@@ -27,7 +27,7 @@ type alias Model =
     , debug : String
     , error : String
     , lia : List Lia.Slide
-    , slide : String
+    , slide : Int
     }
 
 
@@ -69,7 +69,7 @@ nur, ...
 
 init : ( Model, Cmd Msg )
 init =
-    update (Update script) (Model "" "" "" [] "")
+    update (Update script) (Model "" "" "" [] 0)
 
 
 
@@ -78,7 +78,7 @@ init =
 
 type Msg
     = Update String
-    | Load String
+    | Load Int
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -135,8 +135,9 @@ view model =
                     ]
                 ]
                 (model.lia
+                    |> List.indexedMap (,)
                     |> List.map
-                        (\l -> div [ onClick (Load l.title) ] [ a [] [ text l.title ] ])
+                        (\( i, l ) -> div [ onClick (Load i) ] [ a [] [ text l.title ] ])
                 )
             , div
                 [ style
@@ -144,7 +145,11 @@ view model =
                     , ( "float", "right" )
                     ]
                 ]
-                (List.map view_lia model.lia)
+                (model.lia
+                    |> List.indexedMap (,)
+                    |> List.filter (\( i, _ ) -> i == model.slide)
+                    |> List.map (\( _, l ) -> view_lia l)
+                )
             ]
         ]
 
