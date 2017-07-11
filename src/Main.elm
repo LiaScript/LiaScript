@@ -135,9 +135,8 @@ view model =
                     ]
                 ]
                 ((model.lia
-                    |> List.indexedMap (,)
-                    |> List.map
-                        (\( i, l ) -> div [ onClick (Load i) ] [ a [] [ text l.title ] ])
+                    |> Lia.get_headers
+                    |> List.map (\( i, h ) -> div [ onClick (Load i) ] [ a [] [ text h ] ])
                  )
                     ++ [ button [ onClick (Load (model.slide - 1)) ] [ text "<<" ]
                        , button [ onClick (Load (model.slide + 1)) ] [ text ">>" ]
@@ -149,11 +148,13 @@ view model =
                     , ( "float", "right" )
                     ]
                 ]
-                (model.lia
-                    |> List.indexedMap (,)
-                    |> List.filter (\( i, _ ) -> i == model.slide)
-                    |> List.map (\( _, l ) -> view_lia l)
-                )
+                [ case Lia.get_slide model.slide model.lia of
+                    Just slide ->
+                        view_lia slide
+
+                    Nothing ->
+                        text ""
+                ]
             ]
         ]
 

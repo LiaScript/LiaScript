@@ -1,4 +1,10 @@
-module Lia exposing (Slide, parse)
+module Lia
+    exposing
+        ( Slide
+        , get_headers
+        , get_slide
+        , parse
+        )
 
 import Combine exposing (..)
 import Combine.Char exposing (..)
@@ -89,3 +95,23 @@ formatError ms stream =
         ++ "\nI expected one of the following:\n"
         ++ expectationSeparator
         ++ String.join expectationSeparator ms
+
+
+get_headers : List Slide -> List ( Int, String )
+get_headers slides =
+    slides
+        |> List.map (\s -> s.title)
+        |> List.indexedMap (,)
+
+
+get_slide : Int -> List Slide -> Maybe Slide
+get_slide i slides =
+    case ( i, slides ) of
+        ( _, [] ) ->
+            Nothing
+
+        ( 0, x :: xs ) ->
+            Just x
+
+        ( n, _ :: xs ) ->
+            get_slide (n - 1) xs
