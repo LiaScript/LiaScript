@@ -2,7 +2,7 @@ module Main exposing (..)
 
 --import Html.Attribute (width)
 
-import Html exposing (Html, br, button, div, h2, p, text, textarea)
+import Html exposing (Html, br, button, div, h1, h2, h3, h4, h5, h6, p, text, textarea)
 import Html.Attributes exposing (style, value)
 import Html.Events exposing (onInput)
 import Lia exposing (Lia(..))
@@ -32,7 +32,7 @@ type alias Model =
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model "# Hello World" [] "" ""
+    ( Model "# Hello World\nhhh ksks kslsl\nasdfasfd\n" [] "" ""
     , Cmd.none
     )
 
@@ -87,11 +87,28 @@ view model =
 view_lia : Lia -> Html Msg
 view_lia lia =
     case lia of
-        LiaTitle str ->
-            h2 [] [ text str ]
+        LiaTitle i str ->
+            case i of
+                0 ->
+                    h1 [] [ text str ]
+
+                1 ->
+                    h2 [] [ text str ]
+
+                2 ->
+                    h3 [] [ text str ]
+
+                3 ->
+                    h4 [] [ text str ]
+
+                4 ->
+                    h5 [] [ text str ]
+
+                _ ->
+                    h6 [] [ text str ]
 
         LiaText str ->
-            p [] [ text str ]
+            text (str ++ " ")
 
 
 

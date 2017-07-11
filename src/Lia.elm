@@ -5,18 +5,8 @@ import Combine.Char exposing (..)
 import Combine.Num
 
 
-type alias Section =
-    { title : String
-    , body : Body
-    }
-
-
-type alias Body =
-    String
-
-
 type Lia
-    = LiaTitle String
+    = LiaTitle Int String
     | LiaText String
 
 
@@ -25,14 +15,16 @@ comment =
     regex "//[^\n]*"
 
 
-tag : Parser s String
+tag : Parser s Int
 tag =
-    regex "#+ "
+    (\str -> String.length str - 2) <$> regex "#+ "
 
 
 title : Parser s Lia
 title =
-    LiaTitle <$> (tag *> regex "[^\n]+")
+    tag
+        |> map LiaTitle
+        |> andMap (regex "[^\n]+")
 
 
 text : Parser s Lia
