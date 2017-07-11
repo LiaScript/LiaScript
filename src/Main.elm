@@ -3,7 +3,7 @@ module Main exposing (..)
 --import Html.Attribute (width)
 
 import Html exposing (Html, br, button, div, h1, h2, h3, h4, h5, h6, p, text, textarea)
-import Html.Attributes exposing (style, value)
+import Html.Attributes exposing (class, style, value)
 import Html.Events exposing (onInput)
 import Lia exposing (Lia(..))
 
@@ -32,7 +32,38 @@ type alias Model =
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model "# Hello World\nhhh ksks kslsl\nasdfasfd\n" [] "" ""
+    ( Model """# Main Course
+
+...
+
+## Subtitle 1
+
+Auch gibt es niemanden, der den Schmerz an sich liebt, sucht oder wünscht, nur,
+weil er Schmerz ist, es sei denn, es kommt zu zufälligen Umständen, in denen
+Mühen und Schmerz ihm große Freude bereiten können. Um ein triviales Beispiel zu
+nehmen, wer von uns unterzieht sich je anstrengender körperlicher Betätigung,
+außer um Vorteile daraus zu ziehen? ...
+
+## Subtitle 2
+
+... Aber wer hat irgend ein Recht, einen Menschen zu tadeln, der die
+Entscheidung trifft, eine Freude zu genießen, die keine unangenehmen Folgen hat,
+oder einen, der Schmerz vermeidet, welcher keine daraus resultierende Freude
+nach sich zieht? Auch gibt es niemanden, der den Schmerz an sich liebt, sucht
+oder wünscht, nur, weil er Schmerz ist, es sei denn, es kommt zu zufälligen
+Umständen, in denen Mühen und Schmerz ihm große Freude bereiten können.
+
+## Subtitle 3
+
+... Um ein triviales Beispiel zu nehmen, wer von uns unterzieht sich je
+anstrengender körperlicher Betätigung, außer um Vorteile daraus zu ziehen? Aber
+wer hat irgend ein Recht, einen Menschen zu tadeln, der die Entscheidung trifft,
+eine Freude zu genießen, die keine unangenehmen Folgen hat, oder einen, der
+Schmerz vermeidet, welcher keine daraus resultierende Freude nach sich
+zieht?Auch gibt es niemanden, der den Schmerz an sich liebt, sucht oder wünscht,
+nur, ...
+
+""" [] "" ""
     , Cmd.none
     )
 
@@ -80,7 +111,22 @@ view model =
             []
         , text model.error
         , text model.debug
-        , div [] (List.map view_lia model.lia)
+        , div []
+            [ div
+                [ style
+                    [ ( "width", "15%" )
+                    , ( "float", "left" )
+                    ]
+                ]
+                [ p [] [ text "dddd" ], p [] [ text "dddd" ] ]
+            , div
+                [ style
+                    [ ( "width", "85%" )
+                    , ( "float", "right" )
+                    ]
+                ]
+                (List.map view_lia model.lia)
+            ]
         ]
 
 

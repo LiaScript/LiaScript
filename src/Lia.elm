@@ -17,7 +17,7 @@ comment =
 
 tag : Parser s Int
 tag =
-    (\str -> String.length str - 2) <$> regex "#+ "
+    (\h -> String.length h - 2) <$> regex "#+ "
 
 
 title : Parser s Lia
