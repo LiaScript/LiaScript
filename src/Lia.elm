@@ -1,6 +1,7 @@
 module Lia
     exposing
-        ( Slide
+        ( LiaString(..)
+        , Slide
         , get_headers
         , get_slide
         , parse
@@ -14,8 +15,14 @@ import Combine.Num
 type alias Slide =
     { indentation : Int
     , title : String
-    , body : List String
+    , body : List LiaString
     }
+
+
+type LiaString
+    = Base String
+    | Bold String
+    | Italic String
 
 
 comment : Parser s String
@@ -30,7 +37,7 @@ tag =
 
 slide : Parser s Slide
 slide =
-    Slide <$> tag <*> title <*> text
+    Slide <$> tag <*> title <*> body
 
 
 title : Parser s String
@@ -38,9 +45,14 @@ title =
     regex "[^\n]+"
 
 
-text : Parser s (List String)
-text =
-    many (regex "[^#]+")
+body : Parser s (List LiaString)
+body =
+    many element
+
+
+element : Parser s LiaString
+element =
+    Base <$> regex "[^#]+"
 
 
 stmt : Parser s Slide

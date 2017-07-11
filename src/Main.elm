@@ -2,10 +2,10 @@ module Main exposing (..)
 
 --import Html.Attribute (width)
 
-import Html exposing (Html, a, br, button, div, h1, h2, h3, h4, h5, h6, p, text, textarea)
+import Html exposing (Html, a, b, br, button, div, h1, h2, h3, h4, h5, h6, p, text, textarea)
 import Html.Attributes exposing (class, style, value)
 import Html.Events exposing (onClick, onInput)
-import Lia
+import Lia exposing (LiaString(..))
 
 
 main : Program Never Model Msg
@@ -162,7 +162,7 @@ view model =
 view_lia : Lia.Slide -> Html Msg
 view_lia lia =
     div []
-        [ case lia.indentation of
+        ((case lia.indentation of
             0 ->
                 h1 [] [ text lia.title ]
 
@@ -180,8 +180,22 @@ view_lia lia =
 
             _ ->
                 h6 [] [ text lia.title ]
-        , text (String.concat lia.body)
-        ]
+         )
+            :: List.map view_string lia.body
+        )
+
+
+view_string : LiaString -> Html Msg
+view_string string =
+    case string of
+        Base str ->
+            text str
+
+        Bold str ->
+            b [] [ text str ]
+
+        Italic str ->
+            text str
 
 
 
