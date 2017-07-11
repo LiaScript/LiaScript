@@ -2,10 +2,10 @@ module Main exposing (..)
 
 --import Html.Attribute (width)
 
-import Html exposing (Html, br, button, div, h1, h2, h3, h4, h5, h6, p, text, textarea)
+import Html exposing (Html, a, br, button, div, h1, h2, h3, h4, h5, h6, p, text, textarea)
 import Html.Attributes exposing (class, style, value)
-import Html.Events exposing (onInput)
-import Lia exposing (Lia(..))
+import Html.Events exposing (onClick, onInput)
+import Lia
 
 
 main : Program Never Model Msg
@@ -24,15 +24,16 @@ main =
 
 type alias Model =
     { script : String
-    , lia : List Lia
     , debug : String
     , error : String
+    , lia : List Lia.Slide
+    , slide : String
     }
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( Model """# Main Course
+script : String
+script =
+    """# Main Course
 
 ...
 
@@ -63,9 +64,12 @@ Schmerz vermeidet, welcher keine daraus resultierende Freude nach sich
 zieht?Auch gibt es niemanden, der den Schmerz an sich liebt, sucht oder wünscht,
 nur, ...
 
-""" [] "" ""
-    , Cmd.none
-    )
+"""
+
+
+init : ( Model, Cmd Msg )
+init =
+    update (Update script) (Model "" "" "" [] "")
 
 
 
@@ -74,6 +78,7 @@ nur, ...
 
 type Msg
     = Update String
+    | Load String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -91,6 +96,9 @@ update msg model =
                 Err msg ->
                     ( { m | error = msg }, Cmd.none )
 
+        Load slide ->
+            ( { model | slide = slide }, Cmd.none )
+
 
 
 -- VIEW
@@ -101,7 +109,7 @@ view model =
     div []
         [ textarea
             [ style
-                [ ( "width", "100%" )
+                [ ( "width", "50%" )
                 , ( "height", "200px" )
                 , ( "resize", "none" )
                 ]
@@ -109,8 +117,16 @@ view model =
             , onInput Update
             ]
             []
+        , textarea
+            [ style
+                [ ( "width", "49%" )
+                , ( "height", "200px" )
+                , ( "resize", "none" )
+                , ( "float", "right" )
+                ]
+            ]
+            [ text model.debug ]
         , text model.error
-        , text model.debug
         , div []
             [ div
                 [ style
@@ -118,7 +134,10 @@ view model =
                     , ( "float", "left" )
                     ]
                 ]
-                [ p [] [ text "dddd" ], p [] [ text "dddd" ] ]
+                (model.lia
+                    |> List.map
+                        (\l -> div [ onClick (Load l.title) ] [ a [] [ text l.title ] ])
+                )
             , div
                 [ style
                     [ ( "width", "85%" )
@@ -130,31 +149,29 @@ view model =
         ]
 
 
-view_lia : Lia -> Html Msg
+view_lia : Lia.Slide -> Html Msg
 view_lia lia =
-    case lia of
-        LiaTitle i str ->
-            case i of
-                0 ->
-                    h1 [] [ text str ]
+    div []
+        [ case lia.indentation of
+            0 ->
+                h1 [] [ text lia.title ]
 
-                1 ->
-                    h2 [] [ text str ]
+            1 ->
+                h2 [] [ text lia.title ]
 
-                2 ->
-                    h3 [] [ text str ]
+            2 ->
+                h3 [] [ text lia.title ]
 
-                3 ->
-                    h4 [] [ text str ]
+            3 ->
+                h4 [] [ text lia.title ]
 
-                4 ->
-                    h5 [] [ text str ]
+            4 ->
+                h5 [] [ text lia.title ]
 
-                _ ->
-                    h6 [] [ text str ]
-
-        LiaText str ->
-            text (str ++ " ")
+            _ ->
+                h6 [] [ text lia.title ]
+        , text (String.concat lia.body)
+        ]
 
 
 

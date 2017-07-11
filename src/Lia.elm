@@ -1,13 +1,15 @@
-module Lia exposing (Lia(..), parse)
+module Lia exposing (Slide, parse)
 
 import Combine exposing (..)
 import Combine.Char exposing (..)
 import Combine.Num
 
 
-type Lia
-    = LiaTitle Int String
-    | LiaText String
+type alias Slide =
+    { indentation : Int
+    , title : String
+    , body : List String
+    }
 
 
 comment : Parser s String
@@ -20,35 +22,34 @@ tag =
     (\h -> String.length h - 2) <$> regex "#+ "
 
 
-title : Parser s Lia
+slide : Parser s Slide
+slide =
+    Slide <$> tag <*> title <*> text
+
+
+title : Parser s String
 title =
-    tag
-        |> map LiaTitle
-        |> andMap (regex "[^\n]+")
+    regex "[^\n]+"
 
 
-text : Parser s Lia
+text : Parser s (List String)
 text =
-    LiaText <$> regex "[^\n]+"
+    many (regex "[^#]+")
 
 
-stmt : Parser s Lia
+stmt : Parser s Slide
 stmt =
     lazy <|
         \() ->
-            let
-                parsers =
-                    [ title, text ]
-            in
-            whitespace *> choice parsers <* whitespace
+            slide
 
 
-program : Parser s (List Lia)
+program : Parser s (List Slide)
 program =
     many stmt
 
 
-parse : String -> Result String (List Lia)
+parse : String -> Result String (List Slide)
 parse script =
     case Combine.parse program script of
         Ok ( _, _, es ) ->
