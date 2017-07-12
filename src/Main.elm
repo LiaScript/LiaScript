@@ -17,14 +17,15 @@ import Html
         , h4
         , h5
         , h6
+        , img
         , p
         , text
         , textarea
         , u
         )
-import Html.Attributes exposing (class, style, value)
+import Html.Attributes exposing (class, href, src, style, value)
 import Html.Events exposing (onClick, onInput)
-import Lia exposing (LiaString(..))
+import Lia exposing (E(..))
 
 
 main : Program Never Model Msg
@@ -54,7 +55,14 @@ script : String
 script =
     """# Main Course
 
-...
+* bold *, ~ italic ~, _ underlined _,
+*~ bold-italic ~*, *_ bold-underlined _*, _~ italic-underlined ~_,
+_*~ bold-italic-underlined ~*_
+
+
+[link to google](http://www.google.com)
+
+![image](https://cdn-images-1.medium.com/max/720/1*I-3kbXzEIAPAPEGiMcAs0A.png)
 
 ## Subtitle 1
 
@@ -155,7 +163,11 @@ view model =
                 ]
                 ((model.lia
                     |> Lia.get_headers
-                    |> List.map (\( i, h ) -> div [ onClick (Load i) ] [ a [] [ text h ] ])
+                    |> List.map
+                        (\( n, ( h, i ) ) ->
+                            div [ onClick (Load n) ]
+                                [ a [] [ text (String.repeat i "-" ++ h) ] ]
+                        )
                  )
                     ++ [ button [ onClick (Load (model.slide - 1)) ] [ text "<<" ]
                        , button [ onClick (Load (model.slide + 1)) ] [ text ">>" ]
@@ -204,7 +216,7 @@ view_lia lia =
         )
 
 
-view_string : LiaString -> Html Msg
+view_string : E -> Html Msg
 view_string string =
     case string of
         Base str ->
@@ -218,6 +230,12 @@ view_string string =
 
         Underline lia ->
             u [] [ view_string lia ]
+
+        Link text_ url_ ->
+            a [ href url_ ] [ text text_ ]
+
+        Image alt_ url_ ->
+            img [ src url_ ] [ text alt_ ]
 
 
 

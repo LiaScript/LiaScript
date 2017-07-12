@@ -1,6 +1,6 @@
 module Lia
     exposing
-        ( LiaString(..)
+        ( E(..)
         , Slide
         , get_headers
         , get_slide
@@ -15,15 +15,17 @@ import Combine.Num
 type alias Slide =
     { indentation : Int
     , title : String
-    , body : List LiaString
+    , body : List E
     }
 
 
-type LiaString
+type E
     = Base String
-    | Bold LiaString
-    | Italic LiaString
-    | Underline LiaString
+    | Bold E
+    | Italic E
+    | Underline E
+    | Link String String
+    | Image String String
 
 
 comment : Parser s String
@@ -46,12 +48,12 @@ title =
     regex "[^\n]+"
 
 
-body : Parser s (List LiaString)
+body : Parser s (List E)
 body =
     many elements
 
 
-elements : Parser s LiaString
+elements : Parser s E
 elements =
     lazy <|
         \() ->
@@ -60,27 +62,40 @@ elements =
                 , bold_string
                 , italic_string
                 , underline_string
+                , link
                 ]
 
 
-base_string : Parser s LiaString
+base_string : Parser s E
 base_string =
-    Base <$> regex "[^#|*|~|_]+" <?> "base string"
+    Base <$> regex "[^#|*|~|_|\\[]+" <?> "base string"
 
 
-bold_string : Parser s LiaString
+bold_string : Parser s E
 bold_string =
     Bold <$> (string "*" *> elements <* string "*") <?> "bold string"
 
 
-italic_string : Parser s LiaString
+italic_string : Parser s E
 italic_string =
     Italic <$> (string "~" *> elements <* string "~") <?> "italic string"
 
 
-underline_string : Parser s LiaString
+underline_string : Parser s E
 underline_string =
     Underline <$> (string "_" *> elements <* string "_") <?> "underlined string"
+
+
+link : Parser s E
+link =
+    Link <$> brackets (regex "[^\\]]+") <*> parens (regex "[^\\)]+")
+
+
+
+--image : Parser s E
+--image =
+--    Image <$> (string "!" *> brackets (regex "[^\\]]+")) <*> parens (regex "[^\\)]+")
+-- <*> parens (regex "[^\\)]+"))
 
 
 slides : Parser s Slide
@@ -137,10 +152,10 @@ formatError ms stream =
         ++ String.join expectationSeparator ms
 
 
-get_headers : List Slide -> List ( Int, String )
+get_headers : List Slide -> List ( Int, ( String, Int ) )
 get_headers slides =
     slides
-        |> List.map (\s -> s.title)
+        |> List.map (\s -> ( s.title, s.indentation ))
         |> List.indexedMap (,)
 
 
