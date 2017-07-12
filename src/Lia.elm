@@ -21,8 +21,9 @@ type alias Slide =
 
 type LiaString
     = Base String
-    | Bold String
-    | Italic String
+    | Bold LiaString
+    | Italic LiaString
+    | Underline LiaString
 
 
 comment : Parser s String
@@ -47,16 +48,43 @@ title =
 
 body : Parser s (List LiaString)
 body =
-    many element
+    many elements
 
 
-element : Parser s LiaString
-element =
-    Base <$> regex "[^#]+"
+elements : Parser s LiaString
+elements =
+    lazy <|
+        \() ->
+            choice
+                [ base_string
+                , bold_string
+                , italic_string
+                , underline_string
+                ]
 
 
-stmt : Parser s Slide
-stmt =
+base_string : Parser s LiaString
+base_string =
+    Base <$> regex "[^#|*|~|_]+" <?> "base string"
+
+
+bold_string : Parser s LiaString
+bold_string =
+    Bold <$> (string "*" *> elements <* string "*") <?> "bold string"
+
+
+italic_string : Parser s LiaString
+italic_string =
+    Italic <$> (string "~" *> elements <* string "~") <?> "italic string"
+
+
+underline_string : Parser s LiaString
+underline_string =
+    Underline <$> (string "_" *> elements <* string "_") <?> "underlined string"
+
+
+slides : Parser s Slide
+slides =
     lazy <|
         \() ->
             slide
@@ -64,7 +92,7 @@ stmt =
 
 program : Parser s (List Slide)
 program =
-    many stmt
+    many slides
 
 
 parse : String -> Result String (List Slide)

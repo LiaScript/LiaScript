@@ -2,7 +2,26 @@ module Main exposing (..)
 
 --import Html.Attribute (width)
 
-import Html exposing (Html, a, b, br, button, div, h1, h2, h3, h4, h5, h6, p, text, textarea)
+import Html
+    exposing
+        ( Html
+        , a
+        , b
+        , br
+        , button
+        , div
+        , em
+        , h1
+        , h2
+        , h3
+        , h4
+        , h5
+        , h6
+        , p
+        , text
+        , textarea
+        , u
+        )
 import Html.Attributes exposing (class, style, value)
 import Html.Events exposing (onClick, onInput)
 import Lia exposing (LiaString(..))
@@ -191,11 +210,14 @@ view_string string =
         Base str ->
             text str
 
-        Bold str ->
-            b [] [ text str ]
+        Bold lia ->
+            b [] [ view_string lia ]
 
-        Italic str ->
-            text str
+        Italic lia ->
+            em [] [ view_string lia ]
+
+        Underline lia ->
+            u [] [ view_string lia ]
 
 
 
