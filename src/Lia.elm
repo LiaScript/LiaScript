@@ -21,11 +21,23 @@ type alias Slide =
 
 type E
     = Base String
+    | Code String
+    | CodeBlock String
     | Bold E
     | Italic E
     | Underline E
     | Link String String
     | Image String String
+    | Paragraph (List E)
+
+
+type Lia
+    = LiaBool Bool
+    | LiaInt Int
+    | LiaFloat Float
+    | LiaString String
+    | LiaList (List Lia)
+    | LiaCmd String (List Lia)
 
 
 comment : Parser s String
@@ -35,7 +47,7 @@ comment =
 
 tag : Parser s Int
 tag =
-    (\h -> String.length h - 2) <$> regex "#+ "
+    String.length <$> (regex "#+" <* whitespace)
 
 
 slide : Parser s Slide
@@ -45,57 +57,101 @@ slide =
 
 title : Parser s String
 title =
-    regex "[^\n]+"
+    String.trim <$> regex ".+" <* many1 newline
 
 
 body : Parser s (List E)
 body =
-    many elements
+    many blocks
 
 
-elements : Parser s E
-elements =
+blocks : Parser s E
+blocks =
+    lazy <|
+        \() ->
+            let
+                b =
+                    choice
+                        [ code_block
+                        , paragraph
+                        ]
+            in
+            b <* many newline
+
+
+paragraph : Parser s E
+paragraph =
+    (\lines -> Paragraph <| List.concat lines) <$> many (spaces *> line <* newline)
+
+
+line : Parser s (List E)
+line =
+    many1 inlines
+
+
+newline : Parser s String
+newline =
+    string "\n"
+
+
+spaces : Parser s String
+spaces =
+    regex "[ |\t]*"
+
+
+inlines : Parser s E
+inlines =
     lazy <|
         \() ->
             choice
-                [ base_string
-                , bold_string
-                , italic_string
-                , underline_string
-                , link
+                [ code_
+                , image_
+                , link_
+                , strings
                 ]
 
 
-base_string : Parser s E
-base_string =
-    Base <$> regex "[^#|*|~|_|\\[]+" <?> "base string"
+link_ : Parser s E
+link_ =
+    Link <$> brackets (regex "[^\\]|\n]*") <*> parens (regex "[^\\)|\n]*")
 
 
-bold_string : Parser s E
-bold_string =
-    Bold <$> (string "*" *> elements <* string "*") <?> "bold string"
+image_ : Parser s E
+image_ =
+    Image <$> (string "!" *> brackets (regex "[^\\]|\n]*")) <*> parens (regex "[^\\)|\n]*")
 
 
-italic_string : Parser s E
-italic_string =
-    Italic <$> (string "~" *> elements <* string "~") <?> "italic string"
+strings : Parser s E
+strings =
+    lazy <|
+        \() ->
+            let
+                base =
+                    Base <$> regex "[^#|*|~|_|`|!|\\[|\n]+" <?> "base string"
+
+                bold =
+                    Bold <$> (string "*" *> inlines <* string "*") <?> "bold string"
+
+                italic =
+                    Italic <$> (string "~" *> inlines <* string "~") <?> "italic string"
+
+                underline =
+                    Underline <$> (string "_" *> inlines <* string "_") <?> "underline string"
+
+                base2 =
+                    Base <$> regex "[^#|\n]+" <?> "base string"
+            in
+            choice [ base, bold, italic, underline, base2 ]
 
 
-underline_string : Parser s E
-underline_string =
-    Underline <$> (string "_" *> elements <* string "_") <?> "underlined string"
+code_block : Parser s E
+code_block =
+    Code <$> (string "```" *> regex "[^`]+" <* string "```") <?> "block code"
 
 
-link : Parser s E
-link =
-    Link <$> brackets (regex "[^\\]]+") <*> parens (regex "[^\\)]+")
-
-
-
---image : Parser s E
---image =
---    Image <$> (string "!" *> brackets (regex "[^\\]]+")) <*> parens (regex "[^\\)]+")
--- <*> parens (regex "[^\\)]+"))
+code_ : Parser s E
+code_ =
+    Code <$> (string "`" *> regex "[^`]+" <* string "`") <?> "inline code"
 
 
 slides : Parser s Slide

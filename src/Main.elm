@@ -55,14 +55,13 @@ script : String
 script =
     """# Main Course
 
-* bold *, ~ italic ~, _ underlined _,
-*~ bold-italic ~*, *_ bold-underlined _*, _~ italic-underlined ~_,
-_*~ bold-italic-underlined ~*_
+Paragraph example (sss)*test*~hallo~
 
-
-[link to google](http://www.google.com)
-
-![image](https://cdn-images-1.medium.com/max/720/1*I-3kbXzEIAPAPEGiMcAs0A.png)
+```
+def function(p = 12):
+    p = p * p
+    return p
+```
 
 ## Subtitle 1
 
@@ -90,6 +89,11 @@ eine Freude zu genießen, die keine unangenehmen Folgen hat, oder einen, der
 Schmerz vermeidet, welcher keine daraus resultierende Freude nach sich
 zieht?Auch gibt es niemanden, der den Schmerz an sich liebt, sucht oder wünscht,
 nur, ...
+
+
+### Subtitle 3
+
+{image}("https://cdn-images-1.medium.com/max/720/1*I-3kbXzEIAPAPEGiMcAs0A.png")
 
 """
 
@@ -212,13 +216,27 @@ view_lia lia =
             _ ->
                 h6 [] [ text lia.title ]
          )
-            :: List.map view_string lia.body
+            :: view_body lia.body
         )
+
+
+view_body : List E -> List (Html Msg)
+view_body body =
+    List.map view_string body
 
 
 view_string : E -> Html Msg
 view_string string =
     case string of
+        Paragraph xs ->
+            p [] (List.map view_string xs)
+
+        CodeBlock str ->
+            Html.pre [] [ Html.code [] [ text str ] ]
+
+        Code str ->
+            Html.pre [] [ text str ]
+
         Base str ->
             text str
 
@@ -239,5 +257,7 @@ view_string string =
 
 
 
+--        Lia cmd params ->
+--            text (cmd ++ " : " ++ toString params)
 -- SUBSCRIPTIONS
 -- HTTP
