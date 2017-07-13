@@ -28,7 +28,9 @@ type E
     | Underline E
     | Link String String
     | Image String String
+    | Movie String String
     | Paragraph (List E)
+    | Quote (List E)
 
 
 type Lia
@@ -72,7 +74,8 @@ blocks =
             let
                 b =
                     choice
-                        [ code_block
+                        [ code
+                        , quote
                         , paragraph
                         ]
             in
@@ -105,24 +108,36 @@ inlines =
         \() ->
             choice
                 [ code_
-                , image_
-                , link_
-                , strings
+                , reference_
+                , strings_
                 ]
 
 
-link_ : Parser s E
-link_ =
-    Link <$> brackets (regex "[^\\]|\n]*") <*> parens (regex "[^\\)|\n]*")
+reference_ : Parser s E
+reference_ =
+    lazy <|
+        \() ->
+            let
+                info =
+                    brackets (regex "[^\\]|\n]*")
+
+                url =
+                    parens (regex "[^\\)|\n]*")
+
+                link =
+                    Link <$> info <*> url
+
+                image =
+                    Image <$> (string "!" *> info) <*> url
+
+                movie =
+                    Movie <$> (string "!!" *> info) <*> url
+            in
+            choice [ movie, image, link ]
 
 
-image_ : Parser s E
-image_ =
-    Image <$> (string "!" *> brackets (regex "[^\\]|\n]*")) <*> parens (regex "[^\\)|\n]*")
-
-
-strings : Parser s E
-strings =
+strings_ : Parser s E
+strings_ =
     lazy <|
         \() ->
             let
@@ -144,9 +159,18 @@ strings =
             choice [ base, bold, italic, underline, base2 ]
 
 
-code_block : Parser s E
-code_block =
+code : Parser s E
+code =
     Code <$> (string "```" *> regex "[^`]+" <* string "```") <?> "block code"
+
+
+quote : Parser s E
+quote =
+    let
+        p =
+            regex "^" *> string ">" *> line <* newline
+    in
+    (\q -> Quote <| List.concat q) <$> many1 p
 
 
 code_ : Parser s E

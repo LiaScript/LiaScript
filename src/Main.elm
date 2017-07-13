@@ -228,8 +228,8 @@ view_body body =
 view_string : E -> Html Msg
 view_string string =
     case string of
-        Paragraph xs ->
-            p [] (List.map view_string xs)
+        Paragraph elems ->
+            p [] (List.map view_string elems)
 
         CodeBlock str ->
             Html.pre [] [ Html.code [] [ text str ] ]
@@ -252,8 +252,14 @@ view_string string =
         Link text_ url_ ->
             a [ href url_ ] [ text text_ ]
 
+        Quote elems ->
+            Html.blockquote [] (List.map view_string elems)
+
         Image alt_ url_ ->
             img [ src url_ ] [ text alt_ ]
+
+        Movie alt_ url_ ->
+            Html.iframe [ src url_ ] [ text alt_ ]
 
 
 
