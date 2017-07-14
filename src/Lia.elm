@@ -42,19 +42,18 @@ type Lia
     | LiaCmd String (List Lia)
 
 
-comment : Parser s String
-comment =
-    regex "//[^\n]*"
+comments : Parser s ()
+comments =
+    let
+        p =
+            many (choice [ regex "[^-]*", regex "-[^}]+" ])
+    in
+    skip (many (string "{-" *> p <* string "-}"))
 
 
 tag : Parser s Int
 tag =
-    String.length <$> (regex "#+" <* whitespace)
-
-
-slide : Parser s Slide
-slide =
-    Slide <$> tag <*> title <*> body
+    String.length <$> (newlines *> regex "#+" <* whitespace)
 
 
 title : Parser s String
@@ -79,7 +78,7 @@ blocks =
                         , paragraph
                         ]
             in
-            b <* many newline
+            skip comments *> b <* newlines
 
 
 paragraph : Parser s E
@@ -97,6 +96,11 @@ newline =
     string "\n"
 
 
+newlines : Parser s String
+newlines =
+    regex "\n*"
+
+
 spaces : Parser s String
 spaces =
     regex "[ |\t]*"
@@ -106,11 +110,15 @@ inlines : Parser s E
 inlines =
     lazy <|
         \() ->
-            choice
-                [ code_
-                , reference_
-                , strings_
-                ]
+            let
+                p =
+                    choice
+                        [ code_
+                        , reference_
+                        , strings_
+                        ]
+            in
+            skip comments *> p
 
 
 reference_ : Parser s E
@@ -142,7 +150,7 @@ strings_ =
         \() ->
             let
                 base =
-                    Base <$> regex "[^#|*|~|_|`|!|\\[|\n]+" <?> "base string"
+                    Base <$> regex "[^#|*|~|_|`|!|\\[|{|\n]+" <?> "base string"
 
                 bold =
                     Bold <$> (string "*" *> inlines <* string "*") <?> "bold string"
@@ -197,16 +205,9 @@ code_ =
     Code <$> (string "`" *> regex "[^`]+" <* string "`") <?> "inline code"
 
 
-slides : Parser s Slide
-slides =
-    lazy <|
-        \() ->
-            slide
-
-
 program : Parser s (List Slide)
 program =
-    many slides
+    skip comments *> many (Slide <$> tag <*> title <*> body)
 
 
 parse : String -> Result String (List Slide)
