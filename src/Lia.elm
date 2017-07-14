@@ -22,7 +22,7 @@ type alias Slide =
 type E
     = Base String
     | Code String
-    | CodeBlock String
+    | CodeBlock String String
     | Bold E
     | Italic E
     | Underline E
@@ -161,7 +161,26 @@ strings_ =
 
 code : Parser s E
 code =
-    Code <$> (string "```" *> regex "[^`]+" <* string "```") <?> "block code"
+    let
+        lang =
+            string "```" *> spaces *> regex "([a-z,A-Z,0-9])*" <* spaces <* newline
+
+        block =
+            String.concat
+                <$> many
+                        (choice
+                            [ regex "[^`]+"
+                            , regex "`[^`]+"
+                            , regex "``[^`]+"
+                            ]
+                        )
+                <* string "```"
+    in
+    CodeBlock <$> lang <*> block
+
+
+
+-- <$>
 
 
 quote : Parser s E

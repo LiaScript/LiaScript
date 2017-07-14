@@ -231,8 +231,8 @@ view_string string =
         Paragraph elems ->
             p [] (List.map view_string elems)
 
-        CodeBlock str ->
-            Html.pre [] [ Html.code [] [ text str ] ]
+        CodeBlock lang_ code_ ->
+            Html.pre [] [ Html.code [] [ text code_ ] ]
 
         Code str ->
             Html.pre [] [ text str ]
