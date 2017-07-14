@@ -150,7 +150,10 @@ strings_ =
         \() ->
             let
                 base =
-                    Base <$> regex "[^#|*|~|_|`|!|\\[|{|\n]+" <?> "base string"
+                    Base <$> regex "[^#|*|~|_|`|!|\\[|{|\\\\|\n]+" <?> "base string"
+
+                escape =
+                    Base <$> (string "\\" *> regex "[*_~`{\\\\]") <?> "escape string"
 
                 bold =
                     Bold <$> (string "*" *> inlines <* string "*") <?> "bold string"
@@ -164,7 +167,7 @@ strings_ =
                 base2 =
                     Base <$> regex "[^#|\n]+" <?> "base string"
             in
-            choice [ base, bold, italic, underline, base2 ]
+            choice [ base, escape, bold, italic, underline, base2 ]
 
 
 code : Parser s E
