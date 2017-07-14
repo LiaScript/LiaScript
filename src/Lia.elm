@@ -24,6 +24,7 @@ type E
     | Code String
     | CodeBlock String String
     | Bold E
+    | Unicode String
     | Italic E
     | Underline E
     | Link String String
@@ -122,6 +123,8 @@ inlines =
                     choice
                         [ code_
                         , reference_
+
+                        --  , arrows_
                         , strings_
                         ]
             in
@@ -157,24 +160,51 @@ strings_ =
         \() ->
             let
                 base =
-                    Base <$> regex "[^#|*|~|_|`|!|\\[|{|\\\\|\n]+" <?> "base string"
+                    Base <$> regex "[^#|*|~|_|`|!|\\[|{|\\\\|\n|\\-|<|>]+" <?> "base string"
 
                 escape =
-                    Base <$> (string "\\" *> regex "[*_~`{\\\\]") <?> "escape string"
+                    Base <$> (spaces *> string "\\" *> regex "[*_~`{\\\\]") <?> "escape string"
 
                 bold =
-                    Bold <$> (string "*" *> inlines <* string "*") <?> "bold string"
+                    Bold <$> (spaces *> string "*" *> inlines <* string "*") <?> "bold string"
 
                 italic =
-                    Italic <$> (string "~" *> inlines <* string "~") <?> "italic string"
+                    Italic <$> (spaces *> string "~" *> inlines <* string "~") <?> "italic string"
 
                 underline =
-                    Underline <$> (string "_" *> inlines <* string "_") <?> "underline string"
+                    Underline <$> (spaces *> string "_" *> inlines <* string "_") <?> "underline string"
+
+                characters =
+                    Base <$> regex "[*|~|_|\\-|<|>]"
 
                 base2 =
                     Base <$> regex "[^#|\n]+" <?> "base string"
+
+                arrows =
+                    lazy <|
+                        \() ->
+                            choice
+                                [ string "<<-" $> Unicode "↞"
+                                , string "->>" $> Unicode "↠"
+                                , string "<->" $> Unicode "↔"
+                                , string ">->" $> Unicode "↣"
+                                , string "<-<" $> Unicode "↢"
+                                , string "->" $> Unicode "→"
+                                , string "<-" $> Unicode "←"
+                                , string "<~" $> Unicode "↜"
+                                , string "~>" $> Unicode "↝"
+                                ]
             in
-            choice [ base, escape, bold, italic, underline, base2 ]
+            choice
+                [ base
+                , arrows
+                , escape
+                , bold
+                , italic
+                , underline
+                , characters
+                , base2
+                ]
 
 
 code : Parser s E

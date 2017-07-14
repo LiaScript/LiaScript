@@ -112,6 +112,9 @@ view_element string =
         Line ->
             Html.hr [] []
 
+        Unicode code_ ->
+            Html.text code_
+
         Bold lia ->
             Html.b [] [ view_element lia ]
 
