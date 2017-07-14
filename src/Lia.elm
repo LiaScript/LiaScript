@@ -160,7 +160,7 @@ strings_ =
         \() ->
             let
                 base =
-                    Base <$> regex "[^#|*|~|_|`|!|\\[|{|\\\\|\n|\\-|<|>]+" <?> "base string"
+                    Base <$> regex "[^#|*|~|_|`|!|\\[|{|\\\\|\n|\\-|<|>|=]+" <?> "base string"
 
                 escape =
                     Base <$> (spaces *> string "\\" *> regex "[*_~`{\\\\]") <?> "escape string"
@@ -175,7 +175,7 @@ strings_ =
                     Underline <$> (spaces *> string "_" *> inlines <* string "_") <?> "underline string"
 
                 characters =
-                    Base <$> regex "[*|~|_|\\-|<|>]"
+                    Base <$> regex "[*|~|_|\\-|<|>|=]"
 
                 base2 =
                     Base <$> regex "[^#|\n]+" <?> "base string"
@@ -184,7 +184,10 @@ strings_ =
                     lazy <|
                         \() ->
                             choice
-                                [ string "<<-" $> Unicode "↞"
+                                [ string "<-->" $> Unicode "⟷"
+                                , string "<--" $> Unicode "⟵"
+                                , string "-->" $> Unicode "⟶"
+                                , string "<<-" $> Unicode "↞"
                                 , string "->>" $> Unicode "↠"
                                 , string "<->" $> Unicode "↔"
                                 , string ">->" $> Unicode "↣"
@@ -193,6 +196,12 @@ strings_ =
                                 , string "<-" $> Unicode "←"
                                 , string "<~" $> Unicode "↜"
                                 , string "~>" $> Unicode "↝"
+                                , string "<==>" $> Unicode "⟺"
+                                , string "==>" $> Unicode "⟹"
+                                , string "<==" $> Unicode "⟸"
+                                , string "<=>" $> Unicode "⇔"
+                                , string "=>" $> Unicode "⇒"
+                                , string "<=" $> Unicode "⇐"
                                 ]
             in
             choice
