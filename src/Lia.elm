@@ -31,6 +31,7 @@ type E
     | Movie String String
     | Paragraph (List E)
     | Quote (List E)
+    | Line
 
 
 type Lia
@@ -75,10 +76,16 @@ blocks =
                     choice
                         [ code
                         , quote
+                        , horizontal_line
                         , paragraph
                         ]
             in
             skip comments *> b <* newlines
+
+
+horizontal_line : Parser s E
+horizontal_line =
+    Line <$ regex "--[\\-]+"
 
 
 paragraph : Parser s E

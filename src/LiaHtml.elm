@@ -109,6 +109,9 @@ view_element string =
         Base str ->
             Html.text str
 
+        Line ->
+            Html.hr [] []
+
         Bold lia ->
             Html.b [] [ view_element lia ]
 
