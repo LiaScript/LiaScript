@@ -26,6 +26,7 @@ import Html
 import Html.Attributes exposing (class, href, src, style, value)
 import Html.Events exposing (onClick, onInput)
 import Lia exposing (E(..))
+import LiaHtml exposing (book, plain)
 
 
 main : Program Never Model Msg
@@ -109,7 +110,7 @@ init =
 
 type Msg
     = Update String
-    | Load Int
+    | Child LiaHtml.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -127,8 +128,8 @@ update msg model =
                 Err msg ->
                     ( { m | error = msg }, Cmd.none )
 
-        Load slide ->
-            ( { model | slide = slide }, Cmd.none )
+        Child liaMsg ->
+            ( { model | slide = LiaHtml.activated liaMsg }, Cmd.none )
 
 
 
@@ -158,40 +159,46 @@ view model =
             ]
             [ text model.debug ]
         , text model.error
-        , div []
-            [ div
-                [ style
-                    [ ( "width", "15%" )
-                    , ( "float", "left" )
-                    ]
-                ]
-                ((model.lia
-                    |> Lia.get_headers
-                    |> List.map
-                        (\( n, ( h, i ) ) ->
-                            div [ onClick (Load n) ]
-                                [ a [] [ text (String.repeat i "-" ++ h) ] ]
-                        )
-                 )
-                    ++ [ button [ onClick (Load (model.slide - 1)) ] [ text "<<" ]
-                       , button [ onClick (Load (model.slide + 1)) ] [ text ">>" ]
-                       ]
-                )
-            , div
-                [ style
-                    [ ( "width", "85%" )
-                    , ( "float", "right" )
-                    ]
-                ]
-                [ case Lia.get_slide model.slide model.lia of
-                    Just slide ->
-                        view_lia slide
-
-                    Nothing ->
-                        text ""
-                ]
-            ]
+        , Html.map Child <| book model.lia model.slide
         ]
+
+
+
+{- , div []
+       [ div
+           [ style
+               [ ( "width", "15%" )
+               , ( "float", "left" )
+               ]
+           ]
+           ((model.lia
+               |> Lia.get_headers
+               |> List.map
+                   (\( n, ( h, i ) ) ->
+                       div [ onClick (Load n) ]
+                           [ a [] [ text (String.repeat i "-" ++ h) ] ]
+                   )
+            )
+               ++ [ button [ onClick (Load (model.slide - 1)) ] [ text "<<" ]
+                  , button [ onClick (Load (model.slide + 1)) ] [ text ">>" ]
+                  ]
+           )
+       , div
+           [ style
+               [ ( "width", "85%" )
+               , ( "float", "right" )
+               ]
+           ]
+           [ case Lia.get_slide model.slide model.lia of
+               Just slide ->
+                   view_lia slide
+
+               Nothing ->
+                   text ""
+           ]
+       ]
+   ]
+-}
 
 
 view_lia : Lia.Slide -> Html Msg
