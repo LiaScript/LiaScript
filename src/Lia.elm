@@ -33,6 +33,7 @@ type E
     | Paragraph (List E)
     | Quote (List E)
     | Line
+    | EList (List (List E))
 
 
 type Lia
@@ -78,10 +79,20 @@ blocks =
                         [ code
                         , quote
                         , horizontal_line
+                        , list
                         , paragraph
                         ]
             in
-            skip comments *> b <* newlines
+            skip comments *> b
+
+
+
+--<* newlines
+
+
+list : Parser s E
+list =
+    EList <$> many1 (string "* " *> line <* newline)
 
 
 horizontal_line : Parser s E
@@ -91,7 +102,7 @@ horizontal_line =
 
 paragraph : Parser s E
 paragraph =
-    (\lines -> Paragraph <| List.concat lines) <$> many (spaces *> line <* newline)
+    (\l -> Paragraph <| List.concat l) <$> many (spaces *> line <* newline)
 
 
 line : Parser s (List E)
@@ -154,59 +165,79 @@ reference_ =
             choice [ movie, image, link ]
 
 
+arrows_ : Parser s E
+arrows_ =
+    lazy <|
+        \() ->
+            choice
+                [ string "<-->" $> Unicode "⟷"
+                , string "<--" $> Unicode "⟵"
+                , string "-->" $> Unicode "⟶"
+                , string "<<-" $> Unicode "↞"
+                , string "->>" $> Unicode "↠"
+                , string "<->" $> Unicode "↔"
+                , string ">->" $> Unicode "↣"
+                , string "<-<" $> Unicode "↢"
+                , string "->" $> Unicode "→"
+                , string "<-" $> Unicode "←"
+                , string "<~" $> Unicode "↜"
+                , string "~>" $> Unicode "↝"
+                , string "<==>" $> Unicode "⟺"
+                , string "==>" $> Unicode "⟹"
+                , string "<==" $> Unicode "⟸"
+                , string "<=>" $> Unicode "⇔"
+                , string "=>" $> Unicode "⇒"
+                , string "<=" $> Unicode "⇐"
+                ]
+
+
+smileys : Parser s E
+smileys =
+    lazy <|
+        \() ->
+            choice
+                [ string ":)" $> Unicode "😃" --"☺"
+                , string ";)" $> Unicode "😉"
+
+                --, string "B)" $> Unicode "😎"
+                ]
+
+
+between_ : String -> Parser s E -> Parser s E
+between_ str p =
+    spaces *> string str *> p <* string str
+
+
 strings_ : Parser s E
 strings_ =
     lazy <|
         \() ->
             let
                 base =
-                    Base <$> regex "[^#|*|~|_|`|!|\\[|{|\\\\|\n|\\-|<|>|=]+" <?> "base string"
+                    Base <$> regex "[^#|*|~|_|:|;|`|!|\\[|{|\\\\|\n|\\-|<|>|=]+" <?> "base string"
 
                 escape =
                     Base <$> (spaces *> string "\\" *> regex "[*_~`{\\\\]") <?> "escape string"
 
                 bold =
-                    Bold <$> (spaces *> string "*" *> inlines <* string "*") <?> "bold string"
+                    Bold <$> between_ "*" inlines <?> "bold string"
 
                 italic =
-                    Italic <$> (spaces *> string "~" *> inlines <* string "~") <?> "italic string"
+                    Italic <$> between_ "~" inlines <?> "italic string"
 
                 underline =
-                    Underline <$> (spaces *> string "_" *> inlines <* string "_") <?> "underline string"
+                    Underline <$> between_ "_" inlines <?> "underline string"
 
                 characters =
-                    Base <$> regex "[*|~|_|\\-|<|>|=]"
+                    Base <$> regex "[*|~|_|:|;|\\-|<|>|=]"
 
                 base2 =
                     Base <$> regex "[^#|\n]+" <?> "base string"
-
-                arrows =
-                    lazy <|
-                        \() ->
-                            choice
-                                [ string "<-->" $> Unicode "⟷"
-                                , string "<--" $> Unicode "⟵"
-                                , string "-->" $> Unicode "⟶"
-                                , string "<<-" $> Unicode "↞"
-                                , string "->>" $> Unicode "↠"
-                                , string "<->" $> Unicode "↔"
-                                , string ">->" $> Unicode "↣"
-                                , string "<-<" $> Unicode "↢"
-                                , string "->" $> Unicode "→"
-                                , string "<-" $> Unicode "←"
-                                , string "<~" $> Unicode "↜"
-                                , string "~>" $> Unicode "↝"
-                                , string "<==>" $> Unicode "⟺"
-                                , string "==>" $> Unicode "⟹"
-                                , string "<==" $> Unicode "⟸"
-                                , string "<=>" $> Unicode "⇔"
-                                , string "=>" $> Unicode "⇒"
-                                , string "<=" $> Unicode "⇐"
-                                ]
             in
             choice
                 [ base
-                , arrows
+                , arrows_
+                , smileys
                 , escape
                 , bold
                 , italic

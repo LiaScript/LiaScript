@@ -115,6 +115,13 @@ view_element string =
         Unicode code_ ->
             Html.text code_
 
+        EList elems ->
+            Html.ul []
+                (elems
+                    |> List.map (\e -> List.map view_element e)
+                    |> List.map (\e -> Html.li [] e)
+                )
+
         Bold lia ->
             Html.b [] [ view_element lia ]
 
