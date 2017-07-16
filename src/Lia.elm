@@ -83,7 +83,7 @@ blocks =
                         , paragraph
                         ]
             in
-            skip comments *> b
+            skip comments *> b <* newlines
 
 
 
@@ -92,7 +92,20 @@ blocks =
 
 list : Parser s E
 list =
-    EList <$> many1 (string "* " *> line <* newline)
+    let
+        p1 =
+            string "* " *> line <* newline
+
+        p2 =
+            string "  " *> line <* newline
+    in
+    EList
+        <$> many1
+                (p1
+                    |> map (::)
+                    |> andMap (many p2)
+                    |> map List.concat
+                )
 
 
 horizontal_line : Parser s E
@@ -110,14 +123,14 @@ line =
     many1 inlines
 
 
-newline : Parser s String
+newline : Parser s ()
 newline =
-    string "\n"
+    skip (char '\n' <|> eol)
 
 
-newlines : Parser s String
+newlines : Parser s ()
 newlines =
-    regex "\n*"
+    skip (many newline)
 
 
 spaces : Parser s String
@@ -134,8 +147,6 @@ inlines =
                     choice
                         [ code_
                         , reference_
-
-                        --  , arrows_
                         , strings_
                         ]
             in
