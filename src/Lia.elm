@@ -67,21 +67,6 @@ comments =
     skip (many (string "{-" *> p <* string "-}"))
 
 
-tag : Parser s Int
-tag =
-    String.length <$> (newlines *> regex "#+" <* whitespace)
-
-
-title : Parser s String
-title =
-    String.trim <$> regex ".+" <* many1 newline
-
-
-body : Parser s (List Block)
-body =
-    many blocks
-
-
 blocks : Parser s Block
 blocks =
     lazy <|
@@ -318,6 +303,16 @@ code_ =
 
 program : Parser s (List Slide)
 program =
+    let
+        tag =
+            String.length <$> (newlines *> regex "#+" <* whitespace)
+
+        title =
+            String.trim <$> regex ".+" <* many1 newline
+
+        body =
+            many blocks
+    in
     skip comments *> many (Slide <$> tag <*> title <*> body)
 
 
