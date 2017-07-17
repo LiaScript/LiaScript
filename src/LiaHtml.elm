@@ -103,44 +103,37 @@ view_block block =
         HorizontalLine ->
             Html.hr [] []
 
-        Table rows ->
-            Html.table
-                [ Attr.attribute "cellspacing" "0"
-                , Attr.attribute "cellpadding" "8"
-                , Attr.style
-                    [ ( "border-style", "solid" )
-                    , ( "border-color", "#e0e0eb" )
-                    , ( "border-width", "1px" )
-                    ]
-                ]
-                (rows
-                    |> List.map
-                        (\r ->
-                            Html.tr
-                                []
-                                (r
-                                    |> List.map
-                                        (\c ->
-                                            Html.td
-                                                [ Attr.style
-                                                    [ ( "border-style", "solid" )
-                                                    , ( "border-color", "#e0e0eb" )
-                                                    , ( "border-width", "1px" )
-                                                    ]
-                                                ]
-                                                (c
-                                                    |> List.map (\e -> view_inline e)
-                                                )
-                                        )
-                                )
-                        )
-                )
+        Table header body ->
+            view_table header body
 
         Quote elements ->
             Html.blockquote [] (List.map view_inline elements)
 
         CodeBlock language code ->
             Html.pre [] [ Html.code [] [ Html.text code ] ]
+
+
+view_table : List (List Inline) -> List (List (List Inline)) -> Html Msg
+view_table header body =
+    let
+        style_ =
+            Attr.style
+                [ ( "border-style", "solid" )
+                , ( "border-color", "#e0e0eb" )
+                , ( "border-width", "1px" )
+                ]
+
+        view_row =
+            \f row ->
+                List.map (\c -> f [ style_ ] (c |> List.map (\e -> view_inline e)))
+                    row
+    in
+    Html.table
+        [ Attr.attribute "cellspacing" "0"
+        , Attr.attribute "cellpadding" "8"
+        , style_
+        ]
+        (Html.thead [] (view_row Html.th header) :: List.map (\r -> Html.tr [] (view_row Html.td r)) body)
 
 
 view_inline : Inline -> Html Msg

@@ -23,10 +23,10 @@ type alias Slide =
 
 type Block
     = HorizontalLine
-    | Paragraph (List Inline)
-    | Quote (List Inline)
     | CodeBlock String String
-    | Table (List (List (List Inline)))
+    | Quote (List Inline)
+    | Paragraph (List Inline)
+    | Table (List (List Inline)) (List (List (List Inline)))
 
 
 
@@ -119,10 +119,22 @@ paragraph =
 table : Parser s Block
 table =
     let
+        ending =
+            string "|" <* (spaces <* newline)
+
         row =
-            string "|" *> sepBy1 (string "|") (many1 inlines) <* string "|"
+            string "|" *> sepBy1 (string "|") (many1 inlines) <* ending
+
+        header =
+            string "|" *> sepBy1 (string "|") (many1 (regex "--[\\-]+")) <* ending
+
+        simple_table =
+            (\l -> Table [] l) <$> many1 row <* newline
+
+        format_table =
+            Table <$> (row <* header) <*> many row <* newline
     in
-    Table <$> many1 (row <* (spaces <* newline))
+    choice [ format_table, simple_table ]
 
 
 line : Parser s (List Inline)

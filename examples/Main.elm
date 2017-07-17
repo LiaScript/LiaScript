@@ -101,6 +101,7 @@ script =
     """# Main Course
 
 | h1  | h2 | h3 | h4 |
+|-----|----|----|----|
 | aaa | bb | cc | dd |
 
 
