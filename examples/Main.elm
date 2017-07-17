@@ -2,30 +2,10 @@ module Main exposing (..)
 
 --import Html.Attribute (width)
 
-import Html
-    exposing
-        ( Html
-        , a
-        , b
-        , br
-        , button
-        , div
-        , em
-        , h1
-        , h2
-        , h3
-        , h4
-        , h5
-        , h6
-        , img
-        , p
-        , text
-        , textarea
-        , u
-        )
+import Html exposing (Html)
 import Html.Attributes exposing (class, href, src, style, value)
 import Html.Events exposing (onClick, onInput)
-import Lia exposing (E(..))
+import Lia
 import LiaHtml exposing (book, plain)
 
 
@@ -91,8 +71,8 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ textarea
+    Html.div []
+        [ Html.textarea
             [ style
                 [ ( "width", "50%" )
                 , ( "height", "200px" )
@@ -102,7 +82,7 @@ view model =
             , onInput Update
             ]
             []
-        , textarea
+        , Html.textarea
             [ style
                 [ ( "width", "49%" )
                 , ( "height", "200px" )
@@ -110,18 +90,18 @@ view model =
                 , ( "float", "right" )
                 ]
             ]
-            [ text model.debug ]
-        , text model.error
+            [ Html.text model.debug ]
+        , Html.text model.error
         , Html.map Child <| book model.lia model.slide
         ]
 
 
 script : String
 script =
-    """{- Info: Einfaches Beispiel
--}
+    """# Main Course
 
-# Main Course
+| h1  | h2 | h3 | h4 |
+| aaa | bb | cc | dd |
 
 
 """

@@ -1,6 +1,8 @@
 module Lia
     exposing
-        ( E(..)
+        ( Block(..)
+        , Inline(..)
+        , Reference(..)
         , Slide
         , get_headers
         , get_slide
@@ -15,25 +17,36 @@ import Combine.Num
 type alias Slide =
     { indentation : Int
     , title : String
-    , body : List E
+    , body : List Block
     }
 
 
-type E
-    = Base String
-    | Code String
+type Block
+    = HorizontalLine
+    | Paragraph (List Inline)
+    | Quote (List Inline)
     | CodeBlock String String
-    | Bold E
-    | Unicode String
-    | Italic E
-    | Underline E
-    | Link String String
+    | Table (List (List (List Inline)))
+
+
+
+--    | Bullet List Block
+
+
+type Inline
+    = Chars String
+    | Symbol String
+    | Bold Inline
+    | Italic Inline
+    | Underline Inline
+    | Code String
+    | Ref Reference
+
+
+type Reference
+    = Link String String
     | Image String String
     | Movie String String
-    | Paragraph (List E)
-    | Quote (List E)
-    | Line
-    | EList (List (List E))
 
 
 type Lia
@@ -64,22 +77,24 @@ title =
     String.trim <$> regex ".+" <* many1 newline
 
 
-body : Parser s (List E)
+body : Parser s (List Block)
 body =
     many blocks
 
 
-blocks : Parser s E
+blocks : Parser s Block
 blocks =
     lazy <|
         \() ->
             let
                 b =
                     choice
-                        [ code
-                        , quote
+                        [ table
+                        , code_block
+                        , quote_block
                         , horizontal_line
-                        , list
+
+                        --  , list
                         , paragraph
                         ]
             in
@@ -88,37 +103,44 @@ blocks =
 
 
 --<* newlines
+-- list : Parser s E
+-- list =
+--     let
+--         p1 =
+--             string "* " *> line <* newline
+--
+--         p2 =
+--             string "  " *> line <* newline
+--     in
+--     EList
+--         <$> many1
+--                 (p1
+--                     |> map (::)
+--                     |> andMap (many p2)
+--                     |> map List.concat
+--                 )
 
 
-list : Parser s E
-list =
-    let
-        p1 =
-            string "* " *> line <* newline
-
-        p2 =
-            string "  " *> line <* newline
-    in
-    EList
-        <$> many1
-                (p1
-                    |> map (::)
-                    |> andMap (many p2)
-                    |> map List.concat
-                )
-
-
-horizontal_line : Parser s E
+horizontal_line : Parser s Block
 horizontal_line =
-    Line <$ regex "--[\\-]+"
+    HorizontalLine <$ regex "--[\\-]+"
 
 
-paragraph : Parser s E
+paragraph : Parser s Block
 paragraph =
     (\l -> Paragraph <| List.concat l) <$> many (spaces *> line <* newline)
 
 
-line : Parser s (List E)
+table : Parser s Block
+table =
+    let
+        row =
+            string "|" *> sepBy1 (string "|") (many1 inlines) <* string "|"
+    in
+    Table <$> many1 (row <* (spaces <* newline))
+
+
+line : Parser s (List Inline)
 line =
     many1 inlines
 
@@ -135,10 +157,10 @@ newlines =
 
 spaces : Parser s String
 spaces =
-    regex "[ |\t]*"
+    regex "[ \t]*"
 
 
-inlines : Parser s E
+inlines : Parser s Inline
 inlines =
     lazy <|
         \() ->
@@ -153,16 +175,16 @@ inlines =
             skip comments *> p
 
 
-reference_ : Parser s E
+reference_ : Parser s Inline
 reference_ =
     lazy <|
         \() ->
             let
                 info =
-                    brackets (regex "[^\\]|\n]*")
+                    brackets (regex "[^\\]\n]*")
 
                 url =
-                    parens (regex "[^\\)|\n]*")
+                    parens (regex "[^\\)\n]*")
 
                 link =
                     Link <$> info <*> url
@@ -173,62 +195,60 @@ reference_ =
                 movie =
                     Movie <$> (string "!!" *> info) <*> url
             in
-            choice [ movie, image, link ]
+            Ref <$> choice [ movie, image, link ]
 
 
-arrows_ : Parser s E
+arrows_ : Parser s Inline
 arrows_ =
     lazy <|
         \() ->
             choice
-                [ string "<-->" $> Unicode "⟷"
-                , string "<--" $> Unicode "⟵"
-                , string "-->" $> Unicode "⟶"
-                , string "<<-" $> Unicode "↞"
-                , string "->>" $> Unicode "↠"
-                , string "<->" $> Unicode "↔"
-                , string ">->" $> Unicode "↣"
-                , string "<-<" $> Unicode "↢"
-                , string "->" $> Unicode "→"
-                , string "<-" $> Unicode "←"
-                , string "<~" $> Unicode "↜"
-                , string "~>" $> Unicode "↝"
-                , string "<==>" $> Unicode "⟺"
-                , string "==>" $> Unicode "⟹"
-                , string "<==" $> Unicode "⟸"
-                , string "<=>" $> Unicode "⇔"
-                , string "=>" $> Unicode "⇒"
-                , string "<=" $> Unicode "⇐"
+                [ string "<-->" $> Symbol "⟷"
+                , string "<--" $> Symbol "⟵"
+                , string "-->" $> Symbol "⟶"
+                , string "<<-" $> Symbol "↞"
+                , string "->>" $> Symbol "↠"
+                , string "<->" $> Symbol "↔"
+                , string ">->" $> Symbol "↣"
+                , string "<-<" $> Symbol "↢"
+                , string "->" $> Symbol "→"
+                , string "<-" $> Symbol "←"
+                , string "<~" $> Symbol "↜"
+                , string "~>" $> Symbol "↝"
+                , string "<==>" $> Symbol "⟺"
+                , string "==>" $> Symbol "⟹"
+                , string "<==" $> Symbol "⟸"
+                , string "<=>" $> Symbol "⇔"
+                , string "=>" $> Symbol "⇒"
+                , string "<=" $> Symbol "⇐"
                 ]
 
 
-smileys : Parser s E
-smileys =
+smileys_ : Parser s Inline
+smileys_ =
     lazy <|
         \() ->
             choice
-                [ string ":)" $> Unicode "😃" --"☺"
-                , string ";)" $> Unicode "😉"
-
-                --, string "B)" $> Unicode "😎"
+                [ string ":)" $> Symbol "😃"
+                , string ";)" $> Symbol "😉"
                 ]
 
 
-between_ : String -> Parser s E -> Parser s E
+between_ : String -> Parser s e -> Parser s e
 between_ str p =
     spaces *> string str *> p <* string str
 
 
-strings_ : Parser s E
+strings_ : Parser s Inline
 strings_ =
     lazy <|
         \() ->
             let
                 base =
-                    Base <$> regex "[^#|*|~|_|:|;|`|!|\\[|{|\\\\|\n|\\-|<|>|=]+" <?> "base string"
+                    Chars <$> regex "[^#*~_:;`!\\[\\|{\\\\\\n\\-<>=|]+" <?> "base string"
 
                 escape =
-                    Base <$> (spaces *> string "\\" *> regex "[*_~`{\\\\]") <?> "escape string"
+                    Chars <$> (spaces *> string "\\" *> regex "[*_~`{\\\\\\|]") <?> "escape string"
 
                 bold =
                     Bold <$> between_ "*" inlines <?> "bold string"
@@ -240,15 +260,15 @@ strings_ =
                     Underline <$> between_ "_" inlines <?> "underline string"
 
                 characters =
-                    Base <$> regex "[*|~|_|:|;|\\-|<|>|=]"
+                    Chars <$> regex "[*~_:;\\-<>=]"
 
                 base2 =
-                    Base <$> regex "[^#|\n]+" <?> "base string"
+                    Chars <$> regex "[^#\\n|]+" <?> "base string"
             in
             choice
                 [ base
                 , arrows_
-                , smileys
+                , smileys_
                 , escape
                 , bold
                 , italic
@@ -258,8 +278,8 @@ strings_ =
                 ]
 
 
-code : Parser s E
-code =
+code_block : Parser s Block
+code_block =
     let
         lang =
             string "```" *> spaces *> regex "([a-z,A-Z,0-9])*" <* spaces <* newline
@@ -282,8 +302,8 @@ code =
 -- <$>
 
 
-quote : Parser s E
-quote =
+quote_block : Parser s Block
+quote_block =
     let
         p =
             regex "^" *> string ">" *> line <* newline
@@ -291,7 +311,7 @@ quote =
     (\q -> Quote <| List.concat q) <$> many1 p
 
 
-code_ : Parser s E
+code_ : Parser s Inline
 code_ =
     Code <$> (string "`" *> regex "[^`]+" <* string "`") <?> "inline code"
 
