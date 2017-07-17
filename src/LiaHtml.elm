@@ -1,5 +1,6 @@
 module LiaHtml exposing (Msg, activated, book, plain)
 
+import Array exposing (Array)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
@@ -103,8 +104,8 @@ view_block block =
         HorizontalLine ->
             Html.hr [] []
 
-        Table header body ->
-            view_table header body
+        Table header format body ->
+            view_table header (Array.fromList format) body
 
         Quote elements ->
             Html.blockquote [] (List.map view_inline elements)
@@ -113,8 +114,8 @@ view_block block =
             Html.pre [] [ Html.code [] [ Html.text code ] ]
 
 
-view_table : List (List Inline) -> List (List (List Inline)) -> Html Msg
-view_table header body =
+view_table : List (List Inline) -> Array String -> List (List (List Inline)) -> Html Msg
+view_table header format body =
     let
         style_ =
             Attr.style
@@ -125,15 +126,40 @@ view_table header body =
 
         view_row =
             \f row ->
-                List.map (\c -> f [ style_ ] (c |> List.map (\e -> view_inline e)))
-                    row
+                row
+                    |> List.indexedMap (,)
+                    |> List.map
+                        (\( i, col ) ->
+                            f
+                                [ style_
+                                , Attr.align
+                                    (case Array.get i format of
+                                        Just a ->
+                                            a
+
+                                        Nothing ->
+                                            "left"
+                                    )
+                                ]
+                                (col
+                                    |> List.map (\element -> view_inline element)
+                                )
+                        )
     in
     Html.table
         [ Attr.attribute "cellspacing" "0"
         , Attr.attribute "cellpadding" "8"
         , style_
         ]
-        (Html.thead [] (view_row Html.th header) :: List.map (\r -> Html.tr [] (view_row Html.td r)) body)
+        (Html.thead []
+            (view_row Html.th header)
+            :: List.map
+                (\r ->
+                    Html.tr []
+                        (view_row Html.td r)
+                )
+                body
+        )
 
 
 view_inline : Inline -> Html Msg

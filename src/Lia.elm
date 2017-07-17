@@ -26,7 +26,7 @@ type Block
     | CodeBlock String String
     | Quote (List Inline)
     | Paragraph (List Inline)
-    | Table (List (List Inline)) (List (List (List Inline)))
+    | Table (List (List Inline)) (List String) (List (List (List Inline)))
 
 
 
@@ -125,14 +125,23 @@ table =
         row =
             string "|" *> sepBy1 (string "|") (many1 inlines) <* ending
 
-        header =
-            string "|" *> sepBy1 (string "|") (many1 (regex "--[\\-]+")) <* ending
+        format =
+            string "|"
+                *> sepBy1 (string "|")
+                    (choice
+                        [ regex ":--[\\-]+:" $> "center"
+                        , regex ":--[\\-]+" $> "left"
+                        , regex "--[\\-]+:" $> "right"
+                        , regex "--[\\-]+" $> "left"
+                        ]
+                    )
+                <* ending
 
         simple_table =
-            (\l -> Table [] l) <$> many1 row <* newline
+            Table [] [] <$> many1 row <* newline
 
         format_table =
-            Table <$> (row <* header) <*> many row <* newline
+            Table <$> row <*> format <*> many row <* newline
     in
     choice [ format_table, simple_table ]
 

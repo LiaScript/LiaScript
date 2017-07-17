@@ -100,9 +100,12 @@ script : String
 script =
     """# Main Course
 
-| h1  | h2 | h3 | h4 |
-|-----|----|----|----|
-| aaa | bb | cc | dd |
+| h1   | h2   | h3   |
+|:-----|-----:|------|
+| a    |    b |  c   |
+| aa   |   bb |  cc  |
+| aaa  |  bbb | ccc  |
+| aaaa | bbbb | cccc |
 
 
 """
