@@ -13,7 +13,10 @@ type Msg
 
 plain : List Slide -> Html Msg
 plain slides =
-    Html.div [] (List.map view_slide slides)
+    Html.div
+        [ Attr.style [ ( "width", "100%" ) ]
+        ]
+        (List.map view_slide slides)
 
 
 book : List Slide -> Int -> Html Msg
@@ -21,7 +24,7 @@ book slides active =
     Html.div []
         [ Html.div
             [ Attr.style
-                [ ( "width", "15%" )
+                [ ( "width", "200px" )
                 , ( "float", "left" )
                 ]
             ]
@@ -39,7 +42,7 @@ book slides active =
             )
         , Html.div
             [ Attr.style
-                [ ( "width", "85%" )
+                [ ( "width", "calc(100% - 200px)" )
                 , ( "float", "right" )
                 ]
             ]
