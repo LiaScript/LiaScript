@@ -54,20 +54,20 @@ type Mode
 
 init : ( Model, Cmd a )
 init =
-    { outer =
-        SplitPane.init Horizontal
-            |> withResizeLimits (createBound (percentage 0.2) (percentage 0.8))
-    , inner =
-        SplitPane.init Vertical
-            |> withSplitterAt (percentage 0.75)
-    , script = script
-    , debug = ""
-    , error = ""
-    , lia = []
-    , slide = 0
-    , mode = Slides
-    }
-        ! []
+    update (Update script)
+        { outer =
+            SplitPane.init Horizontal
+                |> withResizeLimits (createBound (percentage 0.2) (percentage 0.8))
+        , inner =
+            SplitPane.init Vertical
+                |> withSplitterAt (percentage 0.75)
+        , script = ""
+        , debug = ""
+        , error = ""
+        , lia = []
+        , slide = 0
+        , mode = Slides
+        }
 
 
 
