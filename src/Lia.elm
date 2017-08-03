@@ -60,11 +60,7 @@ type Lia
 
 comments : Parser s ()
 comments =
-    let
-        p =
-            many (choice [ regex "[^-]*", regex "-[^}]+" ])
-    in
-    skip (many (string "{-" *> p <* string "-}"))
+    skip (many (string "{-" *> manyTill anyChar (string "-}")))
 
 
 blocks : Parser s Block
@@ -83,7 +79,7 @@ blocks =
                         , paragraph
                         ]
             in
-            skip comments *> b <* newlines
+            comments *> b <* newlines
 
 
 
@@ -178,7 +174,7 @@ inlines =
                         , strings_
                         ]
             in
-            skip comments *> p
+            comments *> p
 
 
 reference_ : Parser s Inline
@@ -334,7 +330,7 @@ program =
         body =
             many blocks
     in
-    skip comments *> many (Slide <$> tag <*> title <*> body)
+    comments *> many (Slide <$> tag <*> title <*> body)
 
 
 parse : String -> Result String (List Slide)

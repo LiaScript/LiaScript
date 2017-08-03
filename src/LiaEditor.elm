@@ -235,7 +235,12 @@ subscriptions model =
 
 script : String
 script =
-    """# Main Course
+    """{-
+Comments have to be enclosed by curly braces and can be put everywhere...
+These can be used to comment single elements, lines, and multi-lines...
+-}
+
+# Main Course
 
 | h1   | h2   | h3   |
 |:-----|-----:|------|
