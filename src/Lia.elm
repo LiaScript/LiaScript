@@ -314,9 +314,9 @@ quote_block : Parser s Block
 quote_block =
     let
         p =
-            regex "^" *> string ">" *> line <* newline
+            regex "^" *> string ">" *> optional [ Chars "" ] line <* newline
     in
-    (\q -> Quote <| List.concat q) <$> many1 p
+    (\q -> Quote <| combine <| List.concat q) <$> many1 p
 
 
 code_ : Parser s Inline

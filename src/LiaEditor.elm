@@ -282,6 +282,24 @@ void main(int) {
 }
 ```
 
+## References
+
+Links: [Google](http://www.google.de)
+
+Images:
+
+![Image](http://package.elm-lang.org/assets/favicon.ico)
+
+Movies:
+
+!![Movie](https://www.youtube.com/embed/EDp6UmaA9CM)
+
+## Quotes
+
+> This is a quote ...
+>
+> xxx xxx xxx xxx xxx xxx xxx xxx xxx
+> xxx xxx xxx xxx xxx xxx xxx xxx xxx
 
 
 ## Tables
