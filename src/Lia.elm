@@ -305,21 +305,9 @@ code_block =
             string "```" *> spaces *> regex "([a-z,A-Z,0-9])*" <* spaces <* newline
 
         block =
-            String.concat
-                <$> many
-                        (choice
-                            [ regex "[^`]+"
-                            , regex "`[^`]+"
-                            , regex "``[^`]+"
-                            ]
-                        )
-                <* string "```"
+            String.fromList <$> manyTill anyChar (string "```")
     in
     CodeBlock <$> lang <*> block
-
-
-
--- <$>
 
 
 quote_block : Parser s Block

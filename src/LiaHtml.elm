@@ -169,7 +169,7 @@ view_inline : Inline -> Html Msg
 view_inline element =
     case element of
         Code e ->
-            Html.pre [] [ Html.text e ]
+            Html.code [] [ Html.text e ]
 
         Chars e ->
             Html.text e

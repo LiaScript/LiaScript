@@ -242,11 +242,17 @@ These can be used to comment single elements, lines, and multi-lines...
 
 # Main Markdown
 
+Paragraphs are separated by newlines ...
+
 XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
 XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
 XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
 
-## Basic
+XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
+XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
+XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
+
+## Basic Inlines
 
 \\*bold\\* -> *bold*
 
@@ -265,7 +271,16 @@ Combinations are allowed:
 
 \\_\\~\\*bold italic underline\\*\\~\\_ -> _~*bold italic underline*~_
 
+## Code
 
+Code can be either `inline` or explicit:
+
+``` c
+#include <stdio.h>
+void main(int) {
+    println("%d\\n", 1234);
+}
+```
 
 
 
