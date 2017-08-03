@@ -301,6 +301,23 @@ Movies:
 > xxx xxx xxx xxx xxx xxx xxx xxx xxx
 > xxx xxx xxx xxx xxx xxx xxx xxx xxx
 
+## Symboles
+
+### Arrows
+
+->, ->>, >->, <-, <-<, <<-, <->, =>, <=, <=>
+
+-->, <--, <-->, ==>, <==, <==>
+
+~>, <~, <~>
+
+### Smileys
+
+:-), ;-), :-D, :-O, :-(, :-|, :-/, :-P, :-*, :'), :'(
+
+### Escape Chars
+
+\\*, \\~, \\_, \\#
 
 ## Tables
 

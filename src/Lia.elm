@@ -249,8 +249,17 @@ smileys_ =
     lazy <|
         \() ->
             choice
-                [ string ":)" $> Symbol "😃"
-                , string ";)" $> Symbol "😉"
+                [ string ":-)" $> Symbol "🙂"
+                , string ";-)" $> Symbol "😉"
+                , string ":-D" $> Symbol "😀"
+                , string ":-O" $> Symbol "😮"
+                , string ":-(" $> Symbol "🙁"
+                , string ":-|" $> Symbol "😐"
+                , string ":-/" $> Symbol "😕"
+                , string ":-P" $> Symbol "😛"
+                , string ":-*" $> Symbol "😗"
+                , string ":')" $> Symbol "😂"
+                , string ":'(" $> Symbol "😢"
                 ]
 
 
@@ -268,7 +277,7 @@ strings_ =
                     Chars <$> regex "[^#*~_:;`!\\[\\|{\\\\\\n\\-<>=|]+" <?> "base string"
 
                 escape =
-                    Chars <$> (spaces *> string "\\" *> regex "[*_~`{\\\\\\|]") <?> "escape string"
+                    Chars <$> (spaces *> string "\\" *> regex "[#*_~`{\\\\\\|]") <?> "escape string"
 
                 bold =
                     Bold <$> between_ "*" inlines <?> "bold string"
