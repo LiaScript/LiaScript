@@ -240,7 +240,36 @@ Comments have to be enclosed by curly braces and can be put everywhere...
 These can be used to comment single elements, lines, and multi-lines...
 -}
 
-# Main Course
+# Main Markdown
+
+XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
+XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
+XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
+
+## Basic
+
+\\*bold\\* -> *bold*
+
+\\~italic\\~ -> ~italic~
+
+\\_underline\\_ -> _underline_
+
+
+Combinations are allowed:
+
+\\~\\*bold italic\\*\\~ -> ~*bold italic*~
+
+\\_\\*bold underline\\*\\_ -> _*bold underline*_
+
+\\_\\~italic underline\\~\\_ -> _~italic underline~_
+
+\\_\\~\\*bold italic underline\\*\\~\\_ -> _~*bold italic underline*~_
+
+
+
+
+
+## Tables
 
 | h1   | h2   | h3   |
 |:-----|-----:|------|
@@ -248,6 +277,7 @@ These can be used to comment single elements, lines, and multi-lines...
 | aa   |   bb |  cc  |
 | aaa  |  bbb | ccc  |
 | aaaa | bbbb | cccc |
+
 
 
 """

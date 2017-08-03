@@ -109,7 +109,7 @@ horizontal_line =
 
 paragraph : Parser s Block
 paragraph =
-    (\l -> Paragraph <| List.concat l) <$> many (spaces *> line <* newline)
+    (\l -> Paragraph <| combine <| List.concat l) <$> many (spaces *> line <* newline)
 
 
 table : Parser s Block
@@ -142,9 +142,27 @@ table =
     choice [ format_table, simple_table ]
 
 
+combine : List Inline -> List Inline
+combine list =
+    case list of
+        [] ->
+            []
+
+        [ xs ] ->
+            [ xs ]
+
+        x1 :: x2 :: xs ->
+            case ( x1, x2 ) of
+                ( Chars str1, Chars str2 ) ->
+                    combine (Chars (str1 ++ str2) :: xs)
+
+                _ ->
+                    x1 :: combine (x2 :: xs)
+
+
 line : Parser s (List Inline)
 line =
-    many1 inlines
+    (\list -> combine <| List.append list [ Chars "\n" ]) <$> many1 inlines
 
 
 newline : Parser s ()
