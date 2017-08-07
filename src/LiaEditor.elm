@@ -336,6 +336,13 @@ Movies:
 * xxx
   xxx
 
+## Html
+
+ <b id="test" style="background-color:blue;color:red">
+  This is a bold and colored text...
+</b>
+
+
 
 ## Misc
 

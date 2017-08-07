@@ -42,6 +42,7 @@ type Inline
     | Superscript Inline
     | Code String
     | Ref Reference
+    | HTML String
 
 
 type Reference
@@ -81,6 +82,57 @@ blocks =
                         ]
             in
             comments *> b <* newlines
+
+
+html : Parser s Inline
+html =
+    html_void <|> html_block
+
+
+html_void : Parser s Inline
+html_void =
+    lazy <|
+        \() ->
+            let
+                void =
+                    choice
+                        [ regex "<area[^>]*>"
+                        , regex "<base[^>]*>"
+                        , regex "<br[^>]*>"
+                        , regex "<col[^>]*>"
+                        , regex "<embed[^>]*>"
+                        , regex "<hr[^>]*>"
+                        , regex "<img[^>]*>"
+                        , regex "<input[^>]*>"
+                        , regex "<keygen[^>]*>"
+                        , regex "<link[^>]*>"
+                        , regex "<menuitem[^>]*>"
+                        , regex "<meta[^>]*>"
+                        , regex "<param[^>]*>"
+                        , regex "<source[^>]*>"
+                        , regex "<track[^>]*>"
+                        , regex "<wbr[^>]*>"
+                        ]
+            in
+            HTML <$> (whitespace *> void <* whitespace)
+
+
+html_block : Parser s Inline
+html_block =
+    let
+        p tag =
+            (\c ->
+                (c
+                    |> String.fromList
+                    |> String.append ("<" ++ tag)
+                )
+                    ++ "</"
+                    ++ tag
+                    ++ ">"
+            )
+                <$> manyTill anyChar (string "</" *> string tag <* string ">")
+    in
+    HTML <$> (whitespace *> string "<" *> regex "[a-z]+" >>= p)
 
 
 
@@ -188,7 +240,8 @@ inlines =
             let
                 p =
                     choice
-                        [ code_
+                        [ html
+                        , code_
                         , reference_
                         , strings_
                         ]
@@ -300,6 +353,7 @@ strings_ =
             in
             choice
                 [ base
+                , html
                 , arrows_
                 , smileys_
                 , escape

@@ -4,6 +4,7 @@ import Array exposing (Array)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
+import Json.Encode
 import Lia exposing (Block(..), Inline(..), Reference(..), Slide)
 
 
@@ -213,6 +214,9 @@ view_inline element =
 
         Ref e ->
             view_reference e
+
+        HTML e ->
+            Html.span [ Attr.property "innerHTML" (Json.Encode.string e) ] []
 
 
 view_reference : Reference -> Html Msg
