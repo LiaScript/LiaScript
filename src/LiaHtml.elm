@@ -32,12 +32,34 @@ book slides active =
                 |> Lia.get_headers
                 |> List.map
                     (\( n, ( h, i ) ) ->
-                        Html.div [ onClick (Load n) ]
-                            [ Html.a [] [ Html.text (String.repeat i "-" ++ h) ] ]
+                        Html.div []
+                            [ Html.a
+                                [ onClick (Load n)
+                                , h
+                                    |> String.split " "
+                                    |> String.join "_"
+                                    |> String.append "#"
+                                    |> Attr.href
+                                , Attr.style
+                                    [ ( "padding-left"
+                                      , toString ((i - 1) * 20) ++ "px"
+                                      )
+                                    ]
+                                ]
+                                [ Html.text h ]
+                            ]
                     )
              )
-                ++ [ Html.button [ onClick (Load (active - 1)) ] [ Html.text "<<" ]
-                   , Html.button [ onClick (Load (active + 1)) ] [ Html.text ">>" ]
+                ++ [ Html.button
+                        [ onClick (Load (active - 1))
+                        , Attr.style [ ( "width", "100px" ) ]
+                        ]
+                        [ Html.text "<<" ]
+                   , Html.button
+                        [ onClick (Load (active + 1))
+                        , Attr.style [ ( "width", "40%" ) ]
+                        ]
+                        [ Html.text ">>" ]
                    ]
             )
         , Html.div
@@ -185,6 +207,9 @@ view_inline element =
 
         Underline e ->
             Html.u [] [ view_inline e ]
+
+        Superscript e ->
+            Html.sup [] [ view_inline e ]
 
         Ref e ->
             view_reference e

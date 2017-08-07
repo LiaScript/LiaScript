@@ -39,6 +39,7 @@ type Inline
     | Bold Inline
     | Italic Inline
     | Underline Inline
+    | Superscript Inline
     | Code String
     | Ref Reference
 
@@ -274,10 +275,10 @@ strings_ =
         \() ->
             let
                 base =
-                    Chars <$> regex "[^#*~_:;`!\\[\\|{\\\\\\n\\-<>=|]+" <?> "base string"
+                    Chars <$> regex "[^#*~_:;`!\\^\\[\\|{\\\\\\n\\-<>=|]+" <?> "base string"
 
                 escape =
-                    Chars <$> (spaces *> string "\\" *> regex "[#*_~`{\\\\\\|]") <?> "escape string"
+                    Chars <$> (spaces *> string "\\" *> regex "[\\^#*_~`{\\\\\\|]") <?> "escape string"
 
                 bold =
                     Bold <$> between_ "*" inlines <?> "bold string"
@@ -287,6 +288,9 @@ strings_ =
 
                 underline =
                     Underline <$> between_ "_" inlines <?> "underline string"
+
+                superscript =
+                    Superscript <$> between_ "^" inlines <?> "superscript string"
 
                 characters =
                     Chars <$> regex "[*~_:;\\-<>=]"
@@ -302,6 +306,7 @@ strings_ =
                 , bold
                 , italic
                 , underline
+                , superscript
                 , characters
                 , base2
                 ]

@@ -258,6 +258,8 @@ XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
 
 \\~italic\\~ -> ~italic~
 
+\\^superscript\\^ -> ^superscript^
+
 \\_underline\\_ -> _underline_
 
 
@@ -328,6 +330,20 @@ Movies:
 | aaa  |  bbb | ccc  |
 | aaaa | bbbb | cccc |
 
+## Enumeration
+
+* bullets
+* xxx
+  xxx
+
+
+## Misc
+
+horizontal line
+
+---
+
+xxx
 
 
 """
