@@ -93,9 +93,8 @@ html_void : Parser s Inline
 html_void =
     lazy <|
         \() ->
-            let
-                void =
-                    choice
+            HTML
+                <$> choice
                         [ regex "<area[^>]*>"
                         , regex "<base[^>]*>"
                         , regex "<br[^>]*>"
@@ -113,8 +112,6 @@ html_void =
                         , regex "<track[^>]*>"
                         , regex "<wbr[^>]*>"
                         ]
-            in
-            HTML <$> (whitespace *> void <* whitespace)
 
 
 html_block : Parser s Inline

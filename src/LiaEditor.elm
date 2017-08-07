@@ -338,10 +338,14 @@ Movies:
 
 ## Html
 
- <b id="test" style="background-color:blue;color:red">
-  This is a bold and colored text...
-</b>
+This is normal Markdown ...
+<b id="test" style="background-color:blue;color:red">
+This is a bold and colored html...
+</b> that can be used inline or <br> <br> everywhere
 
+<img src="http://package.elm-lang.org/assets/favicon.ico">
+
+s
 
 
 ## Misc
