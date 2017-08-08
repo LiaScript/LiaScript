@@ -1,4 +1,4 @@
-module Lia.View exposing (Mode(..), activated, view)
+module Lia.View exposing (activated, view)
 
 import Array exposing (Array)
 import Html exposing (Html)
@@ -6,13 +6,7 @@ import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import Json.Encode
 import Lia.Helper exposing (..)
-import Lia.Model exposing (..)
-import Lia.Msg exposing (..)
-
-
-type Mode
-    = Slides
-    | Plain
+import Lia.Type exposing (..)
 
 
 view : Mode -> List Slide -> Int -> Html Msg

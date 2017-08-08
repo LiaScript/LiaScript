@@ -6,24 +6,24 @@ module Lia exposing (..)
 --import Lia.Model exposing (Block(..), Inline(..), Reference(..), Slide)
 
 import Html exposing (Html)
-import Lia.Model exposing (Slide)
-import Lia.Msg exposing (..)
+import Lia.Model
 import Lia.Parser
-import Lia.View exposing (Mode(..))
+import Lia.Type exposing (Mode(..), Slide)
+import Lia.Update
+import Lia.View
 
 
 type alias Model =
-    { script : String
-    , error : String
-    , lia : List Slide
-    , slide : Int
-    , mode : Mode
-    }
+    Lia.Model.Model
+
+
+type alias Msg =
+    Lia.Type.Msg
 
 
 init : Mode -> String -> Model
 init mode script =
-    parse <| Model script "" [] 0 mode
+    parse <| Lia.Model.Model script "" [] 0 mode
 
 
 init_plain : String -> Model
@@ -49,3 +49,8 @@ parse model =
 view : Model -> Html Msg
 view model =
     Lia.View.view model.mode model.lia model.slide
+
+
+update : Msg -> Model -> ( Model, Cmd msg )
+update =
+    Lia.Update.update

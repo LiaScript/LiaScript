@@ -3,7 +3,7 @@ module Lia.Parser exposing (run)
 import Combine exposing (..)
 import Combine.Char exposing (..)
 import Combine.Num
-import Lia.Model exposing (..)
+import Lia.Type exposing (..)
 
 
 comments : Parser s ()

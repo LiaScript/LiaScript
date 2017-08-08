@@ -1,8 +1,7 @@
-module Basic exposing (..)
+module Plain exposing (..)
 
 import Html exposing (Html)
 import Lia
-import Lia.Msg
 
 
 main : Program Never Model Msg
@@ -20,7 +19,7 @@ main =
 
 
 type Msg
-    = Child Lia.Msg.Msg
+    = Child Lia.Msg
 
 
 type alias Model =
@@ -42,7 +41,9 @@ init =
 
 update : Msg -> Model -> ( Model, Cmd msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        Child liaMsg ->
+            Lia.update liaMsg model
 
 
 
