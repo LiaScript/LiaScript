@@ -7,7 +7,7 @@
         "src"
     ],
     "exposed-modules": [
-        ""
+        
     ],
     "dependencies": {
         "doodledood/elm-split-pane": "4.0.1 <= v < 5.0.0",

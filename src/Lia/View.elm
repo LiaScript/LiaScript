@@ -1,27 +1,40 @@
-module LiaHtml exposing (Msg, activated, book, plain)
+module Lia.View exposing (Mode(..), activated, view)
 
 import Array exposing (Array)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import Json.Encode
-import Lia exposing (Block(..), Inline(..), Reference(..), Slide)
+import Lia.Helper exposing (..)
+import Lia.Model exposing (..)
+import Lia.Msg exposing (..)
 
 
-type Msg
-    = Load Int
+type Mode
+    = Slides
+    | Plain
 
 
-plain : List Slide -> Html Msg
-plain slides =
+view : Mode -> List Slide -> Int -> Html Msg
+view mode slides num =
+    case mode of
+        Slides ->
+            view_slides slides num
+
+        Plain ->
+            view_plain slides
+
+
+view_plain : List Slide -> Html Msg
+view_plain slides =
     Html.div
         [ Attr.style [ ( "width", "100%" ) ]
         ]
         (List.map view_slide slides)
 
 
-book : List Slide -> Int -> Html Msg
-book slides active =
+view_slides : List Slide -> Int -> Html Msg
+view_slides slides active =
     Html.div []
         [ Html.div
             [ Attr.style
@@ -30,7 +43,7 @@ book slides active =
                 ]
             ]
             ((slides
-                |> Lia.get_headers
+                |> get_headers
                 |> List.map
                     (\( n, ( h, i ) ) ->
                         Html.div []
@@ -69,7 +82,7 @@ book slides active =
                 , ( "float", "right" )
                 ]
             ]
-            [ case Lia.get_slide active slides of
+            [ case get_slide active slides of
                 Just slide ->
                     view_slide slide
 
