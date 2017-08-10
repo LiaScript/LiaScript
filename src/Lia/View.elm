@@ -1,9 +1,10 @@
-module Lia.View exposing (activated, view)
+module Lia.View exposing (view)
 
 import Array exposing (Array)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
+import Html.Lazy exposing (lazy)
 import Json.Encode
 import Lia.Helper exposing (..)
 import Lia.Type exposing (..)
@@ -78,7 +79,7 @@ view_slides slides active =
             ]
             [ case get_slide active slides of
                 Just slide ->
-                    view_slide slide
+                    lazy view_slide slide
 
                 Nothing ->
                     Html.text ""
@@ -86,11 +87,12 @@ view_slides slides active =
         ]
 
 
-activated : Msg -> Int
-activated msg =
-    case msg of
-        Load active ->
-            active
+
+--activated : Msg -> Int
+--activated msg =
+--    case msg of
+--        Load active ->
+--            active
 
 
 view_slide : Slide -> Html Msg
