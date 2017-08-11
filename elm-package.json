@@ -7,8 +7,8 @@
         "src"
     ],
     "exposed-modules": [
-        
     ],
+    "native-modules": true,
     "dependencies": {
         "doodledood/elm-split-pane": "4.0.1 <= v < 5.0.0",
         "elm-community/parser-combinators": "1.1.0 <= v < 2.0.0",

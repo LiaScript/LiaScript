@@ -216,7 +216,7 @@ These can be used to comment single elements, lines, and multi-lines...
 
 # Main Markdown
 
-Paragraphs are separated by newlines ...
+Paragraphs are separated by newlines ...$ \\frac{444}{a*333} $
 
 XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
 XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX

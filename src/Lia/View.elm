@@ -8,16 +8,24 @@ import Html.Lazy exposing (lazy)
 import Json.Encode
 import Lia.Helper exposing (..)
 import Lia.Type exposing (..)
+import Lia.Utils
 
 
 view : Mode -> List Slide -> Int -> Html Msg
 view mode slides num =
-    case mode of
-        Slides ->
-            view_slides slides num
+    let
+        html =
+            case mode of
+                Slides ->
+                    view_slides slides num
 
-        Plain ->
-            view_plain slides
+                Plain ->
+                    view_plain slides
+
+        x =
+            Lia.Utils.mathjax ()
+    in
+    html
 
 
 view_plain : List Slide -> Html Msg
@@ -146,7 +154,7 @@ view_block block =
             Html.blockquote [] (List.map view_inline elements)
 
         CodeBlock language code ->
-            Html.pre [] [ Html.code [] [ Html.text code ] ]
+            Html.pre [] [ Html.code [] [ Lia.Utils.highlight language code ] ]
 
 
 view_table : List (List Inline) -> Array String -> List (List (List Inline)) -> Html Msg
