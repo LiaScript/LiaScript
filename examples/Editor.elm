@@ -216,7 +216,11 @@ These can be used to comment single elements, lines, and multi-lines...
 
 # Main Markdown
 
-Paragraphs are separated by newlines ...$ \\frac{444}{a*333} $
+Paragraphs are separated by newlines ...
+
+$ 444*\\frac{444}{a*333} $
+
+{-<script type="math/tex" id="MathJax-Element-1"> \\frac{444}{a*333} </script>-}
 
 XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
 XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX

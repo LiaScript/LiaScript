@@ -11159,6 +11159,9 @@ var _user$project$Lia_Type$HTML = function (a) {
 var _user$project$Lia_Type$Ref = function (a) {
 	return {ctor: 'Ref', _0: a};
 };
+var _user$project$Lia_Type$Formula = function (a) {
+	return {ctor: 'Formula', _0: a};
+};
 var _user$project$Lia_Type$Code = function (a) {
 	return {ctor: 'Code', _0: a};
 };
@@ -11536,6 +11539,19 @@ var _user$project$Lia_Parser$reference_ = _elm_community$parser_combinators$Comb
 					}
 				}));
 	});
+var _user$project$Lia_Parser$formula_ = function () {
+	var p = A2(
+		_elm_community$parser_combinators$Combine_ops['<$>'],
+		_elm_lang$core$String$fromList,
+		A2(
+			_elm_community$parser_combinators$Combine_ops['*>'],
+			_elm_community$parser_combinators$Combine$string('$'),
+			A2(
+				_elm_community$parser_combinators$Combine$manyTill,
+				_elm_community$parser_combinators$Combine_Char$anyChar,
+				_elm_community$parser_combinators$Combine$string('$'))));
+	return A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Type$Formula, p);
+}();
 var _user$project$Lia_Parser$spaces = _elm_community$parser_combinators$Combine$regex('[ \t]*');
 var _user$project$Lia_Parser$between_ = F2(
 	function (str, p) {
@@ -11766,8 +11782,12 @@ var _user$project$Lia_Parser$inlines = _elm_community$parser_combinators$Combine
 						_0: _user$project$Lia_Parser$reference_,
 						_1: {
 							ctor: '::',
-							_0: _user$project$Lia_Parser$strings_,
-							_1: {ctor: '[]'}
+							_0: _user$project$Lia_Parser$formula_,
+							_1: {
+								ctor: '::',
+								_0: _user$project$Lia_Parser$strings_,
+								_1: {ctor: '[]'}
+							}
 						}
 					}
 				}
@@ -11787,7 +11807,7 @@ var _user$project$Lia_Parser$strings_ = _elm_community$parser_combinators$Combin
 		var characters = A2(
 			_elm_community$parser_combinators$Combine_ops['<$>'],
 			_user$project$Lia_Type$Chars,
-			_elm_community$parser_combinators$Combine$regex('[*~_:;\\-<>=]'));
+			_elm_community$parser_combinators$Combine$regex('[*~_:;\\-<>=$]'));
 		var superscript = A2(
 			_elm_community$parser_combinators$Combine_ops['<$>'],
 			_user$project$Lia_Type$Superscript,
@@ -11827,14 +11847,14 @@ var _user$project$Lia_Parser$strings_ = _elm_community$parser_combinators$Combin
 						_elm_community$parser_combinators$Combine_ops['*>'],
 						_user$project$Lia_Parser$spaces,
 						_elm_community$parser_combinators$Combine$string('\\')),
-					_elm_community$parser_combinators$Combine$regex('[\\^#*_~`{\\\\\\|]')),
+					_elm_community$parser_combinators$Combine$regex('[\\^#*_~`{\\\\\\|$]')),
 				'escape string'));
 		var base = A2(
 			_elm_community$parser_combinators$Combine_ops['<$>'],
 			_user$project$Lia_Type$Chars,
 			A2(
 				_elm_community$parser_combinators$Combine_ops['<?>'],
-				_elm_community$parser_combinators$Combine$regex('[^#*~_:;`!\\^\\[\\|{\\\\\\n\\-<>=|]+'),
+				_elm_community$parser_combinators$Combine$regex('[^#*~_:;`!\\^\\[\\|{\\\\\\n\\-<>=|$]+'),
 				'base string'));
 		return _elm_community$parser_combinators$Combine$choice(
 			{
@@ -12152,44 +12172,42 @@ var _user$project$Native_Utils = (function () {
         }
     };
 
-    function mathjax () {
-        try {
-            setTimeout(function(){
-                var mjax = document.getElementsByClassName("mjx-chtml")
-                for (var i = 0; i < mjax.length; ++i) {
-                    mjax[i].remove();
-                }
-
-                MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
-            }, 10);
-        } catch (e) {
-            console.log(e.message);
+    function formula(dMode, str) {
+        try{
+            return katex.renderToString(str, {displayMode: dMode});
+        } catch(e) {
+            return "<b><font color=\"red\">"+e.message+"</font></b><br>"+str;
         }
     }
 
     return {
         highlight: F2(highlight),
-        mathjax: mathjax
+        formula: F2(formula)
     };
 })();
 
-var _user$project$Lia_Utils$mathjax = function (s) {
-	var $void = _user$project$Native_Utils.mathjax(
-		{ctor: '_Tuple0'});
-	return {ctor: '_Tuple0'};
+var _user$project$Lia_Utils$toHtml = function (str) {
+	return A2(
+		_elm_lang$html$Html$span,
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html_Attributes$property,
+				'innerHTML',
+				_elm_lang$core$Json_Encode$string(str)),
+			_1: {ctor: '[]'}
+		},
+		{ctor: '[]'});
 };
+var _user$project$Lia_Utils$formula = F2(
+	function (displayMode, string) {
+		return _user$project$Lia_Utils$toHtml(
+			A2(_user$project$Native_Utils.formula, displayMode, string));
+	});
 var _user$project$Lia_Utils$highlight = F2(
 	function (language, code) {
-		var html = _elm_lang$core$Json_Encode$string(
+		return _user$project$Lia_Utils$toHtml(
 			A2(_user$project$Native_Utils.highlight, language, code));
-		return A2(
-			_elm_lang$html$Html$span,
-			{
-				ctor: '::',
-				_0: A2(_elm_lang$html$Html_Attributes$property, 'innerHTML', html),
-				_1: {ctor: '[]'}
-			},
-			{ctor: '[]'});
 	});
 
 var _user$project$Lia_View$view_reference = function (ref) {
@@ -12290,7 +12308,7 @@ var _user$project$Lia_View$view_inline = function (element) {
 				});
 		case 'Ref':
 			return _user$project$Lia_View$view_reference(_p1._0);
-		default:
+		case 'HTML':
 			return A2(
 				_elm_lang$html$Html$span,
 				{
@@ -12302,6 +12320,8 @@ var _user$project$Lia_View$view_inline = function (element) {
 					_1: {ctor: '[]'}
 				},
 				{ctor: '[]'});
+		default:
+			return A2(_user$project$Lia_Utils$formula, false, _p1._0);
 	}
 };
 var _user$project$Lia_View$view_table = F3(
@@ -12688,17 +12708,12 @@ var _user$project$Lia_View$view_plain = function (slides) {
 };
 var _user$project$Lia_View$view = F3(
 	function (mode, slides, num) {
-		var x = _user$project$Lia_Utils$mathjax(
-			{ctor: '_Tuple0'});
-		var html = function () {
-			var _p11 = mode;
-			if (_p11.ctor === 'Slides') {
-				return A2(_user$project$Lia_View$view_slides, slides, num);
-			} else {
-				return _user$project$Lia_View$view_plain(slides);
-			}
-		}();
-		return html;
+		var _p11 = mode;
+		if (_p11.ctor === 'Slides') {
+			return A2(_user$project$Lia_View$view_slides, slides, num);
+		} else {
+			return _user$project$Lia_View$view_plain(slides);
+		}
 	});
 
 var _user$project$Lia$switch_mode = F2(
@@ -12745,7 +12760,7 @@ var _user$project$Lia$init = F2(
 var _user$project$Lia$init_plain = _user$project$Lia$init(_user$project$Lia_Type$Plain);
 var _user$project$Lia$init_slides = _user$project$Lia$init(_user$project$Lia_Type$Slides);
 
-var _user$project$Editor$script = '{-\nComments have to be enclosed by curly braces and can be put everywhere...\nThese can be used to comment single elements, lines, and multi-lines...\n-}\n\n# Main Markdown\n\nParagraphs are separated by newlines ...$ \\frac{444}{a*333} $\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n## Basic Inlines\n\n\\*bold\\* -> *bold*\n\n\\~italic\\~ -> ~italic~\n\n\\^superscript\\^ -> ^superscript^\n\n\\_underline\\_ -> _underline_\n\n\nCombinations are allowed:\n\n\\~\\*bold italic\\*\\~ -> ~*bold italic*~\n\n\\_\\*bold underline\\*\\_ -> _*bold underline*_\n\n\\_\\~italic underline\\~\\_ -> _~italic underline~_\n\n\\_\\~\\*bold italic underline\\*\\~\\_ -> _~*bold italic underline*~_\n\n## Code\n\nCode can be either `inline` or explicit:\n\n``` c\n#include <stdio.h>\nvoid main(int) {\n    println(\"%d\\n\", 1234);\n}\n```\n\n## References\n\nLinks: [Google](http://www.google.de)\n\nImages:\n\n![Image](http://package.elm-lang.org/assets/favicon.ico)\n\nMovies:\n\n!![Movie](https://www.youtube.com/embed/EDp6UmaA9CM)\n\n## Quotes\n\n> This is a quote ...\n>\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n\n## Symboles\n\n### Arrows\n\n->, ->>, >->, <-, <-<, <<-, <->, =>, <=, <=>\n\n-->, <--, <-->, ==>, <==, <==>\n\n~>, <~\n\n### Smileys\n\n:-), ;-), :-D, :-O, :-(, :-|, :-/, :-P, :-*, :\'), :\'(\n\n### Escape Chars\n\n\\*, \\~, \\_, \\#\n\n## Tables\n\n| h1   | h2   | h3   |\n|:-----|-----:|------|\n| a    |    b |  c   |\n| aa   |   bb |  cc  |\n| aaa  |  bbb | ccc  |\n| aaaa | bbbb | cccc |\n\n## Enumeration\n\n* bullets\n* xxx\n  xxx\n\n## Html\n\nThis is normal Markdown ...\n<b id=\"test\" style=\"background-color:blue;color:red\">\nThis is a bold and colored html...\n</b> that can be used inline or <br> <br> everywhere\n\n<img src=\"http://package.elm-lang.org/assets/favicon.ico\">\n\ns\n\n\n## Misc\n\nhorizontal line\n\n---\n\nxxx\n\n\n';
+var _user$project$Editor$script = '{-\nComments have to be enclosed by curly braces and can be put everywhere...\nThese can be used to comment single elements, lines, and multi-lines...\n-}\n\n# Main Markdown\n\nParagraphs are separated by newlines ...\n\n$ 444*\\frac{444}{a*333} $\n\n{-<script type=\"math/tex\" id=\"MathJax-Element-1\"> \\frac{444}{a*333} </script>-}\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n## Basic Inlines\n\n\\*bold\\* -> *bold*\n\n\\~italic\\~ -> ~italic~\n\n\\^superscript\\^ -> ^superscript^\n\n\\_underline\\_ -> _underline_\n\n\nCombinations are allowed:\n\n\\~\\*bold italic\\*\\~ -> ~*bold italic*~\n\n\\_\\*bold underline\\*\\_ -> _*bold underline*_\n\n\\_\\~italic underline\\~\\_ -> _~italic underline~_\n\n\\_\\~\\*bold italic underline\\*\\~\\_ -> _~*bold italic underline*~_\n\n## Code\n\nCode can be either `inline` or explicit:\n\n``` c\n#include <stdio.h>\nvoid main(int) {\n    println(\"%d\\n\", 1234);\n}\n```\n\n## References\n\nLinks: [Google](http://www.google.de)\n\nImages:\n\n![Image](http://package.elm-lang.org/assets/favicon.ico)\n\nMovies:\n\n!![Movie](https://www.youtube.com/embed/EDp6UmaA9CM)\n\n## Quotes\n\n> This is a quote ...\n>\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n\n## Symboles\n\n### Arrows\n\n->, ->>, >->, <-, <-<, <<-, <->, =>, <=, <=>\n\n-->, <--, <-->, ==>, <==, <==>\n\n~>, <~\n\n### Smileys\n\n:-), ;-), :-D, :-O, :-(, :-|, :-/, :-P, :-*, :\'), :\'(\n\n### Escape Chars\n\n\\*, \\~, \\_, \\#\n\n## Tables\n\n| h1   | h2   | h3   |\n|:-----|-----:|------|\n| a    |    b |  c   |\n| aa   |   bb |  cc  |\n| aaa  |  bbb | ccc  |\n| aaaa | bbbb | cccc |\n\n## Enumeration\n\n* bullets\n* xxx\n  xxx\n\n## Html\n\nThis is normal Markdown ...\n<b id=\"test\" style=\"background-color:blue;color:red\">\nThis is a bold and colored html...\n</b> that can be used inline or <br> <br> everywhere\n\n<img src=\"http://package.elm-lang.org/assets/favicon.ico\">\n\ns\n\n\n## Misc\n\nhorizontal line\n\n---\n\nxxx\n\n\n';
 var _user$project$Editor$update = F2(
 	function (msg, model) {
 		var _p0 = msg;

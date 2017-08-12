@@ -13,19 +13,12 @@ import Lia.Utils
 
 view : Mode -> List Slide -> Int -> Html Msg
 view mode slides num =
-    let
-        html =
-            case mode of
-                Slides ->
-                    view_slides slides num
+    case mode of
+        Slides ->
+            view_slides slides num
 
-                Plain ->
-                    view_plain slides
-
-        x =
-            Lia.Utils.mathjax ()
-    in
-    html
+        Plain ->
+            view_plain slides
 
 
 view_plain : List Slide -> Html Msg
@@ -234,6 +227,13 @@ view_inline element =
 
         HTML e ->
             Html.span [ Attr.property "innerHTML" (Json.Encode.string e) ] []
+
+        Formula e ->
+            Lia.Utils.formula False e
+
+
+
+--Html.div [ Attr.property "innerHTML" (Json.Encode.string ("<script type=\"math/text\">" ++ e ++ "</script>")) ] []
 
 
 view_reference : Reference -> Html Msg

@@ -11,23 +11,16 @@ var _user$project$Native_Utils = (function () {
         }
     };
 
-    function mathjax () {
-        try {
-            setTimeout(function(){
-                var mjax = document.getElementsByClassName("mjx-chtml")
-                for (var i = 0; i < mjax.length; ++i) {
-                    mjax[i].remove();
-                }
-
-                MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
-            }, 10);
-        } catch (e) {
-            console.log(e.message);
+    function formula(dMode, str) {
+        try{
+            return katex.renderToString(str, {displayMode: dMode});
+        } catch(e) {
+            return "<b><font color=\"red\">"+e.message+"</font></b><br>"+str;
         }
     }
 
     return {
         highlight: F2(highlight),
-        mathjax: mathjax
+        formula: F2(formula)
     };
 })();

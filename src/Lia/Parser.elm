@@ -186,10 +186,20 @@ inlines =
                         [ html
                         , code_
                         , reference_
+                        , formula_
                         , strings_
                         ]
             in
             comments *> p
+
+
+formula_ : Parser s Inline
+formula_ =
+    let
+        p =
+            String.fromList <$> (string "$" *> manyTill anyChar (string "$"))
+    in
+    Formula <$> p
 
 
 reference_ : Parser s Inline
@@ -271,10 +281,10 @@ strings_ =
         \() ->
             let
                 base =
-                    Chars <$> regex "[^#*~_:;`!\\^\\[\\|{\\\\\\n\\-<>=|]+" <?> "base string"
+                    Chars <$> regex "[^#*~_:;`!\\^\\[\\|{\\\\\\n\\-<>=|$]+" <?> "base string"
 
                 escape =
-                    Chars <$> (spaces *> string "\\" *> regex "[\\^#*_~`{\\\\\\|]") <?> "escape string"
+                    Chars <$> (spaces *> string "\\" *> regex "[\\^#*_~`{\\\\\\|$]") <?> "escape string"
 
                 bold =
                     Bold <$> between_ "*" inlines <?> "bold string"
@@ -289,7 +299,7 @@ strings_ =
                     Superscript <$> between_ "^" inlines <?> "superscript string"
 
                 characters =
-                    Chars <$> regex "[*~_:;\\-<>=]"
+                    Chars <$> regex "[*~_:;\\-<>=$]"
 
                 base2 =
                     Chars <$> regex "[^#\\n|]+" <?> "base string"
