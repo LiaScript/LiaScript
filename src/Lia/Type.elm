@@ -45,7 +45,7 @@ type Inline
     | Underline Inline
     | Superscript Inline
     | Code String
-    | Formula String
+    | Formula Bool String
     | Ref Reference
     | HTML String
 

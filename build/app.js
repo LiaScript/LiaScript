@@ -11159,9 +11159,10 @@ var _user$project$Lia_Type$HTML = function (a) {
 var _user$project$Lia_Type$Ref = function (a) {
 	return {ctor: 'Ref', _0: a};
 };
-var _user$project$Lia_Type$Formula = function (a) {
-	return {ctor: 'Formula', _0: a};
-};
+var _user$project$Lia_Type$Formula = F2(
+	function (a, b) {
+		return {ctor: 'Formula', _0: a, _1: b};
+	});
 var _user$project$Lia_Type$Code = function (a) {
 	return {ctor: 'Code', _0: a};
 };
@@ -11540,9 +11541,29 @@ var _user$project$Lia_Parser$reference_ = _elm_community$parser_combinators$Comb
 				}));
 	});
 var _user$project$Lia_Parser$formula_ = function () {
-	var p = A2(
+	var p2 = A2(
 		_elm_community$parser_combinators$Combine_ops['<$>'],
-		_elm_lang$core$String$fromList,
+		function (c) {
+			return A2(
+				_user$project$Lia_Type$Formula,
+				true,
+				_elm_lang$core$String$fromList(c));
+		},
+		A2(
+			_elm_community$parser_combinators$Combine_ops['*>'],
+			_elm_community$parser_combinators$Combine$string('$$'),
+			A2(
+				_elm_community$parser_combinators$Combine$manyTill,
+				_elm_community$parser_combinators$Combine_Char$anyChar,
+				_elm_community$parser_combinators$Combine$string('$$'))));
+	var p1 = A2(
+		_elm_community$parser_combinators$Combine_ops['<$>'],
+		function (c) {
+			return A2(
+				_user$project$Lia_Type$Formula,
+				false,
+				_elm_lang$core$String$fromList(c));
+		},
 		A2(
 			_elm_community$parser_combinators$Combine_ops['*>'],
 			_elm_community$parser_combinators$Combine$string('$'),
@@ -11550,7 +11571,16 @@ var _user$project$Lia_Parser$formula_ = function () {
 				_elm_community$parser_combinators$Combine$manyTill,
 				_elm_community$parser_combinators$Combine_Char$anyChar,
 				_elm_community$parser_combinators$Combine$string('$'))));
-	return A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Type$Formula, p);
+	return _elm_community$parser_combinators$Combine$choice(
+		{
+			ctor: '::',
+			_0: p2,
+			_1: {
+				ctor: '::',
+				_0: p1,
+				_1: {ctor: '[]'}
+			}
+		});
 }();
 var _user$project$Lia_Parser$spaces = _elm_community$parser_combinators$Combine$regex('[ \t]*');
 var _user$project$Lia_Parser$between_ = F2(
@@ -12321,7 +12351,7 @@ var _user$project$Lia_View$view_inline = function (element) {
 				},
 				{ctor: '[]'});
 		default:
-			return A2(_user$project$Lia_Utils$formula, false, _p1._0);
+			return A2(_user$project$Lia_Utils$formula, _p1._0, _p1._1);
 	}
 };
 var _user$project$Lia_View$view_table = F3(

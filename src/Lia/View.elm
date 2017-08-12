@@ -228,8 +228,8 @@ view_inline element =
         HTML e ->
             Html.span [ Attr.property "innerHTML" (Json.Encode.string e) ] []
 
-        Formula e ->
-            Lia.Utils.formula False e
+        Formula mode e ->
+            Lia.Utils.formula mode e
 
 
 

@@ -196,10 +196,13 @@ inlines =
 formula_ : Parser s Inline
 formula_ =
     let
-        p =
-            String.fromList <$> (string "$" *> manyTill anyChar (string "$"))
+        p1 =
+            (\c -> Formula False <| String.fromList c) <$> (string "$" *> manyTill anyChar (string "$"))
+
+        p2 =
+            (\c -> Formula True <| String.fromList c) <$> (string "$$" *> manyTill anyChar (string "$$"))
     in
-    Formula <$> p
+    choice [ p2, p1 ]
 
 
 reference_ : Parser s Inline
