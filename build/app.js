@@ -11285,68 +11285,75 @@ var _user$project$Lia_Parser$smileys_ = _elm_community$parser_combinators$Combin
 				_0: A2(
 					_elm_community$parser_combinators$Combine_ops['$>'],
 					_elm_community$parser_combinators$Combine$string(':-)'),
-					_user$project$Lia_Type$Symbol('🙂')),
+					_user$project$Lia_Type$Symbol('&#x1f600;')),
 				_1: {
 					ctor: '::',
 					_0: A2(
 						_elm_community$parser_combinators$Combine_ops['$>'],
 						_elm_community$parser_combinators$Combine$string(';-)'),
-						_user$project$Lia_Type$Symbol('😉')),
+						_user$project$Lia_Type$Symbol('&#x1f609;')),
 					_1: {
 						ctor: '::',
 						_0: A2(
 							_elm_community$parser_combinators$Combine_ops['$>'],
 							_elm_community$parser_combinators$Combine$string(':-D'),
-							_user$project$Lia_Type$Symbol('😀')),
+							_user$project$Lia_Type$Symbol('&#x1f600;')),
 						_1: {
 							ctor: '::',
 							_0: A2(
 								_elm_community$parser_combinators$Combine_ops['$>'],
 								_elm_community$parser_combinators$Combine$string(':-O'),
-								_user$project$Lia_Type$Symbol('😮')),
+								_user$project$Lia_Type$Symbol('&#128558;')),
 							_1: {
 								ctor: '::',
 								_0: A2(
 									_elm_community$parser_combinators$Combine_ops['$>'],
 									_elm_community$parser_combinators$Combine$string(':-('),
-									_user$project$Lia_Type$Symbol('🙁')),
+									_user$project$Lia_Type$Symbol('&#128542;')),
 								_1: {
 									ctor: '::',
 									_0: A2(
 										_elm_community$parser_combinators$Combine_ops['$>'],
 										_elm_community$parser_combinators$Combine$string(':-|'),
-										_user$project$Lia_Type$Symbol('😐')),
+										_user$project$Lia_Type$Symbol('&#128528;')),
 									_1: {
 										ctor: '::',
 										_0: A2(
 											_elm_community$parser_combinators$Combine_ops['$>'],
 											_elm_community$parser_combinators$Combine$string(':-/'),
-											_user$project$Lia_Type$Symbol('😕')),
+											_user$project$Lia_Type$Symbol('&#128533;')),
 										_1: {
 											ctor: '::',
 											_0: A2(
 												_elm_community$parser_combinators$Combine_ops['$>'],
 												_elm_community$parser_combinators$Combine$string(':-P'),
-												_user$project$Lia_Type$Symbol('😛')),
+												_user$project$Lia_Type$Symbol('&#128539;')),
 											_1: {
 												ctor: '::',
 												_0: A2(
 													_elm_community$parser_combinators$Combine_ops['$>'],
-													_elm_community$parser_combinators$Combine$string(':-*'),
-													_user$project$Lia_Type$Symbol('😗')),
+													_elm_community$parser_combinators$Combine$string(';-P'),
+													_user$project$Lia_Type$Symbol('&#128540;')),
 												_1: {
 													ctor: '::',
 													_0: A2(
 														_elm_community$parser_combinators$Combine_ops['$>'],
-														_elm_community$parser_combinators$Combine$string(':\')'),
-														_user$project$Lia_Type$Symbol('😂')),
+														_elm_community$parser_combinators$Combine$string(':-*'),
+														_user$project$Lia_Type$Symbol('&#128535;')),
 													_1: {
 														ctor: '::',
 														_0: A2(
 															_elm_community$parser_combinators$Combine_ops['$>'],
-															_elm_community$parser_combinators$Combine$string(':\'('),
-															_user$project$Lia_Type$Symbol('😢')),
-														_1: {ctor: '[]'}
+															_elm_community$parser_combinators$Combine$string(':\')'),
+															_user$project$Lia_Type$Symbol('&#128514;')),
+														_1: {
+															ctor: '::',
+															_0: A2(
+																_elm_community$parser_combinators$Combine_ops['$>'],
+																_elm_community$parser_combinators$Combine$string(':\'('),
+																_user$project$Lia_Type$Symbol('&#128554;')),
+															_1: {ctor: '[]'}
+														}
 													}
 												}
 											}
@@ -11368,109 +11375,109 @@ var _user$project$Lia_Parser$arrows_ = _elm_community$parser_combinators$Combine
 				_0: A2(
 					_elm_community$parser_combinators$Combine_ops['$>'],
 					_elm_community$parser_combinators$Combine$string('<-->'),
-					_user$project$Lia_Type$Symbol('⟷')),
+					_user$project$Lia_Type$Symbol('&#10231;')),
 				_1: {
 					ctor: '::',
 					_0: A2(
 						_elm_community$parser_combinators$Combine_ops['$>'],
 						_elm_community$parser_combinators$Combine$string('<--'),
-						_user$project$Lia_Type$Symbol('⟵')),
+						_user$project$Lia_Type$Symbol('&#10229;')),
 					_1: {
 						ctor: '::',
 						_0: A2(
 							_elm_community$parser_combinators$Combine_ops['$>'],
 							_elm_community$parser_combinators$Combine$string('-->'),
-							_user$project$Lia_Type$Symbol('⟶')),
+							_user$project$Lia_Type$Symbol('&#10230;')),
 						_1: {
 							ctor: '::',
 							_0: A2(
 								_elm_community$parser_combinators$Combine_ops['$>'],
 								_elm_community$parser_combinators$Combine$string('<<-'),
-								_user$project$Lia_Type$Symbol('↞')),
+								_user$project$Lia_Type$Symbol('&#8606;')),
 							_1: {
 								ctor: '::',
 								_0: A2(
 									_elm_community$parser_combinators$Combine_ops['$>'],
 									_elm_community$parser_combinators$Combine$string('->>'),
-									_user$project$Lia_Type$Symbol('↠')),
+									_user$project$Lia_Type$Symbol('&#8608;')),
 								_1: {
 									ctor: '::',
 									_0: A2(
 										_elm_community$parser_combinators$Combine_ops['$>'],
 										_elm_community$parser_combinators$Combine$string('<->'),
-										_user$project$Lia_Type$Symbol('↔')),
+										_user$project$Lia_Type$Symbol('&#8596;')),
 									_1: {
 										ctor: '::',
 										_0: A2(
 											_elm_community$parser_combinators$Combine_ops['$>'],
 											_elm_community$parser_combinators$Combine$string('>->'),
-											_user$project$Lia_Type$Symbol('↣')),
+											_user$project$Lia_Type$Symbol('&#8611;')),
 										_1: {
 											ctor: '::',
 											_0: A2(
 												_elm_community$parser_combinators$Combine_ops['$>'],
 												_elm_community$parser_combinators$Combine$string('<-<'),
-												_user$project$Lia_Type$Symbol('↢')),
+												_user$project$Lia_Type$Symbol('&#8610;')),
 											_1: {
 												ctor: '::',
 												_0: A2(
 													_elm_community$parser_combinators$Combine_ops['$>'],
 													_elm_community$parser_combinators$Combine$string('->'),
-													_user$project$Lia_Type$Symbol('→')),
+													_user$project$Lia_Type$Symbol('&#8594;')),
 												_1: {
 													ctor: '::',
 													_0: A2(
 														_elm_community$parser_combinators$Combine_ops['$>'],
 														_elm_community$parser_combinators$Combine$string('<-'),
-														_user$project$Lia_Type$Symbol('←')),
+														_user$project$Lia_Type$Symbol('&#8592;')),
 													_1: {
 														ctor: '::',
 														_0: A2(
 															_elm_community$parser_combinators$Combine_ops['$>'],
 															_elm_community$parser_combinators$Combine$string('<~'),
-															_user$project$Lia_Type$Symbol('↜')),
+															_user$project$Lia_Type$Symbol('&#8604;')),
 														_1: {
 															ctor: '::',
 															_0: A2(
 																_elm_community$parser_combinators$Combine_ops['$>'],
 																_elm_community$parser_combinators$Combine$string('~>'),
-																_user$project$Lia_Type$Symbol('↝')),
+																_user$project$Lia_Type$Symbol('&#8605;')),
 															_1: {
 																ctor: '::',
 																_0: A2(
 																	_elm_community$parser_combinators$Combine_ops['$>'],
 																	_elm_community$parser_combinators$Combine$string('<==>'),
-																	_user$project$Lia_Type$Symbol('⟺')),
+																	_user$project$Lia_Type$Symbol('&#10234;')),
 																_1: {
 																	ctor: '::',
 																	_0: A2(
 																		_elm_community$parser_combinators$Combine_ops['$>'],
 																		_elm_community$parser_combinators$Combine$string('==>'),
-																		_user$project$Lia_Type$Symbol('⟹')),
+																		_user$project$Lia_Type$Symbol('&#10233;')),
 																	_1: {
 																		ctor: '::',
 																		_0: A2(
 																			_elm_community$parser_combinators$Combine_ops['$>'],
 																			_elm_community$parser_combinators$Combine$string('<=='),
-																			_user$project$Lia_Type$Symbol('⟸')),
+																			_user$project$Lia_Type$Symbol('&#10232;')),
 																		_1: {
 																			ctor: '::',
 																			_0: A2(
 																				_elm_community$parser_combinators$Combine_ops['$>'],
 																				_elm_community$parser_combinators$Combine$string('<=>'),
-																				_user$project$Lia_Type$Symbol('⇔')),
+																				_user$project$Lia_Type$Symbol('&#8660;')),
 																			_1: {
 																				ctor: '::',
 																				_0: A2(
 																					_elm_community$parser_combinators$Combine_ops['$>'],
 																					_elm_community$parser_combinators$Combine$string('=>'),
-																					_user$project$Lia_Type$Symbol('⇒')),
+																					_user$project$Lia_Type$Symbol('&#8658;')),
 																				_1: {
 																					ctor: '::',
 																					_0: A2(
 																						_elm_community$parser_combinators$Combine_ops['$>'],
 																						_elm_community$parser_combinators$Combine$string('<='),
-																						_user$project$Lia_Type$Symbol('⇐')),
+																						_user$project$Lia_Type$Symbol('&#8656;')),
 																					_1: {ctor: '[]'}
 																				}
 																			}
@@ -12299,7 +12306,17 @@ var _user$project$Lia_View$view_inline = function (element) {
 		case 'Chars':
 			return _elm_lang$html$Html$text(_p1._0);
 		case 'Symbol':
-			return _elm_lang$html$Html$text(_p1._0);
+			return A2(
+				_elm_lang$html$Html$span,
+				{
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html_Attributes$property,
+						'innerHTML',
+						_elm_lang$core$Json_Encode$string(_p1._0)),
+					_1: {ctor: '[]'}
+				},
+				{ctor: '[]'});
 		case 'Bold':
 			return A2(
 				_elm_lang$html$Html$b,

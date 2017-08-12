@@ -208,8 +208,9 @@ view_inline element =
             Html.text e
 
         Symbol e ->
-            Html.text e
+            Html.span [ Attr.property "innerHTML" (Json.Encode.string e) ] []
 
+        --Html.text e
         Bold e ->
             Html.b [] [ view_inline e ]
 
