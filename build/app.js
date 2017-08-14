@@ -11565,19 +11565,14 @@ var _user$project$Lia_Parser$formula_ = function () {
 				_elm_community$parser_combinators$Combine$string('$$'))));
 	var p1 = A2(
 		_elm_community$parser_combinators$Combine_ops['<$>'],
-		function (c) {
-			return A2(
-				_user$project$Lia_Type$Formula,
-				false,
-				_elm_lang$core$String$fromList(c));
-		},
+		_user$project$Lia_Type$Formula(false),
 		A2(
-			_elm_community$parser_combinators$Combine_ops['*>'],
-			_elm_community$parser_combinators$Combine$string('$'),
+			_elm_community$parser_combinators$Combine_ops['<*'],
 			A2(
-				_elm_community$parser_combinators$Combine$manyTill,
-				_elm_community$parser_combinators$Combine_Char$anyChar,
-				_elm_community$parser_combinators$Combine$string('$'))));
+				_elm_community$parser_combinators$Combine_ops['*>'],
+				_elm_community$parser_combinators$Combine$string('$'),
+				_elm_community$parser_combinators$Combine$regex('[^\\n$]+')),
+			_elm_community$parser_combinators$Combine$string('$')));
 	return _elm_community$parser_combinators$Combine$choice(
 		{
 			ctor: '::',
@@ -12213,7 +12208,7 @@ var _user$project$Native_Utils = (function () {
         try{
             return katex.renderToString(str, {displayMode: dMode});
         } catch(e) {
-            return "<b><font color=\"red\">"+e.message+"</font></b><br>"+str;
+            return "<b><font color=\"red\">"+e.message+"</font></b><br>";
         }
     }
 
@@ -12223,7 +12218,7 @@ var _user$project$Native_Utils = (function () {
     };
 })();
 
-var _user$project$Lia_Utils$toHtml = function (str) {
+var _user$project$Lia_Utils$stringToHtml = function (str) {
 	return A2(
 		_elm_lang$html$Html$span,
 		{
@@ -12238,12 +12233,12 @@ var _user$project$Lia_Utils$toHtml = function (str) {
 };
 var _user$project$Lia_Utils$formula = F2(
 	function (displayMode, string) {
-		return _user$project$Lia_Utils$toHtml(
+		return _user$project$Lia_Utils$stringToHtml(
 			A2(_user$project$Native_Utils.formula, displayMode, string));
 	});
 var _user$project$Lia_Utils$highlight = F2(
 	function (language, code) {
-		return _user$project$Lia_Utils$toHtml(
+		return _user$project$Lia_Utils$stringToHtml(
 			A2(_user$project$Native_Utils.highlight, language, code));
 	});
 
@@ -12305,18 +12300,6 @@ var _user$project$Lia_View$view_inline = function (element) {
 				});
 		case 'Chars':
 			return _elm_lang$html$Html$text(_p1._0);
-		case 'Symbol':
-			return A2(
-				_elm_lang$html$Html$span,
-				{
-					ctor: '::',
-					_0: A2(
-						_elm_lang$html$Html_Attributes$property,
-						'innerHTML',
-						_elm_lang$core$Json_Encode$string(_p1._0)),
-					_1: {ctor: '[]'}
-				},
-				{ctor: '[]'});
 		case 'Bold':
 			return A2(
 				_elm_lang$html$Html$b,
@@ -12355,20 +12338,12 @@ var _user$project$Lia_View$view_inline = function (element) {
 				});
 		case 'Ref':
 			return _user$project$Lia_View$view_reference(_p1._0);
-		case 'HTML':
-			return A2(
-				_elm_lang$html$Html$span,
-				{
-					ctor: '::',
-					_0: A2(
-						_elm_lang$html$Html_Attributes$property,
-						'innerHTML',
-						_elm_lang$core$Json_Encode$string(_p1._0)),
-					_1: {ctor: '[]'}
-				},
-				{ctor: '[]'});
-		default:
+		case 'Formula':
 			return A2(_user$project$Lia_Utils$formula, _p1._0, _p1._1);
+		case 'Symbol':
+			return _user$project$Lia_Utils$stringToHtml(_p1._0);
+		default:
+			return _user$project$Lia_Utils$stringToHtml(_p1._0);
 	}
 };
 var _user$project$Lia_View$view_table = F3(
@@ -12807,7 +12782,7 @@ var _user$project$Lia$init = F2(
 var _user$project$Lia$init_plain = _user$project$Lia$init(_user$project$Lia_Type$Plain);
 var _user$project$Lia$init_slides = _user$project$Lia$init(_user$project$Lia_Type$Slides);
 
-var _user$project$Editor$script = '{-\nComments have to be enclosed by curly braces and can be put everywhere...\nThese can be used to comment single elements, lines, and multi-lines...\n-}\n\n# Main Markdown\n\nParagraphs are separated by newlines ...\n\n$ 444*\\frac{444}{a*333} $\n\n{-<script type=\"math/tex\" id=\"MathJax-Element-1\"> \\frac{444}{a*333} </script>-}\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n## Basic Inlines\n\n\\*bold\\* -> *bold*\n\n\\~italic\\~ -> ~italic~\n\n\\^superscript\\^ -> ^superscript^\n\n\\_underline\\_ -> _underline_\n\n\nCombinations are allowed:\n\n\\~\\*bold italic\\*\\~ -> ~*bold italic*~\n\n\\_\\*bold underline\\*\\_ -> _*bold underline*_\n\n\\_\\~italic underline\\~\\_ -> _~italic underline~_\n\n\\_\\~\\*bold italic underline\\*\\~\\_ -> _~*bold italic underline*~_\n\n## Code\n\nCode can be either `inline` or explicit:\n\n``` c\n#include <stdio.h>\nvoid main(int) {\n    println(\"%d\\n\", 1234);\n}\n```\n\n## References\n\nLinks: [Google](http://www.google.de)\n\nImages:\n\n![Image](http://package.elm-lang.org/assets/favicon.ico)\n\nMovies:\n\n!![Movie](https://www.youtube.com/embed/EDp6UmaA9CM)\n\n## Quotes\n\n> This is a quote ...\n>\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n\n## Symboles\n\n### Arrows\n\n->, ->>, >->, <-, <-<, <<-, <->, =>, <=, <=>\n\n-->, <--, <-->, ==>, <==, <==>\n\n~>, <~\n\n### Smileys\n\n:-), ;-), :-D, :-O, :-(, :-|, :-/, :-P, :-*, :\'), :\'(\n\n### Escape Chars\n\n\\*, \\~, \\_, \\#\n\n## Tables\n\n| h1   | h2   | h3   |\n|:-----|-----:|------|\n| a    |    b |  c   |\n| aa   |   bb |  cc  |\n| aaa  |  bbb | ccc  |\n| aaaa | bbbb | cccc |\n\n## Enumeration\n\n* bullets\n* xxx\n  xxx\n\n## Html\n\nThis is normal Markdown ...\n<b id=\"test\" style=\"background-color:blue;color:red\">\nThis is a bold and colored html...\n</b> that can be used inline or <br> <br> everywhere\n\n<img src=\"http://package.elm-lang.org/assets/favicon.ico\">\n\ns\n\n\n## Misc\n\nhorizontal line\n\n---\n\nxxx\n\n\n';
+var _user$project$Editor$script = '{-\nComments have to be enclosed by curly braces and can be put everywhere...\nThese can be used to comment single elements, lines, and multi-lines...\n-}\n\n# Main Markdown\n\nParagraphs are separated by newlines ...\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n## Basic Inlines\n\n\\*bold\\* -> *bold*\n\n\\~italic\\~ -> ~italic~\n\n\\^superscript\\^ -> ^superscript^\n\n\\_underline\\_ -> _underline_\n\n\nCombinations are allowed:\n\n\\~\\*bold italic\\*\\~ -> ~*bold italic*~\n\n\\_\\*bold underline\\*\\_ -> _*bold underline*_\n\n\\_\\~italic underline\\~\\_ -> _~italic underline~_\n\n\\_\\~\\*bold italic underline\\*\\~\\_ -> _~*bold italic underline*~_\n\n## Code\n\nCode can be either `inline` or explicit:\n\n``` c\n#include <stdio.h>\n\nvoid main(int) {\n    println(\"%d\\n\", 1234);\n}\n```\n\n``` python\nimport math\n\ndef sqrt(val):\n    return math.sqrt(val)\n```\n\n## References\n\nLinks: [Google](http://www.google.de)\n\nImages:\n\n![Image](http://package.elm-lang.org/assets/favicon.ico)\n\nMovies:\n\n!![Movie](https://www.youtube.com/embed/EDp6UmaA9CM)\n\n## Quotes\n\n> This is a quote ...\n>\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n\n## Formulas\n\nsimple inline formulas $ \\frac{a+b}{\\sum x} * \\int x $\nor larger multiline formulas\n\n$$\n\\frac{a+b}{\\sum x}\n      * \\int x\n$$\n\n\n## Symboles\n\n### Arrows\n\n->, ->>, >->, <-, <-<, <<-, <->, =>, <=, <=>\n\n-->, <--, <-->, ==>, <==, <==>\n\n~>, <~\n\n### Smileys\n\n:-), ;-), :-D, :-O, :-(, :-|, :-/, :-P, :-*, :\'), :\'(\n\n### Escape Chars\n\n\\*, \\~, \\_, \\#\n\n## Tables\n\n| h1   | h2   | h3   |\n|:-----|-----:|------|\n| a    |    b |  c   |\n| aa   |   bb |  cc  |\n| aaa  |  bbb | ccc  |\n| aaaa | bbbb | cccc |\n\n## Enumeration\n\n* bullets\n* xxx\n  xxx\n\n## Html\n\nThis is normal Markdown ...\n<b id=\"test\" style=\"background-color:blue;color:red\">\nThis is a bold and colored html...\n</b> that can be used inline or <br> <br> everywhere\n\n<img src=\"http://package.elm-lang.org/assets/favicon.ico\">\n\ns\n\n\n## Misc\n\nhorizontal line\n\n---\n\nxxx\n\n\n';
 var _user$project$Editor$update = F2(
 	function (msg, model) {
 		var _p0 = msg;

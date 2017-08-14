@@ -15,7 +15,7 @@ var _user$project$Native_Utils = (function () {
         try{
             return katex.renderToString(str, {displayMode: dMode});
         } catch(e) {
-            return "<b><font color=\"red\">"+e.message+"</font></b><br>"+str;
+            return "<b><font color=\"red\">"+e.message+"</font></b><br>";
         }
     }
 

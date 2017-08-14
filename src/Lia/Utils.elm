@@ -1,4 +1,4 @@
-module Lia.Utils exposing (formula, highlight)
+module Lia.Utils exposing (formula, highlight, stringToHtml)
 
 --this is where we import the native module
 
@@ -10,14 +10,14 @@ import Native.Utils
 
 highlight : String -> String -> Html msg
 highlight language code =
-    toHtml <| Native.Utils.highlight language code
+    stringToHtml <| Native.Utils.highlight language code
 
 
 formula : Bool -> String -> Html msg
 formula displayMode string =
-    toHtml <| Native.Utils.formula displayMode string
+    stringToHtml <| Native.Utils.formula displayMode string
 
 
-toHtml : String -> Html msg
-toHtml str =
+stringToHtml : String -> Html msg
+stringToHtml str =
     Html.span [ Attr.property "innerHTML" (Json.Encode.string str) ] []

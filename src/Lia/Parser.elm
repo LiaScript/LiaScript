@@ -197,7 +197,7 @@ formula_ : Parser s Inline
 formula_ =
     let
         p1 =
-            (\c -> Formula False <| String.fromList c) <$> (string "$" *> manyTill anyChar (string "$"))
+            Formula False <$> (string "$" *> regex "[^\\n$]+" <* string "$")
 
         p2 =
             (\c -> Formula True <| String.fromList c) <$> (string "$$" *> manyTill anyChar (string "$$"))

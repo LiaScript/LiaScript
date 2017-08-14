@@ -218,10 +218,6 @@ These can be used to comment single elements, lines, and multi-lines...
 
 Paragraphs are separated by newlines ...
 
-$ 444*\\frac{444}{a*333} $
-
-{-<script type="math/tex" id="MathJax-Element-1"> \\frac{444}{a*333} </script>-}
-
 XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
 XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
 XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
@@ -257,9 +253,17 @@ Code can be either `inline` or explicit:
 
 ``` c
 #include <stdio.h>
+
 void main(int) {
     println("%d\\n", 1234);
 }
+```
+
+``` python
+import math
+
+def sqrt(val):
+    return math.sqrt(val)
 ```
 
 ## References
@@ -280,6 +284,17 @@ Movies:
 >
 > xxx xxx xxx xxx xxx xxx xxx xxx xxx
 > xxx xxx xxx xxx xxx xxx xxx xxx xxx
+
+## Formulas
+
+simple inline formulas $ \\frac{a+b}{\\sum x} * \\int x $
+or larger multiline formulas
+
+$$
+\\frac{a+b}{\\sum x}
+      * \\int x
+$$
+
 
 ## Symboles
 

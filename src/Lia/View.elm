@@ -207,10 +207,6 @@ view_inline element =
         Chars e ->
             Html.text e
 
-        Symbol e ->
-            Html.span [ Attr.property "innerHTML" (Json.Encode.string e) ] []
-
-        --Html.text e
         Bold e ->
             Html.b [] [ view_inline e ]
 
@@ -226,15 +222,14 @@ view_inline element =
         Ref e ->
             view_reference e
 
-        HTML e ->
-            Html.span [ Attr.property "innerHTML" (Json.Encode.string e) ] []
-
         Formula mode e ->
             Lia.Utils.formula mode e
 
+        Symbol e ->
+            Lia.Utils.stringToHtml e
 
-
---Html.div [ Attr.property "innerHTML" (Json.Encode.string ("<script type=\"math/text\">" ++ e ++ "</script>")) ] []
+        HTML e ->
+            Lia.Utils.stringToHtml e
 
 
 view_reference : Reference -> Html Msg
