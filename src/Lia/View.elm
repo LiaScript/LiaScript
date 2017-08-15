@@ -4,33 +4,37 @@ import Array exposing (Array)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
-import Html.Lazy exposing (lazy)
-import Json.Encode
+import Html.Lazy exposing (lazy2)
 import Lia.Helper exposing (..)
+import Lia.Model exposing (Model)
 import Lia.Type exposing (..)
 import Lia.Utils
 
 
-view : Mode -> List Slide -> Int -> Html Msg
-view mode slides num =
-    case mode of
+view : Model -> Html Msg
+view model =
+    case model.mode of
         Slides ->
-            view_slides slides num
+            view_slides model
 
         Plain ->
-            view_plain slides
+            view_plain model
 
 
-view_plain : List Slide -> Html Msg
-view_plain slides =
+view_plain : Model -> Html Msg
+view_plain model =
+    let
+        f =
+            view_slide model
+    in
     Html.div
         [ Attr.style [ ( "width", "100%" ) ]
         ]
-        (List.map view_slide slides)
+        (List.map f model.lia)
 
 
-view_slides : List Slide -> Int -> Html Msg
-view_slides slides active =
+view_slides : Model -> Html Msg
+view_slides model =
     Html.div []
         [ Html.div
             [ Attr.style
@@ -38,7 +42,7 @@ view_slides slides active =
                 , ( "float", "left" )
                 ]
             ]
-            ((slides
+            ((model.lia
                 |> get_headers
                 |> List.map
                     (\( n, ( h, i ) ) ->
@@ -61,12 +65,12 @@ view_slides slides active =
                     )
              )
                 ++ [ Html.button
-                        [ onClick (Load (active - 1))
+                        [ onClick (Load (model.slide - 1))
                         , Attr.style [ ( "width", "100px" ) ]
                         ]
                         [ Html.text "<<" ]
                    , Html.button
-                        [ onClick (Load (active + 1))
+                        [ onClick (Load (model.slide + 1))
                         , Attr.style [ ( "width", "40%" ) ]
                         ]
                         [ Html.text ">>" ]
@@ -78,9 +82,9 @@ view_slides slides active =
                 , ( "float", "right" )
                 ]
             ]
-            [ case get_slide active slides of
+            [ case get_slide model.slide model.lia of
                 Just slide ->
-                    lazy view_slide slide
+                    lazy2 view_slide model slide
 
                 Nothing ->
                     Html.text ""
@@ -88,19 +92,11 @@ view_slides slides active =
         ]
 
 
-
---activated : Msg -> Int
---activated msg =
---    case msg of
---        Load active ->
---            active
-
-
-view_slide : Slide -> Html Msg
-view_slide slide =
+view_slide : Model -> Slide -> Html Msg
+view_slide model slide =
     Html.div []
         (view_header slide.indentation slide.title
-            :: view_body slide.body
+            :: view_body model slide.body
         )
 
 
@@ -126,13 +122,17 @@ view_header indentation title =
             Html.h6 [] [ Html.text title ]
 
 
-view_body : List Block -> List (Html Msg)
-view_body body =
-    List.map view_block body
+view_body : Model -> List Block -> List (Html Msg)
+view_body model body =
+    let
+        f =
+            view_block model
+    in
+    List.map f body
 
 
-view_block : Block -> Html Msg
-view_block block =
+view_block : Model -> Block -> Html Msg
+view_block model block =
     case block of
         Paragraph elements ->
             Html.p [] (List.map view_inline elements)
@@ -148,6 +148,46 @@ view_block block =
 
         CodeBlock language code ->
             Html.pre [] [ Html.code [] [ Lia.Utils.highlight language code ] ]
+
+        Quiz question number ->
+            Html.div [] [ view_quiz model question number ]
+
+
+view_quiz : Model -> Quiz -> Int -> Html Msg
+view_quiz model question number =
+    case question of
+        MultipleChoice questions ->
+            questions
+                |> List.indexedMap (,)
+                |> List.map
+                    (\( i, ( _, q ) ) ->
+                        Html.p []
+                            [ Html.input
+                                [ Attr.type_ "checkbox"
+                                , Attr.checked (Lia.Helper.question_state number i model.quiz)
+                                , onClick (CheckBox number i)
+                                ]
+                                []
+                            , Html.span [] (List.map view_inline q)
+                            ]
+                    )
+                |> (\l ->
+                        l
+                            ++ [ Html.button
+                                    (case Lia.Helper.quiz_state number model.quiz of
+                                        Just b ->
+                                            if b then
+                                                [ Attr.style [ ( "color", "green" ) ] ]
+                                            else
+                                                [ Attr.style [ ( "color", "red" ) ], onClick (Check number) ]
+
+                                        Nothing ->
+                                            [ onClick (Check number) ]
+                                    )
+                                    [ Html.text "Check" ]
+                               ]
+                   )
+                |> Html.div []
 
 
 view_table : List (List Inline) -> Array String -> List (List (List Inline)) -> Html Msg

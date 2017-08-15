@@ -42,7 +42,7 @@ type alias Model =
 -- INIT
 
 
-init : ( Model, Cmd msg )
+init : ( Model, Cmd Msg )
 init =
     update (Update script)
         { outer =
@@ -59,7 +59,7 @@ init =
 -- UPDATE
 
 
-update : Msg -> Model -> ( Model, Cmd msg )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Update script ->
@@ -73,7 +73,7 @@ update msg model =
                 ( lia, cmd ) =
                     Lia.update liaMsg model.lia
             in
-            ( { model | lia = lia }, cmd )
+            ( { model | lia = lia }, Cmd.none )
 
         Outer m ->
             { model

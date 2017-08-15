@@ -1,8 +1,9 @@
 module Lia.Parser exposing (run)
 
+--import Combine.Num
+
 import Combine exposing (..)
 import Combine.Char exposing (..)
-import Combine.Num
 import Lia.Type exposing (..)
 
 
@@ -11,7 +12,7 @@ comments =
     skip (many (string "{-" *> manyTill anyChar (string "-}")))
 
 
-blocks : Parser s Block
+blocks : Parser Int Block
 blocks =
     lazy <|
         \() ->
@@ -22,12 +23,39 @@ blocks =
                         , code_block
                         , quote_block
                         , horizontal_line
+                        , quiz
 
                         --  , list
                         , paragraph
                         ]
             in
             comments *> b <* newlines
+
+
+quiz : Parser Int Block
+quiz =
+    Quiz <$> multiple_choice <*> counter
+
+
+counter : Parser Int Int
+counter =
+    let
+        pp par =
+            succeed par
+    in
+    withState pp <* modifyState ((+) 1)
+
+
+multiple_choice : Parser s Quiz
+multiple_choice =
+    let
+        unchecked =
+            (\l -> ( False, l )) <$> (string "[ ]" *> line <* newline)
+
+        checked =
+            (\l -> ( True, l )) <$> (string "[X]" *> line <* newline)
+    in
+    MultipleChoice <$> many1 (choice [ checked, unchecked ])
 
 
 html : Parser s Inline
@@ -349,8 +377,8 @@ code_ =
     Code <$> (string "`" *> regex "[^`]+" <* string "`") <?> "inline code"
 
 
-program : Parser s (List Slide)
-program =
+parse : Parser Int (List Slide)
+parse =
     let
         tag =
             String.length <$> (newlines *> regex "#+" <* whitespace)
@@ -361,12 +389,12 @@ program =
         body =
             many blocks
     in
-    comments *> many (Slide <$> tag <*> title <*> body)
+    comments *> many1 (Slide <$> tag <*> title <*> body)
 
 
 run : String -> Result String (List Slide)
 run script =
-    case Combine.parse program script of
+    case Combine.runParser parse 0 script of
         Ok ( _, _, es ) ->
             Ok es
 

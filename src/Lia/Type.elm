@@ -4,13 +4,25 @@ module Lia.Type
         , Inline(..)
         , Mode(..)
         , Msg(..)
+        , Quiz(..)
+        , QuizMatrix
         , Reference(..)
         , Slide
         )
 
+import Array exposing (Array)
+
 
 type Msg
     = Load Int
+    | CheckBox Int Int
+    | Check Int
+    | Speak String
+    | TTS (Result String Never)
+
+
+type alias QuizMatrix =
+    Array ( Maybe Bool, Array ( Bool, Bool ) )
 
 
 type Mode
@@ -31,6 +43,11 @@ type Block
     | Quote (List Inline)
     | Paragraph (List Inline)
     | Table (List (List Inline)) (List String) (List (List (List Inline)))
+    | Quiz Quiz Int
+
+
+type Quiz
+    = MultipleChoice (List ( Bool, List Inline ))
 
 
 

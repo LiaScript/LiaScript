@@ -2,9 +2,13 @@ module Lia.Helper
     exposing
         ( get_headers
         , get_slide
+        , question_state
+        , quiz_matrix
+        , quiz_state
         )
 
-import Lia.Type exposing (Slide)
+import Array
+import Lia.Type exposing (Block(..), Quiz(..), QuizMatrix, Slide)
 
 
 get_headers : List Slide -> List ( Int, ( String, Int ) )
@@ -25,3 +29,58 @@ get_slide i slides =
 
         ( n, _ :: xs ) ->
             get_slide (n - 1) xs
+
+
+quiz_matrix : List Slide -> QuizMatrix
+quiz_matrix slides =
+    let
+        filter b =
+            case b of
+                Quiz quiz _ ->
+                    Just quiz
+
+                _ ->
+                    Nothing
+
+        matrix quiz =
+            let
+                m =
+                    case quiz of
+                        MultipleChoice q ->
+                            q
+                                |> List.map (\( b, _ ) -> ( False, b ))
+                                |> Array.fromList
+            in
+            ( Nothing, m )
+    in
+    slides
+        |> List.map (\s -> s.body)
+        |> List.concat
+        |> List.filterMap filter
+        |> List.map matrix
+        |> Array.fromList
+
+
+quiz_state : Int -> QuizMatrix -> Maybe Bool
+quiz_state quiz_id matrix =
+    case Array.get quiz_id matrix of
+        Just ( state, _ ) ->
+            state
+
+        Nothing ->
+            Nothing
+
+
+question_state : Int -> Int -> QuizMatrix -> Bool
+question_state quiz_id question_id matrix =
+    case Array.get quiz_id matrix of
+        Just ( _, questions ) ->
+            case Array.get question_id questions of
+                Just ( c, _ ) ->
+                    c
+
+                Nothing ->
+                    False
+
+        Nothing ->
+            False

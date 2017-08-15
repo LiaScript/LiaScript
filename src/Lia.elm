@@ -1,6 +1,8 @@
 module Lia exposing (..)
 
+import Array
 import Html exposing (Html)
+import Lia.Helper
 import Lia.Model
 import Lia.Parser
 import Lia.Type
@@ -22,7 +24,7 @@ type alias Mode =
 
 init : Mode -> String -> Model
 init mode script =
-    parse <| Lia.Model.Model script "" [] 0 mode
+    parse <| Lia.Model.Model script "" [] Array.empty 0 mode
 
 
 set_script : Model -> String -> Model
@@ -44,7 +46,7 @@ parse : Model -> Model
 parse model =
     case Lia.Parser.run model.script of
         Ok lia ->
-            { model | lia = lia, error = "" }
+            { model | lia = lia, error = "", quiz = Lia.Helper.quiz_matrix lia }
 
         Err msg ->
             { model | error = msg }
@@ -52,10 +54,10 @@ parse model =
 
 view : Model -> Html Msg
 view model =
-    Lia.View.view model.mode model.lia model.slide
+    Lia.View.view model
 
 
-update : Msg -> Model -> ( Model, Cmd msg )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update =
     Lia.Update.update
 
