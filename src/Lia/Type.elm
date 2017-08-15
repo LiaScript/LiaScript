@@ -47,7 +47,9 @@ type Block
 
 
 type Quiz
-    = MultipleChoice (List ( Bool, List Inline ))
+    = --OneChoice ( Int, List (List Inline) )
+      --|
+      MultipleChoice (List ( Bool, List Inline ))
 
 
 

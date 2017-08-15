@@ -266,6 +266,17 @@ def sqrt(val):
     return math.sqrt(val)
 ```
 
+## Quize
+
+### Multiple-Choice
+
+Zwei von Vier?
+
+[ ] nein
+[X] Ja
+[X] auch Ja
+[ ] auf keinen Fall
+
 ## References
 
 Links: [Google](http://www.google.de)
