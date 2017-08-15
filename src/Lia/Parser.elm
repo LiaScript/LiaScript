@@ -7,12 +7,24 @@ import Combine.Char exposing (..)
 import Lia.Type exposing (..)
 
 
+type alias PState =
+    { quiz : Int
+    , section : List Int
+    , indentation : List Int
+    }
+
+
+init_pstate : PState
+init_pstate =
+    PState 0 [] [ 0 ]
+
+
 comments : Parser s ()
 comments =
     skip (many (string "{-" *> manyTill anyChar (string "-}")))
 
 
-blocks : Parser Int Block
+blocks : Parser PState Block
 blocks =
     lazy <|
         \() ->
@@ -32,18 +44,20 @@ blocks =
             comments *> b <* newlines
 
 
-quiz : Parser Int Block
+quiz : Parser PState Block
 quiz =
-    Quiz <$> multiple_choice <*> counter
-
-
-counter : Parser Int Int
-counter =
     let
-        pp par =
-            succeed par
+        counter =
+            let
+                pp par =
+                    succeed par.quiz
+
+                increment_counter c =
+                    { c | quiz = c.quiz + 1 }
+            in
+            withState pp <* modifyState increment_counter
     in
-    withState pp <* modifyState ((+) 1)
+    Quiz <$> multiple_choice <*> counter
 
 
 multiple_choice : Parser s Quiz
@@ -377,7 +391,7 @@ code_ =
     Code <$> (string "`" *> regex "[^`]+" <* string "`") <?> "inline code"
 
 
-parse : Parser Int (List Slide)
+parse : Parser PState (List Slide)
 parse =
     let
         tag =
@@ -394,7 +408,7 @@ parse =
 
 run : String -> Result String (List Slide)
 run script =
-    case Combine.runParser parse 0 script of
+    case Combine.runParser parse init_pstate script of
         Ok ( _, _, es ) ->
             Ok es
 

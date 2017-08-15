@@ -15779,19 +15779,6 @@ var _user$project$Lia_Parser$html_void = _elm_community$parser_combinators$Combi
 				}));
 	});
 var _user$project$Lia_Parser$html = A2(_elm_community$parser_combinators$Combine_ops['<|>'], _user$project$Lia_Parser$html_void, _user$project$Lia_Parser$html_block);
-var _user$project$Lia_Parser$counter = function () {
-	var pp = function (par) {
-		return _elm_community$parser_combinators$Combine$succeed(par);
-	};
-	return A2(
-		_elm_community$parser_combinators$Combine_ops['<*'],
-		_elm_community$parser_combinators$Combine$withState(pp),
-		_elm_community$parser_combinators$Combine$modifyState(
-			F2(
-				function (x, y) {
-					return x + y;
-				})(1)));
-}();
 var _user$project$Lia_Parser$comments = _elm_community$parser_combinators$Combine$skip(
 	_elm_community$parser_combinators$Combine$many(
 		A2(
@@ -16076,10 +16063,26 @@ var _user$project$Lia_Parser$multiple_choice = function () {
 					}
 				})));
 }();
-var _user$project$Lia_Parser$quiz = A2(
-	_elm_community$parser_combinators$Combine_ops['<*>'],
-	A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Type$Quiz, _user$project$Lia_Parser$multiple_choice),
-	_user$project$Lia_Parser$counter);
+var _user$project$Lia_Parser$quiz = function () {
+	var counter = function () {
+		var increment_counter = function (c) {
+			return _elm_lang$core$Native_Utils.update(
+				c,
+				{quiz: c.quiz + 1});
+		};
+		var pp = function (par) {
+			return _elm_community$parser_combinators$Combine$succeed(par.quiz);
+		};
+		return A2(
+			_elm_community$parser_combinators$Combine_ops['<*'],
+			_elm_community$parser_combinators$Combine$withState(pp),
+			_elm_community$parser_combinators$Combine$modifyState(increment_counter));
+	}();
+	return A2(
+		_elm_community$parser_combinators$Combine_ops['<*>'],
+		A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Type$Quiz, _user$project$Lia_Parser$multiple_choice),
+		counter);
+}();
 var _user$project$Lia_Parser$paragraph = A2(
 	_elm_community$parser_combinators$Combine_ops['<$>'],
 	function (l) {
@@ -16184,8 +16187,16 @@ var _user$project$Lia_Parser$parse = function () {
 					title),
 				body)));
 }();
+var _user$project$Lia_Parser$PState = F2(
+	function (a, b) {
+		return {quiz: a, section: b};
+	});
+var _user$project$Lia_Parser$init_pstate = A2(
+	_user$project$Lia_Parser$PState,
+	0,
+	{ctor: '[]'});
 var _user$project$Lia_Parser$run = function (script) {
-	var _p19 = A3(_elm_community$parser_combinators$Combine$runParser, _user$project$Lia_Parser$parse, 0, script);
+	var _p19 = A3(_elm_community$parser_combinators$Combine$runParser, _user$project$Lia_Parser$parse, _user$project$Lia_Parser$init_pstate, script);
 	if (_p19.ctor === 'Ok') {
 		return _elm_lang$core$Result$Ok(_p19._0._2);
 	} else {
