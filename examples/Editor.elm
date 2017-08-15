@@ -268,6 +268,14 @@ def sqrt(val):
 
 ## Quize
 
+### Single-Choice
+
+Die zwei ist die einzig richtige Antwort
+
+( ) 1
+(X) 2
+( ) Oder 3
+
 ### Multiple-Choice
 
 Zwei von Vier?

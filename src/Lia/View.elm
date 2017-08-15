@@ -149,45 +149,74 @@ view_block model block =
         CodeBlock language code ->
             Html.pre [] [ Html.code [] [ Lia.Utils.highlight language code ] ]
 
-        Quiz question number ->
-            Html.div [] [ view_quiz model question number ]
+        Quiz quiz idx ->
+            Html.div [] [ view_quiz model quiz idx ]
 
 
 view_quiz : Model -> Quiz -> Int -> Html Msg
-view_quiz model question number =
-    case question of
-        MultipleChoice questions ->
-            questions
-                |> List.indexedMap (,)
-                |> List.map
-                    (\( i, ( _, q ) ) ->
-                        Html.p []
-                            [ Html.input
-                                [ Attr.type_ "checkbox"
-                                , Attr.checked (Lia.Helper.question_state number i model.quiz)
-                                , onClick (CheckBox number i)
-                                ]
-                                []
-                            , Html.span [] (List.map view_inline q)
-                            ]
-                    )
-                |> (\l ->
-                        l
-                            ++ [ Html.button
-                                    (case Lia.Helper.quiz_state number model.quiz of
-                                        Just b ->
-                                            if b then
-                                                [ Attr.style [ ( "color", "green" ) ] ]
-                                            else
-                                                [ Attr.style [ ( "color", "red" ) ], onClick (Check number) ]
+view_quiz model quiz idx =
+    case quiz of
+        SingleChoice rslt questions ->
+            view_quiz_single_choice model rslt questions idx
 
-                                        Nothing ->
-                                            [ onClick (Check number) ]
-                                    )
-                                    [ Html.text "Check" ]
-                               ]
-                   )
-                |> Html.div []
+        MultipleChoice questions ->
+            view_quiz_multiple_choice model questions idx
+
+
+quiz_check_button : Model -> Int -> Html Msg
+quiz_check_button model idx =
+    Html.button
+        (case Lia.Helper.quiz_state idx model.quiz of
+            Just b ->
+                if b then
+                    [ Attr.style [ ( "color", "green" ) ] ]
+                else
+                    [ Attr.style [ ( "color", "red" ) ], onClick (Check idx) ]
+
+            Nothing ->
+                [ onClick (Check idx) ]
+        )
+        [ Html.text "Check" ]
+
+
+view_quiz_single_choice : Model -> Int -> List (List Inline) -> Int -> Html Msg
+view_quiz_single_choice model rslt questions idx =
+    questions
+        |> List.indexedMap (,)
+        |> List.map
+            (\( i, elements ) ->
+                Html.p []
+                    [ Html.input
+                        [ Attr.type_ "radio"
+                        , Attr.checked (Lia.Helper.question_state idx i model.quiz)
+                        , onClick (RadioButton idx i)
+                        ]
+                        []
+                    , Html.span [] (List.map view_inline elements)
+                    ]
+            )
+        |> (\l -> List.append l [ quiz_check_button model idx ])
+        |> Html.div []
+
+
+view_quiz_multiple_choice : Model -> List ( Bool, List Inline ) -> Int -> Html Msg
+view_quiz_multiple_choice model questions idx =
+    questions
+        |> List.indexedMap (,)
+        |> List.map
+            (\( i, ( _, q ) ) ->
+                Html.p []
+                    [ Html.input
+                        [ Attr.type_ "checkbox"
+                        , Attr.checked (Lia.Helper.question_state idx i model.quiz)
+                        , onClick (CheckBox idx i)
+                        ]
+                        []
+                    , Html.span [] (List.map view_inline q)
+                    ]
+            )
+        |> (\l -> List.append l [ quiz_check_button model idx ])
+        |> Html.div []
 
 
 view_table : List (List Inline) -> Array String -> List (List (List Inline)) -> Html Msg

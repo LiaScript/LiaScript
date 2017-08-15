@@ -16,6 +16,9 @@ update msg model =
         CheckBox quiz_id question_id ->
             ( { model | quiz = flip_checkbox quiz_id question_id model.quiz }, Cmd.none )
 
+        RadioButton quiz_id answer ->
+            ( { model | quiz = flip_checkbox quiz_id answer model.quiz }, Cmd.none )
+
         Check quiz_id ->
             ( { model | quiz = check_answer quiz_id model.quiz }, Cmd.none )
 
@@ -32,23 +35,24 @@ update msg model =
 flip_checkbox : Int -> Int -> QuizMatrix -> QuizMatrix
 flip_checkbox quiz_id question_id matrix =
     case Array.get quiz_id matrix of
-        Just ( state, quiz ) ->
-            case state of
-                Just True ->
+        Just ( Just True, _ ) ->
+            matrix
+
+        Just ( state, Single c a ) ->
+            Array.set quiz_id ( state, Single question_id a ) matrix
+
+        Just ( state, Multi quiz ) ->
+            case Array.get question_id quiz of
+                Just question ->
+                    question
+                        |> (\( c, a ) -> ( not c, a ))
+                        |> (\q -> Array.set question_id q quiz)
+                        |> (\q -> Array.set quiz_id ( state, Multi q ) matrix)
+
+                Nothing ->
                     matrix
 
-                _ ->
-                    case Array.get question_id quiz of
-                        Just question ->
-                            question
-                                |> (\( c, a ) -> ( not c, a ))
-                                |> (\q -> Array.set question_id q quiz)
-                                |> (\q -> Array.set quiz_id ( state, q ) matrix)
-
-                        Nothing ->
-                            matrix
-
-        Nothing ->
+        _ ->
             matrix
 
 
@@ -58,21 +62,23 @@ check_answer quiz_id matrix =
         Just ( Just True, _ ) ->
             matrix
 
-        Just ( state, quiz ) ->
+        Just ( state, Single c a ) ->
+            Array.set quiz_id
+                ( Just (c == a)
+                , Single c a
+                )
+                matrix
+
+        Just ( state, Multi quiz ) ->
             let
                 f ( c, a ) r =
                     r && (c == a)
-
-                answer =
-                    Just (Array.foldr f True quiz)
-
-                a =
-                    Debug.log "anser"
-
-                b =
-                    Debug.log <| toString answer
             in
-            Array.set quiz_id ( answer, quiz ) matrix
+            Array.set quiz_id
+                ( Just (Array.foldr f True quiz)
+                , Multi quiz
+                )
+                matrix
 
         Nothing ->
             matrix

@@ -8,7 +8,7 @@ module Lia.Helper
         )
 
 import Array
-import Lia.Type exposing (Block(..), Quiz(..), QuizMatrix, Slide)
+import Lia.Type exposing (Block(..), Quiz(..), QuizMatrix, QuizState(..), Slide)
 
 
 get_headers : List Slide -> List ( Int, ( String, Int ) )
@@ -46,10 +46,14 @@ quiz_matrix slides =
             let
                 m =
                     case quiz of
+                        SingleChoice a _ ->
+                            Single -1 a
+
                         MultipleChoice q ->
                             q
                                 |> List.map (\( b, _ ) -> ( False, b ))
                                 |> Array.fromList
+                                |> Multi
             in
             ( Nothing, m )
     in
@@ -74,7 +78,10 @@ quiz_state quiz_id matrix =
 question_state : Int -> Int -> QuizMatrix -> Bool
 question_state quiz_id question_id matrix =
     case Array.get quiz_id matrix of
-        Just ( _, questions ) ->
+        Just ( _, Single c a ) ->
+            question_id == c
+
+        Just ( _, Multi questions ) ->
             case Array.get question_id questions of
                 Just ( c, _ ) ->
                     c
@@ -82,5 +89,5 @@ question_state quiz_id question_id matrix =
                 Nothing ->
                     False
 
-        Nothing ->
+        _ ->
             False

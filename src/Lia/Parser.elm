@@ -57,19 +57,47 @@ quiz =
             in
             withState pp <* modifyState increment_counter
     in
-    Quiz <$> multiple_choice <*> counter
+    Quiz <$> (single_choice <|> multiple_choice) <*> counter
+
+
+single_choice : Parser s Quiz
+single_choice =
+    let
+        get_result list =
+            list
+                |> List.indexedMap (,)
+                |> List.filter (\( _, ( rslt, _ ) ) -> rslt == True)
+                |> (\l ->
+                        case List.head l of
+                            Just ( i, _ ) ->
+                                i
+
+                            Nothing ->
+                                -1
+                   )
+    in
+    many (checked False (string "( )"))
+        |> map (\a b -> List.append a [ b ])
+        |> andMap (checked True (string "(X)"))
+        |> map (++)
+        |> andMap (many (checked False (string "( )")))
+        |> map (\q -> SingleChoice (get_result q) (List.map (\( _, qq ) -> qq) q))
+
+
+checked : Bool -> Parser s res -> Parser s ( Bool, List Inline )
+checked b p =
+    (\l -> ( b, l )) <$> (p *> line <* newline)
 
 
 multiple_choice : Parser s Quiz
 multiple_choice =
-    let
-        unchecked =
-            (\l -> ( False, l )) <$> (string "[ ]" *> line <* newline)
-
-        checked =
-            (\l -> ( True, l )) <$> (string "[X]" *> line <* newline)
-    in
-    MultipleChoice <$> many1 (choice [ checked, unchecked ])
+    MultipleChoice
+        <$> many1
+                (choice
+                    [ checked True (string "[X]")
+                    , checked False (string "[ ]")
+                    ]
+                )
 
 
 html : Parser s Inline

@@ -6,6 +6,7 @@ module Lia.Type
         , Msg(..)
         , Quiz(..)
         , QuizMatrix
+        , QuizState(..)
         , Reference(..)
         , Slide
         )
@@ -16,13 +17,19 @@ import Array exposing (Array)
 type Msg
     = Load Int
     | CheckBox Int Int
+    | RadioButton Int Int
     | Check Int
     | Speak String
     | TTS (Result String Never)
 
 
 type alias QuizMatrix =
-    Array ( Maybe Bool, Array ( Bool, Bool ) )
+    Array ( Maybe Bool, QuizState )
+
+
+type QuizState
+    = Single Int Int
+    | Multi (Array ( Bool, Bool ))
 
 
 type Mode
@@ -47,9 +54,8 @@ type Block
 
 
 type Quiz
-    = --OneChoice ( Int, List (List Inline) )
-      --|
-      MultipleChoice (List ( Bool, List Inline ))
+    = SingleChoice Int (List (List Inline))
+    | MultipleChoice (List ( Bool, List Inline ))
 
 
 
