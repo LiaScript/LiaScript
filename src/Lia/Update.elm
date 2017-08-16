@@ -1,6 +1,7 @@
 module Lia.Update exposing (update)
 
 import Array
+import Lia.Helper exposing (get_slide_effects)
 import Lia.Model exposing (..)
 import Lia.Type exposing (..)
 import Tts.Tts exposing (speak)
@@ -11,7 +12,24 @@ update msg model =
     case msg of
         Load int ->
             --( { model | slide = int }, Cmd.none )
-            update (Speak "Starting to load next slide") { model | slide = int, visible = 0 }
+            update (Speak "Starting to load next slide")
+                { model
+                    | slide = int
+                    , visible = 0
+                    , effects = get_slide_effects int model.lia
+                }
+
+        PrevSlide ->
+            if model.visible == 0 then
+                update (Load (model.slide - 1)) model
+            else
+                ( { model | visible = model.visible - 1 }, Cmd.none )
+
+        NextSlide ->
+            if model.visible == model.effects then
+                update (Load (model.slide + 1)) model
+            else
+                ( { model | visible = model.visible + 1 }, Cmd.none )
 
         CheckBox quiz_id question_id ->
             ( { model | quiz = flip_checkbox quiz_id question_id model.quiz }, Cmd.none )

@@ -11,4 +11,5 @@ type alias Model =
     , slide : Int
     , mode : Mode
     , visible : Int
+    , effects : Int
     }

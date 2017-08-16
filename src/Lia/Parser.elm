@@ -10,12 +10,17 @@ type alias PState =
     { quiz : Int
     , section : List Int
     , indentation : List Int
+    , effects : Int
     }
 
 
 init_pstate : PState
 init_pstate =
-    PState 0 [] [ 0 ]
+    { quiz = 0
+    , section = []
+    , indentation = [ 0 ]
+    , effects = 0
+    }
 
 
 comments : Parser s ()
@@ -46,11 +51,11 @@ blocks =
 
 eblock : Parser PState Block
 eblock =
-    EBlock <$> (spaces *> braces int <* regex "[\\n]?") <*> blocks
-
-
-
---<*> blocks
+    let
+        increment_counter c =
+            { c | effects = c.effects + 1 }
+    in
+    EBlock <$> (spaces *> braces int <* regex "( *)[\\n]?") <*> blocks <* modifyState increment_counter
 
 
 quiz : Parser PState Block
@@ -444,8 +449,18 @@ parse =
 
         body =
             many blocks
+
+        effect_counter =
+            let
+                pp par =
+                    succeed par.effects
+
+                reset_effect c =
+                    { c | effects = 0 }
+            in
+            withState pp <* modifyState reset_effect
     in
-    comments *> many1 (Slide <$> tag <*> title <*> body)
+    comments *> many1 (Slide <$> tag <*> title <*> body <*> effect_counter)
 
 
 run : String -> Result String (List Slide)

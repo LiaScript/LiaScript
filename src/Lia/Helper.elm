@@ -2,6 +2,7 @@ module Lia.Helper
     exposing
         ( get_headers
         , get_slide
+        , get_slide_effects
         , question_state
         , question_state_text
         , quiz_matrix
@@ -30,6 +31,16 @@ get_slide i slides =
 
         ( n, _ :: xs ) ->
             get_slide (n - 1) xs
+
+
+get_slide_effects : Int -> List Slide -> Int
+get_slide_effects i slides =
+    case get_slide i slides of
+        Just slide ->
+            slide.effects
+
+        Nothing ->
+            0
 
 
 quiz_matrix : List Slide -> QuizMatrix

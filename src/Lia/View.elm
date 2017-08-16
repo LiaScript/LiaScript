@@ -25,10 +25,14 @@ view_plain : Model -> Html Msg
 view_plain model =
     let
         f =
-            view_slide model
+            view_slide { model | visible = 999 }
     in
     Html.div
-        [ Attr.style [ ( "width", "100%" ) ]
+        [ Attr.style
+            [ ( "width", "100%" )
+            , ( "overflow", "auto" )
+            , ( "height", "100%" )
+            ]
         ]
         (List.map f model.lia)
 
@@ -36,10 +40,10 @@ view_plain model =
 view_slides : Model -> Html Msg
 view_slides model =
     let
-        loadButton str i =
+        loadButton str msg =
             Html.button
-                [ onClick (Load (model.slide + i))
-                , Attr.style [ ( "width", "49%" ) ]
+                [ onClick msg
+                , Attr.style [ ( "width", "50%" ) ]
                 ]
                 [ Html.text str ]
     in
@@ -59,8 +63,8 @@ view_slides model =
                 ]
             ]
             [ Html.div []
-                [ loadButton "<<" -1
-                , loadButton ">>" 1
+                [ loadButton "<<" PrevSlide
+                , loadButton ">>" NextSlide
                 ]
             , Html.div
                 [ Attr.style
@@ -145,6 +149,31 @@ view_body model body =
     List.map f body
 
 
+draw_circle : Int -> Html Msg
+draw_circle int =
+    Html.div
+        [ Attr.style
+            [ ( "display", "flex" )
+            , ( "justify-content", "center" )
+            ]
+        ]
+        [ Html.div
+            [ Attr.style
+                [ ( "border-radius", "50%" )
+                , ( "width", "15px" )
+                , ( "height", "14px" )
+                , ( "padding", "3px" )
+                , ( "background", "#000" )
+                , ( "border", "2px solid #666" )
+                , ( "color", "#fff" )
+                , ( "text-align", "center" )
+                , ( "font", "12px Arial Bold, sans-serif" )
+                ]
+            ]
+            [ Html.text (toString int) ]
+        ]
+
+
 view_block : Model -> Block -> Html Msg
 view_block model block =
     case block of
@@ -169,9 +198,11 @@ view_block model block =
         EBlock idx sub_block ->
             Html.div
                 [ Attr.id (toString idx)
-                , Attr.hidden True
+                , Attr.hidden (idx > model.visible)
                 ]
-                [ view_block model sub_block ]
+                [ draw_circle idx
+                , view_block model sub_block
+                ]
 
 
 

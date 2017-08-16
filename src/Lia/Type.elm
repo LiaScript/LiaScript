@@ -16,6 +16,8 @@ import Array exposing (Array)
 
 type Msg
     = Load Int
+    | PrevSlide
+    | NextSlide
     | CheckBox Int Int
     | RadioButton Int Int
     | Input Int String
@@ -43,6 +45,7 @@ type alias Slide =
     { indentation : Int
     , title : String
     , body : List Block
+    , effects : Int
     }
 
 
