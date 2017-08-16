@@ -39,7 +39,7 @@ view_slides model =
         loadButton str i =
             Html.button
                 [ onClick (Load (model.slide + i))
-                , Attr.style [ ( "width", "45%" ) ]
+                , Attr.style [ ( "width", "49%" ) ]
                 ]
                 [ Html.text str ]
     in
@@ -51,8 +51,6 @@ view_slides model =
                 ]
             ]
             [ view_contents model
-            , loadButton "<<" -1
-            , loadButton ">>" 1
             ]
         , Html.div
             [ Attr.style
@@ -60,12 +58,23 @@ view_slides model =
                 , ( "float", "right" )
                 ]
             ]
-            [ case get_slide model.slide model.lia of
-                Just slide ->
-                    lazy2 view_slide model slide
+            [ Html.div []
+                [ loadButton "<<" -1
+                , loadButton ">>" 1
+                ]
+            , Html.div
+                [ Attr.style
+                    [ ( "overflow", "auto" )
+                    , ( "height", "100%" )
+                    ]
+                ]
+                [ case get_slide model.slide model.lia of
+                    Just slide ->
+                        lazy2 view_slide model slide
 
-                Nothing ->
-                    Html.text ""
+                    Nothing ->
+                        Html.text ""
+                ]
             ]
         ]
 
