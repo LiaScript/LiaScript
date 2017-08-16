@@ -11,7 +11,7 @@ update msg model =
     case msg of
         Load int ->
             --( { model | slide = int }, Cmd.none )
-            update (Speak "Starting to load next slide") { model | slide = int }
+            update (Speak "Starting to load next slide") { model | slide = int, visible = 0 }
 
         CheckBox quiz_id question_id ->
             ( { model | quiz = flip_checkbox quiz_id question_id model.quiz }, Cmd.none )

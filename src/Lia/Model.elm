@@ -10,4 +10,5 @@ type alias Model =
     , quiz : QuizMatrix
     , slide : Int
     , mode : Mode
+    , visible : Int
     }

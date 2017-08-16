@@ -53,6 +53,7 @@ type Block
     | Paragraph (List Inline)
     | Table (List (List Inline)) (List String) (List (List (List Inline)))
     | Quiz Quiz Int
+    | EBlock Int Block
 
 
 type Quiz

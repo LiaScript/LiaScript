@@ -35,6 +35,14 @@ view_plain model =
 
 view_slides : Model -> Html Msg
 view_slides model =
+    let
+        loadButton str i =
+            Html.button
+                [ onClick (Load (model.slide + i))
+                , Attr.style [ ( "width", "45%" ) ]
+                ]
+                [ Html.text str ]
+    in
     Html.div []
         [ Html.div
             [ Attr.style
@@ -42,40 +50,10 @@ view_slides model =
                 , ( "float", "left" )
                 ]
             ]
-            ((model.lia
-                |> get_headers
-                |> List.map
-                    (\( n, ( h, i ) ) ->
-                        Html.div []
-                            [ Html.a
-                                [ onClick (Load n)
-                                , h
-                                    |> String.split " "
-                                    |> String.join "_"
-                                    |> String.append "#"
-                                    |> Attr.href
-                                , Attr.style
-                                    [ ( "padding-left"
-                                      , toString ((i - 1) * 20) ++ "px"
-                                      )
-                                    ]
-                                ]
-                                [ Html.text h ]
-                            ]
-                    )
-             )
-                ++ [ Html.button
-                        [ onClick (Load (model.slide - 1))
-                        , Attr.style [ ( "width", "100px" ) ]
-                        ]
-                        [ Html.text "<<" ]
-                   , Html.button
-                        [ onClick (Load (model.slide + 1))
-                        , Attr.style [ ( "width", "40%" ) ]
-                        ]
-                        [ Html.text ">>" ]
-                   ]
-            )
+            [ view_contents model
+            , loadButton "<<" -1
+            , loadButton ">>" 1
+            ]
         , Html.div
             [ Attr.style
                 [ ( "width", "calc(100% - 200px)" )
@@ -90,6 +68,33 @@ view_slides model =
                     Html.text ""
             ]
         ]
+
+
+view_contents : Model -> Html Msg
+view_contents model =
+    let
+        f ( n, ( h, i ) ) =
+            Html.div []
+                [ Html.a
+                    [ onClick (Load n)
+                    , h
+                        |> String.split " "
+                        |> String.join "_"
+                        |> String.append "#"
+                        |> Attr.href
+                    , Attr.style
+                        [ ( "padding-left"
+                          , toString ((i - 1) * 20) ++ "px"
+                          )
+                        ]
+                    ]
+                    [ Html.text h ]
+                ]
+    in
+    model.lia
+        |> get_headers
+        |> List.map f
+        |> Html.div []
 
 
 view_slide : Model -> Slide -> Html Msg
@@ -151,6 +156,17 @@ view_block model block =
 
         Quiz quiz idx ->
             Html.div [] [ view_quiz model quiz idx ]
+
+        EBlock idx sub_block ->
+            Html.div
+                [ Attr.id (toString idx)
+                , Attr.hidden True
+                ]
+                [ view_block model sub_block ]
+
+
+
+--view_block model sub_block
 
 
 view_quiz : Model -> Quiz -> Int -> Html Msg

@@ -1,9 +1,8 @@
 module Lia.Parser exposing (run)
 
---import Combine.Num
-
 import Combine exposing (..)
 import Combine.Char exposing (..)
+import Combine.Num exposing (int)
 import Lia.Type exposing (..)
 
 
@@ -36,12 +35,22 @@ blocks =
                         , quote_block
                         , horizontal_line
                         , quiz
+                        , eblock
 
                         --  , list
                         , paragraph
                         ]
             in
             comments *> b <* newlines
+
+
+eblock : Parser PState Block
+eblock =
+    EBlock <$> (spaces *> braces int <* regex "[\\n]?") <*> blocks
+
+
+
+--<*> blocks
 
 
 quiz : Parser PState Block
