@@ -171,6 +171,7 @@ view_quiz_text_input model idx =
     Html.p []
         [ Html.input
             [ Attr.type_ "input"
+            , Attr.value <| Lia.Helper.question_state_text idx model.quiz
             , onInput (Input idx)
             ]
             []

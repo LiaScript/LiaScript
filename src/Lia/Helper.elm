@@ -3,6 +3,7 @@ module Lia.Helper
         ( get_headers
         , get_slide
         , question_state
+        , question_state_text
         , quiz_matrix
         , quiz_state
         )
@@ -78,11 +79,21 @@ quiz_state quiz_id matrix =
             Nothing
 
 
+question_state_text : Int -> QuizMatrix -> String
+question_state_text quiz_id matrix =
+    case Array.get quiz_id matrix of
+        Just ( _, Text input answer ) ->
+            input
+
+        _ ->
+            ""
+
+
 question_state : Int -> Int -> QuizMatrix -> Bool
 question_state quiz_id question_id matrix =
     case Array.get quiz_id matrix of
-        Just ( _, Single c a ) ->
-            question_id == c
+        Just ( _, Single input answer ) ->
+            question_id == input
 
         Just ( _, Multi questions ) ->
             case Array.get question_id questions of

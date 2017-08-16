@@ -216,8 +216,6 @@ These can be used to comment single elements, lines, and multi-lines...
 
 # Main Markdown
 
-[[3.15149]]
-
 Paragraphs are separated by newlines ...
 
 XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
@@ -286,6 +284,14 @@ Zwei von Vier?
 [X] Ja
 [X] auch Ja
 [ ] auf keinen Fall
+
+
+### Texteingaben
+
+Wie sieht Pi aus, bis auf 5 Stellen nach dem Komma?
+
+[[3.14159]]
+
 
 ## References
 
