@@ -12,4 +12,5 @@ type alias Model =
     , mode : Mode
     , visible : Int
     , effects : Int
+    , contents : Bool
     }

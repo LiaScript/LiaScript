@@ -11139,6 +11139,7 @@ var _user$project$Lia_Type$TTS = function (a) {
 var _user$project$Lia_Type$Speak = function (a) {
 	return {ctor: 'Speak', _0: a};
 };
+var _user$project$Lia_Type$ContentsTable = {ctor: 'ContentsTable'};
 var _user$project$Lia_Type$Check = function (a) {
 	return {ctor: 'Check', _0: a};
 };
@@ -11405,9 +11406,9 @@ var _user$project$Lia_Helper$get_headers = function (slides) {
 			slides));
 };
 
-var _user$project$Lia_Model$Model = F8(
-	function (a, b, c, d, e, f, g, h) {
-		return {script: a, error: b, lia: c, quiz: d, slide: e, mode: f, visible: g, effects: h};
+var _user$project$Lia_Model$Model = F9(
+	function (a, b, c, d, e, f, g, h, i) {
+		return {script: a, error: b, lia: c, quiz: d, slide: e, mode: f, visible: g, effects: h, contents: i};
 	});
 
 var _user$project$Lia_Parser$formatError = F2(
@@ -11902,7 +11903,7 @@ var _user$project$Lia_Parser$html_block = function () {
 					_elm_community$parser_combinators$Combine_ops['*>'],
 					_elm_community$parser_combinators$Combine$whitespace,
 					_elm_community$parser_combinators$Combine$string('<')),
-				_elm_community$parser_combinators$Combine$regex('[a-z]+')),
+				_elm_community$parser_combinators$Combine$regex('[a-zA-Z]+')),
 			p));
 }();
 var _user$project$Lia_Parser$html_void = _elm_community$parser_combinators$Combine$lazy(
@@ -11914,52 +11915,52 @@ var _user$project$Lia_Parser$html_void = _elm_community$parser_combinators$Combi
 			_elm_community$parser_combinators$Combine$choice(
 				{
 					ctor: '::',
-					_0: _elm_community$parser_combinators$Combine$regex('<area[^>]*>'),
+					_0: _elm_community$parser_combinators$Combine$regex('<area[^>\\n]*>'),
 					_1: {
 						ctor: '::',
-						_0: _elm_community$parser_combinators$Combine$regex('<base[^>]*>'),
+						_0: _elm_community$parser_combinators$Combine$regex('<base[^>\\n]*>'),
 						_1: {
 							ctor: '::',
-							_0: _elm_community$parser_combinators$Combine$regex('<br[^>]*>'),
+							_0: _elm_community$parser_combinators$Combine$regex('<br[^>\\n]*>'),
 							_1: {
 								ctor: '::',
-								_0: _elm_community$parser_combinators$Combine$regex('<col[^>]*>'),
+								_0: _elm_community$parser_combinators$Combine$regex('<col[^>\\n]*>'),
 								_1: {
 									ctor: '::',
-									_0: _elm_community$parser_combinators$Combine$regex('<embed[^>]*>'),
+									_0: _elm_community$parser_combinators$Combine$regex('<embed[^>\\n]*>'),
 									_1: {
 										ctor: '::',
-										_0: _elm_community$parser_combinators$Combine$regex('<hr[^>]*>'),
+										_0: _elm_community$parser_combinators$Combine$regex('<hr[^>\\n]*>'),
 										_1: {
 											ctor: '::',
-											_0: _elm_community$parser_combinators$Combine$regex('<img[^>]*>'),
+											_0: _elm_community$parser_combinators$Combine$regex('<img[^>\\n]*>'),
 											_1: {
 												ctor: '::',
-												_0: _elm_community$parser_combinators$Combine$regex('<input[^>]*>'),
+												_0: _elm_community$parser_combinators$Combine$regex('<input[^>\\n]*>'),
 												_1: {
 													ctor: '::',
-													_0: _elm_community$parser_combinators$Combine$regex('<keygen[^>]*>'),
+													_0: _elm_community$parser_combinators$Combine$regex('<keygen[^>\\n]*>'),
 													_1: {
 														ctor: '::',
-														_0: _elm_community$parser_combinators$Combine$regex('<link[^>]*>'),
+														_0: _elm_community$parser_combinators$Combine$regex('<link[^>\\n]*>'),
 														_1: {
 															ctor: '::',
-															_0: _elm_community$parser_combinators$Combine$regex('<menuitem[^>]*>'),
+															_0: _elm_community$parser_combinators$Combine$regex('<menuitem[^>\\n]*>'),
 															_1: {
 																ctor: '::',
-																_0: _elm_community$parser_combinators$Combine$regex('<meta[^>]*>'),
+																_0: _elm_community$parser_combinators$Combine$regex('<meta[^>\\n]*>'),
 																_1: {
 																	ctor: '::',
-																	_0: _elm_community$parser_combinators$Combine$regex('<param[^>]*>'),
+																	_0: _elm_community$parser_combinators$Combine$regex('<param[^>\\n]*>'),
 																	_1: {
 																		ctor: '::',
-																		_0: _elm_community$parser_combinators$Combine$regex('<source[^>]*>'),
+																		_0: _elm_community$parser_combinators$Combine$regex('<source[^>\\n]*>'),
 																		_1: {
 																			ctor: '::',
-																			_0: _elm_community$parser_combinators$Combine$regex('<track[^>]*>'),
+																			_0: _elm_community$parser_combinators$Combine$regex('<track[^>\\n]*>'),
 																			_1: {
 																				ctor: '::',
-																				_0: _elm_community$parser_combinators$Combine$regex('<wbr[^>]*>'),
+																				_0: _elm_community$parser_combinators$Combine$regex('<wbr[^>\\n]*>'),
 																				_1: {ctor: '[]'}
 																			}
 																		}
@@ -13007,6 +13008,14 @@ var _user$project$Lia_Update$update = F2(
 							}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
+				case 'ContentsTable':
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{contents: !model.contents}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
 				case 'Speak':
 					return {
 						ctor: '_Tuple2',
@@ -13841,7 +13850,7 @@ var _user$project$Lia_View$view_slides = function (model) {
 						_0: _elm_lang$html$Html_Attributes$style(
 							{
 								ctor: '::',
-								_0: {ctor: '_Tuple2', _0: 'width', _1: '50%'},
+								_0: {ctor: '_Tuple2', _0: 'width', _1: 'calc(50% - 20px)'},
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -13853,7 +13862,81 @@ var _user$project$Lia_View$view_slides = function (model) {
 					_1: {ctor: '[]'}
 				});
 		});
-	return A2(
+	var content = A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$div,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$button,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Events$onClick(_user$project$Lia_Type$ContentsTable),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$style(
+									{
+										ctor: '::',
+										_0: {ctor: '_Tuple2', _0: 'width', _1: '40px'},
+										_1: {ctor: '[]'}
+									}),
+								_1: {ctor: '[]'}
+							}
+						},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text('T'),
+							_1: {ctor: '[]'}
+						}),
+					_1: {
+						ctor: '::',
+						_0: A2(loadButton, '<<', _user$project$Lia_Type$PrevSlide),
+						_1: {
+							ctor: '::',
+							_0: A2(loadButton, '>>', _user$project$Lia_Type$NextSlide),
+							_1: {ctor: '[]'}
+						}
+					}
+				}),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$div,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$style(
+							{
+								ctor: '::',
+								_0: {ctor: '_Tuple2', _0: 'overflow', _1: 'auto'},
+								_1: {
+									ctor: '::',
+									_0: {ctor: '_Tuple2', _0: 'height', _1: '100%'},
+									_1: {ctor: '[]'}
+								}
+							}),
+						_1: {ctor: '[]'}
+					},
+					{
+						ctor: '::',
+						_0: function () {
+							var _p20 = A2(_user$project$Lia_Helper$get_slide, model.slide, model.lia);
+							if (_p20.ctor === 'Just') {
+								return A3(_elm_lang$html$Html_Lazy$lazy2, _user$project$Lia_View$view_slide, model, _p20._0);
+							} else {
+								return _elm_lang$html$Html$text('');
+							}
+						}(),
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			}
+		});
+	return model.contents ? A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
 		{
@@ -13899,54 +13982,12 @@ var _user$project$Lia_View$view_slides = function (model) {
 					},
 					{
 						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$div,
-							{ctor: '[]'},
-							{
-								ctor: '::',
-								_0: A2(loadButton, '<<', _user$project$Lia_Type$PrevSlide),
-								_1: {
-									ctor: '::',
-									_0: A2(loadButton, '>>', _user$project$Lia_Type$NextSlide),
-									_1: {ctor: '[]'}
-								}
-							}),
-						_1: {
-							ctor: '::',
-							_0: A2(
-								_elm_lang$html$Html$div,
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$style(
-										{
-											ctor: '::',
-											_0: {ctor: '_Tuple2', _0: 'overflow', _1: 'auto'},
-											_1: {
-												ctor: '::',
-												_0: {ctor: '_Tuple2', _0: 'height', _1: '100%'},
-												_1: {ctor: '[]'}
-											}
-										}),
-									_1: {ctor: '[]'}
-								},
-								{
-									ctor: '::',
-									_0: function () {
-										var _p20 = A2(_user$project$Lia_Helper$get_slide, model.slide, model.lia);
-										if (_p20.ctor === 'Just') {
-											return A3(_elm_lang$html$Html_Lazy$lazy2, _user$project$Lia_View$view_slide, model, _p20._0);
-										} else {
-											return _elm_lang$html$Html$text('');
-										}
-									}(),
-									_1: {ctor: '[]'}
-								}),
-							_1: {ctor: '[]'}
-						}
+						_0: content,
+						_1: {ctor: '[]'}
 					}),
 				_1: {ctor: '[]'}
 			}
-		});
+		}) : content;
 };
 var _user$project$Lia_View$view_plain = function (model) {
 	var f = _user$project$Lia_View$view_slide(
@@ -14022,7 +14063,7 @@ var _user$project$Lia$set_script = F2(
 var _user$project$Lia$init = F2(
 	function (mode, script) {
 		return _user$project$Lia$parse(
-			A8(
+			A9(
 				_user$project$Lia_Model$Model,
 				script,
 				'',
@@ -14031,7 +14072,8 @@ var _user$project$Lia$init = F2(
 				0,
 				mode,
 				0,
-				0));
+				0,
+				true));
 	});
 var _user$project$Lia$init_plain = _user$project$Lia$init(_user$project$Lia_Type$Plain);
 var _user$project$Lia$init_slides = _user$project$Lia$init(_user$project$Lia_Type$Slides);

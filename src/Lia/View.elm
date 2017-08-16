@@ -43,44 +43,57 @@ view_slides model =
         loadButton str msg =
             Html.button
                 [ onClick msg
-                , Attr.style [ ( "width", "50%" ) ]
+                , Attr.style [ ( "width", "calc(50% - 20px)" ) ]
                 ]
                 [ Html.text str ]
+
+        content =
+            Html.div []
+                [ Html.div []
+                    [ Html.button
+                        [ onClick ContentsTable
+                        , Attr.style [ ( "width", "40px" ) ]
+                        ]
+                        [ Html.text "T" ]
+                    , loadButton "<<" PrevSlide
+                    , loadButton ">>" NextSlide
+                    ]
+                , Html.div
+                    [ Attr.style
+                        [ ( "overflow", "auto" )
+                        , ( "height", "100%" )
+                        ]
+                    ]
+                    [ case get_slide model.slide model.lia of
+                        Just slide ->
+                            lazy2 view_slide model slide
+
+                        Nothing ->
+                            Html.text ""
+                    ]
+                ]
     in
-    Html.div []
-        [ Html.div
-            [ Attr.style
-                [ ( "width", "200px" )
-                , ( "float", "left" )
+    if model.contents then
+        Html.div []
+            [ Html.div
+                [ Attr.style
+                    [ ( "width", "200px" )
+                    , ( "float", "left" )
+                    ]
                 ]
-            ]
-            [ view_contents model
-            ]
-        , Html.div
-            [ Attr.style
-                [ ( "width", "calc(100% - 200px)" )
-                , ( "float", "right" )
-                ]
-            ]
-            [ Html.div []
-                [ loadButton "<<" PrevSlide
-                , loadButton ">>" NextSlide
+                [ view_contents model
                 ]
             , Html.div
                 [ Attr.style
-                    [ ( "overflow", "auto" )
-                    , ( "height", "100%" )
+                    [ ( "width", "calc(100% - 200px)" )
+                    , ( "float", "right" )
                     ]
                 ]
-                [ case get_slide model.slide model.lia of
-                    Just slide ->
-                        lazy2 view_slide model slide
-
-                    Nothing ->
-                        Html.text ""
+                [ content
                 ]
             ]
-        ]
+    else
+        content
 
 
 view_contents : Model -> Html Msg

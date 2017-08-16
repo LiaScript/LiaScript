@@ -139,22 +139,22 @@ html_void =
         \() ->
             HTML
                 <$> choice
-                        [ regex "<area[^>]*>"
-                        , regex "<base[^>]*>"
-                        , regex "<br[^>]*>"
-                        , regex "<col[^>]*>"
-                        , regex "<embed[^>]*>"
-                        , regex "<hr[^>]*>"
-                        , regex "<img[^>]*>"
-                        , regex "<input[^>]*>"
-                        , regex "<keygen[^>]*>"
-                        , regex "<link[^>]*>"
-                        , regex "<menuitem[^>]*>"
-                        , regex "<meta[^>]*>"
-                        , regex "<param[^>]*>"
-                        , regex "<source[^>]*>"
-                        , regex "<track[^>]*>"
-                        , regex "<wbr[^>]*>"
+                        [ regex "<area[^>\\n]*>"
+                        , regex "<base[^>\\n]*>"
+                        , regex "<br[^>\\n]*>"
+                        , regex "<col[^>\\n]*>"
+                        , regex "<embed[^>\\n]*>"
+                        , regex "<hr[^>\\n]*>"
+                        , regex "<img[^>\\n]*>"
+                        , regex "<input[^>\\n]*>"
+                        , regex "<keygen[^>\\n]*>"
+                        , regex "<link[^>\\n]*>"
+                        , regex "<menuitem[^>\\n]*>"
+                        , regex "<meta[^>\\n]*>"
+                        , regex "<param[^>\\n]*>"
+                        , regex "<source[^>\\n]*>"
+                        , regex "<track[^>\\n]*>"
+                        , regex "<wbr[^>\\n]*>"
                         ]
 
 
@@ -173,7 +173,7 @@ html_block =
             )
                 <$> manyTill anyChar (string "</" *> string tag <* string ">")
     in
-    HTML <$> (whitespace *> string "<" *> regex "[a-z]+" >>= p)
+    HTML <$> (whitespace *> string "<" *> regex "[a-zA-Z]+" >>= p)
 
 
 

@@ -24,7 +24,7 @@ type alias Mode =
 
 init : Mode -> String -> Model
 init mode script =
-    parse <| Lia.Model.Model script "" [] Array.empty 0 mode 0 0
+    parse <| Lia.Model.Model script "" [] Array.empty 0 mode 0 0 True
 
 
 set_script : Model -> String -> Model

@@ -43,6 +43,9 @@ update msg model =
         Check quiz_id ->
             ( { model | quiz = check_answer quiz_id model.quiz }, Cmd.none )
 
+        ContentsTable ->
+            ( { model | contents = not model.contents }, Cmd.none )
+
         Speak text ->
             ( { model | error = "Speaking" }, speak TTS Nothing "en_US" text )
 
