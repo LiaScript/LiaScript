@@ -151,43 +151,37 @@ view_body model body =
 
 draw_circle : Int -> Html Msg
 draw_circle int =
-    Html.div
+    Html.span
         [ Attr.style
-            [ ( "display", "flex" )
-            , ( "justify-content", "center" )
+            [ ( "border-radius", "50%" )
+            , ( "width", "15px" )
+            , ( "height", "14px" )
+            , ( "padding", "3px" )
+            , ( "display", "inline-block" )
+            , ( "background", "#000" )
+            , ( "border", "2px solid #666" )
+            , ( "color", "#fff" )
+            , ( "text-align", "center" )
+            , ( "font", "12px Arial Bold, sans-serif" )
             ]
         ]
-        [ Html.div
-            [ Attr.style
-                [ ( "border-radius", "50%" )
-                , ( "width", "15px" )
-                , ( "height", "14px" )
-                , ( "padding", "3px" )
-                , ( "background", "#000" )
-                , ( "border", "2px solid #666" )
-                , ( "color", "#fff" )
-                , ( "text-align", "center" )
-                , ( "font", "12px Arial Bold, sans-serif" )
-                ]
-            ]
-            [ Html.text (toString int) ]
-        ]
+        [ Html.text (toString int) ]
 
 
 view_block : Model -> Block -> Html Msg
 view_block model block =
     case block of
         Paragraph elements ->
-            Html.p [] (List.map view_inline elements)
+            Html.p [] (List.map (\e -> view_inline model e) elements)
 
         HorizontalLine ->
             Html.hr [] []
 
         Table header format body ->
-            view_table header (Array.fromList format) body
+            view_table model header (Array.fromList format) body
 
         Quote elements ->
-            Html.blockquote [] (List.map view_inline elements)
+            Html.blockquote [] (List.map (\e -> view_inline model e) elements)
 
         CodeBlock language code ->
             Html.pre [] [ Html.code [] [ Lia.Utils.highlight language code ] ]
@@ -200,7 +194,13 @@ view_block model block =
                 [ Attr.id (toString idx)
                 , Attr.hidden (idx > model.visible)
                 ]
-                (draw_circle idx
+                (Html.div
+                    [ Attr.style
+                        [ ( "display", "flex" )
+                        , ( "justify-content", "center" )
+                        ]
+                    ]
+                    [ draw_circle idx ]
                     :: List.map (\sub -> view_block model sub) sub_blocks
                 )
 
@@ -264,7 +264,7 @@ view_quiz_single_choice model rslt questions idx =
                         , onClick (RadioButton idx i)
                         ]
                         []
-                    , Html.span [] (List.map view_inline elements)
+                    , Html.span [] (List.map (\e -> view_inline model e) elements)
                     ]
             )
         |> (\l -> List.append l [ quiz_check_button model idx ])
@@ -284,15 +284,15 @@ view_quiz_multiple_choice model questions idx =
                         , onClick (CheckBox idx i)
                         ]
                         []
-                    , Html.span [] (List.map view_inline q)
+                    , Html.span [] (List.map (\x -> view_inline model x) q)
                     ]
             )
         |> (\l -> List.append l [ quiz_check_button model idx ])
         |> Html.div []
 
 
-view_table : List (List Inline) -> Array String -> List (List (List Inline)) -> Html Msg
-view_table header format body =
+view_table : Model -> List (List Inline) -> Array String -> List (List (List Inline)) -> Html Msg
+view_table model header format body =
     let
         style_ =
             Attr.style
@@ -301,27 +301,26 @@ view_table header format body =
                 , ( "border-width", "1px" )
                 ]
 
-        view_row =
-            \f row ->
-                row
-                    |> List.indexedMap (,)
-                    |> List.map
-                        (\( i, col ) ->
-                            f
-                                [ style_
-                                , Attr.align
-                                    (case Array.get i format of
-                                        Just a ->
-                                            a
+        view_row model f row =
+            row
+                |> List.indexedMap (,)
+                |> List.map
+                    (\( i, col ) ->
+                        f
+                            [ style_
+                            , Attr.align
+                                (case Array.get i format of
+                                    Just a ->
+                                        a
 
-                                        Nothing ->
-                                            "left"
-                                    )
-                                ]
-                                (col
-                                    |> List.map (\element -> view_inline element)
+                                    Nothing ->
+                                        "left"
                                 )
-                        )
+                            ]
+                            (col
+                                |> List.map (\element -> view_inline model element)
+                            )
+                    )
     in
     Html.table
         [ Attr.attribute "cellspacing" "0"
@@ -329,18 +328,18 @@ view_table header format body =
         , style_
         ]
         (Html.thead []
-            (view_row Html.th header)
+            (view_row model Html.th header)
             :: List.map
                 (\r ->
                     Html.tr []
-                        (view_row Html.td r)
+                        (view_row model Html.td r)
                 )
                 body
         )
 
 
-view_inline : Inline -> Html Msg
-view_inline element =
+view_inline : Model -> Inline -> Html Msg
+view_inline model element =
     case element of
         Code e ->
             Html.code [] [ Html.text e ]
@@ -349,16 +348,16 @@ view_inline element =
             Html.text e
 
         Bold e ->
-            Html.b [] [ view_inline e ]
+            Html.b [] [ view_inline model e ]
 
         Italic e ->
-            Html.em [] [ view_inline e ]
+            Html.em [] [ view_inline model e ]
 
         Underline e ->
-            Html.u [] [ view_inline e ]
+            Html.u [] [ view_inline model e ]
 
         Superscript e ->
-            Html.sup [] [ view_inline e ]
+            Html.sup [] [ view_inline model e ]
 
         Ref e ->
             view_reference e
@@ -371,6 +370,15 @@ view_inline element =
 
         HTML e ->
             Lia.Utils.stringToHtml e
+
+        EInline idx elements ->
+            Html.span
+                [ Attr.id (toString idx)
+                , Attr.hidden (idx > model.visible)
+                ]
+                (draw_circle idx
+                    :: List.map (\e -> view_inline model e) elements
+                )
 
 
 view_reference : Reference -> Html Msg

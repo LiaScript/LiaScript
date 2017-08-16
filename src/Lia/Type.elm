@@ -80,6 +80,7 @@ type Inline
     | Formula Bool String
     | Ref Reference
     | HTML String
+    | EInline Int (List Inline)
 
 
 type Reference

@@ -23,7 +23,7 @@ init_pstate =
     }
 
 
-comments : Parser s ()
+comments : Parser PState ()
 comments =
     skip (many (string "{-" *> manyTill anyChar (string "-}")))
 
@@ -53,10 +53,10 @@ eblock : Parser PState Block
 eblock =
     let
         number =
-            spaces *> braces int <* regex "( *)[\\n]?"
+            spaces *> braces int <* regex "( *)[\\n]"
 
         multi_block =
-            spaces *> string "{{" *> manyTill blocks (string "}}")
+            spaces *> string "{{" *> manyTill blocks (string "}}") <* newline
 
         single_block =
             List.singleton <$> blocks
@@ -83,12 +83,12 @@ quiz =
     Quiz <$> choice [ quiz_SingleChoice, quiz_MultipleChoice, quiz_TextInput ] <*> counter
 
 
-quiz_TextInput : Parser s Quiz
+quiz_TextInput : Parser PState Quiz
 quiz_TextInput =
     (\c -> TextInput <| String.fromList c) <$> (string "[[" *> manyTill anyChar (string "]]"))
 
 
-quiz_SingleChoice : Parser s Quiz
+quiz_SingleChoice : Parser PState Quiz
 quiz_SingleChoice =
     let
         get_result list =
@@ -112,12 +112,12 @@ quiz_SingleChoice =
         |> map (\q -> SingleChoice (get_result q) (List.map (\( _, qq ) -> qq) q))
 
 
-checked : Bool -> Parser s res -> Parser s ( Bool, List Inline )
+checked : Bool -> Parser PState res -> Parser PState ( Bool, List Inline )
 checked b p =
     (\l -> ( b, l )) <$> (p *> line <* newline)
 
 
-quiz_MultipleChoice : Parser s Quiz
+quiz_MultipleChoice : Parser PState Quiz
 quiz_MultipleChoice =
     MultipleChoice
         <$> many1
@@ -128,12 +128,12 @@ quiz_MultipleChoice =
                 )
 
 
-html : Parser s Inline
+html : Parser PState Inline
 html =
     html_void <|> html_block
 
 
-html_void : Parser s Inline
+html_void : Parser PState Inline
 html_void =
     lazy <|
         \() ->
@@ -158,7 +158,7 @@ html_void =
                         ]
 
 
-html_block : Parser s Inline
+html_block : Parser PState Inline
 html_block =
     let
         p tag =
@@ -201,12 +201,12 @@ horizontal_line =
     HorizontalLine <$ regex "--[\\-]+"
 
 
-paragraph : Parser s Block
+paragraph : Parser PState Block
 paragraph =
     (\l -> Paragraph <| combine <| List.concat l) <$> many (spaces *> line <* newline)
 
 
-table : Parser s Block
+table : Parser PState Block
 table =
     let
         ending =
@@ -254,7 +254,7 @@ combine list =
                     x1 :: combine (x2 :: xs)
 
 
-line : Parser s (List Inline)
+line : Parser PState (List Inline)
 line =
     (\list -> combine <| List.append list [ Chars "\n" ]) <$> many1 inlines
 
@@ -274,7 +274,7 @@ spaces =
     regex "[ \t]*"
 
 
-inlines : Parser s Inline
+inlines : Parser PState Inline
 inlines =
     lazy <|
         \() ->
@@ -289,6 +289,21 @@ inlines =
                         ]
             in
             comments *> p
+
+
+einline_ : Parser PState Inline
+einline_ =
+    let
+        number =
+            braces int
+
+        multi_inline =
+            string "{" *> manyTill inlines (string "}")
+
+        increment_counter c =
+            { c | effects = c.effects + 1 }
+    in
+    EInline <$> number <*> multi_inline <* modifyState increment_counter
 
 
 formula_ : Parser s Inline
@@ -377,16 +392,16 @@ between_ str p =
     spaces *> string str *> p <* string str
 
 
-strings_ : Parser s Inline
+strings_ : Parser PState Inline
 strings_ =
     lazy <|
         \() ->
             let
                 base =
-                    Chars <$> regex "[^#*~_:;`!\\^\\[\\|{\\\\\\n\\-<>=|$]+" <?> "base string"
+                    Chars <$> regex "[^#*~_:;`!\\^\\[\\|{}\\\\\\n\\-<>=|$]+" <?> "base string"
 
                 escape =
-                    Chars <$> (spaces *> string "\\" *> regex "[\\^#*_~`{\\\\\\|$]") <?> "escape string"
+                    Chars <$> (spaces *> string "\\" *> regex "[\\^#*_~`\\\\\\|$]") <?> "escape string"
 
                 bold =
                     Bold <$> between_ "*" inlines <?> "bold string"
@@ -401,7 +416,7 @@ strings_ =
                     Superscript <$> between_ "^" inlines <?> "superscript string"
 
                 characters =
-                    Chars <$> regex "[*~_:;\\-<>=$]"
+                    Chars <$> regex "[*~_:;\\-<>=${}]"
 
                 base2 =
                     Chars <$> regex "[^#\\n|]+" <?> "base string"
@@ -409,6 +424,7 @@ strings_ =
             choice
                 [ base
                 , html
+                , einline_
                 , arrows_
                 , smileys_
                 , escape
@@ -433,7 +449,7 @@ code_block =
     CodeBlock <$> lang <*> block
 
 
-quote_block : Parser s Block
+quote_block : Parser PState Block
 quote_block =
     let
         p =
