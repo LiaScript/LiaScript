@@ -35,12 +35,12 @@ blocks =
             let
                 b =
                     choice
-                        [ table
+                        [ eblock
+                        , table
                         , code_block
                         , quote_block
                         , horizontal_line
                         , quiz
-                        , eblock
 
                         --  , list
                         , paragraph
@@ -52,10 +52,19 @@ blocks =
 eblock : Parser PState Block
 eblock =
     let
+        number =
+            spaces *> braces int <* regex "( *)[\\n]?"
+
+        multi_block =
+            spaces *> string "{{" *> manyTill blocks (string "}}")
+
+        single_block =
+            List.singleton <$> blocks
+
         increment_counter c =
             { c | effects = c.effects + 1 }
     in
-    EBlock <$> (spaces *> braces int <* regex "( *)[\\n]?") <*> blocks <* modifyState increment_counter
+    EBlock <$> number <*> (multi_block <|> single_block) <* modifyState increment_counter
 
 
 quiz : Parser PState Block

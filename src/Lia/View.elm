@@ -195,14 +195,14 @@ view_block model block =
         Quiz quiz idx ->
             Html.div [] [ view_quiz model quiz idx ]
 
-        EBlock idx sub_block ->
+        EBlock idx sub_blocks ->
             Html.div
                 [ Attr.id (toString idx)
                 , Attr.hidden (idx > model.visible)
                 ]
-                [ draw_circle idx
-                , view_block model sub_block
-                ]
+                (draw_circle idx
+                    :: List.map (\sub -> view_block model sub) sub_blocks
+                )
 
 
 
