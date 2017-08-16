@@ -19,6 +19,9 @@ update msg model =
         RadioButton quiz_id answer ->
             ( { model | quiz = flip_checkbox quiz_id answer model.quiz }, Cmd.none )
 
+        Input quiz_id string ->
+            ( { model | quiz = update_input quiz_id string model.quiz }, Cmd.none )
+
         Check quiz_id ->
             ( { model | quiz = check_answer quiz_id model.quiz }, Cmd.none )
 
@@ -30,6 +33,19 @@ update msg model =
 
         TTS (Result.Err m) ->
             ( { model | error = m }, Cmd.none )
+
+
+update_input : Int -> String -> QuizMatrix -> QuizMatrix
+update_input quiz_id text matrix =
+    case Array.get quiz_id matrix of
+        Just ( Just True, _ ) ->
+            matrix
+
+        Just ( state, Text input answer ) ->
+            Array.set quiz_id ( state, Text text answer ) matrix
+
+        _ ->
+            matrix
 
 
 flip_checkbox : Int -> Int -> QuizMatrix -> QuizMatrix
@@ -62,17 +78,24 @@ check_answer quiz_id matrix =
         Just ( Just True, _ ) ->
             matrix
 
-        Just ( state, Single c a ) ->
+        Just ( state, Text input answer ) ->
             Array.set quiz_id
-                ( Just (c == a)
-                , Single c a
+                ( Just (input == answer)
+                , Text input answer
+                )
+                matrix
+
+        Just ( state, Single input answer ) ->
+            Array.set quiz_id
+                ( Just (input == answer)
+                , Single input answer
                 )
                 matrix
 
         Just ( state, Multi quiz ) ->
             let
-                f ( c, a ) r =
-                    r && (c == a)
+                f ( input, answer ) result =
+                    result && (input == answer)
             in
             Array.set quiz_id
                 ( Just (Array.foldr f True quiz)

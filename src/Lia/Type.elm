@@ -18,6 +18,7 @@ type Msg
     = Load Int
     | CheckBox Int Int
     | RadioButton Int Int
+    | Input Int String
     | Check Int
     | Speak String
     | TTS (Result String Never)
@@ -30,6 +31,7 @@ type alias QuizMatrix =
 type QuizState
     = Single Int Int
     | Multi (Array ( Bool, Bool ))
+    | Text String String
 
 
 type Mode
@@ -56,6 +58,7 @@ type Block
 type Quiz
     = SingleChoice Int (List (List Inline))
     | MultipleChoice (List ( Bool, List Inline ))
+    | TextInput String
 
 
 

@@ -46,6 +46,9 @@ quiz_matrix slides =
             let
                 m =
                     case quiz of
+                        TextInput str ->
+                            Text "" str
+
                         SingleChoice a _ ->
                             Single -1 a
 

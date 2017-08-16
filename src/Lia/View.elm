@@ -156,11 +156,26 @@ view_block model block =
 view_quiz : Model -> Quiz -> Int -> Html Msg
 view_quiz model quiz idx =
     case quiz of
+        TextInput _ ->
+            view_quiz_text_input model idx
+
         SingleChoice rslt questions ->
             view_quiz_single_choice model rslt questions idx
 
         MultipleChoice questions ->
             view_quiz_multiple_choice model questions idx
+
+
+view_quiz_text_input : Model -> Int -> Html Msg
+view_quiz_text_input model idx =
+    Html.p []
+        [ Html.input
+            [ Attr.type_ "input"
+            , onInput (Input idx)
+            ]
+            []
+        , quiz_check_button model idx
+        ]
 
 
 quiz_check_button : Model -> Int -> Html Msg

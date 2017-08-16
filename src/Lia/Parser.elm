@@ -57,11 +57,16 @@ quiz =
             in
             withState pp <* modifyState increment_counter
     in
-    Quiz <$> (single_choice <|> multiple_choice) <*> counter
+    Quiz <$> choice [ quiz_SingleChoice, quiz_MultipleChoice, quiz_TextInput ] <*> counter
 
 
-single_choice : Parser s Quiz
-single_choice =
+quiz_TextInput : Parser s Quiz
+quiz_TextInput =
+    (\c -> TextInput <| String.fromList c) <$> (string "[[" *> manyTill anyChar (string "]]"))
+
+
+quiz_SingleChoice : Parser s Quiz
+quiz_SingleChoice =
     let
         get_result list =
             list
@@ -89,8 +94,8 @@ checked b p =
     (\l -> ( b, l )) <$> (p *> line <* newline)
 
 
-multiple_choice : Parser s Quiz
-multiple_choice =
+quiz_MultipleChoice : Parser s Quiz
+quiz_MultipleChoice =
     MultipleChoice
         <$> many1
                 (choice
