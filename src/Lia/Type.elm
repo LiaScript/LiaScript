@@ -5,8 +5,8 @@ module Lia.Type
         , Mode(..)
         , Msg(..)
         , Quiz(..)
-        , QuizMatrix
         , QuizState(..)
+        , QuizVector
         , Reference(..)
         , Slide
         )
@@ -28,7 +28,7 @@ type Msg
     | TTS (Result String Never)
 
 
-type alias QuizMatrix =
+type alias QuizVector =
     Array ( Maybe Bool, QuizState, Int )
 
 

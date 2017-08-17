@@ -10,7 +10,7 @@ module Lia.Helper
         )
 
 import Array
-import Lia.Type exposing (Block(..), Quiz(..), QuizMatrix, QuizState(..), Slide)
+import Lia.Type exposing (Block(..), Quiz(..), QuizState(..), QuizVector, Slide)
 
 
 get_headers : List Slide -> List ( Int, ( String, Int ) )
@@ -43,7 +43,7 @@ get_slide_effects i slides =
             0
 
 
-quiz_matrix : List Slide -> QuizMatrix
+quiz_matrix : List Slide -> QuizVector
 quiz_matrix slides =
     let
         filter b =
@@ -80,7 +80,7 @@ quiz_matrix slides =
         |> Array.fromList
 
 
-quiz_state : Int -> QuizMatrix -> ( Maybe Bool, Int )
+quiz_state : Int -> QuizVector -> ( Maybe Bool, Int )
 quiz_state quiz_id matrix =
     case Array.get quiz_id matrix of
         Just ( state, _, trial_count ) ->
@@ -90,7 +90,7 @@ quiz_state quiz_id matrix =
             ( Nothing, 0 )
 
 
-question_state_text : Int -> QuizMatrix -> String
+question_state_text : Int -> QuizVector -> String
 question_state_text quiz_id matrix =
     case Array.get quiz_id matrix of
         Just ( _, Text input answer, _ ) ->
@@ -100,7 +100,7 @@ question_state_text quiz_id matrix =
             ""
 
 
-question_state : Int -> Int -> QuizMatrix -> Bool
+question_state : Int -> Int -> QuizVector -> Bool
 question_state quiz_id question_id matrix =
     case Array.get quiz_id matrix of
         Just ( _, Single input answer, _ ) ->

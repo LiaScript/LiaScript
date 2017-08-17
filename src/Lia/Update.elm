@@ -59,7 +59,7 @@ update msg model =
             ( { model | error = m }, Cmd.none )
 
 
-update_input : Int -> String -> QuizMatrix -> QuizMatrix
+update_input : Int -> String -> QuizVector -> QuizVector
 update_input quiz_id text matrix =
     case Array.get quiz_id matrix of
         Just ( Just True, _, _ ) ->
@@ -72,7 +72,7 @@ update_input quiz_id text matrix =
             matrix
 
 
-flip_checkbox : Int -> Int -> QuizMatrix -> QuizMatrix
+flip_checkbox : Int -> Int -> QuizVector -> QuizVector
 flip_checkbox quiz_id question_id matrix =
     case Array.get quiz_id matrix of
         Just ( Just True, _, _ ) ->
@@ -96,7 +96,7 @@ flip_checkbox quiz_id question_id matrix =
             matrix
 
 
-check_answer : Int -> QuizMatrix -> QuizMatrix
+check_answer : Int -> QuizVector -> QuizVector
 check_answer quiz_id matrix =
     case Array.get quiz_id matrix of
         Just ( Just True, _, _ ) ->
