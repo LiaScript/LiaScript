@@ -13,5 +13,7 @@ type alias Model =
     , visible : Int
     , effects : Int
     , contents : Bool
-    , search : Maybe String
+    , search : String
+    , index : List String
+    , search_results : Maybe (List Int)
     }

@@ -285,9 +285,12 @@ def sqrt(val):
 
 Die zwei ist die einzig richtige Antwort
 
-( ) 1
-(X) 2
-( ) Oder 3
+[( )] 1
+[(X)] 2
+[( )] Oder 3
+[?] Es gibt nur eine möglichkeit
+[?] Nummer 2 ist es
+[?] Alles aufgebraucht
 
 ### Multiple-Choice
 
@@ -297,7 +300,9 @@ Zwei von Vier?
 [X] Ja
 [X] auch Ja
 [ ] auf keinen Fall
-
+[?] Es gibt nur eine möglichkeit
+[?] Nummer 2 ist es
+[?] Alles aufgebraucht
 
 ### Texteingaben
 

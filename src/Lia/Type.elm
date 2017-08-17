@@ -1,10 +1,12 @@
 module Lia.Type
     exposing
         ( Block(..)
+        , Hints
         , Inline(..)
         , Mode(..)
         , Msg(..)
         , Quiz(..)
+        , QuizElement
         , QuizState(..)
         , QuizVector
         , Reference(..)
@@ -22,14 +24,26 @@ type Msg
     | RadioButton Int Int
     | Input Int String
     | Check Int
-    | Search String
+    | ScanIndex String
     | ContentsTable
     | Speak String
     | TTS (Result String Never)
 
 
 type alias QuizVector =
-    Array ( Maybe Bool, QuizState, Int )
+    Array QuizElement
+
+
+type alias QuizElement =
+    { solved : Maybe Bool
+    , state : QuizState
+    , trial : Int
+    , hint : Int
+    }
+
+
+type alias Hints =
+    List (List Inline)
 
 
 type QuizState
@@ -63,7 +77,7 @@ type Block
 
 type Quiz
     = SingleChoice Int (List (List Inline))
-    | MultipleChoice (List ( Bool, List Inline ))
+    | MultipleChoice (List ( Bool, List Inline )) Hints
     | TextInput String
 
 

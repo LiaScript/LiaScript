@@ -11129,6 +11129,10 @@ var _elm_lang$html$Html_Lazy$lazy3 = _elm_lang$virtual_dom$VirtualDom$lazy3;
 var _elm_lang$html$Html_Lazy$lazy2 = _elm_lang$virtual_dom$VirtualDom$lazy2;
 var _elm_lang$html$Html_Lazy$lazy = _elm_lang$virtual_dom$VirtualDom$lazy;
 
+var _user$project$Lia_Type$QuizElement = F4(
+	function (a, b, c, d) {
+		return {solved: a, state: b, trial: c, hint: d};
+	});
 var _user$project$Lia_Type$Slide = F4(
 	function (a, b, c, d) {
 		return {indentation: a, title: b, body: c, effects: d};
@@ -11140,8 +11144,8 @@ var _user$project$Lia_Type$Speak = function (a) {
 	return {ctor: 'Speak', _0: a};
 };
 var _user$project$Lia_Type$ContentsTable = {ctor: 'ContentsTable'};
-var _user$project$Lia_Type$Search = function (a) {
-	return {ctor: 'Search', _0: a};
+var _user$project$Lia_Type$ScanIndex = function (a) {
+	return {ctor: 'ScanIndex', _0: a};
 };
 var _user$project$Lia_Type$Check = function (a) {
 	return {ctor: 'Check', _0: a};
@@ -11202,9 +11206,10 @@ var _user$project$Lia_Type$HorizontalLine = {ctor: 'HorizontalLine'};
 var _user$project$Lia_Type$TextInput = function (a) {
 	return {ctor: 'TextInput', _0: a};
 };
-var _user$project$Lia_Type$MultipleChoice = function (a) {
-	return {ctor: 'MultipleChoice', _0: a};
-};
+var _user$project$Lia_Type$MultipleChoice = F2(
+	function (a, b) {
+		return {ctor: 'MultipleChoice', _0: a, _1: b};
+	});
 var _user$project$Lia_Type$SingleChoice = F2(
 	function (a, b) {
 		return {ctor: 'SingleChoice', _0: a, _1: b};
@@ -11278,15 +11283,20 @@ var _user$project$Lia_Type$LiaBool = function (a) {
 
 var _user$project$Lia_Helper$question_state = F3(
 	function (quiz_id, question_id, vector) {
-		var _p0 = A2(_elm_lang$core$Array$get, quiz_id, vector);
+		var _p0 = A2(
+			_elm_lang$core$Maybe$map,
+			function (_) {
+				return _.state;
+			},
+			A2(_elm_lang$core$Array$get, quiz_id, vector));
 		_v0_2:
 		do {
-			if ((_p0.ctor === 'Just') && (_p0._0.ctor === '_Tuple3')) {
-				switch (_p0._0._1.ctor) {
+			if (_p0.ctor === 'Just') {
+				switch (_p0._0.ctor) {
 					case 'Single':
-						return _elm_lang$core$Native_Utils.eq(question_id, _p0._0._1._0);
+						return _elm_lang$core$Native_Utils.eq(question_id, _p0._0._0);
 					case 'Multi':
-						var _p1 = A2(_elm_lang$core$Array$get, question_id, _p0._0._1._0);
+						var _p1 = A2(_elm_lang$core$Array$get, question_id, _p0._0._0);
 						if (_p1.ctor === 'Just') {
 							return _p1._0._0;
 						} else {
@@ -11303,49 +11313,58 @@ var _user$project$Lia_Helper$question_state = F3(
 	});
 var _user$project$Lia_Helper$question_state_text = F2(
 	function (quiz_id, vector) {
-		var _p2 = A2(_elm_lang$core$Array$get, quiz_id, vector);
-		if (((_p2.ctor === 'Just') && (_p2._0.ctor === '_Tuple3')) && (_p2._0._1.ctor === 'Text')) {
-			return _p2._0._1._0;
+		var _p2 = A2(
+			_elm_lang$core$Maybe$map,
+			function (_) {
+				return _.state;
+			},
+			A2(_elm_lang$core$Array$get, quiz_id, vector));
+		if ((_p2.ctor === 'Just') && (_p2._0.ctor === 'Text')) {
+			return _p2._0._0;
 		} else {
 			return '';
 		}
 	});
 var _user$project$Lia_Helper$quiz_state = F2(
 	function (quiz_id, vector) {
-		var _p3 = A2(_elm_lang$core$Array$get, quiz_id, vector);
-		if (_p3.ctor === 'Just') {
-			return {ctor: '_Tuple2', _0: _p3._0._0, _1: _p3._0._2};
-		} else {
-			return {ctor: '_Tuple2', _0: _elm_lang$core$Maybe$Nothing, _1: 0};
-		}
+		return A2(
+			_elm_lang$core$Maybe$withDefault,
+			{ctor: '_Tuple2', _0: _elm_lang$core$Maybe$Nothing, _1: 0},
+			A2(
+				_elm_lang$core$Maybe$andThen,
+				function (q) {
+					return _elm_lang$core$Maybe$Just(
+						{ctor: '_Tuple2', _0: q.solved, _1: q.trial});
+				},
+				A2(_elm_lang$core$Array$get, quiz_id, vector)));
 	});
 var _user$project$Lia_Helper$quiz_vector = function (slides) {
 	var vector = function (quiz) {
 		var m = function () {
-			var _p4 = quiz;
-			switch (_p4.ctor) {
+			var _p3 = quiz;
+			switch (_p3.ctor) {
 				case 'TextInput':
-					return A2(_user$project$Lia_Type$Text, '', _p4._0);
+					return A2(_user$project$Lia_Type$Text, '', _p3._0);
 				case 'SingleChoice':
-					return A2(_user$project$Lia_Type$Single, -1, _p4._0);
+					return A2(_user$project$Lia_Type$Single, -1, _p3._0);
 				default:
 					return _user$project$Lia_Type$Multi(
 						_elm_lang$core$Array$fromList(
 							A2(
 								_elm_lang$core$List$map,
-								function (_p5) {
-									var _p6 = _p5;
-									return {ctor: '_Tuple2', _0: false, _1: _p6._0};
+								function (_p4) {
+									var _p5 = _p4;
+									return {ctor: '_Tuple2', _0: false, _1: _p5._0};
 								},
-								_p4._0)));
+								_p3._0)));
 			}
 		}();
-		return {ctor: '_Tuple3', _0: _elm_lang$core$Maybe$Nothing, _1: m, _2: 0};
+		return {solved: _elm_lang$core$Maybe$Nothing, state: m, trial: 0, hint: 0};
 	};
 	var filter = function (b) {
-		var _p7 = b;
-		if (_p7.ctor === 'Quiz') {
-			return _elm_lang$core$Maybe$Just(_p7._0);
+		var _p6 = b;
+		if (_p6.ctor === 'Quiz') {
+			return _elm_lang$core$Maybe$Just(_p6._0);
 		} else {
 			return _elm_lang$core$Maybe$Nothing;
 		}
@@ -11369,17 +11388,17 @@ var _user$project$Lia_Helper$get_slide = F2(
 	function (i, slides) {
 		get_slide:
 		while (true) {
-			var _p8 = {ctor: '_Tuple2', _0: i, _1: slides};
-			if (_p8._1.ctor === '[]') {
+			var _p7 = {ctor: '_Tuple2', _0: i, _1: slides};
+			if (_p7._1.ctor === '[]') {
 				return _elm_lang$core$Maybe$Nothing;
 			} else {
-				if (_p8._0 === 0) {
-					return _elm_lang$core$Maybe$Just(_p8._1._0);
+				if (_p7._0 === 0) {
+					return _elm_lang$core$Maybe$Just(_p7._1._0);
 				} else {
-					var _v8 = _p8._0 - 1,
-						_v9 = _p8._1._1;
-					i = _v8;
-					slides = _v9;
+					var _v7 = _p7._0 - 1,
+						_v8 = _p7._1._1;
+					i = _v7;
+					slides = _v8;
 					continue get_slide;
 				}
 			}
@@ -11387,9 +11406,9 @@ var _user$project$Lia_Helper$get_slide = F2(
 	});
 var _user$project$Lia_Helper$get_slide_effects = F2(
 	function (i, slides) {
-		var _p9 = A2(_user$project$Lia_Helper$get_slide, i, slides);
-		if (_p9.ctor === 'Just') {
-			return _p9._0.effects;
+		var _p8 = A2(_user$project$Lia_Helper$get_slide, i, slides);
+		if (_p8.ctor === 'Just') {
+			return _p8._0.effects;
 		} else {
 			return 0;
 		}
@@ -11409,6 +11428,138 @@ var _user$project$Lia_Helper$get_headers = function (slides) {
 			slides));
 };
 
+var _user$project$Lia_Index$parse_inline = function (element) {
+	parse_inline:
+	while (true) {
+		var _p0 = element;
+		switch (_p0.ctor) {
+			case 'Chars':
+				return _p0._0;
+			case 'Code':
+				return _p0._0;
+			case 'Bold':
+				var _v1 = _p0._0;
+				element = _v1;
+				continue parse_inline;
+			case 'Italic':
+				var _v2 = _p0._0;
+				element = _v2;
+				continue parse_inline;
+			case 'Underline':
+				var _v3 = _p0._0;
+				element = _v3;
+				continue parse_inline;
+			case 'Superscript':
+				var _v4 = _p0._0;
+				element = _v4;
+				continue parse_inline;
+			case 'Ref':
+				var _p1 = _p0._0;
+				switch (_p1.ctor) {
+					case 'Link':
+						return A2(
+							_elm_lang$core$Basics_ops['++'],
+							_p1._0,
+							A2(_elm_lang$core$Basics_ops['++'], '', _p1._1));
+					case 'Image':
+						return A2(
+							_elm_lang$core$Basics_ops['++'],
+							_p1._0,
+							A2(_elm_lang$core$Basics_ops['++'], '', _p1._1));
+					default:
+						return A2(
+							_elm_lang$core$Basics_ops['++'],
+							_p1._0,
+							A2(_elm_lang$core$Basics_ops['++'], '', _p1._1));
+				}
+			case 'Formula':
+				return _p0._1;
+			case 'HTML':
+				return _p0._0;
+			case 'EInline':
+				return _elm_lang$core$String$concat(
+					A2(_elm_lang$core$List$map, _user$project$Lia_Index$parse_inline, _p0._1));
+			default:
+				return '';
+		}
+	}
+};
+var _user$project$Lia_Index$parse_block = function (element) {
+	var scan = function (e) {
+		return _elm_lang$core$String$concat(
+			A2(_elm_lang$core$List$map, _user$project$Lia_Index$parse_inline, e));
+	};
+	var _p2 = element;
+	switch (_p2.ctor) {
+		case 'Paragraph':
+			return scan(_p2._0);
+		case 'Quote':
+			return scan(_p2._0);
+		case 'CodeBlock':
+			return _p2._1;
+		case 'Quiz':
+			var _p3 = _p2._0;
+			switch (_p3.ctor) {
+				case 'TextInput':
+					return '';
+				case 'SingleChoice':
+					return _elm_lang$core$String$concat(
+						A2(_elm_lang$core$List$map, scan, _p3._1));
+				default:
+					return _elm_lang$core$String$concat(
+						A2(
+							_elm_lang$core$List$map,
+							function (_p4) {
+								var _p5 = _p4;
+								return scan(_p5._1);
+							},
+							_p3._0));
+			}
+		case 'EBlock':
+			return _elm_lang$core$String$concat(
+				A2(
+					_elm_lang$core$List$map,
+					function (sub) {
+						return _user$project$Lia_Index$parse_block(sub);
+					},
+					_p2._1));
+		default:
+			return '';
+	}
+};
+var _user$project$Lia_Index$extract_string = function (slide) {
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		slide.title,
+		_elm_lang$core$String$concat(
+			A2(_elm_lang$core$List$map, _user$project$Lia_Index$parse_block, slide.body)));
+};
+var _user$project$Lia_Index$scan = F2(
+	function (index, pattern) {
+		return A2(
+			_elm_lang$core$List$map,
+			function (_p6) {
+				var _p7 = _p6;
+				return _p7._0;
+			},
+			A2(
+				_elm_lang$core$List$filter,
+				function (_p8) {
+					var _p9 = _p8;
+					return A2(_elm_lang$core$String$contains, pattern, _p9._1);
+				},
+				A2(
+					_elm_lang$core$List$indexedMap,
+					F2(
+						function (v0, v1) {
+							return {ctor: '_Tuple2', _0: v0, _1: v1};
+						}),
+					index)));
+	});
+var _user$project$Lia_Index$create = function (slides) {
+	return A2(_elm_lang$core$List$map, _user$project$Lia_Index$extract_string, slides);
+};
+
 var _user$project$Lia_Model$Model = function (a) {
 	return function (b) {
 		return function (c) {
@@ -11419,7 +11570,11 @@ var _user$project$Lia_Model$Model = function (a) {
 							return function (h) {
 								return function (i) {
 									return function (j) {
-										return {script: a, error: b, slides: c, quiz: d, current_slide: e, mode: f, visible: g, effects: h, contents: i, search: j};
+										return function (k) {
+											return function (l) {
+												return {script: a, error: b, slides: c, quiz: d, current_slide: e, mode: f, visible: g, effects: h, contents: i, search: j, index: k, search_results: l};
+											};
+										};
 									};
 								};
 							};
@@ -12336,7 +12491,7 @@ var _user$project$Lia_Parser$quiz_SingleChoice = function () {
 				A2(
 					_user$project$Lia_Parser$checked,
 					false,
-					_elm_community$parser_combinators$Combine$string('( )'))),
+					_elm_community$parser_combinators$Combine$string('[( )]'))),
 			A2(
 				_elm_community$parser_combinators$Combine$map,
 				F2(
@@ -12348,7 +12503,7 @@ var _user$project$Lia_Parser$quiz_SingleChoice = function () {
 					A2(
 						_user$project$Lia_Parser$checked,
 						true,
-						_elm_community$parser_combinators$Combine$string('(X)')),
+						_elm_community$parser_combinators$Combine$string('[(X)]')),
 					A2(
 						_elm_community$parser_combinators$Combine$map,
 						F2(
@@ -12366,28 +12521,39 @@ var _user$project$Lia_Parser$quiz_SingleChoice = function () {
 							A2(
 								_user$project$Lia_Parser$checked,
 								false,
-								_elm_community$parser_combinators$Combine$string('( )'))))))));
+								_elm_community$parser_combinators$Combine$string('[( )]'))))))));
 }();
+var _user$project$Lia_Parser$quiz_hints = _elm_community$parser_combinators$Combine$many(
+	A2(
+		_elm_community$parser_combinators$Combine_ops['<*'],
+		A2(
+			_elm_community$parser_combinators$Combine_ops['*>'],
+			_elm_community$parser_combinators$Combine$string('[?]'),
+			_user$project$Lia_Parser$line),
+		_user$project$Lia_Parser$newline));
 var _user$project$Lia_Parser$quiz_MultipleChoice = A2(
-	_elm_community$parser_combinators$Combine_ops['<$>'],
-	_user$project$Lia_Type$MultipleChoice,
-	_elm_community$parser_combinators$Combine$many1(
-		_elm_community$parser_combinators$Combine$choice(
-			{
-				ctor: '::',
-				_0: A2(
-					_user$project$Lia_Parser$checked,
-					true,
-					_elm_community$parser_combinators$Combine$string('[X]')),
-				_1: {
+	_elm_community$parser_combinators$Combine_ops['<*>'],
+	A2(
+		_elm_community$parser_combinators$Combine_ops['<$>'],
+		_user$project$Lia_Type$MultipleChoice,
+		_elm_community$parser_combinators$Combine$many1(
+			_elm_community$parser_combinators$Combine$choice(
+				{
 					ctor: '::',
 					_0: A2(
 						_user$project$Lia_Parser$checked,
-						false,
-						_elm_community$parser_combinators$Combine$string('[ ]')),
-					_1: {ctor: '[]'}
-				}
-			})));
+						true,
+						_elm_community$parser_combinators$Combine$string('[X]')),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_user$project$Lia_Parser$checked,
+							false,
+							_elm_community$parser_combinators$Combine$string('[ ]')),
+						_1: {ctor: '[]'}
+					}
+				}))),
+	_user$project$Lia_Parser$quiz_hints);
 var _user$project$Lia_Parser$quiz = function () {
 	var counter = function () {
 		var increment_counter = function (c) {
@@ -12770,201 +12936,154 @@ var _user$project$Tts_Tts$Recognition = F2(
 	});
 
 var _user$project$Lia_Update$check_answer = F2(
-	function (quiz_id, vector) {
-		var _p0 = A2(_elm_lang$core$Array$get, quiz_id, vector);
-		_v0_0:
-		do {
-			if (_p0.ctor === 'Just') {
-				switch (_p0._0._1.ctor) {
-					case 'Text':
-						if ((_p0._0._0.ctor === 'Just') && (_p0._0._0._0 === true)) {
-							break _v0_0;
-						} else {
-							var _p2 = _p0._0._1._0;
-							var _p1 = _p0._0._1._1;
-							return A3(
-								_elm_lang$core$Array$set,
-								quiz_id,
-								{
-									ctor: '_Tuple3',
-									_0: _elm_lang$core$Maybe$Just(
-										_elm_lang$core$Native_Utils.eq(_p2, _p1)),
-									_1: A2(_user$project$Lia_Type$Text, _p2, _p1),
-									_2: _p0._0._2 + 1
-								},
-								vector);
-						}
-					case 'Single':
-						if ((_p0._0._0.ctor === 'Just') && (_p0._0._0._0 === true)) {
-							break _v0_0;
-						} else {
-							var _p4 = _p0._0._1._0;
-							var _p3 = _p0._0._1._1;
-							return A3(
-								_elm_lang$core$Array$set,
-								quiz_id,
-								{
-									ctor: '_Tuple3',
-									_0: _elm_lang$core$Maybe$Just(
-										_elm_lang$core$Native_Utils.eq(_p4, _p3)),
-									_1: A2(_user$project$Lia_Type$Single, _p4, _p3),
-									_2: _p0._0._2 + 1
-								},
-								vector);
-						}
-					default:
-						if ((_p0._0._0.ctor === 'Just') && (_p0._0._0._0 === true)) {
-							break _v0_0;
-						} else {
-							var _p7 = _p0._0._1._0;
-							var f = F2(
-								function (_p5, result) {
-									var _p6 = _p5;
-									return result && _elm_lang$core$Native_Utils.eq(_p6._0, _p6._1);
-								});
-							return A3(
-								_elm_lang$core$Array$set,
-								quiz_id,
-								{
-									ctor: '_Tuple3',
-									_0: _elm_lang$core$Maybe$Just(
-										A3(_elm_lang$core$Array$foldr, f, true, _p7)),
-									_1: _user$project$Lia_Type$Multi(_p7),
-									_2: _p0._0._2 + 1
-								},
-								vector);
-						}
-				}
-			} else {
-				return vector;
+	function (idx, vector) {
+		var ccheck = function (state) {
+			var _p0 = state;
+			switch (_p0.ctor) {
+				case 'Multi':
+					var f = F2(
+						function (_p1, result) {
+							var _p2 = _p1;
+							return result && _elm_lang$core$Native_Utils.eq(_p2._0, _p2._1);
+						});
+					return _elm_lang$core$Maybe$Just(
+						A3(_elm_lang$core$Array$foldr, f, true, _p0._0));
+				case 'Single':
+					return _elm_lang$core$Maybe$Just(
+						_elm_lang$core$Native_Utils.eq(_p0._0, _p0._1));
+				default:
+					return _elm_lang$core$Maybe$Just(
+						_elm_lang$core$Native_Utils.eq(_p0._0, _p0._1));
 			}
-		} while(false);
-		return vector;
+		};
+		var _p3 = A2(_elm_lang$core$Array$get, idx, vector);
+		if (_p3.ctor === 'Just') {
+			var _p4 = _p3._0;
+			return _elm_lang$core$Native_Utils.eq(
+				_p4.solved,
+				_elm_lang$core$Maybe$Just(true)) ? vector : A3(
+				_elm_lang$core$Array$set,
+				idx,
+				_elm_lang$core$Native_Utils.update(
+					_p4,
+					{
+						solved: ccheck(_p4.state),
+						trial: _p4.trial + 1
+					}),
+				vector);
+		} else {
+			return vector;
+		}
 	});
 var _user$project$Lia_Update$flip_checkbox = F3(
-	function (quiz_id, question_id, vector) {
-		var _p8 = A2(_elm_lang$core$Array$get, quiz_id, vector);
-		_v2_3:
-		do {
-			_v2_0:
-			do {
-				if ((_p8.ctor === 'Just') && (_p8._0.ctor === '_Tuple3')) {
-					switch (_p8._0._1.ctor) {
-						case 'Single':
-							if ((_p8._0._0.ctor === 'Just') && (_p8._0._0._0 === true)) {
-								break _v2_0;
-							} else {
-								return A3(
-									_elm_lang$core$Array$set,
-									quiz_id,
-									{
-										ctor: '_Tuple3',
-										_0: _p8._0._0,
-										_1: A2(_user$project$Lia_Type$Single, question_id, _p8._0._1._1),
-										_2: _p8._0._2
-									},
-									vector);
-							}
-						case 'Multi':
-							if ((_p8._0._0.ctor === 'Just') && (_p8._0._0._0 === true)) {
-								break _v2_0;
-							} else {
-								var _p12 = _p8._0._1._0;
-								var _p9 = A2(_elm_lang$core$Array$get, question_id, _p12);
-								if (_p9.ctor === 'Just') {
-									return function (q) {
-										return A3(
-											_elm_lang$core$Array$set,
-											quiz_id,
-											{
-												ctor: '_Tuple3',
-												_0: _p8._0._0,
-												_1: _user$project$Lia_Type$Multi(q),
-												_2: _p8._0._2
-											},
-											vector);
-									}(
-										function (q) {
-											return A3(_elm_lang$core$Array$set, question_id, q, _p12);
-										}(
-											function (_p10) {
-												var _p11 = _p10;
-												return {ctor: '_Tuple2', _0: !_p11._0, _1: _p11._1};
-											}(_p9._0)));
-								} else {
-									return vector;
-								}
-							}
-						default:
-							if ((_p8._0._0.ctor === 'Just') && (_p8._0._0._0 === true)) {
-								break _v2_0;
-							} else {
-								break _v2_3;
-							}
-					}
-				} else {
-					break _v2_3;
-				}
-			} while(false);
-			return vector;
-		} while(false);
-		return vector;
-	});
-var _user$project$Lia_Update$update_input = F3(
-	function (quiz_id, text, vector) {
-		var _p13 = A2(_elm_lang$core$Array$get, quiz_id, vector);
-		_v5_2:
-		do {
-			if ((_p13.ctor === 'Just') && (_p13._0.ctor === '_Tuple3')) {
-				if ((_p13._0._0.ctor === 'Just') && (_p13._0._0._0 === true)) {
-					return vector;
-				} else {
-					if (_p13._0._1.ctor === 'Text') {
+	function (idx, question_id, vector) {
+		var _p5 = A2(_elm_lang$core$Array$get, idx, vector);
+		if (_p5.ctor === 'Just') {
+			var _p11 = _p5._0;
+			if (_elm_lang$core$Native_Utils.eq(
+				_p11.solved,
+				_elm_lang$core$Maybe$Just(true))) {
+				return vector;
+			} else {
+				var _p6 = _p11.state;
+				switch (_p6.ctor) {
+					case 'Single':
 						return A3(
 							_elm_lang$core$Array$set,
-							quiz_id,
-							{
-								ctor: '_Tuple3',
-								_0: _p13._0._0,
-								_1: A2(_user$project$Lia_Type$Text, text, _p13._0._1._1),
-								_2: _p13._0._2
-							},
+							idx,
+							_elm_lang$core$Native_Utils.update(
+								_p11,
+								{
+									state: A2(_user$project$Lia_Type$Single, question_id, _p6._1)
+								}),
 							vector);
-					} else {
-						break _v5_2;
-					}
+					case 'Multi':
+						var _p10 = _p6._0;
+						var _p7 = A2(_elm_lang$core$Array$get, question_id, _p10);
+						if (_p7.ctor === 'Just') {
+							return function (q) {
+								return A3(
+									_elm_lang$core$Array$set,
+									idx,
+									_elm_lang$core$Native_Utils.update(
+										_p11,
+										{
+											state: _user$project$Lia_Type$Multi(q)
+										}),
+									vector);
+							}(
+								function (q) {
+									return A3(_elm_lang$core$Array$set, question_id, q, _p10);
+								}(
+									function (_p8) {
+										var _p9 = _p8;
+										return {ctor: '_Tuple2', _0: !_p9._0, _1: _p9._1};
+									}(_p7._0)));
+						} else {
+							return vector;
+						}
+					default:
+						return vector;
 				}
-			} else {
-				break _v5_2;
 			}
-		} while(false);
-		return vector;
+		} else {
+			return vector;
+		}
+	});
+var _user$project$Lia_Update$update_input = F3(
+	function (idx, text, vector) {
+		var _p12 = A2(_elm_lang$core$Array$get, idx, vector);
+		if (_p12.ctor === 'Just') {
+			var _p14 = _p12._0;
+			if (_elm_lang$core$Native_Utils.eq(
+				_p14.solved,
+				_elm_lang$core$Maybe$Just(true))) {
+				return vector;
+			} else {
+				var _p13 = _p14.state;
+				if (_p13.ctor === 'Text') {
+					return A3(
+						_elm_lang$core$Array$set,
+						idx,
+						_elm_lang$core$Native_Utils.update(
+							_p14,
+							{
+								state: A2(_user$project$Lia_Type$Text, text, _p13._1)
+							}),
+						vector);
+				} else {
+					return vector;
+				}
+			}
+		} else {
+			return vector;
+		}
 	});
 var _user$project$Lia_Update$update = F2(
 	function (msg, model) {
 		update:
 		while (true) {
-			var _p14 = msg;
-			switch (_p14.ctor) {
+			var _p15 = msg;
+			switch (_p15.ctor) {
 				case 'Load':
-					var _p15 = _p14._0;
-					var _v7 = _user$project$Lia_Type$Speak('Starting to load next slide'),
-						_v8 = _elm_lang$core$Native_Utils.update(
+					var _p16 = _p15._0;
+					var _v10 = _user$project$Lia_Type$Speak('Starting to load next slide'),
+						_v11 = _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							current_slide: _p15,
+							current_slide: _p16,
 							visible: 0,
-							effects: A2(_user$project$Lia_Helper$get_slide_effects, _p15, model.slides)
+							effects: A2(_user$project$Lia_Helper$get_slide_effects, _p16, model.slides)
 						});
-					msg = _v7;
-					model = _v8;
+					msg = _v10;
+					model = _v11;
 					continue update;
 				case 'PrevSlide':
 					if (_elm_lang$core$Native_Utils.eq(model.visible, 0)) {
-						var _v9 = _user$project$Lia_Type$Load(model.current_slide - 1),
-							_v10 = model;
-						msg = _v9;
-						model = _v10;
+						var _v12 = _user$project$Lia_Type$Load(model.current_slide - 1),
+							_v13 = model;
+						msg = _v12;
+						model = _v13;
 						continue update;
 					} else {
 						return {
@@ -12977,10 +13096,10 @@ var _user$project$Lia_Update$update = F2(
 					}
 				case 'NextSlide':
 					if (_elm_lang$core$Native_Utils.eq(model.visible, model.effects)) {
-						var _v11 = _user$project$Lia_Type$Load(model.current_slide + 1),
-							_v12 = model;
-						msg = _v11;
-						model = _v12;
+						var _v14 = _user$project$Lia_Type$Load(model.current_slide + 1),
+							_v15 = model;
+						msg = _v14;
+						model = _v15;
 						continue update;
 					} else {
 						return {
@@ -12997,7 +13116,7 @@ var _user$project$Lia_Update$update = F2(
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
 							{
-								quiz: A3(_user$project$Lia_Update$flip_checkbox, _p14._0, _p14._1, model.quiz)
+								quiz: A3(_user$project$Lia_Update$flip_checkbox, _p15._0, _p15._1, model.quiz)
 							}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
@@ -13007,7 +13126,7 @@ var _user$project$Lia_Update$update = F2(
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
 							{
-								quiz: A3(_user$project$Lia_Update$flip_checkbox, _p14._0, _p14._1, model.quiz)
+								quiz: A3(_user$project$Lia_Update$flip_checkbox, _p15._0, _p15._1, model.quiz)
 							}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
@@ -13017,7 +13136,7 @@ var _user$project$Lia_Update$update = F2(
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
 							{
-								quiz: A3(_user$project$Lia_Update$update_input, _p14._0, _p14._1, model.quiz)
+								quiz: A3(_user$project$Lia_Update$update_input, _p15._0, _p15._1, model.quiz)
 							}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
@@ -13027,12 +13146,21 @@ var _user$project$Lia_Update$update = F2(
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
 							{
-								quiz: A2(_user$project$Lia_Update$check_answer, _p14._0, model.quiz)
+								quiz: A2(_user$project$Lia_Update$check_answer, _p15._0, model.quiz)
 							}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
-				case 'Search':
-					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+				case 'ScanIndex':
+					var _p17 = _p15._0;
+					var results = _elm_lang$core$Native_Utils.eq(_p17, '') ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
+						A2(_user$project$Lia_Index$scan, model.index, _p17));
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{search: _p17, search_results: results}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
 				case 'ContentsTable':
 					return {
 						ctor: '_Tuple2',
@@ -13047,10 +13175,10 @@ var _user$project$Lia_Update$update = F2(
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
 							{error: 'Speaking'}),
-						_1: A4(_user$project$Tts_Tts$speak, _user$project$Lia_Type$TTS, _elm_lang$core$Maybe$Nothing, 'en_US', _p14._0)
+						_1: A4(_user$project$Tts_Tts$speak, _user$project$Lia_Type$TTS, _elm_lang$core$Maybe$Nothing, 'en_US', _p15._0)
 					};
 				default:
-					if (_p14._0.ctor === 'Ok') {
+					if (_p15._0.ctor === 'Ok') {
 						return {
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
@@ -13063,7 +13191,7 @@ var _user$project$Lia_Update$update = F2(
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
-								{error: _p14._0._0}),
+								{error: _p15._0._0}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
 					}
@@ -13536,7 +13664,14 @@ var _user$project$Lia_View$view_quiz = F3(
 			case 'SingleChoice':
 				return A4(_user$project$Lia_View$view_quiz_single_choice, model, _p10._0, _p10._1, idx);
 			default:
-				return A3(_user$project$Lia_View$view_quiz_multiple_choice, model, _p10._0, idx);
+				return A2(
+					_elm_lang$html$Html$div,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: A3(_user$project$Lia_View$view_quiz_multiple_choice, model, _p10._0, idx),
+						_1: {ctor: '[]'}
+					});
 		}
 	});
 var _user$project$Lia_View$view_table = F4(
@@ -13891,7 +14026,15 @@ var _user$project$Lia_View$view_contents = function (model) {
 									_0: {ctor: '_Tuple2', _0: 'margin-bottom', _1: '24px'},
 									_1: {ctor: '[]'}
 								}),
-							_1: {ctor: '[]'}
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$value(model.search),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html_Events$onInput(_user$project$Lia_Type$ScanIndex),
+									_1: {ctor: '[]'}
+								}
+							}
 						}
 					},
 					{ctor: '[]'}),
@@ -13901,7 +14044,21 @@ var _user$project$Lia_View$view_contents = function (model) {
 		A2(
 			_elm_lang$core$List$map,
 			f,
-			_user$project$Lia_Helper$get_headers(model.slides)));
+			function (list) {
+				var _p21 = model.search_results;
+				if (_p21.ctor === 'Nothing') {
+					return list;
+				} else {
+					return A2(
+						_elm_lang$core$List$filter,
+						function (_p22) {
+							var _p23 = _p22;
+							return A2(_elm_lang$core$List$member, _p23._0, _p21._0);
+						},
+						list);
+				}
+			}(
+				_user$project$Lia_Helper$get_headers(model.slides))));
 };
 var _user$project$Lia_View$view_slides = function (model) {
 	var loadButton = F2(
@@ -13990,9 +14147,9 @@ var _user$project$Lia_View$view_slides = function (model) {
 					{
 						ctor: '::',
 						_0: function () {
-							var _p21 = A2(_user$project$Lia_Helper$get_slide, model.current_slide, model.slides);
-							if (_p21.ctor === 'Just') {
-								return A3(_elm_lang$html$Html_Lazy$lazy2, _user$project$Lia_View$view_slide, model, _p21._0);
+							var _p24 = A2(_user$project$Lia_Helper$get_slide, model.current_slide, model.slides);
+							if (_p24.ctor === 'Just') {
+								return A3(_elm_lang$html$Html_Lazy$lazy2, _user$project$Lia_View$view_slide, model, _p24._0);
 							} else {
 								return _elm_lang$html$Html$text('');
 							}
@@ -14083,8 +14240,8 @@ var _user$project$Lia_View$view_plain = function (model) {
 		A2(_elm_lang$core$List$map, f, model.slides));
 };
 var _user$project$Lia_View$view = function (model) {
-	var _p22 = model.mode;
-	if (_p22.ctor === 'Slides') {
+	var _p25 = model.mode;
+	if (_p25.ctor === 'Slides') {
 		return _user$project$Lia_View$view_slides(model);
 	} else {
 		return _user$project$Lia_View$view_plain(model);
@@ -14112,7 +14269,8 @@ var _user$project$Lia$parse = function (model) {
 			{
 				slides: _p1,
 				error: '',
-				quiz: _user$project$Lia_Helper$quiz_vector(_p1)
+				quiz: _user$project$Lia_Helper$quiz_vector(_p1),
+				index: _user$project$Lia_Index$create(_p1)
 			});
 	} else {
 		return _elm_lang$core$Native_Utils.update(
@@ -14130,12 +14288,13 @@ var _user$project$Lia$init = F2(
 	function (mode, script) {
 		return _user$project$Lia$parse(
 			_user$project$Lia_Model$Model(script)('')(
-				{ctor: '[]'})(_elm_lang$core$Array$empty)(0)(mode)(0)(0)(true)(_elm_lang$core$Maybe$Nothing));
+				{ctor: '[]'})(_elm_lang$core$Array$empty)(0)(mode)(0)(0)(true)('')(
+				{ctor: '[]'})(_elm_lang$core$Maybe$Nothing));
 	});
 var _user$project$Lia$init_plain = _user$project$Lia$init(_user$project$Lia_Type$Plain);
 var _user$project$Lia$init_slides = _user$project$Lia$init(_user$project$Lia_Type$Slides);
 
-var _user$project$Editor$script = '{-\nComments have to be enclosed by curly braces and can be put everywhere...\nThese can be used to comment single elements, lines, and multi-lines...\n-}\n\n# Main Markdown\n\nParagraphs are separated by newlines ...\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n## Basic Inlines\n\n\\*bold\\* -> *bold*\n\n\\~italic\\~ -> ~italic~\n\n\\^superscript\\^ -> ^superscript^\n\n\\_underline\\_ -> _underline_\n\n\nCombinations are allowed:\n\n\\~\\*bold italic\\*\\~ -> ~*bold italic*~\n\n\\_\\*bold underline\\*\\_ -> _*bold underline*_\n\n\\_\\~italic underline\\~\\_ -> _~italic underline~_\n\n\\_\\~\\*bold italic underline\\*\\~\\_ -> _~*bold italic underline*~_\n\n## Code\n\nCode can be either `inline` or explicit:\n\n``` c\n#include <stdio.h>\n\nvoid main(int) {\n    println(\"%d\\n\", 1234);\n}\n```\n\n``` python\nimport math\n\ndef sqrt(val):\n    return math.sqrt(val)\n```\n\n## Quize\n\n### Single-Choice\n\nDie zwei ist die einzig richtige Antwort\n\n( ) 1\n(X) 2\n( ) Oder 3\n\n### Multiple-Choice\n\nZwei von Vier?\n\n[ ] nein\n[X] Ja\n[X] auch Ja\n[ ] auf keinen Fall\n\n\n### Texteingaben\n\nWie sieht Pi aus, bis auf 5 Stellen nach dem Komma?\n\n[[3.14159]]\n\n## effects\n\n                                  {1}\nAAA AAA AAA AAA {3}{*test*} AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\nAAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\nAAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\n\n{2}\n{{\n\n![Image](http://package.elm-lang.org/assets/favicon.ico)\n\n[ ] nein\n[X] Ja\n[X] auch Ja\n[ ] auf keinen Fall\n\n}}\n                                  {1}\nBBB BBB BBB BBB BBB BBB BBB {3}{*test*} {3}{*test*} BBB BBB BBB BBB BBB BBB BBB\n\n## References\n\nLinks: [Google](http://www.google.de)\n\nImages:\n\n![Image](http://package.elm-lang.org/assets/favicon.ico)\n\nMovies:\n\n!![Movie](https://www.youtube.com/embed/EDp6UmaA9CM)\n\n## Quotes\n\n> This is a quote ...\n>\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n\n## Formulas\n\nsimple inline formulas $ \\frac{a+b}{\\sum x} * \\int x $\nor larger multiline formulas\n\n$$\n\\frac{a+b}{\\sum x}\n      * \\int x\n$$\n\n\n## Symboles\n\n### Arrows\n\n->, ->>, >->, <-, <-<, <<-, <->, =>, <=, <=>\n\n-->, <--, <-->, ==>, <==, <==>\n\n~>, <~\n\n### Smileys\n\n:-), ;-), :-D, :-O, :-(, :-|, :-/, :-P, :-*, :\'), :\'(\n\n### Escape Chars\n\n\\*, \\~, \\_, \\#\n\n## Tables\n\n| h1   | h2   | h3   |\n|:-----|-----:|------|\n| a    |    b |  c   |\n| aa   |   bb |  cc  |\n| aaa  |  bbb | ccc  |\n| aaaa | bbbb | cccc |\n\n## Enumeration\n\n* bullets\n* xxx\n  xxx\n\n## Html\n\nThis is normal Markdown ...\n<b id=\"test\" style=\"background-color:blue;color:red\">\nThis is a bold and colored html...\n</b> that can be used inline or <br> <br> everywhere\n\n<img src=\"http://package.elm-lang.org/assets/favicon.ico\">\n\ns\n\n\n## Misc\n\nhorizontal line\n\n---\n\nxxx\n\n\n';
+var _user$project$Editor$script = '{-\nComments have to be enclosed by curly braces and can be put everywhere...\nThese can be used to comment single elements, lines, and multi-lines...\n-}\n\n# Main Markdown\n\nParagraphs are separated by newlines ...\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n## Basic Inlines\n\n\\*bold\\* -> *bold*\n\n\\~italic\\~ -> ~italic~\n\n\\^superscript\\^ -> ^superscript^\n\n\\_underline\\_ -> _underline_\n\n\nCombinations are allowed:\n\n\\~\\*bold italic\\*\\~ -> ~*bold italic*~\n\n\\_\\*bold underline\\*\\_ -> _*bold underline*_\n\n\\_\\~italic underline\\~\\_ -> _~italic underline~_\n\n\\_\\~\\*bold italic underline\\*\\~\\_ -> _~*bold italic underline*~_\n\n## Code\n\nCode can be either `inline` or explicit:\n\n``` c\n#include <stdio.h>\n\nvoid main(int) {\n    println(\"%d\\n\", 1234);\n}\n```\n\n``` python\nimport math\n\ndef sqrt(val):\n    return math.sqrt(val)\n```\n\n## Quize\n\n### Single-Choice\n\nDie zwei ist die einzig richtige Antwort\n\n[( )] 1\n[(X)] 2\n[( )] Oder 3\n[?] Es gibt nur eine möglichkeit\n[?] Nummer 2 ist es\n[?] Alles aufgebraucht\n\n### Multiple-Choice\n\nZwei von Vier?\n\n[ ] nein\n[X] Ja\n[X] auch Ja\n[ ] auf keinen Fall\n[?] Es gibt nur eine möglichkeit\n[?] Nummer 2 ist es\n[?] Alles aufgebraucht\n\n### Texteingaben\n\nWie sieht Pi aus, bis auf 5 Stellen nach dem Komma?\n\n[[3.14159]]\n\n## effects\n\n                                  {1}\nAAA AAA AAA AAA {3}{*test*} AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\nAAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\nAAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\n\n{2}\n{{\n\n![Image](http://package.elm-lang.org/assets/favicon.ico)\n\n[ ] nein\n[X] Ja\n[X] auch Ja\n[ ] auf keinen Fall\n\n}}\n                                  {1}\nBBB BBB BBB BBB BBB BBB BBB {3}{*test*} {3}{*test*} BBB BBB BBB BBB BBB BBB BBB\n\n## References\n\nLinks: [Google](http://www.google.de)\n\nImages:\n\n![Image](http://package.elm-lang.org/assets/favicon.ico)\n\nMovies:\n\n!![Movie](https://www.youtube.com/embed/EDp6UmaA9CM)\n\n## Quotes\n\n> This is a quote ...\n>\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n\n## Formulas\n\nsimple inline formulas $ \\frac{a+b}{\\sum x} * \\int x $\nor larger multiline formulas\n\n$$\n\\frac{a+b}{\\sum x}\n      * \\int x\n$$\n\n\n## Symboles\n\n### Arrows\n\n->, ->>, >->, <-, <-<, <<-, <->, =>, <=, <=>\n\n-->, <--, <-->, ==>, <==, <==>\n\n~>, <~\n\n### Smileys\n\n:-), ;-), :-D, :-O, :-(, :-|, :-/, :-P, :-*, :\'), :\'(\n\n### Escape Chars\n\n\\*, \\~, \\_, \\#\n\n## Tables\n\n| h1   | h2   | h3   |\n|:-----|-----:|------|\n| a    |    b |  c   |\n| aa   |   bb |  cc  |\n| aaa  |  bbb | ccc  |\n| aaaa | bbbb | cccc |\n\n## Enumeration\n\n* bullets\n* xxx\n  xxx\n\n## Html\n\nThis is normal Markdown ...\n<b id=\"test\" style=\"background-color:blue;color:red\">\nThis is a bold and colored html...\n</b> that can be used inline or <br> <br> everywhere\n\n<img src=\"http://package.elm-lang.org/assets/favicon.ico\">\n\ns\n\n\n## Misc\n\nhorizontal line\n\n---\n\nxxx\n\n\n';
 var _user$project$Editor$update = F2(
 	function (msg, model) {
 		var _p0 = msg;

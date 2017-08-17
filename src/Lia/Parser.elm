@@ -104,17 +104,22 @@ quiz_SingleChoice =
                                 -1
                    )
     in
-    many (checked False (string "( )"))
+    many (checked False (string "[( )]"))
         |> map (\a b -> List.append a [ b ])
-        |> andMap (checked True (string "(X)"))
+        |> andMap (checked True (string "[(X)]"))
         |> map (++)
-        |> andMap (many (checked False (string "( )")))
+        |> andMap (many (checked False (string "[( )]")))
         |> map (\q -> SingleChoice (get_result q) (List.map (\( _, qq ) -> qq) q))
 
 
 checked : Bool -> Parser PState res -> Parser PState ( Bool, List Inline )
 checked b p =
     (\l -> ( b, l )) <$> (p *> line <* newline)
+
+
+quiz_hints : Parser PState Hints
+quiz_hints =
+    many (string "[?]" *> line <* newline)
 
 
 quiz_MultipleChoice : Parser PState Quiz
@@ -126,6 +131,7 @@ quiz_MultipleChoice =
                     , checked False (string "[ ]")
                     ]
                 )
+        <*> quiz_hints
 
 
 html : Parser PState Inline

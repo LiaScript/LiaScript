@@ -10,7 +10,7 @@ module Lia.Helper
         )
 
 import Array
-import Lia.Type exposing (Block(..), Quiz(..), QuizState(..), QuizVector, Slide)
+import Lia.Type exposing (Block(..), Quiz(..), QuizElement, QuizState(..), QuizVector, Slide)
 
 
 get_headers : List Slide -> List ( Int, ( String, Int ) )
@@ -64,13 +64,13 @@ quiz_vector slides =
                         SingleChoice a _ ->
                             Single -1 a
 
-                        MultipleChoice q ->
+                        MultipleChoice q hints ->
                             q
                                 |> List.map (\( b, _ ) -> ( False, b ))
                                 |> Array.fromList
                                 |> Multi
             in
-            ( Nothing, m, 0 )
+            { solved = Nothing, state = m, trial = 0, hint = 0 }
     in
     slides
         |> List.map (\s -> s.body)
@@ -82,18 +82,19 @@ quiz_vector slides =
 
 quiz_state : Int -> QuizVector -> ( Maybe Bool, Int )
 quiz_state quiz_id vector =
-    case Array.get quiz_id vector of
-        Just ( state, _, trial_count ) ->
-            ( state, trial_count )
-
-        Nothing ->
-            ( Nothing, 0 )
+    vector
+        |> Array.get quiz_id
+        |> Maybe.andThen (\q -> Just ( q.solved, q.trial ))
+        |> Maybe.withDefault ( Nothing, 0 )
 
 
 question_state_text : Int -> QuizVector -> String
 question_state_text quiz_id vector =
-    case Array.get quiz_id vector of
-        Just ( _, Text input answer, _ ) ->
+    case
+        Array.get quiz_id vector
+            |> Maybe.map .state
+    of
+        Just (Text input answer) ->
             input
 
         _ ->
@@ -102,11 +103,14 @@ question_state_text quiz_id vector =
 
 question_state : Int -> Int -> QuizVector -> Bool
 question_state quiz_id question_id vector =
-    case Array.get quiz_id vector of
-        Just ( _, Single input answer, _ ) ->
+    case
+        Array.get quiz_id vector
+            |> Maybe.map .state
+    of
+        Just (Single input answer) ->
             question_id == input
 
-        Just ( _, Multi questions, _ ) ->
+        Just (Multi questions) ->
             case Array.get question_id questions of
                 Just ( c, _ ) ->
                     c

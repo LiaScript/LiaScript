@@ -125,15 +125,22 @@ view_contents model =
     in
     model.slides
         |> get_headers
+        |> (\list ->
+                case model.search_results of
+                    Nothing ->
+                        list
+
+                    Just index ->
+                        list |> List.filter (\( l, x ) -> List.member l index)
+           )
         |> List.map f
         |> (\h ->
                 Html.div []
                     (Html.input
                         [ Attr.type_ "input"
                         , Attr.style [ ( "margin-bottom", "24px" ) ]
-
-                        --, Attr.value <| Lia.Helper.question_state_text idx model.quiz
-                        --, onInput (Input idx)
+                        , Attr.value model.search
+                        , onInput ScanIndex
                         ]
                         []
                         :: h
@@ -245,8 +252,8 @@ view_quiz model quiz idx =
         SingleChoice rslt questions ->
             view_quiz_single_choice model rslt questions idx
 
-        MultipleChoice questions ->
-            view_quiz_multiple_choice model questions idx
+        MultipleChoice questions hints ->
+            Html.div [] [ view_quiz_multiple_choice model questions idx ]
 
 
 view_quiz_text_input : Model -> Int -> Html Msg

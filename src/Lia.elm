@@ -3,6 +3,7 @@ module Lia exposing (..)
 import Array
 import Html exposing (Html)
 import Lia.Helper
+import Lia.Index
 import Lia.Model
 import Lia.Parser
 import Lia.Type
@@ -24,7 +25,7 @@ type alias Mode =
 
 init : Mode -> String -> Model
 init mode script =
-    parse <| Lia.Model.Model script "" [] Array.empty 0 mode 0 0 True Nothing
+    parse <| Lia.Model.Model script "" [] Array.empty 0 mode 0 0 True "" [] Nothing
 
 
 set_script : Model -> String -> Model
@@ -50,6 +51,7 @@ parse model =
                 | slides = slides
                 , error = ""
                 , quiz = Lia.Helper.quiz_vector slides
+                , index = Lia.Index.create slides
             }
 
         Err msg ->
