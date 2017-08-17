@@ -11528,11 +11528,12 @@ var _user$project$Lia_Index$parse_block = function (element) {
 	}
 };
 var _user$project$Lia_Index$extract_string = function (slide) {
-	return A2(
-		_elm_lang$core$Basics_ops['++'],
-		slide.title,
-		_elm_lang$core$String$concat(
-			A2(_elm_lang$core$List$map, _user$project$Lia_Index$parse_block, slide.body)));
+	return _elm_lang$core$String$toLower(
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			slide.title,
+			_elm_lang$core$String$concat(
+				A2(_elm_lang$core$List$map, _user$project$Lia_Index$parse_block, slide.body))));
 };
 var _user$project$Lia_Index$scan = F2(
 	function (index, pattern) {
@@ -11546,7 +11547,10 @@ var _user$project$Lia_Index$scan = F2(
 				_elm_lang$core$List$filter,
 				function (_p8) {
 					var _p9 = _p8;
-					return A2(_elm_lang$core$String$contains, pattern, _p9._1);
+					return A2(
+						_elm_lang$core$String$contains,
+						_elm_lang$core$String$toLower(pattern),
+						_p9._1);
 				},
 				A2(
 					_elm_lang$core$List$indexedMap,
@@ -12430,7 +12434,7 @@ var _user$project$Lia_Parser$line = A2(
 				list,
 				{
 					ctor: '::',
-					_0: _user$project$Lia_Type$Chars('\n'),
+					_0: _user$project$Lia_Type$Chars(' '),
 					_1: {ctor: '[]'}
 				}));
 	},

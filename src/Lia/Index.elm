@@ -13,7 +13,7 @@ scan : List String -> String -> List Int
 scan index pattern =
     index
         |> List.indexedMap (,)
-        |> List.filter (\( _, str ) -> String.contains pattern str)
+        |> List.filter (\( _, str ) -> String.contains (String.toLower pattern) str)
         |> List.map (\( i, _ ) -> i)
 
 
@@ -24,6 +24,7 @@ extract_string slide =
                 |> List.map parse_block
                 |> String.concat
            )
+        |> String.toLower
 
 
 parse_block : Block -> String

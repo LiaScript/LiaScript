@@ -262,7 +262,7 @@ combine list =
 
 line : Parser PState (List Inline)
 line =
-    (\list -> combine <| List.append list [ Chars "\n" ]) <$> many1 inlines
+    (\list -> combine <| List.append list [ Chars " " ]) <$> many1 inlines
 
 
 newline : Parser s ()
