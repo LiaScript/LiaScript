@@ -43,6 +43,9 @@ update msg model =
         Check quiz_id ->
             ( { model | quiz = check_answer quiz_id model.quiz }, Cmd.none )
 
+        Search string ->
+            ( model, Cmd.none )
+
         ContentsTable ->
             ( { model | contents = not model.contents }, Cmd.none )
 

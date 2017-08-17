@@ -11140,6 +11140,9 @@ var _user$project$Lia_Type$Speak = function (a) {
 	return {ctor: 'Speak', _0: a};
 };
 var _user$project$Lia_Type$ContentsTable = {ctor: 'ContentsTable'};
+var _user$project$Lia_Type$Search = function (a) {
+	return {ctor: 'Search', _0: a};
+};
 var _user$project$Lia_Type$Check = function (a) {
 	return {ctor: 'Check', _0: a};
 };
@@ -11406,10 +11409,27 @@ var _user$project$Lia_Helper$get_headers = function (slides) {
 			slides));
 };
 
-var _user$project$Lia_Model$Model = F9(
-	function (a, b, c, d, e, f, g, h, i) {
-		return {script: a, error: b, lia: c, quiz: d, slide: e, mode: f, visible: g, effects: h, contents: i};
-	});
+var _user$project$Lia_Model$Model = function (a) {
+	return function (b) {
+		return function (c) {
+			return function (d) {
+				return function (e) {
+					return function (f) {
+						return function (g) {
+							return function (h) {
+								return function (i) {
+									return function (j) {
+										return {script: a, error: b, lia: c, quiz: d, slide: e, mode: f, visible: g, effects: h, contents: i, search: j};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
 
 var _user$project$Lia_Parser$formatError = F2(
 	function (ms, stream) {
@@ -13011,6 +13031,8 @@ var _user$project$Lia_Update$update = F2(
 							}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
+				case 'Search':
+					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 				case 'ContentsTable':
 					return {
 						ctor: '_Tuple2',
@@ -13841,9 +13863,32 @@ var _user$project$Lia_View$view_contents = function (model) {
 				_1: {ctor: '[]'}
 			});
 	};
-	return A2(
-		_elm_lang$html$Html$div,
-		{ctor: '[]'},
+	return function (h) {
+		return A2(
+			_elm_lang$html$Html$div,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$input,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$type_('input'),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$style(
+								{
+									ctor: '::',
+									_0: {ctor: '_Tuple2', _0: 'margin-bottom', _1: '24px'},
+									_1: {ctor: '[]'}
+								}),
+							_1: {ctor: '[]'}
+						}
+					},
+					{ctor: '[]'}),
+				_1: h
+			});
+	}(
 		A2(
 			_elm_lang$core$List$map,
 			f,
@@ -14075,17 +14120,8 @@ var _user$project$Lia$set_script = F2(
 var _user$project$Lia$init = F2(
 	function (mode, script) {
 		return _user$project$Lia$parse(
-			A9(
-				_user$project$Lia_Model$Model,
-				script,
-				'',
-				{ctor: '[]'},
-				_elm_lang$core$Array$empty,
-				0,
-				mode,
-				0,
-				0,
-				true));
+			_user$project$Lia_Model$Model(script)('')(
+				{ctor: '[]'})(_elm_lang$core$Array$empty)(0)(mode)(0)(0)(true)(_elm_lang$core$Maybe$Nothing));
 	});
 var _user$project$Lia$init_plain = _user$project$Lia$init(_user$project$Lia_Type$Plain);
 var _user$project$Lia$init_slides = _user$project$Lia$init(_user$project$Lia_Type$Slides);

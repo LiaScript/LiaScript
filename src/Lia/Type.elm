@@ -22,6 +22,7 @@ type Msg
     | RadioButton Int Int
     | Input Int String
     | Check Int
+    | Search String
     | ContentsTable
     | Speak String
     | TTS (Result String Never)

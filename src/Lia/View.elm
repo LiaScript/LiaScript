@@ -120,7 +120,19 @@ view_contents model =
     model.lia
         |> get_headers
         |> List.map f
-        |> Html.div []
+        |> (\h ->
+                Html.div []
+                    (Html.input
+                        [ Attr.type_ "input"
+                        , Attr.style [ ( "margin-bottom", "24px" ) ]
+
+                        --, Attr.value <| Lia.Helper.question_state_text idx model.quiz
+                        --, onInput (Input idx)
+                        ]
+                        []
+                        :: h
+                    )
+           )
 
 
 view_slide : Model -> Slide -> Html Msg
