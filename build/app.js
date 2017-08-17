@@ -11982,17 +11982,14 @@ var _user$project$Lia_Parser$html_void = _elm_community$parser_combinators$Combi
 var _user$project$Lia_Parser$html = A2(_elm_community$parser_combinators$Combine_ops['<|>'], _user$project$Lia_Parser$html_void, _user$project$Lia_Parser$html_block);
 var _user$project$Lia_Parser$quiz_TextInput = A2(
 	_elm_community$parser_combinators$Combine_ops['<$>'],
-	function (c) {
-		return _user$project$Lia_Type$TextInput(
-			_elm_lang$core$String$fromList(c));
-	},
+	_user$project$Lia_Type$TextInput,
 	A2(
-		_elm_community$parser_combinators$Combine_ops['*>'],
-		_elm_community$parser_combinators$Combine$string('[['),
+		_elm_community$parser_combinators$Combine_ops['<*'],
 		A2(
-			_elm_community$parser_combinators$Combine$manyTill,
-			_elm_community$parser_combinators$Combine_Char$anyChar,
-			_elm_community$parser_combinators$Combine$string(']]'))));
+			_elm_community$parser_combinators$Combine_ops['*>'],
+			_elm_community$parser_combinators$Combine$string('[['),
+			_elm_community$parser_combinators$Combine$regex('[^\n\\]]+')),
+		_elm_community$parser_combinators$Combine$string(']]')));
 var _user$project$Lia_Parser$comments = _elm_community$parser_combinators$Combine$skip(
 	_elm_community$parser_combinators$Combine$many(
 		A2(

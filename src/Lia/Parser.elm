@@ -85,7 +85,7 @@ quiz =
 
 quiz_TextInput : Parser PState Quiz
 quiz_TextInput =
-    (\c -> TextInput <| String.fromList c) <$> (string "[[" *> manyTill anyChar (string "]]"))
+    TextInput <$> (string "[[" *> regex "[^\n\\]]+" <* string "]]")
 
 
 quiz_SingleChoice : Parser PState Quiz
