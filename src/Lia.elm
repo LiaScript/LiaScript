@@ -46,7 +46,11 @@ parse : Model -> Model
 parse model =
     case Lia.Parser.run model.script of
         Ok lia ->
-            { model | lia = lia, error = "", quiz = Lia.Helper.quiz_matrix lia }
+            { model
+                | lia = lia
+                , error = ""
+                , quiz = Lia.Helper.quiz_vector lia
+            }
 
         Err msg ->
             { model | error = msg }

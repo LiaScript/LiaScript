@@ -60,26 +60,26 @@ update msg model =
 
 
 update_input : Int -> String -> QuizVector -> QuizVector
-update_input quiz_id text matrix =
-    case Array.get quiz_id matrix of
+update_input quiz_id text vector =
+    case Array.get quiz_id vector of
         Just ( Just True, _, _ ) ->
-            matrix
+            vector
 
         Just ( state, Text input answer, trial_count ) ->
-            Array.set quiz_id ( state, Text text answer, trial_count ) matrix
+            Array.set quiz_id ( state, Text text answer, trial_count ) vector
 
         _ ->
-            matrix
+            vector
 
 
 flip_checkbox : Int -> Int -> QuizVector -> QuizVector
-flip_checkbox quiz_id question_id matrix =
-    case Array.get quiz_id matrix of
+flip_checkbox quiz_id question_id vector =
+    case Array.get quiz_id vector of
         Just ( Just True, _, _ ) ->
-            matrix
+            vector
 
         Just ( state, Single c answer, trial_count ) ->
-            Array.set quiz_id ( state, Single question_id answer, trial_count ) matrix
+            Array.set quiz_id ( state, Single question_id answer, trial_count ) vector
 
         Just ( state, Multi quiz, trial_count ) ->
             case Array.get question_id quiz of
@@ -87,20 +87,20 @@ flip_checkbox quiz_id question_id matrix =
                     question
                         |> (\( c, a ) -> ( not c, a ))
                         |> (\q -> Array.set question_id q quiz)
-                        |> (\q -> Array.set quiz_id ( state, Multi q, trial_count ) matrix)
+                        |> (\q -> Array.set quiz_id ( state, Multi q, trial_count ) vector)
 
                 Nothing ->
-                    matrix
+                    vector
 
         _ ->
-            matrix
+            vector
 
 
 check_answer : Int -> QuizVector -> QuizVector
-check_answer quiz_id matrix =
-    case Array.get quiz_id matrix of
+check_answer quiz_id vector =
+    case Array.get quiz_id vector of
         Just ( Just True, _, _ ) ->
-            matrix
+            vector
 
         Just ( state, Text input answer, trial_count ) ->
             Array.set quiz_id
@@ -108,7 +108,7 @@ check_answer quiz_id matrix =
                 , Text input answer
                 , trial_count + 1
                 )
-                matrix
+                vector
 
         Just ( state, Single input answer, trial_count ) ->
             Array.set quiz_id
@@ -116,7 +116,7 @@ check_answer quiz_id matrix =
                 , Single input answer
                 , trial_count + 1
                 )
-                matrix
+                vector
 
         Just ( state, Multi quiz, trial_count ) ->
             let
@@ -128,7 +128,7 @@ check_answer quiz_id matrix =
                 , Multi quiz
                 , trial_count + 1
                 )
-                matrix
+                vector
 
         Nothing ->
-            matrix
+            vector

@@ -5,8 +5,8 @@ module Lia.Helper
         , get_slide_effects
         , question_state
         , question_state_text
-        , quiz_matrix
         , quiz_state
+        , quiz_vector
         )
 
 import Array
@@ -43,8 +43,8 @@ get_slide_effects i slides =
             0
 
 
-quiz_matrix : List Slide -> QuizVector
-quiz_matrix slides =
+quiz_vector : List Slide -> QuizVector
+quiz_vector slides =
     let
         filter b =
             case b of
@@ -54,7 +54,7 @@ quiz_matrix slides =
                 _ ->
                     Nothing
 
-        matrix quiz =
+        vector quiz =
             let
                 m =
                     case quiz of
@@ -76,13 +76,13 @@ quiz_matrix slides =
         |> List.map (\s -> s.body)
         |> List.concat
         |> List.filterMap filter
-        |> List.map matrix
+        |> List.map vector
         |> Array.fromList
 
 
 quiz_state : Int -> QuizVector -> ( Maybe Bool, Int )
-quiz_state quiz_id matrix =
-    case Array.get quiz_id matrix of
+quiz_state quiz_id vector =
+    case Array.get quiz_id vector of
         Just ( state, _, trial_count ) ->
             ( state, trial_count )
 
@@ -91,8 +91,8 @@ quiz_state quiz_id matrix =
 
 
 question_state_text : Int -> QuizVector -> String
-question_state_text quiz_id matrix =
-    case Array.get quiz_id matrix of
+question_state_text quiz_id vector =
+    case Array.get quiz_id vector of
         Just ( _, Text input answer, _ ) ->
             input
 
@@ -101,8 +101,8 @@ question_state_text quiz_id matrix =
 
 
 question_state : Int -> Int -> QuizVector -> Bool
-question_state quiz_id question_id matrix =
-    case Array.get quiz_id matrix of
+question_state quiz_id question_id vector =
+    case Array.get quiz_id vector of
         Just ( _, Single input answer, _ ) ->
             question_id == input
 

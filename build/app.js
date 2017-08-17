@@ -11277,8 +11277,8 @@ var _user$project$Lia_Type$LiaBool = function (a) {
 };
 
 var _user$project$Lia_Helper$question_state = F3(
-	function (quiz_id, question_id, matrix) {
-		var _p0 = A2(_elm_lang$core$Array$get, quiz_id, matrix);
+	function (quiz_id, question_id, vector) {
+		var _p0 = A2(_elm_lang$core$Array$get, quiz_id, vector);
 		_v0_2:
 		do {
 			if ((_p0.ctor === 'Just') && (_p0._0.ctor === '_Tuple3')) {
@@ -11302,8 +11302,8 @@ var _user$project$Lia_Helper$question_state = F3(
 		return false;
 	});
 var _user$project$Lia_Helper$question_state_text = F2(
-	function (quiz_id, matrix) {
-		var _p2 = A2(_elm_lang$core$Array$get, quiz_id, matrix);
+	function (quiz_id, vector) {
+		var _p2 = A2(_elm_lang$core$Array$get, quiz_id, vector);
 		if (((_p2.ctor === 'Just') && (_p2._0.ctor === '_Tuple3')) && (_p2._0._1.ctor === 'Text')) {
 			return _p2._0._1._0;
 		} else {
@@ -11311,16 +11311,16 @@ var _user$project$Lia_Helper$question_state_text = F2(
 		}
 	});
 var _user$project$Lia_Helper$quiz_state = F2(
-	function (quiz_id, matrix) {
-		var _p3 = A2(_elm_lang$core$Array$get, quiz_id, matrix);
+	function (quiz_id, vector) {
+		var _p3 = A2(_elm_lang$core$Array$get, quiz_id, vector);
 		if (_p3.ctor === 'Just') {
 			return {ctor: '_Tuple2', _0: _p3._0._0, _1: _p3._0._2};
 		} else {
 			return {ctor: '_Tuple2', _0: _elm_lang$core$Maybe$Nothing, _1: 0};
 		}
 	});
-var _user$project$Lia_Helper$quiz_matrix = function (slides) {
-	var matrix = function (quiz) {
+var _user$project$Lia_Helper$quiz_vector = function (slides) {
+	var vector = function (quiz) {
 		var m = function () {
 			var _p4 = quiz;
 			switch (_p4.ctor) {
@@ -11353,7 +11353,7 @@ var _user$project$Lia_Helper$quiz_matrix = function (slides) {
 	return _elm_lang$core$Array$fromList(
 		A2(
 			_elm_lang$core$List$map,
-			matrix,
+			vector,
 			A2(
 				_elm_lang$core$List$filterMap,
 				filter,
@@ -12770,8 +12770,8 @@ var _user$project$Tts_Tts$Recognition = F2(
 	});
 
 var _user$project$Lia_Update$check_answer = F2(
-	function (quiz_id, matrix) {
-		var _p0 = A2(_elm_lang$core$Array$get, quiz_id, matrix);
+	function (quiz_id, vector) {
+		var _p0 = A2(_elm_lang$core$Array$get, quiz_id, vector);
 		_v0_0:
 		do {
 			if (_p0.ctor === 'Just') {
@@ -12792,7 +12792,7 @@ var _user$project$Lia_Update$check_answer = F2(
 									_1: A2(_user$project$Lia_Type$Text, _p2, _p1),
 									_2: _p0._0._2 + 1
 								},
-								matrix);
+								vector);
 						}
 					case 'Single':
 						if ((_p0._0._0.ctor === 'Just') && (_p0._0._0._0 === true)) {
@@ -12810,7 +12810,7 @@ var _user$project$Lia_Update$check_answer = F2(
 									_1: A2(_user$project$Lia_Type$Single, _p4, _p3),
 									_2: _p0._0._2 + 1
 								},
-								matrix);
+								vector);
 						}
 					default:
 						if ((_p0._0._0.ctor === 'Just') && (_p0._0._0._0 === true)) {
@@ -12832,18 +12832,18 @@ var _user$project$Lia_Update$check_answer = F2(
 									_1: _user$project$Lia_Type$Multi(_p7),
 									_2: _p0._0._2 + 1
 								},
-								matrix);
+								vector);
 						}
 				}
 			} else {
-				return matrix;
+				return vector;
 			}
 		} while(false);
-		return matrix;
+		return vector;
 	});
 var _user$project$Lia_Update$flip_checkbox = F3(
-	function (quiz_id, question_id, matrix) {
-		var _p8 = A2(_elm_lang$core$Array$get, quiz_id, matrix);
+	function (quiz_id, question_id, vector) {
+		var _p8 = A2(_elm_lang$core$Array$get, quiz_id, vector);
 		_v2_3:
 		do {
 			_v2_0:
@@ -12863,7 +12863,7 @@ var _user$project$Lia_Update$flip_checkbox = F3(
 										_1: A2(_user$project$Lia_Type$Single, question_id, _p8._0._1._1),
 										_2: _p8._0._2
 									},
-									matrix);
+									vector);
 							}
 						case 'Multi':
 							if ((_p8._0._0.ctor === 'Just') && (_p8._0._0._0 === true)) {
@@ -12882,7 +12882,7 @@ var _user$project$Lia_Update$flip_checkbox = F3(
 												_1: _user$project$Lia_Type$Multi(q),
 												_2: _p8._0._2
 											},
-											matrix);
+											vector);
 									}(
 										function (q) {
 											return A3(_elm_lang$core$Array$set, question_id, q, _p12);
@@ -12892,7 +12892,7 @@ var _user$project$Lia_Update$flip_checkbox = F3(
 												return {ctor: '_Tuple2', _0: !_p11._0, _1: _p11._1};
 											}(_p9._0)));
 								} else {
-									return matrix;
+									return vector;
 								}
 							}
 						default:
@@ -12906,18 +12906,18 @@ var _user$project$Lia_Update$flip_checkbox = F3(
 					break _v2_3;
 				}
 			} while(false);
-			return matrix;
+			return vector;
 		} while(false);
-		return matrix;
+		return vector;
 	});
 var _user$project$Lia_Update$update_input = F3(
-	function (quiz_id, text, matrix) {
-		var _p13 = A2(_elm_lang$core$Array$get, quiz_id, matrix);
+	function (quiz_id, text, vector) {
+		var _p13 = A2(_elm_lang$core$Array$get, quiz_id, vector);
 		_v5_2:
 		do {
 			if ((_p13.ctor === 'Just') && (_p13._0.ctor === '_Tuple3')) {
 				if ((_p13._0._0.ctor === 'Just') && (_p13._0._0._0 === true)) {
-					return matrix;
+					return vector;
 				} else {
 					if (_p13._0._1.ctor === 'Text') {
 						return A3(
@@ -12929,7 +12929,7 @@ var _user$project$Lia_Update$update_input = F3(
 								_1: A2(_user$project$Lia_Type$Text, text, _p13._0._1._1),
 								_2: _p13._0._2
 							},
-							matrix);
+							vector);
 					} else {
 						break _v5_2;
 					}
@@ -12938,7 +12938,7 @@ var _user$project$Lia_Update$update_input = F3(
 				break _v5_2;
 			}
 		} while(false);
-		return matrix;
+		return vector;
 	});
 var _user$project$Lia_Update$update = F2(
 	function (msg, model) {
@@ -14112,7 +14112,7 @@ var _user$project$Lia$parse = function (model) {
 			{
 				lia: _p1,
 				error: '',
-				quiz: _user$project$Lia_Helper$quiz_matrix(_p1)
+				quiz: _user$project$Lia_Helper$quiz_vector(_p1)
 			});
 	} else {
 		return _elm_lang$core$Native_Utils.update(
