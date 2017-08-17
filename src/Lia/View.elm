@@ -218,10 +218,6 @@ view_block model block =
                 )
 
 
-
---view_block model sub_block
-
-
 view_quiz : Model -> Quiz -> Int -> Html Msg
 view_quiz model quiz idx =
     case quiz of
@@ -250,18 +246,18 @@ view_quiz_text_input model idx =
 
 quiz_check_button : Model -> Int -> Html Msg
 quiz_check_button model idx =
-    Html.button
-        (case Lia.Helper.quiz_state idx model.quiz of
-            Just b ->
-                if b then
+    case Lia.Helper.quiz_state idx model.quiz of
+        ( Just b, trial_counts ) ->
+            Html.button
+                (if b then
                     [ Attr.style [ ( "color", "green" ) ] ]
-                else
+                 else
                     [ Attr.style [ ( "color", "red" ) ], onClick (Check idx) ]
+                )
+                [ Html.text ("Check " ++ toString trial_counts) ]
 
-            Nothing ->
-                [ onClick (Check idx) ]
-        )
-        [ Html.text "Check" ]
+        ( Nothing, _ ) ->
+            Html.button [ onClick (Check idx) ] [ Html.text "Check" ]
 
 
 view_quiz_single_choice : Model -> Int -> List (List Inline) -> Int -> Html Msg
@@ -273,7 +269,7 @@ view_quiz_single_choice model rslt questions idx =
                 Html.p []
                     [ Html.input
                         [ Attr.type_ "radio"
-                        , Attr.checked (Lia.Helper.question_state idx i model.quiz)
+                        , Attr.checked <| Lia.Helper.question_state idx i model.quiz
                         , onClick (RadioButton idx i)
                         ]
                         []

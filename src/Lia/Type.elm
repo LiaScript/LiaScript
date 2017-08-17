@@ -28,7 +28,7 @@ type Msg
 
 
 type alias QuizMatrix =
-    Array ( Maybe Bool, QuizState )
+    Array ( Maybe Bool, QuizState, Int )
 
 
 type QuizState

@@ -70,7 +70,7 @@ quiz_matrix slides =
                                 |> Array.fromList
                                 |> Multi
             in
-            ( Nothing, m )
+            ( Nothing, m, 0 )
     in
     slides
         |> List.map (\s -> s.body)
@@ -80,20 +80,20 @@ quiz_matrix slides =
         |> Array.fromList
 
 
-quiz_state : Int -> QuizMatrix -> Maybe Bool
+quiz_state : Int -> QuizMatrix -> ( Maybe Bool, Int )
 quiz_state quiz_id matrix =
     case Array.get quiz_id matrix of
-        Just ( state, _ ) ->
-            state
+        Just ( state, _, trial_count ) ->
+            ( state, trial_count )
 
         Nothing ->
-            Nothing
+            ( Nothing, 0 )
 
 
 question_state_text : Int -> QuizMatrix -> String
 question_state_text quiz_id matrix =
     case Array.get quiz_id matrix of
-        Just ( _, Text input answer ) ->
+        Just ( _, Text input answer, _ ) ->
             input
 
         _ ->
@@ -103,10 +103,10 @@ question_state_text quiz_id matrix =
 question_state : Int -> Int -> QuizMatrix -> Bool
 question_state quiz_id question_id matrix =
     case Array.get quiz_id matrix of
-        Just ( _, Single input answer ) ->
+        Just ( _, Single input answer, _ ) ->
             question_id == input
 
-        Just ( _, Multi questions ) ->
+        Just ( _, Multi questions, _ ) ->
             case Array.get question_id questions of
                 Just ( c, _ ) ->
                     c

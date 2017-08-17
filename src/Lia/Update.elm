@@ -59,11 +59,11 @@ update msg model =
 update_input : Int -> String -> QuizMatrix -> QuizMatrix
 update_input quiz_id text matrix =
     case Array.get quiz_id matrix of
-        Just ( Just True, _ ) ->
+        Just ( Just True, _, _ ) ->
             matrix
 
-        Just ( state, Text input answer ) ->
-            Array.set quiz_id ( state, Text text answer ) matrix
+        Just ( state, Text input answer, trial_count ) ->
+            Array.set quiz_id ( state, Text text answer, trial_count ) matrix
 
         _ ->
             matrix
@@ -72,19 +72,19 @@ update_input quiz_id text matrix =
 flip_checkbox : Int -> Int -> QuizMatrix -> QuizMatrix
 flip_checkbox quiz_id question_id matrix =
     case Array.get quiz_id matrix of
-        Just ( Just True, _ ) ->
+        Just ( Just True, _, _ ) ->
             matrix
 
-        Just ( state, Single c a ) ->
-            Array.set quiz_id ( state, Single question_id a ) matrix
+        Just ( state, Single c answer, trial_count ) ->
+            Array.set quiz_id ( state, Single question_id answer, trial_count ) matrix
 
-        Just ( state, Multi quiz ) ->
+        Just ( state, Multi quiz, trial_count ) ->
             case Array.get question_id quiz of
                 Just question ->
                     question
                         |> (\( c, a ) -> ( not c, a ))
                         |> (\q -> Array.set question_id q quiz)
-                        |> (\q -> Array.set quiz_id ( state, Multi q ) matrix)
+                        |> (\q -> Array.set quiz_id ( state, Multi q, trial_count ) matrix)
 
                 Nothing ->
                     matrix
@@ -96,24 +96,26 @@ flip_checkbox quiz_id question_id matrix =
 check_answer : Int -> QuizMatrix -> QuizMatrix
 check_answer quiz_id matrix =
     case Array.get quiz_id matrix of
-        Just ( Just True, _ ) ->
+        Just ( Just True, _, _ ) ->
             matrix
 
-        Just ( state, Text input answer ) ->
+        Just ( state, Text input answer, trial_count ) ->
             Array.set quiz_id
                 ( Just (input == answer)
                 , Text input answer
+                , trial_count + 1
                 )
                 matrix
 
-        Just ( state, Single input answer ) ->
+        Just ( state, Single input answer, trial_count ) ->
             Array.set quiz_id
                 ( Just (input == answer)
                 , Single input answer
+                , trial_count + 1
                 )
                 matrix
 
-        Just ( state, Multi quiz ) ->
+        Just ( state, Multi quiz, trial_count ) ->
             let
                 f ( input, answer ) result =
                     result && (input == answer)
@@ -121,6 +123,7 @@ check_answer quiz_id matrix =
             Array.set quiz_id
                 ( Just (Array.foldr f True quiz)
                 , Multi quiz
+                , trial_count + 1
                 )
                 matrix
 
