@@ -45,11 +45,11 @@ init_slides =
 parse : Model -> Model
 parse model =
     case Lia.Parser.run model.script of
-        Ok lia ->
+        Ok slides ->
             { model
-                | lia = lia
+                | slides = slides
                 , error = ""
-                , quiz = Lia.Helper.quiz_vector lia
+                , quiz = Lia.Helper.quiz_vector slides
             }
 
         Err msg ->

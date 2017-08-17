@@ -6,9 +6,9 @@ import Lia.Type exposing (Mode, QuizVector, Slide)
 type alias Model =
     { script : String
     , error : String
-    , lia : List Slide
+    , slides : List Slide
     , quiz : QuizVector
-    , slide : Int
+    , current_slide : Int
     , mode : Mode
     , visible : Int
     , effects : Int

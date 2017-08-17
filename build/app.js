@@ -11419,7 +11419,7 @@ var _user$project$Lia_Model$Model = function (a) {
 							return function (h) {
 								return function (i) {
 									return function (j) {
-										return {script: a, error: b, lia: c, quiz: d, slide: e, mode: f, visible: g, effects: h, contents: i, search: j};
+										return {script: a, error: b, slides: c, quiz: d, current_slide: e, mode: f, visible: g, effects: h, contents: i, search: j};
 									};
 								};
 							};
@@ -12952,16 +12952,16 @@ var _user$project$Lia_Update$update = F2(
 						_v8 = _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							slide: _p15,
+							current_slide: _p15,
 							visible: 0,
-							effects: A2(_user$project$Lia_Helper$get_slide_effects, _p15, model.lia)
+							effects: A2(_user$project$Lia_Helper$get_slide_effects, _p15, model.slides)
 						});
 					msg = _v7;
 					model = _v8;
 					continue update;
 				case 'PrevSlide':
 					if (_elm_lang$core$Native_Utils.eq(model.visible, 0)) {
-						var _v9 = _user$project$Lia_Type$Load(model.slide - 1),
+						var _v9 = _user$project$Lia_Type$Load(model.current_slide - 1),
 							_v10 = model;
 						msg = _v9;
 						model = _v10;
@@ -12977,7 +12977,7 @@ var _user$project$Lia_Update$update = F2(
 					}
 				case 'NextSlide':
 					if (_elm_lang$core$Native_Utils.eq(model.visible, model.effects)) {
-						var _v11 = _user$project$Lia_Type$Load(model.slide + 1),
+						var _v11 = _user$project$Lia_Type$Load(model.current_slide + 1),
 							_v12 = model;
 						msg = _v11;
 						model = _v12;
@@ -13855,7 +13855,7 @@ var _user$project$Lia_View$view_contents = function (model) {
 											_0: {
 												ctor: '_Tuple2',
 												_0: 'color',
-												_1: _elm_lang$core$Native_Utils.eq(model.slide, _p20) ? '#33f' : '#333'
+												_1: _elm_lang$core$Native_Utils.eq(model.current_slide, _p20) ? '#33f' : '#333'
 											},
 											_1: {ctor: '[]'}
 										}
@@ -13901,7 +13901,7 @@ var _user$project$Lia_View$view_contents = function (model) {
 		A2(
 			_elm_lang$core$List$map,
 			f,
-			_user$project$Lia_Helper$get_headers(model.lia)));
+			_user$project$Lia_Helper$get_headers(model.slides)));
 };
 var _user$project$Lia_View$view_slides = function (model) {
 	var loadButton = F2(
@@ -13990,7 +13990,7 @@ var _user$project$Lia_View$view_slides = function (model) {
 					{
 						ctor: '::',
 						_0: function () {
-							var _p21 = A2(_user$project$Lia_Helper$get_slide, model.slide, model.lia);
+							var _p21 = A2(_user$project$Lia_Helper$get_slide, model.current_slide, model.slides);
 							if (_p21.ctor === 'Just') {
 								return A3(_elm_lang$html$Html_Lazy$lazy2, _user$project$Lia_View$view_slide, model, _p21._0);
 							} else {
@@ -14080,7 +14080,7 @@ var _user$project$Lia_View$view_plain = function (model) {
 				}),
 			_1: {ctor: '[]'}
 		},
-		A2(_elm_lang$core$List$map, f, model.lia));
+		A2(_elm_lang$core$List$map, f, model.slides));
 };
 var _user$project$Lia_View$view = function (model) {
 	var _p22 = model.mode;
@@ -14110,7 +14110,7 @@ var _user$project$Lia$parse = function (model) {
 		return _elm_lang$core$Native_Utils.update(
 			model,
 			{
-				lia: _p1,
+				slides: _p1,
 				error: '',
 				quiz: _user$project$Lia_Helper$quiz_vector(_p1)
 			});
@@ -14452,7 +14452,7 @@ var _user$project$Editor$leftView = function (model) {
 						A2(
 							_elm_lang$core$Basics_ops['++'],
 							'\n',
-							_elm_lang$core$Basics$toString(model.lia.lia)))),
+							_elm_lang$core$Basics$toString(model.lia.slides)))),
 				_1: {ctor: '[]'}
 			}));
 };

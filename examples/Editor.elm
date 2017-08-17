@@ -176,7 +176,7 @@ leftView model =
                 , ( "resize", "none" )
                 ]
             ]
-            [ Html.text (model.lia.error ++ "\n" ++ toString model.lia.lia) ]
+            [ Html.text (model.lia.error ++ "\n" ++ toString model.lia.slides) ]
         )
 
 

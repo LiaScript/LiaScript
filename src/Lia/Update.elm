@@ -14,20 +14,20 @@ update msg model =
             --( { model | slide = int }, Cmd.none )
             update (Speak "Starting to load next slide")
                 { model
-                    | slide = int
+                    | current_slide = int
                     , visible = 0
-                    , effects = get_slide_effects int model.lia
+                    , effects = get_slide_effects int model.slides
                 }
 
         PrevSlide ->
             if model.visible == 0 then
-                update (Load (model.slide - 1)) model
+                update (Load (model.current_slide - 1)) model
             else
                 ( { model | visible = model.visible - 1 }, Cmd.none )
 
         NextSlide ->
             if model.visible == model.effects then
-                update (Load (model.slide + 1)) model
+                update (Load (model.current_slide + 1)) model
             else
                 ( { model | visible = model.visible + 1 }, Cmd.none )
 

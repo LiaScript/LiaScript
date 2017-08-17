@@ -34,7 +34,7 @@ view_plain model =
             , ( "height", "100%" )
             ]
         ]
-        (List.map f model.lia)
+        (List.map f model.slides)
 
 
 view_slides : Model -> Html Msg
@@ -64,7 +64,7 @@ view_slides model =
                         , ( "height", "100%" )
                         ]
                     ]
-                    [ case get_slide model.slide model.lia of
+                    [ case get_slide model.current_slide model.slides of
                         Just slide ->
                             lazy2 view_slide model slide
 
@@ -113,7 +113,7 @@ view_contents model =
                           , toString ((i - 1) * 20) ++ "px"
                           )
                         , ( "color"
-                          , if model.slide == n then
+                          , if model.current_slide == n then
                                 "#33f"
                             else
                                 "#333"
@@ -123,7 +123,7 @@ view_contents model =
                     [ Html.text h ]
                 ]
     in
-    model.lia
+    model.slides
         |> get_headers
         |> List.map f
         |> (\h ->
