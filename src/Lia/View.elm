@@ -112,6 +112,12 @@ view_contents model =
                         [ ( "padding-left"
                           , toString ((i - 1) * 20) ++ "px"
                           )
+                        , ( "color"
+                          , if model.slide == n then
+                                "#33f"
+                            else
+                                "#333"
+                          )
                         ]
                     ]
                     [ Html.text h ]

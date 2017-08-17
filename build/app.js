@@ -13814,6 +13814,7 @@ var _user$project$Lia_View$view_slide = F2(
 var _user$project$Lia_View$view_contents = function (model) {
 	var f = function (_p17) {
 		var _p18 = _p17;
+		var _p20 = _p18._0;
 		var _p19 = _p18._1._0;
 		return A2(
 			_elm_lang$html$Html$div,
@@ -13825,7 +13826,7 @@ var _user$project$Lia_View$view_contents = function (model) {
 					{
 						ctor: '::',
 						_0: _elm_lang$html$Html_Events$onClick(
-							_user$project$Lia_Type$Load(_p18._0)),
+							_user$project$Lia_Type$Load(_p20)),
 						_1: {
 							ctor: '::',
 							_0: _elm_lang$html$Html_Attributes$href(
@@ -13849,7 +13850,15 @@ var _user$project$Lia_View$view_contents = function (model) {
 												_elm_lang$core$Basics$toString((_p18._1._1 - 1) * 20),
 												'px')
 										},
-										_1: {ctor: '[]'}
+										_1: {
+											ctor: '::',
+											_0: {
+												ctor: '_Tuple2',
+												_0: 'color',
+												_1: _elm_lang$core$Native_Utils.eq(model.slide, _p20) ? '#33f' : '#333'
+											},
+											_1: {ctor: '[]'}
+										}
 									}),
 								_1: {ctor: '[]'}
 							}
@@ -13981,9 +13990,9 @@ var _user$project$Lia_View$view_slides = function (model) {
 					{
 						ctor: '::',
 						_0: function () {
-							var _p20 = A2(_user$project$Lia_Helper$get_slide, model.slide, model.lia);
-							if (_p20.ctor === 'Just') {
-								return A3(_elm_lang$html$Html_Lazy$lazy2, _user$project$Lia_View$view_slide, model, _p20._0);
+							var _p21 = A2(_user$project$Lia_Helper$get_slide, model.slide, model.lia);
+							if (_p21.ctor === 'Just') {
+								return A3(_elm_lang$html$Html_Lazy$lazy2, _user$project$Lia_View$view_slide, model, _p21._0);
 							} else {
 								return _elm_lang$html$Html$text('');
 							}
@@ -14074,8 +14083,8 @@ var _user$project$Lia_View$view_plain = function (model) {
 		A2(_elm_lang$core$List$map, f, model.lia));
 };
 var _user$project$Lia_View$view = function (model) {
-	var _p21 = model.mode;
-	if (_p21.ctor === 'Slides') {
+	var _p22 = model.mode;
+	if (_p22.ctor === 'Slides') {
 		return _user$project$Lia_View$view_slides(model);
 	} else {
 		return _user$project$Lia_View$view_plain(model);
