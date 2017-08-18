@@ -11144,6 +11144,9 @@ var _user$project$Lia_Type$Speak = function (a) {
 	return {ctor: 'Speak', _0: a};
 };
 var _user$project$Lia_Type$ContentsTable = {ctor: 'ContentsTable'};
+var _user$project$Lia_Type$ShowHint = function (a) {
+	return {ctor: 'ShowHint', _0: a};
+};
 var _user$project$Lia_Type$ScanIndex = function (a) {
 	return {ctor: 'ScanIndex', _0: a};
 };
@@ -11184,9 +11187,9 @@ var _user$project$Lia_Type$EBlock = F2(
 	function (a, b) {
 		return {ctor: 'EBlock', _0: a, _1: b};
 	});
-var _user$project$Lia_Type$Quiz = F2(
-	function (a, b) {
-		return {ctor: 'Quiz', _0: a, _1: b};
+var _user$project$Lia_Type$Quiz = F3(
+	function (a, b, c) {
+		return {ctor: 'Quiz', _0: a, _1: b, _2: c};
 	});
 var _user$project$Lia_Type$Table = F3(
 	function (a, b, c) {
@@ -11206,10 +11209,9 @@ var _user$project$Lia_Type$HorizontalLine = {ctor: 'HorizontalLine'};
 var _user$project$Lia_Type$TextInput = function (a) {
 	return {ctor: 'TextInput', _0: a};
 };
-var _user$project$Lia_Type$MultipleChoice = F2(
-	function (a, b) {
-		return {ctor: 'MultipleChoice', _0: a, _1: b};
-	});
+var _user$project$Lia_Type$MultipleChoice = function (a) {
+	return {ctor: 'MultipleChoice', _0: a};
+};
 var _user$project$Lia_Type$SingleChoice = F2(
 	function (a, b) {
 		return {ctor: 'SingleChoice', _0: a, _1: b};
@@ -11409,6 +11411,15 @@ var _user$project$Lia_Helper$get_slide_effects = F2(
 		var _p8 = A2(_user$project$Lia_Helper$get_slide, i, slides);
 		if (_p8.ctor === 'Just') {
 			return _p8._0.effects;
+		} else {
+			return 0;
+		}
+	});
+var _user$project$Lia_Helper$get_hint_counter = F2(
+	function (idx, vector) {
+		var _p9 = A2(_elm_lang$core$Array$get, idx, vector);
+		if (_p9.ctor === 'Just') {
+			return _p9._0.hint;
 		} else {
 			return 0;
 		}
@@ -12168,7 +12179,7 @@ var _user$project$Lia_Parser$quiz_TextInput = A2(
 			_elm_community$parser_combinators$Combine_ops['*>'],
 			_elm_community$parser_combinators$Combine$string('[['),
 			_elm_community$parser_combinators$Combine$regex('[^\n\\]]+')),
-		_elm_community$parser_combinators$Combine$string(']]')));
+		_elm_community$parser_combinators$Combine$regex('\\]\\]( *)\\n')));
 var _user$project$Lia_Parser$comments = _elm_community$parser_combinators$Combine$skip(
 	_elm_community$parser_combinators$Combine$many(
 		A2(
@@ -12527,6 +12538,26 @@ var _user$project$Lia_Parser$quiz_SingleChoice = function () {
 								false,
 								_elm_community$parser_combinators$Combine$string('[( )]'))))))));
 }();
+var _user$project$Lia_Parser$quiz_MultipleChoice = A2(
+	_elm_community$parser_combinators$Combine_ops['<$>'],
+	_user$project$Lia_Type$MultipleChoice,
+	_elm_community$parser_combinators$Combine$many1(
+		_elm_community$parser_combinators$Combine$choice(
+			{
+				ctor: '::',
+				_0: A2(
+					_user$project$Lia_Parser$checked,
+					true,
+					_elm_community$parser_combinators$Combine$string('[X]')),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_user$project$Lia_Parser$checked,
+						false,
+						_elm_community$parser_combinators$Combine$string('[ ]')),
+					_1: {ctor: '[]'}
+				}
+			})));
 var _user$project$Lia_Parser$quiz_hints = _elm_community$parser_combinators$Combine$many(
 	A2(
 		_elm_community$parser_combinators$Combine_ops['<*'],
@@ -12535,29 +12566,6 @@ var _user$project$Lia_Parser$quiz_hints = _elm_community$parser_combinators$Comb
 			_elm_community$parser_combinators$Combine$string('[?]'),
 			_user$project$Lia_Parser$line),
 		_user$project$Lia_Parser$newline));
-var _user$project$Lia_Parser$quiz_MultipleChoice = A2(
-	_elm_community$parser_combinators$Combine_ops['<*>'],
-	A2(
-		_elm_community$parser_combinators$Combine_ops['<$>'],
-		_user$project$Lia_Type$MultipleChoice,
-		_elm_community$parser_combinators$Combine$many1(
-			_elm_community$parser_combinators$Combine$choice(
-				{
-					ctor: '::',
-					_0: A2(
-						_user$project$Lia_Parser$checked,
-						true,
-						_elm_community$parser_combinators$Combine$string('[X]')),
-					_1: {
-						ctor: '::',
-						_0: A2(
-							_user$project$Lia_Parser$checked,
-							false,
-							_elm_community$parser_combinators$Combine$string('[ ]')),
-						_1: {ctor: '[]'}
-					}
-				}))),
-	_user$project$Lia_Parser$quiz_hints);
 var _user$project$Lia_Parser$quiz = function () {
 	var counter = function () {
 		var increment_counter = function (c) {
@@ -12576,23 +12584,26 @@ var _user$project$Lia_Parser$quiz = function () {
 	return A2(
 		_elm_community$parser_combinators$Combine_ops['<*>'],
 		A2(
-			_elm_community$parser_combinators$Combine_ops['<$>'],
-			_user$project$Lia_Type$Quiz,
-			_elm_community$parser_combinators$Combine$choice(
-				{
-					ctor: '::',
-					_0: _user$project$Lia_Parser$quiz_SingleChoice,
-					_1: {
+			_elm_community$parser_combinators$Combine_ops['<*>'],
+			A2(
+				_elm_community$parser_combinators$Combine_ops['<$>'],
+				_user$project$Lia_Type$Quiz,
+				_elm_community$parser_combinators$Combine$choice(
+					{
 						ctor: '::',
-						_0: _user$project$Lia_Parser$quiz_MultipleChoice,
+						_0: _user$project$Lia_Parser$quiz_SingleChoice,
 						_1: {
 							ctor: '::',
-							_0: _user$project$Lia_Parser$quiz_TextInput,
-							_1: {ctor: '[]'}
+							_0: _user$project$Lia_Parser$quiz_MultipleChoice,
+							_1: {
+								ctor: '::',
+								_0: _user$project$Lia_Parser$quiz_TextInput,
+								_1: {ctor: '[]'}
+							}
 						}
-					}
-				})),
-		counter);
+					})),
+			counter),
+		_user$project$Lia_Parser$quiz_hints);
 }();
 var _user$project$Lia_Parser$paragraph = A2(
 	_elm_community$parser_combinators$Combine_ops['<$>'],
@@ -13034,25 +13045,43 @@ var _user$project$Lia_Update$flip_checkbox = F3(
 			return vector;
 		}
 	});
-var _user$project$Lia_Update$update_input = F3(
-	function (idx, text, vector) {
+var _user$project$Lia_Update$update_hint = F2(
+	function (idx, vector) {
 		var _p12 = A2(_elm_lang$core$Array$get, idx, vector);
 		if (_p12.ctor === 'Just') {
-			var _p14 = _p12._0;
+			var _p13 = _p12._0;
+			return _elm_lang$core$Native_Utils.eq(
+				_p13.solved,
+				_elm_lang$core$Maybe$Just(true)) ? vector : A3(
+				_elm_lang$core$Array$set,
+				idx,
+				_elm_lang$core$Native_Utils.update(
+					_p13,
+					{hint: _p13.hint + 1}),
+				vector);
+		} else {
+			return vector;
+		}
+	});
+var _user$project$Lia_Update$update_input = F3(
+	function (idx, text, vector) {
+		var _p14 = A2(_elm_lang$core$Array$get, idx, vector);
+		if (_p14.ctor === 'Just') {
+			var _p16 = _p14._0;
 			if (_elm_lang$core$Native_Utils.eq(
-				_p14.solved,
+				_p16.solved,
 				_elm_lang$core$Maybe$Just(true))) {
 				return vector;
 			} else {
-				var _p13 = _p14.state;
-				if (_p13.ctor === 'Text') {
+				var _p15 = _p16.state;
+				if (_p15.ctor === 'Text') {
 					return A3(
 						_elm_lang$core$Array$set,
 						idx,
 						_elm_lang$core$Native_Utils.update(
-							_p14,
+							_p16,
 							{
-								state: A2(_user$project$Lia_Type$Text, text, _p13._1)
+								state: A2(_user$project$Lia_Type$Text, text, _p15._1)
 							}),
 						vector);
 				} else {
@@ -13067,27 +13096,27 @@ var _user$project$Lia_Update$update = F2(
 	function (msg, model) {
 		update:
 		while (true) {
-			var _p15 = msg;
-			switch (_p15.ctor) {
+			var _p17 = msg;
+			switch (_p17.ctor) {
 				case 'Load':
-					var _p16 = _p15._0;
-					var _v10 = _user$project$Lia_Type$Speak('Starting to load next slide'),
-						_v11 = _elm_lang$core$Native_Utils.update(
+					var _p18 = _p17._0;
+					var _v11 = _user$project$Lia_Type$Speak('Starting to load next slide'),
+						_v12 = _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							current_slide: _p16,
+							current_slide: _p18,
 							visible: 0,
-							effects: A2(_user$project$Lia_Helper$get_slide_effects, _p16, model.slides)
+							effects: A2(_user$project$Lia_Helper$get_slide_effects, _p18, model.slides)
 						});
-					msg = _v10;
-					model = _v11;
+					msg = _v11;
+					model = _v12;
 					continue update;
 				case 'PrevSlide':
 					if (_elm_lang$core$Native_Utils.eq(model.visible, 0)) {
-						var _v12 = _user$project$Lia_Type$Load(model.current_slide - 1),
-							_v13 = model;
-						msg = _v12;
-						model = _v13;
+						var _v13 = _user$project$Lia_Type$Load(model.current_slide - 1),
+							_v14 = model;
+						msg = _v13;
+						model = _v14;
 						continue update;
 					} else {
 						return {
@@ -13100,10 +13129,10 @@ var _user$project$Lia_Update$update = F2(
 					}
 				case 'NextSlide':
 					if (_elm_lang$core$Native_Utils.eq(model.visible, model.effects)) {
-						var _v14 = _user$project$Lia_Type$Load(model.current_slide + 1),
-							_v15 = model;
-						msg = _v14;
-						model = _v15;
+						var _v15 = _user$project$Lia_Type$Load(model.current_slide + 1),
+							_v16 = model;
+						msg = _v15;
+						model = _v16;
 						continue update;
 					} else {
 						return {
@@ -13120,7 +13149,7 @@ var _user$project$Lia_Update$update = F2(
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
 							{
-								quiz: A3(_user$project$Lia_Update$flip_checkbox, _p15._0, _p15._1, model.quiz)
+								quiz: A3(_user$project$Lia_Update$flip_checkbox, _p17._0, _p17._1, model.quiz)
 							}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
@@ -13130,7 +13159,7 @@ var _user$project$Lia_Update$update = F2(
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
 							{
-								quiz: A3(_user$project$Lia_Update$flip_checkbox, _p15._0, _p15._1, model.quiz)
+								quiz: A3(_user$project$Lia_Update$flip_checkbox, _p17._0, _p17._1, model.quiz)
 							}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
@@ -13140,7 +13169,7 @@ var _user$project$Lia_Update$update = F2(
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
 							{
-								quiz: A3(_user$project$Lia_Update$update_input, _p15._0, _p15._1, model.quiz)
+								quiz: A3(_user$project$Lia_Update$update_input, _p17._0, _p17._1, model.quiz)
 							}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
@@ -13150,19 +13179,29 @@ var _user$project$Lia_Update$update = F2(
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
 							{
-								quiz: A2(_user$project$Lia_Update$check_answer, _p15._0, model.quiz)
+								quiz: A2(_user$project$Lia_Update$check_answer, _p17._0, model.quiz)
 							}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
-				case 'ScanIndex':
-					var _p17 = _p15._0;
-					var results = _elm_lang$core$Native_Utils.eq(_p17, '') ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
-						A2(_user$project$Lia_Index$scan, model.index, _p17));
+				case 'ShowHint':
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
-							{search: _p17, search_results: results}),
+							{
+								quiz: A2(_user$project$Lia_Update$update_hint, _p17._0, model.quiz)
+							}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
+				case 'ScanIndex':
+					var _p19 = _p17._0;
+					var results = _elm_lang$core$Native_Utils.eq(_p19, '') ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
+						A2(_user$project$Lia_Index$scan, model.index, _p19));
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{search: _p19, search_results: results}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				case 'ContentsTable':
@@ -13179,10 +13218,10 @@ var _user$project$Lia_Update$update = F2(
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
 							{error: 'Speaking'}),
-						_1: A4(_user$project$Tts_Tts$speak, _user$project$Lia_Type$TTS, _elm_lang$core$Maybe$Nothing, 'en_US', _p15._0)
+						_1: A4(_user$project$Tts_Tts$speak, _user$project$Lia_Type$TTS, _elm_lang$core$Maybe$Nothing, 'en_US', _p17._0)
 					};
 				default:
-					if (_p15._0.ctor === 'Ok') {
+					if (_p17._0.ctor === 'Ok') {
 						return {
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
@@ -13195,7 +13234,7 @@ var _user$project$Lia_Update$update = F2(
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
-								{error: _p15._0._0}),
+								{error: _p17._0._0}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
 					}
@@ -13355,35 +13394,28 @@ var _user$project$Lia_View$quiz_check_button = F2(
 	});
 var _user$project$Lia_View$view_quiz_text_input = F2(
 	function (model, idx) {
-		return A2(
-			_elm_lang$html$Html$p,
-			{ctor: '[]'},
-			{
-				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$input,
-					{
+		return {
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$input,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$type_('input'),
+					_1: {
 						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$type_('input'),
+						_0: _elm_lang$html$Html_Attributes$value(
+							A2(_user$project$Lia_Helper$question_state_text, idx, model.quiz)),
 						_1: {
 							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$value(
-								A2(_user$project$Lia_Helper$question_state_text, idx, model.quiz)),
-							_1: {
-								ctor: '::',
-								_0: _elm_lang$html$Html_Events$onInput(
-									_user$project$Lia_Type$Input(idx)),
-								_1: {ctor: '[]'}
-							}
+							_0: _elm_lang$html$Html_Events$onInput(
+								_user$project$Lia_Type$Input(idx)),
+							_1: {ctor: '[]'}
 						}
-					},
-					{ctor: '[]'}),
-				_1: {
-					ctor: '::',
-					_0: A2(_user$project$Lia_View$quiz_check_button, model, idx),
-					_1: {ctor: '[]'}
-				}
-			});
+					}
+				},
+				{ctor: '[]'}),
+			_1: {ctor: '[]'}
+		};
 	});
 var _user$project$Lia_View$draw_circle = function ($int) {
 	return A2(
@@ -13527,156 +13559,202 @@ var _user$project$Lia_View$view_inline = F2(
 					});
 		}
 	});
+var _user$project$Lia_View$view_hints = F3(
+	function (model, counter, hints) {
+		if (_elm_lang$core$Native_Utils.cmp(counter, 0) > 0) {
+			var _p4 = hints;
+			if (_p4.ctor === '[]') {
+				return {ctor: '[]'};
+			} else {
+				return {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$p,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: _user$project$Lia_Utils$stringToHtml('&#x1f4a1;'),
+							_1: A2(
+								_elm_lang$core$List$map,
+								_user$project$Lia_View$view_inline(model),
+								_p4._0)
+						}),
+					_1: A3(_user$project$Lia_View$view_hints, model, counter - 1, _p4._1)
+				};
+			}
+		} else {
+			return {ctor: '[]'};
+		}
+	});
 var _user$project$Lia_View$view_quiz_single_choice = F4(
 	function (model, rslt, questions, idx) {
 		return A2(
-			_elm_lang$html$Html$div,
-			{ctor: '[]'},
-			function (l) {
+			_elm_lang$core$List$map,
+			function (_p5) {
+				var _p6 = _p5;
+				var _p7 = _p6._0;
 				return A2(
-					_elm_lang$core$List$append,
-					l,
+					_elm_lang$html$Html$p,
+					{ctor: '[]'},
 					{
 						ctor: '::',
-						_0: A2(_user$project$Lia_View$quiz_check_button, model, idx),
-						_1: {ctor: '[]'}
-					});
-			}(
-				A2(
-					_elm_lang$core$List$map,
-					function (_p4) {
-						var _p5 = _p4;
-						var _p6 = _p5._0;
-						return A2(
-							_elm_lang$html$Html$p,
-							{ctor: '[]'},
+						_0: A2(
+							_elm_lang$html$Html$input,
 							{
 								ctor: '::',
-								_0: A2(
-									_elm_lang$html$Html$input,
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$type_('radio'),
-										_1: {
-											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$checked(
-												A3(_user$project$Lia_Helper$question_state, idx, _p6, model.quiz)),
-											_1: {
-												ctor: '::',
-												_0: _elm_lang$html$Html_Events$onClick(
-													A2(_user$project$Lia_Type$RadioButton, idx, _p6)),
-												_1: {ctor: '[]'}
-											}
-										}
-									},
-									{ctor: '[]'}),
+								_0: _elm_lang$html$Html_Attributes$type_('radio'),
 								_1: {
 									ctor: '::',
-									_0: A2(
-										_elm_lang$html$Html$span,
-										{ctor: '[]'},
-										A2(
-											_elm_lang$core$List$map,
-											function (e) {
-												return A2(_user$project$Lia_View$view_inline, model, e);
-											},
-											_p5._1)),
-									_1: {ctor: '[]'}
+									_0: _elm_lang$html$Html_Attributes$checked(
+										A3(_user$project$Lia_Helper$question_state, idx, _p7, model.quiz)),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$html$Html_Events$onClick(
+											A2(_user$project$Lia_Type$RadioButton, idx, _p7)),
+										_1: {ctor: '[]'}
+									}
 								}
-							});
-					},
-					A2(
-						_elm_lang$core$List$indexedMap,
-						F2(
-							function (v0, v1) {
-								return {ctor: '_Tuple2', _0: v0, _1: v1};
-							}),
-						questions))));
+							},
+							{ctor: '[]'}),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$span,
+								{ctor: '[]'},
+								A2(
+									_elm_lang$core$List$map,
+									function (e) {
+										return A2(_user$project$Lia_View$view_inline, model, e);
+									},
+									_p6._1)),
+							_1: {ctor: '[]'}
+						}
+					});
+			},
+			A2(
+				_elm_lang$core$List$indexedMap,
+				F2(
+					function (v0, v1) {
+						return {ctor: '_Tuple2', _0: v0, _1: v1};
+					}),
+				questions));
 	});
 var _user$project$Lia_View$view_quiz_multiple_choice = F3(
 	function (model, questions, idx) {
 		return A2(
-			_elm_lang$html$Html$div,
-			{ctor: '[]'},
-			function (l) {
+			_elm_lang$core$List$map,
+			function (_p8) {
+				var _p9 = _p8;
+				var _p10 = _p9._0;
 				return A2(
-					_elm_lang$core$List$append,
-					l,
-					{
-						ctor: '::',
-						_0: A2(_user$project$Lia_View$quiz_check_button, model, idx),
-						_1: {ctor: '[]'}
-					});
-			}(
-				A2(
-					_elm_lang$core$List$map,
-					function (_p7) {
-						var _p8 = _p7;
-						var _p9 = _p8._0;
-						return A2(
-							_elm_lang$html$Html$p,
-							{ctor: '[]'},
-							{
-								ctor: '::',
-								_0: A2(
-									_elm_lang$html$Html$input,
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$type_('checkbox'),
-										_1: {
-											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$checked(
-												A3(_user$project$Lia_Helper$question_state, idx, _p9, model.quiz)),
-											_1: {
-												ctor: '::',
-												_0: _elm_lang$html$Html_Events$onClick(
-													A2(_user$project$Lia_Type$CheckBox, idx, _p9)),
-												_1: {ctor: '[]'}
-											}
-										}
-									},
-									{ctor: '[]'}),
-								_1: {
-									ctor: '::',
-									_0: A2(
-										_elm_lang$html$Html$span,
-										{ctor: '[]'},
-										A2(
-											_elm_lang$core$List$map,
-											function (x) {
-												return A2(_user$project$Lia_View$view_inline, model, x);
-											},
-											_p8._1._1)),
-									_1: {ctor: '[]'}
-								}
-							});
-					},
-					A2(
-						_elm_lang$core$List$indexedMap,
-						F2(
-							function (v0, v1) {
-								return {ctor: '_Tuple2', _0: v0, _1: v1};
-							}),
-						questions))));
-	});
-var _user$project$Lia_View$view_quiz = F3(
-	function (model, quiz, idx) {
-		var _p10 = quiz;
-		switch (_p10.ctor) {
-			case 'TextInput':
-				return A2(_user$project$Lia_View$view_quiz_text_input, model, idx);
-			case 'SingleChoice':
-				return A4(_user$project$Lia_View$view_quiz_single_choice, model, _p10._0, _p10._1, idx);
-			default:
-				return A2(
-					_elm_lang$html$Html$div,
+					_elm_lang$html$Html$p,
 					{ctor: '[]'},
 					{
 						ctor: '::',
-						_0: A3(_user$project$Lia_View$view_quiz_multiple_choice, model, _p10._0, idx),
-						_1: {ctor: '[]'}
+						_0: A2(
+							_elm_lang$html$Html$input,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$type_('checkbox'),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$checked(
+										A3(_user$project$Lia_Helper$question_state, idx, _p10, model.quiz)),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$html$Html_Events$onClick(
+											A2(_user$project$Lia_Type$CheckBox, idx, _p10)),
+										_1: {ctor: '[]'}
+									}
+								}
+							},
+							{ctor: '[]'}),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$span,
+								{ctor: '[]'},
+								A2(
+									_elm_lang$core$List$map,
+									function (x) {
+										return A2(_user$project$Lia_View$view_inline, model, x);
+									},
+									_p9._1._1)),
+							_1: {ctor: '[]'}
+						}
 					});
-		}
+			},
+			A2(
+				_elm_lang$core$List$indexedMap,
+				F2(
+					function (v0, v1) {
+						return {ctor: '_Tuple2', _0: v0, _1: v1};
+					}),
+				questions));
+	});
+var _user$project$Lia_View$view_quiz = F4(
+	function (model, quiz, idx, hints) {
+		var hint_count = A2(_user$project$Lia_Helper$get_hint_counter, idx, model.quiz);
+		var quiz_html = function () {
+			var _p11 = quiz;
+			switch (_p11.ctor) {
+				case 'TextInput':
+					return A2(_user$project$Lia_View$view_quiz_text_input, model, idx);
+				case 'SingleChoice':
+					return A4(_user$project$Lia_View$view_quiz_single_choice, model, _p11._0, _p11._1, idx);
+				default:
+					return A3(_user$project$Lia_View$view_quiz_multiple_choice, model, _p11._0, idx);
+			}
+		}();
+		return A2(
+			_elm_lang$html$Html$p,
+			{ctor: '[]'},
+			A2(
+				_elm_lang$core$List$append,
+				quiz_html,
+				{
+					ctor: '::',
+					_0: A2(_user$project$Lia_View$quiz_check_button, model, idx),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$html$Html$text(' '),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$sup,
+								{ctor: '[]'},
+								{
+									ctor: '::',
+									_0: A2(
+										_elm_lang$html$Html$a,
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html_Attributes$href('#'),
+											_1: {
+												ctor: '::',
+												_0: _elm_lang$html$Html_Events$onClick(
+													_user$project$Lia_Type$ShowHint(idx)),
+												_1: {ctor: '[]'}
+											}
+										},
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html$text('?'),
+											_1: {ctor: '[]'}
+										}),
+									_1: {ctor: '[]'}
+								}),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$div,
+									{ctor: '[]'},
+									A3(_user$project$Lia_View$view_hints, model, hint_count, hints)),
+								_1: {ctor: '[]'}
+							}
+						}
+					}
+				}));
 	});
 var _user$project$Lia_View$view_table = F4(
 	function (model, header, format, body) {
@@ -13698,8 +13776,8 @@ var _user$project$Lia_View$view_table = F4(
 			function (model, f, row) {
 				return A2(
 					_elm_lang$core$List$map,
-					function (_p11) {
-						var _p12 = _p11;
+					function (_p12) {
+						var _p13 = _p12;
 						return A2(
 							f,
 							{
@@ -13709,9 +13787,9 @@ var _user$project$Lia_View$view_table = F4(
 									ctor: '::',
 									_0: _elm_lang$html$Html_Attributes$align(
 										function () {
-											var _p13 = A2(_elm_lang$core$Array$get, _p12._0, format);
-											if (_p13.ctor === 'Just') {
-												return _p13._0;
+											var _p14 = A2(_elm_lang$core$Array$get, _p13._0, format);
+											if (_p14.ctor === 'Just') {
+												return _p14._0;
 											} else {
 												return 'left';
 											}
@@ -13724,7 +13802,7 @@ var _user$project$Lia_View$view_table = F4(
 								function (element) {
 									return A2(_user$project$Lia_View$view_inline, model, element);
 								},
-								_p12._1));
+								_p13._1));
 					},
 					A2(
 						_elm_lang$core$List$indexedMap,
@@ -13768,8 +13846,8 @@ var _user$project$Lia_View$view_table = F4(
 	});
 var _user$project$Lia_View$view_block = F2(
 	function (model, block) {
-		var _p14 = block;
-		switch (_p14.ctor) {
+		var _p15 = block;
+		switch (_p15.ctor) {
 			case 'Paragraph':
 				return A2(
 					_elm_lang$html$Html$p,
@@ -13779,7 +13857,7 @@ var _user$project$Lia_View$view_block = F2(
 						function (e) {
 							return A2(_user$project$Lia_View$view_inline, model, e);
 						},
-						_p14._0));
+						_p15._0));
 			case 'HorizontalLine':
 				return A2(
 					_elm_lang$html$Html$hr,
@@ -13789,9 +13867,9 @@ var _user$project$Lia_View$view_block = F2(
 				return A4(
 					_user$project$Lia_View$view_table,
 					model,
-					_p14._0,
-					_elm_lang$core$Array$fromList(_p14._1),
-					_p14._2);
+					_p15._0,
+					_elm_lang$core$Array$fromList(_p15._1),
+					_p15._2);
 			case 'Quote':
 				return A2(
 					_elm_lang$html$Html$blockquote,
@@ -13801,7 +13879,7 @@ var _user$project$Lia_View$view_block = F2(
 						function (e) {
 							return A2(_user$project$Lia_View$view_inline, model, e);
 						},
-						_p14._0));
+						_p15._0));
 			case 'CodeBlock':
 				return A2(
 					_elm_lang$html$Html$pre,
@@ -13813,7 +13891,7 @@ var _user$project$Lia_View$view_block = F2(
 							{ctor: '[]'},
 							{
 								ctor: '::',
-								_0: A2(_user$project$Lia_Utils$highlight, _p14._0, _p14._1),
+								_0: A2(_user$project$Lia_Utils$highlight, _p15._0, _p15._1),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -13824,21 +13902,21 @@ var _user$project$Lia_View$view_block = F2(
 					{ctor: '[]'},
 					{
 						ctor: '::',
-						_0: A3(_user$project$Lia_View$view_quiz, model, _p14._0, _p14._1),
+						_0: A4(_user$project$Lia_View$view_quiz, model, _p15._0, _p15._1, _p15._2),
 						_1: {ctor: '[]'}
 					});
 			default:
-				var _p15 = _p14._0;
+				var _p16 = _p15._0;
 				return A2(
 					_elm_lang$html$Html$div,
 					{
 						ctor: '::',
 						_0: _elm_lang$html$Html_Attributes$id(
-							_elm_lang$core$Basics$toString(_p15)),
+							_elm_lang$core$Basics$toString(_p16)),
 						_1: {
 							ctor: '::',
 							_0: _elm_lang$html$Html_Attributes$hidden(
-								_elm_lang$core$Native_Utils.cmp(_p15, model.visible) > 0),
+								_elm_lang$core$Native_Utils.cmp(_p16, model.visible) > 0),
 							_1: {ctor: '[]'}
 						}
 					},
@@ -13862,7 +13940,7 @@ var _user$project$Lia_View$view_block = F2(
 							},
 							{
 								ctor: '::',
-								_0: _user$project$Lia_View$draw_circle(_p15),
+								_0: _user$project$Lia_View$draw_circle(_p16),
 								_1: {ctor: '[]'}
 							}),
 						_1: A2(
@@ -13870,7 +13948,7 @@ var _user$project$Lia_View$view_block = F2(
 							function (sub) {
 								return A2(_user$project$Lia_View$view_block, model, sub);
 							},
-							_p14._1)
+							_p15._1)
 					});
 		}
 	});
@@ -13881,8 +13959,8 @@ var _user$project$Lia_View$view_body = F2(
 	});
 var _user$project$Lia_View$view_header = F2(
 	function (indentation, title) {
-		var _p16 = indentation;
-		switch (_p16) {
+		var _p17 = indentation;
+		switch (_p17) {
 			case 0:
 				return A2(
 					_elm_lang$html$Html$h1,
@@ -13951,10 +14029,10 @@ var _user$project$Lia_View$view_slide = F2(
 			});
 	});
 var _user$project$Lia_View$view_contents = function (model) {
-	var f = function (_p17) {
-		var _p18 = _p17;
-		var _p20 = _p18._0;
-		var _p19 = _p18._1._0;
+	var f = function (_p18) {
+		var _p19 = _p18;
+		var _p21 = _p19._0;
+		var _p20 = _p19._1._0;
 		return A2(
 			_elm_lang$html$Html$div,
 			{ctor: '[]'},
@@ -13965,7 +14043,7 @@ var _user$project$Lia_View$view_contents = function (model) {
 					{
 						ctor: '::',
 						_0: _elm_lang$html$Html_Events$onClick(
-							_user$project$Lia_Type$Load(_p20)),
+							_user$project$Lia_Type$Load(_p21)),
 						_1: {
 							ctor: '::',
 							_0: _elm_lang$html$Html_Attributes$href(
@@ -13975,7 +14053,7 @@ var _user$project$Lia_View$view_contents = function (model) {
 									A2(
 										_elm_lang$core$String$join,
 										'_',
-										A2(_elm_lang$core$String$split, ' ', _p19)))),
+										A2(_elm_lang$core$String$split, ' ', _p20)))),
 							_1: {
 								ctor: '::',
 								_0: _elm_lang$html$Html_Attributes$style(
@@ -13986,7 +14064,7 @@ var _user$project$Lia_View$view_contents = function (model) {
 											_0: 'padding-left',
 											_1: A2(
 												_elm_lang$core$Basics_ops['++'],
-												_elm_lang$core$Basics$toString((_p18._1._1 - 1) * 20),
+												_elm_lang$core$Basics$toString((_p19._1._1 - 1) * 20),
 												'px')
 										},
 										_1: {
@@ -13994,7 +14072,7 @@ var _user$project$Lia_View$view_contents = function (model) {
 											_0: {
 												ctor: '_Tuple2',
 												_0: 'color',
-												_1: _elm_lang$core$Native_Utils.eq(model.current_slide, _p20) ? '#33f' : '#333'
+												_1: _elm_lang$core$Native_Utils.eq(model.current_slide, _p21) ? '#33f' : '#333'
 											},
 											_1: {ctor: '[]'}
 										}
@@ -14005,7 +14083,7 @@ var _user$project$Lia_View$view_contents = function (model) {
 					},
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html$text(_p19),
+						_0: _elm_lang$html$Html$text(_p20),
 						_1: {ctor: '[]'}
 					}),
 				_1: {ctor: '[]'}
@@ -14049,15 +14127,15 @@ var _user$project$Lia_View$view_contents = function (model) {
 			_elm_lang$core$List$map,
 			f,
 			function (list) {
-				var _p21 = model.search_results;
-				if (_p21.ctor === 'Nothing') {
+				var _p22 = model.search_results;
+				if (_p22.ctor === 'Nothing') {
 					return list;
 				} else {
 					return A2(
 						_elm_lang$core$List$filter,
-						function (_p22) {
-							var _p23 = _p22;
-							return A2(_elm_lang$core$List$member, _p23._0, _p21._0);
+						function (_p23) {
+							var _p24 = _p23;
+							return A2(_elm_lang$core$List$member, _p24._0, _p22._0);
 						},
 						list);
 				}
@@ -14151,9 +14229,9 @@ var _user$project$Lia_View$view_slides = function (model) {
 					{
 						ctor: '::',
 						_0: function () {
-							var _p24 = A2(_user$project$Lia_Helper$get_slide, model.current_slide, model.slides);
-							if (_p24.ctor === 'Just') {
-								return A3(_elm_lang$html$Html_Lazy$lazy2, _user$project$Lia_View$view_slide, model, _p24._0);
+							var _p25 = A2(_user$project$Lia_Helper$get_slide, model.current_slide, model.slides);
+							if (_p25.ctor === 'Just') {
+								return A3(_elm_lang$html$Html_Lazy$lazy2, _user$project$Lia_View$view_slide, model, _p25._0);
 							} else {
 								return _elm_lang$html$Html$text('');
 							}
@@ -14244,8 +14322,8 @@ var _user$project$Lia_View$view_plain = function (model) {
 		A2(_elm_lang$core$List$map, f, model.slides));
 };
 var _user$project$Lia_View$view = function (model) {
-	var _p25 = model.mode;
-	if (_p25.ctor === 'Slides') {
+	var _p26 = model.mode;
+	if (_p26.ctor === 'Slides') {
 		return _user$project$Lia_View$view_slides(model);
 	} else {
 		return _user$project$Lia_View$view_plain(model);

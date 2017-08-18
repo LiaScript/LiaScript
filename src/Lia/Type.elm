@@ -25,6 +25,7 @@ type Msg
     | Input Int String
     | Check Int
     | ScanIndex String
+    | ShowHint Int
     | ContentsTable
     | Speak String
     | TTS (Result String Never)
@@ -71,13 +72,13 @@ type Block
     | Quote (List Inline)
     | Paragraph (List Inline)
     | Table (List (List Inline)) (List String) (List (List (List Inline)))
-    | Quiz Quiz Int
+    | Quiz Quiz Int Hints
     | EBlock Int (List Block)
 
 
 type Quiz
     = SingleChoice Int (List (List Inline))
-    | MultipleChoice (List ( Bool, List Inline )) Hints
+    | MultipleChoice (List ( Bool, List Inline ))
     | TextInput String
 
 

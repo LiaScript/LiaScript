@@ -80,12 +80,12 @@ quiz =
             in
             withState pp <* modifyState increment_counter
     in
-    Quiz <$> choice [ quiz_SingleChoice, quiz_MultipleChoice, quiz_TextInput ] <*> counter
+    Quiz <$> choice [ quiz_SingleChoice, quiz_MultipleChoice, quiz_TextInput ] <*> counter <*> quiz_hints
 
 
 quiz_TextInput : Parser PState Quiz
 quiz_TextInput =
-    TextInput <$> (string "[[" *> regex "[^\n\\]]+" <* string "]]")
+    TextInput <$> (string "[[" *> regex "[^\n\\]]+" <* regex "\\]\\]( *)\\n")
 
 
 quiz_SingleChoice : Parser PState Quiz
@@ -131,7 +131,6 @@ quiz_MultipleChoice =
                     , checked False (string "[ ]")
                     ]
                 )
-        <*> quiz_hints
 
 
 html : Parser PState Inline

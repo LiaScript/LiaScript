@@ -224,8 +224,8 @@ view_block model block =
         CodeBlock language code ->
             Html.pre [] [ Html.code [] [ Lia.Utils.highlight language code ] ]
 
-        Quiz quiz idx ->
-            Html.div [] [ view_quiz model quiz idx ]
+        Quiz quiz idx hints ->
+            Html.div [] [ view_quiz model quiz idx hints ]
 
         EBlock idx sub_blocks ->
             Html.div
@@ -243,30 +243,55 @@ view_block model block =
                 )
 
 
-view_quiz : Model -> Quiz -> Int -> Html Msg
-view_quiz model quiz idx =
-    case quiz of
-        TextInput _ ->
-            view_quiz_text_input model idx
+view_quiz : Model -> Quiz -> Int -> Hints -> Html Msg
+view_quiz model quiz idx hints =
+    let
+        quiz_html =
+            case quiz of
+                TextInput _ ->
+                    view_quiz_text_input model idx
 
-        SingleChoice rslt questions ->
-            view_quiz_single_choice model rslt questions idx
+                SingleChoice rslt questions ->
+                    view_quiz_single_choice model rslt questions idx
 
-        MultipleChoice questions hints ->
-            Html.div [] [ view_quiz_multiple_choice model questions idx ]
+                MultipleChoice questions ->
+                    view_quiz_multiple_choice model questions idx
 
-
-view_quiz_text_input : Model -> Int -> Html Msg
-view_quiz_text_input model idx =
-    Html.p []
-        [ Html.input
-            [ Attr.type_ "input"
-            , Attr.value <| Lia.Helper.question_state_text idx model.quiz
-            , onInput (Input idx)
-            ]
-            []
-        , quiz_check_button model idx
+        hint_count =
+            Lia.Helper.get_hint_counter idx model.quiz
+    in
+    List.append quiz_html
+        [ quiz_check_button model idx
+        , Html.text " "
+        , Html.sup [] [ Html.a [ Attr.href "#", onClick (ShowHint idx) ] [ Html.text "?" ] ]
+        , Html.div [] (view_hints model hint_count hints)
         ]
+        |> Html.p []
+
+
+view_hints : Model -> Int -> Hints -> List (Html Msg)
+view_hints model counter hints =
+    if counter > 0 then
+        case hints of
+            [] ->
+                []
+
+            x :: xs ->
+                Html.p [] (Lia.Utils.stringToHtml "&#x1f4a1;" :: List.map (view_inline model) x)
+                    :: view_hints model (counter - 1) xs
+    else
+        []
+
+
+view_quiz_text_input : Model -> Int -> List (Html Msg)
+view_quiz_text_input model idx =
+    [ Html.input
+        [ Attr.type_ "input"
+        , Attr.value <| Lia.Helper.question_state_text idx model.quiz
+        , onInput (Input idx)
+        ]
+        []
+    ]
 
 
 quiz_check_button : Model -> Int -> Html Msg
@@ -285,7 +310,7 @@ quiz_check_button model idx =
             Html.button [ onClick (Check idx) ] [ Html.text "Check" ]
 
 
-view_quiz_single_choice : Model -> Int -> List (List Inline) -> Int -> Html Msg
+view_quiz_single_choice : Model -> Int -> List (List Inline) -> Int -> List (Html Msg)
 view_quiz_single_choice model rslt questions idx =
     questions
         |> List.indexedMap (,)
@@ -301,11 +326,9 @@ view_quiz_single_choice model rslt questions idx =
                     , Html.span [] (List.map (\e -> view_inline model e) elements)
                     ]
             )
-        |> (\l -> List.append l [ quiz_check_button model idx ])
-        |> Html.div []
 
 
-view_quiz_multiple_choice : Model -> List ( Bool, List Inline ) -> Int -> Html Msg
+view_quiz_multiple_choice : Model -> List ( Bool, List Inline ) -> Int -> List (Html Msg)
 view_quiz_multiple_choice model questions idx =
     questions
         |> List.indexedMap (,)
@@ -321,8 +344,6 @@ view_quiz_multiple_choice model questions idx =
                     , Html.span [] (List.map (\x -> view_inline model x) q)
                     ]
             )
-        |> (\l -> List.append l [ quiz_check_button model idx ])
-        |> Html.div []
 
 
 view_table : Model -> List (List Inline) -> Array String -> List (List (List Inline)) -> Html Msg

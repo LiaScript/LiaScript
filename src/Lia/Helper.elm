@@ -1,6 +1,7 @@
 module Lia.Helper
     exposing
         ( get_headers
+        , get_hint_counter
         , get_slide
         , get_slide_effects
         , question_state
@@ -18,6 +19,16 @@ get_headers slides =
     slides
         |> List.map (\s -> ( s.title, s.indentation ))
         |> List.indexedMap (,)
+
+
+get_hint_counter : Int -> QuizVector -> Int
+get_hint_counter idx vector =
+    case Array.get idx vector of
+        Just e ->
+            e.hint
+
+        Nothing ->
+            0
 
 
 get_slide : Int -> List Slide -> Maybe Slide
@@ -48,7 +59,7 @@ quiz_vector slides =
     let
         filter b =
             case b of
-                Quiz quiz _ ->
+                Quiz quiz _ _ ->
                     Just quiz
 
                 _ ->
@@ -64,7 +75,7 @@ quiz_vector slides =
                         SingleChoice a _ ->
                             Single -1 a
 
-                        MultipleChoice q hints ->
+                        MultipleChoice q ->
                             q
                                 |> List.map (\( b, _ ) -> ( False, b ))
                                 |> Array.fromList

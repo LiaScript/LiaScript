@@ -44,6 +44,9 @@ update msg model =
         Check quiz_id ->
             ( { model | quiz = check_answer quiz_id model.quiz }, Cmd.none )
 
+        ShowHint quiz_id ->
+            ( { model | quiz = update_hint quiz_id model.quiz }, Cmd.none )
+
         ScanIndex pattern ->
             let
                 results =
@@ -80,6 +83,19 @@ update_input idx text vector =
 
                     _ ->
                         vector
+
+        _ ->
+            vector
+
+
+update_hint : Int -> QuizVector -> QuizVector
+update_hint idx vector =
+    case Array.get idx vector of
+        Just elem ->
+            if elem.solved == Just True then
+                vector
+            else
+                Array.set idx { elem | hint = elem.hint + 1 } vector
 
         _ ->
             vector

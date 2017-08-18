@@ -44,7 +44,7 @@ parse_block element =
         CodeBlock language code ->
             code
 
-        Quiz quiz _ ->
+        Quiz quiz _ _ ->
             case quiz of
                 TextInput _ ->
                     ""
@@ -53,7 +53,7 @@ parse_block element =
                     List.map scan e
                         |> String.concat
 
-                MultipleChoice e _ ->
+                MultipleChoice e ->
                     List.map (\( _, ee ) -> scan ee) e
                         |> String.concat
 
