@@ -11255,6 +11255,19 @@ var _user$project$Lia_Type$LiaBool = function (a) {
 	return {ctor: 'LiaBool', _0: a};
 };
 
+var _user$project$Lia_Effect_Model$Model = F2(
+	function (a, b) {
+		return {visible: a, effects: b};
+	});
+var _user$project$Lia_Effect_Model$init = function (maybe) {
+	var _p0 = maybe;
+	if (_p0.ctor === 'Just') {
+		return A2(_user$project$Lia_Effect_Model$Model, 0, _p0._0.effects);
+	} else {
+		return A2(_user$project$Lia_Effect_Model$Model, 0, 0);
+	}
+};
+
 var _user$project$Lia_Index$parse_inline = function (element) {
 	parse_inline:
 	while (true) {
@@ -11522,9 +11535,7 @@ var _user$project$Lia_Model$Model = function (a) {
 								return function (i) {
 									return function (j) {
 										return function (k) {
-											return function (l) {
-												return {script: a, error: b, slides: c, quiz: d, current_slide: e, mode: f, visible: g, effects: h, contents: i, search: j, index: k, search_results: l};
-											};
+											return {script: a, error: b, slides: c, quiz: d, current_slide: e, mode: f, effects: g, contents: h, search: i, index: j, search_results: k};
 										};
 									};
 								};
@@ -12749,15 +12760,6 @@ var _user$project$Lia_Helper$get_slide = F2(
 			}
 		}
 	});
-var _user$project$Lia_Helper$get_slide_effects = F2(
-	function (i, slides) {
-		var _p1 = A2(_user$project$Lia_Helper$get_slide, i, slides);
-		if (_p1.ctor === 'Just') {
-			return _p1._0.effects;
-		} else {
-			return 0;
-		}
-	});
 var _user$project$Lia_Helper$get_headers = function (slides) {
 	return A2(
 		_elm_lang$core$List$indexedMap,
@@ -13158,41 +13160,51 @@ var _user$project$Lia_Update$update = F2(
 						model,
 						{
 							current_slide: _p1,
-							visible: 0,
-							effects: A2(_user$project$Lia_Helper$get_slide_effects, _p1, model.slides)
+							effects: _user$project$Lia_Effect_Model$init(
+								A2(_user$project$Lia_Helper$get_slide, _p1, model.slides))
 						});
 					msg = _v1;
 					model = _v2;
 					continue update;
 				case 'PrevSlide':
-					if (_elm_lang$core$Native_Utils.eq(model.visible, 0)) {
+					if (_elm_lang$core$Native_Utils.eq(model.effects.visible, 0)) {
 						var _v3 = _user$project$Lia_Update$Load(model.current_slide - 1),
 							_v4 = model;
 						msg = _v3;
 						model = _v4;
 						continue update;
 					} else {
+						var effects = model.effects;
 						return {
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
-								{visible: model.visible - 1}),
+								{
+									effects: _elm_lang$core$Native_Utils.update(
+										effects,
+										{visible: effects.visible - 1})
+								}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
 					}
 				case 'NextSlide':
-					if (_elm_lang$core$Native_Utils.eq(model.visible, model.effects)) {
+					if (_elm_lang$core$Native_Utils.eq(model.effects.visible, model.effects.effects)) {
 						var _v5 = _user$project$Lia_Update$Load(model.current_slide + 1),
 							_v6 = model;
 						msg = _v5;
 						model = _v6;
 						continue update;
 					} else {
+						var effects = model.effects;
 						return {
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
-								{visible: model.visible + 1}),
+								{
+									effects: _elm_lang$core$Native_Utils.update(
+										effects,
+										{visible: effects.visible + 1})
+								}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
 					}
@@ -13256,58 +13268,7 @@ var _user$project$Lia_Update$update = F2(
 		}
 	});
 
-var _user$project$Native_Utils = (function () {
-
-    function highlight (language, code) {
-        try {
-            if (language != "")
-                return hljs.highlight(language, code).value;
-            else
-                return hljs.highlightAuto(code, hljs.listLanguages()).value;
-        } catch (e) {
-            return "<b><font color=\"red\">"+e.message+"</font></b><br>"+code;
-        }
-    };
-
-    function formula(dMode, str) {
-        try{
-            return katex.renderToString(str, {displayMode: dMode});
-        } catch(e) {
-            return "<b><font color=\"red\">"+e.message+"</font></b><br>";
-        }
-    }
-
-    return {
-        highlight: F2(highlight),
-        formula: F2(formula)
-    };
-})();
-
-var _user$project$Lia_Utils$stringToHtml = function (str) {
-	return A2(
-		_elm_lang$html$Html$span,
-		{
-			ctor: '::',
-			_0: A2(
-				_elm_lang$html$Html_Attributes$property,
-				'innerHTML',
-				_elm_lang$core$Json_Encode$string(str)),
-			_1: {ctor: '[]'}
-		},
-		{ctor: '[]'});
-};
-var _user$project$Lia_Utils$formula = F2(
-	function (displayMode, string) {
-		return _user$project$Lia_Utils$stringToHtml(
-			A2(_user$project$Native_Utils.formula, displayMode, string));
-	});
-var _user$project$Lia_Utils$highlight = F2(
-	function (language, code) {
-		return _user$project$Lia_Utils$stringToHtml(
-			A2(_user$project$Native_Utils.highlight, language, code));
-	});
-
-var _user$project$Lia_Inline_View$circle = function ($int) {
+var _user$project$Lia_Effect_View$circle = function ($int) {
 	return A2(
 		_elm_lang$html$Html$span,
 		{
@@ -13363,6 +13324,124 @@ var _user$project$Lia_Inline_View$circle = function ($int) {
 			_1: {ctor: '[]'}
 		});
 };
+var _user$project$Lia_Effect_View$view_block = F4(
+	function (model, viewer, idx, blocks) {
+		return A2(
+			_elm_lang$html$Html$div,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$id(
+					_elm_lang$core$Basics$toString(idx)),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$hidden(
+						_elm_lang$core$Native_Utils.cmp(idx, model.visible) > 0),
+					_1: {ctor: '[]'}
+				}
+			},
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$div,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$style(
+							{
+								ctor: '::',
+								_0: {ctor: '_Tuple2', _0: 'display', _1: 'flex'},
+								_1: {
+									ctor: '::',
+									_0: {ctor: '_Tuple2', _0: 'justify-content', _1: 'center'},
+									_1: {ctor: '[]'}
+								}
+							}),
+						_1: {ctor: '[]'}
+					},
+					{
+						ctor: '::',
+						_0: _user$project$Lia_Effect_View$circle(idx),
+						_1: {ctor: '[]'}
+					}),
+				_1: A2(_elm_lang$core$List$map, viewer, blocks)
+			});
+	});
+var _user$project$Lia_Effect_View$view = F4(
+	function (viewer, idx, visible, elements) {
+		return A2(
+			_elm_lang$html$Html$span,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$id(
+					_elm_lang$core$Basics$toString(idx)),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$hidden(
+						_elm_lang$core$Native_Utils.cmp(idx, visible) > 0),
+					_1: {ctor: '[]'}
+				}
+			},
+			{
+				ctor: '::',
+				_0: _user$project$Lia_Effect_View$circle(idx),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html$text(' '),
+					_1: A2(_elm_lang$core$List$map, viewer, elements)
+				}
+			});
+	});
+
+var _user$project$Native_Utils = (function () {
+
+    function highlight (language, code) {
+        try {
+            if (language != "")
+                return hljs.highlight(language, code).value;
+            else
+                return hljs.highlightAuto(code, hljs.listLanguages()).value;
+        } catch (e) {
+            return "<b><font color=\"red\">"+e.message+"</font></b><br>"+code;
+        }
+    };
+
+    function formula(dMode, str) {
+        try{
+            return katex.renderToString(str, {displayMode: dMode});
+        } catch(e) {
+            return "<b><font color=\"red\">"+e.message+"</font></b><br>";
+        }
+    }
+
+    return {
+        highlight: F2(highlight),
+        formula: F2(formula)
+    };
+})();
+
+var _user$project$Lia_Utils$stringToHtml = function (str) {
+	return A2(
+		_elm_lang$html$Html$span,
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html_Attributes$property,
+				'innerHTML',
+				_elm_lang$core$Json_Encode$string(str)),
+			_1: {ctor: '[]'}
+		},
+		{ctor: '[]'});
+};
+var _user$project$Lia_Utils$formula = F2(
+	function (displayMode, string) {
+		return _user$project$Lia_Utils$stringToHtml(
+			A2(_user$project$Native_Utils.formula, displayMode, string));
+	});
+var _user$project$Lia_Utils$highlight = F2(
+	function (language, code) {
+		return _user$project$Lia_Utils$stringToHtml(
+			A2(_user$project$Native_Utils.highlight, language, code));
+	});
+
 var _user$project$Lia_Inline_View$reference = function (ref) {
 	var _p0 = ref;
 	switch (_p0.ctor) {
@@ -13467,30 +13546,12 @@ var _user$project$Lia_Inline_View$view = F2(
 			case 'HTML':
 				return _user$project$Lia_Utils$stringToHtml(_p1._0);
 			default:
-				var _p2 = _p1._0;
-				return A2(
-					_elm_lang$html$Html$span,
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$id(
-							_elm_lang$core$Basics$toString(_p2)),
-						_1: {
-							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$hidden(
-								_elm_lang$core$Native_Utils.cmp(_p2, visible) > 0),
-							_1: {ctor: '[]'}
-						}
-					},
-					{
-						ctor: '::',
-						_0: _user$project$Lia_Inline_View$circle(_p2),
-						_1: A2(
-							_elm_lang$core$List$map,
-							function (e) {
-								return A2(_user$project$Lia_Inline_View$view, visible, e);
-							},
-							_p1._1)
-					});
+				return A4(
+					_user$project$Lia_Effect_View$view,
+					_user$project$Lia_Inline_View$view(visible),
+					_p1._0,
+					visible,
+					_p1._1);
 		}
 	});
 
@@ -13816,7 +13877,7 @@ var _user$project$Lia_View$view_table = F4(
 							A2(
 								_elm_lang$core$List$map,
 								function (element) {
-									return A2(_user$project$Lia_Inline_View$view, model.visible, element);
+									return A2(_user$project$Lia_Inline_View$view, model.effects.visible, element);
 								},
 								_p1._1));
 					},
@@ -13871,7 +13932,7 @@ var _user$project$Lia_View$view_block = F2(
 					A2(
 						_elm_lang$core$List$map,
 						function (e) {
-							return A2(_user$project$Lia_Inline_View$view, model.visible, e);
+							return A2(_user$project$Lia_Inline_View$view, model.effects.visible, e);
 						},
 						_p3._0));
 			case 'HorizontalLine':
@@ -13893,7 +13954,7 @@ var _user$project$Lia_View$view_block = F2(
 					A2(
 						_elm_lang$core$List$map,
 						function (e) {
-							return A2(_user$project$Lia_Inline_View$view, model.visible, e);
+							return A2(_user$project$Lia_Inline_View$view, model.effects.visible, e);
 						},
 						_p3._0));
 			case 'CodeBlock':
@@ -13918,50 +13979,12 @@ var _user$project$Lia_View$view_block = F2(
 					_user$project$Lia_Update$UpdateQuiz,
 					A2(_user$project$Lia_Quiz_View$view, model.quiz, _p3._0));
 			default:
-				var _p4 = _p3._0;
-				return A2(
-					_elm_lang$html$Html$div,
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$id(
-							_elm_lang$core$Basics$toString(_p4)),
-						_1: {
-							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$hidden(
-								_elm_lang$core$Native_Utils.cmp(_p4, model.visible) > 0),
-							_1: {ctor: '[]'}
-						}
-					},
-					{
-						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$div,
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$style(
-									{
-										ctor: '::',
-										_0: {ctor: '_Tuple2', _0: 'display', _1: 'flex'},
-										_1: {
-											ctor: '::',
-											_0: {ctor: '_Tuple2', _0: 'justify-content', _1: 'center'},
-											_1: {ctor: '[]'}
-										}
-									}),
-								_1: {ctor: '[]'}
-							},
-							{
-								ctor: '::',
-								_0: _user$project$Lia_Inline_View$circle(_p4),
-								_1: {ctor: '[]'}
-							}),
-						_1: A2(
-							_elm_lang$core$List$map,
-							function (sub) {
-								return A2(_user$project$Lia_View$view_block, model, sub);
-							},
-							_p3._1)
-					});
+				return A4(
+					_user$project$Lia_Effect_View$view_block,
+					model.effects,
+					_user$project$Lia_View$view_block(model),
+					_p3._0,
+					_p3._1);
 		}
 	});
 var _user$project$Lia_View$view_body = F2(
@@ -13971,8 +13994,8 @@ var _user$project$Lia_View$view_body = F2(
 	});
 var _user$project$Lia_View$view_header = F2(
 	function (indentation, title) {
-		var _p5 = indentation;
-		switch (_p5) {
+		var _p4 = indentation;
+		switch (_p4) {
 			case 0:
 				return A2(
 					_elm_lang$html$Html$h1,
@@ -14041,10 +14064,10 @@ var _user$project$Lia_View$view_slide = F2(
 			});
 	});
 var _user$project$Lia_View$view_contents = function (model) {
-	var f = function (_p6) {
-		var _p7 = _p6;
-		var _p9 = _p7._0;
-		var _p8 = _p7._1._0;
+	var f = function (_p5) {
+		var _p6 = _p5;
+		var _p8 = _p6._0;
+		var _p7 = _p6._1._0;
 		return A2(
 			_elm_lang$html$Html$div,
 			{ctor: '[]'},
@@ -14055,7 +14078,7 @@ var _user$project$Lia_View$view_contents = function (model) {
 					{
 						ctor: '::',
 						_0: _elm_lang$html$Html_Events$onClick(
-							_user$project$Lia_Update$Load(_p9)),
+							_user$project$Lia_Update$Load(_p8)),
 						_1: {
 							ctor: '::',
 							_0: _elm_lang$html$Html_Attributes$href(
@@ -14065,7 +14088,7 @@ var _user$project$Lia_View$view_contents = function (model) {
 									A2(
 										_elm_lang$core$String$join,
 										'_',
-										A2(_elm_lang$core$String$split, ' ', _p8)))),
+										A2(_elm_lang$core$String$split, ' ', _p7)))),
 							_1: {
 								ctor: '::',
 								_0: _elm_lang$html$Html_Attributes$style(
@@ -14076,7 +14099,7 @@ var _user$project$Lia_View$view_contents = function (model) {
 											_0: 'padding-left',
 											_1: A2(
 												_elm_lang$core$Basics_ops['++'],
-												_elm_lang$core$Basics$toString((_p7._1._1 - 1) * 20),
+												_elm_lang$core$Basics$toString((_p6._1._1 - 1) * 20),
 												'px')
 										},
 										_1: {
@@ -14084,7 +14107,7 @@ var _user$project$Lia_View$view_contents = function (model) {
 											_0: {
 												ctor: '_Tuple2',
 												_0: 'color',
-												_1: _elm_lang$core$Native_Utils.eq(model.current_slide, _p9) ? '#33f' : '#333'
+												_1: _elm_lang$core$Native_Utils.eq(model.current_slide, _p8) ? '#33f' : '#333'
 											},
 											_1: {ctor: '[]'}
 										}
@@ -14095,7 +14118,7 @@ var _user$project$Lia_View$view_contents = function (model) {
 					},
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html$text(_p8),
+						_0: _elm_lang$html$Html$text(_p7),
 						_1: {ctor: '[]'}
 					}),
 				_1: {ctor: '[]'}
@@ -14139,15 +14162,15 @@ var _user$project$Lia_View$view_contents = function (model) {
 			_elm_lang$core$List$map,
 			f,
 			function (list) {
-				var _p10 = model.search_results;
-				if (_p10.ctor === 'Nothing') {
+				var _p9 = model.search_results;
+				if (_p9.ctor === 'Nothing') {
 					return list;
 				} else {
 					return A2(
 						_elm_lang$core$List$filter,
-						function (_p11) {
-							var _p12 = _p11;
-							return A2(_elm_lang$core$List$member, _p12._0, _p10._0);
+						function (_p10) {
+							var _p11 = _p10;
+							return A2(_elm_lang$core$List$member, _p11._0, _p9._0);
 						},
 						list);
 				}
@@ -14241,9 +14264,9 @@ var _user$project$Lia_View$view_slides = function (model) {
 					{
 						ctor: '::',
 						_0: function () {
-							var _p13 = A2(_user$project$Lia_Helper$get_slide, model.current_slide, model.slides);
-							if (_p13.ctor === 'Just') {
-								return A3(_elm_lang$html$Html_Lazy$lazy2, _user$project$Lia_View$view_slide, model, _p13._0);
+							var _p12 = A2(_user$project$Lia_Helper$get_slide, model.current_slide, model.slides);
+							if (_p12.ctor === 'Just') {
+								return A3(_elm_lang$html$Html_Lazy$lazy2, _user$project$Lia_View$view_slide, model, _p12._0);
 							} else {
 								return _elm_lang$html$Html$text('');
 							}
@@ -14310,7 +14333,9 @@ var _user$project$Lia_View$view_plain = function (model) {
 	var f = _user$project$Lia_View$view_slide(
 		_elm_lang$core$Native_Utils.update(
 			model,
-			{visible: 999}));
+			{
+				effects: A2(_user$project$Lia_Effect_Model$Model, 999, 999)
+			}));
 	return A2(
 		_elm_lang$html$Html$div,
 		{
@@ -14334,8 +14359,8 @@ var _user$project$Lia_View$view_plain = function (model) {
 		A2(_elm_lang$core$List$map, f, model.slides));
 };
 var _user$project$Lia_View$view = function (model) {
-	var _p14 = model.mode;
-	if (_p14.ctor === 'Slides') {
+	var _p13 = model.mode;
+	if (_p13.ctor === 'Slides') {
 		return _user$project$Lia_View$view_slides(model);
 	} else {
 		return _user$project$Lia_View$view_plain(model);
@@ -14382,7 +14407,8 @@ var _user$project$Lia$init = F2(
 	function (mode, script) {
 		return _user$project$Lia$parse(
 			_user$project$Lia_Model$Model(script)('')(
-				{ctor: '[]'})(_elm_lang$core$Array$empty)(0)(mode)(0)(0)(true)('')(
+				{ctor: '[]'})(_elm_lang$core$Array$empty)(0)(mode)(
+				A2(_user$project$Lia_Effect_Model$Model, 0, 0))(true)('')(
 				{ctor: '[]'})(_elm_lang$core$Maybe$Nothing));
 	});
 var _user$project$Lia$init_plain = _user$project$Lia$init(_user$project$Lia_Type$Plain);

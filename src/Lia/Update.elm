@@ -1,6 +1,7 @@
 module Lia.Update exposing (Msg(..), update)
 
-import Lia.Helper exposing (get_slide_effects)
+import Lia.Effect.Model as Effect
+import Lia.Helper exposing (get_slide)
 import Lia.Index
 import Lia.Model exposing (..)
 import Lia.Quiz.Update
@@ -26,21 +27,28 @@ update msg model =
             update (Speak "Starting to load next slide")
                 { model
                     | current_slide = int
-                    , visible = 0
-                    , effects = get_slide_effects int model.slides
+                    , effects = Effect.init <| get_slide int model.slides
                 }
 
         PrevSlide ->
-            if model.visible == 0 then
+            if model.effects.visible == 0 then
                 update (Load (model.current_slide - 1)) model
             else
-                ( { model | visible = model.visible - 1 }, Cmd.none )
+                let
+                    effects =
+                        model.effects
+                in
+                ( { model | effects = { effects | visible = effects.visible - 1 } }, Cmd.none )
 
         NextSlide ->
-            if model.visible == model.effects then
+            if model.effects.visible == model.effects.effects then
                 update (Load (model.current_slide + 1)) model
             else
-                ( { model | visible = model.visible + 1 }, Cmd.none )
+                let
+                    effects =
+                        model.effects
+                in
+                ( { model | effects = { effects | visible = effects.visible + 1 } }, Cmd.none )
 
         ScanIndex pattern ->
             let

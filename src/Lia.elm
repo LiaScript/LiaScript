@@ -2,6 +2,7 @@ module Lia exposing (..)
 
 import Array
 import Html exposing (Html)
+import Lia.Effect.Model as Effect
 import Lia.Index
 import Lia.Model
 import Lia.Parser
@@ -25,7 +26,7 @@ type alias Mode =
 
 init : Mode -> String -> Model
 init mode script =
-    parse <| Lia.Model.Model script "" [] Array.empty 0 mode 0 0 True "" [] Nothing
+    parse <| Lia.Model.Model script "" [] Array.empty 0 mode (Effect.Model 0 0) True "" [] Nothing
 
 
 set_script : Model -> String -> Model

@@ -5,6 +5,8 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import Html.Lazy exposing (lazy2)
+import Lia.Effect.Model as Effect
+import Lia.Effect.View as Effects
 import Lia.Helper exposing (..)
 import Lia.Inline.Type exposing (Inline)
 import Lia.Inline.View as Elem
@@ -29,7 +31,7 @@ view_plain : Model -> Html Msg
 view_plain model =
     let
         f =
-            view_slide { model | visible = 999 }
+            view_slide { model | effects = Effect.Model 999 999 }
     in
     Html.div
         [ Attr.style
@@ -195,7 +197,7 @@ view_block : Model -> Block -> Html Msg
 view_block model block =
     case block of
         Paragraph elements ->
-            Html.p [] (List.map (\e -> Elem.view model.visible e) elements)
+            Html.p [] (List.map (\e -> Elem.view model.effects.visible e) elements)
 
         HorizontalLine ->
             Html.hr [] []
@@ -204,7 +206,7 @@ view_block model block =
             view_table model header (Array.fromList format) body
 
         Quote elements ->
-            Html.blockquote [] (List.map (\e -> Elem.view model.visible e) elements)
+            Html.blockquote [] (List.map (\e -> Elem.view model.effects.visible e) elements)
 
         CodeBlock language code ->
             Html.pre [] [ Html.code [] [ Lia.Utils.highlight language code ] ]
@@ -213,19 +215,7 @@ view_block model block =
             Html.map UpdateQuiz <| Lia.Quiz.View.view model.quiz quiz
 
         EBlock idx sub_blocks ->
-            Html.div
-                [ Attr.id (toString idx)
-                , Attr.hidden (idx > model.visible)
-                ]
-                (Html.div
-                    [ Attr.style
-                        [ ( "display", "flex" )
-                        , ( "justify-content", "center" )
-                        ]
-                    ]
-                    [ Elem.circle idx ]
-                    :: List.map (\sub -> view_block model sub) sub_blocks
-                )
+            Effects.view_block model.effects (view_block model) idx sub_blocks
 
 
 view_table : Model -> List (List Inline) -> Array String -> List (List (List Inline)) -> Html Msg
@@ -255,7 +245,7 @@ view_table model header format body =
                                 )
                             ]
                             (col
-                                |> List.map (\element -> Elem.view model.visible element)
+                                |> List.map (\element -> Elem.view model.effects.visible element)
                             )
                     )
     in

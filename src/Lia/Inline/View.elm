@@ -1,7 +1,8 @@
-module Lia.Inline.View exposing (circle, reference, view)
+module Lia.Inline.View exposing (reference, view)
 
 import Html exposing (Html)
 import Html.Attributes as Attr
+import Lia.Effect.View as Effect
 import Lia.Inline.Type exposing (Inline(..), Reference(..))
 import Lia.Utils
 
@@ -40,13 +41,7 @@ view visible element =
             Lia.Utils.stringToHtml e
 
         EInline idx elements ->
-            Html.span
-                [ Attr.id (toString idx)
-                , Attr.hidden (idx > visible)
-                ]
-                (circle idx
-                    :: List.map (\e -> view visible e) elements
-                )
+            Effect.view (view visible) idx visible elements
 
 
 reference : Reference -> Html msg
@@ -60,22 +55,3 @@ reference ref =
 
         Movie alt_ url_ ->
             Html.iframe [ Attr.src url_ ] [ Html.text alt_ ]
-
-
-circle : Int -> Html msg
-circle int =
-    Html.span
-        [ Attr.style
-            [ ( "border-radius", "50%" )
-            , ( "width", "15px" )
-            , ( "height", "14px" )
-            , ( "padding", "3px" )
-            , ( "display", "inline-block" )
-            , ( "background", "#000" )
-            , ( "border", "2px solid #666" )
-            , ( "color", "#fff" )
-            , ( "text-align", "center" )
-            , ( "font", "12px Arial Bold, sans-serif" )
-            ]
-        ]
-        [ Html.text (toString int) ]
