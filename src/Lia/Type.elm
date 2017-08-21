@@ -1,56 +1,12 @@
 module Lia.Type
     exposing
         ( Block(..)
-        , Hints
         , Inline(..)
         , Mode(..)
-        , Msg(..)
         , Quiz(..)
-        , QuizElement
-        , QuizState(..)
-        , QuizVector
         , Reference(..)
         , Slide
         )
-
-import Array exposing (Array)
-
-
-type Msg
-    = Load Int
-    | PrevSlide
-    | NextSlide
-    | CheckBox Int Int
-    | RadioButton Int Int
-    | Input Int String
-    | Check Int
-    | ScanIndex String
-    | ShowHint Int
-    | ContentsTable
-    | Speak String
-    | TTS (Result String Never)
-
-
-type alias QuizVector =
-    Array QuizElement
-
-
-type alias QuizElement =
-    { solved : Maybe Bool
-    , state : QuizState
-    , trial : Int
-    , hint : Int
-    }
-
-
-type alias Hints =
-    List (List Inline)
-
-
-type QuizState
-    = Single Int Int
-    | Multi (Array ( Bool, Bool ))
-    | Text String String
 
 
 type Mode
@@ -72,7 +28,7 @@ type Block
     | Quote (List Inline)
     | Paragraph (List Inline)
     | Table (List (List Inline)) (List String) (List (List (List Inline)))
-    | Quiz Quiz Int Hints
+    | Quiz Quiz Int (List (List Inline))
     | EBlock Int (List Block)
 
 

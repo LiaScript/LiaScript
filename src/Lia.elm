@@ -2,10 +2,10 @@ module Lia exposing (..)
 
 import Array
 import Html exposing (Html)
-import Lia.Helper
 import Lia.Index
 import Lia.Model
 import Lia.Parser
+import Lia.Quiz.Model
 import Lia.Type
 import Lia.Update
 import Lia.View
@@ -16,7 +16,7 @@ type alias Model =
 
 
 type alias Msg =
-    Lia.Type.Msg
+    Lia.Update.Msg
 
 
 type alias Mode =
@@ -50,7 +50,7 @@ parse model =
             { model
                 | slides = slides
                 , error = ""
-                , quiz = Lia.Helper.quiz_vector slides
+                , quiz = Lia.Quiz.Model.init slides
                 , index = Lia.Index.create slides
             }
 

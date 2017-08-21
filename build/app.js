@@ -11129,57 +11129,9 @@ var _elm_lang$html$Html_Lazy$lazy3 = _elm_lang$virtual_dom$VirtualDom$lazy3;
 var _elm_lang$html$Html_Lazy$lazy2 = _elm_lang$virtual_dom$VirtualDom$lazy2;
 var _elm_lang$html$Html_Lazy$lazy = _elm_lang$virtual_dom$VirtualDom$lazy;
 
-var _user$project$Lia_Type$QuizElement = F4(
-	function (a, b, c, d) {
-		return {solved: a, state: b, trial: c, hint: d};
-	});
 var _user$project$Lia_Type$Slide = F4(
 	function (a, b, c, d) {
 		return {indentation: a, title: b, body: c, effects: d};
-	});
-var _user$project$Lia_Type$TTS = function (a) {
-	return {ctor: 'TTS', _0: a};
-};
-var _user$project$Lia_Type$Speak = function (a) {
-	return {ctor: 'Speak', _0: a};
-};
-var _user$project$Lia_Type$ContentsTable = {ctor: 'ContentsTable'};
-var _user$project$Lia_Type$ShowHint = function (a) {
-	return {ctor: 'ShowHint', _0: a};
-};
-var _user$project$Lia_Type$ScanIndex = function (a) {
-	return {ctor: 'ScanIndex', _0: a};
-};
-var _user$project$Lia_Type$Check = function (a) {
-	return {ctor: 'Check', _0: a};
-};
-var _user$project$Lia_Type$Input = F2(
-	function (a, b) {
-		return {ctor: 'Input', _0: a, _1: b};
-	});
-var _user$project$Lia_Type$RadioButton = F2(
-	function (a, b) {
-		return {ctor: 'RadioButton', _0: a, _1: b};
-	});
-var _user$project$Lia_Type$CheckBox = F2(
-	function (a, b) {
-		return {ctor: 'CheckBox', _0: a, _1: b};
-	});
-var _user$project$Lia_Type$NextSlide = {ctor: 'NextSlide'};
-var _user$project$Lia_Type$PrevSlide = {ctor: 'PrevSlide'};
-var _user$project$Lia_Type$Load = function (a) {
-	return {ctor: 'Load', _0: a};
-};
-var _user$project$Lia_Type$Text = F2(
-	function (a, b) {
-		return {ctor: 'Text', _0: a, _1: b};
-	});
-var _user$project$Lia_Type$Multi = function (a) {
-	return {ctor: 'Multi', _0: a};
-};
-var _user$project$Lia_Type$Single = F2(
-	function (a, b) {
-		return {ctor: 'Single', _0: a, _1: b};
 	});
 var _user$project$Lia_Type$Plain = {ctor: 'Plain'};
 var _user$project$Lia_Type$Slides = {ctor: 'Slides'};
@@ -11281,162 +11233,6 @@ var _user$project$Lia_Type$LiaInt = function (a) {
 };
 var _user$project$Lia_Type$LiaBool = function (a) {
 	return {ctor: 'LiaBool', _0: a};
-};
-
-var _user$project$Lia_Helper$question_state = F3(
-	function (quiz_id, question_id, vector) {
-		var _p0 = A2(
-			_elm_lang$core$Maybe$map,
-			function (_) {
-				return _.state;
-			},
-			A2(_elm_lang$core$Array$get, quiz_id, vector));
-		_v0_2:
-		do {
-			if (_p0.ctor === 'Just') {
-				switch (_p0._0.ctor) {
-					case 'Single':
-						return _elm_lang$core$Native_Utils.eq(question_id, _p0._0._0);
-					case 'Multi':
-						var _p1 = A2(_elm_lang$core$Array$get, question_id, _p0._0._0);
-						if (_p1.ctor === 'Just') {
-							return _p1._0._0;
-						} else {
-							return false;
-						}
-					default:
-						break _v0_2;
-				}
-			} else {
-				break _v0_2;
-			}
-		} while(false);
-		return false;
-	});
-var _user$project$Lia_Helper$question_state_text = F2(
-	function (quiz_id, vector) {
-		var _p2 = A2(
-			_elm_lang$core$Maybe$map,
-			function (_) {
-				return _.state;
-			},
-			A2(_elm_lang$core$Array$get, quiz_id, vector));
-		if ((_p2.ctor === 'Just') && (_p2._0.ctor === 'Text')) {
-			return _p2._0._0;
-		} else {
-			return '';
-		}
-	});
-var _user$project$Lia_Helper$quiz_state = F2(
-	function (quiz_id, vector) {
-		return A2(
-			_elm_lang$core$Maybe$withDefault,
-			{ctor: '_Tuple2', _0: _elm_lang$core$Maybe$Nothing, _1: 0},
-			A2(
-				_elm_lang$core$Maybe$andThen,
-				function (q) {
-					return _elm_lang$core$Maybe$Just(
-						{ctor: '_Tuple2', _0: q.solved, _1: q.trial});
-				},
-				A2(_elm_lang$core$Array$get, quiz_id, vector)));
-	});
-var _user$project$Lia_Helper$quiz_vector = function (slides) {
-	var vector = function (quiz) {
-		var m = function () {
-			var _p3 = quiz;
-			switch (_p3.ctor) {
-				case 'TextInput':
-					return A2(_user$project$Lia_Type$Text, '', _p3._0);
-				case 'SingleChoice':
-					return A2(_user$project$Lia_Type$Single, -1, _p3._0);
-				default:
-					return _user$project$Lia_Type$Multi(
-						_elm_lang$core$Array$fromList(
-							A2(
-								_elm_lang$core$List$map,
-								function (_p4) {
-									var _p5 = _p4;
-									return {ctor: '_Tuple2', _0: false, _1: _p5._0};
-								},
-								_p3._0)));
-			}
-		}();
-		return {solved: _elm_lang$core$Maybe$Nothing, state: m, trial: 0, hint: 0};
-	};
-	var filter = function (b) {
-		var _p6 = b;
-		if (_p6.ctor === 'Quiz') {
-			return _elm_lang$core$Maybe$Just(_p6._0);
-		} else {
-			return _elm_lang$core$Maybe$Nothing;
-		}
-	};
-	return _elm_lang$core$Array$fromList(
-		A2(
-			_elm_lang$core$List$map,
-			vector,
-			A2(
-				_elm_lang$core$List$filterMap,
-				filter,
-				_elm_lang$core$List$concat(
-					A2(
-						_elm_lang$core$List$map,
-						function (s) {
-							return s.body;
-						},
-						slides)))));
-};
-var _user$project$Lia_Helper$get_slide = F2(
-	function (i, slides) {
-		get_slide:
-		while (true) {
-			var _p7 = {ctor: '_Tuple2', _0: i, _1: slides};
-			if (_p7._1.ctor === '[]') {
-				return _elm_lang$core$Maybe$Nothing;
-			} else {
-				if (_p7._0 === 0) {
-					return _elm_lang$core$Maybe$Just(_p7._1._0);
-				} else {
-					var _v7 = _p7._0 - 1,
-						_v8 = _p7._1._1;
-					i = _v7;
-					slides = _v8;
-					continue get_slide;
-				}
-			}
-		}
-	});
-var _user$project$Lia_Helper$get_slide_effects = F2(
-	function (i, slides) {
-		var _p8 = A2(_user$project$Lia_Helper$get_slide, i, slides);
-		if (_p8.ctor === 'Just') {
-			return _p8._0.effects;
-		} else {
-			return 0;
-		}
-	});
-var _user$project$Lia_Helper$get_hint_counter = F2(
-	function (idx, vector) {
-		var _p9 = A2(_elm_lang$core$Array$get, idx, vector);
-		if (_p9.ctor === 'Just') {
-			return _p9._0.hint;
-		} else {
-			return 0;
-		}
-	});
-var _user$project$Lia_Helper$get_headers = function (slides) {
-	return A2(
-		_elm_lang$core$List$indexedMap,
-		F2(
-			function (v0, v1) {
-				return {ctor: '_Tuple2', _0: v0, _1: v1};
-			}),
-		A2(
-			_elm_lang$core$List$map,
-			function (s) {
-				return {ctor: '_Tuple2', _0: s.title, _1: s.indentation};
-			},
-			slides));
 };
 
 var _user$project$Lia_Index$parse_inline = function (element) {
@@ -11573,6 +11369,135 @@ var _user$project$Lia_Index$scan = F2(
 	});
 var _user$project$Lia_Index$create = function (slides) {
 	return A2(_elm_lang$core$List$map, _user$project$Lia_Index$extract_string, slides);
+};
+
+var _user$project$Lia_Quiz_Type$QuizElement = F4(
+	function (a, b, c, d) {
+		return {solved: a, state: b, trial: c, hint: d};
+	});
+var _user$project$Lia_Quiz_Type$Text = F2(
+	function (a, b) {
+		return {ctor: 'Text', _0: a, _1: b};
+	});
+var _user$project$Lia_Quiz_Type$Multi = function (a) {
+	return {ctor: 'Multi', _0: a};
+};
+var _user$project$Lia_Quiz_Type$Single = F2(
+	function (a, b) {
+		return {ctor: 'Single', _0: a, _1: b};
+	});
+
+var _user$project$Lia_Quiz_Model$question_state = F3(
+	function (quiz_id, question_id, vector) {
+		var _p0 = A2(
+			_elm_lang$core$Maybe$map,
+			function (_) {
+				return _.state;
+			},
+			A2(_elm_lang$core$Array$get, quiz_id, vector));
+		_v0_2:
+		do {
+			if (_p0.ctor === 'Just') {
+				switch (_p0._0.ctor) {
+					case 'Single':
+						return _elm_lang$core$Native_Utils.eq(question_id, _p0._0._0);
+					case 'Multi':
+						var _p1 = A2(_elm_lang$core$Array$get, question_id, _p0._0._0);
+						if (_p1.ctor === 'Just') {
+							return _p1._0._0;
+						} else {
+							return false;
+						}
+					default:
+						break _v0_2;
+				}
+			} else {
+				break _v0_2;
+			}
+		} while(false);
+		return false;
+	});
+var _user$project$Lia_Quiz_Model$quiz_state = F2(
+	function (quiz_id, vector) {
+		return A2(
+			_elm_lang$core$Maybe$withDefault,
+			{ctor: '_Tuple2', _0: _elm_lang$core$Maybe$Nothing, _1: 0},
+			A2(
+				_elm_lang$core$Maybe$andThen,
+				function (q) {
+					return _elm_lang$core$Maybe$Just(
+						{ctor: '_Tuple2', _0: q.solved, _1: q.trial});
+				},
+				A2(_elm_lang$core$Array$get, quiz_id, vector)));
+	});
+var _user$project$Lia_Quiz_Model$question_state_text = F2(
+	function (quiz_id, vector) {
+		var _p2 = A2(
+			_elm_lang$core$Maybe$map,
+			function (_) {
+				return _.state;
+			},
+			A2(_elm_lang$core$Array$get, quiz_id, vector));
+		if ((_p2.ctor === 'Just') && (_p2._0.ctor === 'Text')) {
+			return _p2._0._0;
+		} else {
+			return '';
+		}
+	});
+var _user$project$Lia_Quiz_Model$get_hint_counter = F2(
+	function (idx, vector) {
+		var _p3 = A2(_elm_lang$core$Array$get, idx, vector);
+		if (_p3.ctor === 'Just') {
+			return _p3._0.hint;
+		} else {
+			return 0;
+		}
+	});
+var _user$project$Lia_Quiz_Model$element = function (quiz) {
+	var m = function () {
+		var _p4 = quiz;
+		switch (_p4.ctor) {
+			case 'TextInput':
+				return A2(_user$project$Lia_Quiz_Type$Text, '', _p4._0);
+			case 'SingleChoice':
+				return A2(_user$project$Lia_Quiz_Type$Single, -1, _p4._0);
+			default:
+				return _user$project$Lia_Quiz_Type$Multi(
+					_elm_lang$core$Array$fromList(
+						A2(
+							_elm_lang$core$List$map,
+							function (_p5) {
+								var _p6 = _p5;
+								return {ctor: '_Tuple2', _0: false, _1: _p6._0};
+							},
+							_p4._0)));
+		}
+	}();
+	return {solved: _elm_lang$core$Maybe$Nothing, state: m, trial: 0, hint: 0};
+};
+var _user$project$Lia_Quiz_Model$filter = function (block) {
+	var _p7 = block;
+	if (_p7.ctor === 'Quiz') {
+		return _elm_lang$core$Maybe$Just(_p7._0);
+	} else {
+		return _elm_lang$core$Maybe$Nothing;
+	}
+};
+var _user$project$Lia_Quiz_Model$init = function (slides) {
+	return _elm_lang$core$Array$fromList(
+		A2(
+			_elm_lang$core$List$map,
+			_user$project$Lia_Quiz_Model$element,
+			A2(
+				_elm_lang$core$List$filterMap,
+				_user$project$Lia_Quiz_Model$filter,
+				_elm_lang$core$List$concat(
+					A2(
+						_elm_lang$core$List$map,
+						function (_) {
+							return _.body;
+						},
+						slides)))));
 };
 
 var _user$project$Lia_Model$Model = function (a) {
@@ -12789,6 +12714,243 @@ var _user$project$Lia_Parser$PState = F4(
 		return {quiz: a, section: b, indentation: c, effects: d};
 	});
 
+var _user$project$Lia_Helper$get_slide = F2(
+	function (i, slides) {
+		get_slide:
+		while (true) {
+			var _p0 = {ctor: '_Tuple2', _0: i, _1: slides};
+			if (_p0._1.ctor === '[]') {
+				return _elm_lang$core$Maybe$Nothing;
+			} else {
+				if (_p0._0 === 0) {
+					return _elm_lang$core$Maybe$Just(_p0._1._0);
+				} else {
+					var _v1 = _p0._0 - 1,
+						_v2 = _p0._1._1;
+					i = _v1;
+					slides = _v2;
+					continue get_slide;
+				}
+			}
+		}
+	});
+var _user$project$Lia_Helper$get_slide_effects = F2(
+	function (i, slides) {
+		var _p1 = A2(_user$project$Lia_Helper$get_slide, i, slides);
+		if (_p1.ctor === 'Just') {
+			return _p1._0.effects;
+		} else {
+			return 0;
+		}
+	});
+var _user$project$Lia_Helper$get_headers = function (slides) {
+	return A2(
+		_elm_lang$core$List$indexedMap,
+		F2(
+			function (v0, v1) {
+				return {ctor: '_Tuple2', _0: v0, _1: v1};
+			}),
+		A2(
+			_elm_lang$core$List$map,
+			function (s) {
+				return {ctor: '_Tuple2', _0: s.title, _1: s.indentation};
+			},
+			slides));
+};
+
+var _user$project$Lia_Quiz_Update$get = F2(
+	function (idx, model) {
+		var _p0 = A2(_elm_lang$core$Array$get, idx, model);
+		if (_p0.ctor === 'Just') {
+			var _p1 = _p0._0;
+			return _elm_lang$core$Native_Utils.eq(
+				_p1.solved,
+				_elm_lang$core$Maybe$Just(true)) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(_p1);
+		} else {
+			return _elm_lang$core$Maybe$Nothing;
+		}
+	});
+var _user$project$Lia_Quiz_Update$update_input = F3(
+	function (idx, text, vector) {
+		var _p2 = A2(_user$project$Lia_Quiz_Update$get, idx, vector);
+		if (_p2.ctor === 'Just') {
+			var _p4 = _p2._0;
+			var _p3 = _p4.state;
+			if (_p3.ctor === 'Text') {
+				return A3(
+					_elm_lang$core$Array$set,
+					idx,
+					_elm_lang$core$Native_Utils.update(
+						_p4,
+						{
+							state: A2(_user$project$Lia_Quiz_Type$Text, text, _p3._1)
+						}),
+					vector);
+			} else {
+				return vector;
+			}
+		} else {
+			return vector;
+		}
+	});
+var _user$project$Lia_Quiz_Update$update_hint = F2(
+	function (idx, vector) {
+		var _p5 = A2(_user$project$Lia_Quiz_Update$get, idx, vector);
+		if (_p5.ctor === 'Just') {
+			var _p6 = _p5._0;
+			return A3(
+				_elm_lang$core$Array$set,
+				idx,
+				_elm_lang$core$Native_Utils.update(
+					_p6,
+					{hint: _p6.hint + 1}),
+				vector);
+		} else {
+			return vector;
+		}
+	});
+var _user$project$Lia_Quiz_Update$flip_checkbox = F3(
+	function (idx, question_id, vector) {
+		var _p7 = A2(_user$project$Lia_Quiz_Update$get, idx, vector);
+		if (_p7.ctor === 'Just') {
+			var _p13 = _p7._0;
+			var _p8 = _p13.state;
+			switch (_p8.ctor) {
+				case 'Single':
+					return A3(
+						_elm_lang$core$Array$set,
+						idx,
+						_elm_lang$core$Native_Utils.update(
+							_p13,
+							{
+								state: A2(_user$project$Lia_Quiz_Type$Single, question_id, _p8._1)
+							}),
+						vector);
+				case 'Multi':
+					var _p12 = _p8._0;
+					var _p9 = A2(_elm_lang$core$Array$get, question_id, _p12);
+					if (_p9.ctor === 'Just') {
+						return function (q) {
+							return A3(
+								_elm_lang$core$Array$set,
+								idx,
+								_elm_lang$core$Native_Utils.update(
+									_p13,
+									{
+										state: _user$project$Lia_Quiz_Type$Multi(q)
+									}),
+								vector);
+						}(
+							function (q) {
+								return A3(_elm_lang$core$Array$set, question_id, q, _p12);
+							}(
+								function (_p10) {
+									var _p11 = _p10;
+									return {ctor: '_Tuple2', _0: !_p11._0, _1: _p11._1};
+								}(_p9._0)));
+					} else {
+						return vector;
+					}
+				default:
+					return vector;
+			}
+		} else {
+			return vector;
+		}
+	});
+var _user$project$Lia_Quiz_Update$check_answer = F2(
+	function (idx, vector) {
+		var ccheck = function (state) {
+			var _p14 = state;
+			switch (_p14.ctor) {
+				case 'Multi':
+					var f = F2(
+						function (_p15, result) {
+							var _p16 = _p15;
+							return result && _elm_lang$core$Native_Utils.eq(_p16._0, _p16._1);
+						});
+					return _elm_lang$core$Maybe$Just(
+						A3(_elm_lang$core$Array$foldr, f, true, _p14._0));
+				case 'Single':
+					return _elm_lang$core$Maybe$Just(
+						_elm_lang$core$Native_Utils.eq(_p14._0, _p14._1));
+				default:
+					return _elm_lang$core$Maybe$Just(
+						_elm_lang$core$Native_Utils.eq(_p14._0, _p14._1));
+			}
+		};
+		var _p17 = A2(_user$project$Lia_Quiz_Update$get, idx, vector);
+		if (_p17.ctor === 'Just') {
+			var _p18 = _p17._0;
+			return A3(
+				_elm_lang$core$Array$set,
+				idx,
+				_elm_lang$core$Native_Utils.update(
+					_p18,
+					{
+						solved: ccheck(_p18.state),
+						trial: _p18.trial + 1
+					}),
+				vector);
+		} else {
+			return vector;
+		}
+	});
+var _user$project$Lia_Quiz_Update$update = F2(
+	function (msg, model) {
+		var _p19 = msg;
+		switch (_p19.ctor) {
+			case 'CheckBox':
+				return {
+					ctor: '_Tuple2',
+					_0: A3(_user$project$Lia_Quiz_Update$flip_checkbox, _p19._0, _p19._1, model),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'RadioButton':
+				return {
+					ctor: '_Tuple2',
+					_0: A3(_user$project$Lia_Quiz_Update$flip_checkbox, _p19._0, _p19._1, model),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'Input':
+				return {
+					ctor: '_Tuple2',
+					_0: A3(_user$project$Lia_Quiz_Update$update_input, _p19._0, _p19._1, model),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'Check':
+				return {
+					ctor: '_Tuple2',
+					_0: A2(_user$project$Lia_Quiz_Update$check_answer, _p19._0, model),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			default:
+				return {
+					ctor: '_Tuple2',
+					_0: A2(_user$project$Lia_Quiz_Update$update_hint, _p19._0, model),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+		}
+	});
+var _user$project$Lia_Quiz_Update$ShowHint = function (a) {
+	return {ctor: 'ShowHint', _0: a};
+};
+var _user$project$Lia_Quiz_Update$Check = function (a) {
+	return {ctor: 'Check', _0: a};
+};
+var _user$project$Lia_Quiz_Update$Input = F2(
+	function (a, b) {
+		return {ctor: 'Input', _0: a, _1: b};
+	});
+var _user$project$Lia_Quiz_Update$RadioButton = F2(
+	function (a, b) {
+		return {ctor: 'RadioButton', _0: a, _1: b};
+	});
+var _user$project$Lia_Quiz_Update$CheckBox = F2(
+	function (a, b) {
+		return {ctor: 'CheckBox', _0: a, _1: b};
+	});
+
 var _user$project$Native_Tts = (function () {
 
     function speak(voice, lang, text)
@@ -12950,173 +13112,49 @@ var _user$project$Tts_Tts$Recognition = F2(
 		return {confidence: a, transcript: b};
 	});
 
-var _user$project$Lia_Update$check_answer = F2(
-	function (idx, vector) {
-		var ccheck = function (state) {
-			var _p0 = state;
-			switch (_p0.ctor) {
-				case 'Multi':
-					var f = F2(
-						function (_p1, result) {
-							var _p2 = _p1;
-							return result && _elm_lang$core$Native_Utils.eq(_p2._0, _p2._1);
-						});
-					return _elm_lang$core$Maybe$Just(
-						A3(_elm_lang$core$Array$foldr, f, true, _p0._0));
-				case 'Single':
-					return _elm_lang$core$Maybe$Just(
-						_elm_lang$core$Native_Utils.eq(_p0._0, _p0._1));
-				default:
-					return _elm_lang$core$Maybe$Just(
-						_elm_lang$core$Native_Utils.eq(_p0._0, _p0._1));
-			}
-		};
-		var _p3 = A2(_elm_lang$core$Array$get, idx, vector);
-		if (_p3.ctor === 'Just') {
-			var _p4 = _p3._0;
-			return _elm_lang$core$Native_Utils.eq(
-				_p4.solved,
-				_elm_lang$core$Maybe$Just(true)) ? vector : A3(
-				_elm_lang$core$Array$set,
-				idx,
-				_elm_lang$core$Native_Utils.update(
-					_p4,
-					{
-						solved: ccheck(_p4.state),
-						trial: _p4.trial + 1
-					}),
-				vector);
-		} else {
-			return vector;
-		}
-	});
-var _user$project$Lia_Update$flip_checkbox = F3(
-	function (idx, question_id, vector) {
-		var _p5 = A2(_elm_lang$core$Array$get, idx, vector);
-		if (_p5.ctor === 'Just') {
-			var _p11 = _p5._0;
-			if (_elm_lang$core$Native_Utils.eq(
-				_p11.solved,
-				_elm_lang$core$Maybe$Just(true))) {
-				return vector;
-			} else {
-				var _p6 = _p11.state;
-				switch (_p6.ctor) {
-					case 'Single':
-						return A3(
-							_elm_lang$core$Array$set,
-							idx,
-							_elm_lang$core$Native_Utils.update(
-								_p11,
-								{
-									state: A2(_user$project$Lia_Type$Single, question_id, _p6._1)
-								}),
-							vector);
-					case 'Multi':
-						var _p10 = _p6._0;
-						var _p7 = A2(_elm_lang$core$Array$get, question_id, _p10);
-						if (_p7.ctor === 'Just') {
-							return function (q) {
-								return A3(
-									_elm_lang$core$Array$set,
-									idx,
-									_elm_lang$core$Native_Utils.update(
-										_p11,
-										{
-											state: _user$project$Lia_Type$Multi(q)
-										}),
-									vector);
-							}(
-								function (q) {
-									return A3(_elm_lang$core$Array$set, question_id, q, _p10);
-								}(
-									function (_p8) {
-										var _p9 = _p8;
-										return {ctor: '_Tuple2', _0: !_p9._0, _1: _p9._1};
-									}(_p7._0)));
-						} else {
-							return vector;
-						}
-					default:
-						return vector;
-				}
-			}
-		} else {
-			return vector;
-		}
-	});
-var _user$project$Lia_Update$update_hint = F2(
-	function (idx, vector) {
-		var _p12 = A2(_elm_lang$core$Array$get, idx, vector);
-		if (_p12.ctor === 'Just') {
-			var _p13 = _p12._0;
-			return _elm_lang$core$Native_Utils.eq(
-				_p13.solved,
-				_elm_lang$core$Maybe$Just(true)) ? vector : A3(
-				_elm_lang$core$Array$set,
-				idx,
-				_elm_lang$core$Native_Utils.update(
-					_p13,
-					{hint: _p13.hint + 1}),
-				vector);
-		} else {
-			return vector;
-		}
-	});
-var _user$project$Lia_Update$update_input = F3(
-	function (idx, text, vector) {
-		var _p14 = A2(_elm_lang$core$Array$get, idx, vector);
-		if (_p14.ctor === 'Just') {
-			var _p16 = _p14._0;
-			if (_elm_lang$core$Native_Utils.eq(
-				_p16.solved,
-				_elm_lang$core$Maybe$Just(true))) {
-				return vector;
-			} else {
-				var _p15 = _p16.state;
-				if (_p15.ctor === 'Text') {
-					return A3(
-						_elm_lang$core$Array$set,
-						idx,
-						_elm_lang$core$Native_Utils.update(
-							_p16,
-							{
-								state: A2(_user$project$Lia_Type$Text, text, _p15._1)
-							}),
-						vector);
-				} else {
-					return vector;
-				}
-			}
-		} else {
-			return vector;
-		}
-	});
+var _user$project$Lia_Update$TTS = function (a) {
+	return {ctor: 'TTS', _0: a};
+};
+var _user$project$Lia_Update$Speak = function (a) {
+	return {ctor: 'Speak', _0: a};
+};
+var _user$project$Lia_Update$ContentsTable = {ctor: 'ContentsTable'};
+var _user$project$Lia_Update$UpdateQuiz = function (a) {
+	return {ctor: 'UpdateQuiz', _0: a};
+};
+var _user$project$Lia_Update$ScanIndex = function (a) {
+	return {ctor: 'ScanIndex', _0: a};
+};
+var _user$project$Lia_Update$NextSlide = {ctor: 'NextSlide'};
+var _user$project$Lia_Update$PrevSlide = {ctor: 'PrevSlide'};
+var _user$project$Lia_Update$Load = function (a) {
+	return {ctor: 'Load', _0: a};
+};
 var _user$project$Lia_Update$update = F2(
 	function (msg, model) {
 		update:
 		while (true) {
-			var _p17 = msg;
-			switch (_p17.ctor) {
+			var _p0 = msg;
+			switch (_p0.ctor) {
 				case 'Load':
-					var _p18 = _p17._0;
-					var _v11 = _user$project$Lia_Type$Speak('Starting to load next slide'),
-						_v12 = _elm_lang$core$Native_Utils.update(
+					var _p1 = _p0._0;
+					var _v1 = _user$project$Lia_Update$Speak('Starting to load next slide'),
+						_v2 = _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							current_slide: _p18,
+							current_slide: _p1,
 							visible: 0,
-							effects: A2(_user$project$Lia_Helper$get_slide_effects, _p18, model.slides)
+							effects: A2(_user$project$Lia_Helper$get_slide_effects, _p1, model.slides)
 						});
-					msg = _v11;
-					model = _v12;
+					msg = _v1;
+					model = _v2;
 					continue update;
 				case 'PrevSlide':
 					if (_elm_lang$core$Native_Utils.eq(model.visible, 0)) {
-						var _v13 = _user$project$Lia_Type$Load(model.current_slide - 1),
-							_v14 = model;
-						msg = _v13;
-						model = _v14;
+						var _v3 = _user$project$Lia_Update$Load(model.current_slide - 1),
+							_v4 = model;
+						msg = _v3;
+						model = _v4;
 						continue update;
 					} else {
 						return {
@@ -13129,10 +13167,10 @@ var _user$project$Lia_Update$update = F2(
 					}
 				case 'NextSlide':
 					if (_elm_lang$core$Native_Utils.eq(model.visible, model.effects)) {
-						var _v15 = _user$project$Lia_Type$Load(model.current_slide + 1),
-							_v16 = model;
-						msg = _v15;
-						model = _v16;
+						var _v5 = _user$project$Lia_Update$Load(model.current_slide + 1),
+							_v6 = model;
+						msg = _v5;
+						model = _v6;
 						continue update;
 					} else {
 						return {
@@ -13143,65 +13181,15 @@ var _user$project$Lia_Update$update = F2(
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
 					}
-				case 'CheckBox':
-					return {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Native_Utils.update(
-							model,
-							{
-								quiz: A3(_user$project$Lia_Update$flip_checkbox, _p17._0, _p17._1, model.quiz)
-							}),
-						_1: _elm_lang$core$Platform_Cmd$none
-					};
-				case 'RadioButton':
-					return {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Native_Utils.update(
-							model,
-							{
-								quiz: A3(_user$project$Lia_Update$flip_checkbox, _p17._0, _p17._1, model.quiz)
-							}),
-						_1: _elm_lang$core$Platform_Cmd$none
-					};
-				case 'Input':
-					return {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Native_Utils.update(
-							model,
-							{
-								quiz: A3(_user$project$Lia_Update$update_input, _p17._0, _p17._1, model.quiz)
-							}),
-						_1: _elm_lang$core$Platform_Cmd$none
-					};
-				case 'Check':
-					return {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Native_Utils.update(
-							model,
-							{
-								quiz: A2(_user$project$Lia_Update$check_answer, _p17._0, model.quiz)
-							}),
-						_1: _elm_lang$core$Platform_Cmd$none
-					};
-				case 'ShowHint':
-					return {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Native_Utils.update(
-							model,
-							{
-								quiz: A2(_user$project$Lia_Update$update_hint, _p17._0, model.quiz)
-							}),
-						_1: _elm_lang$core$Platform_Cmd$none
-					};
 				case 'ScanIndex':
-					var _p19 = _p17._0;
-					var results = _elm_lang$core$Native_Utils.eq(_p19, '') ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
-						A2(_user$project$Lia_Index$scan, model.index, _p19));
+					var _p2 = _p0._0;
+					var results = _elm_lang$core$Native_Utils.eq(_p2, '') ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
+						A2(_user$project$Lia_Index$scan, model.index, _p2));
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
-							{search: _p19, search_results: results}),
+							{search: _p2, search_results: results}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				case 'ContentsTable':
@@ -13218,10 +13206,10 @@ var _user$project$Lia_Update$update = F2(
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
 							{error: 'Speaking'}),
-						_1: A4(_user$project$Tts_Tts$speak, _user$project$Lia_Type$TTS, _elm_lang$core$Maybe$Nothing, 'en_US', _p17._0)
+						_1: A4(_user$project$Tts_Tts$speak, _user$project$Lia_Update$TTS, _elm_lang$core$Maybe$Nothing, 'en_US', _p0._0)
 					};
-				default:
-					if (_p17._0.ctor === 'Ok') {
+				case 'TTS':
+					if (_p0._0.ctor === 'Ok') {
 						return {
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
@@ -13234,10 +13222,21 @@ var _user$project$Lia_Update$update = F2(
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
-								{error: _p17._0._0}),
+								{error: _p0._0._0}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
 					}
+				default:
+					var _p3 = A2(_user$project$Lia_Quiz_Update$update, _p0._0, model.quiz);
+					var quiz = _p3._0;
+					var cmd = _p3._1;
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{quiz: quiz}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
 			}
 		}
 	});
@@ -13293,131 +13292,7 @@ var _user$project$Lia_Utils$highlight = F2(
 			A2(_user$project$Native_Utils.highlight, language, code));
 	});
 
-var _user$project$Lia_View$view_reference = function (ref) {
-	var _p0 = ref;
-	switch (_p0.ctor) {
-		case 'Link':
-			return A2(
-				_elm_lang$html$Html$a,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$href(_p0._1),
-					_1: {ctor: '[]'}
-				},
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html$text(_p0._0),
-					_1: {ctor: '[]'}
-				});
-		case 'Image':
-			return A2(
-				_elm_lang$html$Html$img,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$src(_p0._1),
-					_1: {ctor: '[]'}
-				},
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html$text(_p0._0),
-					_1: {ctor: '[]'}
-				});
-		default:
-			return A2(
-				_elm_lang$html$Html$iframe,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$src(_p0._1),
-					_1: {ctor: '[]'}
-				},
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html$text(_p0._0),
-					_1: {ctor: '[]'}
-				});
-	}
-};
-var _user$project$Lia_View$quiz_check_button = F2(
-	function (model, idx) {
-		var _p1 = A2(_user$project$Lia_Helper$quiz_state, idx, model.quiz);
-		if (_p1._0.ctor === 'Just') {
-			return A2(
-				_elm_lang$html$Html$button,
-				_p1._0._0 ? {
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$style(
-						{
-							ctor: '::',
-							_0: {ctor: '_Tuple2', _0: 'color', _1: 'green'},
-							_1: {ctor: '[]'}
-						}),
-					_1: {ctor: '[]'}
-				} : {
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$style(
-						{
-							ctor: '::',
-							_0: {ctor: '_Tuple2', _0: 'color', _1: 'red'},
-							_1: {ctor: '[]'}
-						}),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$html$Html_Events$onClick(
-							_user$project$Lia_Type$Check(idx)),
-						_1: {ctor: '[]'}
-					}
-				},
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html$text(
-						A2(
-							_elm_lang$core$Basics_ops['++'],
-							'Check ',
-							_elm_lang$core$Basics$toString(_p1._1))),
-					_1: {ctor: '[]'}
-				});
-		} else {
-			return A2(
-				_elm_lang$html$Html$button,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Events$onClick(
-						_user$project$Lia_Type$Check(idx)),
-					_1: {ctor: '[]'}
-				},
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html$text('Check'),
-					_1: {ctor: '[]'}
-				});
-		}
-	});
-var _user$project$Lia_View$view_quiz_text_input = F2(
-	function (model, idx) {
-		return {
-			ctor: '::',
-			_0: A2(
-				_elm_lang$html$Html$input,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$type_('input'),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$value(
-							A2(_user$project$Lia_Helper$question_state_text, idx, model.quiz)),
-						_1: {
-							ctor: '::',
-							_0: _elm_lang$html$Html_Events$onInput(
-								_user$project$Lia_Type$Input(idx)),
-							_1: {ctor: '[]'}
-						}
-					}
-				},
-				{ctor: '[]'}),
-			_1: {ctor: '[]'}
-		};
-	});
-var _user$project$Lia_View$draw_circle = function ($int) {
+var _user$project$Lia_Inline_View$circle = function ($int) {
 	return A2(
 		_elm_lang$html$Html$span,
 		{
@@ -13473,28 +13348,72 @@ var _user$project$Lia_View$draw_circle = function ($int) {
 			_1: {ctor: '[]'}
 		});
 };
-var _user$project$Lia_View$view_inline = F2(
-	function (model, element) {
-		var _p2 = element;
-		switch (_p2.ctor) {
+var _user$project$Lia_Inline_View$reference = function (ref) {
+	var _p0 = ref;
+	switch (_p0.ctor) {
+		case 'Link':
+			return A2(
+				_elm_lang$html$Html$a,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$href(_p0._1),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text(_p0._0),
+					_1: {ctor: '[]'}
+				});
+		case 'Image':
+			return A2(
+				_elm_lang$html$Html$img,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$src(_p0._1),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text(_p0._0),
+					_1: {ctor: '[]'}
+				});
+		default:
+			return A2(
+				_elm_lang$html$Html$iframe,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$src(_p0._1),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text(_p0._0),
+					_1: {ctor: '[]'}
+				});
+	}
+};
+var _user$project$Lia_Inline_View$view = F2(
+	function (visible, element) {
+		var _p1 = element;
+		switch (_p1.ctor) {
 			case 'Code':
 				return A2(
 					_elm_lang$html$Html$code,
 					{ctor: '[]'},
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html$text(_p2._0),
+						_0: _elm_lang$html$Html$text(_p1._0),
 						_1: {ctor: '[]'}
 					});
 			case 'Chars':
-				return _elm_lang$html$Html$text(_p2._0);
+				return _elm_lang$html$Html$text(_p1._0);
 			case 'Bold':
 				return A2(
 					_elm_lang$html$Html$b,
 					{ctor: '[]'},
 					{
 						ctor: '::',
-						_0: A2(_user$project$Lia_View$view_inline, model, _p2._0),
+						_0: A2(_user$project$Lia_Inline_View$view, visible, _p1._0),
 						_1: {ctor: '[]'}
 					});
 			case 'Italic':
@@ -13503,7 +13422,7 @@ var _user$project$Lia_View$view_inline = F2(
 					{ctor: '[]'},
 					{
 						ctor: '::',
-						_0: A2(_user$project$Lia_View$view_inline, model, _p2._0),
+						_0: A2(_user$project$Lia_Inline_View$view, visible, _p1._0),
 						_1: {ctor: '[]'}
 					});
 			case 'Underline':
@@ -13512,7 +13431,7 @@ var _user$project$Lia_View$view_inline = F2(
 					{ctor: '[]'},
 					{
 						ctor: '::',
-						_0: A2(_user$project$Lia_View$view_inline, model, _p2._0),
+						_0: A2(_user$project$Lia_Inline_View$view, visible, _p1._0),
 						_1: {ctor: '[]'}
 					});
 			case 'Superscript':
@@ -13521,131 +13440,52 @@ var _user$project$Lia_View$view_inline = F2(
 					{ctor: '[]'},
 					{
 						ctor: '::',
-						_0: A2(_user$project$Lia_View$view_inline, model, _p2._0),
+						_0: A2(_user$project$Lia_Inline_View$view, visible, _p1._0),
 						_1: {ctor: '[]'}
 					});
 			case 'Ref':
-				return _user$project$Lia_View$view_reference(_p2._0);
+				return _user$project$Lia_Inline_View$reference(_p1._0);
 			case 'Formula':
-				return A2(_user$project$Lia_Utils$formula, _p2._0, _p2._1);
+				return A2(_user$project$Lia_Utils$formula, _p1._0, _p1._1);
 			case 'Symbol':
-				return _user$project$Lia_Utils$stringToHtml(_p2._0);
+				return _user$project$Lia_Utils$stringToHtml(_p1._0);
 			case 'HTML':
-				return _user$project$Lia_Utils$stringToHtml(_p2._0);
+				return _user$project$Lia_Utils$stringToHtml(_p1._0);
 			default:
-				var _p3 = _p2._0;
+				var _p2 = _p1._0;
 				return A2(
 					_elm_lang$html$Html$span,
 					{
 						ctor: '::',
 						_0: _elm_lang$html$Html_Attributes$id(
-							_elm_lang$core$Basics$toString(_p3)),
+							_elm_lang$core$Basics$toString(_p2)),
 						_1: {
 							ctor: '::',
 							_0: _elm_lang$html$Html_Attributes$hidden(
-								_elm_lang$core$Native_Utils.cmp(_p3, model.visible) > 0),
+								_elm_lang$core$Native_Utils.cmp(_p2, visible) > 0),
 							_1: {ctor: '[]'}
 						}
 					},
 					{
 						ctor: '::',
-						_0: _user$project$Lia_View$draw_circle(_p3),
+						_0: _user$project$Lia_Inline_View$circle(_p2),
 						_1: A2(
 							_elm_lang$core$List$map,
 							function (e) {
-								return A2(_user$project$Lia_View$view_inline, model, e);
+								return A2(_user$project$Lia_Inline_View$view, visible, e);
 							},
-							_p2._1)
+							_p1._1)
 					});
 		}
 	});
-var _user$project$Lia_View$view_hints = F3(
-	function (model, counter, hints) {
-		if (_elm_lang$core$Native_Utils.cmp(counter, 0) > 0) {
-			var _p4 = hints;
-			if (_p4.ctor === '[]') {
-				return {ctor: '[]'};
-			} else {
-				return {
-					ctor: '::',
-					_0: A2(
-						_elm_lang$html$Html$p,
-						{ctor: '[]'},
-						{
-							ctor: '::',
-							_0: _user$project$Lia_Utils$stringToHtml('&#x1f4a1;'),
-							_1: A2(
-								_elm_lang$core$List$map,
-								_user$project$Lia_View$view_inline(model),
-								_p4._0)
-						}),
-					_1: A3(_user$project$Lia_View$view_hints, model, counter - 1, _p4._1)
-				};
-			}
-		} else {
-			return {ctor: '[]'};
-		}
-	});
-var _user$project$Lia_View$view_quiz_single_choice = F4(
-	function (model, rslt, questions, idx) {
-		return A2(
-			_elm_lang$core$List$map,
-			function (_p5) {
-				var _p6 = _p5;
-				var _p7 = _p6._0;
-				return A2(
-					_elm_lang$html$Html$p,
-					{ctor: '[]'},
-					{
-						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$input,
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$type_('radio'),
-								_1: {
-									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$checked(
-										A3(_user$project$Lia_Helper$question_state, idx, _p7, model.quiz)),
-									_1: {
-										ctor: '::',
-										_0: _elm_lang$html$Html_Events$onClick(
-											A2(_user$project$Lia_Type$RadioButton, idx, _p7)),
-										_1: {ctor: '[]'}
-									}
-								}
-							},
-							{ctor: '[]'}),
-						_1: {
-							ctor: '::',
-							_0: A2(
-								_elm_lang$html$Html$span,
-								{ctor: '[]'},
-								A2(
-									_elm_lang$core$List$map,
-									function (e) {
-										return A2(_user$project$Lia_View$view_inline, model, e);
-									},
-									_p6._1)),
-							_1: {ctor: '[]'}
-						}
-					});
-			},
-			A2(
-				_elm_lang$core$List$indexedMap,
-				F2(
-					function (v0, v1) {
-						return {ctor: '_Tuple2', _0: v0, _1: v1};
-					}),
-				questions));
-	});
-var _user$project$Lia_View$view_quiz_multiple_choice = F3(
+
+var _user$project$Lia_Quiz_View$view_quiz_multiple_choice = F3(
 	function (model, questions, idx) {
 		return A2(
 			_elm_lang$core$List$map,
-			function (_p8) {
-				var _p9 = _p8;
-				var _p10 = _p9._0;
+			function (_p0) {
+				var _p1 = _p0;
+				var _p2 = _p1._0;
 				return A2(
 					_elm_lang$html$Html$p,
 					{ctor: '[]'},
@@ -13659,11 +13499,11 @@ var _user$project$Lia_View$view_quiz_multiple_choice = F3(
 								_1: {
 									ctor: '::',
 									_0: _elm_lang$html$Html_Attributes$checked(
-										A3(_user$project$Lia_Helper$question_state, idx, _p10, model.quiz)),
+										A3(_user$project$Lia_Quiz_Model$question_state, idx, _p2, model)),
 									_1: {
 										ctor: '::',
 										_0: _elm_lang$html$Html_Events$onClick(
-											A2(_user$project$Lia_Type$CheckBox, idx, _p10)),
+											A2(_user$project$Lia_Quiz_Update$CheckBox, idx, _p2)),
 										_1: {ctor: '[]'}
 									}
 								}
@@ -13677,9 +13517,9 @@ var _user$project$Lia_View$view_quiz_multiple_choice = F3(
 								A2(
 									_elm_lang$core$List$map,
 									function (x) {
-										return A2(_user$project$Lia_View$view_inline, model, x);
+										return A2(_user$project$Lia_Inline_View$view, 999, x);
 									},
-									_p9._1._1)),
+									_p1._1._1)),
 							_1: {ctor: '[]'}
 						}
 					});
@@ -13692,18 +13532,178 @@ var _user$project$Lia_View$view_quiz_multiple_choice = F3(
 					}),
 				questions));
 	});
-var _user$project$Lia_View$view_quiz = F4(
+var _user$project$Lia_Quiz_View$view_quiz_single_choice = F4(
+	function (model, rslt, questions, idx) {
+		return A2(
+			_elm_lang$core$List$map,
+			function (_p3) {
+				var _p4 = _p3;
+				var _p5 = _p4._0;
+				return A2(
+					_elm_lang$html$Html$p,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$input,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$type_('radio'),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$checked(
+										A3(_user$project$Lia_Quiz_Model$question_state, idx, _p5, model)),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$html$Html_Events$onClick(
+											A2(_user$project$Lia_Quiz_Update$RadioButton, idx, _p5)),
+										_1: {ctor: '[]'}
+									}
+								}
+							},
+							{ctor: '[]'}),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$span,
+								{ctor: '[]'},
+								A2(
+									_elm_lang$core$List$map,
+									function (e) {
+										return A2(_user$project$Lia_Inline_View$view, 999, e);
+									},
+									_p4._1)),
+							_1: {ctor: '[]'}
+						}
+					});
+			},
+			A2(
+				_elm_lang$core$List$indexedMap,
+				F2(
+					function (v0, v1) {
+						return {ctor: '_Tuple2', _0: v0, _1: v1};
+					}),
+				questions));
+	});
+var _user$project$Lia_Quiz_View$quiz_check_button = F2(
+	function (model, idx) {
+		var _p6 = A2(_user$project$Lia_Quiz_Model$quiz_state, idx, model);
+		if (_p6._0.ctor === 'Just') {
+			return A2(
+				_elm_lang$html$Html$button,
+				_p6._0._0 ? {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$style(
+						{
+							ctor: '::',
+							_0: {ctor: '_Tuple2', _0: 'color', _1: 'green'},
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				} : {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$style(
+						{
+							ctor: '::',
+							_0: {ctor: '_Tuple2', _0: 'color', _1: 'red'},
+							_1: {ctor: '[]'}
+						}),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$html$Html_Events$onClick(
+							_user$project$Lia_Quiz_Update$Check(idx)),
+						_1: {ctor: '[]'}
+					}
+				},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text(
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							'Check ',
+							_elm_lang$core$Basics$toString(_p6._1))),
+					_1: {ctor: '[]'}
+				});
+		} else {
+			return A2(
+				_elm_lang$html$Html$button,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Events$onClick(
+						_user$project$Lia_Quiz_Update$Check(idx)),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text('Check'),
+					_1: {ctor: '[]'}
+				});
+		}
+	});
+var _user$project$Lia_Quiz_View$view_quiz_text_input = F2(
+	function (model, idx) {
+		return {
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$input,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$type_('input'),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$value(
+							A2(_user$project$Lia_Quiz_Model$question_state_text, idx, model)),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$html$Html_Events$onInput(
+								_user$project$Lia_Quiz_Update$Input(idx)),
+							_1: {ctor: '[]'}
+						}
+					}
+				},
+				{ctor: '[]'}),
+			_1: {ctor: '[]'}
+		};
+	});
+var _user$project$Lia_Quiz_View$view_hints = F3(
+	function (model, counter, hints) {
+		if (_elm_lang$core$Native_Utils.cmp(counter, 0) > 0) {
+			var _p7 = hints;
+			if (_p7.ctor === '[]') {
+				return {ctor: '[]'};
+			} else {
+				return {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$p,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: _user$project$Lia_Utils$stringToHtml('&#x1f4a1;'),
+							_1: A2(
+								_elm_lang$core$List$map,
+								_user$project$Lia_Inline_View$view(999),
+								_p7._0)
+						}),
+					_1: A3(_user$project$Lia_Quiz_View$view_hints, model, counter - 1, _p7._1)
+				};
+			}
+		} else {
+			return {ctor: '[]'};
+		}
+	});
+var _user$project$Lia_Quiz_View$view = F4(
 	function (model, quiz, idx, hints) {
-		var hint_count = A2(_user$project$Lia_Helper$get_hint_counter, idx, model.quiz);
+		var hint_count = A2(_user$project$Lia_Quiz_Model$get_hint_counter, idx, model);
 		var quiz_html = function () {
-			var _p11 = quiz;
-			switch (_p11.ctor) {
+			var _p8 = quiz;
+			switch (_p8.ctor) {
 				case 'TextInput':
-					return A2(_user$project$Lia_View$view_quiz_text_input, model, idx);
+					return A2(_user$project$Lia_Quiz_View$view_quiz_text_input, model, idx);
 				case 'SingleChoice':
-					return A4(_user$project$Lia_View$view_quiz_single_choice, model, _p11._0, _p11._1, idx);
+					return A4(_user$project$Lia_Quiz_View$view_quiz_single_choice, model, _p8._0, _p8._1, idx);
 				default:
-					return A3(_user$project$Lia_View$view_quiz_multiple_choice, model, _p11._0, idx);
+					return A3(_user$project$Lia_Quiz_View$view_quiz_multiple_choice, model, _p8._0, idx);
 			}
 		}();
 		return A2(
@@ -13714,7 +13714,7 @@ var _user$project$Lia_View$view_quiz = F4(
 				quiz_html,
 				{
 					ctor: '::',
-					_0: A2(_user$project$Lia_View$quiz_check_button, model, idx),
+					_0: A2(_user$project$Lia_Quiz_View$quiz_check_button, model, idx),
 					_1: {
 						ctor: '::',
 						_0: _elm_lang$html$Html$text(' '),
@@ -13733,7 +13733,7 @@ var _user$project$Lia_View$view_quiz = F4(
 											_1: {
 												ctor: '::',
 												_0: _elm_lang$html$Html_Events$onClick(
-													_user$project$Lia_Type$ShowHint(idx)),
+													_user$project$Lia_Quiz_Update$ShowHint(idx)),
 												_1: {ctor: '[]'}
 											}
 										},
@@ -13749,13 +13749,14 @@ var _user$project$Lia_View$view_quiz = F4(
 								_0: A2(
 									_elm_lang$html$Html$div,
 									{ctor: '[]'},
-									A3(_user$project$Lia_View$view_hints, model, hint_count, hints)),
+									A3(_user$project$Lia_Quiz_View$view_hints, model, hint_count, hints)),
 								_1: {ctor: '[]'}
 							}
 						}
 					}
 				}));
 	});
+
 var _user$project$Lia_View$view_table = F4(
 	function (model, header, format, body) {
 		var style_ = _elm_lang$html$Html_Attributes$style(
@@ -13776,8 +13777,8 @@ var _user$project$Lia_View$view_table = F4(
 			function (model, f, row) {
 				return A2(
 					_elm_lang$core$List$map,
-					function (_p12) {
-						var _p13 = _p12;
+					function (_p0) {
+						var _p1 = _p0;
 						return A2(
 							f,
 							{
@@ -13787,9 +13788,9 @@ var _user$project$Lia_View$view_table = F4(
 									ctor: '::',
 									_0: _elm_lang$html$Html_Attributes$align(
 										function () {
-											var _p14 = A2(_elm_lang$core$Array$get, _p13._0, format);
-											if (_p14.ctor === 'Just') {
-												return _p14._0;
+											var _p2 = A2(_elm_lang$core$Array$get, _p1._0, format);
+											if (_p2.ctor === 'Just') {
+												return _p2._0;
 											} else {
 												return 'left';
 											}
@@ -13800,9 +13801,9 @@ var _user$project$Lia_View$view_table = F4(
 							A2(
 								_elm_lang$core$List$map,
 								function (element) {
-									return A2(_user$project$Lia_View$view_inline, model, element);
+									return A2(_user$project$Lia_Inline_View$view, model.visible, element);
 								},
-								_p13._1));
+								_p1._1));
 					},
 					A2(
 						_elm_lang$core$List$indexedMap,
@@ -13846,8 +13847,8 @@ var _user$project$Lia_View$view_table = F4(
 	});
 var _user$project$Lia_View$view_block = F2(
 	function (model, block) {
-		var _p15 = block;
-		switch (_p15.ctor) {
+		var _p3 = block;
+		switch (_p3.ctor) {
 			case 'Paragraph':
 				return A2(
 					_elm_lang$html$Html$p,
@@ -13855,9 +13856,9 @@ var _user$project$Lia_View$view_block = F2(
 					A2(
 						_elm_lang$core$List$map,
 						function (e) {
-							return A2(_user$project$Lia_View$view_inline, model, e);
+							return A2(_user$project$Lia_Inline_View$view, model.visible, e);
 						},
-						_p15._0));
+						_p3._0));
 			case 'HorizontalLine':
 				return A2(
 					_elm_lang$html$Html$hr,
@@ -13867,9 +13868,9 @@ var _user$project$Lia_View$view_block = F2(
 				return A4(
 					_user$project$Lia_View$view_table,
 					model,
-					_p15._0,
-					_elm_lang$core$Array$fromList(_p15._1),
-					_p15._2);
+					_p3._0,
+					_elm_lang$core$Array$fromList(_p3._1),
+					_p3._2);
 			case 'Quote':
 				return A2(
 					_elm_lang$html$Html$blockquote,
@@ -13877,9 +13878,9 @@ var _user$project$Lia_View$view_block = F2(
 					A2(
 						_elm_lang$core$List$map,
 						function (e) {
-							return A2(_user$project$Lia_View$view_inline, model, e);
+							return A2(_user$project$Lia_Inline_View$view, model.visible, e);
 						},
-						_p15._0));
+						_p3._0));
 			case 'CodeBlock':
 				return A2(
 					_elm_lang$html$Html$pre,
@@ -13891,32 +13892,28 @@ var _user$project$Lia_View$view_block = F2(
 							{ctor: '[]'},
 							{
 								ctor: '::',
-								_0: A2(_user$project$Lia_Utils$highlight, _p15._0, _p15._1),
+								_0: A2(_user$project$Lia_Utils$highlight, _p3._0, _p3._1),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
 					});
 			case 'Quiz':
 				return A2(
-					_elm_lang$html$Html$div,
-					{ctor: '[]'},
-					{
-						ctor: '::',
-						_0: A4(_user$project$Lia_View$view_quiz, model, _p15._0, _p15._1, _p15._2),
-						_1: {ctor: '[]'}
-					});
+					_elm_lang$html$Html$map,
+					_user$project$Lia_Update$UpdateQuiz,
+					A4(_user$project$Lia_Quiz_View$view, model.quiz, _p3._0, _p3._1, _p3._2));
 			default:
-				var _p16 = _p15._0;
+				var _p4 = _p3._0;
 				return A2(
 					_elm_lang$html$Html$div,
 					{
 						ctor: '::',
 						_0: _elm_lang$html$Html_Attributes$id(
-							_elm_lang$core$Basics$toString(_p16)),
+							_elm_lang$core$Basics$toString(_p4)),
 						_1: {
 							ctor: '::',
 							_0: _elm_lang$html$Html_Attributes$hidden(
-								_elm_lang$core$Native_Utils.cmp(_p16, model.visible) > 0),
+								_elm_lang$core$Native_Utils.cmp(_p4, model.visible) > 0),
 							_1: {ctor: '[]'}
 						}
 					},
@@ -13940,7 +13937,7 @@ var _user$project$Lia_View$view_block = F2(
 							},
 							{
 								ctor: '::',
-								_0: _user$project$Lia_View$draw_circle(_p16),
+								_0: _user$project$Lia_Inline_View$circle(_p4),
 								_1: {ctor: '[]'}
 							}),
 						_1: A2(
@@ -13948,7 +13945,7 @@ var _user$project$Lia_View$view_block = F2(
 							function (sub) {
 								return A2(_user$project$Lia_View$view_block, model, sub);
 							},
-							_p15._1)
+							_p3._1)
 					});
 		}
 	});
@@ -13959,8 +13956,8 @@ var _user$project$Lia_View$view_body = F2(
 	});
 var _user$project$Lia_View$view_header = F2(
 	function (indentation, title) {
-		var _p17 = indentation;
-		switch (_p17) {
+		var _p5 = indentation;
+		switch (_p5) {
 			case 0:
 				return A2(
 					_elm_lang$html$Html$h1,
@@ -14029,10 +14026,10 @@ var _user$project$Lia_View$view_slide = F2(
 			});
 	});
 var _user$project$Lia_View$view_contents = function (model) {
-	var f = function (_p18) {
-		var _p19 = _p18;
-		var _p21 = _p19._0;
-		var _p20 = _p19._1._0;
+	var f = function (_p6) {
+		var _p7 = _p6;
+		var _p9 = _p7._0;
+		var _p8 = _p7._1._0;
 		return A2(
 			_elm_lang$html$Html$div,
 			{ctor: '[]'},
@@ -14043,7 +14040,7 @@ var _user$project$Lia_View$view_contents = function (model) {
 					{
 						ctor: '::',
 						_0: _elm_lang$html$Html_Events$onClick(
-							_user$project$Lia_Type$Load(_p21)),
+							_user$project$Lia_Update$Load(_p9)),
 						_1: {
 							ctor: '::',
 							_0: _elm_lang$html$Html_Attributes$href(
@@ -14053,7 +14050,7 @@ var _user$project$Lia_View$view_contents = function (model) {
 									A2(
 										_elm_lang$core$String$join,
 										'_',
-										A2(_elm_lang$core$String$split, ' ', _p20)))),
+										A2(_elm_lang$core$String$split, ' ', _p8)))),
 							_1: {
 								ctor: '::',
 								_0: _elm_lang$html$Html_Attributes$style(
@@ -14064,7 +14061,7 @@ var _user$project$Lia_View$view_contents = function (model) {
 											_0: 'padding-left',
 											_1: A2(
 												_elm_lang$core$Basics_ops['++'],
-												_elm_lang$core$Basics$toString((_p19._1._1 - 1) * 20),
+												_elm_lang$core$Basics$toString((_p7._1._1 - 1) * 20),
 												'px')
 										},
 										_1: {
@@ -14072,7 +14069,7 @@ var _user$project$Lia_View$view_contents = function (model) {
 											_0: {
 												ctor: '_Tuple2',
 												_0: 'color',
-												_1: _elm_lang$core$Native_Utils.eq(model.current_slide, _p21) ? '#33f' : '#333'
+												_1: _elm_lang$core$Native_Utils.eq(model.current_slide, _p9) ? '#33f' : '#333'
 											},
 											_1: {ctor: '[]'}
 										}
@@ -14083,7 +14080,7 @@ var _user$project$Lia_View$view_contents = function (model) {
 					},
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html$text(_p20),
+						_0: _elm_lang$html$Html$text(_p8),
 						_1: {ctor: '[]'}
 					}),
 				_1: {ctor: '[]'}
@@ -14113,7 +14110,7 @@ var _user$project$Lia_View$view_contents = function (model) {
 								_0: _elm_lang$html$Html_Attributes$value(model.search),
 								_1: {
 									ctor: '::',
-									_0: _elm_lang$html$Html_Events$onInput(_user$project$Lia_Type$ScanIndex),
+									_0: _elm_lang$html$Html_Events$onInput(_user$project$Lia_Update$ScanIndex),
 									_1: {ctor: '[]'}
 								}
 							}
@@ -14127,15 +14124,15 @@ var _user$project$Lia_View$view_contents = function (model) {
 			_elm_lang$core$List$map,
 			f,
 			function (list) {
-				var _p22 = model.search_results;
-				if (_p22.ctor === 'Nothing') {
+				var _p10 = model.search_results;
+				if (_p10.ctor === 'Nothing') {
 					return list;
 				} else {
 					return A2(
 						_elm_lang$core$List$filter,
-						function (_p23) {
-							var _p24 = _p23;
-							return A2(_elm_lang$core$List$member, _p24._0, _p22._0);
+						function (_p11) {
+							var _p12 = _p11;
+							return A2(_elm_lang$core$List$member, _p12._0, _p10._0);
 						},
 						list);
 				}
@@ -14181,7 +14178,7 @@ var _user$project$Lia_View$view_slides = function (model) {
 						_elm_lang$html$Html$button,
 						{
 							ctor: '::',
-							_0: _elm_lang$html$Html_Events$onClick(_user$project$Lia_Type$ContentsTable),
+							_0: _elm_lang$html$Html_Events$onClick(_user$project$Lia_Update$ContentsTable),
 							_1: {
 								ctor: '::',
 								_0: _elm_lang$html$Html_Attributes$style(
@@ -14200,10 +14197,10 @@ var _user$project$Lia_View$view_slides = function (model) {
 						}),
 					_1: {
 						ctor: '::',
-						_0: A2(loadButton, '<<', _user$project$Lia_Type$PrevSlide),
+						_0: A2(loadButton, '<<', _user$project$Lia_Update$PrevSlide),
 						_1: {
 							ctor: '::',
-							_0: A2(loadButton, '>>', _user$project$Lia_Type$NextSlide),
+							_0: A2(loadButton, '>>', _user$project$Lia_Update$NextSlide),
 							_1: {ctor: '[]'}
 						}
 					}
@@ -14229,9 +14226,9 @@ var _user$project$Lia_View$view_slides = function (model) {
 					{
 						ctor: '::',
 						_0: function () {
-							var _p25 = A2(_user$project$Lia_Helper$get_slide, model.current_slide, model.slides);
-							if (_p25.ctor === 'Just') {
-								return A3(_elm_lang$html$Html_Lazy$lazy2, _user$project$Lia_View$view_slide, model, _p25._0);
+							var _p13 = A2(_user$project$Lia_Helper$get_slide, model.current_slide, model.slides);
+							if (_p13.ctor === 'Just') {
+								return A3(_elm_lang$html$Html_Lazy$lazy2, _user$project$Lia_View$view_slide, model, _p13._0);
 							} else {
 								return _elm_lang$html$Html$text('');
 							}
@@ -14322,8 +14319,8 @@ var _user$project$Lia_View$view_plain = function (model) {
 		A2(_elm_lang$core$List$map, f, model.slides));
 };
 var _user$project$Lia_View$view = function (model) {
-	var _p26 = model.mode;
-	if (_p26.ctor === 'Slides') {
+	var _p14 = model.mode;
+	if (_p14.ctor === 'Slides') {
 		return _user$project$Lia_View$view_slides(model);
 	} else {
 		return _user$project$Lia_View$view_plain(model);
@@ -14351,7 +14348,7 @@ var _user$project$Lia$parse = function (model) {
 			{
 				slides: _p1,
 				error: '',
-				quiz: _user$project$Lia_Helper$quiz_vector(_p1),
+				quiz: _user$project$Lia_Quiz_Model$init(_p1),
 				index: _user$project$Lia_Index$create(_p1)
 			});
 	} else {

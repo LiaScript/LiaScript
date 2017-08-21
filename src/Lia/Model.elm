@@ -1,13 +1,14 @@
 module Lia.Model exposing (..)
 
-import Lia.Type exposing (Mode, QuizVector, Slide)
+import Lia.Quiz.Model
+import Lia.Type exposing (Mode, Slide)
 
 
 type alias Model =
     { script : String
     , error : String
     , slides : List Slide
-    , quiz : QuizVector
+    , quiz : Lia.Quiz.Model.Model
     , current_slide : Int
     , mode : Mode
     , visible : Int

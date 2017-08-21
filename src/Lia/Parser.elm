@@ -117,7 +117,7 @@ checked b p =
     (\l -> ( b, l )) <$> (p *> line <* newline)
 
 
-quiz_hints : Parser PState Hints
+quiz_hints : Parser PState (List (List Inline))
 quiz_hints =
     many (string "[?]" *> line <* newline)
 

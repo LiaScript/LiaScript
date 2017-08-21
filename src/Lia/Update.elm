@@ -1,11 +1,21 @@
-module Lia.Update exposing (update)
+module Lia.Update exposing (Msg(..), update)
 
-import Array
 import Lia.Helper exposing (get_slide_effects)
 import Lia.Index
 import Lia.Model exposing (..)
-import Lia.Type exposing (..)
+import Lia.Quiz.Update
 import Tts.Tts exposing (speak)
+
+
+type Msg
+    = Load Int
+    | PrevSlide
+    | NextSlide
+    | ScanIndex String
+    | UpdateQuiz Lia.Quiz.Update.Msg
+    | ContentsTable
+    | Speak String
+    | TTS (Result String Never)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -32,21 +42,6 @@ update msg model =
             else
                 ( { model | visible = model.visible + 1 }, Cmd.none )
 
-        CheckBox quiz_id question_id ->
-            ( { model | quiz = flip_checkbox quiz_id question_id model.quiz }, Cmd.none )
-
-        RadioButton quiz_id answer ->
-            ( { model | quiz = flip_checkbox quiz_id answer model.quiz }, Cmd.none )
-
-        Input quiz_id string ->
-            ( { model | quiz = update_input quiz_id string model.quiz }, Cmd.none )
-
-        Check quiz_id ->
-            ( { model | quiz = check_answer quiz_id model.quiz }, Cmd.none )
-
-        ShowHint quiz_id ->
-            ( { model | quiz = update_hint quiz_id model.quiz }, Cmd.none )
-
         ScanIndex pattern ->
             let
                 results =
@@ -69,91 +64,9 @@ update msg model =
         TTS (Result.Err m) ->
             ( { model | error = m }, Cmd.none )
 
-
-update_input : Int -> String -> QuizVector -> QuizVector
-update_input idx text vector =
-    case Array.get idx vector of
-        Just elem ->
-            if elem.solved == Just True then
-                vector
-            else
-                case elem.state of
-                    Text input answer ->
-                        Array.set idx { elem | state = Text text answer } vector
-
-                    _ ->
-                        vector
-
-        _ ->
-            vector
-
-
-update_hint : Int -> QuizVector -> QuizVector
-update_hint idx vector =
-    case Array.get idx vector of
-        Just elem ->
-            if elem.solved == Just True then
-                vector
-            else
-                Array.set idx { elem | hint = elem.hint + 1 } vector
-
-        _ ->
-            vector
-
-
-flip_checkbox : Int -> Int -> QuizVector -> QuizVector
-flip_checkbox idx question_id vector =
-    case Array.get idx vector of
-        Just elem ->
-            if elem.solved == Just True then
-                vector
-            else
-                case elem.state of
-                    Single c answer ->
-                        Array.set idx { elem | state = Single question_id answer } vector
-
-                    Multi quiz ->
-                        case Array.get question_id quiz of
-                            Just question ->
-                                question
-                                    |> (\( c, a ) -> ( not c, a ))
-                                    |> (\q -> Array.set question_id q quiz)
-                                    |> (\q -> Array.set idx { elem | state = Multi q } vector)
-
-                            Nothing ->
-                                vector
-
-                    _ ->
-                        vector
-
-        _ ->
-            vector
-
-
-check_answer : Int -> QuizVector -> QuizVector
-check_answer idx vector =
-    let
-        ccheck state =
-            case state of
-                Multi quiz ->
-                    let
-                        f ( input, answer ) result =
-                            result && (input == answer)
-                    in
-                    Just (Array.foldr f True quiz)
-
-                Single input answer ->
-                    Just (input == answer)
-
-                Text input answer ->
-                    Just (input == answer)
-    in
-    case Array.get idx vector of
-        Just elem ->
-            if elem.solved == Just True then
-                vector
-            else
-                Array.set idx { elem | solved = ccheck elem.state, trial = elem.trial + 1 } vector
-
-        Nothing ->
-            vector
+        UpdateQuiz quiz_msg ->
+            let
+                ( quiz, cmd ) =
+                    Lia.Quiz.Update.update quiz_msg model.quiz
+            in
+            ( { model | quiz = quiz }, Cmd.none )

@@ -6,8 +6,11 @@ import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import Html.Lazy exposing (lazy2)
 import Lia.Helper exposing (..)
+import Lia.Inline.View as Elem
 import Lia.Model exposing (Model)
+import Lia.Quiz.View
 import Lia.Type exposing (..)
+import Lia.Update exposing (Msg(..))
 import Lia.Utils
 
 
@@ -187,30 +190,11 @@ view_body model body =
     List.map f body
 
 
-draw_circle : Int -> Html Msg
-draw_circle int =
-    Html.span
-        [ Attr.style
-            [ ( "border-radius", "50%" )
-            , ( "width", "15px" )
-            , ( "height", "14px" )
-            , ( "padding", "3px" )
-            , ( "display", "inline-block" )
-            , ( "background", "#000" )
-            , ( "border", "2px solid #666" )
-            , ( "color", "#fff" )
-            , ( "text-align", "center" )
-            , ( "font", "12px Arial Bold, sans-serif" )
-            ]
-        ]
-        [ Html.text (toString int) ]
-
-
 view_block : Model -> Block -> Html Msg
 view_block model block =
     case block of
         Paragraph elements ->
-            Html.p [] (List.map (\e -> view_inline model e) elements)
+            Html.p [] (List.map (\e -> Elem.view model.visible e) elements)
 
         HorizontalLine ->
             Html.hr [] []
@@ -219,13 +203,13 @@ view_block model block =
             view_table model header (Array.fromList format) body
 
         Quote elements ->
-            Html.blockquote [] (List.map (\e -> view_inline model e) elements)
+            Html.blockquote [] (List.map (\e -> Elem.view model.visible e) elements)
 
         CodeBlock language code ->
             Html.pre [] [ Html.code [] [ Lia.Utils.highlight language code ] ]
 
         Quiz quiz idx hints ->
-            Html.div [] [ view_quiz model quiz idx hints ]
+            Html.map UpdateQuiz <| Lia.Quiz.View.view model.quiz quiz idx hints
 
         EBlock idx sub_blocks ->
             Html.div
@@ -238,112 +222,9 @@ view_block model block =
                         , ( "justify-content", "center" )
                         ]
                     ]
-                    [ draw_circle idx ]
+                    [ Elem.circle idx ]
                     :: List.map (\sub -> view_block model sub) sub_blocks
                 )
-
-
-view_quiz : Model -> Quiz -> Int -> Hints -> Html Msg
-view_quiz model quiz idx hints =
-    let
-        quiz_html =
-            case quiz of
-                TextInput _ ->
-                    view_quiz_text_input model idx
-
-                SingleChoice rslt questions ->
-                    view_quiz_single_choice model rslt questions idx
-
-                MultipleChoice questions ->
-                    view_quiz_multiple_choice model questions idx
-
-        hint_count =
-            Lia.Helper.get_hint_counter idx model.quiz
-    in
-    List.append quiz_html
-        [ quiz_check_button model idx
-        , Html.text " "
-        , Html.sup [] [ Html.a [ Attr.href "#", onClick (ShowHint idx) ] [ Html.text "?" ] ]
-        , Html.div [] (view_hints model hint_count hints)
-        ]
-        |> Html.p []
-
-
-view_hints : Model -> Int -> Hints -> List (Html Msg)
-view_hints model counter hints =
-    if counter > 0 then
-        case hints of
-            [] ->
-                []
-
-            x :: xs ->
-                Html.p [] (Lia.Utils.stringToHtml "&#x1f4a1;" :: List.map (view_inline model) x)
-                    :: view_hints model (counter - 1) xs
-    else
-        []
-
-
-view_quiz_text_input : Model -> Int -> List (Html Msg)
-view_quiz_text_input model idx =
-    [ Html.input
-        [ Attr.type_ "input"
-        , Attr.value <| Lia.Helper.question_state_text idx model.quiz
-        , onInput (Input idx)
-        ]
-        []
-    ]
-
-
-quiz_check_button : Model -> Int -> Html Msg
-quiz_check_button model idx =
-    case Lia.Helper.quiz_state idx model.quiz of
-        ( Just b, trial_counts ) ->
-            Html.button
-                (if b then
-                    [ Attr.style [ ( "color", "green" ) ] ]
-                 else
-                    [ Attr.style [ ( "color", "red" ) ], onClick (Check idx) ]
-                )
-                [ Html.text ("Check " ++ toString trial_counts) ]
-
-        ( Nothing, _ ) ->
-            Html.button [ onClick (Check idx) ] [ Html.text "Check" ]
-
-
-view_quiz_single_choice : Model -> Int -> List (List Inline) -> Int -> List (Html Msg)
-view_quiz_single_choice model rslt questions idx =
-    questions
-        |> List.indexedMap (,)
-        |> List.map
-            (\( i, elements ) ->
-                Html.p []
-                    [ Html.input
-                        [ Attr.type_ "radio"
-                        , Attr.checked <| Lia.Helper.question_state idx i model.quiz
-                        , onClick (RadioButton idx i)
-                        ]
-                        []
-                    , Html.span [] (List.map (\e -> view_inline model e) elements)
-                    ]
-            )
-
-
-view_quiz_multiple_choice : Model -> List ( Bool, List Inline ) -> Int -> List (Html Msg)
-view_quiz_multiple_choice model questions idx =
-    questions
-        |> List.indexedMap (,)
-        |> List.map
-            (\( i, ( _, q ) ) ->
-                Html.p []
-                    [ Html.input
-                        [ Attr.type_ "checkbox"
-                        , Attr.checked (Lia.Helper.question_state idx i model.quiz)
-                        , onClick (CheckBox idx i)
-                        ]
-                        []
-                    , Html.span [] (List.map (\x -> view_inline model x) q)
-                    ]
-            )
 
 
 view_table : Model -> List (List Inline) -> Array String -> List (List (List Inline)) -> Html Msg
@@ -373,7 +254,7 @@ view_table model header format body =
                                 )
                             ]
                             (col
-                                |> List.map (\element -> view_inline model element)
+                                |> List.map (\element -> Elem.view model.visible element)
                             )
                     )
     in
@@ -391,62 +272,6 @@ view_table model header format body =
                 )
                 body
         )
-
-
-view_inline : Model -> Inline -> Html Msg
-view_inline model element =
-    case element of
-        Code e ->
-            Html.code [] [ Html.text e ]
-
-        Chars e ->
-            Html.text e
-
-        Bold e ->
-            Html.b [] [ view_inline model e ]
-
-        Italic e ->
-            Html.em [] [ view_inline model e ]
-
-        Underline e ->
-            Html.u [] [ view_inline model e ]
-
-        Superscript e ->
-            Html.sup [] [ view_inline model e ]
-
-        Ref e ->
-            view_reference e
-
-        Formula mode e ->
-            Lia.Utils.formula mode e
-
-        Symbol e ->
-            Lia.Utils.stringToHtml e
-
-        HTML e ->
-            Lia.Utils.stringToHtml e
-
-        EInline idx elements ->
-            Html.span
-                [ Attr.id (toString idx)
-                , Attr.hidden (idx > model.visible)
-                ]
-                (draw_circle idx
-                    :: List.map (\e -> view_inline model e) elements
-                )
-
-
-view_reference : Reference -> Html Msg
-view_reference ref =
-    case ref of
-        Link alt_ url_ ->
-            Html.a [ Attr.href url_ ] [ Html.text alt_ ]
-
-        Image alt_ url_ ->
-            Html.img [ Attr.src url_ ] [ Html.text alt_ ]
-
-        Movie alt_ url_ ->
-            Html.iframe [ Attr.src url_ ] [ Html.text alt_ ]
 
 
 
