@@ -16,7 +16,7 @@ import Lia.Inline.Type exposing (..)
 
 comments : Parser s ()
 comments =
-    skip (many (string "{-" *> manyTill anyChar (string "-}")))
+    skip (many (string "<!--" *> manyTill anyChar (string "-->")))
 
 
 html : Parser s Inline

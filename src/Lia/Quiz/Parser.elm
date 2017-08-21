@@ -59,7 +59,7 @@ checked b p =
 
 quiz_hints : Parser s (List (List Inline))
 quiz_hints =
-    many (string "[?]" *> line <* newline)
+    many (string "[[?]]" *> line <* newline)
 
 
 quiz_MultipleChoice : Parser s Quiz
@@ -67,7 +67,7 @@ quiz_MultipleChoice =
     MultipleChoice
         <$> many1
                 (choice
-                    [ checked True (string "[X]")
-                    , checked False (string "[ ]")
+                    [ checked True (string "[[X]]")
+                    , checked False (string "[[ ]]")
                     ]
                 )

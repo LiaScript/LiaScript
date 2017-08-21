@@ -210,10 +210,10 @@ subscriptions model =
 
 script : String
 script =
-    """{-
+    """<!--
 Comments have to be enclosed by curly braces and can be put everywhere...
 These can be used to comment single elements, lines, and multi-lines...
--}
+-->
 
 # Main Markdown
 
@@ -288,21 +288,21 @@ Die zwei ist die einzig richtige Antwort
 [( )] 1
 [(X)] 2
 [( )] Oder 3
-[?] Es gibt nur eine möglichkeit
-[?] Nummer 2 ist es
-[?] Alles aufgebraucht
+[[?]] Es gibt nur eine möglichkeit
+[[?]] Nummer 2 ist es
+[[?]] Alles aufgebraucht
 
 ### Multiple-Choice
 
 Zwei von Vier?
 
-[ ] nein
-[X] Ja
-[X] auch Ja
-[ ] auf keinen Fall
-[?] Es gibt nur eine möglichkeit
-[?] Nummer 2 ist es
-[?] Alles aufgebraucht
+[[ ]] nein
+[[X]] Ja
+[[X]] auch Ja
+[[ ]] auf keinen Fall
+[[?]] Es gibt nur eine möglichkeit
+[[?]] Nummer 2 ist es
+[[?]] Alles aufgebraucht
 
 ### Texteingaben
 
