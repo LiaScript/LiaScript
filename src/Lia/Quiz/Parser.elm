@@ -2,11 +2,12 @@ module Lia.Quiz.Parser exposing (quiz)
 
 import Combine exposing (..)
 import Lia.Inline.Parser exposing (..)
+import Lia.Inline.Type exposing (..)
 import Lia.PState exposing (PState)
-import Lia.Type exposing (..)
+import Lia.Quiz.Type exposing (Quiz(..), QuizBlock)
 
 
-quiz : Parser PState Block
+quiz : Parser PState QuizBlock
 quiz =
     let
         counter =
@@ -19,7 +20,7 @@ quiz =
             in
             withState pp <* modifyState increment_counter
     in
-    Quiz <$> choice [ quiz_SingleChoice, quiz_MultipleChoice, quiz_TextInput ] <*> counter <*> quiz_hints
+    QuizBlock <$> choice [ quiz_SingleChoice, quiz_MultipleChoice, quiz_TextInput ] <*> counter <*> quiz_hints
 
 
 quiz_TextInput : Parser s Quiz

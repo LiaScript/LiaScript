@@ -11,7 +11,7 @@ module Lia.Inline.Parser
 
 import Combine exposing (..)
 import Combine.Char exposing (..)
-import Lia.Type exposing (..)
+import Lia.Inline.Type exposing (..)
 
 
 comments : Parser s ()

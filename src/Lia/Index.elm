@@ -1,6 +1,8 @@
 module Lia.Index exposing (create, scan)
 
-import Lia.Type exposing (Block(..), Inline(..), Quiz(..), Reference(..), Slide)
+import Lia.Inline.Type exposing (Inline(..), Reference(..))
+import Lia.Quiz.Type exposing (Quiz(..), QuizBlock)
+import Lia.Type exposing (Block(..), Slide)
 import String
 
 
@@ -44,18 +46,8 @@ parse_block element =
         CodeBlock language code ->
             code
 
-        Quiz quiz _ _ ->
-            case quiz of
-                TextInput _ ->
-                    ""
-
-                SingleChoice _ e ->
-                    List.map scan e
-                        |> String.concat
-
-                MultipleChoice e ->
-                    List.map (\( _, ee ) -> scan ee) e
-                        |> String.concat
+        Quiz block ->
+            parse_quiz block.quiz
 
         EBlock _ sub_blocks ->
             List.map (\sub -> parse_block sub) sub_blocks
@@ -63,6 +55,27 @@ parse_block element =
 
         _ ->
             ""
+
+
+parse_quiz : Quiz -> String
+parse_quiz quiz =
+    case quiz of
+        TextInput _ ->
+            ""
+
+        SingleChoice _ e ->
+            List.map parse_inlines e
+                |> String.concat
+
+        MultipleChoice e ->
+            List.map (\( _, ee ) -> parse_inlines ee) e
+                |> String.concat
+
+
+parse_inlines : List Inline -> String
+parse_inlines list =
+    List.map parse_inline list
+        |> String.concat
 
 
 parse_inline : Inline -> String

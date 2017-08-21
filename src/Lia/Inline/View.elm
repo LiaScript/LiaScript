@@ -2,7 +2,7 @@ module Lia.Inline.View exposing (circle, reference, view)
 
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Lia.Type exposing (Inline(..), Reference(..))
+import Lia.Inline.Type exposing (Inline(..), Reference(..))
 import Lia.Utils
 
 

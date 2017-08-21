@@ -4,6 +4,7 @@ import Combine exposing (..)
 import Combine.Char
 import Combine.Num exposing (int)
 import Lia.Inline.Parser exposing (..)
+import Lia.Inline.Type exposing (Inline(..))
 import Lia.PState exposing (PState)
 import Lia.Quiz.Parser exposing (..)
 import Lia.Type exposing (..)
@@ -21,7 +22,7 @@ blocks =
                         , code_block
                         , quote_block
                         , horizontal_line
-                        , quiz
+                        , Quiz <$> quiz
 
                         --  , list
                         , paragraph

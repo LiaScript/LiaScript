@@ -3,35 +3,36 @@ module Lia.Quiz.View exposing (view)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
+import Lia.Inline.Type exposing (Inline)
 import Lia.Inline.View as Elem
 import Lia.Quiz.Model exposing (..)
+import Lia.Quiz.Type exposing (Quiz(..), QuizBlock)
 import Lia.Quiz.Update exposing (Msg(..))
-import Lia.Type exposing (Inline, Quiz(..))
 import Lia.Utils
 
 
-view : Model -> Quiz -> Int -> List (List Inline) -> Html Msg
-view model quiz idx hints =
+view : Model -> QuizBlock -> Html Msg
+view model block =
     let
         quiz_html =
-            case quiz of
+            case block.quiz of
                 TextInput _ ->
-                    view_quiz_text_input model idx
+                    view_quiz_text_input model block.idx
 
                 SingleChoice rslt questions ->
-                    view_quiz_single_choice model rslt questions idx
+                    view_quiz_single_choice model rslt questions block.idx
 
                 MultipleChoice questions ->
-                    view_quiz_multiple_choice model questions idx
+                    view_quiz_multiple_choice model questions block.idx
 
         hint_count =
-            get_hint_counter idx model
+            get_hint_counter block.idx model
     in
     List.append quiz_html
-        [ quiz_check_button model idx
+        [ quiz_check_button model block.idx
         , Html.text " "
-        , Html.sup [] [ Html.a [ Attr.href "#", onClick (ShowHint idx) ] [ Html.text "?" ] ]
-        , Html.div [] (view_hints model hint_count hints)
+        , Html.sup [] [ Html.a [ Attr.href "#", onClick (ShowHint block.idx) ] [ Html.text "?" ] ]
+        , Html.div [] (view_hints model hint_count block.hints)
         ]
         |> Html.p []
 

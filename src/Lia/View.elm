@@ -6,6 +6,7 @@ import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import Html.Lazy exposing (lazy2)
 import Lia.Helper exposing (..)
+import Lia.Inline.Type exposing (Inline)
 import Lia.Inline.View as Elem
 import Lia.Model exposing (Model)
 import Lia.Quiz.View
@@ -208,8 +209,8 @@ view_block model block =
         CodeBlock language code ->
             Html.pre [] [ Html.code [] [ Lia.Utils.highlight language code ] ]
 
-        Quiz quiz idx hints ->
-            Html.map UpdateQuiz <| Lia.Quiz.View.view model.quiz quiz idx hints
+        Quiz quiz ->
+            Html.map UpdateQuiz <| Lia.Quiz.View.view model.quiz quiz
 
         EBlock idx sub_blocks ->
             Html.div

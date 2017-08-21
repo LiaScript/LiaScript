@@ -9,13 +9,8 @@ module Lia.Quiz.Model
         )
 
 import Array
-import Lia.Quiz.Type
-    exposing
-        ( QuizElement
-        , QuizState(..)
-        , QuizVector
-        )
-import Lia.Type exposing (Block(..), Quiz(..), Slide)
+import Lia.Quiz.Type exposing (..)
+import Lia.Type exposing (Block(..), Slide)
 
 
 type alias Model =
@@ -32,21 +27,21 @@ init slides =
         |> Array.fromList
 
 
-filter : Block -> Maybe Quiz
+filter : Block -> Maybe QuizBlock
 filter block =
     case block of
-        Quiz quiz _ _ ->
+        Quiz quiz ->
             Just quiz
 
         _ ->
             Nothing
 
 
-element : Quiz -> QuizElement
+element : QuizBlock -> QuizElement
 element quiz =
     let
         m =
-            case quiz of
+            case quiz.quiz of
                 TextInput str ->
                     Text "" str
 
