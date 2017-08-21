@@ -5,7 +5,7 @@ module Lia.Helper
         , get_slide_effects
         )
 
-import Lia.Type exposing (Block(..), Quiz(..), Slide)
+import Lia.Type exposing (Slide)
 
 
 get_headers : List Slide -> List ( Int, ( String, Int ) )

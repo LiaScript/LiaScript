@@ -11526,49 +11526,7 @@ var _user$project$Lia_Model$Model = function (a) {
 	};
 };
 
-var _user$project$Lia_Parser$formatError = F2(
-	function (ms, stream) {
-		var expectationSeparator = '\n  * ';
-		var separator = '|> ';
-		var separatorOffset = _elm_lang$core$String$length(separator);
-		var location = _elm_community$parser_combinators$Combine$currentLocation(stream);
-		var lineNumberOffset = _elm_lang$core$Basics$floor(
-			A2(
-				_elm_lang$core$Basics$logBase,
-				10,
-				_elm_lang$core$Basics$toFloat(location.line))) + 1;
-		var padding = (location.column + separatorOffset) + 2;
-		return A2(
-			_elm_lang$core$Basics_ops['++'],
-			'Parse error around line:\n\n',
-			A2(
-				_elm_lang$core$Basics_ops['++'],
-				_elm_lang$core$Basics$toString(location.line),
-				A2(
-					_elm_lang$core$Basics_ops['++'],
-					separator,
-					A2(
-						_elm_lang$core$Basics_ops['++'],
-						location.source,
-						A2(
-							_elm_lang$core$Basics_ops['++'],
-							'\n',
-							A2(
-								_elm_lang$core$Basics_ops['++'],
-								A3(
-									_elm_lang$core$String$padLeft,
-									padding,
-									_elm_lang$core$Native_Utils.chr(' '),
-									'^'),
-								A2(
-									_elm_lang$core$Basics_ops['++'],
-									'\nI expected one of the following:\n',
-									A2(
-										_elm_lang$core$Basics_ops['++'],
-										expectationSeparator,
-										A2(_elm_lang$core$String$join, expectationSeparator, ms)))))))));
-	});
-var _user$project$Lia_Parser$code_ = A2(
+var _user$project$Lia_Inline_Parser$code = A2(
 	_elm_community$parser_combinators$Combine_ops['<$>'],
 	_user$project$Lia_Type$Code,
 	A2(
@@ -11581,7 +11539,7 @@ var _user$project$Lia_Parser$code_ = A2(
 				_elm_community$parser_combinators$Combine$regex('[^`]+')),
 			_elm_community$parser_combinators$Combine$string('`')),
 		'inline code'));
-var _user$project$Lia_Parser$smileys_ = _elm_community$parser_combinators$Combine$lazy(
+var _user$project$Lia_Inline_Parser$smileys = _elm_community$parser_combinators$Combine$lazy(
 	function (_p0) {
 		var _p1 = _p0;
 		return _elm_community$parser_combinators$Combine$choice(
@@ -11671,7 +11629,7 @@ var _user$project$Lia_Parser$smileys_ = _elm_community$parser_combinators$Combin
 				}
 			});
 	});
-var _user$project$Lia_Parser$arrows_ = _elm_community$parser_combinators$Combine$lazy(
+var _user$project$Lia_Inline_Parser$arrows = _elm_community$parser_combinators$Combine$lazy(
 	function (_p2) {
 		var _p3 = _p2;
 		return _elm_community$parser_combinators$Combine$choice(
@@ -11803,7 +11761,7 @@ var _user$project$Lia_Parser$arrows_ = _elm_community$parser_combinators$Combine
 				}
 			});
 	});
-var _user$project$Lia_Parser$reference_ = _elm_community$parser_combinators$Combine$lazy(
+var _user$project$Lia_Inline_Parser$reference = _elm_community$parser_combinators$Combine$lazy(
 	function (_p4) {
 		var _p5 = _p4;
 		var url = _elm_community$parser_combinators$Combine$parens(
@@ -11852,7 +11810,7 @@ var _user$project$Lia_Parser$reference_ = _elm_community$parser_combinators$Comb
 					}
 				}));
 	});
-var _user$project$Lia_Parser$formula_ = function () {
+var _user$project$Lia_Inline_Parser$formula = function () {
 	var p2 = A2(
 		_elm_community$parser_combinators$Combine_ops['<$>'],
 		function (c) {
@@ -11889,8 +11847,8 @@ var _user$project$Lia_Parser$formula_ = function () {
 			}
 		});
 }();
-var _user$project$Lia_Parser$spaces = _elm_community$parser_combinators$Combine$regex('[ \t]*');
-var _user$project$Lia_Parser$between_ = F2(
+var _user$project$Lia_Inline_Parser$spaces = _elm_community$parser_combinators$Combine$regex('[ \t]*');
+var _user$project$Lia_Inline_Parser$between_ = F2(
 	function (str, p) {
 		return A2(
 			_elm_community$parser_combinators$Combine_ops['<*'],
@@ -11898,46 +11856,20 @@ var _user$project$Lia_Parser$between_ = F2(
 				_elm_community$parser_combinators$Combine_ops['*>'],
 				A2(
 					_elm_community$parser_combinators$Combine_ops['*>'],
-					_user$project$Lia_Parser$spaces,
+					_user$project$Lia_Inline_Parser$spaces,
 					_elm_community$parser_combinators$Combine$string(str)),
 				p),
 			_elm_community$parser_combinators$Combine$string(str));
 	});
-var _user$project$Lia_Parser$newline = _elm_community$parser_combinators$Combine$skip(
+var _user$project$Lia_Inline_Parser$newline = _elm_community$parser_combinators$Combine$skip(
 	A2(
 		_elm_community$parser_combinators$Combine_ops['<|>'],
 		_elm_community$parser_combinators$Combine_Char$char(
 			_elm_lang$core$Native_Utils.chr('\n')),
 		_elm_community$parser_combinators$Combine_Char$eol));
-var _user$project$Lia_Parser$newlines = _elm_community$parser_combinators$Combine$skip(
-	_elm_community$parser_combinators$Combine$many(_user$project$Lia_Parser$newline));
-var _user$project$Lia_Parser$code_block = function () {
-	var block = A2(
-		_elm_community$parser_combinators$Combine_ops['<$>'],
-		_elm_lang$core$String$fromList,
-		A2(
-			_elm_community$parser_combinators$Combine$manyTill,
-			_elm_community$parser_combinators$Combine_Char$anyChar,
-			_elm_community$parser_combinators$Combine$string('```')));
-	var lang = A2(
-		_elm_community$parser_combinators$Combine_ops['<*'],
-		A2(
-			_elm_community$parser_combinators$Combine_ops['<*'],
-			A2(
-				_elm_community$parser_combinators$Combine_ops['*>'],
-				A2(
-					_elm_community$parser_combinators$Combine_ops['*>'],
-					_elm_community$parser_combinators$Combine$string('```'),
-					_user$project$Lia_Parser$spaces),
-				_elm_community$parser_combinators$Combine$regex('([a-z,A-Z,0-9])*')),
-			_user$project$Lia_Parser$spaces),
-		_user$project$Lia_Parser$newline);
-	return A2(
-		_elm_community$parser_combinators$Combine_ops['<*>'],
-		A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Type$CodeBlock, lang),
-		block);
-}();
-var _user$project$Lia_Parser$combine = function (list) {
+var _user$project$Lia_Inline_Parser$newlines = _elm_community$parser_combinators$Combine$skip(
+	_elm_community$parser_combinators$Combine$many(_user$project$Lia_Inline_Parser$newline));
+var _user$project$Lia_Inline_Parser$combine = function (list) {
 	combine:
 	while (true) {
 		var _p6 = list;
@@ -11968,7 +11900,7 @@ var _user$project$Lia_Parser$combine = function (list) {
 					return {
 						ctor: '::',
 						_0: _p8,
-						_1: _user$project$Lia_Parser$combine(
+						_1: _user$project$Lia_Inline_Parser$combine(
 							{ctor: '::', _0: _p9, _1: _p10})
 					};
 				}
@@ -11976,11 +11908,7 @@ var _user$project$Lia_Parser$combine = function (list) {
 		}
 	}
 };
-var _user$project$Lia_Parser$horizontal_line = A2(
-	_elm_community$parser_combinators$Combine_ops['<$'],
-	_user$project$Lia_Type$HorizontalLine,
-	_elm_community$parser_combinators$Combine$regex('--[\\-]+'));
-var _user$project$Lia_Parser$html_block = function () {
+var _user$project$Lia_Inline_Parser$html_block = function () {
 	var p = function (tag) {
 		return A2(
 			_elm_community$parser_combinators$Combine_ops['<$>'],
@@ -12021,7 +11949,7 @@ var _user$project$Lia_Parser$html_block = function () {
 				_elm_community$parser_combinators$Combine$regex('[a-zA-Z]+')),
 			p));
 }();
-var _user$project$Lia_Parser$html_void = _elm_community$parser_combinators$Combine$lazy(
+var _user$project$Lia_Inline_Parser$html_void = _elm_community$parser_combinators$Combine$lazy(
 	function (_p11) {
 		var _p12 = _p11;
 		return A2(
@@ -12094,18 +12022,8 @@ var _user$project$Lia_Parser$html_void = _elm_community$parser_combinators$Combi
 					}
 				}));
 	});
-var _user$project$Lia_Parser$html = A2(_elm_community$parser_combinators$Combine_ops['<|>'], _user$project$Lia_Parser$html_void, _user$project$Lia_Parser$html_block);
-var _user$project$Lia_Parser$quiz_TextInput = A2(
-	_elm_community$parser_combinators$Combine_ops['<$>'],
-	_user$project$Lia_Type$TextInput,
-	A2(
-		_elm_community$parser_combinators$Combine_ops['<*'],
-		A2(
-			_elm_community$parser_combinators$Combine_ops['*>'],
-			_elm_community$parser_combinators$Combine$string('[['),
-			_elm_community$parser_combinators$Combine$regex('[^\n\\]]+')),
-		_elm_community$parser_combinators$Combine$regex('\\]\\]( *)\\n')));
-var _user$project$Lia_Parser$comments = _elm_community$parser_combinators$Combine$skip(
+var _user$project$Lia_Inline_Parser$html = A2(_elm_community$parser_combinators$Combine_ops['<|>'], _user$project$Lia_Inline_Parser$html_void, _user$project$Lia_Inline_Parser$html_block);
+var _user$project$Lia_Inline_Parser$comments = _elm_community$parser_combinators$Combine$skip(
 	_elm_community$parser_combinators$Combine$many(
 		A2(
 			_elm_community$parser_combinators$Combine_ops['*>'],
@@ -12114,34 +12032,34 @@ var _user$project$Lia_Parser$comments = _elm_community$parser_combinators$Combin
 				_elm_community$parser_combinators$Combine$manyTill,
 				_elm_community$parser_combinators$Combine_Char$anyChar,
 				_elm_community$parser_combinators$Combine$string('-}')))));
-var _user$project$Lia_Parser$inlines = _elm_community$parser_combinators$Combine$lazy(
+var _user$project$Lia_Inline_Parser$inlines = _elm_community$parser_combinators$Combine$lazy(
 	function (_p13) {
 		var _p14 = _p13;
 		var p = _elm_community$parser_combinators$Combine$choice(
 			{
 				ctor: '::',
-				_0: _user$project$Lia_Parser$html,
+				_0: _user$project$Lia_Inline_Parser$html,
 				_1: {
 					ctor: '::',
-					_0: _user$project$Lia_Parser$code_,
+					_0: _user$project$Lia_Inline_Parser$code,
 					_1: {
 						ctor: '::',
-						_0: _user$project$Lia_Parser$reference_,
+						_0: _user$project$Lia_Inline_Parser$reference,
 						_1: {
 							ctor: '::',
-							_0: _user$project$Lia_Parser$formula_,
+							_0: _user$project$Lia_Inline_Parser$formula,
 							_1: {
 								ctor: '::',
-								_0: _user$project$Lia_Parser$strings_,
+								_0: _user$project$Lia_Inline_Parser$strings,
 								_1: {ctor: '[]'}
 							}
 						}
 					}
 				}
 			});
-		return A2(_elm_community$parser_combinators$Combine_ops['*>'], _user$project$Lia_Parser$comments, p);
+		return A2(_elm_community$parser_combinators$Combine_ops['*>'], _user$project$Lia_Inline_Parser$comments, p);
 	});
-var _user$project$Lia_Parser$strings_ = _elm_community$parser_combinators$Combine$lazy(
+var _user$project$Lia_Inline_Parser$strings = _elm_community$parser_combinators$Combine$lazy(
 	function (_p15) {
 		var _p16 = _p15;
 		var base2 = A2(
@@ -12160,28 +12078,28 @@ var _user$project$Lia_Parser$strings_ = _elm_community$parser_combinators$Combin
 			_user$project$Lia_Type$Superscript,
 			A2(
 				_elm_community$parser_combinators$Combine_ops['<?>'],
-				A2(_user$project$Lia_Parser$between_, '^', _user$project$Lia_Parser$inlines),
+				A2(_user$project$Lia_Inline_Parser$between_, '^', _user$project$Lia_Inline_Parser$inlines),
 				'superscript string'));
 		var underline = A2(
 			_elm_community$parser_combinators$Combine_ops['<$>'],
 			_user$project$Lia_Type$Underline,
 			A2(
 				_elm_community$parser_combinators$Combine_ops['<?>'],
-				A2(_user$project$Lia_Parser$between_, '_', _user$project$Lia_Parser$inlines),
+				A2(_user$project$Lia_Inline_Parser$between_, '_', _user$project$Lia_Inline_Parser$inlines),
 				'underline string'));
 		var italic = A2(
 			_elm_community$parser_combinators$Combine_ops['<$>'],
 			_user$project$Lia_Type$Italic,
 			A2(
 				_elm_community$parser_combinators$Combine_ops['<?>'],
-				A2(_user$project$Lia_Parser$between_, '~', _user$project$Lia_Parser$inlines),
+				A2(_user$project$Lia_Inline_Parser$between_, '~', _user$project$Lia_Inline_Parser$inlines),
 				'italic string'));
 		var bold = A2(
 			_elm_community$parser_combinators$Combine_ops['<$>'],
 			_user$project$Lia_Type$Bold,
 			A2(
 				_elm_community$parser_combinators$Combine_ops['<?>'],
-				A2(_user$project$Lia_Parser$between_, '*', _user$project$Lia_Parser$inlines),
+				A2(_user$project$Lia_Inline_Parser$between_, '*', _user$project$Lia_Inline_Parser$inlines),
 				'bold string'));
 		var escape = A2(
 			_elm_community$parser_combinators$Combine_ops['<$>'],
@@ -12192,7 +12110,7 @@ var _user$project$Lia_Parser$strings_ = _elm_community$parser_combinators$Combin
 					_elm_community$parser_combinators$Combine_ops['*>'],
 					A2(
 						_elm_community$parser_combinators$Combine_ops['*>'],
-						_user$project$Lia_Parser$spaces,
+						_user$project$Lia_Inline_Parser$spaces,
 						_elm_community$parser_combinators$Combine$string('\\')),
 					_elm_community$parser_combinators$Combine$regex('[\\^#*_~`\\\\\\|$]')),
 				'escape string'));
@@ -12209,39 +12127,35 @@ var _user$project$Lia_Parser$strings_ = _elm_community$parser_combinators$Combin
 				_0: base,
 				_1: {
 					ctor: '::',
-					_0: _user$project$Lia_Parser$html,
+					_0: _user$project$Lia_Inline_Parser$html,
 					_1: {
 						ctor: '::',
-						_0: _user$project$Lia_Parser$einline_,
+						_0: _user$project$Lia_Inline_Parser$arrows,
 						_1: {
 							ctor: '::',
-							_0: _user$project$Lia_Parser$arrows_,
+							_0: _user$project$Lia_Inline_Parser$smileys,
 							_1: {
 								ctor: '::',
-								_0: _user$project$Lia_Parser$smileys_,
+								_0: escape,
 								_1: {
 									ctor: '::',
-									_0: escape,
+									_0: bold,
 									_1: {
 										ctor: '::',
-										_0: bold,
+										_0: italic,
 										_1: {
 											ctor: '::',
-											_0: italic,
+											_0: underline,
 											_1: {
 												ctor: '::',
-												_0: underline,
+												_0: superscript,
 												_1: {
 													ctor: '::',
-													_0: superscript,
+													_0: characters,
 													_1: {
 														ctor: '::',
-														_0: characters,
-														_1: {
-															ctor: '::',
-															_0: base2,
-															_1: {ctor: '[]'}
-														}
+														_0: base2,
+														_1: {ctor: '[]'}
 													}
 												}
 											}
@@ -12254,33 +12168,302 @@ var _user$project$Lia_Parser$strings_ = _elm_community$parser_combinators$Combin
 				}
 			});
 	});
-var _user$project$Lia_Parser$einline_ = function () {
-	var increment_counter = function (c) {
-		return _elm_lang$core$Native_Utils.update(
-			c,
-			{effects: c.effects + 1});
-	};
-	var multi_inline = A2(
-		_elm_community$parser_combinators$Combine_ops['*>'],
-		_elm_community$parser_combinators$Combine$string('{'),
-		A2(
-			_elm_community$parser_combinators$Combine$manyTill,
-			_user$project$Lia_Parser$inlines,
-			_elm_community$parser_combinators$Combine$string('}')));
-	var number = _elm_community$parser_combinators$Combine$braces(_elm_community$parser_combinators$Combine_Num$int);
-	return A2(
+var _user$project$Lia_Inline_Parser$line = A2(
+	_elm_community$parser_combinators$Combine_ops['<$>'],
+	function (list) {
+		return _user$project$Lia_Inline_Parser$combine(
+			A2(
+				_elm_lang$core$List$append,
+				list,
+				{
+					ctor: '::',
+					_0: _user$project$Lia_Type$Chars(' '),
+					_1: {ctor: '[]'}
+				}));
+	},
+	_elm_community$parser_combinators$Combine$many1(_user$project$Lia_Inline_Parser$inlines));
+
+var _user$project$Lia_PState$init = {
+	quiz: 0,
+	section: {ctor: '[]'},
+	indentation: {
+		ctor: '::',
+		_0: 0,
+		_1: {ctor: '[]'}
+	},
+	effects: 0
+};
+var _user$project$Lia_PState$PState = F4(
+	function (a, b, c, d) {
+		return {quiz: a, section: b, indentation: c, effects: d};
+	});
+
+var _user$project$Lia_Quiz_Parser$quiz_hints = _elm_community$parser_combinators$Combine$many(
+	A2(
 		_elm_community$parser_combinators$Combine_ops['<*'],
 		A2(
+			_elm_community$parser_combinators$Combine_ops['*>'],
+			_elm_community$parser_combinators$Combine$string('[?]'),
+			_user$project$Lia_Inline_Parser$line),
+		_user$project$Lia_Inline_Parser$newline));
+var _user$project$Lia_Quiz_Parser$checked = F2(
+	function (b, p) {
+		return A2(
+			_elm_community$parser_combinators$Combine_ops['<$>'],
+			function (l) {
+				return {ctor: '_Tuple2', _0: b, _1: l};
+			},
+			A2(
+				_elm_community$parser_combinators$Combine_ops['<*'],
+				A2(_elm_community$parser_combinators$Combine_ops['*>'], p, _user$project$Lia_Inline_Parser$line),
+				_user$project$Lia_Inline_Parser$newline));
+	});
+var _user$project$Lia_Quiz_Parser$quiz_MultipleChoice = A2(
+	_elm_community$parser_combinators$Combine_ops['<$>'],
+	_user$project$Lia_Type$MultipleChoice,
+	_elm_community$parser_combinators$Combine$many1(
+		_elm_community$parser_combinators$Combine$choice(
+			{
+				ctor: '::',
+				_0: A2(
+					_user$project$Lia_Quiz_Parser$checked,
+					true,
+					_elm_community$parser_combinators$Combine$string('[X]')),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_user$project$Lia_Quiz_Parser$checked,
+						false,
+						_elm_community$parser_combinators$Combine$string('[ ]')),
+					_1: {ctor: '[]'}
+				}
+			})));
+var _user$project$Lia_Quiz_Parser$quiz_SingleChoice = function () {
+	var get_result = function (list) {
+		return function (l) {
+			var _p0 = _elm_lang$core$List$head(l);
+			if (_p0.ctor === 'Just') {
+				return _p0._0._0;
+			} else {
+				return -1;
+			}
+		}(
+			A2(
+				_elm_lang$core$List$filter,
+				function (_p1) {
+					var _p2 = _p1;
+					return _elm_lang$core$Native_Utils.eq(_p2._1._0, true);
+				},
+				A2(
+					_elm_lang$core$List$indexedMap,
+					F2(
+						function (v0, v1) {
+							return {ctor: '_Tuple2', _0: v0, _1: v1};
+						}),
+					list)));
+	};
+	return A2(
+		_elm_community$parser_combinators$Combine$map,
+		function (q) {
+			return A2(
+				_user$project$Lia_Type$SingleChoice,
+				get_result(q),
+				A2(
+					_elm_lang$core$List$map,
+					function (_p3) {
+						var _p4 = _p3;
+						return _p4._1;
+					},
+					q));
+		},
+		A2(
+			_elm_community$parser_combinators$Combine$andMap,
+			_elm_community$parser_combinators$Combine$many(
+				A2(
+					_user$project$Lia_Quiz_Parser$checked,
+					false,
+					_elm_community$parser_combinators$Combine$string('[( )]'))),
+			A2(
+				_elm_community$parser_combinators$Combine$map,
+				F2(
+					function (x, y) {
+						return A2(_elm_lang$core$Basics_ops['++'], x, y);
+					}),
+				A2(
+					_elm_community$parser_combinators$Combine$andMap,
+					A2(
+						_user$project$Lia_Quiz_Parser$checked,
+						true,
+						_elm_community$parser_combinators$Combine$string('[(X)]')),
+					A2(
+						_elm_community$parser_combinators$Combine$map,
+						F2(
+							function (a, b) {
+								return A2(
+									_elm_lang$core$List$append,
+									a,
+									{
+										ctor: '::',
+										_0: b,
+										_1: {ctor: '[]'}
+									});
+							}),
+						_elm_community$parser_combinators$Combine$many(
+							A2(
+								_user$project$Lia_Quiz_Parser$checked,
+								false,
+								_elm_community$parser_combinators$Combine$string('[( )]'))))))));
+}();
+var _user$project$Lia_Quiz_Parser$quiz_TextInput = A2(
+	_elm_community$parser_combinators$Combine_ops['<$>'],
+	_user$project$Lia_Type$TextInput,
+	A2(
+		_elm_community$parser_combinators$Combine_ops['<*'],
+		A2(
+			_elm_community$parser_combinators$Combine_ops['*>'],
+			_elm_community$parser_combinators$Combine$string('[['),
+			_elm_community$parser_combinators$Combine$regex('[^\n\\]]+')),
+		_elm_community$parser_combinators$Combine$regex('\\]\\]( *)\\n')));
+var _user$project$Lia_Quiz_Parser$quiz = function () {
+	var counter = function () {
+		var increment_counter = function (c) {
+			return _elm_lang$core$Native_Utils.update(
+				c,
+				{quiz: c.quiz + 1});
+		};
+		var pp = function (par) {
+			return _elm_community$parser_combinators$Combine$succeed(par.quiz);
+		};
+		return A2(
+			_elm_community$parser_combinators$Combine_ops['<*'],
+			_elm_community$parser_combinators$Combine$withState(pp),
+			_elm_community$parser_combinators$Combine$modifyState(increment_counter));
+	}();
+	return A2(
+		_elm_community$parser_combinators$Combine_ops['<*>'],
+		A2(
 			_elm_community$parser_combinators$Combine_ops['<*>'],
-			A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Type$EInline, number),
-			multi_inline),
-		_elm_community$parser_combinators$Combine$modifyState(increment_counter));
+			A2(
+				_elm_community$parser_combinators$Combine_ops['<$>'],
+				_user$project$Lia_Type$Quiz,
+				_elm_community$parser_combinators$Combine$choice(
+					{
+						ctor: '::',
+						_0: _user$project$Lia_Quiz_Parser$quiz_SingleChoice,
+						_1: {
+							ctor: '::',
+							_0: _user$project$Lia_Quiz_Parser$quiz_MultipleChoice,
+							_1: {
+								ctor: '::',
+								_0: _user$project$Lia_Quiz_Parser$quiz_TextInput,
+								_1: {ctor: '[]'}
+							}
+						}
+					})),
+			counter),
+		_user$project$Lia_Quiz_Parser$quiz_hints);
+}();
+
+var _user$project$Lia_Parser$formatError = F2(
+	function (ms, stream) {
+		var expectationSeparator = '\n  * ';
+		var separator = '|> ';
+		var separatorOffset = _elm_lang$core$String$length(separator);
+		var location = _elm_community$parser_combinators$Combine$currentLocation(stream);
+		var lineNumberOffset = _elm_lang$core$Basics$floor(
+			A2(
+				_elm_lang$core$Basics$logBase,
+				10,
+				_elm_lang$core$Basics$toFloat(location.line))) + 1;
+		var padding = (location.column + separatorOffset) + 2;
+		return A2(
+			_elm_lang$core$Basics_ops['++'],
+			'Parse error around line:\n\n',
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_elm_lang$core$Basics$toString(location.line),
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					separator,
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						location.source,
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							'\n',
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								A3(
+									_elm_lang$core$String$padLeft,
+									padding,
+									_elm_lang$core$Native_Utils.chr(' '),
+									'^'),
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									'\nI expected one of the following:\n',
+									A2(
+										_elm_lang$core$Basics_ops['++'],
+										expectationSeparator,
+										A2(_elm_lang$core$String$join, expectationSeparator, ms)))))))));
+	});
+var _user$project$Lia_Parser$quote_block = function () {
+	var p = A2(
+		_elm_community$parser_combinators$Combine_ops['<*'],
+		A2(
+			_elm_community$parser_combinators$Combine_ops['*>'],
+			A2(
+				_elm_community$parser_combinators$Combine_ops['*>'],
+				_elm_community$parser_combinators$Combine$regex('^'),
+				_elm_community$parser_combinators$Combine$string('>')),
+			A2(
+				_elm_community$parser_combinators$Combine$optional,
+				{
+					ctor: '::',
+					_0: _user$project$Lia_Type$Chars(''),
+					_1: {ctor: '[]'}
+				},
+				_user$project$Lia_Inline_Parser$line)),
+		_user$project$Lia_Inline_Parser$newline);
+	return A2(
+		_elm_community$parser_combinators$Combine_ops['<$>'],
+		function (q) {
+			return _user$project$Lia_Type$Quote(
+				_user$project$Lia_Inline_Parser$combine(
+					_elm_lang$core$List$concat(q)));
+		},
+		_elm_community$parser_combinators$Combine$many1(p));
+}();
+var _user$project$Lia_Parser$code_block = function () {
+	var block = A2(
+		_elm_community$parser_combinators$Combine_ops['<$>'],
+		_elm_lang$core$String$fromList,
+		A2(
+			_elm_community$parser_combinators$Combine$manyTill,
+			_elm_community$parser_combinators$Combine_Char$anyChar,
+			_elm_community$parser_combinators$Combine$string('```')));
+	var lang = A2(
+		_elm_community$parser_combinators$Combine_ops['<*'],
+		A2(
+			_elm_community$parser_combinators$Combine_ops['<*'],
+			A2(
+				_elm_community$parser_combinators$Combine_ops['*>'],
+				A2(
+					_elm_community$parser_combinators$Combine_ops['*>'],
+					_elm_community$parser_combinators$Combine$string('```'),
+					_user$project$Lia_Inline_Parser$spaces),
+				_elm_community$parser_combinators$Combine$regex('([a-z,A-Z,0-9])*')),
+			_user$project$Lia_Inline_Parser$spaces),
+		_user$project$Lia_Inline_Parser$newline);
+	return A2(
+		_elm_community$parser_combinators$Combine_ops['<*>'],
+		A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Type$CodeBlock, lang),
+		block);
 }();
 var _user$project$Lia_Parser$table = function () {
 	var ending = A2(
 		_elm_community$parser_combinators$Combine_ops['<*'],
 		_elm_community$parser_combinators$Combine$string('|'),
-		A2(_elm_community$parser_combinators$Combine_ops['<*'], _user$project$Lia_Parser$spaces, _user$project$Lia_Parser$newline));
+		A2(_elm_community$parser_combinators$Combine_ops['<*'], _user$project$Lia_Inline_Parser$spaces, _user$project$Lia_Inline_Parser$newline));
 	var row = A2(
 		_elm_community$parser_combinators$Combine_ops['<*'],
 		A2(
@@ -12289,7 +12472,7 @@ var _user$project$Lia_Parser$table = function () {
 			A2(
 				_elm_community$parser_combinators$Combine$sepBy1,
 				_elm_community$parser_combinators$Combine$string('|'),
-				_elm_community$parser_combinators$Combine$many1(_user$project$Lia_Parser$inlines))),
+				_elm_community$parser_combinators$Combine$many1(_user$project$Lia_Inline_Parser$inlines))),
 		ending);
 	var simple_table = A2(
 		_elm_community$parser_combinators$Combine_ops['<*'],
@@ -12300,7 +12483,7 @@ var _user$project$Lia_Parser$table = function () {
 				{ctor: '[]'},
 				{ctor: '[]'}),
 			_elm_community$parser_combinators$Combine$many1(row)),
-		_user$project$Lia_Parser$newline);
+		_user$project$Lia_Inline_Parser$newline);
 	var format = A2(
 		_elm_community$parser_combinators$Combine_ops['<*'],
 		A2(
@@ -12349,7 +12532,7 @@ var _user$project$Lia_Parser$table = function () {
 				A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Type$Table, row),
 				format),
 			_elm_community$parser_combinators$Combine$many(row)),
-		_user$project$Lia_Parser$newline);
+		_user$project$Lia_Inline_Parser$newline);
 	return _elm_community$parser_combinators$Combine$choice(
 		{
 			ctor: '::',
@@ -12361,217 +12544,25 @@ var _user$project$Lia_Parser$table = function () {
 			}
 		});
 }();
-var _user$project$Lia_Parser$line = A2(
-	_elm_community$parser_combinators$Combine_ops['<$>'],
-	function (list) {
-		return _user$project$Lia_Parser$combine(
-			A2(
-				_elm_lang$core$List$append,
-				list,
-				{
-					ctor: '::',
-					_0: _user$project$Lia_Type$Chars(' '),
-					_1: {ctor: '[]'}
-				}));
-	},
-	_elm_community$parser_combinators$Combine$many1(_user$project$Lia_Parser$inlines));
-var _user$project$Lia_Parser$checked = F2(
-	function (b, p) {
-		return A2(
-			_elm_community$parser_combinators$Combine_ops['<$>'],
-			function (l) {
-				return {ctor: '_Tuple2', _0: b, _1: l};
-			},
-			A2(
-				_elm_community$parser_combinators$Combine_ops['<*'],
-				A2(_elm_community$parser_combinators$Combine_ops['*>'], p, _user$project$Lia_Parser$line),
-				_user$project$Lia_Parser$newline));
-	});
-var _user$project$Lia_Parser$quiz_SingleChoice = function () {
-	var get_result = function (list) {
-		return function (l) {
-			var _p17 = _elm_lang$core$List$head(l);
-			if (_p17.ctor === 'Just') {
-				return _p17._0._0;
-			} else {
-				return -1;
-			}
-		}(
-			A2(
-				_elm_lang$core$List$filter,
-				function (_p18) {
-					var _p19 = _p18;
-					return _elm_lang$core$Native_Utils.eq(_p19._1._0, true);
-				},
-				A2(
-					_elm_lang$core$List$indexedMap,
-					F2(
-						function (v0, v1) {
-							return {ctor: '_Tuple2', _0: v0, _1: v1};
-						}),
-					list)));
-	};
-	return A2(
-		_elm_community$parser_combinators$Combine$map,
-		function (q) {
-			return A2(
-				_user$project$Lia_Type$SingleChoice,
-				get_result(q),
-				A2(
-					_elm_lang$core$List$map,
-					function (_p20) {
-						var _p21 = _p20;
-						return _p21._1;
-					},
-					q));
-		},
-		A2(
-			_elm_community$parser_combinators$Combine$andMap,
-			_elm_community$parser_combinators$Combine$many(
-				A2(
-					_user$project$Lia_Parser$checked,
-					false,
-					_elm_community$parser_combinators$Combine$string('[( )]'))),
-			A2(
-				_elm_community$parser_combinators$Combine$map,
-				F2(
-					function (x, y) {
-						return A2(_elm_lang$core$Basics_ops['++'], x, y);
-					}),
-				A2(
-					_elm_community$parser_combinators$Combine$andMap,
-					A2(
-						_user$project$Lia_Parser$checked,
-						true,
-						_elm_community$parser_combinators$Combine$string('[(X)]')),
-					A2(
-						_elm_community$parser_combinators$Combine$map,
-						F2(
-							function (a, b) {
-								return A2(
-									_elm_lang$core$List$append,
-									a,
-									{
-										ctor: '::',
-										_0: b,
-										_1: {ctor: '[]'}
-									});
-							}),
-						_elm_community$parser_combinators$Combine$many(
-							A2(
-								_user$project$Lia_Parser$checked,
-								false,
-								_elm_community$parser_combinators$Combine$string('[( )]'))))))));
-}();
-var _user$project$Lia_Parser$quiz_MultipleChoice = A2(
-	_elm_community$parser_combinators$Combine_ops['<$>'],
-	_user$project$Lia_Type$MultipleChoice,
-	_elm_community$parser_combinators$Combine$many1(
-		_elm_community$parser_combinators$Combine$choice(
-			{
-				ctor: '::',
-				_0: A2(
-					_user$project$Lia_Parser$checked,
-					true,
-					_elm_community$parser_combinators$Combine$string('[X]')),
-				_1: {
-					ctor: '::',
-					_0: A2(
-						_user$project$Lia_Parser$checked,
-						false,
-						_elm_community$parser_combinators$Combine$string('[ ]')),
-					_1: {ctor: '[]'}
-				}
-			})));
-var _user$project$Lia_Parser$quiz_hints = _elm_community$parser_combinators$Combine$many(
-	A2(
-		_elm_community$parser_combinators$Combine_ops['<*'],
-		A2(
-			_elm_community$parser_combinators$Combine_ops['*>'],
-			_elm_community$parser_combinators$Combine$string('[?]'),
-			_user$project$Lia_Parser$line),
-		_user$project$Lia_Parser$newline));
-var _user$project$Lia_Parser$quiz = function () {
-	var counter = function () {
-		var increment_counter = function (c) {
-			return _elm_lang$core$Native_Utils.update(
-				c,
-				{quiz: c.quiz + 1});
-		};
-		var pp = function (par) {
-			return _elm_community$parser_combinators$Combine$succeed(par.quiz);
-		};
-		return A2(
-			_elm_community$parser_combinators$Combine_ops['<*'],
-			_elm_community$parser_combinators$Combine$withState(pp),
-			_elm_community$parser_combinators$Combine$modifyState(increment_counter));
-	}();
-	return A2(
-		_elm_community$parser_combinators$Combine_ops['<*>'],
-		A2(
-			_elm_community$parser_combinators$Combine_ops['<*>'],
-			A2(
-				_elm_community$parser_combinators$Combine_ops['<$>'],
-				_user$project$Lia_Type$Quiz,
-				_elm_community$parser_combinators$Combine$choice(
-					{
-						ctor: '::',
-						_0: _user$project$Lia_Parser$quiz_SingleChoice,
-						_1: {
-							ctor: '::',
-							_0: _user$project$Lia_Parser$quiz_MultipleChoice,
-							_1: {
-								ctor: '::',
-								_0: _user$project$Lia_Parser$quiz_TextInput,
-								_1: {ctor: '[]'}
-							}
-						}
-					})),
-			counter),
-		_user$project$Lia_Parser$quiz_hints);
-}();
 var _user$project$Lia_Parser$paragraph = A2(
 	_elm_community$parser_combinators$Combine_ops['<$>'],
 	function (l) {
 		return _user$project$Lia_Type$Paragraph(
-			_user$project$Lia_Parser$combine(
+			_user$project$Lia_Inline_Parser$combine(
 				_elm_lang$core$List$concat(l)));
 	},
 	_elm_community$parser_combinators$Combine$many(
 		A2(
 			_elm_community$parser_combinators$Combine_ops['<*'],
-			A2(_elm_community$parser_combinators$Combine_ops['*>'], _user$project$Lia_Parser$spaces, _user$project$Lia_Parser$line),
-			_user$project$Lia_Parser$newline)));
-var _user$project$Lia_Parser$quote_block = function () {
-	var p = A2(
-		_elm_community$parser_combinators$Combine_ops['<*'],
-		A2(
-			_elm_community$parser_combinators$Combine_ops['*>'],
-			A2(
-				_elm_community$parser_combinators$Combine_ops['*>'],
-				_elm_community$parser_combinators$Combine$regex('^'),
-				_elm_community$parser_combinators$Combine$string('>')),
-			A2(
-				_elm_community$parser_combinators$Combine$optional,
-				{
-					ctor: '::',
-					_0: _user$project$Lia_Type$Chars(''),
-					_1: {ctor: '[]'}
-				},
-				_user$project$Lia_Parser$line)),
-		_user$project$Lia_Parser$newline);
-	return A2(
-		_elm_community$parser_combinators$Combine_ops['<$>'],
-		function (q) {
-			return _user$project$Lia_Type$Quote(
-				_user$project$Lia_Parser$combine(
-					_elm_lang$core$List$concat(q)));
-		},
-		_elm_community$parser_combinators$Combine$many1(p));
-}();
+			A2(_elm_community$parser_combinators$Combine_ops['*>'], _user$project$Lia_Inline_Parser$spaces, _user$project$Lia_Inline_Parser$line),
+			_user$project$Lia_Inline_Parser$newline)));
+var _user$project$Lia_Parser$horizontal_line = A2(
+	_elm_community$parser_combinators$Combine_ops['<$'],
+	_user$project$Lia_Type$HorizontalLine,
+	_elm_community$parser_combinators$Combine$regex('--[\\-]+'));
 var _user$project$Lia_Parser$blocks = _elm_community$parser_combinators$Combine$lazy(
-	function (_p22) {
-		var _p23 = _p22;
+	function (_p0) {
+		var _p1 = _p0;
 		var b = _elm_community$parser_combinators$Combine$choice(
 			{
 				ctor: '::',
@@ -12590,7 +12581,7 @@ var _user$project$Lia_Parser$blocks = _elm_community$parser_combinators$Combine$
 								_0: _user$project$Lia_Parser$horizontal_line,
 								_1: {
 									ctor: '::',
-									_0: _user$project$Lia_Parser$quiz,
+									_0: _user$project$Lia_Quiz_Parser$quiz,
 									_1: {
 										ctor: '::',
 										_0: _user$project$Lia_Parser$paragraph,
@@ -12604,8 +12595,8 @@ var _user$project$Lia_Parser$blocks = _elm_community$parser_combinators$Combine$
 			});
 		return A2(
 			_elm_community$parser_combinators$Combine_ops['<*'],
-			A2(_elm_community$parser_combinators$Combine_ops['*>'], _user$project$Lia_Parser$comments, b),
-			_user$project$Lia_Parser$newlines);
+			A2(_elm_community$parser_combinators$Combine_ops['*>'], _user$project$Lia_Inline_Parser$comments, b),
+			_user$project$Lia_Inline_Parser$newlines);
 	});
 var _user$project$Lia_Parser$eblock = function () {
 	var increment_counter = function (c) {
@@ -12620,18 +12611,18 @@ var _user$project$Lia_Parser$eblock = function () {
 			_elm_community$parser_combinators$Combine_ops['*>'],
 			A2(
 				_elm_community$parser_combinators$Combine_ops['*>'],
-				_user$project$Lia_Parser$spaces,
+				_user$project$Lia_Inline_Parser$spaces,
 				_elm_community$parser_combinators$Combine$string('{{')),
 			A2(
 				_elm_community$parser_combinators$Combine$manyTill,
 				_user$project$Lia_Parser$blocks,
 				_elm_community$parser_combinators$Combine$string('}}'))),
-		_user$project$Lia_Parser$newline);
+		_user$project$Lia_Inline_Parser$newline);
 	var number = A2(
 		_elm_community$parser_combinators$Combine_ops['<*'],
 		A2(
 			_elm_community$parser_combinators$Combine_ops['*>'],
-			_user$project$Lia_Parser$spaces,
+			_user$project$Lia_Inline_Parser$spaces,
 			_elm_community$parser_combinators$Combine$braces(_elm_community$parser_combinators$Combine_Num$int)),
 		_elm_community$parser_combinators$Combine$regex('( *)[\\n]'));
 	return A2(
@@ -12664,7 +12655,7 @@ var _user$project$Lia_Parser$parse = function () {
 			_elm_community$parser_combinators$Combine_ops['<$>'],
 			_elm_lang$core$String$trim,
 			_elm_community$parser_combinators$Combine$regex('.+')),
-		_elm_community$parser_combinators$Combine$many1(_user$project$Lia_Parser$newline));
+		_elm_community$parser_combinators$Combine$many1(_user$project$Lia_Inline_Parser$newline));
 	var tag = A2(
 		_elm_community$parser_combinators$Combine_ops['<$>'],
 		_elm_lang$core$String$length,
@@ -12672,12 +12663,12 @@ var _user$project$Lia_Parser$parse = function () {
 			_elm_community$parser_combinators$Combine_ops['<*'],
 			A2(
 				_elm_community$parser_combinators$Combine_ops['*>'],
-				_user$project$Lia_Parser$newlines,
+				_user$project$Lia_Inline_Parser$newlines,
 				_elm_community$parser_combinators$Combine$regex('#+')),
 			_elm_community$parser_combinators$Combine$whitespace));
 	return A2(
 		_elm_community$parser_combinators$Combine_ops['*>'],
-		_user$project$Lia_Parser$comments,
+		_user$project$Lia_Inline_Parser$comments,
 		_elm_community$parser_combinators$Combine$many1(
 			A2(
 				_elm_community$parser_combinators$Combine_ops['<*>'],
@@ -12690,29 +12681,15 @@ var _user$project$Lia_Parser$parse = function () {
 					body),
 				effect_counter)));
 }();
-var _user$project$Lia_Parser$init_pstate = {
-	quiz: 0,
-	section: {ctor: '[]'},
-	indentation: {
-		ctor: '::',
-		_0: 0,
-		_1: {ctor: '[]'}
-	},
-	effects: 0
-};
 var _user$project$Lia_Parser$run = function (script) {
-	var _p24 = A3(_elm_community$parser_combinators$Combine$runParser, _user$project$Lia_Parser$parse, _user$project$Lia_Parser$init_pstate, script);
-	if (_p24.ctor === 'Ok') {
-		return _elm_lang$core$Result$Ok(_p24._0._2);
+	var _p2 = A3(_elm_community$parser_combinators$Combine$runParser, _user$project$Lia_Parser$parse, _user$project$Lia_PState$init, script);
+	if (_p2.ctor === 'Ok') {
+		return _elm_lang$core$Result$Ok(_p2._0._2);
 	} else {
 		return _elm_lang$core$Result$Err(
-			A2(_user$project$Lia_Parser$formatError, _p24._0._2, _p24._0._1));
+			A2(_user$project$Lia_Parser$formatError, _p2._0._2, _p2._0._1));
 	}
 };
-var _user$project$Lia_Parser$PState = F4(
-	function (a, b, c, d) {
-		return {quiz: a, section: b, indentation: c, effects: d};
-	});
 
 var _user$project$Lia_Helper$get_slide = F2(
 	function (i, slides) {
