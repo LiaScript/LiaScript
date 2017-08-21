@@ -11,7 +11,9 @@ module Lia.Inline.Parser
 
 import Combine exposing (..)
 import Combine.Char exposing (..)
+import Lia.Effect.Parser exposing (einline)
 import Lia.Inline.Type exposing (..)
+import Lia.PState exposing (PState)
 
 
 comments : Parser s ()
@@ -85,7 +87,7 @@ combine list =
                     x1 :: combine (x2 :: xs)
 
 
-line : Parser s (List Inline)
+line : Parser PState (List Inline)
 line =
     (\list -> combine <| List.append list [ Chars " " ]) <$> many1 inlines
 
@@ -105,7 +107,7 @@ spaces =
     regex "[ \t]*"
 
 
-inlines : Parser s Inline
+inlines : Parser PState Inline
 inlines =
     lazy <|
         \() ->
@@ -116,6 +118,7 @@ inlines =
                         , code
                         , reference
                         , formula
+                        , einline inlines
                         , strings
                         ]
             in
@@ -208,7 +211,7 @@ between_ str p =
     spaces *> string str *> p <* string str
 
 
-strings : Parser s Inline
+strings : Parser PState Inline
 strings =
     lazy <|
         \() ->

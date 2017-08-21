@@ -2,7 +2,7 @@ module Lia.Parser exposing (run)
 
 import Combine exposing (..)
 import Combine.Char
-import Combine.Num exposing (int)
+import Lia.Effect.Parser exposing (..)
 import Lia.Inline.Parser exposing (..)
 import Lia.Inline.Type exposing (Inline(..))
 import Lia.PState exposing (PState)
@@ -17,7 +17,7 @@ blocks =
             let
                 b =
                     choice
-                        [ eblock
+                        [ eblock blocks
                         , table
                         , code_block
                         , quote_block
@@ -29,24 +29,6 @@ blocks =
                         ]
             in
             comments *> b <* newlines
-
-
-eblock : Parser PState Block
-eblock =
-    let
-        number =
-            spaces *> braces int <* regex "( *)[\\n]"
-
-        multi_block =
-            spaces *> string "{{" *> manyTill blocks (string "}}") <* newline
-
-        single_block =
-            List.singleton <$> blocks
-
-        increment_counter c =
-            { c | effects = c.effects + 1 }
-    in
-    EBlock <$> number <*> (multi_block <|> single_block) <* modifyState increment_counter
 
 
 horizontal_line : Parser s Block

@@ -28,7 +28,7 @@ quiz_TextInput =
     TextInput <$> (string "[[" *> regex "[^\n\\]]+" <* regex "\\]\\]( *)\\n")
 
 
-quiz_SingleChoice : Parser s Quiz
+quiz_SingleChoice : Parser PState Quiz
 quiz_SingleChoice =
     let
         get_result list =
@@ -52,17 +52,17 @@ quiz_SingleChoice =
         |> map (\q -> SingleChoice (get_result q) (List.map (\( _, qq ) -> qq) q))
 
 
-checked : Bool -> Parser s res -> Parser s ( Bool, List Inline )
+checked : Bool -> Parser PState res -> Parser PState ( Bool, List Inline )
 checked b p =
     (\l -> ( b, l )) <$> (p *> line <* newline)
 
 
-quiz_hints : Parser s (List (List Inline))
+quiz_hints : Parser PState (List (List Inline))
 quiz_hints =
     many (string "[[?]]" *> line <* newline)
 
 
-quiz_MultipleChoice : Parser s Quiz
+quiz_MultipleChoice : Parser PState Quiz
 quiz_MultipleChoice =
     MultipleChoice
         <$> many1

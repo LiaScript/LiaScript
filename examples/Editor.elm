@@ -312,24 +312,24 @@ Wie sieht Pi aus, bis auf 5 Stellen nach dem Komma?
 
 ## effects
 
-                                  {1}
-AAA AAA AAA AAA {3}{*test*} AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
+                                  {{1}}
+AAA AAA AAA AAA {{3}}{{*test*}} AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
 AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
 AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
 
-{2}
+{{2}}
 {{
 
 ![Image](http://package.elm-lang.org/assets/favicon.ico)
 
-[ ] nein
-[X] Ja
-[X] auch Ja
-[ ] auf keinen Fall
+[[ ]] nein
+[[X]] Ja
+[[X]] auch Ja
+[[ ]] auf keinen Fall
 
 }}
-                                  {1}
-BBB BBB BBB BBB BBB BBB BBB {3}{*test*} {3}{*test*} BBB BBB BBB BBB BBB BBB BBB
+                                  {{1}}
+BBB BBB BBB BBB BBB BBB BBB {{3}}{{*test*}} {{3}}{{*test*}} BBB BBB BBB BBB BBB BBB BBB
 
 ## References
 
