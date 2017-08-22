@@ -18,11 +18,8 @@ eblock blocks =
 
         single_block =
             List.singleton <$> blocks
-
-        increment_counter c =
-            { c | effects = c.effects + 1 }
     in
-    EBlock <$> number <*> (multi_block <|> single_block) <* modifyState increment_counter
+    EBlock <$> number <*> (multi_block <|> single_block) <* effect_number
 
 
 einline : Parser PState Inline -> Parser PState Inline
@@ -33,8 +30,10 @@ einline inlines =
 
         multi_inline =
             string "{{" *> manyTill inlines (string "}}")
-
-        increment_counter c =
-            { c | effects = c.effects + 1 }
     in
-    EInline <$> number <*> multi_inline <* modifyState increment_counter
+    EInline <$> number <*> multi_inline <* effect_number
+
+
+effect_number : Parser PState ()
+effect_number =
+    modifyState (\s -> { s | effects = s.effects + 1 })

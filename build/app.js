@@ -11563,12 +11563,13 @@ var _user$project$Lia_PState$PState = F4(
 		return {quiz: a, section: b, indentation: c, effects: d};
 	});
 
-var _user$project$Lia_Effect_Parser$einline = function (inlines) {
-	var increment_counter = function (c) {
+var _user$project$Lia_Effect_Parser$effect_number = _elm_community$parser_combinators$Combine$modifyState(
+	function (s) {
 		return _elm_lang$core$Native_Utils.update(
-			c,
-			{effects: c.effects + 1});
-	};
+			s,
+			{effects: s.effects + 1});
+	});
+var _user$project$Lia_Effect_Parser$einline = function (inlines) {
 	var multi_inline = A2(
 		_elm_community$parser_combinators$Combine_ops['*>'],
 		_elm_community$parser_combinators$Combine$string('{{'),
@@ -11589,14 +11590,9 @@ var _user$project$Lia_Effect_Parser$einline = function (inlines) {
 			_elm_community$parser_combinators$Combine_ops['<*>'],
 			A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Inline_Type$EInline, number),
 			multi_inline),
-		_elm_community$parser_combinators$Combine$modifyState(increment_counter));
+		_user$project$Lia_Effect_Parser$effect_number);
 };
 var _user$project$Lia_Effect_Parser$eblock = function (blocks) {
-	var increment_counter = function (c) {
-		return _elm_lang$core$Native_Utils.update(
-			c,
-			{effects: c.effects + 1});
-	};
 	var single_block = A2(_elm_community$parser_combinators$Combine_ops['<$>'], _elm_lang$core$List$singleton, blocks);
 	var multi_block = A2(
 		_elm_community$parser_combinators$Combine_ops['*>'],
@@ -11618,7 +11614,7 @@ var _user$project$Lia_Effect_Parser$eblock = function (blocks) {
 			_elm_community$parser_combinators$Combine_ops['<*>'],
 			A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Type$EBlock, number),
 			A2(_elm_community$parser_combinators$Combine_ops['<|>'], multi_block, single_block)),
-		_elm_community$parser_combinators$Combine$modifyState(increment_counter));
+		_user$project$Lia_Effect_Parser$effect_number);
 };
 
 var _user$project$Lia_Inline_Parser$code = A2(
