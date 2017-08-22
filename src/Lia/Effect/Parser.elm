@@ -2,9 +2,9 @@ module Lia.Effect.Parser exposing (..)
 
 import Combine exposing (..)
 import Combine.Num exposing (int)
-import Lia.Inline.Type exposing (Inline(..))
+import Lia.Inline.Types exposing (Inline(..))
 import Lia.PState exposing (PState)
-import Lia.Type exposing (Block(..))
+import Lia.Types exposing (Block(..))
 
 
 eblock : Parser PState Block -> Parser PState Block
@@ -51,3 +51,12 @@ effect_number =
                 *> succeed n
     in
     int >>= state
+
+
+ecomment : Parser PState Block -> Parser PState Block
+ecomment blocks =
+    let
+        number =
+            regex "( *)--{{" *> effect_number <* regex "}}--( *)[\\n]"
+    in
+    EBlock <$> number <*> many1 blocks

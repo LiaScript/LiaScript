@@ -9,8 +9,8 @@ module Lia.Quiz.Model
         )
 
 import Array
-import Lia.Quiz.Type exposing (..)
-import Lia.Type exposing (Block(..), Slide)
+import Lia.Quiz.Types exposing (..)
+import Lia.Types exposing (Block(..), Slide)
 
 
 type alias Model =

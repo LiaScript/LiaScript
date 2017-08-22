@@ -1,4 +1,4 @@
-module Lia.Quiz.Type
+module Lia.Quiz.Types
     exposing
         ( Quiz(..)
         , QuizBlock
@@ -8,7 +8,7 @@ module Lia.Quiz.Type
         )
 
 import Array exposing (Array)
-import Lia.Inline.Type exposing (Inline)
+import Lia.Inline.Types exposing (Inline)
 
 
 type alias QuizVector =

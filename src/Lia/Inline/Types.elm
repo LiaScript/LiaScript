@@ -1,8 +1,4 @@
-module Lia.Inline.Type
-    exposing
-        ( Inline(..)
-        , Reference(..)
-        )
+module Lia.Inline.Types exposing (Inline(..), Reference(..))
 
 
 type Inline

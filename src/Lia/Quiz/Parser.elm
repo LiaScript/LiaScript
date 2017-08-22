@@ -2,9 +2,9 @@ module Lia.Quiz.Parser exposing (quiz)
 
 import Combine exposing (..)
 import Lia.Inline.Parser exposing (..)
-import Lia.Inline.Type exposing (..)
+import Lia.Inline.Types exposing (..)
 import Lia.PState exposing (PState)
-import Lia.Quiz.Type exposing (Quiz(..), QuizBlock)
+import Lia.Quiz.Types exposing (Quiz(..), QuizBlock)
 
 
 quiz : Parser PState QuizBlock

@@ -9,11 +9,11 @@ import Lia.Effect.Model as Effect
 import Lia.Effect.View as Effects
 import Lia.Helper exposing (..)
 import Lia.Index.View
-import Lia.Inline.Type exposing (Inline)
+import Lia.Inline.Types exposing (Inline)
 import Lia.Inline.View as Elem
 import Lia.Model exposing (Model)
 import Lia.Quiz.View
-import Lia.Type exposing (..)
+import Lia.Types exposing (..)
 import Lia.Update exposing (Msg(..))
 import Lia.Utils
 

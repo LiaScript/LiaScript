@@ -1,12 +1,7 @@
-module Lia.Type
-    exposing
-        ( Block(..)
-        , Mode(..)
-        , Slide
-        )
+module Lia.Types exposing (Block(..), Mode(..), Slide)
 
-import Lia.Inline.Type exposing (..)
-import Lia.Quiz.Type exposing (QuizBlock)
+import Lia.Inline.Types exposing (..)
+import Lia.Quiz.Types exposing (QuizBlock)
 
 
 type Mode

@@ -3,10 +3,10 @@ module Lia.Quiz.View exposing (view)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
-import Lia.Inline.Type exposing (Inline)
+import Lia.Inline.Types exposing (Inline)
 import Lia.Inline.View as Elem
 import Lia.Quiz.Model exposing (..)
-import Lia.Quiz.Type exposing (Quiz(..), QuizBlock)
+import Lia.Quiz.Types exposing (Quiz(..), QuizBlock)
 import Lia.Quiz.Update exposing (Msg(..))
 import Lia.Utils
 

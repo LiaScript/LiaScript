@@ -5,7 +5,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import Lia
-import Lia.Type exposing (Mode(..))
+import Lia.Types exposing (Mode(..))
 import SplitPane exposing (Orientation(..), ViewConfig, createViewConfig, percentage, withResizeLimits, withSplitterAt)
 
 
@@ -142,7 +142,7 @@ leftView model =
                     [ Html.input
                         [ Attr.type_ "radio"
                         , onClick (Render Slides)
-                        , Attr.checked (model.lia.mode == Lia.Type.Slides)
+                        , Attr.checked (model.lia.mode == Lia.Types.Slides)
                         ]
                         []
                     , Html.text "Slides"

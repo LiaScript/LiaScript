@@ -3,7 +3,7 @@ module Lia.Inline.View exposing (reference, view)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Lia.Effect.View as Effect
-import Lia.Inline.Type exposing (Inline(..), Reference(..))
+import Lia.Inline.Types exposing (Inline(..), Reference(..))
 import Lia.Utils
 
 

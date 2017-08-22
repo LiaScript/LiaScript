@@ -12,7 +12,7 @@ module Lia.Inline.Parser
 import Combine exposing (..)
 import Combine.Char exposing (..)
 import Lia.Effect.Parser exposing (einline)
-import Lia.Inline.Type exposing (..)
+import Lia.Inline.Types exposing (..)
 import Lia.PState exposing (PState)
 
 

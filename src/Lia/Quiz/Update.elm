@@ -2,7 +2,7 @@ module Lia.Quiz.Update exposing (Msg(..), update)
 
 import Array
 import Lia.Quiz.Model exposing (Model)
-import Lia.Quiz.Type exposing (..)
+import Lia.Quiz.Types exposing (..)
 
 
 --import Lia.Helper exposing (get_slide_effects)

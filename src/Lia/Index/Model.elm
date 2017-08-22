@@ -1,8 +1,8 @@
 module Lia.Index.Model exposing (Model, init)
 
-import Lia.Inline.Type exposing (Inline(..), Reference(..))
-import Lia.Quiz.Type exposing (Quiz(..))
-import Lia.Type exposing (Block(..), Slide)
+import Lia.Inline.Types exposing (Inline(..), Reference(..))
+import Lia.Quiz.Types exposing (Quiz(..))
+import Lia.Types exposing (Block(..), Slide)
 
 
 type alias Model =

@@ -1,6 +1,6 @@
 module Lia.Effect.Model exposing (Model, init)
 
-import Lia.Type exposing (Slide)
+import Lia.Types exposing (Slide)
 
 
 type alias Model =

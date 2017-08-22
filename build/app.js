@@ -11129,129 +11129,129 @@ var _elm_lang$html$Html_Lazy$lazy3 = _elm_lang$virtual_dom$VirtualDom$lazy3;
 var _elm_lang$html$Html_Lazy$lazy2 = _elm_lang$virtual_dom$VirtualDom$lazy2;
 var _elm_lang$html$Html_Lazy$lazy = _elm_lang$virtual_dom$VirtualDom$lazy;
 
-var _user$project$Lia_Inline_Type$EInline = F2(
+var _user$project$Lia_Inline_Types$EInline = F2(
 	function (a, b) {
 		return {ctor: 'EInline', _0: a, _1: b};
 	});
-var _user$project$Lia_Inline_Type$HTML = function (a) {
+var _user$project$Lia_Inline_Types$HTML = function (a) {
 	return {ctor: 'HTML', _0: a};
 };
-var _user$project$Lia_Inline_Type$Ref = function (a) {
+var _user$project$Lia_Inline_Types$Ref = function (a) {
 	return {ctor: 'Ref', _0: a};
 };
-var _user$project$Lia_Inline_Type$Formula = F2(
+var _user$project$Lia_Inline_Types$Formula = F2(
 	function (a, b) {
 		return {ctor: 'Formula', _0: a, _1: b};
 	});
-var _user$project$Lia_Inline_Type$Code = function (a) {
+var _user$project$Lia_Inline_Types$Code = function (a) {
 	return {ctor: 'Code', _0: a};
 };
-var _user$project$Lia_Inline_Type$Superscript = function (a) {
+var _user$project$Lia_Inline_Types$Superscript = function (a) {
 	return {ctor: 'Superscript', _0: a};
 };
-var _user$project$Lia_Inline_Type$Underline = function (a) {
+var _user$project$Lia_Inline_Types$Underline = function (a) {
 	return {ctor: 'Underline', _0: a};
 };
-var _user$project$Lia_Inline_Type$Italic = function (a) {
+var _user$project$Lia_Inline_Types$Italic = function (a) {
 	return {ctor: 'Italic', _0: a};
 };
-var _user$project$Lia_Inline_Type$Bold = function (a) {
+var _user$project$Lia_Inline_Types$Bold = function (a) {
 	return {ctor: 'Bold', _0: a};
 };
-var _user$project$Lia_Inline_Type$Symbol = function (a) {
+var _user$project$Lia_Inline_Types$Symbol = function (a) {
 	return {ctor: 'Symbol', _0: a};
 };
-var _user$project$Lia_Inline_Type$Chars = function (a) {
+var _user$project$Lia_Inline_Types$Chars = function (a) {
 	return {ctor: 'Chars', _0: a};
 };
-var _user$project$Lia_Inline_Type$Movie = F2(
+var _user$project$Lia_Inline_Types$Movie = F2(
 	function (a, b) {
 		return {ctor: 'Movie', _0: a, _1: b};
 	});
-var _user$project$Lia_Inline_Type$Image = F2(
+var _user$project$Lia_Inline_Types$Image = F2(
 	function (a, b) {
 		return {ctor: 'Image', _0: a, _1: b};
 	});
-var _user$project$Lia_Inline_Type$Link = F2(
+var _user$project$Lia_Inline_Types$Link = F2(
 	function (a, b) {
 		return {ctor: 'Link', _0: a, _1: b};
 	});
 
-var _user$project$Lia_Quiz_Type$QuizElement = F4(
+var _user$project$Lia_Quiz_Types$QuizElement = F4(
 	function (a, b, c, d) {
 		return {solved: a, state: b, trial: c, hint: d};
 	});
-var _user$project$Lia_Quiz_Type$QuizBlock = F3(
+var _user$project$Lia_Quiz_Types$QuizBlock = F3(
 	function (a, b, c) {
 		return {quiz: a, idx: b, hints: c};
 	});
-var _user$project$Lia_Quiz_Type$Text = F2(
+var _user$project$Lia_Quiz_Types$Text = F2(
 	function (a, b) {
 		return {ctor: 'Text', _0: a, _1: b};
 	});
-var _user$project$Lia_Quiz_Type$Multi = function (a) {
+var _user$project$Lia_Quiz_Types$Multi = function (a) {
 	return {ctor: 'Multi', _0: a};
 };
-var _user$project$Lia_Quiz_Type$Single = F2(
+var _user$project$Lia_Quiz_Types$Single = F2(
 	function (a, b) {
 		return {ctor: 'Single', _0: a, _1: b};
 	});
-var _user$project$Lia_Quiz_Type$TextInput = function (a) {
+var _user$project$Lia_Quiz_Types$TextInput = function (a) {
 	return {ctor: 'TextInput', _0: a};
 };
-var _user$project$Lia_Quiz_Type$MultipleChoice = function (a) {
+var _user$project$Lia_Quiz_Types$MultipleChoice = function (a) {
 	return {ctor: 'MultipleChoice', _0: a};
 };
-var _user$project$Lia_Quiz_Type$SingleChoice = F2(
+var _user$project$Lia_Quiz_Types$SingleChoice = F2(
 	function (a, b) {
 		return {ctor: 'SingleChoice', _0: a, _1: b};
 	});
 
-var _user$project$Lia_Type$Slide = F4(
+var _user$project$Lia_Types$Slide = F4(
 	function (a, b, c, d) {
 		return {indentation: a, title: b, body: c, effects: d};
 	});
-var _user$project$Lia_Type$Plain = {ctor: 'Plain'};
-var _user$project$Lia_Type$Slides = {ctor: 'Slides'};
-var _user$project$Lia_Type$EBlock = F2(
+var _user$project$Lia_Types$Plain = {ctor: 'Plain'};
+var _user$project$Lia_Types$Slides = {ctor: 'Slides'};
+var _user$project$Lia_Types$EBlock = F2(
 	function (a, b) {
 		return {ctor: 'EBlock', _0: a, _1: b};
 	});
-var _user$project$Lia_Type$Quiz = function (a) {
+var _user$project$Lia_Types$Quiz = function (a) {
 	return {ctor: 'Quiz', _0: a};
 };
-var _user$project$Lia_Type$Table = F3(
+var _user$project$Lia_Types$Table = F3(
 	function (a, b, c) {
 		return {ctor: 'Table', _0: a, _1: b, _2: c};
 	});
-var _user$project$Lia_Type$Paragraph = function (a) {
+var _user$project$Lia_Types$Paragraph = function (a) {
 	return {ctor: 'Paragraph', _0: a};
 };
-var _user$project$Lia_Type$Quote = function (a) {
+var _user$project$Lia_Types$Quote = function (a) {
 	return {ctor: 'Quote', _0: a};
 };
-var _user$project$Lia_Type$CodeBlock = F2(
+var _user$project$Lia_Types$CodeBlock = F2(
 	function (a, b) {
 		return {ctor: 'CodeBlock', _0: a, _1: b};
 	});
-var _user$project$Lia_Type$HorizontalLine = {ctor: 'HorizontalLine'};
-var _user$project$Lia_Type$LiaCmd = F2(
+var _user$project$Lia_Types$HorizontalLine = {ctor: 'HorizontalLine'};
+var _user$project$Lia_Types$LiaCmd = F2(
 	function (a, b) {
 		return {ctor: 'LiaCmd', _0: a, _1: b};
 	});
-var _user$project$Lia_Type$LiaList = function (a) {
+var _user$project$Lia_Types$LiaList = function (a) {
 	return {ctor: 'LiaList', _0: a};
 };
-var _user$project$Lia_Type$LiaString = function (a) {
+var _user$project$Lia_Types$LiaString = function (a) {
 	return {ctor: 'LiaString', _0: a};
 };
-var _user$project$Lia_Type$LiaFloat = function (a) {
+var _user$project$Lia_Types$LiaFloat = function (a) {
 	return {ctor: 'LiaFloat', _0: a};
 };
-var _user$project$Lia_Type$LiaInt = function (a) {
+var _user$project$Lia_Types$LiaInt = function (a) {
 	return {ctor: 'LiaInt', _0: a};
 };
-var _user$project$Lia_Type$LiaBool = function (a) {
+var _user$project$Lia_Types$LiaBool = function (a) {
 	return {ctor: 'LiaBool', _0: a};
 };
 
@@ -11465,11 +11465,11 @@ var _user$project$Lia_Quiz_Model$element = function (quiz) {
 		var _p4 = quiz.quiz;
 		switch (_p4.ctor) {
 			case 'TextInput':
-				return A2(_user$project$Lia_Quiz_Type$Text, '', _p4._0);
+				return A2(_user$project$Lia_Quiz_Types$Text, '', _p4._0);
 			case 'SingleChoice':
-				return A2(_user$project$Lia_Quiz_Type$Single, -1, _p4._0);
+				return A2(_user$project$Lia_Quiz_Types$Single, -1, _p4._0);
 			default:
-				return _user$project$Lia_Quiz_Type$Multi(
+				return _user$project$Lia_Quiz_Types$Multi(
 					_elm_lang$core$Array$fromList(
 						A2(
 							_elm_lang$core$List$map,
@@ -11543,6 +11543,19 @@ var _user$project$Lia_Effect_Parser$effect_number = function () {
 	};
 	return A2(_elm_community$parser_combinators$Combine_ops['>>='], _elm_community$parser_combinators$Combine_Num$int, state);
 }();
+var _user$project$Lia_Effect_Parser$ecomment = function (blocks) {
+	var number = A2(
+		_elm_community$parser_combinators$Combine_ops['<*'],
+		A2(
+			_elm_community$parser_combinators$Combine_ops['*>'],
+			_elm_community$parser_combinators$Combine$regex('( *)--{{'),
+			_user$project$Lia_Effect_Parser$effect_number),
+		_elm_community$parser_combinators$Combine$regex('}}--( *)[\\n]'));
+	return A2(
+		_elm_community$parser_combinators$Combine_ops['<*>'],
+		A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$EBlock, number),
+		_elm_community$parser_combinators$Combine$many1(blocks));
+};
 var _user$project$Lia_Effect_Parser$einline = function (inlines) {
 	var multi_inline = A2(
 		_elm_community$parser_combinators$Combine_ops['*>'],
@@ -11560,7 +11573,7 @@ var _user$project$Lia_Effect_Parser$einline = function (inlines) {
 		_elm_community$parser_combinators$Combine$string('}}'));
 	return A2(
 		_elm_community$parser_combinators$Combine_ops['<*>'],
-		A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Inline_Type$EInline, number),
+		A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Inline_Types$EInline, number),
 		multi_inline);
 };
 var _user$project$Lia_Effect_Parser$eblock = function (blocks) {
@@ -11581,13 +11594,13 @@ var _user$project$Lia_Effect_Parser$eblock = function (blocks) {
 		_elm_community$parser_combinators$Combine$regex('}}( *)[\\n]'));
 	return A2(
 		_elm_community$parser_combinators$Combine_ops['<*>'],
-		A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Type$EBlock, number),
+		A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$EBlock, number),
 		A2(_elm_community$parser_combinators$Combine_ops['<|>'], multi_block, single_block));
 };
 
 var _user$project$Lia_Inline_Parser$code = A2(
 	_elm_community$parser_combinators$Combine_ops['<$>'],
-	_user$project$Lia_Inline_Type$Code,
+	_user$project$Lia_Inline_Types$Code,
 	A2(
 		_elm_community$parser_combinators$Combine_ops['<?>'],
 		A2(
@@ -11607,73 +11620,73 @@ var _user$project$Lia_Inline_Parser$smileys = _elm_community$parser_combinators$
 				_0: A2(
 					_elm_community$parser_combinators$Combine_ops['$>'],
 					_elm_community$parser_combinators$Combine$string(':-)'),
-					_user$project$Lia_Inline_Type$Symbol('&#x1f600;')),
+					_user$project$Lia_Inline_Types$Symbol('&#x1f600;')),
 				_1: {
 					ctor: '::',
 					_0: A2(
 						_elm_community$parser_combinators$Combine_ops['$>'],
 						_elm_community$parser_combinators$Combine$string(';-)'),
-						_user$project$Lia_Inline_Type$Symbol('&#x1f609;')),
+						_user$project$Lia_Inline_Types$Symbol('&#x1f609;')),
 					_1: {
 						ctor: '::',
 						_0: A2(
 							_elm_community$parser_combinators$Combine_ops['$>'],
 							_elm_community$parser_combinators$Combine$string(':-D'),
-							_user$project$Lia_Inline_Type$Symbol('&#x1f600;')),
+							_user$project$Lia_Inline_Types$Symbol('&#x1f600;')),
 						_1: {
 							ctor: '::',
 							_0: A2(
 								_elm_community$parser_combinators$Combine_ops['$>'],
 								_elm_community$parser_combinators$Combine$string(':-O'),
-								_user$project$Lia_Inline_Type$Symbol('&#128558;')),
+								_user$project$Lia_Inline_Types$Symbol('&#128558;')),
 							_1: {
 								ctor: '::',
 								_0: A2(
 									_elm_community$parser_combinators$Combine_ops['$>'],
 									_elm_community$parser_combinators$Combine$string(':-('),
-									_user$project$Lia_Inline_Type$Symbol('&#128542;')),
+									_user$project$Lia_Inline_Types$Symbol('&#128542;')),
 								_1: {
 									ctor: '::',
 									_0: A2(
 										_elm_community$parser_combinators$Combine_ops['$>'],
 										_elm_community$parser_combinators$Combine$string(':-|'),
-										_user$project$Lia_Inline_Type$Symbol('&#128528;')),
+										_user$project$Lia_Inline_Types$Symbol('&#128528;')),
 									_1: {
 										ctor: '::',
 										_0: A2(
 											_elm_community$parser_combinators$Combine_ops['$>'],
 											_elm_community$parser_combinators$Combine$string(':-/'),
-											_user$project$Lia_Inline_Type$Symbol('&#128533;')),
+											_user$project$Lia_Inline_Types$Symbol('&#128533;')),
 										_1: {
 											ctor: '::',
 											_0: A2(
 												_elm_community$parser_combinators$Combine_ops['$>'],
 												_elm_community$parser_combinators$Combine$string(':-P'),
-												_user$project$Lia_Inline_Type$Symbol('&#128539;')),
+												_user$project$Lia_Inline_Types$Symbol('&#128539;')),
 											_1: {
 												ctor: '::',
 												_0: A2(
 													_elm_community$parser_combinators$Combine_ops['$>'],
 													_elm_community$parser_combinators$Combine$string(';-P'),
-													_user$project$Lia_Inline_Type$Symbol('&#128540;')),
+													_user$project$Lia_Inline_Types$Symbol('&#128540;')),
 												_1: {
 													ctor: '::',
 													_0: A2(
 														_elm_community$parser_combinators$Combine_ops['$>'],
 														_elm_community$parser_combinators$Combine$string(':-*'),
-														_user$project$Lia_Inline_Type$Symbol('&#128535;')),
+														_user$project$Lia_Inline_Types$Symbol('&#128535;')),
 													_1: {
 														ctor: '::',
 														_0: A2(
 															_elm_community$parser_combinators$Combine_ops['$>'],
 															_elm_community$parser_combinators$Combine$string(':\')'),
-															_user$project$Lia_Inline_Type$Symbol('&#128514;')),
+															_user$project$Lia_Inline_Types$Symbol('&#128514;')),
 														_1: {
 															ctor: '::',
 															_0: A2(
 																_elm_community$parser_combinators$Combine_ops['$>'],
 																_elm_community$parser_combinators$Combine$string(':\'('),
-																_user$project$Lia_Inline_Type$Symbol('&#128554;')),
+																_user$project$Lia_Inline_Types$Symbol('&#128554;')),
 															_1: {ctor: '[]'}
 														}
 													}
@@ -11697,109 +11710,109 @@ var _user$project$Lia_Inline_Parser$arrows = _elm_community$parser_combinators$C
 				_0: A2(
 					_elm_community$parser_combinators$Combine_ops['$>'],
 					_elm_community$parser_combinators$Combine$string('<-->'),
-					_user$project$Lia_Inline_Type$Symbol('&#10231;')),
+					_user$project$Lia_Inline_Types$Symbol('&#10231;')),
 				_1: {
 					ctor: '::',
 					_0: A2(
 						_elm_community$parser_combinators$Combine_ops['$>'],
 						_elm_community$parser_combinators$Combine$string('<--'),
-						_user$project$Lia_Inline_Type$Symbol('&#10229;')),
+						_user$project$Lia_Inline_Types$Symbol('&#10229;')),
 					_1: {
 						ctor: '::',
 						_0: A2(
 							_elm_community$parser_combinators$Combine_ops['$>'],
 							_elm_community$parser_combinators$Combine$string('-->'),
-							_user$project$Lia_Inline_Type$Symbol('&#10230;')),
+							_user$project$Lia_Inline_Types$Symbol('&#10230;')),
 						_1: {
 							ctor: '::',
 							_0: A2(
 								_elm_community$parser_combinators$Combine_ops['$>'],
 								_elm_community$parser_combinators$Combine$string('<<-'),
-								_user$project$Lia_Inline_Type$Symbol('&#8606;')),
+								_user$project$Lia_Inline_Types$Symbol('&#8606;')),
 							_1: {
 								ctor: '::',
 								_0: A2(
 									_elm_community$parser_combinators$Combine_ops['$>'],
 									_elm_community$parser_combinators$Combine$string('->>'),
-									_user$project$Lia_Inline_Type$Symbol('&#8608;')),
+									_user$project$Lia_Inline_Types$Symbol('&#8608;')),
 								_1: {
 									ctor: '::',
 									_0: A2(
 										_elm_community$parser_combinators$Combine_ops['$>'],
 										_elm_community$parser_combinators$Combine$string('<->'),
-										_user$project$Lia_Inline_Type$Symbol('&#8596;')),
+										_user$project$Lia_Inline_Types$Symbol('&#8596;')),
 									_1: {
 										ctor: '::',
 										_0: A2(
 											_elm_community$parser_combinators$Combine_ops['$>'],
 											_elm_community$parser_combinators$Combine$string('>->'),
-											_user$project$Lia_Inline_Type$Symbol('&#8611;')),
+											_user$project$Lia_Inline_Types$Symbol('&#8611;')),
 										_1: {
 											ctor: '::',
 											_0: A2(
 												_elm_community$parser_combinators$Combine_ops['$>'],
 												_elm_community$parser_combinators$Combine$string('<-<'),
-												_user$project$Lia_Inline_Type$Symbol('&#8610;')),
+												_user$project$Lia_Inline_Types$Symbol('&#8610;')),
 											_1: {
 												ctor: '::',
 												_0: A2(
 													_elm_community$parser_combinators$Combine_ops['$>'],
 													_elm_community$parser_combinators$Combine$string('->'),
-													_user$project$Lia_Inline_Type$Symbol('&#8594;')),
+													_user$project$Lia_Inline_Types$Symbol('&#8594;')),
 												_1: {
 													ctor: '::',
 													_0: A2(
 														_elm_community$parser_combinators$Combine_ops['$>'],
 														_elm_community$parser_combinators$Combine$string('<-'),
-														_user$project$Lia_Inline_Type$Symbol('&#8592;')),
+														_user$project$Lia_Inline_Types$Symbol('&#8592;')),
 													_1: {
 														ctor: '::',
 														_0: A2(
 															_elm_community$parser_combinators$Combine_ops['$>'],
 															_elm_community$parser_combinators$Combine$string('<~'),
-															_user$project$Lia_Inline_Type$Symbol('&#8604;')),
+															_user$project$Lia_Inline_Types$Symbol('&#8604;')),
 														_1: {
 															ctor: '::',
 															_0: A2(
 																_elm_community$parser_combinators$Combine_ops['$>'],
 																_elm_community$parser_combinators$Combine$string('~>'),
-																_user$project$Lia_Inline_Type$Symbol('&#8605;')),
+																_user$project$Lia_Inline_Types$Symbol('&#8605;')),
 															_1: {
 																ctor: '::',
 																_0: A2(
 																	_elm_community$parser_combinators$Combine_ops['$>'],
 																	_elm_community$parser_combinators$Combine$string('<==>'),
-																	_user$project$Lia_Inline_Type$Symbol('&#10234;')),
+																	_user$project$Lia_Inline_Types$Symbol('&#10234;')),
 																_1: {
 																	ctor: '::',
 																	_0: A2(
 																		_elm_community$parser_combinators$Combine_ops['$>'],
 																		_elm_community$parser_combinators$Combine$string('==>'),
-																		_user$project$Lia_Inline_Type$Symbol('&#10233;')),
+																		_user$project$Lia_Inline_Types$Symbol('&#10233;')),
 																	_1: {
 																		ctor: '::',
 																		_0: A2(
 																			_elm_community$parser_combinators$Combine_ops['$>'],
 																			_elm_community$parser_combinators$Combine$string('<=='),
-																			_user$project$Lia_Inline_Type$Symbol('&#10232;')),
+																			_user$project$Lia_Inline_Types$Symbol('&#10232;')),
 																		_1: {
 																			ctor: '::',
 																			_0: A2(
 																				_elm_community$parser_combinators$Combine_ops['$>'],
 																				_elm_community$parser_combinators$Combine$string('<=>'),
-																				_user$project$Lia_Inline_Type$Symbol('&#8660;')),
+																				_user$project$Lia_Inline_Types$Symbol('&#8660;')),
 																			_1: {
 																				ctor: '::',
 																				_0: A2(
 																					_elm_community$parser_combinators$Combine_ops['$>'],
 																					_elm_community$parser_combinators$Combine$string('=>'),
-																					_user$project$Lia_Inline_Type$Symbol('&#8658;')),
+																					_user$project$Lia_Inline_Types$Symbol('&#8658;')),
 																				_1: {
 																					ctor: '::',
 																					_0: A2(
 																						_elm_community$parser_combinators$Combine_ops['$>'],
 																						_elm_community$parser_combinators$Combine$string('<='),
-																						_user$project$Lia_Inline_Type$Symbol('&#8656;')),
+																						_user$project$Lia_Inline_Types$Symbol('&#8656;')),
 																					_1: {ctor: '[]'}
 																				}
 																			}
@@ -11829,13 +11842,13 @@ var _user$project$Lia_Inline_Parser$reference = _elm_community$parser_combinator
 			_elm_community$parser_combinators$Combine$regex('[^\\]\n]*'));
 		var link = A2(
 			_elm_community$parser_combinators$Combine_ops['<*>'],
-			A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Inline_Type$Link, info),
+			A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Inline_Types$Link, info),
 			url);
 		var image = A2(
 			_elm_community$parser_combinators$Combine_ops['<*>'],
 			A2(
 				_elm_community$parser_combinators$Combine_ops['<$>'],
-				_user$project$Lia_Inline_Type$Image,
+				_user$project$Lia_Inline_Types$Image,
 				A2(
 					_elm_community$parser_combinators$Combine_ops['*>'],
 					_elm_community$parser_combinators$Combine$string('!'),
@@ -11845,7 +11858,7 @@ var _user$project$Lia_Inline_Parser$reference = _elm_community$parser_combinator
 			_elm_community$parser_combinators$Combine_ops['<*>'],
 			A2(
 				_elm_community$parser_combinators$Combine_ops['<$>'],
-				_user$project$Lia_Inline_Type$Movie,
+				_user$project$Lia_Inline_Types$Movie,
 				A2(
 					_elm_community$parser_combinators$Combine_ops['*>'],
 					_elm_community$parser_combinators$Combine$string('!!'),
@@ -11853,7 +11866,7 @@ var _user$project$Lia_Inline_Parser$reference = _elm_community$parser_combinator
 			url);
 		return A2(
 			_elm_community$parser_combinators$Combine_ops['<$>'],
-			_user$project$Lia_Inline_Type$Ref,
+			_user$project$Lia_Inline_Types$Ref,
 			_elm_community$parser_combinators$Combine$choice(
 				{
 					ctor: '::',
@@ -11874,7 +11887,7 @@ var _user$project$Lia_Inline_Parser$formula = function () {
 		_elm_community$parser_combinators$Combine_ops['<$>'],
 		function (c) {
 			return A2(
-				_user$project$Lia_Inline_Type$Formula,
+				_user$project$Lia_Inline_Types$Formula,
 				true,
 				_elm_lang$core$String$fromList(c));
 		},
@@ -11887,7 +11900,7 @@ var _user$project$Lia_Inline_Parser$formula = function () {
 				_elm_community$parser_combinators$Combine$string('$$'))));
 	var p1 = A2(
 		_elm_community$parser_combinators$Combine_ops['<$>'],
-		_user$project$Lia_Inline_Type$Formula(false),
+		_user$project$Lia_Inline_Types$Formula(false),
 		A2(
 			_elm_community$parser_combinators$Combine_ops['<*'],
 			A2(
@@ -11949,7 +11962,7 @@ var _user$project$Lia_Inline_Parser$combine = function (list) {
 				if (((_p7.ctor === '_Tuple2') && (_p7._0.ctor === 'Chars')) && (_p7._1.ctor === 'Chars')) {
 					var _v5 = {
 						ctor: '::',
-						_0: _user$project$Lia_Inline_Type$Chars(
+						_0: _user$project$Lia_Inline_Types$Chars(
 							A2(_elm_lang$core$Basics_ops['++'], _p7._0._0, _p7._1._0)),
 						_1: _p10
 					};
@@ -11996,7 +12009,7 @@ var _user$project$Lia_Inline_Parser$html_block = function () {
 	};
 	return A2(
 		_elm_community$parser_combinators$Combine_ops['<$>'],
-		_user$project$Lia_Inline_Type$HTML,
+		_user$project$Lia_Inline_Types$HTML,
 		A2(
 			_elm_community$parser_combinators$Combine_ops['>>='],
 			A2(
@@ -12013,7 +12026,7 @@ var _user$project$Lia_Inline_Parser$html_void = _elm_community$parser_combinator
 		var _p12 = _p11;
 		return A2(
 			_elm_community$parser_combinators$Combine_ops['<$>'],
-			_user$project$Lia_Inline_Type$HTML,
+			_user$project$Lia_Inline_Types$HTML,
 			_elm_community$parser_combinators$Combine$choice(
 				{
 					ctor: '::',
@@ -12127,46 +12140,46 @@ var _user$project$Lia_Inline_Parser$strings = _elm_community$parser_combinators$
 		var _p16 = _p15;
 		var base2 = A2(
 			_elm_community$parser_combinators$Combine_ops['<$>'],
-			_user$project$Lia_Inline_Type$Chars,
+			_user$project$Lia_Inline_Types$Chars,
 			A2(
 				_elm_community$parser_combinators$Combine_ops['<?>'],
 				_elm_community$parser_combinators$Combine$regex('[^#\\n|]+'),
 				'base string'));
 		var characters = A2(
 			_elm_community$parser_combinators$Combine_ops['<$>'],
-			_user$project$Lia_Inline_Type$Chars,
+			_user$project$Lia_Inline_Types$Chars,
 			_elm_community$parser_combinators$Combine$regex('[*~_:;\\-<>=${}]'));
 		var superscript = A2(
 			_elm_community$parser_combinators$Combine_ops['<$>'],
-			_user$project$Lia_Inline_Type$Superscript,
+			_user$project$Lia_Inline_Types$Superscript,
 			A2(
 				_elm_community$parser_combinators$Combine_ops['<?>'],
 				A2(_user$project$Lia_Inline_Parser$between_, '^', _user$project$Lia_Inline_Parser$inlines),
 				'superscript string'));
 		var underline = A2(
 			_elm_community$parser_combinators$Combine_ops['<$>'],
-			_user$project$Lia_Inline_Type$Underline,
+			_user$project$Lia_Inline_Types$Underline,
 			A2(
 				_elm_community$parser_combinators$Combine_ops['<?>'],
 				A2(_user$project$Lia_Inline_Parser$between_, '_', _user$project$Lia_Inline_Parser$inlines),
 				'underline string'));
 		var italic = A2(
 			_elm_community$parser_combinators$Combine_ops['<$>'],
-			_user$project$Lia_Inline_Type$Italic,
+			_user$project$Lia_Inline_Types$Italic,
 			A2(
 				_elm_community$parser_combinators$Combine_ops['<?>'],
 				A2(_user$project$Lia_Inline_Parser$between_, '~', _user$project$Lia_Inline_Parser$inlines),
 				'italic string'));
 		var bold = A2(
 			_elm_community$parser_combinators$Combine_ops['<$>'],
-			_user$project$Lia_Inline_Type$Bold,
+			_user$project$Lia_Inline_Types$Bold,
 			A2(
 				_elm_community$parser_combinators$Combine_ops['<?>'],
 				A2(_user$project$Lia_Inline_Parser$between_, '*', _user$project$Lia_Inline_Parser$inlines),
 				'bold string'));
 		var escape = A2(
 			_elm_community$parser_combinators$Combine_ops['<$>'],
-			_user$project$Lia_Inline_Type$Chars,
+			_user$project$Lia_Inline_Types$Chars,
 			A2(
 				_elm_community$parser_combinators$Combine_ops['<?>'],
 				A2(
@@ -12179,7 +12192,7 @@ var _user$project$Lia_Inline_Parser$strings = _elm_community$parser_combinators$
 				'escape string'));
 		var base = A2(
 			_elm_community$parser_combinators$Combine_ops['<$>'],
-			_user$project$Lia_Inline_Type$Chars,
+			_user$project$Lia_Inline_Types$Chars,
 			A2(
 				_elm_community$parser_combinators$Combine_ops['<?>'],
 				_elm_community$parser_combinators$Combine$regex('[^#*~_:;`!\\^\\[\\|{}\\\\\\n\\-<>=|$]+'),
@@ -12240,7 +12253,7 @@ var _user$project$Lia_Inline_Parser$line = A2(
 				list,
 				{
 					ctor: '::',
-					_0: _user$project$Lia_Inline_Type$Chars(' '),
+					_0: _user$project$Lia_Inline_Types$Chars(' '),
 					_1: {ctor: '[]'}
 				}));
 	},
@@ -12268,7 +12281,7 @@ var _user$project$Lia_Quiz_Parser$checked = F2(
 	});
 var _user$project$Lia_Quiz_Parser$quiz_MultipleChoice = A2(
 	_elm_community$parser_combinators$Combine_ops['<$>'],
-	_user$project$Lia_Quiz_Type$MultipleChoice,
+	_user$project$Lia_Quiz_Types$MultipleChoice,
 	_elm_community$parser_combinators$Combine$many1(
 		_elm_community$parser_combinators$Combine$choice(
 			{
@@ -12314,7 +12327,7 @@ var _user$project$Lia_Quiz_Parser$quiz_SingleChoice = function () {
 		_elm_community$parser_combinators$Combine$map,
 		function (q) {
 			return A2(
-				_user$project$Lia_Quiz_Type$SingleChoice,
+				_user$project$Lia_Quiz_Types$SingleChoice,
 				get_result(q),
 				A2(
 					_elm_lang$core$List$map,
@@ -12364,7 +12377,7 @@ var _user$project$Lia_Quiz_Parser$quiz_SingleChoice = function () {
 }();
 var _user$project$Lia_Quiz_Parser$quiz_TextInput = A2(
 	_elm_community$parser_combinators$Combine_ops['<$>'],
-	_user$project$Lia_Quiz_Type$TextInput,
+	_user$project$Lia_Quiz_Types$TextInput,
 	A2(
 		_elm_community$parser_combinators$Combine_ops['<*'],
 		A2(
@@ -12393,7 +12406,7 @@ var _user$project$Lia_Quiz_Parser$quiz = function () {
 			_elm_community$parser_combinators$Combine_ops['<*>'],
 			A2(
 				_elm_community$parser_combinators$Combine_ops['<$>'],
-				_user$project$Lia_Quiz_Type$QuizBlock,
+				_user$project$Lia_Quiz_Types$QuizBlock,
 				_elm_community$parser_combinators$Combine$choice(
 					{
 						ctor: '::',
@@ -12467,7 +12480,7 @@ var _user$project$Lia_Parser$quote_block = function () {
 				_elm_community$parser_combinators$Combine$optional,
 				{
 					ctor: '::',
-					_0: _user$project$Lia_Inline_Type$Chars(''),
+					_0: _user$project$Lia_Inline_Types$Chars(''),
 					_1: {ctor: '[]'}
 				},
 				_user$project$Lia_Inline_Parser$line)),
@@ -12475,7 +12488,7 @@ var _user$project$Lia_Parser$quote_block = function () {
 	return A2(
 		_elm_community$parser_combinators$Combine_ops['<$>'],
 		function (q) {
-			return _user$project$Lia_Type$Quote(
+			return _user$project$Lia_Types$Quote(
 				_user$project$Lia_Inline_Parser$combine(
 					_elm_lang$core$List$concat(q)));
 		},
@@ -12504,7 +12517,7 @@ var _user$project$Lia_Parser$code_block = function () {
 		_user$project$Lia_Inline_Parser$newline);
 	return A2(
 		_elm_community$parser_combinators$Combine_ops['<*>'],
-		A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Type$CodeBlock, lang),
+		A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$CodeBlock, lang),
 		block);
 }();
 var _user$project$Lia_Parser$table = function () {
@@ -12527,7 +12540,7 @@ var _user$project$Lia_Parser$table = function () {
 		A2(
 			_elm_community$parser_combinators$Combine_ops['<$>'],
 			A2(
-				_user$project$Lia_Type$Table,
+				_user$project$Lia_Types$Table,
 				{ctor: '[]'},
 				{ctor: '[]'}),
 			_elm_community$parser_combinators$Combine$many1(row)),
@@ -12577,7 +12590,7 @@ var _user$project$Lia_Parser$table = function () {
 			_elm_community$parser_combinators$Combine_ops['<*>'],
 			A2(
 				_elm_community$parser_combinators$Combine_ops['<*>'],
-				A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Type$Table, row),
+				A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$Table, row),
 				format),
 			_elm_community$parser_combinators$Combine$many(row)),
 		_user$project$Lia_Inline_Parser$newline);
@@ -12595,7 +12608,7 @@ var _user$project$Lia_Parser$table = function () {
 var _user$project$Lia_Parser$paragraph = A2(
 	_elm_community$parser_combinators$Combine_ops['<$>'],
 	function (l) {
-		return _user$project$Lia_Type$Paragraph(
+		return _user$project$Lia_Types$Paragraph(
 			_user$project$Lia_Inline_Parser$combine(
 				_elm_lang$core$List$concat(l)));
 	},
@@ -12606,7 +12619,7 @@ var _user$project$Lia_Parser$paragraph = A2(
 			_user$project$Lia_Inline_Parser$newline)));
 var _user$project$Lia_Parser$horizontal_line = A2(
 	_elm_community$parser_combinators$Combine_ops['<$'],
-	_user$project$Lia_Type$HorizontalLine,
+	_user$project$Lia_Types$HorizontalLine,
 	_elm_community$parser_combinators$Combine$regex('--[\\-]+'));
 var _user$project$Lia_Parser$blocks = _elm_community$parser_combinators$Combine$lazy(
 	function (_p0) {
@@ -12629,7 +12642,7 @@ var _user$project$Lia_Parser$blocks = _elm_community$parser_combinators$Combine$
 								_0: _user$project$Lia_Parser$horizontal_line,
 								_1: {
 									ctor: '::',
-									_0: A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Type$Quiz, _user$project$Lia_Quiz_Parser$quiz),
+									_0: A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$Quiz, _user$project$Lia_Quiz_Parser$quiz),
 									_1: {
 										ctor: '::',
 										_0: _user$project$Lia_Parser$paragraph,
@@ -12689,7 +12702,7 @@ var _user$project$Lia_Parser$parse = function () {
 					_elm_community$parser_combinators$Combine_ops['<*>'],
 					A2(
 						_elm_community$parser_combinators$Combine_ops['<*>'],
-						A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Type$Slide, tag),
+						A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$Slide, tag),
 						title),
 					body),
 				effect_counter)));
@@ -12833,7 +12846,7 @@ var _user$project$Lia_Quiz_Update$update_input = F3(
 					_elm_lang$core$Native_Utils.update(
 						_p4,
 						{
-							state: A2(_user$project$Lia_Quiz_Type$Text, text, _p3._1)
+							state: A2(_user$project$Lia_Quiz_Types$Text, text, _p3._1)
 						}),
 					vector);
 			} else {
@@ -12873,7 +12886,7 @@ var _user$project$Lia_Quiz_Update$flip_checkbox = F3(
 						_elm_lang$core$Native_Utils.update(
 							_p13,
 							{
-								state: A2(_user$project$Lia_Quiz_Type$Single, question_id, _p8._1)
+								state: A2(_user$project$Lia_Quiz_Types$Single, question_id, _p8._1)
 							}),
 						vector);
 				case 'Multi':
@@ -12887,7 +12900,7 @@ var _user$project$Lia_Quiz_Update$flip_checkbox = F3(
 								_elm_lang$core$Native_Utils.update(
 									_p13,
 									{
-										state: _user$project$Lia_Quiz_Type$Multi(q)
+										state: _user$project$Lia_Quiz_Types$Multi(q)
 									}),
 								vector);
 						}(
@@ -14407,8 +14420,8 @@ var _user$project$Lia$switch_mode = F2(
 			model,
 			{mode: mode});
 	});
-var _user$project$Lia$plain_mode = _user$project$Lia$switch_mode(_user$project$Lia_Type$Plain);
-var _user$project$Lia$slide_mode = _user$project$Lia$switch_mode(_user$project$Lia_Type$Slides);
+var _user$project$Lia$plain_mode = _user$project$Lia$switch_mode(_user$project$Lia_Types$Plain);
+var _user$project$Lia$slide_mode = _user$project$Lia$switch_mode(_user$project$Lia_Types$Slides);
 var _user$project$Lia$update = _user$project$Lia_Update$update;
 var _user$project$Lia$view = function (model) {
 	return _user$project$Lia_View$view(model);
@@ -14456,8 +14469,8 @@ var _user$project$Lia$init = F2(
 					{ctor: '[]'},
 					_elm_lang$core$Maybe$Nothing)));
 	});
-var _user$project$Lia$init_plain = _user$project$Lia$init(_user$project$Lia_Type$Plain);
-var _user$project$Lia$init_slides = _user$project$Lia$init(_user$project$Lia_Type$Slides);
+var _user$project$Lia$init_plain = _user$project$Lia$init(_user$project$Lia_Types$Plain);
+var _user$project$Lia$init_slides = _user$project$Lia$init(_user$project$Lia_Types$Slides);
 
 var _user$project$Editor$script = '<!--\nComments have to be enclosed by curly braces and can be put everywhere...\nThese can be used to comment single elements, lines, and multi-lines...\n-->\n\n# Main Markdown\n\nParagraphs are separated by newlines ...\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n## Basic Inlines\n\n\\*bold\\* -> *bold*\n\n\\~italic\\~ -> ~italic~\n\n\\^superscript\\^ -> ^superscript^\n\n\\_underline\\_ -> _underline_\n\n\nCombinations are allowed:\n\n\\~\\*bold italic\\*\\~ -> ~*bold italic*~\n\n\\_\\*bold underline\\*\\_ -> _*bold underline*_\n\n\\_\\~italic underline\\~\\_ -> _~italic underline~_\n\n\\_\\~\\*bold italic underline\\*\\~\\_ -> _~*bold italic underline*~_\n\n## Code\n\nCode can be either `inline` or explicit:\n\n``` c\n#include <stdio.h>\n\nvoid main(int) {\n    println(\"%d\\n\", 1234);\n}\n```\n\n``` python\nimport math\n\ndef sqrt(val):\n    return math.sqrt(val)\n```\n\n## Quize\n\n### Single-Choice\n\nDie zwei ist die einzig richtige Antwort\n\n[( )] 1\n[(X)] 2\n[( )] Oder 3\n[[?]] Es gibt nur eine möglichkeit\n[[?]] Nummer 2 ist es\n[[?]] Alles aufgebraucht\n\n### Multiple-Choice\n\nZwei von Vier?\n\n[[ ]] nein\n[[X]] Ja\n[[X]] auch Ja\n[[ ]] auf keinen Fall\n[[?]] Es gibt nur eine möglichkeit\n[[?]] Nummer 2 ist es\n[[?]] Alles aufgebraucht\n\n### Texteingaben\n\nWie sieht Pi aus, bis auf 5 Stellen nach dem Komma?\n\n[[3.14159]]\n\n## effects\n\n                                  {{1}}\nAAA AAA AAA AAA {{3}}{{*test*}} AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\nAAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\nAAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\n\n{{2}}\n{{\n\n![Image](http://package.elm-lang.org/assets/favicon.ico)\n\n[[ ]] nein\n[[X]] Ja\n[[X]] auch Ja\n[[ ]] auf keinen Fall\n\n}}\n                                  {{1}}\nBBB BBB BBB BBB BBB BBB BBB {{3}}{{*test*}} {{3}}{{*test*}} BBB BBB BBB BBB BBB BBB BBB\n\n## References\n\nLinks: [Google](http://www.google.de)\n\nImages:\n\n![Image](http://package.elm-lang.org/assets/favicon.ico)\n\nMovies:\n\n!![Movie](https://www.youtube.com/embed/EDp6UmaA9CM)\n\n## Quotes\n\n> This is a quote ...\n>\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n\n## Formulas\n\nsimple inline formulas $ \\frac{a+b}{\\sum x} * \\int x $\nor larger multiline formulas\n\n$$\n\\frac{a+b}{\\sum x}\n      * \\int x\n$$\n\n\n## Symboles\n\n### Arrows\n\n->, ->>, >->, <-, <-<, <<-, <->, =>, <=, <=>\n\n-->, <--, <-->, ==>, <==, <==>\n\n~>, <~\n\n### Smileys\n\n:-), ;-), :-D, :-O, :-(, :-|, :-/, :-P, :-*, :\'), :\'(\n\n### Escape Chars\n\n\\*, \\~, \\_, \\#\n\n## Tables\n\n| h1   | h2   | h3   |\n|:-----|-----:|------|\n| a    |    b |  c   |\n| aa   |   bb |  cc  |\n| aaa  |  bbb | ccc  |\n| aaaa | bbbb | cccc |\n\n## Enumeration\n\n* bullets\n* xxx\n  xxx\n\n## Html\n\nThis is normal Markdown ...\n<b id=\"test\" style=\"background-color:blue;color:red\">\nThis is a bold and colored html...\n</b> that can be used inline or <br> <br> everywhere\n\n<img src=\"http://package.elm-lang.org/assets/favicon.ico\">\n\ns\n\n\n## Misc\n\nhorizontal line\n\n---\n\nxxx\n\n\n';
 var _user$project$Editor$update = F2(
@@ -14661,11 +14674,11 @@ var _user$project$Editor$leftView = function (model) {
 											_1: {
 												ctor: '::',
 												_0: _elm_lang$html$Html_Events$onClick(
-													_user$project$Editor$Render(_user$project$Lia_Type$Slides)),
+													_user$project$Editor$Render(_user$project$Lia_Types$Slides)),
 												_1: {
 													ctor: '::',
 													_0: _elm_lang$html$Html_Attributes$checked(
-														_elm_lang$core$Native_Utils.eq(model.lia.mode, _user$project$Lia_Type$Slides)),
+														_elm_lang$core$Native_Utils.eq(model.lia.mode, _user$project$Lia_Types$Slides)),
 													_1: {ctor: '[]'}
 												}
 											}
@@ -14684,11 +14697,11 @@ var _user$project$Editor$leftView = function (model) {
 													_1: {
 														ctor: '::',
 														_0: _elm_lang$html$Html_Events$onClick(
-															_user$project$Editor$Render(_user$project$Lia_Type$Plain)),
+															_user$project$Editor$Render(_user$project$Lia_Types$Plain)),
 														_1: {
 															ctor: '::',
 															_0: _elm_lang$html$Html_Attributes$checked(
-																_elm_lang$core$Native_Utils.eq(model.lia.mode, _user$project$Lia_Type$Plain)),
+																_elm_lang$core$Native_Utils.eq(model.lia.mode, _user$project$Lia_Types$Plain)),
 															_1: {ctor: '[]'}
 														}
 													}

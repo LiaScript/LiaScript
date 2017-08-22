@@ -4,10 +4,10 @@ import Combine exposing (..)
 import Combine.Char
 import Lia.Effect.Parser exposing (..)
 import Lia.Inline.Parser exposing (..)
-import Lia.Inline.Type exposing (Inline(..))
+import Lia.Inline.Types exposing (Inline(..))
 import Lia.PState exposing (PState)
 import Lia.Quiz.Parser exposing (..)
-import Lia.Type exposing (..)
+import Lia.Types exposing (..)
 
 
 blocks : Parser PState Block

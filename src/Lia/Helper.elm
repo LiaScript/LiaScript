@@ -1,6 +1,6 @@
 module Lia.Helper exposing (get_headers, get_slide)
 
-import Lia.Type exposing (Slide)
+import Lia.Types exposing (Slide)
 
 
 get_headers : List Slide -> List ( Int, ( String, Int ) )

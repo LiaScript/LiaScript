@@ -7,7 +7,7 @@ import Lia.Index.Model as Index
 import Lia.Model
 import Lia.Parser
 import Lia.Quiz.Model as Quiz
-import Lia.Type
+import Lia.Types
 import Lia.Update
 import Lia.View
 
@@ -21,7 +21,7 @@ type alias Msg =
 
 
 type alias Mode =
-    Lia.Type.Mode
+    Lia.Types.Mode
 
 
 init : Mode -> String -> Model
@@ -36,12 +36,12 @@ set_script model script =
 
 init_plain : String -> Model
 init_plain =
-    init Lia.Type.Plain
+    init Lia.Types.Plain
 
 
 init_slides : String -> Model
 init_slides =
-    init Lia.Type.Slides
+    init Lia.Types.Slides
 
 
 parse : Model -> Model
@@ -76,9 +76,9 @@ switch_mode mode model =
 
 plain_mode : Model -> Model
 plain_mode =
-    switch_mode Lia.Type.Plain
+    switch_mode Lia.Types.Plain
 
 
 slide_mode : Model -> Model
 slide_mode =
-    switch_mode Lia.Type.Slides
+    switch_mode Lia.Types.Slides
