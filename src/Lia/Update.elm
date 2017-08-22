@@ -3,7 +3,7 @@ module Lia.Update exposing (Msg(..), update)
 import Lia.Effect.Model as Effect
 import Lia.Effect.Update
 import Lia.Helper exposing (get_slide)
-import Lia.Index
+import Lia.Index.Update
 import Lia.Model exposing (..)
 import Lia.Quiz.Update
 import Tts.Tts exposing (speak)
@@ -14,7 +14,7 @@ type Msg
     | PrevSlide
     | NextSlide
       --| UpdateEffect Lia.Effect.Update.Msg
-    | ScanIndex String
+    | UpdateIndex Lia.Index.Update.Msg
     | UpdateQuiz Lia.Quiz.Update.Msg
     | ContentsTable
     | Speak String
@@ -48,15 +48,12 @@ update msg model =
                 _ ->
                     update (Load (model.current_slide + 1)) model
 
-        ScanIndex pattern ->
+        UpdateIndex childMsg ->
             let
-                results =
-                    if pattern == "" then
-                        Nothing
-                    else
-                        Just (Lia.Index.scan model.index pattern)
+                ( index, _ ) =
+                    Lia.Index.Update.update childMsg model.index
             in
-            ( { model | search = pattern, search_results = results }, Cmd.none )
+            ( { model | index = index }, Cmd.none )
 
         ContentsTable ->
             ( { model | contents = not model.contents }, Cmd.none )

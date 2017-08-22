@@ -11268,7 +11268,7 @@ var _user$project$Lia_Effect_Model$init = function (maybe) {
 	}
 };
 
-var _user$project$Lia_Index$parse_inline = function (element) {
+var _user$project$Lia_Index_Model$parse_inline = function (element) {
 	parse_inline:
 	while (true) {
 		var _p0 = element;
@@ -11318,39 +11318,39 @@ var _user$project$Lia_Index$parse_inline = function (element) {
 				return _p0._0;
 			case 'EInline':
 				return _elm_lang$core$String$concat(
-					A2(_elm_lang$core$List$map, _user$project$Lia_Index$parse_inline, _p0._1));
+					A2(_elm_lang$core$List$map, _user$project$Lia_Index_Model$parse_inline, _p0._1));
 			default:
 				return '';
 		}
 	}
 };
-var _user$project$Lia_Index$parse_inlines = function (list) {
+var _user$project$Lia_Index_Model$parse_inlines = function (list) {
 	return _elm_lang$core$String$concat(
-		A2(_elm_lang$core$List$map, _user$project$Lia_Index$parse_inline, list));
+		A2(_elm_lang$core$List$map, _user$project$Lia_Index_Model$parse_inline, list));
 };
-var _user$project$Lia_Index$parse_quiz = function (quiz) {
+var _user$project$Lia_Index_Model$parse_quiz = function (quiz) {
 	var _p2 = quiz;
 	switch (_p2.ctor) {
 		case 'TextInput':
 			return '';
 		case 'SingleChoice':
 			return _elm_lang$core$String$concat(
-				A2(_elm_lang$core$List$map, _user$project$Lia_Index$parse_inlines, _p2._1));
+				A2(_elm_lang$core$List$map, _user$project$Lia_Index_Model$parse_inlines, _p2._1));
 		default:
 			return _elm_lang$core$String$concat(
 				A2(
 					_elm_lang$core$List$map,
 					function (_p3) {
 						var _p4 = _p3;
-						return _user$project$Lia_Index$parse_inlines(_p4._1);
+						return _user$project$Lia_Index_Model$parse_inlines(_p4._1);
 					},
 					_p2._0));
 	}
 };
-var _user$project$Lia_Index$parse_block = function (element) {
+var _user$project$Lia_Index_Model$parse_block = function (element) {
 	var scan = function (e) {
 		return _elm_lang$core$String$concat(
-			A2(_elm_lang$core$List$map, _user$project$Lia_Index$parse_inline, e));
+			A2(_elm_lang$core$List$map, _user$project$Lia_Index_Model$parse_inline, e));
 	};
 	var _p5 = element;
 	switch (_p5.ctor) {
@@ -11361,54 +11361,37 @@ var _user$project$Lia_Index$parse_block = function (element) {
 		case 'CodeBlock':
 			return _p5._1;
 		case 'Quiz':
-			return _user$project$Lia_Index$parse_quiz(_p5._0.quiz);
+			return _user$project$Lia_Index_Model$parse_quiz(_p5._0.quiz);
 		case 'EBlock':
 			return _elm_lang$core$String$concat(
 				A2(
 					_elm_lang$core$List$map,
 					function (sub) {
-						return _user$project$Lia_Index$parse_block(sub);
+						return _user$project$Lia_Index_Model$parse_block(sub);
 					},
 					_p5._1));
 		default:
 			return '';
 	}
 };
-var _user$project$Lia_Index$extract_string = function (slide) {
+var _user$project$Lia_Index_Model$extract_string = function (slide) {
 	return _elm_lang$core$String$toLower(
 		A2(
 			_elm_lang$core$Basics_ops['++'],
 			slide.title,
 			_elm_lang$core$String$concat(
-				A2(_elm_lang$core$List$map, _user$project$Lia_Index$parse_block, slide.body))));
+				A2(_elm_lang$core$List$map, _user$project$Lia_Index_Model$parse_block, slide.body))));
 };
-var _user$project$Lia_Index$scan = F2(
-	function (index, pattern) {
-		return A2(
-			_elm_lang$core$List$map,
-			function (_p6) {
-				var _p7 = _p6;
-				return _p7._0;
-			},
-			A2(
-				_elm_lang$core$List$filter,
-				function (_p8) {
-					var _p9 = _p8;
-					return A2(
-						_elm_lang$core$String$contains,
-						_elm_lang$core$String$toLower(pattern),
-						_p9._1);
-				},
-				A2(
-					_elm_lang$core$List$indexedMap,
-					F2(
-						function (v0, v1) {
-							return {ctor: '_Tuple2', _0: v0, _1: v1};
-						}),
-					index)));
+var _user$project$Lia_Index_Model$Model = F3(
+	function (a, b, c) {
+		return {search: a, index: b, results: c};
 	});
-var _user$project$Lia_Index$create = function (slides) {
-	return A2(_elm_lang$core$List$map, _user$project$Lia_Index$extract_string, slides);
+var _user$project$Lia_Index_Model$init = function (slides) {
+	return A3(
+		_user$project$Lia_Index_Model$Model,
+		'',
+		A2(_elm_lang$core$List$map, _user$project$Lia_Index_Model$extract_string, slides),
+		_elm_lang$core$Maybe$Nothing);
 };
 
 var _user$project$Lia_Quiz_Model$question_state = F3(
@@ -11524,29 +11507,10 @@ var _user$project$Lia_Quiz_Model$init = function (slides) {
 						slides)))));
 };
 
-var _user$project$Lia_Model$Model = function (a) {
-	return function (b) {
-		return function (c) {
-			return function (d) {
-				return function (e) {
-					return function (f) {
-						return function (g) {
-							return function (h) {
-								return function (i) {
-									return function (j) {
-										return function (k) {
-											return {script: a, error: b, slides: c, quiz: d, current_slide: e, mode: f, effects: g, contents: h, search: i, index: j, search_results: k};
-										};
-									};
-								};
-							};
-						};
-					};
-				};
-			};
-		};
-	};
-};
+var _user$project$Lia_Model$Model = F9(
+	function (a, b, c, d, e, f, g, h, i) {
+		return {script: a, error: b, slides: c, quiz: d, current_slide: e, mode: f, effects: g, contents: h, index: i};
+	});
 
 var _user$project$Lia_PState$init = {
 	quiz: 0,
@@ -12801,6 +12765,49 @@ var _user$project$Lia_Helper$get_headers = function (slides) {
 			slides));
 };
 
+var _user$project$Lia_Index_Update$scan = F2(
+	function (index, pattern) {
+		return A2(
+			_elm_lang$core$List$map,
+			function (_p0) {
+				var _p1 = _p0;
+				return _p1._0;
+			},
+			A2(
+				_elm_lang$core$List$filter,
+				function (_p2) {
+					var _p3 = _p2;
+					return A2(
+						_elm_lang$core$String$contains,
+						_elm_lang$core$String$toLower(pattern),
+						_p3._1);
+				},
+				A2(
+					_elm_lang$core$List$indexedMap,
+					F2(
+						function (v0, v1) {
+							return {ctor: '_Tuple2', _0: v0, _1: v1};
+						}),
+					index)));
+	});
+var _user$project$Lia_Index_Update$update = F2(
+	function (msg, model) {
+		var _p4 = msg;
+		var _p5 = _p4._0;
+		var results = _elm_lang$core$Native_Utils.eq(_p5, '') ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
+			A2(_user$project$Lia_Index_Update$scan, model.index, _p5));
+		return {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Native_Utils.update(
+				model,
+				{search: _p5, results: results}),
+			_1: _elm_lang$core$Platform_Cmd$none
+		};
+	});
+var _user$project$Lia_Index_Update$ScanIndex = function (a) {
+	return {ctor: 'ScanIndex', _0: a};
+};
+
 var _user$project$Lia_Quiz_Update$get = F2(
 	function (idx, model) {
 		var _p0 = A2(_elm_lang$core$Array$get, idx, model);
@@ -13165,8 +13172,8 @@ var _user$project$Lia_Update$ContentsTable = {ctor: 'ContentsTable'};
 var _user$project$Lia_Update$UpdateQuiz = function (a) {
 	return {ctor: 'UpdateQuiz', _0: a};
 };
-var _user$project$Lia_Update$ScanIndex = function (a) {
-	return {ctor: 'ScanIndex', _0: a};
+var _user$project$Lia_Update$UpdateIndex = function (a) {
+	return {ctor: 'UpdateIndex', _0: a};
 };
 var _user$project$Lia_Update$NextSlide = {ctor: 'NextSlide'};
 var _user$project$Lia_Update$PrevSlide = {ctor: 'PrevSlide'};
@@ -13226,15 +13233,14 @@ var _user$project$Lia_Update$update = F2(
 						model = _v8;
 						continue update;
 					}
-				case 'ScanIndex':
-					var _p4 = _p0._0;
-					var results = _elm_lang$core$Native_Utils.eq(_p4, '') ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
-						A2(_user$project$Lia_Index$scan, model.index, _p4));
+				case 'UpdateIndex':
+					var _p4 = A2(_user$project$Lia_Index_Update$update, _p0._0, model.index);
+					var index = _p4._0;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
-							{search: _p4, search_results: results}),
+							{index: index}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				case 'ContentsTable':
@@ -13408,6 +13414,34 @@ var _user$project$Lia_Effect_View$view = F4(
 				}
 			});
 	});
+
+var _user$project$Lia_Index_View$view = function (model) {
+	return A2(
+		_elm_lang$html$Html$input,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$type_('input'),
+			_1: {
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$style(
+					{
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 'margin-bottom', _1: '24px'},
+						_1: {ctor: '[]'}
+					}),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$value(model.search),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$html$Html_Events$onInput(_user$project$Lia_Index_Update$ScanIndex),
+						_1: {ctor: '[]'}
+					}
+				}
+			}
+		},
+		{ctor: '[]'});
+};
 
 var _user$project$Native_Utils = (function () {
 
@@ -14146,41 +14180,23 @@ var _user$project$Lia_View$view_contents = function (model) {
 		return A2(
 			_elm_lang$html$Html$div,
 			{ctor: '[]'},
-			{
-				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$input,
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$type_('input'),
-						_1: {
-							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$style(
-								{
-									ctor: '::',
-									_0: {ctor: '_Tuple2', _0: 'margin-bottom', _1: '24px'},
-									_1: {ctor: '[]'}
-								}),
-							_1: {
-								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$value(model.search),
-								_1: {
-									ctor: '::',
-									_0: _elm_lang$html$Html_Events$onInput(_user$project$Lia_Update$ScanIndex),
-									_1: {ctor: '[]'}
-								}
-							}
-						}
-					},
-					{ctor: '[]'}),
-				_1: h
-			});
+			A2(
+				_elm_lang$core$List$append,
+				{
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$map,
+						_user$project$Lia_Update$UpdateIndex,
+						_user$project$Lia_Index_View$view(model.index)),
+					_1: {ctor: '[]'}
+				},
+				h));
 	}(
 		A2(
 			_elm_lang$core$List$map,
 			f,
 			function (list) {
-				var _p9 = model.search_results;
+				var _p9 = model.index.results;
 				if (_p9.ctor === 'Nothing') {
 					return list;
 				} else {
@@ -14407,7 +14423,7 @@ var _user$project$Lia$parse = function (model) {
 				slides: _p1,
 				error: '',
 				quiz: _user$project$Lia_Quiz_Model$init(_p1),
-				index: _user$project$Lia_Index$create(_p1)
+				index: _user$project$Lia_Index_Model$init(_p1)
 			});
 	} else {
 		return _elm_lang$core$Native_Utils.update(
@@ -14424,10 +14440,21 @@ var _user$project$Lia$set_script = F2(
 var _user$project$Lia$init = F2(
 	function (mode, script) {
 		return _user$project$Lia$parse(
-			_user$project$Lia_Model$Model(script)('')(
-				{ctor: '[]'})(_elm_lang$core$Array$empty)(0)(mode)(
-				A2(_user$project$Lia_Effect_Model$Model, 0, 0))(true)('')(
-				{ctor: '[]'})(_elm_lang$core$Maybe$Nothing));
+			A9(
+				_user$project$Lia_Model$Model,
+				script,
+				'',
+				{ctor: '[]'},
+				_elm_lang$core$Array$empty,
+				0,
+				mode,
+				A2(_user$project$Lia_Effect_Model$Model, 0, 0),
+				true,
+				A3(
+					_user$project$Lia_Index_Model$Model,
+					'',
+					{ctor: '[]'},
+					_elm_lang$core$Maybe$Nothing)));
 	});
 var _user$project$Lia$init_plain = _user$project$Lia$init(_user$project$Lia_Type$Plain);
 var _user$project$Lia$init_slides = _user$project$Lia$init(_user$project$Lia_Type$Slides);

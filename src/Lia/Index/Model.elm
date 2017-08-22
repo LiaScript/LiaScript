@@ -1,22 +1,20 @@
-module Lia.Index exposing (create, scan)
+module Lia.Index.Model exposing (Model, init)
 
 import Lia.Inline.Type exposing (Inline(..), Reference(..))
-import Lia.Quiz.Type exposing (Quiz(..), QuizBlock)
+import Lia.Quiz.Type exposing (Quiz(..))
 import Lia.Type exposing (Block(..), Slide)
-import String
 
 
-create : List Slide -> List String
-create slides =
-    List.map extract_string slides
+type alias Model =
+    { search : String
+    , index : List String
+    , results : Maybe (List Int)
+    }
 
 
-scan : List String -> String -> List Int
-scan index pattern =
-    index
-        |> List.indexedMap (,)
-        |> List.filter (\( _, str ) -> String.contains (String.toLower pattern) str)
-        |> List.map (\( i, _ ) -> i)
+init : List Slide -> Model
+init slides =
+    Model "" (List.map extract_string slides) Nothing
 
 
 extract_string : Slide -> String

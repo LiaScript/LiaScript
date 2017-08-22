@@ -3,10 +3,10 @@ module Lia exposing (..)
 import Array
 import Html exposing (Html)
 import Lia.Effect.Model as Effect
-import Lia.Index
+import Lia.Index.Model as Index
 import Lia.Model
 import Lia.Parser
-import Lia.Quiz.Model
+import Lia.Quiz.Model as Quiz
 import Lia.Type
 import Lia.Update
 import Lia.View
@@ -26,7 +26,7 @@ type alias Mode =
 
 init : Mode -> String -> Model
 init mode script =
-    parse <| Lia.Model.Model script "" [] Array.empty 0 mode (Effect.Model 0 0) True "" [] Nothing
+    parse <| Lia.Model.Model script "" [] Array.empty 0 mode (Effect.Model 0 0) True (Index.Model "" [] Nothing)
 
 
 set_script : Model -> String -> Model
@@ -51,8 +51,8 @@ parse model =
             { model
                 | slides = slides
                 , error = ""
-                , quiz = Lia.Quiz.Model.init slides
-                , index = Lia.Index.create slides
+                , quiz = Quiz.init slides
+                , index = Index.init slides
             }
 
         Err msg ->

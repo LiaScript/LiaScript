@@ -8,6 +8,7 @@ import Html.Lazy exposing (lazy2)
 import Lia.Effect.Model as Effect
 import Lia.Effect.View as Effects
 import Lia.Helper exposing (..)
+import Lia.Index.View
 import Lia.Inline.Type exposing (Inline)
 import Lia.Inline.View as Elem
 import Lia.Model exposing (Model)
@@ -132,7 +133,7 @@ view_contents model =
     model.slides
         |> get_headers
         |> (\list ->
-                case model.search_results of
+                case model.index.results of
                     Nothing ->
                         list
 
@@ -142,14 +143,9 @@ view_contents model =
         |> List.map f
         |> (\h ->
                 Html.div []
-                    (Html.input
-                        [ Attr.type_ "input"
-                        , Attr.style [ ( "margin-bottom", "24px" ) ]
-                        , Attr.value model.search
-                        , onInput ScanIndex
-                        ]
-                        []
-                        :: h
+                    (List.append
+                        [ Html.map UpdateIndex <| Lia.Index.View.view model.index ]
+                        h
                     )
            )
 
