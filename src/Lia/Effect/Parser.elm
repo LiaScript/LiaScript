@@ -11,7 +11,7 @@ eblock : Parser PState Block -> Parser PState Block
 eblock blocks =
     let
         number =
-            regex "( *){{" *> int <* regex "}}( *)[\\n]"
+            regex "( *){{" *> effect_number <* regex "}}( *)[\\n]"
 
         multi_block =
             regex "( *){{" *> manyTill blocks (regex "}}[\\n]?")
@@ -19,21 +19,35 @@ eblock blocks =
         single_block =
             List.singleton <$> blocks
     in
-    EBlock <$> number <*> (multi_block <|> single_block) <* effect_number
+    EBlock <$> number <*> (multi_block <|> single_block)
 
 
 einline : Parser PState Inline -> Parser PState Inline
 einline inlines =
     let
         number =
-            string "{{" *> int <* string "}}"
+            string "{{" *> effect_number <* string "}}"
 
         multi_inline =
             string "{{" *> manyTill inlines (string "}}")
     in
-    EInline <$> number <*> multi_inline <* effect_number
+    EInline <$> number <*> multi_inline
 
 
-effect_number : Parser PState ()
+effect_number : Parser PState Int
 effect_number =
-    modifyState (\s -> { s | effects = s.effects + 1 })
+    let
+        state n =
+            modifyState
+                (\s ->
+                    { s
+                        | effects =
+                            if n > s.effects then
+                                n
+                            else
+                                s.effects
+                    }
+                )
+                *> succeed n
+    in
+    int >>= state

@@ -11563,12 +11563,22 @@ var _user$project$Lia_PState$PState = F4(
 		return {quiz: a, section: b, indentation: c, effects: d};
 	});
 
-var _user$project$Lia_Effect_Parser$effect_number = _elm_community$parser_combinators$Combine$modifyState(
-	function (s) {
-		return _elm_lang$core$Native_Utils.update(
-			s,
-			{effects: s.effects + 1});
-	});
+var _user$project$Lia_Effect_Parser$effect_number = function () {
+	var state = function (n) {
+		return A2(
+			_elm_community$parser_combinators$Combine_ops['*>'],
+			_elm_community$parser_combinators$Combine$modifyState(
+				function (s) {
+					return _elm_lang$core$Native_Utils.update(
+						s,
+						{
+							effects: (_elm_lang$core$Native_Utils.cmp(n, s.effects) > 0) ? n : s.effects
+						});
+				}),
+			_elm_community$parser_combinators$Combine$succeed(n));
+	};
+	return A2(_elm_community$parser_combinators$Combine_ops['>>='], _elm_community$parser_combinators$Combine_Num$int, state);
+}();
 var _user$project$Lia_Effect_Parser$einline = function (inlines) {
 	var multi_inline = A2(
 		_elm_community$parser_combinators$Combine_ops['*>'],
@@ -11582,15 +11592,12 @@ var _user$project$Lia_Effect_Parser$einline = function (inlines) {
 		A2(
 			_elm_community$parser_combinators$Combine_ops['*>'],
 			_elm_community$parser_combinators$Combine$string('{{'),
-			_elm_community$parser_combinators$Combine_Num$int),
+			_user$project$Lia_Effect_Parser$effect_number),
 		_elm_community$parser_combinators$Combine$string('}}'));
 	return A2(
-		_elm_community$parser_combinators$Combine_ops['<*'],
-		A2(
-			_elm_community$parser_combinators$Combine_ops['<*>'],
-			A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Inline_Type$EInline, number),
-			multi_inline),
-		_user$project$Lia_Effect_Parser$effect_number);
+		_elm_community$parser_combinators$Combine_ops['<*>'],
+		A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Inline_Type$EInline, number),
+		multi_inline);
 };
 var _user$project$Lia_Effect_Parser$eblock = function (blocks) {
 	var single_block = A2(_elm_community$parser_combinators$Combine_ops['<$>'], _elm_lang$core$List$singleton, blocks);
@@ -11606,15 +11613,12 @@ var _user$project$Lia_Effect_Parser$eblock = function (blocks) {
 		A2(
 			_elm_community$parser_combinators$Combine_ops['*>'],
 			_elm_community$parser_combinators$Combine$regex('( *){{'),
-			_elm_community$parser_combinators$Combine_Num$int),
+			_user$project$Lia_Effect_Parser$effect_number),
 		_elm_community$parser_combinators$Combine$regex('}}( *)[\\n]'));
 	return A2(
-		_elm_community$parser_combinators$Combine_ops['<*'],
-		A2(
-			_elm_community$parser_combinators$Combine_ops['<*>'],
-			A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Type$EBlock, number),
-			A2(_elm_community$parser_combinators$Combine_ops['<|>'], multi_block, single_block)),
-		_user$project$Lia_Effect_Parser$effect_number);
+		_elm_community$parser_combinators$Combine_ops['<*>'],
+		A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Type$EBlock, number),
+		A2(_elm_community$parser_combinators$Combine_ops['<|>'], multi_block, single_block));
 };
 
 var _user$project$Lia_Inline_Parser$code = A2(
