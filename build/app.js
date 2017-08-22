@@ -12740,6 +12740,32 @@ var _user$project$Lia_Parser$run = function (script) {
 	}
 };
 
+var _user$project$Lia_Effect_Update$update = F2(
+	function (msg, model) {
+		var _p0 = msg;
+		if (_p0.ctor === 'Next') {
+			return _elm_lang$core$Native_Utils.eq(model.visible, model.effects) ? {ctor: '_Tuple2', _0: model, _1: true} : {
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Native_Utils.update(
+					model,
+					{visible: model.visible + 1}),
+				_1: false
+			};
+		} else {
+			return _elm_lang$core$Native_Utils.eq(model.visible, 0) ? {ctor: '_Tuple2', _0: model, _1: true} : {
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Native_Utils.update(
+					model,
+					{visible: model.visible - 1}),
+				_1: false
+			};
+		}
+	});
+var _user$project$Lia_Effect_Update$Previous = {ctor: 'Previous'};
+var _user$project$Lia_Effect_Update$previous = _user$project$Lia_Effect_Update$update(_user$project$Lia_Effect_Update$Previous);
+var _user$project$Lia_Effect_Update$Next = {ctor: 'Next'};
+var _user$project$Lia_Effect_Update$next = _user$project$Lia_Effect_Update$update(_user$project$Lia_Effect_Update$Next);
+
 var _user$project$Lia_Helper$get_slide = F2(
 	function (i, slides) {
 		get_slide:
@@ -13167,56 +13193,48 @@ var _user$project$Lia_Update$update = F2(
 					model = _v2;
 					continue update;
 				case 'PrevSlide':
-					if (_elm_lang$core$Native_Utils.eq(model.effects.visible, 0)) {
-						var _v3 = _user$project$Lia_Update$Load(model.current_slide - 1),
-							_v4 = model;
-						msg = _v3;
-						model = _v4;
-						continue update;
-					} else {
-						var effects = model.effects;
+					var _p2 = _user$project$Lia_Effect_Update$previous(model.effects);
+					if ((_p2.ctor === '_Tuple2') && (_p2._1 === false)) {
 						return {
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
-								{
-									effects: _elm_lang$core$Native_Utils.update(
-										effects,
-										{visible: effects.visible - 1})
-								}),
+								{effects: _p2._0}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
+					} else {
+						var _v4 = _user$project$Lia_Update$Load(model.current_slide - 1),
+							_v5 = model;
+						msg = _v4;
+						model = _v5;
+						continue update;
 					}
 				case 'NextSlide':
-					if (_elm_lang$core$Native_Utils.eq(model.effects.visible, model.effects.effects)) {
-						var _v5 = _user$project$Lia_Update$Load(model.current_slide + 1),
-							_v6 = model;
-						msg = _v5;
-						model = _v6;
-						continue update;
-					} else {
-						var effects = model.effects;
+					var _p3 = _user$project$Lia_Effect_Update$next(model.effects);
+					if ((_p3.ctor === '_Tuple2') && (_p3._1 === false)) {
 						return {
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
-								{
-									effects: _elm_lang$core$Native_Utils.update(
-										effects,
-										{visible: effects.visible + 1})
-								}),
+								{effects: _p3._0}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
+					} else {
+						var _v7 = _user$project$Lia_Update$Load(model.current_slide + 1),
+							_v8 = model;
+						msg = _v7;
+						model = _v8;
+						continue update;
 					}
 				case 'ScanIndex':
-					var _p2 = _p0._0;
-					var results = _elm_lang$core$Native_Utils.eq(_p2, '') ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
-						A2(_user$project$Lia_Index$scan, model.index, _p2));
+					var _p4 = _p0._0;
+					var results = _elm_lang$core$Native_Utils.eq(_p4, '') ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
+						A2(_user$project$Lia_Index$scan, model.index, _p4));
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
-							{search: _p2, search_results: results}),
+							{search: _p4, search_results: results}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				case 'ContentsTable':
@@ -13254,9 +13272,9 @@ var _user$project$Lia_Update$update = F2(
 						};
 					}
 				default:
-					var _p3 = A2(_user$project$Lia_Quiz_Update$update, _p0._0, model.quiz);
-					var quiz = _p3._0;
-					var cmd = _p3._1;
+					var _p5 = A2(_user$project$Lia_Quiz_Update$update, _p0._0, model.quiz);
+					var quiz = _p5._0;
+					var cmd = _p5._1;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
