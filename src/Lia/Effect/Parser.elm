@@ -1,4 +1,6 @@
-module Lia.Effect.Parser exposing (..)
+module Lia.Effect.Parser exposing (eblock, ecomment, einline)
+
+--import Lia.Effect.Types exposing (Comment)
 
 import Combine exposing (..)
 import Combine.Num exposing (int)
@@ -53,10 +55,10 @@ effect_number =
     int >>= state
 
 
-ecomment : Parser PState Block -> Parser PState Block
-ecomment blocks =
+ecomment : Parser PState (List Inline) -> Parser PState Block
+ecomment paragraph =
     let
         number =
-            regex "( *)--{{" *> effect_number <* regex "}}--( *)[\\n]"
+            regex "( *)--{{" *> effect_number <* regex "}}--( *)[\\n]+"
     in
-    EBlock <$> number <*> many1 blocks
+    EComment <$> number <*> paragraph

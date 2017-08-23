@@ -257,4 +257,4 @@ strings =
 
 code : Parser s Inline
 code =
-    Code <$> (string "`" *> regex "[^`]+" <* string "`") <?> "inline code"
+    Code <$> (string "`" *> regex "[^`\\n]+" <* string "`") <?> "inline code"

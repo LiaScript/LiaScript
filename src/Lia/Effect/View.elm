@@ -1,4 +1,6 @@
-module Lia.Effect.View exposing (view, view_block)
+module Lia.Effect.View exposing (comment, view, view_block)
+
+--, view_comment)
 
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -29,6 +31,30 @@ view_block model viewer idx blocks =
             [ circle idx ]
             :: List.map viewer blocks
         )
+
+
+comment : Model -> (inline -> Html msg) -> Int -> List inline -> Html msg
+comment model viewer idx elements =
+    if idx == model.visible then
+        Html.div
+            [ Attr.style
+                [ ( "transition", ".1s ease" )
+                , ( "opacity", "0.6" )
+                , ( "position", "absolute" )
+                , ( "top", "80%" )
+                , ( "left", "50%" )
+                , ( "width", "80%" )
+                , ( "transform", "translate(-50%, -50%)" )
+                , ( "-ms-transform", "translate(-50%, -50%)" )
+                , ( "background-color", "#4CAF50" )
+                , ( "color", "white" )
+                , ( "font-size", "16px" )
+                , ( "padding", "16px 32px" )
+                ]
+            ]
+            (List.map viewer elements)
+    else
+        Html.div [] []
 
 
 circle : Int -> Html msg

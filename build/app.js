@@ -11213,6 +11213,13 @@ var _user$project$Lia_Types$Slide = F4(
 	});
 var _user$project$Lia_Types$Plain = {ctor: 'Plain'};
 var _user$project$Lia_Types$Slides = {ctor: 'Slides'};
+var _user$project$Lia_Types$MList = function (a) {
+	return {ctor: 'MList', _0: a};
+};
+var _user$project$Lia_Types$EComment = F2(
+	function (a, b) {
+		return {ctor: 'EComment', _0: a, _1: b};
+	});
 var _user$project$Lia_Types$EBlock = F2(
 	function (a, b) {
 		return {ctor: 'EBlock', _0: a, _1: b};
@@ -11234,7 +11241,7 @@ var _user$project$Lia_Types$CodeBlock = F2(
 	function (a, b) {
 		return {ctor: 'CodeBlock', _0: a, _1: b};
 	});
-var _user$project$Lia_Types$HorizontalLine = {ctor: 'HorizontalLine'};
+var _user$project$Lia_Types$HLine = {ctor: 'HLine'};
 var _user$project$Lia_Types$LiaCmd = F2(
 	function (a, b) {
 		return {ctor: 'LiaCmd', _0: a, _1: b};
@@ -11543,18 +11550,18 @@ var _user$project$Lia_Effect_Parser$effect_number = function () {
 	};
 	return A2(_elm_community$parser_combinators$Combine_ops['>>='], _elm_community$parser_combinators$Combine_Num$int, state);
 }();
-var _user$project$Lia_Effect_Parser$ecomment = function (blocks) {
+var _user$project$Lia_Effect_Parser$ecomment = function (paragraph) {
 	var number = A2(
 		_elm_community$parser_combinators$Combine_ops['<*'],
 		A2(
 			_elm_community$parser_combinators$Combine_ops['*>'],
 			_elm_community$parser_combinators$Combine$regex('( *)--{{'),
 			_user$project$Lia_Effect_Parser$effect_number),
-		_elm_community$parser_combinators$Combine$regex('}}--( *)[\\n]'));
+		_elm_community$parser_combinators$Combine$regex('}}--( *)[\\n]+'));
 	return A2(
 		_elm_community$parser_combinators$Combine_ops['<*>'],
-		A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$EBlock, number),
-		_elm_community$parser_combinators$Combine$many1(blocks));
+		A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$EComment, number),
+		paragraph);
 };
 var _user$project$Lia_Effect_Parser$einline = function (inlines) {
 	var multi_inline = A2(
@@ -11608,7 +11615,7 @@ var _user$project$Lia_Inline_Parser$code = A2(
 			A2(
 				_elm_community$parser_combinators$Combine_ops['*>'],
 				_elm_community$parser_combinators$Combine$string('`'),
-				_elm_community$parser_combinators$Combine$regex('[^`]+')),
+				_elm_community$parser_combinators$Combine$regex('[^`\\n]+')),
 			_elm_community$parser_combinators$Combine$string('`')),
 		'inline code'));
 var _user$project$Lia_Inline_Parser$smileys = _elm_community$parser_combinators$Combine$lazy(
@@ -12608,9 +12615,8 @@ var _user$project$Lia_Parser$table = function () {
 var _user$project$Lia_Parser$paragraph = A2(
 	_elm_community$parser_combinators$Combine_ops['<$>'],
 	function (l) {
-		return _user$project$Lia_Types$Paragraph(
-			_user$project$Lia_Inline_Parser$combine(
-				_elm_lang$core$List$concat(l)));
+		return _user$project$Lia_Inline_Parser$combine(
+			_elm_lang$core$List$concat(l));
 	},
 	_elm_community$parser_combinators$Combine$many(
 		A2(
@@ -12619,7 +12625,7 @@ var _user$project$Lia_Parser$paragraph = A2(
 			_user$project$Lia_Inline_Parser$newline)));
 var _user$project$Lia_Parser$horizontal_line = A2(
 	_elm_community$parser_combinators$Combine_ops['<$'],
-	_user$project$Lia_Types$HorizontalLine,
+	_user$project$Lia_Types$HLine,
 	_elm_community$parser_combinators$Combine$regex('--[\\-]+'));
 var _user$project$Lia_Parser$blocks = _elm_community$parser_combinators$Combine$lazy(
 	function (_p0) {
@@ -12630,23 +12636,27 @@ var _user$project$Lia_Parser$blocks = _elm_community$parser_combinators$Combine$
 				_0: _user$project$Lia_Effect_Parser$eblock(_user$project$Lia_Parser$blocks),
 				_1: {
 					ctor: '::',
-					_0: _user$project$Lia_Parser$table,
+					_0: _user$project$Lia_Effect_Parser$ecomment(_user$project$Lia_Parser$paragraph),
 					_1: {
 						ctor: '::',
-						_0: _user$project$Lia_Parser$code_block,
+						_0: _user$project$Lia_Parser$table,
 						_1: {
 							ctor: '::',
-							_0: _user$project$Lia_Parser$quote_block,
+							_0: _user$project$Lia_Parser$code_block,
 							_1: {
 								ctor: '::',
-								_0: _user$project$Lia_Parser$horizontal_line,
+								_0: _user$project$Lia_Parser$quote_block,
 								_1: {
 									ctor: '::',
-									_0: A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$Quiz, _user$project$Lia_Quiz_Parser$quiz),
+									_0: _user$project$Lia_Parser$horizontal_line,
 									_1: {
 										ctor: '::',
-										_0: _user$project$Lia_Parser$paragraph,
-										_1: {ctor: '[]'}
+										_0: A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$Quiz, _user$project$Lia_Quiz_Parser$quiz),
+										_1: {
+											ctor: '::',
+											_0: A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$Paragraph, _user$project$Lia_Parser$paragraph),
+											_1: {ctor: '[]'}
+										}
 									}
 								}
 							}
@@ -12659,6 +12669,37 @@ var _user$project$Lia_Parser$blocks = _elm_community$parser_combinators$Combine$
 			A2(_elm_community$parser_combinators$Combine_ops['*>'], _user$project$Lia_Inline_Parser$comments, b),
 			_user$project$Lia_Inline_Parser$newlines);
 	});
+var _user$project$Lia_Parser$list = function () {
+	var state = function (i) {
+		return A2(
+			_elm_community$parser_combinators$Combine_ops['*>'],
+			_elm_community$parser_combinators$Combine$modifyState(
+				function (s) {
+					return _elm_lang$core$Native_Utils.update(
+						s,
+						{
+							indentation: (_elm_lang$core$Native_Utils.cmp(
+								i,
+								A2(
+									_elm_lang$core$Maybe$withDefault,
+									0,
+									_elm_lang$core$List$head(s.indentation))) > 0) ? {ctor: '::', _0: i, _1: s.indentation} : s.indentation
+						});
+				}),
+			_elm_community$parser_combinators$Combine$succeed(
+				{ctor: '_Tuple0'}));
+	};
+	var identation = A2(
+		_elm_community$parser_combinators$Combine_ops['<$>'],
+		_elm_lang$core$String$length,
+		_elm_community$parser_combinators$Combine$regex('( *)\\*( )'));
+	var rows = _elm_community$parser_combinators$Combine$many1(
+		A2(
+			_elm_community$parser_combinators$Combine_ops['*>'],
+			A2(_elm_community$parser_combinators$Combine_ops['>>='], identation, state),
+			_user$project$Lia_Parser$blocks));
+	return A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$MList, rows);
+}();
 var _user$project$Lia_Parser$parse = function () {
 	var effect_counter = function () {
 		var reset_effect = function (c) {
@@ -13361,6 +13402,69 @@ var _user$project$Lia_Effect_View$circle = function ($int) {
 			_1: {ctor: '[]'}
 		});
 };
+var _user$project$Lia_Effect_View$comment = F4(
+	function (model, viewer, idx, elements) {
+		return _elm_lang$core$Native_Utils.eq(idx, model.visible) ? A2(
+			_elm_lang$html$Html$div,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$style(
+					{
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 'transition', _1: '.1s ease'},
+						_1: {
+							ctor: '::',
+							_0: {ctor: '_Tuple2', _0: 'opacity', _1: '0.6'},
+							_1: {
+								ctor: '::',
+								_0: {ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
+								_1: {
+									ctor: '::',
+									_0: {ctor: '_Tuple2', _0: 'top', _1: '80%'},
+									_1: {
+										ctor: '::',
+										_0: {ctor: '_Tuple2', _0: 'left', _1: '50%'},
+										_1: {
+											ctor: '::',
+											_0: {ctor: '_Tuple2', _0: 'width', _1: '80%'},
+											_1: {
+												ctor: '::',
+												_0: {ctor: '_Tuple2', _0: 'transform', _1: 'translate(-50%, -50%)'},
+												_1: {
+													ctor: '::',
+													_0: {ctor: '_Tuple2', _0: '-ms-transform', _1: 'translate(-50%, -50%)'},
+													_1: {
+														ctor: '::',
+														_0: {ctor: '_Tuple2', _0: 'background-color', _1: '#4CAF50'},
+														_1: {
+															ctor: '::',
+															_0: {ctor: '_Tuple2', _0: 'color', _1: 'white'},
+															_1: {
+																ctor: '::',
+																_0: {ctor: '_Tuple2', _0: 'font-size', _1: '16px'},
+																_1: {
+																	ctor: '::',
+																	_0: {ctor: '_Tuple2', _0: 'padding', _1: '16px 32px'},
+																	_1: {ctor: '[]'}
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}),
+				_1: {ctor: '[]'}
+			},
+			A2(_elm_lang$core$List$map, viewer, elements)) : A2(
+			_elm_lang$html$Html$div,
+			{ctor: '[]'},
+			{ctor: '[]'});
+	});
 var _user$project$Lia_Effect_View$view_block = F4(
 	function (model, viewer, idx, blocks) {
 		return A2(
@@ -14000,7 +14104,7 @@ var _user$project$Lia_View$view_block = F2(
 							return A2(_user$project$Lia_Inline_View$view, model.effects.visible, e);
 						},
 						_p3._0));
-			case 'HorizontalLine':
+			case 'HLine':
 				return A2(
 					_elm_lang$html$Html$hr,
 					{ctor: '[]'},
@@ -14043,13 +14147,41 @@ var _user$project$Lia_View$view_block = F2(
 					_elm_lang$html$Html$map,
 					_user$project$Lia_Update$UpdateQuiz,
 					A2(_user$project$Lia_Quiz_View$view, model.quiz, _p3._0));
-			default:
+			case 'EBlock':
 				return A4(
 					_user$project$Lia_Effect_View$view_block,
 					model.effects,
 					_user$project$Lia_View$view_block(model),
 					_p3._0,
 					_p3._1);
+			case 'MList':
+				return A2(
+					_elm_lang$html$Html$div,
+					{ctor: '[]'},
+					A2(
+						_elm_lang$core$List$map,
+						function (l) {
+							return A2(
+								_elm_lang$html$Html$li,
+								{ctor: '[]'},
+								{
+									ctor: '::',
+									_0: A2(_user$project$Lia_View$view_block, model, l),
+									_1: {ctor: '[]'}
+								});
+						},
+						_p3._0));
+			default:
+				return A4(
+					_user$project$Lia_Effect_View$comment,
+					model.effects,
+					_user$project$Lia_View$view_block(model),
+					_p3._0,
+					{
+						ctor: '::',
+						_0: _user$project$Lia_Types$Paragraph(_p3._1),
+						_1: {ctor: '[]'}
+					});
 		}
 	});
 var _user$project$Lia_View$view_body = F2(
@@ -14436,7 +14568,9 @@ var _user$project$Lia$parse = function (model) {
 				slides: _p1,
 				error: '',
 				quiz: _user$project$Lia_Quiz_Model$init(_p1),
-				index: _user$project$Lia_Index_Model$init(_p1)
+				index: _user$project$Lia_Index_Model$init(_p1),
+				effects: _user$project$Lia_Effect_Model$init(
+					_elm_lang$core$List$head(_p1))
 			});
 	} else {
 		return _elm_lang$core$Native_Utils.update(
@@ -14472,7 +14606,7 @@ var _user$project$Lia$init = F2(
 var _user$project$Lia$init_plain = _user$project$Lia$init(_user$project$Lia_Types$Plain);
 var _user$project$Lia$init_slides = _user$project$Lia$init(_user$project$Lia_Types$Slides);
 
-var _user$project$Editor$script = '<!--\nComments have to be enclosed by curly braces and can be put everywhere...\nThese can be used to comment single elements, lines, and multi-lines...\n-->\n\n# Main Markdown\n\nParagraphs are separated by newlines ...\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n## Basic Inlines\n\n\\*bold\\* -> *bold*\n\n\\~italic\\~ -> ~italic~\n\n\\^superscript\\^ -> ^superscript^\n\n\\_underline\\_ -> _underline_\n\n\nCombinations are allowed:\n\n\\~\\*bold italic\\*\\~ -> ~*bold italic*~\n\n\\_\\*bold underline\\*\\_ -> _*bold underline*_\n\n\\_\\~italic underline\\~\\_ -> _~italic underline~_\n\n\\_\\~\\*bold italic underline\\*\\~\\_ -> _~*bold italic underline*~_\n\n## Code\n\nCode can be either `inline` or explicit:\n\n``` c\n#include <stdio.h>\n\nvoid main(int) {\n    println(\"%d\\n\", 1234);\n}\n```\n\n``` python\nimport math\n\ndef sqrt(val):\n    return math.sqrt(val)\n```\n\n## Quize\n\n### Single-Choice\n\nDie zwei ist die einzig richtige Antwort\n\n[( )] 1\n[(X)] 2\n[( )] Oder 3\n[[?]] Es gibt nur eine möglichkeit\n[[?]] Nummer 2 ist es\n[[?]] Alles aufgebraucht\n\n### Multiple-Choice\n\nZwei von Vier?\n\n[[ ]] nein\n[[X]] Ja\n[[X]] auch Ja\n[[ ]] auf keinen Fall\n[[?]] Es gibt nur eine möglichkeit\n[[?]] Nummer 2 ist es\n[[?]] Alles aufgebraucht\n\n### Texteingaben\n\nWie sieht Pi aus, bis auf 5 Stellen nach dem Komma?\n\n[[3.14159]]\n\n## effects\n\n                                  {{1}}\nAAA AAA AAA AAA {{3}}{{*test*}} AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\nAAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\nAAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\n\n{{2}}\n{{\n\n![Image](http://package.elm-lang.org/assets/favicon.ico)\n\n[[ ]] nein\n[[X]] Ja\n[[X]] auch Ja\n[[ ]] auf keinen Fall\n\n}}\n                                  {{1}}\nBBB BBB BBB BBB BBB BBB BBB {{3}}{{*test*}} {{3}}{{*test*}} BBB BBB BBB BBB BBB BBB BBB\n\n## References\n\nLinks: [Google](http://www.google.de)\n\nImages:\n\n![Image](http://package.elm-lang.org/assets/favicon.ico)\n\nMovies:\n\n!![Movie](https://www.youtube.com/embed/EDp6UmaA9CM)\n\n## Quotes\n\n> This is a quote ...\n>\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n\n## Formulas\n\nsimple inline formulas $ \\frac{a+b}{\\sum x} * \\int x $\nor larger multiline formulas\n\n$$\n\\frac{a+b}{\\sum x}\n      * \\int x\n$$\n\n\n## Symboles\n\n### Arrows\n\n->, ->>, >->, <-, <-<, <<-, <->, =>, <=, <=>\n\n-->, <--, <-->, ==>, <==, <==>\n\n~>, <~\n\n### Smileys\n\n:-), ;-), :-D, :-O, :-(, :-|, :-/, :-P, :-*, :\'), :\'(\n\n### Escape Chars\n\n\\*, \\~, \\_, \\#\n\n## Tables\n\n| h1   | h2   | h3   |\n|:-----|-----:|------|\n| a    |    b |  c   |\n| aa   |   bb |  cc  |\n| aaa  |  bbb | ccc  |\n| aaaa | bbbb | cccc |\n\n## Enumeration\n\n* bullets\n* xxx\n  xxx\n\n## Html\n\nThis is normal Markdown ...\n<b id=\"test\" style=\"background-color:blue;color:red\">\nThis is a bold and colored html...\n</b> that can be used inline or <br> <br> everywhere\n\n<img src=\"http://package.elm-lang.org/assets/favicon.ico\">\n\ns\n\n\n## Misc\n\nhorizontal line\n\n---\n\nxxx\n\n\n';
+var _user$project$Editor$script = '<!--\nComments have to be enclosed by curly braces and can be put everywhere...\nThese can be used to comment single elements, lines, and multi-lines...\n-->\n\n# Main Markdown\n\nParagraphs are separated by newlines ...\n\n* XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n* XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n* XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n--{{1}}--\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n                         --{{2}}--\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n\n## Basic Inlines\n\n\\*bold\\* -> *bold*\n\n\\~italic\\~ -> ~italic~\n\n\\^superscript\\^ -> ^superscript^\n\n\\_underline\\_ -> _underline_\n\n\nCombinations are allowed:\n\n\\~\\*bold italic\\*\\~ -> ~*bold italic*~\n\n\\_\\*bold underline\\*\\_ -> _*bold underline*_\n\n\\_\\~italic underline\\~\\_ -> _~italic underline~_\n\n\\_\\~\\*bold italic underline\\*\\~\\_ -> _~*bold italic underline*~_\n\n## Code\n\nCode can be either `inline` or explicit:\n\n``` c\n#include <stdio.h>\n\nvoid main(int) {\n    println(\"%d\\n\", 1234);\n}\n```\n\n``` python\nimport math\n\ndef sqrt(val):\n    return math.sqrt(val)\n```\n\n## Quize\n\n### Single-Choice\n\nDie zwei ist die einzig richtige Antwort\n\n[( )] 1\n[(X)] 2\n[( )] Oder 3\n[[?]] Es gibt nur eine möglichkeit\n[[?]] Nummer 2 ist es\n[[?]] Alles aufgebraucht\n\n### Multiple-Choice\n\nZwei von Vier?\n\n[[ ]] nein\n[[X]] Ja\n[[X]] auch Ja\n[[ ]] auf keinen Fall\n[[?]] Es gibt nur eine möglichkeit\n[[?]] Nummer 2 ist es\n[[?]] Alles aufgebraucht\n\n### Texteingaben\n\nWie sieht Pi aus, bis auf 5 Stellen nach dem Komma?\n\n[[3.14159]]\n\n## effects\n\n                                  {{1}}\nAAA AAA AAA AAA {{3}}{{*test*}} AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\nAAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\nAAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\n\n{{2}}\n{{\n\n![Image](http://package.elm-lang.org/assets/favicon.ico)\n\n[[ ]] nein\n[[X]] Ja\n[[X]] auch Ja\n[[ ]] auf keinen Fall\n\n}}\n                                  {{1}}\nBBB BBB BBB BBB BBB BBB BBB {{3}}{{*test*}} {{3}}{{*test*}} BBB BBB BBB BBB BBB BBB BBB\n\n## References\n\nLinks: [Google](http://www.google.de)\n\nImages:\n\n![Image](http://package.elm-lang.org/assets/favicon.ico)\n\nMovies:\n\n!![Movie](https://www.youtube.com/embed/EDp6UmaA9CM)\n\n## Quotes\n\n> This is a quote ...\n>\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n\n## Formulas\n\nsimple inline formulas $ \\frac{a+b}{\\sum x} * \\int x $\nor larger multiline formulas\n\n$$\n\\frac{a+b}{\\sum x}\n      * \\int x\n$$\n\n\n## Symboles\n\n### Arrows\n\n->, ->>, >->, <-, <-<, <<-, <->, =>, <=, <=>\n\n-->, <--, <-->, ==>, <==, <==>\n\n~>, <~\n\n### Smileys\n\n:-), ;-), :-D, :-O, :-(, :-|, :-/, :-P, :-*, :\'), :\'(\n\n### Escape Chars\n\n\\*, \\~, \\_, \\#\n\n## Tables\n\n| h1   | h2   | h3   |\n|:-----|-----:|------|\n| a    |    b |  c   |\n| aa   |   bb |  cc  |\n| aaa  |  bbb | ccc  |\n| aaaa | bbbb | cccc |\n\n## Enumeration\n\n* bullets\n* xxx\n  xxx\n\n## Html\n\nThis is normal Markdown ...\n<b id=\"test\" style=\"background-color:blue;color:red\">\nThis is a bold and colored html...\n</b> that can be used inline or <br> <br> everywhere\n\n<img src=\"http://package.elm-lang.org/assets/favicon.ico\">\n\ns\n\n\n## Misc\n\nhorizontal line\n\n---\n\nxxx\n\n\n';
 var _user$project$Editor$update = F2(
 	function (msg, model) {
 		var _p0 = msg;

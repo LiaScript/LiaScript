@@ -1,4 +1,4 @@
-module Lia.Types exposing (Block(..), Mode(..), Slide)
+module Lia.Types exposing (Block(..), Mode(..), Paragraph, Slide)
 
 import Lia.Inline.Types exposing (..)
 import Lia.Quiz.Types exposing (QuizBlock)
@@ -17,14 +17,20 @@ type alias Slide =
     }
 
 
+type alias Paragraph =
+    List Inline
+
+
 type Block
-    = HorizontalLine
+    = HLine
     | CodeBlock String String
-    | Quote (List Inline)
-    | Paragraph (List Inline)
-    | Table (List (List Inline)) (List String) (List (List (List Inline)))
+    | Quote Paragraph
+    | Paragraph Paragraph
+    | Table (List Paragraph) (List String) (List (List Paragraph))
     | Quiz QuizBlock
     | EBlock Int (List Block)
+    | EComment Int Paragraph
+    | MList (List Block)
 
 
 

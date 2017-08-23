@@ -153,6 +153,7 @@ view_contents model =
 view_slide : Model -> Slide -> Html Msg
 view_slide model slide =
     Html.div []
+        --Attr.class "lia", Attr.class "section" ]
         (view_header slide.indentation slide.title
             :: view_body model slide.body
         )
@@ -195,7 +196,7 @@ view_block model block =
         Paragraph elements ->
             Html.p [] (List.map (\e -> Elem.view model.effects.visible e) elements)
 
-        HorizontalLine ->
+        HLine ->
             Html.hr [] []
 
         Table header format body ->
@@ -212,6 +213,16 @@ view_block model block =
 
         EBlock idx sub_blocks ->
             Effects.view_block model.effects (view_block model) idx sub_blocks
+
+        MList list ->
+            Html.div []
+                (List.map
+                    (\l -> Html.li [] [ view_block model l ])
+                    list
+                )
+
+        EComment idx comment ->
+            Effects.comment model.effects (view_block model) idx [ Paragraph comment ]
 
 
 view_table : Model -> List (List Inline) -> Array String -> List (List (List Inline)) -> Html Msg

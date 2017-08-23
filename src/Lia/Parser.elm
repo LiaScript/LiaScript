@@ -18,6 +18,7 @@ blocks =
                 b =
                     choice
                         [ eblock blocks
+                        , ecomment paragraph
                         , table
                         , code_block
                         , quote_block
@@ -25,20 +26,45 @@ blocks =
                         , Quiz <$> quiz
 
                         --  , list
-                        , paragraph
+                        , Paragraph <$> paragraph
                         ]
             in
             comments *> b <* newlines
 
 
-horizontal_line : Parser s Block
+list : Parser PState Block
+list =
+    let
+        identation =
+            String.length <$> regex "( *)\\*( )"
+
+        state i =
+            modifyState
+                (\s ->
+                    { s
+                        | indentation =
+                            if i > Maybe.withDefault 0 (List.head s.indentation) then
+                                i :: s.indentation
+                            else
+                                s.indentation
+                    }
+                )
+                *> succeed ()
+
+        rows =
+            many1 ((identation >>= state) *> blocks)
+    in
+    MList <$> rows
+
+
+horizontal_line : Parser PState Block
 horizontal_line =
-    HorizontalLine <$ regex "--[\\-]+"
+    HLine <$ regex "--[\\-]+"
 
 
-paragraph : Parser PState Block
+paragraph : Parser PState Paragraph
 paragraph =
-    (\l -> Paragraph <| combine <| List.concat l) <$> many (spaces *> line <* newline)
+    (\l -> combine <| List.concat l) <$> many (spaces *> line <* newline)
 
 
 table : Parser PState Block
@@ -71,7 +97,7 @@ table =
     choice [ format_table, simple_table ]
 
 
-code_block : Parser s Block
+code_block : Parser PState Block
 code_block =
     let
         lang =

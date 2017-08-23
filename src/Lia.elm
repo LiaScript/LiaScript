@@ -53,6 +53,7 @@ parse model =
                 , error = ""
                 , quiz = Quiz.init slides
                 , index = Index.init slides
+                , effects = Effect.init <| List.head slides
             }
 
         Err msg ->
