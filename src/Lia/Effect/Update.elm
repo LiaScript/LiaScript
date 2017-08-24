@@ -1,11 +1,12 @@
-module Lia.Effect.Update exposing (Msg(..), next, previous, update)
+module Lia.Effect.Update exposing (Msg(..), init, next, previous, update)
 
 import Lia.Effect.Model exposing (Model, Status(..), get_comment)
 import Tts.Tts as Tts
 
 
 type Msg
-    = Next
+    = Init
+    | Next
     | Previous
     | Speak
     | TTS (Result String Never)
@@ -15,9 +16,17 @@ update : Msg -> Model -> ( Model, Cmd Msg, Bool )
 update msg model =
     let
         stop_talking model =
-            ( { model | status = Silent }, Cmd.none, Tts.shut_up True )
+            case model.status of
+                Speaking ->
+                    ( { model | status = Silent }, Cmd.none, Tts.shut_up True )
+
+                _ ->
+                    ( model, Cmd.none, True )
     in
     case msg of
+        Init ->
+            update Speak model
+
         Next ->
             if model.visible == model.effects then
                 stop_talking model
@@ -43,6 +52,11 @@ update msg model =
 
         TTS (Result.Err m) ->
             ( { model | status = Error m }, Cmd.none, False )
+
+
+init : Model -> ( Model, Cmd Msg, Bool )
+init =
+    update Init
 
 
 next : Model -> ( Model, Cmd Msg, Bool )

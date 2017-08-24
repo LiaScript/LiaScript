@@ -22,12 +22,17 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Load int ->
-            --( { model | slide = int }, Cmd.none )
+            let
+                ( effects, cmd, _ ) =
+                    get_slide int model.slides
+                        |> EffectModel.init
+                        |> Effect.init
+            in
             ( { model
                 | current_slide = int
-                , effects = EffectModel.init <| get_slide int model.slides
+                , effects = effects
               }
-            , Cmd.none
+            , Cmd.map UpdateEffect cmd
             )
 
         PrevSlide ->

@@ -13016,44 +13016,55 @@ var _user$project$Lia_Effect_Update$update = F2(
 		update:
 		while (true) {
 			var stop_talking = function (model) {
-				return {
-					ctor: '_Tuple3',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{status: _user$project$Lia_Effect_Model$Silent}),
-					_1: _elm_lang$core$Platform_Cmd$none,
-					_2: _user$project$Tts_Tts$shut_up(true)
-				};
+				var _p0 = model.status;
+				if (_p0.ctor === 'Speaking') {
+					return {
+						ctor: '_Tuple3',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{status: _user$project$Lia_Effect_Model$Silent}),
+						_1: _elm_lang$core$Platform_Cmd$none,
+						_2: _user$project$Tts_Tts$shut_up(true)
+					};
+				} else {
+					return {ctor: '_Tuple3', _0: model, _1: _elm_lang$core$Platform_Cmd$none, _2: true};
+				}
 			};
-			var _p0 = msg;
-			switch (_p0.ctor) {
+			var _p1 = msg;
+			switch (_p1.ctor) {
+				case 'Init':
+					var _v2 = _user$project$Lia_Effect_Update$Speak,
+						_v3 = model;
+					msg = _v2;
+					model = _v3;
+					continue update;
 				case 'Next':
 					if (_elm_lang$core$Native_Utils.eq(model.visible, model.effects)) {
 						return stop_talking(model);
 					} else {
-						var _v1 = _user$project$Lia_Effect_Update$Speak,
-							_v2 = _elm_lang$core$Native_Utils.update(
+						var _v4 = _user$project$Lia_Effect_Update$Speak,
+							_v5 = _elm_lang$core$Native_Utils.update(
 							model,
 							{visible: model.visible + 1});
-						msg = _v1;
-						model = _v2;
+						msg = _v4;
+						model = _v5;
 						continue update;
 					}
 				case 'Previous':
 					if (_elm_lang$core$Native_Utils.eq(model.visible, 0)) {
 						return stop_talking(model);
 					} else {
-						var _v3 = _user$project$Lia_Effect_Update$Speak,
-							_v4 = _elm_lang$core$Native_Utils.update(
+						var _v6 = _user$project$Lia_Effect_Update$Speak,
+							_v7 = _elm_lang$core$Native_Utils.update(
 							model,
 							{visible: model.visible - 1});
-						msg = _v3;
-						model = _v4;
+						msg = _v6;
+						model = _v7;
 						continue update;
 					}
 				case 'Speak':
-					var _p1 = _user$project$Lia_Effect_Model$get_comment(model);
-					if (_p1.ctor === 'Just') {
+					var _p2 = _user$project$Lia_Effect_Model$get_comment(model);
+					if (_p2.ctor === 'Just') {
 						return {
 							ctor: '_Tuple3',
 							_0: _elm_lang$core$Native_Utils.update(
@@ -13064,14 +13075,14 @@ var _user$project$Lia_Effect_Update$update = F2(
 								_user$project$Lia_Effect_Update$TTS,
 								_elm_lang$core$Maybe$Just('sabrina'),
 								'en_US',
-								_p1._0),
+								_p2._0),
 							_2: false
 						};
 					} else {
 						return {ctor: '_Tuple3', _0: model, _1: _elm_lang$core$Platform_Cmd$none, _2: false};
 					}
 				default:
-					if (_p0._0.ctor === 'Ok') {
+					if (_p1._0.ctor === 'Ok') {
 						return {
 							ctor: '_Tuple3',
 							_0: _elm_lang$core$Native_Utils.update(
@@ -13086,7 +13097,7 @@ var _user$project$Lia_Effect_Update$update = F2(
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
 								{
-									status: _user$project$Lia_Effect_Model$Error(_p0._0._0)
+									status: _user$project$Lia_Effect_Model$Error(_p1._0._0)
 								}),
 							_1: _elm_lang$core$Platform_Cmd$none,
 							_2: false
@@ -13099,6 +13110,8 @@ var _user$project$Lia_Effect_Update$Previous = {ctor: 'Previous'};
 var _user$project$Lia_Effect_Update$previous = _user$project$Lia_Effect_Update$update(_user$project$Lia_Effect_Update$Previous);
 var _user$project$Lia_Effect_Update$Next = {ctor: 'Next'};
 var _user$project$Lia_Effect_Update$next = _user$project$Lia_Effect_Update$update(_user$project$Lia_Effect_Update$Next);
+var _user$project$Lia_Effect_Update$Init = {ctor: 'Init'};
+var _user$project$Lia_Effect_Update$init = _user$project$Lia_Effect_Update$update(_user$project$Lia_Effect_Update$Init);
 
 var _user$project$Lia_Helper$get_slide = F2(
 	function (i, slides) {
@@ -13393,37 +13406,21 @@ var _user$project$Lia_Update$update = F2(
 			var _p0 = msg;
 			switch (_p0.ctor) {
 				case 'Load':
-					var _p1 = _p0._0;
+					var _p2 = _p0._0;
+					var _p1 = _user$project$Lia_Effect_Update$init(
+						_user$project$Lia_Effect_Model$init(
+							A2(_user$project$Lia_Helper$get_slide, _p2, model.slides)));
+					var effects = _p1._0;
+					var cmd = _p1._1;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
-							{
-								current_slide: _p1,
-								effects: _user$project$Lia_Effect_Model$init(
-									A2(_user$project$Lia_Helper$get_slide, _p1, model.slides))
-							}),
-						_1: _elm_lang$core$Platform_Cmd$none
+							{current_slide: _p2, effects: effects}),
+						_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Lia_Update$UpdateEffect, cmd)
 					};
 				case 'PrevSlide':
-					var _p2 = _user$project$Lia_Effect_Update$previous(model.effects);
-					if ((_p2.ctor === '_Tuple3') && (_p2._2 === false)) {
-						return {
-							ctor: '_Tuple2',
-							_0: _elm_lang$core$Native_Utils.update(
-								model,
-								{effects: _p2._0}),
-							_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Lia_Update$UpdateEffect, _p2._1)
-						};
-					} else {
-						var _v2 = _user$project$Lia_Update$Load(model.current_slide - 1),
-							_v3 = model;
-						msg = _v2;
-						model = _v3;
-						continue update;
-					}
-				case 'NextSlide':
-					var _p3 = _user$project$Lia_Effect_Update$next(model.effects);
+					var _p3 = _user$project$Lia_Effect_Update$previous(model.effects);
 					if ((_p3.ctor === '_Tuple3') && (_p3._2 === false)) {
 						return {
 							ctor: '_Tuple2',
@@ -13433,6 +13430,23 @@ var _user$project$Lia_Update$update = F2(
 							_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Lia_Update$UpdateEffect, _p3._1)
 						};
 					} else {
+						var _v2 = _user$project$Lia_Update$Load(model.current_slide - 1),
+							_v3 = model;
+						msg = _v2;
+						model = _v3;
+						continue update;
+					}
+				case 'NextSlide':
+					var _p4 = _user$project$Lia_Effect_Update$next(model.effects);
+					if ((_p4.ctor === '_Tuple3') && (_p4._2 === false)) {
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{effects: _p4._0}),
+							_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Lia_Update$UpdateEffect, _p4._1)
+						};
+					} else {
 						var _v5 = _user$project$Lia_Update$Load(model.current_slide + 1),
 							_v6 = model;
 						msg = _v5;
@@ -13440,8 +13454,8 @@ var _user$project$Lia_Update$update = F2(
 						continue update;
 					}
 				case 'UpdateIndex':
-					var _p4 = A2(_user$project$Lia_Index_Update$update, _p0._0, model.index);
-					var index = _p4._0;
+					var _p5 = A2(_user$project$Lia_Index_Update$update, _p0._0, model.index);
+					var index = _p5._0;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -13450,10 +13464,10 @@ var _user$project$Lia_Update$update = F2(
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				case 'UpdateEffect':
-					var _p5 = A2(_user$project$Lia_Effect_Update$update, _p0._0, model.effects);
-					var effects = _p5._0;
-					var cmd = _p5._1;
-					var h = _p5._2;
+					var _p6 = A2(_user$project$Lia_Effect_Update$update, _p0._0, model.effects);
+					var effects = _p6._0;
+					var cmd = _p6._1;
+					var h = _p6._2;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -13470,9 +13484,9 @@ var _user$project$Lia_Update$update = F2(
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				default:
-					var _p6 = A2(_user$project$Lia_Quiz_Update$update, _p0._0, model.quiz);
-					var quiz = _p6._0;
-					var cmd = _p6._1;
+					var _p7 = A2(_user$project$Lia_Quiz_Update$update, _p0._0, model.quiz);
+					var quiz = _p7._0;
+					var cmd = _p7._1;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
