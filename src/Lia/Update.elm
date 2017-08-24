@@ -33,7 +33,7 @@ update msg model =
         PrevSlide ->
             case Effect.previous model.effects of
                 ( effects, cmd, False ) ->
-                    ( { model | effects = effects, error = toString cmd }, Cmd.map UpdateEffect cmd )
+                    ( { model | effects = effects }, Cmd.map UpdateEffect cmd )
 
                 _ ->
                     update (Load (model.current_slide - 1)) model
@@ -41,7 +41,7 @@ update msg model =
         NextSlide ->
             case Effect.next model.effects of
                 ( effects, cmd, False ) ->
-                    ( { model | effects = effects, error = toString cmd }, Cmd.map UpdateEffect cmd )
+                    ( { model | effects = effects }, Cmd.map UpdateEffect cmd )
 
                 _ ->
                     update (Load (model.current_slide + 1)) model
@@ -58,7 +58,7 @@ update msg model =
                 ( effects, cmd, h ) =
                     Effect.update childMsg model.effects
             in
-            ( { model | effects = effects, error = toString cmd }, Cmd.map UpdateEffect cmd )
+            ( { model | effects = effects }, Cmd.map UpdateEffect cmd )
 
         ToggleContentsTable ->
             ( { model | contents = not model.contents }, Cmd.none )

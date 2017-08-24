@@ -32,7 +32,7 @@ view_plain : Model -> Html Msg
 view_plain model =
     let
         f =
-            view_slide { model | effects = Effect.Model 999 999 }
+            view_slide { model | effects = Effect.init_silent }
     in
     Html.div
         [ Attr.style

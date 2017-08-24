@@ -1,13 +1,13 @@
 module Lia.Effect.Update exposing (Msg(..), next, previous, update)
 
-import Lia.Effect.Model exposing (Model)
-import Tts.Tts exposing (speak)
+import Lia.Effect.Model exposing (Model, Status(..), get_comment)
+import Tts.Tts as Tts
 
 
 type Msg
     = Next
     | Previous
-    | Speak String
+    | Speak
     | TTS (Result String Never)
 
 
@@ -18,25 +18,29 @@ update msg model =
             if model.visible == model.effects then
                 ( model, Cmd.none, True )
             else
-                update (Speak "Loading next effect") { model | visible = model.visible + 1 }
+                update Speak { model | visible = model.visible + 1 }
 
         --( { model | visible = model.visible + 1 }, Cmd.none, False )
         Previous ->
             if model.visible == 0 then
                 ( model, Cmd.none, True )
             else
-                update (Speak "Going back to previous one")
-                    { model | visible = model.visible - 1 }
+                update Speak { model | visible = model.visible - 1 }
 
         --( { model | visible = model.visible - 1 }, Cmd.none, False )
-        Speak text ->
-            ( model, speak TTS Nothing "en_US" text, False )
+        Speak ->
+            case get_comment model of
+                Just str ->
+                    ( { model | status = Speaking }, Tts.speak TTS (Just "sabrina") "en_US" str, False )
+
+                Nothing ->
+                    ( model, Cmd.none, False )
 
         TTS (Result.Ok _) ->
-            ( model, Cmd.none, False )
+            ( { model | status = Silent }, Cmd.none, False )
 
         TTS (Result.Err m) ->
-            ( model, Cmd.none, False )
+            ( { model | status = Error m }, Cmd.none, False )
 
 
 next : Model -> ( Model, Cmd Msg, Bool )

@@ -1,4 +1,4 @@
-module Lia.Index.Model exposing (Model, init)
+module Lia.Index.Model exposing (Model, init, parse_inlines)
 
 import Lia.Inline.Types exposing (Inline(..), Reference(..))
 import Lia.Quiz.Types exposing (Quiz(..))
@@ -29,17 +29,12 @@ extract_string slide =
 
 parse_block : Block -> String
 parse_block element =
-    let
-        scan e =
-            List.map parse_inline e
-                |> String.concat
-    in
     case element of
         Paragraph e ->
-            scan e
+            parse_inlines e
 
         Quote e ->
-            scan e
+            parse_inlines e
 
         CodeBlock language code ->
             code

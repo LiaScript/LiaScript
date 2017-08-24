@@ -33,7 +33,7 @@ speak resultToMessage voice lang text =
                 Nothing ->
                     Enc.null
     in
-    Task.perform resultToMessage (Native.Tts.speak v lang text)
+    Task.attempt resultToMessage (Native.Tts.speak v lang text)
 
 
 {-| -}

@@ -11262,19 +11262,6 @@ var _user$project$Lia_Types$LiaBool = function (a) {
 	return {ctor: 'LiaBool', _0: a};
 };
 
-var _user$project$Lia_Effect_Model$Model = F2(
-	function (a, b) {
-		return {visible: a, effects: b};
-	});
-var _user$project$Lia_Effect_Model$init = function (maybe) {
-	var _p0 = maybe;
-	if (_p0.ctor === 'Just') {
-		return A2(_user$project$Lia_Effect_Model$Model, 0, _p0._0.effects);
-	} else {
-		return A2(_user$project$Lia_Effect_Model$Model, 0, 0);
-	}
-};
-
 var _user$project$Lia_Index_Model$parse_inline = function (element) {
 	parse_inline:
 	while (true) {
@@ -11355,16 +11342,12 @@ var _user$project$Lia_Index_Model$parse_quiz = function (quiz) {
 	}
 };
 var _user$project$Lia_Index_Model$parse_block = function (element) {
-	var scan = function (e) {
-		return _elm_lang$core$String$concat(
-			A2(_elm_lang$core$List$map, _user$project$Lia_Index_Model$parse_inline, e));
-	};
 	var _p5 = element;
 	switch (_p5.ctor) {
 		case 'Paragraph':
-			return scan(_p5._0);
+			return _user$project$Lia_Index_Model$parse_inlines(_p5._0);
 		case 'Quote':
-			return scan(_p5._0);
+			return _user$project$Lia_Index_Model$parse_inlines(_p5._0);
 		case 'CodeBlock':
 			return _p5._1;
 		case 'Quiz':
@@ -11400,6 +11383,82 @@ var _user$project$Lia_Index_Model$init = function (slides) {
 		A2(_elm_lang$core$List$map, _user$project$Lia_Index_Model$extract_string, slides),
 		_elm_lang$core$Maybe$Nothing);
 };
+
+var _user$project$Lia_Effect_Model$scan_for_comments = F2(
+	function (effect_count, blocks) {
+		var find = F3(
+			function (comments, idx, _p0) {
+				return A2(
+					_elm_lang$core$Maybe$andThen,
+					function (_p1) {
+						var _p2 = _p1;
+						return _elm_lang$core$Maybe$Just(_p2._1);
+					},
+					_elm_lang$core$List$head(
+						A2(
+							_elm_lang$core$List$filter,
+							function (_p3) {
+								var _p4 = _p3;
+								return _elm_lang$core$Native_Utils.eq(_p4._0, idx);
+							},
+							comments)));
+			});
+		var ecomment = function (block) {
+			var _p5 = block;
+			if (_p5.ctor === 'EComment') {
+				return _elm_lang$core$Maybe$Just(
+					{
+						ctor: '_Tuple2',
+						_0: _p5._0,
+						_1: _user$project$Lia_Index_Model$parse_inlines(_p5._1)
+					});
+			} else {
+				return _elm_lang$core$Maybe$Nothing;
+			}
+		};
+		var _p6 = A2(_elm_lang$core$List$filterMap, ecomment, blocks);
+		if (_p6.ctor === '[]') {
+			return _elm_lang$core$Array$empty;
+		} else {
+			var find_comments = find(_p6);
+			return A2(
+				_elm_lang$core$Array$indexedMap,
+				find_comments,
+				A2(_elm_lang$core$Array$repeat, effect_count + 1, _elm_lang$core$Maybe$Nothing));
+		}
+	});
+var _user$project$Lia_Effect_Model$get_comment = function (model) {
+	return A2(
+		_elm_lang$core$Maybe$andThen,
+		function (a) {
+			return a;
+		},
+		A2(_elm_lang$core$Array$get, model.visible, model.comments));
+};
+var _user$project$Lia_Effect_Model$Model = F4(
+	function (a, b, c, d) {
+		return {visible: a, effects: b, status: c, comments: d};
+	});
+var _user$project$Lia_Effect_Model$Error = function (a) {
+	return {ctor: 'Error', _0: a};
+};
+var _user$project$Lia_Effect_Model$Silent = {ctor: 'Silent'};
+var _user$project$Lia_Effect_Model$init = function (maybe) {
+	var _p7 = maybe;
+	if (_p7.ctor === 'Just') {
+		var _p8 = _p7._0;
+		return A4(
+			_user$project$Lia_Effect_Model$Model,
+			0,
+			_p8.effects,
+			_user$project$Lia_Effect_Model$Silent,
+			A2(_user$project$Lia_Effect_Model$scan_for_comments, _p8.effects, _p8.body));
+	} else {
+		return A4(_user$project$Lia_Effect_Model$Model, 0, 0, _user$project$Lia_Effect_Model$Silent, _elm_lang$core$Array$empty);
+	}
+};
+var _user$project$Lia_Effect_Model$init_silent = A4(_user$project$Lia_Effect_Model$Model, 9999, 9999, _user$project$Lia_Effect_Model$Silent, _elm_lang$core$Array$empty);
+var _user$project$Lia_Effect_Model$Speaking = {ctor: 'Speaking'};
 
 var _user$project$Lia_Quiz_Model$question_state = F3(
 	function (quiz_id, question_id, vector) {
@@ -12910,7 +12969,7 @@ var _user$project$Tts_Tts$speak = F4(
 			}
 		}();
 		return A2(
-			_elm_lang$core$Task$perform,
+			_elm_lang$core$Task$attempt,
 			resultToMessage,
 			A3(_user$project$Native_Tts.speak, v, lang, text));
 	});
@@ -12922,9 +12981,7 @@ var _user$project$Tts_Tts$Recognition = F2(
 var _user$project$Lia_Effect_Update$TTS = function (a) {
 	return {ctor: 'TTS', _0: a};
 };
-var _user$project$Lia_Effect_Update$Speak = function (a) {
-	return {ctor: 'Speak', _0: a};
-};
+var _user$project$Lia_Effect_Update$Speak = {ctor: 'Speak'};
 var _user$project$Lia_Effect_Update$update = F2(
 	function (msg, model) {
 		update:
@@ -12935,7 +12992,7 @@ var _user$project$Lia_Effect_Update$update = F2(
 					if (_elm_lang$core$Native_Utils.eq(model.visible, model.effects)) {
 						return {ctor: '_Tuple3', _0: model, _1: _elm_lang$core$Platform_Cmd$none, _2: true};
 					} else {
-						var _v1 = _user$project$Lia_Effect_Update$Speak('Loading next effect'),
+						var _v1 = _user$project$Lia_Effect_Update$Speak,
 							_v2 = _elm_lang$core$Native_Utils.update(
 							model,
 							{visible: model.visible + 1});
@@ -12947,7 +13004,7 @@ var _user$project$Lia_Effect_Update$update = F2(
 					if (_elm_lang$core$Native_Utils.eq(model.visible, 0)) {
 						return {ctor: '_Tuple3', _0: model, _1: _elm_lang$core$Platform_Cmd$none, _2: true};
 					} else {
-						var _v3 = _user$project$Lia_Effect_Update$Speak('Going back to previous one'),
+						var _v3 = _user$project$Lia_Effect_Update$Speak,
 							_v4 = _elm_lang$core$Native_Utils.update(
 							model,
 							{visible: model.visible - 1});
@@ -12956,17 +13013,45 @@ var _user$project$Lia_Effect_Update$update = F2(
 						continue update;
 					}
 				case 'Speak':
-					return {
-						ctor: '_Tuple3',
-						_0: model,
-						_1: A4(_user$project$Tts_Tts$speak, _user$project$Lia_Effect_Update$TTS, _elm_lang$core$Maybe$Nothing, 'en_US', _p0._0),
-						_2: false
-					};
-				default:
-					if (_p0._0.ctor === 'Ok') {
-						return {ctor: '_Tuple3', _0: model, _1: _elm_lang$core$Platform_Cmd$none, _2: false};
+					var _p1 = _user$project$Lia_Effect_Model$get_comment(model);
+					if (_p1.ctor === 'Just') {
+						return {
+							ctor: '_Tuple3',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{status: _user$project$Lia_Effect_Model$Speaking}),
+							_1: A4(
+								_user$project$Tts_Tts$speak,
+								_user$project$Lia_Effect_Update$TTS,
+								_elm_lang$core$Maybe$Just('sabrina'),
+								'en_US',
+								_p1._0),
+							_2: false
+						};
 					} else {
 						return {ctor: '_Tuple3', _0: model, _1: _elm_lang$core$Platform_Cmd$none, _2: false};
+					}
+				default:
+					if (_p0._0.ctor === 'Ok') {
+						return {
+							ctor: '_Tuple3',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{status: _user$project$Lia_Effect_Model$Silent}),
+							_1: _elm_lang$core$Platform_Cmd$none,
+							_2: false
+						};
+					} else {
+						return {
+							ctor: '_Tuple3',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{
+									status: _user$project$Lia_Effect_Model$Error(_p0._0._0)
+								}),
+							_1: _elm_lang$core$Platform_Cmd$none,
+							_2: false
+						};
 					}
 			}
 		}
@@ -13284,16 +13369,12 @@ var _user$project$Lia_Update$update = F2(
 				case 'PrevSlide':
 					var _p2 = _user$project$Lia_Effect_Update$previous(model.effects);
 					if ((_p2.ctor === '_Tuple3') && (_p2._2 === false)) {
-						var _p3 = _p2._1;
 						return {
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
-								{
-									effects: _p2._0,
-									error: _elm_lang$core$Basics$toString(_p3)
-								}),
-							_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Lia_Update$UpdateEffect, _p3)
+								{effects: _p2._0}),
+							_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Lia_Update$UpdateEffect, _p2._1)
 						};
 					} else {
 						var _v2 = _user$project$Lia_Update$Load(model.current_slide - 1),
@@ -13303,18 +13384,14 @@ var _user$project$Lia_Update$update = F2(
 						continue update;
 					}
 				case 'NextSlide':
-					var _p4 = _user$project$Lia_Effect_Update$next(model.effects);
-					if ((_p4.ctor === '_Tuple3') && (_p4._2 === false)) {
-						var _p5 = _p4._1;
+					var _p3 = _user$project$Lia_Effect_Update$next(model.effects);
+					if ((_p3.ctor === '_Tuple3') && (_p3._2 === false)) {
 						return {
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
-								{
-									effects: _p4._0,
-									error: _elm_lang$core$Basics$toString(_p5)
-								}),
-							_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Lia_Update$UpdateEffect, _p5)
+								{effects: _p3._0}),
+							_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Lia_Update$UpdateEffect, _p3._1)
 						};
 					} else {
 						var _v5 = _user$project$Lia_Update$Load(model.current_slide + 1),
@@ -13324,8 +13401,8 @@ var _user$project$Lia_Update$update = F2(
 						continue update;
 					}
 				case 'UpdateIndex':
-					var _p6 = A2(_user$project$Lia_Index_Update$update, _p0._0, model.index);
-					var index = _p6._0;
+					var _p4 = A2(_user$project$Lia_Index_Update$update, _p0._0, model.index);
+					var index = _p4._0;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -13334,18 +13411,15 @@ var _user$project$Lia_Update$update = F2(
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				case 'UpdateEffect':
-					var _p7 = A2(_user$project$Lia_Effect_Update$update, _p0._0, model.effects);
-					var effects = _p7._0;
-					var cmd = _p7._1;
-					var h = _p7._2;
+					var _p5 = A2(_user$project$Lia_Effect_Update$update, _p0._0, model.effects);
+					var effects = _p5._0;
+					var cmd = _p5._1;
+					var h = _p5._2;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
-							{
-								effects: effects,
-								error: _elm_lang$core$Basics$toString(cmd)
-							}),
+							{effects: effects}),
 						_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Lia_Update$UpdateEffect, cmd)
 					};
 				case 'ToggleContentsTable':
@@ -13357,9 +13431,9 @@ var _user$project$Lia_Update$update = F2(
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				default:
-					var _p8 = A2(_user$project$Lia_Quiz_Update$update, _p0._0, model.quiz);
-					var quiz = _p8._0;
-					var cmd = _p8._1;
+					var _p6 = A2(_user$project$Lia_Quiz_Update$update, _p0._0, model.quiz);
+					var quiz = _p6._0;
+					var cmd = _p6._1;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -14498,9 +14572,7 @@ var _user$project$Lia_View$view_plain = function (model) {
 	var f = _user$project$Lia_View$view_slide(
 		_elm_lang$core$Native_Utils.update(
 			model,
-			{
-				effects: A2(_user$project$Lia_Effect_Model$Model, 999, 999)
-			}));
+			{effects: _user$project$Lia_Effect_Model$init_silent}));
 	return A2(
 		_elm_lang$html$Html$div,
 		{
@@ -14581,18 +14653,22 @@ var _user$project$Lia$init = F2(
 				_elm_lang$core$Array$empty,
 				0,
 				mode,
-				A2(_user$project$Lia_Effect_Model$Model, 0, 0),
+				_user$project$Lia_Effect_Model$init(_elm_lang$core$Maybe$Nothing),
 				true,
-				A3(
-					_user$project$Lia_Index_Model$Model,
-					'',
-					{ctor: '[]'},
-					_elm_lang$core$Maybe$Nothing)));
+				_user$project$Lia_Index_Model$init(
+					{ctor: '[]'})));
 	});
 var _user$project$Lia$init_plain = _user$project$Lia$init(_user$project$Lia_Types$Plain);
 var _user$project$Lia$init_slides = _user$project$Lia$init(_user$project$Lia_Types$Slides);
 
 var _user$project$Editor$script = '<!--\nComments have to be enclosed by curly braces and can be put everywhere...\nThese can be used to comment single elements, lines, and multi-lines...\n-->\n\n# Main Markdown\n\nParagraphs are separated by newlines ...\n\n* XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n* XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n* XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n--{{1}}--\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n                         --{{2}}--\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n\n## Basic Inlines\n\n\\*bold\\* -> *bold*\n\n\\~italic\\~ -> ~italic~\n\n\\^superscript\\^ -> ^superscript^\n\n\\_underline\\_ -> _underline_\n\n\nCombinations are allowed:\n\n\\~\\*bold italic\\*\\~ -> ~*bold italic*~\n\n\\_\\*bold underline\\*\\_ -> _*bold underline*_\n\n\\_\\~italic underline\\~\\_ -> _~italic underline~_\n\n\\_\\~\\*bold italic underline\\*\\~\\_ -> _~*bold italic underline*~_\n\n## Code\n\nCode can be either `inline` or explicit:\n\n``` c\n#include <stdio.h>\n\nvoid main(int) {\n    println(\"%d\\n\", 1234);\n}\n```\n\n``` python\nimport math\n\ndef sqrt(val):\n    return math.sqrt(val)\n```\n\n## Quize\n\n### Single-Choice\n\nDie zwei ist die einzig richtige Antwort\n\n[( )] 1\n[(X)] 2\n[( )] Oder 3\n[[?]] Es gibt nur eine möglichkeit\n[[?]] Nummer 2 ist es\n[[?]] Alles aufgebraucht\n\n### Multiple-Choice\n\nZwei von Vier?\n\n[[ ]] nein\n[[X]] Ja\n[[X]] auch Ja\n[[ ]] auf keinen Fall\n[[?]] Es gibt nur eine möglichkeit\n[[?]] Nummer 2 ist es\n[[?]] Alles aufgebraucht\n\n### Texteingaben\n\nWie sieht Pi aus, bis auf 5 Stellen nach dem Komma?\n\n[[3.14159]]\n\n## effects\n\n                                  {{1}}\nAAA AAA AAA AAA {{3}}{{*test*}} AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\nAAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\nAAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\n\n{{2}}\n{{\n\n![Image](http://package.elm-lang.org/assets/favicon.ico)\n\n[[ ]] nein\n[[X]] Ja\n[[X]] auch Ja\n[[ ]] auf keinen Fall\n\n}}\n                                  {{1}}\nBBB BBB BBB BBB BBB BBB BBB {{3}}{{*test*}} {{3}}{{*test*}} BBB BBB BBB BBB BBB BBB BBB\n\n## References\n\nLinks: [Google](http://www.google.de)\n\nImages:\n\n![Image](http://package.elm-lang.org/assets/favicon.ico)\n\nMovies:\n\n!![Movie](https://www.youtube.com/embed/EDp6UmaA9CM)\n\n## Quotes\n\n> This is a quote ...\n>\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n\n## Formulas\n\nsimple inline formulas $ \\frac{a+b}{\\sum x} * \\int x $\nor larger multiline formulas\n\n$$\n\\frac{a+b}{\\sum x}\n      * \\int x\n$$\n\n\n## Symboles\n\n### Arrows\n\n->, ->>, >->, <-, <-<, <<-, <->, =>, <=, <=>\n\n-->, <--, <-->, ==>, <==, <==>\n\n~>, <~\n\n### Smileys\n\n:-), ;-), :-D, :-O, :-(, :-|, :-/, :-P, :-*, :\'), :\'(\n\n### Escape Chars\n\n\\*, \\~, \\_, \\#\n\n## Tables\n\n| h1   | h2   | h3   |\n|:-----|-----:|------|\n| a    |    b |  c   |\n| aa   |   bb |  cc  |\n| aaa  |  bbb | ccc  |\n| aaaa | bbbb | cccc |\n\n## Enumeration\n\n* bullets\n* xxx\n  xxx\n\n## Html\n\nThis is normal Markdown ...\n<b id=\"test\" style=\"background-color:blue;color:red\">\nThis is a bold and colored html...\n</b> that can be used inline or <br> <br> everywhere\n\n<img src=\"http://package.elm-lang.org/assets/favicon.ico\">\n\ns\n\n\n## Misc\n\nhorizontal line\n\n---\n\nxxx\n\n\n';
+var _user$project$Editor$Model = F3(
+	function (a, b, c) {
+		return {outer: a, inner: b, lia: c};
+	});
+var _user$project$Editor$Child = function (a) {
+	return {ctor: 'Child', _0: a};
+};
 var _user$project$Editor$update = F2(
 	function (msg, model) {
 		var _p0 = msg;
@@ -14627,7 +14703,7 @@ var _user$project$Editor$update = F2(
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{lia: lia}),
-					_1: _elm_lang$core$Platform_Cmd$none
+					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Editor$Child, cmd)
 				};
 			case 'Outer':
 				return A2(
@@ -14649,13 +14725,6 @@ var _user$project$Editor$update = F2(
 					{ctor: '[]'});
 		}
 	});
-var _user$project$Editor$Model = F3(
-	function (a, b, c) {
-		return {outer: a, inner: b, lia: c};
-	});
-var _user$project$Editor$Child = function (a) {
-	return {ctor: 'Child', _0: a};
-};
 var _user$project$Editor$rightView = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,

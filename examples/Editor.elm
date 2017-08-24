@@ -73,7 +73,7 @@ update msg model =
                 ( lia, cmd ) =
                     Lia.update liaMsg model.lia
             in
-            ( { model | lia = lia }, Cmd.none )
+            ( { model | lia = lia }, Cmd.map Child cmd )
 
         Outer m ->
             { model
