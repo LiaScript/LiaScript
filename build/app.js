@@ -14278,37 +14278,24 @@ var _user$project$Lia_View$view_contents = function (model) {
 							_user$project$Lia_Update$Load(_p8)),
 						_1: {
 							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$href(
+							_0: _elm_lang$html$Html_Attributes$class(
 								A2(
-									_elm_lang$core$String$append,
-									'#',
+									_elm_lang$core$Basics_ops['++'],
+									'toc',
 									A2(
-										_elm_lang$core$String$join,
-										'_',
-										A2(_elm_lang$core$String$split, ' ', _p7)))),
+										_elm_lang$core$Basics_ops['++'],
+										_elm_lang$core$Basics$toString(_p6._1._1),
+										_elm_lang$core$Native_Utils.eq(model.current_slide, _p8) ? ' active' : ''))),
 							_1: {
 								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$style(
-									{
-										ctor: '::',
-										_0: {
-											ctor: '_Tuple2',
-											_0: 'padding-left',
-											_1: A2(
-												_elm_lang$core$Basics_ops['++'],
-												_elm_lang$core$Basics$toString((_p6._1._1 - 1) * 20),
-												'px')
-										},
-										_1: {
-											ctor: '::',
-											_0: {
-												ctor: '_Tuple2',
-												_0: 'color',
-												_1: _elm_lang$core$Native_Utils.eq(model.current_slide, _p8) ? '#33f' : '#333'
-											},
-											_1: {ctor: '[]'}
-										}
-									}),
+								_0: _elm_lang$html$Html_Attributes$href(
+									A2(
+										_elm_lang$core$String$append,
+										'#',
+										A2(
+											_elm_lang$core$String$join,
+											'_',
+											A2(_elm_lang$core$String$split, ' ', _p7)))),
 								_1: {ctor: '[]'}
 							}
 						}
@@ -14366,12 +14353,7 @@ var _user$project$Lia_View$view_slides = function (model) {
 					_0: _elm_lang$html$Html_Events$onClick(msg),
 					_1: {
 						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$style(
-							{
-								ctor: '::',
-								_0: {ctor: '_Tuple2', _0: 'width', _1: 'calc(50% - 20px)'},
-								_1: {ctor: '[]'}
-							}),
+						_0: _elm_lang$html$Html_Attributes$class('button_slide'),
 						_1: {ctor: '[]'}
 					}
 				},
@@ -14455,25 +14437,20 @@ var _user$project$Lia_View$view_slides = function (model) {
 				_1: {ctor: '[]'}
 			}
 		});
-	return model.contents ? A2(
+	return A2(
 		_elm_lang$html$Html$div,
-		{ctor: '[]'},
 		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('screen'),
+			_1: {ctor: '[]'}
+		},
+		model.contents ? {
 			ctor: '::',
 			_0: A2(
 				_elm_lang$html$Html$div,
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$style(
-						{
-							ctor: '::',
-							_0: {ctor: '_Tuple2', _0: 'width', _1: '200px'},
-							_1: {
-								ctor: '::',
-								_0: {ctor: '_Tuple2', _0: 'float', _1: 'left'},
-								_1: {ctor: '[]'}
-							}
-						}),
+					_0: _elm_lang$html$Html_Attributes$class('table_of_contents'),
 					_1: {ctor: '[]'}
 				},
 				{
@@ -14483,30 +14460,14 @@ var _user$project$Lia_View$view_slides = function (model) {
 				}),
 			_1: {
 				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$div,
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$style(
-							{
-								ctor: '::',
-								_0: {ctor: '_Tuple2', _0: 'width', _1: 'calc(100% - 200px)'},
-								_1: {
-									ctor: '::',
-									_0: {ctor: '_Tuple2', _0: 'float', _1: 'right'},
-									_1: {ctor: '[]'}
-								}
-							}),
-						_1: {ctor: '[]'}
-					},
-					{
-						ctor: '::',
-						_0: content,
-						_1: {ctor: '[]'}
-					}),
+				_0: content,
 				_1: {ctor: '[]'}
 			}
-		}) : content;
+		} : {
+			ctor: '::',
+			_0: content,
+			_1: {ctor: '[]'}
+		});
 };
 var _user$project$Lia_View$view_plain = function (model) {
 	var f = _user$project$Lia_View$view_slide(
@@ -14678,15 +14639,11 @@ var _user$project$Editor$rightView = function (model) {
 			_0: _elm_lang$html$Html_Attributes$style(
 				{
 					ctor: '::',
-					_0: {ctor: '_Tuple2', _0: 'margin', _1: '10px'},
+					_0: {ctor: '_Tuple2', _0: 'height', _1: '100%'},
 					_1: {
 						ctor: '::',
-						_0: {ctor: '_Tuple2', _0: 'height', _1: 'calc(100% - 24px)'},
-						_1: {
-							ctor: '::',
-							_0: {ctor: '_Tuple2', _0: 'width', _1: 'calc(100% - 12px)'},
-							_1: {ctor: '[]'}
-						}
+						_0: {ctor: '_Tuple2', _0: 'width', _1: '100%'},
+						_1: {ctor: '[]'}
 					}
 				}),
 			_1: {ctor: '[]'}
@@ -14940,10 +14897,10 @@ var _user$project$Editor$view = function (model) {
 			_0: _elm_lang$html$Html_Attributes$style(
 				{
 					ctor: '::',
-					_0: {ctor: '_Tuple2', _0: 'width', _1: '99vw'},
+					_0: {ctor: '_Tuple2', _0: 'width', _1: '100%'},
 					_1: {
 						ctor: '::',
-						_0: {ctor: '_Tuple2', _0: 'height', _1: '97vh'},
+						_0: {ctor: '_Tuple2', _0: 'height', _1: '100%'},
 						_1: {ctor: '[]'}
 					}
 				}),

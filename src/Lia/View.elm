@@ -50,7 +50,7 @@ view_slides model =
         loadButton str msg =
             Html.button
                 [ onClick msg
-                , Attr.style [ ( "width", "calc(50% - 20px)" ) ]
+                , Attr.class "button_slide"
                 ]
                 [ Html.text str ]
 
@@ -80,27 +80,14 @@ view_slides model =
                     ]
                 ]
     in
-    if model.contents then
-        Html.div []
-            [ Html.div
-                [ Attr.style
-                    [ ( "width", "200px" )
-                    , ( "float", "left" )
-                    ]
-                ]
-                [ view_contents model
-                ]
-            , Html.div
-                [ Attr.style
-                    [ ( "width", "calc(100% - 200px)" )
-                    , ( "float", "right" )
-                    ]
-                ]
-                [ content
-                ]
+    Html.div [ Attr.class "screen" ]
+        (if model.contents then
+            [ Html.div [ Attr.class "table_of_contents" ] [ view_contents model ]
+            , content
             ]
-    else
-        content
+         else
+            [ content ]
+        )
 
 
 view_contents : Model -> Html Msg
@@ -110,22 +97,31 @@ view_contents model =
             Html.div []
                 [ Html.a
                     [ onClick (Load n)
+                    , Attr.class
+                        ("toc" ++ toString i
+                            ++ (if model.current_slide == n then
+                                    " active"
+                                else
+                                    ""
+                               )
+                        )
                     , h
                         |> String.split " "
                         |> String.join "_"
                         |> String.append "#"
                         |> Attr.href
-                    , Attr.style
-                        [ ( "padding-left"
-                          , toString ((i - 1) * 20) ++ "px"
-                          )
-                        , ( "color"
-                          , if model.current_slide == n then
-                                "#33f"
-                            else
-                                "#333"
-                          )
-                        ]
+
+                    --Attr.style
+                    --  [ ( "padding-left"
+                    --    , toString ((i - 1) * 20) ++ "px"
+                    --    )
+                    --  , ( "color"
+                    --    , if model.current_slide == n then
+                    --          "#33f"
+                    --      else
+                    --          "#333"
+                    --    )
+                    --  ]
                     ]
                     [ Html.text h ]
                 ]

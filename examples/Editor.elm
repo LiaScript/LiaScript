@@ -96,8 +96,8 @@ view : Model -> Html Msg
 view model =
     Html.div
         [ Attr.style
-            [ ( "width", "99vw" )
-            , ( "height", "97vh" )
+            [ ( "width", "100%" )
+            , ( "height", "100%" )
             ]
         ]
         [ SplitPane.view outerViewConfig (leftView model model.inner) (rightView model) model.outer ]
@@ -107,11 +107,8 @@ rightView : Model -> Html Msg
 rightView model =
     Html.div
         [ Attr.style
-            [ ( "margin", "10px" )
-
-            --, ( "overflow-y", "auto" )
-            , ( "height", "calc(100% - 24px)" )
-            , ( "width", "calc(100% - 12px)" )
+            [ ( "height", "100%" )
+            , ( "width", "100%" )
             ]
         ]
         [ Html.map Child <| Lia.view model.lia ]
