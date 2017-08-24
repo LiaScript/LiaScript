@@ -12823,6 +12823,8 @@ var _user$project$Native_Tts = (function () {
     {
         return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback){
             try {
+                speechSynthesis.cancel();
+
                 var tts = new SpeechSynthesisUtterance(text);
                 tts.lang = lang;
                 for(var i=0; i<speechSynthesis.getVoices().length; i++) {
@@ -12850,6 +12852,23 @@ var _user$project$Native_Tts = (function () {
                 callback(_elm_lang$core$Native_Scheduler.fail(e.message));
             }
         })
+    };
+
+    function shut_up () {
+        try {
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+            }
+            return {
+                ctor: "Ok",
+                _0: null
+            };
+        } catch (e) {
+            return {
+                ctor: "Err",
+                _0: e.message
+            };
+        }
     };
 
     function listen (continuous, interimResults, lang) {
@@ -12930,6 +12949,7 @@ var _user$project$Native_Tts = (function () {
         speak: F3(speak),
         listen: F3(listen),
         voices: voices,
+        shut_up: shut_up,
         languages: languages
     };
 })();
@@ -12951,6 +12971,8 @@ var _user$project$Tts_Tts$languages = _user$project$Tts_Tts$decode_string_list(
 var _user$project$Tts_Tts$voices = _user$project$Tts_Tts$decode_string_list(
 	_user$project$Native_Tts.voices(
 		{ctor: '_Tuple0'}));
+var _user$project$Tts_Tts$shut_up = _user$project$Native_Tts.shut_up(
+	{ctor: '_Tuple0'});
 var _user$project$Tts_Tts$listen = F4(
 	function (resultToMessage, continous, interimResults, lang) {
 		return A2(
@@ -13013,6 +13035,7 @@ var _user$project$Lia_Effect_Update$update = F2(
 						continue update;
 					}
 				case 'Speak':
+					var x = _user$project$Tts_Tts$shut_up;
 					var _p1 = _user$project$Lia_Effect_Model$get_comment(model);
 					if (_p1.ctor === 'Just') {
 						return {
@@ -14661,7 +14684,7 @@ var _user$project$Lia$init = F2(
 var _user$project$Lia$init_plain = _user$project$Lia$init(_user$project$Lia_Types$Plain);
 var _user$project$Lia$init_slides = _user$project$Lia$init(_user$project$Lia_Types$Slides);
 
-var _user$project$Editor$script = '<!--\nComments have to be enclosed by curly braces and can be put everywhere...\nThese can be used to comment single elements, lines, and multi-lines...\n-->\n\n# Main Markdown\n\nParagraphs are separated by newlines ...\n\n* XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n* XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n* XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n--{{1}}--\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n                         --{{2}}--\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n\n## Basic Inlines\n\n\\*bold\\* -> *bold*\n\n\\~italic\\~ -> ~italic~\n\n\\^superscript\\^ -> ^superscript^\n\n\\_underline\\_ -> _underline_\n\n\nCombinations are allowed:\n\n\\~\\*bold italic\\*\\~ -> ~*bold italic*~\n\n\\_\\*bold underline\\*\\_ -> _*bold underline*_\n\n\\_\\~italic underline\\~\\_ -> _~italic underline~_\n\n\\_\\~\\*bold italic underline\\*\\~\\_ -> _~*bold italic underline*~_\n\n## Code\n\nCode can be either `inline` or explicit:\n\n``` c\n#include <stdio.h>\n\nvoid main(int) {\n    println(\"%d\\n\", 1234);\n}\n```\n\n``` python\nimport math\n\ndef sqrt(val):\n    return math.sqrt(val)\n```\n\n## Quize\n\n### Single-Choice\n\nDie zwei ist die einzig richtige Antwort\n\n[( )] 1\n[(X)] 2\n[( )] Oder 3\n[[?]] Es gibt nur eine möglichkeit\n[[?]] Nummer 2 ist es\n[[?]] Alles aufgebraucht\n\n### Multiple-Choice\n\nZwei von Vier?\n\n[[ ]] nein\n[[X]] Ja\n[[X]] auch Ja\n[[ ]] auf keinen Fall\n[[?]] Es gibt nur eine möglichkeit\n[[?]] Nummer 2 ist es\n[[?]] Alles aufgebraucht\n\n### Texteingaben\n\nWie sieht Pi aus, bis auf 5 Stellen nach dem Komma?\n\n[[3.14159]]\n\n## effects\n\n                                  {{1}}\nAAA AAA AAA AAA {{3}}{{*test*}} AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\nAAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\nAAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\n\n{{2}}\n{{\n\n![Image](http://package.elm-lang.org/assets/favicon.ico)\n\n[[ ]] nein\n[[X]] Ja\n[[X]] auch Ja\n[[ ]] auf keinen Fall\n\n}}\n                                  {{1}}\nBBB BBB BBB BBB BBB BBB BBB {{3}}{{*test*}} {{3}}{{*test*}} BBB BBB BBB BBB BBB BBB BBB\n\n## References\n\nLinks: [Google](http://www.google.de)\n\nImages:\n\n![Image](http://package.elm-lang.org/assets/favicon.ico)\n\nMovies:\n\n!![Movie](https://www.youtube.com/embed/EDp6UmaA9CM)\n\n## Quotes\n\n> This is a quote ...\n>\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n\n## Formulas\n\nsimple inline formulas $ \\frac{a+b}{\\sum x} * \\int x $\nor larger multiline formulas\n\n$$\n\\frac{a+b}{\\sum x}\n      * \\int x\n$$\n\n\n## Symboles\n\n### Arrows\n\n->, ->>, >->, <-, <-<, <<-, <->, =>, <=, <=>\n\n-->, <--, <-->, ==>, <==, <==>\n\n~>, <~\n\n### Smileys\n\n:-), ;-), :-D, :-O, :-(, :-|, :-/, :-P, :-*, :\'), :\'(\n\n### Escape Chars\n\n\\*, \\~, \\_, \\#\n\n## Tables\n\n| h1   | h2   | h3   |\n|:-----|-----:|------|\n| a    |    b |  c   |\n| aa   |   bb |  cc  |\n| aaa  |  bbb | ccc  |\n| aaaa | bbbb | cccc |\n\n## Enumeration\n\n* bullets\n* xxx\n  xxx\n\n## Html\n\nThis is normal Markdown ...\n<b id=\"test\" style=\"background-color:blue;color:red\">\nThis is a bold and colored html...\n</b> that can be used inline or <br> <br> everywhere\n\n<img src=\"http://package.elm-lang.org/assets/favicon.ico\">\n\ns\n\n\n## Misc\n\nhorizontal line\n\n---\n\nxxx\n\n\n';
+var _user$project$Editor$script = '<!--\nComments have to be enclosed by curly braces and can be put everywhere...\nThese can be used to comment single elements, lines, and multi-lines...\n-->\n\n# Main Markdown\n\nParagraphs are separated by newlines ...\n\n* XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n* XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n* XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n--{{1}}--\nThis is some kind of first explanation text ...\n\n                         --{{2}}--\n\nThe second one comes afterwards.\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n\n## Basic Inlines\n\n\\*bold\\* -> *bold*\n\n\\~italic\\~ -> ~italic~\n\n\\^superscript\\^ -> ^superscript^\n\n\\_underline\\_ -> _underline_\n\n\nCombinations are allowed:\n\n\\~\\*bold italic\\*\\~ -> ~*bold italic*~\n\n\\_\\*bold underline\\*\\_ -> _*bold underline*_\n\n\\_\\~italic underline\\~\\_ -> _~italic underline~_\n\n\\_\\~\\*bold italic underline\\*\\~\\_ -> _~*bold italic underline*~_\n\n## Code\n\nCode can be either `inline` or explicit:\n\n``` c\n#include <stdio.h>\n\nvoid main(int) {\n    println(\"%d\\n\", 1234);\n}\n```\n\n``` python\nimport math\n\ndef sqrt(val):\n    return math.sqrt(val)\n```\n\n## Quize\n\n### Single-Choice\n\nDie zwei ist die einzig richtige Antwort\n\n[( )] 1\n[(X)] 2\n[( )] Oder 3\n[[?]] Es gibt nur eine möglichkeit\n[[?]] Nummer 2 ist es\n[[?]] Alles aufgebraucht\n\n### Multiple-Choice\n\nZwei von Vier?\n\n[[ ]] nein\n[[X]] Ja\n[[X]] auch Ja\n[[ ]] auf keinen Fall\n[[?]] Es gibt nur eine möglichkeit\n[[?]] Nummer 2 ist es\n[[?]] Alles aufgebraucht\n\n### Texteingaben\n\nWie sieht Pi aus, bis auf 5 Stellen nach dem Komma?\n\n[[3.14159]]\n\n## effects\n\n                                  {{1}}\nAAA AAA AAA AAA {{3}}{{*test*}} AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\nAAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\nAAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\n\n{{2}}\n{{\n\n![Image](http://package.elm-lang.org/assets/favicon.ico)\n\n[[ ]] nein\n[[X]] Ja\n[[X]] auch Ja\n[[ ]] auf keinen Fall\n\n}}\n                                  {{1}}\nBBB BBB BBB BBB BBB BBB BBB {{3}}{{*test*}} {{3}}{{*test*}} BBB BBB BBB BBB BBB BBB BBB\n\n## References\n\nLinks: [Google](http://www.google.de)\n\nImages:\n\n![Image](http://package.elm-lang.org/assets/favicon.ico)\n\nMovies:\n\n!![Movie](https://www.youtube.com/embed/EDp6UmaA9CM)\n\n## Quotes\n\n> This is a quote ...\n>\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n\n## Formulas\n\nsimple inline formulas $ \\frac{a+b}{\\sum x} * \\int x $\nor larger multiline formulas\n\n$$\n\\frac{a+b}{\\sum x}\n      * \\int x\n$$\n\n\n## Symboles\n\n### Arrows\n\n->, ->>, >->, <-, <-<, <<-, <->, =>, <=, <=>\n\n-->, <--, <-->, ==>, <==, <==>\n\n~>, <~\n\n### Smileys\n\n:-), ;-), :-D, :-O, :-(, :-|, :-/, :-P, :-*, :\'), :\'(\n\n### Escape Chars\n\n\\*, \\~, \\_, \\#\n\n## Tables\n\n| h1   | h2   | h3   |\n|:-----|-----:|------|\n| a    |    b |  c   |\n| aa   |   bb |  cc  |\n| aaa  |  bbb | ccc  |\n| aaaa | bbbb | cccc |\n\n## Enumeration\n\n* bullets\n* xxx\n  xxx\n\n## Html\n\nThis is normal Markdown ...\n<b id=\"test\" style=\"background-color:blue;color:red\">\nThis is a bold and colored html...\n</b> that can be used inline or <br> <br> everywhere\n\n<img src=\"http://package.elm-lang.org/assets/favicon.ico\">\n\ns\n\n\n## Misc\n\nhorizontal line\n\n---\n\nxxx\n\n\n';
 var _user$project$Editor$Model = F3(
 	function (a, b, c) {
 		return {outer: a, inner: b, lia: c};

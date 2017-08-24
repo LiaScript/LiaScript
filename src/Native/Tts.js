@@ -4,6 +4,8 @@ var _user$project$Native_Tts = (function () {
     {
         return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback){
             try {
+                speechSynthesis.cancel();
+
                 var tts = new SpeechSynthesisUtterance(text);
                 tts.lang = lang;
                 for(var i=0; i<speechSynthesis.getVoices().length; i++) {
@@ -31,6 +33,23 @@ var _user$project$Native_Tts = (function () {
                 callback(_elm_lang$core$Native_Scheduler.fail(e.message));
             }
         })
+    };
+
+    function shut_up () {
+        try {
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+            }
+            return {
+                ctor: "Ok",
+                _0: null
+            };
+        } catch (e) {
+            return {
+                ctor: "Err",
+                _0: e.message
+            };
+        }
     };
 
     function listen (continuous, interimResults, lang) {
@@ -111,6 +130,7 @@ var _user$project$Native_Tts = (function () {
         speak: F3(speak),
         listen: F3(listen),
         voices: voices,
+        shut_up: shut_up,
         languages: languages
     };
 })();

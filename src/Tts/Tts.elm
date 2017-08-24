@@ -1,4 +1,4 @@
-module Tts.Tts exposing (languages, listen, speak, voices)
+module Tts.Tts exposing (languages, listen, shut_up, speak, voices)
 
 {-| A native Html5 Text-To-Speech wrapper library.
 
@@ -40,6 +40,11 @@ speak resultToMessage voice lang text =
 listen : (Result String String -> msg) -> Bool -> Bool -> String -> Cmd msg
 listen resultToMessage continous interimResults lang =
     Task.attempt resultToMessage (Native.Tts.listen continous interimResults lang)
+
+
+shut_up : Result String Never
+shut_up =
+    Native.Tts.shut_up ()
 
 
 {-| -}
