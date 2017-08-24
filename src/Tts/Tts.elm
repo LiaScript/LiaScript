@@ -42,9 +42,16 @@ listen resultToMessage continous interimResults lang =
     Task.attempt resultToMessage (Native.Tts.listen continous interimResults lang)
 
 
-shut_up : Result String Never
-shut_up =
-    Native.Tts.shut_up ()
+shut_up : Bool -> Bool
+shut_up x =
+    if x then
+        let
+            t =
+                Native.Tts.shut_up ()
+        in
+        True
+    else
+        True
 
 
 {-| -}

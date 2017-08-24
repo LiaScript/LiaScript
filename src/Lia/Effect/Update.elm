@@ -13,21 +13,23 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg, Bool )
 update msg model =
+    let
+        stop_talking model =
+            ( { model | status = Silent }, Cmd.none, Tts.shut_up True )
+    in
     case msg of
         Next ->
             if model.visible == model.effects then
-                ( model, Cmd.none, True )
+                stop_talking model
             else
                 update Speak { model | visible = model.visible + 1 }
 
-        --( { model | visible = model.visible + 1 }, Cmd.none, False )
         Previous ->
             if model.visible == 0 then
-                ( model, Cmd.none, True )
+                stop_talking model
             else
                 update Speak { model | visible = model.visible - 1 }
 
-        --( { model | visible = model.visible - 1 }, Cmd.none, False )
         Speak ->
             case get_comment model of
                 Just str ->

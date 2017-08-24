@@ -12971,8 +12971,15 @@ var _user$project$Tts_Tts$languages = _user$project$Tts_Tts$decode_string_list(
 var _user$project$Tts_Tts$voices = _user$project$Tts_Tts$decode_string_list(
 	_user$project$Native_Tts.voices(
 		{ctor: '_Tuple0'}));
-var _user$project$Tts_Tts$shut_up = _user$project$Native_Tts.shut_up(
-	{ctor: '_Tuple0'});
+var _user$project$Tts_Tts$shut_up = function (x) {
+	if (x) {
+		var t = _user$project$Native_Tts.shut_up(
+			{ctor: '_Tuple0'});
+		return true;
+	} else {
+		return true;
+	}
+};
 var _user$project$Tts_Tts$listen = F4(
 	function (resultToMessage, continous, interimResults, lang) {
 		return A2(
@@ -13008,11 +13015,21 @@ var _user$project$Lia_Effect_Update$update = F2(
 	function (msg, model) {
 		update:
 		while (true) {
+			var stop_talking = function (model) {
+				return {
+					ctor: '_Tuple3',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{status: _user$project$Lia_Effect_Model$Silent}),
+					_1: _elm_lang$core$Platform_Cmd$none,
+					_2: _user$project$Tts_Tts$shut_up(true)
+				};
+			};
 			var _p0 = msg;
 			switch (_p0.ctor) {
 				case 'Next':
 					if (_elm_lang$core$Native_Utils.eq(model.visible, model.effects)) {
-						return {ctor: '_Tuple3', _0: model, _1: _elm_lang$core$Platform_Cmd$none, _2: true};
+						return stop_talking(model);
 					} else {
 						var _v1 = _user$project$Lia_Effect_Update$Speak,
 							_v2 = _elm_lang$core$Native_Utils.update(
@@ -13024,7 +13041,7 @@ var _user$project$Lia_Effect_Update$update = F2(
 					}
 				case 'Previous':
 					if (_elm_lang$core$Native_Utils.eq(model.visible, 0)) {
-						return {ctor: '_Tuple3', _0: model, _1: _elm_lang$core$Platform_Cmd$none, _2: true};
+						return stop_talking(model);
 					} else {
 						var _v3 = _user$project$Lia_Effect_Update$Speak,
 							_v4 = _elm_lang$core$Native_Utils.update(
@@ -13035,7 +13052,6 @@ var _user$project$Lia_Effect_Update$update = F2(
 						continue update;
 					}
 				case 'Speak':
-					var x = _user$project$Tts_Tts$shut_up;
 					var _p1 = _user$project$Lia_Effect_Model$get_comment(model);
 					if (_p1.ctor === 'Just') {
 						return {
