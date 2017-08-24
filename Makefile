@@ -1,8 +1,11 @@
 all:
 	elm-make examples/Editor.elm --output build/app.js
+	./lib/KaTeX/node_modules/uglify-js/bin/uglifyjs --compress --mangle  --output build/app.min.js build/app.js
+
 
 debug:
 	elm-make --debug --warn examples/Editor.elm --output build/app.js
+	./lib/KaTeX/node_modules/uglify-js/bin/uglifyjs --compress --mangle  --output build/app.min.js build/app.js
 
 init:
 	#git clone https://github.com/mathjax/MathJax lib/MathJax

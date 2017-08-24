@@ -66,16 +66,16 @@ var _user$project$Native_Tts = (function () {
 
     function voices () {
         try {
-            let name_list = [];
-            let voice_list = speechSynthesis.getVoices();
+            var nameList = [];
+            var voiceList = speechSynthesis.getVoices();
 
-            for (var i=0; i<voice_list.length; i++) {
-                name_list.push (voice_list[i].name);
+            for (var i=0; i<voiceList.length; i++) {
+                nameList.push (voice_list[i].name);
             }
 
             return {
                 ctor: "Ok",
-                _0: name_list.sort()
+                _0: nameList.sort()
             };
         } catch (e) {
             return {
@@ -87,16 +87,16 @@ var _user$project$Native_Tts = (function () {
 
     function languages () {
         try {
-            let lang_list = [];
-            let voice_list = speechSynthesis.getVoices();
+            var langList = [];
+            var voiceList = speechSynthesis.getVoices();
 
-            for (var i=0; i<voice_list.length; i++) {
-                lang_list.push (voice_list[i].lang);
+            for (var i=0; i<voiceList.length; i++) {
+                langList.push (voiceList[i].lang);
             }
 
             return {
                 ctor: "Ok",
-                _0: lang_list.sort()
+                _0: langList.sort()
             };
         } catch (e) {
             return {
