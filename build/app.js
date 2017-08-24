@@ -12758,25 +12758,217 @@ var _user$project$Lia_Parser$run = function (script) {
 	}
 };
 
+var _user$project$Native_Tts = (function () {
+
+    function speak(voice, lang, text)
+    {
+        return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback){
+            try {
+                var tts = new SpeechSynthesisUtterance(text);
+                tts.lang = lang;
+                for(var i=0; i<speechSynthesis.getVoices().length; i++) {
+                    if (speechSynthesis.getVoices()[i].name == voice) {
+                        tts.voice = speechSynthesis.getVoices()[i];
+                        break;
+                    }
+                }
+
+                tts.onend = function () {
+                    if (callback) {
+                        callback(_elm_lang$core$Native_Scheduler.succeed());
+                    }
+                };
+
+                tts.onerror = function (e) {
+                    if (callback) {
+                        callback(_elm_lang$core$Native_Scheduler.fail(e.message));
+                    }
+                };
+
+                speechSynthesis.speak(tts);
+
+            } catch (e) {
+                callback(_elm_lang$core$Native_Scheduler.fail(e.message));
+            }
+        })
+    };
+
+    function listen (continuous, interimResults, lang) {
+        return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback){
+            try {
+                var recognition = new webkitSpeechRecognition();
+                recognition.continuous = continuous;
+                recognition.interimResults = interimResults;
+
+                recognition.lang = lang;
+
+                recognition.onend = function (e) {
+                    if (callback) {
+                        callback(_elm_lang$core$Native_Scheduler.fail("no results"));
+                    }
+                };
+
+                recognition.onresult = function (e) {
+                    // cancel onend handler
+                    recognition.onend = null;
+                    if (callback) {
+                        callback(_elm_lang$core$Native_Scheduler.succeed(e.results[0][0].transcript));
+                    }
+                };
+
+                // start listening
+                recognition.start();
+            } catch (e) {
+                callback(_elm_lang$core$Native_Scheduler.fail(e.message));
+            }
+        });
+    };
+
+    function voices () {
+        try {
+            var nameList = [];
+            var voiceList = speechSynthesis.getVoices();
+
+            for (var i=0; i<voiceList.length; i++) {
+                nameList.push (voice_list[i].name);
+            }
+
+            return {
+                ctor: "Ok",
+                _0: nameList.sort()
+            };
+        } catch (e) {
+            return {
+                ctor: "Err",
+                _0: e.message
+            };
+        }
+    };
+
+    function languages () {
+        try {
+            var langList = [];
+            var voiceList = speechSynthesis.getVoices();
+
+            for (var i=0; i<voiceList.length; i++) {
+                langList.push (voiceList[i].lang);
+            }
+
+            return {
+                ctor: "Ok",
+                _0: langList.sort()
+            };
+        } catch (e) {
+            return {
+                ctor: "Err",
+                _0: e.message
+            };
+        }
+    };
+
+
+    return {
+        speak: F3(speak),
+        listen: F3(listen),
+        voices: voices,
+        languages: languages
+    };
+})();
+
+var _user$project$Tts_Tts$decode_string_list = function (result) {
+	var _p0 = result;
+	if (_p0.ctor === 'Ok') {
+		return A2(
+			_elm_lang$core$Json_Decode$decodeValue,
+			_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$string),
+			_p0._0);
+	} else {
+		return _elm_lang$core$Result$Err(_p0._0);
+	}
+};
+var _user$project$Tts_Tts$languages = _user$project$Tts_Tts$decode_string_list(
+	_user$project$Native_Tts.languages(
+		{ctor: '_Tuple0'}));
+var _user$project$Tts_Tts$voices = _user$project$Tts_Tts$decode_string_list(
+	_user$project$Native_Tts.voices(
+		{ctor: '_Tuple0'}));
+var _user$project$Tts_Tts$listen = F4(
+	function (resultToMessage, continous, interimResults, lang) {
+		return A2(
+			_elm_lang$core$Task$attempt,
+			resultToMessage,
+			A3(_user$project$Native_Tts.listen, continous, interimResults, lang));
+	});
+var _user$project$Tts_Tts$speak = F4(
+	function (resultToMessage, voice, lang, text) {
+		var v = function () {
+			var _p1 = voice;
+			if (_p1.ctor === 'Just') {
+				return _elm_lang$core$Json_Encode$string(_p1._0);
+			} else {
+				return _elm_lang$core$Json_Encode$null;
+			}
+		}();
+		return A2(
+			_elm_lang$core$Task$perform,
+			resultToMessage,
+			A3(_user$project$Native_Tts.speak, v, lang, text));
+	});
+var _user$project$Tts_Tts$Recognition = F2(
+	function (a, b) {
+		return {confidence: a, transcript: b};
+	});
+
+var _user$project$Lia_Effect_Update$TTS = function (a) {
+	return {ctor: 'TTS', _0: a};
+};
+var _user$project$Lia_Effect_Update$Speak = function (a) {
+	return {ctor: 'Speak', _0: a};
+};
 var _user$project$Lia_Effect_Update$update = F2(
 	function (msg, model) {
-		var _p0 = msg;
-		if (_p0.ctor === 'Next') {
-			return _elm_lang$core$Native_Utils.eq(model.visible, model.effects) ? {ctor: '_Tuple2', _0: model, _1: true} : {
-				ctor: '_Tuple2',
-				_0: _elm_lang$core$Native_Utils.update(
-					model,
-					{visible: model.visible + 1}),
-				_1: false
-			};
-		} else {
-			return _elm_lang$core$Native_Utils.eq(model.visible, 0) ? {ctor: '_Tuple2', _0: model, _1: true} : {
-				ctor: '_Tuple2',
-				_0: _elm_lang$core$Native_Utils.update(
-					model,
-					{visible: model.visible - 1}),
-				_1: false
-			};
+		update:
+		while (true) {
+			var _p0 = msg;
+			switch (_p0.ctor) {
+				case 'Next':
+					if (_elm_lang$core$Native_Utils.eq(model.visible, model.effects)) {
+						return {ctor: '_Tuple3', _0: model, _1: _elm_lang$core$Platform_Cmd$none, _2: true};
+					} else {
+						var _v1 = _user$project$Lia_Effect_Update$Speak('Loading next effect'),
+							_v2 = _elm_lang$core$Native_Utils.update(
+							model,
+							{visible: model.visible + 1});
+						msg = _v1;
+						model = _v2;
+						continue update;
+					}
+				case 'Previous':
+					if (_elm_lang$core$Native_Utils.eq(model.visible, 0)) {
+						return {ctor: '_Tuple3', _0: model, _1: _elm_lang$core$Platform_Cmd$none, _2: true};
+					} else {
+						var _v3 = _user$project$Lia_Effect_Update$Speak('Going back to previous one'),
+							_v4 = _elm_lang$core$Native_Utils.update(
+							model,
+							{visible: model.visible - 1});
+						msg = _v3;
+						model = _v4;
+						continue update;
+					}
+				case 'Speak':
+					return {
+						ctor: '_Tuple3',
+						_0: model,
+						_1: A4(_user$project$Tts_Tts$speak, _user$project$Lia_Effect_Update$TTS, _elm_lang$core$Maybe$Nothing, 'en_US', _p0._0),
+						_2: false
+					};
+				default:
+					if (_p0._0.ctor === 'Ok') {
+						return {ctor: '_Tuple3', _0: model, _1: _elm_lang$core$Platform_Cmd$none, _2: false};
+					} else {
+						return {ctor: '_Tuple3', _0: model, _1: _elm_lang$core$Platform_Cmd$none, _2: false};
+					}
+			}
 		}
 	});
 var _user$project$Lia_Effect_Update$Previous = {ctor: 'Previous'};
@@ -13055,180 +13247,16 @@ var _user$project$Lia_Quiz_Update$CheckBox = F2(
 		return {ctor: 'CheckBox', _0: a, _1: b};
 	});
 
-var _user$project$Native_Tts = (function () {
-
-    function speak(voice, lang, text)
-    {
-        return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback){
-            try {
-                var tts = new SpeechSynthesisUtterance(text);
-                tts.lang = lang;
-                for(var i=0; i<speechSynthesis.getVoices().length; i++) {
-                    if (speechSynthesis.getVoices()[i].name == voice) {
-                        tts.voice = speechSynthesis.getVoices()[i];
-                        break;
-                    }
-                }
-
-                tts.onend = function () {
-                    if (callback) {
-                        callback(_elm_lang$core$Native_Scheduler.succeed());
-                    }
-                };
-
-                tts.onerror = function (e) {
-                    if (callback) {
-                        callback(_elm_lang$core$Native_Scheduler.fail(e.message));
-                    }
-                };
-
-                speechSynthesis.speak(tts);
-
-            } catch (e) {
-                callback(_elm_lang$core$Native_Scheduler.fail(e.message));
-            }
-        })
-    };
-
-    function listen (continuous, interimResults, lang) {
-        return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback){
-            try {
-                var recognition = new webkitSpeechRecognition();
-                recognition.continuous = continuous;
-                recognition.interimResults = interimResults;
-
-                recognition.lang = lang;
-
-                recognition.onend = function (e) {
-                    if (callback) {
-                        callback(_elm_lang$core$Native_Scheduler.fail("no results"));
-                    }
-                };
-
-                recognition.onresult = function (e) {
-                    // cancel onend handler
-                    recognition.onend = null;
-                    if (callback) {
-                        callback(_elm_lang$core$Native_Scheduler.succeed(e.results[0][0].transcript));
-                    }
-                };
-
-                // start listening
-                recognition.start();
-            } catch (e) {
-                callback(_elm_lang$core$Native_Scheduler.fail(e.message));
-            }
-        });
-    };
-
-    function voices () {
-        try {
-            var nameList = [];
-            var voiceList = speechSynthesis.getVoices();
-
-            for (var i=0; i<voiceList.length; i++) {
-                nameList.push (voice_list[i].name);
-            }
-
-            return {
-                ctor: "Ok",
-                _0: nameList.sort()
-            };
-        } catch (e) {
-            return {
-                ctor: "Err",
-                _0: e.message
-            };
-        }
-    };
-
-    function languages () {
-        try {
-            var langList = [];
-            var voiceList = speechSynthesis.getVoices();
-
-            for (var i=0; i<voiceList.length; i++) {
-                langList.push (voiceList[i].lang);
-            }
-
-            return {
-                ctor: "Ok",
-                _0: langList.sort()
-            };
-        } catch (e) {
-            return {
-                ctor: "Err",
-                _0: e.message
-            };
-        }
-    };
-
-
-    return {
-        speak: F3(speak),
-        listen: F3(listen),
-        voices: voices,
-        languages: languages
-    };
-})();
-
-var _user$project$Tts_Tts$decode_string_list = function (result) {
-	var _p0 = result;
-	if (_p0.ctor === 'Ok') {
-		return A2(
-			_elm_lang$core$Json_Decode$decodeValue,
-			_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$string),
-			_p0._0);
-	} else {
-		return _elm_lang$core$Result$Err(_p0._0);
-	}
+var _user$project$Lia_Update$UpdateEffect = function (a) {
+	return {ctor: 'UpdateEffect', _0: a};
 };
-var _user$project$Tts_Tts$languages = _user$project$Tts_Tts$decode_string_list(
-	_user$project$Native_Tts.languages(
-		{ctor: '_Tuple0'}));
-var _user$project$Tts_Tts$voices = _user$project$Tts_Tts$decode_string_list(
-	_user$project$Native_Tts.voices(
-		{ctor: '_Tuple0'}));
-var _user$project$Tts_Tts$listen = F4(
-	function (resultToMessage, continous, interimResults, lang) {
-		return A2(
-			_elm_lang$core$Task$attempt,
-			resultToMessage,
-			A3(_user$project$Native_Tts.listen, continous, interimResults, lang));
-	});
-var _user$project$Tts_Tts$speak = F4(
-	function (resultToMessage, voice, lang, text) {
-		var v = function () {
-			var _p1 = voice;
-			if (_p1.ctor === 'Just') {
-				return _elm_lang$core$Json_Encode$string(_p1._0);
-			} else {
-				return _elm_lang$core$Json_Encode$null;
-			}
-		}();
-		return A2(
-			_elm_lang$core$Task$attempt,
-			resultToMessage,
-			A3(_user$project$Native_Tts.speak, v, lang, text));
-	});
-var _user$project$Tts_Tts$Recognition = F2(
-	function (a, b) {
-		return {confidence: a, transcript: b};
-	});
-
-var _user$project$Lia_Update$TTS = function (a) {
-	return {ctor: 'TTS', _0: a};
-};
-var _user$project$Lia_Update$Speak = function (a) {
-	return {ctor: 'Speak', _0: a};
-};
-var _user$project$Lia_Update$ContentsTable = {ctor: 'ContentsTable'};
 var _user$project$Lia_Update$UpdateQuiz = function (a) {
 	return {ctor: 'UpdateQuiz', _0: a};
 };
 var _user$project$Lia_Update$UpdateIndex = function (a) {
 	return {ctor: 'UpdateIndex', _0: a};
 };
+var _user$project$Lia_Update$ToggleContentsTable = {ctor: 'ToggleContentsTable'};
 var _user$project$Lia_Update$NextSlide = {ctor: 'NextSlide'};
 var _user$project$Lia_Update$PrevSlide = {ctor: 'PrevSlide'};
 var _user$project$Lia_Update$Load = function (a) {
@@ -13242,54 +13270,62 @@ var _user$project$Lia_Update$update = F2(
 			switch (_p0.ctor) {
 				case 'Load':
 					var _p1 = _p0._0;
-					var _v1 = _user$project$Lia_Update$Speak('Starting to load next slide'),
-						_v2 = _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							current_slide: _p1,
-							effects: _user$project$Lia_Effect_Model$init(
-								A2(_user$project$Lia_Helper$get_slide, _p1, model.slides))
-						});
-					msg = _v1;
-					model = _v2;
-					continue update;
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{
+								current_slide: _p1,
+								effects: _user$project$Lia_Effect_Model$init(
+									A2(_user$project$Lia_Helper$get_slide, _p1, model.slides))
+							}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
 				case 'PrevSlide':
 					var _p2 = _user$project$Lia_Effect_Update$previous(model.effects);
-					if ((_p2.ctor === '_Tuple2') && (_p2._1 === false)) {
+					if ((_p2.ctor === '_Tuple3') && (_p2._2 === false)) {
+						var _p3 = _p2._1;
 						return {
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
-								{effects: _p2._0}),
-							_1: _elm_lang$core$Platform_Cmd$none
+								{
+									effects: _p2._0,
+									error: _elm_lang$core$Basics$toString(_p3)
+								}),
+							_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Lia_Update$UpdateEffect, _p3)
 						};
 					} else {
-						var _v4 = _user$project$Lia_Update$Load(model.current_slide - 1),
-							_v5 = model;
-						msg = _v4;
-						model = _v5;
+						var _v2 = _user$project$Lia_Update$Load(model.current_slide - 1),
+							_v3 = model;
+						msg = _v2;
+						model = _v3;
 						continue update;
 					}
 				case 'NextSlide':
-					var _p3 = _user$project$Lia_Effect_Update$next(model.effects);
-					if ((_p3.ctor === '_Tuple2') && (_p3._1 === false)) {
+					var _p4 = _user$project$Lia_Effect_Update$next(model.effects);
+					if ((_p4.ctor === '_Tuple3') && (_p4._2 === false)) {
+						var _p5 = _p4._1;
 						return {
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
-								{effects: _p3._0}),
-							_1: _elm_lang$core$Platform_Cmd$none
+								{
+									effects: _p4._0,
+									error: _elm_lang$core$Basics$toString(_p5)
+								}),
+							_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Lia_Update$UpdateEffect, _p5)
 						};
 					} else {
-						var _v7 = _user$project$Lia_Update$Load(model.current_slide + 1),
-							_v8 = model;
-						msg = _v7;
-						model = _v8;
+						var _v5 = _user$project$Lia_Update$Load(model.current_slide + 1),
+							_v6 = model;
+						msg = _v5;
+						model = _v6;
 						continue update;
 					}
 				case 'UpdateIndex':
-					var _p4 = A2(_user$project$Lia_Index_Update$update, _p0._0, model.index);
-					var index = _p4._0;
+					var _p6 = A2(_user$project$Lia_Index_Update$update, _p0._0, model.index);
+					var index = _p6._0;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -13297,7 +13333,22 @@ var _user$project$Lia_Update$update = F2(
 							{index: index}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
-				case 'ContentsTable':
+				case 'UpdateEffect':
+					var _p7 = A2(_user$project$Lia_Effect_Update$update, _p0._0, model.effects);
+					var effects = _p7._0;
+					var cmd = _p7._1;
+					var h = _p7._2;
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{
+								effects: effects,
+								error: _elm_lang$core$Basics$toString(cmd)
+							}),
+						_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Lia_Update$UpdateEffect, cmd)
+					};
+				case 'ToggleContentsTable':
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -13305,36 +13356,10 @@ var _user$project$Lia_Update$update = F2(
 							{contents: !model.contents}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
-				case 'Speak':
-					return {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Native_Utils.update(
-							model,
-							{error: 'Speaking'}),
-						_1: A4(_user$project$Tts_Tts$speak, _user$project$Lia_Update$TTS, _elm_lang$core$Maybe$Nothing, 'en_US', _p0._0)
-					};
-				case 'TTS':
-					if (_p0._0.ctor === 'Ok') {
-						return {
-							ctor: '_Tuple2',
-							_0: _elm_lang$core$Native_Utils.update(
-								model,
-								{error: ''}),
-							_1: _elm_lang$core$Platform_Cmd$none
-						};
-					} else {
-						return {
-							ctor: '_Tuple2',
-							_0: _elm_lang$core$Native_Utils.update(
-								model,
-								{error: _p0._0._0}),
-							_1: _elm_lang$core$Platform_Cmd$none
-						};
-					}
 				default:
-					var _p5 = A2(_user$project$Lia_Quiz_Update$update, _p0._0, model.quiz);
-					var quiz = _p5._0;
-					var cmd = _p5._1;
+					var _p8 = A2(_user$project$Lia_Quiz_Update$update, _p0._0, model.quiz);
+					var quiz = _p8._0;
+					var cmd = _p8._1;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -14377,7 +14402,7 @@ var _user$project$Lia_View$view_slides = function (model) {
 						_elm_lang$html$Html$button,
 						{
 							ctor: '::',
-							_0: _elm_lang$html$Html_Events$onClick(_user$project$Lia_Update$ContentsTable),
+							_0: _elm_lang$html$Html_Events$onClick(_user$project$Lia_Update$ToggleContentsTable),
 							_1: {
 								ctor: '::',
 								_0: _elm_lang$html$Html_Attributes$style(

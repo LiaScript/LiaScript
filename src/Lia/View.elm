@@ -58,7 +58,7 @@ view_slides model =
             Html.div []
                 [ Html.div []
                     [ Html.button
-                        [ onClick ContentsTable
+                        [ onClick ToggleContentsTable
                         , Attr.style [ ( "width", "40px" ) ]
                         ]
                         [ Html.text "T" ]
@@ -98,7 +98,8 @@ view_contents model =
                 [ Html.a
                     [ onClick (Load n)
                     , Attr.class
-                        ("toc" ++ toString i
+                        ("toc"
+                            ++ toString i
                             ++ (if model.current_slide == n then
                                     " active"
                                 else
