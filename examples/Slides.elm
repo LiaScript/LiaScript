@@ -2,6 +2,7 @@ module Slides exposing (..)
 
 import Html exposing (Html)
 import Lia
+import Lia.Update
 
 
 main : Program Never Model Msg
@@ -18,8 +19,8 @@ main =
 -- MODEL
 
 
-type Msg
-    = Child Lia.Msg
+type alias Msg =
+    Lia.Update.Msg
 
 
 type alias Model =
@@ -39,11 +40,9 @@ init =
 -- UPDATE
 
 
-update : Msg -> Model -> ( Model, Cmd msg )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        Child liaMsg ->
-            Lia.update liaMsg model
+    Lia.update msg model
 
 
 
@@ -52,7 +51,7 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    Html.map Child <| Lia.view model
+    Lia.view model
 
 
 script : String
