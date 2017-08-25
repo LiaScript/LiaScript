@@ -2,6 +2,14 @@ all:
 	elm-make examples/Editor.elm --output build/app.js
 	./lib/KaTeX/node_modules/uglify-js/bin/uglifyjs --compress --mangle  --output build/app.min.js build/app.js
 
+example_slides:
+	elm-make examples/Slides.elm --output build/app.js
+	./lib/KaTeX/node_modules/uglify-js/bin/uglifyjs --compress --mangle  --output build/app.min.js build/app.js
+
+example_plain:
+		elm-make examples/Plain.elm --output build/app.js
+		./lib/KaTeX/node_modules/uglify-js/bin/uglifyjs --compress --mangle  --output build/app.min.js build/app.js
+
 
 debug:
 	elm-make --debug --warn examples/Editor.elm --output build/app.js

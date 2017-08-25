@@ -14714,15 +14714,16 @@ var _user$project$Lia$init = F2(
 var _user$project$Lia$init_plain = _user$project$Lia$init(_user$project$Lia_Types$Plain);
 var _user$project$Lia$init_slides = _user$project$Lia$init(_user$project$Lia_Types$Slides);
 
-var _user$project$Editor$script = '<!--\nComments have to be enclosed by curly braces and can be put everywhere...\nThese can be used to comment single elements, lines, and multi-lines...\n-->\n\n# Main Markdown\n\nParagraphs are separated by newlines ...\n\n* XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n* XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n* XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n--{{1}}--\nThis is some kind of first explanation text ...\n\n                         --{{2}}--\n\nThe second one comes afterwards.\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n\n## Basic Inlines\n\n\\*bold\\* -> *bold*\n\n\\~italic\\~ -> ~italic~\n\n\\^superscript\\^ -> ^superscript^\n\n\\_underline\\_ -> _underline_\n\n\nCombinations are allowed:\n\n\\~\\*bold italic\\*\\~ -> ~*bold italic*~\n\n\\_\\*bold underline\\*\\_ -> _*bold underline*_\n\n\\_\\~italic underline\\~\\_ -> _~italic underline~_\n\n\\_\\~\\*bold italic underline\\*\\~\\_ -> _~*bold italic underline*~_\n\n## Code\n\nCode can be either `inline` or explicit:\n\n``` c\n#include <stdio.h>\n\nvoid main(int) {\n    println(\"%d\\n\", 1234);\n}\n```\n\n``` python\nimport math\n\ndef sqrt(val):\n    return math.sqrt(val)\n```\n\n## Quize\n\n### Single-Choice\n\nDie zwei ist die einzig richtige Antwort\n\n[( )] 1\n[(X)] 2\n[( )] Oder 3\n[[?]] Es gibt nur eine möglichkeit\n[[?]] Nummer 2 ist es\n[[?]] Alles aufgebraucht\n\n### Multiple-Choice\n\nZwei von Vier?\n\n[[ ]] nein\n[[X]] Ja\n[[X]] auch Ja\n[[ ]] auf keinen Fall\n[[?]] Es gibt nur eine möglichkeit\n[[?]] Nummer 2 ist es\n[[?]] Alles aufgebraucht\n\n### Texteingaben\n\nWie sieht Pi aus, bis auf 5 Stellen nach dem Komma?\n\n[[3.14159]]\n\n## effects\n\n                                  {{1}}\nAAA AAA AAA AAA {{3}}{{*test*}} AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\nAAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\nAAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\n\n{{2}}\n{{\n\n![Image](http://package.elm-lang.org/assets/favicon.ico)\n\n[[ ]] nein\n[[X]] Ja\n[[X]] auch Ja\n[[ ]] auf keinen Fall\n\n}}\n                                  {{1}}\nBBB BBB BBB BBB BBB BBB BBB {{3}}{{*test*}} {{3}}{{*test*}} BBB BBB BBB BBB BBB BBB BBB\n\n## References\n\nLinks: [Google](http://www.google.de)\n\nImages:\n\n![Image](http://package.elm-lang.org/assets/favicon.ico)\n\nMovies:\n\n!![Movie](https://www.youtube.com/embed/EDp6UmaA9CM)\n\n## Quotes\n\n> This is a quote ...\n>\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n\n## Formulas\n\nsimple inline formulas $ \\frac{a+b}{\\sum x} * \\int x $\nor larger multiline formulas\n\n$$\n\\frac{a+b}{\\sum x}\n      * \\int x\n$$\n\n\n## Symboles\n\n### Arrows\n\n->, ->>, >->, <-, <-<, <<-, <->, =>, <=, <=>\n\n-->, <--, <-->, ==>, <==, <==>\n\n~>, <~\n\n### Smileys\n\n:-), ;-), :-D, :-O, :-(, :-|, :-/, :-P, :-*, :\'), :\'(\n\n### Escape Chars\n\n\\*, \\~, \\_, \\#\n\n## Tables\n\n| h1   | h2   | h3   |\n|:-----|-----:|------|\n| a    |    b |  c   |\n| aa   |   bb |  cc  |\n| aaa  |  bbb | ccc  |\n| aaaa | bbbb | cccc |\n\n## Enumeration\n\n* bullets\n* xxx\n  xxx\n\n## Html\n\nThis is normal Markdown ...\n<b id=\"test\" style=\"background-color:blue;color:red\">\nThis is a bold and colored html...\n</b> that can be used inline or <br> <br> everywhere\n\n<img src=\"http://package.elm-lang.org/assets/favicon.ico\">\n\ns\n\n\n## Misc\n\nhorizontal line\n\n---\n\nxxx\n\n\n';
-var _user$project$Editor$Model = F3(
+var _user$project$Readme$text = '<!--\nComments have to be enclosed by curly braces and can be put everywhere...\nThese can be used to comment single elements, lines, and multi-lines...\n-->\n\n# Main Markdown\n\nParagraphs are separated by newlines ...\n\n* XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n* XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n* XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n--{{1}}--\nThis is some kind of first explanation text ...\n\n                         --{{2}}--\n\nThe second one comes afterwards.\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n\n## Basic Inlines\n\n\\*bold\\* -> *bold*\n\n\\~italic\\~ -> ~italic~\n\n\\^superscript\\^ -> ^superscript^\n\n\\_underline\\_ -> _underline_\n\n\nCombinations are allowed:\n\n\\~\\*bold italic\\*\\~ -> ~*bold italic*~\n\n\\_\\*bold underline\\*\\_ -> _*bold underline*_\n\n\\_\\~italic underline\\~\\_ -> _~italic underline~_\n\n\\_\\~\\*bold italic underline\\*\\~\\_ -> _~*bold italic underline*~_\n\n## Code\n\nCode can be either `inline` or explicit:\n\n``` c\n#include <stdio.h>\n\nvoid main(int) {\n    println(\"%d\\n\", 1234);\n}\n```\n\n``` python\nimport math\n\ndef sqrt(val):\n    return math.sqrt(val)\n```\n\n## Quize\n\n### Single-Choice\n\nDie zwei ist die einzig richtige Antwort\n\n[( )] 1\n[(X)] 2\n[( )] Oder 3\n[[?]] Es gibt nur eine möglichkeit\n[[?]] Nummer 2 ist es\n[[?]] Alles aufgebraucht\n\n### Multiple-Choice\n\nZwei von Vier?\n\n[[ ]] nein\n[[X]] Ja\n[[X]] auch Ja\n[[ ]] auf keinen Fall\n[[?]] Es gibt nur eine möglichkeit\n[[?]] Nummer 2 ist es\n[[?]] Alles aufgebraucht\n\n### Texteingaben\n\nWie sieht Pi aus, bis auf 5 Stellen nach dem Komma?\n\n[[3.14159]]\n\n## effects\n\n                                  {{1}}\nAAA AAA AAA AAA {{3}}{{*test*}} AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\nAAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\nAAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\n\n{{2}}\n{{\n\n![Image](http://package.elm-lang.org/assets/favicon.ico)\n\n[[ ]] nein\n[[X]] Ja\n[[X]] auch Ja\n[[ ]] auf keinen Fall\n\n}}\n                                  {{1}}\nBBB BBB BBB BBB BBB BBB BBB {{3}}{{*test*}} {{3}}{{*test*}} BBB BBB BBB BBB BBB BBB BBB\n\n## References\n\nLinks: [Google](http://www.google.de)\n\nImages:\n\n![Image](http://package.elm-lang.org/assets/favicon.ico)\n\nMovies:\n\n!![Movie](https://www.youtube.com/embed/EDp6UmaA9CM)\n\n## Quotes\n\n> This is a quote ...\n>\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n\n## Formulas\n\nsimple inline formulas $ \\frac{a+b}{\\sum x} * \\int x $\nor larger multiline formulas\n\n$$\n\\frac{a+b}{\\sum x}\n      * \\int x\n$$\n\n\n## Symboles\n\n### Arrows\n\n->, ->>, >->, <-, <-<, <<-, <->, =>, <=, <=>\n\n-->, <--, <-->, ==>, <==, <==>\n\n~>, <~\n\n### Smileys\n\n:-), ;-), :-D, :-O, :-(, :-|, :-/, :-P, :-*, :\'), :\'(\n\n### Escape Chars\n\n\\*, \\~, \\_, \\#\n\n## Tables\n\n| h1   | h2   | h3   |\n|:-----|-----:|------|\n| a    |    b |  c   |\n| aa   |   bb |  cc  |\n| aaa  |  bbb | ccc  |\n| aaaa | bbbb | cccc |\n\n## Enumeration\n\n* bullets\n* xxx\n  xxx\n\n## Html\n\nThis is normal Markdown ...\n<b id=\"test\" style=\"background-color:blue;color:red\">\nThis is a bold and colored html...\n</b> that can be used inline or <br> <br> everywhere\n\n<img src=\"http://package.elm-lang.org/assets/favicon.ico\">\n\ns\n\n\n## Misc\n\nhorizontal line\n\n---\n\nxxx\n\n\n';
+
+var _user$project$Main$Model = F3(
 	function (a, b, c) {
 		return {outer: a, inner: b, lia: c};
 	});
-var _user$project$Editor$Child = function (a) {
+var _user$project$Main$Child = function (a) {
 	return {ctor: 'Child', _0: a};
 };
-var _user$project$Editor$update = F2(
+var _user$project$Main$update = F2(
 	function (msg, model) {
 		var _p0 = msg;
 		switch (_p0.ctor) {
@@ -14756,7 +14757,7 @@ var _user$project$Editor$update = F2(
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{lia: lia}),
-					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Editor$Child, cmd)
+					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$Child, cmd)
 				};
 			case 'Outer':
 				return A2(
@@ -14778,7 +14779,7 @@ var _user$project$Editor$update = F2(
 					{ctor: '[]'});
 		}
 	});
-var _user$project$Editor$rightView = function (model) {
+var _user$project$Main$rightView = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
 		{
@@ -14799,20 +14800,20 @@ var _user$project$Editor$rightView = function (model) {
 			ctor: '::',
 			_0: A2(
 				_elm_lang$html$Html$map,
-				_user$project$Editor$Child,
+				_user$project$Main$Child,
 				_user$project$Lia$view(model.lia)),
 			_1: {ctor: '[]'}
 		});
 };
-var _user$project$Editor$Render = function (a) {
+var _user$project$Main$Render = function (a) {
 	return {ctor: 'Render', _0: a};
 };
-var _user$project$Editor$Update = function (a) {
+var _user$project$Main$Update = function (a) {
 	return {ctor: 'Update', _0: a};
 };
-var _user$project$Editor$init = A2(
-	_user$project$Editor$update,
-	_user$project$Editor$Update(_user$project$Editor$script),
+var _user$project$Main$init = A2(
+	_user$project$Main$update,
+	_user$project$Main$Update(_user$project$Readme$text),
 	{
 		outer: A2(
 			_doodledood$elm_split_pane$SplitPane$withResizeLimits,
@@ -14825,17 +14826,17 @@ var _user$project$Editor$init = A2(
 			_doodledood$elm_split_pane$SplitPane$withSplitterAt,
 			_doodledood$elm_split_pane$SplitPane$percentage(0.75),
 			_doodledood$elm_split_pane$SplitPane$init(_doodledood$elm_split_pane$SplitPane$Vertical)),
-		lia: _user$project$Lia$init_slides(_user$project$Editor$script)
+		lia: _user$project$Lia$init_slides(_user$project$Readme$text)
 	});
-var _user$project$Editor$Inner = function (a) {
+var _user$project$Main$Inner = function (a) {
 	return {ctor: 'Inner', _0: a};
 };
-var _user$project$Editor$innerViewConfig = _doodledood$elm_split_pane$SplitPane$createViewConfig(
-	{toMsg: _user$project$Editor$Inner, customSplitter: _elm_lang$core$Maybe$Nothing});
-var _user$project$Editor$leftView = function (model) {
+var _user$project$Main$innerViewConfig = _doodledood$elm_split_pane$SplitPane$createViewConfig(
+	{toMsg: _user$project$Main$Inner, customSplitter: _elm_lang$core$Maybe$Nothing});
+var _user$project$Main$leftView = function (model) {
 	return A3(
 		_doodledood$elm_split_pane$SplitPane$view,
-		_user$project$Editor$innerViewConfig,
+		_user$project$Main$innerViewConfig,
 		A2(
 			_elm_lang$html$Html$div,
 			{
@@ -14912,7 +14913,7 @@ var _user$project$Editor$leftView = function (model) {
 											_1: {
 												ctor: '::',
 												_0: _elm_lang$html$Html_Events$onClick(
-													_user$project$Editor$Render(_user$project$Lia_Types$Slides)),
+													_user$project$Main$Render(_user$project$Lia_Types$Slides)),
 												_1: {
 													ctor: '::',
 													_0: _elm_lang$html$Html_Attributes$checked(
@@ -14935,7 +14936,7 @@ var _user$project$Editor$leftView = function (model) {
 													_1: {
 														ctor: '::',
 														_0: _elm_lang$html$Html_Events$onClick(
-															_user$project$Editor$Render(_user$project$Lia_Types$Plain)),
+															_user$project$Main$Render(_user$project$Lia_Types$Plain)),
 														_1: {
 															ctor: '::',
 															_0: _elm_lang$html$Html_Attributes$checked(
@@ -14985,7 +14986,7 @@ var _user$project$Editor$leftView = function (model) {
 								_0: _elm_lang$html$Html_Attributes$value(model.lia.script),
 								_1: {
 									ctor: '::',
-									_0: _elm_lang$html$Html_Events$onInput(_user$project$Editor$Update),
+									_0: _elm_lang$html$Html_Events$onInput(_user$project$Main$Update),
 									_1: {ctor: '[]'}
 								}
 							}
@@ -15031,12 +15032,12 @@ var _user$project$Editor$leftView = function (model) {
 				_1: {ctor: '[]'}
 			}));
 };
-var _user$project$Editor$Outer = function (a) {
+var _user$project$Main$Outer = function (a) {
 	return {ctor: 'Outer', _0: a};
 };
-var _user$project$Editor$outerViewConfig = _doodledood$elm_split_pane$SplitPane$createViewConfig(
-	{toMsg: _user$project$Editor$Outer, customSplitter: _elm_lang$core$Maybe$Nothing});
-var _user$project$Editor$view = function (model) {
+var _user$project$Main$outerViewConfig = _doodledood$elm_split_pane$SplitPane$createViewConfig(
+	{toMsg: _user$project$Main$Outer, customSplitter: _elm_lang$core$Maybe$Nothing});
+var _user$project$Main$view = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
 		{
@@ -15057,38 +15058,38 @@ var _user$project$Editor$view = function (model) {
 			ctor: '::',
 			_0: A4(
 				_doodledood$elm_split_pane$SplitPane$view,
-				_user$project$Editor$outerViewConfig,
-				A2(_user$project$Editor$leftView, model, model.inner),
-				_user$project$Editor$rightView(model),
+				_user$project$Main$outerViewConfig,
+				A2(_user$project$Main$leftView, model, model.inner),
+				_user$project$Main$rightView(model),
 				model.outer),
 			_1: {ctor: '[]'}
 		});
 };
-var _user$project$Editor$subscriptions = function (model) {
+var _user$project$Main$subscriptions = function (model) {
 	return _elm_lang$core$Platform_Sub$batch(
 		{
 			ctor: '::',
 			_0: A2(
 				_elm_lang$core$Platform_Sub$map,
-				_user$project$Editor$Outer,
+				_user$project$Main$Outer,
 				_doodledood$elm_split_pane$SplitPane$subscriptions(model.outer)),
 			_1: {
 				ctor: '::',
 				_0: A2(
 					_elm_lang$core$Platform_Sub$map,
-					_user$project$Editor$Inner,
+					_user$project$Main$Inner,
 					_doodledood$elm_split_pane$SplitPane$subscriptions(model.inner)),
 				_1: {ctor: '[]'}
 			}
 		});
 };
-var _user$project$Editor$main = _elm_lang$html$Html$program(
-	{update: _user$project$Editor$update, init: _user$project$Editor$init, subscriptions: _user$project$Editor$subscriptions, view: _user$project$Editor$view})();
+var _user$project$Main$main = _elm_lang$html$Html$program(
+	{update: _user$project$Main$update, init: _user$project$Main$init, subscriptions: _user$project$Main$subscriptions, view: _user$project$Main$view})();
 
 var Elm = {};
-Elm['Editor'] = Elm['Editor'] || {};
-if (typeof _user$project$Editor$main !== 'undefined') {
-    _user$project$Editor$main(Elm['Editor'], 'Editor', undefined);
+Elm['Main'] = Elm['Main'] || {};
+if (typeof _user$project$Main$main !== 'undefined') {
+    _user$project$Main$main(Elm['Main'], 'Main', undefined);
 }
 
 if (typeof define === "function" && define['amd'])
