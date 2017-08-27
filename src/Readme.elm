@@ -66,6 +66,10 @@ As you can see from the examples you can combine all elements freely.
 
 \\*\\~italic strike\\~ \\~\\~italic underline\\~\\~\\* -> *~italic strike~ ~~italic underline~~*
 
+### Escape Chars
+
+\\*, \\~, \\_, \\#, \\{, \\}, \\[, \\], \\|, \\`
+
 ### Symbols
 
                                      --{{0}}--
