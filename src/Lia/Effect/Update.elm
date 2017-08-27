@@ -42,7 +42,7 @@ update msg model =
         Speak ->
             case get_comment model of
                 Just str ->
-                    ( { model | status = Speaking }, Tts.speak TTS (Just "sabrina") "en_US" str, False )
+                    ( { model | status = Speaking }, Tts.speak TTS (Just "samantha") "en_US" str, False )
 
                 Nothing ->
                     ( model, Cmd.none, False )

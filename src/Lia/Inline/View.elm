@@ -22,11 +22,17 @@ view visible element =
         Italic e ->
             Html.em [] [ view visible e ]
 
+        Strike e ->
+            Html.s [] [ view visible e ]
+
         Underline e ->
             Html.u [] [ view visible e ]
 
         Superscript e ->
             Html.sup [] [ view visible e ]
+
+        Container list ->
+            Html.span [] <| List.map (\e -> view visible e) list
 
         Ref e ->
             reference e

@@ -11129,6 +11129,9 @@ var _elm_lang$html$Html_Lazy$lazy3 = _elm_lang$virtual_dom$VirtualDom$lazy3;
 var _elm_lang$html$Html_Lazy$lazy2 = _elm_lang$virtual_dom$VirtualDom$lazy2;
 var _elm_lang$html$Html_Lazy$lazy = _elm_lang$virtual_dom$VirtualDom$lazy;
 
+var _user$project$Lia_Inline_Types$Container = function (a) {
+	return {ctor: 'Container', _0: a};
+};
 var _user$project$Lia_Inline_Types$EInline = F2(
 	function (a, b) {
 		return {ctor: 'EInline', _0: a, _1: b};
@@ -11151,6 +11154,9 @@ var _user$project$Lia_Inline_Types$Superscript = function (a) {
 };
 var _user$project$Lia_Inline_Types$Underline = function (a) {
 	return {ctor: 'Underline', _0: a};
+};
+var _user$project$Lia_Inline_Types$Strike = function (a) {
+	return {ctor: 'Strike', _0: a};
 };
 var _user$project$Lia_Inline_Types$Italic = function (a) {
 	return {ctor: 'Italic', _0: a};
@@ -11986,19 +11992,6 @@ var _user$project$Lia_Inline_Parser$formula = function () {
 		});
 }();
 var _user$project$Lia_Inline_Parser$spaces = _elm_community$parser_combinators$Combine$regex('[ \t]*');
-var _user$project$Lia_Inline_Parser$between_ = F2(
-	function (str, p) {
-		return A2(
-			_elm_community$parser_combinators$Combine_ops['<*'],
-			A2(
-				_elm_community$parser_combinators$Combine_ops['*>'],
-				A2(
-					_elm_community$parser_combinators$Combine_ops['*>'],
-					_user$project$Lia_Inline_Parser$spaces,
-					_elm_community$parser_combinators$Combine$string(str)),
-				p),
-			_elm_community$parser_combinators$Combine$string(str));
-	});
 var _user$project$Lia_Inline_Parser$newline = _elm_community$parser_combinators$Combine$skip(
 	A2(
 		_elm_community$parser_combinators$Combine_ops['<|>'],
@@ -12214,35 +12207,48 @@ var _user$project$Lia_Inline_Parser$strings = _elm_community$parser_combinators$
 		var characters = A2(
 			_elm_community$parser_combinators$Combine_ops['<$>'],
 			_user$project$Lia_Inline_Types$Chars,
-			_elm_community$parser_combinators$Combine$regex('[*~_:;\\-<>=${}]'));
+			_elm_community$parser_combinators$Combine$regex('[*~:_;\\-<>=${}]'));
 		var superscript = A2(
 			_elm_community$parser_combinators$Combine_ops['<$>'],
 			_user$project$Lia_Inline_Types$Superscript,
 			A2(
 				_elm_community$parser_combinators$Combine_ops['<?>'],
-				A2(_user$project$Lia_Inline_Parser$between_, '^', _user$project$Lia_Inline_Parser$inlines),
+				_user$project$Lia_Inline_Parser$between_('^'),
 				'superscript string'));
 		var underline = A2(
 			_elm_community$parser_combinators$Combine_ops['<$>'],
 			_user$project$Lia_Inline_Types$Underline,
 			A2(
 				_elm_community$parser_combinators$Combine_ops['<?>'],
-				A2(_user$project$Lia_Inline_Parser$between_, '_', _user$project$Lia_Inline_Parser$inlines),
-				'underline string'));
-		var italic = A2(
+				_user$project$Lia_Inline_Parser$between_('~~'),
+				'underlined string'));
+		var strike = A2(
 			_elm_community$parser_combinators$Combine_ops['<$>'],
-			_user$project$Lia_Inline_Types$Italic,
+			_user$project$Lia_Inline_Types$Strike,
 			A2(
 				_elm_community$parser_combinators$Combine_ops['<?>'],
-				A2(_user$project$Lia_Inline_Parser$between_, '~', _user$project$Lia_Inline_Parser$inlines),
-				'italic string'));
+				_user$project$Lia_Inline_Parser$between_('~'),
+				'striked out string'));
 		var bold = A2(
 			_elm_community$parser_combinators$Combine_ops['<$>'],
 			_user$project$Lia_Inline_Types$Bold,
 			A2(
 				_elm_community$parser_combinators$Combine_ops['<?>'],
-				A2(_user$project$Lia_Inline_Parser$between_, '*', _user$project$Lia_Inline_Parser$inlines),
+				A2(
+					_elm_community$parser_combinators$Combine_ops['<|>'],
+					_user$project$Lia_Inline_Parser$between_('**'),
+					_user$project$Lia_Inline_Parser$between_('__')),
 				'bold string'));
+		var italic = A2(
+			_elm_community$parser_combinators$Combine_ops['<$>'],
+			_user$project$Lia_Inline_Types$Italic,
+			A2(
+				_elm_community$parser_combinators$Combine_ops['<?>'],
+				A2(
+					_elm_community$parser_combinators$Combine_ops['<|>'],
+					_user$project$Lia_Inline_Parser$between_('*'),
+					_user$project$Lia_Inline_Parser$between_('_')),
+				'italic string'));
 		var escape = A2(
 			_elm_community$parser_combinators$Combine_ops['<$>'],
 			_user$project$Lia_Inline_Types$Chars,
@@ -12261,7 +12267,7 @@ var _user$project$Lia_Inline_Parser$strings = _elm_community$parser_combinators$
 			_user$project$Lia_Inline_Types$Chars,
 			A2(
 				_elm_community$parser_combinators$Combine_ops['<?>'],
-				_elm_community$parser_combinators$Combine$regex('[^#*~_:;`!\\^\\[\\|{}\\\\\\n\\-<>=|$]+'),
+				_elm_community$parser_combinators$Combine$regex('[^#*_~:;`!\\^\\[\\|{}\\\\\\n\\-<>=|$]+'),
 				'base string'));
 		return _elm_community$parser_combinators$Combine$choice(
 			{
@@ -12290,14 +12296,18 @@ var _user$project$Lia_Inline_Parser$strings = _elm_community$parser_combinators$
 											_0: underline,
 											_1: {
 												ctor: '::',
-												_0: superscript,
+												_0: strike,
 												_1: {
 													ctor: '::',
-													_0: characters,
+													_0: superscript,
 													_1: {
 														ctor: '::',
-														_0: base2,
-														_1: {ctor: '[]'}
+														_0: characters,
+														_1: {
+															ctor: '::',
+															_0: base2,
+															_1: {ctor: '[]'}
+														}
 													}
 												}
 											}
@@ -12310,6 +12320,37 @@ var _user$project$Lia_Inline_Parser$strings = _elm_community$parser_combinators$
 				}
 			});
 	});
+var _user$project$Lia_Inline_Parser$between_ = function (str) {
+	return _elm_community$parser_combinators$Combine$lazy(
+		function (_p17) {
+			var _p18 = _p17;
+			return _elm_community$parser_combinators$Combine$choice(
+				{
+					ctor: '::',
+					_0: A2(
+						_elm_community$parser_combinators$Combine_ops['<*'],
+						A2(
+							_elm_community$parser_combinators$Combine_ops['*>'],
+							_elm_community$parser_combinators$Combine$string(str),
+							_user$project$Lia_Inline_Parser$inlines),
+						_elm_community$parser_combinators$Combine$string(str)),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_community$parser_combinators$Combine_ops['<$>'],
+							_user$project$Lia_Inline_Types$Container,
+							A2(
+								_elm_community$parser_combinators$Combine_ops['*>'],
+								_elm_community$parser_combinators$Combine$string(str),
+								A2(
+									_elm_community$parser_combinators$Combine$manyTill,
+									_user$project$Lia_Inline_Parser$inlines,
+									_elm_community$parser_combinators$Combine$string(str)))),
+						_1: {ctor: '[]'}
+					}
+				});
+		});
+};
 var _user$project$Lia_Inline_Parser$line = A2(
 	_elm_community$parser_combinators$Combine_ops['<$>'],
 	function (list) {
@@ -13073,7 +13114,7 @@ var _user$project$Lia_Effect_Update$update = F2(
 							_1: A4(
 								_user$project$Tts_Tts$speak,
 								_user$project$Lia_Effect_Update$TTS,
-								_elm_lang$core$Maybe$Just('sabrina'),
+								_elm_lang$core$Maybe$Just('samantha'),
 								'en_US',
 								_p2._0),
 							_2: false
@@ -13840,6 +13881,15 @@ var _user$project$Lia_Inline_View$view = F2(
 						_0: A2(_user$project$Lia_Inline_View$view, visible, _p1._0),
 						_1: {ctor: '[]'}
 					});
+			case 'Strike':
+				return A2(
+					_elm_lang$html$Html$s,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: A2(_user$project$Lia_Inline_View$view, visible, _p1._0),
+						_1: {ctor: '[]'}
+					});
 			case 'Underline':
 				return A2(
 					_elm_lang$html$Html$u,
@@ -13858,6 +13908,16 @@ var _user$project$Lia_Inline_View$view = F2(
 						_0: A2(_user$project$Lia_Inline_View$view, visible, _p1._0),
 						_1: {ctor: '[]'}
 					});
+			case 'Container':
+				return A2(
+					_elm_lang$html$Html$span,
+					{ctor: '[]'},
+					A2(
+						_elm_lang$core$List$map,
+						function (e) {
+							return A2(_user$project$Lia_Inline_View$view, visible, e);
+						},
+						_p1._0));
 			case 'Ref':
 				return _user$project$Lia_Inline_View$reference(_p1._0);
 			case 'Formula':
@@ -14714,7 +14774,7 @@ var _user$project$Lia$init = F2(
 var _user$project$Lia$init_plain = _user$project$Lia$init(_user$project$Lia_Types$Plain);
 var _user$project$Lia$init_slides = _user$project$Lia$init(_user$project$Lia_Types$Slides);
 
-var _user$project$Readme$text = '<!--\nComments have to be enclosed by curly braces and can be put everywhere...\nThese can be used to comment single elements, lines, and multi-lines...\n-->\n\n# Main Markdown\n\nParagraphs are separated by newlines ...\n\n* XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n* XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n* XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n--{{1}}--\nThis is some kind of first explanation text ...\n\n                         --{{2}}--\n\nThe second one comes afterwards.\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\nXXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX\n\n\n## Basic Inlines\n\n\\*bold\\* -> *bold*\n\n\\~italic\\~ -> ~italic~\n\n\\^superscript\\^ -> ^superscript^\n\n\\_underline\\_ -> _underline_\n\n\nCombinations are allowed:\n\n\\~\\*bold italic\\*\\~ -> ~*bold italic*~\n\n\\_\\*bold underline\\*\\_ -> _*bold underline*_\n\n\\_\\~italic underline\\~\\_ -> _~italic underline~_\n\n\\_\\~\\*bold italic underline\\*\\~\\_ -> _~*bold italic underline*~_\n\n## Code\n\nCode can be either `inline` or explicit:\n\n``` c\n#include <stdio.h>\n\nvoid main(int) {\n    println(\"%d\\n\", 1234);\n}\n```\n\n``` python\nimport math\n\ndef sqrt(val):\n    return math.sqrt(val)\n```\n\n## Quize\n\n### Single-Choice\n\nDie zwei ist die einzig richtige Antwort\n\n[( )] 1\n[(X)] 2\n[( )] Oder 3\n[[?]] Es gibt nur eine möglichkeit\n[[?]] Nummer 2 ist es\n[[?]] Alles aufgebraucht\n\n### Multiple-Choice\n\nZwei von Vier?\n\n[[ ]] nein\n[[X]] Ja\n[[X]] auch Ja\n[[ ]] auf keinen Fall\n[[?]] Es gibt nur eine möglichkeit\n[[?]] Nummer 2 ist es\n[[?]] Alles aufgebraucht\n\n### Texteingaben\n\nWie sieht Pi aus, bis auf 5 Stellen nach dem Komma?\n\n[[3.14159]]\n\n## effects\n\n                                  {{1}}\nAAA AAA AAA AAA {{3}}{{*test*}} AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\nAAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\nAAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA\n\n{{2}}\n{{\n\n![Image](http://package.elm-lang.org/assets/favicon.ico)\n\n[[ ]] nein\n[[X]] Ja\n[[X]] auch Ja\n[[ ]] auf keinen Fall\n\n}}\n                                  {{1}}\nBBB BBB BBB BBB BBB BBB BBB {{3}}{{*test*}} {{3}}{{*test*}} BBB BBB BBB BBB BBB BBB BBB\n\n## References\n\nLinks: [Google](http://www.google.de)\n\nImages:\n\n![Image](http://package.elm-lang.org/assets/favicon.ico)\n\nMovies:\n\n!![Movie](https://www.youtube.com/embed/EDp6UmaA9CM)\n\n## Quotes\n\n> This is a quote ...\n>\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n> xxx xxx xxx xxx xxx xxx xxx xxx xxx\n\n## Formulas\n\nsimple inline formulas $ \\frac{a+b}{\\sum x} * \\int x $\nor larger multiline formulas\n\n$$\n\\frac{a+b}{\\sum x}\n      * \\int x\n$$\n\n\n## Symboles\n\n### Arrows\n\n->, ->>, >->, <-, <-<, <<-, <->, =>, <=, <=>\n\n-->, <--, <-->, ==>, <==, <==>\n\n~>, <~\n\n### Smileys\n\n:-), ;-), :-D, :-O, :-(, :-|, :-/, :-P, :-*, :\'), :\'(\n\n### Escape Chars\n\n\\*, \\~, \\_, \\#\n\n## Tables\n\n| h1   | h2   | h3   |\n|:-----|-----:|------|\n| a    |    b |  c   |\n| aa   |   bb |  cc  |\n| aaa  |  bbb | ccc  |\n| aaaa | bbbb | cccc |\n\n## Enumeration\n\n* bullets\n* xxx\n  xxx\n\n## Html\n\nThis is normal Markdown ...\n<b id=\"test\" style=\"background-color:blue;color:red\">\nThis is a bold and colored html...\n</b> that can be used inline or <br> <br> everywhere\n\n<img src=\"http://package.elm-lang.org/assets/favicon.ico\">\n\ns\n\n\n## Misc\n\nhorizontal line\n\n---\n\nxxx\n\n\n';
+var _user$project$Readme$text = '# Lia\n\nA Markdown format for writing interactive online courses.\n\n\n                                     --{{1}}--\nWith Lia we try to implement an extended Markdown format that should enable\neveryone to create, share, adapt, translate or correct and extend online courses\nwithout the need of beeing a web-developer.\n\n                                     --{{2}}--\nEverything that is required is simple text-editor and a web-browser. Or you\nstart directly to create and share your course on github.\n\n\n## Basic Text-Formating\n\n                                    --{{0}}--\nWe tried to use the github flavored Markdown style for simple formating with\nsome additional elements.\n\n\\*italic\\* -> *italic*\n\n\\*\\*bold\\*\\* -> **bold**\n\n\\*\\*\\*bold and italic \\*\\*\\* -> ***bold and italic ***\n\n\\_also italic\\_ -> _also italic_\n\n\\_\\_also bold\\_\\_ -> __also bold__\n\n\\_\\_\\_also bold and italic\\_\\_\\_ -> ___also bold and italic___\n\n\\~strike\\~ -> ~strike~\n\n                                       {{1}}\n{{\n\n\\~\\~underline\\~\\~ -> ~~underline~~\n\n\\~\\~\\~underline\\~\\~\\~ -> ~~~strike and underline~~~\n\n\\^superscript\\^ -> ^superscript^ ^^superscript^^ ^^^superscript^^^\n\n}}\n\n                                     --{{1}}--\nThese exceptions are for example underline and its combination with strike\nthroug or the application of superscript. If you superscript superscript you\ncan get even smaller.\n\n### Combinations\n\n                                     --{{0}}--\nAs you can see from the examples you can combine all elements freely.\n\n\n\\*\\*bold \\_bold italic\\_\\*\\* -> **bold _italic_**\n\n\\*\\*\\~bold strike\\~ \\~\\~bold underline\\~\\~\\*\\* -> **~bold strike~ ~~bold underline~~**\n\n\\*\\~italic strike\\~ \\~\\~italic underline\\~\\~\\* -> *~italic strike~ ~~italic underline~~*\n\n### Symbols\n\n                                     --{{0}}--\nIf you want to, then you can use any kind of arrows, these symbols are generated\nautomatically for you ...\n\n->, ->>, >->, <-, <-<, <<-, <->, =>, <=, <=>\n\n-->, <--, <-->, ==>, <==, <==>\n\n~>, <~\n\n                                     --{{1}}--\nBut you can also use some basic smileys. We will try to extend this partial\nsupport in the future.\n\n                                       {{1}}\n:-), ;-), :-D, :-O, :-(, :-|, :-/, :-P, :-*, :\'), :\'(\n\n\n## Math-Mode\n\nsss\n\n## Syntax Highlighting\n\nlll\n\n## Quizes\n\n## Effects\n\n\n\n';
 
 var _user$project$Main$Model = F3(
 	function (a, b, c) {

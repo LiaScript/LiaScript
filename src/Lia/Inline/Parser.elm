@@ -206,9 +206,14 @@ smileys =
                 ]
 
 
-between_ : String -> Parser s e -> Parser s e
-between_ str p =
-    spaces *> string str *> p <* string str
+between_ : String -> Parser PState Inline
+between_ str =
+    lazy <|
+        \() ->
+            choice
+                [ string str *> inlines <* string str
+                , Container <$> (string str *> manyTill inlines (string str))
+                ]
 
 
 strings : Parser PState Inline
@@ -217,25 +222,28 @@ strings =
         \() ->
             let
                 base =
-                    Chars <$> regex "[^#*~_:;`!\\^\\[\\|{}\\\\\\n\\-<>=|$]+" <?> "base string"
+                    Chars <$> regex "[^#*_~:;`!\\^\\[\\|{}\\\\\\n\\-<>=|$]+" <?> "base string"
 
                 escape =
                     Chars <$> (spaces *> string "\\" *> regex "[\\^#*_~`\\\\\\|$]") <?> "escape string"
 
-                bold =
-                    Bold <$> between_ "*" inlines <?> "bold string"
-
                 italic =
-                    Italic <$> between_ "~" inlines <?> "italic string"
+                    Italic <$> (between_ "*" <|> between_ "_") <?> "italic string"
+
+                bold =
+                    Bold <$> (between_ "**" <|> between_ "__") <?> "bold string"
+
+                strike =
+                    Strike <$> between_ "~" <?> "striked out string"
 
                 underline =
-                    Underline <$> between_ "_" inlines <?> "underline string"
+                    Underline <$> between_ "~~" <?> "underlined string"
 
                 superscript =
-                    Superscript <$> between_ "^" inlines <?> "superscript string"
+                    Superscript <$> between_ "^" <?> "superscript string"
 
                 characters =
-                    Chars <$> regex "[*~_:;\\-<>=${}]"
+                    Chars <$> regex "[*~:_;\\-<>=${}]"
 
                 base2 =
                     Chars <$> regex "[^#\\n|]+" <?> "base string"
@@ -249,6 +257,7 @@ strings =
                 , bold
                 , italic
                 , underline
+                , strike
                 , superscript
                 , characters
                 , base2

@@ -6,6 +6,7 @@ type Inline
     | Symbol String
     | Bold Inline
     | Italic Inline
+    | Strike Inline
     | Underline Inline
     | Superscript Inline
     | Code String
@@ -13,6 +14,7 @@ type Inline
     | Ref Reference
     | HTML String
     | EInline Int (List Inline)
+    | Container (List Inline)
 
 
 type Reference

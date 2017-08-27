@@ -3,168 +3,74 @@ module Readme exposing (..)
 
 text : String
 text =
-    """<!--
-Comments have to be enclosed by curly braces and can be put everywhere...
-These can be used to comment single elements, lines, and multi-lines...
--->
+    """# Lia
 
-# Main Markdown
-
-Paragraphs are separated by newlines ...
-
-* XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
-  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
-  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
-
-* XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
-  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
-  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
-
-* XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
-  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
-  XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
-
---{{1}}--
-This is some kind of first explanation text ...
-
-                         --{{2}}--
-
-The second one comes afterwards.
-
-XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
-XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
-XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
-
-XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
-XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
-XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
+A Markdown format for writing interactive online courses.
 
 
-## Basic Inlines
+                                     --{{1}}--
+With Lia we try to implement an extended Markdown format that should enable
+everyone to create, share, adapt, translate or correct and extend online courses
+without the need of beeing a web-developer.
 
-\\*bold\\* -> *bold*
-
-\\~italic\\~ -> ~italic~
-
-\\^superscript\\^ -> ^superscript^
-
-\\_underline\\_ -> _underline_
+                                     --{{2}}--
+Everything that is required is simple text-editor and a web-browser. Or you
+start directly to create and share your course on github.
 
 
-Combinations are allowed:
+## Basic Text-Formating
 
-\\~\\*bold italic\\*\\~ -> ~*bold italic*~
+                                    --{{0}}--
+We tried to use the github flavored Markdown style for simple formating with
+some additional elements.
 
-\\_\\*bold underline\\*\\_ -> _*bold underline*_
+\\*italic\\* -> *italic*
 
-\\_\\~italic underline\\~\\_ -> _~italic underline~_
+\\*\\*bold\\*\\* -> **bold**
 
-\\_\\~\\*bold italic underline\\*\\~\\_ -> _~*bold italic underline*~_
+\\*\\*\\*bold and italic \\*\\*\\* -> ***bold and italic ***
 
-## Code
+\\_also italic\\_ -> _also italic_
 
-Code can be either `inline` or explicit:
+\\_\\_also bold\\_\\_ -> __also bold__
 
-``` c
-#include <stdio.h>
+\\_\\_\\_also bold and italic\\_\\_\\_ -> ___also bold and italic___
 
-void main(int) {
-    println("%d\\n", 1234);
-}
-```
+\\~strike\\~ -> ~strike~
 
-``` python
-import math
-
-def sqrt(val):
-    return math.sqrt(val)
-```
-
-## Quize
-
-### Single-Choice
-
-Die zwei ist die einzig richtige Antwort
-
-[( )] 1
-[(X)] 2
-[( )] Oder 3
-[[?]] Es gibt nur eine möglichkeit
-[[?]] Nummer 2 ist es
-[[?]] Alles aufgebraucht
-
-### Multiple-Choice
-
-Zwei von Vier?
-
-[[ ]] nein
-[[X]] Ja
-[[X]] auch Ja
-[[ ]] auf keinen Fall
-[[?]] Es gibt nur eine möglichkeit
-[[?]] Nummer 2 ist es
-[[?]] Alles aufgebraucht
-
-### Texteingaben
-
-Wie sieht Pi aus, bis auf 5 Stellen nach dem Komma?
-
-[[3.14159]]
-
-## effects
-
-                                  {{1}}
-AAA AAA AAA AAA {{3}}{{*test*}} AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
-AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
-AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA AAA
-
-{{2}}
+                                       {{1}}
 {{
 
-![Image](http://package.elm-lang.org/assets/favicon.ico)
+\\~\\~underline\\~\\~ -> ~~underline~~
 
-[[ ]] nein
-[[X]] Ja
-[[X]] auch Ja
-[[ ]] auf keinen Fall
+\\~\\~\\~underline\\~\\~\\~ -> ~~~strike and underline~~~
+
+\\^superscript\\^ -> ^superscript^ ^^superscript^^ ^^^superscript^^^
 
 }}
-                                  {{1}}
-BBB BBB BBB BBB BBB BBB BBB {{3}}{{*test*}} {{3}}{{*test*}} BBB BBB BBB BBB BBB BBB BBB
 
-## References
+                                     --{{1}}--
+These exceptions are for example underline and its combination with strike
+throug or the application of superscript. If you superscript superscript you
+can get even smaller.
 
-Links: [Google](http://www.google.de)
+### Combinations
 
-Images:
-
-![Image](http://package.elm-lang.org/assets/favicon.ico)
-
-Movies:
-
-!![Movie](https://www.youtube.com/embed/EDp6UmaA9CM)
-
-## Quotes
-
-> This is a quote ...
->
-> xxx xxx xxx xxx xxx xxx xxx xxx xxx
-> xxx xxx xxx xxx xxx xxx xxx xxx xxx
-
-## Formulas
-
-simple inline formulas $ \\frac{a+b}{\\sum x} * \\int x $
-or larger multiline formulas
-
-$$
-\\frac{a+b}{\\sum x}
-      * \\int x
-$$
+                                     --{{0}}--
+As you can see from the examples you can combine all elements freely.
 
 
-## Symboles
+\\*\\*bold \\_bold italic\\_\\*\\* -> **bold _italic_**
 
-### Arrows
+\\*\\*\\~bold strike\\~ \\~\\~bold underline\\~\\~\\*\\* -> **~bold strike~ ~~bold underline~~**
+
+\\*\\~italic strike\\~ \\~\\~italic underline\\~\\~\\* -> *~italic strike~ ~~italic underline~~*
+
+### Symbols
+
+                                     --{{0}}--
+If you want to, then you can use any kind of arrows, these symbols are generated
+automatically for you ...
 
 ->, ->>, >->, <-, <-<, <<-, <->, =>, <=, <=>
 
@@ -172,48 +78,26 @@ $$
 
 ~>, <~
 
-### Smileys
+                                     --{{1}}--
+But you can also use some basic smileys. We will try to extend this partial
+support in the future.
 
+                                       {{1}}
 :-), ;-), :-D, :-O, :-(, :-|, :-/, :-P, :-*, :'), :'(
 
-### Escape Chars
 
-\\*, \\~, \\_, \\#
+## Math-Mode
 
-## Tables
+sss
 
-| h1   | h2   | h3   |
-|:-----|-----:|------|
-| a    |    b |  c   |
-| aa   |   bb |  cc  |
-| aaa  |  bbb | ccc  |
-| aaaa | bbbb | cccc |
+## Syntax Highlighting
 
-## Enumeration
+lll
 
-* bullets
-* xxx
-  xxx
+## Quizes
 
-## Html
+## Effects
 
-This is normal Markdown ...
-<b id="test" style="background-color:blue;color:red">
-This is a bold and colored html...
-</b> that can be used inline or <br> <br> everywhere
-
-<img src="http://package.elm-lang.org/assets/favicon.ico">
-
-s
-
-
-## Misc
-
-horizontal line
-
----
-
-xxx
 
 
 """
