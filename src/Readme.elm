@@ -5,23 +5,7 @@ text : String
 text =
     """# Lia
 
-A Markdown format for writing interactive online courses.
-
-* alpha
-* beta
-* gamma and
-  delta
-  plus epsilon
-
-
-                                       {{1}}
-{{
-
-* -> ~~underline~~
-* -> ~~~strike and underline~~~
-* -> ^superscript^ ^^superscript^^ ^^^superscript^^^
-
-}}
+An extended Markdown format for writing interactive online courses.
 
 
                                      --{{1}}--
@@ -57,11 +41,11 @@ some additional elements.
                                        {{1}}
 {{
 
-* \\~\\~underline\\~\\~ -> ~~underline~~
+\\~\\~underline\\~\\~ -> ~~underline~~
 
-* \\~\\~\\~strike and underline\\~\\~\\~ -> ~~~strike and underline~~~
+\\~\\~\\~strike and underline\\~\\~\\~ -> ~~~strike and underline~~~
 
-* \\^superscript\\^ -> ^superscript^ ^^superscript^^ ^^^superscript^^^
+\\^superscript\\^ -> ^superscript^ ^^superscript^^ ^^^superscript^^^
 
 }}
 
@@ -84,7 +68,12 @@ As you can see from the examples you can combine all elements freely.
 
 ### Escape Chars
 
-\\*, \\~, \\_, \\#, \\{, \\}, \\[, \\], \\|, \\`
+\\*, \\~, \\_, \\#, \\{, \\}, \\[, \\], \\|, \\`, \\$
+
+                                     --{{0}}--
+If you want to use multiple stars, hash-tags, or other syntax elements within
+your script without applying their functionality, then you can escape them with
+a starting backslash.
 
 ### Symbols
 
@@ -108,16 +97,94 @@ support in the future.
 
 ## Math-Mode
 
-sss
+{{0}}{{ via KaTex http://katex.org }}
+
+{{1}}{{ Inline math-mode `$ \\frac{a}{\\sum{b+i}} $` -> $ \\frac{a}{\\sum{b+i}} $ }}
+
+                                        {{2}}
+Multi-line math-mode can be applied by double dollars `$$ formula $$`
+$$
+  \\frac{a}{\\sum{b+i}}
+$$
+
+                                    --{{0}}--
+We apply KaTeX for math-formating, see the documentation at www.katex.org.
+
+                                    --{{1}}--
+A formula can be either inline with single dollars.
+
+                                    --{{2}}--
+Or multiline by using the double dollar notation.
 
 ## Syntax Highlighting
 
-lll
+### Inline-Code
+
+Inline code via \\` enter some code in here 1\\#\\#\\#\\$& \\` -> ` enter some code in here 1###$& `
+
+### Block-Code
+
+
+``` c
+#include "test.h"
+
+int main () {
+    printf("this is an example\\n");
+    return 0;
+}
+```
+
+``` python
+import math
+
+def lia_sqrt(val):
+    return math.sqrt(val) + 22
+```
+
+                                    --{{0}}--
+Syntax highlighting is enabled with highlight.js.
 
 ## Quizes
 
+### Single-Choice
+
+Only one element can be selected!
+
+    [( )] Wrong
+    [(X)] This is the **correct** answer
+    [( )] This is ~~wrong~~ too!
+
+### Multiple-Choice
+
+Multiple of them can be selected, or all, or none of them ...
+
+    [[ ]] Do not touch!
+    [[X]] Select this one ...
+    [[X]] ... and this one too!
+    [[ ]] also not correct..
+
+
+### Text Inputs
+
+Please enter the word "solution" into the text-field!
+
+    [[solution]]
+
+### Hints
+
+    [[super]]
+    [[?]] another word for awesome
+    [[?]] not as great as mega or terra
+    [[?]] hopefully not that bad
+    [[?]] there are no hints left
+
+
 ## Effects
 
+### Inline Effects
 
+### Block Effects
+
+### Comment Effects
 
 """

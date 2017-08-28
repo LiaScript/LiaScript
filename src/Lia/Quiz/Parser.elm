@@ -25,7 +25,7 @@ quiz =
 
 quiz_TextInput : Parser s Quiz
 quiz_TextInput =
-    TextInput <$> (string "[[" *> regex "[^\n\\]]+" <* regex "\\]\\]( *)\\n")
+    TextInput <$> (regex "[ \\t]*\\[\\[" *> regex "[^\n\\]]+" <* regex "\\]\\]( *)\\n")
 
 
 quiz_SingleChoice : Parser PState Quiz
@@ -44,11 +44,11 @@ quiz_SingleChoice =
                                 -1
                    )
     in
-    many (checked False (string "[( )]"))
+    many (checked False (regex "[ \\t]*\\[\\( \\)\\]"))
         |> map (\a b -> List.append a [ b ])
-        |> andMap (checked True (string "[(X)]"))
+        |> andMap (checked True (regex "[ \\t]*\\[\\(X\\)\\]"))
         |> map (++)
-        |> andMap (many (checked False (string "[( )]")))
+        |> andMap (many (checked False (regex "[ \\t]*\\[\\( \\)\\]")))
         |> map (\q -> SingleChoice (get_result q) (List.map (\( _, qq ) -> qq) q))
 
 
@@ -59,7 +59,7 @@ checked b p =
 
 quiz_hints : Parser PState (List (List Inline))
 quiz_hints =
-    many (string "[[?]]" *> line <* newline)
+    many (regex "[ \\t]*\\[\\[\\?\\]\\]" *> line <* newline)
 
 
 quiz_MultipleChoice : Parser PState Quiz
@@ -67,7 +67,7 @@ quiz_MultipleChoice =
     MultipleChoice
         <$> many1
                 (choice
-                    [ checked True (string "[[X]]")
-                    , checked False (string "[[ ]]")
+                    [ checked True (regex "[ \\t]*\\[\\[X\\]\\]")
+                    , checked False (regex "[ \\t]*\\[\\[ \\]\\]")
                     ]
                 )
