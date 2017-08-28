@@ -12833,7 +12833,11 @@ var _user$project$Lia_Parser$ordered_list = function () {
 							_elm_community$parser_combinators$Combine_ops['*>'],
 							_elm_community$parser_combinators$Combine$modifyState(
 								mod_s(true)),
-							_elm_community$parser_combinators$Combine$many1(_user$project$Lia_Parser$blocks)),
+							_elm_community$parser_combinators$Combine$many1(
+								A2(
+									_elm_community$parser_combinators$Combine_ops['<*'],
+									_user$project$Lia_Parser$blocks,
+									_elm_community$parser_combinators$Combine$regex('[\\n]*')))),
 						_user$project$Lia_Inline_Parser$newlines),
 					_elm_community$parser_combinators$Combine$modifyState(
 						mod_s(false))))));
@@ -12865,7 +12869,11 @@ var _user$project$Lia_Parser$unordered_list = function () {
 							_elm_community$parser_combinators$Combine_ops['*>'],
 							_elm_community$parser_combinators$Combine$modifyState(
 								mod_s(true)),
-							_elm_community$parser_combinators$Combine$many1(_user$project$Lia_Parser$blocks)),
+							_elm_community$parser_combinators$Combine$many1(
+								A2(
+									_elm_community$parser_combinators$Combine_ops['<*'],
+									_user$project$Lia_Parser$blocks,
+									_elm_community$parser_combinators$Combine$regex('[\\n]*')))),
 						_user$project$Lia_Inline_Parser$newlines),
 					_elm_community$parser_combinators$Combine$modifyState(
 						mod_s(false))))));
