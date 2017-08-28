@@ -64,7 +64,6 @@ unordered_list =
                     *> regex "[*+-]( )"
                     *> (modifyState (mod_s True)
                             *> many1 (blocks <* regex "[\\n]?")
-                            <* newlines
                             <* modifyState (mod_s False)
                        )
                 )
@@ -85,7 +84,6 @@ ordered_list =
                     *> regex "[0-9]+\\. "
                     *> (modifyState (mod_s True)
                             *> many1 (blocks <* regex "[\\n]?")
-                            <* newlines
                             <* modifyState (mod_s False)
                        )
                 )

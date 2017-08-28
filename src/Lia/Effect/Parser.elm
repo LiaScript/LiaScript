@@ -21,10 +21,10 @@ eblock blocks =
             regex "( *){{" *> effect_number <* regex "}}( *)[\\n]"
 
         multi_block =
-            regex "( *){{[\\n]+" *> manyTill (blocks <* regex "[ \\n\\t]+") (regex "( *)}}")
+            regex "( *){{[\\n]+" *> manyTill (blocks <* regex "[ \\n\\t]*") (regex "( *)}}")
 
         single_block =
-            List.singleton <$> (regex "[ \\n\\t]+" *> blocks)
+            List.singleton <$> (regex "[ \\n\\t]*" *> blocks)
     in
     EBlock <$> number <*> (multi_block <|> single_block)
 

@@ -14,6 +14,16 @@ A Markdown format for writing interactive online courses.
   plus epsilon
 
 
+                                       {{1}}
+{{
+
+* -> ~~underline~~
+* -> ~~~strike and underline~~~
+* -> ^superscript^ ^^superscript^^ ^^^superscript^^^
+
+}}
+
+
                                      --{{1}}--
 With Lia we try to implement an extended Markdown format that should enable
 everyone to create, share, adapt, translate or correct and extend online courses

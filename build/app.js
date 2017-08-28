@@ -11654,7 +11654,7 @@ var _user$project$Lia_Effect_Parser$eblock = function (blocks) {
 		_elm_lang$core$List$singleton,
 		A2(
 			_elm_community$parser_combinators$Combine_ops['*>'],
-			_elm_community$parser_combinators$Combine$regex('[ \\n\\t]+'),
+			_elm_community$parser_combinators$Combine$regex('[ \\n\\t]*'),
 			blocks));
 	var multi_block = A2(
 		_elm_community$parser_combinators$Combine_ops['*>'],
@@ -11664,7 +11664,7 @@ var _user$project$Lia_Effect_Parser$eblock = function (blocks) {
 			A2(
 				_elm_community$parser_combinators$Combine_ops['<*'],
 				blocks,
-				_elm_community$parser_combinators$Combine$regex('[ \\n\\t]+')),
+				_elm_community$parser_combinators$Combine$regex('[ \\n\\t]*')),
 			_elm_community$parser_combinators$Combine$regex('( *)}}')));
 	var number = A2(
 		_elm_community$parser_combinators$Combine_ops['<*'],
@@ -12828,17 +12828,14 @@ var _user$project$Lia_Parser$ordered_list = function () {
 				A2(
 					_elm_community$parser_combinators$Combine_ops['<*'],
 					A2(
-						_elm_community$parser_combinators$Combine_ops['<*'],
-						A2(
-							_elm_community$parser_combinators$Combine_ops['*>'],
-							_elm_community$parser_combinators$Combine$modifyState(
-								mod_s(true)),
-							_elm_community$parser_combinators$Combine$many1(
-								A2(
-									_elm_community$parser_combinators$Combine_ops['<*'],
-									_user$project$Lia_Parser$blocks,
-									_elm_community$parser_combinators$Combine$regex('[\\n]?')))),
-						_user$project$Lia_Inline_Parser$newlines),
+						_elm_community$parser_combinators$Combine_ops['*>'],
+						_elm_community$parser_combinators$Combine$modifyState(
+							mod_s(true)),
+						_elm_community$parser_combinators$Combine$many1(
+							A2(
+								_elm_community$parser_combinators$Combine_ops['<*'],
+								_user$project$Lia_Parser$blocks,
+								_elm_community$parser_combinators$Combine$regex('[\\n]?')))),
 					_elm_community$parser_combinators$Combine$modifyState(
 						mod_s(false))))));
 }();
@@ -12864,17 +12861,14 @@ var _user$project$Lia_Parser$unordered_list = function () {
 				A2(
 					_elm_community$parser_combinators$Combine_ops['<*'],
 					A2(
-						_elm_community$parser_combinators$Combine_ops['<*'],
-						A2(
-							_elm_community$parser_combinators$Combine_ops['*>'],
-							_elm_community$parser_combinators$Combine$modifyState(
-								mod_s(true)),
-							_elm_community$parser_combinators$Combine$many1(
-								A2(
-									_elm_community$parser_combinators$Combine_ops['<*'],
-									_user$project$Lia_Parser$blocks,
-									_elm_community$parser_combinators$Combine$regex('[\\n]?')))),
-						_user$project$Lia_Inline_Parser$newlines),
+						_elm_community$parser_combinators$Combine_ops['*>'],
+						_elm_community$parser_combinators$Combine$modifyState(
+							mod_s(true)),
+						_elm_community$parser_combinators$Combine$many1(
+							A2(
+								_elm_community$parser_combinators$Combine_ops['<*'],
+								_user$project$Lia_Parser$blocks,
+								_elm_community$parser_combinators$Combine$regex('[\\n]?')))),
 					_elm_community$parser_combinators$Combine$modifyState(
 						mod_s(false))))));
 }();
@@ -14872,7 +14866,7 @@ var _user$project$Lia$init = F2(
 var _user$project$Lia$init_plain = _user$project$Lia$init(_user$project$Lia_Types$Plain);
 var _user$project$Lia$init_slides = _user$project$Lia$init(_user$project$Lia_Types$Slides);
 
-var _user$project$Readme$text = '# Lia\n\nA Markdown format for writing interactive online courses.\n\n* alpha\n* beta\n* gamma and\n  delta\n  plus epsilon\n\n\n                                     --{{1}}--\nWith Lia we try to implement an extended Markdown format that should enable\neveryone to create, share, adapt, translate or correct and extend online courses\nwithout the need of beeing a web-developer.\n\n                                     --{{2}}--\nEverything that is required is simple text-editor and a web-browser. Or you\nstart directly to create and share your course on github.\n\n\n## Basic Text-Formating\n\n                                    --{{0}}--\nWe tried to use the github flavored Markdown style for simple formating with\nsome additional elements.\n\n\\*italic\\* -> *italic*\n\n\\*\\*bold\\*\\* -> **bold**\n\n\\*\\*\\*bold and italic \\*\\*\\* -> ***bold and italic ***\n\n\\_also italic\\_ -> _also italic_\n\n\\_\\_also bold\\_\\_ -> __also bold__\n\n\\_\\_\\_also bold and italic\\_\\_\\_ -> ___also bold and italic___\n\n\\~strike\\~ -> ~strike~\n\n                                       {{1}}\n{{\n\n* \\~\\~underline\\~\\~ -> ~~underline~~\n\n* \\~\\~\\~strike and underline\\~\\~\\~ -> ~~~strike and underline~~~\n\n* \\^superscript\\^ -> ^superscript^ ^^superscript^^ ^^^superscript^^^\n\n}}\n\n                                     --{{1}}--\nThese exceptions are for example underline and its combination with strike\nthroug or the application of superscript. If you superscript superscript you\ncan get even smaller.\n\n### Combinations\n\n                                     --{{0}}--\nAs you can see from the examples you can combine all elements freely.\n\n\n\\*\\*bold \\_bold italic\\_\\*\\* -> **bold _italic_**\n\n\\*\\*\\~bold strike\\~ \\~\\~bold underline\\~\\~\\*\\* -> **~bold strike~ ~~bold underline~~**\n\n\\*\\~italic strike\\~ \\~\\~italic underline\\~\\~\\* -> *~italic strike~ ~~italic underline~~*\n\n### Escape Chars\n\n\\*, \\~, \\_, \\#, \\{, \\}, \\[, \\], \\|, \\`\n\n### Symbols\n\n                                     --{{0}}--\nIf you want to, then you can use any kind of arrows, these symbols are generated\nautomatically for you ...\n\n->, ->>, >->, <-, <-<, <<-, <->, =>, <=, <=>\n\n-->, <--, <-->, ==>, <==, <==>\n\n~>, <~\n\n                                     --{{1}}--\nBut you can also use some basic smileys. We will try to extend this partial\nsupport in the future.\n\n                                       {{1}}\n:-), ;-), :-D, :-O, :-(, :-|, :-/, :-P, :-*, :\'), :\'(\n\n\n## Math-Mode\n\nsss\n\n## Syntax Highlighting\n\nlll\n\n## Quizes\n\n## Effects\n\n\n\n';
+var _user$project$Readme$text = '# Lia\n\nA Markdown format for writing interactive online courses.\n\n* alpha\n* beta\n* gamma and\n  delta\n  plus epsilon\n\n\n                                       {{1}}\n{{\n\n* -> ~~underline~~\n* -> ~~~strike and underline~~~\n* -> ^superscript^ ^^superscript^^ ^^^superscript^^^\n\n}}\n\n\n                                     --{{1}}--\nWith Lia we try to implement an extended Markdown format that should enable\neveryone to create, share, adapt, translate or correct and extend online courses\nwithout the need of beeing a web-developer.\n\n                                     --{{2}}--\nEverything that is required is simple text-editor and a web-browser. Or you\nstart directly to create and share your course on github.\n\n\n## Basic Text-Formating\n\n                                    --{{0}}--\nWe tried to use the github flavored Markdown style for simple formating with\nsome additional elements.\n\n\\*italic\\* -> *italic*\n\n\\*\\*bold\\*\\* -> **bold**\n\n\\*\\*\\*bold and italic \\*\\*\\* -> ***bold and italic ***\n\n\\_also italic\\_ -> _also italic_\n\n\\_\\_also bold\\_\\_ -> __also bold__\n\n\\_\\_\\_also bold and italic\\_\\_\\_ -> ___also bold and italic___\n\n\\~strike\\~ -> ~strike~\n\n                                       {{1}}\n{{\n\n* \\~\\~underline\\~\\~ -> ~~underline~~\n\n* \\~\\~\\~strike and underline\\~\\~\\~ -> ~~~strike and underline~~~\n\n* \\^superscript\\^ -> ^superscript^ ^^superscript^^ ^^^superscript^^^\n\n}}\n\n                                     --{{1}}--\nThese exceptions are for example underline and its combination with strike\nthroug or the application of superscript. If you superscript superscript you\ncan get even smaller.\n\n### Combinations\n\n                                     --{{0}}--\nAs you can see from the examples you can combine all elements freely.\n\n\n\\*\\*bold \\_bold italic\\_\\*\\* -> **bold _italic_**\n\n\\*\\*\\~bold strike\\~ \\~\\~bold underline\\~\\~\\*\\* -> **~bold strike~ ~~bold underline~~**\n\n\\*\\~italic strike\\~ \\~\\~italic underline\\~\\~\\* -> *~italic strike~ ~~italic underline~~*\n\n### Escape Chars\n\n\\*, \\~, \\_, \\#, \\{, \\}, \\[, \\], \\|, \\`\n\n### Symbols\n\n                                     --{{0}}--\nIf you want to, then you can use any kind of arrows, these symbols are generated\nautomatically for you ...\n\n->, ->>, >->, <-, <-<, <<-, <->, =>, <=, <=>\n\n-->, <--, <-->, ==>, <==, <==>\n\n~>, <~\n\n                                     --{{1}}--\nBut you can also use some basic smileys. We will try to extend this partial\nsupport in the future.\n\n                                       {{1}}\n:-), ;-), :-D, :-O, :-(, :-|, :-/, :-P, :-*, :\'), :\'(\n\n\n## Math-Mode\n\nsss\n\n## Syntax Highlighting\n\nlll\n\n## Quizes\n\n## Effects\n\n\n\n';
 
 var _user$project$Main$Model = F3(
 	function (a, b, c) {
