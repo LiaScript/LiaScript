@@ -211,8 +211,15 @@ view_block model block =
         EBlock idx sub_blocks ->
             Effects.view_block model.effects (view_block model) idx sub_blocks
 
-        MList list ->
-            Html.div []
+        BulletList list ->
+            Html.ul []
+                (List.map
+                    (\l -> Html.li [] (List.map (\ll -> view_block model ll) l))
+                    list
+                )
+
+        OrderedList list ->
+            Html.ol []
                 (List.map
                     (\l -> Html.li [] [ view_block model l ])
                     list

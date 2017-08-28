@@ -10,6 +10,23 @@ import Lia.Quiz.Parser exposing (..)
 import Lia.Types exposing (..)
 
 
+identation : Parser PState ()
+identation =
+    let
+        ident s =
+            if s.skip_identation then
+                skip (succeed ())
+            else
+                String.repeat s.identation " "
+                    |> string
+                    |> skip
+
+        reset s =
+            { s | skip_identation = False }
+    in
+    withState ident <* modifyState reset
+
+
 blocks : Parser PState Block
 blocks =
     lazy <|
@@ -24,47 +41,71 @@ blocks =
                         , quote_block
                         , horizontal_line
                         , Quiz <$> quiz
-
-                        --  , list
+                        , bullet_list
                         , Paragraph <$> paragraph
                         ]
             in
-            comments *> b <* newlines
+            comments *> b
 
 
-list : Parser PState Block
-list =
+
+--<* newlines
+
+
+bullet_list : Parser PState Block
+bullet_list =
     let
-        identation =
-            String.length <$> regex "( *)\\*( )"
-
-        state i =
-            modifyState
-                (\s ->
-                    { s
-                        | indentation =
-                            if i > Maybe.withDefault 0 (List.head s.indentation) then
-                                i :: s.indentation
-                            else
-                                s.indentation
-                    }
-                )
-                *> succeed ()
-
-        rows =
-            many1 ((identation >>= state) *> blocks)
+        mod_s b s =
+            if b then
+                { s | skip_identation = True, identation = s.identation + 2 }
+            else
+                { s | skip_identation = False, identation = s.identation - 2 }
     in
-    MList <$> rows
+    BulletList
+        <$> many1
+                (identation
+                    *> regex "[*+-]( )"
+                    *> (modifyState (mod_s True)
+                            *> many1 blocks
+                            <* modifyState (mod_s False)
+                       )
+                )
+
+
+
+-- list : Parser PState Block
+-- list =
+--     let
+--         identation =
+--             String.length <$> regex "^( *)[+*-]( )"
+--
+--         state i =
+--             modifyState
+--                 (\s ->
+--                     { s
+--                         | indentation =
+--                             if i > Maybe.withDefault 0 (List.head s.indentation) then
+--                                 i :: s.indentation
+--                             else
+--                                 s.indentation
+--                     }
+--                 )
+--                 *> succeed ()
+--
+--         rows =
+--             many1 ((identation >>= state) *> blocks)
+--     in
+--     BulletList <$> rows
 
 
 horizontal_line : Parser PState Block
 horizontal_line =
-    HLine <$ regex "--[\\-]+"
+    HLine <$ (identation *> regex "--[\\-]+")
 
 
 paragraph : Parser PState Paragraph
 paragraph =
-    (\l -> combine <| List.concat l) <$> many (spaces *> line <* newline)
+    (\l -> combine <| List.concat l) <$> many1 (identation *> line <* newline)
 
 
 table : Parser PState Block
@@ -113,7 +154,7 @@ quote_block : Parser PState Block
 quote_block =
     let
         p =
-            regex "^" *> string ">" *> optional [ Chars "" ] line <* newline
+            identation *> string ">" *> optional [ Chars "" ] line <* newline
     in
     (\q -> Quote <| combine <| List.concat q) <$> many1 p
 
@@ -128,7 +169,7 @@ parse =
             String.trim <$> regex ".+" <* many1 newline
 
         body =
-            many blocks
+            many (blocks <* newlines)
 
         effect_counter =
             let

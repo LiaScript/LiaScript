@@ -11219,8 +11219,11 @@ var _user$project$Lia_Types$Slide = F4(
 	});
 var _user$project$Lia_Types$Plain = {ctor: 'Plain'};
 var _user$project$Lia_Types$Slides = {ctor: 'Slides'};
-var _user$project$Lia_Types$MList = function (a) {
-	return {ctor: 'MList', _0: a};
+var _user$project$Lia_Types$OrderedList = function (a) {
+	return {ctor: 'OrderedList', _0: a};
+};
+var _user$project$Lia_Types$BulletList = function (a) {
+	return {ctor: 'BulletList', _0: a};
 };
 var _user$project$Lia_Types$EComment = F2(
 	function (a, b) {
@@ -11587,16 +11590,13 @@ var _user$project$Lia_Model$Model = F9(
 var _user$project$Lia_PState$init = {
 	quiz: 0,
 	section: {ctor: '[]'},
-	indentation: {
-		ctor: '::',
-		_0: 0,
-		_1: {ctor: '[]'}
-	},
+	identation: 0,
+	skip_identation: false,
 	effects: 0
 };
-var _user$project$Lia_PState$PState = F4(
-	function (a, b, c, d) {
-		return {quiz: a, section: b, indentation: c, effects: d};
+var _user$project$Lia_PState$PState = F5(
+	function (a, b, c, d, e) {
+		return {quiz: a, section: b, identation: c, skip_identation: d, effects: e};
 	});
 
 var _user$project$Lia_Effect_Parser$effect_number = function () {
@@ -11649,14 +11649,23 @@ var _user$project$Lia_Effect_Parser$einline = function (inlines) {
 		multi_inline);
 };
 var _user$project$Lia_Effect_Parser$eblock = function (blocks) {
-	var single_block = A2(_elm_community$parser_combinators$Combine_ops['<$>'], _elm_lang$core$List$singleton, blocks);
+	var single_block = A2(
+		_elm_community$parser_combinators$Combine_ops['<$>'],
+		_elm_lang$core$List$singleton,
+		A2(
+			_elm_community$parser_combinators$Combine_ops['*>'],
+			_elm_community$parser_combinators$Combine$regex('[ \\n\\t]+'),
+			blocks));
 	var multi_block = A2(
 		_elm_community$parser_combinators$Combine_ops['*>'],
-		_elm_community$parser_combinators$Combine$regex('( *){{'),
+		_elm_community$parser_combinators$Combine$regex('( *){{[\\n]+'),
 		A2(
 			_elm_community$parser_combinators$Combine$manyTill,
-			blocks,
-			_elm_community$parser_combinators$Combine$regex('}}[\\n]?')));
+			A2(
+				_elm_community$parser_combinators$Combine_ops['<*'],
+				blocks,
+				_elm_community$parser_combinators$Combine$regex('[ \\n\\t]+')),
+			_elm_community$parser_combinators$Combine$regex('( *)}}')));
 	var number = A2(
 		_elm_community$parser_combinators$Combine_ops['<*'],
 		A2(
@@ -11669,6 +11678,8 @@ var _user$project$Lia_Effect_Parser$eblock = function (blocks) {
 		A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$EBlock, number),
 		A2(_elm_community$parser_combinators$Combine_ops['<|>'], multi_block, single_block));
 };
+var _user$project$Lia_Effect_Parser$newlines = _elm_community$parser_combinators$Combine$skip(
+	_elm_community$parser_combinators$Combine$regex('[ \\n\\t]+'));
 
 var _user$project$Lia_Inline_Parser$code = A2(
 	_elm_community$parser_combinators$Combine_ops['<$>'],
@@ -12202,12 +12213,12 @@ var _user$project$Lia_Inline_Parser$strings = _elm_community$parser_combinators$
 			_user$project$Lia_Inline_Types$Chars,
 			A2(
 				_elm_community$parser_combinators$Combine_ops['<?>'],
-				_elm_community$parser_combinators$Combine$regex('[^#\\n|]+'),
+				_elm_community$parser_combinators$Combine$regex('[^#\\n|*]+'),
 				'base string'));
 		var characters = A2(
 			_elm_community$parser_combinators$Combine_ops['<$>'],
 			_user$project$Lia_Inline_Types$Chars,
-			_elm_community$parser_combinators$Combine$regex('[*~:_;\\-<>=${}]'));
+			_elm_community$parser_combinators$Combine$regex('[~:_;\\-<>=${}]'));
 		var superscript = A2(
 			_elm_community$parser_combinators$Combine_ops['<$>'],
 			_user$project$Lia_Inline_Types$Superscript,
@@ -12574,33 +12585,6 @@ var _user$project$Lia_Parser$formatError = F2(
 										expectationSeparator,
 										A2(_elm_lang$core$String$join, expectationSeparator, ms)))))))));
 	});
-var _user$project$Lia_Parser$quote_block = function () {
-	var p = A2(
-		_elm_community$parser_combinators$Combine_ops['<*'],
-		A2(
-			_elm_community$parser_combinators$Combine_ops['*>'],
-			A2(
-				_elm_community$parser_combinators$Combine_ops['*>'],
-				_elm_community$parser_combinators$Combine$regex('^'),
-				_elm_community$parser_combinators$Combine$string('>')),
-			A2(
-				_elm_community$parser_combinators$Combine$optional,
-				{
-					ctor: '::',
-					_0: _user$project$Lia_Inline_Types$Chars(''),
-					_1: {ctor: '[]'}
-				},
-				_user$project$Lia_Inline_Parser$line)),
-		_user$project$Lia_Inline_Parser$newline);
-	return A2(
-		_elm_community$parser_combinators$Combine_ops['<$>'],
-		function (q) {
-			return _user$project$Lia_Types$Quote(
-				_user$project$Lia_Inline_Parser$combine(
-					_elm_lang$core$List$concat(q)));
-		},
-		_elm_community$parser_combinators$Combine$many1(p));
-}();
 var _user$project$Lia_Parser$code_block = function () {
 	var block = A2(
 		_elm_community$parser_combinators$Combine_ops['<$>'],
@@ -12712,21 +12696,69 @@ var _user$project$Lia_Parser$table = function () {
 			}
 		});
 }();
+var _user$project$Lia_Parser$identation = function () {
+	var reset = function (s) {
+		return _elm_lang$core$Native_Utils.update(
+			s,
+			{skip_identation: false});
+	};
+	var ident = function (s) {
+		return s.skip_identation ? _elm_community$parser_combinators$Combine$skip(
+			_elm_community$parser_combinators$Combine$succeed(
+				{ctor: '_Tuple0'})) : _elm_community$parser_combinators$Combine$skip(
+			_elm_community$parser_combinators$Combine$string(
+				A2(_elm_lang$core$String$repeat, s.identation, ' ')));
+	};
+	return A2(
+		_elm_community$parser_combinators$Combine_ops['<*'],
+		_elm_community$parser_combinators$Combine$withState(ident),
+		_elm_community$parser_combinators$Combine$modifyState(reset));
+}();
+var _user$project$Lia_Parser$horizontal_line = A2(
+	_elm_community$parser_combinators$Combine_ops['<$'],
+	_user$project$Lia_Types$HLine,
+	A2(
+		_elm_community$parser_combinators$Combine_ops['*>'],
+		_user$project$Lia_Parser$identation,
+		_elm_community$parser_combinators$Combine$regex('--[\\-]+')));
 var _user$project$Lia_Parser$paragraph = A2(
 	_elm_community$parser_combinators$Combine_ops['<$>'],
 	function (l) {
 		return _user$project$Lia_Inline_Parser$combine(
 			_elm_lang$core$List$concat(l));
 	},
-	_elm_community$parser_combinators$Combine$many(
+	_elm_community$parser_combinators$Combine$many1(
 		A2(
 			_elm_community$parser_combinators$Combine_ops['<*'],
-			A2(_elm_community$parser_combinators$Combine_ops['*>'], _user$project$Lia_Inline_Parser$spaces, _user$project$Lia_Inline_Parser$line),
+			A2(_elm_community$parser_combinators$Combine_ops['*>'], _user$project$Lia_Parser$identation, _user$project$Lia_Inline_Parser$line),
 			_user$project$Lia_Inline_Parser$newline)));
-var _user$project$Lia_Parser$horizontal_line = A2(
-	_elm_community$parser_combinators$Combine_ops['<$'],
-	_user$project$Lia_Types$HLine,
-	_elm_community$parser_combinators$Combine$regex('--[\\-]+'));
+var _user$project$Lia_Parser$quote_block = function () {
+	var p = A2(
+		_elm_community$parser_combinators$Combine_ops['<*'],
+		A2(
+			_elm_community$parser_combinators$Combine_ops['*>'],
+			A2(
+				_elm_community$parser_combinators$Combine_ops['*>'],
+				_user$project$Lia_Parser$identation,
+				_elm_community$parser_combinators$Combine$string('>')),
+			A2(
+				_elm_community$parser_combinators$Combine$optional,
+				{
+					ctor: '::',
+					_0: _user$project$Lia_Inline_Types$Chars(''),
+					_1: {ctor: '[]'}
+				},
+				_user$project$Lia_Inline_Parser$line)),
+		_user$project$Lia_Inline_Parser$newline);
+	return A2(
+		_elm_community$parser_combinators$Combine_ops['<$>'],
+		function (q) {
+			return _user$project$Lia_Types$Quote(
+				_user$project$Lia_Inline_Parser$combine(
+					_elm_lang$core$List$concat(q)));
+		},
+		_elm_community$parser_combinators$Combine$many1(p));
+}();
 var _user$project$Lia_Parser$blocks = _elm_community$parser_combinators$Combine$lazy(
 	function (_p0) {
 		var _p1 = _p0;
@@ -12754,8 +12786,12 @@ var _user$project$Lia_Parser$blocks = _elm_community$parser_combinators$Combine$
 										_0: A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$Quiz, _user$project$Lia_Quiz_Parser$quiz),
 										_1: {
 											ctor: '::',
-											_0: A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$Paragraph, _user$project$Lia_Parser$paragraph),
-											_1: {ctor: '[]'}
+											_0: _user$project$Lia_Parser$bullet_list,
+											_1: {
+												ctor: '::',
+												_0: A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$Paragraph, _user$project$Lia_Parser$paragraph),
+												_1: {ctor: '[]'}
+											}
 										}
 									}
 								}
@@ -12764,41 +12800,36 @@ var _user$project$Lia_Parser$blocks = _elm_community$parser_combinators$Combine$
 					}
 				}
 			});
-		return A2(
-			_elm_community$parser_combinators$Combine_ops['<*'],
-			A2(_elm_community$parser_combinators$Combine_ops['*>'], _user$project$Lia_Inline_Parser$comments, b),
-			_user$project$Lia_Inline_Parser$newlines);
+		return A2(_elm_community$parser_combinators$Combine_ops['*>'], _user$project$Lia_Inline_Parser$comments, b);
 	});
-var _user$project$Lia_Parser$list = function () {
-	var state = function (i) {
-		return A2(
-			_elm_community$parser_combinators$Combine_ops['*>'],
-			_elm_community$parser_combinators$Combine$modifyState(
-				function (s) {
-					return _elm_lang$core$Native_Utils.update(
-						s,
-						{
-							indentation: (_elm_lang$core$Native_Utils.cmp(
-								i,
-								A2(
-									_elm_lang$core$Maybe$withDefault,
-									0,
-									_elm_lang$core$List$head(s.indentation))) > 0) ? {ctor: '::', _0: i, _1: s.indentation} : s.indentation
-						});
-				}),
-			_elm_community$parser_combinators$Combine$succeed(
-				{ctor: '_Tuple0'}));
-	};
-	var identation = A2(
+var _user$project$Lia_Parser$bullet_list = function () {
+	var mod_s = F2(
+		function (b, s) {
+			return b ? _elm_lang$core$Native_Utils.update(
+				s,
+				{skip_identation: true, identation: s.identation + 2}) : _elm_lang$core$Native_Utils.update(
+				s,
+				{skip_identation: false, identation: s.identation - 2});
+		});
+	return A2(
 		_elm_community$parser_combinators$Combine_ops['<$>'],
-		_elm_lang$core$String$length,
-		_elm_community$parser_combinators$Combine$regex('( *)\\*( )'));
-	var rows = _elm_community$parser_combinators$Combine$many1(
-		A2(
-			_elm_community$parser_combinators$Combine_ops['*>'],
-			A2(_elm_community$parser_combinators$Combine_ops['>>='], identation, state),
-			_user$project$Lia_Parser$blocks));
-	return A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$MList, rows);
+		_user$project$Lia_Types$BulletList,
+		_elm_community$parser_combinators$Combine$many1(
+			A2(
+				_elm_community$parser_combinators$Combine_ops['*>'],
+				A2(
+					_elm_community$parser_combinators$Combine_ops['*>'],
+					_user$project$Lia_Parser$identation,
+					_elm_community$parser_combinators$Combine$regex('[*+-]( )')),
+				A2(
+					_elm_community$parser_combinators$Combine_ops['<*'],
+					A2(
+						_elm_community$parser_combinators$Combine_ops['*>'],
+						_elm_community$parser_combinators$Combine$modifyState(
+							mod_s(true)),
+						_elm_community$parser_combinators$Combine$many1(_user$project$Lia_Parser$blocks)),
+					_elm_community$parser_combinators$Combine$modifyState(
+						mod_s(false))))));
 }();
 var _user$project$Lia_Parser$parse = function () {
 	var effect_counter = function () {
@@ -12815,7 +12846,8 @@ var _user$project$Lia_Parser$parse = function () {
 			_elm_community$parser_combinators$Combine$withState(pp),
 			_elm_community$parser_combinators$Combine$modifyState(reset_effect));
 	}();
-	var body = _elm_community$parser_combinators$Combine$many(_user$project$Lia_Parser$blocks);
+	var body = _elm_community$parser_combinators$Combine$many(
+		A2(_elm_community$parser_combinators$Combine_ops['<*'], _user$project$Lia_Parser$blocks, _user$project$Lia_Inline_Parser$newlines));
 	var title = A2(
 		_elm_community$parser_combinators$Combine_ops['<*'],
 		A2(
@@ -14366,9 +14398,27 @@ var _user$project$Lia_View$view_block = F2(
 					_user$project$Lia_View$view_block(model),
 					_p3._0,
 					_p3._1);
-			case 'MList':
+			case 'BulletList':
 				return A2(
-					_elm_lang$html$Html$div,
+					_elm_lang$html$Html$ul,
+					{ctor: '[]'},
+					A2(
+						_elm_lang$core$List$map,
+						function (l) {
+							return A2(
+								_elm_lang$html$Html$li,
+								{ctor: '[]'},
+								A2(
+									_elm_lang$core$List$map,
+									function (ll) {
+										return A2(_user$project$Lia_View$view_block, model, ll);
+									},
+									l));
+						},
+						_p3._0));
+			case 'OrderedList':
+				return A2(
+					_elm_lang$html$Html$ol,
 					{ctor: '[]'},
 					A2(
 						_elm_lang$core$List$map,
@@ -14774,7 +14824,7 @@ var _user$project$Lia$init = F2(
 var _user$project$Lia$init_plain = _user$project$Lia$init(_user$project$Lia_Types$Plain);
 var _user$project$Lia$init_slides = _user$project$Lia$init(_user$project$Lia_Types$Slides);
 
-var _user$project$Readme$text = '# Lia\n\nA Markdown format for writing interactive online courses.\n\n\n                                     --{{1}}--\nWith Lia we try to implement an extended Markdown format that should enable\neveryone to create, share, adapt, translate or correct and extend online courses\nwithout the need of beeing a web-developer.\n\n                                     --{{2}}--\nEverything that is required is simple text-editor and a web-browser. Or you\nstart directly to create and share your course on github.\n\n\n## Basic Text-Formating\n\n                                    --{{0}}--\nWe tried to use the github flavored Markdown style for simple formating with\nsome additional elements.\n\n\\*italic\\* -> *italic*\n\n\\*\\*bold\\*\\* -> **bold**\n\n\\*\\*\\*bold and italic \\*\\*\\* -> ***bold and italic ***\n\n\\_also italic\\_ -> _also italic_\n\n\\_\\_also bold\\_\\_ -> __also bold__\n\n\\_\\_\\_also bold and italic\\_\\_\\_ -> ___also bold and italic___\n\n\\~strike\\~ -> ~strike~\n\n                                       {{1}}\n{{\n\n\\~\\~underline\\~\\~ -> ~~underline~~\n\n\\~\\~\\~underline\\~\\~\\~ -> ~~~strike and underline~~~\n\n\\^superscript\\^ -> ^superscript^ ^^superscript^^ ^^^superscript^^^\n\n}}\n\n                                     --{{1}}--\nThese exceptions are for example underline and its combination with strike\nthroug or the application of superscript. If you superscript superscript you\ncan get even smaller.\n\n### Combinations\n\n                                     --{{0}}--\nAs you can see from the examples you can combine all elements freely.\n\n\n\\*\\*bold \\_bold italic\\_\\*\\* -> **bold _italic_**\n\n\\*\\*\\~bold strike\\~ \\~\\~bold underline\\~\\~\\*\\* -> **~bold strike~ ~~bold underline~~**\n\n\\*\\~italic strike\\~ \\~\\~italic underline\\~\\~\\* -> *~italic strike~ ~~italic underline~~*\n\n### Escape Chars\n\n\\*, \\~, \\_, \\#, \\{, \\}, \\[, \\], \\|, \\`\n\n### Symbols\n\n                                     --{{0}}--\nIf you want to, then you can use any kind of arrows, these symbols are generated\nautomatically for you ...\n\n->, ->>, >->, <-, <-<, <<-, <->, =>, <=, <=>\n\n-->, <--, <-->, ==>, <==, <==>\n\n~>, <~\n\n                                     --{{1}}--\nBut you can also use some basic smileys. We will try to extend this partial\nsupport in the future.\n\n                                       {{1}}\n:-), ;-), :-D, :-O, :-(, :-|, :-/, :-P, :-*, :\'), :\'(\n\n\n## Math-Mode\n\nsss\n\n## Syntax Highlighting\n\nlll\n\n## Quizes\n\n## Effects\n\n\n\n';
+var _user$project$Readme$text = '# Lia\n\nA Markdown format for writing interactive online courses.\n\n       {{1}}\n{{\n\npunkt 1\n\npunkt 2\n\n}}\n\n* alpha\n* beta\n* gamma and\n  delta\n  plus epsilon\n\n\n                                     --{{1}}--\nWith Lia we try to implement an extended Markdown format that should enable\neveryone to create, share, adapt, translate or correct and extend online courses\nwithout the need of beeing a web-developer.\n\n                                     --{{2}}--\nEverything that is required is simple text-editor and a web-browser. Or you\nstart directly to create and share your course on github.\n\n\n## Basic Text-Formating\n\n                                    --{{0}}--\nWe tried to use the github flavored Markdown style for simple formating with\nsome additional elements.\n\n\\*italic\\* -> *italic*\n\n\\*\\*bold\\*\\* -> **bold**\n\n\\*\\*\\*bold and italic \\*\\*\\* -> ***bold and italic ***\n\n\\_also italic\\_ -> _also italic_\n\n\\_\\_also bold\\_\\_ -> __also bold__\n\n\\_\\_\\_also bold and italic\\_\\_\\_ -> ___also bold and italic___\n\n\\~strike\\~ -> ~strike~\n\n                                       {{1}}\n{{\n\n\\~\\~underline\\~\\~ -> ~~underline~~\n\n\\~\\~\\~underline\\~\\~\\~ -> ~~~strike and underline~~~\n\n\\^superscript\\^ -> ^superscript^ ^^superscript^^ ^^^superscript^^^\n\n}}\n\n                                     --{{1}}--\nThese exceptions are for example underline and its combination with strike\nthroug or the application of superscript. If you superscript superscript you\ncan get even smaller.\n\n### Combinations\n\n                                     --{{0}}--\nAs you can see from the examples you can combine all elements freely.\n\n\n\\*\\*bold \\_bold italic\\_\\*\\* -> **bold _italic_**\n\n\\*\\*\\~bold strike\\~ \\~\\~bold underline\\~\\~\\*\\* -> **~bold strike~ ~~bold underline~~**\n\n\\*\\~italic strike\\~ \\~\\~italic underline\\~\\~\\* -> *~italic strike~ ~~italic underline~~*\n\n### Escape Chars\n\n\\*, \\~, \\_, \\#, \\{, \\}, \\[, \\], \\|, \\`\n\n### Symbols\n\n                                     --{{0}}--\nIf you want to, then you can use any kind of arrows, these symbols are generated\nautomatically for you ...\n\n->, ->>, >->, <-, <-<, <<-, <->, =>, <=, <=>\n\n-->, <--, <-->, ==>, <==, <==>\n\n~>, <~\n\n                                     --{{1}}--\nBut you can also use some basic smileys. We will try to extend this partial\nsupport in the future.\n\n                                       {{1}}\n:-), ;-), :-D, :-O, :-(, :-|, :-/, :-P, :-*, :\'), :\'(\n\n\n## Math-Mode\n\nsss\n\n## Syntax Highlighting\n\nlll\n\n## Quizes\n\n## Effects\n\n\n\n';
 
 var _user$project$Main$Model = F3(
 	function (a, b, c) {

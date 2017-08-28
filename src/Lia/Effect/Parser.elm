@@ -9,6 +9,11 @@ import Lia.PState exposing (PState)
 import Lia.Types exposing (Block(..))
 
 
+newlines : Parser s ()
+newlines =
+    skip (regex "[ \\n\\t]+")
+
+
 eblock : Parser PState Block -> Parser PState Block
 eblock blocks =
     let
@@ -16,12 +21,16 @@ eblock blocks =
             regex "( *){{" *> effect_number <* regex "}}( *)[\\n]"
 
         multi_block =
-            regex "( *){{" *> manyTill blocks (regex "}}[\\n]?")
+            regex "( *){{[\\n]+" *> manyTill (blocks <* regex "[ \\n\\t]+") (regex "( *)}}")
 
         single_block =
-            List.singleton <$> blocks
+            List.singleton <$> (regex "[ \\n\\t]+" *> blocks)
     in
     EBlock <$> number <*> (multi_block <|> single_block)
+
+
+
+-- <|> single_block)
 
 
 einline : Parser PState Inline -> Parser PState Inline

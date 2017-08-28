@@ -243,10 +243,10 @@ strings =
                     Superscript <$> between_ "^" <?> "superscript string"
 
                 characters =
-                    Chars <$> regex "[*~:_;\\-<>=${}]"
+                    Chars <$> regex "[~:_;\\-<>=${}]"
 
                 base2 =
-                    Chars <$> regex "[^#\\n|]+" <?> "base string"
+                    Chars <$> regex "[^#\\n|*]+" <?> "base string"
             in
             choice
                 [ base

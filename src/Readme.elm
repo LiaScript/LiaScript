@@ -7,6 +7,21 @@ text =
 
 A Markdown format for writing interactive online courses.
 
+       {{1}}
+{{
+
+punkt 1
+
+punkt 2
+
+}}
+
+* alpha
+* beta
+* gamma and
+  delta
+  plus epsilon
+
 
                                      --{{1}}--
 With Lia we try to implement an extended Markdown format that should enable

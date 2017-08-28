@@ -30,7 +30,8 @@ type Block
     | Quiz QuizBlock
     | EBlock Int (List Block)
     | EComment Int Paragraph
-    | MList (List Block)
+    | BulletList (List (List Block))
+    | OrderedList (List Block)
 
 
 
