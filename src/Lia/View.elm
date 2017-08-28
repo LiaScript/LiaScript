@@ -221,7 +221,7 @@ view_block model block =
         OrderedList list ->
             Html.ol []
                 (List.map
-                    (\l -> Html.li [] [ view_block model l ])
+                    (\l -> Html.li [] (List.map (\ll -> view_block model ll) l))
                     list
                 )
 

@@ -12786,11 +12786,15 @@ var _user$project$Lia_Parser$blocks = _elm_community$parser_combinators$Combine$
 										_0: A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$Quiz, _user$project$Lia_Quiz_Parser$quiz),
 										_1: {
 											ctor: '::',
-											_0: _user$project$Lia_Parser$bullet_list,
+											_0: _user$project$Lia_Parser$ordered_list,
 											_1: {
 												ctor: '::',
-												_0: A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$Paragraph, _user$project$Lia_Parser$paragraph),
-												_1: {ctor: '[]'}
+												_0: _user$project$Lia_Parser$unordered_list,
+												_1: {
+													ctor: '::',
+													_0: A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$Paragraph, _user$project$Lia_Parser$paragraph),
+													_1: {ctor: '[]'}
+												}
 											}
 										}
 									}
@@ -12802,7 +12806,39 @@ var _user$project$Lia_Parser$blocks = _elm_community$parser_combinators$Combine$
 			});
 		return A2(_elm_community$parser_combinators$Combine_ops['*>'], _user$project$Lia_Inline_Parser$comments, b);
 	});
-var _user$project$Lia_Parser$bullet_list = function () {
+var _user$project$Lia_Parser$ordered_list = function () {
+	var mod_s = F2(
+		function (b, s) {
+			return b ? _elm_lang$core$Native_Utils.update(
+				s,
+				{skip_identation: true, identation: s.identation + 3}) : _elm_lang$core$Native_Utils.update(
+				s,
+				{skip_identation: false, identation: s.identation - 3});
+		});
+	return A2(
+		_elm_community$parser_combinators$Combine_ops['<$>'],
+		_user$project$Lia_Types$OrderedList,
+		_elm_community$parser_combinators$Combine$many1(
+			A2(
+				_elm_community$parser_combinators$Combine_ops['*>'],
+				A2(
+					_elm_community$parser_combinators$Combine_ops['*>'],
+					_user$project$Lia_Parser$identation,
+					_elm_community$parser_combinators$Combine$regex('[0-9]+\\. ')),
+				A2(
+					_elm_community$parser_combinators$Combine_ops['<*'],
+					A2(
+						_elm_community$parser_combinators$Combine_ops['<*'],
+						A2(
+							_elm_community$parser_combinators$Combine_ops['*>'],
+							_elm_community$parser_combinators$Combine$modifyState(
+								mod_s(true)),
+							_elm_community$parser_combinators$Combine$many1(_user$project$Lia_Parser$blocks)),
+						_user$project$Lia_Inline_Parser$newlines),
+					_elm_community$parser_combinators$Combine$modifyState(
+						mod_s(false))))));
+}();
+var _user$project$Lia_Parser$unordered_list = function () {
 	var mod_s = F2(
 		function (b, s) {
 			return b ? _elm_lang$core$Native_Utils.update(
@@ -12824,10 +12860,13 @@ var _user$project$Lia_Parser$bullet_list = function () {
 				A2(
 					_elm_community$parser_combinators$Combine_ops['<*'],
 					A2(
-						_elm_community$parser_combinators$Combine_ops['*>'],
-						_elm_community$parser_combinators$Combine$modifyState(
-							mod_s(true)),
-						_elm_community$parser_combinators$Combine$many1(_user$project$Lia_Parser$blocks)),
+						_elm_community$parser_combinators$Combine_ops['<*'],
+						A2(
+							_elm_community$parser_combinators$Combine_ops['*>'],
+							_elm_community$parser_combinators$Combine$modifyState(
+								mod_s(true)),
+							_elm_community$parser_combinators$Combine$many1(_user$project$Lia_Parser$blocks)),
+						_user$project$Lia_Inline_Parser$newlines),
 					_elm_community$parser_combinators$Combine$modifyState(
 						mod_s(false))))));
 }();
@@ -14426,11 +14465,12 @@ var _user$project$Lia_View$view_block = F2(
 							return A2(
 								_elm_lang$html$Html$li,
 								{ctor: '[]'},
-								{
-									ctor: '::',
-									_0: A2(_user$project$Lia_View$view_block, model, l),
-									_1: {ctor: '[]'}
-								});
+								A2(
+									_elm_lang$core$List$map,
+									function (ll) {
+										return A2(_user$project$Lia_View$view_block, model, ll);
+									},
+									l));
 						},
 						_p3._0));
 			default:
@@ -14824,7 +14864,7 @@ var _user$project$Lia$init = F2(
 var _user$project$Lia$init_plain = _user$project$Lia$init(_user$project$Lia_Types$Plain);
 var _user$project$Lia$init_slides = _user$project$Lia$init(_user$project$Lia_Types$Slides);
 
-var _user$project$Readme$text = '# Lia\n\nA Markdown format for writing interactive online courses.\n\n       {{1}}\n{{\n\npunkt 1\n\npunkt 2\n\n}}\n\n* alpha\n* beta\n* gamma and\n  delta\n  plus epsilon\n\n\n                                     --{{1}}--\nWith Lia we try to implement an extended Markdown format that should enable\neveryone to create, share, adapt, translate or correct and extend online courses\nwithout the need of beeing a web-developer.\n\n                                     --{{2}}--\nEverything that is required is simple text-editor and a web-browser. Or you\nstart directly to create and share your course on github.\n\n\n## Basic Text-Formating\n\n                                    --{{0}}--\nWe tried to use the github flavored Markdown style for simple formating with\nsome additional elements.\n\n\\*italic\\* -> *italic*\n\n\\*\\*bold\\*\\* -> **bold**\n\n\\*\\*\\*bold and italic \\*\\*\\* -> ***bold and italic ***\n\n\\_also italic\\_ -> _also italic_\n\n\\_\\_also bold\\_\\_ -> __also bold__\n\n\\_\\_\\_also bold and italic\\_\\_\\_ -> ___also bold and italic___\n\n\\~strike\\~ -> ~strike~\n\n                                       {{1}}\n{{\n\n\\~\\~underline\\~\\~ -> ~~underline~~\n\n\\~\\~\\~underline\\~\\~\\~ -> ~~~strike and underline~~~\n\n\\^superscript\\^ -> ^superscript^ ^^superscript^^ ^^^superscript^^^\n\n}}\n\n                                     --{{1}}--\nThese exceptions are for example underline and its combination with strike\nthroug or the application of superscript. If you superscript superscript you\ncan get even smaller.\n\n### Combinations\n\n                                     --{{0}}--\nAs you can see from the examples you can combine all elements freely.\n\n\n\\*\\*bold \\_bold italic\\_\\*\\* -> **bold _italic_**\n\n\\*\\*\\~bold strike\\~ \\~\\~bold underline\\~\\~\\*\\* -> **~bold strike~ ~~bold underline~~**\n\n\\*\\~italic strike\\~ \\~\\~italic underline\\~\\~\\* -> *~italic strike~ ~~italic underline~~*\n\n### Escape Chars\n\n\\*, \\~, \\_, \\#, \\{, \\}, \\[, \\], \\|, \\`\n\n### Symbols\n\n                                     --{{0}}--\nIf you want to, then you can use any kind of arrows, these symbols are generated\nautomatically for you ...\n\n->, ->>, >->, <-, <-<, <<-, <->, =>, <=, <=>\n\n-->, <--, <-->, ==>, <==, <==>\n\n~>, <~\n\n                                     --{{1}}--\nBut you can also use some basic smileys. We will try to extend this partial\nsupport in the future.\n\n                                       {{1}}\n:-), ;-), :-D, :-O, :-(, :-|, :-/, :-P, :-*, :\'), :\'(\n\n\n## Math-Mode\n\nsss\n\n## Syntax Highlighting\n\nlll\n\n## Quizes\n\n## Effects\n\n\n\n';
+var _user$project$Readme$text = '# Lia\n\nA Markdown format for writing interactive online courses.\n\n* alpha\n* beta\n* gamma and\n  delta\n  plus epsilon\n\n\n                                     --{{1}}--\nWith Lia we try to implement an extended Markdown format that should enable\neveryone to create, share, adapt, translate or correct and extend online courses\nwithout the need of beeing a web-developer.\n\n                                     --{{2}}--\nEverything that is required is simple text-editor and a web-browser. Or you\nstart directly to create and share your course on github.\n\n\n## Basic Text-Formating\n\n                                    --{{0}}--\nWe tried to use the github flavored Markdown style for simple formating with\nsome additional elements.\n\n\\*italic\\* -> *italic*\n\n\\*\\*bold\\*\\* -> **bold**\n\n\\*\\*\\*bold and italic \\*\\*\\* -> ***bold and italic ***\n\n\\_also italic\\_ -> _also italic_\n\n\\_\\_also bold\\_\\_ -> __also bold__\n\n\\_\\_\\_also bold and italic\\_\\_\\_ -> ___also bold and italic___\n\n\\~strike\\~ -> ~strike~\n\n                                       {{1}}\n{{\n\n* \\~\\~underline\\~\\~ -> ~~underline~~\n\n* \\~\\~\\~strike and underline\\~\\~\\~ -> ~~~strike and underline~~~\n\n* \\^superscript\\^ -> ^superscript^ ^^superscript^^ ^^^superscript^^^\n\n}}\n\n                                     --{{1}}--\nThese exceptions are for example underline and its combination with strike\nthroug or the application of superscript. If you superscript superscript you\ncan get even smaller.\n\n### Combinations\n\n                                     --{{0}}--\nAs you can see from the examples you can combine all elements freely.\n\n\n\\*\\*bold \\_bold italic\\_\\*\\* -> **bold _italic_**\n\n\\*\\*\\~bold strike\\~ \\~\\~bold underline\\~\\~\\*\\* -> **~bold strike~ ~~bold underline~~**\n\n\\*\\~italic strike\\~ \\~\\~italic underline\\~\\~\\* -> *~italic strike~ ~~italic underline~~*\n\n### Escape Chars\n\n\\*, \\~, \\_, \\#, \\{, \\}, \\[, \\], \\|, \\`\n\n### Symbols\n\n                                     --{{0}}--\nIf you want to, then you can use any kind of arrows, these symbols are generated\nautomatically for you ...\n\n->, ->>, >->, <-, <-<, <<-, <->, =>, <=, <=>\n\n-->, <--, <-->, ==>, <==, <==>\n\n~>, <~\n\n                                     --{{1}}--\nBut you can also use some basic smileys. We will try to extend this partial\nsupport in the future.\n\n                                       {{1}}\n:-), ;-), :-D, :-O, :-(, :-|, :-/, :-P, :-*, :\'), :\'(\n\n\n## Math-Mode\n\nsss\n\n## Syntax Highlighting\n\nlll\n\n## Quizes\n\n## Effects\n\n\n\n';
 
 var _user$project$Main$Model = F3(
 	function (a, b, c) {

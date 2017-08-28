@@ -41,7 +41,8 @@ blocks =
                         , quote_block
                         , horizontal_line
                         , Quiz <$> quiz
-                        , bullet_list
+                        , ordered_list
+                        , unordered_list
                         , Paragraph <$> paragraph
                         ]
             in
@@ -52,8 +53,8 @@ blocks =
 --<* newlines
 
 
-bullet_list : Parser PState Block
-bullet_list =
+unordered_list : Parser PState Block
+unordered_list =
     let
         mod_s b s =
             if b then
@@ -67,6 +68,28 @@ bullet_list =
                     *> regex "[*+-]( )"
                     *> (modifyState (mod_s True)
                             *> many1 blocks
+                            <* newlines
+                            <* modifyState (mod_s False)
+                       )
+                )
+
+
+ordered_list : Parser PState Block
+ordered_list =
+    let
+        mod_s b s =
+            if b then
+                { s | skip_identation = True, identation = s.identation + 3 }
+            else
+                { s | skip_identation = False, identation = s.identation - 3 }
+    in
+    OrderedList
+        <$> many1
+                (identation
+                    *> regex "[0-9]+\\. "
+                    *> (modifyState (mod_s True)
+                            *> many1 blocks
+                            <* newlines
                             <* modifyState (mod_s False)
                        )
                 )

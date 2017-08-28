@@ -31,7 +31,7 @@ type Block
     | EBlock Int (List Block)
     | EComment Int Paragraph
     | BulletList (List (List Block))
-    | OrderedList (List Block)
+    | OrderedList (List (List Block))
 
 
 

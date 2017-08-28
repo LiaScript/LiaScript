@@ -7,15 +7,6 @@ text =
 
 A Markdown format for writing interactive online courses.
 
-       {{1}}
-{{
-
-punkt 1
-
-punkt 2
-
-}}
-
 * alpha
 * beta
 * gamma and
@@ -56,11 +47,11 @@ some additional elements.
                                        {{1}}
 {{
 
-\\~\\~underline\\~\\~ -> ~~underline~~
+* \\~\\~underline\\~\\~ -> ~~underline~~
 
-\\~\\~\\~underline\\~\\~\\~ -> ~~~strike and underline~~~
+* \\~\\~\\~strike and underline\\~\\~\\~ -> ~~~strike and underline~~~
 
-\\^superscript\\^ -> ^superscript^ ^^superscript^^ ^^^superscript^^^
+* \\^superscript\\^ -> ^superscript^ ^^superscript^^ ^^^superscript^^^
 
 }}
 
