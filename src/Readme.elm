@@ -7,15 +7,13 @@ text =
 
 An extended Markdown format for writing interactive online courses.
 
-![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)(width: 80%; height: 100px)
-
 
                                      --{{1}}--
 With Lia we try to implement an extended Markdown format that should enable
 everyone to create, share, adapt, translate or correct and extend online courses
 without the need of beeing a web-developer.
 
-                                     --{{2}}--
+                                    --{{2}}--
 Everything that is required is simple text-editor and a web-browser. Or you
 start directly to create and share your course on github.
 
