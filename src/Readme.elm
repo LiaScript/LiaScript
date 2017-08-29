@@ -7,6 +7,8 @@ text =
 
 An extended Markdown format for writing interactive online courses.
 
+![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)(width: 80%; height: 100px)
+
 
                                      --{{1}}--
 With Lia we try to implement an extended Markdown format that should enable
@@ -93,6 +95,47 @@ support in the future.
 
                                        {{1}}
 :-), ;-), :-D, :-O, :-(, :-|, :-/, :-P, :-*, :'), :'(
+
+## References
+
+### Simple Links
+
+[link](www.google.de)
+
+### Images and Movies
+
+## Lists
+
+### Unordered Lists
+
+* alpha
++ *beta*
+- gamma
+  and delta
+
+### Ordered Lists
+
+0. alpha
+2. **beta**
+1. gamma
+
+   *and delta*
+
+   ** and something else **
+
+### Mixed Lists
+
+1. alpha
+2. **beta**
+   * one
+   * two
+   * three
+3. gamma
+
+   *and delta*
+
+   ** and something else **
+
 
 
 ## Math-Mode

@@ -97,10 +97,10 @@ parse_inline element =
                 Link alt_ url_ ->
                     alt_ ++ "" ++ url_
 
-                Image alt_ url_ ->
+                Image alt_ url_ _ ->
                     alt_ ++ "" ++ url_
 
-                Movie alt_ url_ ->
+                Movie alt_ url_ _ ->
                     alt_ ++ "" ++ url_
 
         Formula _ str ->

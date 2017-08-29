@@ -52,12 +52,19 @@ view visible element =
 
 reference : Reference -> Html msg
 reference ref =
+    let
+        media url_ style_ =
+            if style_ == "" then
+                [ Attr.src url_ ]
+            else
+                [ Attr.src url_, Attr.attribute "style" style_ ]
+    in
     case ref of
         Link alt_ url_ ->
             Html.a [ Attr.href url_ ] [ Html.text alt_ ]
 
-        Image alt_ url_ ->
-            Html.img [ Attr.src url_ ] [ Html.text alt_ ]
+        Image alt_ url_ style_ ->
+            Html.img (media url_ style_) [ Html.text alt_ ]
 
-        Movie alt_ url_ ->
-            Html.iframe [ Attr.src url_ ] [ Html.text alt_ ]
+        Movie alt_ url_ style_ ->
+            Html.iframe (media url_ style_) [ Html.text alt_ ]

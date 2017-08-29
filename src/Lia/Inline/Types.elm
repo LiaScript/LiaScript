@@ -19,5 +19,5 @@ type Inline
 
 type Reference
     = Link String String
-    | Image String String
-    | Movie String String
+    | Image String String String
+    | Movie String String String

@@ -152,10 +152,10 @@ reference =
                     Link <$> info <*> url
 
                 image =
-                    Image <$> (string "!" *> info) <*> url
+                    Image <$> (string "!" *> info) <*> url <*> optional "" url
 
                 movie =
-                    Movie <$> (string "!!" *> info) <*> url
+                    Movie <$> (string "!!" *> info) <*> url <*> optional "" url
             in
             Ref <$> choice [ movie, image, link ]
 
