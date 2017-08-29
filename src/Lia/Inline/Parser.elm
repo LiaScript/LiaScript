@@ -148,14 +148,17 @@ reference =
                 url =
                     parens (regex "[^\\)\n]*")
 
+                style =
+                    optional "" (parens (regex "[^\\)]*"))
+
                 link =
                     Link <$> info <*> url
 
                 image =
-                    Image <$> (string "!" *> info) <*> url <*> optional "" url
+                    Image <$> (string "!" *> info) <*> url <*> style
 
                 movie =
-                    Movie <$> (string "!!" *> info) <*> url <*> optional "" url
+                    Movie <$> (string "!!" *> info) <*> url <*> style
             in
             Ref <$> choice [ movie, image, link ]
 

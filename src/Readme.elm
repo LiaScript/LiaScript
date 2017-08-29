@@ -228,6 +228,66 @@ Please enter the word "solution" into the text-field!
 
 ### Block Effects
 
+{{1}}
+![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)(
+    position: absolute;
+    left: 0%;
+    top: 0%;
+    margin: 100 0 0 0;
+    border:
+    10px solid;
+    width: 98%
+)
+
+{{2}}
+![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)(
+    position: absolute;
+    left: 10%;
+    top: 10%;
+    margin: 100 0 0 0;
+    border: 10px solid;
+    width: 78%
+)
+
+{{3}}
+![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)(
+    position: absolute;
+    left: 20%;
+    top: 20%;
+    margin: 100 0 0 0;
+    border: 10px solid;
+    width: 58%
+)
+
+{{4}}
+![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)(
+    position: absolute;
+    left: 30%;
+    top: 30%;
+    margin: 100 0 0 0;
+    border: 10px solid;
+    width: 38%
+)
+
+{{5}}
+![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)(
+    position: absolute;
+    left: 40%;
+    top: 40%;
+    margin: 100 0 0 0;
+    border: 10px solid;
+    width: 18%
+)
+
+
+--{{1}}--
+
+I like to see apes doing human stuff ...
+
+--{{2}}--
+
+But I do not like it the oposite way.
+
 ### Comment Effects
 
 """
