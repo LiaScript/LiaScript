@@ -208,8 +208,8 @@ view_block model block =
         Quiz quiz ->
             Html.map UpdateQuiz <| Lia.Quiz.View.view model.quiz quiz
 
-        EBlock idx sub_blocks ->
-            Effects.view_block model.effects (view_block model) idx sub_blocks
+        EBlock idx effect_name sub_blocks ->
+            Effects.view_block model.effects (view_block model) idx effect_name sub_blocks
 
         BulletList list ->
             Html.ul []

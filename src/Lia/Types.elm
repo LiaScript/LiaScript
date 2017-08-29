@@ -28,7 +28,7 @@ type Block
     | Paragraph Paragraph
     | Table (List Paragraph) (List String) (List (List Paragraph))
     | Quiz QuizBlock
-    | EBlock Int (List Block)
+    | EBlock Int (Maybe String) (List Block)
     | EComment Int Paragraph
     | BulletList (List (List Block))
     | OrderedList (List (List Block))

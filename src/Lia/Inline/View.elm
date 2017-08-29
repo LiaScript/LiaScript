@@ -46,8 +46,8 @@ view visible element =
         HTML e ->
             Lia.Utils.stringToHtml e
 
-        EInline idx elements ->
-            Effect.view (view visible) idx visible elements
+        EInline idx effect_name elements ->
+            Effect.view (view visible) idx visible effect_name elements
 
 
 reference : Reference -> Html msg

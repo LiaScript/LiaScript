@@ -7,20 +7,32 @@ import Html.Attributes as Attr
 import Lia.Effect.Model exposing (Model)
 
 
-view : (inline -> Html msg) -> Int -> Int -> List inline -> Html msg
-view viewer idx visible elements =
+view : (inline -> Html msg) -> Int -> Int -> Maybe String -> List inline -> Html msg
+view viewer idx visible effect_name elements =
     Html.span
         [ Attr.id (toString idx)
         , Attr.hidden (idx > visible)
+        , case effect_name of
+            Nothing ->
+                Attr.class ""
+
+            Just name ->
+                Attr.class ("animated " ++ name)
         ]
         (circle idx :: Html.text " " :: List.map viewer elements)
 
 
-view_block : Model -> (block -> Html msg) -> Int -> List block -> Html msg
-view_block model viewer idx blocks =
+view_block : Model -> (block -> Html msg) -> Int -> Maybe String -> List block -> Html msg
+view_block model viewer idx effect_name blocks =
     Html.div
         [ Attr.id (toString idx)
         , Attr.hidden (idx > model.visible)
+        , case effect_name of
+            Nothing ->
+                Attr.class ""
+
+            Just name ->
+                Attr.class ("animated " ++ name)
         ]
         (Html.div
             [ Attr.style

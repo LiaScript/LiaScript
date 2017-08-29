@@ -42,7 +42,7 @@ parse_block element =
         Quiz block ->
             parse_quiz block.quiz
 
-        EBlock _ sub_blocks ->
+        EBlock _ _ sub_blocks ->
             List.map (\sub -> parse_block sub) sub_blocks
                 |> String.concat
 
@@ -109,7 +109,7 @@ parse_inline element =
         HTML str ->
             str
 
-        EInline _ e ->
+        EInline _ _ e ->
             List.map parse_inline e
                 |> String.concat
 

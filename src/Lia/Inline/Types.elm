@@ -13,7 +13,7 @@ type Inline
     | Formula Bool String
     | Ref Reference
     | HTML String
-    | EInline Int (List Inline)
+    | EInline Int (Maybe String) (List Inline)
     | Container (List Inline)
 
 

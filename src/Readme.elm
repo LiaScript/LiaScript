@@ -226,7 +226,7 @@ Please enter the word "solution" into the text-field!
 
 ### Block Effects
 
-{{1}}
+{{1 infinite zoomIn}}
 ![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)(
     position: absolute;
     left: 0%;
@@ -237,7 +237,7 @@ Please enter the word "solution" into the text-field!
     width: 98%
 )
 
-{{2}}
+{{2 infinite bounce}}
 ![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)(
     position: absolute;
     left: 10%;
@@ -247,7 +247,7 @@ Please enter the word "solution" into the text-field!
     width: 78%
 )
 
-{{3}}
+{{3 infinite bounce}}
 ![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)(
     position: absolute;
     left: 20%;
@@ -257,7 +257,7 @@ Please enter the word "solution" into the text-field!
     width: 58%
 )
 
-{{4}}
+{{4 infinite bounce}}
 ![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)(
     position: absolute;
     left: 30%;
@@ -267,7 +267,7 @@ Please enter the word "solution" into the text-field!
     width: 38%
 )
 
-{{5}}
+{{5 infinite bounce}}
 ![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)(
     position: absolute;
     left: 40%;
