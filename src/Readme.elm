@@ -182,6 +182,11 @@ def lia_sqrt(val):
     return math.sqrt(val) + 22
 ```
 
+``` javascript X
+
+alert("test XXXX");
+```
+
                                     --{{0}}--
 Syntax highlighting is enabled with highlight.js.
 
@@ -279,6 +284,12 @@ Please enter the word "solution" into the text-field!
 
 
 --{{1}}--
+
+``` javascript X
+
+alert ("fuck");
+
+```
 
 I like to see apes doing human stuff ...
 

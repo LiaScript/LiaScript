@@ -11129,6 +11129,28 @@ var _elm_lang$html$Html_Lazy$lazy3 = _elm_lang$virtual_dom$VirtualDom$lazy3;
 var _elm_lang$html$Html_Lazy$lazy2 = _elm_lang$virtual_dom$VirtualDom$lazy2;
 var _elm_lang$html$Html_Lazy$lazy = _elm_lang$virtual_dom$VirtualDom$lazy;
 
+var _user$project$Lia_Code_Model$get_result = F2(
+	function (idx, model) {
+		return A2(
+			_elm_lang$core$Maybe$andThen,
+			function (a) {
+				return a;
+			},
+			A2(_elm_lang$core$Array$get, idx, model));
+	});
+var _user$project$Lia_Code_Model$init = function (i) {
+	return A2(_elm_lang$core$Array$repeat, i, _elm_lang$core$Maybe$Nothing);
+};
+
+var _user$project$Lia_Code_Types$EvalJS = F2(
+	function (a, b) {
+		return {ctor: 'EvalJS', _0: a, _1: b};
+	});
+var _user$project$Lia_Code_Types$Highlight = F2(
+	function (a, b) {
+		return {ctor: 'Highlight', _0: a, _1: b};
+	});
+
 var _user$project$Lia_Inline_Types$Container = function (a) {
 	return {ctor: 'Container', _0: a};
 };
@@ -11246,10 +11268,9 @@ var _user$project$Lia_Types$Paragraph = function (a) {
 var _user$project$Lia_Types$Quote = function (a) {
 	return {ctor: 'Quote', _0: a};
 };
-var _user$project$Lia_Types$CodeBlock = F2(
-	function (a, b) {
-		return {ctor: 'CodeBlock', _0: a, _1: b};
-	});
+var _user$project$Lia_Types$CodeBlock = function (a) {
+	return {ctor: 'CodeBlock', _0: a};
+};
 var _user$project$Lia_Types$HLine = {ctor: 'HLine'};
 var _user$project$Lia_Types$LiaCmd = F2(
 	function (a, b) {
@@ -11358,7 +11379,12 @@ var _user$project$Lia_Index_Model$parse_block = function (element) {
 		case 'Quote':
 			return _user$project$Lia_Index_Model$parse_inlines(_p5._0);
 		case 'CodeBlock':
-			return _p5._1;
+			var _p6 = _p5._0;
+			if (_p6.ctor === 'Highlight') {
+				return _p6._1;
+			} else {
+				return _p6._0;
+			}
 		case 'Quiz':
 			return _user$project$Lia_Index_Model$parse_quiz(_p5._0.quiz);
 		case 'EBlock':
@@ -11582,21 +11608,103 @@ var _user$project$Lia_Quiz_Model$init = function (slides) {
 						slides)))));
 };
 
-var _user$project$Lia_Model$Model = F9(
-	function (a, b, c, d, e, f, g, h, i) {
-		return {script: a, error: b, slides: c, quiz: d, current_slide: e, mode: f, effects: g, contents: h, index: i};
-	});
+var _user$project$Lia_Model$Model = function (a) {
+	return function (b) {
+		return function (c) {
+			return function (d) {
+				return function (e) {
+					return function (f) {
+						return function (g) {
+							return function (h) {
+								return function (i) {
+									return function (j) {
+										return {script: a, error: b, slides: c, quiz: d, code: e, current_slide: f, mode: g, effects: h, contents: i, index: j};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
 
 var _user$project$Lia_PState$init = {
 	quiz: 0,
 	section: {ctor: '[]'},
 	identation: 0,
 	skip_identation: false,
-	effects: 0
+	effects: 0,
+	code: 0
 };
-var _user$project$Lia_PState$PState = F5(
-	function (a, b, c, d, e) {
-		return {quiz: a, section: b, identation: c, skip_identation: d, effects: e};
+var _user$project$Lia_PState$PState = F6(
+	function (a, b, c, d, e, f) {
+		return {quiz: a, section: b, identation: c, skip_identation: d, effects: e, code: f};
+	});
+
+var _user$project$Lia_Code_Parser$inc_counter = function () {
+	var increment_counter = function (c) {
+		return _elm_lang$core$Native_Utils.update(
+			c,
+			{code: c.code + 1});
+	};
+	var pp = function (par) {
+		return _elm_community$parser_combinators$Combine$succeed(par.code);
+	};
+	return A2(
+		_elm_community$parser_combinators$Combine_ops['<*'],
+		_elm_community$parser_combinators$Combine$withState(pp),
+		_elm_community$parser_combinators$Combine$modifyState(increment_counter));
+}();
+var _user$project$Lia_Code_Parser$eval_js = function () {
+	var block = A2(
+		_elm_community$parser_combinators$Combine_ops['<$>'],
+		_elm_lang$core$String$fromList,
+		A2(
+			_elm_community$parser_combinators$Combine$manyTill,
+			_elm_community$parser_combinators$Combine_Char$anyChar,
+			_elm_community$parser_combinators$Combine$string('```')));
+	return A2(
+		_elm_community$parser_combinators$Combine_ops['<*>'],
+		A2(
+			_elm_community$parser_combinators$Combine_ops['<$>'],
+			_user$project$Lia_Code_Types$EvalJS,
+			A2(
+				_elm_community$parser_combinators$Combine_ops['*>'],
+				_elm_community$parser_combinators$Combine$regex('```( *)((js)|(javascript))( +)(x|X)'),
+				block)),
+		_user$project$Lia_Code_Parser$inc_counter);
+}();
+var _user$project$Lia_Code_Parser$block = function () {
+	var block = A2(
+		_elm_community$parser_combinators$Combine_ops['<$>'],
+		_elm_lang$core$String$fromList,
+		A2(
+			_elm_community$parser_combinators$Combine$manyTill,
+			_elm_community$parser_combinators$Combine_Char$anyChar,
+			_elm_community$parser_combinators$Combine$string('```')));
+	var lang = A2(
+		_elm_community$parser_combinators$Combine_ops['<*'],
+		A2(
+			_elm_community$parser_combinators$Combine_ops['*>'],
+			_elm_community$parser_combinators$Combine$regex('```( *)'),
+			_elm_community$parser_combinators$Combine$regex('([a-z,A-Z,0-9])*')),
+		_elm_community$parser_combinators$Combine$regex('( *)\\n'));
+	return A2(
+		_elm_community$parser_combinators$Combine_ops['<*>'],
+		A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Code_Types$Highlight, lang),
+		block);
+}();
+var _user$project$Lia_Code_Parser$code = _elm_community$parser_combinators$Combine$choice(
+	{
+		ctor: '::',
+		_0: _user$project$Lia_Code_Parser$eval_js,
+		_1: {
+			ctor: '::',
+			_0: _user$project$Lia_Code_Parser$block,
+			_1: {ctor: '[]'}
+		}
 	});
 
 var _user$project$Lia_Effect_Parser$effect_number = function () {
@@ -12616,32 +12724,6 @@ var _user$project$Lia_Parser$formatError = F2(
 										expectationSeparator,
 										A2(_elm_lang$core$String$join, expectationSeparator, ms)))))))));
 	});
-var _user$project$Lia_Parser$code_block = function () {
-	var block = A2(
-		_elm_community$parser_combinators$Combine_ops['<$>'],
-		_elm_lang$core$String$fromList,
-		A2(
-			_elm_community$parser_combinators$Combine$manyTill,
-			_elm_community$parser_combinators$Combine_Char$anyChar,
-			_elm_community$parser_combinators$Combine$string('```')));
-	var lang = A2(
-		_elm_community$parser_combinators$Combine_ops['<*'],
-		A2(
-			_elm_community$parser_combinators$Combine_ops['<*'],
-			A2(
-				_elm_community$parser_combinators$Combine_ops['*>'],
-				A2(
-					_elm_community$parser_combinators$Combine_ops['*>'],
-					_elm_community$parser_combinators$Combine$string('```'),
-					_user$project$Lia_Inline_Parser$spaces),
-				_elm_community$parser_combinators$Combine$regex('([a-z,A-Z,0-9])*')),
-			_user$project$Lia_Inline_Parser$spaces),
-		_user$project$Lia_Inline_Parser$newline);
-	return A2(
-		_elm_community$parser_combinators$Combine_ops['<*>'],
-		A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$CodeBlock, lang),
-		block);
-}();
 var _user$project$Lia_Parser$table = function () {
 	var ending = A2(
 		_elm_community$parser_combinators$Combine_ops['<*'],
@@ -12805,7 +12887,7 @@ var _user$project$Lia_Parser$blocks = _elm_community$parser_combinators$Combine$
 						_0: _user$project$Lia_Parser$table,
 						_1: {
 							ctor: '::',
-							_0: _user$project$Lia_Parser$code_block,
+							_0: A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$CodeBlock, _user$project$Lia_Code_Parser$code),
 							_1: {
 								ctor: '::',
 								_0: _user$project$Lia_Parser$quote_block,
@@ -12955,12 +13037,103 @@ var _user$project$Lia_Parser$parse = function () {
 var _user$project$Lia_Parser$run = function (script) {
 	var _p2 = A3(_elm_community$parser_combinators$Combine$runParser, _user$project$Lia_Parser$parse, _user$project$Lia_PState$init, script);
 	if (_p2.ctor === 'Ok') {
-		return _elm_lang$core$Result$Ok(_p2._0._2);
+		var _p3 = _p2._0._0;
+		return _elm_lang$core$Result$Ok(
+			{ctor: '_Tuple3', _0: _p2._0._2, _1: _p3.quiz, _2: _p3.code});
 	} else {
 		return _elm_lang$core$Result$Err(
 			A2(_user$project$Lia_Parser$formatError, _p2._0._2, _p2._0._1));
 	}
 };
+
+var _user$project$Native_Utils = (function () {
+
+    function highlight (language, code) {
+        try {
+            if (language != "")
+                return hljs.highlight(language, code).value;
+            else
+                return hljs.highlightAuto(code, hljs.listLanguages()).value;
+        } catch (e) {
+            return "<b><font color=\"red\">"+e.message+"</font></b><br>"+code;
+        }
+    };
+
+    function formula(dMode, str) {
+        try{
+            return katex.renderToString(str, {displayMode: dMode});
+        } catch(e) {
+            return "<b><font color=\"red\">"+e.message+"</font></b><br>";
+        }
+    }
+
+    function evaluate(code)
+    {
+        try { var rslt = String(eval(code));
+              return {
+                  ctor: "Ok",
+                  _0: rslt
+              };
+        } catch (e) {
+            return {
+                ctor: "Err",
+                _0: e.message
+            };
+        }
+    };
+
+    return {
+        highlight: F2(highlight),
+        formula: F2(formula),
+        evaluate: evaluate
+    };
+})();
+
+var _user$project$Lia_Utils$stringToHtml = function (str) {
+	return A2(
+		_elm_lang$html$Html$span,
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html_Attributes$property,
+				'innerHTML',
+				_elm_lang$core$Json_Encode$string(str)),
+			_1: {ctor: '[]'}
+		},
+		{ctor: '[]'});
+};
+var _user$project$Lia_Utils$evaluateJS = function (code) {
+	return _user$project$Native_Utils.evaluate(code);
+};
+var _user$project$Lia_Utils$formula = F2(
+	function (displayMode, string) {
+		return _user$project$Lia_Utils$stringToHtml(
+			A2(_user$project$Native_Utils.formula, displayMode, string));
+	});
+var _user$project$Lia_Utils$highlight = F2(
+	function (language, code) {
+		return _user$project$Lia_Utils$stringToHtml(
+			A2(_user$project$Native_Utils.highlight, language, code));
+	});
+
+var _user$project$Lia_Code_Update$update = F2(
+	function (msg, model) {
+		var _p0 = msg;
+		return {
+			ctor: '_Tuple2',
+			_0: A3(
+				_elm_lang$core$Array$set,
+				_p0._0,
+				_elm_lang$core$Maybe$Just(
+					_user$project$Lia_Utils$evaluateJS(_p0._1)),
+				model),
+			_1: _elm_lang$core$Platform_Cmd$none
+		};
+	});
+var _user$project$Lia_Code_Update$Eval = F2(
+	function (a, b) {
+		return {ctor: 'Eval', _0: a, _1: b};
+	});
 
 var _user$project$Native_Tts = (function () {
 
@@ -13532,6 +13705,9 @@ var _user$project$Lia_Quiz_Update$CheckBox = F2(
 var _user$project$Lia_Update$UpdateEffect = function (a) {
 	return {ctor: 'UpdateEffect', _0: a};
 };
+var _user$project$Lia_Update$UpdateCode = function (a) {
+	return {ctor: 'UpdateCode', _0: a};
+};
 var _user$project$Lia_Update$UpdateQuiz = function (a) {
 	return {ctor: 'UpdateQuiz', _0: a};
 };
@@ -13608,11 +13784,22 @@ var _user$project$Lia_Update$update = F2(
 							{index: index}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
-				case 'UpdateEffect':
-					var _p6 = A2(_user$project$Lia_Effect_Update$update, _p0._0, model.effects);
-					var effects = _p6._0;
+				case 'UpdateCode':
+					var _p6 = A2(_user$project$Lia_Code_Update$update, _p0._0, model.code);
+					var code = _p6._0;
 					var cmd = _p6._1;
-					var h = _p6._2;
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{code: code}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
+				case 'UpdateEffect':
+					var _p7 = A2(_user$project$Lia_Effect_Update$update, _p0._0, model.effects);
+					var effects = _p7._0;
+					var cmd = _p7._1;
+					var h = _p7._2;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -13629,9 +13816,9 @@ var _user$project$Lia_Update$update = F2(
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				default:
-					var _p7 = A2(_user$project$Lia_Quiz_Update$update, _p0._0, model.quiz);
-					var quiz = _p7._0;
-					var cmd = _p7._1;
+					var _p8 = A2(_user$project$Lia_Quiz_Update$update, _p0._0, model.quiz);
+					var quiz = _p8._0;
+					var cmd = _p8._1;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -13640,6 +13827,84 @@ var _user$project$Lia_Update$update = F2(
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 			}
+		}
+	});
+
+var _user$project$Lia_Code_View$view = F2(
+	function (model, code) {
+		var _p0 = code;
+		if (_p0.ctor === 'Highlight') {
+			return A2(
+				_elm_lang$html$Html$pre,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$code,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: A2(_user$project$Lia_Utils$highlight, _p0._0, _p0._1),
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				});
+		} else {
+			var _p3 = _p0._1;
+			var _p2 = _p0._0;
+			return A2(
+				_elm_lang$html$Html$div,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$pre,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$code,
+								{ctor: '[]'},
+								{
+									ctor: '::',
+									_0: A2(_user$project$Lia_Utils$highlight, 'js', _p2),
+									_1: {ctor: '[]'}
+								}),
+							_1: {ctor: '[]'}
+						}),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$button,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Events$onClick(
+									A2(_user$project$Lia_Code_Update$Eval, _p3, _p2)),
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html$text('run'),
+								_1: {ctor: '[]'}
+							}),
+						_1: {
+							ctor: '::',
+							_0: function () {
+								var _p1 = A2(_user$project$Lia_Code_Model$get_result, _p3, model);
+								if (_p1.ctor === 'Nothing') {
+									return _elm_lang$html$Html$text('');
+								} else {
+									if (_p1._0.ctor === 'Ok') {
+										return _elm_lang$html$Html$text(_p1._0._0);
+									} else {
+										return _elm_lang$html$Html$text(_p1._0._0);
+									}
+								}
+							}(),
+							_1: {ctor: '[]'}
+						}
+					}
+				});
 		}
 	});
 
@@ -13880,57 +14145,6 @@ var _user$project$Lia_Index_View$view = function (model) {
 		},
 		{ctor: '[]'});
 };
-
-var _user$project$Native_Utils = (function () {
-
-    function highlight (language, code) {
-        try {
-            if (language != "")
-                return hljs.highlight(language, code).value;
-            else
-                return hljs.highlightAuto(code, hljs.listLanguages()).value;
-        } catch (e) {
-            return "<b><font color=\"red\">"+e.message+"</font></b><br>"+code;
-        }
-    };
-
-    function formula(dMode, str) {
-        try{
-            return katex.renderToString(str, {displayMode: dMode});
-        } catch(e) {
-            return "<b><font color=\"red\">"+e.message+"</font></b><br>";
-        }
-    }
-
-    return {
-        highlight: F2(highlight),
-        formula: F2(formula)
-    };
-})();
-
-var _user$project$Lia_Utils$stringToHtml = function (str) {
-	return A2(
-		_elm_lang$html$Html$span,
-		{
-			ctor: '::',
-			_0: A2(
-				_elm_lang$html$Html_Attributes$property,
-				'innerHTML',
-				_elm_lang$core$Json_Encode$string(str)),
-			_1: {ctor: '[]'}
-		},
-		{ctor: '[]'});
-};
-var _user$project$Lia_Utils$formula = F2(
-	function (displayMode, string) {
-		return _user$project$Lia_Utils$stringToHtml(
-			A2(_user$project$Native_Utils.formula, displayMode, string));
-	});
-var _user$project$Lia_Utils$highlight = F2(
-	function (language, code) {
-		return _user$project$Lia_Utils$stringToHtml(
-			A2(_user$project$Native_Utils.highlight, language, code));
-	});
 
 var _user$project$Lia_Inline_View$reference = function (ref) {
 	var media = F2(
@@ -14477,20 +14691,9 @@ var _user$project$Lia_View$view_block = F2(
 						_p3._0));
 			case 'CodeBlock':
 				return A2(
-					_elm_lang$html$Html$pre,
-					{ctor: '[]'},
-					{
-						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$code,
-							{ctor: '[]'},
-							{
-								ctor: '::',
-								_0: A2(_user$project$Lia_Utils$highlight, _p3._0, _p3._1),
-								_1: {ctor: '[]'}
-							}),
-						_1: {ctor: '[]'}
-					});
+					_elm_lang$html$Html$map,
+					_user$project$Lia_Update$UpdateCode,
+					A2(_user$project$Lia_Code_View$view, model.code, _p3._0));
 			case 'Quiz':
 				return A2(
 					_elm_lang$html$Html$map,
@@ -14889,7 +15092,7 @@ var _user$project$Lia$view = function (model) {
 var _user$project$Lia$parse = function (model) {
 	var _p0 = _user$project$Lia_Parser$run(model.script);
 	if (_p0.ctor === 'Ok') {
-		var _p1 = _p0._0;
+		var _p1 = _p0._0._0;
 		return _elm_lang$core$Native_Utils.update(
 			model,
 			{
@@ -14898,7 +15101,8 @@ var _user$project$Lia$parse = function (model) {
 				quiz: _user$project$Lia_Quiz_Model$init(_p1),
 				index: _user$project$Lia_Index_Model$init(_p1),
 				effects: _user$project$Lia_Effect_Model$init(
-					_elm_lang$core$List$head(_p1))
+					_elm_lang$core$List$head(_p1)),
+				code: _user$project$Lia_Code_Model$init(_p0._0._1)
 			});
 	} else {
 		return _elm_lang$core$Native_Utils.update(
@@ -14915,23 +15119,24 @@ var _user$project$Lia$set_script = F2(
 var _user$project$Lia$init = F2(
 	function (mode, script) {
 		return _user$project$Lia$parse(
-			A9(
-				_user$project$Lia_Model$Model,
-				script,
-				'',
-				{ctor: '[]'},
-				_elm_lang$core$Array$empty,
-				0,
-				mode,
-				_user$project$Lia_Effect_Model$init(_elm_lang$core$Maybe$Nothing),
-				true,
-				_user$project$Lia_Index_Model$init(
-					{ctor: '[]'})));
+			{
+				script: '',
+				error: '',
+				slides: {ctor: '[]'},
+				quiz: _elm_lang$core$Array$empty,
+				code: _user$project$Lia_Code_Model$init(0),
+				current_slide: 0,
+				mode: mode,
+				effects: _user$project$Lia_Effect_Model$init(_elm_lang$core$Maybe$Nothing),
+				contents: true,
+				index: _user$project$Lia_Index_Model$init(
+					{ctor: '[]'})
+			});
 	});
 var _user$project$Lia$init_plain = _user$project$Lia$init(_user$project$Lia_Types$Plain);
 var _user$project$Lia$init_slides = _user$project$Lia$init(_user$project$Lia_Types$Slides);
 
-var _user$project$Readme$text = '# Lia\n\nAn extended Markdown format for writing interactive online courses.\n\n\n                                     --{{1}}--\nWith Lia we try to implement an extended Markdown format that should enable\neveryone to create, share, adapt, translate or correct and extend online courses\nwithout the need of beeing a web-developer.\n\n                                    --{{2}}--\nEverything that is required is simple text-editor and a web-browser. Or you\nstart directly to create and share your course on github.\n\n\n## Basic Text-Formating\n\n                                    --{{0}}--\nWe tried to use the github flavored Markdown style for simple formating with\nsome additional elements.\n\n\\*italic\\* -> *italic*\n\n\\*\\*bold\\*\\* -> **bold**\n\n\\*\\*\\*bold and italic \\*\\*\\* -> ***bold and italic ***\n\n\\_also italic\\_ -> _also italic_\n\n\\_\\_also bold\\_\\_ -> __also bold__\n\n\\_\\_\\_also bold and italic\\_\\_\\_ -> ___also bold and italic___\n\n\\~strike\\~ -> ~strike~\n\n                                       {{1}}\n{{\n\n\\~\\~underline\\~\\~ -> ~~underline~~\n\n\\~\\~\\~strike and underline\\~\\~\\~ -> ~~~strike and underline~~~\n\n\\^superscript\\^ -> ^superscript^ ^^superscript^^ ^^^superscript^^^\n\n}}\n\n                                     --{{1}}--\nThese exceptions are for example underline and its combination with strike\nthroug or the application of superscript. If you superscript superscript you\ncan get even smaller.\n\n### Combinations\n\n                                     --{{0}}--\nAs you can see from the examples you can combine all elements freely.\n\n\n\\*\\*bold \\_bold italic\\_\\*\\* -> **bold _italic_**\n\n\\*\\*\\~bold strike\\~ \\~\\~bold underline\\~\\~\\*\\* -> **~bold strike~ ~~bold underline~~**\n\n\\*\\~italic strike\\~ \\~\\~italic underline\\~\\~\\* -> *~italic strike~ ~~italic underline~~*\n\n### Escape Chars\n\n\\*, \\~, \\_, \\#, \\{, \\}, \\[, \\], \\|, \\`, \\$\n\n                                     --{{0}}--\nIf you want to use multiple stars, hash-tags, or other syntax elements within\nyour script without applying their functionality, then you can escape them with\na starting backslash.\n\n### Symbols\n\n                                     --{{0}}--\nIf you want to, then you can use any kind of arrows, these symbols are generated\nautomatically for you ...\n\n->, ->>, >->, <-, <-<, <<-, <->, =>, <=, <=>\n\n-->, <--, <-->, ==>, <==, <==>\n\n~>, <~\n\n                                     --{{1}}--\nBut you can also use some basic smileys. We will try to extend this partial\nsupport in the future.\n\n                                       {{1}}\n:-), ;-), :-D, :-O, :-(, :-|, :-/, :-P, :-*, :\'), :\'(\n\n## References\n\n### Simple Links\n\n[link](www.google.de)\n\n### Images and Movies\n\n## Lists\n\n### Unordered Lists\n\n* alpha\n+ *beta*\n- gamma\n  and delta\n\n### Ordered Lists\n\n0. alpha\n2. **beta**\n1. gamma\n\n   *and delta*\n\n   ** and something else **\n\n### Mixed Lists\n\n1. alpha\n2. **beta**\n   * one\n   * two\n   * three\n3. gamma\n\n   *and delta*\n\n   ** and something else **\n\n\n\n## Math-Mode\n\n{{0}}{{ via KaTex http://katex.org }}\n\n{{1}}{{ Inline math-mode `$ \\frac{a}{\\sum{b+i}} $` -> $ \\frac{a}{\\sum{b+i}} $ }}\n\n                                        {{2}}\nMulti-line math-mode can be applied by double dollars `$$ formula $$`\n$$\n  \\frac{a}{\\sum{b+i}}\n$$\n\n                                    --{{0}}--\nWe apply KaTeX for math-formating, see the documentation at www.katex.org.\n\n                                    --{{1}}--\nA formula can be either inline with single dollars.\n\n                                    --{{2}}--\nOr multiline by using the double dollar notation.\n\n## Syntax Highlighting\n\n### Inline-Code\n\nInline code via \\` enter some code in here 1\\#\\#\\#\\$& \\` -> ` enter some code in here 1###$& `\n\n### Block-Code\n\n\n``` c\n#include \"test.h\"\n\nint main () {\n    printf(\"this is an example\\n\");\n    return 0;\n}\n```\n\n``` python\nimport math\n\ndef lia_sqrt(val):\n    return math.sqrt(val) + 22\n```\n\n                                    --{{0}}--\nSyntax highlighting is enabled with highlight.js.\n\n## Quizes\n\n### Single-Choice\n\nOnly one element can be selected!\n\n    [( )] Wrong\n    [(X)] This is the **correct** answer\n    [( )] This is ~~wrong~~ too!\n\n### Multiple-Choice\n\nMultiple of them can be selected, or all, or none of them ...\n\n    [[ ]] Do not touch!\n    [[X]] Select this one ...\n    [[X]] ... and this one too!\n    [[ ]] also not correct..\n\n\n### Text Inputs\n\nPlease enter the word \"solution\" into the text-field!\n\n    [[solution]]\n\n### Hints\n\n    [[super]]\n    [[?]] another word for awesome\n    [[?]] not as great as mega or terra\n    [[?]] hopefully not that bad\n    [[?]] there are no hints left\n\n\n## Effects\n\n### Inline Effects\n\n### Block Effects\n\n{{1 infinite zoomIn}}\n![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)(\n    position: absolute;\n    left: 0%;\n    top: 0%;\n    margin: 100 0 0 0;\n    border:\n    10px solid;\n    width: 98%\n)\n\n{{2 infinite bounce}}\n![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)(\n    position: absolute;\n    left: 10%;\n    top: 10%;\n    margin: 100 0 0 0;\n    border: 10px solid;\n    width: 78%\n)\n\n{{3 infinite bounce}}\n![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)(\n    position: absolute;\n    left: 20%;\n    top: 20%;\n    margin: 100 0 0 0;\n    border: 10px solid;\n    width: 58%\n)\n\n{{4 infinite bounce}}\n![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)(\n    position: absolute;\n    left: 30%;\n    top: 30%;\n    margin: 100 0 0 0;\n    border: 10px solid;\n    width: 38%\n)\n\n{{5 infinite bounce}}\n![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)(\n    position: absolute;\n    left: 40%;\n    top: 40%;\n    margin: 100 0 0 0;\n    border: 10px solid;\n    width: 18%\n)\n\n\n--{{1}}--\n\nI like to see apes doing human stuff ...\n\n--{{2}}--\n\nBut I do not like it the oposite way.\n\n### Comment Effects\n\n';
+var _user$project$Readme$text = '# Lia\n\nAn extended Markdown format for writing interactive online courses.\n\n\n                                     --{{1}}--\nWith Lia we try to implement an extended Markdown format that should enable\neveryone to create, share, adapt, translate or correct and extend online courses\nwithout the need of beeing a web-developer.\n\n                                    --{{2}}--\nEverything that is required is simple text-editor and a web-browser. Or you\nstart directly to create and share your course on github.\n\n\n## Basic Text-Formating\n\n                                    --{{0}}--\nWe tried to use the github flavored Markdown style for simple formating with\nsome additional elements.\n\n\\*italic\\* -> *italic*\n\n\\*\\*bold\\*\\* -> **bold**\n\n\\*\\*\\*bold and italic \\*\\*\\* -> ***bold and italic ***\n\n\\_also italic\\_ -> _also italic_\n\n\\_\\_also bold\\_\\_ -> __also bold__\n\n\\_\\_\\_also bold and italic\\_\\_\\_ -> ___also bold and italic___\n\n\\~strike\\~ -> ~strike~\n\n                                       {{1}}\n{{\n\n\\~\\~underline\\~\\~ -> ~~underline~~\n\n\\~\\~\\~strike and underline\\~\\~\\~ -> ~~~strike and underline~~~\n\n\\^superscript\\^ -> ^superscript^ ^^superscript^^ ^^^superscript^^^\n\n}}\n\n                                     --{{1}}--\nThese exceptions are for example underline and its combination with strike\nthroug or the application of superscript. If you superscript superscript you\ncan get even smaller.\n\n### Combinations\n\n                                     --{{0}}--\nAs you can see from the examples you can combine all elements freely.\n\n\n\\*\\*bold \\_bold italic\\_\\*\\* -> **bold _italic_**\n\n\\*\\*\\~bold strike\\~ \\~\\~bold underline\\~\\~\\*\\* -> **~bold strike~ ~~bold underline~~**\n\n\\*\\~italic strike\\~ \\~\\~italic underline\\~\\~\\* -> *~italic strike~ ~~italic underline~~*\n\n### Escape Chars\n\n\\*, \\~, \\_, \\#, \\{, \\}, \\[, \\], \\|, \\`, \\$\n\n                                     --{{0}}--\nIf you want to use multiple stars, hash-tags, or other syntax elements within\nyour script without applying their functionality, then you can escape them with\na starting backslash.\n\n### Symbols\n\n                                     --{{0}}--\nIf you want to, then you can use any kind of arrows, these symbols are generated\nautomatically for you ...\n\n->, ->>, >->, <-, <-<, <<-, <->, =>, <=, <=>\n\n-->, <--, <-->, ==>, <==, <==>\n\n~>, <~\n\n                                     --{{1}}--\nBut you can also use some basic smileys. We will try to extend this partial\nsupport in the future.\n\n                                       {{1}}\n:-), ;-), :-D, :-O, :-(, :-|, :-/, :-P, :-*, :\'), :\'(\n\n## References\n\n### Simple Links\n\n[link](www.google.de)\n\n### Images and Movies\n\n## Lists\n\n### Unordered Lists\n\n* alpha\n+ *beta*\n- gamma\n  and delta\n\n### Ordered Lists\n\n0. alpha\n2. **beta**\n1. gamma\n\n   *and delta*\n\n   ** and something else **\n\n### Mixed Lists\n\n1. alpha\n2. **beta**\n   * one\n   * two\n   * three\n3. gamma\n\n   *and delta*\n\n   ** and something else **\n\n\n\n## Math-Mode\n\n{{0}}{{ via KaTex http://katex.org }}\n\n{{1}}{{ Inline math-mode `$ \\frac{a}{\\sum{b+i}} $` -> $ \\frac{a}{\\sum{b+i}} $ }}\n\n                                        {{2}}\nMulti-line math-mode can be applied by double dollars `$$ formula $$`\n$$\n  \\frac{a}{\\sum{b+i}}\n$$\n\n                                    --{{0}}--\nWe apply KaTeX for math-formating, see the documentation at www.katex.org.\n\n                                    --{{1}}--\nA formula can be either inline with single dollars.\n\n                                    --{{2}}--\nOr multiline by using the double dollar notation.\n\n## Syntax Highlighting\n\n### Inline-Code\n\nInline code via \\` enter some code in here 1\\#\\#\\#\\$& \\` -> ` enter some code in here 1###$& `\n\n### Block-Code\n\n\n``` c\n#include \"test.h\"\n\nint main () {\n    printf(\"this is an example\\n\");\n    return 0;\n}\n```\n\n``` python\nimport math\n\ndef lia_sqrt(val):\n    return math.sqrt(val) + 22\n```\n\n                                    --{{0}}--\nSyntax highlighting is enabled with highlight.js.\n\n## Quizes\n\n### Single-Choice\n\nOnly one element can be selected!\n\n    [( )] Wrong\n    [(X)] This is the **correct** answer\n    [( )] This is ~~wrong~~ too!\n\n### Multiple-Choice\n\nMultiple of them can be selected, or all, or none of them ...\n\n    [[ ]] Do not touch!\n    [[X]] Select this one ...\n    [[X]] ... and this one too!\n    [[ ]] also not correct..\n\n\n### Text Inputs\n\nPlease enter the word \"solution\" into the text-field!\n\n    [[solution]]\n\n### Hints\n\n    [[super]]\n    [[?]] another word for awesome\n    [[?]] not as great as mega or terra\n    [[?]] hopefully not that bad\n    [[?]] there are no hints left\n\n\n## Effects\n\n### Inline Effects\n\n### Block Effects\n\n{{1 infinite zoomIn}}\n![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)(\n    position: absolute;\n    left: 0%;\n    top: 0%;\n    margin: 100 0 0 0;\n    border:\n    10px solid;\n    width: 98%\n)\n\n{{2 infinite bounce}}\n![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)(\n    position: absolute;\n    left: 10%;\n    top: 10%;\n    margin: 100 0 0 0;\n    border: 10px solid;\n    width: 78%\n)\n\n{{3 infinite bounce}}\n![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)(\n    position: absolute;\n    left: 20%;\n    top: 20%;\n    margin: 100 0 0 0;\n    border: 10px solid;\n    width: 58%\n)\n\n{{4 infinite bounce}}\n![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)(\n    position: absolute;\n    left: 30%;\n    top: 30%;\n    margin: 100 0 0 0;\n    border: 10px solid;\n    width: 38%\n)\n\n{{5 infinite bounce}}\n![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)(\n    position: absolute;\n    left: 40%;\n    top: 40%;\n    margin: 100 0 0 0;\n    border: 10px solid;\n    width: 18%\n)\n\n\n--{{1}}--\n\n``` javascript X\n\nalert (\"fuck\");\n\n```\n\nI like to see apes doing human stuff ...\n\n--{{2}}--\n\nBut I do not like it the oposite way.\n\n### Comment Effects\n\n';
 
 var _user$project$Main$Model = F3(
 	function (a, b, c) {

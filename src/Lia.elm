@@ -2,6 +2,7 @@ module Lia exposing (..)
 
 import Array
 import Html exposing (Html)
+import Lia.Code.Model as Code
 import Lia.Effect.Model as Effect
 import Lia.Index.Model as Index
 import Lia.Model
@@ -26,7 +27,18 @@ type alias Mode =
 
 init : Mode -> String -> Model
 init mode script =
-    parse <| Lia.Model.Model script "" [] Array.empty 0 mode (Effect.init Nothing) True (Index.init [])
+    parse <|
+        { script = ""
+        , error = ""
+        , slides = []
+        , quiz = Array.empty
+        , code = Code.init 0
+        , current_slide = 0
+        , mode = mode
+        , effects = Effect.init Nothing
+        , contents = True
+        , index = Index.init []
+        }
 
 
 set_script : Model -> String -> Model
@@ -47,13 +59,14 @@ init_slides =
 parse : Model -> Model
 parse model =
     case Lia.Parser.run model.script of
-        Ok slides ->
+        Ok ( slides, codes, quizes ) ->
             { model
                 | slides = slides
                 , error = ""
                 , quiz = Quiz.init slides
                 , index = Index.init slides
                 , effects = Effect.init <| List.head slides
+                , code = Code.init codes
             }
 
         Err msg ->

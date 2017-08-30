@@ -1,7 +1,7 @@
 module Lia.Parser exposing (run)
 
 import Combine exposing (..)
-import Combine.Char
+import Lia.Code.Parser exposing (..)
 import Lia.Effect.Parser exposing (..)
 import Lia.Inline.Parser exposing (..)
 import Lia.Inline.Types exposing (Inline(..))
@@ -37,7 +37,7 @@ blocks =
                         [ eblock blocks
                         , ecomment paragraph
                         , table
-                        , code_block
+                        , CodeBlock <$> code
                         , quote_block
                         , horizontal_line
                         , Quiz <$> quiz
@@ -155,18 +155,6 @@ table =
     choice [ format_table, simple_table ]
 
 
-code_block : Parser PState Block
-code_block =
-    let
-        lang =
-            string "```" *> spaces *> regex "([a-z,A-Z,0-9])*" <* spaces <* newline
-
-        block =
-            String.fromList <$> manyTill Combine.Char.anyChar (string "```")
-    in
-    CodeBlock <$> lang <*> block
-
-
 quote_block : Parser PState Block
 quote_block =
     let
@@ -201,11 +189,11 @@ parse =
     comments *> many1 (Slide <$> tag <*> title <*> body <*> effect_counter)
 
 
-run : String -> Result String (List Slide)
+run : String -> Result String ( List Slide, Int, Int )
 run script =
     case Combine.runParser parse Lia.PState.init script of
-        Ok ( _, _, es ) ->
-            Ok es
+        Ok ( state, _, es ) ->
+            Ok ( es, state.quiz, state.code )
 
         Err ( _, stream, ms ) ->
             Err <| formatError ms stream

@@ -1,5 +1,6 @@
 module Lia.Update exposing (Msg(..), update)
 
+import Lia.Code.Update as Code
 import Lia.Effect.Model as EffectModel
 import Lia.Effect.Update as Effect
 import Lia.Helper exposing (get_slide)
@@ -15,6 +16,7 @@ type Msg
     | ToggleContentsTable
     | UpdateIndex Index.Msg
     | UpdateQuiz Quiz.Msg
+    | UpdateCode Code.Msg
     | UpdateEffect Effect.Msg
 
 
@@ -57,6 +59,13 @@ update msg model =
                     Index.update childMsg model.index
             in
             ( { model | index = index }, Cmd.none )
+
+        UpdateCode childMsg ->
+            let
+                ( code, cmd ) =
+                    Code.update childMsg model.code
+            in
+            ( { model | code = code }, Cmd.none )
 
         UpdateEffect childMsg ->
             let

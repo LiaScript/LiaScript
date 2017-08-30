@@ -1,4 +1,4 @@
-module Lia.Utils exposing (formula, highlight, stringToHtml)
+module Lia.Utils exposing (evaluateJS, formula, highlight, stringToHtml)
 
 --this is where we import the native module
 
@@ -16,6 +16,11 @@ highlight language code =
 formula : Bool -> String -> Html msg
 formula displayMode string =
     stringToHtml <| Native.Utils.formula displayMode string
+
+
+evaluateJS : String -> Result String String
+evaluateJS code =
+    Native.Utils.evaluate code
 
 
 stringToHtml : String -> Html msg

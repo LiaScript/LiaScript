@@ -7,6 +7,7 @@ type alias PState =
     , identation : Int
     , skip_identation : Bool
     , effects : Int
+    , code : Int
     }
 
 
@@ -17,4 +18,5 @@ init =
     , identation = 0
     , skip_identation = False
     , effects = 0
+    , code = 0
     }

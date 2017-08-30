@@ -5,6 +5,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import Html.Lazy exposing (lazy2)
+import Lia.Code.View as Codes
 import Lia.Effect.Model as Effect
 import Lia.Effect.View as Effects
 import Lia.Helper exposing (..)
@@ -202,8 +203,8 @@ view_block model block =
         Quote elements ->
             Html.blockquote [] (List.map (\e -> Elem.view model.effects.visible e) elements)
 
-        CodeBlock language code ->
-            Html.pre [] [ Html.code [] [ Lia.Utils.highlight language code ] ]
+        CodeBlock code ->
+            Html.map UpdateCode <| Codes.view model.code code
 
         Quiz quiz ->
             Html.map UpdateQuiz <| Lia.Quiz.View.view model.quiz quiz

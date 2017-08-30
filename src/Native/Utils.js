@@ -19,8 +19,24 @@ var _user$project$Native_Utils = (function () {
         }
     }
 
+    function evaluate(code)
+    {
+        try { var rslt = String(eval(code));
+              return {
+                  ctor: "Ok",
+                  _0: rslt
+              };
+        } catch (e) {
+            return {
+                ctor: "Err",
+                _0: e.message
+            };
+        }
+    };
+
     return {
         highlight: F2(highlight),
-        formula: F2(formula)
+        formula: F2(formula),
+        evaluate: evaluate
     };
 })();

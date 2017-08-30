@@ -1,5 +1,6 @@
 module Lia.Index.Model exposing (Model, init, parse_inlines)
 
+import Lia.Code.Types exposing (..)
 import Lia.Inline.Types exposing (Inline(..), Reference(..))
 import Lia.Quiz.Types exposing (Quiz(..))
 import Lia.Types exposing (Block(..), Slide)
@@ -36,8 +37,13 @@ parse_block element =
         Quote e ->
             parse_inlines e
 
-        CodeBlock language code ->
-            code
+        CodeBlock code ->
+            case code of
+                Highlight lang str ->
+                    str
+
+                EvalJS str _ ->
+                    str
 
         Quiz block ->
             parse_quiz block.quiz

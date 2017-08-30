@@ -1,5 +1,6 @@
 module Lia.Types exposing (Block(..), Mode(..), Paragraph, Slide)
 
+import Lia.Code.Types exposing (Code)
 import Lia.Inline.Types exposing (..)
 import Lia.Quiz.Types exposing (QuizBlock)
 
@@ -23,7 +24,7 @@ type alias Paragraph =
 
 type Block
     = HLine
-    | CodeBlock String String
+    | CodeBlock Code
     | Quote Paragraph
     | Paragraph Paragraph
     | Table (List Paragraph) (List String) (List (List Paragraph))

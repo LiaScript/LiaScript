@@ -1,5 +1,6 @@
 module Lia.Model exposing (..)
 
+import Lia.Code.Model
 import Lia.Effect.Model
 import Lia.Index.Model
 import Lia.Quiz.Model
@@ -11,6 +12,7 @@ type alias Model =
     , error : String
     , slides : List Slide
     , quiz : Lia.Quiz.Model.Model
+    , code : Lia.Code.Model.Model
     , current_slide : Int
     , mode : Mode
     , effects : Lia.Effect.Model.Model
