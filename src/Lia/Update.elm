@@ -27,7 +27,7 @@ update msg model =
             let
                 ( effects, cmd, _ ) =
                     get_slide int model.slides
-                        |> EffectModel.init
+                        |> EffectModel.init model.narator
                         |> Effect.init
             in
             ( { model

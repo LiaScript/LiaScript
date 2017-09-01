@@ -35,7 +35,8 @@ init mode script =
         , code = Code.init 0
         , current_slide = 0
         , mode = mode
-        , effects = Effect.init Nothing
+        , effects = Effect.init "US English Male" Nothing
+        , narator = "US English Male"
         , contents = True
         , index = Index.init []
         }
@@ -59,14 +60,19 @@ init_slides =
 parse : Model -> Model
 parse model =
     case Lia.Parser.run model.script of
-        Ok ( slides, codes, quizes ) ->
+        Ok ( slides, codes, quizes, narator ) ->
             { model
                 | slides = slides
                 , error = ""
                 , quiz = Quiz.init slides
                 , index = Index.init slides
-                , effects = Effect.init <| List.head slides
+                , effects = Effect.init narator <| List.head slides
                 , code = Code.init codes
+                , narator =
+                    if narator == "" then
+                        "US English Male"
+                    else
+                        narator
             }
 
         Err msg ->

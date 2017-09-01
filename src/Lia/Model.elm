@@ -16,6 +16,7 @@ type alias Model =
     , current_slide : Int
     , mode : Mode
     , effects : Lia.Effect.Model.Model
+    , narator : String
     , contents : Bool
     , index : Lia.Index.Model.Model
     }

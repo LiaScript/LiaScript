@@ -89,32 +89,6 @@ ordered_list =
                 )
 
 
-
--- list : Parser PState Block
--- list =
---     let
---         identation =
---             String.length <$> regex "^( *)[+*-]( )"
---
---         state i =
---             modifyState
---                 (\s ->
---                     { s
---                         | indentation =
---                             if i > Maybe.withDefault 0 (List.head s.indentation) then
---                                 i :: s.indentation
---                             else
---                                 s.indentation
---                     }
---                 )
---                 *> succeed ()
---
---         rows =
---             many1 ((identation >>= state) *> blocks)
---     in
---     BulletList <$> rows
-
-
 horizontal_line : Parser PState Block
 horizontal_line =
     HLine <$ (identation *> regex "--[\\-]+")
@@ -186,14 +160,50 @@ parse =
             in
             withState pp <* modifyState reset_effect
     in
-    comments *> many1 (Slide <$> tag <*> title <*> body <*> effect_counter)
+    regex "[ \\t\\n]*" *> define_comment *> many1 (Slide <$> tag <*> title <*> body <*> effect_counter)
 
 
-run : String -> Result String ( List Slide, Int, Int )
+define_comment : Parser PState ()
+define_comment =
+    let
+        ending =
+            String.trim <$> regex "[^\\n]*"
+
+        author x =
+            modifyState (\s -> { s | def_author = x })
+
+        date x =
+            modifyState (\s -> { s | def_date = x })
+
+        email x =
+            modifyState (\s -> { s | def_email = x })
+
+        language x =
+            modifyState (\s -> { s | def_language = x })
+
+        narator x =
+            modifyState (\s -> { s | def_narator = x })
+
+        version x =
+            modifyState (\s -> { s | def_version = x })
+
+        list =
+            [ string "author:" *> (ending >>= author)
+            , string "date:" *> (ending >>= date)
+            , string "email:" *> (ending >>= email)
+            , string "language:" *> (ending >>= language)
+            , string "narator:" *> (ending >>= narator)
+            , string "version:" *> (ending >>= version)
+            ]
+    in
+    skip (string "<!--" *> regex "[ \\t\\n]+" *> many1 (choice list <* regex "[\n]*") <* string "-->")
+
+
+run : String -> Result String ( List Slide, Int, Int, String )
 run script =
     case Combine.runParser parse Lia.PState.init script of
         Ok ( state, _, es ) ->
-            Ok ( es, state.quiz, state.code )
+            Ok ( es, state.quiz, state.code, state.def_narator )
 
         Err ( _, stream, ms ) ->
             Err <| formatError ms stream

@@ -16,9 +16,9 @@ debug:
 	./lib/KaTeX/node_modules/uglify-js/bin/uglifyjs --compress --mangle  --output build/app.min.js build/app.js
 
 init:
-	#git clone https://github.com/mathjax/MathJax lib/MathJax
 	git clone https://github.com/Khan/KaTeX lib/KaTeX
 	cd lib/KaTeX; make
 	cp lib/KaTeX/build/katex.min.js lib/
 	cp lib/KaTeX/build/katex.min.css lib/
 	elm-make --yes
+	git clone https://github.com/andre-dietrich/elm-responsive-voice elm-stuff/packages/andre-dietrich/elm-responsive-voice/1.0.0/

@@ -3,7 +3,23 @@ module Readme exposing (..)
 
 text : String
 text =
-    """# Lia
+    """
+
+<!--
+
+author:   Andre Dietrich
+
+email:    dietrich@ivs.cs.uni-magdeburg.de
+
+version:  1.0.0
+
+language: en_US
+
+narator:  US English Female
+
+-->
+
+# Lia
 
 An extended Markdown format for writing interactive online courses.
 
@@ -232,7 +248,7 @@ Please enter the word "solution" into the text-field!
 ### Block Effects
 
 {{1 infinite zoomIn}}
-![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)(
+![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)<!--
     position: absolute;
     left: 0%;
     top: 0%;
@@ -240,47 +256,47 @@ Please enter the word "solution" into the text-field!
     border:
     10px solid;
     width: 98%
-)
+-->
 
 {{2 infinite bounce}}
-![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)(
+![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)<!--
     position: absolute;
     left: 10%;
     top: 10%;
     margin: 100 0 0 0;
     border: 10px solid;
     width: 78%
-)
+-->
 
 {{3 infinite bounce}}
-![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)(
+![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)<!--
     position: absolute;
     left: 20%;
     top: 20%;
     margin: 100 0 0 0;
     border: 10px solid;
     width: 58%
-)
+-->
 
 {{4 infinite bounce}}
-![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)(
+![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)<!--
     position: absolute;
     left: 30%;
     top: 30%;
     margin: 100 0 0 0;
     border: 10px solid;
     width: 38%
-)
+-->
 
 {{5 infinite bounce}}
-![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)(
+![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)<!--
     position: absolute;
     left: 40%;
     top: 40%;
     margin: 100 0 0 0;
     border: 10px solid;
     width: 18%
-)
+-->
 
 
 --{{1}}--

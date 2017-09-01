@@ -16,9 +16,14 @@ import Lia.Inline.Types exposing (..)
 import Lia.PState exposing (PState)
 
 
+comment : Parser s String
+comment =
+    String.fromList <$> (string "<!--" *> manyTill anyChar (string "-->"))
+
+
 comments : Parser s ()
 comments =
-    skip (many (string "<!--" *> manyTill anyChar (string "-->")))
+    skip (many comment)
 
 
 html : Parser s Inline
@@ -149,7 +154,7 @@ reference =
                     parens (regex "[^\\)\n]*")
 
                 style =
-                    optional "" (parens (regex "[^\\)]*"))
+                    optional "" comment
 
                 link =
                     Link <$> info <*> url

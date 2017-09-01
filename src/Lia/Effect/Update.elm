@@ -1,7 +1,10 @@
 module Lia.Effect.Update exposing (Msg(..), init, next, previous, update)
 
 import Lia.Effect.Model exposing (Model, Status(..), get_comment)
-import Tts.Tts as Tts
+import Responsive
+
+
+--import Tts.Tts as Tts
 
 
 type Msg
@@ -18,7 +21,11 @@ update msg model =
         stop_talking model =
             case model.status of
                 Speaking ->
-                    ( { model | status = Silent }, Cmd.none, Tts.shut_up True )
+                    let
+                        c =
+                            Responsive.cancel ()
+                    in
+                    ( { model | status = Silent }, Cmd.none, True )
 
                 _ ->
                     ( model, Cmd.none, True )
@@ -42,7 +49,7 @@ update msg model =
         Speak ->
             case get_comment model of
                 Just str ->
-                    ( { model | status = Speaking }, Tts.speak TTS (Just "samantha") "en_US" str, False )
+                    ( { model | status = Speaking }, Responsive.speak TTS model.narator str, False )
 
                 Nothing ->
                     ( model, Cmd.none, False )

@@ -18,6 +18,7 @@ type alias Model =
     , effects : Int
     , status : Status
     , comments : Array (Maybe String)
+    , narator : String
     }
 
 
@@ -27,19 +28,19 @@ type Status
     | Error String
 
 
-init : Maybe Slide -> Model
-init maybe =
+init : String -> Maybe Slide -> Model
+init narator maybe =
     case maybe of
         Just slide ->
-            Model 0 slide.effects Silent (scan_for_comments slide.effects slide.body)
+            Model 0 slide.effects Silent (scan_for_comments slide.effects slide.body) narator
 
         Nothing ->
-            Model 0 0 Silent Array.empty
+            Model 0 0 Silent Array.empty narator
 
 
 init_silent : Model
 init_silent =
-    Model 9999 9999 Silent Array.empty
+    Model 9999 9999 Silent Array.empty ""
 
 
 get_comment : Model -> Maybe String
