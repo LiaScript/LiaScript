@@ -12230,7 +12230,8 @@ var _user$project$Lia_Inline_Parser$formula = function () {
 			}
 		});
 }();
-var _user$project$Lia_Inline_Parser$spaces = _elm_community$parser_combinators$Combine$regex('[ \t]*');
+var _user$project$Lia_Inline_Parser$whitelines = _elm_community$parser_combinators$Combine$skip(
+	_elm_community$parser_combinators$Combine$regex('[ \\t\\n]*'));
 var _user$project$Lia_Inline_Parser$newline = _elm_community$parser_combinators$Combine$skip(
 	A2(
 		_elm_community$parser_combinators$Combine_ops['<|>'],
@@ -12393,22 +12394,28 @@ var _user$project$Lia_Inline_Parser$html_void = _elm_community$parser_combinator
 				}));
 	});
 var _user$project$Lia_Inline_Parser$html = A2(_elm_community$parser_combinators$Combine_ops['<|>'], _user$project$Lia_Inline_Parser$html_void, _user$project$Lia_Inline_Parser$html_block);
-var _user$project$Lia_Inline_Parser$comment = A2(
-	_elm_community$parser_combinators$Combine_ops['<$>'],
-	_elm_lang$core$String$fromList,
-	A2(
+var _user$project$Lia_Inline_Parser$comment = function (p) {
+	return A2(
 		_elm_community$parser_combinators$Combine_ops['*>'],
 		_elm_community$parser_combinators$Combine$string('<!--'),
 		A2(
 			_elm_community$parser_combinators$Combine$manyTill,
-			_elm_community$parser_combinators$Combine_Char$anyChar,
-			_elm_community$parser_combinators$Combine$string('-->'))));
+			p,
+			_elm_community$parser_combinators$Combine$string('-->')));
+};
 var _user$project$Lia_Inline_Parser$comments = _elm_community$parser_combinators$Combine$skip(
-	_elm_community$parser_combinators$Combine$many(_user$project$Lia_Inline_Parser$comment));
+	_elm_community$parser_combinators$Combine$many(
+		_user$project$Lia_Inline_Parser$comment(_elm_community$parser_combinators$Combine_Char$anyChar)));
 var _user$project$Lia_Inline_Parser$reference = _elm_community$parser_combinators$Combine$lazy(
 	function (_p11) {
 		var _p12 = _p11;
-		var style = A2(_elm_community$parser_combinators$Combine$optional, '', _user$project$Lia_Inline_Parser$comment);
+		var style = A2(
+			_elm_community$parser_combinators$Combine$optional,
+			'',
+			A2(
+				_elm_community$parser_combinators$Combine_ops['<$>'],
+				_elm_lang$core$String$fromList,
+				_user$project$Lia_Inline_Parser$comment(_elm_community$parser_combinators$Combine_Char$anyChar)));
 		var url = _elm_community$parser_combinators$Combine$parens(
 			_elm_community$parser_combinators$Combine$regex('[^\\)\n]*'));
 		var info = _elm_community$parser_combinators$Combine$brackets(
@@ -12556,7 +12563,7 @@ var _user$project$Lia_Inline_Parser$strings = _elm_community$parser_combinators$
 					_elm_community$parser_combinators$Combine_ops['*>'],
 					A2(
 						_elm_community$parser_combinators$Combine_ops['*>'],
-						_user$project$Lia_Inline_Parser$spaces,
+						_elm_community$parser_combinators$Combine$whitespace,
 						_elm_community$parser_combinators$Combine$string('\\')),
 					_elm_community$parser_combinators$Combine$regex('[\\^#*_~`\\\\\\|${}\\[\\]]')),
 				'escape string'));
@@ -12969,26 +12976,20 @@ var _user$project$Lia_Parser$define_comment = function () {
 		}
 	};
 	return _elm_community$parser_combinators$Combine$skip(
-		A2(
-			_elm_community$parser_combinators$Combine_ops['<*'],
+		_user$project$Lia_Inline_Parser$comment(
 			A2(
-				_elm_community$parser_combinators$Combine_ops['*>'],
+				_elm_community$parser_combinators$Combine_ops['<*'],
 				A2(
 					_elm_community$parser_combinators$Combine_ops['*>'],
-					_elm_community$parser_combinators$Combine$string('<!--'),
-					_elm_community$parser_combinators$Combine$regex('[ \\t\\n]+')),
-				_elm_community$parser_combinators$Combine$many1(
-					A2(
-						_elm_community$parser_combinators$Combine_ops['<*'],
-						_elm_community$parser_combinators$Combine$choice(list),
-						_elm_community$parser_combinators$Combine$regex('[\n]*')))),
-			_elm_community$parser_combinators$Combine$string('-->')));
+					_elm_community$parser_combinators$Combine$regex('[ \\t\\n]*'),
+					_elm_community$parser_combinators$Combine$choice(list)),
+				_elm_community$parser_combinators$Combine$regex('[\n]+'))));
 }();
 var _user$project$Lia_Parser$table = function () {
 	var ending = A2(
 		_elm_community$parser_combinators$Combine_ops['<*'],
 		_elm_community$parser_combinators$Combine$string('|'),
-		A2(_elm_community$parser_combinators$Combine_ops['<*'], _user$project$Lia_Inline_Parser$spaces, _user$project$Lia_Inline_Parser$newline));
+		A2(_elm_community$parser_combinators$Combine_ops['<*'], _elm_community$parser_combinators$Combine$whitespace, _user$project$Lia_Inline_Parser$newline));
 	var row = A2(
 		_elm_community$parser_combinators$Combine_ops['<*'],
 		A2(

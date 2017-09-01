@@ -1,12 +1,13 @@
 module Lia.Inline.Parser
     exposing
         ( combine
+        , comment
         , comments
         , inlines
         , line
         , newline
         , newlines
-        , spaces
+        , whitelines
         )
 
 import Combine exposing (..)
@@ -16,14 +17,14 @@ import Lia.Inline.Types exposing (..)
 import Lia.PState exposing (PState)
 
 
-comment : Parser s String
-comment =
-    String.fromList <$> (string "<!--" *> manyTill anyChar (string "-->"))
+comment : Parser s a -> Parser s (List a)
+comment p =
+    string "<!--" *> manyTill p (string "-->")
 
 
 comments : Parser s ()
 comments =
-    skip (many comment)
+    skip (many (comment anyChar))
 
 
 html : Parser s Inline
@@ -99,17 +100,17 @@ line =
 
 newline : Parser s ()
 newline =
-    skip (char '\n' <|> eol)
+    (char '\n' <|> eol) |> skip
 
 
 newlines : Parser s ()
 newlines =
-    skip (many newline)
+    many newline |> skip
 
 
-spaces : Parser s String
-spaces =
-    regex "[ \t]*"
+whitelines : Parser s ()
+whitelines =
+    regex "[ \\t\\n]*" |> skip
 
 
 inlines : Parser PState Inline
@@ -154,7 +155,7 @@ reference =
                     parens (regex "[^\\)\n]*")
 
                 style =
-                    optional "" comment
+                    optional "" (String.fromList <$> comment anyChar)
 
                 link =
                     Link <$> info <*> url
@@ -233,7 +234,7 @@ strings =
                     Chars <$> regex "[^#*_~:;`!\\^\\[\\|{}\\\\\\n\\-<>=|$]+" <?> "base string"
 
                 escape =
-                    Chars <$> (spaces *> string "\\" *> regex "[\\^#*_~`\\\\\\|${}\\[\\]]") <?> "escape string"
+                    Chars <$> (whitespace *> string "\\" *> regex "[\\^#*_~`\\\\\\|${}\\[\\]]") <?> "escape string"
 
                 italic =
                     Italic <$> (between_ "*" <|> between_ "_") <?> "italic string"

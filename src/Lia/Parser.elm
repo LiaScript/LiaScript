@@ -103,7 +103,7 @@ table : Parser PState Block
 table =
     let
         ending =
-            string "|" <* (spaces <* newline)
+            string "|" <* (whitespace <* newline)
 
         row =
             string "|" *> sepBy1 (string "|") (many1 inlines) <* ending
@@ -196,7 +196,7 @@ define_comment =
             , string "version:" *> (ending >>= version)
             ]
     in
-    skip (string "<!--" *> regex "[ \\t\\n]+" *> many1 (choice list <* regex "[\n]*") <* string "-->")
+    skip (comment (regex "[ \\t\\n]*" *> choice list <* regex "[\n]+"))
 
 
 run : String -> Result String ( List Slide, Int, Int, String )
