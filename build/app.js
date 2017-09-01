@@ -11247,10 +11247,8 @@ var _elm_lang$html$Html_Lazy$lazy = _elm_lang$virtual_dom$VirtualDom$lazy;
 var _user$project$Lia_Code_Model$get_result = F2(
 	function (idx, model) {
 		return A2(
-			_elm_lang$core$Maybe$andThen,
-			function (a) {
-				return a;
-			},
+			_elm_lang$core$Maybe$withDefault,
+			_elm_lang$core$Maybe$Nothing,
 			A2(_elm_lang$core$Array$get, idx, model));
 	});
 var _user$project$Lia_Code_Model$init = function (i) {
@@ -12617,19 +12615,6 @@ var _user$project$Lia_Code_Parser$inc_counter = function () {
 		_elm_community$parser_combinators$Combine$modifyState(increment_counter));
 }();
 var _user$project$Lia_Code_Parser$border = _elm_community$parser_combinators$Combine$string('```');
-var _user$project$Lia_Code_Parser$eval_js = A2(
-	_elm_community$parser_combinators$Combine_ops['<*>'],
-	A2(
-		_elm_community$parser_combinators$Combine_ops['<$>'],
-		_user$project$Lia_Code_Types$EvalJS,
-		A2(
-			_elm_community$parser_combinators$Combine_ops['*>'],
-			A2(
-				_elm_community$parser_combinators$Combine_ops['*>'],
-				_user$project$Lia_Code_Parser$border,
-				_elm_community$parser_combinators$Combine$regex('( *)((js)|(javascript))( +)(x|X)( *)\\n')),
-			_user$project$Lia_Inline_Parser$stringTill(_user$project$Lia_Code_Parser$border))),
-	_user$project$Lia_Code_Parser$inc_counter);
 var _user$project$Lia_Code_Parser$header = function (p) {
 	return A2(
 		_elm_community$parser_combinators$Combine_ops['<*'],
@@ -12647,6 +12632,17 @@ var _user$project$Lia_Code_Parser$block = A2(
 		_user$project$Lia_Code_Parser$header(
 			_elm_community$parser_combinators$Combine$regex('([a-z,A-Z,0-9])*'))),
 	_user$project$Lia_Inline_Parser$stringTill(_user$project$Lia_Code_Parser$border));
+var _user$project$Lia_Code_Parser$eval_js = A2(
+	_elm_community$parser_combinators$Combine_ops['<*>'],
+	A2(
+		_elm_community$parser_combinators$Combine_ops['<$>'],
+		_user$project$Lia_Code_Types$EvalJS,
+		A2(
+			_elm_community$parser_combinators$Combine_ops['*>'],
+			_user$project$Lia_Code_Parser$header(
+				_elm_community$parser_combinators$Combine$regex('((js)|(javascript))( +)(x|X)')),
+			_user$project$Lia_Inline_Parser$stringTill(_user$project$Lia_Code_Parser$border))),
+	_user$project$Lia_Code_Parser$inc_counter);
 var _user$project$Lia_Code_Parser$code = _elm_community$parser_combinators$Combine$choice(
 	{
 		ctor: '::',

@@ -14,4 +14,6 @@ init i =
 
 get_result : Int -> Model -> Maybe (Result String String)
 get_result idx model =
-    Array.get idx model |> Maybe.andThen (\a -> a)
+    model
+        |> Array.get idx
+        |> Maybe.withDefault Nothing
