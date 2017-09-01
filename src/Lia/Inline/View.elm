@@ -54,10 +54,12 @@ reference : Reference -> Html msg
 reference ref =
     let
         media url_ style_ =
-            if style_ == "" then
-                [ Attr.src url_ ]
-            else
-                [ Attr.src url_, Attr.attribute "style" style_ ]
+            case style_ of
+                Nothing ->
+                    [ Attr.src url_ ]
+
+                Just s ->
+                    [ Attr.src url_, Attr.attribute "style" s ]
     in
     case ref of
         Link alt_ url_ ->

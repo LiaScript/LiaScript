@@ -160,7 +160,7 @@ parse =
             in
             withState pp <* modifyState reset_effect
     in
-    regex "[ \\t\\n]*" *> define_comment *> many1 (Slide <$> tag <*> title <*> body <*> effect_counter)
+    whitelines *> define_comment *> many1 (Slide <$> tag <*> title <*> body <*> effect_counter)
 
 
 define_comment : Parser PState ()

@@ -11792,70 +11792,6 @@ var _user$project$Lia_PState$PState = function (a) {
 	};
 };
 
-var _user$project$Lia_Code_Parser$inc_counter = function () {
-	var increment_counter = function (c) {
-		return _elm_lang$core$Native_Utils.update(
-			c,
-			{code: c.code + 1});
-	};
-	var pp = function (par) {
-		return _elm_community$parser_combinators$Combine$succeed(par.code);
-	};
-	return A2(
-		_elm_community$parser_combinators$Combine_ops['<*'],
-		_elm_community$parser_combinators$Combine$withState(pp),
-		_elm_community$parser_combinators$Combine$modifyState(increment_counter));
-}();
-var _user$project$Lia_Code_Parser$eval_js = function () {
-	var block = A2(
-		_elm_community$parser_combinators$Combine_ops['<$>'],
-		_elm_lang$core$String$fromList,
-		A2(
-			_elm_community$parser_combinators$Combine$manyTill,
-			_elm_community$parser_combinators$Combine_Char$anyChar,
-			_elm_community$parser_combinators$Combine$string('```')));
-	return A2(
-		_elm_community$parser_combinators$Combine_ops['<*>'],
-		A2(
-			_elm_community$parser_combinators$Combine_ops['<$>'],
-			_user$project$Lia_Code_Types$EvalJS,
-			A2(
-				_elm_community$parser_combinators$Combine_ops['*>'],
-				_elm_community$parser_combinators$Combine$regex('```( *)((js)|(javascript))( +)(x|X)'),
-				block)),
-		_user$project$Lia_Code_Parser$inc_counter);
-}();
-var _user$project$Lia_Code_Parser$block = function () {
-	var block = A2(
-		_elm_community$parser_combinators$Combine_ops['<$>'],
-		_elm_lang$core$String$fromList,
-		A2(
-			_elm_community$parser_combinators$Combine$manyTill,
-			_elm_community$parser_combinators$Combine_Char$anyChar,
-			_elm_community$parser_combinators$Combine$string('```')));
-	var lang = A2(
-		_elm_community$parser_combinators$Combine_ops['<*'],
-		A2(
-			_elm_community$parser_combinators$Combine_ops['*>'],
-			_elm_community$parser_combinators$Combine$regex('```( *)'),
-			_elm_community$parser_combinators$Combine$regex('([a-z,A-Z,0-9])*')),
-		_elm_community$parser_combinators$Combine$regex('( *)\\n'));
-	return A2(
-		_elm_community$parser_combinators$Combine_ops['<*>'],
-		A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Code_Types$Highlight, lang),
-		block);
-}();
-var _user$project$Lia_Code_Parser$code = _elm_community$parser_combinators$Combine$choice(
-	{
-		ctor: '::',
-		_0: _user$project$Lia_Code_Parser$eval_js,
-		_1: {
-			ctor: '::',
-			_0: _user$project$Lia_Code_Parser$block,
-			_1: {ctor: '[]'}
-		}
-	});
-
 var _user$project$Lia_Effect_Parser$effect_number = function () {
 	var state = function (n) {
 		return A2(
@@ -12193,21 +12129,20 @@ var _user$project$Lia_Inline_Parser$arrows = _elm_community$parser_combinators$C
 				}
 			});
 	});
+var _user$project$Lia_Inline_Parser$stringTill = function (p) {
+	return A2(
+		_elm_community$parser_combinators$Combine_ops['<$>'],
+		_elm_lang$core$String$fromList,
+		A2(_elm_community$parser_combinators$Combine$manyTill, _elm_community$parser_combinators$Combine_Char$anyChar, p));
+};
 var _user$project$Lia_Inline_Parser$formula = function () {
 	var p2 = A2(
 		_elm_community$parser_combinators$Combine_ops['<$>'],
-		function (c) {
-			return A2(
-				_user$project$Lia_Inline_Types$Formula,
-				true,
-				_elm_lang$core$String$fromList(c));
-		},
+		_user$project$Lia_Inline_Types$Formula(true),
 		A2(
 			_elm_community$parser_combinators$Combine_ops['*>'],
 			_elm_community$parser_combinators$Combine$string('$$'),
-			A2(
-				_elm_community$parser_combinators$Combine$manyTill,
-				_elm_community$parser_combinators$Combine_Char$anyChar,
+			_user$project$Lia_Inline_Parser$stringTill(
 				_elm_community$parser_combinators$Combine$string('$$'))));
 	var p1 = A2(
 		_elm_community$parser_combinators$Combine_ops['<$>'],
@@ -12289,15 +12224,13 @@ var _user$project$Lia_Inline_Parser$html_block = function () {
 					A2(
 						_elm_lang$core$String$append,
 						A2(_elm_lang$core$Basics_ops['++'], '<', tag),
-						_elm_lang$core$String$fromList(c)),
+						c),
 					A2(
 						_elm_lang$core$Basics_ops['++'],
 						'</',
 						A2(_elm_lang$core$Basics_ops['++'], tag, '>')));
 			},
-			A2(
-				_elm_community$parser_combinators$Combine$manyTill,
-				_elm_community$parser_combinators$Combine_Char$anyChar,
+			_user$project$Lia_Inline_Parser$stringTill(
 				A2(
 					_elm_community$parser_combinators$Combine_ops['<*'],
 					A2(
@@ -12409,9 +12342,7 @@ var _user$project$Lia_Inline_Parser$comments = _elm_community$parser_combinators
 var _user$project$Lia_Inline_Parser$reference = _elm_community$parser_combinators$Combine$lazy(
 	function (_p11) {
 		var _p12 = _p11;
-		var style = A2(
-			_elm_community$parser_combinators$Combine$optional,
-			'',
+		var style = _elm_community$parser_combinators$Combine$maybe(
 			A2(
 				_elm_community$parser_combinators$Combine_ops['<$>'],
 				_elm_lang$core$String$fromList,
@@ -12670,6 +12601,62 @@ var _user$project$Lia_Inline_Parser$line = A2(
 				}));
 	},
 	_elm_community$parser_combinators$Combine$many1(_user$project$Lia_Inline_Parser$inlines));
+
+var _user$project$Lia_Code_Parser$inc_counter = function () {
+	var increment_counter = function (c) {
+		return _elm_lang$core$Native_Utils.update(
+			c,
+			{code: c.code + 1});
+	};
+	var pp = function (par) {
+		return _elm_community$parser_combinators$Combine$succeed(par.code);
+	};
+	return A2(
+		_elm_community$parser_combinators$Combine_ops['<*'],
+		_elm_community$parser_combinators$Combine$withState(pp),
+		_elm_community$parser_combinators$Combine$modifyState(increment_counter));
+}();
+var _user$project$Lia_Code_Parser$border = _elm_community$parser_combinators$Combine$string('```');
+var _user$project$Lia_Code_Parser$eval_js = A2(
+	_elm_community$parser_combinators$Combine_ops['<*>'],
+	A2(
+		_elm_community$parser_combinators$Combine_ops['<$>'],
+		_user$project$Lia_Code_Types$EvalJS,
+		A2(
+			_elm_community$parser_combinators$Combine_ops['*>'],
+			A2(
+				_elm_community$parser_combinators$Combine_ops['*>'],
+				_user$project$Lia_Code_Parser$border,
+				_elm_community$parser_combinators$Combine$regex('( *)((js)|(javascript))( +)(x|X)( *)\\n')),
+			_user$project$Lia_Inline_Parser$stringTill(_user$project$Lia_Code_Parser$border))),
+	_user$project$Lia_Code_Parser$inc_counter);
+var _user$project$Lia_Code_Parser$header = function (p) {
+	return A2(
+		_elm_community$parser_combinators$Combine_ops['<*'],
+		A2(
+			_elm_community$parser_combinators$Combine_ops['*>'],
+			A2(_elm_community$parser_combinators$Combine_ops['*>'], _user$project$Lia_Code_Parser$border, _elm_community$parser_combinators$Combine$whitespace),
+			p),
+		_elm_community$parser_combinators$Combine$regex('( *)\\n'));
+};
+var _user$project$Lia_Code_Parser$block = A2(
+	_elm_community$parser_combinators$Combine_ops['<*>'],
+	A2(
+		_elm_community$parser_combinators$Combine_ops['<$>'],
+		_user$project$Lia_Code_Types$Highlight,
+		_user$project$Lia_Code_Parser$header(
+			_elm_community$parser_combinators$Combine$regex('([a-z,A-Z,0-9])*'))),
+	_user$project$Lia_Inline_Parser$stringTill(_user$project$Lia_Code_Parser$border));
+var _user$project$Lia_Code_Parser$code = _elm_community$parser_combinators$Combine$choice(
+	{
+		ctor: '::',
+		_0: _user$project$Lia_Code_Parser$eval_js,
+		_1: {
+			ctor: '::',
+			_0: _user$project$Lia_Code_Parser$block,
+			_1: {ctor: '[]'}
+		}
+	});
 
 var _user$project$Lia_Quiz_Parser$quiz_hints = _elm_community$parser_combinators$Combine$many(
 	A2(
@@ -13282,10 +13269,7 @@ var _user$project$Lia_Parser$parse = function () {
 			_elm_community$parser_combinators$Combine$whitespace));
 	return A2(
 		_elm_community$parser_combinators$Combine_ops['*>'],
-		A2(
-			_elm_community$parser_combinators$Combine_ops['*>'],
-			_elm_community$parser_combinators$Combine$regex('[ \\t\\n]*'),
-			_user$project$Lia_Parser$define_comment),
+		A2(_elm_community$parser_combinators$Combine_ops['*>'], _user$project$Lia_Inline_Parser$whitelines, _user$project$Lia_Parser$define_comment),
 		_elm_community$parser_combinators$Combine$many1(
 			A2(
 				_elm_community$parser_combinators$Combine_ops['<*>'],
@@ -14222,77 +14206,82 @@ var _user$project$Lia_Index_View$view = function (model) {
 var _user$project$Lia_Inline_View$reference = function (ref) {
 	var media = F2(
 		function (url_, style_) {
-			return _elm_lang$core$Native_Utils.eq(style_, '') ? {
-				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$src(url_),
-				_1: {ctor: '[]'}
-			} : {
-				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$src(url_),
-				_1: {
+			var _p0 = style_;
+			if (_p0.ctor === 'Nothing') {
+				return {
 					ctor: '::',
-					_0: A2(_elm_lang$html$Html_Attributes$attribute, 'style', style_),
+					_0: _elm_lang$html$Html_Attributes$src(url_),
 					_1: {ctor: '[]'}
-				}
-			};
+				};
+			} else {
+				return {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$src(url_),
+					_1: {
+						ctor: '::',
+						_0: A2(_elm_lang$html$Html_Attributes$attribute, 'style', _p0._0),
+						_1: {ctor: '[]'}
+					}
+				};
+			}
 		});
-	var _p0 = ref;
-	switch (_p0.ctor) {
+	var _p1 = ref;
+	switch (_p1.ctor) {
 		case 'Link':
 			return A2(
 				_elm_lang$html$Html$a,
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$href(_p0._1),
+					_0: _elm_lang$html$Html_Attributes$href(_p1._1),
 					_1: {ctor: '[]'}
 				},
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html$text(_p0._0),
+					_0: _elm_lang$html$Html$text(_p1._0),
 					_1: {ctor: '[]'}
 				});
 		case 'Image':
 			return A2(
 				_elm_lang$html$Html$img,
-				A2(media, _p0._1, _p0._2),
+				A2(media, _p1._1, _p1._2),
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html$text(_p0._0),
+					_0: _elm_lang$html$Html$text(_p1._0),
 					_1: {ctor: '[]'}
 				});
 		default:
 			return A2(
 				_elm_lang$html$Html$iframe,
-				A2(media, _p0._1, _p0._2),
+				A2(media, _p1._1, _p1._2),
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html$text(_p0._0),
+					_0: _elm_lang$html$Html$text(_p1._0),
 					_1: {ctor: '[]'}
 				});
 	}
 };
 var _user$project$Lia_Inline_View$view = F2(
 	function (visible, element) {
-		var _p1 = element;
-		switch (_p1.ctor) {
+		var _p2 = element;
+		switch (_p2.ctor) {
 			case 'Code':
 				return A2(
 					_elm_lang$html$Html$code,
 					{ctor: '[]'},
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html$text(_p1._0),
+						_0: _elm_lang$html$Html$text(_p2._0),
 						_1: {ctor: '[]'}
 					});
 			case 'Chars':
-				return _elm_lang$html$Html$text(_p1._0);
+				return _elm_lang$html$Html$text(_p2._0);
 			case 'Bold':
 				return A2(
 					_elm_lang$html$Html$b,
 					{ctor: '[]'},
 					{
 						ctor: '::',
-						_0: A2(_user$project$Lia_Inline_View$view, visible, _p1._0),
+						_0: A2(_user$project$Lia_Inline_View$view, visible, _p2._0),
 						_1: {ctor: '[]'}
 					});
 			case 'Italic':
@@ -14301,7 +14290,7 @@ var _user$project$Lia_Inline_View$view = F2(
 					{ctor: '[]'},
 					{
 						ctor: '::',
-						_0: A2(_user$project$Lia_Inline_View$view, visible, _p1._0),
+						_0: A2(_user$project$Lia_Inline_View$view, visible, _p2._0),
 						_1: {ctor: '[]'}
 					});
 			case 'Strike':
@@ -14310,7 +14299,7 @@ var _user$project$Lia_Inline_View$view = F2(
 					{ctor: '[]'},
 					{
 						ctor: '::',
-						_0: A2(_user$project$Lia_Inline_View$view, visible, _p1._0),
+						_0: A2(_user$project$Lia_Inline_View$view, visible, _p2._0),
 						_1: {ctor: '[]'}
 					});
 			case 'Underline':
@@ -14319,7 +14308,7 @@ var _user$project$Lia_Inline_View$view = F2(
 					{ctor: '[]'},
 					{
 						ctor: '::',
-						_0: A2(_user$project$Lia_Inline_View$view, visible, _p1._0),
+						_0: A2(_user$project$Lia_Inline_View$view, visible, _p2._0),
 						_1: {ctor: '[]'}
 					});
 			case 'Superscript':
@@ -14328,7 +14317,7 @@ var _user$project$Lia_Inline_View$view = F2(
 					{ctor: '[]'},
 					{
 						ctor: '::',
-						_0: A2(_user$project$Lia_Inline_View$view, visible, _p1._0),
+						_0: A2(_user$project$Lia_Inline_View$view, visible, _p2._0),
 						_1: {ctor: '[]'}
 					});
 			case 'Container':
@@ -14340,23 +14329,23 @@ var _user$project$Lia_Inline_View$view = F2(
 						function (e) {
 							return A2(_user$project$Lia_Inline_View$view, visible, e);
 						},
-						_p1._0));
+						_p2._0));
 			case 'Ref':
-				return _user$project$Lia_Inline_View$reference(_p1._0);
+				return _user$project$Lia_Inline_View$reference(_p2._0);
 			case 'Formula':
-				return A2(_user$project$Lia_Utils$formula, _p1._0, _p1._1);
+				return A2(_user$project$Lia_Utils$formula, _p2._0, _p2._1);
 			case 'Symbol':
-				return _user$project$Lia_Utils$stringToHtml(_p1._0);
+				return _user$project$Lia_Utils$stringToHtml(_p2._0);
 			case 'HTML':
-				return _user$project$Lia_Utils$stringToHtml(_p1._0);
+				return _user$project$Lia_Utils$stringToHtml(_p2._0);
 			default:
 				return A5(
 					_user$project$Lia_Effect_View$view,
 					_user$project$Lia_Inline_View$view(visible),
-					_p1._0,
+					_p2._0,
 					visible,
-					_p1._1,
-					_p1._2);
+					_p2._1,
+					_p2._2);
 		}
 	});
 

@@ -1,8 +1,8 @@
-module Lia.Code.Parser exposing (..)
+module Lia.Code.Parser exposing (code)
 
 import Combine exposing (..)
-import Combine.Char
 import Lia.Code.Types exposing (..)
+import Lia.Inline.Parser exposing (stringTill)
 import Lia.PState exposing (PState)
 
 
@@ -11,25 +11,26 @@ code =
     choice [ eval_js, block ]
 
 
+border : Parser PState String
+border =
+    string "```"
+
+
+header : Parser PState a -> Parser PState a
+header p =
+    border *> whitespace *> p <* regex "( *)\\n"
+
+
 block : Parser PState Code
 block =
-    let
-        lang =
-            regex "```( *)" *> regex "([a-z,A-Z,0-9])*" <* regex "( *)\\n"
-
-        block =
-            String.fromList <$> manyTill Combine.Char.anyChar (string "```")
-    in
-    Highlight <$> lang <*> block
+    Highlight <$> header (regex "([a-z,A-Z,0-9])*") <*> stringTill border
 
 
 eval_js : Parser PState Code
 eval_js =
-    let
-        block =
-            String.fromList <$> manyTill Combine.Char.anyChar (string "```")
-    in
-    EvalJS <$> (regex "```( *)((js)|(javascript))( +)(x|X)" *> block) <*> inc_counter
+    EvalJS
+        <$> (header (regex "((js)|(javascript))( +)(x|X)") *> stringTill border)
+        <*> inc_counter
 
 
 inc_counter : Parser PState Int

@@ -7,6 +7,7 @@ module Lia.Inline.Parser
         , line
         , newline
         , newlines
+        , stringTill
         , whitelines
         )
 
@@ -62,15 +63,12 @@ html_block =
     let
         p tag =
             (\c ->
-                (c
-                    |> String.fromList
-                    |> String.append ("<" ++ tag)
-                )
+                String.append ("<" ++ tag) c
                     ++ "</"
                     ++ tag
                     ++ ">"
             )
-                <$> manyTill anyChar (string "</" *> string tag <* string ">")
+                <$> stringTill (string "</" *> string tag <* string ">")
     in
     HTML <$> (whitespace *> string "<" *> regex "[a-zA-Z]+" >>= p)
 
@@ -131,6 +129,11 @@ inlines =
             comments *> p
 
 
+stringTill : Parser s p -> Parser s String
+stringTill p =
+    String.fromList <$> manyTill anyChar p
+
+
 formula : Parser s Inline
 formula =
     let
@@ -138,7 +141,7 @@ formula =
             Formula False <$> (string "$" *> regex "[^\\n$]+" <* string "$")
 
         p2 =
-            (\c -> Formula True <| String.fromList c) <$> (string "$$" *> manyTill anyChar (string "$$"))
+            Formula True <$> (string "$$" *> stringTill (string "$$"))
     in
     choice [ p2, p1 ]
 
@@ -155,7 +158,7 @@ reference =
                     parens (regex "[^\\)\n]*")
 
                 style =
-                    optional "" (String.fromList <$> comment anyChar)
+                    maybe (String.fromList <$> comment anyChar)
 
                 link =
                     Link <$> info <*> url
