@@ -33,16 +33,3 @@ type Block
     | EComment Int Paragraph
     | BulletList (List (List Block))
     | OrderedList (List (List Block))
-
-
-
---    | Bullet List Block
-
-
-type Lia
-    = LiaBool Bool
-    | LiaInt Int
-    | LiaFloat Float
-    | LiaString String
-    | LiaList (List Lia)
-    | LiaCmd String (List Lia)

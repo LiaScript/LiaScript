@@ -16,7 +16,6 @@ import Lia.Model exposing (Model)
 import Lia.Quiz.View
 import Lia.Types exposing (..)
 import Lia.Update exposing (Msg(..))
-import Lia.Utils
 
 
 view : Model -> Html Msg

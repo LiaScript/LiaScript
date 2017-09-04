@@ -1,10 +1,11 @@
 module Lia.Quiz.Parser exposing (quiz)
 
+import Array exposing (push)
 import Combine exposing (..)
 import Lia.Inline.Parser exposing (..)
 import Lia.Inline.Types exposing (..)
 import Lia.PState exposing (PState)
-import Lia.Quiz.Types exposing (Quiz(..), QuizBlock)
+import Lia.Quiz.Types exposing (Quiz(..), QuizBlock, QuizState(..), QuizVector)
 
 
 quiz : Parser PState QuizBlock
@@ -23,9 +24,27 @@ quiz =
     QuizBlock <$> choice [ quiz_SingleChoice, quiz_MultipleChoice, quiz_TextInput ] <*> counter <*> quiz_hints
 
 
-quiz_TextInput : Parser s Quiz
+quiz_TextInput : Parser PState Quiz
 quiz_TextInput =
-    TextInput <$> (regex "[ \\t]*\\[\\[" *> regex "[^\n\\]]+" <* regex "\\]\\]( *)\\n")
+    let
+        state txt =
+            modifyState (\s -> push_state s (Text "" txt)) *> succeed txt
+    in
+    TextInput <$> ((regex "[ \\t]*\\[\\[" *> regex "[^\n\\]]+" <* regex "\\]\\]( *)\\n") >>= state)
+
+
+push_state : PState -> QuizState -> PState
+push_state p q =
+    { p
+        | quiz_vector =
+            push
+                { solved = Nothing
+                , state = q
+                , trial = 0
+                , hint = 0
+                }
+                p.quiz_vector
+    }
 
 
 quiz_SingleChoice : Parser PState Quiz
@@ -43,12 +62,17 @@ quiz_SingleChoice =
                             Nothing ->
                                 -1
                    )
+
+        state a =
+            modifyState (\s -> push_state s (Single -1 <| List.length a)) *> succeed a
+
+        --*> succeed a
     in
     many (checked False (regex "[ \\t]*\\[\\( \\)\\]"))
         |> map (\a b -> List.append a [ b ])
         |> andMap (checked True (regex "[ \\t]*\\[\\(X\\)\\]"))
         |> map (++)
-        |> andMap (many (checked False (regex "[ \\t]*\\[\\( \\)\\]")))
+        |> (\p -> andMap (many (checked False (regex "[ \\t]*\\[\\( \\)\\]")) >>= state) p)
         |> map (\q -> SingleChoice (get_result q) (List.map (\( _, qq ) -> qq) q))
 
 
@@ -64,10 +88,43 @@ quiz_hints =
 
 quiz_MultipleChoice : Parser PState Quiz
 quiz_MultipleChoice =
+    let
+        state mc =
+            let
+                element =
+                    mc
+                        |> List.map (\( b, _ ) -> ( False, b ))
+                        |> Array.fromList
+                        |> Multi
+            in
+            modifyState (\s -> push_state s element) *> succeed mc
+    in
     MultipleChoice
-        <$> many1
+        <$> (many1
                 (choice
                     [ checked True (regex "[ \\t]*\\[\\[X\\]\\]")
                     , checked False (regex "[ \\t]*\\[\\[ \\]\\]")
                     ]
                 )
+                >>= state
+            )
+
+
+
+-- effect_number : QuizState -> Parser PState ()
+-- effect_number =
+--     let
+--         state n =
+--             modifyState
+--                 (\s ->
+--                     { s
+--                         | effects =
+--                             if n > s.effects then
+--                                 n
+--                             else
+--                                 s.effects
+--                     }
+--                 )
+--                 *> succeed n
+--     in
+--     int >>= state

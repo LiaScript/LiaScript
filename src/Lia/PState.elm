@@ -1,5 +1,8 @@
 module Lia.PState exposing (PState, init)
 
+import Array
+import Lia.Quiz.Types exposing (QuizVector)
+
 
 type alias PState =
     { quiz : Int
@@ -15,6 +18,7 @@ type alias PState =
     , def_narator : String
     , def_version : String
     , def_comment : String
+    , quiz_vector : QuizVector
     }
 
 
@@ -33,4 +37,5 @@ init =
     , def_narator = ""
     , def_version = ""
     , def_comment = ""
+    , quiz_vector = Array.empty
     }

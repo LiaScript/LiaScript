@@ -7,6 +7,7 @@ import Lia.Inline.Parser exposing (..)
 import Lia.Inline.Types exposing (Inline(..))
 import Lia.PState exposing (PState)
 import Lia.Quiz.Parser exposing (..)
+import Lia.Quiz.Types exposing (QuizVector)
 import Lia.Types exposing (..)
 
 
@@ -199,11 +200,11 @@ define_comment =
     skip (comment (regex "[ \\t\\n]*" *> choice list <* regex "[\n]+"))
 
 
-run : String -> Result String ( List Slide, Int, Int, String )
+run : String -> Result String ( List Slide, Int, QuizVector, String )
 run script =
     case Combine.runParser parse Lia.PState.init script of
         Ok ( state, _, es ) ->
-            Ok ( es, state.quiz, state.code, state.def_narator )
+            Ok ( es, state.code, state.quiz_vector, state.def_narator )
 
         Err ( _, stream, ms ) ->
             Err <| formatError ms stream

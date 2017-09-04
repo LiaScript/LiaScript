@@ -7,7 +7,6 @@ import Lia.Effect.Model as Effect
 import Lia.Index.Model as Index
 import Lia.Model
 import Lia.Parser
-import Lia.Quiz.Model as Quiz
 import Lia.Types
 import Lia.Update
 import Lia.View
@@ -60,11 +59,11 @@ init_slides =
 parse : Model -> Model
 parse model =
     case Lia.Parser.run model.script of
-        Ok ( slides, codes, quizes, narator ) ->
+        Ok ( slides, codes, quiz_vector, narator ) ->
             { model
                 | slides = slides
                 , error = ""
-                , quiz = Quiz.init slides
+                , quiz = quiz_vector --Quiz.init slides
                 , index = Index.init slides
                 , effects = Effect.init narator <| List.head slides
                 , code = Code.init codes

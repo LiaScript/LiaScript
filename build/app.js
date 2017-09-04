@@ -11385,25 +11385,6 @@ var _user$project$Lia_Types$CodeBlock = function (a) {
 	return {ctor: 'CodeBlock', _0: a};
 };
 var _user$project$Lia_Types$HLine = {ctor: 'HLine'};
-var _user$project$Lia_Types$LiaCmd = F2(
-	function (a, b) {
-		return {ctor: 'LiaCmd', _0: a, _1: b};
-	});
-var _user$project$Lia_Types$LiaList = function (a) {
-	return {ctor: 'LiaList', _0: a};
-};
-var _user$project$Lia_Types$LiaString = function (a) {
-	return {ctor: 'LiaString', _0: a};
-};
-var _user$project$Lia_Types$LiaFloat = function (a) {
-	return {ctor: 'LiaFloat', _0: a};
-};
-var _user$project$Lia_Types$LiaInt = function (a) {
-	return {ctor: 'LiaInt', _0: a};
-};
-var _user$project$Lia_Types$LiaBool = function (a) {
-	return {ctor: 'LiaBool', _0: a};
-};
 
 var _user$project$Lia_Index_Model$parse_inline = function (element) {
 	parse_inline:
@@ -11610,14 +11591,18 @@ var _user$project$Lia_Effect_Model$init = F2(
 var _user$project$Lia_Effect_Model$init_silent = A5(_user$project$Lia_Effect_Model$Model, 9999, 9999, _user$project$Lia_Effect_Model$Silent, _elm_lang$core$Array$empty, '');
 var _user$project$Lia_Effect_Model$Speaking = {ctor: 'Speaking'};
 
-var _user$project$Lia_Quiz_Model$question_state = F3(
-	function (quiz_id, question_id, vector) {
-		var _p0 = A2(
+var _user$project$Lia_Quiz_Model$get_state = F2(
+	function (idx, vector) {
+		return A2(
 			_elm_lang$core$Maybe$map,
 			function (_) {
 				return _.state;
 			},
-			A2(_elm_lang$core$Array$get, quiz_id, vector));
+			A2(_elm_lang$core$Array$get, idx, vector));
+	});
+var _user$project$Lia_Quiz_Model$question_state = F3(
+	function (quiz_id, question_id, vector) {
+		var _p0 = A2(_user$project$Lia_Quiz_Model$get_state, quiz_id, vector);
 		_v0_2:
 		do {
 			if (_p0.ctor === 'Just') {
@@ -11655,12 +11640,7 @@ var _user$project$Lia_Quiz_Model$quiz_state = F2(
 	});
 var _user$project$Lia_Quiz_Model$question_state_text = F2(
 	function (quiz_id, vector) {
-		var _p2 = A2(
-			_elm_lang$core$Maybe$map,
-			function (_) {
-				return _.state;
-			},
-			A2(_elm_lang$core$Array$get, quiz_id, vector));
+		var _p2 = A2(_user$project$Lia_Quiz_Model$get_state, quiz_id, vector);
 		if ((_p2.ctor === 'Just') && (_p2._0.ctor === 'Text')) {
 			return _p2._0._0;
 		} else {
@@ -11676,52 +11656,6 @@ var _user$project$Lia_Quiz_Model$get_hint_counter = F2(
 			return 0;
 		}
 	});
-var _user$project$Lia_Quiz_Model$element = function (quiz) {
-	var m = function () {
-		var _p4 = quiz.quiz;
-		switch (_p4.ctor) {
-			case 'TextInput':
-				return A2(_user$project$Lia_Quiz_Types$Text, '', _p4._0);
-			case 'SingleChoice':
-				return A2(_user$project$Lia_Quiz_Types$Single, -1, _p4._0);
-			default:
-				return _user$project$Lia_Quiz_Types$Multi(
-					_elm_lang$core$Array$fromList(
-						A2(
-							_elm_lang$core$List$map,
-							function (_p5) {
-								var _p6 = _p5;
-								return {ctor: '_Tuple2', _0: false, _1: _p6._0};
-							},
-							_p4._0)));
-		}
-	}();
-	return {solved: _elm_lang$core$Maybe$Nothing, state: m, trial: 0, hint: 0};
-};
-var _user$project$Lia_Quiz_Model$filter = function (block) {
-	var _p7 = block;
-	if (_p7.ctor === 'Quiz') {
-		return _elm_lang$core$Maybe$Just(_p7._0);
-	} else {
-		return _elm_lang$core$Maybe$Nothing;
-	}
-};
-var _user$project$Lia_Quiz_Model$init = function (slides) {
-	return _elm_lang$core$Array$fromList(
-		A2(
-			_elm_lang$core$List$map,
-			_user$project$Lia_Quiz_Model$element,
-			A2(
-				_elm_lang$core$List$filterMap,
-				_user$project$Lia_Quiz_Model$filter,
-				_elm_lang$core$List$concat(
-					A2(
-						_elm_lang$core$List$map,
-						function (_) {
-							return _.body;
-						},
-						slides)))));
-};
 
 var _user$project$Lia_Model$Model = function (a) {
 	return function (b) {
@@ -11760,7 +11694,8 @@ var _user$project$Lia_PState$init = {
 	def_language: '',
 	def_narator: '',
 	def_version: '',
-	def_comment: ''
+	def_comment: '',
+	quiz_vector: _elm_lang$core$Array$empty
 };
 var _user$project$Lia_PState$PState = function (a) {
 	return function (b) {
@@ -11775,7 +11710,9 @@ var _user$project$Lia_PState$PState = function (a) {
 										return function (k) {
 											return function (l) {
 												return function (m) {
-													return {quiz: a, section: b, identation: c, skip_identation: d, effects: e, code: f, def_author: g, def_date: h, def_email: i, def_language: j, def_narator: k, def_version: l, def_comment: m};
+													return function (n) {
+														return {quiz: a, section: b, identation: c, skip_identation: d, effects: e, code: f, def_author: g, def_date: h, def_email: i, def_language: j, def_narator: k, def_version: l, def_comment: m, quiz_vector: n};
+													};
 												};
 											};
 										};
@@ -12674,27 +12611,33 @@ var _user$project$Lia_Quiz_Parser$checked = F2(
 				A2(_elm_community$parser_combinators$Combine_ops['*>'], p, _user$project$Lia_Inline_Parser$line),
 				_user$project$Lia_Inline_Parser$newline));
 	});
-var _user$project$Lia_Quiz_Parser$quiz_MultipleChoice = A2(
-	_elm_community$parser_combinators$Combine_ops['<$>'],
-	_user$project$Lia_Quiz_Types$MultipleChoice,
-	_elm_community$parser_combinators$Combine$many1(
-		_elm_community$parser_combinators$Combine$choice(
+var _user$project$Lia_Quiz_Parser$push_state = F2(
+	function (p, q) {
+		return _elm_lang$core$Native_Utils.update(
+			p,
 			{
-				ctor: '::',
-				_0: A2(
-					_user$project$Lia_Quiz_Parser$checked,
-					true,
-					_elm_community$parser_combinators$Combine$regex('[ \\t]*\\[\\[X\\]\\]')),
-				_1: {
-					ctor: '::',
-					_0: A2(
-						_user$project$Lia_Quiz_Parser$checked,
-						false,
-						_elm_community$parser_combinators$Combine$regex('[ \\t]*\\[\\[ \\]\\]')),
-					_1: {ctor: '[]'}
-				}
-			})));
+				quiz_vector: A2(
+					_elm_lang$core$Array$push,
+					{solved: _elm_lang$core$Maybe$Nothing, state: q, trial: 0, hint: 0},
+					p.quiz_vector)
+			});
+	});
 var _user$project$Lia_Quiz_Parser$quiz_SingleChoice = function () {
+	var state = function (a) {
+		return A2(
+			_elm_community$parser_combinators$Combine_ops['*>'],
+			_elm_community$parser_combinators$Combine$modifyState(
+				function (s) {
+					return A2(
+						_user$project$Lia_Quiz_Parser$push_state,
+						s,
+						A2(
+							_user$project$Lia_Quiz_Types$Single,
+							-1,
+							_elm_lang$core$List$length(a)));
+				}),
+			_elm_community$parser_combinators$Combine$succeed(a));
+	};
 	var get_result = function (list) {
 		return function (l) {
 			var _p0 = _elm_lang$core$List$head(l);
@@ -12732,13 +12675,19 @@ var _user$project$Lia_Quiz_Parser$quiz_SingleChoice = function () {
 					},
 					q));
 		},
-		A2(
-			_elm_community$parser_combinators$Combine$andMap,
-			_elm_community$parser_combinators$Combine$many(
+		function (p) {
+			return A2(
+				_elm_community$parser_combinators$Combine$andMap,
 				A2(
-					_user$project$Lia_Quiz_Parser$checked,
-					false,
-					_elm_community$parser_combinators$Combine$regex('[ \\t]*\\[\\( \\)\\]'))),
+					_elm_community$parser_combinators$Combine_ops['>>='],
+					_elm_community$parser_combinators$Combine$many(
+						A2(
+							_user$project$Lia_Quiz_Parser$checked,
+							false,
+							_elm_community$parser_combinators$Combine$regex('[ \\t]*\\[\\( \\)\\]'))),
+					state),
+				p);
+		}(
 			A2(
 				_elm_community$parser_combinators$Combine$map,
 				F2(
@@ -12770,16 +12719,76 @@ var _user$project$Lia_Quiz_Parser$quiz_SingleChoice = function () {
 								false,
 								_elm_community$parser_combinators$Combine$regex('[ \\t]*\\[\\( \\)\\]'))))))));
 }();
-var _user$project$Lia_Quiz_Parser$quiz_TextInput = A2(
-	_elm_community$parser_combinators$Combine_ops['<$>'],
-	_user$project$Lia_Quiz_Types$TextInput,
-	A2(
-		_elm_community$parser_combinators$Combine_ops['<*'],
-		A2(
+var _user$project$Lia_Quiz_Parser$quiz_MultipleChoice = function () {
+	var state = function (mc) {
+		var element = _user$project$Lia_Quiz_Types$Multi(
+			_elm_lang$core$Array$fromList(
+				A2(
+					_elm_lang$core$List$map,
+					function (_p5) {
+						var _p6 = _p5;
+						return {ctor: '_Tuple2', _0: false, _1: _p6._0};
+					},
+					mc)));
+		return A2(
 			_elm_community$parser_combinators$Combine_ops['*>'],
-			_elm_community$parser_combinators$Combine$regex('[ \\t]*\\[\\['),
-			_elm_community$parser_combinators$Combine$regex('[^\n\\]]+')),
-		_elm_community$parser_combinators$Combine$regex('\\]\\]( *)\\n')));
+			_elm_community$parser_combinators$Combine$modifyState(
+				function (s) {
+					return A2(_user$project$Lia_Quiz_Parser$push_state, s, element);
+				}),
+			_elm_community$parser_combinators$Combine$succeed(mc));
+	};
+	return A2(
+		_elm_community$parser_combinators$Combine_ops['<$>'],
+		_user$project$Lia_Quiz_Types$MultipleChoice,
+		A2(
+			_elm_community$parser_combinators$Combine_ops['>>='],
+			_elm_community$parser_combinators$Combine$many1(
+				_elm_community$parser_combinators$Combine$choice(
+					{
+						ctor: '::',
+						_0: A2(
+							_user$project$Lia_Quiz_Parser$checked,
+							true,
+							_elm_community$parser_combinators$Combine$regex('[ \\t]*\\[\\[X\\]\\]')),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_user$project$Lia_Quiz_Parser$checked,
+								false,
+								_elm_community$parser_combinators$Combine$regex('[ \\t]*\\[\\[ \\]\\]')),
+							_1: {ctor: '[]'}
+						}
+					})),
+			state));
+}();
+var _user$project$Lia_Quiz_Parser$quiz_TextInput = function () {
+	var state = function (txt) {
+		return A2(
+			_elm_community$parser_combinators$Combine_ops['*>'],
+			_elm_community$parser_combinators$Combine$modifyState(
+				function (s) {
+					return A2(
+						_user$project$Lia_Quiz_Parser$push_state,
+						s,
+						A2(_user$project$Lia_Quiz_Types$Text, '', txt));
+				}),
+			_elm_community$parser_combinators$Combine$succeed(txt));
+	};
+	return A2(
+		_elm_community$parser_combinators$Combine_ops['<$>'],
+		_user$project$Lia_Quiz_Types$TextInput,
+		A2(
+			_elm_community$parser_combinators$Combine_ops['>>='],
+			A2(
+				_elm_community$parser_combinators$Combine_ops['<*'],
+				A2(
+					_elm_community$parser_combinators$Combine_ops['*>'],
+					_elm_community$parser_combinators$Combine$regex('[ \\t]*\\[\\['),
+					_elm_community$parser_combinators$Combine$regex('[^\n\\]]+')),
+				_elm_community$parser_combinators$Combine$regex('\\]\\]( *)\\n')),
+			state));
+}();
 var _user$project$Lia_Quiz_Parser$quiz = function () {
 	var counter = function () {
 		var increment_counter = function (c) {
@@ -13283,7 +13292,7 @@ var _user$project$Lia_Parser$run = function (script) {
 	if (_p2.ctor === 'Ok') {
 		var _p3 = _p2._0._0;
 		return _elm_lang$core$Result$Ok(
-			{ctor: '_Tuple4', _0: _p2._0._2, _1: _p3.quiz, _2: _p3.code, _3: _p3.def_narator});
+			{ctor: '_Tuple4', _0: _p2._0._2, _1: _p3.code, _2: _p3.quiz_vector, _3: _p3.def_narator});
 	} else {
 		return _elm_lang$core$Result$Err(
 			A2(_user$project$Lia_Parser$formatError, _p2._0._2, _p2._0._1));
@@ -13883,25 +13892,29 @@ var _user$project$Lia_Update$update = F2(
 		}
 	});
 
+var _user$project$Lia_Code_View$highlight = F2(
+	function (lang, block) {
+		return A2(
+			_elm_lang$html$Html$pre,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$code,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: A2(_user$project$Lia_Utils$highlight, lang, block),
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			});
+	});
 var _user$project$Lia_Code_View$view = F2(
 	function (model, code) {
 		var _p0 = code;
 		if (_p0.ctor === 'Highlight') {
-			return A2(
-				_elm_lang$html$Html$pre,
-				{ctor: '[]'},
-				{
-					ctor: '::',
-					_0: A2(
-						_elm_lang$html$Html$code,
-						{ctor: '[]'},
-						{
-							ctor: '::',
-							_0: A2(_user$project$Lia_Utils$highlight, _p0._0, _p0._1),
-							_1: {ctor: '[]'}
-						}),
-					_1: {ctor: '[]'}
-				});
+			return A2(_user$project$Lia_Code_View$highlight, _p0._0, _p0._1);
 		} else {
 			var _p3 = _p0._1;
 			var _p2 = _p0._0;
@@ -13910,21 +13923,7 @@ var _user$project$Lia_Code_View$view = F2(
 				{ctor: '[]'},
 				{
 					ctor: '::',
-					_0: A2(
-						_elm_lang$html$Html$pre,
-						{ctor: '[]'},
-						{
-							ctor: '::',
-							_0: A2(
-								_elm_lang$html$Html$code,
-								{ctor: '[]'},
-								{
-									ctor: '::',
-									_0: A2(_user$project$Lia_Utils$highlight, 'js', _p2),
-									_1: {ctor: '[]'}
-								}),
-							_1: {ctor: '[]'}
-						}),
+					_0: A2(_user$project$Lia_Code_View$highlight, 'js', _p2),
 					_1: {
 						ctor: '::',
 						_0: A2(
@@ -15157,7 +15156,7 @@ var _user$project$Lia$parse = function (model) {
 			{
 				slides: _p2,
 				error: '',
-				quiz: _user$project$Lia_Quiz_Model$init(_p2),
+				quiz: _p0._0._2,
 				index: _user$project$Lia_Index_Model$init(_p2),
 				effects: A2(
 					_user$project$Lia_Effect_Model$init,
