@@ -31,7 +31,7 @@ init mode script =
         , error = ""
         , slides = []
         , quiz_model = Array.empty
-        , code = Code.init 0
+        , code_model = Array.empty
         , current_slide = 0
         , mode = mode
         , effects = Effect.init "US English Male" Nothing
@@ -63,10 +63,10 @@ parse model =
             { model
                 | slides = slides
                 , error = ""
-                , quiz_model = quiz_vector --Quiz.init slides
+                , quiz_model = quiz_vector
                 , index = Index.init slides
                 , effects = Effect.init narator <| List.head slides
-                , code = Code.init codes
+                , code_model = Code.init codes
                 , narator =
                     if narator == "" then
                         "US English Male"

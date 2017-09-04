@@ -62,10 +62,10 @@ update msg model =
 
         UpdateCode childMsg ->
             let
-                ( code, cmd ) =
-                    Code.update childMsg model.code
+                ( code_model, cmd ) =
+                    Code.update childMsg model.code_model
             in
-            ( { model | code = code }, Cmd.none )
+            ( { model | code_model = code_model }, Cmd.none )
 
         UpdateEffect childMsg ->
             let

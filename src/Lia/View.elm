@@ -203,7 +203,7 @@ view_block model block =
             Html.blockquote [] (List.map (\e -> Elem.view model.effects.visible e) elements)
 
         CodeBlock code ->
-            Html.map UpdateCode <| Codes.view model.code code
+            Html.map UpdateCode <| Codes.view model.code_model code
 
         Quiz quiz ->
             Html.map UpdateQuiz <| Lia.Quiz.View.view model.quiz_model quiz
@@ -277,13 +277,5 @@ view_table model header format body =
 
 
 
---        EList elems ->
---            Html.ul []
---                (elems
---                    |> List.map (\e -> List.map view_element e)
---                    |> List.map (\e -> Html.li [] e)
---                )
---        Lia cmd params ->
---            text (cmd ++ " : " ++ toString params)
 -- SUBSCRIPTIONS
 -- HTTP
