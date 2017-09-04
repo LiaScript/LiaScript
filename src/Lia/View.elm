@@ -32,7 +32,7 @@ view_plain : Model -> Html Msg
 view_plain model =
     let
         f =
-            view_slide { model | effects = Effect.init_silent }
+            view_slide { model | effect_model = Effect.init_silent }
     in
     Html.div
         [ Attr.style
@@ -158,24 +158,28 @@ view_slide model slide =
 
 view_header : Int -> String -> Html Msg
 view_header indentation title =
+    let
+        html_title =
+            [ Html.text title ]
+    in
     case indentation of
         0 ->
-            Html.h1 [] [ Html.text title ]
+            Html.h1 [] html_title
 
         1 ->
-            Html.h2 [] [ Html.text title ]
+            Html.h2 [] html_title
 
         2 ->
-            Html.h3 [] [ Html.text title ]
+            Html.h3 [] html_title
 
         3 ->
-            Html.h4 [] [ Html.text title ]
+            Html.h4 [] html_title
 
         4 ->
-            Html.h5 [] [ Html.text title ]
+            Html.h5 [] html_title
 
         _ ->
-            Html.h6 [] [ Html.text title ]
+            Html.h6 [] html_title
 
 
 view_body : Model -> List Block -> List (Html Msg)
@@ -191,7 +195,7 @@ view_block : Model -> Block -> Html Msg
 view_block model block =
     case block of
         Paragraph elements ->
-            Html.p [] (List.map (\e -> Elem.view model.effects.visible e) elements)
+            Html.p [] (List.map (\e -> Elem.view model.effect_model.visible e) elements)
 
         HLine ->
             Html.hr [] []
@@ -200,7 +204,7 @@ view_block model block =
             view_table model header (Array.fromList format) body
 
         Quote elements ->
-            Html.blockquote [] (List.map (\e -> Elem.view model.effects.visible e) elements)
+            Html.blockquote [] (List.map (\e -> Elem.view model.effect_model.visible e) elements)
 
         CodeBlock code ->
             Html.map UpdateCode <| Codes.view model.code_model code
@@ -209,7 +213,7 @@ view_block model block =
             Html.map UpdateQuiz <| Lia.Quiz.View.view model.quiz_model quiz
 
         EBlock idx effect_name sub_blocks ->
-            Effects.view_block model.effects (view_block model) idx effect_name sub_blocks
+            Effects.view_block model.effect_model (view_block model) idx effect_name sub_blocks
 
         BulletList list ->
             Html.ul []
@@ -226,7 +230,7 @@ view_block model block =
                 )
 
         EComment idx comment ->
-            Effects.comment model.effects (view_block model) idx [ Paragraph comment ]
+            Effects.comment model.effect_model (view_block model) idx [ Paragraph comment ]
 
 
 view_table : Model -> List (List Inline) -> Array String -> List (List (List Inline)) -> Html Msg
@@ -256,7 +260,7 @@ view_table model header format body =
                                 )
                             ]
                             (col
-                                |> List.map (\element -> Elem.view model.effects.visible element)
+                                |> List.map (\element -> Elem.view model.effect_model.visible element)
                             )
                     )
     in

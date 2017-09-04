@@ -34,7 +34,7 @@ init mode script =
         , code_model = Array.empty
         , current_slide = 0
         , mode = mode
-        , effects = Effect.init "US English Male" Nothing
+        , effect_model = Effect.init "US English Male" Nothing
         , narator = "US English Male"
         , contents = True
         , index = Index.init []
@@ -65,7 +65,7 @@ parse model =
                 , error = ""
                 , quiz_model = quiz_vector
                 , index = Index.init slides
-                , effects = Effect.init narator <| List.head slides
+                , effect_model = Effect.init narator <| List.head slides
                 , code_model = Code.init codes
                 , narator =
                     if narator == "" then

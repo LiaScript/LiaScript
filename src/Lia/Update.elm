@@ -25,30 +25,30 @@ update msg model =
     case msg of
         Load int ->
             let
-                ( effects, cmd, _ ) =
+                ( effect_model, cmd, _ ) =
                     get_slide int model.slides
                         |> EffectModel.init model.narator
                         |> Effect.init
             in
             ( { model
                 | current_slide = int
-                , effects = effects
+                , effect_model = effect_model
               }
             , Cmd.map UpdateEffect cmd
             )
 
         PrevSlide ->
-            case Effect.previous model.effects of
-                ( effects, cmd, False ) ->
-                    ( { model | effects = effects }, Cmd.map UpdateEffect cmd )
+            case Effect.previous model.effect_model of
+                ( effect_model, cmd, False ) ->
+                    ( { model | effect_model = effect_model }, Cmd.map UpdateEffect cmd )
 
                 _ ->
                     update (Load (model.current_slide - 1)) model
 
         NextSlide ->
-            case Effect.next model.effects of
-                ( effects, cmd, False ) ->
-                    ( { model | effects = effects }, Cmd.map UpdateEffect cmd )
+            case Effect.next model.effect_model of
+                ( effect_model, cmd, False ) ->
+                    ( { model | effect_model = effect_model }, Cmd.map UpdateEffect cmd )
 
                 _ ->
                     update (Load (model.current_slide + 1)) model
@@ -69,10 +69,10 @@ update msg model =
 
         UpdateEffect childMsg ->
             let
-                ( effects, cmd, h ) =
-                    Effect.update childMsg model.effects
+                ( effect_model, cmd, h ) =
+                    Effect.update childMsg model.effect_model
             in
-            ( { model | effects = effects }, Cmd.map UpdateEffect cmd )
+            ( { model | effect_model = effect_model }, Cmd.map UpdateEffect cmd )
 
         ToggleContentsTable ->
             ( { model | contents = not model.contents }, Cmd.none )
