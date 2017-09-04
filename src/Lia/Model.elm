@@ -10,13 +10,13 @@ import Lia.Types exposing (Mode, Slide)
 type alias Model =
     { script : String
     , error : String
+    , mode : Mode
     , slides : List Slide
+    , current_slide : Int
     , quiz_model : Lia.Quiz.Model.Model
     , code_model : Lia.Code.Model.Model
-    , current_slide : Int
-    , mode : Mode
     , effect_model : Lia.Effect.Model.Model
+    , index_model : Lia.Index.Model.Model
     , narator : String
     , contents : Bool
-    , index : Lia.Index.Model.Model
     }

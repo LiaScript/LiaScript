@@ -11668,7 +11668,7 @@ var _user$project$Lia_Model$Model = function (a) {
 								return function (i) {
 									return function (j) {
 										return function (k) {
-											return {script: a, error: b, slides: c, quiz_model: d, code_model: e, current_slide: f, mode: g, effect_model: h, narator: i, contents: j, index: k};
+											return {script: a, error: b, mode: c, slides: d, current_slide: e, quiz_model: f, code_model: g, effect_model: h, index_model: i, narator: j, contents: k};
 										};
 									};
 								};
@@ -13837,13 +13837,13 @@ var _user$project$Lia_Update$update = F2(
 						continue update;
 					}
 				case 'UpdateIndex':
-					var _p5 = A2(_user$project$Lia_Index_Update$update, _p0._0, model.index);
-					var index = _p5._0;
+					var _p5 = A2(_user$project$Lia_Index_Update$update, _p0._0, model.index_model);
+					var index_model = _p5._0;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
-							{index: index}),
+							{index_model: index_model}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				case 'UpdateCode':
@@ -14929,7 +14929,7 @@ var _user$project$Lia_View$view_contents = function (model) {
 					_0: A2(
 						_elm_lang$html$Html$map,
 						_user$project$Lia_Update$UpdateIndex,
-						_user$project$Lia_Index_View$view(model.index)),
+						_user$project$Lia_Index_View$view(model.index_model)),
 					_1: {ctor: '[]'}
 				},
 				h));
@@ -14938,7 +14938,7 @@ var _user$project$Lia_View$view_contents = function (model) {
 			_elm_lang$core$List$map,
 			f,
 			function (list) {
-				var _p9 = model.index.results;
+				var _p9 = model.index_model.results;
 				if (_p9.ctor === 'Nothing') {
 					return list;
 				} else {
@@ -15138,7 +15138,7 @@ var _user$project$Lia$parse = function (model) {
 				slides: _p2,
 				error: '',
 				quiz_model: _p0._0._2,
-				index: _user$project$Lia_Index_Model$init(_p2),
+				index_model: _user$project$Lia_Index_Model$init(_p2),
 				effect_model: A2(
 					_user$project$Lia_Effect_Model$init,
 					_p1,
@@ -15164,16 +15164,16 @@ var _user$project$Lia$init = F2(
 			{
 				script: '',
 				error: '',
+				mode: mode,
 				slides: {ctor: '[]'},
+				current_slide: 0,
 				quiz_model: _elm_lang$core$Array$empty,
 				code_model: _elm_lang$core$Array$empty,
-				current_slide: 0,
-				mode: mode,
+				index_model: _user$project$Lia_Index_Model$init(
+					{ctor: '[]'}),
 				effect_model: A2(_user$project$Lia_Effect_Model$init, 'US English Male', _elm_lang$core$Maybe$Nothing),
 				narator: 'US English Male',
-				contents: true,
-				index: _user$project$Lia_Index_Model$init(
-					{ctor: '[]'})
+				contents: true
 			});
 	});
 var _user$project$Lia$init_plain = _user$project$Lia$init(_user$project$Lia_Types$Plain);

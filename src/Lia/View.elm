@@ -130,7 +130,7 @@ view_contents model =
     model.slides
         |> get_headers
         |> (\list ->
-                case model.index.results of
+                case model.index_model.results of
                     Nothing ->
                         list
 
@@ -141,7 +141,7 @@ view_contents model =
         |> (\h ->
                 Html.div []
                     (List.append
-                        [ Html.map UpdateIndex <| Lia.Index.View.view model.index ]
+                        [ Html.map UpdateIndex <| Lia.Index.View.view model.index_model ]
                         h
                     )
            )

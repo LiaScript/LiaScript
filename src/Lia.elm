@@ -29,15 +29,15 @@ init mode script =
     parse <|
         { script = ""
         , error = ""
+        , mode = mode
         , slides = []
+        , current_slide = 0
         , quiz_model = Array.empty
         , code_model = Array.empty
-        , current_slide = 0
-        , mode = mode
+        , index_model = Index.init []
         , effect_model = Effect.init "US English Male" Nothing
         , narator = "US English Male"
         , contents = True
-        , index = Index.init []
         }
 
 
@@ -64,7 +64,7 @@ parse model =
                 | slides = slides
                 , error = ""
                 , quiz_model = quiz_vector
-                , index = Index.init slides
+                , index_model = Index.init slides
                 , effect_model = Effect.init narator <| List.head slides
                 , code_model = Code.init codes
                 , narator =

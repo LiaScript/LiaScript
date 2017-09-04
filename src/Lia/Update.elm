@@ -55,10 +55,10 @@ update msg model =
 
         UpdateIndex childMsg ->
             let
-                ( index, _ ) =
-                    Index.update childMsg model.index
+                ( index_model, _ ) =
+                    Index.update childMsg model.index_model
             in
-            ( { model | index = index }, Cmd.none )
+            ( { model | index_model = index_model }, Cmd.none )
 
         UpdateCode childMsg ->
             let
