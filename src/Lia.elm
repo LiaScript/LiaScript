@@ -30,7 +30,7 @@ init mode script =
         { script = ""
         , error = ""
         , slides = []
-        , quiz = Array.empty
+        , quiz_model = Array.empty
         , code = Code.init 0
         , current_slide = 0
         , mode = mode
@@ -63,7 +63,7 @@ parse model =
             { model
                 | slides = slides
                 , error = ""
-                , quiz = quiz_vector --Quiz.init slides
+                , quiz_model = quiz_vector --Quiz.init slides
                 , index = Index.init slides
                 , effects = Effect.init narator <| List.head slides
                 , code = Code.init codes

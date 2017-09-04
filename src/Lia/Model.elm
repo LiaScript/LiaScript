@@ -11,7 +11,7 @@ type alias Model =
     { script : String
     , error : String
     , slides : List Slide
-    , quiz : Lia.Quiz.Model.Model
+    , quiz_model : Lia.Quiz.Model.Model
     , code : Lia.Code.Model.Model
     , current_slide : Int
     , mode : Mode

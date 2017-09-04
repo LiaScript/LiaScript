@@ -11668,7 +11668,7 @@ var _user$project$Lia_Model$Model = function (a) {
 								return function (i) {
 									return function (j) {
 										return function (k) {
-											return {script: a, error: b, slides: c, quiz: d, code: e, current_slide: f, mode: g, effects: h, narator: i, contents: j, index: k};
+											return {script: a, error: b, slides: c, quiz_model: d, code: e, current_slide: f, mode: g, effects: h, narator: i, contents: j, index: k};
 										};
 									};
 								};
@@ -13878,14 +13878,14 @@ var _user$project$Lia_Update$update = F2(
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				default:
-					var _p8 = A2(_user$project$Lia_Quiz_Update$update, _p0._0, model.quiz);
-					var quiz = _p8._0;
+					var _p8 = A2(_user$project$Lia_Quiz_Update$update, _p0._0, model.quiz_model);
+					var quiz_model = _p8._0;
 					var cmd = _p8._1;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
-							{quiz: quiz}),
+							{quiz_model: quiz_model}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 			}
@@ -14755,7 +14755,7 @@ var _user$project$Lia_View$view_block = F2(
 				return A2(
 					_elm_lang$html$Html$map,
 					_user$project$Lia_Update$UpdateQuiz,
-					A2(_user$project$Lia_Quiz_View$view, model.quiz, _p3._0));
+					A2(_user$project$Lia_Quiz_View$view, model.quiz_model, _p3._0));
 			case 'EBlock':
 				return A5(
 					_user$project$Lia_Effect_View$view_block,
@@ -15156,7 +15156,7 @@ var _user$project$Lia$parse = function (model) {
 			{
 				slides: _p2,
 				error: '',
-				quiz: _p0._0._2,
+				quiz_model: _p0._0._2,
 				index: _user$project$Lia_Index_Model$init(_p2),
 				effects: A2(
 					_user$project$Lia_Effect_Model$init,
@@ -15184,7 +15184,7 @@ var _user$project$Lia$init = F2(
 				script: '',
 				error: '',
 				slides: {ctor: '[]'},
-				quiz: _elm_lang$core$Array$empty,
+				quiz_model: _elm_lang$core$Array$empty,
 				code: _user$project$Lia_Code_Model$init(0),
 				current_slide: 0,
 				mode: mode,

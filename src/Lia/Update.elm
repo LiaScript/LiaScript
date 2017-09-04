@@ -79,7 +79,7 @@ update msg model =
 
         UpdateQuiz quiz_msg ->
             let
-                ( quiz, cmd ) =
-                    Quiz.update quiz_msg model.quiz
+                ( quiz_model, cmd ) =
+                    Quiz.update quiz_msg model.quiz_model
             in
-            ( { model | quiz = quiz }, Cmd.none )
+            ( { model | quiz_model = quiz_model }, Cmd.none )

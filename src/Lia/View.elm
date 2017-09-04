@@ -206,7 +206,7 @@ view_block model block =
             Html.map UpdateCode <| Codes.view model.code code
 
         Quiz quiz ->
-            Html.map UpdateQuiz <| Lia.Quiz.View.view model.quiz quiz
+            Html.map UpdateQuiz <| Lia.Quiz.View.view model.quiz_model quiz
 
         EBlock idx effect_name sub_blocks ->
             Effects.view_block model.effects (view_block model) idx effect_name sub_blocks
