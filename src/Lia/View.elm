@@ -81,7 +81,7 @@ view_slides model =
                 ]
     in
     Html.div [ Attr.class "screen" ]
-        (if model.contents then
+        (if model.show_contents then
             [ Html.div [ Attr.class "table_of_contents" ] [ view_contents model ]
             , content
             ]
@@ -111,18 +111,6 @@ view_contents model =
                         |> String.join "_"
                         |> String.append "#"
                         |> Attr.href
-
-                    --Attr.style
-                    --  [ ( "padding-left"
-                    --    , toString ((i - 1) * 20) ++ "px"
-                    --    )
-                    --  , ( "color"
-                    --    , if model.current_slide == n then
-                    --          "#33f"
-                    --      else
-                    --          "#333"
-                    --    )
-                    --  ]
                     ]
                     [ Html.text h ]
                 ]

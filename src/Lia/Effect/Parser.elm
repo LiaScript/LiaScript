@@ -9,16 +9,9 @@ import Lia.PState exposing (PState)
 import Lia.Types exposing (Block(..))
 
 
-newlines : Parser s ()
-newlines =
-    skip (regex "[ \\n\\t]+")
-
-
 eblock : Parser PState Block -> Parser PState Block
 eblock blocks =
     let
-        --number =
-        --    regex "( *){{" *> effect_number <* regex "}}( *)[\\n]"
         name =
             maybe (regex "[a-zA-Z ]+")
 

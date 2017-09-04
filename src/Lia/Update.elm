@@ -75,7 +75,7 @@ update msg model =
             ( { model | effect_model = effect_model }, Cmd.map UpdateEffect cmd )
 
         ToggleContentsTable ->
-            ( { model | contents = not model.contents }, Cmd.none )
+            ( { model | show_contents = not model.show_contents }, Cmd.none )
 
         UpdateQuiz quiz_msg ->
             let

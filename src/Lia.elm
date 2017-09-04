@@ -32,12 +32,12 @@ init mode script =
         , mode = mode
         , slides = []
         , current_slide = 0
+        , show_contents = True
         , quiz_model = Array.empty
         , code_model = Array.empty
         , index_model = Index.init []
         , effect_model = Effect.init "US English Male" Nothing
         , narator = "US English Male"
-        , contents = True
         }
 
 

@@ -11668,7 +11668,7 @@ var _user$project$Lia_Model$Model = function (a) {
 								return function (i) {
 									return function (j) {
 										return function (k) {
-											return {script: a, error: b, mode: c, slides: d, current_slide: e, quiz_model: f, code_model: g, effect_model: h, index_model: i, narator: j, contents: k};
+											return {script: a, error: b, mode: c, slides: d, current_slide: e, show_contents: f, quiz_model: g, code_model: h, effect_model: i, index_model: j, narator: k};
 										};
 									};
 								};
@@ -11826,8 +11826,6 @@ var _user$project$Lia_Effect_Parser$eblock = function (blocks) {
 				_elm_community$parser_combinators$Combine$regex('}}( *)[\\n]'))),
 		A2(_elm_community$parser_combinators$Combine_ops['<|>'], multi_block, single_block));
 };
-var _user$project$Lia_Effect_Parser$newlines = _elm_community$parser_combinators$Combine$skip(
-	_elm_community$parser_combinators$Combine$regex('[ \\n\\t]+'));
 
 var _user$project$Lia_Inline_Parser$code = A2(
 	_elm_community$parser_combinators$Combine_ops['<$>'],
@@ -13874,7 +13872,7 @@ var _user$project$Lia_Update$update = F2(
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
-							{contents: !model.contents}),
+							{show_contents: !model.show_contents}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				default:
@@ -15054,7 +15052,7 @@ var _user$project$Lia_View$view_slides = function (model) {
 			_0: _elm_lang$html$Html_Attributes$class('screen'),
 			_1: {ctor: '[]'}
 		},
-		model.contents ? {
+		model.show_contents ? {
 			ctor: '::',
 			_0: A2(
 				_elm_lang$html$Html$div,
@@ -15167,13 +15165,13 @@ var _user$project$Lia$init = F2(
 				mode: mode,
 				slides: {ctor: '[]'},
 				current_slide: 0,
+				show_contents: true,
 				quiz_model: _elm_lang$core$Array$empty,
 				code_model: _elm_lang$core$Array$empty,
 				index_model: _user$project$Lia_Index_Model$init(
 					{ctor: '[]'}),
 				effect_model: A2(_user$project$Lia_Effect_Model$init, 'US English Male', _elm_lang$core$Maybe$Nothing),
-				narator: 'US English Male',
-				contents: true
+				narator: 'US English Male'
 			});
 	});
 var _user$project$Lia$init_plain = _user$project$Lia$init(_user$project$Lia_Types$Plain);

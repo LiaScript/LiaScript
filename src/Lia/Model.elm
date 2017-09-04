@@ -13,10 +13,10 @@ type alias Model =
     , mode : Mode
     , slides : List Slide
     , current_slide : Int
+    , show_contents : Bool
     , quiz_model : Lia.Quiz.Model.Model
     , code_model : Lia.Code.Model.Model
     , effect_model : Lia.Effect.Model.Model
     , index_model : Lia.Index.Model.Model
     , narator : String
-    , contents : Bool
     }
