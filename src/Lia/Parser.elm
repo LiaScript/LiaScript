@@ -154,10 +154,10 @@ parse =
         effect_counter =
             let
                 pp par =
-                    succeed par.effects
+                    succeed par.num_effects
 
                 reset_effect c =
-                    { c | effects = 0 }
+                    { c | num_effects = 0 }
             in
             withState pp <* modifyState reset_effect
     in
@@ -204,7 +204,7 @@ run : String -> Result String ( List Slide, Int, QuizVector, String )
 run script =
     case Combine.runParser parse Lia.PState.init script of
         Ok ( state, _, es ) ->
-            Ok ( es, state.code, state.quiz_vector, state.def_narator )
+            Ok ( es, state.num_code, state.quiz_vector, state.def_narator )
 
         Err ( _, stream, ms ) ->
             Err <| formatError ms stream

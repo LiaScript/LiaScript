@@ -14,10 +14,10 @@ quiz =
         counter =
             let
                 pp par =
-                    succeed par.quiz
+                    succeed par.num_quiz
 
                 increment_counter c =
-                    { c | quiz = c.quiz + 1 }
+                    { c | num_quiz = c.num_quiz + 1 }
             in
             withState pp <* modifyState increment_counter
     in
@@ -65,8 +65,6 @@ quiz_SingleChoice =
 
         state a =
             modifyState (\s -> push_state s (Single -1 <| List.length a)) *> succeed a
-
-        --*> succeed a
     in
     many (checked False (regex "[ \\t]*\\[\\( \\)\\]"))
         |> map (\a b -> List.append a [ b ])
@@ -108,23 +106,3 @@ quiz_MultipleChoice =
                 )
                 >>= state
             )
-
-
-
--- effect_number : QuizState -> Parser PState ()
--- effect_number =
---     let
---         state n =
---             modifyState
---                 (\s ->
---                     { s
---                         | effects =
---                             if n > s.effects then
---                                 n
---                             else
---                                 s.effects
---                     }
---                 )
---                 *> succeed n
---     in
---     int >>= state

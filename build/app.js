@@ -11682,20 +11682,20 @@ var _user$project$Lia_Model$Model = function (a) {
 };
 
 var _user$project$Lia_PState$init = {
-	quiz: 0,
 	section: {ctor: '[]'},
 	identation: 0,
 	skip_identation: false,
-	effects: 0,
-	code: 0,
+	num_effects: 0,
+	num_code: 0,
+	num_quiz: 0,
+	quiz_vector: _elm_lang$core$Array$empty,
 	def_author: '',
 	def_date: '',
 	def_email: '',
 	def_language: '',
 	def_narator: '',
 	def_version: '',
-	def_comment: '',
-	quiz_vector: _elm_lang$core$Array$empty
+	def_comment: ''
 };
 var _user$project$Lia_PState$PState = function (a) {
 	return function (b) {
@@ -11711,7 +11711,7 @@ var _user$project$Lia_PState$PState = function (a) {
 											return function (l) {
 												return function (m) {
 													return function (n) {
-														return {quiz: a, section: b, identation: c, skip_identation: d, effects: e, code: f, def_author: g, def_date: h, def_email: i, def_language: j, def_narator: k, def_version: l, def_comment: m, quiz_vector: n};
+														return {section: a, identation: b, skip_identation: c, num_effects: d, num_code: e, num_quiz: f, quiz_vector: g, def_author: h, def_date: i, def_email: j, def_language: k, def_narator: l, def_version: m, def_comment: n};
 													};
 												};
 											};
@@ -11736,7 +11736,7 @@ var _user$project$Lia_Effect_Parser$effect_number = function () {
 					return _elm_lang$core$Native_Utils.update(
 						s,
 						{
-							effects: (_elm_lang$core$Native_Utils.cmp(n, s.effects) > 0) ? n : s.effects
+							num_effects: (_elm_lang$core$Native_Utils.cmp(n, s.num_effects) > 0) ? n : s.num_effects
 						});
 				}),
 			_elm_community$parser_combinators$Combine$succeed(n));
@@ -12539,10 +12539,10 @@ var _user$project$Lia_Code_Parser$inc_counter = function () {
 	var increment_counter = function (c) {
 		return _elm_lang$core$Native_Utils.update(
 			c,
-			{code: c.code + 1});
+			{num_code: c.num_code + 1});
 	};
 	var pp = function (par) {
-		return _elm_community$parser_combinators$Combine$succeed(par.code);
+		return _elm_community$parser_combinators$Combine$succeed(par.num_code);
 	};
 	return A2(
 		_elm_community$parser_combinators$Combine_ops['<*'],
@@ -12792,10 +12792,10 @@ var _user$project$Lia_Quiz_Parser$quiz = function () {
 		var increment_counter = function (c) {
 			return _elm_lang$core$Native_Utils.update(
 				c,
-				{quiz: c.quiz + 1});
+				{num_quiz: c.num_quiz + 1});
 		};
 		var pp = function (par) {
-			return _elm_community$parser_combinators$Combine$succeed(par.quiz);
+			return _elm_community$parser_combinators$Combine$succeed(par.num_quiz);
 		};
 		return A2(
 			_elm_community$parser_combinators$Combine_ops['<*'],
@@ -13241,10 +13241,10 @@ var _user$project$Lia_Parser$parse = function () {
 		var reset_effect = function (c) {
 			return _elm_lang$core$Native_Utils.update(
 				c,
-				{effects: 0});
+				{num_effects: 0});
 		};
 		var pp = function (par) {
-			return _elm_community$parser_combinators$Combine$succeed(par.effects);
+			return _elm_community$parser_combinators$Combine$succeed(par.num_effects);
 		};
 		return A2(
 			_elm_community$parser_combinators$Combine_ops['<*'],
@@ -13290,7 +13290,7 @@ var _user$project$Lia_Parser$run = function (script) {
 	if (_p2.ctor === 'Ok') {
 		var _p3 = _p2._0._0;
 		return _elm_lang$core$Result$Ok(
-			{ctor: '_Tuple4', _0: _p2._0._2, _1: _p3.code, _2: _p3.quiz_vector, _3: _p3.def_narator});
+			{ctor: '_Tuple4', _0: _p2._0._2, _1: _p3.num_code, _2: _p3.quiz_vector, _3: _p3.def_narator});
 	} else {
 		return _elm_lang$core$Result$Err(
 			A2(_user$project$Lia_Parser$formatError, _p2._0._2, _p2._0._1));

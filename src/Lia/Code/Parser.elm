@@ -37,9 +37,9 @@ inc_counter : Parser PState Int
 inc_counter =
     let
         pp par =
-            succeed par.code
+            succeed par.num_code
 
         increment_counter c =
-            { c | code = c.code + 1 }
+            { c | num_code = c.num_code + 1 }
     in
     withState pp <* modifyState increment_counter

@@ -53,11 +53,11 @@ effect_number =
             modifyState
                 (\s ->
                     { s
-                        | effects =
-                            if n > s.effects then
+                        | num_effects =
+                            if n > s.num_effects then
                                 n
                             else
-                                s.effects
+                                s.num_effects
                     }
                 )
                 *> succeed n

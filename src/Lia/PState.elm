@@ -5,12 +5,13 @@ import Lia.Quiz.Types exposing (QuizVector)
 
 
 type alias PState =
-    { quiz : Int
-    , section : List Int
+    { section : List Int
     , identation : Int
     , skip_identation : Bool
-    , effects : Int
-    , code : Int
+    , num_effects : Int
+    , num_code : Int
+    , num_quiz : Int
+    , quiz_vector : QuizVector
     , def_author : String
     , def_date : String
     , def_email : String
@@ -18,18 +19,18 @@ type alias PState =
     , def_narator : String
     , def_version : String
     , def_comment : String
-    , quiz_vector : QuizVector
     }
 
 
 init : PState
 init =
-    { quiz = 0
-    , section = []
+    { section = []
     , identation = 0
     , skip_identation = False
-    , effects = 0
-    , code = 0
+    , num_effects = 0
+    , num_code = 0
+    , num_quiz = 0
+    , quiz_vector = Array.empty
     , def_author = ""
     , def_date = ""
     , def_email = ""
@@ -37,5 +38,4 @@ init =
     , def_narator = ""
     , def_version = ""
     , def_comment = ""
-    , quiz_vector = Array.empty
     }
