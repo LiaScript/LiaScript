@@ -14529,31 +14529,82 @@ var _user$project$Lia_Quiz_View$view_quiz_text_input = F2(
 		};
 	});
 var _user$project$Lia_Quiz_View$view_hints = F3(
-	function (model, counter, hints) {
-		if (_elm_lang$core$Native_Utils.cmp(counter, 0) > 0) {
-			var _p7 = hints;
-			if (_p7.ctor === '[]') {
-				return {ctor: '[]'};
-			} else {
-				return {
+	function (counter, idx, hints) {
+		var v_hints = F2(
+			function (h, c) {
+				var _p7 = {ctor: '_Tuple2', _0: h, _1: c};
+				if (_p7._0.ctor === '[]') {
+					return {ctor: '[]'};
+				} else {
+					if (_p7._1 === 0) {
+						return {ctor: '[]'};
+					} else {
+						return {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$p,
+								{ctor: '[]'},
+								{
+									ctor: '::',
+									_0: _user$project$Lia_Utils$stringToHtml('&#x1f4a1;'),
+									_1: A2(
+										_elm_lang$core$List$map,
+										_user$project$Lia_Inline_View$view(999),
+										_p7._0._0)
+								}),
+							_1: A2(v_hints, _p7._0._1, c - 1)
+						};
+					}
+				}
+			});
+		return (_elm_lang$core$Native_Utils.cmp(
+			counter,
+			_elm_lang$core$List$length(hints)) < 0) ? {
+			ctor: '::',
+			_0: _elm_lang$html$Html$text(' '),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$sup,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$a,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$href('#'),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html_Events$onClick(
+										_user$project$Lia_Quiz_Update$ShowHint(idx)),
+									_1: {ctor: '[]'}
+								}
+							},
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html$text('?'),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}),
+				_1: {
 					ctor: '::',
 					_0: A2(
-						_elm_lang$html$Html$p,
+						_elm_lang$html$Html$div,
 						{ctor: '[]'},
-						{
-							ctor: '::',
-							_0: _user$project$Lia_Utils$stringToHtml('&#x1f4a1;'),
-							_1: A2(
-								_elm_lang$core$List$map,
-								_user$project$Lia_Inline_View$view(999),
-								_p7._0)
-						}),
-					_1: A3(_user$project$Lia_Quiz_View$view_hints, model, counter - 1, _p7._1)
-				};
+						A2(v_hints, hints, counter)),
+					_1: {ctor: '[]'}
+				}
 			}
-		} else {
-			return {ctor: '[]'};
-		}
+		} : {
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$div,
+				{ctor: '[]'},
+				A2(v_hints, hints, counter)),
+			_1: {ctor: '[]'}
+		};
 	});
 var _user$project$Lia_Quiz_View$view = F2(
 	function (model, block) {
@@ -14572,49 +14623,21 @@ var _user$project$Lia_Quiz_View$view = F2(
 		return A2(
 			_elm_lang$html$Html$p,
 			{ctor: '[]'},
-			A2(
-				_elm_lang$core$List$append,
-				quiz_html,
+			_elm_lang$core$List$concat(
 				{
 					ctor: '::',
-					_0: A2(_user$project$Lia_Quiz_View$quiz_check_button, model, block.idx),
+					_0: quiz_html,
 					_1: {
 						ctor: '::',
-						_0: _elm_lang$html$Html$text(' '),
+						_0: {
+							ctor: '::',
+							_0: A2(_user$project$Lia_Quiz_View$quiz_check_button, model, block.idx),
+							_1: {ctor: '[]'}
+						},
 						_1: {
 							ctor: '::',
-							_0: A2(
-								_elm_lang$html$Html$sup,
-								{ctor: '[]'},
-								{
-									ctor: '::',
-									_0: A2(
-										_elm_lang$html$Html$a,
-										{
-											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$href('#'),
-											_1: {
-												ctor: '::',
-												_0: _elm_lang$html$Html_Events$onClick(
-													_user$project$Lia_Quiz_Update$ShowHint(block.idx)),
-												_1: {ctor: '[]'}
-											}
-										},
-										{
-											ctor: '::',
-											_0: _elm_lang$html$Html$text('?'),
-											_1: {ctor: '[]'}
-										}),
-									_1: {ctor: '[]'}
-								}),
-							_1: {
-								ctor: '::',
-								_0: A2(
-									_elm_lang$html$Html$div,
-									{ctor: '[]'},
-									A3(_user$project$Lia_Quiz_View$view_hints, model, hint_count, block.hints)),
-								_1: {ctor: '[]'}
-							}
+							_0: A3(_user$project$Lia_Quiz_View$view_hints, hint_count, block.idx, block.hints),
+							_1: {ctor: '[]'}
 						}
 					}
 				}));

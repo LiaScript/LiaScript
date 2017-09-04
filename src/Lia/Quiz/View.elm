@@ -28,27 +28,36 @@ view model block =
         hint_count =
             get_hint_counter block.idx model
     in
-    List.append quiz_html
-        [ quiz_check_button model block.idx
-        , Html.text " "
-        , Html.sup [] [ Html.a [ Attr.href "#", onClick (ShowHint block.idx) ] [ Html.text "?" ] ]
-        , Html.div [] (view_hints model hint_count block.hints)
+    List.concat
+        [ quiz_html
+        , [ quiz_check_button model block.idx ]
+        , view_hints hint_count block.idx block.hints
         ]
         |> Html.p []
 
 
-view_hints : Model -> Int -> List (List Inline) -> List (Html Msg)
-view_hints model counter hints =
-    if counter > 0 then
-        case hints of
-            [] ->
-                []
+view_hints : Int -> Int -> List (List Inline) -> List (Html Msg)
+view_hints counter idx hints =
+    let
+        v_hints h c =
+            case ( h, c ) of
+                ( [], _ ) ->
+                    []
 
-            x :: xs ->
-                Html.p [] (Lia.Utils.stringToHtml "&#x1f4a1;" :: List.map (Elem.view 999) x)
-                    :: view_hints model (counter - 1) xs
+                ( _, 0 ) ->
+                    []
+
+                ( x :: xs, _ ) ->
+                    Html.p [] (Lia.Utils.stringToHtml "&#x1f4a1;" :: List.map (Elem.view 999) x)
+                        :: v_hints xs (c - 1)
+    in
+    if counter < List.length hints then
+        [ Html.text " "
+        , Html.sup [] [ Html.a [ Attr.href "#", onClick (ShowHint idx) ] [ Html.text "?" ] ]
+        , Html.div [] (v_hints hints counter)
+        ]
     else
-        []
+        [ Html.div [] (v_hints hints counter) ]
 
 
 view_quiz_text_input : Model -> Int -> List (Html Msg)
