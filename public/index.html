@@ -1,0 +1,40 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Lia Script</title>
+        <!-- bad style - replace with npm packages TODO -->
+        <script src="http://code.responsivevoice.org/responsivevoice.js"></script>
+        <link rel="stylesheet" href="../css/lia.css">
+        <link rel="stylesheet" href="../css/animate.css">
+
+        <link rel="stylesheet" href="../lib/highlight/styles/default.css">
+        <script type="text/javascript" src="../lib/highlight/highlight.pack.js"></script>
+
+        <link rel="stylesheet" href="../lib/KaTeX/build/katex.css">
+        <script type="text/javascript" src="../lib/KaTeX/build/katex.js"></script>
+
+        <script type="text/javascript" src="js/elm.js"></script>
+    </head>
+    <body>
+        <div id="lia"></div>
+        <script>
+            function readTextFile(file) {
+                var rawFile = new XMLHttpRequest();
+                rawFile.open("GET", file, false);
+                rawFile.onreadystatechange = function () {
+                    if(rawFile.readyState === 4) {
+                        if(rawFile.status === 200 || rawFile.status == 0) {
+                            const elmLia = document.querySelector('#lia');
+
+                            if (elmLia) {
+                                const app = Elm.Editor.embed(elmLia, {script: rawFile.responseText});
+                            }
+                        }
+                    }
+                }
+                rawFile.send(null);
+            }
+            readTextFile("ReadMe.md")
+        </script>
+    </body>
+</html>

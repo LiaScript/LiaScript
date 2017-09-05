@@ -1,0 +1,29 @@
+{
+  "name": "lia-script",
+  "version": "0.1.0",
+  "description": "A collaborative presentation framework",
+  "main": "brunch-config.js",
+  "scripts": {
+    "postinstall": "elm package install -y",
+    "start": "brunch watch --server",
+    "prod": "brunch build --production"
+  },
+  "keywords": [
+    "elm",
+    "brunch",
+    "sass"
+  ],
+  "author": "",
+  "license": "BSD-3-Clause",
+  "dependencies": {
+    "elm-github-install": "^1.4.0"
+  },
+  "devDependencies": {
+    "auto-reload-brunch": "^2.7.1",
+    "brunch": "^2.8.2",
+    "elm-brunch": "^0.7.0",
+    "hmr-brunch": "^0.1.1",
+    "node-sass": "^4.5.3",
+    "sass-brunch": "^2.6.3"
+  }
+}

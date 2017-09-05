@@ -1,4 +1,4 @@
-module Tts.Tts exposing (languages, listen, shut_up, speak, voices)
+module Tts.Local exposing (languages, listen, shut_up, speak, voices)
 
 {-| A native Html5 Text-To-Speech wrapper library.
 
