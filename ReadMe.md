@@ -33,7 +33,6 @@ start directly to create and share your course on github.
 We tried to use the github flavored Markdown style for simple formating with
 some additional elements.
 
-
 \*italic\* -> *italic*
 
 \*\*bold\*\* -> **bold**
