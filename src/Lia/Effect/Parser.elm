@@ -31,14 +31,14 @@ einline : Parser PState Inline -> Parser PState Inline
 einline inlines =
     let
         name =
-            maybe (whitespace *> regex "[a-zA-Z ]+")
+            maybe (regex "[a-zA-Z ]+")
 
         multi_inline =
             string "{{" *> manyTill inlines (string "}}")
     in
     EInline
         <$> (string "{{" *> effect_number)
-        <*> (name <* string "}}")
+        <*> (regex "( *)" *> name <* string "}}")
         <*> multi_inline
 
 

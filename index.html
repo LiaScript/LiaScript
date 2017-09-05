@@ -16,11 +16,23 @@
     <body>
         <div id="lia"></div>
         <script>
-            const elmLia = document.querySelector('#lia');
+            function readTextFile(file) {
+                var rawFile = new XMLHttpRequest();
+                rawFile.open("GET", file, false);
+                rawFile.onreadystatechange = function () {
+                    if(rawFile.readyState === 4) {
+                        if(rawFile.status === 200 || rawFile.status == 0) {
+                            const elmLia = document.querySelector('#lia');
 
-            if (elmLia) {
-                const app = Elm.Main.embed(elmLia);
+                            if (elmLia) {
+                                const app = Elm.Main.embed(elmLia, {script: rawFile.responseText});
+                            }
+                        }
+                    }
+                }
+                rawFile.send(null);
             }
+            readTextFile("ReadMe.md")
         </script>
     </body>
 </html>

@@ -11763,10 +11763,7 @@ var _user$project$Lia_Effect_Parser$einline = function (inlines) {
 			inlines,
 			_elm_community$parser_combinators$Combine$string('}}')));
 	var name = _elm_community$parser_combinators$Combine$maybe(
-		A2(
-			_elm_community$parser_combinators$Combine_ops['*>'],
-			_elm_community$parser_combinators$Combine$whitespace,
-			_elm_community$parser_combinators$Combine$regex('[a-zA-Z ]+')));
+		_elm_community$parser_combinators$Combine$regex('[a-zA-Z ]+'));
 	return A2(
 		_elm_community$parser_combinators$Combine_ops['<*>'],
 		A2(
@@ -11780,7 +11777,10 @@ var _user$project$Lia_Effect_Parser$einline = function (inlines) {
 					_user$project$Lia_Effect_Parser$effect_number)),
 			A2(
 				_elm_community$parser_combinators$Combine_ops['<*'],
-				name,
+				A2(
+					_elm_community$parser_combinators$Combine_ops['*>'],
+					_elm_community$parser_combinators$Combine$regex('( *)'),
+					name),
 				_elm_community$parser_combinators$Combine$string('}}'))),
 		multi_inline);
 };
@@ -15198,8 +15198,6 @@ var _user$project$Lia$init = F2(
 var _user$project$Lia$init_plain = _user$project$Lia$init(_user$project$Lia_Types$Plain);
 var _user$project$Lia$init_slides = _user$project$Lia$init(_user$project$Lia_Types$Slides);
 
-var _user$project$Readme$text = '\n\n<!--\n\nauthor:   Andre Dietrich\n\nemail:    dietrich@ivs.cs.uni-magdeburg.de\n\nversion:  1.0.0\n\nlanguage: en_US\n\nnarator:  US English Female\n\n-->\n\n# Lia\n\nAn extended Markdown format for writing interactive online courses.\n\n\n                                     --{{1}}--\nWith Lia we try to implement an extended Markdown format that should enable\neveryone to create, share, adapt, translate or correct and extend online courses\nwithout the need of beeing a web-developer.\n\n                                    --{{2}}--\nEverything that is required is simple text-editor and a web-browser. Or you\nstart directly to create and share your course on github.\n\n\n## Basic Text-Formating\n\n                                    --{{0}}--\nWe tried to use the github flavored Markdown style for simple formating with\nsome additional elements.\n\n\\*italic\\* -> *italic*\n\n\\*\\*bold\\*\\* -> **bold**\n\n\\*\\*\\*bold and italic \\*\\*\\* -> ***bold and italic ***\n\n\\_also italic\\_ -> _also italic_\n\n\\_\\_also bold\\_\\_ -> __also bold__\n\n\\_\\_\\_also bold and italic\\_\\_\\_ -> ___also bold and italic___\n\n\\~strike\\~ -> ~strike~\n\n                                       {{1}}\n{{\n\n\\~\\~underline\\~\\~ -> ~~underline~~\n\n\\~\\~\\~strike and underline\\~\\~\\~ -> ~~~strike and underline~~~\n\n\\^superscript\\^ -> ^superscript^ ^^superscript^^ ^^^superscript^^^\n\n}}\n\n                                     --{{1}}--\nThese exceptions are for example underline and its combination with strike\nthroug or the application of superscript. If you superscript superscript you\ncan get even smaller.\n\n### Combinations\n\n                                     --{{0}}--\nAs you can see from the examples you can combine all elements freely.\n\n\n\\*\\*bold \\_bold italic\\_\\*\\* -> **bold _italic_**\n\n\\*\\*\\~bold strike\\~ \\~\\~bold underline\\~\\~\\*\\* -> **~bold strike~ ~~bold underline~~**\n\n\\*\\~italic strike\\~ \\~\\~italic underline\\~\\~\\* -> *~italic strike~ ~~italic underline~~*\n\n### Escape Chars\n\n\\*, \\~, \\_, \\#, \\{, \\}, \\[, \\], \\|, \\`, \\$\n\n                                     --{{0}}--\nIf you want to use multiple stars, hash-tags, or other syntax elements within\nyour script without applying their functionality, then you can escape them with\na starting backslash.\n\n### Symbols\n\n                                     --{{0}}--\nIf you want to, then you can use any kind of arrows, these symbols are generated\nautomatically for you ...\n\n->, ->>, >->, <-, <-<, <<-, <->, =>, <=, <=>\n\n-->, <--, <-->, ==>, <==, <==>\n\n~>, <~\n\n                                     --{{1}}--\nBut you can also use some basic smileys. We will try to extend this partial\nsupport in the future.\n\n                                       {{1}}\n:-), ;-), :-D, :-O, :-(, :-|, :-/, :-P, :-*, :\'), :\'(\n\n## References\n\n### Simple Links\n\n[link](www.google.de)\n\n### Images and Movies\n\n## Lists\n\n### Unordered Lists\n\n* alpha\n+ *beta*\n- gamma\n  and delta\n\n### Ordered Lists\n\n0. alpha\n2. **beta**\n1. gamma\n\n   *and delta*\n\n   ** and something else **\n\n### Mixed Lists\n\n1. alpha\n2. **beta**\n   * one\n   * two\n   * three\n3. gamma\n\n   *and delta*\n\n   ** and something else **\n\n\n\n## Math-Mode\n\n{{0}}{{ via KaTex http://katex.org }}\n\n{{1}}{{ Inline math-mode `$ \\frac{a}{\\sum{b+i}} $` -> $ \\frac{a}{\\sum{b+i}} $ }}\n\n                                        {{2}}\nMulti-line math-mode can be applied by double dollars `$$ formula $$`\n$$\n  \\frac{a}{\\sum{b+i}}\n$$\n\n                                    --{{0}}--\nWe apply KaTeX for math-formating, see the documentation at www.katex.org.\n\n                                    --{{1}}--\nA formula can be either inline with single dollars.\n\n                                    --{{2}}--\nOr multiline by using the double dollar notation.\n\n## Syntax Highlighting\n\n### Inline-Code\n\nInline code via \\` enter some code in here 1\\#\\#\\#\\$& \\` -> ` enter some code in here 1###$& `\n\n### Block-Code\n\n\n``` c\n#include \"test.h\"\n\nint main () {\n    printf(\"this is an example\\n\");\n    return 0;\n}\n```\n\n``` python\nimport math\n\ndef lia_sqrt(val):\n    return math.sqrt(val) + 22\n```\n\n``` javascript X\n\nalert(\"test XXXX\");\n```\n\n                                    --{{0}}--\nSyntax highlighting is enabled with highlight.js.\n\n## Quizes\n\n### Single-Choice\n\nOnly one element can be selected!\n\n    [( )] Wrong\n    [(X)] This is the **correct** answer\n    [( )] This is ~~wrong~~ too!\n\n### Multiple-Choice\n\nMultiple of them can be selected, or all, or none of them ...\n\n    [[ ]] Do not touch!\n    [[X]] Select this one ...\n    [[X]] ... and this one too!\n    [[ ]] also not correct..\n\n\n### Text Inputs\n\nPlease enter the word \"solution\" into the text-field!\n\n    [[solution]]\n\n### Hints\n\n    [[super]]\n    [[?]] another word for awesome\n    [[?]] not as great as mega or terra\n    [[?]] hopefully not that bad\n    [[?]] there are no hints left\n\n\n## Effects\n\n### Inline Effects\n\n### Block Effects\n\n{{1 infinite zoomIn}}\n![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)<!--\n    position: absolute;\n    left: 0%;\n    top: 0%;\n    margin: 100 0 0 0;\n    border:\n    10px solid;\n    width: 98%\n-->\n\n{{2 infinite bounce}}\n![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)<!--\n    position: absolute;\n    left: 10%;\n    top: 10%;\n    margin: 100 0 0 0;\n    border: 10px solid;\n    width: 78%\n-->\n\n{{3 infinite bounce}}\n![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)<!--\n    position: absolute;\n    left: 20%;\n    top: 20%;\n    margin: 100 0 0 0;\n    border: 10px solid;\n    width: 58%\n-->\n\n{{4 infinite bounce}}\n![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)<!--\n    position: absolute;\n    left: 30%;\n    top: 30%;\n    margin: 100 0 0 0;\n    border: 10px solid;\n    width: 38%\n-->\n\n{{5 infinite bounce}}\n![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)<!--\n    position: absolute;\n    left: 40%;\n    top: 40%;\n    margin: 100 0 0 0;\n    border: 10px solid;\n    width: 18%\n-->\n\n\n--{{1}}--\n\n``` javascript X\n\nalert (\"fuck\");\n\n```\n\nI like to see apes doing human stuff ...\n\n--{{2}}--\n\nBut I do not like it the oposite way.\n\n### Comment Effects\n\n';
-
 var _user$project$Main$list_get = F2(
 	function (i, list) {
 		list_get:
@@ -15224,6 +15222,9 @@ var _user$project$Main$Model = F3(
 	function (a, b, c) {
 		return {outer: a, inner: b, lia: c};
 	});
+var _user$project$Main$Flags = function (a) {
+	return {script: a};
+};
 var _user$project$Main$Child = function (a) {
 	return {ctor: 'Child', _0: a};
 };
@@ -15315,23 +15316,25 @@ var _user$project$Main$Render = function (a) {
 var _user$project$Main$Update = function (a) {
 	return {ctor: 'Update', _0: a};
 };
-var _user$project$Main$init = A2(
-	_user$project$Main$update,
-	_user$project$Main$Update(_user$project$Readme$text),
-	{
-		outer: A2(
-			_doodledood$elm_split_pane$SplitPane$withResizeLimits,
-			A2(
-				_doodledood$elm_split_pane$Bound$createBound,
-				_doodledood$elm_split_pane$SplitPane$percentage(0.2),
-				_doodledood$elm_split_pane$SplitPane$percentage(0.8)),
-			_doodledood$elm_split_pane$SplitPane$init(_doodledood$elm_split_pane$SplitPane$Horizontal)),
-		inner: A2(
-			_doodledood$elm_split_pane$SplitPane$withSplitterAt,
-			_doodledood$elm_split_pane$SplitPane$percentage(0.75),
-			_doodledood$elm_split_pane$SplitPane$init(_doodledood$elm_split_pane$SplitPane$Vertical)),
-		lia: _user$project$Lia$init_slides(_user$project$Readme$text)
-	});
+var _user$project$Main$init = function (flags) {
+	return A2(
+		_user$project$Main$update,
+		_user$project$Main$Update(flags.script),
+		{
+			outer: A2(
+				_doodledood$elm_split_pane$SplitPane$withResizeLimits,
+				A2(
+					_doodledood$elm_split_pane$Bound$createBound,
+					_doodledood$elm_split_pane$SplitPane$percentage(0.2),
+					_doodledood$elm_split_pane$SplitPane$percentage(0.8)),
+				_doodledood$elm_split_pane$SplitPane$init(_doodledood$elm_split_pane$SplitPane$Horizontal)),
+			inner: A2(
+				_doodledood$elm_split_pane$SplitPane$withSplitterAt,
+				_doodledood$elm_split_pane$SplitPane$percentage(0.75),
+				_doodledood$elm_split_pane$SplitPane$init(_doodledood$elm_split_pane$SplitPane$Vertical)),
+			lia: _user$project$Lia$init_slides(flags.script)
+		});
+};
 var _user$project$Main$Inner = function (a) {
 	return {ctor: 'Inner', _0: a};
 };
@@ -15593,8 +15596,15 @@ var _user$project$Main$subscriptions = function (model) {
 			}
 		});
 };
-var _user$project$Main$main = _elm_lang$html$Html$program(
-	{update: _user$project$Main$update, init: _user$project$Main$init, subscriptions: _user$project$Main$subscriptions, view: _user$project$Main$view})();
+var _user$project$Main$main = _elm_lang$html$Html$programWithFlags(
+	{update: _user$project$Main$update, init: _user$project$Main$init, subscriptions: _user$project$Main$subscriptions, view: _user$project$Main$view})(
+	A2(
+		_elm_lang$core$Json_Decode$andThen,
+		function (script) {
+			return _elm_lang$core$Json_Decode$succeed(
+				{script: script});
+		},
+		A2(_elm_lang$core$Json_Decode$field, 'script', _elm_lang$core$Json_Decode$string)));
 
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};

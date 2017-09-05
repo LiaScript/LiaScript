@@ -6,13 +6,12 @@ import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import Lia
 import Lia.Types exposing (Mode(..))
-import Readme
 import SplitPane exposing (Orientation(..), ViewConfig, createViewConfig, percentage, withResizeLimits, withSplitterAt)
 
 
-main : Program Never Model Msg
+main : Program Flags Model Msg
 main =
-    Html.program
+    Html.programWithFlags
         { update = update
         , init = init
         , subscriptions = subscriptions
@@ -39,20 +38,25 @@ type alias Model =
     }
 
 
+type alias Flags =
+    { script : String
+    }
+
+
 
 -- INIT
 
 
-init : ( Model, Cmd Msg )
-init =
-    update (Update Readme.text)
+init : Flags -> ( Model, Cmd Msg )
+init flags =
+    update (Update flags.script)
         { outer =
             SplitPane.init Horizontal
                 |> withResizeLimits (createBound (percentage 0.2) (percentage 0.8))
         , inner =
             SplitPane.init Vertical
                 |> withSplitterAt (percentage 0.75)
-        , lia = Lia.init_slides Readme.text
+        , lia = Lia.init_slides flags.script
         }
 
 
