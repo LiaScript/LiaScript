@@ -27,22 +27,18 @@ eblock blocks =
         <*> (multi_block <|> single_block)
 
 
-
--- <|> single_block)
-
-
 einline : Parser PState Inline -> Parser PState Inline
 einline inlines =
     let
         name =
-            maybe (regex "[a-zA-Z ]+")
+            maybe (whitespace *> regex "[a-zA-Z ]+")
 
         multi_inline =
             string "{{" *> manyTill inlines (string "}}")
     in
     EInline
         <$> (string "{{" *> effect_number)
-        <*> (regex "( *)" *> name <* string "}}")
+        <*> (name <* string "}}")
         <*> multi_inline
 
 
@@ -52,13 +48,10 @@ effect_number =
         state n =
             modifyState
                 (\s ->
-                    { s
-                        | num_effects =
-                            if n > s.num_effects then
-                                n
-                            else
-                                s.num_effects
-                    }
+                    if n > s.num_effects then
+                        { s | num_effects = n }
+                    else
+                        s
                 )
                 *> succeed n
     in

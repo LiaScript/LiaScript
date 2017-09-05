@@ -174,8 +174,29 @@ leftView model =
                 , ( "resize", "none" )
                 ]
             ]
-            [ Html.text (model.lia.error ++ "\n" ++ toString model.lia.slides) ]
+            (let
+                slide =
+                    model.lia.slides
+                        |> list_get model.lia.current_slide
+                        |> Maybe.map toString
+                        |> Maybe.withDefault ""
+             in
+             [ Html.text (model.lia.error ++ "\n" ++ slide) ]
+            )
         )
+
+
+list_get : Int -> List a -> Maybe a
+list_get i list =
+    case ( i, list ) of
+        ( 0, x :: xs ) ->
+            Just x
+
+        ( _, x :: xs ) ->
+            list_get (i - 1) xs
+
+        ( _, [] ) ->
+            Nothing
 
 
 outerViewConfig : ViewConfig Msg

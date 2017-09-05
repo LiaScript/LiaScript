@@ -11733,11 +11733,9 @@ var _user$project$Lia_Effect_Parser$effect_number = function () {
 			_elm_community$parser_combinators$Combine_ops['*>'],
 			_elm_community$parser_combinators$Combine$modifyState(
 				function (s) {
-					return _elm_lang$core$Native_Utils.update(
+					return (_elm_lang$core$Native_Utils.cmp(n, s.num_effects) > 0) ? _elm_lang$core$Native_Utils.update(
 						s,
-						{
-							num_effects: (_elm_lang$core$Native_Utils.cmp(n, s.num_effects) > 0) ? n : s.num_effects
-						});
+						{num_effects: n}) : s;
 				}),
 			_elm_community$parser_combinators$Combine$succeed(n));
 	};
@@ -11765,7 +11763,10 @@ var _user$project$Lia_Effect_Parser$einline = function (inlines) {
 			inlines,
 			_elm_community$parser_combinators$Combine$string('}}')));
 	var name = _elm_community$parser_combinators$Combine$maybe(
-		_elm_community$parser_combinators$Combine$regex('[a-zA-Z ]+'));
+		A2(
+			_elm_community$parser_combinators$Combine_ops['*>'],
+			_elm_community$parser_combinators$Combine$whitespace,
+			_elm_community$parser_combinators$Combine$regex('[a-zA-Z ]+')));
 	return A2(
 		_elm_community$parser_combinators$Combine_ops['<*>'],
 		A2(
@@ -11779,10 +11780,7 @@ var _user$project$Lia_Effect_Parser$einline = function (inlines) {
 					_user$project$Lia_Effect_Parser$effect_number)),
 			A2(
 				_elm_community$parser_combinators$Combine_ops['<*'],
-				A2(
-					_elm_community$parser_combinators$Combine_ops['*>'],
-					_elm_community$parser_combinators$Combine$regex('( *)'),
-					name),
+				name,
 				_elm_community$parser_combinators$Combine$string('}}'))),
 		multi_inline);
 };
@@ -15202,6 +15200,26 @@ var _user$project$Lia$init_slides = _user$project$Lia$init(_user$project$Lia_Typ
 
 var _user$project$Readme$text = '\n\n<!--\n\nauthor:   Andre Dietrich\n\nemail:    dietrich@ivs.cs.uni-magdeburg.de\n\nversion:  1.0.0\n\nlanguage: en_US\n\nnarator:  US English Female\n\n-->\n\n# Lia\n\nAn extended Markdown format for writing interactive online courses.\n\n\n                                     --{{1}}--\nWith Lia we try to implement an extended Markdown format that should enable\neveryone to create, share, adapt, translate or correct and extend online courses\nwithout the need of beeing a web-developer.\n\n                                    --{{2}}--\nEverything that is required is simple text-editor and a web-browser. Or you\nstart directly to create and share your course on github.\n\n\n## Basic Text-Formating\n\n                                    --{{0}}--\nWe tried to use the github flavored Markdown style for simple formating with\nsome additional elements.\n\n\\*italic\\* -> *italic*\n\n\\*\\*bold\\*\\* -> **bold**\n\n\\*\\*\\*bold and italic \\*\\*\\* -> ***bold and italic ***\n\n\\_also italic\\_ -> _also italic_\n\n\\_\\_also bold\\_\\_ -> __also bold__\n\n\\_\\_\\_also bold and italic\\_\\_\\_ -> ___also bold and italic___\n\n\\~strike\\~ -> ~strike~\n\n                                       {{1}}\n{{\n\n\\~\\~underline\\~\\~ -> ~~underline~~\n\n\\~\\~\\~strike and underline\\~\\~\\~ -> ~~~strike and underline~~~\n\n\\^superscript\\^ -> ^superscript^ ^^superscript^^ ^^^superscript^^^\n\n}}\n\n                                     --{{1}}--\nThese exceptions are for example underline and its combination with strike\nthroug or the application of superscript. If you superscript superscript you\ncan get even smaller.\n\n### Combinations\n\n                                     --{{0}}--\nAs you can see from the examples you can combine all elements freely.\n\n\n\\*\\*bold \\_bold italic\\_\\*\\* -> **bold _italic_**\n\n\\*\\*\\~bold strike\\~ \\~\\~bold underline\\~\\~\\*\\* -> **~bold strike~ ~~bold underline~~**\n\n\\*\\~italic strike\\~ \\~\\~italic underline\\~\\~\\* -> *~italic strike~ ~~italic underline~~*\n\n### Escape Chars\n\n\\*, \\~, \\_, \\#, \\{, \\}, \\[, \\], \\|, \\`, \\$\n\n                                     --{{0}}--\nIf you want to use multiple stars, hash-tags, or other syntax elements within\nyour script without applying their functionality, then you can escape them with\na starting backslash.\n\n### Symbols\n\n                                     --{{0}}--\nIf you want to, then you can use any kind of arrows, these symbols are generated\nautomatically for you ...\n\n->, ->>, >->, <-, <-<, <<-, <->, =>, <=, <=>\n\n-->, <--, <-->, ==>, <==, <==>\n\n~>, <~\n\n                                     --{{1}}--\nBut you can also use some basic smileys. We will try to extend this partial\nsupport in the future.\n\n                                       {{1}}\n:-), ;-), :-D, :-O, :-(, :-|, :-/, :-P, :-*, :\'), :\'(\n\n## References\n\n### Simple Links\n\n[link](www.google.de)\n\n### Images and Movies\n\n## Lists\n\n### Unordered Lists\n\n* alpha\n+ *beta*\n- gamma\n  and delta\n\n### Ordered Lists\n\n0. alpha\n2. **beta**\n1. gamma\n\n   *and delta*\n\n   ** and something else **\n\n### Mixed Lists\n\n1. alpha\n2. **beta**\n   * one\n   * two\n   * three\n3. gamma\n\n   *and delta*\n\n   ** and something else **\n\n\n\n## Math-Mode\n\n{{0}}{{ via KaTex http://katex.org }}\n\n{{1}}{{ Inline math-mode `$ \\frac{a}{\\sum{b+i}} $` -> $ \\frac{a}{\\sum{b+i}} $ }}\n\n                                        {{2}}\nMulti-line math-mode can be applied by double dollars `$$ formula $$`\n$$\n  \\frac{a}{\\sum{b+i}}\n$$\n\n                                    --{{0}}--\nWe apply KaTeX for math-formating, see the documentation at www.katex.org.\n\n                                    --{{1}}--\nA formula can be either inline with single dollars.\n\n                                    --{{2}}--\nOr multiline by using the double dollar notation.\n\n## Syntax Highlighting\n\n### Inline-Code\n\nInline code via \\` enter some code in here 1\\#\\#\\#\\$& \\` -> ` enter some code in here 1###$& `\n\n### Block-Code\n\n\n``` c\n#include \"test.h\"\n\nint main () {\n    printf(\"this is an example\\n\");\n    return 0;\n}\n```\n\n``` python\nimport math\n\ndef lia_sqrt(val):\n    return math.sqrt(val) + 22\n```\n\n``` javascript X\n\nalert(\"test XXXX\");\n```\n\n                                    --{{0}}--\nSyntax highlighting is enabled with highlight.js.\n\n## Quizes\n\n### Single-Choice\n\nOnly one element can be selected!\n\n    [( )] Wrong\n    [(X)] This is the **correct** answer\n    [( )] This is ~~wrong~~ too!\n\n### Multiple-Choice\n\nMultiple of them can be selected, or all, or none of them ...\n\n    [[ ]] Do not touch!\n    [[X]] Select this one ...\n    [[X]] ... and this one too!\n    [[ ]] also not correct..\n\n\n### Text Inputs\n\nPlease enter the word \"solution\" into the text-field!\n\n    [[solution]]\n\n### Hints\n\n    [[super]]\n    [[?]] another word for awesome\n    [[?]] not as great as mega or terra\n    [[?]] hopefully not that bad\n    [[?]] there are no hints left\n\n\n## Effects\n\n### Inline Effects\n\n### Block Effects\n\n{{1 infinite zoomIn}}\n![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)<!--\n    position: absolute;\n    left: 0%;\n    top: 0%;\n    margin: 100 0 0 0;\n    border:\n    10px solid;\n    width: 98%\n-->\n\n{{2 infinite bounce}}\n![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)<!--\n    position: absolute;\n    left: 10%;\n    top: 10%;\n    margin: 100 0 0 0;\n    border: 10px solid;\n    width: 78%\n-->\n\n{{3 infinite bounce}}\n![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)<!--\n    position: absolute;\n    left: 20%;\n    top: 20%;\n    margin: 100 0 0 0;\n    border: 10px solid;\n    width: 58%\n-->\n\n{{4 infinite bounce}}\n![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)<!--\n    position: absolute;\n    left: 30%;\n    top: 30%;\n    margin: 100 0 0 0;\n    border: 10px solid;\n    width: 38%\n-->\n\n{{5 infinite bounce}}\n![ape](https://www.allmystery.de/static/upics/942586_handy.jpg)<!--\n    position: absolute;\n    left: 40%;\n    top: 40%;\n    margin: 100 0 0 0;\n    border: 10px solid;\n    width: 18%\n-->\n\n\n--{{1}}--\n\n``` javascript X\n\nalert (\"fuck\");\n\n```\n\nI like to see apes doing human stuff ...\n\n--{{2}}--\n\nBut I do not like it the oposite way.\n\n### Comment Effects\n\n';
 
+var _user$project$Main$list_get = F2(
+	function (i, list) {
+		list_get:
+		while (true) {
+			var _p0 = {ctor: '_Tuple2', _0: i, _1: list};
+			if (_p0._1.ctor === '::') {
+				if (_p0._0 === 0) {
+					return _elm_lang$core$Maybe$Just(_p0._1._0);
+				} else {
+					var _v1 = i - 1,
+						_v2 = _p0._1._1;
+					i = _v1;
+					list = _v2;
+					continue list_get;
+				}
+			} else {
+				return _elm_lang$core$Maybe$Nothing;
+			}
+		}
+	});
 var _user$project$Main$Model = F3(
 	function (a, b, c) {
 		return {outer: a, inner: b, lia: c};
@@ -15211,8 +15229,8 @@ var _user$project$Main$Child = function (a) {
 };
 var _user$project$Main$update = F2(
 	function (msg, model) {
-		var _p0 = msg;
-		switch (_p0.ctor) {
+		var _p1 = msg;
+		switch (_p1.ctor) {
 			case 'Update':
 				return {
 					ctor: '_Tuple2',
@@ -15220,7 +15238,7 @@ var _user$project$Main$update = F2(
 						model,
 						{
 							lia: _user$project$Lia$parse(
-								A2(_user$project$Lia$set_script, model.lia, _p0._0))
+								A2(_user$project$Lia$set_script, model.lia, _p1._0))
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
@@ -15230,14 +15248,14 @@ var _user$project$Main$update = F2(
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							lia: A2(_user$project$Lia$switch_mode, _p0._0, model.lia)
+							lia: A2(_user$project$Lia$switch_mode, _p1._0, model.lia)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'Child':
-				var _p1 = A2(_user$project$Lia$update, _p0._0, model.lia);
-				var lia = _p1._0;
-				var cmd = _p1._1;
+				var _p2 = A2(_user$project$Lia$update, _p1._0, model.lia);
+				var lia = _p2._0;
+				var cmd = _p2._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -15251,7 +15269,7 @@ var _user$project$Main$update = F2(
 					_elm_lang$core$Native_Utils.update(
 						model,
 						{
-							outer: A2(_doodledood$elm_split_pane$SplitPane$update, _p0._0, model.outer)
+							outer: A2(_doodledood$elm_split_pane$SplitPane$update, _p1._0, model.outer)
 						}),
 					{ctor: '[]'});
 			default:
@@ -15260,7 +15278,7 @@ var _user$project$Main$update = F2(
 					_elm_lang$core$Native_Utils.update(
 						model,
 						{
-							inner: A2(_doodledood$elm_split_pane$SplitPane$update, _p0._0, model.inner)
+							inner: A2(_doodledood$elm_split_pane$SplitPane$update, _p1._0, model.inner)
 						}),
 					{ctor: '[]'});
 		}
@@ -15505,18 +15523,24 @@ var _user$project$Main$leftView = function (model) {
 					}),
 				_1: {ctor: '[]'}
 			},
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html$text(
+			function () {
+				var slide = A2(
+					_elm_lang$core$Maybe$withDefault,
+					'',
 					A2(
-						_elm_lang$core$Basics_ops['++'],
-						model.lia.error,
+						_elm_lang$core$Maybe$map,
+						_elm_lang$core$Basics$toString,
+						A2(_user$project$Main$list_get, model.lia.current_slide, model.lia.slides)));
+				return {
+					ctor: '::',
+					_0: _elm_lang$html$Html$text(
 						A2(
 							_elm_lang$core$Basics_ops['++'],
-							'\n',
-							_elm_lang$core$Basics$toString(model.lia.slides)))),
-				_1: {ctor: '[]'}
-			}));
+							model.lia.error,
+							A2(_elm_lang$core$Basics_ops['++'], '\n', slide))),
+					_1: {ctor: '[]'}
+				};
+			}()));
 };
 var _user$project$Main$Outer = function (a) {
 	return {ctor: 'Outer', _0: a};
