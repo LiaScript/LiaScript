@@ -1,4 +1,4 @@
-module Editor exposing (..)
+module Main exposing (..)
 
 import Bound exposing (createBound)
 import Html exposing (Html)
