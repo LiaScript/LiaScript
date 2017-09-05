@@ -12423,10 +12423,7 @@ var _user$project$Lia_Inline_Parser$strings = _elm_community$parser_combinators$
 				_elm_community$parser_combinators$Combine_ops['<?>'],
 				A2(
 					_elm_community$parser_combinators$Combine_ops['*>'],
-					A2(
-						_elm_community$parser_combinators$Combine_ops['*>'],
-						_elm_community$parser_combinators$Combine$whitespace,
-						_elm_community$parser_combinators$Combine$string('\\')),
+					_elm_community$parser_combinators$Combine$string('\\'),
 					_elm_community$parser_combinators$Combine$regex('[\\^#*_~`\\\\\\|${}\\[\\]]')),
 				'escape string'));
 		var base = A2(
