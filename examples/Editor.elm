@@ -39,7 +39,7 @@ type alias Model =
 
 
 type alias Flags =
-    { script : String
+    {
     }
 
 
@@ -49,14 +49,17 @@ type alias Flags =
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    update (Update flags.script)
+    let
+        script = "TODO: Load ReadMe.md"
+    in
+    update (Update script)
         { outer =
             SplitPane.init Horizontal
                 |> withResizeLimits (createBound (percentage 0.2) (percentage 0.8))
         , inner =
             SplitPane.init Vertical
                 |> withSplitterAt (percentage 0.75)
-        , lia = Lia.init_slides flags.script
+        , lia = Lia.init_slides script
         }
 
 

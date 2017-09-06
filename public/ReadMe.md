@@ -293,11 +293,9 @@ Please enter the word "solution" into the text-field!
 
 
 --{{1}}--
-
 I like to see apes doing human stuff ...
 
 --{{2}}--
-
 But I do not like it the oposite way.
 
 ### Comment Effects
