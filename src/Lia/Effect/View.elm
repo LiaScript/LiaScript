@@ -12,6 +12,7 @@ view viewer idx visible effect_name elements =
     Html.span
         [ Attr.id (toString idx)
         , Attr.hidden (idx > visible)
+        , Attr.class "lia-effect-inline"
         , case effect_name of
             Nothing ->
                 Attr.class ""
@@ -27,6 +28,7 @@ view_block model viewer idx effect_name blocks =
     Html.div
         [ Attr.id (toString idx)
         , Attr.hidden (idx > model.visible)
+        , Attr.class "lia-effect-block"
         , case effect_name of
             Nothing ->
                 Attr.class ""
@@ -34,13 +36,8 @@ view_block model viewer idx effect_name blocks =
             Just name ->
                 Attr.class ("animated " ++ name)
         ]
-        (Html.div
-            [ Attr.style
-                [ ( "display", "flex" )
-                , ( "justify-content", "center" )
-                ]
-            ]
-            [ circle idx ]
+        (
+            circle idx
             :: List.map viewer blocks
         )
 
@@ -49,27 +46,17 @@ comment : Model -> (inline -> Html msg) -> Int -> List inline -> Html msg
 comment model viewer idx elements =
     if idx == model.visible then
         Html.div
-            [ Attr.style
-                [ ( "transition", ".1s ease" )
-                , ( "opacity", "0.6" )
-                , ( "position", "absolute" )
-                , ( "top", "80%" )
-                , ( "left", "50%" )
-                , ( "width", "80%" )
-                , ( "transform", "translate(-50%, -50%)" )
-                , ( "-ms-transform", "translate(-50%, -50%)" )
-                , ( "background-color", "#4CAF50" )
-                , ( "color", "white" )
-                , ( "font-size", "16px" )
-                , ( "padding", "16px 32px" )
-                ]
+            [ Attr.class "lia-effect-comment"
             ]
             (List.append
                 (List.map viewer elements)
                 [ responsive ]
             )
     else
-        Html.div [] []
+        Html.div
+            [ Attr.class "lia-effect-comment"
+            , Attr.class "lia-hidden"
+            ] []
 
 
 responsive : Html msg
@@ -95,17 +82,6 @@ responsive =
 circle : Int -> Html msg
 circle int =
     Html.span
-        [ Attr.style
-            [ ( "border-radius", "50%" )
-            , ( "width", "15px" )
-            , ( "height", "14px" )
-            , ( "padding", "3px" )
-            , ( "display", "inline-block" )
-            , ( "background", "#000" )
-            , ( "border", "2px solid #666" )
-            , ( "color", "#fff" )
-            , ( "text-align", "center" )
-            , ( "font", "12px Arial Bold, sans-serif" )
-            ]
+        [ Attr.class "lia-effect-circle"
         ]
         [ Html.text (toString int) ]

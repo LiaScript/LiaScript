@@ -11,28 +11,56 @@ view : Int -> Inline -> Html msg
 view visible element =
     case element of
         Code e ->
-            Html.code [] [ Html.text e ]
+            Html.code
+                [ Attr.class "lia-code"
+                , Attr.class "lia-inline"
+                ]
+                [ Html.text e ]
 
         Chars e ->
             Html.text e
 
         Bold e ->
-            Html.b [] [ view visible e ]
+            Html.b
+                [ Attr.class "lia-bold"
+                , Attr.class "lia-inline"
+                ]
+                [ view visible e ]
 
         Italic e ->
-            Html.em [] [ view visible e ]
+            Html.em
+                [ Attr.class "lia-italic"
+                , Attr.class "lia-inline"
+                ]
+                [ view visible e ]
 
         Strike e ->
-            Html.s [] [ view visible e ]
+            Html.s
+                [ Attr.class "lia-strike"
+                , Attr.class "lia-inline"
+                ]
+                [ view visible e ]
 
         Underline e ->
-            Html.u [] [ view visible e ]
+            Html.u
+                [ Attr.class "lia-underline"
+                , Attr.class "lia-inline"
+                ]
+                [ view visible e ]
 
         Superscript e ->
-            Html.sup [] [ view visible e ]
+            Html.sup
+                [ Attr.class "lia-superscript"
+                , Attr.class "lia-inline"
+                ]
+                [ view visible e ]
 
         Container list ->
-            Html.span [] <| List.map (\e -> view visible e) list
+            Html.span
+                [ Attr.class "lia-container"
+                , Attr.class "lia-inline"
+                ]
+                <| List.map (\e -> view visible e) list
 
         Ref e ->
             reference e
@@ -70,7 +98,11 @@ reference ref =
     in
     case ref of
         Link alt_ url_ ->
-            Html.a [ Attr.href <| get_url url_ ] [ Html.text alt_ ]
+            Html.a
+                [ Attr.href <| get_url url_
+                , Attr.class "lia-link"
+                , Attr.class "lia-inline"
+                ] [ Html.text alt_ ]
 
         Image alt_ url_ style_ ->
             Html.img (media url_ style_) [ Html.text alt_ ]

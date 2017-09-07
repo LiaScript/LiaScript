@@ -28,6 +28,8 @@
     "hmr-brunch": "^0.1.1",
     "katex": "^0.8.3",
     "node-sass": "^4.5.3",
-    "sass-brunch": "^2.6.3"
+    "normalize.css": "^7.0.0",
+    "sass-brunch": "^2.6.3",
+    "sass-material-colors": "0.0.5"
   }
 }

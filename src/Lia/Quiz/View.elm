@@ -32,7 +32,7 @@ view model quiz =
 view_quiz state fn_view idx hints solution =
     case state of
         Just s ->
-            Html.p []
+            Html.p [ Attr.class "lia-quiz" ]
                 (fn_view idx s.state s.solved
                     :: view_button s.trial s.solved (Check idx solution)
                     :: view_hints idx s.hints hints
@@ -46,13 +46,13 @@ view_button : Int -> Bool -> Msg -> Html Msg
 view_button trials solved msg =
     if solved then
         Html.button
-            [ Attr.style [ ( "color", "green" ) ] ]
+            [ Attr.class "lia-btn", Attr.class "lia-success" ]
             [ Html.text ("Check " ++ toString trials) ]
     else if trials == 0 then
-        Html.button [ onClick msg ] [ Html.text "Check" ]
+        Html.button [ Attr.class "lia-btn", onClick msg ] [ Html.text "Check" ]
     else
         Html.button
-            [ Attr.style [ ( "color", "red" ) ], onClick msg ]
+            [ Attr.class "lia-btn", Attr.class "lia-failure", onClick msg ]
             [ Html.text ("Check " ++ toString trials) ]
 
 
@@ -62,6 +62,7 @@ view_text idx state solved =
         TextState x ->
             Html.input
                 [ Attr.type_ "input"
+                , Attr.class "lia-input"
                 , Attr.value x
                 , Attr.disabled solved
                 , onInput (Input idx)
@@ -80,9 +81,10 @@ view_single_choice questions idx state solved =
                 |> List.indexedMap (,)
                 |> List.map
                     (\( i, elements ) ->
-                        Html.p []
+                        Html.p [ Attr.class "lia-radio-item" ]
                             [ Html.input
                                 [ Attr.type_ "radio"
+                                , Attr.class "lia-radio-btn"
                                 , Attr.checked (i == x)
                                 , if solved then
                                     Attr.disabled True
@@ -90,7 +92,7 @@ view_single_choice questions idx state solved =
                                     onClick (RadioButton idx i)
                                 ]
                                 []
-                            , Html.span [] (List.map view_inf elements)
+                            , Html.span [ Attr.class "lia-label" ] (List.map view_inf elements)
                             ]
                     )
                 |> Html.div []
@@ -103,9 +105,10 @@ view_multiple_choice : List Line -> Int -> QuizState -> Bool -> Html Msg
 view_multiple_choice questions idx state solved =
     let
         fn b ( i, line ) =
-            Html.p []
+            Html.p [ Attr.class "lia-check-item" ]
                 [ Html.input
                     [ Attr.type_ "checkbox"
+                    , Attr.class "lia-check-btn"
                     , Attr.checked b
                     , if solved then
                         Attr.disabled True
@@ -113,7 +116,7 @@ view_multiple_choice questions idx state solved =
                         onClick (RadioButton idx i)
                     ]
                     []
-                , Html.span [] (List.map view_inf line)
+                , Html.span [ Attr.class "lia-label" ] (List.map view_inf line)
                 ]
     in
     case state of
@@ -144,11 +147,18 @@ view_hints idx counter hints =
     in
     if counter < List.length hints then
         [ Html.text " "
-        , Html.sup [] [ Html.a [ Attr.href "#", onClick (ShowHint idx) ] [ Html.text "?" ] ]
-        , Html.div [] (v_hints hints counter)
+        , Html.a [ Attr.class "lia-hint-btn", Attr.href "#", onClick (ShowHint idx) ] [ Html.text "live_help" ]
+        , Html.div
+            [ Attr.class "lia-hints"
+            ]
+            (v_hints hints counter)
         ]
     else
-        [ Html.div [] (v_hints hints counter) ]
+        [ Html.div
+            [ Attr.class "lia-hints"
+            ]
+            (v_hints hints counter)
+        ]
 
 
 

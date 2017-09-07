@@ -37,11 +37,7 @@ view_plain model =
             view_slide { model | effect_model = Effect.init_silent }
     in
     Html.div
-        [ Attr.style
-            [ ( "width", "100%" )
-            , ( "overflow", "auto" )
-            , ( "height", "100%" )
-            ]
+        [ Attr.class "lia-plain"
         ]
         (List.map f model.slides)
 
@@ -52,26 +48,28 @@ view_slides model =
         loadButton str msg =
             Html.button
                 [ onClick msg
-                , Attr.class "button_slide"
+                , Attr.class "lia-btn"
+                , Attr.class "lia-slide-control"
                 ]
                 [ Html.text str ]
 
         content =
-            Html.div []
-                [ Html.div []
+            Html.div
+                [ Attr.class "lia-slide"
+                ]
+                [ Html.div
+                    [ Attr.class "lia-toolbar"
+                    ]
                     [ Html.button
                         [ onClick ToggleContentsTable
-                        , Attr.style [ ( "width", "40px" ) ]
-                        ]
-                        [ Html.text "T" ]
-                    , loadButton "<<" PrevSlide
-                    , loadButton ">>" NextSlide
+                        , Attr.class "lia-btn"
+                        , Attr.class "lia-toc-control" ]
+                        [ Html.text "toc" ]
+                    , loadButton "navigate_before" PrevSlide
+                    , loadButton "navigate_next" NextSlide
                     ]
                 , Html.div
-                    [ Attr.style
-                        [ ( "overflow", "auto" )
-                        , ( "height", "100%" )
-                        ]
+                    [ Attr.class "lia-content"
                     ]
                     [ case get_slide model.current_slide model.slides of
                         Just slide ->
@@ -82,9 +80,9 @@ view_slides model =
                     ]
                 ]
     in
-    Html.div [ Attr.class "screen" ]
+    Html.div [ Attr.class "lia-canvas", Attr.class "theme-light" ]
         (if model.show_contents then
-            [ Html.div [ Attr.class "table_of_contents" ] [ view_contents model ]
+            [ view_contents model
             , content
             ]
          else
@@ -96,26 +94,24 @@ view_contents : Model -> Html Msg
 view_contents model =
     let
         f ( n, ( h, i ) ) =
-            Html.div []
-                [ Html.a
-                    [ onClick (Load n)
-                    , Attr.class
-                        ("toc"
-                            ++ toString i
-                            ++ (if model.current_slide == n then
-                                    " active"
-                                else
-                                    ""
-                               )
-                        )
-                    , h
-                        |> String.split " "
-                        |> String.join "_"
-                        |> String.append "#"
-                        |> Attr.href
-                    ]
-                    [ Html.text h ]
+            Html.a
+                [ onClick (Load n)
+                , Attr.class
+                    ("lia-toc-l"
+                         ++ toString i
+                         ++ (if model.current_slide == n then
+                                 " lia-active"
+                             else
+                                 ""
+                            )
+                    )
+                , h
+                |> String.split " "
+                |> String.join "_"
+                |> String.append "#"
+                |> Attr.href
                 ]
+            [ Html.text h ]
     in
     model.slides
         |> get_headers
@@ -129,18 +125,20 @@ view_contents model =
            )
         |> List.map f
         |> (\h ->
-                Html.div []
-                    (List.append
-                        [ Html.map UpdateIndex <| Lia.Index.View.view model.index_model ]
-                        h
-                    )
+                Html.div
+                    [ Attr.class "lia-toc" ]
+                    [ Html.map UpdateIndex <| Lia.Index.View.view model.index_model
+                    , Html.div
+                        [ Attr.class "lia-content"
+                        ] h
+                    ]
            )
 
 
 view_slide : Model -> Slide -> Html Msg
 view_slide model slide =
-    Html.div []
-        --Attr.class "lia", Attr.class "section" ]
+    Html.div
+        [ Attr.class "lia-section" ]
         (view_header slide.indentation slide.title
             :: view_body model slide.body
         )
@@ -154,22 +152,40 @@ view_header indentation title =
     in
     case indentation of
         0 ->
-            Html.h1 [] html_title
+            Html.h1
+                [ Attr.class "lia-inline"
+                , Attr.class "lia-h1"
+                ] html_title
 
         1 ->
-            Html.h2 [] html_title
+            Html.h2
+                [ Attr.class "lia-inline"
+                , Attr.class "lia-h2"
+                ] html_title
 
         2 ->
-            Html.h3 [] html_title
+            Html.h3
+                [ Attr.class "lia-inline"
+                , Attr.class "lia-h3"
+                ] html_title
 
         3 ->
-            Html.h4 [] html_title
+            Html.h4
+                [ Attr.class "lia-inline"
+                , Attr.class "lia-h4"
+                ] html_title
 
         4 ->
-            Html.h5 [] html_title
+            Html.h5
+                [ Attr.class "lia-inline"
+                , Attr.class "lia-h5"
+                ] html_title
 
         _ ->
-            Html.h6 [] html_title
+            Html.h6
+                [ Attr.class "lia-inline"
+                , Attr.class "lia-h6"
+                ] html_title
 
 
 view_body : Model -> List Block -> List (Html Msg)
@@ -185,16 +201,25 @@ view_block : Model -> Block -> Html Msg
 view_block model block =
     case block of
         Paragraph elements ->
-            Html.p [] (List.map (\e -> Elem.view model.effect_model.visible e) elements)
+            Html.p
+                [ Attr.class "lia-inline"
+                , Attr.class "lia-paragraph"
+                ] (List.map (\e -> Elem.view model.effect_model.visible e) elements)
 
         HLine ->
-            Html.hr [] []
+            Html.hr
+                [ Attr.class "lia-inline"
+                , Attr.class "lia-horiz-line"
+                ] []
 
         Table header format body ->
             view_table model header (Array.fromList format) body
 
         Quote elements ->
-            Html.blockquote [] (List.map (\e -> Elem.view model.effect_model.visible e) elements)
+            Html.blockquote
+                [ Attr.class "lia-inline"
+                , Attr.class "lia-quote"
+                ] (List.map (\e -> Elem.view model.effect_model.visible e) elements)
 
         CodeBlock code ->
             Html.map UpdateCode <| Codes.view model.code_model code
@@ -209,14 +234,22 @@ view_block model block =
             Effects.view_block model.effect_model (view_block model) idx effect_name sub_blocks
 
         BulletList list ->
-            Html.ul []
+            Html.ul
+                [ Attr.class "lia-inline"
+                , Attr.class "lia-list"
+                , Attr.class "lia-unordered"
+                ]
                 (List.map
                     (\l -> Html.li [] (List.map (\ll -> view_block model ll) l))
                     list
                 )
 
         OrderedList list ->
-            Html.ol []
+            Html.ol
+                [ Attr.class "lia-inline"
+                , Attr.class "lia-list"
+                , Attr.class "lia-ordered"
+                ]
                 (List.map
                     (\l -> Html.li [] (List.map (\ll -> view_block model ll) l))
                     list
@@ -232,21 +265,13 @@ view_block model block =
 view_table : Model -> List (List Inline) -> Array String -> List (List (List Inline)) -> Html Msg
 view_table model header format body =
     let
-        style_ =
-            Attr.style
-                [ ( "border-style", "solid" )
-                , ( "border-color", "#e0e0eb" )
-                , ( "border-width", "1px" )
-                ]
-
         view_row model f row =
             row
                 |> List.indexedMap (,)
                 |> List.map
                     (\( i, col ) ->
                         f
-                            [ style_
-                            , Attr.align
+                            [ Attr.align
                                 (case Array.get i format of
                                     Just a ->
                                         a
@@ -261,15 +286,14 @@ view_table model header format body =
                     )
     in
     Html.table
-        [ Attr.attribute "cellspacing" "0"
-        , Attr.attribute "cellpadding" "8"
-        , style_
-        ]
-        (Html.thead []
+        [ Attr.class "lia-inline"
+        , Attr.class "lia-table" ]
+        (Html.thead [ Attr.class "lia-inline"
+                    , Attr.class "lia-table-head" ]
             (view_row model Html.th header)
             :: List.map
                 (\r ->
-                    Html.tr []
+                    Html.tr [ Attr.class "lia-inline", Attr.class "lia-table-row" ]
                         (view_row model Html.td r)
                 )
                 body

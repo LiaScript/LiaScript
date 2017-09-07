@@ -1,0 +1,90 @@
+@import "config";
+
+@mixin controls($theme) {
+    .lia-h1 {
+        font-size: 200%;
+        font-weight: 500;
+    }
+    .lia-h2 {
+        font-size: 175%;
+        font-weight: 500;
+    }
+    .lia-h3 {
+        font-size: 150%;
+        font-weight: 500;
+    }
+    .lia-h4 {
+        font-size: 125%;
+        font-weight: 500;
+    }
+    .lia-h5 {
+        font-size: 110%;
+        font-weight: 500;
+    }
+    .lia-h6 {
+        font-size: 105%;
+        font-weight: 500;
+    }
+
+    .lia-link {
+        &:link {
+            color: map-get($theme, primary);
+
+            &:hover {
+                color: lighten(map-get($theme, primary), 20%);
+            }
+
+            &:active {
+                color: darken(map-get($theme, primary), 20%);
+            }
+        }
+
+        &:visited {
+            color: map-get($theme, secondary);
+
+            &:hover {
+                color: lighten(map-get($theme, secondary), 20%);
+            }
+
+            &:active {
+                color: darken(map-get($theme, secondary), 20%);
+            }
+        }
+    }
+
+    .lia-code.lia-inline {
+        $vert: map-get($config, spacing-smaller);
+        $horiz: map-get($config, spacing-small);
+        $bg: mix(map-get($theme, background), map-get($theme, primary), 80%);
+        $fg: mix(map-get($theme, text), map-get($theme, background), 80%);
+        $fg-inv: mix(map-get($theme, text-inv), map-get($theme, background), 80%);
+
+        font-family: "Roboto Mono";
+        background: $bg;
+        color: color-contrast($bg, $fg, $fg-inv);
+        border-radius: map-get($config, spacing-small);
+        padding: $vert $horiz;
+        font-size: map-get($config, code-size);
+    }
+
+    .lia-code:not(.lia-inline) {
+        $bg: mix(map-get($theme, background), map-get($theme, background-inv), 95%);
+
+        font-family: "Roboto Mono";
+        background: $bg;
+        padding: map-get($config, spacing-normal);
+        font-size: map-get($config, code-size);
+    }
+
+    .lia-btn,
+    input {
+        $vert: map-get($config, spacing-small);
+        $horiz: map-get($config, spacing-normal);
+        padding: $vert $horiz;
+        margin: $horiz;
+    }
+
+    .lia-hidden {
+        display: none;
+    }
+}

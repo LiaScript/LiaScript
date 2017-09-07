@@ -21,6 +21,13 @@ module.exports = {
                     "css/app.css": /^(?!node_modules)/,
                     "css/vendor.css": /^node_modules/,
                 },
+                order: {
+                    before: [
+                        "node_modules/normalize.css/normalize.css",
+                    ],
+                    after: [
+                    ],
+                },
             },
         },
         plugins: {
@@ -32,6 +39,11 @@ module.exports = {
             },
             sass: {
                 mode: "native",
+                options: {
+                    includePaths: [
+                        "node_modules/sass-material-colors/sass",
+                    ],
+                },
             },
             copycat: {
                 "fonts": [
@@ -43,6 +55,7 @@ module.exports = {
         },
         npm: {
             styles: {
+                "normalize.css": ["normalize.css"],
                 "highlight.js": ["styles/default.css"],
                 "animate.css": ["animate.css"],
                 "katex": ["dist/katex.css"],

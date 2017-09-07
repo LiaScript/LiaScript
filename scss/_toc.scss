@@ -1,0 +1,106 @@
+@import "config";
+
+@mixin toc($theme) {
+    .lia-toc {
+        @include flex(column, nowrap, flex-start, stretch, stretch);
+        width: map-get($config, toc-width);
+        margin-right: map-get($config, spacing-small);
+        position: relative;
+
+        &::after {
+            content: "";
+            position: absolute;
+            display: block;
+            width: map-get($config, spacing-small);
+            height: 100%;
+            right: 0;
+            cursor: ew-resize;
+        }
+
+        .lia-toolbar {
+            @include flex(column, nowrap, flex-start, stretch, stretch);
+            height: map-get($config, toolbar-height);
+
+            input.lia-search {
+                $vert: map-get($config, spacing-small);
+                $horiz: map-get($config, spacing-normal);
+
+                flex: 1 1 auto;
+                padding: $vert $horiz $vert ($horiz + 1);
+                margin: $horiz;
+            }
+
+            &::after {
+                @include material-icon(search, 16px);
+                line-height: 2em;
+                position: absolute;
+                margin: map-get($config, spacing-normal);
+                color: rgba(map-get($theme, text), 0.75);
+                padding-left: map-get($config, spacing-icon);
+            }
+        }
+
+        .lia-content {
+            @include flex(column, nowrap);
+            overflow-x: auto;
+            padding: map-get($config, spacing-normal);
+            flex: 1 0 auto;
+
+            a {
+                width: 100%;
+                white-space: nowrap;
+                margin-bottom: map-get($config, spacing-normal);
+                text-decoration: none;
+
+                &:link {
+                    $col: mix(map-get($theme, text), map-get($theme, background), 80%);
+                    color: $col;
+
+                    &:hover {
+                        color: lighten($col, 20%);
+                    }
+
+                    &:active {
+                        color: darken($col, 20%);
+                    }
+                }
+
+                &:visited {
+                    $col: map-get($theme, text);
+                    color: $col;
+
+                    &:hover {
+                        color: lighten($col, 20%);
+                    }
+
+                    &:active {
+                        color: darken($col, 20%);
+                    }
+                }
+
+                &.lia-active {
+                    $col: map-get($theme, primary);
+                    font-weight: map-get($theme, highlight-weight);
+                    color: $col;
+
+                    &:hover {
+                        color: lighten($col, 20%);
+                    }
+
+                    &:active {
+                        color: darken($col, 20%);
+                    }
+                }
+
+                &.lia-toc-l {
+                    &1 { padding-left: 0 * map-get($config, spacing-large); }
+                    &2 { padding-left: 1 * map-get($config, spacing-large); }
+                    &3 { padding-left: 2 * map-get($config, spacing-large); }
+                    &4 { padding-left: 3 * map-get($config, spacing-large); }
+                    &5 { padding-left: 4 * map-get($config, spacing-large); }
+                    &6 { padding-left: 5 * map-get($config, spacing-large); }
+                }
+            }
+        }
+    }
+}
