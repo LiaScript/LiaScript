@@ -1,5 +1,5 @@
 // responsive voice uses no module system at all
-require("lib/responsivevoice.js");
+//require("lib/responsivevoice.js");
 
 var _user$project$Native_Responsive = (function () {
 

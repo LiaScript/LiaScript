@@ -8,7 +8,7 @@ main : Program Flags Lia.Model Lia.Msg
 main =
     Html.programWithFlags
         { update = Lia.update
-        , init = init
+        , init = ( Lia.parse <| Lia.set_script (Lia.init_slides Readme.text) Readme.text, Cmd.none )
         , subscriptions = \_ -> Sub.none
         , view = Lia.view
         }

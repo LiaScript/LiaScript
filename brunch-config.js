@@ -43,13 +43,13 @@ module.exports = {
         },
         npm: {
             styles: {
-                "hightlight.js": ["styles/default.css"],
+                "highlight.js": ["styles/default.css"],
                 "animate.css": ["animate.css"],
                 "katex": ["dist/katex.css"],
             },
             static: [
                 "node_modules/katex/dist/katex.js",
-                "lib/responsivevoice.js",
+                //"lib/responsivevoice.js",
             ],
         },
     }
