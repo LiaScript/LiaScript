@@ -139,15 +139,19 @@ quote_block =
     (\q -> Quote <| combine <| List.concat q) <$> many1 p
 
 
+title_tag : Parser PState Int
+title_tag =
+    String.length <$> (newlines *> regex "#+" <* whitespace)
+
+
+title_str : Parser PState String
+title_str =
+    String.trim <$> regex ".+[\\n]+"
+
+
 parse : Parser PState (List Slide)
 parse =
     let
-        tag =
-            String.length <$> (newlines *> regex "#+" <* whitespace)
-
-        title =
-            String.trim <$> regex ".+" <* many1 newline
-
         body =
             many (blocks <* newlines)
 
@@ -161,7 +165,7 @@ parse =
             in
             withState pp <* modifyState reset_effect
     in
-    whitelines *> define_comment *> many1 (Slide <$> tag <*> title <*> body <*> effect_counter)
+    whitelines *> define_comment *> many1 (Slide <$> title_tag <*> title_str <*> body <*> effect_counter)
 
 
 define_comment : Parser PState ()

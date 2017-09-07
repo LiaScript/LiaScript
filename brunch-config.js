@@ -13,10 +13,10 @@ module.exports = {
         },
         plugins: {
             elmBrunch: {
-                mainModules: ["examples/Editor.elm"],
+                mainModules: ["examples/Slides.elm"],
                 outputFolder: "public/js/",
                 outputFile: 'elm.js',
-                makeParameters: ['--warn']
+                makeParameters: ['--warn', '--debug']
             },
             sass: {
                 mode: "native"
