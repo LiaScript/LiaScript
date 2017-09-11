@@ -77,11 +77,213 @@
     }
 
     .lia-btn,
-    input {
+    .lia-input {
         $vert: map-get($config, spacing-small);
-        $horiz: map-get($config, spacing-normal);
-        padding: $vert $horiz;
-        margin: $horiz;
+        $marg: map-get($config, spacing-normal);
+        padding: $vert 0;
+        margin: $marg;
+    }
+
+    .lia-btn {
+        $bg: map-get($theme, primary);
+        $fg: color-contrast(map-get($theme, primary));
+
+        border: none;
+        border-radius: map-get($config, spacing-smaller);
+        background: $bg;
+        color: $fg;
+        outline: none;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 3px 1px -2px rgba(0,0,0,.2),
+                    0 2px 2px 0    rgba(0,0,0,.14),
+                    0 1px 5px 0    rgba(0,0,0,.12);
+        transition: background 0.25s ease-in 0s;
+        padding: 0 map-get($config, spacing-large);
+        line-height: 2em;
+
+        &:hover {
+            cursor: pointer;
+            background: mix($bg, $fg, 90%);
+        }
+
+        .lia-ripple {
+            position: absolute;
+            display: block;
+            border-radius: 50%;
+            width: 0;
+            height: 0;
+            margin: 0;
+            background: $fg;
+            opacity: 0;
+            transition-property: width, height, margin, opacity;
+            transition-duration: 0.5s;
+            transition-timing-function: ease-out;
+            transition-delay: 0s;
+        }
+
+        &.lia-success {
+            $bg: map-get($theme, success);
+            $fg: color-contrast($bg);
+
+            background: $bg;
+            color: $fg;
+
+            &:hover {
+                background: mix($bg, $fg, 90%);
+            }
+
+            .lia-ripple {
+                background: $fg;
+            }
+        }
+
+        &.lia-failure {
+            $bg: map-get($theme, error);
+            $fg: color-contrast($bg);
+
+            background: $bg;
+            color: $fg;
+
+            &:hover {
+                background: mix($bg, $fg, 90%);
+            }
+
+            .lia-ripple {
+                background: $fg;
+            }
+        }
+    }
+
+    .lia-toolbar {
+        $bg: map-get($theme, primary);
+        $fg: color-contrast($bg);
+
+        z-index: 1;
+
+        .lia-btn {
+            box-shadow: none;
+            background: transparent;
+            color: $fg;
+
+            &:hover {
+                background: mix(transparent, $fg, 90%);
+            }
+
+            .lia-ripple {
+                background: $fg;
+            }
+        }
+
+        .lia-input {
+            background: $bg;
+            color: $fg;
+            border-bottom-color: mix($bg, $fg, 50%);
+
+            &:focus {
+                border-bottom-color: $fg;
+            }
+        }
+    }
+
+    .lia-input {
+        $bg: map-get($theme, background);
+        $fg: color-contrast($bg);
+
+        background: $bg;
+        color: $fg;
+        border: none;
+        outline: none;
+        border-bottom: 1.5px solid mix($bg, $fg, 50%);
+        transition: border-bottom-color 0.5s ease-out 0s;
+
+        &:focus {
+            border-bottom-color: map-get($theme, primary);
+        }
+    }
+
+    .lia-radio-btn {
+        $bg: map-get($theme, background);
+        $fg: color-contrast($bg);
+        $snd: map-get($theme, secondary);
+
+        outline: none;
+        width: 1.25em;
+        height: 1.25em;
+        margin-right: map-get($config, spacing-small);
+        vertical-align: middle;
+
+        &:hover {
+            cursor: pointer;
+        }
+
+        &::after {
+            content: "";
+            display: inline-block;
+            box-sizing: border-box;
+            border-radius: 50%;
+            margin-top: 1.5px;
+            margin-left: 1.5px;
+            margin-bottom: -1.5px;
+            margin-right: -1.5px;
+            border: 0.5em solid $bg;
+            background: $bg;
+            box-shadow: 0 0 0 2.5px mix($bg, $fg, 50%);
+            width: calc(100% - 3px);
+            height: calc(100% - 3px);
+            transition-property: background, box-shadow, border;
+            transition-duration: 0.25s;
+            transition-timing-function: ease-in;
+        }
+
+        &:checked::after {
+            box-shadow: 0 0 0 2.5px $snd;
+            background: $snd;
+            border: 3px solid $bg;
+        }
+    }
+
+    .lia-check-btn {
+        $bg: map-get($theme, background);
+        $fg: color-contrast($bg);
+        $snd: map-get($theme, secondary);
+
+        outline: none;
+        width: 1.25em;
+        height: 1.25em;
+        margin-right: map-get($config, spacing-small);
+        vertical-align: middle;
+
+        &:hover {
+            cursor: pointer;
+        }
+
+        &::after {
+            @include material-icon("check", inherit);
+            font-weight: 600;
+            overflow: hidden;
+            box-sizing: border-box;
+            border-radius: map-get($config, spacing-tiny);
+            margin-top: 1.5px;
+            margin-left: 1.5px;
+            margin-bottom: -1.5px;
+            margin-right: -1.5px;
+            border: 0.5em solid $bg;
+            box-shadow: 0 0 0 2.5px mix($bg, $fg, 50%);
+            width: calc(100% - 3px);
+            height: calc(100% - 3px);
+            background: $bg;
+            color: color-contrast($snd);
+            transition-property: background, box-shadow, border;
+            transition-duration: 0.25s;
+            transition-timing-function: ease-in;
+        }
+
+        &:checked::after {
+            box-shadow: 0 0 0 2.5px $snd;
+            border: 0px solid $snd;
+            background: $snd;
+        }
     }
 
     .lia-hidden {

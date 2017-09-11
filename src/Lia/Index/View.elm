@@ -16,6 +16,8 @@ view model =
               [ Attr.type_ "input"
               , Attr.value model.search
               , Attr.class "lia-search"
+              , Attr.class "lia-input"
+              , Attr.placeholder "Search"
               , onInput ScanIndex
               ]
               []

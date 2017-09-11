@@ -80,7 +80,7 @@ view_slides model =
                     ]
                 ]
     in
-    Html.div [ Attr.class "lia-canvas", Attr.class "theme-light" ]
+    Html.div [ Attr.class "lia-canvas", Attr.class "lia-theme-default", Attr.class "lia-variant-light" ]
         (if model.show_contents then
             [ view_contents model
             , content

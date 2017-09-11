@@ -13,7 +13,7 @@ module.exports = {
             // vendor is for 3rb party lib, app is for custom lib
             javascripts: {
                 joinTo: {
-                    "js/vendor.js": /^(node_modules|lib)/,
+                    "js/vendor.js": /^(node_modules|lib|src\/index.js)/,
                 },
             },
             stylesheets: {

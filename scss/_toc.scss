@@ -2,32 +2,51 @@
 
 @mixin toc($theme) {
     .lia-toc {
+        $bg: map-get($theme, background);
+        $fg: color-contrast($bg);
+
         @include flex(column, nowrap, flex-start, stretch, stretch);
         width: map-get($config, toc-width);
-        margin-right: map-get($config, spacing-small);
         position: relative;
+        background: mix($bg, $fg, 95%);
 
         &::after {
             content: "";
             position: absolute;
             display: block;
             width: map-get($config, spacing-small);
-            height: 100%;
+            top: map-get($config, toolbar-height);
+            bottom: 0;
             right: 0;
             cursor: ew-resize;
+            background: mix($bg, $fg, 90%);
         }
 
         .lia-toolbar {
+            $bg: map-get($theme, primary);
+            $fg: color-contrast($bg);
+
             @include flex(column, nowrap, flex-start, stretch, stretch);
             height: map-get($config, toolbar-height);
+            background: $bg;
 
             input.lia-search {
-                $vert: map-get($config, spacing-small);
-                $horiz: map-get($config, spacing-normal);
-
+                $placeholder: mix($bg, $fg, 40%);
                 flex: 1 1 auto;
-                padding: $vert $horiz $vert ($horiz + 1);
-                margin: $horiz;
+                padding-left: 1.75em;
+
+                &::-webkit-input-placeholder { /* WebKit, Blink, Edge */
+                    color: $placeholder;
+                }
+
+                &::-moz-placeholder { /* Mozilla Firefox 19+ */
+                    color: $placeholder;
+                    opacity: 1;
+                }
+
+                &::-ms-input-placeholder { /* Microsoft Edge */
+                    color: $placeholder;
+                }
             }
 
             &::after {
@@ -35,14 +54,18 @@
                 line-height: 2em;
                 position: absolute;
                 margin: map-get($config, spacing-normal);
-                color: rgba(map-get($theme, text), 0.75);
+                color: rgba($fg, 0.75);
                 padding-left: map-get($config, spacing-icon);
             }
         }
 
         .lia-content {
+            $bg: map-get($theme, background);
+            $fg: color-contrast($bg);
+
             @include flex(column, nowrap);
             overflow-x: auto;
+            margin-right: map-get($config, spacing-small);
             padding: map-get($config, spacing-normal);
             flex: 1 0 auto;
 
@@ -53,7 +76,7 @@
                 text-decoration: none;
 
                 &:link {
-                    $col: mix(map-get($theme, text), map-get($theme, background), 80%);
+                    $col: mix($fg, $bg, 80%);
                     color: $col;
 
                     &:hover {
@@ -66,7 +89,7 @@
                 }
 
                 &:visited {
-                    $col: map-get($theme, text);
+                    $col: $fg;
                     color: $col;
 
                     &:hover {

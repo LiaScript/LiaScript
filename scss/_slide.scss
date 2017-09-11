@@ -7,6 +7,7 @@
         .lia-toolbar {
             @include flex(row, norwap, flex-start, stretch, stretch);
             height: map-get($config, toolbar-height);
+            background: map-get($theme, primary);
 
             .lia-btn {
                 @include material-icon("", 1em);
@@ -22,7 +23,7 @@
             padding: $vert $horiz;
 
             .lia-effect-comment {
-                $bg: mix(map-get($theme, background), map-get($theme, info), 80%);
+                $bg: mix(map-get($theme, background), map-get($theme, primary), 80%);
 
                 position: absolute;
                 width: calc(100% - #{map-get($config, spacing-huge) * 2});
@@ -43,7 +44,7 @@
                 $bg: mix(map-get($theme, background), map-get($theme, background-inv), 80%);
 
                 position: absolute;
-                left: $effect-circle-size * -1.5;
+                left: $effect-circle-size * 0.5;
                 font-size: 75%;
                 display: inline-block;
                 width: $effect-circle-size;
@@ -61,16 +62,6 @@
                 text-decoration: none;
                 color: map-get($theme, text);
                 vertical-align: middle;
-            }
-
-            .lia-success {
-                background: map-get($theme, success);
-                color: color-contrast(map-get($theme, success));
-            }
-
-            .lia-failure {
-                background: map-get($theme, error);
-                color: color-contrast(map-get($theme, error));
             }
         }
     }
