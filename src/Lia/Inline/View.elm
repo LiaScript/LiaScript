@@ -3,7 +3,7 @@ module Lia.Inline.View exposing (reference, view)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Lia.Effect.View as Effect
-import Lia.Inline.Types exposing (Inline(..), Reference(..))
+import Lia.Inline.Types exposing (Inline(..), Reference(..), Url(..))
 import Lia.Utils
 
 
@@ -56,17 +56,32 @@ reference ref =
         media url_ style_ =
             case style_ of
                 Nothing ->
-                    [ Attr.src url_ ]
+                    [ Attr.src <| get_url url_ ]
 
                 Just s ->
-                    [ Attr.src url_, Attr.attribute "style" s ]
+                    [ Attr.src <| get_url url_
+                    , Attr.attribute "style" s
+                    ]
     in
     case ref of
         Link alt_ url_ ->
-            Html.a [ Attr.href url_ ] [ Html.text alt_ ]
+            Html.a [ Attr.href <| get_url url_ ] [ Html.text alt_ ]
 
         Image alt_ url_ style_ ->
             Html.img (media url_ style_) [ Html.text alt_ ]
 
         Movie alt_ url_ style_ ->
             Html.iframe (media url_ style_) [ Html.text alt_ ]
+
+
+get_url : Url -> String
+get_url url =
+    case url of
+        Full str ->
+            str
+
+        Mail str ->
+            str
+
+        Partial str ->
+            str

@@ -1,4 +1,4 @@
-module Lia.Inline.Types exposing (Inline(..), Reference(..))
+module Lia.Inline.Types exposing (Inline(..), Reference(..), Url(..))
 
 
 type Inline
@@ -17,7 +17,13 @@ type Inline
     | Container (List Inline)
 
 
+type Url
+    = Mail String
+    | Full String
+    | Partial String
+
+
 type Reference
-    = Link String String
-    | Image String String (Maybe String)
-    | Movie String String (Maybe String)
+    = Link String Url
+    | Image String Url (Maybe String)
+    | Movie String Url (Maybe String)

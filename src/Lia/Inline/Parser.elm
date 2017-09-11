@@ -146,6 +146,31 @@ formula =
     choice [ p2, p1 ]
 
 
+url_full : Parser s String
+url_full =
+    regex "[a-zA-Z]+://(/)?[a-zA-Z0-9\\.\\-]+\\.([a-z\\.]{2,6})[^ \\)\\t\\n]*"
+
+
+url_mail : Parser s String
+url_mail =
+    regex "( )*[^@]+@[^\\)\n ]+"
+
+
+url : Parser s Url
+url =
+    lazy <|
+        \() ->
+            choice
+                [ Full <$> url_full
+                , Mail <$> url_mail
+                ]
+
+
+inline_url : Parser s Reference
+inline_url =
+    (\u -> Link u (Full u)) <$> (url_full <|> url_mail)
+
+
 reference : Parser s Inline
 reference =
     lazy <|
@@ -154,20 +179,20 @@ reference =
                 info =
                     brackets (regex "[^\\]\n]*")
 
-                url =
-                    parens (regex "[^\\)\n]*")
-
                 style =
                     maybe (String.fromList <$> comment anyChar)
 
+                url_ =
+                    parens (url <|> (Partial <$> regex "[^\\)\n]*"))
+
                 link =
-                    Link <$> info <*> url
+                    Link <$> info <*> url_
 
                 image =
-                    Image <$> (string "!" *> info) <*> url <*> style
+                    Image <$> (string "!" *> info) <*> url_ <*> style
 
                 movie =
-                    Movie <$> (string "!!" *> info) <*> url <*> style
+                    Movie <$> (string "!!" *> info) <*> url_ <*> style
             in
             Ref <$> choice [ movie, image, link ]
 
@@ -234,7 +259,7 @@ strings =
         \() ->
             let
                 base =
-                    Chars <$> regex "[^#*_~:;`!\\^\\[\\|{}\\\\\\n\\-<>=|$]+" <?> "base string"
+                    Chars <$> regex "[^#*_~:;`!\\^\\[\\|{}\\\\\\n\\-<>=|$ ]+" <?> "base string"
 
                 escape =
                     Chars <$> (string "\\" *> regex "[\\^#*_~`\\\\\\|${}\\[\\]]") <?> "escape string"
@@ -255,13 +280,14 @@ strings =
                     Superscript <$> between_ "^" <?> "superscript string"
 
                 characters =
-                    Chars <$> regex "[~:_;\\-<>=${}]"
+                    Chars <$> regex "[~:_;\\-<>=${} ]"
 
                 base2 =
                     Chars <$> regex "[^#\\n|*]+" <?> "base string"
             in
             choice
                 [ base
+                , Ref <$> inline_url
                 , html
                 , arrows
                 , smileys

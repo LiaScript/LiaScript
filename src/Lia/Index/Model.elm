@@ -1,7 +1,7 @@
 module Lia.Index.Model exposing (Model, init, parse_inlines)
 
 import Lia.Code.Types exposing (..)
-import Lia.Inline.Types exposing (Inline(..), Reference(..))
+import Lia.Inline.Types exposing (Inline(..), Reference(..), Url(..))
 import Lia.Quiz.Types exposing (Quiz(..))
 import Lia.Types exposing (Block(..), Slide)
 
@@ -101,13 +101,13 @@ parse_inline element =
         Ref e ->
             case e of
                 Link alt_ url_ ->
-                    alt_ ++ "" ++ url_
+                    alt_ ++ " " ++ parse_url url_
 
                 Image alt_ url_ _ ->
-                    alt_ ++ "" ++ url_
+                    alt_ ++ " " ++ parse_url url_
 
                 Movie alt_ url_ _ ->
-                    alt_ ++ "" ++ url_
+                    alt_ ++ " " ++ parse_url url_
 
         Formula _ str ->
             str
@@ -121,3 +121,16 @@ parse_inline element =
 
         _ ->
             ""
+
+
+parse_url : Url -> String
+parse_url url =
+    case url of
+        Full str ->
+            str
+
+        Partial str ->
+            str
+
+        Mail str ->
+            str

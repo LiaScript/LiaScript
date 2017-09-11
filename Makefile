@@ -2,6 +2,11 @@ all:
 	elm-make examples/Editor.elm --output build/app.js
 	./lib/KaTeX/node_modules/uglify-js/bin/uglifyjs --compress --mangle  --output build/app.min.js build/app.js
 
+github:
+	elm-make examples/Online.elm --output build/app.js
+	./lib/KaTeX/node_modules/uglify-js/bin/uglifyjs --compress --mangle  --output build/app.min.js build/app.js
+
+
 example_slides:
 	elm-make examples/Slides.elm --output build/app.js
 	./lib/KaTeX/node_modules/uglify-js/bin/uglifyjs --compress --mangle  --output build/app.min.js build/app.js
