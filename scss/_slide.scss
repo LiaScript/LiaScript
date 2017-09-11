@@ -17,8 +17,9 @@
             $vert: map-get($config, spacing-large);
 
             position: relative;
-            flex: 1 0 auto;
+            flex: 1 1 auto;
             padding: $vert $horiz;
+            overflow: auto;
 
             .lia-effect-comment {
                 $bg: mix(map-get($theme, background), map-get($theme, primary), 80%);

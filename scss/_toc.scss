@@ -62,10 +62,10 @@
             $fg: color-contrast($bg);
 
             @include flex(column, nowrap);
-            overflow-x: auto;
+            overflow: auto;
             margin-right: map-get($config, spacing-small);
             padding: map-get($config, spacing-normal);
-            flex: 1 0 auto;
+            flex: 1 1 auto;
 
             a {
                 width: 100%;
