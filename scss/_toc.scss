@@ -58,13 +58,14 @@
         }
 
         .lia-content {
-            $bg: map-get($theme, background);
-            $fg: color-contrast($bg);
+            $_bg: map-get($theme, background);
+            $fg: color-contrast($_bg);
+            $bg: mix($bg, $fg, 95%);
 
             @include flex(column, nowrap);
             overflow: auto;
             margin-right: map-get($config, spacing-small);
-            padding: map-get($config, spacing-normal);
+            padding: map-get($config, spacing-normal) 0;
             flex: 1 1 auto;
 
             a {
@@ -72,6 +73,7 @@
                 white-space: nowrap;
                 margin-bottom: map-get($config, spacing-normal);
                 text-decoration: none;
+                padding: map-get($config, spacing-small) map-get($config, spacing-normal);
 
                 &:link {
                     $col: mix($fg, $bg, 80%);
@@ -101,25 +103,27 @@
 
                 &.lia-active {
                     $col: map-get($theme, primary);
+                    $fg: color-contrast($col);
                     font-weight: map-get($theme, highlight-weight);
-                    color: $col;
+                    color: $fg;
+                    background: $col;
 
                     &:hover {
-                        color: lighten($col, 20%);
+                        color: lighten($fg, 20%);
                     }
 
                     &:active {
-                        color: darken($col, 20%);
+                        color: darken($fg, 20%);
                     }
                 }
 
                 &.lia-toc-l {
-                    &1 { padding-left: 0 * map-get($config, spacing-large); }
-                    &2 { padding-left: 1 * map-get($config, spacing-large); }
-                    &3 { padding-left: 2 * map-get($config, spacing-large); }
-                    &4 { padding-left: 3 * map-get($config, spacing-large); }
-                    &5 { padding-left: 4 * map-get($config, spacing-large); }
-                    &6 { padding-left: 5 * map-get($config, spacing-large); }
+                    &1 { padding-left: 0 * map-get($config, spacing-large) + map-get($config, spacing-normal); }
+                    &2 { padding-left: 1 * map-get($config, spacing-large) + map-get($config, spacing-normal); }
+                    &3 { padding-left: 2 * map-get($config, spacing-large) + map-get($config, spacing-normal); }
+                    &4 { padding-left: 3 * map-get($config, spacing-large) + map-get($config, spacing-normal); }
+                    &5 { padding-left: 4 * map-get($config, spacing-large) + map-get($config, spacing-normal); }
+                    &6 { padding-left: 5 * map-get($config, spacing-large) + map-get($config, spacing-normal); }
                 }
             }
         }
