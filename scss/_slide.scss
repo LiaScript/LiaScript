@@ -5,9 +5,7 @@
         @include flex(column, nowrap, flex-start, stretch, stretch);
 
         .lia-toolbar {
-            @include flex(row, norwap, flex-start, stretch, stretch);
-            height: map-get($config, toolbar-height);
-            background: map-get($theme, primary);
+            @include flex(row, nowrap, flex-start, stretch, stretch);
 
             .lia-btn {
                 @include material-icon("", 1em);

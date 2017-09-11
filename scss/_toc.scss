@@ -27,8 +27,6 @@
             $fg: color-contrast($bg);
 
             @include flex(column, nowrap, flex-start, stretch, stretch);
-            height: map-get($config, toolbar-height);
-            background: $bg;
 
             input.lia-search {
                 $placeholder: mix($bg, $fg, 40%);

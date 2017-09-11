@@ -160,6 +160,9 @@
         $fg: color-contrast($bg);
 
         z-index: 1;
+        flex: 0 0 auto;
+        height: map-get($config, toolbar-height);
+        background: map-get($theme, primary);
 
         .lia-btn {
             box-shadow: none;
