@@ -43,7 +43,7 @@ $(function () {
         });
 
         window.setTimeout(function () {
-            //$old_ripple.remove();
+            $old_ripple.remove();
         }, 500);
     });
 });
