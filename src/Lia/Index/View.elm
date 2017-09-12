@@ -13,12 +13,11 @@ view model =
         [ Attr.class "lia-toolbar"
         ]
         [ Html.input
-              [ Attr.type_ "input"
-              , Attr.value model.search
-              , Attr.class "lia-search"
-              , Attr.class "lia-input"
-              , Attr.placeholder "Search"
-              , onInput ScanIndex
-              ]
-              []
+            [ Attr.type_ "input"
+            , Attr.value model.search
+            , Attr.class "lia-search lia-input"
+            , Attr.placeholder "Search"
+            , onInput ScanIndex
+            ]
+            []
         ]

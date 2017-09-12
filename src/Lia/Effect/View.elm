@@ -36,8 +36,7 @@ view_block model viewer idx effect_name blocks =
             Just name ->
                 Attr.class ("animated " ++ name)
         ]
-        (
-            circle idx
+        (circle idx
             :: List.map viewer blocks
         )
 
@@ -54,9 +53,9 @@ comment model viewer idx elements =
             )
     else
         Html.div
-            [ Attr.class "lia-effect-comment"
-            , Attr.class "lia-hidden"
-            ] []
+            [ Attr.class "lia-effect-comment lia-hidden"
+            ]
+            []
 
 
 responsive : Html msg

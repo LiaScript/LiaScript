@@ -1,66 +1,51 @@
 module Lia.Inline.View exposing (reference, view, view_inf)
 
-import Html exposing (Html)
+import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Lia.Effect.View as Effect
 import Lia.Inline.Types exposing (Inline(..), Reference(..), Url(..))
 import Lia.Utils
 
 
+inline_class : String -> Attribute msg
+inline_class c =
+    Attr.class ("lia-inline" ++ c)
+
+
 view : Int -> Inline -> Html msg
 view visible element =
     case element of
         Code e ->
-            Html.code
-                [ Attr.class "lia-code"
-                , Attr.class "lia-inline"
-                ]
+            Html.code [ inline_class "lia-code" ]
                 [ Html.text e ]
 
         Chars e ->
             Html.text e
 
         Bold e ->
-            Html.b
-                [ Attr.class "lia-bold"
-                , Attr.class "lia-inline"
-                ]
+            Html.b [ inline_class "lia-bold" ]
                 [ view visible e ]
 
         Italic e ->
-            Html.em
-                [ Attr.class "lia-italic"
-                , Attr.class "lia-inline"
-                ]
+            Html.em [ inline_class "lia-italic" ]
                 [ view visible e ]
 
         Strike e ->
-            Html.s
-                [ Attr.class "lia-strike"
-                , Attr.class "lia-inline"
-                ]
+            Html.s [ inline_class "lia-strike" ]
                 [ view visible e ]
 
         Underline e ->
-            Html.u
-                [ Attr.class "lia-underline"
-                , Attr.class "lia-inline"
-                ]
+            Html.u [ inline_class "lia-underline" ]
                 [ view visible e ]
 
         Superscript e ->
-            Html.sup
-                [ Attr.class "lia-superscript"
-                , Attr.class "lia-inline"
-                ]
+            Html.sup [ inline_class "lia-superscript" ]
                 [ view visible e ]
 
         Container list ->
-            Html.span
-                [ Attr.class "lia-container"
-                , Attr.class "lia-inline"
-                ]
-                <| List.map (\e -> view visible e) list
+            list
+                |> List.map (\e -> view visible e)
+                |> Html.span [ inline_class "lia-container" ]
 
         Ref e ->
             reference e
@@ -100,9 +85,9 @@ reference ref =
         Link alt_ url_ ->
             Html.a
                 [ Attr.href <| get_url url_
-                , Attr.class "lia-link"
-                , Attr.class "lia-inline"
-                ] [ Html.text alt_ ]
+                , inline_class "lia-link"
+                ]
+                [ Html.text alt_ ]
 
         Image alt_ url_ style_ ->
             Html.img (media url_ style_) [ Html.text alt_ ]
