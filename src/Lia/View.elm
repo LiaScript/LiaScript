@@ -59,15 +59,17 @@ view_slides model =
                 [ Html.div
                     [ Attr.class "lia-toolbar"
                     ]
-                    [ Html.button
-                        [ onClick ToggleContentsTable
-                        , Attr.class "lia-btn lia-toc-control"
+                    (List.append
+                        [ Html.button
+                            [ onClick ToggleContentsTable
+                            , Attr.class "lia-btn lia-toc-control"
+                            ]
+                            [ Html.text "toc" ]
+                        , loadButton "navigate_before" PrevSlide
+                        , loadButton "navigate_next" NextSlide
                         ]
-                        [ Html.text "toc" ]
-                    , loadButton "navigate_before" PrevSlide
-                    , loadButton "navigate_next" NextSlide
-                    , view_themes model.theme model.theme_light
-                    ]
+                        (view_themes model.theme model.theme_light)
+                    )
                 , Html.div
                     [ Attr.class "lia-content"
                     ]
@@ -101,14 +103,14 @@ view_slides model =
         )
 
 
-view_themes : String -> Bool -> Html Msg
+view_themes : String -> Bool -> List (Html Msg)
 view_themes current_theme light =
     let
         themes =
             [ "default", "amber", "blue", "green", "grey", "purple" ]
     in
-    Html.div []
-        [ Html.text "theme"
+    [ Html.span []
+        [ Html.span [] [ Html.text "theme" ]
         , Html.select
             [ onInput Theme
             ]
@@ -120,10 +122,13 @@ view_themes current_theme light =
                             [ Html.text t ]
                     )
             )
-        , Html.input [ Attr.type_ "checkbox", onClick ThemeLight, Attr.checked light ] []
-        , Html.span [ Attr.class "lia-check-btn" ] [ Html.text "check" ]
-        , Html.text "light"
         ]
+    , Html.span []
+        [ Html.input [ Attr.type_ "checkbox", onClick ThemeLight, Attr.checked light ] []
+        , Html.span [ Attr.class "lia-check-btn" ] [ Html.text "check" ]
+        , Html.span [] [ Html.text "light" ]
+        ]
+    ]
 
 
 view_contents : Model -> Html Msg

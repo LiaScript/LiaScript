@@ -46,6 +46,10 @@
         .lia-variant-dark {
             @include _new-theme($dark, $theme-name);
         }
+
+        .lia-icon {
+          @include material-icon("", inherit);
+        }
     }
 }
 

@@ -9,7 +9,6 @@ import Lia.Inline.View exposing (view_inf)
 import Lia.Quiz.Model exposing (..)
 import Lia.Quiz.Types exposing (..)
 import Lia.Quiz.Update exposing (Msg(..))
-import Lia.Utils
 
 
 view : Model -> Quiz -> Html Msg
@@ -142,7 +141,10 @@ view_hints idx counter hints =
                     []
 
                 ( x :: xs, _ ) ->
-                    Html.p [] (Lia.Utils.stringToHtml "&#x1f4a1;" :: List.map view_inf x)
+                    Html.p []
+                        (Html.span [ Attr.class "lia-icon" ] [ Html.text "lightbulb_outline" ]
+                            :: List.map view_inf x
+                        )
                         :: v_hints xs (c - 1)
     in
     if counter < List.length hints then
