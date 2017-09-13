@@ -15,9 +15,7 @@
   ],
   "author": "",
   "license": "BSD-3-Clause",
-  "dependencies": {
-    "elm-github-install": "^1.4.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "animate.css": "^3.5.2",
     "auto-reload-brunch": "^2.7.1",
