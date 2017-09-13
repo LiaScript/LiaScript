@@ -21,4 +21,6 @@ type alias Model =
     , index_model : Lia.Index.Model.Model
     , survey_model : Lia.Survey.Model.Model
     , narator : String
+    , theme : String
+    , theme_light : Bool
     }

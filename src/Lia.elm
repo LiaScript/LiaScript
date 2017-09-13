@@ -3,7 +3,6 @@ module Lia exposing (..)
 import Array
 import Html exposing (Html)
 import Json.Encode as JE
-import Lia.Code.Model as Code
 import Lia.Effect.Model as Effect
 import Lia.Index.Model as Index
 import Lia.Model
@@ -42,6 +41,8 @@ init mode script =
         , index_model = Index.init []
         , effect_model = Effect.init "US English Male" Nothing
         , narator = "US English Male"
+        , theme = "default"
+        , theme_light = True
         }
 
 

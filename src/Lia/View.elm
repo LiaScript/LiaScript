@@ -66,6 +66,7 @@ view_slides model =
                         [ Html.text "toc" ]
                     , loadButton "navigate_before" PrevSlide
                     , loadButton "navigate_next" NextSlide
+                    , view_themes model.theme model.theme_light
                     ]
                 , Html.div
                     [ Attr.class "lia-content"
@@ -79,7 +80,18 @@ view_slides model =
                     ]
                 ]
     in
-    Html.div [ Attr.class "lia-canvas lia-theme-default lia-variant-light" ]
+    Html.div
+        [ Attr.class
+            ("lia-canvas lia-theme-"
+                ++ model.theme
+                ++ " lia-variant-"
+                ++ (if model.theme_light then
+                        "light"
+                    else
+                        "dark"
+                   )
+            )
+        ]
         (if model.show_contents then
             [ view_contents model
             , content
@@ -87,6 +99,30 @@ view_slides model =
          else
             [ content ]
         )
+
+
+view_themes : String -> Bool -> Html Msg
+view_themes current_theme light =
+    let
+        themes =
+            [ "default", "amber", "blue", "green", "grey", "purple" ]
+    in
+    Html.div []
+        [ Html.text "theme"
+        , Html.select
+            [ onInput Theme
+            ]
+            (themes
+                |> List.map
+                    (\t ->
+                        Html.option
+                            [ Attr.value t, Attr.selected (t == current_theme) ]
+                            [ Html.text t ]
+                    )
+            )
+        , Html.input [ Attr.type_ "checkbox", onClick ThemeLight, Attr.checked light ] []
+        , Html.text "light"
+        ]
 
 
 view_contents : Model -> Html Msg
