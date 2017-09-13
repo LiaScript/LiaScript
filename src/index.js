@@ -1,8 +1,8 @@
-var $ = require("jquery");
+//var $ = require("jquery");
 
 Elm.Main.embed(document.body, {url: "https://raw.githubusercontent.com/andre-dietrich/lia/master/README.md"});
 
-$(function () {
+/*$(function () {
     // store created ripple from mousedown until mouseup
     var $ripple;
 
@@ -46,4 +46,4 @@ $(function () {
             $old_ripple.remove();
         }, 500);
     });
-});
+});*/
