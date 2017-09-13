@@ -84,7 +84,6 @@ view_single_choice questions idx state solved =
                         Html.p [ Attr.class "lia-radio-item" ]
                             [ Html.input
                                 [ Attr.type_ "radio"
-                                , Attr.class "lia-radio-btn"
                                 , Attr.checked (i == x)
                                 , if solved then
                                     Attr.disabled True
@@ -92,6 +91,7 @@ view_single_choice questions idx state solved =
                                     onClick (RadioButton idx i)
                                 ]
                                 []
+                            , Html.span [ Attr.class "lia-radio-btn" ] []
                             , Html.span [ Attr.class "lia-label" ] (List.map view_inf elements)
                             ]
                     )
@@ -108,7 +108,6 @@ view_multiple_choice questions idx state solved =
             Html.p [ Attr.class "lia-check-item" ]
                 [ Html.input
                     [ Attr.type_ "checkbox"
-                    , Attr.class "lia-check-btn"
                     , Attr.checked b
                     , if solved then
                         Attr.disabled True
@@ -116,6 +115,7 @@ view_multiple_choice questions idx state solved =
                         onClick (RadioButton idx i)
                     ]
                     []
+                , Html.span [ Attr.class "lia-check-btn" ] [ Html.text "check" ]
                 , Html.span [ Attr.class "lia-label" ] (List.map view_inf line)
                 ]
     in
