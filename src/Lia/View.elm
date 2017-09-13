@@ -121,6 +121,7 @@ view_themes current_theme light =
                     )
             )
         , Html.input [ Attr.type_ "checkbox", onClick ThemeLight, Attr.checked light ] []
+        , Html.span [ Attr.class "lia-check-btn" ] [ Html.text "check" ]
         , Html.text "light"
         ]
 
