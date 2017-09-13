@@ -18,6 +18,8 @@ import Lia.Quiz.View
 import Lia.Survey.View
 import Lia.Types exposing (..)
 import Lia.Update exposing (Msg(..))
+import String
+import Char
 
 
 view : Model -> Html Msg
@@ -48,7 +50,7 @@ view_slides model =
         loadButton str msg =
             Html.button
                 [ onClick msg
-                , Attr.class "lia-btn lia-slide-control"
+                , Attr.class "lia-btn lia-slide-control lia-left"
                 ]
                 [ Html.text str ]
 
@@ -62,11 +64,12 @@ view_slides model =
                     (List.append
                         [ Html.button
                             [ onClick ToggleContentsTable
-                            , Attr.class "lia-btn lia-toc-control"
+                            , Attr.class "lia-btn lia-toc-control lia-left"
                             ]
                             [ Html.text "toc" ]
                         , loadButton "navigate_before" PrevSlide
                         , loadButton "navigate_next" NextSlide
+                        , Html.span [ Attr.class "lia-spacer" ] []
                         ]
                         (view_themes model.theme model.theme_light)
                     )
@@ -103,31 +106,36 @@ view_slides model =
         )
 
 
+capitalize : String -> String
+capitalize s =
+  case String.uncons s of
+    Just (c,ss) -> String.cons (Char.toUpper c) ss
+    Nothing -> s
+
+
 view_themes : String -> Bool -> List (Html Msg)
 view_themes current_theme light =
     let
         themes =
             [ "default", "amber", "blue", "green", "grey", "purple" ]
     in
-    [ Html.span []
-        [ Html.span [] [ Html.text "theme" ]
-        , Html.select
-            [ onInput Theme
-            ]
-            (themes
-                |> List.map
-                    (\t ->
-                        Html.option
-                            [ Attr.value t, Attr.selected (t == current_theme) ]
-                            [ Html.text t ]
-                    )
-            )
-        ]
-    , Html.span []
+    [ Html.span [ Attr.class "lia-labeled lia-right" ]
         [ Html.input [ Attr.type_ "checkbox", onClick ThemeLight, Attr.checked light ] []
         , Html.span [ Attr.class "lia-check-btn" ] [ Html.text "check" ]
-        , Html.span [] [ Html.text "light" ]
+        , Html.span [ Attr.class "lia-label" ] [ Html.text "Light Variant" ]
         ]
+    , Html.select
+      [ onInput Theme
+      , Attr.class "lia-right lia-select"
+      ]
+      (themes
+          |> List.map
+              (\t ->
+                  Html.option
+                      [ Attr.value t, Attr.selected (capitalize t ++ " Theme" == current_theme) ]
+                      [ Html.text (capitalize t ++ " Theme") ]
+              )
+      )
     ]
 
 

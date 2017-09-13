@@ -77,7 +77,9 @@
     }
 
     .lia-btn,
-    .lia-input {
+    .lia-input,
+    .lia-label,
+    .lia-select {
         $vert: map-get($config, spacing-small);
         $marg: map-get($config, spacing-normal);
         padding: $vert 0;
@@ -155,6 +157,15 @@
         }
     }
 
+    .lia-labeled {
+        @include flex(row, nowrap, flex-start, center, flex-start);
+        margin-right: map-get($config, spacing-normal);
+
+        & :first-child {
+            margin-right: 0;
+        }
+    }
+
     .lia-toolbar {
         $bg: map-get($theme, primary);
         $fg: color-contrast($bg);
@@ -162,7 +173,8 @@
         z-index: 1;
         flex: 0 0 auto;
         height: map-get($config, toolbar-height);
-        background: map-get($theme, primary);
+        background: $bg;
+        color: $fg;
 
         .lia-btn {
             box-shadow: none;
@@ -178,7 +190,8 @@
             }
         }
 
-        .lia-input {
+        .lia-input,
+        .lia-select {
             background: $bg;
             color: $fg;
             border-bottom-color: mix($bg, $fg, 50%);
@@ -187,9 +200,23 @@
                 border-bottom-color: $fg;
             }
         }
+
+        .lia-left {
+            order: 1;
+        }
+
+        .lia-spacer {
+            order: 1;
+            flex: 1 1 auto;
+        }
+
+        .lia-right {
+            order: 2;
+        }
     }
 
-    .lia-input {
+    .lia-input,
+    .lia-select {
         $bg: map-get($theme, background);
         $fg: color-contrast($bg);
 
