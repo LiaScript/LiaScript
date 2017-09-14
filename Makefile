@@ -1,6 +1,6 @@
 all:
 	elm-make examples/Editor.elm --output build/app.js
-	./lib/KaTeX/node_modules/uglify-js/bin/uglifyjs --compress --mangle  --output build/app.min.js build/app.js
+	#closure-compiler --compilation_level ADVANCED_OPTIMIZATIONS  --language_in ECMASCRIPT6 --js build/app.js --js_output_file build/app.min.js
 
 github:
 	elm-make examples/Online.elm --output build/app.js

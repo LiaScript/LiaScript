@@ -7,6 +7,7 @@ import Lia.Helper exposing (get_slide)
 import Lia.Index.Update as Index
 import Lia.Model exposing (..)
 import Lia.Quiz.Update as Quiz
+import Lia.Survey.Update as Survey
 
 
 type Msg
@@ -17,6 +18,7 @@ type Msg
     | UpdateIndex Index.Msg
     | UpdateQuiz Quiz.Msg
     | UpdateCode Code.Msg
+    | UpdateSurvey Survey.Msg
     | UpdateEffect Effect.Msg
 
 
@@ -59,6 +61,13 @@ update msg model =
                     Index.update childMsg model.index_model
             in
             ( { model | index_model = index_model }, Cmd.none )
+
+        UpdateSurvey childMsg ->
+            let
+                ( model_, _ ) =
+                    Survey.update childMsg model.survey_model
+            in
+            ( { model | survey_model = model_ }, Cmd.none )
 
         UpdateCode childMsg ->
             let

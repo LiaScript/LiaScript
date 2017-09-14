@@ -4,6 +4,7 @@ import Lia.Code.Model
 import Lia.Effect.Model
 import Lia.Index.Model
 import Lia.Quiz.Model
+import Lia.Survey.Model
 import Lia.Types exposing (Mode, Slide)
 
 
@@ -18,5 +19,6 @@ type alias Model =
     , code_model : Lia.Code.Model.Model
     , effect_model : Lia.Effect.Model.Model
     , index_model : Lia.Index.Model.Model
+    , survey_model : Lia.Survey.Model.Model
     , narator : String
     }

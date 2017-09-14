@@ -11242,12 +11242,51 @@ var _user$project$Lia_Quiz_Types$SingleChoice = F2(
 		return {ctor: 'SingleChoice', _0: a, _1: b};
 	});
 
+var _user$project$Lia_Survey_Types$MultiChoiceBlockState = function (a) {
+	return {ctor: 'MultiChoiceBlockState', _0: a};
+};
+var _user$project$Lia_Survey_Types$SingleChoiceBlockState = function (a) {
+	return {ctor: 'SingleChoiceBlockState', _0: a};
+};
+var _user$project$Lia_Survey_Types$MultiChoiceState = function (a) {
+	return {ctor: 'MultiChoiceState', _0: a};
+};
+var _user$project$Lia_Survey_Types$SingleChoiceState = function (a) {
+	return {ctor: 'SingleChoiceState', _0: a};
+};
+var _user$project$Lia_Survey_Types$TextState = function (a) {
+	return {ctor: 'TextState', _0: a};
+};
+var _user$project$Lia_Survey_Types$MultiChoiceBlock = F3(
+	function (a, b, c) {
+		return {ctor: 'MultiChoiceBlock', _0: a, _1: b, _2: c};
+	});
+var _user$project$Lia_Survey_Types$SingleChoiceBlock = F3(
+	function (a, b, c) {
+		return {ctor: 'SingleChoiceBlock', _0: a, _1: b, _2: c};
+	});
+var _user$project$Lia_Survey_Types$MultiChoice = F2(
+	function (a, b) {
+		return {ctor: 'MultiChoice', _0: a, _1: b};
+	});
+var _user$project$Lia_Survey_Types$SingleChoice = F2(
+	function (a, b) {
+		return {ctor: 'SingleChoice', _0: a, _1: b};
+	});
+var _user$project$Lia_Survey_Types$Text = F2(
+	function (a, b) {
+		return {ctor: 'Text', _0: a, _1: b};
+	});
+
 var _user$project$Lia_Types$Slide = F4(
 	function (a, b, c, d) {
 		return {indentation: a, title: b, body: c, effects: d};
 	});
 var _user$project$Lia_Types$Plain = {ctor: 'Plain'};
 var _user$project$Lia_Types$Slides = {ctor: 'Slides'};
+var _user$project$Lia_Types$SurveyBlock = function (a) {
+	return {ctor: 'SurveyBlock', _0: a};
+};
 var _user$project$Lia_Types$OrderedList = function (a) {
 	return {ctor: 'OrderedList', _0: a};
 };
@@ -11571,6 +11610,82 @@ var _user$project$Lia_Quiz_Model$get_hint_counter = F2(
 		}
 	});
 
+var _user$project$Lia_Survey_Model$get_matrix_state = F4(
+	function (model, idx, row, $var) {
+		var bool = function (s) {
+			return A2(
+				_elm_lang$core$Maybe$withDefault,
+				false,
+				A2(
+					_elm_lang$core$Maybe$andThen,
+					function (d) {
+						return A2(_elm_lang$core$Dict$get, $var, d);
+					},
+					A2(_elm_lang$core$Array$get, row, s)));
+		};
+		var _p0 = A2(_elm_lang$core$Array$get, idx, model);
+		_v0_2:
+		do {
+			if ((_p0.ctor === 'Just') && (_p0._0.ctor === '_Tuple2')) {
+				switch (_p0._0._1.ctor) {
+					case 'SingleChoiceBlockState':
+						return bool(_p0._0._1._0);
+					case 'MultiChoiceBlockState':
+						return bool(_p0._0._1._0);
+					default:
+						break _v0_2;
+				}
+			} else {
+				break _v0_2;
+			}
+		} while(false);
+		return false;
+	});
+var _user$project$Lia_Survey_Model$get_vector_state = F3(
+	function (model, idx, $var) {
+		var bool = function (s) {
+			return A2(
+				_elm_lang$core$Maybe$withDefault,
+				false,
+				A2(_elm_lang$core$Dict$get, $var, s));
+		};
+		var _p1 = A2(_elm_lang$core$Array$get, idx, model);
+		_v1_2:
+		do {
+			if ((_p1.ctor === 'Just') && (_p1._0.ctor === '_Tuple2')) {
+				switch (_p1._0._1.ctor) {
+					case 'SingleChoiceState':
+						return bool(_p1._0._1._0);
+					case 'MultiChoiceState':
+						return bool(_p1._0._1._0);
+					default:
+						break _v1_2;
+				}
+			} else {
+				break _v1_2;
+			}
+		} while(false);
+		return false;
+	});
+var _user$project$Lia_Survey_Model$get_text_state = F2(
+	function (model, idx) {
+		var _p2 = A2(_elm_lang$core$Array$get, idx, model);
+		if (((_p2.ctor === 'Just') && (_p2._0.ctor === '_Tuple2')) && (_p2._0._1.ctor === 'TextState')) {
+			return _p2._0._1._0;
+		} else {
+			return '';
+		}
+	});
+var _user$project$Lia_Survey_Model$get_submission_state = F2(
+	function (model, idx) {
+		var _p3 = A2(_elm_lang$core$Array$get, idx, model);
+		if (((_p3.ctor === 'Just') && (_p3._0.ctor === '_Tuple2')) && (_p3._0._0 === true)) {
+			return true;
+		} else {
+			return false;
+		}
+	});
+
 var _user$project$Lia_Model$Model = function (a) {
 	return function (b) {
 		return function (c) {
@@ -11582,7 +11697,9 @@ var _user$project$Lia_Model$Model = function (a) {
 								return function (i) {
 									return function (j) {
 										return function (k) {
-											return {script: a, error: b, mode: c, slides: d, current_slide: e, show_contents: f, quiz_model: g, code_model: h, effect_model: i, index_model: j, narator: k};
+											return function (l) {
+												return {script: a, error: b, mode: c, slides: d, current_slide: e, show_contents: f, quiz_model: g, code_model: h, effect_model: i, index_model: j, survey_model: k, narator: l};
+											};
 										};
 									};
 								};
@@ -11602,7 +11719,9 @@ var _user$project$Lia_PState$init = {
 	num_effects: 0,
 	num_code: 0,
 	num_quiz: 0,
+	num_survey: 0,
 	quiz_vector: _elm_lang$core$Array$empty,
+	survey_vector: _elm_lang$core$Array$empty,
 	def_author: '',
 	def_date: '',
 	def_email: '',
@@ -11625,7 +11744,11 @@ var _user$project$Lia_PState$PState = function (a) {
 											return function (l) {
 												return function (m) {
 													return function (n) {
-														return {section: a, identation: b, skip_identation: c, num_effects: d, num_code: e, num_quiz: f, quiz_vector: g, def_author: h, def_date: i, def_email: j, def_language: k, def_narator: l, def_version: m, def_comment: n};
+														return function (o) {
+															return function (p) {
+																return {section: a, identation: b, skip_identation: c, num_effects: d, num_code: e, num_quiz: f, num_survey: g, quiz_vector: h, survey_vector: i, def_author: j, def_date: k, def_email: l, def_language: m, def_narator: n, def_version: o, def_comment: p};
+															};
+														};
 													};
 												};
 											};
@@ -12369,14 +12492,14 @@ var _user$project$Lia_Inline_Parser$strings = _elm_community$parser_combinators$
 				A2(
 					_elm_community$parser_combinators$Combine_ops['*>'],
 					_elm_community$parser_combinators$Combine$string('\\'),
-					_elm_community$parser_combinators$Combine$regex('[\\^#*_~`\\\\\\|${}\\[\\]]')),
+					_elm_community$parser_combinators$Combine$regex('[\\^#*_~`\\\\${}\\[\\]|]')),
 				'escape string'));
 		var base = A2(
 			_elm_community$parser_combinators$Combine_ops['<$>'],
 			_user$project$Lia_Inline_Types$Chars,
 			A2(
 				_elm_community$parser_combinators$Combine_ops['<?>'],
-				_elm_community$parser_combinators$Combine$regex('[^#*_~:;`!\\^\\[\\|{}\\\\\\n\\-<>=|$ ]+'),
+				_elm_community$parser_combinators$Combine$regex('[^#*_~:;`!\\^\\[|{}\\\\\\n\\-<>=$ ]+'),
 				'base string'));
 		return _elm_community$parser_combinators$Combine$choice(
 			{
@@ -12771,6 +12894,214 @@ var _user$project$Lia_Quiz_Parser$quiz = function () {
 		_user$project$Lia_Quiz_Parser$quiz_hints);
 }();
 
+var _user$project$Lia_Survey_Parser$modify_PState = function (survey_) {
+	var state = function () {
+		var extractor = F2(
+			function (fn, v) {
+				return _elm_lang$core$Dict$fromList(
+					A2(_elm_lang$core$List$map, fn, v));
+			});
+		var _p0 = survey_;
+		switch (_p0.ctor) {
+			case 'Text':
+				return _user$project$Lia_Survey_Types$TextState('');
+			case 'SingleChoice':
+				return _user$project$Lia_Survey_Types$SingleChoiceState(
+					A2(
+						extractor,
+						function (_p1) {
+							var _p2 = _p1;
+							return {ctor: '_Tuple2', _0: _p2._0, _1: false};
+						},
+						_p0._0));
+			case 'MultiChoice':
+				return _user$project$Lia_Survey_Types$MultiChoiceState(
+					A2(
+						extractor,
+						function (_p3) {
+							var _p4 = _p3;
+							return {ctor: '_Tuple2', _0: _p4._0, _1: false};
+						},
+						_p0._0));
+			case 'SingleChoiceBlock':
+				return _user$project$Lia_Survey_Types$SingleChoiceBlockState(
+					A2(
+						_elm_lang$core$Array$repeat,
+						_elm_lang$core$List$length(_p0._1),
+						A2(
+							extractor,
+							function (v) {
+								return {ctor: '_Tuple2', _0: v, _1: false};
+							},
+							_p0._0)));
+			default:
+				return _user$project$Lia_Survey_Types$MultiChoiceBlockState(
+					A2(
+						_elm_lang$core$Array$repeat,
+						_elm_lang$core$List$length(_p0._1),
+						A2(
+							extractor,
+							function (v) {
+								return {ctor: '_Tuple2', _0: v, _1: false};
+							},
+							_p0._0)));
+		}
+	}();
+	var add_state = F2(
+		function (e, s) {
+			return _elm_lang$core$Native_Utils.update(
+				s,
+				{
+					survey_vector: A2(
+						_elm_lang$core$Array$push,
+						{ctor: '_Tuple2', _0: false, _1: e},
+						s.survey_vector)
+				});
+		});
+	return A2(
+		_elm_community$parser_combinators$Combine_ops['*>'],
+		_elm_community$parser_combinators$Combine$modifyState(
+			add_state(state)),
+		_elm_community$parser_combinators$Combine$succeed(survey_));
+};
+var _user$project$Lia_Survey_Parser$increment_counter = function () {
+	var increment = function (c) {
+		return _elm_lang$core$Native_Utils.update(
+			c,
+			{num_survey: c.num_survey + 1});
+	};
+	var pp = function (par) {
+		return _elm_community$parser_combinators$Combine$succeed(par.num_survey);
+	};
+	return A2(
+		_elm_community$parser_combinators$Combine_ops['<*'],
+		_elm_community$parser_combinators$Combine$withState(pp),
+		_elm_community$parser_combinators$Combine$modifyState(increment));
+}();
+var _user$project$Lia_Survey_Parser$question = function (p) {
+	return A2(
+		_elm_community$parser_combinators$Combine_ops['<*>'],
+		A2(
+			_elm_community$parser_combinators$Combine_ops['<$>'],
+			F2(
+				function (i, l) {
+					return {ctor: '_Tuple2', _0: i, _1: l};
+				}),
+			p),
+		A2(_elm_community$parser_combinators$Combine_ops['<*'], _user$project$Lia_Inline_Parser$line, _user$project$Lia_Inline_Parser$newline));
+};
+var _user$project$Lia_Survey_Parser$questions = _elm_community$parser_combinators$Combine$many1(
+	A2(
+		_elm_community$parser_combinators$Combine_ops['<*'],
+		A2(
+			_elm_community$parser_combinators$Combine_ops['*>'],
+			_elm_community$parser_combinators$Combine$regex('[ \\t]*\\[[ \\t]+\\]'),
+			_user$project$Lia_Inline_Parser$line),
+		_user$project$Lia_Inline_Parser$newline));
+var _user$project$Lia_Survey_Parser$id_str = A2(
+	_elm_community$parser_combinators$Combine_ops['*>'],
+	_elm_community$parser_combinators$Combine$string(':'),
+	_elm_community$parser_combinators$Combine$regex('[0-9a-zA-Z_ ]+'));
+var _user$project$Lia_Survey_Parser$id_int = _elm_community$parser_combinators$Combine$regex('\\-?[0-9]+');
+var _user$project$Lia_Survey_Parser$pattern = function (p) {
+	return A2(
+		_elm_community$parser_combinators$Combine_ops['<*'],
+		A2(
+			_elm_community$parser_combinators$Combine_ops['*>'],
+			_elm_community$parser_combinators$Combine$regex('[ \\t]*\\['),
+			p),
+		_elm_community$parser_combinators$Combine$string(']'));
+};
+var _user$project$Lia_Survey_Parser$vector = function (p) {
+	var vec = function (x) {
+		return _elm_community$parser_combinators$Combine$many1(
+			_user$project$Lia_Survey_Parser$question(
+				_user$project$Lia_Survey_Parser$pattern(
+					p(x))));
+	};
+	return A2(
+		_elm_community$parser_combinators$Combine_ops['<|>'],
+		vec(_user$project$Lia_Survey_Parser$id_int),
+		vec(_user$project$Lia_Survey_Parser$id_str));
+};
+var _user$project$Lia_Survey_Parser$header = function (p) {
+	return A2(
+		_elm_community$parser_combinators$Combine_ops['<*'],
+		_user$project$Lia_Survey_Parser$pattern(
+			_elm_community$parser_combinators$Combine$choice(
+				{
+					ctor: '::',
+					_0: _elm_community$parser_combinators$Combine$many1(
+						p(_user$project$Lia_Survey_Parser$id_int)),
+					_1: {
+						ctor: '::',
+						_0: _elm_community$parser_combinators$Combine$many1(
+							p(_user$project$Lia_Survey_Parser$id_str)),
+						_1: {ctor: '[]'}
+					}
+				})),
+		_user$project$Lia_Inline_Parser$newline);
+};
+var _user$project$Lia_Survey_Parser$text_lines = A2(
+	_elm_community$parser_combinators$Combine_ops['<$>'],
+	_elm_lang$core$List$length,
+	_user$project$Lia_Survey_Parser$pattern(
+		A2(
+			_elm_community$parser_combinators$Combine_ops['<*'],
+			A2(
+				_elm_community$parser_combinators$Combine_ops['*>'],
+				_elm_community$parser_combinators$Combine$string('['),
+				_elm_community$parser_combinators$Combine$many1(
+					A2(
+						_elm_community$parser_combinators$Combine_ops['<*'],
+						_elm_community$parser_combinators$Combine$regex('(__(_)+)'),
+						_elm_community$parser_combinators$Combine$whitespace))),
+			_elm_community$parser_combinators$Combine$string(']'))));
+var _user$project$Lia_Survey_Parser$survey = A2(
+	_elm_community$parser_combinators$Combine_ops['<*>'],
+	_elm_community$parser_combinators$Combine$choice(
+		{
+			ctor: '::',
+			_0: A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Survey_Types$Text, _user$project$Lia_Survey_Parser$text_lines),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_community$parser_combinators$Combine_ops['<$>'],
+					_user$project$Lia_Survey_Types$SingleChoice,
+					_user$project$Lia_Survey_Parser$vector(_elm_community$parser_combinators$Combine$parens)),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_community$parser_combinators$Combine_ops['<*>'],
+						A2(
+							_elm_community$parser_combinators$Combine_ops['<$>'],
+							_user$project$Lia_Survey_Types$SingleChoiceBlock,
+							_user$project$Lia_Survey_Parser$header(_elm_community$parser_combinators$Combine$parens)),
+						_user$project$Lia_Survey_Parser$questions),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_community$parser_combinators$Combine_ops['<$>'],
+							_user$project$Lia_Survey_Types$MultiChoice,
+							_user$project$Lia_Survey_Parser$vector(_elm_community$parser_combinators$Combine$brackets)),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_community$parser_combinators$Combine_ops['<*>'],
+								A2(
+									_elm_community$parser_combinators$Combine_ops['<$>'],
+									_user$project$Lia_Survey_Types$MultiChoiceBlock,
+									_user$project$Lia_Survey_Parser$header(_elm_community$parser_combinators$Combine$brackets)),
+								_user$project$Lia_Survey_Parser$questions),
+							_1: {ctor: '[]'}
+						}
+					}
+				}
+			}
+		}),
+	_user$project$Lia_Survey_Parser$increment_counter);
+var _user$project$Lia_Survey_Parser$parse = A2(_elm_community$parser_combinators$Combine_ops['>>='], _user$project$Lia_Survey_Parser$survey, _user$project$Lia_Survey_Parser$modify_PState);
+
 var _user$project$Lia_Parser$formatError = F2(
 	function (ms, stream) {
 		var expectationSeparator = '\n  * ';
@@ -12933,91 +13264,6 @@ var _user$project$Lia_Parser$title_tag = A2(
 			_user$project$Lia_Inline_Parser$newlines,
 			_elm_community$parser_combinators$Combine$regex('#+')),
 		_elm_community$parser_combinators$Combine$whitespace));
-var _user$project$Lia_Parser$table = function () {
-	var ending = A2(
-		_elm_community$parser_combinators$Combine_ops['<*'],
-		_elm_community$parser_combinators$Combine$string('|'),
-		A2(_elm_community$parser_combinators$Combine_ops['<*'], _elm_community$parser_combinators$Combine$whitespace, _user$project$Lia_Inline_Parser$newline));
-	var row = A2(
-		_elm_community$parser_combinators$Combine_ops['<*'],
-		A2(
-			_elm_community$parser_combinators$Combine_ops['*>'],
-			_elm_community$parser_combinators$Combine$string('|'),
-			A2(
-				_elm_community$parser_combinators$Combine$sepBy1,
-				_elm_community$parser_combinators$Combine$string('|'),
-				_elm_community$parser_combinators$Combine$many1(_user$project$Lia_Inline_Parser$inlines))),
-		ending);
-	var simple_table = A2(
-		_elm_community$parser_combinators$Combine_ops['<*'],
-		A2(
-			_elm_community$parser_combinators$Combine_ops['<$>'],
-			A2(
-				_user$project$Lia_Types$Table,
-				{ctor: '[]'},
-				{ctor: '[]'}),
-			_elm_community$parser_combinators$Combine$many1(row)),
-		_user$project$Lia_Inline_Parser$newline);
-	var format = A2(
-		_elm_community$parser_combinators$Combine_ops['<*'],
-		A2(
-			_elm_community$parser_combinators$Combine_ops['*>'],
-			_elm_community$parser_combinators$Combine$string('|'),
-			A2(
-				_elm_community$parser_combinators$Combine$sepBy1,
-				_elm_community$parser_combinators$Combine$string('|'),
-				_elm_community$parser_combinators$Combine$choice(
-					{
-						ctor: '::',
-						_0: A2(
-							_elm_community$parser_combinators$Combine_ops['$>'],
-							_elm_community$parser_combinators$Combine$regex(':--[\\-]+:'),
-							'center'),
-						_1: {
-							ctor: '::',
-							_0: A2(
-								_elm_community$parser_combinators$Combine_ops['$>'],
-								_elm_community$parser_combinators$Combine$regex(':--[\\-]+'),
-								'left'),
-							_1: {
-								ctor: '::',
-								_0: A2(
-									_elm_community$parser_combinators$Combine_ops['$>'],
-									_elm_community$parser_combinators$Combine$regex('--[\\-]+:'),
-									'right'),
-								_1: {
-									ctor: '::',
-									_0: A2(
-										_elm_community$parser_combinators$Combine_ops['$>'],
-										_elm_community$parser_combinators$Combine$regex('--[\\-]+'),
-										'left'),
-									_1: {ctor: '[]'}
-								}
-							}
-						}
-					}))),
-		ending);
-	var format_table = A2(
-		_elm_community$parser_combinators$Combine_ops['<*'],
-		A2(
-			_elm_community$parser_combinators$Combine_ops['<*>'],
-			A2(
-				_elm_community$parser_combinators$Combine_ops['<*>'],
-				A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$Table, row),
-				format),
-			_elm_community$parser_combinators$Combine$many(row)),
-		_user$project$Lia_Inline_Parser$newline);
-	return _elm_community$parser_combinators$Combine$choice(
-		{
-			ctor: '::',
-			_0: format_table,
-			_1: {
-				ctor: '::',
-				_0: simple_table,
-				_1: {ctor: '[]'}
-			}
-		});
-}();
 var _user$project$Lia_Parser$identation = function () {
 	var reset = function (s) {
 		return _elm_lang$core$Native_Utils.update(
@@ -13054,6 +13300,94 @@ var _user$project$Lia_Parser$paragraph = A2(
 			_elm_community$parser_combinators$Combine_ops['<*'],
 			A2(_elm_community$parser_combinators$Combine_ops['*>'], _user$project$Lia_Parser$identation, _user$project$Lia_Inline_Parser$line),
 			_user$project$Lia_Inline_Parser$newline)));
+var _user$project$Lia_Parser$table = function () {
+	var ending = A2(
+		_elm_community$parser_combinators$Combine_ops['*>'],
+		_elm_community$parser_combinators$Combine$regex('\\|[ \\t]*'),
+		_user$project$Lia_Inline_Parser$newline);
+	var row = A2(
+		_elm_community$parser_combinators$Combine_ops['*>'],
+		_user$project$Lia_Parser$identation,
+		A2(
+			_elm_community$parser_combinators$Combine$manyTill,
+			A2(
+				_elm_community$parser_combinators$Combine_ops['*>'],
+				_elm_community$parser_combinators$Combine$string('|'),
+				_elm_community$parser_combinators$Combine$many(_user$project$Lia_Inline_Parser$inlines)),
+			ending));
+	var simple_table = A2(
+		_elm_community$parser_combinators$Combine_ops['<*'],
+		A2(
+			_elm_community$parser_combinators$Combine_ops['<$>'],
+			A2(
+				_user$project$Lia_Types$Table,
+				{ctor: '[]'},
+				{ctor: '[]'}),
+			_elm_community$parser_combinators$Combine$many1(row)),
+		_user$project$Lia_Inline_Parser$newline);
+	var format = A2(
+		_elm_community$parser_combinators$Combine_ops['<*'],
+		A2(
+			_elm_community$parser_combinators$Combine_ops['*>'],
+			A2(
+				_elm_community$parser_combinators$Combine_ops['*>'],
+				_user$project$Lia_Parser$identation,
+				_elm_community$parser_combinators$Combine$string('|')),
+			A2(
+				_elm_community$parser_combinators$Combine$sepBy1,
+				_elm_community$parser_combinators$Combine$string('|'),
+				_elm_community$parser_combinators$Combine$choice(
+					{
+						ctor: '::',
+						_0: A2(
+							_elm_community$parser_combinators$Combine_ops['$>'],
+							_elm_community$parser_combinators$Combine$regex('[ \\t]*:--[\\-]+:[ \\t]*'),
+							'center'),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_community$parser_combinators$Combine_ops['$>'],
+								_elm_community$parser_combinators$Combine$regex('[ \\t]*:--[\\-]+[ \\t]*'),
+								'left'),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_elm_community$parser_combinators$Combine_ops['$>'],
+									_elm_community$parser_combinators$Combine$regex('[ \\t]*--[\\-]+:[ \\t]*'),
+									'right'),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_elm_community$parser_combinators$Combine_ops['$>'],
+										_elm_community$parser_combinators$Combine$regex('[ \\t]*--[\\-]+[ \\t]*'),
+										'left'),
+									_1: {ctor: '[]'}
+								}
+							}
+						}
+					}))),
+		ending);
+	var format_table = A2(
+		_elm_community$parser_combinators$Combine_ops['<*'],
+		A2(
+			_elm_community$parser_combinators$Combine_ops['<*>'],
+			A2(
+				_elm_community$parser_combinators$Combine_ops['<*>'],
+				A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$Table, row),
+				format),
+			_elm_community$parser_combinators$Combine$many(row)),
+		_user$project$Lia_Inline_Parser$newline);
+	return _elm_community$parser_combinators$Combine$choice(
+		{
+			ctor: '::',
+			_0: format_table,
+			_1: {
+				ctor: '::',
+				_0: simple_table,
+				_1: {ctor: '[]'}
+			}
+		});
+}();
 var _user$project$Lia_Parser$quote_block = function () {
 	var p = A2(
 		_elm_community$parser_combinators$Combine_ops['<*'],
@@ -13105,17 +13439,21 @@ var _user$project$Lia_Parser$blocks = _elm_community$parser_combinators$Combine$
 									_0: _user$project$Lia_Parser$horizontal_line,
 									_1: {
 										ctor: '::',
-										_0: A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$Quiz, _user$project$Lia_Quiz_Parser$quiz),
+										_0: A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$SurveyBlock, _user$project$Lia_Survey_Parser$parse),
 										_1: {
 											ctor: '::',
-											_0: _user$project$Lia_Parser$ordered_list,
+											_0: A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$Quiz, _user$project$Lia_Quiz_Parser$quiz),
 											_1: {
 												ctor: '::',
-												_0: _user$project$Lia_Parser$unordered_list,
+												_0: _user$project$Lia_Parser$ordered_list,
 												_1: {
 													ctor: '::',
-													_0: A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$Paragraph, _user$project$Lia_Parser$paragraph),
-													_1: {ctor: '[]'}
+													_0: _user$project$Lia_Parser$unordered_list,
+													_1: {
+														ctor: '::',
+														_0: A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$Paragraph, _user$project$Lia_Parser$paragraph),
+														_1: {ctor: '[]'}
+													}
 												}
 											}
 										}
@@ -13231,7 +13569,7 @@ var _user$project$Lia_Parser$run = function (script) {
 	if (_p2.ctor === 'Ok') {
 		var _p3 = _p2._0._0;
 		return _elm_lang$core$Result$Ok(
-			{ctor: '_Tuple4', _0: _p2._0._2, _1: _p3.num_code, _2: _p3.quiz_vector, _3: _p3.def_narator});
+			{ctor: '_Tuple5', _0: _p2._0._2, _1: _p3.num_code, _2: _p3.quiz_vector, _3: _p3.survey_vector, _4: _p3.def_narator});
 	} else {
 		return _elm_lang$core$Result$Err(
 			A2(_user$project$Lia_Parser$formatError, _p2._0._2, _p2._0._1));
@@ -13816,8 +14154,222 @@ var _user$project$Lia_Quiz_Update$CheckBox = F2(
 		return {ctor: 'CheckBox', _0: a, _1: b};
 	});
 
+var _user$project$Lia_Survey_Update$submit = F2(
+	function (model, idx) {
+		var _p0 = A2(_elm_lang$core$Array$get, idx, model);
+		if (((_p0.ctor === 'Just') && (_p0._0.ctor === '_Tuple2')) && (_p0._0._0 === false)) {
+			return A3(
+				_elm_lang$core$Array$set,
+				idx,
+				{ctor: '_Tuple2', _0: true, _1: _p0._0._1},
+				model);
+		} else {
+			return model;
+		}
+	});
+var _user$project$Lia_Survey_Update$set_state = F3(
+	function (model, idx, state) {
+		return A3(
+			_elm_lang$core$Array$set,
+			idx,
+			{ctor: '_Tuple2', _0: false, _1: state},
+			model);
+	});
+var _user$project$Lia_Survey_Update$update_matrix = F4(
+	function (model, idx, row, $var) {
+		var _p1 = A2(_elm_lang$core$Array$get, idx, model);
+		_v1_2:
+		do {
+			if (((_p1.ctor === 'Just') && (_p1._0.ctor === '_Tuple2')) && (_p1._0._0 === false)) {
+				switch (_p1._0._1.ctor) {
+					case 'SingleChoiceBlockState':
+						var _p5 = _p1._0._1._0;
+						var vector = A2(_elm_lang$core$Array$get, row, _p5);
+						return A3(
+							_user$project$Lia_Survey_Update$set_state,
+							model,
+							idx,
+							_user$project$Lia_Survey_Types$SingleChoiceBlockState(
+								A2(
+									_elm_lang$core$Maybe$withDefault,
+									_p5,
+									A2(
+										_elm_lang$core$Maybe$map,
+										function (d) {
+											return A3(_elm_lang$core$Array$set, row, d, _p5);
+										},
+										A2(
+											_elm_lang$core$Maybe$map,
+											function (d) {
+												return A3(
+													_elm_lang$core$Dict$update,
+													$var,
+													function (_p2) {
+														return _elm_lang$core$Maybe$Just(true);
+													},
+													d);
+											},
+											A2(
+												_elm_lang$core$Maybe$map,
+												function (d) {
+													return A2(
+														_elm_lang$core$Dict$map,
+														F2(
+															function (_p4, _p3) {
+																return false;
+															}),
+														d);
+												},
+												vector))))));
+					case 'MultiChoiceBlockState':
+						var _p6 = _p1._0._1._0;
+						var vector = A2(_elm_lang$core$Array$get, row, _p6);
+						return A3(
+							_user$project$Lia_Survey_Update$set_state,
+							model,
+							idx,
+							_user$project$Lia_Survey_Types$MultiChoiceBlockState(
+								A2(
+									_elm_lang$core$Maybe$withDefault,
+									_p6,
+									A2(
+										_elm_lang$core$Maybe$map,
+										function (d) {
+											return A3(_elm_lang$core$Array$set, row, d, _p6);
+										},
+										A2(
+											_elm_lang$core$Maybe$map,
+											function (d) {
+												return A3(
+													_elm_lang$core$Dict$update,
+													$var,
+													function (b) {
+														return A2(_elm_lang$core$Maybe$map, _elm_lang$core$Basics$not, b);
+													},
+													d);
+											},
+											vector)))));
+					default:
+						break _v1_2;
+				}
+			} else {
+				break _v1_2;
+			}
+		} while(false);
+		return model;
+	});
+var _user$project$Lia_Survey_Update$update_vector = F3(
+	function (model, idx, $var) {
+		var _p7 = A2(_elm_lang$core$Array$get, idx, model);
+		_v2_2:
+		do {
+			if (((_p7.ctor === 'Just') && (_p7._0.ctor === '_Tuple2')) && (_p7._0._0 === false)) {
+				switch (_p7._0._1.ctor) {
+					case 'SingleChoiceState':
+						return A3(
+							_user$project$Lia_Survey_Update$set_state,
+							model,
+							idx,
+							_user$project$Lia_Survey_Types$SingleChoiceState(
+								A3(
+									_elm_lang$core$Dict$update,
+									$var,
+									function (_p8) {
+										return _elm_lang$core$Maybe$Just(true);
+									},
+									A2(
+										_elm_lang$core$Dict$map,
+										F2(
+											function (_p10, _p9) {
+												return false;
+											}),
+										_p7._0._1._0))));
+					case 'MultiChoiceState':
+						return A3(
+							_user$project$Lia_Survey_Update$set_state,
+							model,
+							idx,
+							_user$project$Lia_Survey_Types$MultiChoiceState(
+								A3(
+									_elm_lang$core$Dict$update,
+									$var,
+									function (b) {
+										return A2(_elm_lang$core$Maybe$map, _elm_lang$core$Basics$not, b);
+									},
+									_p7._0._1._0)));
+					default:
+						break _v2_2;
+				}
+			} else {
+				break _v2_2;
+			}
+		} while(false);
+		return model;
+	});
+var _user$project$Lia_Survey_Update$update_text = F3(
+	function (model, idx, str) {
+		var _p11 = A2(_elm_lang$core$Array$get, idx, model);
+		if ((((_p11.ctor === 'Just') && (_p11._0.ctor === '_Tuple2')) && (_p11._0._0 === false)) && (_p11._0._1.ctor === 'TextState')) {
+			return A3(
+				_user$project$Lia_Survey_Update$set_state,
+				model,
+				idx,
+				_user$project$Lia_Survey_Types$TextState(str));
+		} else {
+			return model;
+		}
+	});
+var _user$project$Lia_Survey_Update$update = F2(
+	function (msg, model) {
+		var _p12 = msg;
+		switch (_p12.ctor) {
+			case 'TextInput':
+				return {
+					ctor: '_Tuple2',
+					_0: A3(_user$project$Lia_Survey_Update$update_text, model, _p12._0, _p12._1),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'Vector':
+				return {
+					ctor: '_Tuple2',
+					_0: A3(_user$project$Lia_Survey_Update$update_vector, model, _p12._0, _p12._1),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'Matrix':
+				return {
+					ctor: '_Tuple2',
+					_0: A4(_user$project$Lia_Survey_Update$update_matrix, model, _p12._0, _p12._1, _p12._2),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			default:
+				return {
+					ctor: '_Tuple2',
+					_0: A2(_user$project$Lia_Survey_Update$submit, model, _p12._0),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+		}
+	});
+var _user$project$Lia_Survey_Update$Submit = function (a) {
+	return {ctor: 'Submit', _0: a};
+};
+var _user$project$Lia_Survey_Update$Matrix = F3(
+	function (a, b, c) {
+		return {ctor: 'Matrix', _0: a, _1: b, _2: c};
+	});
+var _user$project$Lia_Survey_Update$Vector = F2(
+	function (a, b) {
+		return {ctor: 'Vector', _0: a, _1: b};
+	});
+var _user$project$Lia_Survey_Update$TextInput = F2(
+	function (a, b) {
+		return {ctor: 'TextInput', _0: a, _1: b};
+	});
+
 var _user$project$Lia_Update$UpdateEffect = function (a) {
 	return {ctor: 'UpdateEffect', _0: a};
+};
+var _user$project$Lia_Update$UpdateSurvey = function (a) {
+	return {ctor: 'UpdateSurvey', _0: a};
 };
 var _user$project$Lia_Update$UpdateCode = function (a) {
 	return {ctor: 'UpdateCode', _0: a};
@@ -13900,10 +14452,20 @@ var _user$project$Lia_Update$update = F2(
 							{index_model: index_model}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
+				case 'UpdateSurvey':
+					var _p6 = A2(_user$project$Lia_Survey_Update$update, _p0._0, model.survey_model);
+					var model_ = _p6._0;
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{survey_model: model_}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
 				case 'UpdateCode':
-					var _p6 = A2(_user$project$Lia_Code_Update$update, _p0._0, model.code_model);
-					var code_model = _p6._0;
-					var cmd = _p6._1;
+					var _p7 = A2(_user$project$Lia_Code_Update$update, _p0._0, model.code_model);
+					var code_model = _p7._0;
+					var cmd = _p7._1;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -13912,10 +14474,10 @@ var _user$project$Lia_Update$update = F2(
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				case 'UpdateEffect':
-					var _p7 = A2(_user$project$Lia_Effect_Update$update, _p0._0, model.effect_model);
-					var effect_model = _p7._0;
-					var cmd = _p7._1;
-					var h = _p7._2;
+					var _p8 = A2(_user$project$Lia_Effect_Update$update, _p0._0, model.effect_model);
+					var effect_model = _p8._0;
+					var cmd = _p8._1;
+					var h = _p8._2;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -13932,9 +14494,9 @@ var _user$project$Lia_Update$update = F2(
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				default:
-					var _p8 = A2(_user$project$Lia_Quiz_Update$update, _p0._0, model.quiz_model);
-					var quiz_model = _p8._0;
-					var cmd = _p8._1;
+					var _p9 = A2(_user$project$Lia_Quiz_Update$update, _p0._0, model.quiz_model);
+					var quiz_model = _p9._0;
+					var cmd = _p9._1;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -14411,6 +14973,7 @@ var _user$project$Lia_Inline_View$view = F2(
 					_p3._2);
 		}
 	});
+var _user$project$Lia_Inline_View$view_inf = _user$project$Lia_Inline_View$view(99999);
 
 var _user$project$Lia_Quiz_View$view_quiz_multiple_choice = F3(
 	function (model, questions, idx) {
@@ -14713,6 +15276,318 @@ var _user$project$Lia_Quiz_View$view = F2(
 				}));
 	});
 
+var _user$project$Lia_Survey_View$inline = function (elements) {
+	return A2(
+		_elm_lang$html$Html$span,
+		{ctor: '[]'},
+		A2(_elm_lang$core$List$map, _user$project$Lia_Inline_View$view_inf, elements));
+};
+var _user$project$Lia_Survey_View$input = F4(
+	function (type_, msg, $var, fn) {
+		return A2(
+			_elm_lang$html$Html$input,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$type_(type_),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Events$onClick(
+						msg($var)),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$checked(
+							fn($var)),
+						_1: {ctor: '[]'}
+					}
+				}
+			},
+			{ctor: '[]'});
+	});
+var _user$project$Lia_Survey_View$vector = F4(
+	function (type_, msg, fn, _p0) {
+		var _p1 = _p0;
+		return A2(
+			_elm_lang$html$Html$p,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: A4(_user$project$Lia_Survey_View$input, type_, msg, _p1._0, fn),
+				_1: {
+					ctor: '::',
+					_0: _user$project$Lia_Survey_View$inline(_p1._1),
+					_1: {ctor: '[]'}
+				}
+			});
+	});
+var _user$project$Lia_Survey_View$mat_attr = _elm_lang$html$Html_Attributes$align('center');
+var _user$project$Lia_Survey_View$matrix = F5(
+	function (type_, msg, fn, vars, _p2) {
+		var _p3 = _p2;
+		var _p4 = _p3._0;
+		var msgX = msg(_p4);
+		return A2(
+			_elm_lang$html$Html$tr,
+			{ctor: '[]'},
+			A2(
+				_elm_lang$core$List$append,
+				A2(
+					_elm_lang$core$List$map,
+					function ($var) {
+						return A2(
+							_elm_lang$html$Html$td,
+							{
+								ctor: '::',
+								_0: _user$project$Lia_Survey_View$mat_attr,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: A4(
+									_user$project$Lia_Survey_View$input,
+									type_,
+									msgX,
+									$var,
+									fn(_p4)),
+								_1: {ctor: '[]'}
+							});
+					},
+					vars),
+				{
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$td,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: _user$project$Lia_Survey_View$inline(_p3._1),
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				}));
+	});
+var _user$project$Lia_Survey_View$view_matrix = F4(
+	function (vars, questions, fn, submitted) {
+		var th = A2(
+			_elm_lang$html$Html$thead,
+			{ctor: '[]'},
+			A2(
+				_elm_lang$core$List$map,
+				function (v) {
+					return A2(
+						_elm_lang$html$Html$td,
+						{
+							ctor: '::',
+							_0: _user$project$Lia_Survey_View$mat_attr,
+							_1: {ctor: '[]'}
+						},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text(v),
+							_1: {ctor: '[]'}
+						});
+				},
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					vars,
+					{
+						ctor: '::',
+						_0: '',
+						_1: {ctor: '[]'}
+					})));
+		return A2(
+			_elm_lang$html$Html$table,
+			{ctor: '[]'},
+			A2(
+				_elm_lang$core$List$append,
+				{
+					ctor: '::',
+					_0: th,
+					_1: {ctor: '[]'}
+				},
+				A2(
+					_elm_lang$core$List$map,
+					fn,
+					A2(
+						_elm_lang$core$List$indexedMap,
+						F2(
+							function (v0, v1) {
+								return {ctor: '_Tuple2', _0: v0, _1: v1};
+							}),
+						questions))));
+	});
+var _user$project$Lia_Survey_View$view_vector = F3(
+	function (questions, fn, submitted) {
+		return A2(
+			_elm_lang$html$Html$div,
+			{ctor: '[]'},
+			A2(_elm_lang$core$List$map, fn, questions));
+	});
+var _user$project$Lia_Survey_View$view_text = F4(
+	function (str, lines, idx, submitted) {
+		var attr = {
+			ctor: '::',
+			_0: _elm_lang$html$Html_Events$onInput(
+				_user$project$Lia_Survey_Update$TextInput(idx)),
+			_1: {
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$value(str),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$disabled(submitted),
+					_1: {ctor: '[]'}
+				}
+			}
+		};
+		return A2(
+			_elm_lang$html$Html$div,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: function () {
+					var _p5 = lines;
+					if (_p5 === 1) {
+						return A2(
+							_elm_lang$html$Html$input,
+							attr,
+							{ctor: '[]'});
+					} else {
+						return A2(
+							_elm_lang$html$Html$textarea,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$rows(lines),
+								_1: attr
+							},
+							{ctor: '[]'});
+					}
+				}(),
+				_1: {ctor: '[]'}
+			});
+	});
+var _user$project$Lia_Survey_View$submit_button = F2(
+	function (submitted, idx) {
+		return A2(
+			_elm_lang$html$Html$div,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$button,
+					{
+						ctor: '::',
+						_0: submitted ? _elm_lang$html$Html_Attributes$disabled(true) : _elm_lang$html$Html_Events$onClick(
+							_user$project$Lia_Survey_Update$Submit(idx)),
+						_1: {ctor: '[]'}
+					},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text('Submit'),
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			});
+	});
+var _user$project$Lia_Survey_View$view_survey = F3(
+	function (model, idx, fn) {
+		var submitted = A2(_user$project$Lia_Survey_Model$get_submission_state, model, idx);
+		return {
+			ctor: '::',
+			_0: fn(submitted),
+			_1: {
+				ctor: '::',
+				_0: A2(_user$project$Lia_Survey_View$submit_button, submitted, idx),
+				_1: {ctor: '[]'}
+			}
+		};
+	});
+var _user$project$Lia_Survey_View$view = F2(
+	function (model, survey) {
+		var mat = F5(
+			function (type_, msg, fn, vars, questions) {
+				return A3(
+					_user$project$Lia_Survey_View$view_matrix,
+					vars,
+					questions,
+					A4(_user$project$Lia_Survey_View$matrix, type_, msg, fn, vars));
+			});
+		var vec = F4(
+			function (type_, msg, fn, questions) {
+				return A2(
+					_user$project$Lia_Survey_View$view_vector,
+					questions,
+					A3(_user$project$Lia_Survey_View$vector, type_, msg, fn));
+			});
+		return A2(
+			_elm_lang$html$Html$p,
+			{ctor: '[]'},
+			function () {
+				var _p6 = survey;
+				switch (_p6.ctor) {
+					case 'Text':
+						var _p7 = _p6._1;
+						return A3(
+							_user$project$Lia_Survey_View$view_survey,
+							model,
+							_p7,
+							A3(
+								_user$project$Lia_Survey_View$view_text,
+								A2(_user$project$Lia_Survey_Model$get_text_state, model, _p7),
+								_p6._0,
+								_p7));
+					case 'SingleChoice':
+						var _p8 = _p6._1;
+						return A3(
+							_user$project$Lia_Survey_View$view_survey,
+							model,
+							_p8,
+							A4(
+								vec,
+								'radio',
+								_user$project$Lia_Survey_Update$Vector(_p8),
+								A2(_user$project$Lia_Survey_Model$get_vector_state, model, _p8),
+								_p6._0));
+					case 'MultiChoice':
+						var _p9 = _p6._1;
+						return A3(
+							_user$project$Lia_Survey_View$view_survey,
+							model,
+							_p9,
+							A4(
+								vec,
+								'checkbox',
+								_user$project$Lia_Survey_Update$Vector(_p9),
+								A2(_user$project$Lia_Survey_Model$get_vector_state, model, _p9),
+								_p6._0));
+					case 'SingleChoiceBlock':
+						var _p10 = _p6._2;
+						return A3(
+							_user$project$Lia_Survey_View$view_survey,
+							model,
+							_p10,
+							A5(
+								mat,
+								'radio',
+								_user$project$Lia_Survey_Update$Matrix(_p10),
+								A2(_user$project$Lia_Survey_Model$get_matrix_state, model, _p10),
+								_p6._0,
+								_p6._1));
+					default:
+						var _p11 = _p6._2;
+						return A3(
+							_user$project$Lia_Survey_View$view_survey,
+							model,
+							_p11,
+							A5(
+								mat,
+								'checkbox',
+								_user$project$Lia_Survey_Update$Matrix(_p11),
+								A2(_user$project$Lia_Survey_Model$get_matrix_state, model, _p11),
+								_p6._0,
+								_p6._1));
+				}
+			}());
+	});
+
 var _user$project$Lia_View$view_table = F4(
 	function (model, header, format, body) {
 		var style_ = _elm_lang$html$Html_Attributes$style(
@@ -14847,6 +15722,11 @@ var _user$project$Lia_View$view_block = F2(
 					_elm_lang$html$Html$map,
 					_user$project$Lia_Update$UpdateQuiz,
 					A2(_user$project$Lia_Quiz_View$view, model.quiz_model, _p3._0));
+			case 'SurveyBlock':
+				return A2(
+					_elm_lang$html$Html$map,
+					_user$project$Lia_Update$UpdateSurvey,
+					A2(_user$project$Lia_Survey_View$view, model.survey_model, _p3._0));
 			case 'EBlock':
 				return A5(
 					_user$project$Lia_Effect_View$view_block,
@@ -15222,7 +16102,7 @@ var _user$project$Lia$parse = function (model) {
 	var _p0 = _user$project$Lia_Parser$run(model.script);
 	if (_p0.ctor === 'Ok') {
 		var _p2 = _p0._0._0;
-		var _p1 = _p0._0._3;
+		var _p1 = _p0._0._4;
 		return _elm_lang$core$Native_Utils.update(
 			model,
 			{
@@ -15235,6 +16115,7 @@ var _user$project$Lia$parse = function (model) {
 					_p1,
 					_elm_lang$core$List$head(_p2)),
 				code_model: _user$project$Lia_Code_Model$init(_p0._0._1),
+				survey_model: _p0._0._3,
 				narator: _elm_lang$core$Native_Utils.eq(_p1, '') ? 'US English Male' : _p1
 			});
 	} else {
@@ -15261,6 +16142,7 @@ var _user$project$Lia$init = F2(
 				show_contents: true,
 				quiz_model: _elm_lang$core$Array$empty,
 				code_model: _elm_lang$core$Array$empty,
+				survey_model: _elm_lang$core$Array$empty,
 				index_model: _user$project$Lia_Index_Model$init(
 					{ctor: '[]'}),
 				effect_model: A2(_user$project$Lia_Effect_Model$init, 'US English Male', _elm_lang$core$Maybe$Nothing),

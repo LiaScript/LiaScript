@@ -1,4 +1,12 @@
-module Lia.Inline.Types exposing (Inline(..), Reference(..), Url(..))
+module Lia.Inline.Types exposing (ID, Inline(..), Line, Reference(..), Url(..))
+
+
+type alias Line =
+    List Inline
+
+
+type alias ID =
+    Int
 
 
 type Inline

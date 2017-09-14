@@ -14,6 +14,7 @@ import Lia.Inline.Types exposing (Inline)
 import Lia.Inline.View as Elem
 import Lia.Model exposing (Model)
 import Lia.Quiz.View
+import Lia.Survey.View
 import Lia.Types exposing (..)
 import Lia.Update exposing (Msg(..))
 
@@ -199,6 +200,9 @@ view_block model block =
 
         Quiz quiz ->
             Html.map UpdateQuiz <| Lia.Quiz.View.view model.quiz_model quiz
+
+        SurveyBlock survey ->
+            Html.map UpdateSurvey <| Lia.Survey.View.view model.survey_model survey
 
         EBlock idx effect_name sub_blocks ->
             Effects.view_block model.effect_model (view_block model) idx effect_name sub_blocks

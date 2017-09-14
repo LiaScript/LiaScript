@@ -1,4 +1,4 @@
-module Lia.Inline.View exposing (reference, view)
+module Lia.Inline.View exposing (reference, view, view_inf)
 
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -48,6 +48,11 @@ view visible element =
 
         EInline idx effect_name elements ->
             Effect.view (view visible) idx visible effect_name elements
+
+
+view_inf : Inline -> Html msg
+view_inf =
+    view 99999
 
 
 reference : Reference -> Html msg

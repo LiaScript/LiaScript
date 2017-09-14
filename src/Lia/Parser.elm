@@ -8,6 +8,8 @@ import Lia.Inline.Types exposing (Inline(..))
 import Lia.PState exposing (PState)
 import Lia.Quiz.Parser exposing (..)
 import Lia.Quiz.Types exposing (QuizVector)
+import Lia.Survey.Parser as Survey
+import Lia.Survey.Types exposing (SurveyVector)
 import Lia.Types exposing (..)
 
 
@@ -41,6 +43,7 @@ blocks =
                         , CodeBlock <$> code
                         , quote_block
                         , horizontal_line
+                        , SurveyBlock <$> Survey.parse
                         , Quiz <$> quiz
                         , ordered_list
                         , unordered_list
@@ -104,28 +107,29 @@ table : Parser PState Block
 table =
     let
         ending =
-            string "|" <* (whitespace <* newline)
+            regex "\\|[ \\t]*" *> newline
 
         row =
-            string "|" *> sepBy1 (string "|") (many1 inlines) <* ending
+            identation *> manyTill (string "|" *> many inlines) ending
 
         format =
-            string "|"
+            identation
+                *> string "|"
                 *> sepBy1 (string "|")
                     (choice
-                        [ regex ":--[\\-]+:" $> "center"
-                        , regex ":--[\\-]+" $> "left"
-                        , regex "--[\\-]+:" $> "right"
-                        , regex "--[\\-]+" $> "left"
+                        [ regex "[ \\t]*:--[\\-]+:[ \\t]*" $> "center"
+                        , regex "[ \\t]*:--[\\-]+[ \\t]*" $> "left"
+                        , regex "[ \\t]*--[\\-]+:[ \\t]*" $> "right"
+                        , regex "[ \\t]*--[\\-]+[ \\t]*" $> "left"
                         ]
                     )
                 <* ending
 
         simple_table =
-            Table [] [] <$> many1 row <* newline
+            (Table [] [] <$> many1 row) <* newline
 
         format_table =
-            Table <$> row <*> format <*> many row <* newline
+            (Table <$> row <*> format <*> many row) <* newline
     in
     choice [ format_table, simple_table ]
 
@@ -204,11 +208,11 @@ define_comment =
     skip (comment (regex "[ \\t\\n]*" *> choice list <* regex "[\n]+"))
 
 
-run : String -> Result String ( List Slide, Int, QuizVector, String )
+run : String -> Result String ( List Slide, Int, QuizVector, SurveyVector, String )
 run script =
     case Combine.runParser parse Lia.PState.init script of
         Ok ( state, _, es ) ->
-            Ok ( es, state.num_code, state.quiz_vector, state.def_narator )
+            Ok ( es, state.num_code, state.quiz_vector, state.survey_vector, state.def_narator )
 
         Err ( _, stream, ms ) ->
             Err <| formatError ms stream

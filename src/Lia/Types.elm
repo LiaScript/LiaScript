@@ -1,8 +1,9 @@
-module Lia.Types exposing (Block(..), Mode(..), Paragraph, Slide)
+module Lia.Types exposing (Block(..), Id, Mode(..), Paragraph, Slide)
 
 import Lia.Code.Types exposing (Code)
 import Lia.Inline.Types exposing (..)
 import Lia.Quiz.Types exposing (QuizBlock)
+import Lia.Survey.Types exposing (Survey)
 
 
 type Mode
@@ -22,6 +23,10 @@ type alias Paragraph =
     List Inline
 
 
+type alias Id =
+    Int
+
+
 type Block
     = HLine
     | CodeBlock Code
@@ -33,3 +38,4 @@ type Block
     | EComment Int Paragraph
     | BulletList (List (List Block))
     | OrderedList (List (List Block))
+    | SurveyBlock Survey

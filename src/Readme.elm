@@ -315,4 +315,49 @@ But I do not like it the oposite way.
 
 ### Comment Effects
 
+
+## Tables
+
+
+| Tables        | Are           | Cool  |
+| ------------- |:-------------:| -----:|
+| col 3 is      | right-aligned | $1600 |
+| col 2 is      | centered      |   $12 |
+| zebra stripes | are neat      |    $1 |
+
+## Surveys
+
+Text :
+
+    [[___ ___ ___ ___]]
+
+Single Choice
+
+    [(1)] test 222
+    [(2)] oder *333*
+    [(3)] 1111
+    [(4)] 1111
+
+Multi Choice
+
+    [[1]] test 222
+    [[2]] oder *333*
+    [[3]] 1111
+    [[4]] 1111
+
+Single Choice Matrix
+
+    [(1)(2)(3)(4)(5)(6)(7)]
+    [                     ] test 1
+    [                     ] test 2
+    [                     ] test 3
+
+Multi Choice Matrix
+
+    [[1][2][3][4][5][6][7]]
+    [                     ] test 1
+    [                     ] test 4
+    [                     ] test 3
+
+
 """
