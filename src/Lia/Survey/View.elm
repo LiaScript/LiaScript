@@ -54,13 +54,10 @@ view_survey model idx fn =
 submit_button : Bool -> ID -> Html Msg
 submit_button submitted idx =
     Html.div []
-        [ Html.button
-            [ if submitted then
-                Attr.disabled True
-              else
-                onClick <| Submit idx
-            ]
-            [ Html.text "Submit" ]
+        [ if submitted then
+            Html.button [ Attr.disabled True ] [ Html.text "Thanks" ]
+          else
+            Html.button [ onClick <| Submit idx ] [ Html.text "Submit" ]
         ]
 
 
@@ -83,29 +80,29 @@ view_text str lines idx submitted =
         ]
 
 
-
---view_vector : String -> (Var -> Msg) -> (Var -> Bool) -> List ( Var, Line ) -> Bool -> Html Msg
---view_vector : List Line -> (Line -> Html Msg) -> Bool -> Html Msg
-
-
+view_vector : List ( Var, Line ) -> (Bool -> ( Var, Line ) -> Html Msg) -> Bool -> Html Msg
 view_vector questions fn submitted =
-    Html.div [] <| List.map fn questions
+    let
+        fnX =
+            fn submitted
+    in
+    Html.div [] <| List.map fnX questions
 
 
-
---view_matrix : String -> (ID -> Var -> Msg) -> (Int -> Var -> Bool) -> List Var -> List Line -> Bool -> Html Msg
-
-
+view_matrix : List Var -> List Line -> (Bool -> ( Int, Line ) -> Html Msg) -> Bool -> Html Msg
 view_matrix vars questions fn submitted =
     let
         th =
             (vars ++ [ "" ])
                 |> List.map (\v -> Html.td [ mat_attr ] [ Html.text v ])
                 |> Html.thead []
+
+        fnX =
+            fn submitted
     in
     questions
         |> List.indexedMap (,)
-        |> List.map fn
+        |> List.map fnX
         |> List.append [ th ]
         |> Html.table []
 
@@ -115,35 +112,41 @@ mat_attr =
     Attr.align "center"
 
 
-vector : String -> (Var -> Msg) -> (Var -> Bool) -> ( Var, Line ) -> Html Msg
-vector type_ msg fn ( var, elements ) =
-    Html.p [] [ input type_ msg var fn, inline elements ]
+vector : String -> (Var -> Msg) -> (Var -> Bool) -> Bool -> ( Var, Line ) -> Html Msg
+vector type_ msg fn submitted ( var, elements ) =
+    Html.p [] [ input type_ (msg var) (fn var) submitted, inline elements ]
 
 
-matrix : String -> (ID -> Var -> Msg) -> (ID -> Var -> Bool) -> List Var -> ( ID, Line ) -> Html Msg
-matrix type_ msg fn vars ( row, elements ) =
+matrix : String -> (ID -> Var -> Msg) -> (ID -> Var -> Bool) -> List Var -> Bool -> ( ID, Line ) -> Html Msg
+matrix type_ msg fn vars submitted ( row, elements ) =
     let
         msgX =
             msg row
+
+        fnX =
+            fn row
     in
     Html.tr [] <|
         List.append
             (List.map
                 (\var ->
                     Html.td [ mat_attr ]
-                        [ input type_ msgX var (fn row) ]
+                        [ input type_ (msgX var) (fnX var) submitted ]
                 )
                 vars
             )
             [ Html.td [] [ inline elements ] ]
 
 
-input : String -> (Var -> Msg) -> Var -> (Var -> Bool) -> Html Msg
-input type_ msg var fn =
+input : String -> Msg -> Bool -> Bool -> Html Msg
+input type_ msg checked submitted =
     Html.input
         [ Attr.type_ type_
-        , onClick (msg var)
-        , Attr.checked (fn var)
+        , Attr.checked checked
+        , if submitted then
+            Attr.disabled True
+          else
+            onClick msg
         ]
         []
 
