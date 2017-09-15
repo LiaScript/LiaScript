@@ -19,15 +19,11 @@ type alias SurveyElement =
 
 type SurveyState
     = TextState String
-    | SingleChoiceState (Dict Var Bool)
-    | MultiChoiceState (Dict Var Bool)
-    | SingleChoiceBlockState (Array (Dict Var Bool))
-    | MultiChoiceBlockState (Array (Dict Var Bool))
+    | VectorState Bool (Dict Var Bool)
+    | MatrixState Bool (Array (Dict Var Bool))
 
 
 type Survey
     = Text Int ID
-    | SingleChoice (List ( Var, Line )) ID
-    | MultiChoice (List ( Var, Line )) ID
-    | SingleChoiceBlock (List Var) (List Line) ID
-    | MultiChoiceBlock (List Var) (List Line) ID
+    | Vector Bool (List ( Var, Line )) ID
+    | Matrix Bool (List Var) (List Line) ID

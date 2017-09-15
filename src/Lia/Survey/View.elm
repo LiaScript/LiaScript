@@ -25,20 +25,12 @@ view model survey =
                 view_text (get_text_state model idx) lines idx
                     |> view_survey model idx
 
-            SingleChoice questions idx ->
-                vec "radio" (Vector idx) (get_vector_state model idx) questions
+            Vector button questions idx ->
+                vec button (VectorUpdate idx) (get_vector_state model idx) questions
                     |> view_survey model idx
 
-            MultiChoice questions idx ->
-                vec "checkbox" (Vector idx) (get_vector_state model idx) questions
-                    |> view_survey model idx
-
-            SingleChoiceBlock vars questions idx ->
-                mat "radio" (Matrix idx) (get_matrix_state model idx) vars questions
-                    |> view_survey model idx
-
-            MultiChoiceBlock vars questions idx ->
-                mat "checkbox" (Matrix idx) (get_matrix_state model idx) vars questions
+            Matrix button vars questions idx ->
+                mat button (MatrixUpdate idx) (get_matrix_state model idx) vars questions
                     |> view_survey model idx
 
 
@@ -65,7 +57,7 @@ view_text : String -> Int -> ID -> Bool -> Html Msg
 view_text str lines idx submitted =
     let
         attr =
-            [ onInput <| TextInput idx
+            [ onInput <| TextUpdate idx
             , Attr.value str
             , Attr.disabled submitted
             ]
@@ -112,13 +104,13 @@ mat_attr =
     Attr.align "center"
 
 
-vector : String -> (Var -> Msg) -> (Var -> Bool) -> Bool -> ( Var, Line ) -> Html Msg
-vector type_ msg fn submitted ( var, elements ) =
-    Html.p [] [ input type_ (msg var) (fn var) submitted, inline elements ]
+vector : Bool -> (Var -> Msg) -> (Var -> Bool) -> Bool -> ( Var, Line ) -> Html Msg
+vector button msg fn submitted ( var, elements ) =
+    Html.p [] [ input button (msg var) (fn var) submitted, inline elements ]
 
 
-matrix : String -> (ID -> Var -> Msg) -> (ID -> Var -> Bool) -> List Var -> Bool -> ( ID, Line ) -> Html Msg
-matrix type_ msg fn vars submitted ( row, elements ) =
+matrix : Bool -> (ID -> Var -> Msg) -> (ID -> Var -> Bool) -> List Var -> Bool -> ( ID, Line ) -> Html Msg
+matrix button msg fn vars submitted ( row, elements ) =
     let
         msgX =
             msg row
@@ -131,17 +123,21 @@ matrix type_ msg fn vars submitted ( row, elements ) =
             (List.map
                 (\var ->
                     Html.td [ mat_attr ]
-                        [ input type_ (msgX var) (fnX var) submitted ]
+                        [ input button (msgX var) (fnX var) submitted ]
                 )
                 vars
             )
             [ Html.td [] [ inline elements ] ]
 
 
-input : String -> Msg -> Bool -> Bool -> Html Msg
-input type_ msg checked submitted =
+input : Bool -> Msg -> Bool -> Bool -> Html Msg
+input button msg checked submitted =
     Html.input
-        [ Attr.type_ type_
+        [ Attr.type_ <|
+            if button then
+                "radio"
+            else
+                "checkbox"
         , Attr.checked checked
         , if submitted then
             Attr.disabled True

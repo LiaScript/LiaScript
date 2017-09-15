@@ -13,22 +13,22 @@ import Lia.Survey.Types exposing (..)
 
 
 type Msg
-    = TextInput ID String
-    | Vector ID String
-    | Matrix ID ID String
+    = TextUpdate ID String
+    | VectorUpdate ID String
+    | MatrixUpdate ID ID String
     | Submit ID
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        TextInput idx str ->
+        TextUpdate idx str ->
             ( update_text model idx str, Cmd.none )
 
-        Vector idx var ->
+        VectorUpdate idx var ->
             ( update_vector model idx var, Cmd.none )
 
-        Matrix idx row var ->
+        MatrixUpdate idx row var ->
             ( update_matrix model idx row var, Cmd.none )
 
         Submit idx ->
@@ -48,17 +48,17 @@ update_text model idx str =
 update_vector : Model -> ID -> String -> Model
 update_vector model idx var =
     case Array.get idx model of
-        Just ( False, SingleChoiceState vector ) ->
+        Just ( False, VectorState False vector ) ->
             vector
                 |> Dict.map (\_ _ -> False)
                 |> Dict.update var (\_ -> Just True)
-                |> SingleChoiceState
+                |> VectorState False
                 |> set_state model idx
 
-        Just ( False, MultiChoiceState vector ) ->
+        Just ( False, VectorState True vector ) ->
             vector
                 |> Dict.update var (\b -> Maybe.map not b)
-                |> MultiChoiceState
+                |> VectorState True
                 |> set_state model idx
 
         _ ->
@@ -68,7 +68,7 @@ update_vector model idx var =
 update_matrix : Model -> ID -> ID -> String -> Model
 update_matrix model idx row var =
     case Array.get idx model of
-        Just ( False, SingleChoiceBlockState matrix ) ->
+        Just ( False, MatrixState False matrix ) ->
             let
                 vector =
                     Array.get row matrix
@@ -78,10 +78,10 @@ update_matrix model idx row var =
                 |> Maybe.map (\d -> Dict.update var (\_ -> Just True) d)
                 |> Maybe.map (\d -> Array.set row d matrix)
                 |> Maybe.withDefault matrix
-                |> SingleChoiceBlockState
+                |> MatrixState False
                 |> set_state model idx
 
-        Just ( False, MultiChoiceBlockState matrix ) ->
+        Just ( False, MatrixState True matrix ) ->
             let
                 vector =
                     Array.get row matrix
@@ -90,7 +90,7 @@ update_matrix model idx row var =
                 |> Maybe.map (\d -> Dict.update var (\b -> Maybe.map not b) d)
                 |> Maybe.map (\d -> Array.set row d matrix)
                 |> Maybe.withDefault matrix
-                |> MultiChoiceBlockState
+                |> MatrixState True
                 |> set_state model idx
 
         _ ->

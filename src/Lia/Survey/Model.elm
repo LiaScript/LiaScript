@@ -40,18 +40,11 @@ get_text_state model idx =
 
 get_vector_state : Model -> Int -> String -> Bool
 get_vector_state model idx var =
-    let
-        bool s =
-            s
+    case Array.get idx model of
+        Just ( _, VectorState _ state ) ->
+            state
                 |> Dict.get var
                 |> Maybe.withDefault False
-    in
-    case Array.get idx model of
-        Just ( _, SingleChoiceState s ) ->
-            bool s
-
-        Just ( _, MultiChoiceState s ) ->
-            bool s
 
         _ ->
             False
@@ -59,19 +52,12 @@ get_vector_state model idx var =
 
 get_matrix_state : Model -> Int -> Int -> String -> Bool
 get_matrix_state model idx row var =
-    let
-        bool s =
-            s
+    case Array.get idx model of
+        Just ( _, MatrixState _ matrix ) ->
+            matrix
                 |> Array.get row
                 |> Maybe.andThen (\d -> Dict.get var d)
                 |> Maybe.withDefault False
-    in
-    case Array.get idx model of
-        Just ( _, SingleChoiceBlockState matrix ) ->
-            bool matrix
-
-        Just ( _, MultiChoiceBlockState matrix ) ->
-            bool matrix
 
         _ ->
             False
@@ -103,14 +89,14 @@ state2json state =
             TextState str ->
                 [ ( "Text", string str ) ]
 
-            SingleChoiceState vector ->
+            VectorState True vector ->
                 [ ( "SingleChoice", dict2json vector ) ]
 
-            MultiChoiceState vector ->
+            VectorState False vector ->
                 [ ( "MultiChoice", dict2json vector ) ]
 
-            SingleChoiceBlockState matrix ->
+            MatrixState True matrix ->
                 [ ( "SingleChoiceBlock", matrix |> Array.map dict2json |> array ) ]
 
-            MultiChoiceBlockState matrix ->
+            MatrixState False matrix ->
                 [ ( "MultiChoiceBlock", matrix |> Array.map dict2json |> array ) ]

@@ -14432,36 +14432,24 @@ var _user$project$Lia_Quiz_Types$SingleChoice = F2(
 		return {ctor: 'SingleChoice', _0: a, _1: b};
 	});
 
-var _user$project$Lia_Survey_Types$MultiChoiceBlockState = function (a) {
-	return {ctor: 'MultiChoiceBlockState', _0: a};
-};
-var _user$project$Lia_Survey_Types$SingleChoiceBlockState = function (a) {
-	return {ctor: 'SingleChoiceBlockState', _0: a};
-};
-var _user$project$Lia_Survey_Types$MultiChoiceState = function (a) {
-	return {ctor: 'MultiChoiceState', _0: a};
-};
-var _user$project$Lia_Survey_Types$SingleChoiceState = function (a) {
-	return {ctor: 'SingleChoiceState', _0: a};
-};
+var _user$project$Lia_Survey_Types$MatrixState = F2(
+	function (a, b) {
+		return {ctor: 'MatrixState', _0: a, _1: b};
+	});
+var _user$project$Lia_Survey_Types$VectorState = F2(
+	function (a, b) {
+		return {ctor: 'VectorState', _0: a, _1: b};
+	});
 var _user$project$Lia_Survey_Types$TextState = function (a) {
 	return {ctor: 'TextState', _0: a};
 };
-var _user$project$Lia_Survey_Types$MultiChoiceBlock = F3(
+var _user$project$Lia_Survey_Types$Matrix = F4(
+	function (a, b, c, d) {
+		return {ctor: 'Matrix', _0: a, _1: b, _2: c, _3: d};
+	});
+var _user$project$Lia_Survey_Types$Vector = F3(
 	function (a, b, c) {
-		return {ctor: 'MultiChoiceBlock', _0: a, _1: b, _2: c};
-	});
-var _user$project$Lia_Survey_Types$SingleChoiceBlock = F3(
-	function (a, b, c) {
-		return {ctor: 'SingleChoiceBlock', _0: a, _1: b, _2: c};
-	});
-var _user$project$Lia_Survey_Types$MultiChoice = F2(
-	function (a, b) {
-		return {ctor: 'MultiChoice', _0: a, _1: b};
-	});
-var _user$project$Lia_Survey_Types$SingleChoice = F2(
-	function (a, b) {
-		return {ctor: 'SingleChoice', _0: a, _1: b};
+		return {ctor: 'Vector', _0: a, _1: b, _2: c};
 	});
 var _user$project$Lia_Survey_Types$Text = F2(
 	function (a, b) {
@@ -14800,9 +14788,113 @@ var _user$project$Lia_Quiz_Model$get_hint_counter = F2(
 		}
 	});
 
+var _user$project$Lia_Survey_Model$state2json = function (state) {
+	var dict2json = function (dict) {
+		return _elm_lang$core$Json_Encode$object(
+			A2(
+				_elm_lang$core$List$map,
+				function (_p0) {
+					var _p1 = _p0;
+					return {
+						ctor: '_Tuple2',
+						_0: _p1._0,
+						_1: _elm_lang$core$Json_Encode$bool(_p1._1)
+					};
+				},
+				_elm_lang$core$Dict$toList(dict)));
+	};
+	return _elm_lang$core$Json_Encode$object(
+		function () {
+			var _p2 = state;
+			switch (_p2.ctor) {
+				case 'TextState':
+					return {
+						ctor: '::',
+						_0: {
+							ctor: '_Tuple2',
+							_0: 'Text',
+							_1: _elm_lang$core$Json_Encode$string(_p2._0)
+						},
+						_1: {ctor: '[]'}
+					};
+				case 'VectorState':
+					if (_p2._0 === true) {
+						return {
+							ctor: '::',
+							_0: {
+								ctor: '_Tuple2',
+								_0: 'SingleChoice',
+								_1: dict2json(_p2._1)
+							},
+							_1: {ctor: '[]'}
+						};
+					} else {
+						return {
+							ctor: '::',
+							_0: {
+								ctor: '_Tuple2',
+								_0: 'MultiChoice',
+								_1: dict2json(_p2._1)
+							},
+							_1: {ctor: '[]'}
+						};
+					}
+				default:
+					if (_p2._0 === true) {
+						return {
+							ctor: '::',
+							_0: {
+								ctor: '_Tuple2',
+								_0: 'SingleChoiceBlock',
+								_1: _elm_lang$core$Json_Encode$array(
+									A2(_elm_lang$core$Array$map, dict2json, _p2._1))
+							},
+							_1: {ctor: '[]'}
+						};
+					} else {
+						return {
+							ctor: '::',
+							_0: {
+								ctor: '_Tuple2',
+								_0: 'MultiChoiceBlock',
+								_1: _elm_lang$core$Json_Encode$array(
+									A2(_elm_lang$core$Array$map, dict2json, _p2._1))
+							},
+							_1: {ctor: '[]'}
+						};
+					}
+			}
+		}());
+};
+var _user$project$Lia_Survey_Model$element2json = function (_p3) {
+	var _p4 = _p3;
+	return _elm_lang$core$Json_Encode$object(
+		{
+			ctor: '::',
+			_0: {
+				ctor: '_Tuple2',
+				_0: 'submitted',
+				_1: _elm_lang$core$Json_Encode$bool(_p4._0)
+			},
+			_1: {
+				ctor: '::',
+				_0: {
+					ctor: '_Tuple2',
+					_0: 'state',
+					_1: _user$project$Lia_Survey_Model$state2json(_p4._1)
+				},
+				_1: {ctor: '[]'}
+			}
+		});
+};
+var _user$project$Lia_Survey_Model$model2json = function (vector) {
+	return _elm_lang$core$Json_Encode$array(
+		A2(_elm_lang$core$Array$map, _user$project$Lia_Survey_Model$element2json, vector));
+};
 var _user$project$Lia_Survey_Model$get_matrix_state = F4(
 	function (model, idx, row, $var) {
-		var bool = function (s) {
+		var _p5 = A2(_elm_lang$core$Array$get, idx, model);
+		if (((_p5.ctor === 'Just') && (_p5._0.ctor === '_Tuple2')) && (_p5._0._1.ctor === 'MatrixState')) {
 			return A2(
 				_elm_lang$core$Maybe$withDefault,
 				false,
@@ -14811,65 +14903,36 @@ var _user$project$Lia_Survey_Model$get_matrix_state = F4(
 					function (d) {
 						return A2(_elm_lang$core$Dict$get, $var, d);
 					},
-					A2(_elm_lang$core$Array$get, row, s)));
-		};
-		var _p0 = A2(_elm_lang$core$Array$get, idx, model);
-		_v0_2:
-		do {
-			if ((_p0.ctor === 'Just') && (_p0._0.ctor === '_Tuple2')) {
-				switch (_p0._0._1.ctor) {
-					case 'SingleChoiceBlockState':
-						return bool(_p0._0._1._0);
-					case 'MultiChoiceBlockState':
-						return bool(_p0._0._1._0);
-					default:
-						break _v0_2;
-				}
-			} else {
-				break _v0_2;
-			}
-		} while(false);
-		return false;
+					A2(_elm_lang$core$Array$get, row, _p5._0._1._1)));
+		} else {
+			return false;
+		}
 	});
 var _user$project$Lia_Survey_Model$get_vector_state = F3(
 	function (model, idx, $var) {
-		var bool = function (s) {
+		var _p6 = A2(_elm_lang$core$Array$get, idx, model);
+		if (((_p6.ctor === 'Just') && (_p6._0.ctor === '_Tuple2')) && (_p6._0._1.ctor === 'VectorState')) {
 			return A2(
 				_elm_lang$core$Maybe$withDefault,
 				false,
-				A2(_elm_lang$core$Dict$get, $var, s));
-		};
-		var _p1 = A2(_elm_lang$core$Array$get, idx, model);
-		_v1_2:
-		do {
-			if ((_p1.ctor === 'Just') && (_p1._0.ctor === '_Tuple2')) {
-				switch (_p1._0._1.ctor) {
-					case 'SingleChoiceState':
-						return bool(_p1._0._1._0);
-					case 'MultiChoiceState':
-						return bool(_p1._0._1._0);
-					default:
-						break _v1_2;
-				}
-			} else {
-				break _v1_2;
-			}
-		} while(false);
-		return false;
+				A2(_elm_lang$core$Dict$get, $var, _p6._0._1._1));
+		} else {
+			return false;
+		}
 	});
 var _user$project$Lia_Survey_Model$get_text_state = F2(
 	function (model, idx) {
-		var _p2 = A2(_elm_lang$core$Array$get, idx, model);
-		if (((_p2.ctor === 'Just') && (_p2._0.ctor === '_Tuple2')) && (_p2._0._1.ctor === 'TextState')) {
-			return _p2._0._1._0;
+		var _p7 = A2(_elm_lang$core$Array$get, idx, model);
+		if (((_p7.ctor === 'Just') && (_p7._0.ctor === '_Tuple2')) && (_p7._0._1.ctor === 'TextState')) {
+			return _p7._0._1._0;
 		} else {
 			return '';
 		}
 	});
 var _user$project$Lia_Survey_Model$get_submission_state = F2(
 	function (model, idx) {
-		var _p3 = A2(_elm_lang$core$Array$get, idx, model);
-		if (((_p3.ctor === 'Just') && (_p3._0.ctor === '_Tuple2')) && (_p3._0._0 === true)) {
+		var _p8 = A2(_elm_lang$core$Array$get, idx, model);
+		if (((_p8.ctor === 'Just') && (_p8._0.ctor === '_Tuple2')) && (_p8._0._0 === true)) {
 			return true;
 		} else {
 			return false;
@@ -16095,46 +16158,30 @@ var _user$project$Lia_Survey_Parser$modify_PState = function (survey_) {
 		switch (_p0.ctor) {
 			case 'Text':
 				return _user$project$Lia_Survey_Types$TextState('');
-			case 'SingleChoice':
-				return _user$project$Lia_Survey_Types$SingleChoiceState(
+			case 'Vector':
+				return A2(
+					_user$project$Lia_Survey_Types$VectorState,
+					_p0._0,
 					A2(
 						extractor,
 						function (_p1) {
 							var _p2 = _p1;
 							return {ctor: '_Tuple2', _0: _p2._0, _1: false};
 						},
-						_p0._0));
-			case 'MultiChoice':
-				return _user$project$Lia_Survey_Types$MultiChoiceState(
-					A2(
-						extractor,
-						function (_p3) {
-							var _p4 = _p3;
-							return {ctor: '_Tuple2', _0: _p4._0, _1: false};
-						},
-						_p0._0));
-			case 'SingleChoiceBlock':
-				return _user$project$Lia_Survey_Types$SingleChoiceBlockState(
-					A2(
-						_elm_lang$core$Array$repeat,
-						_elm_lang$core$List$length(_p0._1),
-						A2(
-							extractor,
-							function (v) {
-								return {ctor: '_Tuple2', _0: v, _1: false};
-							},
-							_p0._0)));
+						_p0._1));
 			default:
-				return _user$project$Lia_Survey_Types$MultiChoiceBlockState(
+				return A2(
+					_user$project$Lia_Survey_Types$MatrixState,
+					_p0._0,
 					A2(
 						_elm_lang$core$Array$repeat,
-						_elm_lang$core$List$length(_p0._1),
+						_elm_lang$core$List$length(_p0._2),
 						A2(
 							extractor,
 							function (v) {
 								return {ctor: '_Tuple2', _0: v, _1: false};
 							},
-							_p0._0)));
+							_p0._1)));
 		}
 	}();
 	var add_state = F2(
@@ -16257,30 +16304,30 @@ var _user$project$Lia_Survey_Parser$survey = A2(
 				ctor: '::',
 				_0: A2(
 					_elm_community$parser_combinators$Combine_ops['<$>'],
-					_user$project$Lia_Survey_Types$SingleChoice,
+					_user$project$Lia_Survey_Types$Vector(false),
 					_user$project$Lia_Survey_Parser$vector(_elm_community$parser_combinators$Combine$parens)),
 				_1: {
 					ctor: '::',
 					_0: A2(
-						_elm_community$parser_combinators$Combine_ops['<*>'],
-						A2(
-							_elm_community$parser_combinators$Combine_ops['<$>'],
-							_user$project$Lia_Survey_Types$SingleChoiceBlock,
-							_user$project$Lia_Survey_Parser$header(_elm_community$parser_combinators$Combine$parens)),
-						_user$project$Lia_Survey_Parser$questions),
+						_elm_community$parser_combinators$Combine_ops['<$>'],
+						_user$project$Lia_Survey_Types$Vector(true),
+						_user$project$Lia_Survey_Parser$vector(_elm_community$parser_combinators$Combine$brackets)),
 					_1: {
 						ctor: '::',
 						_0: A2(
-							_elm_community$parser_combinators$Combine_ops['<$>'],
-							_user$project$Lia_Survey_Types$MultiChoice,
-							_user$project$Lia_Survey_Parser$vector(_elm_community$parser_combinators$Combine$brackets)),
+							_elm_community$parser_combinators$Combine_ops['<*>'],
+							A2(
+								_elm_community$parser_combinators$Combine_ops['<$>'],
+								_user$project$Lia_Survey_Types$Matrix(false),
+								_user$project$Lia_Survey_Parser$header(_elm_community$parser_combinators$Combine$parens)),
+							_user$project$Lia_Survey_Parser$questions),
 						_1: {
 							ctor: '::',
 							_0: A2(
 								_elm_community$parser_combinators$Combine_ops['<*>'],
 								A2(
 									_elm_community$parser_combinators$Combine_ops['<$>'],
-									_user$project$Lia_Survey_Types$MultiChoiceBlock,
+									_user$project$Lia_Survey_Types$Matrix(false),
 									_user$project$Lia_Survey_Parser$header(_elm_community$parser_combinators$Combine$brackets)),
 								_user$project$Lia_Survey_Parser$questions),
 							_1: {ctor: '[]'}
@@ -17373,133 +17420,127 @@ var _user$project$Lia_Survey_Update$set_state = F3(
 var _user$project$Lia_Survey_Update$update_matrix = F4(
 	function (model, idx, row, $var) {
 		var _p1 = A2(_elm_lang$core$Array$get, idx, model);
-		_v1_2:
-		do {
-			if (((_p1.ctor === 'Just') && (_p1._0.ctor === '_Tuple2')) && (_p1._0._0 === false)) {
-				switch (_p1._0._1.ctor) {
-					case 'SingleChoiceBlockState':
-						var _p5 = _p1._0._1._0;
-						var vector = A2(_elm_lang$core$Array$get, row, _p5);
-						return A3(
-							_user$project$Lia_Survey_Update$set_state,
-							model,
-							idx,
-							_user$project$Lia_Survey_Types$SingleChoiceBlockState(
+		if ((((_p1.ctor === 'Just') && (_p1._0.ctor === '_Tuple2')) && (_p1._0._0 === false)) && (_p1._0._1.ctor === 'MatrixState')) {
+			if (_p1._0._1._0 === false) {
+				var _p5 = _p1._0._1._1;
+				var vector = A2(_elm_lang$core$Array$get, row, _p5);
+				return A3(
+					_user$project$Lia_Survey_Update$set_state,
+					model,
+					idx,
+					A2(
+						_user$project$Lia_Survey_Types$MatrixState,
+						false,
+						A2(
+							_elm_lang$core$Maybe$withDefault,
+							_p5,
+							A2(
+								_elm_lang$core$Maybe$map,
+								function (d) {
+									return A3(_elm_lang$core$Array$set, row, d, _p5);
+								},
 								A2(
-									_elm_lang$core$Maybe$withDefault,
-									_p5,
+									_elm_lang$core$Maybe$map,
+									function (d) {
+										return A3(
+											_elm_lang$core$Dict$update,
+											$var,
+											function (_p2) {
+												return _elm_lang$core$Maybe$Just(true);
+											},
+											d);
+									},
 									A2(
 										_elm_lang$core$Maybe$map,
 										function (d) {
-											return A3(_elm_lang$core$Array$set, row, d, _p5);
+											return A2(
+												_elm_lang$core$Dict$map,
+												F2(
+													function (_p4, _p3) {
+														return false;
+													}),
+												d);
 										},
-										A2(
-											_elm_lang$core$Maybe$map,
-											function (d) {
-												return A3(
-													_elm_lang$core$Dict$update,
-													$var,
-													function (_p2) {
-														return _elm_lang$core$Maybe$Just(true);
-													},
-													d);
-											},
-											A2(
-												_elm_lang$core$Maybe$map,
-												function (d) {
-													return A2(
-														_elm_lang$core$Dict$map,
-														F2(
-															function (_p4, _p3) {
-																return false;
-															}),
-														d);
-												},
-												vector))))));
-					case 'MultiChoiceBlockState':
-						var _p6 = _p1._0._1._0;
-						var vector = A2(_elm_lang$core$Array$get, row, _p6);
-						return A3(
-							_user$project$Lia_Survey_Update$set_state,
-							model,
-							idx,
-							_user$project$Lia_Survey_Types$MultiChoiceBlockState(
-								A2(
-									_elm_lang$core$Maybe$withDefault,
-									_p6,
-									A2(
-										_elm_lang$core$Maybe$map,
-										function (d) {
-											return A3(_elm_lang$core$Array$set, row, d, _p6);
-										},
-										A2(
-											_elm_lang$core$Maybe$map,
-											function (d) {
-												return A3(
-													_elm_lang$core$Dict$update,
-													$var,
-													function (b) {
-														return A2(_elm_lang$core$Maybe$map, _elm_lang$core$Basics$not, b);
-													},
-													d);
-											},
-											vector)))));
-					default:
-						break _v1_2;
-				}
+										vector))))));
 			} else {
-				break _v1_2;
+				var _p6 = _p1._0._1._1;
+				var vector = A2(_elm_lang$core$Array$get, row, _p6);
+				return A3(
+					_user$project$Lia_Survey_Update$set_state,
+					model,
+					idx,
+					A2(
+						_user$project$Lia_Survey_Types$MatrixState,
+						true,
+						A2(
+							_elm_lang$core$Maybe$withDefault,
+							_p6,
+							A2(
+								_elm_lang$core$Maybe$map,
+								function (d) {
+									return A3(_elm_lang$core$Array$set, row, d, _p6);
+								},
+								A2(
+									_elm_lang$core$Maybe$map,
+									function (d) {
+										return A3(
+											_elm_lang$core$Dict$update,
+											$var,
+											function (b) {
+												return A2(_elm_lang$core$Maybe$map, _elm_lang$core$Basics$not, b);
+											},
+											d);
+									},
+									vector)))));
 			}
-		} while(false);
-		return model;
+		} else {
+			return model;
+		}
 	});
 var _user$project$Lia_Survey_Update$update_vector = F3(
 	function (model, idx, $var) {
 		var _p7 = A2(_elm_lang$core$Array$get, idx, model);
-		_v2_2:
-		do {
-			if (((_p7.ctor === 'Just') && (_p7._0.ctor === '_Tuple2')) && (_p7._0._0 === false)) {
-				switch (_p7._0._1.ctor) {
-					case 'SingleChoiceState':
-						return A3(
-							_user$project$Lia_Survey_Update$set_state,
-							model,
-							idx,
-							_user$project$Lia_Survey_Types$SingleChoiceState(
-								A3(
-									_elm_lang$core$Dict$update,
-									$var,
-									function (_p8) {
-										return _elm_lang$core$Maybe$Just(true);
-									},
-									A2(
-										_elm_lang$core$Dict$map,
-										F2(
-											function (_p10, _p9) {
-												return false;
-											}),
-										_p7._0._1._0))));
-					case 'MultiChoiceState':
-						return A3(
-							_user$project$Lia_Survey_Update$set_state,
-							model,
-							idx,
-							_user$project$Lia_Survey_Types$MultiChoiceState(
-								A3(
-									_elm_lang$core$Dict$update,
-									$var,
-									function (b) {
-										return A2(_elm_lang$core$Maybe$map, _elm_lang$core$Basics$not, b);
-									},
-									_p7._0._1._0)));
-					default:
-						break _v2_2;
-				}
+		if ((((_p7.ctor === 'Just') && (_p7._0.ctor === '_Tuple2')) && (_p7._0._0 === false)) && (_p7._0._1.ctor === 'VectorState')) {
+			if (_p7._0._1._0 === false) {
+				return A3(
+					_user$project$Lia_Survey_Update$set_state,
+					model,
+					idx,
+					A2(
+						_user$project$Lia_Survey_Types$VectorState,
+						false,
+						A3(
+							_elm_lang$core$Dict$update,
+							$var,
+							function (_p8) {
+								return _elm_lang$core$Maybe$Just(true);
+							},
+							A2(
+								_elm_lang$core$Dict$map,
+								F2(
+									function (_p10, _p9) {
+										return false;
+									}),
+								_p7._0._1._1))));
 			} else {
-				break _v2_2;
+				return A3(
+					_user$project$Lia_Survey_Update$set_state,
+					model,
+					idx,
+					A2(
+						_user$project$Lia_Survey_Types$VectorState,
+						true,
+						A3(
+							_elm_lang$core$Dict$update,
+							$var,
+							function (b) {
+								return A2(_elm_lang$core$Maybe$map, _elm_lang$core$Basics$not, b);
+							},
+							_p7._0._1._1)));
 			}
-		} while(false);
-		return model;
+		} else {
+			return model;
+		}
 	});
 var _user$project$Lia_Survey_Update$update_text = F3(
 	function (model, idx, str) {
@@ -17518,19 +17559,19 @@ var _user$project$Lia_Survey_Update$update = F2(
 	function (msg, model) {
 		var _p12 = msg;
 		switch (_p12.ctor) {
-			case 'TextInput':
+			case 'TextUpdate':
 				return {
 					ctor: '_Tuple2',
 					_0: A3(_user$project$Lia_Survey_Update$update_text, model, _p12._0, _p12._1),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
-			case 'Vector':
+			case 'VectorUpdate':
 				return {
 					ctor: '_Tuple2',
 					_0: A3(_user$project$Lia_Survey_Update$update_vector, model, _p12._0, _p12._1),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
-			case 'Matrix':
+			case 'MatrixUpdate':
 				return {
 					ctor: '_Tuple2',
 					_0: A4(_user$project$Lia_Survey_Update$update_matrix, model, _p12._0, _p12._1, _p12._2),
@@ -17547,17 +17588,17 @@ var _user$project$Lia_Survey_Update$update = F2(
 var _user$project$Lia_Survey_Update$Submit = function (a) {
 	return {ctor: 'Submit', _0: a};
 };
-var _user$project$Lia_Survey_Update$Matrix = F3(
+var _user$project$Lia_Survey_Update$MatrixUpdate = F3(
 	function (a, b, c) {
-		return {ctor: 'Matrix', _0: a, _1: b, _2: c};
+		return {ctor: 'MatrixUpdate', _0: a, _1: b, _2: c};
 	});
-var _user$project$Lia_Survey_Update$Vector = F2(
+var _user$project$Lia_Survey_Update$VectorUpdate = F2(
 	function (a, b) {
-		return {ctor: 'Vector', _0: a, _1: b};
+		return {ctor: 'VectorUpdate', _0: a, _1: b};
 	});
-var _user$project$Lia_Survey_Update$TextInput = F2(
+var _user$project$Lia_Survey_Update$TextUpdate = F2(
 	function (a, b) {
-		return {ctor: 'TextInput', _0: a, _1: b};
+		return {ctor: 'TextUpdate', _0: a, _1: b};
 	});
 
 var _user$project$Lia_Update$UpdateEffect = function (a) {
@@ -18488,12 +18529,13 @@ var _user$project$Lia_Survey_View$inline = function (elements) {
 		A2(_elm_lang$core$List$map, _user$project$Lia_Inline_View$view_inf, elements));
 };
 var _user$project$Lia_Survey_View$input = F4(
-	function (type_, msg, checked, submitted) {
+	function (button, msg, checked, submitted) {
 		return A2(
 			_elm_lang$html$Html$input,
 			{
 				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$type_(type_),
+				_0: _elm_lang$html$Html_Attributes$type_(
+					button ? 'radio' : 'checkbox'),
 				_1: {
 					ctor: '::',
 					_0: _elm_lang$html$Html_Attributes$checked(checked),
@@ -18507,7 +18549,7 @@ var _user$project$Lia_Survey_View$input = F4(
 			{ctor: '[]'});
 	});
 var _user$project$Lia_Survey_View$vector = F5(
-	function (type_, msg, fn, submitted, _p0) {
+	function (button, msg, fn, submitted, _p0) {
 		var _p1 = _p0;
 		var _p2 = _p1._0;
 		return A2(
@@ -18517,7 +18559,7 @@ var _user$project$Lia_Survey_View$vector = F5(
 				ctor: '::',
 				_0: A4(
 					_user$project$Lia_Survey_View$input,
-					type_,
+					button,
 					msg(_p2),
 					fn(_p2),
 					submitted),
@@ -18530,7 +18572,7 @@ var _user$project$Lia_Survey_View$vector = F5(
 	});
 var _user$project$Lia_Survey_View$mat_attr = _elm_lang$html$Html_Attributes$align('center');
 var _user$project$Lia_Survey_View$matrix = F6(
-	function (type_, msg, fn, vars, submitted, _p3) {
+	function (button, msg, fn, vars, submitted, _p3) {
 		var _p4 = _p3;
 		var _p5 = _p4._0;
 		var fnX = fn(_p5);
@@ -18554,7 +18596,7 @@ var _user$project$Lia_Survey_View$matrix = F6(
 								ctor: '::',
 								_0: A4(
 									_user$project$Lia_Survey_View$input,
-									type_,
+									button,
 									msgX($var),
 									fnX($var),
 									submitted),
@@ -18639,7 +18681,7 @@ var _user$project$Lia_Survey_View$view_text = F4(
 		var attr = {
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onInput(
-				_user$project$Lia_Survey_Update$TextInput(idx)),
+				_user$project$Lia_Survey_Update$TextUpdate(idx)),
 			_1: {
 				ctor: '::',
 				_0: _elm_lang$html$Html_Attributes$value(str),
@@ -18757,56 +18799,31 @@ var _user$project$Lia_Survey_View$view = F2(
 								A2(_user$project$Lia_Survey_Model$get_text_state, model, _p8),
 								_p7._0,
 								_p8));
-					case 'SingleChoice':
-						var _p9 = _p7._1;
+					case 'Vector':
+						var _p9 = _p7._2;
 						return A3(
 							_user$project$Lia_Survey_View$view_survey,
 							model,
 							_p9,
 							A4(
 								vec,
-								'radio',
-								_user$project$Lia_Survey_Update$Vector(_p9),
+								_p7._0,
+								_user$project$Lia_Survey_Update$VectorUpdate(_p9),
 								A2(_user$project$Lia_Survey_Model$get_vector_state, model, _p9),
-								_p7._0));
-					case 'MultiChoice':
-						var _p10 = _p7._1;
+								_p7._1));
+					default:
+						var _p10 = _p7._3;
 						return A3(
 							_user$project$Lia_Survey_View$view_survey,
 							model,
 							_p10,
-							A4(
-								vec,
-								'checkbox',
-								_user$project$Lia_Survey_Update$Vector(_p10),
-								A2(_user$project$Lia_Survey_Model$get_vector_state, model, _p10),
-								_p7._0));
-					case 'SingleChoiceBlock':
-						var _p11 = _p7._2;
-						return A3(
-							_user$project$Lia_Survey_View$view_survey,
-							model,
-							_p11,
 							A5(
 								mat,
-								'radio',
-								_user$project$Lia_Survey_Update$Matrix(_p11),
-								A2(_user$project$Lia_Survey_Model$get_matrix_state, model, _p11),
 								_p7._0,
-								_p7._1));
-					default:
-						var _p12 = _p7._2;
-						return A3(
-							_user$project$Lia_Survey_View$view_survey,
-							model,
-							_p12,
-							A5(
-								mat,
-								'checkbox',
-								_user$project$Lia_Survey_Update$Matrix(_p12),
-								A2(_user$project$Lia_Survey_Model$get_matrix_state, model, _p12),
-								_p7._0,
-								_p7._1));
+								_user$project$Lia_Survey_Update$MatrixUpdate(_p10),
+								A2(_user$project$Lia_Survey_Model$get_matrix_state, model, _p10),
+								_p7._1,
+								_p7._2));
 				}
 			}());
 	});
@@ -19536,7 +19553,7 @@ var _user$project$Main$main = _elm_lang$html$Html$programWithFlags(
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};
 if (typeof _user$project$Main$main !== 'undefined') {
-    _user$project$Main$main(Elm['Main'], 'Main', {"types":{"unions":{"Lia.Index.Update.Msg":{"args":[],"tags":{"ScanIndex":["String"]}},"Dict.LeafColor":{"args":[],"tags":{"LBBlack":[],"LBlack":[]}},"Lia.Code.Update.Msg":{"args":[],"tags":{"Eval":["Int","String"]}},"Basics.Never":{"args":[],"tags":{"JustOneMore":["Basics.Never"]}},"Dict.Dict":{"args":["k","v"],"tags":{"RBNode_elm_builtin":["Dict.NColor","k","v","Dict.Dict k v","Dict.Dict k v"],"RBEmpty_elm_builtin":["Dict.LeafColor"]}},"Lia.Update.Msg":{"args":[],"tags":{"UpdateCode":["Lia.Code.Update.Msg"],"UpdateIndex":["Lia.Index.Update.Msg"],"UpdateSurvey":["Lia.Survey.Update.Msg"],"UpdateQuiz":["Lia.Quiz.Update.Msg"],"Load":["Int"],"UpdateEffect":["Lia.Effect.Update.Msg"],"NextSlide":[],"PrevSlide":[],"ToggleContentsTable":[]}},"Main.Msg":{"args":[],"tags":{"LIA":["Lia.Msg"],"GET":["Result.Result Http.Error String"]}},"Lia.Survey.Update.Msg":{"args":[],"tags":{"Matrix":["Lia.Inline.Types.ID","Lia.Inline.Types.ID","String"],"TextInput":["Lia.Inline.Types.ID","String"],"Submit":["Lia.Inline.Types.ID"],"Vector":["Lia.Inline.Types.ID","String"]}},"Dict.NColor":{"args":[],"tags":{"BBlack":[],"Red":[],"NBlack":[],"Black":[]}},"Lia.Effect.Update.Msg":{"args":[],"tags":{"Next":[],"Init":[],"Speak":[],"TTS":["Result.Result String Basics.Never"],"Previous":[]}},"Lia.Quiz.Update.Msg":{"args":[],"tags":{"Check":["Int"],"Input":["Int","String"],"RadioButton":["Int","Int"],"ShowHint":["Int"],"CheckBox":["Int","Int"]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String"],"NetworkError":[],"Timeout":[],"BadStatus":["Http.Response String"],"BadPayload":["String","Http.Response String"]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}}},"aliases":{"Http.Response":{"args":["body"],"type":"{ url : String , status : { code : Int, message : String } , headers : Dict.Dict String String , body : body }"},"Lia.Inline.Types.ID":{"args":[],"type":"Int"},"Lia.Msg":{"args":[],"type":"Lia.Update.Msg"}},"message":"Main.Msg"},"versions":{"elm":"0.18.0"}});
+    _user$project$Main$main(Elm['Main'], 'Main', {"types":{"unions":{"Lia.Index.Update.Msg":{"args":[],"tags":{"ScanIndex":["String"]}},"Dict.LeafColor":{"args":[],"tags":{"LBBlack":[],"LBlack":[]}},"Lia.Code.Update.Msg":{"args":[],"tags":{"Eval":["Int","String"]}},"Basics.Never":{"args":[],"tags":{"JustOneMore":["Basics.Never"]}},"Dict.Dict":{"args":["k","v"],"tags":{"RBNode_elm_builtin":["Dict.NColor","k","v","Dict.Dict k v","Dict.Dict k v"],"RBEmpty_elm_builtin":["Dict.LeafColor"]}},"Lia.Update.Msg":{"args":[],"tags":{"UpdateCode":["Lia.Code.Update.Msg"],"UpdateIndex":["Lia.Index.Update.Msg"],"UpdateSurvey":["Lia.Survey.Update.Msg"],"UpdateQuiz":["Lia.Quiz.Update.Msg"],"Load":["Int"],"UpdateEffect":["Lia.Effect.Update.Msg"],"NextSlide":[],"PrevSlide":[],"ToggleContentsTable":[]}},"Main.Msg":{"args":[],"tags":{"LIA":["Lia.Msg"],"GET":["Result.Result Http.Error String"]}},"Lia.Survey.Update.Msg":{"args":[],"tags":{"VectorUpdate":["Lia.Inline.Types.ID","String"],"TextUpdate":["Lia.Inline.Types.ID","String"],"Submit":["Lia.Inline.Types.ID"],"MatrixUpdate":["Lia.Inline.Types.ID","Lia.Inline.Types.ID","String"]}},"Dict.NColor":{"args":[],"tags":{"BBlack":[],"Red":[],"NBlack":[],"Black":[]}},"Lia.Effect.Update.Msg":{"args":[],"tags":{"Next":[],"Init":[],"Speak":[],"TTS":["Result.Result String Basics.Never"],"Previous":[]}},"Lia.Quiz.Update.Msg":{"args":[],"tags":{"Check":["Int"],"Input":["Int","String"],"RadioButton":["Int","Int"],"ShowHint":["Int"],"CheckBox":["Int","Int"]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String"],"NetworkError":[],"Timeout":[],"BadStatus":["Http.Response String"],"BadPayload":["String","Http.Response String"]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}}},"aliases":{"Http.Response":{"args":["body"],"type":"{ url : String , status : { code : Int, message : String } , headers : Dict.Dict String String , body : body }"},"Lia.Inline.Types.ID":{"args":[],"type":"Int"},"Lia.Msg":{"args":[],"type":"Lia.Update.Msg"}},"message":"Main.Msg"},"versions":{"elm":"0.18.0"}});
 }
 
 if (typeof define === "function" && define['amd'])

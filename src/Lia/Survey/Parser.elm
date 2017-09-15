@@ -18,10 +18,10 @@ survey : Parser PState Survey
 survey =
     choice
         [ Text <$> text_lines
-        , SingleChoice <$> vector parens
-        , SingleChoiceBlock <$> header parens <*> questions
-        , MultiChoice <$> vector brackets
-        , MultiChoiceBlock <$> header brackets <*> questions
+        , Vector False <$> vector parens
+        , Vector True <$> vector brackets
+        , Matrix False <$> header parens <*> questions
+        , Matrix False <$> header brackets <*> questions
         ]
         <*> increment_counter
 
@@ -101,26 +101,15 @@ modify_PState survey_ =
                 Text _ _ ->
                     TextState ""
 
-                SingleChoice vars _ ->
+                Vector bool vars _ ->
                     vars
                         |> extractor (\( v, _ ) -> ( v, False ))
-                        |> SingleChoiceState
+                        |> VectorState bool
 
-                MultiChoice vars _ ->
-                    vars
-                        |> extractor (\( v, _ ) -> ( v, False ))
-                        |> MultiChoiceState
-
-                SingleChoiceBlock vars qs _ ->
+                Matrix bool vars qs _ ->
                     vars
                         |> extractor (\v -> ( v, False ))
                         |> Array.repeat (List.length qs)
-                        |> SingleChoiceBlockState
-
-                MultiChoiceBlock vars qs _ ->
-                    vars
-                        |> extractor (\v -> ( v, False ))
-                        |> Array.repeat (List.length qs)
-                        |> MultiChoiceBlockState
+                        |> MatrixState bool
     in
     modifyState (add_state state) *> succeed survey_
