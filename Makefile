@@ -1,6 +1,6 @@
 all:
 	elm-make  --debug --warn  examples/Online.elm --output build/app.js
-	#closure-compiler --compilation_level ADVANCED_OPTIMIZATIONS  --language_in ECMASCRIPT6 --js build/app.js --js_output_file build/app.min.js
+	closure-compiler --compilation_level ADVANCED_OPTIMIZATIONS  --language_in ECMASCRIPT5 --js build/app.js --js_output_file build/lia.js
 
 github:
 	elm-make examples/Online.elm --output build/app.js

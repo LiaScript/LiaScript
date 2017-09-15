@@ -59,10 +59,10 @@ update msg model =
     case msg of
         LIA liaMsg ->
             let
-                ( lia, cmd ) =
+                ( lia, cmd, info ) =
                     Lia.update liaMsg model.lia
             in
-            ( { model | lia = lia }, Cmd.map LIA cmd )
+            ( { model | lia = lia, error = toString model.lia.quiz_model }, Cmd.map LIA cmd )
 
         GET (Ok script) ->
             ( { model
@@ -90,7 +90,10 @@ view model =
                 ]
 
         LoadOk ->
-            Html.map LIA <| Lia.view model.lia
+            Html.div []
+                [ Html.text model.error
+                , Html.map LIA <| Lia.view model.lia
+                ]
 
         LoadFail ->
             Html.div []

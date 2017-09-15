@@ -18,23 +18,23 @@ type Msg
     | ShowHint Int
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Cmd Msg, Maybe String )
 update msg model =
     case msg of
         CheckBox idx question_id ->
-            ( flip_checkbox idx question_id model, Cmd.none )
+            ( flip_checkbox idx question_id model, Cmd.none, Nothing )
 
         RadioButton idx answer ->
-            ( flip_checkbox idx answer model, Cmd.none )
+            ( flip_checkbox idx answer model, Cmd.none, Nothing )
 
         Input idx string ->
-            ( update_input idx string model, Cmd.none )
+            ( update_input idx string model, Cmd.none, Nothing )
 
         Check idx ->
-            ( check_answer idx model, Cmd.none )
+            ( check_answer idx model, Cmd.none, Just "check" )
 
         ShowHint idx ->
-            ( update_hint idx model, Cmd.none )
+            ( update_hint idx model, Cmd.none, Just "hint" )
 
 
 get : Int -> QuizVector -> Maybe QuizElement

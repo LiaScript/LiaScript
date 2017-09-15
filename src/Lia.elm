@@ -85,7 +85,7 @@ view model =
     Lia.View.view model
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Cmd Msg, Maybe String )
 update =
     Lia.Update.update
 

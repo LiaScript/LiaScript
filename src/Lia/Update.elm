@@ -22,7 +22,7 @@ type Msg
     | UpdateEffect Effect.Msg
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Cmd Msg, Maybe String )
 update msg model =
     case msg of
         Load int ->
@@ -37,12 +37,13 @@ update msg model =
                 , effect_model = effect_model
               }
             , Cmd.map UpdateEffect cmd
+            , Nothing
             )
 
         PrevSlide ->
             case Effect.previous model.effect_model of
                 ( effect_model, cmd, False ) ->
-                    ( { model | effect_model = effect_model }, Cmd.map UpdateEffect cmd )
+                    ( { model | effect_model = effect_model }, Cmd.map UpdateEffect cmd, Nothing )
 
                 _ ->
                     update (Load (model.current_slide - 1)) model
@@ -50,7 +51,7 @@ update msg model =
         NextSlide ->
             case Effect.next model.effect_model of
                 ( effect_model, cmd, False ) ->
-                    ( { model | effect_model = effect_model }, Cmd.map UpdateEffect cmd )
+                    ( { model | effect_model = effect_model }, Cmd.map UpdateEffect cmd, Nothing )
 
                 _ ->
                     update (Load (model.current_slide + 1)) model
@@ -60,35 +61,35 @@ update msg model =
                 ( index_model, _ ) =
                     Index.update childMsg model.index_model
             in
-            ( { model | index_model = index_model }, Cmd.none )
+            ( { model | index_model = index_model }, Cmd.none, Nothing )
 
         UpdateSurvey childMsg ->
             let
                 ( model_, _ ) =
                     Survey.update childMsg model.survey_model
             in
-            ( { model | survey_model = model_ }, Cmd.none )
+            ( { model | survey_model = model_ }, Cmd.none, Nothing )
 
         UpdateCode childMsg ->
             let
                 ( code_model, cmd ) =
                     Code.update childMsg model.code_model
             in
-            ( { model | code_model = code_model }, Cmd.none )
+            ( { model | code_model = code_model }, Cmd.none, Nothing )
 
         UpdateEffect childMsg ->
             let
                 ( effect_model, cmd, h ) =
                     Effect.update childMsg model.effect_model
             in
-            ( { model | effect_model = effect_model }, Cmd.map UpdateEffect cmd )
+            ( { model | effect_model = effect_model }, Cmd.map UpdateEffect cmd, Nothing )
 
         ToggleContentsTable ->
-            ( { model | show_contents = not model.show_contents }, Cmd.none )
+            ( { model | show_contents = not model.show_contents }, Cmd.none, Nothing )
 
         UpdateQuiz quiz_msg ->
             let
-                ( quiz_model, cmd ) =
+                ( quiz_model, cmd, info ) =
                     Quiz.update quiz_msg model.quiz_model
             in
-            ( { model | quiz_model = quiz_model }, Cmd.none )
+            ( { model | quiz_model = quiz_model }, Cmd.none, info )
