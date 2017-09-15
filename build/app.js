@@ -16327,7 +16327,7 @@ var _user$project$Lia_Survey_Parser$survey = A2(
 								_elm_community$parser_combinators$Combine_ops['<*>'],
 								A2(
 									_elm_community$parser_combinators$Combine_ops['<$>'],
-									_user$project$Lia_Survey_Types$Matrix(false),
+									_user$project$Lia_Survey_Types$Matrix(true),
 									_user$project$Lia_Survey_Parser$header(_elm_community$parser_combinators$Combine$brackets)),
 								_user$project$Lia_Survey_Parser$questions),
 							_1: {ctor: '[]'}
@@ -18535,7 +18535,7 @@ var _user$project$Lia_Survey_View$input = F4(
 			{
 				ctor: '::',
 				_0: _elm_lang$html$Html_Attributes$type_(
-					button ? 'radio' : 'checkbox'),
+					button ? 'checkbox' : 'radio'),
 				_1: {
 					ctor: '::',
 					_0: _elm_lang$html$Html_Attributes$checked(checked),

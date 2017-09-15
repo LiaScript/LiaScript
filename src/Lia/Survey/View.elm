@@ -135,9 +135,9 @@ input button msg checked submitted =
     Html.input
         [ Attr.type_ <|
             if button then
-                "radio"
-            else
                 "checkbox"
+            else
+                "radio"
         , Attr.checked checked
         , if submitted then
             Attr.disabled True

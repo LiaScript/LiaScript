@@ -21,7 +21,7 @@ survey =
         , Vector False <$> vector parens
         , Vector True <$> vector brackets
         , Matrix False <$> header parens <*> questions
-        , Matrix False <$> header brackets <*> questions
+        , Matrix True <$> header brackets <*> questions
         ]
         <*> increment_counter
 
