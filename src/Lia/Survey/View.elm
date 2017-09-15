@@ -12,13 +12,6 @@ import Lia.Survey.Update exposing (Msg(..))
 
 view : Model -> Survey -> Html Msg
 view model survey =
-    let
-        vec type_ msg fn questions =
-            vector type_ msg fn |> view_vector questions
-
-        mat type_ msg fn vars questions =
-            matrix type_ msg fn vars |> view_matrix vars questions
-    in
     Html.p [] <|
         case survey of
             Text lines idx ->
@@ -26,11 +19,13 @@ view model survey =
                     |> view_survey model idx
 
             Vector button questions idx ->
-                vec button (VectorUpdate idx) (get_vector_state model idx) questions
+                vector button (VectorUpdate idx) (get_vector_state model idx)
+                    |> view_vector questions
                     |> view_survey model idx
 
             Matrix button vars questions idx ->
-                mat button (MatrixUpdate idx) (get_matrix_state model idx) vars questions
+                matrix button (MatrixUpdate idx) (get_matrix_state model idx) vars
+                    |> view_matrix vars questions
                     |> view_survey model idx
 
 
