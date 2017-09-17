@@ -6,8 +6,7 @@ import Lia.Survey.Types exposing (SurveyVector)
 
 
 type alias PState =
-    { section : List Int
-    , identation : Int
+    { identation : Int
     , skip_identation : Bool
     , num_effects : Int
     , num_code : Int
@@ -25,8 +24,7 @@ type alias PState =
 
 init : PState
 init =
-    { section = []
-    , identation = 0
+    { identation = 0
     , skip_identation = False
     , num_effects = 0
     , num_code = 0
