@@ -1,5 +1,6 @@
 module Lia.Update exposing (Msg(..), update)
 
+import Json.Encode as JE
 import Lia.Code.Update as Code
 import Lia.Effect.Model as EffectModel
 import Lia.Effect.Update as Effect
@@ -22,7 +23,7 @@ type Msg
     | UpdateEffect Effect.Msg
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, Maybe String )
+update : Msg -> Model -> ( Model, Cmd Msg, Maybe ( String, JE.Value ) )
 update msg model =
     case msg of
         Load int ->
@@ -58,21 +59,21 @@ update msg model =
 
         UpdateIndex childMsg ->
             let
-                ( index_model, _ ) =
+                index_model =
                     Index.update childMsg model.index_model
             in
             ( { model | index_model = index_model }, Cmd.none, Nothing )
 
         UpdateSurvey childMsg ->
             let
-                ( model_, _ ) =
+                ( model_, info ) =
                     Survey.update childMsg model.survey_model
             in
-            ( { model | survey_model = model_ }, Cmd.none, Nothing )
+            ( { model | survey_model = model_ }, Cmd.none, log "survey" info )
 
         UpdateCode childMsg ->
             let
-                ( code_model, cmd ) =
+                code_model =
                     Code.update childMsg model.code_model
             in
             ( { model | code_model = code_model }, Cmd.none, Nothing )
@@ -89,7 +90,17 @@ update msg model =
 
         UpdateQuiz quiz_msg ->
             let
-                ( quiz_model, cmd, info ) =
+                ( quiz_model, info ) =
                     Quiz.update quiz_msg model.quiz_model
             in
-            ( { model | quiz_model = quiz_model }, Cmd.none, info )
+            ( { model | quiz_model = quiz_model }, Cmd.none, log "quiz" info )
+
+
+log : String -> Maybe JE.Value -> Maybe ( String, JE.Value )
+log topic msg =
+    case msg of
+        Just m ->
+            Just ( topic, m )
+
+        _ ->
+            Nothing

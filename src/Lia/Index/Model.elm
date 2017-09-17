@@ -46,7 +46,7 @@ parse_block element =
                     str
 
         Quiz block ->
-            parse_quiz block.quiz
+            parse_quiz block
 
         EBlock _ _ sub_blocks ->
             List.map (\sub -> parse_block sub) sub_blocks
@@ -59,15 +59,15 @@ parse_block element =
 parse_quiz : Quiz -> String
 parse_quiz quiz =
     case quiz of
-        TextInput _ ->
+        Text _ _ _ ->
             ""
 
-        SingleChoice _ e ->
+        SingleChoice _ e _ _ ->
             List.map parse_inlines e
                 |> String.concat
 
-        MultipleChoice e ->
-            List.map (\( _, ee ) -> parse_inlines ee) e
+        MultipleChoice _ e _ _ ->
+            List.map parse_inlines e
                 |> String.concat
 
 

@@ -2,7 +2,7 @@ module Lia.Types exposing (Block(..), Id, Mode(..), Paragraph, Slide)
 
 import Lia.Code.Types exposing (Code)
 import Lia.Inline.Types exposing (..)
-import Lia.Quiz.Types exposing (QuizBlock)
+import Lia.Quiz.Types exposing (Quiz)
 import Lia.Survey.Types exposing (Survey)
 
 
@@ -33,7 +33,7 @@ type Block
     | Quote Paragraph
     | Paragraph Paragraph
     | Table (List Paragraph) (List String) (List (List Paragraph))
-    | Quiz QuizBlock
+    | Quiz Quiz
     | EBlock Int (Maybe String) (List Block)
     | EComment Int Paragraph
     | BulletList (List (List Block))

@@ -7639,4162 +7639,6 @@ return {
 
 }();
 
-var _elm_lang$core$Task$onError = _elm_lang$core$Native_Scheduler.onError;
-var _elm_lang$core$Task$andThen = _elm_lang$core$Native_Scheduler.andThen;
-var _elm_lang$core$Task$spawnCmd = F2(
-	function (router, _p0) {
-		var _p1 = _p0;
-		return _elm_lang$core$Native_Scheduler.spawn(
-			A2(
-				_elm_lang$core$Task$andThen,
-				_elm_lang$core$Platform$sendToApp(router),
-				_p1._0));
-	});
-var _elm_lang$core$Task$fail = _elm_lang$core$Native_Scheduler.fail;
-var _elm_lang$core$Task$mapError = F2(
-	function (convert, task) {
-		return A2(
-			_elm_lang$core$Task$onError,
-			function (_p2) {
-				return _elm_lang$core$Task$fail(
-					convert(_p2));
-			},
-			task);
-	});
-var _elm_lang$core$Task$succeed = _elm_lang$core$Native_Scheduler.succeed;
-var _elm_lang$core$Task$map = F2(
-	function (func, taskA) {
-		return A2(
-			_elm_lang$core$Task$andThen,
-			function (a) {
-				return _elm_lang$core$Task$succeed(
-					func(a));
-			},
-			taskA);
-	});
-var _elm_lang$core$Task$map2 = F3(
-	function (func, taskA, taskB) {
-		return A2(
-			_elm_lang$core$Task$andThen,
-			function (a) {
-				return A2(
-					_elm_lang$core$Task$andThen,
-					function (b) {
-						return _elm_lang$core$Task$succeed(
-							A2(func, a, b));
-					},
-					taskB);
-			},
-			taskA);
-	});
-var _elm_lang$core$Task$map3 = F4(
-	function (func, taskA, taskB, taskC) {
-		return A2(
-			_elm_lang$core$Task$andThen,
-			function (a) {
-				return A2(
-					_elm_lang$core$Task$andThen,
-					function (b) {
-						return A2(
-							_elm_lang$core$Task$andThen,
-							function (c) {
-								return _elm_lang$core$Task$succeed(
-									A3(func, a, b, c));
-							},
-							taskC);
-					},
-					taskB);
-			},
-			taskA);
-	});
-var _elm_lang$core$Task$map4 = F5(
-	function (func, taskA, taskB, taskC, taskD) {
-		return A2(
-			_elm_lang$core$Task$andThen,
-			function (a) {
-				return A2(
-					_elm_lang$core$Task$andThen,
-					function (b) {
-						return A2(
-							_elm_lang$core$Task$andThen,
-							function (c) {
-								return A2(
-									_elm_lang$core$Task$andThen,
-									function (d) {
-										return _elm_lang$core$Task$succeed(
-											A4(func, a, b, c, d));
-									},
-									taskD);
-							},
-							taskC);
-					},
-					taskB);
-			},
-			taskA);
-	});
-var _elm_lang$core$Task$map5 = F6(
-	function (func, taskA, taskB, taskC, taskD, taskE) {
-		return A2(
-			_elm_lang$core$Task$andThen,
-			function (a) {
-				return A2(
-					_elm_lang$core$Task$andThen,
-					function (b) {
-						return A2(
-							_elm_lang$core$Task$andThen,
-							function (c) {
-								return A2(
-									_elm_lang$core$Task$andThen,
-									function (d) {
-										return A2(
-											_elm_lang$core$Task$andThen,
-											function (e) {
-												return _elm_lang$core$Task$succeed(
-													A5(func, a, b, c, d, e));
-											},
-											taskE);
-									},
-									taskD);
-							},
-							taskC);
-					},
-					taskB);
-			},
-			taskA);
-	});
-var _elm_lang$core$Task$sequence = function (tasks) {
-	var _p3 = tasks;
-	if (_p3.ctor === '[]') {
-		return _elm_lang$core$Task$succeed(
-			{ctor: '[]'});
-	} else {
-		return A3(
-			_elm_lang$core$Task$map2,
-			F2(
-				function (x, y) {
-					return {ctor: '::', _0: x, _1: y};
-				}),
-			_p3._0,
-			_elm_lang$core$Task$sequence(_p3._1));
-	}
-};
-var _elm_lang$core$Task$onEffects = F3(
-	function (router, commands, state) {
-		return A2(
-			_elm_lang$core$Task$map,
-			function (_p4) {
-				return {ctor: '_Tuple0'};
-			},
-			_elm_lang$core$Task$sequence(
-				A2(
-					_elm_lang$core$List$map,
-					_elm_lang$core$Task$spawnCmd(router),
-					commands)));
-	});
-var _elm_lang$core$Task$init = _elm_lang$core$Task$succeed(
-	{ctor: '_Tuple0'});
-var _elm_lang$core$Task$onSelfMsg = F3(
-	function (_p7, _p6, _p5) {
-		return _elm_lang$core$Task$succeed(
-			{ctor: '_Tuple0'});
-	});
-var _elm_lang$core$Task$command = _elm_lang$core$Native_Platform.leaf('Task');
-var _elm_lang$core$Task$Perform = function (a) {
-	return {ctor: 'Perform', _0: a};
-};
-var _elm_lang$core$Task$perform = F2(
-	function (toMessage, task) {
-		return _elm_lang$core$Task$command(
-			_elm_lang$core$Task$Perform(
-				A2(_elm_lang$core$Task$map, toMessage, task)));
-	});
-var _elm_lang$core$Task$attempt = F2(
-	function (resultToMessage, task) {
-		return _elm_lang$core$Task$command(
-			_elm_lang$core$Task$Perform(
-				A2(
-					_elm_lang$core$Task$onError,
-					function (_p8) {
-						return _elm_lang$core$Task$succeed(
-							resultToMessage(
-								_elm_lang$core$Result$Err(_p8)));
-					},
-					A2(
-						_elm_lang$core$Task$andThen,
-						function (_p9) {
-							return _elm_lang$core$Task$succeed(
-								resultToMessage(
-									_elm_lang$core$Result$Ok(_p9)));
-						},
-						task))));
-	});
-var _elm_lang$core$Task$cmdMap = F2(
-	function (tagger, _p10) {
-		var _p11 = _p10;
-		return _elm_lang$core$Task$Perform(
-			A2(_elm_lang$core$Task$map, tagger, _p11._0));
-	});
-_elm_lang$core$Native_Platform.effectManagers['Task'] = {pkg: 'elm-lang/core', init: _elm_lang$core$Task$init, onEffects: _elm_lang$core$Task$onEffects, onSelfMsg: _elm_lang$core$Task$onSelfMsg, tag: 'cmd', cmdMap: _elm_lang$core$Task$cmdMap};
-
-var _elm_lang$virtual_dom$Native_Debug = function() {
-
-
-// IMPORT / EXPORT
-
-function unsafeCoerce(value)
-{
-	return value;
-}
-
-var upload = _elm_lang$core$Native_Scheduler.nativeBinding(function(callback)
-{
-	var element = document.createElement('input');
-	element.setAttribute('type', 'file');
-	element.setAttribute('accept', 'text/json');
-	element.style.display = 'none';
-	element.addEventListener('change', function(event)
-	{
-		var fileReader = new FileReader();
-		fileReader.onload = function(e)
-		{
-			callback(_elm_lang$core$Native_Scheduler.succeed(e.target.result));
-		};
-		fileReader.readAsText(event.target.files[0]);
-		document.body.removeChild(element);
-	});
-	document.body.appendChild(element);
-	element.click();
-});
-
-function download(historyLength, json)
-{
-	return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback)
-	{
-		var fileName = 'history-' + historyLength + '.txt';
-		var jsonString = JSON.stringify(json);
-		var mime = 'text/plain;charset=utf-8';
-		var done = _elm_lang$core$Native_Scheduler.succeed(_elm_lang$core$Native_Utils.Tuple0);
-
-		// for IE10+
-		if (navigator.msSaveBlob)
-		{
-			navigator.msSaveBlob(new Blob([jsonString], {type: mime}), fileName);
-			return callback(done);
-		}
-
-		// for HTML5
-		var element = document.createElement('a');
-		element.setAttribute('href', 'data:' + mime + ',' + encodeURIComponent(jsonString));
-		element.setAttribute('download', fileName);
-		element.style.display = 'none';
-		document.body.appendChild(element);
-		element.click();
-		document.body.removeChild(element);
-		callback(done);
-	});
-}
-
-
-// POPOUT
-
-function messageToString(value)
-{
-	switch (typeof value)
-	{
-		case 'boolean':
-			return value ? 'True' : 'False';
-		case 'number':
-			return value + '';
-		case 'string':
-			return '"' + addSlashes(value, false) + '"';
-	}
-	if (value instanceof String)
-	{
-		return '\'' + addSlashes(value, true) + '\'';
-	}
-	if (typeof value !== 'object' || value === null || !('ctor' in value))
-	{
-		return '…';
-	}
-
-	var ctorStarter = value.ctor.substring(0, 5);
-	if (ctorStarter === '_Tupl' || ctorStarter === '_Task')
-	{
-		return '…'
-	}
-	if (['_Array', '<decoder>', '_Process', '::', '[]', 'Set_elm_builtin', 'RBNode_elm_builtin', 'RBEmpty_elm_builtin'].indexOf(value.ctor) >= 0)
-	{
-		return '…';
-	}
-
-	var keys = Object.keys(value);
-	switch (keys.length)
-	{
-		case 1:
-			return value.ctor;
-		case 2:
-			return value.ctor + ' ' + messageToString(value._0);
-		default:
-			return value.ctor + ' … ' + messageToString(value[keys[keys.length - 1]]);
-	}
-}
-
-
-function primitive(str)
-{
-	return { ctor: 'Primitive', _0: str };
-}
-
-
-function init(value)
-{
-	var type = typeof value;
-
-	if (type === 'boolean')
-	{
-		return {
-			ctor: 'Constructor',
-			_0: _elm_lang$core$Maybe$Just(value ? 'True' : 'False'),
-			_1: true,
-			_2: _elm_lang$core$Native_List.Nil
-		};
-	}
-
-	if (type === 'number')
-	{
-		return primitive(value + '');
-	}
-
-	if (type === 'string')
-	{
-		return { ctor: 'S', _0: '"' + addSlashes(value, false) + '"' };
-	}
-
-	if (value instanceof String)
-	{
-		return { ctor: 'S', _0: "'" + addSlashes(value, true) + "'" };
-	}
-
-	if (value instanceof Date)
-	{
-		return primitive('<' + value.toString() + '>');
-	}
-
-	if (value === null)
-	{
-		return primitive('XXX');
-	}
-
-	if (type === 'object' && 'ctor' in value)
-	{
-		var ctor = value.ctor;
-
-		if (ctor === '::' || ctor === '[]')
-		{
-			return {
-				ctor: 'Sequence',
-				_0: {ctor: 'ListSeq'},
-				_1: true,
-				_2: A2(_elm_lang$core$List$map, init, value)
-			};
-		}
-
-		if (ctor === 'Set_elm_builtin')
-		{
-			return {
-				ctor: 'Sequence',
-				_0: {ctor: 'SetSeq'},
-				_1: true,
-				_2: A3(_elm_lang$core$Set$foldr, initCons, _elm_lang$core$Native_List.Nil, value)
-			};
-		}
-
-		if (ctor === 'RBNode_elm_builtin' || ctor == 'RBEmpty_elm_builtin')
-		{
-			return {
-				ctor: 'Dictionary',
-				_0: true,
-				_1: A3(_elm_lang$core$Dict$foldr, initKeyValueCons, _elm_lang$core$Native_List.Nil, value)
-			};
-		}
-
-		if (ctor === '_Array')
-		{
-			return {
-				ctor: 'Sequence',
-				_0: {ctor: 'ArraySeq'},
-				_1: true,
-				_2: A3(_elm_lang$core$Array$foldr, initCons, _elm_lang$core$Native_List.Nil, value)
-			};
-		}
-
-		var ctorStarter = value.ctor.substring(0, 5);
-		if (ctorStarter === '_Task')
-		{
-			return primitive('<task>');
-		}
-
-		if (ctor === '<decoder>')
-		{
-			return primitive(ctor);
-		}
-
-		if (ctor === '_Process')
-		{
-			return primitive('<process>');
-		}
-
-		var list = _elm_lang$core$Native_List.Nil;
-		for (var i in value)
-		{
-			if (i === 'ctor') continue;
-			list = _elm_lang$core$Native_List.Cons(init(value[i]), list);
-		}
-		return {
-			ctor: 'Constructor',
-			_0: ctorStarter === '_Tupl' ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(ctor),
-			_1: true,
-			_2: _elm_lang$core$List$reverse(list)
-		};
-	}
-
-	if (type === 'object')
-	{
-		var dict = _elm_lang$core$Dict$empty;
-		for (var i in value)
-		{
-			dict = A3(_elm_lang$core$Dict$insert, i, init(value[i]), dict);
-		}
-		return { ctor: 'Record', _0: true, _1: dict };
-	}
-
-	return primitive('XXX');
-}
-
-var initCons = F2(initConsHelp);
-
-function initConsHelp(value, list)
-{
-	return _elm_lang$core$Native_List.Cons(init(value), list);
-}
-
-var initKeyValueCons = F3(initKeyValueConsHelp);
-
-function initKeyValueConsHelp(key, value, list)
-{
-	return _elm_lang$core$Native_List.Cons(
-		_elm_lang$core$Native_Utils.Tuple2(init(key), init(value)),
-		list
-	);
-}
-
-function addSlashes(str, isChar)
-{
-	var s = str.replace(/\\/g, '\\\\')
-			  .replace(/\n/g, '\\n')
-			  .replace(/\t/g, '\\t')
-			  .replace(/\r/g, '\\r')
-			  .replace(/\v/g, '\\v')
-			  .replace(/\0/g, '\\0');
-	if (isChar)
-	{
-		return s.replace(/\'/g, '\\\'');
-	}
-	else
-	{
-		return s.replace(/\"/g, '\\"');
-	}
-}
-
-
-return {
-	upload: upload,
-	download: F2(download),
-	unsafeCoerce: unsafeCoerce,
-	messageToString: messageToString,
-	init: init
-}
-
-}();
-
-var _elm_lang$virtual_dom$VirtualDom_Helpers$keyedNode = _elm_lang$virtual_dom$Native_VirtualDom.keyedNode;
-var _elm_lang$virtual_dom$VirtualDom_Helpers$lazy3 = _elm_lang$virtual_dom$Native_VirtualDom.lazy3;
-var _elm_lang$virtual_dom$VirtualDom_Helpers$lazy2 = _elm_lang$virtual_dom$Native_VirtualDom.lazy2;
-var _elm_lang$virtual_dom$VirtualDom_Helpers$lazy = _elm_lang$virtual_dom$Native_VirtualDom.lazy;
-var _elm_lang$virtual_dom$VirtualDom_Helpers$defaultOptions = {stopPropagation: false, preventDefault: false};
-var _elm_lang$virtual_dom$VirtualDom_Helpers$onWithOptions = _elm_lang$virtual_dom$Native_VirtualDom.on;
-var _elm_lang$virtual_dom$VirtualDom_Helpers$on = F2(
-	function (eventName, decoder) {
-		return A3(_elm_lang$virtual_dom$VirtualDom_Helpers$onWithOptions, eventName, _elm_lang$virtual_dom$VirtualDom_Helpers$defaultOptions, decoder);
-	});
-var _elm_lang$virtual_dom$VirtualDom_Helpers$onClick = function (msg) {
-	return A2(
-		_elm_lang$virtual_dom$VirtualDom_Helpers$on,
-		'click',
-		_elm_lang$core$Json_Decode$succeed(msg));
-};
-var _elm_lang$virtual_dom$VirtualDom_Helpers$style = _elm_lang$virtual_dom$Native_VirtualDom.style;
-var _elm_lang$virtual_dom$VirtualDom_Helpers$attribute = _elm_lang$virtual_dom$Native_VirtualDom.attribute;
-var _elm_lang$virtual_dom$VirtualDom_Helpers$id = _elm_lang$virtual_dom$VirtualDom_Helpers$attribute('id');
-var _elm_lang$virtual_dom$VirtualDom_Helpers$property = _elm_lang$virtual_dom$Native_VirtualDom.property;
-var _elm_lang$virtual_dom$VirtualDom_Helpers$class = function (name) {
-	return A2(
-		_elm_lang$virtual_dom$VirtualDom_Helpers$property,
-		'className',
-		_elm_lang$core$Json_Encode$string(name));
-};
-var _elm_lang$virtual_dom$VirtualDom_Helpers$href = function (name) {
-	return A2(
-		_elm_lang$virtual_dom$VirtualDom_Helpers$property,
-		'href',
-		_elm_lang$core$Json_Encode$string(name));
-};
-var _elm_lang$virtual_dom$VirtualDom_Helpers$map = _elm_lang$virtual_dom$Native_VirtualDom.map;
-var _elm_lang$virtual_dom$VirtualDom_Helpers$text = _elm_lang$virtual_dom$Native_VirtualDom.text;
-var _elm_lang$virtual_dom$VirtualDom_Helpers$node = _elm_lang$virtual_dom$Native_VirtualDom.node;
-var _elm_lang$virtual_dom$VirtualDom_Helpers$div = _elm_lang$virtual_dom$VirtualDom_Helpers$node('div');
-var _elm_lang$virtual_dom$VirtualDom_Helpers$span = _elm_lang$virtual_dom$VirtualDom_Helpers$node('span');
-var _elm_lang$virtual_dom$VirtualDom_Helpers$a = _elm_lang$virtual_dom$VirtualDom_Helpers$node('a');
-var _elm_lang$virtual_dom$VirtualDom_Helpers$h1 = _elm_lang$virtual_dom$VirtualDom_Helpers$node('h1');
-var _elm_lang$virtual_dom$VirtualDom_Helpers$Options = F2(
-	function (a, b) {
-		return {stopPropagation: a, preventDefault: b};
-	});
-var _elm_lang$virtual_dom$VirtualDom_Helpers$Node = {ctor: 'Node'};
-var _elm_lang$virtual_dom$VirtualDom_Helpers$Property = {ctor: 'Property'};
-
-var _elm_lang$virtual_dom$VirtualDom_Expando$purple = _elm_lang$virtual_dom$VirtualDom_Helpers$style(
-	{
-		ctor: '::',
-		_0: {ctor: '_Tuple2', _0: 'color', _1: 'rgb(136, 19, 145)'},
-		_1: {ctor: '[]'}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Expando$blue = _elm_lang$virtual_dom$VirtualDom_Helpers$style(
-	{
-		ctor: '::',
-		_0: {ctor: '_Tuple2', _0: 'color', _1: 'rgb(28, 0, 207)'},
-		_1: {ctor: '[]'}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Expando$red = _elm_lang$virtual_dom$VirtualDom_Helpers$style(
-	{
-		ctor: '::',
-		_0: {ctor: '_Tuple2', _0: 'color', _1: 'rgb(196, 26, 22)'},
-		_1: {ctor: '[]'}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Expando$leftPad = function (maybeKey) {
-	var _p0 = maybeKey;
-	if (_p0.ctor === 'Nothing') {
-		return _elm_lang$virtual_dom$VirtualDom_Helpers$style(
-			{ctor: '[]'});
-	} else {
-		return _elm_lang$virtual_dom$VirtualDom_Helpers$style(
-			{
-				ctor: '::',
-				_0: {ctor: '_Tuple2', _0: 'padding-left', _1: '4ch'},
-				_1: {ctor: '[]'}
-			});
-	}
-};
-var _elm_lang$virtual_dom$VirtualDom_Expando$makeArrow = function (arrow) {
-	return A2(
-		_elm_lang$virtual_dom$VirtualDom_Helpers$span,
-		{
-			ctor: '::',
-			_0: _elm_lang$virtual_dom$VirtualDom_Helpers$style(
-				{
-					ctor: '::',
-					_0: {ctor: '_Tuple2', _0: 'color', _1: '#777'},
-					_1: {
-						ctor: '::',
-						_0: {ctor: '_Tuple2', _0: 'padding-left', _1: '2ch'},
-						_1: {
-							ctor: '::',
-							_0: {ctor: '_Tuple2', _0: 'width', _1: '2ch'},
-							_1: {
-								ctor: '::',
-								_0: {ctor: '_Tuple2', _0: 'display', _1: 'inline-block'},
-								_1: {ctor: '[]'}
-							}
-						}
-					}
-				}),
-			_1: {ctor: '[]'}
-		},
-		{
-			ctor: '::',
-			_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(arrow),
-			_1: {ctor: '[]'}
-		});
-};
-var _elm_lang$virtual_dom$VirtualDom_Expando$lineStarter = F3(
-	function (maybeKey, maybeIsClosed, description) {
-		var arrow = function () {
-			var _p1 = maybeIsClosed;
-			if (_p1.ctor === 'Nothing') {
-				return _elm_lang$virtual_dom$VirtualDom_Expando$makeArrow('');
-			} else {
-				if (_p1._0 === true) {
-					return _elm_lang$virtual_dom$VirtualDom_Expando$makeArrow('▸');
-				} else {
-					return _elm_lang$virtual_dom$VirtualDom_Expando$makeArrow('▾');
-				}
-			}
-		}();
-		var _p2 = maybeKey;
-		if (_p2.ctor === 'Nothing') {
-			return {ctor: '::', _0: arrow, _1: description};
-		} else {
-			return {
-				ctor: '::',
-				_0: arrow,
-				_1: {
-					ctor: '::',
-					_0: A2(
-						_elm_lang$virtual_dom$VirtualDom_Helpers$span,
-						{
-							ctor: '::',
-							_0: _elm_lang$virtual_dom$VirtualDom_Expando$purple,
-							_1: {ctor: '[]'}
-						},
-						{
-							ctor: '::',
-							_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(_p2._0),
-							_1: {ctor: '[]'}
-						}),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(' = '),
-						_1: description
-					}
-				}
-			};
-		}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Expando$viewExtraTinyRecord = F3(
-	function (length, starter, entries) {
-		var _p3 = entries;
-		if (_p3.ctor === '[]') {
-			return {
-				ctor: '_Tuple2',
-				_0: length + 1,
-				_1: {
-					ctor: '::',
-					_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text('}'),
-					_1: {ctor: '[]'}
-				}
-			};
-		} else {
-			var _p5 = _p3._0;
-			var nextLength = (length + _elm_lang$core$String$length(_p5)) + 1;
-			if (_elm_lang$core$Native_Utils.cmp(nextLength, 18) > 0) {
-				return {
-					ctor: '_Tuple2',
-					_0: length + 2,
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text('…}'),
-						_1: {ctor: '[]'}
-					}
-				};
-			} else {
-				var _p4 = A3(_elm_lang$virtual_dom$VirtualDom_Expando$viewExtraTinyRecord, nextLength, ',', _p3._1);
-				var finalLength = _p4._0;
-				var otherNodes = _p4._1;
-				return {
-					ctor: '_Tuple2',
-					_0: finalLength,
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(starter),
-						_1: {
-							ctor: '::',
-							_0: A2(
-								_elm_lang$virtual_dom$VirtualDom_Helpers$span,
-								{
-									ctor: '::',
-									_0: _elm_lang$virtual_dom$VirtualDom_Expando$purple,
-									_1: {ctor: '[]'}
-								},
-								{
-									ctor: '::',
-									_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(_p5),
-									_1: {ctor: '[]'}
-								}),
-							_1: otherNodes
-						}
-					}
-				};
-			}
-		}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Expando$elideMiddle = function (str) {
-	return (_elm_lang$core$Native_Utils.cmp(
-		_elm_lang$core$String$length(str),
-		18) < 1) ? str : A2(
-		_elm_lang$core$Basics_ops['++'],
-		A2(_elm_lang$core$String$left, 8, str),
-		A2(
-			_elm_lang$core$Basics_ops['++'],
-			'...',
-			A2(_elm_lang$core$String$right, 8, str)));
-};
-var _elm_lang$virtual_dom$VirtualDom_Expando$viewTinyHelp = function (str) {
-	return {
-		ctor: '_Tuple2',
-		_0: _elm_lang$core$String$length(str),
-		_1: {
-			ctor: '::',
-			_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(str),
-			_1: {ctor: '[]'}
-		}
-	};
-};
-var _elm_lang$virtual_dom$VirtualDom_Expando$updateIndex = F3(
-	function (n, func, list) {
-		var _p6 = list;
-		if (_p6.ctor === '[]') {
-			return {ctor: '[]'};
-		} else {
-			var _p8 = _p6._1;
-			var _p7 = _p6._0;
-			return (_elm_lang$core$Native_Utils.cmp(n, 0) < 1) ? {
-				ctor: '::',
-				_0: func(_p7),
-				_1: _p8
-			} : {
-				ctor: '::',
-				_0: _p7,
-				_1: A3(_elm_lang$virtual_dom$VirtualDom_Expando$updateIndex, n - 1, func, _p8)
-			};
-		}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Expando$seqTypeToString = F2(
-	function (n, seqType) {
-		var _p9 = seqType;
-		switch (_p9.ctor) {
-			case 'ListSeq':
-				return A2(
-					_elm_lang$core$Basics_ops['++'],
-					'List(',
-					A2(
-						_elm_lang$core$Basics_ops['++'],
-						_elm_lang$core$Basics$toString(n),
-						')'));
-			case 'SetSeq':
-				return A2(
-					_elm_lang$core$Basics_ops['++'],
-					'Set(',
-					A2(
-						_elm_lang$core$Basics_ops['++'],
-						_elm_lang$core$Basics$toString(n),
-						')'));
-			default:
-				return A2(
-					_elm_lang$core$Basics_ops['++'],
-					'Array(',
-					A2(
-						_elm_lang$core$Basics_ops['++'],
-						_elm_lang$core$Basics$toString(n),
-						')'));
-		}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Expando$viewTiny = function (value) {
-	var _p10 = value;
-	switch (_p10.ctor) {
-		case 'S':
-			var str = _elm_lang$virtual_dom$VirtualDom_Expando$elideMiddle(_p10._0);
-			return {
-				ctor: '_Tuple2',
-				_0: _elm_lang$core$String$length(str),
-				_1: {
-					ctor: '::',
-					_0: A2(
-						_elm_lang$virtual_dom$VirtualDom_Helpers$span,
-						{
-							ctor: '::',
-							_0: _elm_lang$virtual_dom$VirtualDom_Expando$red,
-							_1: {ctor: '[]'}
-						},
-						{
-							ctor: '::',
-							_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(str),
-							_1: {ctor: '[]'}
-						}),
-					_1: {ctor: '[]'}
-				}
-			};
-		case 'Primitive':
-			var _p11 = _p10._0;
-			return {
-				ctor: '_Tuple2',
-				_0: _elm_lang$core$String$length(_p11),
-				_1: {
-					ctor: '::',
-					_0: A2(
-						_elm_lang$virtual_dom$VirtualDom_Helpers$span,
-						{
-							ctor: '::',
-							_0: _elm_lang$virtual_dom$VirtualDom_Expando$blue,
-							_1: {ctor: '[]'}
-						},
-						{
-							ctor: '::',
-							_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(_p11),
-							_1: {ctor: '[]'}
-						}),
-					_1: {ctor: '[]'}
-				}
-			};
-		case 'Sequence':
-			return _elm_lang$virtual_dom$VirtualDom_Expando$viewTinyHelp(
-				A2(
-					_elm_lang$virtual_dom$VirtualDom_Expando$seqTypeToString,
-					_elm_lang$core$List$length(_p10._2),
-					_p10._0));
-		case 'Dictionary':
-			return _elm_lang$virtual_dom$VirtualDom_Expando$viewTinyHelp(
-				A2(
-					_elm_lang$core$Basics_ops['++'],
-					'Dict(',
-					A2(
-						_elm_lang$core$Basics_ops['++'],
-						_elm_lang$core$Basics$toString(
-							_elm_lang$core$List$length(_p10._1)),
-						')')));
-		case 'Record':
-			return _elm_lang$virtual_dom$VirtualDom_Expando$viewTinyRecord(_p10._1);
-		default:
-			if (_p10._2.ctor === '[]') {
-				return _elm_lang$virtual_dom$VirtualDom_Expando$viewTinyHelp(
-					A2(_elm_lang$core$Maybe$withDefault, 'Unit', _p10._0));
-			} else {
-				return _elm_lang$virtual_dom$VirtualDom_Expando$viewTinyHelp(
-					function () {
-						var _p12 = _p10._0;
-						if (_p12.ctor === 'Nothing') {
-							return A2(
-								_elm_lang$core$Basics_ops['++'],
-								'Tuple(',
-								A2(
-									_elm_lang$core$Basics_ops['++'],
-									_elm_lang$core$Basics$toString(
-										_elm_lang$core$List$length(_p10._2)),
-									')'));
-						} else {
-							return A2(_elm_lang$core$Basics_ops['++'], _p12._0, ' …');
-						}
-					}());
-			}
-	}
-};
-var _elm_lang$virtual_dom$VirtualDom_Expando$viewTinyRecord = function (record) {
-	return _elm_lang$core$Dict$isEmpty(record) ? {
-		ctor: '_Tuple2',
-		_0: 2,
-		_1: {
-			ctor: '::',
-			_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text('{}'),
-			_1: {ctor: '[]'}
-		}
-	} : A3(
-		_elm_lang$virtual_dom$VirtualDom_Expando$viewTinyRecordHelp,
-		0,
-		'{ ',
-		_elm_lang$core$Dict$toList(record));
-};
-var _elm_lang$virtual_dom$VirtualDom_Expando$viewTinyRecordHelp = F3(
-	function (length, starter, entries) {
-		var _p13 = entries;
-		if (_p13.ctor === '[]') {
-			return {
-				ctor: '_Tuple2',
-				_0: length + 2,
-				_1: {
-					ctor: '::',
-					_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(' }'),
-					_1: {ctor: '[]'}
-				}
-			};
-		} else {
-			var _p16 = _p13._0._0;
-			var _p14 = _elm_lang$virtual_dom$VirtualDom_Expando$viewExtraTiny(_p13._0._1);
-			var valueLen = _p14._0;
-			var valueNodes = _p14._1;
-			var fieldLen = _elm_lang$core$String$length(_p16);
-			var newLength = ((length + fieldLen) + valueLen) + 5;
-			if (_elm_lang$core$Native_Utils.cmp(newLength, 60) > 0) {
-				return {
-					ctor: '_Tuple2',
-					_0: length + 4,
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(', … }'),
-						_1: {ctor: '[]'}
-					}
-				};
-			} else {
-				var _p15 = A3(_elm_lang$virtual_dom$VirtualDom_Expando$viewTinyRecordHelp, newLength, ', ', _p13._1);
-				var finalLength = _p15._0;
-				var otherNodes = _p15._1;
-				return {
-					ctor: '_Tuple2',
-					_0: finalLength,
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(starter),
-						_1: {
-							ctor: '::',
-							_0: A2(
-								_elm_lang$virtual_dom$VirtualDom_Helpers$span,
-								{
-									ctor: '::',
-									_0: _elm_lang$virtual_dom$VirtualDom_Expando$purple,
-									_1: {ctor: '[]'}
-								},
-								{
-									ctor: '::',
-									_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(_p16),
-									_1: {ctor: '[]'}
-								}),
-							_1: {
-								ctor: '::',
-								_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(' = '),
-								_1: {
-									ctor: '::',
-									_0: A2(
-										_elm_lang$virtual_dom$VirtualDom_Helpers$span,
-										{ctor: '[]'},
-										valueNodes),
-									_1: otherNodes
-								}
-							}
-						}
-					}
-				};
-			}
-		}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Expando$viewExtraTiny = function (value) {
-	var _p17 = value;
-	if (_p17.ctor === 'Record') {
-		return A3(
-			_elm_lang$virtual_dom$VirtualDom_Expando$viewExtraTinyRecord,
-			0,
-			'{',
-			_elm_lang$core$Dict$keys(_p17._1));
-	} else {
-		return _elm_lang$virtual_dom$VirtualDom_Expando$viewTiny(value);
-	}
-};
-var _elm_lang$virtual_dom$VirtualDom_Expando$Constructor = F3(
-	function (a, b, c) {
-		return {ctor: 'Constructor', _0: a, _1: b, _2: c};
-	});
-var _elm_lang$virtual_dom$VirtualDom_Expando$Record = F2(
-	function (a, b) {
-		return {ctor: 'Record', _0: a, _1: b};
-	});
-var _elm_lang$virtual_dom$VirtualDom_Expando$Dictionary = F2(
-	function (a, b) {
-		return {ctor: 'Dictionary', _0: a, _1: b};
-	});
-var _elm_lang$virtual_dom$VirtualDom_Expando$Sequence = F3(
-	function (a, b, c) {
-		return {ctor: 'Sequence', _0: a, _1: b, _2: c};
-	});
-var _elm_lang$virtual_dom$VirtualDom_Expando$initHelp = F2(
-	function (isOuter, expando) {
-		var _p18 = expando;
-		switch (_p18.ctor) {
-			case 'S':
-				return expando;
-			case 'Primitive':
-				return expando;
-			case 'Sequence':
-				var _p20 = _p18._0;
-				var _p19 = _p18._2;
-				return isOuter ? A3(
-					_elm_lang$virtual_dom$VirtualDom_Expando$Sequence,
-					_p20,
-					false,
-					A2(
-						_elm_lang$core$List$map,
-						_elm_lang$virtual_dom$VirtualDom_Expando$initHelp(false),
-						_p19)) : ((_elm_lang$core$Native_Utils.cmp(
-					_elm_lang$core$List$length(_p19),
-					8) < 1) ? A3(_elm_lang$virtual_dom$VirtualDom_Expando$Sequence, _p20, false, _p19) : expando);
-			case 'Dictionary':
-				var _p23 = _p18._1;
-				return isOuter ? A2(
-					_elm_lang$virtual_dom$VirtualDom_Expando$Dictionary,
-					false,
-					A2(
-						_elm_lang$core$List$map,
-						function (_p21) {
-							var _p22 = _p21;
-							return {
-								ctor: '_Tuple2',
-								_0: _p22._0,
-								_1: A2(_elm_lang$virtual_dom$VirtualDom_Expando$initHelp, false, _p22._1)
-							};
-						},
-						_p23)) : ((_elm_lang$core$Native_Utils.cmp(
-					_elm_lang$core$List$length(_p23),
-					8) < 1) ? A2(_elm_lang$virtual_dom$VirtualDom_Expando$Dictionary, false, _p23) : expando);
-			case 'Record':
-				var _p25 = _p18._1;
-				return isOuter ? A2(
-					_elm_lang$virtual_dom$VirtualDom_Expando$Record,
-					false,
-					A2(
-						_elm_lang$core$Dict$map,
-						F2(
-							function (_p24, v) {
-								return A2(_elm_lang$virtual_dom$VirtualDom_Expando$initHelp, false, v);
-							}),
-						_p25)) : ((_elm_lang$core$Native_Utils.cmp(
-					_elm_lang$core$Dict$size(_p25),
-					4) < 1) ? A2(_elm_lang$virtual_dom$VirtualDom_Expando$Record, false, _p25) : expando);
-			default:
-				var _p27 = _p18._0;
-				var _p26 = _p18._2;
-				return isOuter ? A3(
-					_elm_lang$virtual_dom$VirtualDom_Expando$Constructor,
-					_p27,
-					false,
-					A2(
-						_elm_lang$core$List$map,
-						_elm_lang$virtual_dom$VirtualDom_Expando$initHelp(false),
-						_p26)) : ((_elm_lang$core$Native_Utils.cmp(
-					_elm_lang$core$List$length(_p26),
-					4) < 1) ? A3(_elm_lang$virtual_dom$VirtualDom_Expando$Constructor, _p27, false, _p26) : expando);
-		}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Expando$init = function (value) {
-	return A2(
-		_elm_lang$virtual_dom$VirtualDom_Expando$initHelp,
-		true,
-		_elm_lang$virtual_dom$Native_Debug.init(value));
-};
-var _elm_lang$virtual_dom$VirtualDom_Expando$mergeHelp = F2(
-	function (old, $new) {
-		var _p28 = {ctor: '_Tuple2', _0: old, _1: $new};
-		_v12_6:
-		do {
-			if (_p28.ctor === '_Tuple2') {
-				switch (_p28._1.ctor) {
-					case 'S':
-						return $new;
-					case 'Primitive':
-						return $new;
-					case 'Sequence':
-						if (_p28._0.ctor === 'Sequence') {
-							return A3(
-								_elm_lang$virtual_dom$VirtualDom_Expando$Sequence,
-								_p28._1._0,
-								_p28._0._1,
-								A2(_elm_lang$virtual_dom$VirtualDom_Expando$mergeListHelp, _p28._0._2, _p28._1._2));
-						} else {
-							break _v12_6;
-						}
-					case 'Dictionary':
-						if (_p28._0.ctor === 'Dictionary') {
-							return A2(_elm_lang$virtual_dom$VirtualDom_Expando$Dictionary, _p28._0._0, _p28._1._1);
-						} else {
-							break _v12_6;
-						}
-					case 'Record':
-						if (_p28._0.ctor === 'Record') {
-							return A2(
-								_elm_lang$virtual_dom$VirtualDom_Expando$Record,
-								_p28._0._0,
-								A2(
-									_elm_lang$core$Dict$map,
-									_elm_lang$virtual_dom$VirtualDom_Expando$mergeDictHelp(_p28._0._1),
-									_p28._1._1));
-						} else {
-							break _v12_6;
-						}
-					default:
-						if (_p28._0.ctor === 'Constructor') {
-							return A3(
-								_elm_lang$virtual_dom$VirtualDom_Expando$Constructor,
-								_p28._1._0,
-								_p28._0._1,
-								A2(_elm_lang$virtual_dom$VirtualDom_Expando$mergeListHelp, _p28._0._2, _p28._1._2));
-						} else {
-							break _v12_6;
-						}
-				}
-			} else {
-				break _v12_6;
-			}
-		} while(false);
-		return $new;
-	});
-var _elm_lang$virtual_dom$VirtualDom_Expando$mergeDictHelp = F3(
-	function (oldDict, key, value) {
-		var _p29 = A2(_elm_lang$core$Dict$get, key, oldDict);
-		if (_p29.ctor === 'Nothing') {
-			return value;
-		} else {
-			return A2(_elm_lang$virtual_dom$VirtualDom_Expando$mergeHelp, _p29._0, value);
-		}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Expando$mergeListHelp = F2(
-	function (olds, news) {
-		var _p30 = {ctor: '_Tuple2', _0: olds, _1: news};
-		if (_p30._0.ctor === '[]') {
-			return news;
-		} else {
-			if (_p30._1.ctor === '[]') {
-				return news;
-			} else {
-				return {
-					ctor: '::',
-					_0: A2(_elm_lang$virtual_dom$VirtualDom_Expando$mergeHelp, _p30._0._0, _p30._1._0),
-					_1: A2(_elm_lang$virtual_dom$VirtualDom_Expando$mergeListHelp, _p30._0._1, _p30._1._1)
-				};
-			}
-		}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Expando$merge = F2(
-	function (value, expando) {
-		return A2(
-			_elm_lang$virtual_dom$VirtualDom_Expando$mergeHelp,
-			expando,
-			_elm_lang$virtual_dom$Native_Debug.init(value));
-	});
-var _elm_lang$virtual_dom$VirtualDom_Expando$update = F2(
-	function (msg, value) {
-		var _p31 = value;
-		switch (_p31.ctor) {
-			case 'S':
-				return _elm_lang$core$Native_Utils.crashCase(
-					'VirtualDom.Expando',
-					{
-						start: {line: 168, column: 3},
-						end: {line: 235, column: 50}
-					},
-					_p31)('No messages for primitives');
-			case 'Primitive':
-				return _elm_lang$core$Native_Utils.crashCase(
-					'VirtualDom.Expando',
-					{
-						start: {line: 168, column: 3},
-						end: {line: 235, column: 50}
-					},
-					_p31)('No messages for primitives');
-			case 'Sequence':
-				var _p39 = _p31._2;
-				var _p38 = _p31._0;
-				var _p37 = _p31._1;
-				var _p34 = msg;
-				switch (_p34.ctor) {
-					case 'Toggle':
-						return A3(_elm_lang$virtual_dom$VirtualDom_Expando$Sequence, _p38, !_p37, _p39);
-					case 'Index':
-						if (_p34._0.ctor === 'None') {
-							return A3(
-								_elm_lang$virtual_dom$VirtualDom_Expando$Sequence,
-								_p38,
-								_p37,
-								A3(
-									_elm_lang$virtual_dom$VirtualDom_Expando$updateIndex,
-									_p34._1,
-									_elm_lang$virtual_dom$VirtualDom_Expando$update(_p34._2),
-									_p39));
-						} else {
-							return _elm_lang$core$Native_Utils.crashCase(
-								'VirtualDom.Expando',
-								{
-									start: {line: 176, column: 7},
-									end: {line: 188, column: 46}
-								},
-								_p34)('No redirected indexes on sequences');
-						}
-					default:
-						return _elm_lang$core$Native_Utils.crashCase(
-							'VirtualDom.Expando',
-							{
-								start: {line: 176, column: 7},
-								end: {line: 188, column: 46}
-							},
-							_p34)('No field on sequences');
-				}
-			case 'Dictionary':
-				var _p51 = _p31._1;
-				var _p50 = _p31._0;
-				var _p40 = msg;
-				switch (_p40.ctor) {
-					case 'Toggle':
-						return A2(_elm_lang$virtual_dom$VirtualDom_Expando$Dictionary, !_p50, _p51);
-					case 'Index':
-						var _p48 = _p40._2;
-						var _p47 = _p40._1;
-						var _p41 = _p40._0;
-						switch (_p41.ctor) {
-							case 'None':
-								return _elm_lang$core$Native_Utils.crashCase(
-									'VirtualDom.Expando',
-									{
-										start: {line: 196, column: 11},
-										end: {line: 206, column: 81}
-									},
-									_p41)('must have redirect for dictionaries');
-							case 'Key':
-								return A2(
-									_elm_lang$virtual_dom$VirtualDom_Expando$Dictionary,
-									_p50,
-									A3(
-										_elm_lang$virtual_dom$VirtualDom_Expando$updateIndex,
-										_p47,
-										function (_p43) {
-											var _p44 = _p43;
-											return {
-												ctor: '_Tuple2',
-												_0: A2(_elm_lang$virtual_dom$VirtualDom_Expando$update, _p48, _p44._0),
-												_1: _p44._1
-											};
-										},
-										_p51));
-							default:
-								return A2(
-									_elm_lang$virtual_dom$VirtualDom_Expando$Dictionary,
-									_p50,
-									A3(
-										_elm_lang$virtual_dom$VirtualDom_Expando$updateIndex,
-										_p47,
-										function (_p45) {
-											var _p46 = _p45;
-											return {
-												ctor: '_Tuple2',
-												_0: _p46._0,
-												_1: A2(_elm_lang$virtual_dom$VirtualDom_Expando$update, _p48, _p46._1)
-											};
-										},
-										_p51));
-						}
-					default:
-						return _elm_lang$core$Native_Utils.crashCase(
-							'VirtualDom.Expando',
-							{
-								start: {line: 191, column: 7},
-								end: {line: 209, column: 50}
-							},
-							_p40)('no field for dictionaries');
-				}
-			case 'Record':
-				var _p55 = _p31._1;
-				var _p54 = _p31._0;
-				var _p52 = msg;
-				switch (_p52.ctor) {
-					case 'Toggle':
-						return A2(_elm_lang$virtual_dom$VirtualDom_Expando$Record, !_p54, _p55);
-					case 'Index':
-						return _elm_lang$core$Native_Utils.crashCase(
-							'VirtualDom.Expando',
-							{
-								start: {line: 212, column: 7},
-								end: {line: 220, column: 77}
-							},
-							_p52)('No index for records');
-					default:
-						return A2(
-							_elm_lang$virtual_dom$VirtualDom_Expando$Record,
-							_p54,
-							A3(
-								_elm_lang$core$Dict$update,
-								_p52._0,
-								_elm_lang$virtual_dom$VirtualDom_Expando$updateField(_p52._1),
-								_p55));
-				}
-			default:
-				var _p61 = _p31._2;
-				var _p60 = _p31._0;
-				var _p59 = _p31._1;
-				var _p56 = msg;
-				switch (_p56.ctor) {
-					case 'Toggle':
-						return A3(_elm_lang$virtual_dom$VirtualDom_Expando$Constructor, _p60, !_p59, _p61);
-					case 'Index':
-						if (_p56._0.ctor === 'None') {
-							return A3(
-								_elm_lang$virtual_dom$VirtualDom_Expando$Constructor,
-								_p60,
-								_p59,
-								A3(
-									_elm_lang$virtual_dom$VirtualDom_Expando$updateIndex,
-									_p56._1,
-									_elm_lang$virtual_dom$VirtualDom_Expando$update(_p56._2),
-									_p61));
-						} else {
-							return _elm_lang$core$Native_Utils.crashCase(
-								'VirtualDom.Expando',
-								{
-									start: {line: 223, column: 7},
-									end: {line: 235, column: 50}
-								},
-								_p56)('No redirected indexes on sequences');
-						}
-					default:
-						return _elm_lang$core$Native_Utils.crashCase(
-							'VirtualDom.Expando',
-							{
-								start: {line: 223, column: 7},
-								end: {line: 235, column: 50}
-							},
-							_p56)('No field for constructors');
-				}
-		}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Expando$updateField = F2(
-	function (msg, maybeExpando) {
-		var _p62 = maybeExpando;
-		if (_p62.ctor === 'Nothing') {
-			return _elm_lang$core$Native_Utils.crashCase(
-				'VirtualDom.Expando',
-				{
-					start: {line: 253, column: 3},
-					end: {line: 258, column: 32}
-				},
-				_p62)('key does not exist');
-		} else {
-			return _elm_lang$core$Maybe$Just(
-				A2(_elm_lang$virtual_dom$VirtualDom_Expando$update, msg, _p62._0));
-		}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Expando$Primitive = function (a) {
-	return {ctor: 'Primitive', _0: a};
-};
-var _elm_lang$virtual_dom$VirtualDom_Expando$S = function (a) {
-	return {ctor: 'S', _0: a};
-};
-var _elm_lang$virtual_dom$VirtualDom_Expando$ArraySeq = {ctor: 'ArraySeq'};
-var _elm_lang$virtual_dom$VirtualDom_Expando$SetSeq = {ctor: 'SetSeq'};
-var _elm_lang$virtual_dom$VirtualDom_Expando$ListSeq = {ctor: 'ListSeq'};
-var _elm_lang$virtual_dom$VirtualDom_Expando$Field = F2(
-	function (a, b) {
-		return {ctor: 'Field', _0: a, _1: b};
-	});
-var _elm_lang$virtual_dom$VirtualDom_Expando$Index = F3(
-	function (a, b, c) {
-		return {ctor: 'Index', _0: a, _1: b, _2: c};
-	});
-var _elm_lang$virtual_dom$VirtualDom_Expando$Toggle = {ctor: 'Toggle'};
-var _elm_lang$virtual_dom$VirtualDom_Expando$Value = {ctor: 'Value'};
-var _elm_lang$virtual_dom$VirtualDom_Expando$Key = {ctor: 'Key'};
-var _elm_lang$virtual_dom$VirtualDom_Expando$None = {ctor: 'None'};
-var _elm_lang$virtual_dom$VirtualDom_Expando$viewConstructorEntry = F2(
-	function (index, value) {
-		return A2(
-			_elm_lang$virtual_dom$VirtualDom_Helpers$map,
-			A2(_elm_lang$virtual_dom$VirtualDom_Expando$Index, _elm_lang$virtual_dom$VirtualDom_Expando$None, index),
-			A2(
-				_elm_lang$virtual_dom$VirtualDom_Expando$view,
-				_elm_lang$core$Maybe$Just(
-					_elm_lang$core$Basics$toString(index)),
-				value));
-	});
-var _elm_lang$virtual_dom$VirtualDom_Expando$view = F2(
-	function (maybeKey, expando) {
-		var _p64 = expando;
-		switch (_p64.ctor) {
-			case 'S':
-				return A2(
-					_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-					{
-						ctor: '::',
-						_0: _elm_lang$virtual_dom$VirtualDom_Expando$leftPad(maybeKey),
-						_1: {ctor: '[]'}
-					},
-					A3(
-						_elm_lang$virtual_dom$VirtualDom_Expando$lineStarter,
-						maybeKey,
-						_elm_lang$core$Maybe$Nothing,
-						{
-							ctor: '::',
-							_0: A2(
-								_elm_lang$virtual_dom$VirtualDom_Helpers$span,
-								{
-									ctor: '::',
-									_0: _elm_lang$virtual_dom$VirtualDom_Expando$red,
-									_1: {ctor: '[]'}
-								},
-								{
-									ctor: '::',
-									_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(_p64._0),
-									_1: {ctor: '[]'}
-								}),
-							_1: {ctor: '[]'}
-						}));
-			case 'Primitive':
-				return A2(
-					_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-					{
-						ctor: '::',
-						_0: _elm_lang$virtual_dom$VirtualDom_Expando$leftPad(maybeKey),
-						_1: {ctor: '[]'}
-					},
-					A3(
-						_elm_lang$virtual_dom$VirtualDom_Expando$lineStarter,
-						maybeKey,
-						_elm_lang$core$Maybe$Nothing,
-						{
-							ctor: '::',
-							_0: A2(
-								_elm_lang$virtual_dom$VirtualDom_Helpers$span,
-								{
-									ctor: '::',
-									_0: _elm_lang$virtual_dom$VirtualDom_Expando$blue,
-									_1: {ctor: '[]'}
-								},
-								{
-									ctor: '::',
-									_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(_p64._0),
-									_1: {ctor: '[]'}
-								}),
-							_1: {ctor: '[]'}
-						}));
-			case 'Sequence':
-				return A4(_elm_lang$virtual_dom$VirtualDom_Expando$viewSequence, maybeKey, _p64._0, _p64._1, _p64._2);
-			case 'Dictionary':
-				return A3(_elm_lang$virtual_dom$VirtualDom_Expando$viewDictionary, maybeKey, _p64._0, _p64._1);
-			case 'Record':
-				return A3(_elm_lang$virtual_dom$VirtualDom_Expando$viewRecord, maybeKey, _p64._0, _p64._1);
-			default:
-				return A4(_elm_lang$virtual_dom$VirtualDom_Expando$viewConstructor, maybeKey, _p64._0, _p64._1, _p64._2);
-		}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Expando$viewConstructor = F4(
-	function (maybeKey, maybeName, isClosed, valueList) {
-		var _p65 = function () {
-			var _p66 = valueList;
-			if (_p66.ctor === '[]') {
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Maybe$Nothing,
-					_1: A2(
-						_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-						{ctor: '[]'},
-						{ctor: '[]'})
-				};
-			} else {
-				if (_p66._1.ctor === '[]') {
-					var _p67 = _p66._0;
-					switch (_p67.ctor) {
-						case 'S':
-							return {
-								ctor: '_Tuple2',
-								_0: _elm_lang$core$Maybe$Nothing,
-								_1: A2(
-									_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-									{ctor: '[]'},
-									{ctor: '[]'})
-							};
-						case 'Primitive':
-							return {
-								ctor: '_Tuple2',
-								_0: _elm_lang$core$Maybe$Nothing,
-								_1: A2(
-									_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-									{ctor: '[]'},
-									{ctor: '[]'})
-							};
-						case 'Sequence':
-							return {
-								ctor: '_Tuple2',
-								_0: _elm_lang$core$Maybe$Just(isClosed),
-								_1: isClosed ? A2(
-									_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-									{ctor: '[]'},
-									{ctor: '[]'}) : A2(
-									_elm_lang$virtual_dom$VirtualDom_Helpers$map,
-									A2(_elm_lang$virtual_dom$VirtualDom_Expando$Index, _elm_lang$virtual_dom$VirtualDom_Expando$None, 0),
-									_elm_lang$virtual_dom$VirtualDom_Expando$viewSequenceOpen(_p67._2))
-							};
-						case 'Dictionary':
-							return {
-								ctor: '_Tuple2',
-								_0: _elm_lang$core$Maybe$Just(isClosed),
-								_1: isClosed ? A2(
-									_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-									{ctor: '[]'},
-									{ctor: '[]'}) : A2(
-									_elm_lang$virtual_dom$VirtualDom_Helpers$map,
-									A2(_elm_lang$virtual_dom$VirtualDom_Expando$Index, _elm_lang$virtual_dom$VirtualDom_Expando$None, 0),
-									_elm_lang$virtual_dom$VirtualDom_Expando$viewDictionaryOpen(_p67._1))
-							};
-						case 'Record':
-							return {
-								ctor: '_Tuple2',
-								_0: _elm_lang$core$Maybe$Just(isClosed),
-								_1: isClosed ? A2(
-									_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-									{ctor: '[]'},
-									{ctor: '[]'}) : A2(
-									_elm_lang$virtual_dom$VirtualDom_Helpers$map,
-									A2(_elm_lang$virtual_dom$VirtualDom_Expando$Index, _elm_lang$virtual_dom$VirtualDom_Expando$None, 0),
-									_elm_lang$virtual_dom$VirtualDom_Expando$viewRecordOpen(_p67._1))
-							};
-						default:
-							return {
-								ctor: '_Tuple2',
-								_0: _elm_lang$core$Maybe$Just(isClosed),
-								_1: isClosed ? A2(
-									_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-									{ctor: '[]'},
-									{ctor: '[]'}) : A2(
-									_elm_lang$virtual_dom$VirtualDom_Helpers$map,
-									A2(_elm_lang$virtual_dom$VirtualDom_Expando$Index, _elm_lang$virtual_dom$VirtualDom_Expando$None, 0),
-									_elm_lang$virtual_dom$VirtualDom_Expando$viewConstructorOpen(_p67._2))
-							};
-					}
-				} else {
-					return {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Maybe$Just(isClosed),
-						_1: isClosed ? A2(
-							_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-							{ctor: '[]'},
-							{ctor: '[]'}) : _elm_lang$virtual_dom$VirtualDom_Expando$viewConstructorOpen(valueList)
-					};
-				}
-			}
-		}();
-		var maybeIsClosed = _p65._0;
-		var openHtml = _p65._1;
-		var tinyArgs = A2(
-			_elm_lang$core$List$map,
-			function (_p68) {
-				return _elm_lang$core$Tuple$second(
-					_elm_lang$virtual_dom$VirtualDom_Expando$viewExtraTiny(_p68));
-			},
-			valueList);
-		var description = function () {
-			var _p69 = {ctor: '_Tuple2', _0: maybeName, _1: tinyArgs};
-			if (_p69._0.ctor === 'Nothing') {
-				if (_p69._1.ctor === '[]') {
-					return {
-						ctor: '::',
-						_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text('()'),
-						_1: {ctor: '[]'}
-					};
-				} else {
-					return {
-						ctor: '::',
-						_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text('( '),
-						_1: {
-							ctor: '::',
-							_0: A2(
-								_elm_lang$virtual_dom$VirtualDom_Helpers$span,
-								{ctor: '[]'},
-								_p69._1._0),
-							_1: A3(
-								_elm_lang$core$List$foldr,
-								F2(
-									function (args, rest) {
-										return {
-											ctor: '::',
-											_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(', '),
-											_1: {
-												ctor: '::',
-												_0: A2(
-													_elm_lang$virtual_dom$VirtualDom_Helpers$span,
-													{ctor: '[]'},
-													args),
-												_1: rest
-											}
-										};
-									}),
-								{
-									ctor: '::',
-									_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(' )'),
-									_1: {ctor: '[]'}
-								},
-								_p69._1._1)
-						}
-					};
-				}
-			} else {
-				if (_p69._1.ctor === '[]') {
-					return {
-						ctor: '::',
-						_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(_p69._0._0),
-						_1: {ctor: '[]'}
-					};
-				} else {
-					return {
-						ctor: '::',
-						_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(
-							A2(_elm_lang$core$Basics_ops['++'], _p69._0._0, ' ')),
-						_1: {
-							ctor: '::',
-							_0: A2(
-								_elm_lang$virtual_dom$VirtualDom_Helpers$span,
-								{ctor: '[]'},
-								_p69._1._0),
-							_1: A3(
-								_elm_lang$core$List$foldr,
-								F2(
-									function (args, rest) {
-										return {
-											ctor: '::',
-											_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(' '),
-											_1: {
-												ctor: '::',
-												_0: A2(
-													_elm_lang$virtual_dom$VirtualDom_Helpers$span,
-													{ctor: '[]'},
-													args),
-												_1: rest
-											}
-										};
-									}),
-								{ctor: '[]'},
-								_p69._1._1)
-						}
-					};
-				}
-			}
-		}();
-		return A2(
-			_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-			{
-				ctor: '::',
-				_0: _elm_lang$virtual_dom$VirtualDom_Expando$leftPad(maybeKey),
-				_1: {ctor: '[]'}
-			},
-			{
-				ctor: '::',
-				_0: A2(
-					_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-					{
-						ctor: '::',
-						_0: _elm_lang$virtual_dom$VirtualDom_Helpers$onClick(_elm_lang$virtual_dom$VirtualDom_Expando$Toggle),
-						_1: {ctor: '[]'}
-					},
-					A3(_elm_lang$virtual_dom$VirtualDom_Expando$lineStarter, maybeKey, maybeIsClosed, description)),
-				_1: {
-					ctor: '::',
-					_0: openHtml,
-					_1: {ctor: '[]'}
-				}
-			});
-	});
-var _elm_lang$virtual_dom$VirtualDom_Expando$viewConstructorOpen = function (valueList) {
-	return A2(
-		_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-		{ctor: '[]'},
-		A2(_elm_lang$core$List$indexedMap, _elm_lang$virtual_dom$VirtualDom_Expando$viewConstructorEntry, valueList));
-};
-var _elm_lang$virtual_dom$VirtualDom_Expando$viewDictionaryOpen = function (keyValuePairs) {
-	return A2(
-		_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-		{ctor: '[]'},
-		A2(_elm_lang$core$List$indexedMap, _elm_lang$virtual_dom$VirtualDom_Expando$viewDictionaryEntry, keyValuePairs));
-};
-var _elm_lang$virtual_dom$VirtualDom_Expando$viewDictionaryEntry = F2(
-	function (index, _p70) {
-		var _p71 = _p70;
-		var _p74 = _p71._1;
-		var _p73 = _p71._0;
-		var _p72 = _p73;
-		switch (_p72.ctor) {
-			case 'S':
-				return A2(
-					_elm_lang$virtual_dom$VirtualDom_Helpers$map,
-					A2(_elm_lang$virtual_dom$VirtualDom_Expando$Index, _elm_lang$virtual_dom$VirtualDom_Expando$Value, index),
-					A2(
-						_elm_lang$virtual_dom$VirtualDom_Expando$view,
-						_elm_lang$core$Maybe$Just(_p72._0),
-						_p74));
-			case 'Primitive':
-				return A2(
-					_elm_lang$virtual_dom$VirtualDom_Helpers$map,
-					A2(_elm_lang$virtual_dom$VirtualDom_Expando$Index, _elm_lang$virtual_dom$VirtualDom_Expando$Value, index),
-					A2(
-						_elm_lang$virtual_dom$VirtualDom_Expando$view,
-						_elm_lang$core$Maybe$Just(_p72._0),
-						_p74));
-			default:
-				return A2(
-					_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-					{ctor: '[]'},
-					{
-						ctor: '::',
-						_0: A2(
-							_elm_lang$virtual_dom$VirtualDom_Helpers$map,
-							A2(_elm_lang$virtual_dom$VirtualDom_Expando$Index, _elm_lang$virtual_dom$VirtualDom_Expando$Key, index),
-							A2(
-								_elm_lang$virtual_dom$VirtualDom_Expando$view,
-								_elm_lang$core$Maybe$Just('key'),
-								_p73)),
-						_1: {
-							ctor: '::',
-							_0: A2(
-								_elm_lang$virtual_dom$VirtualDom_Helpers$map,
-								A2(_elm_lang$virtual_dom$VirtualDom_Expando$Index, _elm_lang$virtual_dom$VirtualDom_Expando$Value, index),
-								A2(
-									_elm_lang$virtual_dom$VirtualDom_Expando$view,
-									_elm_lang$core$Maybe$Just('value'),
-									_p74)),
-							_1: {ctor: '[]'}
-						}
-					});
-		}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Expando$viewRecordOpen = function (record) {
-	return A2(
-		_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-		{ctor: '[]'},
-		A2(
-			_elm_lang$core$List$map,
-			_elm_lang$virtual_dom$VirtualDom_Expando$viewRecordEntry,
-			_elm_lang$core$Dict$toList(record)));
-};
-var _elm_lang$virtual_dom$VirtualDom_Expando$viewRecordEntry = function (_p75) {
-	var _p76 = _p75;
-	var _p77 = _p76._0;
-	return A2(
-		_elm_lang$virtual_dom$VirtualDom_Helpers$map,
-		_elm_lang$virtual_dom$VirtualDom_Expando$Field(_p77),
-		A2(
-			_elm_lang$virtual_dom$VirtualDom_Expando$view,
-			_elm_lang$core$Maybe$Just(_p77),
-			_p76._1));
-};
-var _elm_lang$virtual_dom$VirtualDom_Expando$viewSequenceOpen = function (values) {
-	return A2(
-		_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-		{ctor: '[]'},
-		A2(_elm_lang$core$List$indexedMap, _elm_lang$virtual_dom$VirtualDom_Expando$viewConstructorEntry, values));
-};
-var _elm_lang$virtual_dom$VirtualDom_Expando$viewDictionary = F3(
-	function (maybeKey, isClosed, keyValuePairs) {
-		var starter = A2(
-			_elm_lang$core$Basics_ops['++'],
-			'Dict(',
-			A2(
-				_elm_lang$core$Basics_ops['++'],
-				_elm_lang$core$Basics$toString(
-					_elm_lang$core$List$length(keyValuePairs)),
-				')'));
-		return A2(
-			_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-			{
-				ctor: '::',
-				_0: _elm_lang$virtual_dom$VirtualDom_Expando$leftPad(maybeKey),
-				_1: {ctor: '[]'}
-			},
-			{
-				ctor: '::',
-				_0: A2(
-					_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-					{
-						ctor: '::',
-						_0: _elm_lang$virtual_dom$VirtualDom_Helpers$onClick(_elm_lang$virtual_dom$VirtualDom_Expando$Toggle),
-						_1: {ctor: '[]'}
-					},
-					A3(
-						_elm_lang$virtual_dom$VirtualDom_Expando$lineStarter,
-						maybeKey,
-						_elm_lang$core$Maybe$Just(isClosed),
-						{
-							ctor: '::',
-							_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(starter),
-							_1: {ctor: '[]'}
-						})),
-				_1: {
-					ctor: '::',
-					_0: isClosed ? _elm_lang$virtual_dom$VirtualDom_Helpers$text('') : _elm_lang$virtual_dom$VirtualDom_Expando$viewDictionaryOpen(keyValuePairs),
-					_1: {ctor: '[]'}
-				}
-			});
-	});
-var _elm_lang$virtual_dom$VirtualDom_Expando$viewRecord = F3(
-	function (maybeKey, isClosed, record) {
-		var _p78 = isClosed ? {
-			ctor: '_Tuple3',
-			_0: _elm_lang$core$Tuple$second(
-				_elm_lang$virtual_dom$VirtualDom_Expando$viewTinyRecord(record)),
-			_1: _elm_lang$virtual_dom$VirtualDom_Helpers$text(''),
-			_2: _elm_lang$virtual_dom$VirtualDom_Helpers$text('')
-		} : {
-			ctor: '_Tuple3',
-			_0: {
-				ctor: '::',
-				_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text('{'),
-				_1: {ctor: '[]'}
-			},
-			_1: _elm_lang$virtual_dom$VirtualDom_Expando$viewRecordOpen(record),
-			_2: A2(
-				_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-				{
-					ctor: '::',
-					_0: _elm_lang$virtual_dom$VirtualDom_Expando$leftPad(
-						_elm_lang$core$Maybe$Just(
-							{ctor: '_Tuple0'})),
-					_1: {ctor: '[]'}
-				},
-				{
-					ctor: '::',
-					_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text('}'),
-					_1: {ctor: '[]'}
-				})
-		};
-		var start = _p78._0;
-		var middle = _p78._1;
-		var end = _p78._2;
-		return A2(
-			_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-			{
-				ctor: '::',
-				_0: _elm_lang$virtual_dom$VirtualDom_Expando$leftPad(maybeKey),
-				_1: {ctor: '[]'}
-			},
-			{
-				ctor: '::',
-				_0: A2(
-					_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-					{
-						ctor: '::',
-						_0: _elm_lang$virtual_dom$VirtualDom_Helpers$onClick(_elm_lang$virtual_dom$VirtualDom_Expando$Toggle),
-						_1: {ctor: '[]'}
-					},
-					A3(
-						_elm_lang$virtual_dom$VirtualDom_Expando$lineStarter,
-						maybeKey,
-						_elm_lang$core$Maybe$Just(isClosed),
-						start)),
-				_1: {
-					ctor: '::',
-					_0: middle,
-					_1: {
-						ctor: '::',
-						_0: end,
-						_1: {ctor: '[]'}
-					}
-				}
-			});
-	});
-var _elm_lang$virtual_dom$VirtualDom_Expando$viewSequence = F4(
-	function (maybeKey, seqType, isClosed, valueList) {
-		var starter = A2(
-			_elm_lang$virtual_dom$VirtualDom_Expando$seqTypeToString,
-			_elm_lang$core$List$length(valueList),
-			seqType);
-		return A2(
-			_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-			{
-				ctor: '::',
-				_0: _elm_lang$virtual_dom$VirtualDom_Expando$leftPad(maybeKey),
-				_1: {ctor: '[]'}
-			},
-			{
-				ctor: '::',
-				_0: A2(
-					_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-					{
-						ctor: '::',
-						_0: _elm_lang$virtual_dom$VirtualDom_Helpers$onClick(_elm_lang$virtual_dom$VirtualDom_Expando$Toggle),
-						_1: {ctor: '[]'}
-					},
-					A3(
-						_elm_lang$virtual_dom$VirtualDom_Expando$lineStarter,
-						maybeKey,
-						_elm_lang$core$Maybe$Just(isClosed),
-						{
-							ctor: '::',
-							_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(starter),
-							_1: {ctor: '[]'}
-						})),
-				_1: {
-					ctor: '::',
-					_0: isClosed ? _elm_lang$virtual_dom$VirtualDom_Helpers$text('') : _elm_lang$virtual_dom$VirtualDom_Expando$viewSequenceOpen(valueList),
-					_1: {ctor: '[]'}
-				}
-			});
-	});
-
-var _elm_lang$virtual_dom$VirtualDom_Report$some = function (list) {
-	return !_elm_lang$core$List$isEmpty(list);
-};
-var _elm_lang$virtual_dom$VirtualDom_Report$TagChanges = F4(
-	function (a, b, c, d) {
-		return {removed: a, changed: b, added: c, argsMatch: d};
-	});
-var _elm_lang$virtual_dom$VirtualDom_Report$emptyTagChanges = function (argsMatch) {
-	return A4(
-		_elm_lang$virtual_dom$VirtualDom_Report$TagChanges,
-		{ctor: '[]'},
-		{ctor: '[]'},
-		{ctor: '[]'},
-		argsMatch);
-};
-var _elm_lang$virtual_dom$VirtualDom_Report$hasTagChanges = function (tagChanges) {
-	return _elm_lang$core$Native_Utils.eq(
-		tagChanges,
-		A4(
-			_elm_lang$virtual_dom$VirtualDom_Report$TagChanges,
-			{ctor: '[]'},
-			{ctor: '[]'},
-			{ctor: '[]'},
-			true));
-};
-var _elm_lang$virtual_dom$VirtualDom_Report$SomethingChanged = function (a) {
-	return {ctor: 'SomethingChanged', _0: a};
-};
-var _elm_lang$virtual_dom$VirtualDom_Report$MessageChanged = F2(
-	function (a, b) {
-		return {ctor: 'MessageChanged', _0: a, _1: b};
-	});
-var _elm_lang$virtual_dom$VirtualDom_Report$VersionChanged = F2(
-	function (a, b) {
-		return {ctor: 'VersionChanged', _0: a, _1: b};
-	});
-var _elm_lang$virtual_dom$VirtualDom_Report$CorruptHistory = {ctor: 'CorruptHistory'};
-var _elm_lang$virtual_dom$VirtualDom_Report$UnionChange = F2(
-	function (a, b) {
-		return {ctor: 'UnionChange', _0: a, _1: b};
-	});
-var _elm_lang$virtual_dom$VirtualDom_Report$AliasChange = function (a) {
-	return {ctor: 'AliasChange', _0: a};
-};
-var _elm_lang$virtual_dom$VirtualDom_Report$Fine = {ctor: 'Fine'};
-var _elm_lang$virtual_dom$VirtualDom_Report$Risky = {ctor: 'Risky'};
-var _elm_lang$virtual_dom$VirtualDom_Report$Impossible = {ctor: 'Impossible'};
-var _elm_lang$virtual_dom$VirtualDom_Report$worstCase = F2(
-	function (status, statusList) {
-		worstCase:
-		while (true) {
-			var _p0 = statusList;
-			if (_p0.ctor === '[]') {
-				return status;
-			} else {
-				switch (_p0._0.ctor) {
-					case 'Impossible':
-						return _elm_lang$virtual_dom$VirtualDom_Report$Impossible;
-					case 'Risky':
-						var _v1 = _elm_lang$virtual_dom$VirtualDom_Report$Risky,
-							_v2 = _p0._1;
-						status = _v1;
-						statusList = _v2;
-						continue worstCase;
-					default:
-						var _v3 = status,
-							_v4 = _p0._1;
-						status = _v3;
-						statusList = _v4;
-						continue worstCase;
-				}
-			}
-		}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Report$evaluateChange = function (change) {
-	var _p1 = change;
-	if (_p1.ctor === 'AliasChange') {
-		return _elm_lang$virtual_dom$VirtualDom_Report$Impossible;
-	} else {
-		return ((!_p1._1.argsMatch) || (_elm_lang$virtual_dom$VirtualDom_Report$some(_p1._1.changed) || _elm_lang$virtual_dom$VirtualDom_Report$some(_p1._1.removed))) ? _elm_lang$virtual_dom$VirtualDom_Report$Impossible : (_elm_lang$virtual_dom$VirtualDom_Report$some(_p1._1.added) ? _elm_lang$virtual_dom$VirtualDom_Report$Risky : _elm_lang$virtual_dom$VirtualDom_Report$Fine);
-	}
-};
-var _elm_lang$virtual_dom$VirtualDom_Report$evaluate = function (report) {
-	var _p2 = report;
-	switch (_p2.ctor) {
-		case 'CorruptHistory':
-			return _elm_lang$virtual_dom$VirtualDom_Report$Impossible;
-		case 'VersionChanged':
-			return _elm_lang$virtual_dom$VirtualDom_Report$Impossible;
-		case 'MessageChanged':
-			return _elm_lang$virtual_dom$VirtualDom_Report$Impossible;
-		default:
-			return A2(
-				_elm_lang$virtual_dom$VirtualDom_Report$worstCase,
-				_elm_lang$virtual_dom$VirtualDom_Report$Fine,
-				A2(_elm_lang$core$List$map, _elm_lang$virtual_dom$VirtualDom_Report$evaluateChange, _p2._0));
-	}
-};
-
-var _elm_lang$virtual_dom$VirtualDom_Metadata$encodeDict = F2(
-	function (f, dict) {
-		return _elm_lang$core$Json_Encode$object(
-			_elm_lang$core$Dict$toList(
-				A2(
-					_elm_lang$core$Dict$map,
-					F2(
-						function (key, value) {
-							return f(value);
-						}),
-					dict)));
-	});
-var _elm_lang$virtual_dom$VirtualDom_Metadata$encodeUnion = function (_p0) {
-	var _p1 = _p0;
-	return _elm_lang$core$Json_Encode$object(
-		{
-			ctor: '::',
-			_0: {
-				ctor: '_Tuple2',
-				_0: 'args',
-				_1: _elm_lang$core$Json_Encode$list(
-					A2(_elm_lang$core$List$map, _elm_lang$core$Json_Encode$string, _p1.args))
-			},
-			_1: {
-				ctor: '::',
-				_0: {
-					ctor: '_Tuple2',
-					_0: 'tags',
-					_1: A2(
-						_elm_lang$virtual_dom$VirtualDom_Metadata$encodeDict,
-						function (_p2) {
-							return _elm_lang$core$Json_Encode$list(
-								A2(_elm_lang$core$List$map, _elm_lang$core$Json_Encode$string, _p2));
-						},
-						_p1.tags)
-				},
-				_1: {ctor: '[]'}
-			}
-		});
-};
-var _elm_lang$virtual_dom$VirtualDom_Metadata$encodeAlias = function (_p3) {
-	var _p4 = _p3;
-	return _elm_lang$core$Json_Encode$object(
-		{
-			ctor: '::',
-			_0: {
-				ctor: '_Tuple2',
-				_0: 'args',
-				_1: _elm_lang$core$Json_Encode$list(
-					A2(_elm_lang$core$List$map, _elm_lang$core$Json_Encode$string, _p4.args))
-			},
-			_1: {
-				ctor: '::',
-				_0: {
-					ctor: '_Tuple2',
-					_0: 'type',
-					_1: _elm_lang$core$Json_Encode$string(_p4.tipe)
-				},
-				_1: {ctor: '[]'}
-			}
-		});
-};
-var _elm_lang$virtual_dom$VirtualDom_Metadata$encodeTypes = function (_p5) {
-	var _p6 = _p5;
-	return _elm_lang$core$Json_Encode$object(
-		{
-			ctor: '::',
-			_0: {
-				ctor: '_Tuple2',
-				_0: 'message',
-				_1: _elm_lang$core$Json_Encode$string(_p6.message)
-			},
-			_1: {
-				ctor: '::',
-				_0: {
-					ctor: '_Tuple2',
-					_0: 'aliases',
-					_1: A2(_elm_lang$virtual_dom$VirtualDom_Metadata$encodeDict, _elm_lang$virtual_dom$VirtualDom_Metadata$encodeAlias, _p6.aliases)
-				},
-				_1: {
-					ctor: '::',
-					_0: {
-						ctor: '_Tuple2',
-						_0: 'unions',
-						_1: A2(_elm_lang$virtual_dom$VirtualDom_Metadata$encodeDict, _elm_lang$virtual_dom$VirtualDom_Metadata$encodeUnion, _p6.unions)
-					},
-					_1: {ctor: '[]'}
-				}
-			}
-		});
-};
-var _elm_lang$virtual_dom$VirtualDom_Metadata$encodeVersions = function (_p7) {
-	var _p8 = _p7;
-	return _elm_lang$core$Json_Encode$object(
-		{
-			ctor: '::',
-			_0: {
-				ctor: '_Tuple2',
-				_0: 'elm',
-				_1: _elm_lang$core$Json_Encode$string(_p8.elm)
-			},
-			_1: {ctor: '[]'}
-		});
-};
-var _elm_lang$virtual_dom$VirtualDom_Metadata$encode = function (_p9) {
-	var _p10 = _p9;
-	return _elm_lang$core$Json_Encode$object(
-		{
-			ctor: '::',
-			_0: {
-				ctor: '_Tuple2',
-				_0: 'versions',
-				_1: _elm_lang$virtual_dom$VirtualDom_Metadata$encodeVersions(_p10.versions)
-			},
-			_1: {
-				ctor: '::',
-				_0: {
-					ctor: '_Tuple2',
-					_0: 'types',
-					_1: _elm_lang$virtual_dom$VirtualDom_Metadata$encodeTypes(_p10.types)
-				},
-				_1: {ctor: '[]'}
-			}
-		});
-};
-var _elm_lang$virtual_dom$VirtualDom_Metadata$checkTag = F4(
-	function (tag, old, $new, changes) {
-		return _elm_lang$core$Native_Utils.eq(old, $new) ? changes : _elm_lang$core$Native_Utils.update(
-			changes,
-			{
-				changed: {ctor: '::', _0: tag, _1: changes.changed}
-			});
-	});
-var _elm_lang$virtual_dom$VirtualDom_Metadata$addTag = F3(
-	function (tag, _p11, changes) {
-		return _elm_lang$core$Native_Utils.update(
-			changes,
-			{
-				added: {ctor: '::', _0: tag, _1: changes.added}
-			});
-	});
-var _elm_lang$virtual_dom$VirtualDom_Metadata$removeTag = F3(
-	function (tag, _p12, changes) {
-		return _elm_lang$core$Native_Utils.update(
-			changes,
-			{
-				removed: {ctor: '::', _0: tag, _1: changes.removed}
-			});
-	});
-var _elm_lang$virtual_dom$VirtualDom_Metadata$checkUnion = F4(
-	function (name, old, $new, changes) {
-		var tagChanges = A6(
-			_elm_lang$core$Dict$merge,
-			_elm_lang$virtual_dom$VirtualDom_Metadata$removeTag,
-			_elm_lang$virtual_dom$VirtualDom_Metadata$checkTag,
-			_elm_lang$virtual_dom$VirtualDom_Metadata$addTag,
-			old.tags,
-			$new.tags,
-			_elm_lang$virtual_dom$VirtualDom_Report$emptyTagChanges(
-				_elm_lang$core$Native_Utils.eq(old.args, $new.args)));
-		return _elm_lang$virtual_dom$VirtualDom_Report$hasTagChanges(tagChanges) ? changes : {
-			ctor: '::',
-			_0: A2(_elm_lang$virtual_dom$VirtualDom_Report$UnionChange, name, tagChanges),
-			_1: changes
-		};
-	});
-var _elm_lang$virtual_dom$VirtualDom_Metadata$checkAlias = F4(
-	function (name, old, $new, changes) {
-		return (_elm_lang$core$Native_Utils.eq(old.tipe, $new.tipe) && _elm_lang$core$Native_Utils.eq(old.args, $new.args)) ? changes : {
-			ctor: '::',
-			_0: _elm_lang$virtual_dom$VirtualDom_Report$AliasChange(name),
-			_1: changes
-		};
-	});
-var _elm_lang$virtual_dom$VirtualDom_Metadata$ignore = F3(
-	function (key, value, report) {
-		return report;
-	});
-var _elm_lang$virtual_dom$VirtualDom_Metadata$checkTypes = F2(
-	function (old, $new) {
-		return (!_elm_lang$core$Native_Utils.eq(old.message, $new.message)) ? A2(_elm_lang$virtual_dom$VirtualDom_Report$MessageChanged, old.message, $new.message) : _elm_lang$virtual_dom$VirtualDom_Report$SomethingChanged(
-			A6(
-				_elm_lang$core$Dict$merge,
-				_elm_lang$virtual_dom$VirtualDom_Metadata$ignore,
-				_elm_lang$virtual_dom$VirtualDom_Metadata$checkUnion,
-				_elm_lang$virtual_dom$VirtualDom_Metadata$ignore,
-				old.unions,
-				$new.unions,
-				A6(
-					_elm_lang$core$Dict$merge,
-					_elm_lang$virtual_dom$VirtualDom_Metadata$ignore,
-					_elm_lang$virtual_dom$VirtualDom_Metadata$checkAlias,
-					_elm_lang$virtual_dom$VirtualDom_Metadata$ignore,
-					old.aliases,
-					$new.aliases,
-					{ctor: '[]'})));
-	});
-var _elm_lang$virtual_dom$VirtualDom_Metadata$check = F2(
-	function (old, $new) {
-		return (!_elm_lang$core$Native_Utils.eq(old.versions.elm, $new.versions.elm)) ? A2(_elm_lang$virtual_dom$VirtualDom_Report$VersionChanged, old.versions.elm, $new.versions.elm) : A2(_elm_lang$virtual_dom$VirtualDom_Metadata$checkTypes, old.types, $new.types);
-	});
-var _elm_lang$virtual_dom$VirtualDom_Metadata$hasProblem = F2(
-	function (tipe, _p13) {
-		var _p14 = _p13;
-		return A2(_elm_lang$core$String$contains, _p14._1, tipe) ? _elm_lang$core$Maybe$Just(_p14._0) : _elm_lang$core$Maybe$Nothing;
-	});
-var _elm_lang$virtual_dom$VirtualDom_Metadata$Metadata = F2(
-	function (a, b) {
-		return {versions: a, types: b};
-	});
-var _elm_lang$virtual_dom$VirtualDom_Metadata$Versions = function (a) {
-	return {elm: a};
-};
-var _elm_lang$virtual_dom$VirtualDom_Metadata$decodeVersions = A2(
-	_elm_lang$core$Json_Decode$map,
-	_elm_lang$virtual_dom$VirtualDom_Metadata$Versions,
-	A2(_elm_lang$core$Json_Decode$field, 'elm', _elm_lang$core$Json_Decode$string));
-var _elm_lang$virtual_dom$VirtualDom_Metadata$Types = F3(
-	function (a, b, c) {
-		return {message: a, aliases: b, unions: c};
-	});
-var _elm_lang$virtual_dom$VirtualDom_Metadata$Alias = F2(
-	function (a, b) {
-		return {args: a, tipe: b};
-	});
-var _elm_lang$virtual_dom$VirtualDom_Metadata$decodeAlias = A3(
-	_elm_lang$core$Json_Decode$map2,
-	_elm_lang$virtual_dom$VirtualDom_Metadata$Alias,
-	A2(
-		_elm_lang$core$Json_Decode$field,
-		'args',
-		_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$string)),
-	A2(_elm_lang$core$Json_Decode$field, 'type', _elm_lang$core$Json_Decode$string));
-var _elm_lang$virtual_dom$VirtualDom_Metadata$Union = F2(
-	function (a, b) {
-		return {args: a, tags: b};
-	});
-var _elm_lang$virtual_dom$VirtualDom_Metadata$decodeUnion = A3(
-	_elm_lang$core$Json_Decode$map2,
-	_elm_lang$virtual_dom$VirtualDom_Metadata$Union,
-	A2(
-		_elm_lang$core$Json_Decode$field,
-		'args',
-		_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$string)),
-	A2(
-		_elm_lang$core$Json_Decode$field,
-		'tags',
-		_elm_lang$core$Json_Decode$dict(
-			_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$string))));
-var _elm_lang$virtual_dom$VirtualDom_Metadata$decodeTypes = A4(
-	_elm_lang$core$Json_Decode$map3,
-	_elm_lang$virtual_dom$VirtualDom_Metadata$Types,
-	A2(_elm_lang$core$Json_Decode$field, 'message', _elm_lang$core$Json_Decode$string),
-	A2(
-		_elm_lang$core$Json_Decode$field,
-		'aliases',
-		_elm_lang$core$Json_Decode$dict(_elm_lang$virtual_dom$VirtualDom_Metadata$decodeAlias)),
-	A2(
-		_elm_lang$core$Json_Decode$field,
-		'unions',
-		_elm_lang$core$Json_Decode$dict(_elm_lang$virtual_dom$VirtualDom_Metadata$decodeUnion)));
-var _elm_lang$virtual_dom$VirtualDom_Metadata$decoder = A3(
-	_elm_lang$core$Json_Decode$map2,
-	_elm_lang$virtual_dom$VirtualDom_Metadata$Metadata,
-	A2(_elm_lang$core$Json_Decode$field, 'versions', _elm_lang$virtual_dom$VirtualDom_Metadata$decodeVersions),
-	A2(_elm_lang$core$Json_Decode$field, 'types', _elm_lang$virtual_dom$VirtualDom_Metadata$decodeTypes));
-var _elm_lang$virtual_dom$VirtualDom_Metadata$Error = F2(
-	function (a, b) {
-		return {message: a, problems: b};
-	});
-var _elm_lang$virtual_dom$VirtualDom_Metadata$ProblemType = F2(
-	function (a, b) {
-		return {name: a, problems: b};
-	});
-var _elm_lang$virtual_dom$VirtualDom_Metadata$VirtualDom = {ctor: 'VirtualDom'};
-var _elm_lang$virtual_dom$VirtualDom_Metadata$Program = {ctor: 'Program'};
-var _elm_lang$virtual_dom$VirtualDom_Metadata$Request = {ctor: 'Request'};
-var _elm_lang$virtual_dom$VirtualDom_Metadata$Socket = {ctor: 'Socket'};
-var _elm_lang$virtual_dom$VirtualDom_Metadata$Process = {ctor: 'Process'};
-var _elm_lang$virtual_dom$VirtualDom_Metadata$Task = {ctor: 'Task'};
-var _elm_lang$virtual_dom$VirtualDom_Metadata$Decoder = {ctor: 'Decoder'};
-var _elm_lang$virtual_dom$VirtualDom_Metadata$Function = {ctor: 'Function'};
-var _elm_lang$virtual_dom$VirtualDom_Metadata$problemTable = {
-	ctor: '::',
-	_0: {ctor: '_Tuple2', _0: _elm_lang$virtual_dom$VirtualDom_Metadata$Function, _1: '->'},
-	_1: {
-		ctor: '::',
-		_0: {ctor: '_Tuple2', _0: _elm_lang$virtual_dom$VirtualDom_Metadata$Decoder, _1: 'Json.Decode.Decoder'},
-		_1: {
-			ctor: '::',
-			_0: {ctor: '_Tuple2', _0: _elm_lang$virtual_dom$VirtualDom_Metadata$Task, _1: 'Task.Task'},
-			_1: {
-				ctor: '::',
-				_0: {ctor: '_Tuple2', _0: _elm_lang$virtual_dom$VirtualDom_Metadata$Process, _1: 'Process.Id'},
-				_1: {
-					ctor: '::',
-					_0: {ctor: '_Tuple2', _0: _elm_lang$virtual_dom$VirtualDom_Metadata$Socket, _1: 'WebSocket.LowLevel.WebSocket'},
-					_1: {
-						ctor: '::',
-						_0: {ctor: '_Tuple2', _0: _elm_lang$virtual_dom$VirtualDom_Metadata$Request, _1: 'Http.Request'},
-						_1: {
-							ctor: '::',
-							_0: {ctor: '_Tuple2', _0: _elm_lang$virtual_dom$VirtualDom_Metadata$Program, _1: 'Platform.Program'},
-							_1: {
-								ctor: '::',
-								_0: {ctor: '_Tuple2', _0: _elm_lang$virtual_dom$VirtualDom_Metadata$VirtualDom, _1: 'VirtualDom.Node'},
-								_1: {
-									ctor: '::',
-									_0: {ctor: '_Tuple2', _0: _elm_lang$virtual_dom$VirtualDom_Metadata$VirtualDom, _1: 'VirtualDom.Attribute'},
-									_1: {ctor: '[]'}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-};
-var _elm_lang$virtual_dom$VirtualDom_Metadata$findProblems = function (tipe) {
-	return A2(
-		_elm_lang$core$List$filterMap,
-		_elm_lang$virtual_dom$VirtualDom_Metadata$hasProblem(tipe),
-		_elm_lang$virtual_dom$VirtualDom_Metadata$problemTable);
-};
-var _elm_lang$virtual_dom$VirtualDom_Metadata$collectBadAliases = F3(
-	function (name, _p15, list) {
-		var _p16 = _p15;
-		var _p17 = _elm_lang$virtual_dom$VirtualDom_Metadata$findProblems(_p16.tipe);
-		if (_p17.ctor === '[]') {
-			return list;
-		} else {
-			return {
-				ctor: '::',
-				_0: A2(_elm_lang$virtual_dom$VirtualDom_Metadata$ProblemType, name, _p17),
-				_1: list
-			};
-		}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Metadata$collectBadUnions = F3(
-	function (name, _p18, list) {
-		var _p19 = _p18;
-		var _p20 = A2(
-			_elm_lang$core$List$concatMap,
-			_elm_lang$virtual_dom$VirtualDom_Metadata$findProblems,
-			_elm_lang$core$List$concat(
-				_elm_lang$core$Dict$values(_p19.tags)));
-		if (_p20.ctor === '[]') {
-			return list;
-		} else {
-			return {
-				ctor: '::',
-				_0: A2(_elm_lang$virtual_dom$VirtualDom_Metadata$ProblemType, name, _p20),
-				_1: list
-			};
-		}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Metadata$isPortable = function (_p21) {
-	var _p22 = _p21;
-	var _p24 = _p22.types;
-	var badAliases = A3(
-		_elm_lang$core$Dict$foldl,
-		_elm_lang$virtual_dom$VirtualDom_Metadata$collectBadAliases,
-		{ctor: '[]'},
-		_p24.aliases);
-	var _p23 = A3(_elm_lang$core$Dict$foldl, _elm_lang$virtual_dom$VirtualDom_Metadata$collectBadUnions, badAliases, _p24.unions);
-	if (_p23.ctor === '[]') {
-		return _elm_lang$core$Maybe$Nothing;
-	} else {
-		return _elm_lang$core$Maybe$Just(
-			A2(_elm_lang$virtual_dom$VirtualDom_Metadata$Error, _p24.message, _p23));
-	}
-};
-var _elm_lang$virtual_dom$VirtualDom_Metadata$decode = function (value) {
-	var _p25 = A2(_elm_lang$core$Json_Decode$decodeValue, _elm_lang$virtual_dom$VirtualDom_Metadata$decoder, value);
-	if (_p25.ctor === 'Err') {
-		return _elm_lang$core$Native_Utils.crashCase(
-			'VirtualDom.Metadata',
-			{
-				start: {line: 229, column: 3},
-				end: {line: 239, column: 20}
-			},
-			_p25)('Compiler is generating bad metadata. Report this at <https://github.com/elm-lang/virtual-dom/issues>.');
-	} else {
-		var _p28 = _p25._0;
-		var _p27 = _elm_lang$virtual_dom$VirtualDom_Metadata$isPortable(_p28);
-		if (_p27.ctor === 'Nothing') {
-			return _elm_lang$core$Result$Ok(_p28);
-		} else {
-			return _elm_lang$core$Result$Err(_p27._0);
-		}
-	}
-};
-
-var _elm_lang$virtual_dom$VirtualDom_History$viewMessage = F3(
-	function (currentIndex, index, msg) {
-		var messageName = _elm_lang$virtual_dom$Native_Debug.messageToString(msg);
-		var className = _elm_lang$core$Native_Utils.eq(currentIndex, index) ? 'messages-entry messages-entry-selected' : 'messages-entry';
-		return A2(
-			_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-			{
-				ctor: '::',
-				_0: _elm_lang$virtual_dom$VirtualDom_Helpers$class(className),
-				_1: {
-					ctor: '::',
-					_0: A2(
-						_elm_lang$virtual_dom$VirtualDom_Helpers$on,
-						'click',
-						_elm_lang$core$Json_Decode$succeed(index)),
-					_1: {ctor: '[]'}
-				}
-			},
-			{
-				ctor: '::',
-				_0: A2(
-					_elm_lang$virtual_dom$VirtualDom_Helpers$span,
-					{
-						ctor: '::',
-						_0: _elm_lang$virtual_dom$VirtualDom_Helpers$class('messages-entry-content'),
-						_1: {
-							ctor: '::',
-							_0: A2(_elm_lang$virtual_dom$VirtualDom_Helpers$attribute, 'title', messageName),
-							_1: {ctor: '[]'}
-						}
-					},
-					{
-						ctor: '::',
-						_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(messageName),
-						_1: {ctor: '[]'}
-					}),
-				_1: {
-					ctor: '::',
-					_0: A2(
-						_elm_lang$virtual_dom$VirtualDom_Helpers$span,
-						{
-							ctor: '::',
-							_0: _elm_lang$virtual_dom$VirtualDom_Helpers$class('messages-entry-index'),
-							_1: {ctor: '[]'}
-						},
-						{
-							ctor: '::',
-							_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(
-								_elm_lang$core$Basics$toString(index)),
-							_1: {ctor: '[]'}
-						}),
-					_1: {ctor: '[]'}
-				}
-			});
-	});
-var _elm_lang$virtual_dom$VirtualDom_History$consMsg = F3(
-	function (currentIndex, msg, _p0) {
-		var _p1 = _p0;
-		var _p2 = _p1._0;
-		return {
-			ctor: '_Tuple2',
-			_0: _p2 - 1,
-			_1: {
-				ctor: '::',
-				_0: A4(_elm_lang$virtual_dom$VirtualDom_Helpers$lazy3, _elm_lang$virtual_dom$VirtualDom_History$viewMessage, currentIndex, _p2, msg),
-				_1: _p1._1
-			}
-		};
-	});
-var _elm_lang$virtual_dom$VirtualDom_History$viewSnapshot = F3(
-	function (currentIndex, index, _p3) {
-		var _p4 = _p3;
-		return A2(
-			_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-			{ctor: '[]'},
-			_elm_lang$core$Tuple$second(
-				A3(
-					_elm_lang$core$Array$foldl,
-					_elm_lang$virtual_dom$VirtualDom_History$consMsg(currentIndex),
-					{
-						ctor: '_Tuple2',
-						_0: index - 1,
-						_1: {ctor: '[]'}
-					},
-					_p4.messages)));
-	});
-var _elm_lang$virtual_dom$VirtualDom_History$undone = function (getResult) {
-	var _p5 = getResult;
-	if (_p5.ctor === 'Done') {
-		return {ctor: '_Tuple2', _0: _p5._1, _1: _p5._0};
-	} else {
-		return _elm_lang$core$Native_Utils.crashCase(
-			'VirtualDom.History',
-			{
-				start: {line: 195, column: 3},
-				end: {line: 200, column: 39}
-			},
-			_p5)('Bug in History.get');
-	}
-};
-var _elm_lang$virtual_dom$VirtualDom_History$elmToJs = _elm_lang$virtual_dom$Native_Debug.unsafeCoerce;
-var _elm_lang$virtual_dom$VirtualDom_History$encodeHelp = F2(
-	function (snapshot, allMessages) {
-		return A3(
-			_elm_lang$core$Array$foldl,
-			F2(
-				function (elm, msgs) {
-					return {
-						ctor: '::',
-						_0: _elm_lang$virtual_dom$VirtualDom_History$elmToJs(elm),
-						_1: msgs
-					};
-				}),
-			allMessages,
-			snapshot.messages);
-	});
-var _elm_lang$virtual_dom$VirtualDom_History$encode = function (_p7) {
-	var _p8 = _p7;
-	var recentJson = A2(
-		_elm_lang$core$List$map,
-		_elm_lang$virtual_dom$VirtualDom_History$elmToJs,
-		_elm_lang$core$List$reverse(_p8.recent.messages));
-	return _elm_lang$core$Json_Encode$list(
-		A3(_elm_lang$core$Array$foldr, _elm_lang$virtual_dom$VirtualDom_History$encodeHelp, recentJson, _p8.snapshots));
-};
-var _elm_lang$virtual_dom$VirtualDom_History$jsToElm = _elm_lang$virtual_dom$Native_Debug.unsafeCoerce;
-var _elm_lang$virtual_dom$VirtualDom_History$initialModel = function (_p9) {
-	var _p10 = _p9;
-	var _p11 = A2(_elm_lang$core$Array$get, 0, _p10.snapshots);
-	if (_p11.ctor === 'Just') {
-		return _p11._0.model;
-	} else {
-		return _p10.recent.model;
-	}
-};
-var _elm_lang$virtual_dom$VirtualDom_History$size = function (history) {
-	return history.numMessages;
-};
-var _elm_lang$virtual_dom$VirtualDom_History$maxSnapshotSize = 64;
-var _elm_lang$virtual_dom$VirtualDom_History$consSnapshot = F3(
-	function (currentIndex, snapshot, _p12) {
-		var _p13 = _p12;
-		var _p14 = _p13._0;
-		var nextIndex = _p14 - _elm_lang$virtual_dom$VirtualDom_History$maxSnapshotSize;
-		var currentIndexHelp = ((_elm_lang$core$Native_Utils.cmp(nextIndex, currentIndex) < 1) && (_elm_lang$core$Native_Utils.cmp(currentIndex, _p14) < 0)) ? currentIndex : -1;
-		return {
-			ctor: '_Tuple2',
-			_0: _p14 - _elm_lang$virtual_dom$VirtualDom_History$maxSnapshotSize,
-			_1: {
-				ctor: '::',
-				_0: A4(_elm_lang$virtual_dom$VirtualDom_Helpers$lazy3, _elm_lang$virtual_dom$VirtualDom_History$viewSnapshot, currentIndexHelp, _p14, snapshot),
-				_1: _p13._1
-			}
-		};
-	});
-var _elm_lang$virtual_dom$VirtualDom_History$viewSnapshots = F2(
-	function (currentIndex, snapshots) {
-		var highIndex = _elm_lang$virtual_dom$VirtualDom_History$maxSnapshotSize * _elm_lang$core$Array$length(snapshots);
-		return A2(
-			_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-			{ctor: '[]'},
-			_elm_lang$core$Tuple$second(
-				A3(
-					_elm_lang$core$Array$foldr,
-					_elm_lang$virtual_dom$VirtualDom_History$consSnapshot(currentIndex),
-					{
-						ctor: '_Tuple2',
-						_0: highIndex,
-						_1: {ctor: '[]'}
-					},
-					snapshots)));
-	});
-var _elm_lang$virtual_dom$VirtualDom_History$view = F2(
-	function (maybeIndex, _p15) {
-		var _p16 = _p15;
-		var _p17 = function () {
-			var _p18 = maybeIndex;
-			if (_p18.ctor === 'Nothing') {
-				return {ctor: '_Tuple2', _0: -1, _1: 'debugger-sidebar-messages'};
-			} else {
-				return {ctor: '_Tuple2', _0: _p18._0, _1: 'debugger-sidebar-messages-paused'};
-			}
-		}();
-		var index = _p17._0;
-		var className = _p17._1;
-		var oldStuff = A3(_elm_lang$virtual_dom$VirtualDom_Helpers$lazy2, _elm_lang$virtual_dom$VirtualDom_History$viewSnapshots, index, _p16.snapshots);
-		var newStuff = _elm_lang$core$Tuple$second(
-			A3(
-				_elm_lang$core$List$foldl,
-				_elm_lang$virtual_dom$VirtualDom_History$consMsg(index),
-				{
-					ctor: '_Tuple2',
-					_0: _p16.numMessages - 1,
-					_1: {ctor: '[]'}
-				},
-				_p16.recent.messages));
-		return A2(
-			_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-			{
-				ctor: '::',
-				_0: _elm_lang$virtual_dom$VirtualDom_Helpers$class(className),
-				_1: {ctor: '[]'}
-			},
-			{ctor: '::', _0: oldStuff, _1: newStuff});
-	});
-var _elm_lang$virtual_dom$VirtualDom_History$History = F3(
-	function (a, b, c) {
-		return {snapshots: a, recent: b, numMessages: c};
-	});
-var _elm_lang$virtual_dom$VirtualDom_History$RecentHistory = F3(
-	function (a, b, c) {
-		return {model: a, messages: b, numMessages: c};
-	});
-var _elm_lang$virtual_dom$VirtualDom_History$empty = function (model) {
-	return A3(
-		_elm_lang$virtual_dom$VirtualDom_History$History,
-		_elm_lang$core$Array$empty,
-		A3(
-			_elm_lang$virtual_dom$VirtualDom_History$RecentHistory,
-			model,
-			{ctor: '[]'},
-			0),
-		0);
-};
-var _elm_lang$virtual_dom$VirtualDom_History$Snapshot = F2(
-	function (a, b) {
-		return {model: a, messages: b};
-	});
-var _elm_lang$virtual_dom$VirtualDom_History$addRecent = F3(
-	function (msg, newModel, _p19) {
-		var _p20 = _p19;
-		var _p23 = _p20.numMessages;
-		var _p22 = _p20.model;
-		var _p21 = _p20.messages;
-		return _elm_lang$core$Native_Utils.eq(_p23, _elm_lang$virtual_dom$VirtualDom_History$maxSnapshotSize) ? {
-			ctor: '_Tuple2',
-			_0: _elm_lang$core$Maybe$Just(
-				A2(
-					_elm_lang$virtual_dom$VirtualDom_History$Snapshot,
-					_p22,
-					_elm_lang$core$Array$fromList(_p21))),
-			_1: A3(
-				_elm_lang$virtual_dom$VirtualDom_History$RecentHistory,
-				newModel,
-				{
-					ctor: '::',
-					_0: msg,
-					_1: {ctor: '[]'}
-				},
-				1)
-		} : {
-			ctor: '_Tuple2',
-			_0: _elm_lang$core$Maybe$Nothing,
-			_1: A3(
-				_elm_lang$virtual_dom$VirtualDom_History$RecentHistory,
-				_p22,
-				{ctor: '::', _0: msg, _1: _p21},
-				_p23 + 1)
-		};
-	});
-var _elm_lang$virtual_dom$VirtualDom_History$add = F3(
-	function (msg, model, _p24) {
-		var _p25 = _p24;
-		var _p28 = _p25.snapshots;
-		var _p27 = _p25.numMessages;
-		var _p26 = A3(_elm_lang$virtual_dom$VirtualDom_History$addRecent, msg, model, _p25.recent);
-		if (_p26._0.ctor === 'Just') {
-			return A3(
-				_elm_lang$virtual_dom$VirtualDom_History$History,
-				A2(_elm_lang$core$Array$push, _p26._0._0, _p28),
-				_p26._1,
-				_p27 + 1);
-		} else {
-			return A3(_elm_lang$virtual_dom$VirtualDom_History$History, _p28, _p26._1, _p27 + 1);
-		}
-	});
-var _elm_lang$virtual_dom$VirtualDom_History$decoder = F2(
-	function (initialModel, update) {
-		var addMessage = F2(
-			function (rawMsg, _p29) {
-				var _p30 = _p29;
-				var _p31 = _p30._0;
-				var msg = _elm_lang$virtual_dom$VirtualDom_History$jsToElm(rawMsg);
-				return {
-					ctor: '_Tuple2',
-					_0: A2(update, msg, _p31),
-					_1: A3(_elm_lang$virtual_dom$VirtualDom_History$add, msg, _p31, _p30._1)
-				};
-			});
-		var updateModel = function (rawMsgs) {
-			return A3(
-				_elm_lang$core$List$foldl,
-				addMessage,
-				{
-					ctor: '_Tuple2',
-					_0: initialModel,
-					_1: _elm_lang$virtual_dom$VirtualDom_History$empty(initialModel)
-				},
-				rawMsgs);
-		};
-		return A2(
-			_elm_lang$core$Json_Decode$map,
-			updateModel,
-			_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$value));
-	});
-var _elm_lang$virtual_dom$VirtualDom_History$Done = F2(
-	function (a, b) {
-		return {ctor: 'Done', _0: a, _1: b};
-	});
-var _elm_lang$virtual_dom$VirtualDom_History$Stepping = F2(
-	function (a, b) {
-		return {ctor: 'Stepping', _0: a, _1: b};
-	});
-var _elm_lang$virtual_dom$VirtualDom_History$getHelp = F3(
-	function (update, msg, getResult) {
-		var _p32 = getResult;
-		if (_p32.ctor === 'Done') {
-			return getResult;
-		} else {
-			var _p34 = _p32._0;
-			var _p33 = _p32._1;
-			return _elm_lang$core$Native_Utils.eq(_p34, 0) ? A2(
-				_elm_lang$virtual_dom$VirtualDom_History$Done,
-				msg,
-				_elm_lang$core$Tuple$first(
-					A2(update, msg, _p33))) : A2(
-				_elm_lang$virtual_dom$VirtualDom_History$Stepping,
-				_p34 - 1,
-				_elm_lang$core$Tuple$first(
-					A2(update, msg, _p33)));
-		}
-	});
-var _elm_lang$virtual_dom$VirtualDom_History$get = F3(
-	function (update, index, _p35) {
-		var _p36 = _p35;
-		var _p39 = _p36.recent;
-		var snapshotMax = _p36.numMessages - _p39.numMessages;
-		if (_elm_lang$core$Native_Utils.cmp(index, snapshotMax) > -1) {
-			return _elm_lang$virtual_dom$VirtualDom_History$undone(
-				A3(
-					_elm_lang$core$List$foldr,
-					_elm_lang$virtual_dom$VirtualDom_History$getHelp(update),
-					A2(_elm_lang$virtual_dom$VirtualDom_History$Stepping, index - snapshotMax, _p39.model),
-					_p39.messages));
-		} else {
-			var _p37 = A2(_elm_lang$core$Array$get, (index / _elm_lang$virtual_dom$VirtualDom_History$maxSnapshotSize) | 0, _p36.snapshots);
-			if (_p37.ctor === 'Nothing') {
-				return _elm_lang$core$Native_Utils.crashCase(
-					'VirtualDom.History',
-					{
-						start: {line: 165, column: 7},
-						end: {line: 171, column: 95}
-					},
-					_p37)('UI should only let you ask for real indexes!');
-			} else {
-				return _elm_lang$virtual_dom$VirtualDom_History$undone(
-					A3(
-						_elm_lang$core$Array$foldr,
-						_elm_lang$virtual_dom$VirtualDom_History$getHelp(update),
-						A2(
-							_elm_lang$virtual_dom$VirtualDom_History$Stepping,
-							A2(_elm_lang$core$Basics$rem, index, _elm_lang$virtual_dom$VirtualDom_History$maxSnapshotSize),
-							_p37._0.model),
-						_p37._0.messages));
-			}
-		}
-	});
-
-var _elm_lang$virtual_dom$VirtualDom_Overlay$styles = A3(
-	_elm_lang$virtual_dom$VirtualDom_Helpers$node,
-	'style',
-	{ctor: '[]'},
-	{
-		ctor: '::',
-		_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text('\n\n.elm-overlay {\n  position: fixed;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n  color: white;\n  pointer-events: none;\n  font-family: \'Trebuchet MS\', \'Lucida Grande\', \'Bitstream Vera Sans\', \'Helvetica Neue\', sans-serif;\n}\n\n.elm-overlay-resume {\n  width: 100%;\n  height: 100%;\n  cursor: pointer;\n  text-align: center;\n  pointer-events: auto;\n  background-color: rgba(200, 200, 200, 0.7);\n}\n\n.elm-overlay-resume-words {\n  position: absolute;\n  top: calc(50% - 40px);\n  font-size: 80px;\n  line-height: 80px;\n  height: 80px;\n  width: 100%;\n}\n\n.elm-mini-controls {\n  position: fixed;\n  bottom: 0;\n  right: 6px;\n  border-radius: 4px;\n  background-color: rgb(61, 61, 61);\n  font-family: monospace;\n  pointer-events: auto;\n}\n\n.elm-mini-controls-button {\n  padding: 6px;\n  cursor: pointer;\n  text-align: center;\n  min-width: 24ch;\n}\n\n.elm-mini-controls-import-export {\n  padding: 4px 0;\n  font-size: 0.8em;\n  text-align: center;\n  background-color: rgb(50, 50, 50);\n}\n\n.elm-overlay-message {\n  position: absolute;\n  width: 600px;\n  height: 100%;\n  padding-left: calc(50% - 300px);\n  padding-right: calc(50% - 300px);\n  background-color: rgba(200, 200, 200, 0.7);\n  pointer-events: auto;\n}\n\n.elm-overlay-message-title {\n  font-size: 36px;\n  height: 80px;\n  background-color: rgb(50, 50, 50);\n  padding-left: 22px;\n  vertical-align: middle;\n  line-height: 80px;\n}\n\n.elm-overlay-message-details {\n  padding: 8px 20px;\n  overflow-y: auto;\n  max-height: calc(100% - 156px);\n  background-color: rgb(61, 61, 61);\n}\n\n.elm-overlay-message-details-type {\n  font-size: 1.5em;\n}\n\n.elm-overlay-message-details ul {\n  list-style-type: none;\n  padding-left: 20px;\n}\n\n.elm-overlay-message-details ul ul {\n  list-style-type: disc;\n  padding-left: 2em;\n}\n\n.elm-overlay-message-details li {\n  margin: 8px 0;\n}\n\n.elm-overlay-message-buttons {\n  height: 60px;\n  line-height: 60px;\n  text-align: right;\n  background-color: rgb(50, 50, 50);\n}\n\n.elm-overlay-message-buttons button {\n  margin-right: 20px;\n}\n\n'),
-		_1: {ctor: '[]'}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Overlay$button = F2(
-	function (msg, label) {
-		return A2(
-			_elm_lang$virtual_dom$VirtualDom_Helpers$span,
-			{
-				ctor: '::',
-				_0: _elm_lang$virtual_dom$VirtualDom_Helpers$onClick(msg),
-				_1: {
-					ctor: '::',
-					_0: _elm_lang$virtual_dom$VirtualDom_Helpers$style(
-						{
-							ctor: '::',
-							_0: {ctor: '_Tuple2', _0: 'cursor', _1: 'pointer'},
-							_1: {ctor: '[]'}
-						}),
-					_1: {ctor: '[]'}
-				}
-			},
-			{
-				ctor: '::',
-				_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(label),
-				_1: {ctor: '[]'}
-			});
-	});
-var _elm_lang$virtual_dom$VirtualDom_Overlay$viewImportExport = F3(
-	function (props, importMsg, exportMsg) {
-		return A2(
-			_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-			props,
-			{
-				ctor: '::',
-				_0: A2(_elm_lang$virtual_dom$VirtualDom_Overlay$button, importMsg, 'Import'),
-				_1: {
-					ctor: '::',
-					_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(' / '),
-					_1: {
-						ctor: '::',
-						_0: A2(_elm_lang$virtual_dom$VirtualDom_Overlay$button, exportMsg, 'Export'),
-						_1: {ctor: '[]'}
-					}
-				}
-			});
-	});
-var _elm_lang$virtual_dom$VirtualDom_Overlay$viewMiniControls = F2(
-	function (config, numMsgs) {
-		return A2(
-			_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-			{
-				ctor: '::',
-				_0: _elm_lang$virtual_dom$VirtualDom_Helpers$class('elm-mini-controls'),
-				_1: {ctor: '[]'}
-			},
-			{
-				ctor: '::',
-				_0: A2(
-					_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-					{
-						ctor: '::',
-						_0: _elm_lang$virtual_dom$VirtualDom_Helpers$onClick(config.open),
-						_1: {
-							ctor: '::',
-							_0: _elm_lang$virtual_dom$VirtualDom_Helpers$class('elm-mini-controls-button'),
-							_1: {ctor: '[]'}
-						}
-					},
-					{
-						ctor: '::',
-						_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(
-							A2(
-								_elm_lang$core$Basics_ops['++'],
-								'Explore History (',
-								A2(
-									_elm_lang$core$Basics_ops['++'],
-									_elm_lang$core$Basics$toString(numMsgs),
-									')'))),
-						_1: {ctor: '[]'}
-					}),
-				_1: {
-					ctor: '::',
-					_0: A3(
-						_elm_lang$virtual_dom$VirtualDom_Overlay$viewImportExport,
-						{
-							ctor: '::',
-							_0: _elm_lang$virtual_dom$VirtualDom_Helpers$class('elm-mini-controls-import-export'),
-							_1: {ctor: '[]'}
-						},
-						config.importHistory,
-						config.exportHistory),
-					_1: {ctor: '[]'}
-				}
-			});
-	});
-var _elm_lang$virtual_dom$VirtualDom_Overlay$addCommas = function (items) {
-	var _p0 = items;
-	if (_p0.ctor === '[]') {
-		return '';
-	} else {
-		if (_p0._1.ctor === '[]') {
-			return _p0._0;
-		} else {
-			if (_p0._1._1.ctor === '[]') {
-				return A2(
-					_elm_lang$core$Basics_ops['++'],
-					_p0._0,
-					A2(_elm_lang$core$Basics_ops['++'], ' and ', _p0._1._0));
-			} else {
-				return A2(
-					_elm_lang$core$String$join,
-					', ',
-					A2(
-						_elm_lang$core$Basics_ops['++'],
-						_p0._1,
-						{
-							ctor: '::',
-							_0: A2(_elm_lang$core$Basics_ops['++'], ' and ', _p0._0),
-							_1: {ctor: '[]'}
-						}));
-			}
-		}
-	}
-};
-var _elm_lang$virtual_dom$VirtualDom_Overlay$problemToString = function (problem) {
-	var _p1 = problem;
-	switch (_p1.ctor) {
-		case 'Function':
-			return 'functions';
-		case 'Decoder':
-			return 'JSON decoders';
-		case 'Task':
-			return 'tasks';
-		case 'Process':
-			return 'processes';
-		case 'Socket':
-			return 'web sockets';
-		case 'Request':
-			return 'HTTP requests';
-		case 'Program':
-			return 'programs';
-		default:
-			return 'virtual DOM values';
-	}
-};
-var _elm_lang$virtual_dom$VirtualDom_Overlay$goodNews2 = '\nfunction can pattern match on that data and call whatever functions, JSON\ndecoders, etc. you need. This makes the code much more explicit and easy to\nfollow for other readers (or you in a few months!)\n';
-var _elm_lang$virtual_dom$VirtualDom_Overlay$goodNews1 = '\nThe good news is that having values like this in your message type is not\nso great in the long run. You are better off using simpler data, like\n';
-var _elm_lang$virtual_dom$VirtualDom_Overlay$viewCode = function (name) {
-	return A3(
-		_elm_lang$virtual_dom$VirtualDom_Helpers$node,
-		'code',
-		{ctor: '[]'},
-		{
-			ctor: '::',
-			_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(name),
-			_1: {ctor: '[]'}
-		});
-};
-var _elm_lang$virtual_dom$VirtualDom_Overlay$viewMention = F2(
-	function (tags, verbed) {
-		var _p2 = A2(
-			_elm_lang$core$List$map,
-			_elm_lang$virtual_dom$VirtualDom_Overlay$viewCode,
-			_elm_lang$core$List$reverse(tags));
-		if (_p2.ctor === '[]') {
-			return _elm_lang$virtual_dom$VirtualDom_Helpers$text('');
-		} else {
-			if (_p2._1.ctor === '[]') {
-				return A3(
-					_elm_lang$virtual_dom$VirtualDom_Helpers$node,
-					'li',
-					{ctor: '[]'},
-					{
-						ctor: '::',
-						_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(verbed),
-						_1: {
-							ctor: '::',
-							_0: _p2._0,
-							_1: {
-								ctor: '::',
-								_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text('.'),
-								_1: {ctor: '[]'}
-							}
-						}
-					});
-			} else {
-				if (_p2._1._1.ctor === '[]') {
-					return A3(
-						_elm_lang$virtual_dom$VirtualDom_Helpers$node,
-						'li',
-						{ctor: '[]'},
-						{
-							ctor: '::',
-							_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(verbed),
-							_1: {
-								ctor: '::',
-								_0: _p2._1._0,
-								_1: {
-									ctor: '::',
-									_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(' and '),
-									_1: {
-										ctor: '::',
-										_0: _p2._0,
-										_1: {
-											ctor: '::',
-											_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text('.'),
-											_1: {ctor: '[]'}
-										}
-									}
-								}
-							}
-						});
-				} else {
-					return A3(
-						_elm_lang$virtual_dom$VirtualDom_Helpers$node,
-						'li',
-						{ctor: '[]'},
-						{
-							ctor: '::',
-							_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(verbed),
-							_1: A2(
-								_elm_lang$core$Basics_ops['++'],
-								A2(
-									_elm_lang$core$List$intersperse,
-									_elm_lang$virtual_dom$VirtualDom_Helpers$text(', '),
-									_elm_lang$core$List$reverse(_p2._1)),
-								{
-									ctor: '::',
-									_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(', and '),
-									_1: {
-										ctor: '::',
-										_0: _p2._0,
-										_1: {
-											ctor: '::',
-											_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text('.'),
-											_1: {ctor: '[]'}
-										}
-									}
-								})
-						});
-				}
-			}
-		}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Overlay$viewChange = function (change) {
-	return A3(
-		_elm_lang$virtual_dom$VirtualDom_Helpers$node,
-		'li',
-		{ctor: '[]'},
-		function () {
-			var _p3 = change;
-			if (_p3.ctor === 'AliasChange') {
-				return {
-					ctor: '::',
-					_0: A2(
-						_elm_lang$virtual_dom$VirtualDom_Helpers$span,
-						{
-							ctor: '::',
-							_0: _elm_lang$virtual_dom$VirtualDom_Helpers$class('elm-overlay-message-details-type'),
-							_1: {ctor: '[]'}
-						},
-						{
-							ctor: '::',
-							_0: _elm_lang$virtual_dom$VirtualDom_Overlay$viewCode(_p3._0),
-							_1: {ctor: '[]'}
-						}),
-					_1: {ctor: '[]'}
-				};
-			} else {
-				return {
-					ctor: '::',
-					_0: A2(
-						_elm_lang$virtual_dom$VirtualDom_Helpers$span,
-						{
-							ctor: '::',
-							_0: _elm_lang$virtual_dom$VirtualDom_Helpers$class('elm-overlay-message-details-type'),
-							_1: {ctor: '[]'}
-						},
-						{
-							ctor: '::',
-							_0: _elm_lang$virtual_dom$VirtualDom_Overlay$viewCode(_p3._0),
-							_1: {ctor: '[]'}
-						}),
-					_1: {
-						ctor: '::',
-						_0: A3(
-							_elm_lang$virtual_dom$VirtualDom_Helpers$node,
-							'ul',
-							{ctor: '[]'},
-							{
-								ctor: '::',
-								_0: A2(_elm_lang$virtual_dom$VirtualDom_Overlay$viewMention, _p3._1.removed, 'Removed '),
-								_1: {
-									ctor: '::',
-									_0: A2(_elm_lang$virtual_dom$VirtualDom_Overlay$viewMention, _p3._1.changed, 'Changed '),
-									_1: {
-										ctor: '::',
-										_0: A2(_elm_lang$virtual_dom$VirtualDom_Overlay$viewMention, _p3._1.added, 'Added '),
-										_1: {ctor: '[]'}
-									}
-								}
-							}),
-						_1: {
-							ctor: '::',
-							_0: _p3._1.argsMatch ? _elm_lang$virtual_dom$VirtualDom_Helpers$text('') : _elm_lang$virtual_dom$VirtualDom_Helpers$text('This may be due to the fact that the type variable names changed.'),
-							_1: {ctor: '[]'}
-						}
-					}
-				};
-			}
-		}());
-};
-var _elm_lang$virtual_dom$VirtualDom_Overlay$viewProblemType = function (_p4) {
-	var _p5 = _p4;
-	return A3(
-		_elm_lang$virtual_dom$VirtualDom_Helpers$node,
-		'li',
-		{ctor: '[]'},
-		{
-			ctor: '::',
-			_0: _elm_lang$virtual_dom$VirtualDom_Overlay$viewCode(_p5.name),
-			_1: {
-				ctor: '::',
-				_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(
-					A2(
-						_elm_lang$core$Basics_ops['++'],
-						' can contain ',
-						A2(
-							_elm_lang$core$Basics_ops['++'],
-							_elm_lang$virtual_dom$VirtualDom_Overlay$addCommas(
-								A2(_elm_lang$core$List$map, _elm_lang$virtual_dom$VirtualDom_Overlay$problemToString, _p5.problems)),
-							'.'))),
-				_1: {ctor: '[]'}
-			}
-		});
-};
-var _elm_lang$virtual_dom$VirtualDom_Overlay$viewBadMetadata = function (_p6) {
-	var _p7 = _p6;
-	return {
-		ctor: '::',
-		_0: A3(
-			_elm_lang$virtual_dom$VirtualDom_Helpers$node,
-			'p',
-			{ctor: '[]'},
-			{
-				ctor: '::',
-				_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text('The '),
-				_1: {
-					ctor: '::',
-					_0: _elm_lang$virtual_dom$VirtualDom_Overlay$viewCode(_p7.message),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(' type of your program cannot be reliably serialized for history files.'),
-						_1: {ctor: '[]'}
-					}
-				}
-			}),
-		_1: {
-			ctor: '::',
-			_0: A3(
-				_elm_lang$virtual_dom$VirtualDom_Helpers$node,
-				'p',
-				{ctor: '[]'},
-				{
-					ctor: '::',
-					_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text('Functions cannot be serialized, nor can values that contain functions. This is a problem in these places:'),
-					_1: {ctor: '[]'}
-				}),
-			_1: {
-				ctor: '::',
-				_0: A3(
-					_elm_lang$virtual_dom$VirtualDom_Helpers$node,
-					'ul',
-					{ctor: '[]'},
-					A2(_elm_lang$core$List$map, _elm_lang$virtual_dom$VirtualDom_Overlay$viewProblemType, _p7.problems)),
-				_1: {
-					ctor: '::',
-					_0: A3(
-						_elm_lang$virtual_dom$VirtualDom_Helpers$node,
-						'p',
-						{ctor: '[]'},
-						{
-							ctor: '::',
-							_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(_elm_lang$virtual_dom$VirtualDom_Overlay$goodNews1),
-							_1: {
-								ctor: '::',
-								_0: A2(
-									_elm_lang$virtual_dom$VirtualDom_Helpers$a,
-									{
-										ctor: '::',
-										_0: _elm_lang$virtual_dom$VirtualDom_Helpers$href('https://guide.elm-lang.org/types/union_types.html'),
-										_1: {ctor: '[]'}
-									},
-									{
-										ctor: '::',
-										_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text('union types'),
-										_1: {ctor: '[]'}
-									}),
-								_1: {
-									ctor: '::',
-									_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(', in your messages. From there, your '),
-									_1: {
-										ctor: '::',
-										_0: _elm_lang$virtual_dom$VirtualDom_Overlay$viewCode('update'),
-										_1: {
-											ctor: '::',
-											_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(_elm_lang$virtual_dom$VirtualDom_Overlay$goodNews2),
-											_1: {ctor: '[]'}
-										}
-									}
-								}
-							}
-						}),
-					_1: {ctor: '[]'}
-				}
-			}
-		}
-	};
-};
-var _elm_lang$virtual_dom$VirtualDom_Overlay$explanationRisky = '\nThis history seems old. It will work with this program, but some\nmessages have been added since the history was created:\n';
-var _elm_lang$virtual_dom$VirtualDom_Overlay$explanationBad = '\nThe messages in this history do not match the messages handled by your\nprogram. I noticed changes in the following types:\n';
-var _elm_lang$virtual_dom$VirtualDom_Overlay$viewReport = F2(
-	function (isBad, report) {
-		var _p8 = report;
-		switch (_p8.ctor) {
-			case 'CorruptHistory':
-				return {
-					ctor: '::',
-					_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text('Looks like this history file is corrupt. I cannot understand it.'),
-					_1: {ctor: '[]'}
-				};
-			case 'VersionChanged':
-				return {
-					ctor: '::',
-					_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(
-						A2(
-							_elm_lang$core$Basics_ops['++'],
-							'This history was created with Elm ',
-							A2(
-								_elm_lang$core$Basics_ops['++'],
-								_p8._0,
-								A2(
-									_elm_lang$core$Basics_ops['++'],
-									', but you are using Elm ',
-									A2(_elm_lang$core$Basics_ops['++'], _p8._1, ' right now.'))))),
-					_1: {ctor: '[]'}
-				};
-			case 'MessageChanged':
-				return {
-					ctor: '::',
-					_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(
-						A2(_elm_lang$core$Basics_ops['++'], 'To import some other history, the overall message type must', ' be the same. The old history has ')),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$virtual_dom$VirtualDom_Overlay$viewCode(_p8._0),
-						_1: {
-							ctor: '::',
-							_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(' messages, but the new program works with '),
-							_1: {
-								ctor: '::',
-								_0: _elm_lang$virtual_dom$VirtualDom_Overlay$viewCode(_p8._1),
-								_1: {
-									ctor: '::',
-									_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(' messages.'),
-									_1: {ctor: '[]'}
-								}
-							}
-						}
-					}
-				};
-			default:
-				return {
-					ctor: '::',
-					_0: A3(
-						_elm_lang$virtual_dom$VirtualDom_Helpers$node,
-						'p',
-						{ctor: '[]'},
-						{
-							ctor: '::',
-							_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(
-								isBad ? _elm_lang$virtual_dom$VirtualDom_Overlay$explanationBad : _elm_lang$virtual_dom$VirtualDom_Overlay$explanationRisky),
-							_1: {ctor: '[]'}
-						}),
-					_1: {
-						ctor: '::',
-						_0: A3(
-							_elm_lang$virtual_dom$VirtualDom_Helpers$node,
-							'ul',
-							{ctor: '[]'},
-							A2(_elm_lang$core$List$map, _elm_lang$virtual_dom$VirtualDom_Overlay$viewChange, _p8._0)),
-						_1: {ctor: '[]'}
-					}
-				};
-		}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Overlay$viewResume = function (config) {
-	return A2(
-		_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-		{
-			ctor: '::',
-			_0: _elm_lang$virtual_dom$VirtualDom_Helpers$class('elm-overlay-resume'),
-			_1: {
-				ctor: '::',
-				_0: _elm_lang$virtual_dom$VirtualDom_Helpers$onClick(config.resume),
-				_1: {ctor: '[]'}
-			}
-		},
-		{
-			ctor: '::',
-			_0: A2(
-				_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-				{
-					ctor: '::',
-					_0: _elm_lang$virtual_dom$VirtualDom_Helpers$class('elm-overlay-resume-words'),
-					_1: {ctor: '[]'}
-				},
-				{
-					ctor: '::',
-					_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text('Click to Resume'),
-					_1: {ctor: '[]'}
-				}),
-			_1: {ctor: '[]'}
-		});
-};
-var _elm_lang$virtual_dom$VirtualDom_Overlay$uploadDecoder = A3(
-	_elm_lang$core$Json_Decode$map2,
-	F2(
-		function (v0, v1) {
-			return {ctor: '_Tuple2', _0: v0, _1: v1};
-		}),
-	A2(_elm_lang$core$Json_Decode$field, 'metadata', _elm_lang$virtual_dom$VirtualDom_Metadata$decoder),
-	A2(_elm_lang$core$Json_Decode$field, 'history', _elm_lang$core$Json_Decode$value));
-var _elm_lang$virtual_dom$VirtualDom_Overlay$close = F2(
-	function (msg, state) {
-		var _p9 = state;
-		switch (_p9.ctor) {
-			case 'None':
-				return _elm_lang$core$Maybe$Nothing;
-			case 'BadMetadata':
-				return _elm_lang$core$Maybe$Nothing;
-			case 'BadImport':
-				return _elm_lang$core$Maybe$Nothing;
-			default:
-				var _p10 = msg;
-				if (_p10.ctor === 'Cancel') {
-					return _elm_lang$core$Maybe$Nothing;
-				} else {
-					return _elm_lang$core$Maybe$Just(_p9._1);
-				}
-		}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Overlay$isBlocking = function (state) {
-	var _p11 = state;
-	if (_p11.ctor === 'None') {
-		return false;
-	} else {
-		return true;
-	}
-};
-var _elm_lang$virtual_dom$VirtualDom_Overlay$Config = F5(
-	function (a, b, c, d, e) {
-		return {resume: a, open: b, importHistory: c, exportHistory: d, wrap: e};
-	});
-var _elm_lang$virtual_dom$VirtualDom_Overlay$RiskyImport = F2(
-	function (a, b) {
-		return {ctor: 'RiskyImport', _0: a, _1: b};
-	});
-var _elm_lang$virtual_dom$VirtualDom_Overlay$BadImport = function (a) {
-	return {ctor: 'BadImport', _0: a};
-};
-var _elm_lang$virtual_dom$VirtualDom_Overlay$corruptImport = _elm_lang$virtual_dom$VirtualDom_Overlay$BadImport(_elm_lang$virtual_dom$VirtualDom_Report$CorruptHistory);
-var _elm_lang$virtual_dom$VirtualDom_Overlay$assessImport = F2(
-	function (metadata, jsonString) {
-		var _p12 = A2(_elm_lang$core$Json_Decode$decodeString, _elm_lang$virtual_dom$VirtualDom_Overlay$uploadDecoder, jsonString);
-		if (_p12.ctor === 'Err') {
-			return _elm_lang$core$Result$Err(_elm_lang$virtual_dom$VirtualDom_Overlay$corruptImport);
-		} else {
-			var _p14 = _p12._0._1;
-			var report = A2(_elm_lang$virtual_dom$VirtualDom_Metadata$check, _p12._0._0, metadata);
-			var _p13 = _elm_lang$virtual_dom$VirtualDom_Report$evaluate(report);
-			switch (_p13.ctor) {
-				case 'Impossible':
-					return _elm_lang$core$Result$Err(
-						_elm_lang$virtual_dom$VirtualDom_Overlay$BadImport(report));
-				case 'Risky':
-					return _elm_lang$core$Result$Err(
-						A2(_elm_lang$virtual_dom$VirtualDom_Overlay$RiskyImport, report, _p14));
-				default:
-					return _elm_lang$core$Result$Ok(_p14);
-			}
-		}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Overlay$BadMetadata = function (a) {
-	return {ctor: 'BadMetadata', _0: a};
-};
-var _elm_lang$virtual_dom$VirtualDom_Overlay$badMetadata = _elm_lang$virtual_dom$VirtualDom_Overlay$BadMetadata;
-var _elm_lang$virtual_dom$VirtualDom_Overlay$None = {ctor: 'None'};
-var _elm_lang$virtual_dom$VirtualDom_Overlay$none = _elm_lang$virtual_dom$VirtualDom_Overlay$None;
-var _elm_lang$virtual_dom$VirtualDom_Overlay$Proceed = {ctor: 'Proceed'};
-var _elm_lang$virtual_dom$VirtualDom_Overlay$Cancel = {ctor: 'Cancel'};
-var _elm_lang$virtual_dom$VirtualDom_Overlay$viewButtons = function (buttons) {
-	return A2(
-		_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-		{
-			ctor: '::',
-			_0: _elm_lang$virtual_dom$VirtualDom_Helpers$class('elm-overlay-message-buttons'),
-			_1: {ctor: '[]'}
-		},
-		function () {
-			var _p15 = buttons;
-			if (_p15.ctor === 'Accept') {
-				return {
-					ctor: '::',
-					_0: A3(
-						_elm_lang$virtual_dom$VirtualDom_Helpers$node,
-						'button',
-						{
-							ctor: '::',
-							_0: _elm_lang$virtual_dom$VirtualDom_Helpers$onClick(_elm_lang$virtual_dom$VirtualDom_Overlay$Proceed),
-							_1: {ctor: '[]'}
-						},
-						{
-							ctor: '::',
-							_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(_p15._0),
-							_1: {ctor: '[]'}
-						}),
-					_1: {ctor: '[]'}
-				};
-			} else {
-				return {
-					ctor: '::',
-					_0: A3(
-						_elm_lang$virtual_dom$VirtualDom_Helpers$node,
-						'button',
-						{
-							ctor: '::',
-							_0: _elm_lang$virtual_dom$VirtualDom_Helpers$onClick(_elm_lang$virtual_dom$VirtualDom_Overlay$Cancel),
-							_1: {ctor: '[]'}
-						},
-						{
-							ctor: '::',
-							_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(_p15._0),
-							_1: {ctor: '[]'}
-						}),
-					_1: {
-						ctor: '::',
-						_0: A3(
-							_elm_lang$virtual_dom$VirtualDom_Helpers$node,
-							'button',
-							{
-								ctor: '::',
-								_0: _elm_lang$virtual_dom$VirtualDom_Helpers$onClick(_elm_lang$virtual_dom$VirtualDom_Overlay$Proceed),
-								_1: {ctor: '[]'}
-							},
-							{
-								ctor: '::',
-								_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(_p15._1),
-								_1: {ctor: '[]'}
-							}),
-						_1: {ctor: '[]'}
-					}
-				};
-			}
-		}());
-};
-var _elm_lang$virtual_dom$VirtualDom_Overlay$Message = {ctor: 'Message'};
-var _elm_lang$virtual_dom$VirtualDom_Overlay$viewMessage = F4(
-	function (config, title, details, buttons) {
-		return {
-			ctor: '_Tuple2',
-			_0: _elm_lang$virtual_dom$VirtualDom_Overlay$Message,
-			_1: {
-				ctor: '::',
-				_0: A2(
-					_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-					{
-						ctor: '::',
-						_0: _elm_lang$virtual_dom$VirtualDom_Helpers$class('elm-overlay-message'),
-						_1: {ctor: '[]'}
-					},
-					{
-						ctor: '::',
-						_0: A2(
-							_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-							{
-								ctor: '::',
-								_0: _elm_lang$virtual_dom$VirtualDom_Helpers$class('elm-overlay-message-title'),
-								_1: {ctor: '[]'}
-							},
-							{
-								ctor: '::',
-								_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(title),
-								_1: {ctor: '[]'}
-							}),
-						_1: {
-							ctor: '::',
-							_0: A2(
-								_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-								{
-									ctor: '::',
-									_0: _elm_lang$virtual_dom$VirtualDom_Helpers$class('elm-overlay-message-details'),
-									_1: {ctor: '[]'}
-								},
-								details),
-							_1: {
-								ctor: '::',
-								_0: A2(
-									_elm_lang$virtual_dom$VirtualDom_Helpers$map,
-									config.wrap,
-									_elm_lang$virtual_dom$VirtualDom_Overlay$viewButtons(buttons)),
-								_1: {ctor: '[]'}
-							}
-						}
-					}),
-				_1: {ctor: '[]'}
-			}
-		};
-	});
-var _elm_lang$virtual_dom$VirtualDom_Overlay$Pause = {ctor: 'Pause'};
-var _elm_lang$virtual_dom$VirtualDom_Overlay$Normal = {ctor: 'Normal'};
-var _elm_lang$virtual_dom$VirtualDom_Overlay$Choose = F2(
-	function (a, b) {
-		return {ctor: 'Choose', _0: a, _1: b};
-	});
-var _elm_lang$virtual_dom$VirtualDom_Overlay$Accept = function (a) {
-	return {ctor: 'Accept', _0: a};
-};
-var _elm_lang$virtual_dom$VirtualDom_Overlay$viewHelp = F5(
-	function (config, isPaused, isOpen, numMsgs, state) {
-		var _p16 = state;
-		switch (_p16.ctor) {
-			case 'None':
-				var miniControls = isOpen ? {ctor: '[]'} : {
-					ctor: '::',
-					_0: A2(_elm_lang$virtual_dom$VirtualDom_Overlay$viewMiniControls, config, numMsgs),
-					_1: {ctor: '[]'}
-				};
-				return {
-					ctor: '_Tuple2',
-					_0: isPaused ? _elm_lang$virtual_dom$VirtualDom_Overlay$Pause : _elm_lang$virtual_dom$VirtualDom_Overlay$Normal,
-					_1: (isPaused && (!isOpen)) ? {
-						ctor: '::',
-						_0: _elm_lang$virtual_dom$VirtualDom_Overlay$viewResume(config),
-						_1: miniControls
-					} : miniControls
-				};
-			case 'BadMetadata':
-				return A4(
-					_elm_lang$virtual_dom$VirtualDom_Overlay$viewMessage,
-					config,
-					'Cannot use Import or Export',
-					_elm_lang$virtual_dom$VirtualDom_Overlay$viewBadMetadata(_p16._0),
-					_elm_lang$virtual_dom$VirtualDom_Overlay$Accept('Ok'));
-			case 'BadImport':
-				return A4(
-					_elm_lang$virtual_dom$VirtualDom_Overlay$viewMessage,
-					config,
-					'Cannot Import History',
-					A2(_elm_lang$virtual_dom$VirtualDom_Overlay$viewReport, true, _p16._0),
-					_elm_lang$virtual_dom$VirtualDom_Overlay$Accept('Ok'));
-			default:
-				return A4(
-					_elm_lang$virtual_dom$VirtualDom_Overlay$viewMessage,
-					config,
-					'Warning',
-					A2(_elm_lang$virtual_dom$VirtualDom_Overlay$viewReport, false, _p16._0),
-					A2(_elm_lang$virtual_dom$VirtualDom_Overlay$Choose, 'Cancel', 'Import Anyway'));
-		}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Overlay$view = F5(
-	function (config, isPaused, isOpen, numMsgs, state) {
-		var _p17 = A5(_elm_lang$virtual_dom$VirtualDom_Overlay$viewHelp, config, isPaused, isOpen, numMsgs, state);
-		var block = _p17._0;
-		var nodes = _p17._1;
-		return {
-			ctor: '_Tuple2',
-			_0: block,
-			_1: A2(
-				_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-				{
-					ctor: '::',
-					_0: _elm_lang$virtual_dom$VirtualDom_Helpers$class('elm-overlay'),
-					_1: {ctor: '[]'}
-				},
-				{ctor: '::', _0: _elm_lang$virtual_dom$VirtualDom_Overlay$styles, _1: nodes})
-		};
-	});
-
-var _elm_lang$virtual_dom$VirtualDom_Debug$styles = A3(
-	_elm_lang$virtual_dom$VirtualDom_Helpers$node,
-	'style',
-	{ctor: '[]'},
-	{
-		ctor: '::',
-		_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text('\n\nhtml {\n    overflow: hidden;\n    height: 100%;\n}\n\nbody {\n    height: 100%;\n    overflow: auto;\n}\n\n#debugger {\n  width: 100%\n  height: 100%;\n  font-family: monospace;\n}\n\n#values {\n  display: block;\n  float: left;\n  height: 100%;\n  width: calc(100% - 30ch);\n  margin: 0;\n  overflow: auto;\n  cursor: default;\n}\n\n.debugger-sidebar {\n  display: block;\n  float: left;\n  width: 30ch;\n  height: 100%;\n  color: white;\n  background-color: rgb(61, 61, 61);\n}\n\n.debugger-sidebar-controls {\n  width: 100%;\n  text-align: center;\n  background-color: rgb(50, 50, 50);\n}\n\n.debugger-sidebar-controls-import-export {\n  width: 100%;\n  height: 24px;\n  line-height: 24px;\n  font-size: 12px;\n}\n\n.debugger-sidebar-controls-resume {\n  width: 100%;\n  height: 30px;\n  line-height: 30px;\n  cursor: pointer;\n}\n\n.debugger-sidebar-controls-resume:hover {\n  background-color: rgb(41, 41, 41);\n}\n\n.debugger-sidebar-messages {\n  width: 100%;\n  overflow-y: auto;\n  height: calc(100% - 24px);\n}\n\n.debugger-sidebar-messages-paused {\n  width: 100%;\n  overflow-y: auto;\n  height: calc(100% - 54px);\n}\n\n.messages-entry {\n  cursor: pointer;\n  width: 100%;\n}\n\n.messages-entry:hover {\n  background-color: rgb(41, 41, 41);\n}\n\n.messages-entry-selected, .messages-entry-selected:hover {\n  background-color: rgb(10, 10, 10);\n}\n\n.messages-entry-content {\n  width: calc(100% - 7ch);\n  padding-top: 4px;\n  padding-bottom: 4px;\n  padding-left: 1ch;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n  overflow: hidden;\n  display: inline-block;\n}\n\n.messages-entry-index {\n  color: #666;\n  width: 5ch;\n  padding-top: 4px;\n  padding-bottom: 4px;\n  padding-right: 1ch;\n  text-align: right;\n  display: block;\n  float: right;\n}\n\n'),
-		_1: {ctor: '[]'}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Debug$button = F2(
-	function (msg, label) {
-		return A2(
-			_elm_lang$virtual_dom$VirtualDom_Helpers$span,
-			{
-				ctor: '::',
-				_0: _elm_lang$virtual_dom$VirtualDom_Helpers$onClick(msg),
-				_1: {
-					ctor: '::',
-					_0: _elm_lang$virtual_dom$VirtualDom_Helpers$style(
-						{
-							ctor: '::',
-							_0: {ctor: '_Tuple2', _0: 'cursor', _1: 'pointer'},
-							_1: {ctor: '[]'}
-						}),
-					_1: {ctor: '[]'}
-				}
-			},
-			{
-				ctor: '::',
-				_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(label),
-				_1: {ctor: '[]'}
-			});
-	});
-var _elm_lang$virtual_dom$VirtualDom_Debug$getLatestModel = function (state) {
-	var _p0 = state;
-	if (_p0.ctor === 'Running') {
-		return _p0._0;
-	} else {
-		return _p0._2;
-	}
-};
-var _elm_lang$virtual_dom$VirtualDom_Debug$withGoodMetadata = F2(
-	function (model, func) {
-		var _p1 = model.metadata;
-		if (_p1.ctor === 'Ok') {
-			return func(_p1._0);
-		} else {
-			return A2(
-				_elm_lang$core$Platform_Cmd_ops['!'],
-				_elm_lang$core$Native_Utils.update(
-					model,
-					{
-						overlay: _elm_lang$virtual_dom$VirtualDom_Overlay$badMetadata(_p1._0)
-					}),
-				{ctor: '[]'});
-		}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Debug$Model = F6(
-	function (a, b, c, d, e, f) {
-		return {history: a, state: b, expando: c, metadata: d, overlay: e, isDebuggerOpen: f};
-	});
-var _elm_lang$virtual_dom$VirtualDom_Debug$Paused = F3(
-	function (a, b, c) {
-		return {ctor: 'Paused', _0: a, _1: b, _2: c};
-	});
-var _elm_lang$virtual_dom$VirtualDom_Debug$Running = function (a) {
-	return {ctor: 'Running', _0: a};
-};
-var _elm_lang$virtual_dom$VirtualDom_Debug$loadNewHistory = F3(
-	function (rawHistory, userUpdate, model) {
-		var pureUserUpdate = F2(
-			function (msg, userModel) {
-				return _elm_lang$core$Tuple$first(
-					A2(userUpdate, msg, userModel));
-			});
-		var initialUserModel = _elm_lang$virtual_dom$VirtualDom_History$initialModel(model.history);
-		var decoder = A2(_elm_lang$virtual_dom$VirtualDom_History$decoder, initialUserModel, pureUserUpdate);
-		var _p2 = A2(_elm_lang$core$Json_Decode$decodeValue, decoder, rawHistory);
-		if (_p2.ctor === 'Err') {
-			return A2(
-				_elm_lang$core$Platform_Cmd_ops['!'],
-				_elm_lang$core$Native_Utils.update(
-					model,
-					{overlay: _elm_lang$virtual_dom$VirtualDom_Overlay$corruptImport}),
-				{ctor: '[]'});
-		} else {
-			var _p3 = _p2._0._0;
-			return A2(
-				_elm_lang$core$Platform_Cmd_ops['!'],
-				_elm_lang$core$Native_Utils.update(
-					model,
-					{
-						history: _p2._0._1,
-						state: _elm_lang$virtual_dom$VirtualDom_Debug$Running(_p3),
-						expando: _elm_lang$virtual_dom$VirtualDom_Expando$init(_p3),
-						overlay: _elm_lang$virtual_dom$VirtualDom_Overlay$none
-					}),
-				{ctor: '[]'});
-		}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Debug$OverlayMsg = function (a) {
-	return {ctor: 'OverlayMsg', _0: a};
-};
-var _elm_lang$virtual_dom$VirtualDom_Debug$Upload = function (a) {
-	return {ctor: 'Upload', _0: a};
-};
-var _elm_lang$virtual_dom$VirtualDom_Debug$upload = A2(_elm_lang$core$Task$perform, _elm_lang$virtual_dom$VirtualDom_Debug$Upload, _elm_lang$virtual_dom$Native_Debug.upload);
-var _elm_lang$virtual_dom$VirtualDom_Debug$Export = {ctor: 'Export'};
-var _elm_lang$virtual_dom$VirtualDom_Debug$Import = {ctor: 'Import'};
-var _elm_lang$virtual_dom$VirtualDom_Debug$Down = {ctor: 'Down'};
-var _elm_lang$virtual_dom$VirtualDom_Debug$Up = {ctor: 'Up'};
-var _elm_lang$virtual_dom$VirtualDom_Debug$Close = {ctor: 'Close'};
-var _elm_lang$virtual_dom$VirtualDom_Debug$Open = {ctor: 'Open'};
-var _elm_lang$virtual_dom$VirtualDom_Debug$Jump = function (a) {
-	return {ctor: 'Jump', _0: a};
-};
-var _elm_lang$virtual_dom$VirtualDom_Debug$Resume = {ctor: 'Resume'};
-var _elm_lang$virtual_dom$VirtualDom_Debug$overlayConfig = {resume: _elm_lang$virtual_dom$VirtualDom_Debug$Resume, open: _elm_lang$virtual_dom$VirtualDom_Debug$Open, importHistory: _elm_lang$virtual_dom$VirtualDom_Debug$Import, exportHistory: _elm_lang$virtual_dom$VirtualDom_Debug$Export, wrap: _elm_lang$virtual_dom$VirtualDom_Debug$OverlayMsg};
-var _elm_lang$virtual_dom$VirtualDom_Debug$viewIn = function (_p4) {
-	var _p5 = _p4;
-	var isPaused = function () {
-		var _p6 = _p5.state;
-		if (_p6.ctor === 'Running') {
-			return false;
-		} else {
-			return true;
-		}
-	}();
-	return A5(
-		_elm_lang$virtual_dom$VirtualDom_Overlay$view,
-		_elm_lang$virtual_dom$VirtualDom_Debug$overlayConfig,
-		isPaused,
-		_p5.isDebuggerOpen,
-		_elm_lang$virtual_dom$VirtualDom_History$size(_p5.history),
-		_p5.overlay);
-};
-var _elm_lang$virtual_dom$VirtualDom_Debug$resumeButton = A2(
-	_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-	{
-		ctor: '::',
-		_0: _elm_lang$virtual_dom$VirtualDom_Helpers$onClick(_elm_lang$virtual_dom$VirtualDom_Debug$Resume),
-		_1: {
-			ctor: '::',
-			_0: _elm_lang$virtual_dom$VirtualDom_Helpers$class('debugger-sidebar-controls-resume'),
-			_1: {ctor: '[]'}
-		}
-	},
-	{
-		ctor: '::',
-		_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text('Resume'),
-		_1: {ctor: '[]'}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Debug$viewResumeButton = function (maybeIndex) {
-	var _p7 = maybeIndex;
-	if (_p7.ctor === 'Nothing') {
-		return _elm_lang$virtual_dom$VirtualDom_Helpers$text('');
-	} else {
-		return _elm_lang$virtual_dom$VirtualDom_Debug$resumeButton;
-	}
-};
-var _elm_lang$virtual_dom$VirtualDom_Debug$playButton = function (maybeIndex) {
-	return A2(
-		_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-		{
-			ctor: '::',
-			_0: _elm_lang$virtual_dom$VirtualDom_Helpers$class('debugger-sidebar-controls'),
-			_1: {ctor: '[]'}
-		},
-		{
-			ctor: '::',
-			_0: _elm_lang$virtual_dom$VirtualDom_Debug$viewResumeButton(maybeIndex),
-			_1: {
-				ctor: '::',
-				_0: A2(
-					_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-					{
-						ctor: '::',
-						_0: _elm_lang$virtual_dom$VirtualDom_Helpers$class('debugger-sidebar-controls-import-export'),
-						_1: {ctor: '[]'}
-					},
-					{
-						ctor: '::',
-						_0: A2(_elm_lang$virtual_dom$VirtualDom_Debug$button, _elm_lang$virtual_dom$VirtualDom_Debug$Import, 'Import'),
-						_1: {
-							ctor: '::',
-							_0: _elm_lang$virtual_dom$VirtualDom_Helpers$text(' / '),
-							_1: {
-								ctor: '::',
-								_0: A2(_elm_lang$virtual_dom$VirtualDom_Debug$button, _elm_lang$virtual_dom$VirtualDom_Debug$Export, 'Export'),
-								_1: {ctor: '[]'}
-							}
-						}
-					}),
-				_1: {ctor: '[]'}
-			}
-		});
-};
-var _elm_lang$virtual_dom$VirtualDom_Debug$viewSidebar = F2(
-	function (state, history) {
-		var maybeIndex = function () {
-			var _p8 = state;
-			if (_p8.ctor === 'Running') {
-				return _elm_lang$core$Maybe$Nothing;
-			} else {
-				return _elm_lang$core$Maybe$Just(_p8._0);
-			}
-		}();
-		return A2(
-			_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-			{
-				ctor: '::',
-				_0: _elm_lang$virtual_dom$VirtualDom_Helpers$class('debugger-sidebar'),
-				_1: {ctor: '[]'}
-			},
-			{
-				ctor: '::',
-				_0: A2(
-					_elm_lang$virtual_dom$VirtualDom_Helpers$map,
-					_elm_lang$virtual_dom$VirtualDom_Debug$Jump,
-					A2(_elm_lang$virtual_dom$VirtualDom_History$view, maybeIndex, history)),
-				_1: {
-					ctor: '::',
-					_0: _elm_lang$virtual_dom$VirtualDom_Debug$playButton(maybeIndex),
-					_1: {ctor: '[]'}
-				}
-			});
-	});
-var _elm_lang$virtual_dom$VirtualDom_Debug$ExpandoMsg = function (a) {
-	return {ctor: 'ExpandoMsg', _0: a};
-};
-var _elm_lang$virtual_dom$VirtualDom_Debug$viewOut = function (_p9) {
-	var _p10 = _p9;
-	return A2(
-		_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-		{
-			ctor: '::',
-			_0: _elm_lang$virtual_dom$VirtualDom_Helpers$id('debugger'),
-			_1: {ctor: '[]'}
-		},
-		{
-			ctor: '::',
-			_0: _elm_lang$virtual_dom$VirtualDom_Debug$styles,
-			_1: {
-				ctor: '::',
-				_0: A2(_elm_lang$virtual_dom$VirtualDom_Debug$viewSidebar, _p10.state, _p10.history),
-				_1: {
-					ctor: '::',
-					_0: A2(
-						_elm_lang$virtual_dom$VirtualDom_Helpers$map,
-						_elm_lang$virtual_dom$VirtualDom_Debug$ExpandoMsg,
-						A2(
-							_elm_lang$virtual_dom$VirtualDom_Helpers$div,
-							{
-								ctor: '::',
-								_0: _elm_lang$virtual_dom$VirtualDom_Helpers$id('values'),
-								_1: {ctor: '[]'}
-							},
-							{
-								ctor: '::',
-								_0: A2(_elm_lang$virtual_dom$VirtualDom_Expando$view, _elm_lang$core$Maybe$Nothing, _p10.expando),
-								_1: {ctor: '[]'}
-							})),
-					_1: {ctor: '[]'}
-				}
-			}
-		});
-};
-var _elm_lang$virtual_dom$VirtualDom_Debug$UserMsg = function (a) {
-	return {ctor: 'UserMsg', _0: a};
-};
-var _elm_lang$virtual_dom$VirtualDom_Debug$wrapInit = F2(
-	function (metadata, _p11) {
-		var _p12 = _p11;
-		var _p13 = _p12._0;
-		return A2(
-			_elm_lang$core$Platform_Cmd_ops['!'],
-			{
-				history: _elm_lang$virtual_dom$VirtualDom_History$empty(_p13),
-				state: _elm_lang$virtual_dom$VirtualDom_Debug$Running(_p13),
-				expando: _elm_lang$virtual_dom$VirtualDom_Expando$init(_p13),
-				metadata: _elm_lang$virtual_dom$VirtualDom_Metadata$decode(metadata),
-				overlay: _elm_lang$virtual_dom$VirtualDom_Overlay$none,
-				isDebuggerOpen: false
-			},
-			{
-				ctor: '::',
-				_0: A2(_elm_lang$core$Platform_Cmd$map, _elm_lang$virtual_dom$VirtualDom_Debug$UserMsg, _p12._1),
-				_1: {ctor: '[]'}
-			});
-	});
-var _elm_lang$virtual_dom$VirtualDom_Debug$wrapSubs = F2(
-	function (userSubscriptions, _p14) {
-		var _p15 = _p14;
-		return A2(
-			_elm_lang$core$Platform_Sub$map,
-			_elm_lang$virtual_dom$VirtualDom_Debug$UserMsg,
-			userSubscriptions(
-				_elm_lang$virtual_dom$VirtualDom_Debug$getLatestModel(_p15.state)));
-	});
-var _elm_lang$virtual_dom$VirtualDom_Debug$wrapView = F2(
-	function (userView, _p16) {
-		var _p17 = _p16;
-		var currentModel = function () {
-			var _p18 = _p17.state;
-			if (_p18.ctor === 'Running') {
-				return _p18._0;
-			} else {
-				return _p18._1;
-			}
-		}();
-		return A2(
-			_elm_lang$virtual_dom$VirtualDom_Helpers$map,
-			_elm_lang$virtual_dom$VirtualDom_Debug$UserMsg,
-			userView(currentModel));
-	});
-var _elm_lang$virtual_dom$VirtualDom_Debug$NoOp = {ctor: 'NoOp'};
-var _elm_lang$virtual_dom$VirtualDom_Debug$download = F2(
-	function (metadata, history) {
-		var json = _elm_lang$core$Json_Encode$object(
-			{
-				ctor: '::',
-				_0: {
-					ctor: '_Tuple2',
-					_0: 'metadata',
-					_1: _elm_lang$virtual_dom$VirtualDom_Metadata$encode(metadata)
-				},
-				_1: {
-					ctor: '::',
-					_0: {
-						ctor: '_Tuple2',
-						_0: 'history',
-						_1: _elm_lang$virtual_dom$VirtualDom_History$encode(history)
-					},
-					_1: {ctor: '[]'}
-				}
-			});
-		var historyLength = _elm_lang$virtual_dom$VirtualDom_History$size(history);
-		return A2(
-			_elm_lang$core$Task$perform,
-			function (_p19) {
-				return _elm_lang$virtual_dom$VirtualDom_Debug$NoOp;
-			},
-			A2(_elm_lang$virtual_dom$Native_Debug.download, historyLength, json));
-	});
-var _elm_lang$virtual_dom$VirtualDom_Debug$runIf = F2(
-	function (bool, task) {
-		return bool ? A2(
-			_elm_lang$core$Task$perform,
-			_elm_lang$core$Basics$always(_elm_lang$virtual_dom$VirtualDom_Debug$NoOp),
-			task) : _elm_lang$core$Platform_Cmd$none;
-	});
-var _elm_lang$virtual_dom$VirtualDom_Debug$updateUserMsg = F4(
-	function (userUpdate, scrollTask, userMsg, _p20) {
-		var _p21 = _p20;
-		var _p25 = _p21.state;
-		var _p24 = _p21;
-		var userModel = _elm_lang$virtual_dom$VirtualDom_Debug$getLatestModel(_p25);
-		var newHistory = A3(_elm_lang$virtual_dom$VirtualDom_History$add, userMsg, userModel, _p21.history);
-		var _p22 = A2(userUpdate, userMsg, userModel);
-		var newUserModel = _p22._0;
-		var userCmds = _p22._1;
-		var commands = A2(_elm_lang$core$Platform_Cmd$map, _elm_lang$virtual_dom$VirtualDom_Debug$UserMsg, userCmds);
-		var _p23 = _p25;
-		if (_p23.ctor === 'Running') {
-			return A2(
-				_elm_lang$core$Platform_Cmd_ops['!'],
-				_elm_lang$core$Native_Utils.update(
-					_p24,
-					{
-						history: newHistory,
-						state: _elm_lang$virtual_dom$VirtualDom_Debug$Running(newUserModel),
-						expando: A2(_elm_lang$virtual_dom$VirtualDom_Expando$merge, newUserModel, _p21.expando)
-					}),
-				{
-					ctor: '::',
-					_0: commands,
-					_1: {
-						ctor: '::',
-						_0: A2(_elm_lang$virtual_dom$VirtualDom_Debug$runIf, _p24.isDebuggerOpen, scrollTask),
-						_1: {ctor: '[]'}
-					}
-				});
-		} else {
-			return A2(
-				_elm_lang$core$Platform_Cmd_ops['!'],
-				_elm_lang$core$Native_Utils.update(
-					_p24,
-					{
-						history: newHistory,
-						state: A3(_elm_lang$virtual_dom$VirtualDom_Debug$Paused, _p23._0, _p23._1, newUserModel)
-					}),
-				{
-					ctor: '::',
-					_0: commands,
-					_1: {ctor: '[]'}
-				});
-		}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Debug$wrapUpdate = F4(
-	function (userUpdate, scrollTask, msg, model) {
-		wrapUpdate:
-		while (true) {
-			var _p26 = msg;
-			switch (_p26.ctor) {
-				case 'NoOp':
-					return A2(
-						_elm_lang$core$Platform_Cmd_ops['!'],
-						model,
-						{ctor: '[]'});
-				case 'UserMsg':
-					return A4(_elm_lang$virtual_dom$VirtualDom_Debug$updateUserMsg, userUpdate, scrollTask, _p26._0, model);
-				case 'ExpandoMsg':
-					return A2(
-						_elm_lang$core$Platform_Cmd_ops['!'],
-						_elm_lang$core$Native_Utils.update(
-							model,
-							{
-								expando: A2(_elm_lang$virtual_dom$VirtualDom_Expando$update, _p26._0, model.expando)
-							}),
-						{ctor: '[]'});
-				case 'Resume':
-					var _p27 = model.state;
-					if (_p27.ctor === 'Running') {
-						return A2(
-							_elm_lang$core$Platform_Cmd_ops['!'],
-							model,
-							{ctor: '[]'});
-					} else {
-						var _p28 = _p27._2;
-						return A2(
-							_elm_lang$core$Platform_Cmd_ops['!'],
-							_elm_lang$core$Native_Utils.update(
-								model,
-								{
-									state: _elm_lang$virtual_dom$VirtualDom_Debug$Running(_p28),
-									expando: A2(_elm_lang$virtual_dom$VirtualDom_Expando$merge, _p28, model.expando)
-								}),
-							{
-								ctor: '::',
-								_0: A2(_elm_lang$virtual_dom$VirtualDom_Debug$runIf, model.isDebuggerOpen, scrollTask),
-								_1: {ctor: '[]'}
-							});
-					}
-				case 'Jump':
-					var _p30 = _p26._0;
-					var _p29 = A3(_elm_lang$virtual_dom$VirtualDom_History$get, userUpdate, _p30, model.history);
-					var indexModel = _p29._0;
-					var indexMsg = _p29._1;
-					return A2(
-						_elm_lang$core$Platform_Cmd_ops['!'],
-						_elm_lang$core$Native_Utils.update(
-							model,
-							{
-								state: A3(
-									_elm_lang$virtual_dom$VirtualDom_Debug$Paused,
-									_p30,
-									indexModel,
-									_elm_lang$virtual_dom$VirtualDom_Debug$getLatestModel(model.state)),
-								expando: A2(_elm_lang$virtual_dom$VirtualDom_Expando$merge, indexModel, model.expando)
-							}),
-						{ctor: '[]'});
-				case 'Open':
-					return A2(
-						_elm_lang$core$Platform_Cmd_ops['!'],
-						_elm_lang$core$Native_Utils.update(
-							model,
-							{isDebuggerOpen: true}),
-						{ctor: '[]'});
-				case 'Close':
-					return A2(
-						_elm_lang$core$Platform_Cmd_ops['!'],
-						_elm_lang$core$Native_Utils.update(
-							model,
-							{isDebuggerOpen: false}),
-						{ctor: '[]'});
-				case 'Up':
-					var index = function () {
-						var _p31 = model.state;
-						if (_p31.ctor === 'Paused') {
-							return _p31._0;
-						} else {
-							return _elm_lang$virtual_dom$VirtualDom_History$size(model.history);
-						}
-					}();
-					if (_elm_lang$core$Native_Utils.cmp(index, 0) > 0) {
-						var _v17 = userUpdate,
-							_v18 = scrollTask,
-							_v19 = _elm_lang$virtual_dom$VirtualDom_Debug$Jump(index - 1),
-							_v20 = model;
-						userUpdate = _v17;
-						scrollTask = _v18;
-						msg = _v19;
-						model = _v20;
-						continue wrapUpdate;
-					} else {
-						return A2(
-							_elm_lang$core$Platform_Cmd_ops['!'],
-							model,
-							{ctor: '[]'});
-					}
-				case 'Down':
-					var _p32 = model.state;
-					if (_p32.ctor === 'Running') {
-						return A2(
-							_elm_lang$core$Platform_Cmd_ops['!'],
-							model,
-							{ctor: '[]'});
-					} else {
-						var _p33 = _p32._0;
-						if (_elm_lang$core$Native_Utils.eq(
-							_p33,
-							_elm_lang$virtual_dom$VirtualDom_History$size(model.history) - 1)) {
-							var _v22 = userUpdate,
-								_v23 = scrollTask,
-								_v24 = _elm_lang$virtual_dom$VirtualDom_Debug$Resume,
-								_v25 = model;
-							userUpdate = _v22;
-							scrollTask = _v23;
-							msg = _v24;
-							model = _v25;
-							continue wrapUpdate;
-						} else {
-							var _v26 = userUpdate,
-								_v27 = scrollTask,
-								_v28 = _elm_lang$virtual_dom$VirtualDom_Debug$Jump(_p33 + 1),
-								_v29 = model;
-							userUpdate = _v26;
-							scrollTask = _v27;
-							msg = _v28;
-							model = _v29;
-							continue wrapUpdate;
-						}
-					}
-				case 'Import':
-					return A2(
-						_elm_lang$virtual_dom$VirtualDom_Debug$withGoodMetadata,
-						model,
-						function (_p34) {
-							return A2(
-								_elm_lang$core$Platform_Cmd_ops['!'],
-								model,
-								{
-									ctor: '::',
-									_0: _elm_lang$virtual_dom$VirtualDom_Debug$upload,
-									_1: {ctor: '[]'}
-								});
-						});
-				case 'Export':
-					return A2(
-						_elm_lang$virtual_dom$VirtualDom_Debug$withGoodMetadata,
-						model,
-						function (metadata) {
-							return A2(
-								_elm_lang$core$Platform_Cmd_ops['!'],
-								model,
-								{
-									ctor: '::',
-									_0: A2(_elm_lang$virtual_dom$VirtualDom_Debug$download, metadata, model.history),
-									_1: {ctor: '[]'}
-								});
-						});
-				case 'Upload':
-					return A2(
-						_elm_lang$virtual_dom$VirtualDom_Debug$withGoodMetadata,
-						model,
-						function (metadata) {
-							var _p35 = A2(_elm_lang$virtual_dom$VirtualDom_Overlay$assessImport, metadata, _p26._0);
-							if (_p35.ctor === 'Err') {
-								return A2(
-									_elm_lang$core$Platform_Cmd_ops['!'],
-									_elm_lang$core$Native_Utils.update(
-										model,
-										{overlay: _p35._0}),
-									{ctor: '[]'});
-							} else {
-								return A3(_elm_lang$virtual_dom$VirtualDom_Debug$loadNewHistory, _p35._0, userUpdate, model);
-							}
-						});
-				default:
-					var _p36 = A2(_elm_lang$virtual_dom$VirtualDom_Overlay$close, _p26._0, model.overlay);
-					if (_p36.ctor === 'Nothing') {
-						return A2(
-							_elm_lang$core$Platform_Cmd_ops['!'],
-							_elm_lang$core$Native_Utils.update(
-								model,
-								{overlay: _elm_lang$virtual_dom$VirtualDom_Overlay$none}),
-							{ctor: '[]'});
-					} else {
-						return A3(_elm_lang$virtual_dom$VirtualDom_Debug$loadNewHistory, _p36._0, userUpdate, model);
-					}
-			}
-		}
-	});
-var _elm_lang$virtual_dom$VirtualDom_Debug$wrap = F2(
-	function (metadata, _p37) {
-		var _p38 = _p37;
-		return {
-			init: A2(_elm_lang$virtual_dom$VirtualDom_Debug$wrapInit, metadata, _p38.init),
-			view: _elm_lang$virtual_dom$VirtualDom_Debug$wrapView(_p38.view),
-			update: _elm_lang$virtual_dom$VirtualDom_Debug$wrapUpdate(_p38.update),
-			viewIn: _elm_lang$virtual_dom$VirtualDom_Debug$viewIn,
-			viewOut: _elm_lang$virtual_dom$VirtualDom_Debug$viewOut,
-			subscriptions: _elm_lang$virtual_dom$VirtualDom_Debug$wrapSubs(_p38.subscriptions)
-		};
-	});
-var _elm_lang$virtual_dom$VirtualDom_Debug$wrapWithFlags = F2(
-	function (metadata, _p39) {
-		var _p40 = _p39;
-		return {
-			init: function (flags) {
-				return A2(
-					_elm_lang$virtual_dom$VirtualDom_Debug$wrapInit,
-					metadata,
-					_p40.init(flags));
-			},
-			view: _elm_lang$virtual_dom$VirtualDom_Debug$wrapView(_p40.view),
-			update: _elm_lang$virtual_dom$VirtualDom_Debug$wrapUpdate(_p40.update),
-			viewIn: _elm_lang$virtual_dom$VirtualDom_Debug$viewIn,
-			viewOut: _elm_lang$virtual_dom$VirtualDom_Debug$viewOut,
-			subscriptions: _elm_lang$virtual_dom$VirtualDom_Debug$wrapSubs(_p40.subscriptions)
-		};
-	});
-
 var _elm_lang$virtual_dom$VirtualDom$programWithFlags = function (impl) {
 	return A2(_elm_lang$virtual_dom$Native_VirtualDom.programWithFlags, _elm_lang$virtual_dom$VirtualDom_Debug$wrapWithFlags, impl);
 };
@@ -12415,6 +8259,203 @@ var _elm_lang$html$Html_Events$Options = F2(
 	function (a, b) {
 		return {stopPropagation: a, preventDefault: b};
 	});
+
+var _elm_lang$core$Task$onError = _elm_lang$core$Native_Scheduler.onError;
+var _elm_lang$core$Task$andThen = _elm_lang$core$Native_Scheduler.andThen;
+var _elm_lang$core$Task$spawnCmd = F2(
+	function (router, _p0) {
+		var _p1 = _p0;
+		return _elm_lang$core$Native_Scheduler.spawn(
+			A2(
+				_elm_lang$core$Task$andThen,
+				_elm_lang$core$Platform$sendToApp(router),
+				_p1._0));
+	});
+var _elm_lang$core$Task$fail = _elm_lang$core$Native_Scheduler.fail;
+var _elm_lang$core$Task$mapError = F2(
+	function (convert, task) {
+		return A2(
+			_elm_lang$core$Task$onError,
+			function (_p2) {
+				return _elm_lang$core$Task$fail(
+					convert(_p2));
+			},
+			task);
+	});
+var _elm_lang$core$Task$succeed = _elm_lang$core$Native_Scheduler.succeed;
+var _elm_lang$core$Task$map = F2(
+	function (func, taskA) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			function (a) {
+				return _elm_lang$core$Task$succeed(
+					func(a));
+			},
+			taskA);
+	});
+var _elm_lang$core$Task$map2 = F3(
+	function (func, taskA, taskB) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			function (a) {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					function (b) {
+						return _elm_lang$core$Task$succeed(
+							A2(func, a, b));
+					},
+					taskB);
+			},
+			taskA);
+	});
+var _elm_lang$core$Task$map3 = F4(
+	function (func, taskA, taskB, taskC) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			function (a) {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					function (b) {
+						return A2(
+							_elm_lang$core$Task$andThen,
+							function (c) {
+								return _elm_lang$core$Task$succeed(
+									A3(func, a, b, c));
+							},
+							taskC);
+					},
+					taskB);
+			},
+			taskA);
+	});
+var _elm_lang$core$Task$map4 = F5(
+	function (func, taskA, taskB, taskC, taskD) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			function (a) {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					function (b) {
+						return A2(
+							_elm_lang$core$Task$andThen,
+							function (c) {
+								return A2(
+									_elm_lang$core$Task$andThen,
+									function (d) {
+										return _elm_lang$core$Task$succeed(
+											A4(func, a, b, c, d));
+									},
+									taskD);
+							},
+							taskC);
+					},
+					taskB);
+			},
+			taskA);
+	});
+var _elm_lang$core$Task$map5 = F6(
+	function (func, taskA, taskB, taskC, taskD, taskE) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			function (a) {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					function (b) {
+						return A2(
+							_elm_lang$core$Task$andThen,
+							function (c) {
+								return A2(
+									_elm_lang$core$Task$andThen,
+									function (d) {
+										return A2(
+											_elm_lang$core$Task$andThen,
+											function (e) {
+												return _elm_lang$core$Task$succeed(
+													A5(func, a, b, c, d, e));
+											},
+											taskE);
+									},
+									taskD);
+							},
+							taskC);
+					},
+					taskB);
+			},
+			taskA);
+	});
+var _elm_lang$core$Task$sequence = function (tasks) {
+	var _p3 = tasks;
+	if (_p3.ctor === '[]') {
+		return _elm_lang$core$Task$succeed(
+			{ctor: '[]'});
+	} else {
+		return A3(
+			_elm_lang$core$Task$map2,
+			F2(
+				function (x, y) {
+					return {ctor: '::', _0: x, _1: y};
+				}),
+			_p3._0,
+			_elm_lang$core$Task$sequence(_p3._1));
+	}
+};
+var _elm_lang$core$Task$onEffects = F3(
+	function (router, commands, state) {
+		return A2(
+			_elm_lang$core$Task$map,
+			function (_p4) {
+				return {ctor: '_Tuple0'};
+			},
+			_elm_lang$core$Task$sequence(
+				A2(
+					_elm_lang$core$List$map,
+					_elm_lang$core$Task$spawnCmd(router),
+					commands)));
+	});
+var _elm_lang$core$Task$init = _elm_lang$core$Task$succeed(
+	{ctor: '_Tuple0'});
+var _elm_lang$core$Task$onSelfMsg = F3(
+	function (_p7, _p6, _p5) {
+		return _elm_lang$core$Task$succeed(
+			{ctor: '_Tuple0'});
+	});
+var _elm_lang$core$Task$command = _elm_lang$core$Native_Platform.leaf('Task');
+var _elm_lang$core$Task$Perform = function (a) {
+	return {ctor: 'Perform', _0: a};
+};
+var _elm_lang$core$Task$perform = F2(
+	function (toMessage, task) {
+		return _elm_lang$core$Task$command(
+			_elm_lang$core$Task$Perform(
+				A2(_elm_lang$core$Task$map, toMessage, task)));
+	});
+var _elm_lang$core$Task$attempt = F2(
+	function (resultToMessage, task) {
+		return _elm_lang$core$Task$command(
+			_elm_lang$core$Task$Perform(
+				A2(
+					_elm_lang$core$Task$onError,
+					function (_p8) {
+						return _elm_lang$core$Task$succeed(
+							resultToMessage(
+								_elm_lang$core$Result$Err(_p8)));
+					},
+					A2(
+						_elm_lang$core$Task$andThen,
+						function (_p9) {
+							return _elm_lang$core$Task$succeed(
+								resultToMessage(
+									_elm_lang$core$Result$Ok(_p9)));
+						},
+						task))));
+	});
+var _elm_lang$core$Task$cmdMap = F2(
+	function (tagger, _p10) {
+		var _p11 = _p10;
+		return _elm_lang$core$Task$Perform(
+			A2(_elm_lang$core$Task$map, tagger, _p11._0));
+	});
+_elm_lang$core$Native_Platform.effectManagers['Task'] = {pkg: 'elm-lang/core', init: _elm_lang$core$Task$init, onEffects: _elm_lang$core$Task$onEffects, onSelfMsg: _elm_lang$core$Task$onSelfMsg, tag: 'cmd', cmdMap: _elm_lang$core$Task$cmdMap};
 
 //import Native.Scheduler //
 
@@ -14404,32 +10445,28 @@ var _user$project$Lia_Inline_Types$Link = F2(
 
 var _user$project$Lia_Quiz_Types$QuizElement = F4(
 	function (a, b, c, d) {
-		return {solved: a, state: b, trial: c, hint: d};
+		return {solved: a, state: b, hints: c, trial: d};
 	});
-var _user$project$Lia_Quiz_Types$QuizBlock = F3(
+var _user$project$Lia_Quiz_Types$MultipleChoiceState = function (a) {
+	return {ctor: 'MultipleChoiceState', _0: a};
+};
+var _user$project$Lia_Quiz_Types$SingleChoiceState = function (a) {
+	return {ctor: 'SingleChoiceState', _0: a};
+};
+var _user$project$Lia_Quiz_Types$TextState = function (a) {
+	return {ctor: 'TextState', _0: a};
+};
+var _user$project$Lia_Quiz_Types$MultipleChoice = F4(
+	function (a, b, c, d) {
+		return {ctor: 'MultipleChoice', _0: a, _1: b, _2: c, _3: d};
+	});
+var _user$project$Lia_Quiz_Types$SingleChoice = F4(
+	function (a, b, c, d) {
+		return {ctor: 'SingleChoice', _0: a, _1: b, _2: c, _3: d};
+	});
+var _user$project$Lia_Quiz_Types$Text = F3(
 	function (a, b, c) {
-		return {quiz: a, idx: b, hints: c};
-	});
-var _user$project$Lia_Quiz_Types$Text = F2(
-	function (a, b) {
-		return {ctor: 'Text', _0: a, _1: b};
-	});
-var _user$project$Lia_Quiz_Types$Multi = function (a) {
-	return {ctor: 'Multi', _0: a};
-};
-var _user$project$Lia_Quiz_Types$Single = F2(
-	function (a, b) {
-		return {ctor: 'Single', _0: a, _1: b};
-	});
-var _user$project$Lia_Quiz_Types$TextInput = function (a) {
-	return {ctor: 'TextInput', _0: a};
-};
-var _user$project$Lia_Quiz_Types$MultipleChoice = function (a) {
-	return {ctor: 'MultipleChoice', _0: a};
-};
-var _user$project$Lia_Quiz_Types$SingleChoice = F2(
-	function (a, b) {
-		return {ctor: 'SingleChoice', _0: a, _1: b};
+		return {ctor: 'Text', _0: a, _1: b, _2: c};
 	});
 
 var _user$project$Lia_Survey_Types$MatrixState = F2(
@@ -14580,38 +10617,32 @@ var _user$project$Lia_Index_Model$parse_inlines = function (list) {
 var _user$project$Lia_Index_Model$parse_quiz = function (quiz) {
 	var _p3 = quiz;
 	switch (_p3.ctor) {
-		case 'TextInput':
+		case 'Text':
 			return '';
 		case 'SingleChoice':
 			return _elm_lang$core$String$concat(
 				A2(_elm_lang$core$List$map, _user$project$Lia_Index_Model$parse_inlines, _p3._1));
 		default:
 			return _elm_lang$core$String$concat(
-				A2(
-					_elm_lang$core$List$map,
-					function (_p4) {
-						var _p5 = _p4;
-						return _user$project$Lia_Index_Model$parse_inlines(_p5._1);
-					},
-					_p3._0));
+				A2(_elm_lang$core$List$map, _user$project$Lia_Index_Model$parse_inlines, _p3._1));
 	}
 };
 var _user$project$Lia_Index_Model$parse_block = function (element) {
-	var _p6 = element;
-	switch (_p6.ctor) {
+	var _p4 = element;
+	switch (_p4.ctor) {
 		case 'Paragraph':
-			return _user$project$Lia_Index_Model$parse_inlines(_p6._0);
+			return _user$project$Lia_Index_Model$parse_inlines(_p4._0);
 		case 'Quote':
-			return _user$project$Lia_Index_Model$parse_inlines(_p6._0);
+			return _user$project$Lia_Index_Model$parse_inlines(_p4._0);
 		case 'CodeBlock':
-			var _p7 = _p6._0;
-			if (_p7.ctor === 'Highlight') {
-				return _p7._1;
+			var _p5 = _p4._0;
+			if (_p5.ctor === 'Highlight') {
+				return _p5._1;
 			} else {
-				return _p7._0;
+				return _p5._0;
 			}
 		case 'Quiz':
-			return _user$project$Lia_Index_Model$parse_quiz(_p6._0.quiz);
+			return _user$project$Lia_Index_Model$parse_quiz(_p4._0);
 		case 'EBlock':
 			return _elm_lang$core$String$concat(
 				A2(
@@ -14619,7 +10650,7 @@ var _user$project$Lia_Index_Model$parse_block = function (element) {
 					function (sub) {
 						return _user$project$Lia_Index_Model$parse_block(sub);
 					},
-					_p6._2));
+					_p4._2));
 		default:
 			return '';
 	}
@@ -14722,166 +10753,350 @@ var _user$project$Lia_Effect_Model$init = F2(
 var _user$project$Lia_Effect_Model$init_silent = A5(_user$project$Lia_Effect_Model$Model, 9999, 9999, _user$project$Lia_Effect_Model$Silent, _elm_lang$core$Array$empty, '');
 var _user$project$Lia_Effect_Model$Speaking = {ctor: 'Speaking'};
 
-var _user$project$Lia_Quiz_Model$get_state = F2(
-	function (idx, vector) {
-		return A2(
-			_elm_lang$core$Maybe$map,
-			function (_) {
-				return _.state;
-			},
-			A2(_elm_lang$core$Array$get, idx, vector));
-	});
-var _user$project$Lia_Quiz_Model$question_state = F3(
-	function (quiz_id, question_id, vector) {
-		var _p0 = A2(_user$project$Lia_Quiz_Model$get_state, quiz_id, vector);
-		_v0_2:
-		do {
-			if (_p0.ctor === 'Just') {
-				switch (_p0._0.ctor) {
-					case 'Single':
-						return _elm_lang$core$Native_Utils.eq(question_id, _p0._0._0);
-					case 'Multi':
-						var _p1 = A2(_elm_lang$core$Array$get, question_id, _p0._0._0);
-						if (_p1.ctor === 'Just') {
-							return _p1._0._0;
-						} else {
-							return false;
-						}
-					default:
-						break _v0_2;
-				}
-			} else {
-				break _v0_2;
-			}
-		} while(false);
-		return false;
-	});
-var _user$project$Lia_Quiz_Model$quiz_state = F2(
-	function (quiz_id, vector) {
-		return A2(
-			_elm_lang$core$Maybe$withDefault,
-			{ctor: '_Tuple2', _0: _elm_lang$core$Maybe$Nothing, _1: 0},
-			A2(
-				_elm_lang$core$Maybe$andThen,
-				function (q) {
-					return _elm_lang$core$Maybe$Just(
-						{ctor: '_Tuple2', _0: q.solved, _1: q.trial});
-				},
-				A2(_elm_lang$core$Array$get, quiz_id, vector)));
-	});
-var _user$project$Lia_Quiz_Model$question_state_text = F2(
-	function (quiz_id, vector) {
-		var _p2 = A2(_user$project$Lia_Quiz_Model$get_state, quiz_id, vector);
-		if ((_p2.ctor === 'Just') && (_p2._0.ctor === 'Text')) {
-			return _p2._0._0;
-		} else {
-			return '';
+var _user$project$Lia_Quiz_Model$json2state = function () {
+	var state_decoder = function (type_) {
+		var _p0 = type_;
+		switch (_p0) {
+			case 'Text':
+				return A2(
+					_elm_lang$core$Json_Decode$map,
+					_user$project$Lia_Quiz_Types$TextState,
+					A2(_elm_lang$core$Json_Decode$field, 'value', _elm_lang$core$Json_Decode$string));
+			case 'SingleChoice':
+				return A2(
+					_elm_lang$core$Json_Decode$map,
+					_user$project$Lia_Quiz_Types$SingleChoiceState,
+					A2(_elm_lang$core$Json_Decode$field, 'value', _elm_lang$core$Json_Decode$int));
+			case 'MultipleChoice':
+				return A2(
+					_elm_lang$core$Json_Decode$map,
+					_user$project$Lia_Quiz_Types$MultipleChoiceState,
+					A2(
+						_elm_lang$core$Json_Decode$field,
+						'value',
+						_elm_lang$core$Json_Decode$array(_elm_lang$core$Json_Decode$bool)));
+			default:
+				return _elm_lang$core$Json_Decode$fail(
+					A2(_elm_lang$core$Basics_ops['++'], 'not supported type: ', type_));
 		}
-	});
-var _user$project$Lia_Quiz_Model$get_hint_counter = F2(
-	function (idx, vector) {
-		var _p3 = A2(_elm_lang$core$Array$get, idx, vector);
-		if (_p3.ctor === 'Just') {
-			return _p3._0.hint;
-		} else {
-			return 0;
-		}
-	});
-
-var _user$project$Lia_Survey_Model$state2json = function (state) {
-	var dict2json = function (dict) {
-		return _elm_lang$core$Json_Encode$object(
-			A2(
-				_elm_lang$core$List$map,
-				function (_p0) {
-					var _p1 = _p0;
-					return {
-						ctor: '_Tuple2',
-						_0: _p1._0,
-						_1: _elm_lang$core$Json_Encode$bool(_p1._1)
-					};
-				},
-				_elm_lang$core$Dict$toList(dict)));
 	};
+	return A2(
+		_elm_lang$core$Json_Decode$andThen,
+		state_decoder,
+		A2(_elm_lang$core$Json_Decode$field, 'type', _elm_lang$core$Json_Decode$string));
+}();
+var _user$project$Lia_Quiz_Model$json2element = A5(
+	_elm_lang$core$Json_Decode$map4,
+	_user$project$Lia_Quiz_Types$QuizElement,
+	A2(_elm_lang$core$Json_Decode$field, 'solved', _elm_lang$core$Json_Decode$bool),
+	A2(_elm_lang$core$Json_Decode$field, 'state', _user$project$Lia_Quiz_Model$json2state),
+	A2(_elm_lang$core$Json_Decode$field, 'hints', _elm_lang$core$Json_Decode$int),
+	A2(_elm_lang$core$Json_Decode$field, 'trial', _elm_lang$core$Json_Decode$int));
+var _user$project$Lia_Quiz_Model$json2model = function (json) {
+	return A2(
+		_elm_lang$core$Json_Decode$decodeValue,
+		_elm_lang$core$Json_Decode$array(_user$project$Lia_Quiz_Model$json2element),
+		json);
+};
+var _user$project$Lia_Quiz_Model$state2json = function (state) {
 	return _elm_lang$core$Json_Encode$object(
 		function () {
-			var _p2 = state;
-			switch (_p2.ctor) {
+			var _p1 = state;
+			switch (_p1.ctor) {
 				case 'TextState':
 					return {
 						ctor: '::',
 						_0: {
 							ctor: '_Tuple2',
-							_0: 'Text',
-							_1: _elm_lang$core$Json_Encode$string(_p2._0)
+							_0: 'type',
+							_1: _elm_lang$core$Json_Encode$string('Text')
 						},
-						_1: {ctor: '[]'}
+						_1: {
+							ctor: '::',
+							_0: {
+								ctor: '_Tuple2',
+								_0: 'value',
+								_1: _elm_lang$core$Json_Encode$string(_p1._0)
+							},
+							_1: {ctor: '[]'}
+						}
 					};
-				case 'VectorState':
-					if (_p2._0 === true) {
-						return {
+				case 'SingleChoiceState':
+					return {
+						ctor: '::',
+						_0: {
+							ctor: '_Tuple2',
+							_0: 'type',
+							_1: _elm_lang$core$Json_Encode$string('SingleChoice')
+						},
+						_1: {
 							ctor: '::',
 							_0: {
 								ctor: '_Tuple2',
-								_0: 'SingleChoice',
-								_1: dict2json(_p2._1)
+								_0: 'value',
+								_1: _elm_lang$core$Json_Encode$int(_p1._0)
 							},
 							_1: {ctor: '[]'}
-						};
-					} else {
-						return {
-							ctor: '::',
-							_0: {
-								ctor: '_Tuple2',
-								_0: 'MultiChoice',
-								_1: dict2json(_p2._1)
-							},
-							_1: {ctor: '[]'}
-						};
-					}
+						}
+					};
 				default:
-					if (_p2._0 === true) {
-						return {
+					return {
+						ctor: '::',
+						_0: {
+							ctor: '_Tuple2',
+							_0: 'type',
+							_1: _elm_lang$core$Json_Encode$string('MultipleChoice')
+						},
+						_1: {
 							ctor: '::',
 							_0: {
 								ctor: '_Tuple2',
-								_0: 'SingleChoiceBlock',
+								_0: 'value',
 								_1: _elm_lang$core$Json_Encode$array(
-									A2(_elm_lang$core$Array$map, dict2json, _p2._1))
+									A2(_elm_lang$core$Array$map, _elm_lang$core$Json_Encode$bool, _p1._0))
 							},
 							_1: {ctor: '[]'}
-						};
-					} else {
-						return {
-							ctor: '::',
-							_0: {
-								ctor: '_Tuple2',
-								_0: 'MultiChoiceBlock',
-								_1: _elm_lang$core$Json_Encode$array(
-									A2(_elm_lang$core$Array$map, dict2json, _p2._1))
-							},
-							_1: {ctor: '[]'}
-						};
-					}
+						}
+					};
 			}
 		}());
 };
-var _user$project$Lia_Survey_Model$element2json = function (_p3) {
-	var _p4 = _p3;
+var _user$project$Lia_Quiz_Model$element2json = function (element) {
 	return _elm_lang$core$Json_Encode$object(
 		{
 			ctor: '::',
 			_0: {
 				ctor: '_Tuple2',
-				_0: 'submitted',
-				_1: _elm_lang$core$Json_Encode$bool(_p4._0)
+				_0: 'solved',
+				_1: _elm_lang$core$Json_Encode$bool(element.solved)
 			},
 			_1: {
 				ctor: '::',
 				_0: {
 					ctor: '_Tuple2',
 					_0: 'state',
-					_1: _user$project$Lia_Survey_Model$state2json(_p4._1)
+					_1: _user$project$Lia_Quiz_Model$state2json(element.state)
+				},
+				_1: {
+					ctor: '::',
+					_0: {
+						ctor: '_Tuple2',
+						_0: 'trial',
+						_1: _elm_lang$core$Json_Encode$int(element.trial)
+					},
+					_1: {
+						ctor: '::',
+						_0: {
+							ctor: '_Tuple2',
+							_0: 'hints',
+							_1: _elm_lang$core$Json_Encode$int(element.hints)
+						},
+						_1: {ctor: '[]'}
+					}
+				}
+			}
+		});
+};
+var _user$project$Lia_Quiz_Model$model2json = function (model) {
+	return _elm_lang$core$Json_Encode$array(
+		A2(_elm_lang$core$Array$map, _user$project$Lia_Quiz_Model$element2json, model));
+};
+var _user$project$Lia_Quiz_Model$get_state = F2(
+	function (vector, idx) {
+		return A2(_elm_lang$core$Array$get, idx, vector);
+	});
+
+var _user$project$Lia_Survey_Model$json2state = function () {
+	var dict = _elm_lang$core$Json_Decode$dict(_elm_lang$core$Json_Decode$bool);
+	var value = _elm_lang$core$Json_Decode$field('value');
+	var state_decoder = function (type_) {
+		var _p0 = type_;
+		switch (_p0) {
+			case 'Text':
+				return A2(
+					_elm_lang$core$Json_Decode$map,
+					_user$project$Lia_Survey_Types$TextState,
+					value(_elm_lang$core$Json_Decode$string));
+			case 'SingleChoice':
+				return A2(
+					_elm_lang$core$Json_Decode$map,
+					_user$project$Lia_Survey_Types$VectorState(true),
+					value(dict));
+			case 'MultipleChoice':
+				return A2(
+					_elm_lang$core$Json_Decode$map,
+					_user$project$Lia_Survey_Types$VectorState(false),
+					value(dict));
+			case 'SingleChoiceBlock':
+				return A2(
+					_elm_lang$core$Json_Decode$map,
+					_user$project$Lia_Survey_Types$MatrixState(true),
+					value(
+						_elm_lang$core$Json_Decode$array(dict)));
+			case 'MultipleChoiceBlock':
+				return A2(
+					_elm_lang$core$Json_Decode$map,
+					_user$project$Lia_Survey_Types$MatrixState(false),
+					value(
+						_elm_lang$core$Json_Decode$array(dict)));
+			default:
+				return _elm_lang$core$Json_Decode$fail(
+					A2(_elm_lang$core$Basics_ops['++'], 'not supported type: ', type_));
+		}
+	};
+	return A2(
+		_elm_lang$core$Json_Decode$andThen,
+		state_decoder,
+		A2(_elm_lang$core$Json_Decode$field, 'type', _elm_lang$core$Json_Decode$string));
+}();
+var _user$project$Lia_Survey_Model$json2element = A3(
+	_elm_lang$core$Json_Decode$map2,
+	F2(
+		function (v0, v1) {
+			return {ctor: '_Tuple2', _0: v0, _1: v1};
+		}),
+	A2(_elm_lang$core$Json_Decode$field, 'submitted', _elm_lang$core$Json_Decode$bool),
+	A2(_elm_lang$core$Json_Decode$field, 'state', _user$project$Lia_Survey_Model$json2state));
+var _user$project$Lia_Survey_Model$json2model = function (json) {
+	return A2(
+		_elm_lang$core$Json_Decode$decodeValue,
+		_elm_lang$core$Json_Decode$array(_user$project$Lia_Survey_Model$json2element),
+		json);
+};
+var _user$project$Lia_Survey_Model$state2json = function (state) {
+	var dict2json = function (dict) {
+		return _elm_lang$core$Json_Encode$object(
+			A2(
+				_elm_lang$core$List$map,
+				function (_p1) {
+					var _p2 = _p1;
+					return {
+						ctor: '_Tuple2',
+						_0: _p2._0,
+						_1: _elm_lang$core$Json_Encode$bool(_p2._1)
+					};
+				},
+				_elm_lang$core$Dict$toList(dict)));
+	};
+	return _elm_lang$core$Json_Encode$object(
+		function () {
+			var _p3 = state;
+			switch (_p3.ctor) {
+				case 'TextState':
+					return {
+						ctor: '::',
+						_0: {
+							ctor: '_Tuple2',
+							_0: 'type',
+							_1: _elm_lang$core$Json_Encode$string('Text')
+						},
+						_1: {
+							ctor: '::',
+							_0: {
+								ctor: '_Tuple2',
+								_0: 'value',
+								_1: _elm_lang$core$Json_Encode$string(_p3._0)
+							},
+							_1: {ctor: '[]'}
+						}
+					};
+				case 'VectorState':
+					if (_p3._0 === true) {
+						return {
+							ctor: '::',
+							_0: {
+								ctor: '_Tuple2',
+								_0: 'type',
+								_1: _elm_lang$core$Json_Encode$string('SingleChoice')
+							},
+							_1: {
+								ctor: '::',
+								_0: {
+									ctor: '_Tuple2',
+									_0: 'value',
+									_1: dict2json(_p3._1)
+								},
+								_1: {ctor: '[]'}
+							}
+						};
+					} else {
+						return {
+							ctor: '::',
+							_0: {
+								ctor: '_Tuple2',
+								_0: 'type',
+								_1: _elm_lang$core$Json_Encode$string('MultipleChoice')
+							},
+							_1: {
+								ctor: '::',
+								_0: {
+									ctor: '_Tuple2',
+									_0: 'value',
+									_1: dict2json(_p3._1)
+								},
+								_1: {ctor: '[]'}
+							}
+						};
+					}
+				default:
+					if (_p3._0 === true) {
+						return {
+							ctor: '::',
+							_0: {
+								ctor: '_Tuple2',
+								_0: 'type',
+								_1: _elm_lang$core$Json_Encode$string('SingleChoiceBlock')
+							},
+							_1: {
+								ctor: '::',
+								_0: {
+									ctor: '_Tuple2',
+									_0: 'value',
+									_1: _elm_lang$core$Json_Encode$array(
+										A2(_elm_lang$core$Array$map, dict2json, _p3._1))
+								},
+								_1: {ctor: '[]'}
+							}
+						};
+					} else {
+						return {
+							ctor: '::',
+							_0: {
+								ctor: '_Tuple2',
+								_0: 'type',
+								_1: _elm_lang$core$Json_Encode$string('MultipleChoiceBlock')
+							},
+							_1: {
+								ctor: '::',
+								_0: {
+									ctor: '_Tuple2',
+									_0: 'value',
+									_1: _elm_lang$core$Json_Encode$array(
+										A2(_elm_lang$core$Array$map, dict2json, _p3._1))
+								},
+								_1: {ctor: '[]'}
+							}
+						};
+					}
+			}
+		}());
+};
+var _user$project$Lia_Survey_Model$element2json = function (_p4) {
+	var _p5 = _p4;
+	return _elm_lang$core$Json_Encode$object(
+		{
+			ctor: '::',
+			_0: {
+				ctor: '_Tuple2',
+				_0: 'submitted',
+				_1: _elm_lang$core$Json_Encode$bool(_p5._0)
+			},
+			_1: {
+				ctor: '::',
+				_0: {
+					ctor: '_Tuple2',
+					_0: 'state',
+					_1: _user$project$Lia_Survey_Model$state2json(_p5._1)
 				},
 				_1: {ctor: '[]'}
 			}
@@ -14893,8 +11108,8 @@ var _user$project$Lia_Survey_Model$model2json = function (vector) {
 };
 var _user$project$Lia_Survey_Model$get_matrix_state = F4(
 	function (model, idx, row, $var) {
-		var _p5 = A2(_elm_lang$core$Array$get, idx, model);
-		if (((_p5.ctor === 'Just') && (_p5._0.ctor === '_Tuple2')) && (_p5._0._1.ctor === 'MatrixState')) {
+		var _p6 = A2(_elm_lang$core$Array$get, idx, model);
+		if (((_p6.ctor === 'Just') && (_p6._0.ctor === '_Tuple2')) && (_p6._0._1.ctor === 'MatrixState')) {
 			return A2(
 				_elm_lang$core$Maybe$withDefault,
 				false,
@@ -14903,36 +11118,36 @@ var _user$project$Lia_Survey_Model$get_matrix_state = F4(
 					function (d) {
 						return A2(_elm_lang$core$Dict$get, $var, d);
 					},
-					A2(_elm_lang$core$Array$get, row, _p5._0._1._1)));
+					A2(_elm_lang$core$Array$get, row, _p6._0._1._1)));
 		} else {
 			return false;
 		}
 	});
 var _user$project$Lia_Survey_Model$get_vector_state = F3(
 	function (model, idx, $var) {
-		var _p6 = A2(_elm_lang$core$Array$get, idx, model);
-		if (((_p6.ctor === 'Just') && (_p6._0.ctor === '_Tuple2')) && (_p6._0._1.ctor === 'VectorState')) {
+		var _p7 = A2(_elm_lang$core$Array$get, idx, model);
+		if (((_p7.ctor === 'Just') && (_p7._0.ctor === '_Tuple2')) && (_p7._0._1.ctor === 'VectorState')) {
 			return A2(
 				_elm_lang$core$Maybe$withDefault,
 				false,
-				A2(_elm_lang$core$Dict$get, $var, _p6._0._1._1));
+				A2(_elm_lang$core$Dict$get, $var, _p7._0._1._1));
 		} else {
 			return false;
 		}
 	});
 var _user$project$Lia_Survey_Model$get_text_state = F2(
 	function (model, idx) {
-		var _p7 = A2(_elm_lang$core$Array$get, idx, model);
-		if (((_p7.ctor === 'Just') && (_p7._0.ctor === '_Tuple2')) && (_p7._0._1.ctor === 'TextState')) {
-			return _p7._0._1._0;
+		var _p8 = A2(_elm_lang$core$Array$get, idx, model);
+		if (((_p8.ctor === 'Just') && (_p8._0.ctor === '_Tuple2')) && (_p8._0._1.ctor === 'TextState')) {
+			return _p8._0._1._0;
 		} else {
 			return '';
 		}
 	});
 var _user$project$Lia_Survey_Model$get_submission_state = F2(
 	function (model, idx) {
-		var _p8 = A2(_elm_lang$core$Array$get, idx, model);
-		if (((_p8.ctor === 'Just') && (_p8._0.ctor === '_Tuple2')) && (_p8._0._0 === true)) {
+		var _p9 = A2(_elm_lang$core$Array$get, idx, model);
+		if (((_p9.ctor === 'Just') && (_p9._0.ctor === '_Tuple2')) && (_p9._0._0 === true)) {
 			return true;
 		} else {
 			return false;
@@ -15909,243 +12124,164 @@ var _user$project$Lia_Code_Parser$code = _elm_community$parser_combinators$Combi
 		}
 	});
 
-var _user$project$Lia_Quiz_Parser$quiz_hints = _elm_community$parser_combinators$Combine$many(
-	A2(
+var _user$project$Lia_Quiz_Parser$modify_PState = function (quiz_) {
+	var state = function () {
+		var _p0 = quiz_;
+		switch (_p0.ctor) {
+			case 'Text':
+				return _user$project$Lia_Quiz_Types$TextState('');
+			case 'SingleChoice':
+				return _user$project$Lia_Quiz_Types$SingleChoiceState(-1);
+			default:
+				return _user$project$Lia_Quiz_Types$MultipleChoiceState(
+					A2(
+						_elm_lang$core$Array$repeat,
+						_elm_lang$core$Array$length(_p0._0),
+						false));
+		}
+	}();
+	var add_state = F2(
+		function (e, s) {
+			return _elm_lang$core$Native_Utils.update(
+				s,
+				{
+					quiz_vector: A2(
+						_elm_lang$core$Array$push,
+						{solved: false, state: e, trial: 0, hints: 0},
+						s.quiz_vector)
+				});
+		});
+	return A2(
+		_elm_community$parser_combinators$Combine_ops['*>'],
+		_elm_community$parser_combinators$Combine$modifyState(
+			add_state(state)),
+		_elm_community$parser_combinators$Combine$succeed(quiz_));
+};
+var _user$project$Lia_Quiz_Parser$pattern = function (p) {
+	return A2(
 		_elm_community$parser_combinators$Combine_ops['<*'],
 		A2(
 			_elm_community$parser_combinators$Combine_ops['*>'],
-			_elm_community$parser_combinators$Combine$regex('[ \\t]*\\[\\[\\?\\]\\]'),
-			_user$project$Lia_Inline_Parser$line),
-		_user$project$Lia_Inline_Parser$newline));
-var _user$project$Lia_Quiz_Parser$checked = F2(
-	function (b, p) {
-		return A2(
-			_elm_community$parser_combinators$Combine_ops['<$>'],
-			function (l) {
-				return {ctor: '_Tuple2', _0: b, _1: l};
-			},
-			A2(
-				_elm_community$parser_combinators$Combine_ops['<*'],
-				A2(_elm_community$parser_combinators$Combine_ops['*>'], p, _user$project$Lia_Inline_Parser$line),
-				_user$project$Lia_Inline_Parser$newline));
-	});
-var _user$project$Lia_Quiz_Parser$push_state = F2(
-	function (p, q) {
-		return _elm_lang$core$Native_Utils.update(
-			p,
-			{
-				quiz_vector: A2(
-					_elm_lang$core$Array$push,
-					{solved: _elm_lang$core$Maybe$Nothing, state: q, trial: 0, hint: 0},
-					p.quiz_vector)
-			});
-	});
-var _user$project$Lia_Quiz_Parser$quiz_SingleChoice = function () {
-	var state = function (a) {
-		return A2(
-			_elm_community$parser_combinators$Combine_ops['*>'],
-			_elm_community$parser_combinators$Combine$modifyState(
-				function (s) {
-					return A2(
-						_user$project$Lia_Quiz_Parser$push_state,
-						s,
-						A2(
-							_user$project$Lia_Quiz_Types$Single,
-							-1,
-							_elm_lang$core$List$length(a)));
-				}),
-			_elm_community$parser_combinators$Combine$succeed(a));
-	};
-	var get_result = function (list) {
-		return function (l) {
-			var _p0 = _elm_lang$core$List$head(l);
-			if (_p0.ctor === 'Just') {
-				return _p0._0._0;
-			} else {
-				return -1;
-			}
-		}(
-			A2(
-				_elm_lang$core$List$filter,
-				function (_p1) {
-					var _p2 = _p1;
-					return _elm_lang$core$Native_Utils.eq(_p2._1._0, true);
-				},
-				A2(
-					_elm_lang$core$List$indexedMap,
-					F2(
-						function (v0, v1) {
-							return {ctor: '_Tuple2', _0: v0, _1: v1};
-						}),
-					list)));
-	};
+			_elm_community$parser_combinators$Combine$regex('[ \\t]*\\['),
+			p),
+		_elm_community$parser_combinators$Combine$string(']'));
+};
+var _user$project$Lia_Quiz_Parser$quest = function (p) {
 	return A2(
-		_elm_community$parser_combinators$Combine$map,
-		function (q) {
-			return A2(
-				_user$project$Lia_Quiz_Types$SingleChoice,
-				get_result(q),
-				A2(
-					_elm_lang$core$List$map,
-					function (_p3) {
-						var _p4 = _p3;
-						return _p4._1;
-					},
-					q));
-		},
-		function (p) {
-			return A2(
-				_elm_community$parser_combinators$Combine$andMap,
-				A2(
-					_elm_community$parser_combinators$Combine_ops['>>='],
-					_elm_community$parser_combinators$Combine$many(
-						A2(
-							_user$project$Lia_Quiz_Parser$checked,
-							false,
-							_elm_community$parser_combinators$Combine$regex('[ \\t]*\\[\\( \\)\\]'))),
-					state),
-				p);
-		}(
-			A2(
-				_elm_community$parser_combinators$Combine$map,
-				F2(
-					function (x, y) {
-						return A2(_elm_lang$core$Basics_ops['++'], x, y);
-					}),
-				A2(
-					_elm_community$parser_combinators$Combine$andMap,
-					A2(
-						_user$project$Lia_Quiz_Parser$checked,
-						true,
-						_elm_community$parser_combinators$Combine$regex('[ \\t]*\\[\\(X\\)\\]')),
-					A2(
-						_elm_community$parser_combinators$Combine$map,
-						F2(
-							function (a, b) {
-								return A2(
-									_elm_lang$core$List$append,
-									a,
-									{
-										ctor: '::',
-										_0: b,
-										_1: {ctor: '[]'}
-									});
-							}),
-						_elm_community$parser_combinators$Combine$many(
-							A2(
-								_user$project$Lia_Quiz_Parser$checked,
-								false,
-								_elm_community$parser_combinators$Combine$regex('[ \\t]*\\[\\( \\)\\]'))))))));
-}();
-var _user$project$Lia_Quiz_Parser$quiz_MultipleChoice = function () {
-	var state = function (mc) {
-		var element = _user$project$Lia_Quiz_Types$Multi(
-			_elm_lang$core$Array$fromList(
-				A2(
-					_elm_lang$core$List$map,
-					function (_p5) {
-						var _p6 = _p5;
-						return {ctor: '_Tuple2', _0: false, _1: _p6._0};
-					},
-					mc)));
-		return A2(
+		_elm_community$parser_combinators$Combine_ops['<*'],
+		A2(
 			_elm_community$parser_combinators$Combine_ops['*>'],
-			_elm_community$parser_combinators$Combine$modifyState(
-				function (s) {
-					return A2(_user$project$Lia_Quiz_Parser$push_state, s, element);
-				}),
-			_elm_community$parser_combinators$Combine$succeed(mc));
+			_user$project$Lia_Quiz_Parser$pattern(p),
+			_user$project$Lia_Inline_Parser$line),
+		_user$project$Lia_Inline_Parser$newline);
+};
+var _user$project$Lia_Quiz_Parser$multi_choice = function () {
+	var gen = function (m) {
+		var _p1 = _elm_lang$core$List$unzip(m);
+		var list = _p1._0;
+		var questions = _p1._1;
+		return A2(
+			_user$project$Lia_Quiz_Types$MultipleChoice,
+			_elm_lang$core$Array$fromList(list),
+			questions);
 	};
+	var checked = F2(
+		function (b, p) {
+			return A2(
+				_elm_community$parser_combinators$Combine_ops['<$>'],
+				function (l) {
+					return {ctor: '_Tuple2', _0: b, _1: l};
+				},
+				_user$project$Lia_Quiz_Parser$quest(p));
+		});
 	return A2(
 		_elm_community$parser_combinators$Combine_ops['<$>'],
-		_user$project$Lia_Quiz_Types$MultipleChoice,
-		A2(
-			_elm_community$parser_combinators$Combine_ops['>>='],
-			_elm_community$parser_combinators$Combine$many1(
-				_elm_community$parser_combinators$Combine$choice(
-					{
+		gen,
+		_elm_community$parser_combinators$Combine$many1(
+			_elm_community$parser_combinators$Combine$choice(
+				{
+					ctor: '::',
+					_0: A2(
+						checked,
+						true,
+						_elm_community$parser_combinators$Combine$string('[X]')),
+					_1: {
 						ctor: '::',
 						_0: A2(
-							_user$project$Lia_Quiz_Parser$checked,
-							true,
-							_elm_community$parser_combinators$Combine$regex('[ \\t]*\\[\\[X\\]\\]')),
-						_1: {
-							ctor: '::',
-							_0: A2(
-								_user$project$Lia_Quiz_Parser$checked,
-								false,
-								_elm_community$parser_combinators$Combine$regex('[ \\t]*\\[\\[ \\]\\]')),
-							_1: {ctor: '[]'}
-						}
-					})),
-			state));
+							checked,
+							false,
+							_elm_community$parser_combinators$Combine$string('[ ]')),
+						_1: {ctor: '[]'}
+					}
+				})));
 }();
-var _user$project$Lia_Quiz_Parser$quiz_TextInput = function () {
-	var state = function (txt) {
-		return A2(
-			_elm_community$parser_combinators$Combine_ops['*>'],
-			_elm_community$parser_combinators$Combine$modifyState(
-				function (s) {
-					return A2(
-						_user$project$Lia_Quiz_Parser$push_state,
-						s,
-						A2(_user$project$Lia_Quiz_Types$Text, '', txt));
-				}),
-			_elm_community$parser_combinators$Combine$succeed(txt));
-	};
-	return A2(
-		_elm_community$parser_combinators$Combine_ops['<$>'],
-		_user$project$Lia_Quiz_Types$TextInput,
-		A2(
-			_elm_community$parser_combinators$Combine_ops['>>='],
-			A2(
-				_elm_community$parser_combinators$Combine_ops['<*'],
+var _user$project$Lia_Quiz_Parser$single_choice = function () {
+	var par = F3(
+		function (wrong1, c, wrong2) {
+			return A2(
+				_user$project$Lia_Quiz_Types$SingleChoice,
+				_elm_lang$core$List$length(wrong1),
 				A2(
-					_elm_community$parser_combinators$Combine_ops['*>'],
-					_elm_community$parser_combinators$Combine$regex('[ \\t]*\\[\\['),
-					_elm_community$parser_combinators$Combine$regex('[^\n\\]]+')),
-				_elm_community$parser_combinators$Combine$regex('\\]\\]( *)\\n')),
-			state));
-}();
-var _user$project$Lia_Quiz_Parser$quiz = function () {
-	var counter = function () {
-		var increment_counter = function (c) {
-			return _elm_lang$core$Native_Utils.update(
-				c,
-				{num_quiz: c.num_quiz + 1});
-		};
-		var pp = function (par) {
-			return _elm_community$parser_combinators$Combine$succeed(par.num_quiz);
-		};
-		return A2(
-			_elm_community$parser_combinators$Combine_ops['<*'],
-			_elm_community$parser_combinators$Combine$withState(pp),
-			_elm_community$parser_combinators$Combine$modifyState(increment_counter));
-	}();
+					_elm_lang$core$List$append,
+					wrong1,
+					{ctor: '::', _0: c, _1: wrong2}));
+		});
+	var correct = _user$project$Lia_Quiz_Parser$quest(
+		_elm_community$parser_combinators$Combine$string('(X)'));
+	var wrong = _elm_community$parser_combinators$Combine$many(
+		_user$project$Lia_Quiz_Parser$quest(
+			_elm_community$parser_combinators$Combine$string('( )')));
 	return A2(
 		_elm_community$parser_combinators$Combine_ops['<*>'],
 		A2(
 			_elm_community$parser_combinators$Combine_ops['<*>'],
-			A2(
-				_elm_community$parser_combinators$Combine_ops['<$>'],
-				_user$project$Lia_Quiz_Types$QuizBlock,
-				_elm_community$parser_combinators$Combine$choice(
-					{
-						ctor: '::',
-						_0: _user$project$Lia_Quiz_Parser$quiz_SingleChoice,
-						_1: {
-							ctor: '::',
-							_0: _user$project$Lia_Quiz_Parser$quiz_MultipleChoice,
-							_1: {
-								ctor: '::',
-								_0: _user$project$Lia_Quiz_Parser$quiz_TextInput,
-								_1: {ctor: '[]'}
-							}
-						}
-					})),
-			counter),
-		_user$project$Lia_Quiz_Parser$quiz_hints);
+			A2(_elm_community$parser_combinators$Combine_ops['<$>'], par, wrong),
+			correct),
+		wrong);
 }();
+var _user$project$Lia_Quiz_Parser$hints = _elm_community$parser_combinators$Combine$many(
+	_user$project$Lia_Quiz_Parser$quest(
+		_elm_community$parser_combinators$Combine$string('[?]')));
+var _user$project$Lia_Quiz_Parser$text = A2(
+	_elm_community$parser_combinators$Combine_ops['<*'],
+	A2(
+		_elm_community$parser_combinators$Combine_ops['<$>'],
+		_user$project$Lia_Quiz_Types$Text,
+		_user$project$Lia_Quiz_Parser$pattern(
+			A2(
+				_elm_community$parser_combinators$Combine_ops['<*'],
+				A2(
+					_elm_community$parser_combinators$Combine_ops['*>'],
+					_elm_community$parser_combinators$Combine$string('['),
+					_elm_community$parser_combinators$Combine$regex('[^\n\\]]+')),
+				_elm_community$parser_combinators$Combine$regex('\\][ \\t]*')))),
+	_user$project$Lia_Inline_Parser$newline);
+var _user$project$Lia_Quiz_Parser$get_counter = _elm_community$parser_combinators$Combine$withState(
+	function (s) {
+		return _elm_community$parser_combinators$Combine$succeed(
+			_elm_lang$core$Array$length(s.quiz_vector));
+	});
+var _user$project$Lia_Quiz_Parser$quiz = A2(
+	_elm_community$parser_combinators$Combine_ops['<*>'],
+	A2(
+		_elm_community$parser_combinators$Combine_ops['<*>'],
+		_elm_community$parser_combinators$Combine$choice(
+			{
+				ctor: '::',
+				_0: _user$project$Lia_Quiz_Parser$single_choice,
+				_1: {
+					ctor: '::',
+					_0: _user$project$Lia_Quiz_Parser$multi_choice,
+					_1: {
+						ctor: '::',
+						_0: _user$project$Lia_Quiz_Parser$text,
+						_1: {ctor: '[]'}
+					}
+				}
+			}),
+		_user$project$Lia_Quiz_Parser$get_counter),
+	_user$project$Lia_Quiz_Parser$hints);
+var _user$project$Lia_Quiz_Parser$parse = A2(_elm_community$parser_combinators$Combine_ops['>>='], _user$project$Lia_Quiz_Parser$quiz, _user$project$Lia_Quiz_Parser$modify_PState);
 
 var _user$project$Lia_Survey_Parser$modify_PState = function (survey_) {
 	var state = function () {
@@ -16679,7 +12815,7 @@ var _user$project$Lia_Parser$blocks = _elm_community$parser_combinators$Combine$
 										_0: A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$SurveyBlock, _user$project$Lia_Survey_Parser$parse),
 										_1: {
 											ctor: '::',
-											_0: A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$Quiz, _user$project$Lia_Quiz_Parser$quiz),
+											_0: A2(_elm_community$parser_combinators$Combine_ops['<$>'], _user$project$Lia_Types$Quiz, _user$project$Lia_Quiz_Parser$parse),
 											_1: {
 												ctor: '::',
 												_0: _user$project$Lia_Parser$ordered_list,
@@ -16886,16 +13022,12 @@ var _user$project$Lia_Utils$highlight = F2(
 var _user$project$Lia_Code_Update$update = F2(
 	function (msg, model) {
 		var _p0 = msg;
-		return {
-			ctor: '_Tuple2',
-			_0: A3(
-				_elm_lang$core$Array$set,
-				_p0._0,
-				_elm_lang$core$Maybe$Just(
-					_user$project$Lia_Utils$evaluateJS(_p0._1)),
-				model),
-			_1: _elm_lang$core$Platform_Cmd$none
-		};
+		return A3(
+			_elm_lang$core$Array$set,
+			_p0._0,
+			_elm_lang$core$Maybe$Just(
+				_user$project$Lia_Utils$evaluateJS(_p0._1)),
+			model);
 	});
 var _user$project$Lia_Code_Update$Eval = F2(
 	function (a, b) {
@@ -17186,13 +13318,9 @@ var _user$project$Lia_Index_Update$update = F2(
 		var _p5 = _p4._0;
 		var results = _elm_lang$core$Native_Utils.eq(_p5, '') ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
 			A2(_user$project$Lia_Index_Update$scan, model.index, _p5));
-		return {
-			ctor: '_Tuple2',
-			_0: _elm_lang$core$Native_Utils.update(
-				model,
-				{search: _p5, results: results}),
-			_1: _elm_lang$core$Platform_Cmd$none
-		};
+		return _elm_lang$core$Native_Utils.update(
+			model,
+			{search: _p5, results: results});
 	});
 var _user$project$Lia_Index_Update$ScanIndex = function (a) {
 	return {ctor: 'ScanIndex', _0: a};
@@ -17203,9 +13331,7 @@ var _user$project$Lia_Quiz_Update$get = F2(
 		var _p0 = A2(_elm_lang$core$Array$get, idx, model);
 		if (_p0.ctor === 'Just') {
 			var _p1 = _p0._0;
-			return _elm_lang$core$Native_Utils.eq(
-				_p1.solved,
-				_elm_lang$core$Maybe$Just(true)) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(_p1);
+			return _p1.solved ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(_p1);
 		} else {
 			return _elm_lang$core$Maybe$Nothing;
 		}
@@ -17216,14 +13342,14 @@ var _user$project$Lia_Quiz_Update$update_input = F3(
 		if (_p2.ctor === 'Just') {
 			var _p4 = _p2._0;
 			var _p3 = _p4.state;
-			if (_p3.ctor === 'Text') {
+			if (_p3.ctor === 'TextState') {
 				return A3(
 					_elm_lang$core$Array$set,
 					idx,
 					_elm_lang$core$Native_Utils.update(
 						_p4,
 						{
-							state: A2(_user$project$Lia_Quiz_Types$Text, text, _p3._1)
+							state: _user$project$Lia_Quiz_Types$TextState(text)
 						}),
 					vector);
 			} else {
@@ -17243,50 +13369,49 @@ var _user$project$Lia_Quiz_Update$update_hint = F2(
 				idx,
 				_elm_lang$core$Native_Utils.update(
 					_p6,
-					{hint: _p6.hint + 1}),
+					{hints: _p6.hints + 1}),
 				vector);
 		} else {
 			return vector;
 		}
 	});
-var _user$project$Lia_Quiz_Update$flip_checkbox = F3(
+var _user$project$Lia_Quiz_Update$flip_check = F3(
 	function (idx, question_id, vector) {
 		var _p7 = A2(_user$project$Lia_Quiz_Update$get, idx, vector);
 		if (_p7.ctor === 'Just') {
-			var _p13 = _p7._0;
-			var _p8 = _p13.state;
+			var _p11 = _p7._0;
+			var _p8 = _p11.state;
 			switch (_p8.ctor) {
-				case 'Single':
+				case 'SingleChoiceState':
 					return A3(
 						_elm_lang$core$Array$set,
 						idx,
 						_elm_lang$core$Native_Utils.update(
-							_p13,
+							_p11,
 							{
-								state: A2(_user$project$Lia_Quiz_Types$Single, question_id, _p8._1)
+								state: _user$project$Lia_Quiz_Types$SingleChoiceState(question_id)
 							}),
 						vector);
-				case 'Multi':
-					var _p12 = _p8._0;
-					var _p9 = A2(_elm_lang$core$Array$get, question_id, _p12);
+				case 'MultipleChoiceState':
+					var _p10 = _p8._0;
+					var _p9 = A2(_elm_lang$core$Array$get, question_id, _p10);
 					if (_p9.ctor === 'Just') {
 						return function (q) {
 							return A3(
 								_elm_lang$core$Array$set,
 								idx,
 								_elm_lang$core$Native_Utils.update(
-									_p13,
+									_p11,
 									{
-										state: _user$project$Lia_Quiz_Types$Multi(q)
+										state: _user$project$Lia_Quiz_Types$MultipleChoiceState(q)
 									}),
 								vector);
 						}(
 							function (q) {
-								return A3(_elm_lang$core$Array$set, question_id, q, _p12);
+								return A3(_elm_lang$core$Array$set, question_id, q, _p10);
 							}(
-								function (_p10) {
-									var _p11 = _p10;
-									return {ctor: '_Tuple2', _0: !_p11._0, _1: _p11._1};
+								function (c) {
+									return !c;
 								}(_p9._0)));
 					} else {
 						return vector;
@@ -17298,38 +13423,19 @@ var _user$project$Lia_Quiz_Update$flip_checkbox = F3(
 			return vector;
 		}
 	});
-var _user$project$Lia_Quiz_Update$check_answer = F2(
-	function (idx, vector) {
-		var ccheck = function (state) {
-			var _p14 = state;
-			switch (_p14.ctor) {
-				case 'Multi':
-					var f = F2(
-						function (_p15, result) {
-							var _p16 = _p15;
-							return result && _elm_lang$core$Native_Utils.eq(_p16._0, _p16._1);
-						});
-					return _elm_lang$core$Maybe$Just(
-						A3(_elm_lang$core$Array$foldr, f, true, _p14._0));
-				case 'Single':
-					return _elm_lang$core$Maybe$Just(
-						_elm_lang$core$Native_Utils.eq(_p14._0, _p14._1));
-				default:
-					return _elm_lang$core$Maybe$Just(
-						_elm_lang$core$Native_Utils.eq(_p14._0, _p14._1));
-			}
-		};
-		var _p17 = A2(_user$project$Lia_Quiz_Update$get, idx, vector);
-		if (_p17.ctor === 'Just') {
-			var _p18 = _p17._0;
+var _user$project$Lia_Quiz_Update$check_answer = F3(
+	function (idx, solution, vector) {
+		var _p12 = A2(_user$project$Lia_Quiz_Update$get, idx, vector);
+		if (_p12.ctor === 'Just') {
+			var _p13 = _p12._0;
 			return A3(
 				_elm_lang$core$Array$set,
 				idx,
 				_elm_lang$core$Native_Utils.update(
-					_p18,
+					_p13,
 					{
-						solved: ccheck(_p18.state),
-						trial: _p18.trial + 1
+						solved: _elm_lang$core$Native_Utils.eq(_p13.state, solution),
+						trial: _p13.trial + 1
 					}),
 				vector);
 		} else {
@@ -17338,51 +13444,49 @@ var _user$project$Lia_Quiz_Update$check_answer = F2(
 	});
 var _user$project$Lia_Quiz_Update$update = F2(
 	function (msg, model) {
-		var _p19 = msg;
-		switch (_p19.ctor) {
+		var _p14 = msg;
+		switch (_p14.ctor) {
 			case 'CheckBox':
 				return {
-					ctor: '_Tuple3',
-					_0: A3(_user$project$Lia_Quiz_Update$flip_checkbox, _p19._0, _p19._1, model),
-					_1: _elm_lang$core$Platform_Cmd$none,
-					_2: _elm_lang$core$Maybe$Nothing
+					ctor: '_Tuple2',
+					_0: A3(_user$project$Lia_Quiz_Update$flip_check, _p14._0, _p14._1, model),
+					_1: _elm_lang$core$Maybe$Nothing
 				};
 			case 'RadioButton':
 				return {
-					ctor: '_Tuple3',
-					_0: A3(_user$project$Lia_Quiz_Update$flip_checkbox, _p19._0, _p19._1, model),
-					_1: _elm_lang$core$Platform_Cmd$none,
-					_2: _elm_lang$core$Maybe$Nothing
+					ctor: '_Tuple2',
+					_0: A3(_user$project$Lia_Quiz_Update$flip_check, _p14._0, _p14._1, model),
+					_1: _elm_lang$core$Maybe$Nothing
 				};
 			case 'Input':
 				return {
-					ctor: '_Tuple3',
-					_0: A3(_user$project$Lia_Quiz_Update$update_input, _p19._0, _p19._1, model),
-					_1: _elm_lang$core$Platform_Cmd$none,
-					_2: _elm_lang$core$Maybe$Nothing
+					ctor: '_Tuple2',
+					_0: A3(_user$project$Lia_Quiz_Update$update_input, _p14._0, _p14._1, model),
+					_1: _elm_lang$core$Maybe$Nothing
 				};
 			case 'Check':
+				var new_model = A3(_user$project$Lia_Quiz_Update$check_answer, _p14._0, _p14._1, model);
 				return {
-					ctor: '_Tuple3',
-					_0: A2(_user$project$Lia_Quiz_Update$check_answer, _p19._0, model),
-					_1: _elm_lang$core$Platform_Cmd$none,
-					_2: _elm_lang$core$Maybe$Just('check')
+					ctor: '_Tuple2',
+					_0: new_model,
+					_1: _elm_lang$core$Maybe$Just(
+						_user$project$Lia_Quiz_Model$model2json(new_model))
 				};
 			default:
 				return {
-					ctor: '_Tuple3',
-					_0: A2(_user$project$Lia_Quiz_Update$update_hint, _p19._0, model),
-					_1: _elm_lang$core$Platform_Cmd$none,
-					_2: _elm_lang$core$Maybe$Just('hint')
+					ctor: '_Tuple2',
+					_0: A2(_user$project$Lia_Quiz_Update$update_hint, _p14._0, model),
+					_1: _elm_lang$core$Maybe$Nothing
 				};
 		}
 	});
 var _user$project$Lia_Quiz_Update$ShowHint = function (a) {
 	return {ctor: 'ShowHint', _0: a};
 };
-var _user$project$Lia_Quiz_Update$Check = function (a) {
-	return {ctor: 'Check', _0: a};
-};
+var _user$project$Lia_Quiz_Update$Check = F2(
+	function (a, b) {
+		return {ctor: 'Check', _0: a, _1: b};
+	});
 var _user$project$Lia_Quiz_Update$Input = F2(
 	function (a, b) {
 		return {ctor: 'Input', _0: a, _1: b};
@@ -17563,25 +13667,27 @@ var _user$project$Lia_Survey_Update$update = F2(
 				return {
 					ctor: '_Tuple2',
 					_0: A3(_user$project$Lia_Survey_Update$update_text, model, _p12._0, _p12._1),
-					_1: _elm_lang$core$Platform_Cmd$none
+					_1: _elm_lang$core$Maybe$Nothing
 				};
 			case 'VectorUpdate':
 				return {
 					ctor: '_Tuple2',
 					_0: A3(_user$project$Lia_Survey_Update$update_vector, model, _p12._0, _p12._1),
-					_1: _elm_lang$core$Platform_Cmd$none
+					_1: _elm_lang$core$Maybe$Nothing
 				};
 			case 'MatrixUpdate':
 				return {
 					ctor: '_Tuple2',
 					_0: A4(_user$project$Lia_Survey_Update$update_matrix, model, _p12._0, _p12._1, _p12._2),
-					_1: _elm_lang$core$Platform_Cmd$none
+					_1: _elm_lang$core$Maybe$Nothing
 				};
 			default:
+				var new_model = A2(_user$project$Lia_Survey_Update$submit, model, _p12._0);
 				return {
 					ctor: '_Tuple2',
-					_0: A2(_user$project$Lia_Survey_Update$submit, model, _p12._0),
-					_1: _elm_lang$core$Platform_Cmd$none
+					_0: new_model,
+					_1: _elm_lang$core$Maybe$Just(
+						_user$project$Lia_Survey_Model$model2json(new_model))
 				};
 		}
 	});
@@ -17601,6 +13707,16 @@ var _user$project$Lia_Survey_Update$TextUpdate = F2(
 		return {ctor: 'TextUpdate', _0: a, _1: b};
 	});
 
+var _user$project$Lia_Update$log = F2(
+	function (topic, msg) {
+		var _p0 = msg;
+		if (_p0.ctor === 'Just') {
+			return _elm_lang$core$Maybe$Just(
+				{ctor: '_Tuple2', _0: topic, _1: _p0._0});
+		} else {
+			return _elm_lang$core$Maybe$Nothing;
+		}
+	});
 var _user$project$Lia_Update$UpdateEffect = function (a) {
 	return {ctor: 'UpdateEffect', _0: a};
 };
@@ -17626,45 +13742,27 @@ var _user$project$Lia_Update$update = F2(
 	function (msg, model) {
 		update:
 		while (true) {
-			var _p0 = msg;
-			switch (_p0.ctor) {
+			var _p1 = msg;
+			switch (_p1.ctor) {
 				case 'Load':
-					var _p2 = _p0._0;
-					var _p1 = _user$project$Lia_Effect_Update$init(
+					var _p3 = _p1._0;
+					var _p2 = _user$project$Lia_Effect_Update$init(
 						A2(
 							_user$project$Lia_Effect_Model$init,
 							model.narator,
-							A2(_user$project$Lia_Helper$get_slide, _p2, model.slides)));
-					var effect_model = _p1._0;
-					var cmd = _p1._1;
+							A2(_user$project$Lia_Helper$get_slide, _p3, model.slides)));
+					var effect_model = _p2._0;
+					var cmd = _p2._1;
 					return {
 						ctor: '_Tuple3',
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
-							{current_slide: _p2, effect_model: effect_model}),
+							{current_slide: _p3, effect_model: effect_model}),
 						_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Lia_Update$UpdateEffect, cmd),
 						_2: _elm_lang$core$Maybe$Nothing
 					};
 				case 'PrevSlide':
-					var _p3 = _user$project$Lia_Effect_Update$previous(model.effect_model);
-					if ((_p3.ctor === '_Tuple3') && (_p3._2 === false)) {
-						return {
-							ctor: '_Tuple3',
-							_0: _elm_lang$core$Native_Utils.update(
-								model,
-								{effect_model: _p3._0}),
-							_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Lia_Update$UpdateEffect, _p3._1),
-							_2: _elm_lang$core$Maybe$Nothing
-						};
-					} else {
-						var _v2 = _user$project$Lia_Update$Load(model.current_slide - 1),
-							_v3 = model;
-						msg = _v2;
-						model = _v3;
-						continue update;
-					}
-				case 'NextSlide':
-					var _p4 = _user$project$Lia_Effect_Update$next(model.effect_model);
+					var _p4 = _user$project$Lia_Effect_Update$previous(model.effect_model);
 					if ((_p4.ctor === '_Tuple3') && (_p4._2 === false)) {
 						return {
 							ctor: '_Tuple3',
@@ -17675,15 +13773,32 @@ var _user$project$Lia_Update$update = F2(
 							_2: _elm_lang$core$Maybe$Nothing
 						};
 					} else {
-						var _v5 = _user$project$Lia_Update$Load(model.current_slide + 1),
-							_v6 = model;
-						msg = _v5;
-						model = _v6;
+						var _v3 = _user$project$Lia_Update$Load(model.current_slide - 1),
+							_v4 = model;
+						msg = _v3;
+						model = _v4;
+						continue update;
+					}
+				case 'NextSlide':
+					var _p5 = _user$project$Lia_Effect_Update$next(model.effect_model);
+					if ((_p5.ctor === '_Tuple3') && (_p5._2 === false)) {
+						return {
+							ctor: '_Tuple3',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{effect_model: _p5._0}),
+							_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Lia_Update$UpdateEffect, _p5._1),
+							_2: _elm_lang$core$Maybe$Nothing
+						};
+					} else {
+						var _v6 = _user$project$Lia_Update$Load(model.current_slide + 1),
+							_v7 = model;
+						msg = _v6;
+						model = _v7;
 						continue update;
 					}
 				case 'UpdateIndex':
-					var _p5 = A2(_user$project$Lia_Index_Update$update, _p0._0, model.index_model);
-					var index_model = _p5._0;
+					var index_model = A2(_user$project$Lia_Index_Update$update, _p1._0, model.index_model);
 					return {
 						ctor: '_Tuple3',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -17693,20 +13808,19 @@ var _user$project$Lia_Update$update = F2(
 						_2: _elm_lang$core$Maybe$Nothing
 					};
 				case 'UpdateSurvey':
-					var _p6 = A2(_user$project$Lia_Survey_Update$update, _p0._0, model.survey_model);
+					var _p6 = A2(_user$project$Lia_Survey_Update$update, _p1._0, model.survey_model);
 					var model_ = _p6._0;
+					var info = _p6._1;
 					return {
 						ctor: '_Tuple3',
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
 							{survey_model: model_}),
 						_1: _elm_lang$core$Platform_Cmd$none,
-						_2: _elm_lang$core$Maybe$Nothing
+						_2: A2(_user$project$Lia_Update$log, 'survey', info)
 					};
 				case 'UpdateCode':
-					var _p7 = A2(_user$project$Lia_Code_Update$update, _p0._0, model.code_model);
-					var code_model = _p7._0;
-					var cmd = _p7._1;
+					var code_model = A2(_user$project$Lia_Code_Update$update, _p1._0, model.code_model);
 					return {
 						ctor: '_Tuple3',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -17716,10 +13830,10 @@ var _user$project$Lia_Update$update = F2(
 						_2: _elm_lang$core$Maybe$Nothing
 					};
 				case 'UpdateEffect':
-					var _p8 = A2(_user$project$Lia_Effect_Update$update, _p0._0, model.effect_model);
-					var effect_model = _p8._0;
-					var cmd = _p8._1;
-					var h = _p8._2;
+					var _p7 = A2(_user$project$Lia_Effect_Update$update, _p1._0, model.effect_model);
+					var effect_model = _p7._0;
+					var cmd = _p7._1;
+					var h = _p7._2;
 					return {
 						ctor: '_Tuple3',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -17738,17 +13852,16 @@ var _user$project$Lia_Update$update = F2(
 						_2: _elm_lang$core$Maybe$Nothing
 					};
 				default:
-					var _p9 = A2(_user$project$Lia_Quiz_Update$update, _p0._0, model.quiz_model);
-					var quiz_model = _p9._0;
-					var cmd = _p9._1;
-					var info = _p9._2;
+					var _p8 = A2(_user$project$Lia_Quiz_Update$update, _p1._0, model.quiz_model);
+					var quiz_model = _p8._0;
+					var info = _p8._1;
 					return {
 						ctor: '_Tuple3',
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
 							{quiz_model: quiz_model}),
 						_1: _elm_lang$core$Platform_Cmd$none,
-						_2: info
+						_2: A2(_user$project$Lia_Update$log, 'quiz', info)
 					};
 			}
 		}
@@ -18221,201 +14334,15 @@ var _user$project$Lia_Inline_View$view = F2(
 	});
 var _user$project$Lia_Inline_View$view_inf = _user$project$Lia_Inline_View$view(99999);
 
-var _user$project$Lia_Quiz_View$view_quiz_multiple_choice = F3(
-	function (model, questions, idx) {
-		return A2(
-			_elm_lang$core$List$map,
-			function (_p0) {
-				var _p1 = _p0;
-				var _p2 = _p1._0;
-				return A2(
-					_elm_lang$html$Html$p,
-					{ctor: '[]'},
-					{
-						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$input,
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$type_('checkbox'),
-								_1: {
-									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$checked(
-										A3(_user$project$Lia_Quiz_Model$question_state, idx, _p2, model)),
-									_1: {
-										ctor: '::',
-										_0: _elm_lang$html$Html_Events$onClick(
-											A2(_user$project$Lia_Quiz_Update$CheckBox, idx, _p2)),
-										_1: {ctor: '[]'}
-									}
-								}
-							},
-							{ctor: '[]'}),
-						_1: {
-							ctor: '::',
-							_0: A2(
-								_elm_lang$html$Html$span,
-								{ctor: '[]'},
-								A2(
-									_elm_lang$core$List$map,
-									function (x) {
-										return A2(_user$project$Lia_Inline_View$view, 999, x);
-									},
-									_p1._1._1)),
-							_1: {ctor: '[]'}
-						}
-					});
-			},
-			A2(
-				_elm_lang$core$List$indexedMap,
-				F2(
-					function (v0, v1) {
-						return {ctor: '_Tuple2', _0: v0, _1: v1};
-					}),
-				questions));
-	});
-var _user$project$Lia_Quiz_View$view_quiz_single_choice = F4(
-	function (model, rslt, questions, idx) {
-		return A2(
-			_elm_lang$core$List$map,
-			function (_p3) {
-				var _p4 = _p3;
-				var _p5 = _p4._0;
-				return A2(
-					_elm_lang$html$Html$p,
-					{ctor: '[]'},
-					{
-						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$input,
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$type_('radio'),
-								_1: {
-									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$checked(
-										A3(_user$project$Lia_Quiz_Model$question_state, idx, _p5, model)),
-									_1: {
-										ctor: '::',
-										_0: _elm_lang$html$Html_Events$onClick(
-											A2(_user$project$Lia_Quiz_Update$RadioButton, idx, _p5)),
-										_1: {ctor: '[]'}
-									}
-								}
-							},
-							{ctor: '[]'}),
-						_1: {
-							ctor: '::',
-							_0: A2(
-								_elm_lang$html$Html$span,
-								{ctor: '[]'},
-								A2(
-									_elm_lang$core$List$map,
-									function (e) {
-										return A2(_user$project$Lia_Inline_View$view, 999, e);
-									},
-									_p4._1)),
-							_1: {ctor: '[]'}
-						}
-					});
-			},
-			A2(
-				_elm_lang$core$List$indexedMap,
-				F2(
-					function (v0, v1) {
-						return {ctor: '_Tuple2', _0: v0, _1: v1};
-					}),
-				questions));
-	});
-var _user$project$Lia_Quiz_View$quiz_check_button = F2(
-	function (model, idx) {
-		var _p6 = A2(_user$project$Lia_Quiz_Model$quiz_state, idx, model);
-		if (_p6._0.ctor === 'Just') {
-			return A2(
-				_elm_lang$html$Html$button,
-				_p6._0._0 ? {
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$style(
-						{
-							ctor: '::',
-							_0: {ctor: '_Tuple2', _0: 'color', _1: 'green'},
-							_1: {ctor: '[]'}
-						}),
-					_1: {ctor: '[]'}
-				} : {
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$style(
-						{
-							ctor: '::',
-							_0: {ctor: '_Tuple2', _0: 'color', _1: 'red'},
-							_1: {ctor: '[]'}
-						}),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$html$Html_Events$onClick(
-							_user$project$Lia_Quiz_Update$Check(idx)),
-						_1: {ctor: '[]'}
-					}
-				},
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html$text(
-						A2(
-							_elm_lang$core$Basics_ops['++'],
-							'Check ',
-							_elm_lang$core$Basics$toString(_p6._1))),
-					_1: {ctor: '[]'}
-				});
-		} else {
-			return A2(
-				_elm_lang$html$Html$button,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Events$onClick(
-						_user$project$Lia_Quiz_Update$Check(idx)),
-					_1: {ctor: '[]'}
-				},
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html$text('Check'),
-					_1: {ctor: '[]'}
-				});
-		}
-	});
-var _user$project$Lia_Quiz_View$view_quiz_text_input = F2(
-	function (model, idx) {
-		return {
-			ctor: '::',
-			_0: A2(
-				_elm_lang$html$Html$input,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$type_('input'),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$value(
-							A2(_user$project$Lia_Quiz_Model$question_state_text, idx, model)),
-						_1: {
-							ctor: '::',
-							_0: _elm_lang$html$Html_Events$onInput(
-								_user$project$Lia_Quiz_Update$Input(idx)),
-							_1: {ctor: '[]'}
-						}
-					}
-				},
-				{ctor: '[]'}),
-			_1: {ctor: '[]'}
-		};
-	});
 var _user$project$Lia_Quiz_View$view_hints = F3(
-	function (counter, idx, hints) {
+	function (idx, counter, hints) {
 		var v_hints = F2(
 			function (h, c) {
-				var _p7 = {ctor: '_Tuple2', _0: h, _1: c};
-				if (_p7._0.ctor === '[]') {
+				var _p0 = {ctor: '_Tuple2', _0: h, _1: c};
+				if (_p0._0.ctor === '[]') {
 					return {ctor: '[]'};
 				} else {
-					if (_p7._1 === 0) {
+					if (_p0._1 === 0) {
 						return {ctor: '[]'};
 					} else {
 						return {
@@ -18426,12 +14353,9 @@ var _user$project$Lia_Quiz_View$view_hints = F3(
 								{
 									ctor: '::',
 									_0: _user$project$Lia_Utils$stringToHtml('&#x1f4a1;'),
-									_1: A2(
-										_elm_lang$core$List$map,
-										_user$project$Lia_Inline_View$view(999),
-										_p7._0._0)
+									_1: A2(_elm_lang$core$List$map, _user$project$Lia_Inline_View$view_inf, _p0._0._0)
 								}),
-							_1: A2(v_hints, _p7._0._1, c - 1)
+							_1: A2(v_hints, _p0._0._1, c - 1)
 						};
 					}
 				}
@@ -18485,41 +14409,265 @@ var _user$project$Lia_Quiz_View$view_hints = F3(
 			_1: {ctor: '[]'}
 		};
 	});
-var _user$project$Lia_Quiz_View$view = F2(
-	function (model, block) {
-		var hint_count = A2(_user$project$Lia_Quiz_Model$get_hint_counter, block.idx, model);
-		var quiz_html = function () {
-			var _p8 = block.quiz;
-			switch (_p8.ctor) {
-				case 'TextInput':
-					return A2(_user$project$Lia_Quiz_View$view_quiz_text_input, model, block.idx);
-				case 'SingleChoice':
-					return A4(_user$project$Lia_Quiz_View$view_quiz_single_choice, model, _p8._0, _p8._1, block.idx);
-				default:
-					return A3(_user$project$Lia_Quiz_View$view_quiz_multiple_choice, model, _p8._0, block.idx);
-			}
-		}();
-		return A2(
-			_elm_lang$html$Html$p,
-			{ctor: '[]'},
-			_elm_lang$core$List$concat(
-				{
-					ctor: '::',
-					_0: quiz_html,
-					_1: {
+var _user$project$Lia_Quiz_View$view_multiple_choice = F4(
+	function (questions, idx, state, solved) {
+		var fn = F2(
+			function (b, _p1) {
+				var _p2 = _p1;
+				return A2(
+					_elm_lang$html$Html$p,
+					{ctor: '[]'},
+					{
 						ctor: '::',
-						_0: {
-							ctor: '::',
-							_0: A2(_user$project$Lia_Quiz_View$quiz_check_button, model, block.idx),
-							_1: {ctor: '[]'}
-						},
+						_0: A2(
+							_elm_lang$html$Html$input,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$type_('checkbox'),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$checked(b),
+									_1: {
+										ctor: '::',
+										_0: solved ? _elm_lang$html$Html_Attributes$disabled(true) : _elm_lang$html$Html_Events$onClick(
+											A2(_user$project$Lia_Quiz_Update$RadioButton, idx, _p2._0)),
+										_1: {ctor: '[]'}
+									}
+								}
+							},
+							{ctor: '[]'}),
 						_1: {
 							ctor: '::',
-							_0: A3(_user$project$Lia_Quiz_View$view_hints, hint_count, block.idx, block.hints),
+							_0: A2(
+								_elm_lang$html$Html$span,
+								{ctor: '[]'},
+								A2(_elm_lang$core$List$map, _user$project$Lia_Inline_View$view_inf, _p2._1)),
 							_1: {ctor: '[]'}
 						}
+					});
+			});
+		var _p3 = state;
+		if (_p3.ctor === 'MultipleChoiceState') {
+			return A2(
+				_elm_lang$html$Html$div,
+				{ctor: '[]'},
+				A3(
+					_elm_lang$core$List$map2,
+					fn,
+					_elm_lang$core$Array$toList(_p3._0),
+					A2(
+						_elm_lang$core$List$indexedMap,
+						F2(
+							function (v0, v1) {
+								return {ctor: '_Tuple2', _0: v0, _1: v1};
+							}),
+						questions)));
+		} else {
+			return _elm_lang$html$Html$text('');
+		}
+	});
+var _user$project$Lia_Quiz_View$view_single_choice = F4(
+	function (questions, idx, state, solved) {
+		var _p4 = state;
+		if (_p4.ctor === 'SingleChoiceState') {
+			return A2(
+				_elm_lang$html$Html$div,
+				{ctor: '[]'},
+				A2(
+					_elm_lang$core$List$map,
+					function (_p5) {
+						var _p6 = _p5;
+						var _p7 = _p6._0;
+						return A2(
+							_elm_lang$html$Html$p,
+							{ctor: '[]'},
+							{
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$input,
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$type_('radio'),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$html$Html_Attributes$checked(
+												_elm_lang$core$Native_Utils.eq(_p7, _p4._0)),
+											_1: {
+												ctor: '::',
+												_0: solved ? _elm_lang$html$Html_Attributes$disabled(true) : _elm_lang$html$Html_Events$onClick(
+													A2(_user$project$Lia_Quiz_Update$RadioButton, idx, _p7)),
+												_1: {ctor: '[]'}
+											}
+										}
+									},
+									{ctor: '[]'}),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_elm_lang$html$Html$span,
+										{ctor: '[]'},
+										A2(_elm_lang$core$List$map, _user$project$Lia_Inline_View$view_inf, _p6._1)),
+									_1: {ctor: '[]'}
+								}
+							});
+					},
+					A2(
+						_elm_lang$core$List$indexedMap,
+						F2(
+							function (v0, v1) {
+								return {ctor: '_Tuple2', _0: v0, _1: v1};
+							}),
+						questions)));
+		} else {
+			return _elm_lang$html$Html$text('');
+		}
+	});
+var _user$project$Lia_Quiz_View$view_text = F3(
+	function (idx, state, solved) {
+		var _p8 = state;
+		if (_p8.ctor === 'TextState') {
+			return A2(
+				_elm_lang$html$Html$input,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$type_('input'),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$value(_p8._0),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$disabled(solved),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html_Events$onInput(
+									_user$project$Lia_Quiz_Update$Input(idx)),
+								_1: {ctor: '[]'}
+							}
+						}
 					}
-				}));
+				},
+				{ctor: '[]'});
+		} else {
+			return _elm_lang$html$Html$text('');
+		}
+	});
+var _user$project$Lia_Quiz_View$view_button = F3(
+	function (trials, solved, msg) {
+		return solved ? A2(
+			_elm_lang$html$Html$button,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$style(
+					{
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 'color', _1: 'green'},
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text(
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						'Check ',
+						_elm_lang$core$Basics$toString(trials))),
+				_1: {ctor: '[]'}
+			}) : (_elm_lang$core$Native_Utils.eq(trials, 0) ? A2(
+			_elm_lang$html$Html$button,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Events$onClick(msg),
+				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text('Check'),
+				_1: {ctor: '[]'}
+			}) : A2(
+			_elm_lang$html$Html$button,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$style(
+					{
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 'color', _1: 'red'},
+						_1: {ctor: '[]'}
+					}),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Events$onClick(msg),
+					_1: {ctor: '[]'}
+				}
+			},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text(
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						'Check ',
+						_elm_lang$core$Basics$toString(trials))),
+				_1: {ctor: '[]'}
+			}));
+	});
+var _user$project$Lia_Quiz_View$view_quiz = F5(
+	function (state, fn_view, idx, hints, solution) {
+		var _p9 = state;
+		if (_p9.ctor === 'Just') {
+			var _p10 = _p9._0;
+			return A2(
+				_elm_lang$html$Html$p,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: A3(fn_view, idx, _p10.state, _p10.solved),
+					_1: {
+						ctor: '::',
+						_0: A3(
+							_user$project$Lia_Quiz_View$view_button,
+							_p10.trial,
+							_p10.solved,
+							A2(_user$project$Lia_Quiz_Update$Check, idx, solution)),
+						_1: A3(_user$project$Lia_Quiz_View$view_hints, idx, _p10.hints, hints)
+					}
+				});
+		} else {
+			return _elm_lang$html$Html$text('');
+		}
+	});
+var _user$project$Lia_Quiz_View$view = F2(
+	function (model, quiz) {
+		var state = _user$project$Lia_Quiz_Model$get_state(model);
+		var _p11 = quiz;
+		switch (_p11.ctor) {
+			case 'Text':
+				var _p12 = _p11._1;
+				return A5(
+					_user$project$Lia_Quiz_View$view_quiz,
+					state(_p12),
+					_user$project$Lia_Quiz_View$view_text,
+					_p12,
+					_p11._2,
+					_user$project$Lia_Quiz_Types$TextState(_p11._0));
+			case 'SingleChoice':
+				var _p13 = _p11._2;
+				return A5(
+					_user$project$Lia_Quiz_View$view_quiz,
+					state(_p13),
+					_user$project$Lia_Quiz_View$view_single_choice(_p11._1),
+					_p13,
+					_p11._3,
+					_user$project$Lia_Quiz_Types$SingleChoiceState(_p11._0));
+			default:
+				var _p14 = _p11._2;
+				return A5(
+					_user$project$Lia_Quiz_View$view_quiz,
+					state(_p14),
+					_user$project$Lia_Quiz_View$view_multiple_choice(_p11._1),
+					_p14,
+					_p11._3,
+					_user$project$Lia_Quiz_Types$MultipleChoiceState(_p11._0));
+		}
 	});
 
 var _user$project$Lia_Survey_View$inline = function (elements) {
@@ -18767,21 +14915,6 @@ var _user$project$Lia_Survey_View$view_survey = F3(
 	});
 var _user$project$Lia_Survey_View$view = F2(
 	function (model, survey) {
-		var mat = F5(
-			function (type_, msg, fn, vars, questions) {
-				return A3(
-					_user$project$Lia_Survey_View$view_matrix,
-					vars,
-					questions,
-					A4(_user$project$Lia_Survey_View$matrix, type_, msg, fn, vars));
-			});
-		var vec = F4(
-			function (type_, msg, fn, questions) {
-				return A2(
-					_user$project$Lia_Survey_View$view_vector,
-					questions,
-					A3(_user$project$Lia_Survey_View$vector, type_, msg, fn));
-			});
 		return A2(
 			_elm_lang$html$Html$p,
 			{ctor: '[]'},
@@ -18805,25 +14938,31 @@ var _user$project$Lia_Survey_View$view = F2(
 							_user$project$Lia_Survey_View$view_survey,
 							model,
 							_p9,
-							A4(
-								vec,
-								_p7._0,
-								_user$project$Lia_Survey_Update$VectorUpdate(_p9),
-								A2(_user$project$Lia_Survey_Model$get_vector_state, model, _p9),
-								_p7._1));
+							A2(
+								_user$project$Lia_Survey_View$view_vector,
+								_p7._1,
+								A3(
+									_user$project$Lia_Survey_View$vector,
+									_p7._0,
+									_user$project$Lia_Survey_Update$VectorUpdate(_p9),
+									A2(_user$project$Lia_Survey_Model$get_vector_state, model, _p9))));
 					default:
+						var _p11 = _p7._1;
 						var _p10 = _p7._3;
 						return A3(
 							_user$project$Lia_Survey_View$view_survey,
 							model,
 							_p10,
-							A5(
-								mat,
-								_p7._0,
-								_user$project$Lia_Survey_Update$MatrixUpdate(_p10),
-								A2(_user$project$Lia_Survey_Model$get_matrix_state, model, _p10),
-								_p7._1,
-								_p7._2));
+							A3(
+								_user$project$Lia_Survey_View$view_matrix,
+								_p11,
+								_p7._2,
+								A4(
+									_user$project$Lia_Survey_View$matrix,
+									_p7._0,
+									_user$project$Lia_Survey_Update$MatrixUpdate(_p10),
+									A2(_user$project$Lia_Survey_Model$get_matrix_state, model, _p10),
+									_p11)));
 				}
 			}());
 	});
@@ -19326,6 +15465,34 @@ var _user$project$Lia_View$view = function (model) {
 	}
 };
 
+var _user$project$Lia$restore = F2(
+	function (model, _p0) {
+		var _p1 = _p0;
+		var _p5 = _p1._1;
+		var _p2 = _p1._0;
+		switch (_p2) {
+			case 'quiz':
+				var _p3 = _user$project$Lia_Quiz_Model$json2model(_p5);
+				if (_p3.ctor === 'Ok') {
+					return _elm_lang$core$Native_Utils.update(
+						model,
+						{quiz_model: _p3._0});
+				} else {
+					return model;
+				}
+			case 'survey':
+				var _p4 = _user$project$Lia_Survey_Model$json2model(_p5);
+				if (_p4.ctor === 'Ok') {
+					return _elm_lang$core$Native_Utils.update(
+						model,
+						{survey_model: _p4._0});
+				} else {
+					return model;
+				}
+			default:
+				return model;
+		}
+	});
 var _user$project$Lia$switch_mode = F2(
 	function (mode, model) {
 		return _elm_lang$core$Native_Utils.update(
@@ -19339,29 +15506,29 @@ var _user$project$Lia$view = function (model) {
 	return _user$project$Lia_View$view(model);
 };
 var _user$project$Lia$parse = function (model) {
-	var _p0 = _user$project$Lia_Parser$run(model.script);
-	if (_p0.ctor === 'Ok') {
-		var _p2 = _p0._0._0;
-		var _p1 = _p0._0._4;
+	var _p6 = _user$project$Lia_Parser$run(model.script);
+	if (_p6.ctor === 'Ok') {
+		var _p8 = _p6._0._0;
+		var _p7 = _p6._0._4;
 		return _elm_lang$core$Native_Utils.update(
 			model,
 			{
-				slides: _p2,
+				slides: _p8,
 				error: '',
-				quiz_model: _p0._0._2,
-				index_model: _user$project$Lia_Index_Model$init(_p2),
+				quiz_model: _p6._0._2,
+				index_model: _user$project$Lia_Index_Model$init(_p8),
 				effect_model: A2(
 					_user$project$Lia_Effect_Model$init,
-					_p1,
-					_elm_lang$core$List$head(_p2)),
-				code_model: _user$project$Lia_Code_Model$init(_p0._0._1),
-				survey_model: _p0._0._3,
-				narator: _elm_lang$core$Native_Utils.eq(_p1, '') ? 'US English Male' : _p1
+					_p7,
+					_elm_lang$core$List$head(_p8)),
+				code_model: _user$project$Lia_Code_Model$init(_p6._0._1),
+				survey_model: _p6._0._3,
+				narator: _elm_lang$core$Native_Utils.eq(_p7, '') ? 'US English Male' : _p7
 			});
 	} else {
 		return _elm_lang$core$Native_Utils.update(
 			model,
-			{error: _p0._0});
+			{error: _p6._0});
 	}
 };
 var _user$project$Lia$set_script = F2(
@@ -19392,6 +15559,25 @@ var _user$project$Lia$init = F2(
 var _user$project$Lia$init_plain = _user$project$Lia$init(_user$project$Lia_Types$Plain);
 var _user$project$Lia$init_slides = _user$project$Lia$init(_user$project$Lia_Types$Slides);
 
+var _user$project$Main$tx_log = _elm_lang$core$Native_Platform.outgoingPort(
+	'tx_log',
+	function (v) {
+		return [v._0, v._1];
+	});
+var _user$project$Main$rx_log = _elm_lang$core$Native_Platform.incomingPort(
+	'rx_log',
+	A2(
+		_elm_lang$core$Json_Decode$andThen,
+		function (x0) {
+			return A2(
+				_elm_lang$core$Json_Decode$andThen,
+				function (x1) {
+					return _elm_lang$core$Json_Decode$succeed(
+						{ctor: '_Tuple2', _0: x0, _1: x1});
+				},
+				A2(_elm_lang$core$Json_Decode$index, 1, _elm_lang$core$Json_Decode$value));
+		},
+		A2(_elm_lang$core$Json_Decode$index, 0, _elm_lang$core$Json_Decode$string)));
 var _user$project$Main$Flags = function (a) {
 	return {url: a};
 };
@@ -19402,62 +15588,92 @@ var _user$project$Main$Model = F4(
 var _user$project$Main$LoadFail = {ctor: 'LoadFail'};
 var _user$project$Main$LoadOk = {ctor: 'LoadOk'};
 var _user$project$Main$Loading = {ctor: 'Loading'};
+var _user$project$Main$RxLog = function (a) {
+	return {ctor: 'RxLog', _0: a};
+};
+var _user$project$Main$subscriptions = function (model) {
+	return _elm_lang$core$Platform_Sub$batch(
+		{
+			ctor: '::',
+			_0: _user$project$Main$rx_log(_user$project$Main$RxLog),
+			_1: {ctor: '[]'}
+		});
+};
 var _user$project$Main$LIA = function (a) {
 	return {ctor: 'LIA', _0: a};
 };
 var _user$project$Main$update = F2(
 	function (msg, model) {
 		var _p0 = msg;
-		if (_p0.ctor === 'LIA') {
-			var _p1 = A2(_user$project$Lia$update, _p0._0, model.lia);
-			var lia = _p1._0;
-			var cmd = _p1._1;
-			var info = _p1._2;
-			return {
-				ctor: '_Tuple2',
-				_0: _elm_lang$core$Native_Utils.update(
-					model,
-					{
-						lia: lia,
-						error: _elm_lang$core$Basics$toString(model.lia.quiz_model)
-					}),
-				_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$LIA, cmd)
-			};
-		} else {
-			if (_p0._0.ctor === 'Ok') {
-				var _p2 = _p0._0._0;
+		switch (_p0.ctor) {
+			case 'LIA':
+				var _p1 = A2(_user$project$Lia$update, _p0._0, model.lia);
+				var lia = _p1._0;
+				var cmd = _p1._1;
+				var info = _p1._2;
+				var _p2 = info;
+				if (_p2.ctor === 'Just') {
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{lia: lia}),
+						_1: _user$project$Main$tx_log(_p2._0)
+					};
+				} else {
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{lia: lia}),
+						_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$LIA, cmd)
+					};
+				}
+			case 'GET':
+				if (_p0._0.ctor === 'Ok') {
+					var _p3 = _p0._0._0;
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{
+								lia: _user$project$Lia$parse(
+									A2(
+										_user$project$Lia$set_script,
+										_user$project$Lia$init_slides(_p3),
+										_p3)),
+								error: '',
+								state: _user$project$Main$LoadOk
+							}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
+				} else {
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{
+								error: _elm_lang$core$Basics$toString(_p0._0._0),
+								state: _user$project$Main$LoadFail
+							}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
+				}
+			default:
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							lia: _user$project$Lia$parse(
-								A2(
-									_user$project$Lia$set_script,
-									_user$project$Lia$init_slides(_p2),
-									_p2)),
-							error: '',
-							state: _user$project$Main$LoadOk
+							lia: A2(_user$project$Lia$restore, model.lia, _p0._0)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
-			} else {
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							error: _elm_lang$core$Basics$toString(_p0._0._0),
-							state: _user$project$Main$LoadFail
-						}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			}
 		}
 	});
 var _user$project$Main$view = function (model) {
-	var _p3 = model.state;
-	switch (_p3.ctor) {
+	var _p4 = model.state;
+	switch (_p4.ctor) {
 		case 'Loading':
 			return A2(
 				_elm_lang$html$Html$div,
@@ -19534,14 +15750,7 @@ var _user$project$Main$init = function (flag) {
 	};
 };
 var _user$project$Main$main = _elm_lang$html$Html$programWithFlags(
-	{
-		init: _user$project$Main$init,
-		view: _user$project$Main$view,
-		update: _user$project$Main$update,
-		subscriptions: function (_p4) {
-			return _elm_lang$core$Platform_Sub$none;
-		}
-	})(
+	{init: _user$project$Main$init, view: _user$project$Main$view, update: _user$project$Main$update, subscriptions: _user$project$Main$subscriptions})(
 	A2(
 		_elm_lang$core$Json_Decode$andThen,
 		function (url) {
@@ -19553,7 +15762,7 @@ var _user$project$Main$main = _elm_lang$html$Html$programWithFlags(
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};
 if (typeof _user$project$Main$main !== 'undefined') {
-    _user$project$Main$main(Elm['Main'], 'Main', {"types":{"unions":{"Lia.Index.Update.Msg":{"args":[],"tags":{"ScanIndex":["String"]}},"Dict.LeafColor":{"args":[],"tags":{"LBBlack":[],"LBlack":[]}},"Lia.Code.Update.Msg":{"args":[],"tags":{"Eval":["Int","String"]}},"Basics.Never":{"args":[],"tags":{"JustOneMore":["Basics.Never"]}},"Dict.Dict":{"args":["k","v"],"tags":{"RBNode_elm_builtin":["Dict.NColor","k","v","Dict.Dict k v","Dict.Dict k v"],"RBEmpty_elm_builtin":["Dict.LeafColor"]}},"Lia.Update.Msg":{"args":[],"tags":{"UpdateCode":["Lia.Code.Update.Msg"],"UpdateIndex":["Lia.Index.Update.Msg"],"UpdateSurvey":["Lia.Survey.Update.Msg"],"UpdateQuiz":["Lia.Quiz.Update.Msg"],"Load":["Int"],"UpdateEffect":["Lia.Effect.Update.Msg"],"NextSlide":[],"PrevSlide":[],"ToggleContentsTable":[]}},"Main.Msg":{"args":[],"tags":{"LIA":["Lia.Msg"],"GET":["Result.Result Http.Error String"]}},"Lia.Survey.Update.Msg":{"args":[],"tags":{"VectorUpdate":["Lia.Inline.Types.ID","String"],"TextUpdate":["Lia.Inline.Types.ID","String"],"Submit":["Lia.Inline.Types.ID"],"MatrixUpdate":["Lia.Inline.Types.ID","Lia.Inline.Types.ID","String"]}},"Dict.NColor":{"args":[],"tags":{"BBlack":[],"Red":[],"NBlack":[],"Black":[]}},"Lia.Effect.Update.Msg":{"args":[],"tags":{"Next":[],"Init":[],"Speak":[],"TTS":["Result.Result String Basics.Never"],"Previous":[]}},"Lia.Quiz.Update.Msg":{"args":[],"tags":{"Check":["Int"],"Input":["Int","String"],"RadioButton":["Int","Int"],"ShowHint":["Int"],"CheckBox":["Int","Int"]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String"],"NetworkError":[],"Timeout":[],"BadStatus":["Http.Response String"],"BadPayload":["String","Http.Response String"]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}}},"aliases":{"Http.Response":{"args":["body"],"type":"{ url : String , status : { code : Int, message : String } , headers : Dict.Dict String String , body : body }"},"Lia.Inline.Types.ID":{"args":[],"type":"Int"},"Lia.Msg":{"args":[],"type":"Lia.Update.Msg"}},"message":"Main.Msg"},"versions":{"elm":"0.18.0"}});
+    _user$project$Main$main(Elm['Main'], 'Main', undefined);
 }
 
 if (typeof define === "function" && define['amd'])

@@ -2,11 +2,14 @@ module Lia exposing (..)
 
 import Array
 import Html exposing (Html)
+import Json.Encode as JE
 import Lia.Code.Model as Code
 import Lia.Effect.Model as Effect
 import Lia.Index.Model as Index
 import Lia.Model
 import Lia.Parser
+import Lia.Quiz.Model as Quiz
+import Lia.Survey.Model as Survey
 import Lia.Types
 import Lia.Update
 import Lia.View
@@ -85,7 +88,7 @@ view model =
     Lia.View.view model
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, Maybe String )
+update : Msg -> Model -> ( Model, Cmd Msg, Maybe ( String, JE.Value ) )
 update =
     Lia.Update.update
 
@@ -103,3 +106,26 @@ plain_mode =
 slide_mode : Model -> Model
 slide_mode =
     switch_mode Lia.Types.Slides
+
+
+restore : Model -> ( String, JE.Value ) -> Model
+restore model ( what, json ) =
+    case what of
+        "quiz" ->
+            case Quiz.json2model json of
+                Ok quiz_model ->
+                    { model | quiz_model = quiz_model }
+
+                _ ->
+                    model
+
+        "survey" ->
+            case Survey.json2model json of
+                Ok survey_model ->
+                    { model | survey_model = survey_model }
+
+                _ ->
+                    model
+
+        _ ->
+            model

@@ -6,7 +6,7 @@ import Lia.Effect.Parser exposing (..)
 import Lia.Inline.Parser exposing (..)
 import Lia.Inline.Types exposing (Inline(..))
 import Lia.PState exposing (PState)
-import Lia.Quiz.Parser exposing (..)
+import Lia.Quiz.Parser as Quiz
 import Lia.Quiz.Types exposing (QuizVector)
 import Lia.Survey.Parser as Survey
 import Lia.Survey.Types exposing (SurveyVector)
@@ -44,7 +44,7 @@ blocks =
                         , quote_block
                         , horizontal_line
                         , SurveyBlock <$> Survey.parse
-                        , Quiz <$> quiz
+                        , Quiz <$> Quiz.parse
                         , ordered_list
                         , unordered_list
                         , Paragraph <$> paragraph

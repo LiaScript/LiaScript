@@ -1,108 +1,107 @@
-module Lia.Quiz.Parser exposing (quiz)
+module Lia.Quiz.Parser exposing (parse)
 
-import Array exposing (push)
+import Array
 import Combine exposing (..)
 import Lia.Inline.Parser exposing (..)
 import Lia.Inline.Types exposing (..)
 import Lia.PState exposing (PState)
-import Lia.Quiz.Types exposing (Quiz(..), QuizBlock, QuizState(..), QuizVector)
+import Lia.Quiz.Types exposing (Hints, Quiz(..), QuizState(..), QuizVector)
 
 
-quiz : Parser PState QuizBlock
+parse : Parser PState Quiz
+parse =
+    quiz >>= modify_PState
+
+
+quiz : Parser PState Quiz
 quiz =
+    choice [ single_choice, multi_choice, text ] <*> get_counter <*> hints
+
+
+get_counter : Parser PState Int
+get_counter =
+    withState (\s -> succeed (Array.length s.quiz_vector))
+
+
+pattern : Parser s a -> Parser s a
+pattern p =
+    regex "[ \\t]*\\[" *> p <* string "]"
+
+
+quest : Parser PState a -> Parser PState Line
+quest p =
+    pattern p *> line <* newline
+
+
+text : Parser PState (ID -> Hints -> Quiz)
+text =
+    Text <$> pattern (string "[" *> regex "[^\n\\]]+" <* regex "\\][ \\t]*") <* newline
+
+
+multi_choice : Parser PState (ID -> Hints -> Quiz)
+multi_choice =
     let
-        counter =
+        checked b p =
+            (\l -> ( b, l )) <$> quest p
+
+        gen m =
             let
-                pp par =
-                    succeed par.num_quiz
-
-                increment_counter c =
-                    { c | num_quiz = c.num_quiz + 1 }
+                ( list, questions ) =
+                    List.unzip m
             in
-            withState pp <* modifyState increment_counter
+            MultipleChoice (Array.fromList list) questions
     in
-    QuizBlock <$> choice [ quiz_SingleChoice, quiz_MultipleChoice, quiz_TextInput ] <*> counter <*> quiz_hints
-
-
-quiz_TextInput : Parser PState Quiz
-quiz_TextInput =
-    let
-        state txt =
-            modifyState (\s -> push_state s (Text "" txt)) *> succeed txt
-    in
-    TextInput <$> ((regex "[ \\t]*\\[\\[" *> regex "[^\n\\]]+" <* regex "\\]\\]( *)\\n") >>= state)
-
-
-push_state : PState -> QuizState -> PState
-push_state p q =
-    { p
-        | quiz_vector =
-            push
-                { solved = Nothing
-                , state = q
-                , trial = 0
-                , hint = 0
-                }
-                p.quiz_vector
-    }
-
-
-quiz_SingleChoice : Parser PState Quiz
-quiz_SingleChoice =
-    let
-        get_result list =
-            list
-                |> List.indexedMap (,)
-                |> List.filter (\( _, ( rslt, _ ) ) -> rslt == True)
-                |> (\l ->
-                        case List.head l of
-                            Just ( i, _ ) ->
-                                i
-
-                            Nothing ->
-                                -1
-                   )
-
-        state a =
-            modifyState (\s -> push_state s (Single -1 <| List.length a)) *> succeed a
-    in
-    many (checked False (regex "[ \\t]*\\[\\( \\)\\]"))
-        |> map (\a b -> List.append a [ b ])
-        |> andMap (checked True (regex "[ \\t]*\\[\\(X\\)\\]"))
-        |> map (++)
-        |> (\p -> andMap (many (checked False (regex "[ \\t]*\\[\\( \\)\\]")) >>= state) p)
-        |> map (\q -> SingleChoice (get_result q) (List.map (\( _, qq ) -> qq) q))
-
-
-checked : Bool -> Parser PState res -> Parser PState ( Bool, List Inline )
-checked b p =
-    (\l -> ( b, l )) <$> (p *> line <* newline)
-
-
-quiz_hints : Parser PState (List (List Inline))
-quiz_hints =
-    many (regex "[ \\t]*\\[\\[\\?\\]\\]" *> line <* newline)
-
-
-quiz_MultipleChoice : Parser PState Quiz
-quiz_MultipleChoice =
-    let
-        state mc =
-            let
-                element =
-                    mc
-                        |> List.map (\( b, _ ) -> ( False, b ))
-                        |> Array.fromList
-                        |> Multi
-            in
-            modifyState (\s -> push_state s element) *> succeed mc
-    in
-    MultipleChoice
-        <$> (many1
+    gen
+        <$> many1
                 (choice
-                    [ checked True (regex "[ \\t]*\\[\\[X\\]\\]")
-                    , checked False (regex "[ \\t]*\\[\\[ \\]\\]")
+                    [ checked True (string "[X]")
+                    , checked False (string "[ ]")
                     ]
                 )
-                >>= state
-            )
+
+
+single_choice : Parser PState (ID -> Hints -> Quiz)
+single_choice =
+    let
+        wrong =
+            many (quest (string "( )"))
+
+        correct =
+            quest (string "(X)")
+
+        par wrong1 c wrong2 =
+            SingleChoice
+                (List.length wrong1)
+                (c :: wrong2 |> List.append wrong1)
+    in
+    par <$> wrong <*> correct <*> wrong
+
+
+hints : Parser PState (List Line)
+hints =
+    many (quest (string "[?]"))
+
+
+modify_PState : Quiz -> Parser PState Quiz
+modify_PState quiz_ =
+    let
+        add_state e s =
+            { s
+                | quiz_vector =
+                    Array.push
+                        { solved = False, state = e, trial = 0, hints = 0 }
+                        s.quiz_vector
+            }
+
+        state =
+            case quiz_ of
+                Text _ _ _ ->
+                    TextState ""
+
+                SingleChoice _ _ _ _ ->
+                    SingleChoiceState -1
+
+                MultipleChoice x _ _ _ ->
+                    MultipleChoiceState (Array.repeat (Array.length x) False)
+    in
+    modifyState (add_state state) *> succeed quiz_

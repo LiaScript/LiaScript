@@ -7,7 +7,7 @@ type Msg
     = ScanIndex String
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> Model
 update msg model =
     case msg of
         ScanIndex pattern ->
@@ -18,7 +18,7 @@ update msg model =
                     else
                         Just (scan model.index pattern)
             in
-            ( { model | search = pattern, results = results }, Cmd.none )
+            { model | search = pattern, results = results }
 
 
 scan : List String -> String -> List Int

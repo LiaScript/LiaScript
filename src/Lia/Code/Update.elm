@@ -9,8 +9,8 @@ type Msg
     = Eval Int String
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> Model
 update msg model =
     case msg of
         Eval idx code ->
-            ( Array.set idx (Just <| Lia.Utils.evaluateJS code) model, Cmd.none )
+            Array.set idx (Just <| Lia.Utils.evaluateJS code) model

@@ -2,8 +2,9 @@ module Lia.Survey.Update exposing (Msg(..), update)
 
 import Array
 import Dict
+import Json.Encode as JE
 import Lia.Inline.Types exposing (ID)
-import Lia.Survey.Model exposing (Model)
+import Lia.Survey.Model exposing (Model, model2json)
 import Lia.Survey.Types exposing (..)
 
 
@@ -19,20 +20,24 @@ type Msg
     | Submit ID
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Maybe JE.Value )
 update msg model =
     case msg of
         TextUpdate idx str ->
-            ( update_text model idx str, Cmd.none )
+            ( update_text model idx str, Nothing )
 
         VectorUpdate idx var ->
-            ( update_vector model idx var, Cmd.none )
+            ( update_vector model idx var, Nothing )
 
         MatrixUpdate idx row var ->
-            ( update_matrix model idx row var, Cmd.none )
+            ( update_matrix model idx row var, Nothing )
 
         Submit idx ->
-            ( submit model idx, Cmd.none )
+            let
+                new_model =
+                    submit model idx
+            in
+            ( new_model, Just <| model2json new_model )
 
 
 update_text : Model -> ID -> String -> Model

@@ -1,7 +1,8 @@
 module Lia.Quiz.Update exposing (Msg(..), update)
 
 import Array
-import Lia.Quiz.Model exposing (Model)
+import Json.Encode as JE
+import Lia.Quiz.Model exposing (Model, model2json)
 import Lia.Quiz.Types exposing (..)
 
 
@@ -14,34 +15,38 @@ type Msg
     = CheckBox Int Int
     | RadioButton Int Int
     | Input Int String
-    | Check Int
+    | Check Int QuizState
     | ShowHint Int
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, Maybe String )
+update : Msg -> Model -> ( Model, Maybe JE.Value )
 update msg model =
     case msg of
         CheckBox idx question_id ->
-            ( flip_checkbox idx question_id model, Cmd.none, Nothing )
+            ( flip_check idx question_id model, Nothing )
 
         RadioButton idx answer ->
-            ( flip_checkbox idx answer model, Cmd.none, Nothing )
+            ( flip_check idx answer model, Nothing )
 
         Input idx string ->
-            ( update_input idx string model, Cmd.none, Nothing )
+            ( update_input idx string model, Nothing )
 
-        Check idx ->
-            ( check_answer idx model, Cmd.none, Just "check" )
+        Check idx solution ->
+            let
+                new_model =
+                    check_answer idx solution model
+            in
+            ( new_model, Just <| model2json new_model )
 
         ShowHint idx ->
-            ( update_hint idx model, Cmd.none, Just "hint" )
+            ( update_hint idx model, Nothing )
 
 
 get : Int -> QuizVector -> Maybe QuizElement
 get idx model =
     case Array.get idx model of
         Just elem ->
-            if elem.solved == Just True then
+            if elem.solved then
                 Nothing
             else
                 Just elem
@@ -55,8 +60,8 @@ update_input idx text vector =
     case get idx vector of
         Just elem ->
             case elem.state of
-                Text input answer ->
-                    Array.set idx { elem | state = Text text answer } vector
+                TextState _ ->
+                    Array.set idx { elem | state = TextState text } vector
 
                 _ ->
                     vector
@@ -69,27 +74,27 @@ update_hint : Int -> QuizVector -> QuizVector
 update_hint idx vector =
     case get idx vector of
         Just elem ->
-            Array.set idx { elem | hint = elem.hint + 1 } vector
+            Array.set idx { elem | hints = elem.hints + 1 } vector
 
         _ ->
             vector
 
 
-flip_checkbox : Int -> Int -> QuizVector -> QuizVector
-flip_checkbox idx question_id vector =
+flip_check : Int -> Int -> QuizVector -> QuizVector
+flip_check idx question_id vector =
     case get idx vector of
         Just elem ->
             case elem.state of
-                Single c answer ->
-                    Array.set idx { elem | state = Single question_id answer } vector
+                SingleChoiceState _ ->
+                    Array.set idx { elem | state = SingleChoiceState question_id } vector
 
-                Multi quiz ->
+                MultipleChoiceState quiz ->
                     case Array.get question_id quiz of
                         Just question ->
                             question
-                                |> (\( c, a ) -> ( not c, a ))
+                                |> (\c -> not c)
                                 |> (\q -> Array.set question_id q quiz)
-                                |> (\q -> Array.set idx { elem | state = Multi q } vector)
+                                |> (\q -> Array.set idx { elem | state = MultipleChoiceState q } vector)
 
                         Nothing ->
                             vector
@@ -101,27 +106,11 @@ flip_checkbox idx question_id vector =
             vector
 
 
-check_answer : Int -> QuizVector -> QuizVector
-check_answer idx vector =
-    let
-        ccheck state =
-            case state of
-                Multi quiz ->
-                    let
-                        f ( input, answer ) result =
-                            result && (input == answer)
-                    in
-                    Just (Array.foldr f True quiz)
-
-                Single input answer ->
-                    Just (input == answer)
-
-                Text input answer ->
-                    Just (input == answer)
-    in
+check_answer : Int -> QuizState -> QuizVector -> QuizVector
+check_answer idx solution vector =
     case get idx vector of
         Just elem ->
-            Array.set idx { elem | solved = ccheck elem.state, trial = elem.trial + 1 } vector
+            Array.set idx { elem | solved = elem.state == solution, trial = elem.trial + 1 } vector
 
         Nothing ->
             vector

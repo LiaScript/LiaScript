@@ -1,8 +1,16 @@
-module Main exposing (..)
+port module Main exposing (..)
 
 import Html exposing (Html)
 import Http
+import Json.Decode as JD
+import Json.Encode as JE
 import Lia
+
+
+port tx_log : ( String, JE.Value ) -> Cmd msg
+
+
+port rx_log : (( String, JD.Value ) -> msg) -> Sub msg
 
 
 main : Program Flags Model Msg
@@ -11,7 +19,7 @@ main =
         { init = init
         , view = view
         , update = update
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = subscriptions
         }
 
 
@@ -52,6 +60,7 @@ init flag =
 type Msg
     = GET (Result Http.Error String)
     | LIA Lia.Msg
+    | RxLog ( String, JE.Value )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -62,7 +71,12 @@ update msg model =
                 ( lia, cmd, info ) =
                     Lia.update liaMsg model.lia
             in
-            ( { model | lia = lia, error = toString model.lia.quiz_model }, Cmd.map LIA cmd )
+            case info of
+                Just m ->
+                    ( { model | lia = lia }, tx_log m )
+
+                _ ->
+                    ( { model | lia = lia }, Cmd.map LIA cmd )
 
         GET (Ok script) ->
             ( { model
@@ -75,6 +89,9 @@ update msg model =
 
         GET (Err msg) ->
             ( { model | error = toString msg, state = LoadFail }, Cmd.none )
+
+        RxLog m ->
+            ( { model | lia = Lia.restore model.lia m }, Cmd.none )
 
 
 
@@ -110,3 +127,10 @@ view model =
 getCourse : String -> Cmd Msg
 getCourse url =
     Http.send GET <| Http.getString url
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.batch
+        [ rx_log RxLog
+        ]

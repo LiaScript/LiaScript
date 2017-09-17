@@ -5,12 +5,14 @@ module Lia.Survey.Model
         , get_submission_state
         , get_text_state
         , get_vector_state
+        , json2model
         , model2json
         )
 
 import Array
 import Dict
-import Json.Encode exposing (Value, array, bool, object, string)
+import Json.Decode as JD
+import Json.Encode as JE
 import Lia.Survey.Types exposing (..)
 
 
@@ -63,40 +65,97 @@ get_matrix_state model idx row var =
             False
 
 
-model2json : SurveyVector -> Value
+model2json : SurveyVector -> JE.Value
 model2json vector =
     vector
         |> Array.map element2json
-        |> array
+        |> JE.array
 
 
-element2json : SurveyElement -> Value
+element2json : SurveyElement -> JE.Value
 element2json ( b, state ) =
-    object
-        [ ( "submitted", bool b )
+    JE.object
+        [ ( "submitted", JE.bool b )
         , ( "state", state2json state )
         ]
 
 
-state2json : SurveyState -> Value
+state2json : SurveyState -> JE.Value
 state2json state =
     let
         dict2json dict =
-            dict |> Dict.toList |> List.map (\( s, b ) -> ( s, bool b )) |> object
+            dict |> Dict.toList |> List.map (\( s, b ) -> ( s, JE.bool b )) |> JE.object
     in
-    object <|
+    JE.object <|
         case state of
             TextState str ->
-                [ ( "Text", string str ) ]
+                [ ( "type", JE.string "Text" )
+                , ( "value", JE.string str )
+                ]
 
             VectorState True vector ->
-                [ ( "SingleChoice", dict2json vector ) ]
+                [ ( "type", JE.string "SingleChoice" )
+                , ( "value", dict2json vector )
+                ]
 
             VectorState False vector ->
-                [ ( "MultiChoice", dict2json vector ) ]
+                [ ( "type", JE.string "MultipleChoice" )
+                , ( "value", dict2json vector )
+                ]
 
             MatrixState True matrix ->
-                [ ( "SingleChoiceBlock", matrix |> Array.map dict2json |> array ) ]
+                [ ( "type", JE.string "SingleChoiceBlock" )
+                , ( "value", matrix |> Array.map dict2json |> JE.array )
+                ]
 
             MatrixState False matrix ->
-                [ ( "MultiChoiceBlock", matrix |> Array.map dict2json |> array ) ]
+                [ ( "type", JE.string "MultipleChoiceBlock" )
+                , ( "value", matrix |> Array.map dict2json |> JE.array )
+                ]
+
+
+json2model : JD.Value -> Result String Model
+json2model json =
+    JD.decodeValue (JD.array json2element) json
+
+
+json2element : JD.Decoder SurveyElement
+json2element =
+    JD.map2 (,)
+        (JD.field "submitted" JD.bool)
+        (JD.field "state" json2state)
+
+
+json2state : JD.Decoder SurveyState
+json2state =
+    let
+        value =
+            JD.field "value"
+
+        dict =
+            JD.dict JD.bool
+
+        state_decoder type_ =
+            case type_ of
+                "Text" ->
+                    JD.map TextState (value JD.string)
+
+                "SingleChoice" ->
+                    JD.map (VectorState True) (value dict)
+
+                "MultipleChoice" ->
+                    JD.map (VectorState False) (value dict)
+
+                "SingleChoiceBlock" ->
+                    JD.map (MatrixState True) (value (JD.array dict))
+
+                "MultipleChoiceBlock" ->
+                    JD.map (MatrixState False) (value (JD.array dict))
+
+                _ ->
+                    JD.fail <|
+                        "not supported type: "
+                            ++ type_
+    in
+    JD.field "type" JD.string
+        |> JD.andThen state_decoder

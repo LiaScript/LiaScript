@@ -1,42 +1,39 @@
 module Lia.Quiz.Types
     exposing
-        ( Quiz(..)
-        , QuizBlock
+        ( Hints
+        , Quiz(..)
         , QuizElement
         , QuizState(..)
         , QuizVector
         )
 
 import Array exposing (Array)
-import Lia.Inline.Types exposing (Inline)
+import Lia.Inline.Types exposing (ID, Line)
 
 
 type alias QuizVector =
     Array QuizElement
 
 
+type alias Hints =
+    List Line
+
+
 type alias QuizElement =
-    { solved : Maybe Bool
+    { solved : Bool
     , state : QuizState
+    , hints : Int
     , trial : Int
-    , hint : Int
     }
 
 
 type QuizState
-    = Single Int Int
-    | Multi (Array ( Bool, Bool ))
-    | Text String String
+    = TextState String
+    | SingleChoiceState Int
+    | MultipleChoiceState (Array Bool)
 
 
 type Quiz
-    = SingleChoice Int (List (List Inline))
-    | MultipleChoice (List ( Bool, List Inline ))
-    | TextInput String
-
-
-type alias QuizBlock =
-    { quiz : Quiz
-    , idx : Int
-    , hints : List (List Inline)
-    }
+    = Text String ID Hints
+    | SingleChoice Int (List Line) ID Hints
+    | MultipleChoice (Array Bool) (List Line) ID Hints
