@@ -16,6 +16,10 @@ parse =
 
 survey : Parser PState Survey
 survey =
+    let
+        get_id par =
+            succeed (Array.length par.survey_vector)
+    in
     choice
         [ Text <$> text_lines
         , Vector False <$> vector parens
@@ -23,7 +27,7 @@ survey =
         , Matrix False <$> header parens <*> questions
         , Matrix True <$> header brackets <*> questions
         ]
-        <*> increment_counter
+        <*> withState get_id
 
 
 text_lines : Parser s Int
@@ -70,18 +74,6 @@ questions =
 question : Parser PState a -> Parser PState ( a, List Inline )
 question p =
     (\i l -> ( i, l )) <$> p <*> (line <* newline)
-
-
-increment_counter : Parser PState Int
-increment_counter =
-    let
-        pp par =
-            succeed par.num_survey
-
-        increment c =
-            { c | num_survey = c.num_survey + 1 }
-    in
-    withState pp <* modifyState increment
 
 
 modify_PState : Survey -> Parser PState Survey
