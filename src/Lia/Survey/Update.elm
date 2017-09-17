@@ -33,11 +33,14 @@ update msg model =
             ( update_matrix model idx row var, Nothing )
 
         Submit idx ->
-            let
-                new_model =
-                    submit model idx
-            in
-            ( new_model, Just <| model2json new_model )
+            if submitable model idx then
+                let
+                    new_model =
+                        submit model idx
+                in
+                ( new_model, Just <| model2json new_model )
+            else
+                ( model, Nothing )
 
 
 update_text : Model -> ID -> String -> Model
@@ -115,3 +118,27 @@ submit model idx =
 
         _ ->
             model
+
+
+submitable : Model -> ID -> Bool
+submitable model idx =
+    case Array.get idx model of
+        Just ( False, TextState str ) ->
+            str /= ""
+
+        Just ( False, VectorState _ vector ) ->
+            vector
+                |> Dict.values
+                |> List.filter (\a -> a)
+                |> List.length
+                |> (\s -> s > 0)
+
+        Just ( False, MatrixState _ matrix ) ->
+            matrix
+                |> Array.toList
+                |> List.map Dict.values
+                |> List.map (\l -> List.filter (\a -> a) l)
+                |> List.all (\a -> List.length a > 0)
+
+        _ ->
+            False
