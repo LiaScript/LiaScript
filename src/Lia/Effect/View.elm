@@ -64,9 +64,32 @@ comment model viewer idx elements =
                 , ( "padding", "16px 32px" )
                 ]
             ]
-            (List.map viewer elements)
+            (List.append
+                (List.map viewer elements)
+                [ responsive ]
+            )
     else
         Html.div [] []
+
+
+responsive : Html msg
+responsive =
+    Html.div []
+        [ Html.a [ Attr.href "https://responsivevoice.org" ]
+            [ Html.text "ResponsiveVoice-NonCommercial" ]
+        , Html.text " licensed under "
+        , Html.a
+            [ Attr.href "https://creativecommons.org/licenses/by-nc-nd/4.0/" ]
+            [ Html.img
+                [ Attr.title "ResponsiveVoice Text To Speech"
+                , Attr.src "https://responsivevoice.org/wp-content/uploads/2014/08/95x15.png"
+                , Attr.alt "95x15"
+                , Attr.width 95
+                , Attr.height 15
+                ]
+                []
+            ]
+        ]
 
 
 circle : Int -> Html msg
