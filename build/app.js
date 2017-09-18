@@ -11180,22 +11180,7 @@ var _user$project$Lia_Model$Model = function (a) {
 	};
 };
 
-var _user$project$Lia_PState$init = {
-	section: {ctor: '[]'},
-	identation: 0,
-	skip_identation: false,
-	num_effects: 0,
-	num_code: 0,
-	quiz_vector: _elm_lang$core$Array$empty,
-	survey_vector: _elm_lang$core$Array$empty,
-	def_author: '',
-	def_date: '',
-	def_email: '',
-	def_language: '',
-	def_narator: '',
-	def_version: '',
-	def_comment: ''
-};
+var _user$project$Lia_PState$init = {identation: 0, skip_identation: false, num_effects: 0, num_code: 0, quiz_vector: _elm_lang$core$Array$empty, survey_vector: _elm_lang$core$Array$empty, def_author: '', def_date: '', def_email: '', def_language: '', def_narator: '', def_version: '', def_comment: ''};
 var _user$project$Lia_PState$PState = function (a) {
 	return function (b) {
 		return function (c) {
@@ -11209,9 +11194,7 @@ var _user$project$Lia_PState$PState = function (a) {
 										return function (k) {
 											return function (l) {
 												return function (m) {
-													return function (n) {
-														return {section: a, identation: b, skip_identation: c, num_effects: d, num_code: e, quiz_vector: f, survey_vector: g, def_author: h, def_date: i, def_email: j, def_language: k, def_narator: l, def_version: m, def_comment: n};
-													};
+													return {identation: a, skip_identation: b, num_effects: c, num_code: d, quiz_vector: e, survey_vector: f, def_author: g, def_date: h, def_email: i, def_language: j, def_narator: k, def_version: l, def_comment: m};
 												};
 											};
 										};
@@ -15551,14 +15534,14 @@ var _user$project$Lia$parse = function (model) {
 			{
 				slides: _p8,
 				error: '',
-				quiz_model: _p6._0._2,
+				quiz_model: _elm_lang$core$Native_Utils.eq(model.quiz_model, _elm_lang$core$Array$empty) ? _p6._0._2 : model.quiz_model,
 				index_model: _user$project$Lia_Index_Model$init(_p8),
 				effect_model: A2(
 					_user$project$Lia_Effect_Model$init,
 					_p7,
 					_elm_lang$core$List$head(_p8)),
 				code_model: _user$project$Lia_Code_Model$init(_p6._0._1),
-				survey_model: _p6._0._3,
+				survey_model: _elm_lang$core$Native_Utils.eq(model.survey_model, _elm_lang$core$Array$empty) ? _p6._0._3 : model.survey_model,
 				narator: _elm_lang$core$Native_Utils.eq(_p7, '') ? 'US English Male' : _p7
 			});
 	} else {
@@ -15724,7 +15707,18 @@ var _user$project$Main$view = function (model) {
 							_0: _elm_lang$html$Html$text('Loading Course'),
 							_1: {ctor: '[]'}
 						}),
-					_1: {ctor: '[]'}
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$h6,
+							{ctor: '[]'},
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html$text(model.url),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
 				});
 		case 'LoadOk':
 			return A2(
@@ -15758,8 +15752,19 @@ var _user$project$Main$view = function (model) {
 						}),
 					_1: {
 						ctor: '::',
-						_0: _elm_lang$html$Html$text(model.error),
-						_1: {ctor: '[]'}
+						_0: A2(
+							_elm_lang$html$Html$h6,
+							{ctor: '[]'},
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html$text(model.url),
+								_1: {ctor: '[]'}
+							}),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$html$Html$text(model.error),
+							_1: {ctor: '[]'}
+						}
 					}
 				});
 	}

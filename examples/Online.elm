@@ -104,6 +104,7 @@ view model =
         Loading ->
             Html.div []
                 [ Html.h2 [] [ Html.text "Loading Course" ]
+                , Html.h6 [] [ Html.text model.url ]
                 ]
 
         LoadOk ->
@@ -115,6 +116,7 @@ view model =
         LoadFail ->
             Html.div []
                 [ Html.h2 [] [ Html.text "Load failed" ]
+                , Html.h6 [] [ Html.text model.url ]
                 , Html.text model.error
                 ]
 

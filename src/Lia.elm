@@ -67,11 +67,19 @@ parse model =
             { model
                 | slides = slides
                 , error = ""
-                , quiz_model = quiz_vector
+                , quiz_model =
+                    if model.quiz_model == Array.empty then
+                        quiz_vector
+                    else
+                        model.quiz_model
                 , index_model = Index.init slides
                 , effect_model = Effect.init narator <| List.head slides
                 , code_model = Code.init codes
-                , survey_model = survey_vector
+                , survey_model =
+                    if model.survey_model == Array.empty then
+                        survey_vector
+                    else
+                        model.survey_model
                 , narator =
                     if narator == "" then
                         "US English Male"
