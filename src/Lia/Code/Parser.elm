@@ -1,5 +1,6 @@
 module Lia.Code.Parser exposing (code)
 
+import Array exposing (Array)
 import Combine exposing (..)
 import Lia.Code.Types exposing (..)
 import Lia.Inline.Parser exposing (stringTill)
@@ -29,17 +30,17 @@ block =
 eval_js : Parser PState Code
 eval_js =
     EvalJS
-        <$> (header (regex "((js)|(javascript))( +)(x|X)") *> stringTill border)
-        <*> inc_counter
+        <$> ((header (regex "((js)|(javascript))( +)(x|X)")
+                *> stringTill border
+             )
+                >>= modify_PState
+            )
 
 
-inc_counter : Parser PState Int
-inc_counter =
+modify_PState : String -> Parser PState Int
+modify_PState code_ =
     let
-        pp par =
-            succeed par.num_code
-
-        increment_counter c =
-            { c | num_code = c.num_code + 1 }
+        add_state s =
+            { s | code_vector = Array.push ( code_, Nothing, False ) s.code_vector }
     in
-    withState pp <* modifyState increment_counter
+    withState (\s -> succeed (Array.length s.code_vector)) <* modifyState add_state

@@ -10360,25 +10360,14 @@ var _elm_lang$http$Http$StringPart = F2(
 	});
 var _elm_lang$http$Http$stringPart = _elm_lang$http$Http$StringPart;
 
-var _user$project$Lia_Code_Model$get_result = F2(
-	function (idx, model) {
-		return A2(
-			_elm_lang$core$Maybe$withDefault,
-			_elm_lang$core$Maybe$Nothing,
-			A2(_elm_lang$core$Array$get, idx, model));
-	});
-var _user$project$Lia_Code_Model$init = function (i) {
-	return A2(_elm_lang$core$Array$repeat, i, _elm_lang$core$Maybe$Nothing);
+var _user$project$Lia_Code_Types$EvalJS = function (a) {
+	return {ctor: 'EvalJS', _0: a};
 };
-
-var _user$project$Lia_Code_Types$EvalJS = F2(
-	function (a, b) {
-		return {ctor: 'EvalJS', _0: a, _1: b};
-	});
 var _user$project$Lia_Code_Types$Highlight = F2(
 	function (a, b) {
 		return {ctor: 'Highlight', _0: a, _1: b};
 	});
+
 
 var _user$project$Lia_Inline_Types$Container = function (a) {
 	return {ctor: 'Container', _0: a};
@@ -10639,7 +10628,7 @@ var _user$project$Lia_Index_Model$parse_block = function (element) {
 			if (_p5.ctor === 'Highlight') {
 				return _p5._1;
 			} else {
-				return _p5._0;
+				return '';
 			}
 		case 'Quiz':
 			return _user$project$Lia_Index_Model$parse_quiz(_p4._0);
@@ -11180,7 +11169,7 @@ var _user$project$Lia_Model$Model = function (a) {
 	};
 };
 
-var _user$project$Lia_PState$init = {identation: 0, skip_identation: false, num_effects: 0, num_code: 0, quiz_vector: _elm_lang$core$Array$empty, survey_vector: _elm_lang$core$Array$empty, def_author: '', def_date: '', def_email: '', def_language: '', def_narator: '', def_version: '', def_comment: ''};
+var _user$project$Lia_PState$init = {identation: 0, skip_identation: false, num_effects: 0, code_vector: _elm_lang$core$Array$empty, quiz_vector: _elm_lang$core$Array$empty, survey_vector: _elm_lang$core$Array$empty, def_author: '', def_date: '', def_email: '', def_language: '', def_narator: '', def_version: '', def_comment: ''};
 var _user$project$Lia_PState$PState = function (a) {
 	return function (b) {
 		return function (c) {
@@ -11194,7 +11183,7 @@ var _user$project$Lia_PState$PState = function (a) {
 										return function (k) {
 											return function (l) {
 												return function (m) {
-													return {identation: a, skip_identation: b, num_effects: c, num_code: d, quiz_vector: e, survey_vector: f, def_author: g, def_date: h, def_email: i, def_language: j, def_narator: k, def_version: l, def_comment: m};
+													return {identation: a, skip_identation: b, num_effects: c, code_vector: d, quiz_vector: e, survey_vector: f, def_author: g, def_date: h, def_email: i, def_language: j, def_narator: k, def_version: l, def_comment: m};
 												};
 											};
 										};
@@ -12047,20 +12036,26 @@ var _user$project$Lia_Inline_Parser$line = A2(
 	},
 	_elm_community$parser_combinators$Combine$many1(_user$project$Lia_Inline_Parser$inlines));
 
-var _user$project$Lia_Code_Parser$inc_counter = function () {
-	var increment_counter = function (c) {
+var _user$project$Lia_Code_Parser$modify_PState = function (code_) {
+	var add_state = function (s) {
 		return _elm_lang$core$Native_Utils.update(
-			c,
-			{num_code: c.num_code + 1});
-	};
-	var pp = function (par) {
-		return _elm_community$parser_combinators$Combine$succeed(par.num_code);
+			s,
+			{
+				code_vector: A2(
+					_elm_lang$core$Array$push,
+					{ctor: '_Tuple3', _0: code_, _1: _elm_lang$core$Maybe$Nothing, _2: false},
+					s.code_vector)
+			});
 	};
 	return A2(
 		_elm_community$parser_combinators$Combine_ops['<*'],
-		_elm_community$parser_combinators$Combine$withState(pp),
-		_elm_community$parser_combinators$Combine$modifyState(increment_counter));
-}();
+		_elm_community$parser_combinators$Combine$withState(
+			function (s) {
+				return _elm_community$parser_combinators$Combine$succeed(
+					_elm_lang$core$Array$length(s.code_vector));
+			}),
+		_elm_community$parser_combinators$Combine$modifyState(add_state));
+};
 var _user$project$Lia_Code_Parser$border = _elm_community$parser_combinators$Combine$string('```');
 var _user$project$Lia_Code_Parser$header = function (p) {
 	return A2(
@@ -12080,16 +12075,16 @@ var _user$project$Lia_Code_Parser$block = A2(
 			_elm_community$parser_combinators$Combine$regex('([a-z,A-Z,0-9])*'))),
 	_user$project$Lia_Inline_Parser$stringTill(_user$project$Lia_Code_Parser$border));
 var _user$project$Lia_Code_Parser$eval_js = A2(
-	_elm_community$parser_combinators$Combine_ops['<*>'],
+	_elm_community$parser_combinators$Combine_ops['<$>'],
+	_user$project$Lia_Code_Types$EvalJS,
 	A2(
-		_elm_community$parser_combinators$Combine_ops['<$>'],
-		_user$project$Lia_Code_Types$EvalJS,
+		_elm_community$parser_combinators$Combine_ops['>>='],
 		A2(
 			_elm_community$parser_combinators$Combine_ops['*>'],
 			_user$project$Lia_Code_Parser$header(
 				_elm_community$parser_combinators$Combine$regex('((js)|(javascript))( +)(x|X)')),
-			_user$project$Lia_Inline_Parser$stringTill(_user$project$Lia_Code_Parser$border))),
-	_user$project$Lia_Code_Parser$inc_counter);
+			_user$project$Lia_Inline_Parser$stringTill(_user$project$Lia_Code_Parser$border)),
+		_user$project$Lia_Code_Parser$modify_PState));
 var _user$project$Lia_Code_Parser$code = _elm_community$parser_combinators$Combine$choice(
 	{
 		ctor: '::',
@@ -12911,7 +12906,7 @@ var _user$project$Lia_Parser$run = function (script) {
 	if (_p2.ctor === 'Ok') {
 		var _p3 = _p2._0._0;
 		return _elm_lang$core$Result$Ok(
-			{ctor: '_Tuple5', _0: _p2._0._2, _1: _p3.num_code, _2: _p3.quiz_vector, _3: _p3.survey_vector, _4: _p3.def_narator});
+			{ctor: '_Tuple5', _0: _p2._0._2, _1: _p3.code_vector, _2: _p3.quiz_vector, _3: _p3.survey_vector, _4: _p3.def_narator});
 	} else {
 		return _elm_lang$core$Result$Err(
 			A2(_user$project$Lia_Parser$formatError, _p2._0._2, _p2._0._1));
@@ -12991,17 +12986,62 @@ var _user$project$Lia_Utils$highlight = F2(
 var _user$project$Lia_Code_Update$update = F2(
 	function (msg, model) {
 		var _p0 = msg;
-		return A3(
-			_elm_lang$core$Array$set,
-			_p0._0,
-			_elm_lang$core$Maybe$Just(
-				_user$project$Lia_Utils$evaluateJS(_p0._1)),
-			model);
+		switch (_p0.ctor) {
+			case 'Eval':
+				var _p3 = _p0._0;
+				var _p1 = A2(_elm_lang$core$Array$get, _p3, model);
+				if (_p1.ctor === 'Just') {
+					var _p2 = _p1._0._0;
+					return A3(
+						_elm_lang$core$Array$set,
+						_p3,
+						{
+							ctor: '_Tuple3',
+							_0: _p2,
+							_1: _elm_lang$core$Maybe$Just(
+								_user$project$Lia_Utils$evaluateJS(_p2)),
+							_2: false
+						},
+						model);
+				} else {
+					return model;
+				}
+			case 'Update':
+				var _p5 = _p0._0;
+				var _p4 = A2(_elm_lang$core$Array$get, _p5, model);
+				if (_p4.ctor === 'Just') {
+					return A3(
+						_elm_lang$core$Array$set,
+						_p5,
+						{ctor: '_Tuple3', _0: _p0._1, _1: _p4._0._1, _2: _p4._0._2},
+						model);
+				} else {
+					return model;
+				}
+			default:
+				var _p7 = _p0._0;
+				var _p6 = A2(_elm_lang$core$Array$get, _p7, model);
+				if (_p6.ctor === 'Just') {
+					return A3(
+						_elm_lang$core$Array$set,
+						_p7,
+						{ctor: '_Tuple3', _0: _p6._0._0, _1: _p6._0._1, _2: !_p6._0._2},
+						model);
+				} else {
+					return model;
+				}
+		}
 	});
-var _user$project$Lia_Code_Update$Eval = F2(
+var _user$project$Lia_Code_Update$FlipMode = function (a) {
+	return {ctor: 'FlipMode', _0: a};
+};
+var _user$project$Lia_Code_Update$Update = F2(
 	function (a, b) {
-		return {ctor: 'Eval', _0: a, _1: b};
+		return {ctor: 'Update', _0: a, _1: b};
 	});
+var _user$project$Lia_Code_Update$Eval = function (a) {
+	return {ctor: 'Eval', _0: a};
+};
 
 var _user$project$Native_Responsive = (function () {
 
@@ -13886,11 +13926,16 @@ var _user$project$Lia_Update$update = F2(
 		}
 	});
 
-var _user$project$Lia_Code_View$highlight = F2(
-	function (lang, block) {
+var _user$project$Lia_Code_View$highlight = F3(
+	function (lang, code, idx) {
 		return A2(
 			_elm_lang$html$Html$pre,
-			{ctor: '[]'},
+			(_elm_lang$core$Native_Utils.cmp(idx, -1) > 0) ? {
+				ctor: '::',
+				_0: _elm_lang$html$Html_Events$onDoubleClick(
+					_user$project$Lia_Code_Update$FlipMode(idx)),
+				_1: {ctor: '[]'}
+			} : {ctor: '[]'},
 			{
 				ctor: '::',
 				_0: A2(
@@ -13898,7 +13943,7 @@ var _user$project$Lia_Code_View$highlight = F2(
 					{ctor: '[]'},
 					{
 						ctor: '::',
-						_0: A2(_user$project$Lia_Utils$highlight, lang, block),
+						_0: A2(_user$project$Lia_Utils$highlight, lang, code),
 						_1: {ctor: '[]'}
 					}),
 				_1: {ctor: '[]'}
@@ -13908,49 +13953,66 @@ var _user$project$Lia_Code_View$view = F2(
 	function (model, code) {
 		var _p0 = code;
 		if (_p0.ctor === 'Highlight') {
-			return A2(_user$project$Lia_Code_View$highlight, _p0._0, _p0._1);
+			return A3(_user$project$Lia_Code_View$highlight, _p0._0, _p0._1, -1);
 		} else {
-			var _p3 = _p0._1;
-			var _p2 = _p0._0;
-			return A2(
-				_elm_lang$html$Html$div,
-				{ctor: '[]'},
-				{
-					ctor: '::',
-					_0: A2(_user$project$Lia_Code_View$highlight, 'js', _p2),
-					_1: {
+			var _p4 = _p0._0;
+			var _p1 = A2(_elm_lang$core$Array$get, _p4, model);
+			if (_p1.ctor === 'Just') {
+				var _p3 = _p1._0._0;
+				return A2(
+					_elm_lang$html$Html$div,
+					{ctor: '[]'},
+					{
 						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$button,
+						_0: _p1._0._2 ? A2(
+							_elm_lang$html$Html$textarea,
 							{
 								ctor: '::',
-								_0: _elm_lang$html$Html_Events$onClick(
-									A2(_user$project$Lia_Code_Update$Eval, _p3, _p2)),
-								_1: {ctor: '[]'}
+								_0: _elm_lang$html$Html_Events$onInput(
+									_user$project$Lia_Code_Update$Update(_p4)),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$value(_p3),
+									_1: {ctor: '[]'}
+								}
 							},
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html$text('run'),
-								_1: {ctor: '[]'}
-							}),
+							{ctor: '[]'}) : A3(_user$project$Lia_Code_View$highlight, 'js', _p3, _p4),
 						_1: {
 							ctor: '::',
-							_0: function () {
-								var _p1 = A2(_user$project$Lia_Code_Model$get_result, _p3, model);
-								if (_p1.ctor === 'Nothing') {
-									return _elm_lang$html$Html$text('');
-								} else {
-									if (_p1._0.ctor === 'Ok') {
-										return _elm_lang$html$Html$text(_p1._0._0);
+							_0: A2(
+								_elm_lang$html$Html$button,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Events$onClick(
+										_user$project$Lia_Code_Update$Eval(_p4)),
+									_1: {ctor: '[]'}
+								},
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html$text('run'),
+									_1: {ctor: '[]'}
+								}),
+							_1: {
+								ctor: '::',
+								_0: function () {
+									var _p2 = _p1._0._1;
+									if (_p2.ctor === 'Nothing') {
+										return _elm_lang$html$Html$text('');
 									} else {
-										return _elm_lang$html$Html$text(_p1._0._0);
+										if (_p2._0.ctor === 'Ok') {
+											return _elm_lang$html$Html$text(_p2._0._0);
+										} else {
+											return _elm_lang$html$Html$text(_p2._0._0);
+										}
 									}
-								}
-							}(),
-							_1: {ctor: '[]'}
+								}(),
+								_1: {ctor: '[]'}
+							}
 						}
-					}
-				});
+					});
+			} else {
+				return _elm_lang$html$Html$text('');
+			}
 		}
 	});
 
@@ -14010,6 +14072,67 @@ var _user$project$Lia_Effect_View$circle = function ($int) {
 			_1: {ctor: '[]'}
 		});
 };
+var _user$project$Lia_Effect_View$responsive = A2(
+	_elm_lang$html$Html$div,
+	{ctor: '[]'},
+	{
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$a,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$href('https://responsivevoice.org'),
+				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text('ResponsiveVoice-NonCommercial'),
+				_1: {ctor: '[]'}
+			}),
+		_1: {
+			ctor: '::',
+			_0: _elm_lang$html$Html$text(' licensed under '),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$a,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$href('https://creativecommons.org/licenses/by-nc-nd/4.0/'),
+						_1: {ctor: '[]'}
+					},
+					{
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$img,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$title('ResponsiveVoice Text To Speech'),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$src('https://responsivevoice.org/wp-content/uploads/2014/08/95x15.png'),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$alt('95x15'),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$html$Html_Attributes$width(95),
+											_1: {
+												ctor: '::',
+												_0: _elm_lang$html$Html_Attributes$height(15),
+												_1: {ctor: '[]'}
+											}
+										}
+									}
+								}
+							},
+							{ctor: '[]'}),
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			}
+		}
+	});
 var _user$project$Lia_Effect_View$comment = F4(
 	function (model, viewer, idx, elements) {
 		return _elm_lang$core$Native_Utils.eq(idx, model.visible) ? A2(
@@ -14068,7 +14191,14 @@ var _user$project$Lia_Effect_View$comment = F4(
 					}),
 				_1: {ctor: '[]'}
 			},
-			A2(_elm_lang$core$List$map, viewer, elements)) : A2(
+			A2(
+				_elm_lang$core$List$append,
+				A2(_elm_lang$core$List$map, viewer, elements),
+				{
+					ctor: '::',
+					_0: _user$project$Lia_Effect_View$responsive,
+					_1: {ctor: '[]'}
+				})) : A2(
 			_elm_lang$html$Html$div,
 			{ctor: '[]'},
 			{ctor: '[]'});
@@ -15540,7 +15670,7 @@ var _user$project$Lia$parse = function (model) {
 					_user$project$Lia_Effect_Model$init,
 					_p7,
 					_elm_lang$core$List$head(_p8)),
-				code_model: _user$project$Lia_Code_Model$init(_p6._0._1),
+				code_model: _p6._0._1,
 				survey_model: _elm_lang$core$Native_Utils.eq(model.survey_model, _elm_lang$core$Array$empty) ? _p6._0._3 : model.survey_model,
 				narator: _elm_lang$core$Native_Utils.eq(_p7, '') ? 'US English Male' : _p7
 			});

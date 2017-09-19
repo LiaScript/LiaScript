@@ -63,7 +63,7 @@ init_slides =
 parse : Model -> Model
 parse model =
     case Lia.Parser.run model.script of
-        Ok ( slides, codes, quiz_vector, survey_vector, narator ) ->
+        Ok ( slides, code_vector, quiz_vector, survey_vector, narator ) ->
             { model
                 | slides = slides
                 , error = ""
@@ -74,7 +74,7 @@ parse model =
                         model.quiz_model
                 , index_model = Index.init slides
                 , effect_model = Effect.init narator <| List.head slides
-                , code_model = Code.init codes
+                , code_model = code_vector
                 , survey_model =
                     if model.survey_model == Array.empty then
                         survey_vector
