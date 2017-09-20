@@ -24,6 +24,7 @@ An extended Markdown format for writing interactive online courses.
     |______________________________________
     0                                     50
 
+
                                      --{{1}}--
 With Lia we try to implement an extended Markdown format that should enable
 everyone to create, share, adapt, translate or correct and extend online courses
@@ -182,7 +183,7 @@ Inline code via \` enter some code in here 1\#\#\#\$& \` -> ` enter some code in
 ### Block-Code
 
 
-``` c
+```c
 #include "test.h"
 
 int main () {
@@ -191,15 +192,14 @@ int main () {
 }
 ```
 
-``` python
+```python
 import math
 
 def lia_sqrt(val):
     return math.sqrt(val) + 22
 ```
 
-``` javascript X
-
+```javascript X
 alert("test XXXX");
 ```
 
@@ -355,6 +355,3 @@ Multi Choice Matrix
     [                     ] test 1
     [                     ] test 4
     [                     ] test 3
-
-
-"""
