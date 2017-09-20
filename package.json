@@ -6,7 +6,8 @@
   "scripts": {
     "postinstall": "elm package install -y",
     "start": "brunch watch --server",
-    "prod": "brunch build --production"
+    "prod": "brunch build --production",
+    "prepack": "brunch build --production"
   },
   "keywords": [
     "elm",
