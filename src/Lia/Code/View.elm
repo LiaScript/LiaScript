@@ -19,12 +19,12 @@ view model code =
         EvalJS idx ->
             case Array.get idx model of
                 Just ( code, rslt, b ) ->
-                    Html.div []
+                    Html.div [ Attr.class "lia-code-eval" ]
                         [ if b then
                             Html.textarea [ onInput <| Update idx, Attr.value code ] []
                           else
                             highlight "js" code idx
-                        , Html.button [ onClick (Eval idx) ]
+                        , Html.button [ Attr.class "lia-btn", onClick (Eval idx) ]
                             [ Html.text "run" ]
                         , case rslt of
                             Nothing ->
@@ -45,10 +45,10 @@ highlight : String -> String -> Int -> Html Msg
 highlight lang code idx =
     Html.pre
         (if idx > -1 then
-            [ onDoubleClick (FlipMode idx) ]
+            [ Attr.class "lia-code", onDoubleClick (FlipMode idx) ]
          else
-            []
+            [ Attr.class "lia-code" ]
         )
-        [ Html.code []
+        [ Html.code [ Attr.class "lia-code-highlight" ]
             [ Lia.Utils.highlight lang code ]
         ]

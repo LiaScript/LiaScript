@@ -298,22 +298,19 @@ Please enter the word "solution" into the text-field!
     width: 18%
 -->
 
-
---{{1}}--
-
-``` javascript X
-
-alert ("fuck");
-
-```
-
 I like to see apes doing human stuff ...
 
 --{{2}}--
 
 But I do not like it the oposite way.
 
-### Comment Effects
+### Tables
+
+| hhhh | hhhh| asdfaf | sfasf |
+|------|:----|-------:|:-----:|
+| 1    |  2  | 3      | 4     |
+| 1    |  2  | 3      | 4     |
+| 1    |  2  | 3      | 4     |
 
 
 ## Tables

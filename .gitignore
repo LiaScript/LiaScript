@@ -1,2 +1,5 @@
 elm-stuff
-lib/KaTeX
+node_modules
+public
+build
+*~

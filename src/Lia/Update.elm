@@ -21,6 +21,8 @@ type Msg
     | UpdateCode Code.Msg
     | UpdateSurvey Survey.Msg
     | UpdateEffect Effect.Msg
+    | Theme String
+    | ThemeLight
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, Maybe ( String, JE.Value ) )
@@ -40,6 +42,12 @@ update msg model =
             , Cmd.map UpdateEffect cmd
             , Nothing
             )
+
+        Theme theme ->
+            ( { model | theme = theme }, Cmd.none, Nothing )
+
+        ThemeLight ->
+            ( { model | theme_light = not model.theme_light }, Cmd.none, Nothing )
 
         PrevSlide ->
             case Effect.previous model.effect_model of

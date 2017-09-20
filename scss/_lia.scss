@@ -1,0 +1,97 @@
+@import "config";
+@import "color";
+@import "flex";
+@import "material";
+@import "toc";
+@import "slide";
+@import "plain";
+@import "controls";
+
+@mixin create-theme($theme, $theme-name) {
+    $dark: (
+        text: map-get($theme, text-inv),
+        text-inv: map-get($theme, text),
+        background: map-get($theme, background-inv),
+        background-inv: map-get($theme, background),
+        primary: map-get($theme, primary),
+        secondary: map-get($theme, secondary),
+        success: map-get($theme, success),
+        info: map-get($theme, info),
+        warning: map-get($theme, warning),
+        error: map-get($theme, error),
+        highlight-weight: map-get($theme, highlight-weight),
+    );
+
+    @keyframes show-comment {
+        from { right: -100%; }
+        to { right: map-get($config, spacing-huge); }
+    }
+
+    html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        font-family: "Roboto";
+        overflow: hidden;
+
+        * {
+            box-sizing: border-box;
+        }
+
+        .lia-variant-light {
+            @include _new-theme($theme, $theme-name);
+        }
+
+        .lia-variant-dark {
+            @include _new-theme($dark, $theme-name);
+        }
+
+        .lia-icon {
+          @include material-icon("", inherit);
+        }
+    }
+}
+
+@mixin _new-theme($theme, $theme-name) {
+    &.lia-canvas.lia-theme-#{$theme-name} {
+        $bg: map-get($theme, background);
+        $fg: color-contrast($bg);
+
+        @include flex(row, nowrap, flex-start, stretch, stretch);
+        background: $bg;
+        color: $fg;
+        width: 100%;
+        height: 100%;
+
+        .lia-toc {
+            order: 1;
+        }
+
+        .lia-slide,
+        .lia-plain {
+            order: 2;
+            flex: 1 1 auto;
+        }
+
+        // toolbar shadow
+        &::after {
+            content: "";
+            display: block;
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            z-index: 0;
+            height: map-get($config, toolbar-height);
+            box-shadow: 0 3px 1px -2px rgba(0,0,0,.2),
+                        0 2px 2px 0    rgba(0,0,0,.14),
+                        0 1px 5px 0    rgba(0,0,0,.12);
+        }
+
+        @include toc($theme);
+        @include slide($theme);
+        @include plain($theme);
+        @include controls($theme);
+    }
+}

@@ -1,0 +1,21 @@
+@import "material";
+@import "lia";
+
+$fg: material-color('grey', '900');
+$bg: material-color('grey', '50');
+
+$theme: (
+    text: $fg,
+    text-inv: $bg,
+    background: material-color('grey', '300'),
+    background-inv: material-color('grey', '900'),
+    primary: material-color('blue-grey', '500'),
+    secondary: material-color('brown', '500'),
+    success: material-color('green', '500'),
+    info: material-color('blue', '500'),
+    warning: material-color('yellow', '500'),
+    error: material-color('red', '500'),
+    highlight-weight: normal,
+);
+
+@include create-theme($theme, grey);

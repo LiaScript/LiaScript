@@ -1,38 +1,51 @@
 module Lia.Inline.View exposing (reference, view, view_inf)
 
-import Html exposing (Html)
+import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Lia.Effect.View as Effect
 import Lia.Inline.Types exposing (Inline(..), Reference(..), Url(..))
 import Lia.Utils
 
 
+inline_class : String -> Attribute msg
+inline_class c =
+    Attr.class ("lia-inline" ++ c)
+
+
 view : Int -> Inline -> Html msg
 view visible element =
     case element of
         Code e ->
-            Html.code [] [ Html.text e ]
+            Html.code [ inline_class "lia-code" ]
+                [ Html.text e ]
 
         Chars e ->
             Html.text e
 
         Bold e ->
-            Html.b [] [ view visible e ]
+            Html.b [ inline_class "lia-bold" ]
+                [ view visible e ]
 
         Italic e ->
-            Html.em [] [ view visible e ]
+            Html.em [ inline_class "lia-italic" ]
+                [ view visible e ]
 
         Strike e ->
-            Html.s [] [ view visible e ]
+            Html.s [ inline_class "lia-strike" ]
+                [ view visible e ]
 
         Underline e ->
-            Html.u [] [ view visible e ]
+            Html.u [ inline_class "lia-underline" ]
+                [ view visible e ]
 
         Superscript e ->
-            Html.sup [] [ view visible e ]
+            Html.sup [ inline_class "lia-superscript" ]
+                [ view visible e ]
 
         Container list ->
-            Html.span [] <| List.map (\e -> view visible e) list
+            list
+                |> List.map (\e -> view visible e)
+                |> Html.span [ inline_class "lia-container" ]
 
         Ref e ->
             reference e
@@ -70,7 +83,11 @@ reference ref =
     in
     case ref of
         Link alt_ url_ ->
-            Html.a [ Attr.href <| get_url url_ ] [ Html.text alt_ ]
+            Html.a
+                [ Attr.href <| get_url url_
+                , inline_class "lia-link"
+                ]
+                [ Html.text alt_ ]
 
         Image alt_ url_ style_ ->
             Html.img (media url_ style_) [ Html.text alt_ ]

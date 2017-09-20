@@ -1,0 +1,67 @@
+@import "config";
+
+@mixin slide($theme) {
+    .lia-slide {
+        @include flex(column, nowrap, flex-start, stretch, stretch);
+
+        .lia-toolbar {
+            @include flex(row, nowrap, flex-start, stretch, stretch);
+
+            .lia-btn {
+                @include material-icon("", 1em);
+            }
+        }
+
+        .lia-content {
+            $horiz: map-get($config, spacing-huge);
+            $vert: map-get($config, spacing-large);
+
+            position: relative;
+            flex: 1 1 auto;
+            padding: $vert $horiz;
+            overflow: auto;
+
+            .lia-effect-comment {
+                $bg: mix(map-get($theme, background), map-get($theme, primary), 80%);
+
+                position: absolute;
+                width: calc(100% - #{map-get($config, spacing-huge) * 2});
+                right: map-get($config, spacing-huge);
+                bottom: map-get($config, spacing-huge);
+                padding: map-get($config, spacing-large);
+                background: $bg;
+                color: color-contrast($bg);
+                animation: show-comment 0.25s ease-in-out 0s;
+
+                p {
+                    margin: 0;
+                }
+            }
+
+            .lia-effect-circle {
+                $effect-circle-size: 1 + map-get($config, spacing-small);
+                $bg: mix(map-get($theme, background), map-get($theme, background-inv), 80%);
+
+                position: absolute;
+                left: $effect-circle-size * 0.5;
+                font-size: 75%;
+                display: inline-block;
+                width: $effect-circle-size;
+                height: $effect-circle-size;
+                border-radius: $effect-circle-size;
+                background: $bg;
+                color: color-contrast($bg);
+                text-align: center;
+                vertical-align: middle;
+                padding: map-get($config, spacing-tiny);
+            }
+
+            .lia-hint-btn {
+                @include material-icon;
+                text-decoration: none;
+                color: map-get($theme, text);
+                vertical-align: middle;
+            }
+        }
+    }
+}

@@ -1,0 +1,325 @@
+@import "config";
+
+@mixin controls($theme) {
+    .lia-h1 {
+        font-size: 200%;
+        font-weight: 500;
+    }
+    .lia-h2 {
+        font-size: 175%;
+        font-weight: 500;
+    }
+    .lia-h3 {
+        font-size: 150%;
+        font-weight: 500;
+    }
+    .lia-h4 {
+        font-size: 125%;
+        font-weight: 500;
+    }
+    .lia-h5 {
+        font-size: 110%;
+        font-weight: 500;
+    }
+    .lia-h6 {
+        font-size: 105%;
+        font-weight: 500;
+    }
+
+    .lia-link {
+        &:link {
+            color: map-get($theme, primary);
+
+            &:hover {
+                color: lighten(map-get($theme, primary), 20%);
+            }
+
+            &:active {
+                color: darken(map-get($theme, primary), 20%);
+            }
+        }
+
+        &:visited {
+            color: map-get($theme, secondary);
+
+            &:hover {
+                color: lighten(map-get($theme, secondary), 20%);
+            }
+
+            &:active {
+                color: darken(map-get($theme, secondary), 20%);
+            }
+        }
+    }
+
+    .lia-code.lia-inline {
+        $vert: map-get($config, spacing-smaller);
+        $horiz: map-get($config, spacing-small);
+        $bg: mix(map-get($theme, background), map-get($theme, primary), 80%);
+        $fg: mix(map-get($theme, text), map-get($theme, background), 80%);
+        $fg-inv: mix(map-get($theme, text-inv), map-get($theme, background), 80%);
+
+        font-family: "Roboto Mono";
+        background: $bg;
+        color: color-contrast($bg, $fg, $fg-inv);
+        border-radius: map-get($config, spacing-small);
+        padding: $vert $horiz;
+        font-size: map-get($config, code-size);
+    }
+
+    .lia-code:not(.lia-inline) {
+        $bg: mix(map-get($theme, background), map-get($theme, background-inv), 95%);
+
+        font-family: "Roboto Mono";
+        background: $bg;
+        padding: map-get($config, spacing-normal);
+        font-size: map-get($config, code-size);
+    }
+
+    .lia-btn,
+    .lia-input,
+    .lia-label,
+    .lia-select {
+        $vert: map-get($config, spacing-small);
+        $marg: map-get($config, spacing-normal);
+        padding: $vert 0;
+        margin: $marg;
+    }
+
+    .lia-btn {
+        $bg: map-get($theme, primary);
+        $fg: color-contrast(map-get($theme, primary));
+
+        border: none;
+        border-radius: map-get($config, spacing-smaller);
+        background: $bg;
+        color: $fg;
+        outline: none;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 3px 1px -2px rgba(0,0,0,.2),
+                    0 2px 2px 0    rgba(0,0,0,.14),
+                    0 1px 5px 0    rgba(0,0,0,.12);
+        transition: background 0.25s ease-in 0s;
+        padding: 0 map-get($config, spacing-large);
+        line-height: 2em;
+
+        &:hover {
+            cursor: pointer;
+            background: mix($bg, $fg, 90%);
+        }
+
+        .lia-ripple {
+            position: absolute;
+            display: block;
+            border-radius: 50%;
+            width: 0;
+            height: 0;
+            margin: 0;
+            background: $fg;
+            opacity: 0;
+            transition-property: width, height, margin, opacity;
+            transition-duration: 0.5s;
+            transition-timing-function: ease-out;
+            transition-delay: 0s;
+        }
+
+        &.lia-success {
+            $bg: map-get($theme, success);
+            $fg: color-contrast($bg);
+
+            background: $bg;
+            color: $fg;
+
+            &:hover {
+                background: mix($bg, $fg, 90%);
+            }
+
+            .lia-ripple {
+                background: $fg;
+            }
+        }
+
+        &.lia-failure {
+            $bg: map-get($theme, error);
+            $fg: color-contrast($bg);
+
+            background: $bg;
+            color: $fg;
+
+            &:hover {
+                background: mix($bg, $fg, 90%);
+            }
+
+            .lia-ripple {
+                background: $fg;
+            }
+        }
+    }
+
+    .lia-labeled {
+        @include flex(row, nowrap, flex-start, center, flex-start);
+        margin-right: map-get($config, spacing-normal);
+
+        & :first-child {
+            margin-right: 0;
+        }
+    }
+
+    .lia-toolbar {
+        $bg: map-get($theme, primary);
+        $fg: color-contrast($bg);
+
+        z-index: 1;
+        flex: 0 0 auto;
+        height: map-get($config, toolbar-height);
+        background: $bg;
+        color: $fg;
+
+        .lia-btn {
+            box-shadow: none;
+            background: transparent;
+            color: $fg;
+
+            &:hover {
+                background: mix(transparent, $fg, 90%);
+            }
+
+            .lia-ripple {
+                background: $fg;
+            }
+        }
+
+        .lia-input,
+        .lia-select {
+            background: $bg;
+            color: $fg;
+            border-bottom-color: mix($bg, $fg, 50%);
+
+            &:focus {
+                border-bottom-color: $fg;
+            }
+        }
+
+        .lia-left {
+            order: 1;
+        }
+
+        .lia-spacer {
+            order: 1;
+            flex: 1 1 auto;
+        }
+
+        .lia-right {
+            order: 2;
+        }
+    }
+
+    .lia-input,
+    .lia-select {
+        $bg: map-get($theme, background);
+        $fg: color-contrast($bg);
+
+        background: $bg;
+        color: $fg;
+        border: none;
+        outline: none;
+        border-bottom: 1.5px solid mix($bg, $fg, 50%);
+        transition: border-bottom-color 0.5s ease-out 0s;
+
+        &:focus {
+            border-bottom-color: map-get($theme, primary);
+        }
+    }
+
+    input[type='radio'] {
+        $bg: map-get($theme, background);
+        $fg: color-contrast($bg);
+        $snd: map-get($theme, secondary);
+        $outline: 2.5px;
+
+        // hide the input but have it still be clickable
+        opacity: 0;
+        vertical-align: middle;
+        position: absolute;
+        width: calc(1em + #{$outline} * 2);
+        height: calc(1em + #{$outline} * 2);
+        margin-right: map-get($config, spacing-small);
+
+        & + .lia-radio-btn {
+            margin: $outline;
+            clear: none;
+            vertical-align: middle;
+            display: inline-block;
+            box-sizing: border-box;
+            border-radius: 50%;
+            border: 0.5em solid $bg;
+            background: $bg;
+            box-shadow: 0 0 0 $outline mix($bg, $fg, 50%);
+            width: 1em;
+            height: 1em;
+            transition-property: background, box-shadow, border;
+            transition-duration: 0.25s;
+            transition-timing-function: ease-in;
+        }
+
+        &:hover {
+            cursor: pointer;
+        }
+
+        &:checked + .lia-radio-btn {
+            box-shadow: 0 0 0 $outline $snd;
+            background: $snd;
+            border: 3px solid $bg;
+        }
+    }
+
+    input[type='checkbox'] {
+        $bg: map-get($theme, background);
+        $fg: color-contrast($bg);
+        $snd: map-get($theme, secondary);
+        $outline: 2.5px;
+
+        // hide the input but have it still be clickable
+        opacity: 0;
+        vertical-align: middle;
+        position: absolute;
+        width: calc(1em + #{$outline} * 2);
+        height: calc(1em + #{$outline} * 2);
+        margin-right: map-get($config, spacing-small);
+
+        & + .lia-check-btn {
+            @include material-icon("", inherit);
+            margin: $outline;
+            clear: none;
+            vertical-align: middle;
+            font-weight: 600;
+            overflow: hidden;
+            box-sizing: border-box;
+            border-radius: map-get($config, spacing-tiny);
+            border: 0.5em solid $bg;
+            box-shadow: 0 0 0 $outline mix($bg, $fg, 50%);
+            width: 1em;
+            height: 1em;
+            background: $bg;
+            color: color-contrast($snd);
+            transition-property: background, box-shadow, border;
+            transition-duration: 0.25s;
+            transition-timing-function: ease-in;
+        }
+
+        &:hover {
+            cursor: pointer;
+        }
+
+        &:checked + .lia-check-btn {
+            box-shadow: 0 0 0 $outline $snd;
+            border: 0px solid $snd;
+            background: $snd;
+        }
+    }
+
+    .lia-hidden {
+        display: none;
+    }
+}
