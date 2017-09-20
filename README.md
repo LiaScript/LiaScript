@@ -16,13 +16,13 @@ narator:  US English Female
 
 An extended Markdown format for writing interactive online courses.
 
-|          *
-|       *    *
-|     *          *
-|   *                   *
-| *                            *
-|______________________________________
-0                                     50
+    |          *
+    |       *    *
+    |     *          *
+    |   *                   *
+    | *                            *
+    |______________________________________
+    0                                     50
 
                                      --{{1}}--
 With Lia we try to implement an extended Markdown format that should enable
