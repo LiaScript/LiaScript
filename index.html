@@ -1,7 +1,7 @@
 <html>
     <head>
         <!--link rel="stylesheet" href="css/leagua.css"-->
-        <script src="http://code.responsivevoice.org/responsivevoice.js"></script>
+        <!--script src="http://code.responsivevoice.org/responsivevoice.js"></script-->
         <link rel="stylesheet" href="css/lia.css">
         <link rel="stylesheet" href="css/animate.css">
 
@@ -11,20 +11,20 @@
         <link rel="stylesheet" href="lib/KaTeX/build/katex.css">
         <script type="text/javascript" src="lib/KaTeX/build/katex.js"></script>
 
-        <script type="text/javascript" src="build/lia.js"></script>
+        <script type="text/javascript" src="build/app.js"></script>
     </head>
     <body>
         <div id="lia"></div>
-        <script>
+        <!-- <script>
             const elmLia = document.querySelector('#lia');
 
             if (elmLia) {
                 const app = Elm.Main.embed(elmLia, {url: "https://raw.githubusercontent.com/andre-dietrich/lia/master/README.md"});
             }
-        </script>
+        </script> -->
 
 
-        <!-- <script>
+        <script>
             function readTextFile(file) {
                 var rawFile = new XMLHttpRequest();
                 rawFile.open("GET", file, false);
@@ -42,6 +42,6 @@
                 rawFile.send(null);
             }
             readTextFile("ReadMe.md")
-        </script> -->
+        </script>
     </body>
 </html>

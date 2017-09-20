@@ -16,6 +16,21 @@ narator:  US English Female
 
 An extended Markdown format for writing interactive online courses.
 
+|           *
+|
+|        *     *
+|      *          *
+|     *             *                     *
+|    *                *
+|   *                      *
+|  *
+| *                              *
+|___________________________________________
+2.0                                         10
+
+
+
+
 
                                      --{{1}}--
 With Lia we try to implement an extended Markdown format that should enable
@@ -341,7 +356,7 @@ Single Choice Matrix
     [                     ] test 2
     [                     ] test 3
 
-Multi Choice Matrix 
+Multi Choice Matrix
 
     [[1][2][3][4][5][6][7]]
     [                     ] test 1

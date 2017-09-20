@@ -5,6 +5,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import Html.Lazy exposing (lazy2)
+import Lia.Chart.View
 import Lia.Code.View as Codes
 import Lia.Effect.Model as Effect
 import Lia.Effect.View as Effects
@@ -223,6 +224,9 @@ view_block model block =
 
         EComment idx comment ->
             Effects.comment model.effect_model (view_block model) idx [ Paragraph comment ]
+
+        Chart chart ->
+            Lia.Chart.View.view chart
 
 
 view_table : Model -> List (List Inline) -> Array String -> List (List (List Inline)) -> Html Msg

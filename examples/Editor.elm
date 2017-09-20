@@ -75,7 +75,7 @@ update msg model =
 
         Child liaMsg ->
             let
-                ( lia, cmd ) =
+                ( lia, cmd, log ) =
                     Lia.update liaMsg model.lia
             in
             ( { model | lia = lia }, Cmd.map Child cmd )

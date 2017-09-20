@@ -1,6 +1,7 @@
 module Lia.Parser exposing (run)
 
 import Combine exposing (..)
+import Lia.Chart.Parser as Chart
 import Lia.Code.Parser exposing (..)
 import Lia.Code.Types exposing (CodeVector)
 import Lia.Effect.Parser exposing (..)
@@ -40,6 +41,7 @@ blocks =
                     choice
                         [ eblock blocks
                         , ecomment paragraph
+                        , Chart <$> Chart.parse
                         , table
                         , CodeBlock <$> code
                         , quote_block
@@ -154,23 +156,30 @@ title_str =
     String.trim <$> regex ".+[\\n]+"
 
 
+slide : Parser PState Slide
+slide =
+    lazy <|
+        \() ->
+            let
+                body =
+                    many (blocks <* newlines)
+
+                effect_counter =
+                    let
+                        pp par =
+                            succeed par.num_effects
+
+                        reset_effect c =
+                            { c | num_effects = 0 }
+                    in
+                    withState pp <* modifyState reset_effect
+            in
+            Slide <$> title_tag <*> title_str <*> body <*> effect_counter
+
+
 parse : Parser PState (List Slide)
 parse =
-    let
-        body =
-            many (blocks <* newlines)
-
-        effect_counter =
-            let
-                pp par =
-                    succeed par.num_effects
-
-                reset_effect c =
-                    { c | num_effects = 0 }
-            in
-            withState pp <* modifyState reset_effect
-    in
-    whitelines *> define_comment *> many1 (Slide <$> title_tag <*> title_str <*> body <*> effect_counter)
+    whitelines *> define_comment *> many1 slide
 
 
 define_comment : Parser PState ()
