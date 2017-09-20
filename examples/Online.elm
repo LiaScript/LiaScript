@@ -108,10 +108,7 @@ view model =
                 ]
 
         LoadOk ->
-            Html.div []
-                [ Html.text model.error
-                , Html.map LIA <| Lia.view model.lia
-                ]
+            Html.map LIA <| Lia.view model.lia
 
         LoadFail ->
             Html.div []
