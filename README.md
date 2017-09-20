@@ -199,7 +199,7 @@ def lia_sqrt(val):
     return math.sqrt(val) + 22
 ```
 
-```javascript X
+```javascript
 alert("test XXXX");
 ```
 
