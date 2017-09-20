@@ -1,6 +1,6 @@
 {
   "name": "lia-script",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A collaborative presentation framework",
   "main": "brunch-config.js",
   "scripts": {
@@ -16,8 +16,8 @@
   ],
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
-  "dependencies": {},
-  "devDependencies": {
+  "devDependencies": {},
+  "dependencies": {
     "animate.css": "^3.5.2",
     "auto-reload-brunch": "^2.7.1",
     "brunch": "^2.8.2",
