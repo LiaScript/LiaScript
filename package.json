@@ -14,7 +14,7 @@
     "brunch",
     "sass"
   ],
-  "author": "",
+  "author": "André Dietrich",
   "license": "BSD-3-Clause",
   "dependencies": {},
   "devDependencies": {
