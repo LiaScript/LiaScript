@@ -30,8 +30,11 @@ unique start list =
 chart : Parser PState Chart
 chart =
     let
-        points rows ( x0, steps ) =
+        points y_max rows y_min ( x0, x_segment ) =
             let
+                ( y0, y_segment ) =
+                    segmentation (List.length rows) y_min y_max
+
                 points =
                     rows
                         |> List.reverse
@@ -42,8 +45,8 @@ chart =
                                     |> List.map
                                         (\x ->
                                             Point
-                                                (toFloat x * steps + x0)
-                                                (toFloat y)
+                                                (toFloat x * x_segment + x0)
+                                                (toFloat y * y_segment + y0)
                                         )
                             )
                         |> List.concat
@@ -54,7 +57,11 @@ chart =
             else
                 Points points
     in
-    points <$> many1 row <*> x_axis
+    points
+        <$> optional 1.0 (regex "( )*" *> number)
+        <*> many1 row
+        <*> optional 0.0 (regex "( )*" *> number)
+        <*> x_axis
 
 
 row : Parser PState (List Int)
@@ -62,13 +69,17 @@ row =
     String.indexes "*" <$> (regex "( )*\\|" *> regex "(( )*\\*)*") <* regex "( )*\\n"
 
 
+segmentation : Int -> Float -> Float -> ( Float, Float )
+segmentation elements i0 i1 =
+    ( i0, (i1 - i0) / toFloat elements )
+
+
 x_axis : Parser PState ( Float, Float )
 x_axis =
-    let
-        segmentation elments x0 x1 =
-            ( x0, (x1 - x0) / (toFloat <| String.length elments) )
-    in
-    segmentation <$> (regex "( )*\\|" *> regex "_+" <* regex "( )*\\n( )*") <*> number <*> (regex "( )*" *> number <* regex "( )*\\n")
+    (\e x0 x1 -> segmentation (String.length e) x0 x1)
+        <$> (regex "( )*\\|" *> regex "_+" <* regex "( )*\\n( )*")
+        <*> optional 0.0 number
+        <*> optional 1.0 (regex "( )*" *> number <* regex "( )*\\n")
 
 
 number : Parser PState Float

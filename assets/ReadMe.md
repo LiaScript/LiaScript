@@ -16,32 +16,6 @@ narator:  US English Female
 
 An extended Markdown format for writing interactive online courses.
 
-     |           *
-     |
-     |        *     *
-     |      *          *
-     |     *             *                     *
-     |    *                *
-     |   *                      *
-     |  *
-     | *                              *
-     |___________________________________________
-      2.0                                      10
-
-
-     |           *
-     |           *
-     |        *** ***   *
-     |        **** **    *
-     |     *  ** ****   * ***       *
-     |    *       *         *
-     |                         *
-     |           *
-     |    *   *     *         *      *
-     |___________________________________________
-     -2.0                                       2
-
-
 
                                      --{{1}}--
 With Lia we try to implement an extended Markdown format that should enable
@@ -341,6 +315,36 @@ But I do not like it the oposite way.
 | col 3 is      | right-aligned | $1600 |
 | col 2 is      | centered      |   $12 |
 | zebra stripes | are neat      |    $1 |
+
+## Charts
+
+### Line-Plots
+
+       |           *
+       |
+       |        *     *
+       |      *          *
+       |     *             *                     *
+       |    *                *
+       |   *                      *
+       |  *
+       | *                              *
+       |___________________________________________
+       2.0                                      10
+
+### Dot-Plots
+
+    10 |           *
+       |           *
+       |        *** ***   *
+       |        **** **    *
+       |     *  ** ****   * ***       *
+       |    *       *         *
+       |                         *
+       |           *
+       |    *   *     *         *      *
+       |___________________________________________
+       -2.0                                       2
 
 ## Surveys
 
