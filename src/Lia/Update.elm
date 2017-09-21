@@ -88,7 +88,7 @@ update msg model =
 
         UpdateEffect childMsg ->
             let
-                ( effect_model, cmd, h ) =
+                ( effect_model, cmd, _ ) =
                     Effect.update childMsg model.effect_model
             in
             ( { model | effect_model = effect_model }, Cmd.map UpdateEffect cmd, Nothing )
