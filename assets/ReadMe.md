@@ -16,19 +16,30 @@ narator:  US English Female
 
 An extended Markdown format for writing interactive online courses.
 
-|           *
-|
-|        *     *
-|      *          *
-|     *             *                     *
-|    *                *
-|   *                      *
-|  *
-| *                              *
-|___________________________________________
-2.0                                         10
+     |           *
+     |
+     |        *     *
+     |      *          *
+     |     *             *                     *
+     |    *                *
+     |   *                      *
+     |  *
+     | *                              *
+     |___________________________________________
+      2.0                                      10
 
 
+     |           *
+     |           *
+     |        *** ***   *
+     |        **** **    *
+     |     *  ** ****   * ***       *
+     |    *       *         *
+     |                         *
+     |           *
+     |    *   *     *         *      *
+     |___________________________________________
+     -2.0                                       2
 
 
 
@@ -213,6 +224,8 @@ def lia_sqrt(val):
     return math.sqrt(val) + 22
 ```
 
+Double click into this code to change it ...
+
 ``` javascript X
 
 alert("test XXXX");
@@ -320,7 +333,7 @@ I like to see apes doing human stuff ...
 --{{2}}--
 But I do not like it the oposite way.
 
-### Tables
+## Tables
 
 
 | Tables        | Are           | Cool  |
@@ -329,7 +342,7 @@ But I do not like it the oposite way.
 | col 2 is      | centered      |   $12 |
 | zebra stripes | are neat      |    $1 |
 
-### Surveys
+## Surveys
 
 Text :
 
