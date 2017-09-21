@@ -9,3 +9,4 @@ type alias Point =
 
 type Chart
     = Diagram (List Point)
+    | Points (List Point)

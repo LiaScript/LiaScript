@@ -8,20 +8,51 @@ import Lia.PState exposing (PState)
 
 parse : Parser PState Chart
 parse =
-    diagram
+    chart
 
 
-diagram : Parser PState Chart
-diagram =
+unique : Maybe a -> List a -> Bool
+unique start list =
+    case ( list, start ) of
+        ( x :: xs, Nothing ) ->
+            unique (Just x) xs
+
+        ( x :: xs, Just s ) ->
+            if x == s then
+                False
+            else
+                unique (Just x) xs
+
+        ( x, _ ) ->
+            True
+
+
+chart : Parser PState Chart
+chart =
     let
         points rows ( x0, steps ) =
-            rows
-                |> List.reverse
-                |> List.indexedMap (,)
-                |> List.map (\( y, xs ) -> xs |> List.map (\x -> Point (toFloat x * steps + x0) (toFloat y)))
-                |> List.concat
-                |> List.sortBy .x
-                |> Diagram
+            let
+                points =
+                    rows
+                        |> List.reverse
+                        |> List.indexedMap (,)
+                        |> List.map
+                            (\( y, xs ) ->
+                                xs
+                                    |> List.map
+                                        (\x ->
+                                            Point
+                                                (toFloat x * steps + x0)
+                                                (toFloat y)
+                                        )
+                            )
+                        |> List.concat
+                        |> List.sortBy .x
+            in
+            if points |> List.map .x |> unique Nothing then
+                Diagram points
+            else
+                Points points
     in
     points <$> many1 row <*> x_axis
 

@@ -21,3 +21,8 @@ view chart =
                   }
                 ]
                 points
+
+        Points points ->
+            Plot.viewSeries
+                [ Plot.dots (List.map (\{ x, y } -> Plot.circle x y)) ]
+                points
