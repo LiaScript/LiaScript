@@ -1,6 +1,7 @@
 module Lia.View exposing (view)
 
 import Array exposing (Array)
+import Char
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
@@ -19,7 +20,6 @@ import Lia.Survey.View
 import Lia.Types exposing (..)
 import Lia.Update exposing (Msg(..))
 import String
-import Char
 
 
 view : Model -> Html Msg
@@ -108,9 +108,12 @@ view_slides model =
 
 capitalize : String -> String
 capitalize s =
-  case String.uncons s of
-    Just (c,ss) -> String.cons (Char.toUpper c) ss
-    Nothing -> s
+    case String.uncons s of
+        Just ( c, ss ) ->
+            String.cons (Char.toUpper c) ss
+
+        Nothing ->
+            s
 
 
 view_themes : String -> Bool -> List (Html Msg)
@@ -125,17 +128,17 @@ view_themes current_theme light =
         , Html.span [ Attr.class "lia-label" ] [ Html.text "Light Variant" ]
         ]
     , Html.select
-      [ onInput Theme
-      , Attr.class "lia-right lia-select"
-      ]
-      (themes
-          |> List.map
-              (\t ->
-                  Html.option
-                      [ Attr.value t, Attr.selected (capitalize t ++ " Theme" == current_theme) ]
-                      [ Html.text (capitalize t ++ " Theme") ]
-              )
-      )
+        [ onInput Theme
+        , Attr.class "lia-right lia-select"
+        ]
+        (themes
+            |> List.map
+                (\t ->
+                    Html.option
+                        [ Attr.value t, Attr.selected (capitalize t ++ " Theme" == current_theme) ]
+                        [ Html.text (capitalize t ++ " Theme") ]
+                )
+        )
     ]
 
 
@@ -324,7 +327,7 @@ view_block model block =
 view_table : Model -> List (List Inline) -> Array String -> List (List (List Inline)) -> Html Msg
 view_table model header format body =
     let
-        view_row model f row =
+        view_row model_ f row =
             row
                 |> List.indexedMap (,)
                 |> List.map
@@ -340,7 +343,7 @@ view_table model header format body =
                                 )
                             ]
                             (col
-                                |> List.map (\element -> Elem.view model.effect_model.visible element)
+                                |> List.map (\element -> Elem.view model_.effect_model.visible element)
                             )
                     )
     in

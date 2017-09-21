@@ -12,7 +12,7 @@ module Tts.Responsive exposing (cancel, getVoices, speak, voiceSupport)
 import Json.Decode as Dec
 import Native.Responsive
 import Result exposing (Result)
-import Task exposing (Task)
+import Task
 
 
 {-| -}

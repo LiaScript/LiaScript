@@ -18,12 +18,12 @@ view model code =
 
         EvalJS idx ->
             case Array.get idx model of
-                Just ( code, rslt, b ) ->
+                Just ( code_str, rslt, b ) ->
                     Html.div [ Attr.class "lia-code-eval" ]
                         [ if b then
-                            Html.textarea [ onInput <| Update idx, Attr.value code ] []
+                            Html.textarea [ onInput <| Update idx, Attr.value code_str ] []
                           else
-                            highlight "js" code idx
+                            highlight "js" code_str idx
                         , Html.button [ Attr.class "lia-btn", onClick (Eval idx) ]
                             [ Html.text "run" ]
                         , case rslt of

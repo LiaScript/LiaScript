@@ -1,6 +1,22 @@
 //var $ = require("jquery");
 
-Elm.Main.embed(document.body, {url: "https://raw.githubusercontent.com/andre-dietrich/lia/master/README.md"});
+// var Lia = {
+//     init (elment, url, script) {
+//         Elm.Main.embed(elment, {url: url, script: script});
+//     }
+// }
+
+//export default Lia;
+
+// let Lia = {
+//     init(element, url, script) {
+//         if (!element) { return }
+//
+//         Elm.Main.embed(element, {url: url, script: script});
+//     },
+// }
+//
+// export default Lia
 
 /*$(function () {
     // store created ripple from mousedown until mouseup

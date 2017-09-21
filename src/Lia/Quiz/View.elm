@@ -28,6 +28,7 @@ view model quiz =
             view_quiz (state idx) (view_multiple_choice questions) idx hints (MultipleChoiceState solution)
 
 
+view_quiz : Maybe QuizElement -> (Int -> QuizState -> Bool -> Html Msg) -> Int -> List Line -> QuizState -> Html Msg
 view_quiz state fn_view idx hints solution =
     case state of
         Just s ->

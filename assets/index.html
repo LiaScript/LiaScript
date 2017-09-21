@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <script src='https://code.responsivevoice.org/responsivevoice.js'></script>
+    <!--script src='https://code.responsivevoice.org/responsivevoice.js'></script-->
     <script type="text/javascript" src="/js/vendor.js"></script>
     <script type="text/javascript" src="/js/app.js"></script>
 
@@ -20,8 +20,29 @@
     <link rel="icon" href="/favicon.ico">
 
     <title>Lia Script</title>
-</head>
+  </head>
   <body>
-    <script>require("src/index");</script>
+    <script>
+      //var Lia = require("src/index");
+      //Elm.Main.embed(document.body, {url: "", script: ""});
+
+      function readTextFile(file) {
+          var rawFile = new XMLHttpRequest();
+          rawFile.open("GET", file, false);
+          rawFile.onreadystatechange = function () {
+              if(rawFile.readyState === 4) {
+                  if(rawFile.status === 200 || rawFile.status == 0) {
+
+                      const app = Elm.Main.embed(document.body, {url: "" , script: rawFile.responseText});
+
+                  }
+              }
+          }
+          rawFile.send(null);
+      }
+      readTextFile("ReadMe.md")
+
+    </script>
+
   </body>
 </html>

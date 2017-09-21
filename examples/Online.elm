@@ -29,12 +29,14 @@ main =
 
 type State
     = Loading
+    | Waiting
     | LoadOk
     | LoadFail
 
 
 type alias Flags =
     { url : String
+    , script : String
     }
 
 
@@ -47,10 +49,19 @@ type alias Model =
 
 
 init : Flags -> ( Model, Cmd Msg )
-init flag =
-    ( Model flag.url (Lia.init_slides "") Loading ""
-    , getCourse flag.url
-    )
+init flags =
+    if flags.script /= "" then
+        ( Model "" (Lia.init_slides flags.script) LoadOk ""
+        , Cmd.none
+        )
+    else if flags.url /= "" then
+        ( Model flags.url (Lia.init_slides "") Loading ""
+        , getCourse flags.url
+        )
+    else
+        ( Model "" (Lia.init_slides "") Waiting ""
+        , Cmd.none
+        )
 
 
 
@@ -80,7 +91,7 @@ update msg model =
 
         GET (Ok script) ->
             ( { model
-                | lia = Lia.parse <| Lia.set_script (Lia.init_slides script) script
+                | lia = Lia.parse <| Lia.init_slides script
                 , error = ""
                 , state = LoadOk
               }
@@ -115,6 +126,13 @@ view model =
                 [ Html.h2 [] [ Html.text "Load failed" ]
                 , Html.h6 [] [ Html.text model.url ]
                 , Html.text model.error
+                ]
+
+        Waiting ->
+            Html.div []
+                [ Html.text "Please enter a URL: "
+                , Html.input [] []
+                , Html.button [] [ Html.text "Load" ]
                 ]
 
 

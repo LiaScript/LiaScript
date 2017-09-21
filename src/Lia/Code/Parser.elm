@@ -1,6 +1,6 @@
 module Lia.Code.Parser exposing (code)
 
-import Array exposing (Array)
+import Array
 import Combine exposing (..)
 import Lia.Code.Types exposing (..)
 import Lia.Inline.Parser exposing (stringTill)

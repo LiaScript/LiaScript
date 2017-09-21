@@ -13,12 +13,14 @@ import Json.Decode as Dec
 import Json.Encode as Enc
 import Native.Tts
 import Result exposing (Result)
-import Task exposing (Task)
+import Task
 
 
 {-| -}
 type alias Recognition =
-    { confidence : Float, transcript : String }
+    { confidence : Float
+    , transcript : String
+    }
 
 
 {-| -}

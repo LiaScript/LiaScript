@@ -2,7 +2,9 @@ module Lia.Chart.Types exposing (..)
 
 
 type alias Point =
-    { x : Float, y : Float }
+    { x : Float
+    , y : Float
+    }
 
 
 type Chart
