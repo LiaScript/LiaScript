@@ -16,7 +16,9 @@
   ],
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
-  "devDependencies": {},
+  "devDependencies": {
+    "uglify-js-brunch": "^2.10.0"
+  },
   "dependencies": {
     "animate.css": "^3.5.2",
     "auto-reload-brunch": "^2.7.1",
@@ -25,7 +27,6 @@
     "elm-brunch": "^0.7.0",
     "highlight.js": "^9.12.0",
     "hmr-brunch": "^0.1.1",
-    "jquery": "^3.2.1",
     "katex": "^0.8.3",
     "node-sass": "^4.5.3",
     "normalize.css": "^7.0.0",

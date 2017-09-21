@@ -52,6 +52,14 @@ module.exports = {
                 verbose: true,
                 onlyChanged: true,
             },
+            uglify: {
+                mangle: false,
+                compress: {
+                    global_defs: {
+                        DEBUG: false
+                    }
+                }
+            },
         },
         npm: {
             styles: {
