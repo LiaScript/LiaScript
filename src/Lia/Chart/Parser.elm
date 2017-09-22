@@ -10,39 +10,16 @@ import Set
 
 parse : Parser PState Chart
 parse =
-    chart
-
-
-unique : Maybe a -> List a -> Bool
-unique start list =
-    case ( list, start ) of
-        ( x :: xs, Nothing ) ->
-            unique (Just x) xs
-
-        ( x :: xs, Just s ) ->
-            if x == s then
-                False
-            else
-                unique (Just x) xs
-
-        ( x, _ ) ->
-            True
-
-
-magicMerge : Dict comparable (List a) -> Dict comparable (List a) -> Dict comparable (List a)
-magicMerge left right =
-    Dict.merge Dict.insert (\key l r dict -> Dict.insert key (l ++ r) dict) Dict.insert left right Dict.empty
-
-
-chart : Parser PState Chart
-chart =
     let
-        points y_max rows y_min ( x0, x_segment ) =
+        chart title y_max rows y_min ( x_label, ( x0, x_segment ) ) =
             let
                 ( y0, y_segment ) =
                     segmentation (List.length rows) y_min y_max
+
+                ( y_label, data ) =
+                    List.unzip rows
             in
-            rows
+            data
                 |> List.reverse
                 |> List.indexedMap (,)
                 |> List.map
@@ -67,27 +44,70 @@ chart =
                         else
                             Dots v
                     )
+                |> Chart title
+                    (y_label
+                        |> List.map String.trim
+                        |> List.map
+                            (\w ->
+                                if w == "" then
+                                    " "
+                                else
+                                    w
+                            )
+                        |> String.concat
+                        |> String.trim
+                    )
+                    x_label
     in
-    points
-        <$> optional 1.0 (regex "( )*" *> number)
+    chart
+        <$> optional "" (regex "( )*[a-zA-Z0-9 .\\\\()\\-]+\\n")
+        <*> optional 1.0 (regex "( )*" *> number)
         <*> many1 row
         <*> optional 0.0 (regex "( )*" *> number)
         <*> x_axis
 
 
-row : Parser PState (Dict Char (List Int))
+unique : Maybe a -> List a -> Bool
+unique start list =
+    case ( list, start ) of
+        ( x :: xs, Nothing ) ->
+            unique (Just x) xs
+
+        ( x :: xs, Just s ) ->
+            if x == s then
+                False
+            else
+                unique (Just x) xs
+
+        ( x, _ ) ->
+            True
+
+
+magicMerge : Dict comparable (List a) -> Dict comparable (List a) -> Dict comparable (List a)
+magicMerge left right =
+    Dict.merge Dict.insert (\key l r dict -> Dict.insert key (l ++ r) dict) Dict.insert left right Dict.empty
+
+
+label : Parser s String
+label =
+    optional "" (regex "( )*\\(" *> regex "[^\\n)]+" <* regex "\\)( )*")
+
+
+row : Parser PState ( String, Dict Char (List Int) )
 row =
     let
-        indexes str =
-            str
+        indexes y_label str =
+            ( y_label
+            , str
                 |> String.toList
                 |> Set.fromList
                 |> Set.remove ' '
                 |> Set.toList
                 |> List.map (\c -> ( c, String.indexes (String.fromChar c) str ))
                 |> Dict.fromList
+            )
     in
-    indexes <$> (regex "( )*\\|" *> regex "[ \\*a-zA-Z]*") <* regex "( )*\\n"
+    indexes <$> (regex "[^\\n|]*" <* string "|") <*> (regex "[ \\*a-zA-Z\\+#]*" <* regex "( )*\\n")
 
 
 segmentation : Int -> Float -> Float -> ( Float, Float )
@@ -95,11 +115,12 @@ segmentation elements i0 i1 =
     ( i0, (i1 - i0) / toFloat elements )
 
 
-x_axis : Parser PState ( Float, Float )
+x_axis : Parser PState ( String, ( Float, Float ) )
 x_axis =
-    (\e x0 x1 -> segmentation (String.length e) x0 x1)
-        <$> (regex "( )*\\|" *> regex "_+" <* regex "( )*\\n( )*")
+    (\e x0 x_label x1 -> ( x_label, segmentation (String.length e) x0 x1 ))
+        <$> (regex "( )*\\+" *> regex "\\-+" <* regex "( )*\\n( )*")
         <*> optional 0.0 number
+        <*> label
         <*> optional 1.0 (regex "( )*" *> number <* regex "( )*\\n")
 
 

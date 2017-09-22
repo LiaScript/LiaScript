@@ -10,7 +10,11 @@ type alias Point =
 
 
 type alias Chart =
-    Dict Char Diagram
+    { title : String
+    , y_label : String
+    , x_label : String
+    , diagrams : Dict Char Diagram
+    }
 
 
 type Diagram

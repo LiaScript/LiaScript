@@ -8,16 +8,50 @@ import Plot
 import Svg.Attributes as Attr
 
 
+title str summary =
+    Plot.junk
+        (Plot.viewLabel [ Attr.style "text-anchor: end; font-style: italic;" ] str)
+        summary.x.dataMax
+        summary.y.max
+
+
+x_label str summary =
+    Plot.junk
+        (Plot.viewLabel [ Attr.style "text-anchor: begin; font-style: italic;" ] str)
+        (summary.x.dataMax / 2.0)
+        (summary.y.min - (summary.y.max - summary.y.min) / 9)
+
+
+y_label str summary =
+    Plot.junk
+        (Plot.viewLabel [ Attr.style "text-anchor: begin; font-style: italic; transform: rotate(-90deg);" ] str)
+        (summary.x.dataMin - (summary.x.dataMax - summary.x.dataMin) / 11)
+        (summary.y.max / 2.0)
+
+
 view : Chart -> Html msg
 view chart =
+    let
+        custom =
+            Plot.defaultSeriesPlotCustomizations
+    in
     Html.div []
         [ Plot.viewSeriesCustom
-            Plot.defaultSeriesPlotCustomizations
+            { custom
+                | junk =
+                    \summary ->
+                        [ title chart.title summary
+                        , x_label chart.x_label summary
+                        , y_label chart.y_label summary
+                        ]
+                , margin = { top = 50, right = 50, bottom = 50, left = 60 }
+            }
             (chart
+                |> .diagrams
                 |> Dict.toList
                 |> List.map plot
             )
-            chart
+            chart.diagrams
         ]
 
 
