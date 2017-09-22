@@ -322,27 +322,46 @@ But I do not like it the oposite way.
 
        |           *
        |
-       |        *     *
+       |        *      *
        |      *          *
-       |     *             *                     *
-       |    *                *
-       |   *                      *
+       |     *             *       *
+       |    *                 *
+       |   *
        |  *
-       | *                              *
+       | *                              *        *
        |___________________________________________
        2.0                                      10
 
+### Multi-Line-Plots
+
+     1 | r          *
+       |    r
+       |       r *      *
+       |        * r       *
+       |       *      r      *       *
+       |      *                 *
+       |     *
+       |   *
+       | *                              *        *
+    -1 |___________________________________________
+       -1                                       1
+
+
+
 ### Dot-Plots
 
-    10 |           *
-       |           *
-       |        *** ***   *
-       |        **** **    *
-       |     *  ** ****   * ***       *
-       |    *       *         *
-       |                         *
-       |           *
-       |    *   *     *         *      *
+    10 | aaaabbbbccccddddeeeeffffgggghhhhiiiijjjj
+       | aaaabbbbccccddddeeeeffffgggghhhhiiiijjjj
+       | aaaabbbbccccddddeeeeffffgggghhhhiiiijjjj
+       | aaaabbbbccccddddeeeeffffgggghhhhiiiijjjj
+       | kkkkllllmmmmnnnnooooppppqqqqrrrrsssstttt
+       | kkkkllllmmmmnnnnooooppppqqqqrrrrsssstttt
+       | kkkkllllmmmmnnnnooooppppqqqqrrrrsssstttt
+       | kkkkllllmmmmnnnnooooppppqqqqrrrrsssstttt
+       | uuuuvvvvwwwwxxxxyyyyzzzz
+       | uuuuvvvvwwwwxxxxyyyyzzzzRRRR
+       | uuuuvvvvwwwwxxxxyyyyzzzzRRRR
+       | uuuuvvvvwwwwxxxxyyyyzzzzRRRR
        |___________________________________________
        -2.0                                       2
 
