@@ -44,19 +44,9 @@ parse =
                         else
                             Dots v
                     )
-                |> Chart title
-                    (y_label
-                        |> List.map String.trim
-                        |> List.map
-                            (\w ->
-                                if w == "" then
-                                    " "
-                                else
-                                    w
-                            )
-                        |> String.concat
-                        |> String.trim
-                    )
+                |> Chart
+                    title
+                    (y_label |> String.concat |> String.trim)
                     x_label
     in
     chart
@@ -88,16 +78,18 @@ magicMerge left right =
     Dict.merge Dict.insert (\key l r dict -> Dict.insert key (l ++ r) dict) Dict.insert left right Dict.empty
 
 
-label : Parser s String
-label =
-    optional "" (regex "( )*\\(" *> regex "[^\\n)]+" <* regex "\\)( )*")
-
-
 row : Parser PState ( String, Dict Char (List Int) )
 row =
     let
         indexes y_label str =
             ( y_label
+                |> String.trim
+                |> (\w ->
+                        if w == "" then
+                            " "
+                        else
+                            w
+                   )
             , str
                 |> String.toList
                 |> Set.fromList
@@ -117,10 +109,10 @@ segmentation elements i0 i1 =
 
 x_axis : Parser PState ( String, ( Float, Float ) )
 x_axis =
-    (\e x0 x_label x1 -> ( x_label, segmentation (String.length e) x0 x1 ))
+    (\e x0 x_label x1 -> ( String.trim x_label, segmentation (String.length e) x0 x1 ))
         <$> (regex "( )*\\+" *> regex "\\-+" <* regex "( )*\\n( )*")
         <*> optional 0.0 number
-        <*> label
+        <*> optional "" (regex "[a-zA-Z_ .\\\\()\\-]+")
         <*> optional 1.0 (regex "( )*" *> number <* regex "( )*\\n")
 
 
