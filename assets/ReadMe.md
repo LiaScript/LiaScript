@@ -320,7 +320,7 @@ But I do not like it the oposite way.
 
 ### Line-Plots
 
-                               ( Titel des Diagrams)
+                               Titel des Diagrams
        |           *
        |
      y |        *      *
@@ -331,7 +331,7 @@ But I do not like it the oposite way.
      s |  *
        | *                              *        *
        +------------------------------------------
-        2.0            (x_axis)                100
+        2.0            (x-axis)                100
 
 
 

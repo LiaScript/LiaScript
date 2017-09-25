@@ -68,6 +68,17 @@ view_slides model =
                             ]
                             [ Html.text "toc" ]
                         , loadButton "navigate_before" PrevSlide
+                        , Html.span [ Attr.class "lia-label lia-left" ]
+                            [ Html.text (toString (model.current_slide + 1))
+                            , Html.text <|
+                                String.concat
+                                    [ " ("
+                                    , toString (model.effect_model.visible + 1)
+                                    , "/"
+                                    , toString (model.effect_model.effects + 1)
+                                    , ")"
+                                    ]
+                            ]
                         , loadButton "navigate_next" NextSlide
                         , Html.span [ Attr.class "lia-spacer" ] []
                         ]
