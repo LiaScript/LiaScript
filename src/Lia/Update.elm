@@ -29,19 +29,22 @@ update : Msg -> Model -> ( Model, Cmd Msg, Maybe ( String, JE.Value ) )
 update msg model =
     case msg of
         Load int ->
-            let
-                ( effect_model, cmd, _ ) =
-                    get_slide int model.slides
-                        |> EffectModel.init model.silent model.narator
-                        |> Effect.init
-            in
-            ( { model
-                | current_slide = int
-                , effect_model = effect_model
-              }
-            , Cmd.map UpdateEffect cmd
-            , Nothing
-            )
+            if (-1 < int) && (int < List.length model.slides) then
+                let
+                    ( effect_model, cmd, _ ) =
+                        get_slide int model.slides
+                            |> EffectModel.init model.silent model.narator
+                            |> Effect.init
+                in
+                ( { model
+                    | current_slide = int
+                    , effect_model = effect_model
+                  }
+                , Cmd.map UpdateEffect cmd
+                , Nothing
+                )
+            else
+                ( model, Cmd.none, Nothing )
 
         Theme theme ->
             ( { model | theme = theme }, Cmd.none, Nothing )
