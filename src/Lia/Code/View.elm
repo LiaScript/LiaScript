@@ -21,7 +21,13 @@ view model code =
                 Just ( code_str, rslt, b ) ->
                     Html.div [ Attr.class "lia-code-eval" ]
                         [ if b then
-                            Html.textarea [ onInput <| Update idx, Attr.value code_str ] []
+                            Html.textarea
+                                [ Attr.style [ ( "width", "100%" ) ]
+                                , code_str |> String.lines |> List.length |> Attr.rows
+                                , onInput <| Update idx
+                                , Attr.value code_str
+                                ]
+                                []
                           else
                             highlight "js" code_str idx
                         , Html.button [ Attr.class "lia-btn", onClick (Eval idx) ]
