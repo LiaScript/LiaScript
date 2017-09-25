@@ -434,3 +434,29 @@ Multi Choice Matrix
     [                     ] test 1
     [                     ] test 4
     [                     ] test 3
+
+## HTML
+
+<table border="1">
+  <tr>
+    <td>
+       INHALT ZELLE 1
+    </td>
+    <td>
+      INHALT ZELLE 2
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+       INHALT ZELLE 3
+    </td>
+    <td>
+      INHALT ZELLE 4
+    </td>
+  </tr>
+
+</table>
+
+
+Test *bold* and <b>HTML bold</b> works also inline
