@@ -4,6 +4,7 @@ module Lia.Effect.View exposing (comment, view, view_block)
 
 import Html exposing (Html)
 import Html.Attributes as Attr
+import Html.Events exposing (onClick)
 import Lia.Effect.Model exposing (Model)
 
 
@@ -41,15 +42,15 @@ view_block model viewer idx effect_name blocks =
         )
 
 
-comment : Model -> (inline -> Html msg) -> Int -> List inline -> Html msg
-comment model viewer idx elements =
+comment : Bool -> msg -> Model -> (inline -> Html msg) -> Int -> List inline -> Html msg
+comment silent msg model viewer idx elements =
     if idx == model.visible then
         Html.div
             [ Attr.class "lia-effect-comment"
             ]
             (List.append
                 (List.map viewer elements)
-                [ responsive ]
+                [ responsive silent msg ]
             )
     else
         Html.div
@@ -58,10 +59,17 @@ comment model viewer idx elements =
             []
 
 
-responsive : Html msg
-responsive =
+responsive : Bool -> msg -> Html msg
+responsive silent msg =
     Html.div []
-        [ Html.a [ Attr.href "https://responsivevoice.org" ]
+        [ Html.span [ Attr.class "lia-icon", onClick msg ]
+            [ if silent then
+                Html.text "volume_up"
+              else
+                Html.text "volume_off"
+            ]
+        , Html.text " "
+        , Html.a [ Attr.href "https://responsivevoice.org" ]
             [ Html.text "ResponsiveVoice-NonCommercial" ]
         , Html.text " licensed under "
         , Html.a

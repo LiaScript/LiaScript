@@ -1,4 +1,4 @@
-module Lia.Effect.Update exposing (Msg(..), init, next, previous, update)
+module Lia.Effect.Update exposing (Msg(..), init, next, previous, repeat, silence, update)
 
 import Lia.Effect.Model exposing (Model, Status(..), get_comment)
 import Tts.Responsive
@@ -8,10 +8,11 @@ import Tts.Responsive
 
 
 type Msg
-    = Init
-    | Next
-    | Previous
-    | Speak
+    = Init Bool
+    | Next Bool
+    | Previous Bool
+    | Repeat Bool
+    | Speak Bool
     | TTS (Result String Never)
 
 
@@ -31,27 +32,30 @@ update msg model =
                     ( model, Cmd.none, True )
     in
     case msg of
-        Init ->
-            update Speak model
+        Init silent ->
+            update (Speak silent) model
 
-        Next ->
+        Next silent ->
             if model.visible == model.effects then
                 stop_talking model
             else
-                update Speak { model | visible = model.visible + 1 }
+                update (Speak silent) { model | visible = model.visible + 1 }
 
-        Previous ->
+        Repeat silent ->
+            update (Speak silent) model
+
+        Previous silent ->
             if model.visible == 0 then
                 stop_talking model
             else
-                update Speak { model | visible = model.visible - 1 }
+                update (Speak silent) { model | visible = model.visible - 1 }
 
-        Speak ->
-            case get_comment model of
-                Just str ->
+        Speak silent ->
+            case ( get_comment model, silent ) of
+                ( Just str, False ) ->
                     ( { model | status = Speaking }, Tts.Responsive.speak TTS model.narator str, False )
 
-                Nothing ->
+                _ ->
                     ( model, Cmd.none, False )
 
         TTS (Result.Ok _) ->
@@ -61,16 +65,26 @@ update msg model =
             ( { model | status = Error m }, Cmd.none, False )
 
 
-init : Model -> ( Model, Cmd Msg, Bool )
-init =
-    update Init
+init : Bool -> Model -> ( Model, Cmd Msg, Bool )
+init silent =
+    update (Init silent)
 
 
-next : Model -> ( Model, Cmd Msg, Bool )
-next =
-    update Next
+next : Bool -> Model -> ( Model, Cmd Msg, Bool )
+next silent =
+    update (Next silent)
 
 
-previous : Model -> ( Model, Cmd Msg, Bool )
-previous =
-    update Previous
+repeat : Bool -> Model -> ( Model, Cmd Msg, Bool )
+repeat silent =
+    update (Repeat silent)
+
+
+previous : Bool -> Model -> ( Model, Cmd Msg, Bool )
+previous silent =
+    update (Previous silent)
+
+
+silence : a -> Bool
+silence b =
+    Tts.Responsive.cancel ()

@@ -23,6 +23,7 @@ type Msg
     | UpdateEffect Effect.Msg
     | Theme String
     | ThemeLight
+    | ToogleSpeech
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, Maybe ( String, JE.Value ) )
@@ -33,8 +34,8 @@ update msg model =
                 let
                     ( effect_model, cmd, _ ) =
                         get_slide int model.slides
-                            |> EffectModel.init model.silent model.narator
-                            |> Effect.init
+                            |> EffectModel.init model.narator
+                            |> Effect.init model.silent
                 in
                 ( { model
                     | current_slide = int
@@ -52,8 +53,26 @@ update msg model =
         ThemeLight ->
             ( { model | theme_light = not model.theme_light }, Cmd.none, Nothing )
 
+        ToogleSpeech ->
+            if model.silent then
+                case Effect.repeat False model.effect_model of
+                    ( effect_model, cmd, False ) ->
+                        ( { model | silent = False, effect_model = effect_model }, Cmd.map UpdateEffect cmd, Nothing )
+
+                    _ ->
+                        update (Load (model.current_slide - 1)) model
+            else
+                let
+                    x =
+                        if not model.silent then
+                            Effect.silence ()
+                        else
+                            False
+                in
+                ( { model | silent = True }, Cmd.none, Nothing )
+
         PrevSlide ->
-            case Effect.previous model.effect_model of
+            case Effect.previous model.silent model.effect_model of
                 ( effect_model, cmd, False ) ->
                     ( { model | effect_model = effect_model }, Cmd.map UpdateEffect cmd, Nothing )
 
@@ -61,7 +80,7 @@ update msg model =
                     update (Load (model.current_slide - 1)) model
 
         NextSlide ->
-            case Effect.next model.effect_model of
+            case Effect.next model.silent model.effect_model of
                 ( effect_model, cmd, False ) ->
                     ( { model | effect_model = effect_model }, Cmd.map UpdateEffect cmd, Nothing )
 

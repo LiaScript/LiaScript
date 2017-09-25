@@ -329,7 +329,7 @@ view_block model block =
                 )
 
         EComment idx comment ->
-            Effects.comment model.effect_model (view_block model) idx [ Paragraph comment ]
+            Effects.comment model.silent ToogleSpeech model.effect_model (view_block model) idx [ Paragraph comment ]
 
         Chart chart ->
             Lia.Chart.View.view chart

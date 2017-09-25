@@ -39,7 +39,7 @@ init mode script =
         , code_model = Array.empty
         , survey_model = Array.empty
         , index_model = Index.init []
-        , effect_model = Effect.init True "US English Male" Nothing
+        , effect_model = Effect.init "US English Male" Nothing
         , narator = "US English Male"
         , silent = False
         , theme = "default"
@@ -75,7 +75,7 @@ parse model =
                     else
                         model.quiz_model
                 , index_model = Index.init slides
-                , effect_model = Effect.init model.silent narator <| List.head slides
+                , effect_model = Effect.init narator <| List.head slides
                 , code_model = code_vector
                 , survey_model =
                     if model.survey_model == Array.empty then
