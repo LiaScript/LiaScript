@@ -65,14 +65,13 @@ comment show_inline silent msg model viewer idx elements =
 
 responsive : Bool -> msg -> Html msg
 responsive silent msg =
-    Html.div []
-        [ Html.span [ Attr.class "lia-icon", onClick msg ]
+    Html.span []
+        [ Html.button [ Attr.class "lia-btn lia-icon", onClick msg ]
             [ if silent then
                 Html.text "volume_off"
               else
                 Html.text "volume_up"
             ]
-        , Html.text " "
         , Html.a [ Attr.href "https://responsivevoice.org" ]
             [ Html.text "ResponsiveVoice-NonCommercial" ]
         , Html.text " licensed under "
