@@ -380,6 +380,23 @@ But I do not like it the oposite way.
        +-------------------------------------------
        -2.0                                       2
 
+
+### Dot-Plots2
+
+     10 |        rrrrrrrrrrrr    x
+        |    rrrrrrrrrrrrrrrr
+        |  rrrrrrrrrrrrrrrrr  BBBBB
+        | rrrrrrrrrrrrrrrr  BBBBBBBB
+        |rrrrrrrrrrrrrrr  BBBBBBBBBBB
+        |rrrrrrrrrrrrr  BBBBBBBBBBBBB
+        |rrrrrrrrrrr  BBBBBBBBBBBBBBB
+        | rrrrrrrr  BBBBBBBBBBBBBBBB
+        |  rrrrr  BBBBBBBBBBBBBBBBB
+        |        BBBBBBBBBBBBBBBB
+        |   x    BBBBBBBBBBBBB
+        +-------------------------------------
+         -1.0                                      2
+
 ## Surveys
 
 Text :
