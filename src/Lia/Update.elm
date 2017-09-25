@@ -55,12 +55,11 @@ update msg model =
 
         ToogleSpeech ->
             if model.silent then
-                case Effect.repeat False model.effect_model of
-                    ( effect_model, cmd, False ) ->
-                        ( { model | silent = False, effect_model = effect_model }, Cmd.map UpdateEffect cmd, Nothing )
-
-                    _ ->
-                        update (Load (model.current_slide - 1)) model
+                let
+                    ( effect_model, cmd, _ ) =
+                        Effect.repeat False model.effect_model
+                in
+                ( { model | silent = False, effect_model = effect_model }, Cmd.map UpdateEffect cmd, Nothing )
             else
                 let
                     x =
