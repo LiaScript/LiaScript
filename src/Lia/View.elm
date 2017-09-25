@@ -74,6 +74,15 @@ view_slides model =
                             , Attr.class "lia-btn lia-toc-control lia-left"
                             ]
                             [ Html.text "toc" ]
+                        , Html.button [ Attr.class "lia-btn lia-left", onClick SwitchMode ]
+                            [ case model.mode of
+                                Slides ->
+                                    Html.text "hearing"
+
+                                _ ->
+                                    Html.text "visibility"
+                            ]
+                        , Html.span [ Attr.class "lia-spacer" ] []
                         , loadButton "navigate_before" PrevSlide
                         , Html.span [ Attr.class "lia-labeled lia-left" ]
                             [ Html.span [ Attr.class "lia-label" ]
@@ -95,16 +104,6 @@ view_slides model =
                             ]
                         , loadButton "navigate_next" NextSlide
                         , Html.span [ Attr.class "lia-spacer" ] []
-                        , Html.span [ Attr.class "lia-labeled lia-right" ]
-                            [ Html.span [ Attr.class "lia-icon", onClick SwitchMode ]
-                                [ case model.mode of
-                                    Slides ->
-                                        Html.text "hearing"
-
-                                    _ ->
-                                        Html.text "visibility"
-                                ]
-                            ]
                         ]
                         (view_themes model.theme model.theme_light)
                     )
@@ -157,10 +156,11 @@ view_themes current_theme light =
         themes =
             [ "default", "amber", "blue", "green", "grey", "purple" ]
     in
-    [ Html.span [ Attr.class "lia-labeled lia-right" ]
-        [ Html.input [ Attr.type_ "checkbox", onClick ThemeLight, Attr.checked light ] []
-        , Html.span [ Attr.class "lia-check-btn" ] [ Html.text "check" ]
-        , Html.span [ Attr.class "lia-label" ] [ Html.text "Light Variant" ]
+    [ Html.button [ Attr.class "lia-btn lia-right", onClick ThemeLight ]
+        [ if light then
+            Html.text "star"
+          else
+            Html.text "star_border"
         ]
     , Html.select
         [ onInput Theme
