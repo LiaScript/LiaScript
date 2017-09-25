@@ -148,7 +148,7 @@ formula =
 
 url_full : Parser s String
 url_full =
-    regex "[a-zA-Z]+://(/)?[a-zA-Z0-9\\.\\-]+\\.([a-z\\.]{2,6})[^ \\)\\t\\n]*"
+    regex "[a-zA-Z]+://(/)?[a-zA-Z0-9\\.\\-\\_]+\\.([a-z\\.]{2,6})[^ \\)\\t\\n]*"
 
 
 url_mail : Parser s String
@@ -286,8 +286,8 @@ strings =
                     Chars <$> regex "[^#\\n|*]+" <?> "base string"
             in
             choice
-                [ base
-                , Ref <$> inline_url
+                [ Ref <$> inline_url
+                , base
                 , html
                 , arrows
                 , smileys
