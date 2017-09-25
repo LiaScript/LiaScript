@@ -9,7 +9,8 @@ import Lia.Survey.Types exposing (Survey)
 
 type Mode
     = Slides
-    | Plain
+    | Slides_only
+    | Textbook
 
 
 type alias Slide =

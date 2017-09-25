@@ -28,7 +28,14 @@ view model =
         Slides ->
             view_slides model
 
-        Plain ->
+        Slides_only ->
+            view_slides
+                { model
+                    | silent = True
+                    , effect_model = Effect.init_silent
+                }
+
+        Textbook ->
             view_plain model
 
 
@@ -68,19 +75,36 @@ view_slides model =
                             ]
                             [ Html.text "toc" ]
                         , loadButton "navigate_before" PrevSlide
-                        , Html.span [ Attr.class "lia-label lia-left" ]
-                            [ Html.text (toString (model.current_slide + 1))
-                            , Html.text <|
-                                String.concat
-                                    [ " ("
-                                    , toString (model.effect_model.visible + 1)
-                                    , "/"
-                                    , toString (model.effect_model.effects + 1)
-                                    , ")"
-                                    ]
+                        , Html.span [ Attr.class "lia-labeled lia-left" ]
+                            [ Html.span [ Attr.class "lia-label" ]
+                                [ Html.text (toString (model.current_slide + 1))
+                                , case model.mode of
+                                    Slides ->
+                                        Html.text <|
+                                            String.concat
+                                                [ " ("
+                                                , toString (model.effect_model.visible + 1)
+                                                , "/"
+                                                , toString (model.effect_model.effects + 1)
+                                                , ")"
+                                                ]
+
+                                    _ ->
+                                        Html.text ""
+                                ]
                             ]
                         , loadButton "navigate_next" NextSlide
                         , Html.span [ Attr.class "lia-spacer" ] []
+                        , Html.span [ Attr.class "lia-labeled lia-right" ]
+                            [ Html.span [ Attr.class "lia-icon", onClick SwitchMode ]
+                                [ case model.mode of
+                                    Slides ->
+                                        Html.text "hearing"
+
+                                    _ ->
+                                        Html.text "visibility"
+                                ]
+                            ]
                         ]
                         (view_themes model.theme model.theme_light)
                     )
@@ -329,7 +353,12 @@ view_block model block =
                 )
 
         EComment idx comment ->
-            Effects.comment model.silent ToogleSpeech model.effect_model (view_block model) idx [ Paragraph comment ]
+            case model.mode of
+                Slides ->
+                    Effects.comment False model.silent ToogleSpeech model.effect_model (view_block model) idx [ Paragraph comment ]
+
+                _ ->
+                    Effects.comment True model.silent ToogleSpeech model.effect_model (view_block model) idx [ Paragraph comment ]
 
         Chart chart ->
             Lia.Chart.View.view chart

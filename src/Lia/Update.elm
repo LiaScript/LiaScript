@@ -9,6 +9,7 @@ import Lia.Index.Update as Index
 import Lia.Model exposing (..)
 import Lia.Quiz.Update as Quiz
 import Lia.Survey.Update as Survey
+import Lia.Types exposing (Mode(..))
 
 
 type Msg
@@ -24,6 +25,7 @@ type Msg
     | Theme String
     | ThemeLight
     | ToogleSpeech
+    | SwitchMode
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, Maybe ( String, JE.Value ) )
@@ -70,17 +72,25 @@ update msg model =
                 in
                 ( { model | silent = True }, Cmd.none, Nothing )
 
+        SwitchMode ->
+            case model.mode of
+                Slides ->
+                    ( { model | mode = Slides_only, silent = True }, Cmd.none, Nothing )
+
+                _ ->
+                    ( { model | mode = Slides }, Cmd.none, Nothing )
+
         PrevSlide ->
-            case Effect.previous model.silent model.effect_model of
-                ( effect_model, cmd, False ) ->
+            case ( model.mode, Effect.previous model.silent model.effect_model ) of
+                ( Slides, ( effect_model, cmd, False ) ) ->
                     ( { model | effect_model = effect_model }, Cmd.map UpdateEffect cmd, Nothing )
 
                 _ ->
                     update (Load (model.current_slide - 1)) model
 
         NextSlide ->
-            case Effect.next model.silent model.effect_model of
-                ( effect_model, cmd, False ) ->
+            case ( model.mode, Effect.next model.silent model.effect_model ) of
+                ( Slides, ( effect_model, cmd, False ) ) ->
                     ( { model | effect_model = effect_model }, Cmd.map UpdateEffect cmd, Nothing )
 
                 _ ->

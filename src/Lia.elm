@@ -54,7 +54,7 @@ set_script model script =
 
 init_plain : String -> Model
 init_plain =
-    init Lia.Types.Plain
+    init Lia.Types.Textbook
 
 
 init_slides : String -> Model
@@ -110,7 +110,7 @@ switch_mode mode model =
 
 plain_mode : Model -> Model
 plain_mode =
-    switch_mode Lia.Types.Plain
+    switch_mode Lia.Types.Textbook
 
 
 slide_mode : Model -> Model

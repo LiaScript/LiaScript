@@ -42,9 +42,13 @@ view_block model viewer idx effect_name blocks =
         )
 
 
-comment : Bool -> msg -> Model -> (inline -> Html msg) -> Int -> List inline -> Html msg
-comment silent msg model viewer idx elements =
-    if idx == model.visible then
+comment : Bool -> Bool -> msg -> Model -> (inline -> Html msg) -> Int -> List inline -> Html msg
+comment show_inline silent msg model viewer idx elements =
+    if show_inline then
+        elements
+            |> List.map viewer
+            |> Html.div []
+    else if idx == model.visible then
         Html.div
             [ Attr.class "lia-effect-comment"
             ]
@@ -64,9 +68,9 @@ responsive silent msg =
     Html.div []
         [ Html.span [ Attr.class "lia-icon", onClick msg ]
             [ if silent then
-                Html.text "volume_up"
-              else
                 Html.text "volume_off"
+              else
+                Html.text "volume_up"
             ]
         , Html.text " "
         , Html.a [ Attr.href "https://responsivevoice.org" ]
