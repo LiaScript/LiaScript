@@ -24,7 +24,7 @@ type Msg
     | UpdateEffect Effect.Msg
     | Theme String
     | ThemeLight
-    | ToogleSpeech
+    | ToggleSpeech
     | SwitchMode
 
 
@@ -55,7 +55,7 @@ update msg model =
         ThemeLight ->
             ( { model | theme_light = not model.theme_light }, Cmd.none, Nothing )
 
-        ToogleSpeech ->
+        ToggleSpeech ->
             if model.silent then
                 let
                     ( effect_model, cmd, _ ) =
@@ -75,10 +75,14 @@ update msg model =
         SwitchMode ->
             case model.mode of
                 Slides ->
+                    let
+                        x =
+                            Effect.silence ()
+                    in
                     ( { model | mode = Slides_only, silent = True }, Cmd.none, Nothing )
 
                 _ ->
-                    ( { model | mode = Slides }, Cmd.none, Nothing )
+                    update ToggleSpeech { model | mode = Slides, silent = True }
 
         PrevSlide ->
             case ( model.mode, Effect.previous model.silent model.effect_model ) of

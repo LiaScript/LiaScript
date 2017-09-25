@@ -355,10 +355,10 @@ view_block model block =
         EComment idx comment ->
             case model.mode of
                 Slides ->
-                    Effects.comment False model.silent ToogleSpeech model.effect_model (view_block model) idx [ Paragraph comment ]
+                    Effects.comment False model.silent ToggleSpeech model.effect_model (view_block model) idx [ Paragraph comment ]
 
                 _ ->
-                    Effects.comment True model.silent ToogleSpeech model.effect_model (view_block model) idx [ Paragraph comment ]
+                    Effects.comment True model.silent ToggleSpeech model.effect_model (view_block model) idx [ Paragraph comment ]
 
         Chart chart ->
             Lia.Chart.View.view chart
