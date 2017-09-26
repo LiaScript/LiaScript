@@ -322,4 +322,45 @@
     .lia-hidden {
         display: none;
     }
+
+    .lia-table {
+        $bg: map-get($theme, background);
+        $fg: color-contrast($bg);
+        $head-bg: mix($bg, $fg, 100%);
+        $row-even-bg: mix($bg, $fg, 95%);
+        $row-odd-bg: mix($bg, $fg, 100%);
+        $head-fg: color-contrast($head-bg);
+        $row-even-fg: color-contrast($row-even-bg);
+        $row-odd-fg: color-contrast($row-odd-bg);
+        $border-color: mix($bg, $fg, 75%);
+
+        border-collapse: collapse;
+
+        .lia-table-head {
+            th {
+                padding: map-get($config, spacing-normal) map-get($config, spacing-large);
+                border: 1px solid $border-color;
+            }
+
+            background: $head-bg;
+            color: $head-fg;
+        }
+
+        .lia-table-row {
+            td {
+                padding: map-get($config, spacing-normal) map-get($config, spacing-large);
+                border: 1px solid $border-color;
+            }
+
+            &:nth-child(even) {
+                background: $row-even-bg;
+                color: $row-even-fg;
+            }
+
+            &:nth-child(odd) {
+                background: $row-odd-bg;
+                color: $row-odd-fg;
+            }
+        }
+    }
 }

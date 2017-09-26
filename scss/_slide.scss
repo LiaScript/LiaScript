@@ -24,8 +24,8 @@
             .lia-effect-comment {
                 $bg: mix(map-get($theme, background), map-get($theme, primary), 80%);
 
-                position: absolute;
-                width: calc(100% - #{map-get($config, spacing-huge) * 2});
+                position: fixed;
+                left: map-get($config, spacing-huge) + map-get($config, toc-width);
                 right: map-get($config, spacing-huge);
                 bottom: map-get($config, spacing-huge);
                 padding: map-get($config, spacing-large);
