@@ -12,7 +12,7 @@ import Lia.Survey.Update exposing (Msg(..))
 
 view : Model -> Survey -> Html Msg
 view model survey =
-    Html.p [] <|
+    Html.p [ Attr.class "lia-card" ] <|
         case survey of
             Text lines idx ->
                 view_text (get_text_state model idx) lines idx
@@ -42,9 +42,13 @@ submit_button : Bool -> ID -> Html Msg
 submit_button submitted idx =
     Html.div []
         [ if submitted then
-            Html.button [ Attr.disabled True ] [ Html.text "Thanks" ]
+            Html.button
+              [ Attr.class "lia-btn", Attr.disabled True ]
+              [ Html.text "Thanks" ]
           else
-            Html.button [ onClick <| Submit idx ] [ Html.text "Submit" ]
+            Html.button
+              [ Attr.class "lia-btn", onClick <| Submit idx ]
+              [ Html.text "Submit" ]
         ]
 
 
@@ -53,6 +57,8 @@ view_text str lines idx submitted =
     let
         attr =
             [ onInput <| TextUpdate idx
+            , Attr.class "lia-input"
+            , Attr.placeholder "Enter text..."
             , Attr.value str
             , Attr.disabled submitted
             ]
@@ -91,7 +97,7 @@ view_matrix vars questions fn submitted =
         |> List.indexedMap (,)
         |> List.map fnX
         |> List.append [ th ]
-        |> Html.table []
+        |> Html.table [ Attr.class "lia-survey-matrix" ]
 
 
 mat_attr : Html.Attribute Msg
@@ -101,7 +107,9 @@ mat_attr =
 
 vector : Bool -> (Var -> Msg) -> (Var -> Bool) -> Bool -> ( Var, Line ) -> Html Msg
 vector button msg fn submitted ( var, elements ) =
-    Html.p [] [ input button (msg var) (fn var) submitted, inline elements ]
+    Html.p
+        []
+        [ input button (msg var) (fn var) submitted, inline elements ]
 
 
 matrix : Bool -> (ID -> Var -> Msg) -> (ID -> Var -> Bool) -> List Var -> Bool -> ( ID, Line ) -> Html Msg
@@ -127,19 +135,26 @@ matrix button msg fn vars submitted ( row, elements ) =
 
 input : Bool -> Msg -> Bool -> Bool -> Html Msg
 input button msg checked submitted =
-    Html.input
-        [ Attr.type_ <|
-            if button then
-                "checkbox"
-            else
-                "radio"
-        , Attr.checked checked
-        , if submitted then
-            Attr.disabled True
-          else
-            onClick msg
+    -- FIXME: lia-label MUST be placed in here and not outside the lia-*-item
+    -- !!! convert the lia-*-item span to a p element when lia-label is included here
+    Html.span [ Attr.class <| if button then "lia-check-item" else "lia-radio-item" ]
+        [ Html.input
+              [ Attr.type_ <|
+                    if button then
+                        "checkbox"
+                    else
+                        "radio"
+              , Attr.checked checked
+              , if submitted then
+                    Attr.disabled True
+                else
+                    onClick msg
+              ]
+              []
+        , Html.span
+            [ Attr.class <| if button then "lia-check-btn" else "lia-radio-btn" ]
+            [ Html.text <| if button then "check" else "" ]
         ]
-        []
 
 
 inline : Line -> Html Msg
