@@ -176,62 +176,6 @@
         }
     }
 
-    .lia-toolbar {
-        $bg: map-get($theme, primary);
-        $fg: color-contrast($bg);
-
-        z-index: 1;
-        flex: 0 0 auto;
-        height: map-get($config, toolbar-height);
-        background: $bg;
-        color: $fg;
-
-        .lia-btn {
-            box-shadow: none;
-            background: transparent;
-            color: $fg;
-
-            &:hover {
-                background: mix(transparent, $fg, 90%);
-            }
-
-            .lia-ripple {
-                background: $fg;
-            }
-        }
-
-        .lia-input,
-        .lia-select {
-            background: $bg;
-            border-bottom-color: mix($bg, $fg, 50%);
-
-            &:not([disabled]) {
-                color: $fg;
-            }
-
-            &[disabled] {
-                color: rgba($fg, .38);
-            }
-
-            &:focus {
-                border-bottom-color: $fg;
-            }
-        }
-
-        .lia-left {
-            order: 1;
-        }
-
-        .lia-spacer {
-            order: 1;
-            flex: 1 1 auto;
-        }
-
-        .lia-right {
-            order: 2;
-        }
-    }
-
     .lia-input,
     .lia-select {
         $bg: map-get($theme, background);
@@ -439,6 +383,62 @@
 
         :first-child td {
             padding: 0 map-get($config, spacing-normal);
+        }
+    }
+
+    .lia-toolbar {
+        $bg: map-get($theme, primary);
+        $fg: color-contrast($bg);
+
+        z-index: 1;
+        flex: 0 0 auto;
+        height: map-get($config, toolbar-height);
+        background: $bg;
+        color: $fg;
+
+        .lia-btn {
+            box-shadow: none;
+            background: transparent;
+            color: $fg;
+
+            &:hover {
+                background: mix(transparent, $fg, 90%);
+            }
+
+            .lia-ripple {
+                background: $fg;
+            }
+        }
+
+        .lia-input,
+        .lia-select {
+            background: $bg;
+            border-bottom-color: mix($bg, $fg, 50%);
+
+            &:not([disabled]) {
+                color: $fg;
+            }
+
+            &[disabled] {
+                color: rgba($fg, .38);
+            }
+
+            &:focus {
+                border-bottom-color: $fg;
+            }
+        }
+
+        .lia-left {
+            order: 1;
+        }
+
+        .lia-spacer {
+            order: 1;
+            flex: 1 1 auto;
+        }
+
+        .lia-right {
+            order: 2;
         }
     }
 }

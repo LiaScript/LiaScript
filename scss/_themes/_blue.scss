@@ -1,15 +1,15 @@
 @import "material";
 @import "lia";
 
-$fg: material-color('grey', '900');
-$bg: material-color('grey', '50');
+$fg: material-color('blue-grey', '900');
+$bg: material-color('blue-grey', '50');
 
 $theme: (
     text: $fg,
     text-inv: $bg,
-    background: material-color('light-blue', '100'),
-    background-inv: material-color('blue', '900'),
-    primary: material-color('light-blue', '500'),
+    background: $bg,
+    background-inv: $fg,
+    primary: material-color('blue', '500'),
     secondary: material-color('indigo', '500'),
     success: material-color('green', '500'),
     info: material-color('blue', '500'),

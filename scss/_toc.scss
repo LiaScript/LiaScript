@@ -18,7 +18,7 @@
             top: map-get($config, toolbar-height);
             bottom: 0;
             right: 0;
-            cursor: ew-resize;
+            //cursor: ew-resize;
             background: mix($bg, $fg, 90%);
         }
 
