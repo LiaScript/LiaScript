@@ -23,8 +23,17 @@
     );
 
     @keyframes show-comment {
-        from { right: -100%; }
-        to { right: map-get($config, spacing-huge); }
+        $left: map-get($config, spacing-huge) + map-get($config, toc-width);
+        $right: map-get($config, spacing-huge);
+
+        from {
+            left: calc(100% + #{$left});
+            right: calc(#{$right} - 100%);
+        }
+        to {
+            left: $left;
+            right: $right;
+        }
     }
 
     html, body {

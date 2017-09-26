@@ -31,7 +31,7 @@
                 padding: map-get($config, spacing-large);
                 background: $bg;
                 color: color-contrast($bg);
-                animation: show-comment 0.25s ease-in-out 0s;
+                animation: show-comment .25s ease-in-out 0s;
 
                 p {
                     margin: 0;
