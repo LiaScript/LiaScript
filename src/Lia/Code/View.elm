@@ -23,6 +23,7 @@ view model code =
                         [ if b then
                             Html.textarea
                                 [ Attr.style [ ( "width", "100%" ) ]
+                                , Attr.class "lia-input"
                                 , code_str |> String.lines |> List.length |> Attr.rows
                                 , onInput <| Update idx
                                 , Attr.value code_str
@@ -30,8 +31,8 @@ view model code =
                                 []
                           else
                             highlight "js" code_str idx
-                        , Html.button [ Attr.class "lia-btn", onClick (Eval idx) ]
-                            [ Html.text "run" ]
+                        , Html.button [ Attr.class "lia-btn", Attr.class "lia-icon", onClick (Eval idx) ]
+                            [ Html.text "play_circle_filled" ]
                         , case rslt of
                             Nothing ->
                                 Html.text ""
