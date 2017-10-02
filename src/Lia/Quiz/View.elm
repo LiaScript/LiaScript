@@ -1,4 +1,4 @@
-module Lia.Quiz.View exposing (view)
+module Lia.Quiz.View exposing (view, view_solution)
 
 import Array exposing (Array)
 import Html exposing (Html)
@@ -11,30 +11,41 @@ import Lia.Quiz.Types exposing (..)
 import Lia.Quiz.Update exposing (Msg(..))
 
 
-view : Model -> Quiz -> Html Msg
-view model quiz =
+view : Model -> Quiz -> Bool -> Html Msg
+view model quiz show_solution =
     let
         state =
             get_state model
     in
     case quiz of
         Text solution idx hints ->
-            view_quiz (state idx) view_text idx hints (TextState solution)
+            view_quiz show_solution (state idx) view_text idx hints (TextState solution)
 
         SingleChoice solution questions idx hints ->
-            view_quiz (state idx) (view_single_choice questions) idx hints (SingleChoiceState solution)
+            view_quiz show_solution (state idx) (view_single_choice questions) idx hints (SingleChoiceState solution)
 
         MultipleChoice solution questions idx hints ->
-            view_quiz (state idx) (view_multiple_choice questions) idx hints (MultipleChoiceState solution)
+            view_quiz show_solution (state idx) (view_multiple_choice questions) idx hints (MultipleChoiceState solution)
 
 
-view_quiz : Maybe QuizElement -> (Int -> QuizState -> Bool -> Html Msg) -> Int -> List Line -> QuizState -> Html Msg
-view_quiz state fn_view idx hints solution =
+view_quiz : Bool -> Maybe QuizElement -> (Int -> QuizState -> Bool -> Html Msg) -> Int -> List Line -> QuizState -> Html Msg
+view_quiz show_solution state fn_view idx hints solution =
     case state of
         Just s ->
             Html.p [ Attr.class "lia-quiz" ]
-                (fn_view idx s.state s.solved
+                (fn_view idx s.state (s.solved /= Open)
                     :: view_button s.trial s.solved (Check idx solution)
+                    :: (if show_solution then
+                            Html.a
+                                [ Attr.class "lia-hint-btn"
+                                , Attr.href "#"
+                                , onClick (ShowSolution idx solution)
+                                , Attr.title "show solution"
+                                ]
+                                [ Html.text "info" ]
+                        else
+                            Html.text ""
+                       )
                     :: view_hints idx s.hints hints
                 )
 
@@ -42,18 +53,26 @@ view_quiz state fn_view idx hints solution =
             Html.text ""
 
 
-view_button : Int -> Bool -> Msg -> Html Msg
+view_button : Int -> Solution -> Msg -> Html Msg
 view_button trials solved msg =
-    if solved then
-        Html.button
-            [ Attr.class "lia-btn", Attr.class "lia-success" ]
-            [ Html.text ("Check " ++ toString trials) ]
-    else if trials == 0 then
-        Html.button [ Attr.class "lia-btn", onClick msg ] [ Html.text "Check" ]
-    else
-        Html.button
-            [ Attr.class "lia-btn", Attr.class "lia-failure", onClick msg ]
-            [ Html.text ("Check " ++ toString trials) ]
+    case solved of
+        Open ->
+            if trials == 0 then
+                Html.button [ Attr.class "lia-btn", onClick msg ] [ Html.text "Check" ]
+            else
+                Html.button
+                    [ Attr.class "lia-btn", Attr.class "lia-failure", onClick msg ]
+                    [ Html.text ("Check " ++ toString trials) ]
+
+        Solved ->
+            Html.button
+                [ Attr.class "lia-btn", Attr.class "lia-success" ]
+                [ Html.text ("Check " ++ toString trials) ]
+
+        ReSolved ->
+            Html.button
+                [ Attr.class "lia-btn", Attr.class "lia-failure" ]
+                [ Html.text "Resolved" ]
 
 
 view_text : Int -> QuizState -> Bool -> Html Msg
@@ -150,7 +169,13 @@ view_hints idx counter hints =
     in
     if counter < List.length hints then
         [ Html.text " "
-        , Html.a [ Attr.class "lia-hint-btn", Attr.href "#", onClick (ShowHint idx) ] [ Html.text "live_help" ]
+        , Html.a
+            [ Attr.class "lia-hint-btn"
+            , Attr.href "#"
+            , onClick (ShowHint idx)
+            , Attr.title "show hint"
+            ]
+            [ Html.text "help" ]
         , Html.div
             [ Attr.class "lia-hints"
             ]
@@ -162,3 +187,24 @@ view_hints idx counter hints =
             ]
             (v_hints hints counter)
         ]
+
+
+view_solution : Model -> Quiz -> Bool
+view_solution model quiz =
+    let
+        idx =
+            case quiz of
+                Text _ idx _ ->
+                    idx
+
+                SingleChoice _ _ idx _ ->
+                    idx
+
+                MultipleChoice _ _ idx _ ->
+                    idx
+    in
+    idx
+        |> get_state model
+        |> Maybe.map .solved
+        |> Maybe.map (\s -> s /= Open)
+        |> Maybe.withDefault False

@@ -17,6 +17,7 @@ type Msg
     | Input Int String
     | Check Int QuizState
     | ShowHint Int
+    | ShowSolution Int QuizState
 
 
 update : Msg -> Model -> ( Model, Maybe JE.Value )
@@ -41,12 +42,19 @@ update msg model =
         ShowHint idx ->
             ( update_hint idx model, Nothing )
 
+        ShowSolution idx solution ->
+            let
+                new_model =
+                    update_solution idx model solution
+            in
+            ( new_model, Just <| model2json new_model )
+
 
 get : Int -> QuizVector -> Maybe QuizElement
 get idx model =
     case Array.get idx model of
         Just elem ->
-            if elem.solved then
+            if (elem.solved == Solved) || (elem.solved == ReSolved) then
                 Nothing
             else
                 Just elem
@@ -75,6 +83,21 @@ update_hint idx vector =
     case get idx vector of
         Just elem ->
             Array.set idx { elem | hints = elem.hints + 1 } vector
+
+        _ ->
+            vector
+
+
+update_solution : Int -> QuizVector -> QuizState -> QuizVector
+update_solution idx vector quiz_solution =
+    case get idx vector of
+        Just elem ->
+            Array.set idx
+                { elem
+                    | state = quiz_solution
+                    , solved = ReSolved
+                }
+                vector
 
         _ ->
             vector
@@ -110,7 +133,16 @@ check_answer : Int -> QuizState -> QuizVector -> QuizVector
 check_answer idx solution vector =
     case get idx vector of
         Just elem ->
-            Array.set idx { elem | solved = elem.state == solution, trial = elem.trial + 1 } vector
+            Array.set idx
+                { elem
+                    | trial = elem.trial + 1
+                    , solved =
+                        if elem.state == solution then
+                            Solved
+                        else
+                            Open
+                }
+                vector
 
         Nothing ->
             vector

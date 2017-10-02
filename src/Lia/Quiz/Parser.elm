@@ -5,7 +5,7 @@ import Combine exposing (..)
 import Lia.Inline.Parser exposing (..)
 import Lia.Inline.Types exposing (..)
 import Lia.PState exposing (PState)
-import Lia.Quiz.Types exposing (Hints, Quiz(..), QuizState(..), QuizVector)
+import Lia.Quiz.Types exposing (Hints, Quiz(..), QuizState(..), QuizVector, Solution(..))
 
 
 parse : Parser PState Quiz
@@ -89,7 +89,7 @@ modify_PState quiz_ =
             { s
                 | quiz_vector =
                     Array.push
-                        { solved = False, state = e, trial = 0, hints = 0 }
+                        { solved = Open, state = e, trial = 0, hints = 0 }
                         s.quiz_vector
             }
 

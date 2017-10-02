@@ -5,6 +5,7 @@ module Lia.Quiz.Types
         , QuizElement
         , QuizState(..)
         , QuizVector
+        , Solution(..)
         )
 
 import Array exposing (Array)
@@ -19,8 +20,14 @@ type alias Hints =
     List Line
 
 
+type Solution
+    = Open
+    | Solved
+    | ReSolved
+
+
 type alias QuizElement =
-    { solved : Bool
+    { solved : Solution
     , state : QuizState
     , hints : Int
     , trial : Int

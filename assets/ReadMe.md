@@ -221,6 +221,16 @@ Only one element can be selected!
     [( )] Wrong
     [(X)] This is the **correct** answer
     [( )] This is ~~wrong~~ too!
+    [[[
+
+                {{1}}
+this is the correct anserwer
+
+* {{2}}{{test}}
+* hjasdfhaö
+* asdfaf
+
+]]]
 
 ### Multiple-Choice
 

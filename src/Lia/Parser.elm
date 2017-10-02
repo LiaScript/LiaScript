@@ -47,13 +47,18 @@ blocks =
                         , quote_block
                         , horizontal_line
                         , SurveyBlock <$> Survey.parse
-                        , Quiz <$> Quiz.parse
+                        , Quiz <$> Quiz.parse <*> solution
                         , ordered_list
                         , unordered_list
                         , Paragraph <$> paragraph
                         ]
             in
             comments *> b
+
+
+solution : Parser PState (List Block)
+solution =
+    optional [] (regex "( *)\\[\\[\\[[\\n]+" *> manyTill (blocks <* regex "[ \\n\\t]*") (regex "\\]\\]\\]"))
 
 
 unordered_list : Parser PState Block

@@ -30,7 +30,19 @@ model2json model =
 element2json : QuizElement -> JE.Value
 element2json element =
     JE.object
-        [ ( "solved", JE.bool element.solved )
+        [ ( "solved"
+          , JE.int
+                (case element.solved of
+                    Open ->
+                        0
+
+                    Solved ->
+                        1
+
+                    ReSolved ->
+                        -1
+                )
+          )
         , ( "state", state2json element.state )
         , ( "trial", JE.int element.trial )
         , ( "hints", JE.int element.hints )
@@ -64,8 +76,20 @@ json2model json =
 
 json2element : JD.Decoder QuizElement
 json2element =
+    let
+        solved_decoder i =
+            case i of
+                0 ->
+                    JD.succeed Open
+
+                1 ->
+                    JD.succeed Solved
+
+                _ ->
+                    JD.succeed ReSolved
+    in
     JD.map4 QuizElement
-        (JD.field "solved" JD.bool)
+        (JD.field "solved" JD.int |> JD.andThen solved_decoder)
         (JD.field "state" json2state)
         (JD.field "hints" JD.int)
         (JD.field "trial" JD.int)

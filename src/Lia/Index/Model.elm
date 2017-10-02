@@ -45,7 +45,7 @@ parse_block element =
                 EvalJS _ ->
                     ""
 
-        Quiz block ->
+        Quiz block solution ->
             parse_quiz block
 
         EBlock _ _ sub_blocks ->

@@ -227,8 +227,10 @@ view_slide : Model -> Slide -> Html Msg
 view_slide model slide =
     Html.div
         [ Attr.class "lia-section" ]
-        (view_header slide.indentation slide.title
-            :: view_body model slide.body
+        (slide.body
+            |> view_body model
+            |> List.append [ view_header slide.indentation slide.title ]
+            |> (\b -> List.append b [ Html.footer [] [] ])
         )
 
 
@@ -321,8 +323,17 @@ view_block model block =
         CodeBlock code ->
             Html.map UpdateCode <| Codes.view model.code_model code
 
-        Quiz quiz ->
-            Html.map UpdateQuiz <| Lia.Quiz.View.view model.quiz_model quiz
+        Quiz quiz [] ->
+            Html.map UpdateQuiz <| Lia.Quiz.View.view model.quiz_model quiz False
+
+        Quiz quiz solution ->
+            if Lia.Quiz.View.view_solution model.quiz_model quiz then
+                solution
+                    |> view_body model
+                    |> List.append [ Html.map UpdateQuiz <| Lia.Quiz.View.view model.quiz_model quiz False ]
+                    |> Html.div []
+            else
+                Html.map UpdateQuiz <| Lia.Quiz.View.view model.quiz_model quiz True
 
         SurveyBlock survey ->
             Html.map UpdateSurvey <| Lia.Survey.View.view model.survey_model survey
