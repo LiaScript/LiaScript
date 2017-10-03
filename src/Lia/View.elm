@@ -225,13 +225,11 @@ view_contents model =
 
 view_slide : Model -> Slide -> Html Msg
 view_slide model slide =
-    Html.div
-        [ Attr.class "lia-section" ]
-        (slide.body
-            |> view_body model
-            |> List.append [ view_header slide.indentation slide.title ]
-            |> (\b -> List.append b [ Html.footer [] [] ])
-        )
+    slide.body
+        |> view_body model
+        |> List.append [ view_header slide.indentation slide.title ]
+        |> (\b -> List.append b [ Html.footer [] [] ])
+        |> Html.div [ Attr.class "lia-section" ]
 
 
 view_header : Int -> String -> Html Msg
@@ -292,14 +290,18 @@ view_block model block =
             view_table model header (Array.fromList format) body
 
         Quote elements ->
-            Html.blockquote [ Attr.class "lia-inline lia-quote" ]
-                (List.map (\e -> Elem.view model.effect_model.visible e) elements)
+            elements
+                |> List.map (\e -> Elem.view model.effect_model.visible e)
+                |> Html.blockquote [ Attr.class "lia-inline lia-quote" ]
 
         CodeBlock code ->
-            Html.map UpdateCode <| Codes.view model.code_model code
+            code
+                |> Codes.view model.code_model
+                |> Html.map UpdateCode
 
         Quiz quiz Nothing ->
-            Html.map UpdateQuiz <| Lia.Quiz.View.view model.quiz_model quiz False
+            Lia.Quiz.View.view model.quiz_model quiz False
+                |> Html.map UpdateQuiz
 
         Quiz quiz (Just ( answer, hidden_effects )) ->
             if Lia.Quiz.View.view_solution model.quiz_model quiz then
@@ -308,27 +310,26 @@ view_block model block =
                     |> List.append [ Html.map UpdateQuiz <| Lia.Quiz.View.view model.quiz_model quiz False ]
                     |> Html.div []
             else
-                Html.map UpdateQuiz <| Lia.Quiz.View.view model.quiz_model quiz True
+                Lia.Quiz.View.view model.quiz_model quiz True
+                    |> Html.map UpdateQuiz
 
         SurveyBlock survey ->
-            Html.map UpdateSurvey <| Lia.Survey.View.view model.survey_model survey
+            survey
+                |> Lia.Survey.View.view model.survey_model
+                |> Html.map UpdateSurvey
 
         EBlock idx effect_name sub_blocks ->
             Effects.view_block model.effect_model (view_block model) idx effect_name sub_blocks
 
         BulletList list ->
-            Html.ul [ Attr.class "lia-inline lia-list lia-unordered" ]
-                (List.map
-                    (\l -> Html.li [] (List.map (\ll -> view_block model ll) l))
-                    list
-                )
+            list
+                |> List.map (\l -> Html.li [] (List.map (\ll -> view_block model ll) l))
+                |> Html.ul [ Attr.class "lia-inline lia-list lia-unordered" ]
 
         OrderedList list ->
-            Html.ol [ Attr.class "lia-inline lia-list lia-ordered" ]
-                (List.map
-                    (\l -> Html.li [] (List.map (\ll -> view_block model ll) l))
-                    list
-                )
+            list
+                |> List.map (\l -> Html.li [] (List.map (\ll -> view_block model ll) l))
+                |> Html.ol [ Attr.class "lia-inline lia-list lia-ordered" ]
 
         EComment idx comment ->
             case model.mode of
@@ -366,17 +367,14 @@ view_table model header format body =
                     )
     in
     Html.table
-        [ Attr.class "lia-inline"
-        , Attr.class "lia-table"
-        ]
+        [ Attr.class "lia-inline lia-table" ]
         (Html.thead
-            [ Attr.class "lia-inline"
-            , Attr.class "lia-table-head"
+            [ Attr.class "lia-inline lia-table-head"
             ]
             (view_row model Html.th header)
             :: List.map
                 (\r ->
-                    Html.tr [ Attr.class "lia-inline", Attr.class "lia-table-row" ]
+                    Html.tr [ Attr.class "lia-inline lia-table-row" ]
                         (view_row model Html.td r)
                 )
                 body
