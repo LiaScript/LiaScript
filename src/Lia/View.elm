@@ -1,11 +1,12 @@
 module Lia.View exposing (view)
 
+--import Html.Lazy exposing (lazy2)
+
 import Array exposing (Array)
 import Char
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
-import Html.Lazy exposing (lazy2)
 import Lia.Chart.View
 import Lia.Code.View as Codes
 import Lia.Effect.Model as Effect
@@ -42,24 +43,30 @@ view model =
 view_plain : Model -> Html Msg
 view_plain model =
     let
-        f =
-            view_slide { model | effect_model = Effect.init_silent }
+        viewer elements =
+            elements
+                |> view_slide { model | effect_model = Effect.init_silent }
+                |> (\( _, html ) -> html)
     in
-    Html.div
-        [ Attr.class "lia-plain"
-        ]
-        (List.map f model.slides)
+    model.slides
+        |> List.map viewer
+        |> Html.div [ Attr.class "lia-plain" ]
 
 
 view_slides : Model -> Html Msg
 view_slides model =
     let
         loadButton str msg =
-            Html.button
-                [ onClick msg
-                , Attr.class "lia-btn lia-slide-control lia-left"
-                ]
+            Html.button [ onClick msg, Attr.class "lia-btn lia-slide-control lia-left" ]
                 [ Html.text str ]
+
+        ( hidden_effects, body ) =
+            case get_slide model.current_slide model.slides of
+                Just slide ->
+                    view_slide model slide
+
+                Nothing ->
+                    ( 0, Html.text "" )
 
         content =
             Html.div
@@ -83,7 +90,7 @@ view_slides model =
                                     Html.text "visibility"
                             ]
                         , Html.span [ Attr.class "lia-spacer" ] []
-                        , loadButton "navigate_before" PrevSlide
+                        , loadButton "navigate_before" (PrevSlide hidden_effects)
                         , Html.span [ Attr.class "lia-labeled lia-left" ]
                             [ Html.span [ Attr.class "lia-label" ]
                                 [ Html.text (toString (model.current_slide + 1))
@@ -94,7 +101,7 @@ view_slides model =
                                                 [ " ("
                                                 , toString (model.effect_model.visible + 1)
                                                 , "/"
-                                                , toString (model.effect_model.effects + 1)
+                                                , toString (model.effect_model.effects + 1 - hidden_effects)
                                                 , ")"
                                                 ]
 
@@ -102,21 +109,12 @@ view_slides model =
                                         Html.text ""
                                 ]
                             ]
-                        , loadButton "navigate_next" NextSlide
+                        , loadButton "navigate_next" (NextSlide hidden_effects)
                         , Html.span [ Attr.class "lia-spacer" ] []
                         ]
                         (view_themes model.theme model.theme_light)
                     )
-                , Html.div
-                    [ Attr.class "lia-content"
-                    ]
-                    [ case get_slide model.current_slide model.slides of
-                        Just slide ->
-                            lazy2 view_slide model slide
-
-                        Nothing ->
-                            Html.text ""
-                    ]
+                , Html.div [ Attr.class "lia-content" ] [ body ]
                 ]
     in
     Html.div
@@ -223,13 +221,17 @@ view_contents model =
            )
 
 
-view_slide : Model -> Slide -> Html Msg
+view_slide : Model -> Slide -> ( Int, Html Msg )
 view_slide model slide =
-    slide.body
-        |> view_body model
+    let
+        ( is, slide_body ) =
+            view_body model slide.body
+    in
+    slide_body
         |> List.append [ view_header slide.indentation slide.title ]
         |> (\b -> List.append b [ Html.footer [] [] ])
         |> Html.div [ Attr.class "lia-section" ]
+        |> to_tuple is
 
 
 view_header : Int -> String -> Html Msg
@@ -256,13 +258,16 @@ view_header indentation title =
            )
 
 
-view_body : Model -> List Block -> List (Html Msg)
+view_body : Model -> List Block -> ( Int, List (Html Msg) )
 view_body model body =
     let
-        f =
+        viewer =
             view_block model
     in
-    List.map f body
+    body
+        |> List.map viewer
+        |> List.unzip
+        |> (\( is, html ) -> ( List.sum is, html ))
 
 
 to_tuple : Int -> Html Msg -> ( Int, Html Msg )
@@ -275,72 +280,95 @@ zero_tuple =
     to_tuple 0
 
 
-view_block : Model -> Block -> Html Msg
+view_block : Model -> Block -> ( Int, Html Msg )
 view_block model block =
+    let
+        viewer element =
+            element
+                |> view_block model
+                |> (\( _, html ) -> html)
+    in
     case block of
         Paragraph elements ->
             elements
                 |> List.map (\e -> Elem.view model.effect_model.visible e)
                 |> Html.p [ Attr.class "lia-inline lia-paragraph" ]
+                |> zero_tuple
 
         HLine ->
             Html.hr [ Attr.class "lia-inline lia-horiz-line" ] []
+                |> zero_tuple
 
         Table header format body ->
-            view_table model header (Array.fromList format) body
+            body
+                |> view_table model header (Array.fromList format)
+                |> zero_tuple
 
         Quote elements ->
             elements
                 |> List.map (\e -> Elem.view model.effect_model.visible e)
                 |> Html.blockquote [ Attr.class "lia-inline lia-quote" ]
+                |> zero_tuple
 
         CodeBlock code ->
             code
                 |> Codes.view model.code_model
                 |> Html.map UpdateCode
+                |> zero_tuple
 
         Quiz quiz Nothing ->
             Lia.Quiz.View.view model.quiz_model quiz False
                 |> Html.map UpdateQuiz
+                |> zero_tuple
 
         Quiz quiz (Just ( answer, hidden_effects )) ->
             if Lia.Quiz.View.view_solution model.quiz_model quiz then
                 answer
                     |> view_body model
+                    |> (\( _, html ) -> html)
                     |> List.append [ Html.map UpdateQuiz <| Lia.Quiz.View.view model.quiz_model quiz False ]
                     |> Html.div []
+                    |> zero_tuple
             else
                 Lia.Quiz.View.view model.quiz_model quiz True
                     |> Html.map UpdateQuiz
+                    |> to_tuple hidden_effects
 
         SurveyBlock survey ->
             survey
                 |> Lia.Survey.View.view model.survey_model
                 |> Html.map UpdateSurvey
+                |> zero_tuple
 
         EBlock idx effect_name sub_blocks ->
-            Effects.view_block model.effect_model (view_block model) idx effect_name sub_blocks
+            Effects.view_block model.effect_model viewer idx effect_name sub_blocks
+                |> zero_tuple
 
         BulletList list ->
             list
-                |> List.map (\l -> Html.li [] (List.map (\ll -> view_block model ll) l))
+                |> List.map (\l -> Html.li [] (List.map (\ll -> viewer ll) l))
                 |> Html.ul [ Attr.class "lia-inline lia-list lia-unordered" ]
+                |> zero_tuple
 
         OrderedList list ->
             list
-                |> List.map (\l -> Html.li [] (List.map (\ll -> view_block model ll) l))
+                |> List.map (\l -> Html.li [] (List.map (\ll -> viewer ll) l))
                 |> Html.ol [ Attr.class "lia-inline lia-list lia-ordered" ]
+                |> zero_tuple
 
         EComment idx comment ->
-            case model.mode of
-                Slides ->
-                    Effects.comment False model.silent ToggleSpeech model.effect_model (view_block model) idx [ Paragraph comment ]
+            zero_tuple <|
+                case model.mode of
+                    Slides ->
+                        Effects.comment False model.silent ToggleSpeech model.effect_model viewer idx [ Paragraph comment ]
 
-                _ ->
-                    Effects.comment True model.silent ToggleSpeech model.effect_model (view_block model) idx [ Paragraph comment ]
+                    _ ->
+                        Effects.comment True model.silent ToggleSpeech model.effect_model viewer idx [ Paragraph comment ]
 
         Chart chart ->
-            Lia.Chart.View.view chart
+            chart
+                |> Lia.Chart.View.view
+                |> zero_tuple
 
 
 view_table : Model -> List (List Inline) -> Array String -> List (List (List Inline)) -> Html Msg

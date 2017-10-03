@@ -14,8 +14,8 @@ import Lia.Types exposing (Mode(..))
 
 type Msg
     = Load Int
-    | PrevSlide
-    | NextSlide
+    | PrevSlide Int
+    | NextSlide Int
     | ToggleContentsTable
     | UpdateIndex Index.Msg
     | UpdateQuiz Quiz.Msg
@@ -84,16 +84,24 @@ update msg model =
                 _ ->
                     update ToggleSpeech { model | mode = Slides, silent = True }
 
-        PrevSlide ->
-            case ( model.mode, Effect.previous model.silent model.effect_model ) of
+        PrevSlide hidden_effects ->
+            let
+                effect_model =
+                    model.effect_model
+            in
+            case ( model.mode, Effect.previous model.silent { effect_model | effects = effect_model.effects - hidden_effects } ) of
                 ( Slides, ( effect_model, cmd, False ) ) ->
                     ( { model | effect_model = effect_model }, Cmd.map UpdateEffect cmd, Nothing )
 
                 _ ->
                     update (Load (model.current_slide - 1)) model
 
-        NextSlide ->
-            case ( model.mode, Effect.next model.silent model.effect_model ) of
+        NextSlide hidden_effects ->
+            let
+                effect_model =
+                    model.effect_model
+            in
+            case ( model.mode, Effect.next model.silent { effect_model | effects = effect_model.effects - hidden_effects } ) of
                 ( Slides, ( effect_model, cmd, False ) ) ->
                     ( { model | effect_model = effect_model }, Cmd.map UpdateEffect cmd, Nothing )
 
