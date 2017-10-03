@@ -293,42 +293,43 @@ view_body model body =
     List.map f body
 
 
+to_tuple : Int -> Html Msg -> ( Int, Html Msg )
+to_tuple i html =
+    ( i, html )
+
+
+zero_tuple : Html Msg -> ( Int, Html Msg )
+zero_tuple =
+    to_tuple 0
+
+
 view_block : Model -> Block -> Html Msg
 view_block model block =
     case block of
         Paragraph elements ->
-            Html.p
-                [ Attr.class "lia-inline"
-                , Attr.class "lia-paragraph"
-                ]
-                (List.map (\e -> Elem.view model.effect_model.visible e) elements)
+            elements
+                |> List.map (\e -> Elem.view model.effect_model.visible e)
+                |> Html.p [ Attr.class "lia-inline lia-paragraph" ]
 
         HLine ->
-            Html.hr
-                [ Attr.class "lia-inline"
-                , Attr.class "lia-horiz-line"
-                ]
-                []
+            Html.hr [ Attr.class "lia-inline lia-horiz-line" ] []
 
         Table header format body ->
             view_table model header (Array.fromList format) body
 
         Quote elements ->
-            Html.blockquote
-                [ Attr.class "lia-inline"
-                , Attr.class "lia-quote"
-                ]
+            Html.blockquote [ Attr.class "lia-inline lia-quote" ]
                 (List.map (\e -> Elem.view model.effect_model.visible e) elements)
 
         CodeBlock code ->
             Html.map UpdateCode <| Codes.view model.code_model code
 
-        Quiz quiz [] ->
+        Quiz quiz Nothing ->
             Html.map UpdateQuiz <| Lia.Quiz.View.view model.quiz_model quiz False
 
-        Quiz quiz solution ->
+        Quiz quiz (Just ( answer, hidden_effects )) ->
             if Lia.Quiz.View.view_solution model.quiz_model quiz then
-                solution
+                answer
                     |> view_body model
                     |> List.append [ Html.map UpdateQuiz <| Lia.Quiz.View.view model.quiz_model quiz False ]
                     |> Html.div []
@@ -342,22 +343,14 @@ view_block model block =
             Effects.view_block model.effect_model (view_block model) idx effect_name sub_blocks
 
         BulletList list ->
-            Html.ul
-                [ Attr.class "lia-inline"
-                , Attr.class "lia-list"
-                , Attr.class "lia-unordered"
-                ]
+            Html.ul [ Attr.class "lia-inline lia-list lia-unordered" ]
                 (List.map
                     (\l -> Html.li [] (List.map (\ll -> view_block model ll) l))
                     list
                 )
 
         OrderedList list ->
-            Html.ol
-                [ Attr.class "lia-inline"
-                , Attr.class "lia-list"
-                , Attr.class "lia-ordered"
-                ]
+            Html.ol [ Attr.class "lia-inline lia-list lia-ordered" ]
                 (List.map
                     (\l -> Html.li [] (List.map (\ll -> view_block model ll) l))
                     list

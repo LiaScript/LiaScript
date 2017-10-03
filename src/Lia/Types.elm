@@ -35,7 +35,7 @@ type Block
     | Quote Paragraph
     | Paragraph Paragraph
     | Table (List Paragraph) (List String) (List (List Paragraph))
-    | Quiz Quiz (List Block)
+    | Quiz Quiz (Maybe ( List Block, Int ))
     | EBlock Int (Maybe String) (List Block)
     | EComment Int Paragraph
     | BulletList (List (List Block))

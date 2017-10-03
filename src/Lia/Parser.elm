@@ -56,9 +56,20 @@ blocks =
             comments *> b
 
 
-solution : Parser PState (List Block)
+solution : Parser PState (Maybe ( List Block, Int ))
 solution =
-    optional [] (regex "( *)\\[\\[\\[[\\n]+" *> manyTill (blocks <* regex "[ \\n\\t]*") (regex "\\]\\]\\]"))
+    let
+        rslt e1 blocks_ e2 =
+            ( blocks_, e2 - e1 )
+    in
+    maybe
+        (rslt
+            <$> (regex "( *)\\[\\[\\[[\\n]+"
+                    *> withState (\s -> succeed s.num_effects)
+                )
+            <*> manyTill (blocks <* regex "[ \\n\\t]*") (regex "\\]\\]\\]")
+            <*> withState (\s -> succeed s.num_effects)
+        )
 
 
 unordered_list : Parser PState Block
