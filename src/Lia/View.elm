@@ -236,52 +236,26 @@ view_slide model slide =
 
 view_header : Int -> String -> Html Msg
 view_header indentation title =
-    let
-        html_title =
-            [ Html.text title ]
-    in
-    case indentation of
-        0 ->
-            Html.h1
-                [ Attr.class "lia-inline"
-                , Attr.class "lia-h1"
-                ]
-                html_title
+    [ Html.text title ]
+        |> (case indentation of
+                0 ->
+                    Html.h1 [ Attr.class "lia-inline lia-h1" ]
 
-        1 ->
-            Html.h2
-                [ Attr.class "lia-inline"
-                , Attr.class "lia-h2"
-                ]
-                html_title
+                1 ->
+                    Html.h2 [ Attr.class "lia-inline lia-h2" ]
 
-        2 ->
-            Html.h3
-                [ Attr.class "lia-inline"
-                , Attr.class "lia-h3"
-                ]
-                html_title
+                2 ->
+                    Html.h3 [ Attr.class "lia-inline lia-h3" ]
 
-        3 ->
-            Html.h4
-                [ Attr.class "lia-inline"
-                , Attr.class "lia-h4"
-                ]
-                html_title
+                3 ->
+                    Html.h4 [ Attr.class "lia-inline lia-h4" ]
 
-        4 ->
-            Html.h5
-                [ Attr.class "lia-inline"
-                , Attr.class "lia-h5"
-                ]
-                html_title
+                4 ->
+                    Html.h5 [ Attr.class "lia-inline lia-h5" ]
 
-        _ ->
-            Html.h6
-                [ Attr.class "lia-inline"
-                , Attr.class "lia-h6"
-                ]
-                html_title
+                _ ->
+                    Html.h6 [ Attr.class "lia-inline lia-h6" ]
+           )
 
 
 view_body : Model -> List Block -> List (Html Msg)
