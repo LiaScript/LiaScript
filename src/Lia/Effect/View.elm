@@ -8,20 +8,32 @@ import Html.Events exposing (onClick)
 import Lia.Effect.Model exposing (Model)
 
 
+--import Lia.Utils exposing (stringToHtml)
+--spaces =
+--stringToHtml "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+--    Html.text " "
+
+
 view : (inline -> Html msg) -> Int -> Int -> Maybe String -> List inline -> Html msg
 view viewer idx visible effect_name elements =
     Html.span
         [ Attr.id (toString idx)
         , Attr.hidden (idx > visible)
-        , Attr.class "lia-effect-inline"
+        , if idx > visible then
+            Attr.style []
+          else
+            Attr.style [ ( "display", "inline-block" ) ]
         , case effect_name of
             Nothing ->
-                Attr.class ""
+                Attr.class "lia-effect-inline"
 
             Just name ->
-                Attr.class ("animated " ++ name)
+                Attr.class ("lia-effect-inline animated " ++ name)
         ]
-        (circle idx :: Html.text " " :: List.map viewer elements)
+        (Html.span [ Attr.class "lia-effect-circle" ] [ Html.text (toString idx) ]
+            :: Html.text " "
+            :: List.map viewer elements
+        )
 
 
 view_block : Model -> (block -> Html msg) -> Int -> Maybe String -> List block -> Html msg
@@ -29,15 +41,14 @@ view_block model viewer idx effect_name blocks =
     Html.div
         [ Attr.id (toString idx)
         , Attr.hidden (idx > model.visible)
-        , Attr.class "lia-effect-block"
         , case effect_name of
             Nothing ->
-                Attr.class ""
+                Attr.class "lia-effect-inline"
 
             Just name ->
-                Attr.class ("animated " ++ name)
+                Attr.class ("lia-effect-inline animated " ++ name)
         ]
-        (circle idx
+        (Html.span [ Attr.class "lia-effect-circle" ] [ Html.text (toString idx) ]
             :: List.map viewer blocks
         )
 
@@ -87,11 +98,3 @@ responsive silent msg =
                 []
             ]
         ]
-
-
-circle : Int -> Html msg
-circle int =
-    Html.span
-        [ Attr.class "lia-effect-circle"
-        ]
-        [ Html.text (toString int) ]

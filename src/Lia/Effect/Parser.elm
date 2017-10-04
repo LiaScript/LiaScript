@@ -13,7 +13,7 @@ eblock : Parser PState Block -> Parser PState Block
 eblock blocks =
     let
         name =
-            maybe (regex "[a-zA-Z ]+")
+            maybe (regex "[a-zA-Z0-9 ]+")
 
         multi_block =
             regex "( *){{[\\n]+" *> manyTill (blocks <* regex "[ \\n\\t]*") (regex "( *)}}")
@@ -31,7 +31,7 @@ einline : Parser PState Inline -> Parser PState Inline
 einline inlines =
     let
         name =
-            maybe (regex "[a-zA-Z ]+")
+            maybe (regex "[a-zA-Z0-9 ]+")
 
         multi_inline =
             string "{{" *> manyTill inlines (string "}}")
