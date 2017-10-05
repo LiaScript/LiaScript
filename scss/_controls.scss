@@ -74,6 +74,11 @@
         background: $bg;
         padding: map-get($config, spacing-normal);
         font-size: map-get($config, code-size);
+        overflow-x: auto;
+    }
+
+    .lia-label {
+      white-space: nowrap;
     }
 
     .lia-btn,
@@ -384,6 +389,18 @@
         :first-child td {
             padding: 0 map-get($config, spacing-normal);
         }
+    }
+
+    .lia-quote {
+      $info: map-get($theme, info);
+      $bg: mix(map-get($theme, background), $info, 80%);
+      $fg: color-contrast($bg);
+
+      border-left: map-get($config, spacing-small) solid $info;
+      background: $bg;
+      color: $fg;
+      margin: map-get($config, spacing-huge) map-get($config, spacing-normal);
+      padding: map-get($config, spacing-large);
     }
 
     .lia-toolbar {

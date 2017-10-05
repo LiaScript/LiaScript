@@ -3,9 +3,15 @@
 @mixin slide($theme) {
     .lia-slide {
         @include flex(column, nowrap, flex-start, stretch, stretch);
+        overflow: auto;
 
         .lia-toolbar {
             @include flex(row, nowrap, flex-start, stretch, stretch);
+            overflow-x: auto;
+
+            & > * {
+              flex-shrink: 0;
+            }
 
             .lia-btn {
                 @include material-icon("", 1em);
@@ -54,6 +60,10 @@
                 text-align: center;
                 vertical-align: middle;
                 padding: map-get($config, spacing-tiny);
+
+                &.animated {
+                  left: $effect-circle-size * -1.5;
+                }
             }
 
             .lia-hint-btn {

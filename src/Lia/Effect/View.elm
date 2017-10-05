@@ -30,7 +30,15 @@ view viewer idx visible effect_name elements =
             Just name ->
                 Attr.class ("lia-effect-inline animated " ++ name)
         ]
-        (Html.span [ Attr.class "lia-effect-circle" ] [ Html.text (toString idx) ]
+        (Html.span
+            [ Attr.class
+                (if effect_name == Nothing then
+                    "lia-effect-circle"
+                 else
+                    "lia-effect-circle animated"
+                )
+            ]
+            [ Html.text (toString idx) ]
             :: Html.text " "
             :: List.map viewer elements
         )
