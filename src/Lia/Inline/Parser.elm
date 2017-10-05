@@ -70,7 +70,7 @@ html_block =
             )
                 <$> stringTill (string "</" *> string tag <* string ">")
     in
-    HTML <$> (whitespace *> string "<" *> regex "[a-zA-Z]+" >>= p)
+    HTML <$> (whitespace *> string "<" *> regex "[a-zA-Z0-9]+" >>= p)
 
 
 combine : List Inline -> List Inline
