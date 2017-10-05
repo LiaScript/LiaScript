@@ -17,7 +17,7 @@ type alias PState =
     , def_date : String
     , def_email : String
     , def_language : String
-    , def_narator : String
+    , def_narrator : String
     , def_version : String
     , def_comment : String
     }
@@ -35,7 +35,7 @@ init =
     , def_date = ""
     , def_email = ""
     , def_language = ""
-    , def_narator = ""
+    , def_narrator = ""
     , def_version = ""
     , def_comment = ""
     }

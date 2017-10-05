@@ -40,7 +40,7 @@ init mode script =
         , survey_model = Array.empty
         , index_model = Index.init []
         , effect_model = Effect.init "US English Male" Nothing
-        , narator = "US English Male"
+        , narrator = "US English Male"
         , silent = False
         , theme = "default"
         , theme_light = True
@@ -65,7 +65,7 @@ init_slides =
 parse : Model -> Model
 parse model =
     case Lia.Parser.run model.script of
-        Ok ( slides, code_vector, quiz_vector, survey_vector, narator ) ->
+        Ok ( slides, code_vector, quiz_vector, survey_vector, narrator ) ->
             { model
                 | slides = slides
                 , error = ""
@@ -75,18 +75,18 @@ parse model =
                     else
                         model.quiz_model
                 , index_model = Index.init slides
-                , effect_model = Effect.init narator <| List.head slides
+                , effect_model = Effect.init narrator <| List.head slides
                 , code_model = code_vector
                 , survey_model =
                     if model.survey_model == Array.empty then
                         survey_vector
                     else
                         model.survey_model
-                , narator =
-                    if narator == "" then
+                , narrator =
+                    if narrator == "" then
                         "US English Male"
                     else
-                        narator
+                        narrator
             }
 
         Err msg ->

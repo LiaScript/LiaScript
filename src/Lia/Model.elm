@@ -20,7 +20,7 @@ type alias Model =
     , effect_model : Lia.Effect.Model.Model
     , index_model : Lia.Index.Model.Model
     , survey_model : Lia.Survey.Model.Model
-    , narator : String
+    , narrator : String
     , silent : Bool
     , theme : String
     , theme_light : Bool

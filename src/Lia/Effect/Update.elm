@@ -53,7 +53,7 @@ update msg model =
         Speak silent ->
             case ( get_comment model, silent ) of
                 ( Just str, False ) ->
-                    ( { model | status = Speaking }, Tts.Responsive.speak TTS model.narator str, False )
+                    ( { model | status = Speaking }, Tts.Responsive.speak TTS model.narrator str, False )
 
                 _ ->
                     ( model, Cmd.none, False )

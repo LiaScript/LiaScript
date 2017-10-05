@@ -8,7 +8,7 @@ version:  1.0.0
 
 language: en_US
 
-narator:  US English Female
+narrator:  US English Female
 
 -->
 
@@ -17,20 +17,20 @@ narator:  US English Female
 See the online rendered version at: https://liascript.github.io
 
 Lia-Script is an extended Markdown format for writing interactive online
-courses. Imagine all schoolbooks, technical or scientifical literature could
-become open-source projects and more interactive ... with colaborating teachers
+courses. Imagine all schoolbooks, technical or scientific literature could
+become open-source projects and more interactive ... with collaborating teachers
 and students ...
 
 * easy to share adapt and translate
 * no additional software required, everything is implemented in JavaScirpt/Elm
   and runs directly within the browser
-* automatic convertion to epub, pdf, ...
+* automatic conversion to epub, pdf, ...
 
 
                                      --{{1}}--
-With Lia we try to implement an extended Markdown format that should enable
+With Lia, we try to implement an extended Markdown format that should enable
 everyone to create, share, adapt, translate or correct and extend online courses
-without the need of beeing a web-developer.
+without the need of being a web-developer.
 
                                      --{{2}}--
 Everything that is required is simple text-editor and a web-browser. Or you
@@ -41,7 +41,7 @@ client-side.
 ## Markdown-Syntax
 
 This section is intended to give a brief overview on the basic Markdown
-formating elements. The only difference to common Markdown at this point is,
+formatting elements. The only difference to common Markdown at this point is,
 that every course has to start with a comment, which defines authors, a language
 and  a narrator voice, see https://responsivevoice.org for all supported voices.
 
@@ -57,7 +57,7 @@ version:  1.0.0
 
 language: en_US
 
-narator:  US English Female
+narrator:  US English Female
 
 -->
 ```
@@ -87,10 +87,10 @@ whereby the number of hash-tags is used to define the hierarchy.
 ## Section Title 2
 ```
 
-### Text-Formating
+### Text-Formatting
 
                                     --{{0}}--
-We tried to use the github flavored Markdown style for simple formating with
+We tried to use the github flavored Markdown style for simple formatting with
 some additional elements.
 
 \*italic\* -> *italic*
@@ -109,7 +109,7 @@ some additional elements.
 
                                      --{{1}}--
 These exceptions are for example underline and its combination with strike
-throug or the application of superscript. If you, for example, superscript
+through or the application of superscript. If you, for example, superscript
 superscript you can get even smaller.
 
                                        {{1}}
@@ -181,7 +181,7 @@ typical brackets and parenthesis notation.
 
 1. example of an url-link -> http://goo.gl/fGXNvu
 
-   textformating can be applied also (`*** http://goo.gl/fGXNvu ***`) ->
+   text-formatting can be applied also (`*** http://goo.gl/fGXNvu ***`) ->
    *** http://goo.gl/fGXNvu ***
 
 2. naming the link (`[title](http://goo.gl/fGXNvu)`) -> [title](http://goo.gl/fGXNvu)
@@ -200,8 +200,8 @@ defined by two exclamation marks.
 
   !![movie](https://www.youtube.com/embed/XsNk5aOpqUc?&autoplay=1)
 
-  See alse http://www.google.com/support/youtube/bin/answer.py?hl=en&answer=56107
-  to get an overview on how a YouTube link has to be formated to add a starting
+  See also http://www.google.com/support/youtube/bin/answer.py?hl=en&answer=56107
+  to get an overview on how a YouTube link has to be formatted to add a starting
   and/or end point, autoplay, subtitles, and other options.
 
 ##### Styling
@@ -209,7 +209,7 @@ defined by two exclamation marks.
                                     --{{0}}--
 Adding CSS elements to images is implemented via a trailing comment-tag,
 everything within this comment is treated as a style attribute, so that it can
-also used to apply graphical filters of for positioning.
+also be used to apply graphical filters of for positioning.
 
 
 `![image](...Creative-Tail-Animal-lion.svg)<!-- width: 100px; border: 10px solid; filter: grayscale(100%); -->`
@@ -311,7 +311,7 @@ Result:
 #### Ordered Lists
 
                                  --{{1}}--
-Ordered list start with a number and a dot. As you can cee from the example, the
+Ordered list start with a number and a dot. As you can see from the example, the
 number does not count at the moment, the generated list will always count by the
 order of appearance. And it is also possible to mix lists with other lists and
 elements freely.
@@ -324,7 +324,7 @@ Markdown-format:
 1. * gamma
    * delta
    * and epsilon
-3. propably zeta
+3. probably zeta
 ```
 
 Result:
@@ -334,14 +334,14 @@ Result:
 1. * gamma
    * delta
    * and epsilon
-3. propably zeta
+3. probably zeta
 
 #### Tables
 
                                    --{{0}}--
 Tables, we hope, are self-explanatory. The second line is used to define a table
-header as well as the alignement of the column, which is indicated by the colon.
-The default is left alignement.
+header as well as the alignment of the column, which is indicated by the colon.
+The default is left alignment.
 
 Markdown-format:
 
@@ -423,13 +423,13 @@ $$
 $$
 
                                     --{{0}}--
-We apply KaTeX for math-formating, see the documentation at www.katex.org.
+We apply KaTeX for math-formatting, see the documentation at www.katex.org.
 
                                     --{{1}}--
 A formula can be either inline with single dollars.
 
                                     --{{2}}--
-Or multiline by using the double dollar notation.
+Or multi-line by using the double dollar notation.
 
 ## Syntax Highlighting
 
@@ -497,11 +497,11 @@ At the moment, executing code is only possible for JavaScript, we gone extend
 this in the future with backend-support for other languages. Double click on the
 code to edit it and to change the output ...
 
-## Quizes
+## Quizzes
 
-Quizes are an essential element of every online course for students to reflect
-and test their knowledge. Lia currently supports tree different types of quizes
-which can be tweaked, if required.
+Quizzes are an essential element of every online course for students to reflect
+and test their knowledge. Lia currently supports three different types of
+quizzes which can be tweaked, if required.
 
 ### Text Inputs
 
@@ -543,7 +543,7 @@ Only one element can be selected!
                                   --{{0}}--
 A multiple choice quiz can be defined with brackets within brackets and an X,
 which are used to mark the correct answer option. In contrast to single choice
-quizes, their can be multiple selected choices or no one, which is also allowed.
+quizzes, there can be multiple selected choices or no one, which is also allowed.
 
 ``` markdown
     [[ ]] Do not touch!
@@ -562,8 +562,8 @@ Multiple of them can be selected, or all, or none of them ...
 ### Hints
 
                                   --{{0}}--
-To any type of quiz you can add as much hints as you want, which are revealed in
-order by clicking onto the questionmark.
+To any type of quiz you can add as many hints as you want, which are revealed in
+order by clicking onto the question mark.
 
 Markdown-format:
 
@@ -587,11 +587,11 @@ A text input with additional hints:
 ### Solution
 
                                    --{{0}}--
-And finaly, some quizes might require some more explanations, if they are solved
-or not. That is why, with additionall three oppening and three closing brackets
-you mark the begining and the end of your solution, which can contain multiple
-paragraphs, formulas, program code, videos, etc as well as effects (see therefor
-the next section).
+And finally, some quizzes might require some more explanations, if they are
+solved or not. That is why, with additional three opening and three closing
+brackets you mark the beginning and the end of your solution, which can contain
+multiple paragraphs, formulas, program code, videos, etc as well as effects (see
+therefor the next section).
 
 Markdown-format:
 
@@ -648,7 +648,7 @@ order of their appearance.
 Inline effects can be used in nearly all liaScript elements, as already
 mentioned, the first number within curly braces defines the number of appearance
 while the second part defines those Markdown elements that should be revealed
-stepwise. If you use 0, than the effect will be revealed imediately.
+step wise. If you use 0, then the effect will be revealed immediately.
 
 Use this to highlight important facts and to structure your slides (multiple
 effects can be combined, due to the usage of equal numbers):
@@ -692,7 +692,7 @@ See https://daneden.github.io/animate.css for more animation effects.
 ### Block Effects
 
                                    --{{0}}--
-Block effects an animations are defined similarly to inline effects, just with
+Block effects as animations are defined similarly to inline effects, just with
 one additional newline after the effect definition. The following Markdown block
 is then entirely associated with this effect.
 
@@ -739,23 +739,23 @@ You can put spaces before the definition of a block effect, to prevent github
 and others from adding the definition to a Markdown paragraph, and thus, to
 render the script properly.
 
-### Narator
+### Narrator
 
 1. we are using the text-to-speech engine of https://responsivevoice.org
-2. the narator voice must be defined within the inital comment of a script
+2. the narrator voice must be defined within the initial comment of a script
 3. use `--{{id}}--` to indicate what is spoken and when
 
 ``` markdown
                                 --{{1}}--
 The entire ***Markdown*** paragraph right below the effect definition in double
-minus notation is send to responsivevoice to speak the text out loud. If you
+minus notation is sent to responsivevoice to speak the text out loud. If you
 click on the ear button at the navigation panel, then this paragraph gets
 rendered at the place where it is defined.
 ```
 
                                 --{{1}}--
 The entire ***Markdown*** paragraph right below the effect definition in double
-minus notation is send to responsivevoice to speak the text out loud. If you
+minus notation is sent to responsivevoice to speak the text out loud. If you
 click on the ear button at the navigation panel, then this paragraph gets
 rendered at the place where it is defined.
 
@@ -916,12 +916,12 @@ required.
 
 ### Text-Inputs
 
-Similar to text-quizes, use the following syntax to define a text-survey, where
+Similar to text-quizzes, use the following syntax to define a text-survey, where
 the number of underlines defines the presented line numbers:
 
    `[[___ ___ ___ ___]]`
 
-What is your oppinion on ... :
+What is your opinion on ... :
 
     [[___ ___ ___ ___]]
 
@@ -929,7 +929,7 @@ What is your oppinion on ... :
 
                               --{{0}}--
 And also this kind of survey is similar to a single choice quiz, but in this
-case numbers within parentesis are used to define some kind of variable
+case numbers within parenthesis are used to define some kind of variable
 identifier. That is why they do not have to be in order.
 
 ```markdown
@@ -950,7 +950,7 @@ You can only select one option:
 ### Multi Choice Vector
 
                                --{{0}}--
-Similar to multi-choice quizes, you can define multi-choice survey vectors with
+Similar to multi-choice quizzes, you can define multi-choice survey vectors with
 a number in double square brackets. But, and this is also possible for all other
 kinds of surveys you can define some kind of variable name with a starting colon.
 
@@ -977,16 +977,16 @@ also used by the trailing rows.
 Markdown-format:
 
 ```markdown
-    [(:totaly)(:agree)(:unsure)(:maybe not)(:disagree)]
-    [                                                 ] liaScript is great?
-    [                                                 ] I would use it to make online **courses**?
-    [                                                 ] I would use it for online **surveys**?
+    [(:totally)(:agree)(:unsure)(:maybe not)(:disagree)]
+    [                                                  ] liaScript is great?
+    [                                                  ] I would use it to make online **courses**?
+    [                                                  ] I would use it for online **surveys**?
 ```
 
-    [(:totaly)(:agree)(:unsure)(:maybe not)(:disagree)]
-    [                                                 ] liaScript is great?
-    [                                                 ] I would use it to make online **courses**?
-    [                                                 ] I would use it for online **surveys**?
+    [(:totally)(:agree)(:unsure)(:maybe not)(:disagree)]
+    [                                                  ] liaScript is great?
+    [                                                  ] I would use it to make online **courses**?
+    [                                                  ] I would use it for online **surveys**?
 
 ### Multi Choice Matrix
 
@@ -1014,7 +1014,7 @@ Result:
 
 * Better integration with github/gitlab and the versioning of courses
 * Free Integration of JavaScript and Elm resources
-* Automagically analysed surveys
+* Automagically analyzed surveys
 * Integration of WebGl and a 3D navigation
 * Inline function-plotter
 

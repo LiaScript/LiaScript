@@ -18,7 +18,7 @@ type alias Model =
     , effects : Int
     , status : Status
     , comments : Array (Maybe String)
-    , narator : String
+    , narrator : String
     }
 
 
@@ -29,13 +29,13 @@ type Status
 
 
 init : String -> Maybe Slide -> Model
-init narator maybe =
+init narrator maybe =
     case maybe of
         Just slide ->
-            Model 0 slide.effects Silent (scan_for_comments slide.effects slide.body) narator
+            Model 0 slide.effects Silent (scan_for_comments slide.effects slide.body) narrator
 
         Nothing ->
-            Model 0 0 Silent Array.empty narator
+            Model 0 0 Silent Array.empty narrator
 
 
 init_silent : Model

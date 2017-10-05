@@ -216,8 +216,8 @@ define_comment =
         language x =
             modifyState (\s -> { s | def_language = x })
 
-        narator x =
-            modifyState (\s -> { s | def_narator = x })
+        narrator x =
+            modifyState (\s -> { s | def_narrator = x })
 
         version x =
             modifyState (\s -> { s | def_version = x })
@@ -227,7 +227,7 @@ define_comment =
             , string "date:" *> (ending >>= date)
             , string "email:" *> (ending >>= email)
             , string "language:" *> (ending >>= language)
-            , string "narator:" *> (ending >>= narator)
+            , string "narrator:" *> (ending >>= narrator)
             , string "version:" *> (ending >>= version)
             ]
     in
@@ -238,7 +238,7 @@ run : String -> Result String ( List Slide, CodeVector, QuizVector, SurveyVector
 run script =
     case Combine.runParser parse Lia.PState.init script of
         Ok ( state, _, es ) ->
-            Ok ( es, state.code_vector, state.quiz_vector, state.survey_vector, state.def_narator )
+            Ok ( es, state.code_vector, state.quiz_vector, state.survey_vector, state.def_narrator )
 
         Err ( _, stream, ms ) ->
             Err <| formatError ms stream
