@@ -1,6 +1,8 @@
 port module Main exposing (..)
 
 import Html exposing (Html)
+import Html.Attributes as Attr
+import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode as JD
 import Json.Encode as JE
@@ -59,7 +61,7 @@ init flags =
         , getCourse flags.url
         )
     else
-        ( Model "" (Lia.init_slides "") Waiting ""
+        ( Model "https://www.gitlab.com/OvGU-ESS/eLab_v2/lia_script/raw/master/README.md" (Lia.init_slides "") Waiting ""
         , Cmd.none
         )
 
@@ -72,6 +74,8 @@ type Msg
     = GET (Result Http.Error String)
     | LIA Lia.Msg
     | RxLog ( String, JE.Value )
+    | Update String
+    | Load
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -104,6 +108,12 @@ update msg model =
         RxLog m ->
             ( { model | lia = Lia.restore model.lia m }, Cmd.none )
 
+        Update url ->
+            ( { model | url = url }, Cmd.none )
+
+        Load ->
+            ( { model | state = Loading }, getCourse model.url )
+
 
 
 -- VIEW
@@ -129,10 +139,13 @@ view model =
                 ]
 
         Waiting ->
-            Html.div []
-                [ Html.text "Please enter a URL: "
-                , Html.input [] []
-                , Html.button [] [ Html.text "Load" ]
+            Html.div [ Attr.style [ ( "position", "absolute" ), ( "top", "48%" ), ( "left", "38%" ) ] ]
+                [ Html.button [ Attr.class "lia-btn", onClick Load ] [ Html.text "Load URL" ]
+                , Html.input [ onInput Update, Attr.value model.url ] []
+                , Html.br [] []
+                , Html.br [] []
+                , Html.br [] []
+                , Html.a [ Attr.href "https://gitlab.com/OvGU-ESS/eLab_v2/lia_script" ] [ Html.text "https://gitlab.com/OvGU-ESS/eLab_v2/lia_script" ]
                 ]
 
 
@@ -148,6 +161,4 @@ getCourse url =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch
-        [ rx_log RxLog
-        ]
+    Sub.batch [ rx_log RxLog ]
