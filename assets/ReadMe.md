@@ -14,6 +14,8 @@ narator:  US English Female
 
 # Lia-Script
 
+See the online rendered version at: https://liascript.github.io
+
 Lia-Script is an extended Markdown format for writing interactive online
 courses. Imagine all schoolbooks, technical or scientifical literature could
 become open-source projects and more interactive ... with colaborating teachers
@@ -63,6 +65,27 @@ narator:  US English Female
                                     --{{0}}--
 Click on the (ear) button at the navigation bar to switch between spoken and
 plain text mode format. And please click on the at the top for navigating.
+
+### Structuring
+
+                                    --{{0}}--
+A course is structured as any other Markdown document with starting hash-tags,
+whereby the number of hash-tags is used to define the hierarchy.
+
+```markdown
+# Main Title
+
+ ...
+
+## Section Title 1
+
+ ...
+
+### Subsection Title
+
+ ...
+## Section Title 2
+```
 
 ### Text-Formating
 
