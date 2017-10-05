@@ -179,12 +179,12 @@ There are two ways of adding links to a Markdown document, either by inlining
 the url directly or you can name it, as shown in listing 2, by applying the
 typical brackets and parenthesis notation.
 
-1. example of an url-link -> http://www.google.de
+1. example of an url-link -> http://goo.gl/fGXNvu
 
-   textformating can be applied also (`*** http://www.google.de ***`) ->
-   *** http://www.google.de ***
+   textformating can be applied also (`*** http://goo.gl/fGXNvu ***`) ->
+   *** http://goo.gl/fGXNvu ***
 
-2. naming the link (`[title](www.google.de)`) -> [title](www.google.de)
+2. naming the link (`[title](http://goo.gl/fGXNvu)`) -> [title](http://goo.gl/fGXNvu)
 
 #### Images and Movies
 

@@ -37,7 +37,19 @@ var _user$project$Native_Utils = (function () {
             };
         }
     };
+/*
+    function evaluate2 (id, code) {
+        return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback){
+            try {
+                var rslt = String(eval(code));
+                callback(_elm_lang$core$Native_Scheduler.succeed(id, rslt);
 
+            } catch (e) {
+                callback(_elm_lang$core$Native_Scheduler.fail(e.message));
+            }
+        })
+    };
+*/
     return {
         highlight: F2(highlight),
         formula: F2(formula),

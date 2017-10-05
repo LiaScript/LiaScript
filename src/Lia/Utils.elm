@@ -23,6 +23,17 @@ evaluateJS code =
     Native.Utils.evaluate code
 
 
+evaluateJS2 : String -> Result String String
+evaluateJS2 code =
+    Native.Utils.evaluate code
+
+
+
+--evaluateJS2 : (Result err ok -> msg) -> String  Cmd msg
+--evaluateJS2 resultToMessage code =
+--    Task.attempt resultToMessage (Native.Utils.evaluate2 code)
+
+
 stringToHtml : String -> Html msg
 stringToHtml str =
     Html.span [ Attr.property "innerHTML" (Json.Encode.string str) ] []
