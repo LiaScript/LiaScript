@@ -153,7 +153,7 @@ url_full =
 
 url_mail : Parser s String
 url_mail =
-    regex "( )*[^@]+@[^\\)\n ]+"
+    maybe (string "mailto:") *> regex "[a-zA-Z0-9_.\\-]+@[a-zA-Z0-9_.\\-]+"
 
 
 url : Parser s Url
@@ -161,8 +161,8 @@ url =
     lazy <|
         \() ->
             choice
-                [ Full <$> url_full
-                , Mail <$> url_mail
+                [ Mail <$> url_mail
+                , Full <$> url_full
                 ]
 
 

@@ -61,7 +61,7 @@ init flags =
         , getCourse flags.url
         )
     else
-        ( Model "https://www.gitlab.com/OvGU-ESS/eLab_v2/lia_script/raw/master/README.md" (Lia.init_slides "") Waiting ""
+        ( Model "https://raw.githubusercontent.com/liaScript/liascript.github.com/master/README.md" (Lia.init_slides "") Waiting ""
         , Cmd.none
         )
 
@@ -139,8 +139,11 @@ view model =
                 ]
 
         Waiting ->
-            Html.div [ Attr.style [ ( "position", "absolute" ), ( "top", "48%" ), ( "left", "38%" ) ] ]
-                [ Html.button [ Attr.class "lia-btn", onClick Load ] [ Html.text "Load URL" ]
+            Html.div [ Attr.style [ ( "position", "absolute" ), ( "top", "28%" ), ( "left", "38%" ) ] ]
+                [ Html.h1 [] [ Html.text "LiaScript" ]
+                , Html.br [] []
+                , Html.br [] []
+                , Html.button [ Attr.class "lia-btn", onClick Load ] [ Html.text "Load URL" ]
                 , Html.input [ onInput Update, Attr.value model.url ] []
                 , Html.br [] []
                 , Html.br [] []

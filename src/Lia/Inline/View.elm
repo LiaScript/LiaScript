@@ -83,11 +83,7 @@ reference ref =
     in
     case ref of
         Link alt_ url_ ->
-            Html.a
-                [ Attr.href <| get_url url_
-                , inline_class "lia-link"
-                ]
-                [ Html.text alt_ ]
+            view_link alt_ url_
 
         Image alt_ url_ style_ ->
             Html.img (media url_ style_) [ Html.text alt_ ]
@@ -107,3 +103,16 @@ get_url url =
 
         Partial str ->
             str
+
+
+view_link : String -> Url -> Html msg
+view_link alt_ url_ =
+    case url_ of
+        Full str ->
+            Html.a [ Attr.href str, inline_class "lia-link" ] [ Html.text alt_ ]
+
+        Mail str ->
+            Html.a [ Attr.href ("mailto:" ++ str), inline_class "lia-link" ] [ Html.text alt_ ]
+
+        Partial str ->
+            Html.a [ Attr.href str, inline_class "lia-link" ] [ Html.text alt_ ]
