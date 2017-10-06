@@ -20,6 +20,7 @@ type alias PState =
     , def_narrator : String
     , def_version : String
     , def_comment : String
+    , def_scripts : List String
     }
 
 
@@ -38,4 +39,5 @@ init =
     , def_narrator = ""
     , def_version = ""
     , def_comment = ""
+    , def_scripts = []
     }

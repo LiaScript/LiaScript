@@ -37,6 +37,29 @@ var _user$project$Native_Utils = (function () {
             };
         }
     };
+
+    function load_js(url)
+    {
+        try {
+
+          var scriptTag = document.createElement('script');
+          scriptTag.src = url;
+
+          document.head.appendChild(scriptTag);
+
+          return {
+                ctor: "Ok",
+                  _0: ""
+          };
+        } catch (e) {
+            return {
+                ctor: "Err",
+                _0: e.message
+            };
+        }
+    };
+
+
 /*
     function evaluate2 (id, code) {
         return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback){
@@ -53,6 +76,7 @@ var _user$project$Native_Utils = (function () {
     return {
         highlight: F2(highlight),
         formula: F2(formula),
-        evaluate: evaluate
+        evaluate: evaluate,
+        load_js: load_js
     };
 })();

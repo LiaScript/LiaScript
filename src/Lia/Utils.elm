@@ -1,4 +1,4 @@
-module Lia.Utils exposing (evaluateJS, formula, highlight, stringToHtml)
+module Lia.Utils exposing (evaluateJS, formula, highlight, load_js, stringToHtml)
 
 --this is where we import the native module
 
@@ -26,6 +26,11 @@ evaluateJS code =
 evaluateJS2 : String -> Result String String
 evaluateJS2 code =
     Native.Utils.evaluate code
+
+
+load_js : String -> Result String String
+load_js url =
+    Native.Utils.load_js url
 
 
 

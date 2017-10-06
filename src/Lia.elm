@@ -11,6 +11,7 @@ import Lia.Quiz.Model as Quiz
 import Lia.Survey.Model as Survey
 import Lia.Types
 import Lia.Update
+import Lia.Utils exposing (load_js)
 import Lia.View
 
 
@@ -65,7 +66,11 @@ init_slides =
 parse : Model -> Model
 parse model =
     case Lia.Parser.run model.script of
-        Ok ( slides, code_vector, quiz_vector, survey_vector, narrator ) ->
+        Ok ( slides, code_vector, quiz_vector, survey_vector, narrator, scripts ) ->
+            let
+                x =
+                    List.map load_js scripts
+            in
             { model
                 | slides = slides
                 , error = ""
