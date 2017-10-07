@@ -1,10 +1,18 @@
-module Lia.Code.Types exposing (Code(..), CodeVector)
+module Lia.Code.Types exposing (Code(..), CodeElement, CodeVector)
 
 import Array exposing (Array)
 
 
 type alias CodeVector =
-    Array ( String, Maybe (Result String String), Bool )
+    Array CodeElement
+
+
+type alias CodeElement =
+    { code : String
+    , result : Result String String
+    , editing : Bool
+    , running : Bool
+    }
 
 
 type Code

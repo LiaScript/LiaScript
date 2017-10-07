@@ -41,6 +41,6 @@ modify_PState : String -> Parser PState Int
 modify_PState code_ =
     let
         add_state s =
-            { s | code_vector = Array.push ( code_, Nothing, False ) s.code_vector }
+            { s | code_vector = Array.push { code = code_, result = Ok "", editing = False, running = False } s.code_vector }
     in
     withState (\s -> succeed (Array.length s.code_vector)) <* modifyState add_state

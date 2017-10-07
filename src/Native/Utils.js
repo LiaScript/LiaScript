@@ -60,23 +60,36 @@ var _user$project$Native_Utils = (function () {
     };
 
 
-/*
     function evaluate2 (id, code) {
         return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback){
-            try {
-                var rslt = String(eval(code));
-                callback(_elm_lang$core$Native_Scheduler.succeed(id, rslt);
+            setTimeout(function() {
+                var evalJS = new Promise (
+                    function (resolve, reject) {
+                        try {
+                            resolve({id: id, result: String(eval(code))});
+                        }
+                        catch (e) {
+                            reject({id: id, result: e.message});
+                        }
+                    }
+                );
 
-            } catch (e) {
-                callback(_elm_lang$core$Native_Scheduler.fail(e.message));
-            }
-        })
+                evalJS
+                    .then(function(rslt) {
+                        callback(_elm_lang$core$Native_Scheduler.succeed(rslt));
+                    })
+                    .catch(function(rslt) {
+                        callback(_elm_lang$core$Native_Scheduler.fail(rslt));
+                    });
+            }, 10);
+        });
     };
-*/
+
     return {
         highlight: F2(highlight),
         formula: F2(formula),
         evaluate: evaluate,
+        evaluate2: F2(evaluate2),
         load_js: load_js
     };
 })();

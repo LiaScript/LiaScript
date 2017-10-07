@@ -1,4 +1,4 @@
-module Lia.Utils exposing (evaluateJS, formula, highlight, load_js, stringToHtml)
+module Lia.Utils exposing (evaluateJS, evaluateJS2, formula, highlight, load_js, stringToHtml)
 
 --this is where we import the native module
 
@@ -6,6 +6,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Encode
 import Native.Utils
+import Task exposing (attempt)
 
 
 highlight : String -> String -> Html msg
@@ -23,20 +24,14 @@ evaluateJS code =
     Native.Utils.evaluate code
 
 
-evaluateJS2 : String -> Result String String
-evaluateJS2 code =
-    Native.Utils.evaluate code
-
-
 load_js : String -> Result String String
 load_js url =
     Native.Utils.load_js url
 
 
-
---evaluateJS2 : (Result err ok -> msg) -> String  Cmd msg
---evaluateJS2 resultToMessage code =
---    Task.attempt resultToMessage (Native.Utils.evaluate2 code)
+evaluateJS2 : (Result err ok -> msg) -> Int -> String -> Cmd msg
+evaluateJS2 resultToMessage idx code =
+    attempt resultToMessage (Native.Utils.evaluate2 idx code)
 
 
 stringToHtml : String -> Html msg

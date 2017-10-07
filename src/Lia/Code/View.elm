@@ -18,29 +18,31 @@ view model code =
 
         EvalJS idx ->
             case Array.get idx model of
-                Just ( code_str, rslt, b ) ->
+                Just elem ->
                     Html.div [ Attr.class "lia-code-eval" ]
-                        [ if b then
+                        [ if elem.editing then
                             Html.textarea
                                 [ Attr.style [ ( "width", "100%" ) ]
                                 , Attr.class "lia-input"
-                                , code_str |> String.lines |> List.length |> Attr.rows
+                                , elem.code |> String.lines |> List.length |> Attr.rows
                                 , onInput <| Update idx
-                                , Attr.value code_str
+                                , Attr.value elem.code
+                                , onDoubleClick (FlipMode idx)
                                 ]
                                 []
                           else
-                            highlight "js" code_str idx
-                        , Html.button [ Attr.class "lia-btn", Attr.class "lia-icon", onClick (Eval idx) ]
-                            [ Html.text "play_circle_filled" ]
-                        , case rslt of
-                            Nothing ->
-                                Html.text ""
-
-                            Just (Ok rslt) ->
+                            highlight "js" elem.code idx
+                        , if elem.running then
+                            Html.button [ Attr.class "lia-btn lia-icon" ]
+                                [ Html.text "settings" ]
+                          else
+                            Html.button [ Attr.class "lia-btn", Attr.class "lia-icon", onClick (Eval idx) ]
+                                [ Html.text "play_circle_filled" ]
+                        , case elem.result of
+                            Ok rslt ->
                                 Html.text rslt
 
-                            Just (Err rslt) ->
+                            Err rslt ->
                                 Html.text rslt
                         ]
 
