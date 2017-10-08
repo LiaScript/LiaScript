@@ -6,7 +6,7 @@ import Lia.Utils
 
 
 type Msg
-    = Eval Int
+    = Eval Int (List String)
     | Update Int String
     | FlipMode Int
     | EvalRslt (Result { id : Int, result : String } { id : Int, result : String })
@@ -15,10 +15,14 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Eval idx ->
+        Eval idx x ->
             case Array.get idx model of
                 Just elem ->
-                    ( Array.set idx { elem | editing = False, running = True } model, Lia.Utils.evaluateJS2 EvalRslt idx elem.code )
+                    let
+                        exec =
+                            String.join elem.code x
+                    in
+                    ( Array.set idx { elem | editing = False, running = True } model, Lia.Utils.evaluateJS2 EvalRslt idx exec )
 
                 Nothing ->
                     ( model, Cmd.none )

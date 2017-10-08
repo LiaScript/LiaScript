@@ -42,7 +42,7 @@ parse_block element =
                 Highlight lang str ->
                     str
 
-                EvalJS _ ->
+                Evaluate _ _ _ ->
                     ""
 
         Quiz block solution ->

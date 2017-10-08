@@ -17,4 +17,4 @@ type alias CodeElement =
 
 type Code
     = Highlight String String
-    | EvalJS Int
+    | Evaluate String Int (List String)

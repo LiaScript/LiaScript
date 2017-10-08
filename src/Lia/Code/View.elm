@@ -16,7 +16,7 @@ view model code =
         Highlight lang block ->
             highlight lang block -1
 
-        EvalJS idx ->
+        Evaluate lang idx x ->
             case Array.get idx model of
                 Just elem ->
                     Html.div [ Attr.class "lia-code-eval" ]
@@ -31,12 +31,12 @@ view model code =
                                 ]
                                 []
                           else
-                            highlight "js" elem.code idx
+                            highlight lang elem.code idx
                         , if elem.running then
                             Html.button [ Attr.class "lia-btn lia-icon" ]
                                 [ Html.text "settings" ]
                           else
-                            Html.button [ Attr.class "lia-btn", Attr.class "lia-icon", onClick (Eval idx) ]
+                            Html.button [ Attr.class "lia-btn", Attr.class "lia-icon", onClick (Eval idx x) ]
                                 [ Html.text "play_circle_filled" ]
                         , case elem.result of
                             Ok rslt ->

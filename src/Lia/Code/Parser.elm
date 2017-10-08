@@ -2,8 +2,9 @@ module Lia.Code.Parser exposing (code)
 
 import Array
 import Combine exposing (..)
+import Combine.Char exposing (anyChar)
 import Lia.Code.Types exposing (..)
-import Lia.Inline.Parser exposing (stringTill)
+import Lia.Inline.Parser exposing (comment, stringTill)
 import Lia.PState exposing (PState)
 
 
@@ -29,12 +30,10 @@ block =
 
 eval_js : Parser PState Code
 eval_js =
-    EvalJS
-        <$> ((header (regex "((js)|(javascript))( +)(x|X)")
-                *> stringTill border
-             )
-                >>= modify_PState
-            )
+    Evaluate
+        <$> header (regex "([a-z,A-Z,0-9])*")
+        <*> (stringTill border >>= modify_PState)
+        <*> (regex "[ \\n]?" *> ((\c -> c |> String.fromList |> String.trim |> String.split "{X}") <$> comment anyChar))
 
 
 modify_PState : String -> Parser PState Int
