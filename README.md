@@ -8,7 +8,20 @@ version:  1.0.0
 
 language: en_US
 
-narrator:  US English Female
+narrator: US English Female
+
+
+script:   //cdn.jsdelivr.net/chartist.js/latest/chartist.min.js
+
+script:   http://algebrite.org/dist/latest-stable/algebrite.bundle-for-browser.js
+
+script:   https://felixhao28.github.io/JSCPP/dist/JSCPP.es5.min.js
+
+
+
+script:   http://www.skulpt.org/static/skulpt-stdlib.js
+
+script:   http://www.skulpt.org/static/skulpt.min.js
 
 -->
 
@@ -57,7 +70,11 @@ version:  1.0.0
 
 language: en_US
 
-narrator:  US English Female
+narrator: US English Female
+
+script:   javascript resourse url
+
+script:   another javascript resourse url
 
 -->
 ```
@@ -478,24 +495,170 @@ def lia_sqrt(val):
 ### Interactive Code
 
                                     --{{0}}--
+
 Why should code examples not be interactive and editable, especially if it is
-JavaScript? A language definition with a trailing X indicates that this code can
-be executed, click on the run button to execute this example.
+JavaScript or any other language that has been ported to it? Simply add the
+required resources to the initial comment with keyword `script`.
 
-Double-click on the code to switch to edit mode:
+1. Add resource to main-comment: `script: url.js`
 
-``` javascript X
-var string = "liaScript rocks";
-alert(string);
+2. Add a trailing comment to your code: `<!-- `{X}` -->`
 
-// result of this script is:
-string + "!!!";
+
+                                     --{{1}}--
+And add an additional comment tag to the end of your language definition with an
+big X in braces. This element is afterwards substituted with your code and
+executed. We provide some basic examples within the following section.
+
+
+
+#### JavaScript
+
+                                    --{{0}}--
+Click on the run-button to execute the script or double-click on the code to
+edit it and to change the output ...
+
+Double-click on the code to switch to edit mode and double-click to get out:
+
+```javascript
+var i=0;
+var j=0;
+var result = 0;
+
+for(i = 0; i<10000; i++) {
+    for(j = 0; j<i; j++) {
+        result += j;
+    }
+}
+// the last statement defines the return statement
+result;
+```
+<!-- {X} -->
+
+
+#### JavaScript Chartist
+
+A drawing example, for demonstrating that any javascript library can be used,
+also for drawing.
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
+
+```javascript
+// Initialize a Line chart in the container with the ID chart1
+new Chartist.Line('#chart1', {
+  labels: [1, 2, 3, 4],
+  series: [[100, 120, 180, 200]]
+});
+
+// Initialize a Line chart in the container with the ID chart2
+new Chartist.Bar('#chart2', {
+  labels: [1, 2, 3, 4],
+  series: [[5, 2, 8, 3]]
+});
+```
+<!-- {X} -->
+
+<div class="ct-chart ct-golden-section" id="chart1"></div>
+<div class="ct-chart ct-golden-section" id="chart2"></div>
+
+#### Computer-Algebra
+
+An example of a Computer-Algebra-System (Algebrit), see xxx for more examples:
+
+```javascript
+x + x
+```
+<!-- Algebrite.run(`{X}`) -->
+
+```javascript
+f=sin(t)^4-2*cos(t/2)^3*sin(t)
+
+f=circexp(f)
+
+defint(f,t,0,2*pi)
+```
+<!-- Algebrite.run(`{X}`) -->
+
+
+#### C++
+
+Teaching other language-basics is also possible, for this example we applied xxx
+to run simple C++ programs:
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int a = 120;
+    int rslt = 0;
+    for(int i=1; i<a; ++i) {
+        rslt += i;
+        cout << "rslt: " << rslt << endl;
+    }
+    cout << "final result = " << rslt << endl;
+    return 0;
+}
+```
+<!--
+  var output = "";
+  JSCPP.run(`{X}`, "", {stdio: {write: s => { output += s.replace(/\n/g, "<br>");}}});
+  output;
+-->
+
+#### Python
+
+Running a Python-program with xxx:
+
+```python
+def hello(i):
+  for _ in range(i):
+    print "Hello World"
+
+hello(12)
+```
+<!--
+var output = "";
+
+function builtinRead(x) {
+    if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+            throw "File not found: '" + x + "'";
+    return Sk.builtinFiles["files"][x];
+}
+
+Sk.pre = "output";
+Sk.configure({output: e => {output += e;}, read: builtinRead});
+
+var myPromise = Sk.misceval.asyncToPromise(function() {
+   return Sk.importMainWithBody("<stdin>", false, `{X}`, true);
+});
+myPromise.then(function(mod) {
+   console.log('success');
+},
+   function(err) {
+   console.log(err.toString());
+});
+output;
+-->
+
+
+
+#### Prolog
+
+No simple library found yet ;-)
+
+```prolog
+likes(sam, salad).
+likes(dean, pie).
+likes(sam, apples).
+likes(dean, whiskey).
 ```
 
-                                    --{{1}}--
-At the moment, executing code is only possible for JavaScript, we gone extend
-this in the future with backend-support for other languages. Double click on the
-code to edit it and to change the output ...
+
+```prolog
+likes(sam, X)
+```
+
 
 ## Quizzes
 
