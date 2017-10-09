@@ -220,7 +220,7 @@ define_comment =
             modifyState (\s -> { s | def_narrator = x })
 
         script x =
-            modifyState (\s -> { s | def_scripts = x :: s.def_scripts })
+            modifyState (\s -> { s | def_scripts = List.append s.def_scripts [ x ] })
 
         version x =
             modifyState (\s -> { s | def_version = x })

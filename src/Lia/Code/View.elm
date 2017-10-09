@@ -40,7 +40,7 @@ view model code =
                                 [ Html.text "play_circle_filled" ]
                         , case elem.result of
                             Ok rslt ->
-                                Html.text rslt
+                                Lia.Utils.stringToHtml rslt
 
                             Err rslt ->
                                 Html.text rslt

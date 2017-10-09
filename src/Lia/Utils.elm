@@ -2,6 +2,7 @@ module Lia.Utils exposing (evaluateJS, evaluateJS2, formula, highlight, load_js,
 
 --this is where we import the native module
 
+import Array
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Encode

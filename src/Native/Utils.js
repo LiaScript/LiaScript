@@ -38,14 +38,24 @@ var _user$project$Native_Utils = (function () {
         }
     };
 
+/*
+    function wait(ms) {
+        var start = new Date().getTime();
+        var end = start;
+        while(end < start + ms) {
+            end = new Date().getTime();
+        }
+    }
+*/
     function load_js(url)
     {
         try {
 
-          var scriptTag = document.createElement('script');
-          scriptTag.src = url;
+              var scriptTag = document.createElement('script');
+              scriptTag.src = url;
+              document.head.appendChild(scriptTag);
 
-          document.head.appendChild(scriptTag);
+              //wait(100);
 
           return {
                 ctor: "Ok",
