@@ -202,7 +202,7 @@ define_comment : Parser PState ()
 define_comment =
     let
         ending =
-            String.trim <$> regex "[^\\n]*"
+            String.trim <$> regex "[^\\n]+"
 
         author x =
             modifyState (\s -> { s | def_author = x })
@@ -220,7 +220,7 @@ define_comment =
             modifyState (\s -> { s | def_narrator = x })
 
         script x =
-            modifyState (\s -> { s | def_scripts = List.append s.def_scripts [ x ] })
+            modifyState (\s -> { s | def_scripts = x :: s.def_scripts })
 
         version x =
             modifyState (\s -> { s | def_version = x })
@@ -235,7 +235,7 @@ define_comment =
             , string "version:" *> (ending >>= version)
             ]
     in
-    skip (comment (regex "[ \\t\\n]*" *> choice list <* regex "[\n]+"))
+    skip (comment (regex "[ \\t\\n]*" *> choice list <* regex "[\\n]+"))
 
 
 run : String -> Result String ( List Slide, CodeVector, QuizVector, SurveyVector, String, List String )

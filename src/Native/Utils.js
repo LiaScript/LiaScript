@@ -52,25 +52,25 @@ var _user$project$Native_Utils = (function () {
     function load_js(url)
     {
         lib_js_counter += 1;
-        try {
-              setTimeout( function () {
-                  console.log(url);
-                  var scriptTag = document.createElement('script');
-                  scriptTag.src = url;
-                  document.head.appendChild(scriptTag);
-              }, lib_js_counter * 100);
-              //wait(100);
 
-          return {
-                ctor: "Ok",
-                  _0: ""
-          };
-        } catch (e) {
-            return {
-                ctor: "Err",
-                _0: e.message
-            };
-        }
+        console.log("url: ", lib_js_counter, url);
+
+
+        setTimeout( function () {
+          try {
+              var scriptTag = document.createElement('script');
+              scriptTag.src = url;
+              document.head.appendChild(scriptTag);
+
+          } catch (e) {
+              console.log(e.message);
+          }
+      }, lib_js_counter * 100);
+
+      return {
+          ctor: "Ok",
+          _0: ""
+      };
     };
 
 

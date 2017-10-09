@@ -69,7 +69,9 @@ parse model =
         Ok ( slides, code_vector, quiz_vector, survey_vector, narrator, scripts ) ->
             let
                 x =
-                    List.map load_js scripts
+                    scripts
+                        |> List.reverse
+                        |> List.map load_js
             in
             { model
                 | slides = slides
