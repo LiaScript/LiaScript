@@ -47,14 +47,18 @@ var _user$project$Native_Utils = (function () {
         }
     }
 */
+    var lib_js_counter = -1;
+
     function load_js(url)
     {
+        lib_js_counter += 1;
         try {
-
-              var scriptTag = document.createElement('script');
-              scriptTag.src = url;
-              document.head.appendChild(scriptTag);
-
+              setTimeout( function () {
+                  console.log(url);
+                  var scriptTag = document.createElement('script');
+                  scriptTag.src = url;
+                  document.head.appendChild(scriptTag);
+              }, lib_js_counter * 100);
               //wait(100);
 
           return {

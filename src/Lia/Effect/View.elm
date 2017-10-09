@@ -61,15 +61,15 @@ view_block model viewer idx effect_name blocks =
         )
 
 
-comment : Bool -> Bool -> msg -> Model -> (inline -> Html msg) -> Int -> List inline -> Html msg
-comment show_inline silent msg model viewer idx elements =
+comment : String -> Bool -> Bool -> msg -> Model -> (inline -> Html msg) -> Int -> List inline -> Html msg
+comment class show_inline silent msg model viewer idx elements =
     if show_inline then
         elements
             |> List.map viewer
             |> Html.div []
     else if idx == model.visible then
         Html.div
-            [ Attr.class "lia-effect-comment"
+            [ Attr.class class
             ]
             (List.append
                 (List.map viewer elements)

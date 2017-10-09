@@ -357,13 +357,20 @@ view_block model block =
                 |> zero_tuple
 
         EComment idx comment ->
+            let
+                class =
+                    if model.show_contents then
+                        "lia-effect-comment-toc"
+                    else
+                        "lia-effect-comment"
+            in
             zero_tuple <|
                 case model.mode of
                     Slides ->
-                        Effects.comment False model.silent ToggleSpeech model.effect_model viewer idx [ Paragraph comment ]
+                        Effects.comment class False model.silent ToggleSpeech model.effect_model viewer idx [ Paragraph comment ]
 
                     _ ->
-                        Effects.comment True model.silent ToggleSpeech model.effect_model viewer idx [ Paragraph comment ]
+                        Effects.comment class True model.silent ToggleSpeech model.effect_model viewer idx [ Paragraph comment ]
 
         Chart chart ->
             chart

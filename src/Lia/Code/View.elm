@@ -40,10 +40,10 @@ view model code =
                                 [ Html.text "play_circle_filled" ]
                         , case elem.result of
                             Ok rslt ->
-                                Lia.Utils.stringToHtml rslt
+                                Html.pre [] [ Lia.Utils.stringToHtml rslt ]
 
                             Err rslt ->
-                                Html.text rslt
+                                Html.pre [ Attr.style [ ( "color", "red" ) ] ] [ Html.text ("Error: " ++ rslt) ]
                         ]
 
                 Nothing ->

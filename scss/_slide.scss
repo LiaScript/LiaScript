@@ -27,11 +27,28 @@
             padding: $vert $horiz;
             overflow: auto;
 
-            .lia-effect-comment {
+            .lia-effect-comment-toc {
                 $bg: mix(map-get($theme, background), map-get($theme, primary), 80%);
 
                 position: fixed;
                 left: map-get($config, spacing-huge) + map-get($config, toc-width);
+                right: map-get($config, spacing-huge);
+                bottom: map-get($config, spacing-huge);
+                padding: map-get($config, spacing-large);
+                background: rgba($bg, .7);
+                color: color-contrast($bg);
+                animation: show-comment .25s ease-in-out 0s;
+
+                p {
+                    margin: 0;
+                }
+            }
+
+            .lia-effect-comment {
+                $bg: mix(map-get($theme, background), map-get($theme, primary), 80%);
+
+                position: fixed;
+                left: map-get($config, spacing-huge);
                 right: map-get($config, spacing-huge);
                 bottom: map-get($config, spacing-huge);
                 padding: map-get($config, spacing-large);
