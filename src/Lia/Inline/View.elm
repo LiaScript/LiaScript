@@ -109,10 +109,10 @@ view_link : String -> Url -> Html msg
 view_link alt_ url_ =
     case url_ of
         Full str ->
-            Html.a [ Attr.href str, inline_class "lia-link" ] [ Html.text alt_ ]
+            Html.a [ Attr.href str, inline_class "lia-link", Attr.target "_blank" ] [ Html.text alt_ ]
 
         Mail str ->
             Html.a [ Attr.href ("mailto:" ++ str), inline_class "lia-link" ] [ Html.text alt_ ]
 
         Partial str ->
-            Html.a [ Attr.href str, inline_class "lia-link" ] [ Html.text alt_ ]
+            Html.a [ Attr.href str, inline_class "lia-link", Attr.target "_blank" ] [ Html.text alt_ ]
