@@ -190,11 +190,13 @@ view_contents model =
                                 ""
                            )
                     )
-                , h
-                    |> String.split " "
-                    |> String.join "_"
-                    |> String.append "#"
-                    |> Attr.href
+
+                --, h
+                --    |> String.split " "
+                --    |> String.join "_"
+                --    |> String.append "#"
+                --    |> Attr.href
+                , Attr.style [ ( "cursor", "pointer" ) ]
                 ]
                 [ Html.text h ]
     in
