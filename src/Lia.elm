@@ -77,7 +77,7 @@ parse model =
                 | slides = slides
                 , error = ""
                 , quiz_model =
-                    if model.quiz_model == Array.empty then
+                    if Array.isEmpty model.quiz_model then
                         quiz_vector
                     else
                         model.quiz_model
@@ -85,7 +85,7 @@ parse model =
                 , effect_model = Effect.init narrator <| List.head slides
                 , code_model = code_vector
                 , survey_model =
-                    if model.survey_model == Array.empty then
+                    if Array.isEmpty model.survey_model then
                         survey_vector
                     else
                         model.survey_model
