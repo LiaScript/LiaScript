@@ -19,7 +19,9 @@ identation : Parser PState ()
 identation =
     let
         ident s =
-            if s.skip_identation then
+            if s.identation == 0 then
+                succeed ()
+            else if s.skip_identation then
                 skip (succeed ())
             else
                 String.repeat s.identation " "
