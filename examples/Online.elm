@@ -123,24 +123,44 @@ view : Model -> Html Msg
 view model =
     case model.state of
         Loading ->
-            Html.div []
-                [ Html.h2 [] [ Html.text "Loading Course" ]
-                , Html.h6 [] [ Html.text model.url ]
+            Html.div [ Attr.style [ ( "width", "360px" ), ( "margin-left", "calc(50% - 180px)" ) ] ]
+                [ Html.br [] []
+                , Html.br [] []
+                , Html.br [] []
+                , Html.br [] []
+                , Html.br [] []
+                , Html.br [] []
+                , Html.img [ Attr.src "load.gif", Attr.width 360 ] []
+
+                --, Html.a [ Attr.href model.url, Attr.align "center" ] [ Html.text model.url ]
                 ]
 
         LoadOk ->
             Html.map LIA <| Lia.view model.lia
 
         LoadFail ->
-            Html.div []
-                [ Html.h2 [] [ Html.text "Load failed" ]
+            Html.div [ Attr.style [ ( "width", "360px" ), ( "margin-left", "calc(50% - 180px)" ) ] ]
+                [ Html.br [] []
+                , Html.br [] []
+                , Html.br [] []
+                , Html.br [] []
+                , Html.br [] []
+                , Html.br [] []
+                , Html.h2 [] [ Html.text "Load failed" ]
                 , Html.h6 [] [ Html.text model.url ]
                 , Html.text model.error
                 ]
 
         Waiting ->
-            Html.div [ Attr.style [ ( "position", "absolute" ), ( "top", "28%" ), ( "left", "38%" ) ] ]
-                [ Html.h1 [] [ Html.text "LiaScript" ]
+            Html.div [ Attr.style [ ( "width", "360px" ), ( "margin-left", "calc(50% - 180px)" ) ] ]
+                --[ ( "position", "absolute" ), ( "top", "28%" ), ( "left", "38%" ) ] ]
+                [ Html.br [] []
+                , Html.br [] []
+                , Html.br [] []
+                , Html.br [] []
+                , Html.br [] []
+                , Html.br [] []
+                , Html.h1 [] [ Html.text "LiaScript" ]
                 , Html.br [] []
                 , Html.br [] []
                 , Html.button [ Attr.class "lia-btn", onClick Load ] [ Html.text "Load URL" ]
