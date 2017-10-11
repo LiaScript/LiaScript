@@ -27,25 +27,24 @@ type alias Mode =
     Lia.Types.Mode
 
 
-init : Mode -> String -> Model
-init mode script =
-    parse <|
-        { script = script
-        , error = ""
-        , mode = mode
-        , slides = []
-        , current_slide = 0
-        , show_contents = True
-        , quiz_model = Array.empty
-        , code_model = Array.empty
-        , survey_model = Array.empty
-        , index_model = Index.init []
-        , effect_model = Effect.init "US English Male" Nothing
-        , narrator = "US English Male"
-        , silent = False
-        , theme = "default"
-        , theme_light = True
-        }
+init : Mode -> Model
+init mode =
+    { script = ""
+    , error = ""
+    , mode = mode
+    , slides = []
+    , current_slide = 0
+    , show_contents = True
+    , quiz_model = Array.empty
+    , code_model = Array.empty
+    , survey_model = Array.empty
+    , index_model = Index.init []
+    , effect_model = Effect.init "US English Male" Nothing
+    , narrator = "US English Male"
+    , silent = False
+    , theme = "default"
+    , theme_light = True
+    }
 
 
 set_script : Model -> String -> Model
@@ -53,19 +52,19 @@ set_script model script =
     { model | script = script }
 
 
-init_plain : String -> Model
+init_plain : Model
 init_plain =
     init Lia.Types.Textbook
 
 
-init_slides : String -> Model
+init_slides : Model
 init_slides =
     init Lia.Types.Slides
 
 
-parse : Model -> Model
-parse model =
-    case Lia.Parser.run model.script of
+parse : String -> Model -> Model
+parse script model =
+    case Lia.Parser.run script of
         Ok ( slides, code_vector, quiz_vector, survey_vector, narrator, scripts ) ->
             let
                 x =
@@ -94,10 +93,11 @@ parse model =
                         "US English Male"
                     else
                         narrator
+                , script = script
             }
 
         Err msg ->
-            { model | error = msg }
+            { model | error = msg, script = script }
 
 
 view : Model -> Html Msg
