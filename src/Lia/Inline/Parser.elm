@@ -20,7 +20,9 @@ import Lia.PState exposing (PState)
 
 comment : Parser s a -> Parser s (List a)
 comment p =
-    string "<!--" *> manyTill p (string "-->")
+    lazy <|
+        \() ->
+            string "<!--" *> manyTill p (string "-->")
 
 
 comments : Parser s ()

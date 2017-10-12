@@ -10,9 +10,9 @@ suite : Benchmark
 suite =
     let
         lia =
-            Lia.init_slides Readme.text
+            Lia.init_slides
     in
-    Benchmark.benchmark1 "Lia.parse" Lia.parse lia
+    Benchmark.benchmark2 "Lia.parse" Lia.parse Readme.text lia
 
 
 main : BenchmarkProgram

@@ -17,21 +17,23 @@ import Lia.Types exposing (..)
 
 identation : Parser PState ()
 identation =
-    let
-        ident s =
-            if s.identation == 0 then
-                succeed ()
-            else if s.skip_identation then
-                skip (succeed ())
-            else
-                String.repeat s.identation " "
-                    |> string
-                    |> skip
+    lazy <|
+        \() ->
+            let
+                ident s =
+                    if s.identation == 0 then
+                        succeed ()
+                    else if s.skip_identation then
+                        skip (succeed ())
+                    else
+                        String.repeat s.identation " "
+                            |> string
+                            |> skip
 
-        reset s =
-            { s | skip_identation = False }
-    in
-    withState ident <* modifyState reset
+                reset s =
+                    { s | skip_identation = False }
+            in
+            withState ident <* modifyState reset
 
 
 blocks : Parser PState Block

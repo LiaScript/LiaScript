@@ -1,19 +1,24 @@
 module Main exposing (..)
 
+--import Lia exposing (parse)
+
 import Benchmark exposing (Benchmark)
 import Benchmark.Runner exposing (BenchmarkProgram, program)
-import Lia
+import Dict
 import Readme
-import Time
+
+
+--import Time
 
 
 suite : Benchmark
 suite =
-    let
-        lia =
-            Lia.init_slides Readme.text
-    in
-    Benchmark.benchmark1 "Lia.parse" Lia.parse lia |> Benchmark.withRuntime (200 * Time.second)
+    --    let
+    --        lia =
+    --            Lia.init_slides
+    --    in
+    --Benchmark.benchmark2 "Lia.parse" Lia.parse Readme.text Lia.init_slides |> Benchmark.withRuntime (200 * Time.second)
+    Benchmark.benchmark2 "Dict.get" Dict.get "a" (Dict.singleton "a" 1)
 
 
 main : BenchmarkProgram
