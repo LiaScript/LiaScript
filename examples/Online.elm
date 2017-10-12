@@ -125,7 +125,7 @@ view model =
         Loading ->
             Html.div [ style ]
                 [ Html.h2 [] [ Html.text "Loading ..." ]
-                , Html.img [ Attr.src "load.gif", Attr.width 350 ] []
+                , Html.img [ Attr.src "https://liascript.github.io/load.gif", Attr.width 350 ] []
 
                 --, Html.a [ Attr.href model.url, Attr.align "center" ] [ Html.text model.url ]
                 ]

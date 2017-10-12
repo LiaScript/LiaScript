@@ -1,6 +1,6 @@
 {
   "name": "lia-script",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "A collaborative presentation framework",
   "main": "brunch-config.js",
   "scripts": {
