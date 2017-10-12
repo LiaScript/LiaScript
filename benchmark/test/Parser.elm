@@ -1,10 +1,9 @@
 module Main exposing (..)
 
---import Lia exposing (parse)
-
 import Benchmark exposing (Benchmark)
 import Benchmark.Runner exposing (BenchmarkProgram, program)
 import Dict
+import Lia exposing (parse)
 import Readme
 
 
