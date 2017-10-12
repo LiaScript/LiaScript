@@ -123,14 +123,9 @@ view : Model -> Html Msg
 view model =
     case model.state of
         Loading ->
-            Html.div [ Attr.style [ ( "width", "360px" ), ( "margin-left", "calc(50% - 180px)" ) ] ]
-                [ Html.br [] []
-                , Html.br [] []
-                , Html.br [] []
-                , Html.br [] []
-                , Html.br [] []
-                , Html.br [] []
-                , Html.img [ Attr.src "load.gif", Attr.width 360 ] []
+            Html.div [ style ]
+                [ Html.h2 [] [ Html.text "Loading ..." ]
+                , Html.img [ Attr.src "load.gif", Attr.width 350 ] []
 
                 --, Html.a [ Attr.href model.url, Attr.align "center" ] [ Html.text model.url ]
                 ]
@@ -139,28 +134,15 @@ view model =
             Html.map LIA <| Lia.view model.lia
 
         LoadFail ->
-            Html.div [ Attr.style [ ( "width", "360px" ), ( "margin-left", "calc(50% - 180px)" ) ] ]
-                [ Html.br [] []
-                , Html.br [] []
-                , Html.br [] []
-                , Html.br [] []
-                , Html.br [] []
-                , Html.br [] []
-                , Html.h2 [] [ Html.text "Load failed" ]
+            Html.div [ style ]
+                [ Html.h2 [] [ Html.text "Load failed" ]
                 , Html.h6 [] [ Html.text model.url ]
                 , Html.text model.error
                 ]
 
         Waiting ->
-            Html.div [ Attr.style [ ( "width", "360px" ), ( "margin-left", "calc(50% - 180px)" ) ] ]
-                --[ ( "position", "absolute" ), ( "top", "28%" ), ( "left", "38%" ) ] ]
-                [ Html.br [] []
-                , Html.br [] []
-                , Html.br [] []
-                , Html.br [] []
-                , Html.br [] []
-                , Html.br [] []
-                , Html.h1 [] [ Html.text "LiaScript" ]
+            Html.div [ style ]
+                [ Html.h1 [] [ Html.text "LiaScript" ]
                 , Html.br [] []
                 , Html.br [] []
                 , Html.button [ Attr.class "lia-btn", onClick Load ] [ Html.text "Load URL" ]
@@ -170,6 +152,20 @@ view model =
                 , Html.br [] []
                 , Html.a [ Attr.href "https://gitlab.com/OvGU-ESS/eLab_v2/lia_script" ] [ Html.text "https://gitlab.com/OvGU-ESS/eLab_v2/lia_script" ]
                 ]
+
+
+style : Html.Attribute msg
+style =
+    Attr.style
+        [ ( "width", "350px" )
+        , ( "height", "300px" )
+        , ( "position", "absolute" )
+        , ( "top", "0" )
+        , ( "bottom", "0" )
+        , ( "left", "0" )
+        , ( "right", "0" )
+        , ( "margin", "auto" )
+        ]
 
 
 
