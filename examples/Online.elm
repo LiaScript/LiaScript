@@ -53,15 +53,15 @@ type alias Model =
 init : Flags -> ( Model, Cmd Msg )
 init flags =
     if flags.script /= "" then
-        ( Model "" (Lia.init_slides |> Lia.parse flags.script) LoadOk ""
+        ( Model "" (Lia.init_slides Nothing |> Lia.parse flags.script) LoadOk ""
         , Cmd.none
         )
     else if flags.url /= "" then
-        ( Model flags.url Lia.init_slides Loading ""
+        ( Model flags.url (Lia.init_slides (Just flags.url)) Loading ""
         , getCourse flags.url
         )
     else
-        ( Model "https://raw.githubusercontent.com/liaScript/liascript.github.com/master/README.md" Lia.init_slides Waiting ""
+        ( Model "https://raw.githubusercontent.com/liaScript/liascript.github.com/master/README.md" (Lia.init_slides (Just "https://raw.githubusercontent.com/liaScript/liascript.github.com/master/README.md")) Waiting ""
         , Cmd.none
         )
 

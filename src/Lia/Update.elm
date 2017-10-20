@@ -39,6 +39,10 @@ update msg model =
                         get_slide int model.slides
                             |> EffectModel.init model.narrator
                             |> Effect.init model.silent
+
+                    x =
+                        model.uid
+                            |> Maybe.map (\uid -> set_local uid (toString int))
                 in
                 ( { model
                     | current_slide = int

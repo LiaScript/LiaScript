@@ -9,7 +9,8 @@ import Lia.Types exposing (Mode, Slide)
 
 
 type alias Model =
-    { script : String
+    { uid : Maybe String
+    , script : String
     , error : String
     , mode : Mode
     , slides : List Slide

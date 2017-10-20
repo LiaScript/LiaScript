@@ -4,6 +4,7 @@ import Array
 import Html exposing (Html)
 import Json.Encode as JE
 import Lia.Effect.Model as Effect
+import Lia.Helper exposing (get_slide)
 import Lia.Index.Model as Index
 import Lia.Model
 import Lia.Parser
@@ -27,8 +28,8 @@ type alias Mode =
     Lia.Types.Mode
 
 
-init : Mode -> Model
-init mode =
+init : Mode -> Maybe String -> Model
+init mode uid =
     let
         local_theme =
             "theme"
@@ -61,12 +62,27 @@ init mode =
 
                 _ ->
                     mode
+
+        local_slide =
+            uid
+                |> Maybe.andThen get_local
+                |> Maybe.andThen
+                    (\slide ->
+                        case String.toInt slide of
+                            Ok i ->
+                                Just i
+
+                            Err _ ->
+                                Just 0
+                    )
+                |> Maybe.withDefault 0
     in
-    { script = ""
+    { uid = uid
+    , script = ""
     , error = ""
     , mode = local_mode
     , slides = []
-    , current_slide = 0
+    , current_slide = local_slide
     , show_contents = True
     , quiz_model = Array.empty
     , code_model = Array.empty
@@ -85,14 +101,14 @@ set_script model script =
     { model | script = script }
 
 
-init_plain : Model
-init_plain =
-    init Lia.Types.Textbook
+init_plain : Maybe String -> Model
+init_plain uid =
+    init Lia.Types.Textbook uid
 
 
-init_slides : Model
-init_slides =
-    init Lia.Types.Slides
+init_slides : Maybe String -> Model
+init_slides uid =
+    init Lia.Types.Slides uid
 
 
 parse : String -> Model -> Model
@@ -114,7 +130,14 @@ parse script model =
                     else
                         model.quiz_model
                 , index_model = Index.init slides
-                , effect_model = Effect.init narrator <| List.head slides
+                , effect_model =
+                    Effect.init narrator <|
+                        case get_slide model.current_slide slides of
+                            Just slide ->
+                                Just slide
+
+                            _ ->
+                                List.head slides
                 , code_model = code_vector
                 , survey_model =
                     if Array.isEmpty model.survey_model then
