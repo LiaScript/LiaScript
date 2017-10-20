@@ -168,7 +168,7 @@ view_themes current_theme light =
             |> List.map
                 (\t ->
                     Html.option
-                        [ Attr.value t, Attr.selected (capitalize t ++ " Theme" == current_theme) ]
+                        [ Attr.value t, Attr.selected (t == current_theme) ]
                         [ Html.text (capitalize t ++ " Theme") ]
                 )
         )
