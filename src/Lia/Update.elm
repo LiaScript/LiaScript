@@ -10,6 +10,7 @@ import Lia.Model exposing (..)
 import Lia.Quiz.Update as Quiz
 import Lia.Survey.Update as Survey
 import Lia.Types exposing (Mode(..))
+import Lia.Utils exposing (set_local)
 
 
 type Msg
@@ -50,9 +51,22 @@ update msg model =
                 ( model, Cmd.none, Nothing )
 
         Theme theme ->
+            let
+                x =
+                    set_local "theme" theme
+            in
             ( { model | theme = theme }, Cmd.none, Nothing )
 
         ThemeLight ->
+            let
+                x =
+                    set_local "theme_light"
+                        (if not model.theme_light then
+                            "on"
+                         else
+                            "off"
+                        )
+            in
             ( { model | theme_light = not model.theme_light }, Cmd.none, Nothing )
 
         ToggleSpeech ->
@@ -60,6 +74,9 @@ update msg model =
                 let
                     ( effect_model, cmd, _ ) =
                         Effect.repeat False model.effect_model
+
+                    x =
+                        set_local "silent" "false"
                 in
                 ( { model | silent = False, effect_model = effect_model }, Cmd.map UpdateEffect cmd, Nothing )
             else
@@ -69,6 +86,9 @@ update msg model =
                             Effect.silence ()
                         else
                             False
+
+                    y =
+                        set_local "silent" "true"
                 in
                 ( { model | silent = True }, Cmd.none, Nothing )
 
@@ -78,10 +98,17 @@ update msg model =
                     let
                         x =
                             Effect.silence ()
+
+                        y =
+                            set_local "mode" "Slides_only"
                     in
                     ( { model | mode = Slides_only, silent = True }, Cmd.none, Nothing )
 
                 _ ->
+                    let
+                        x =
+                            set_local "mode" "Slides"
+                    in
                     update ToggleSpeech { model | mode = Slides, silent = True }
 
         PrevSlide hidden_effects ->

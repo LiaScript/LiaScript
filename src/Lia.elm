@@ -11,7 +11,7 @@ import Lia.Quiz.Model as Quiz
 import Lia.Survey.Model as Survey
 import Lia.Types
 import Lia.Update
-import Lia.Utils exposing (load_js)
+import Lia.Utils exposing (get_local, load_js, set_local)
 import Lia.View
 
 
@@ -29,9 +29,42 @@ type alias Mode =
 
 init : Mode -> Model
 init mode =
+    let
+        local_theme =
+            "theme"
+                |> get_local
+                |> Maybe.withDefault "default"
+
+        local_light =
+            case get_local "theme_light" of
+                Just "off" ->
+                    False
+
+                _ ->
+                    True
+
+        local_silent =
+            case get_local "silent" of
+                Just "false" ->
+                    False
+
+                _ ->
+                    True
+
+        local_mode =
+            case get_local "mode" of
+                Just "Slides" ->
+                    Lia.Types.Slides
+
+                Just "Slides_only" ->
+                    Lia.Types.Slides_only
+
+                _ ->
+                    mode
+    in
     { script = ""
     , error = ""
-    , mode = mode
+    , mode = local_mode
     , slides = []
     , current_slide = 0
     , show_contents = True
@@ -41,9 +74,9 @@ init mode =
     , index_model = Index.init []
     , effect_model = Effect.init "US English Male" Nothing
     , narrator = "US English Male"
-    , silent = False
-    , theme = "default"
-    , theme_light = True
+    , silent = local_silent
+    , theme = local_theme
+    , theme_light = local_light
     }
 
 
