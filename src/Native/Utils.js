@@ -99,11 +99,36 @@ var _user$project$Native_Utils = (function () {
         });
     };
 
+    function get_local (key) {
+        try {
+            var value = localStorage.getItem(key);
+
+            if (typeof(value) === "string") {
+                return { ctor : "Just", _0:  value };
+            }
+        } catch (e) {
+
+        }
+
+        return { ctor: "Nothing" };
+    };
+
+    function set_local (key, value) {
+        try {
+            localStorage.setItem(key, value);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    };
+
     return {
         highlight: F2(highlight),
         formula: F2(formula),
         evaluate: evaluate,
         evaluate2: F2(evaluate2),
-        load_js: load_js
+        load_js: load_js,
+        get_local: get_local,
+        set_local: F2(set_local)
     };
 })();

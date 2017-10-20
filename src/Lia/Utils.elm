@@ -1,8 +1,8 @@
-module Lia.Utils exposing (evaluateJS, evaluateJS2, formula, highlight, load_js, stringToHtml)
+module Lia.Utils exposing (evaluateJS, evaluateJS2, formula, get_local, highlight, load_js, set_local, stringToHtml)
 
 --this is where we import the native module
+--import Array
 
-import Array
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Encode
@@ -38,3 +38,13 @@ evaluateJS2 resultToMessage idx code =
 stringToHtml : String -> Html msg
 stringToHtml str =
     Html.span [ Attr.property "innerHTML" (Json.Encode.string str) ] []
+
+
+get_local : String -> Maybe String
+get_local key =
+    Native.Utils.get_local key
+
+
+set_local : String -> String -> Bool
+set_local key value =
+    Native.Utils.set_local key value
