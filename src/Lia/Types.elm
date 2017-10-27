@@ -13,20 +13,23 @@ type Mode
     | Textbook
 
 
+type alias Id =
+    Int
+
+
 type alias Slide =
-    { indentation : Int
+    { code : String
     , title : String
+    , indentation : Int
     , body : List Block
+    , error : Maybe String
     , effects : Int
+    , speach : List String
     }
 
 
 type alias Paragraph =
     List Inline
-
-
-type alias Id =
-    Int
 
 
 type Block

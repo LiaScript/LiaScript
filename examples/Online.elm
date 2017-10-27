@@ -53,7 +53,7 @@ type alias Model =
 init : Flags -> ( Model, Cmd Msg )
 init flags =
     if flags.script /= "" then
-        ( Model "" (Lia.init_slides Nothing |> Lia.parse flags.script) LoadOk ""
+        ( Model "" (Lia.set_script (Lia.init_slides Nothing) flags.script) LoadOk ""
         , Cmd.none
         )
     else if flags.url /= "" then

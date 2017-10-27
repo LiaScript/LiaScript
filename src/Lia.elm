@@ -10,10 +10,10 @@ import Lia.Model
 import Lia.Parser
 import Lia.Quiz.Model as Quiz
 import Lia.Survey.Model as Survey
-import Lia.Types
+import Lia.Types exposing (Slide)
 import Lia.Update
-import Lia.Utils exposing (get_local, load_js, set_local)
 import Lia.View
+import Regex
 
 
 type alias Model =
@@ -28,132 +28,104 @@ type alias Mode =
     Lia.Types.Mode
 
 
-init : Mode -> Maybe String -> Model
-init mode uid =
+set_script : Model -> String -> Model
+set_script model script =
     let
-        local_theme =
-            "theme"
-                |> get_local
-                |> Maybe.withDefault "default"
-
-        local_light =
-            case get_local "theme_light" of
-                Just "off" ->
-                    False
-
-                _ ->
-                    True
-
-        local_silent =
-            case get_local "silent" of
-                Just "false" ->
-                    False
-
-                _ ->
-                    True
-
-        local_mode =
-            case get_local "mode" of
-                Just "Slides" ->
-                    Lia.Types.Slides
-
-                Just "Slides_only" ->
-                    Lia.Types.Slides_only
-
-                _ ->
-                    mode
-
-        local_slide =
-            uid
-                |> Maybe.andThen get_local
-                |> Maybe.andThen
-                    (\slide ->
-                        case String.toInt slide of
-                            Ok i ->
-                                Just i
-
-                            Err _ ->
-                                Just 0
-                    )
-                |> Maybe.withDefault 0
+        ( code, definition ) =
+            Lia.Parser.parse_defintion script
     in
-    { uid = uid
-    , script = ""
-    , error = ""
-    , mode = local_mode
-    , slides = []
-    , current_slide = local_slide
-    , show_contents = True
-    , quiz_model = Array.empty
-    , code_model = Array.empty
-    , survey_model = Array.empty
-    , index_model = Index.init []
-    , effect_model = Effect.init "US English Male" Nothing
-    , narrator = "US English Male"
-    , silent = local_silent
-    , theme = local_theme
-    , theme_light = local_light
+    { model
+        | definition = definition
+        , slides =
+            code
+                |> Regex.split Regex.All (Regex.regex "\\n#")
+                |> List.map init_slide
+                |> Array.fromList
     }
 
 
-set_script : Model -> String -> Model
-set_script model script =
-    { model | script = script }
+init_slide : String -> Slide
+init_slide code =
+    let
+        slide =
+            { code = code
+            , title = ""
+            , indentation = -1
+            , body = []
+            , error = Nothing
+            , effects = -1
+            , speach = []
+            }
+    in
+    case Lia.Parser.parse_title code of
+        Ok ( ident, title, body ) ->
+            { slide
+                | code = body
+                , title = title
+                , indentation = ident
+            }
+
+        Err msg ->
+            { slide | error = Just msg }
 
 
 init_plain : Maybe String -> Model
 init_plain uid =
-    init Lia.Types.Textbook uid
+    Lia.Model.init Lia.Types.Textbook uid
 
 
 init_slides : Maybe String -> Model
 init_slides uid =
-    init Lia.Types.Slides uid
+    Lia.Model.init Lia.Types.Slides uid
 
 
 parse : String -> Model -> Model
 parse script model =
-    case Lia.Parser.run script of
-        Ok ( slides, code_vector, quiz_vector, survey_vector, narrator, scripts ) ->
-            let
-                x =
-                    scripts
-                        |> List.reverse
-                        |> List.map load_js
-            in
-            { model
-                | slides = slides
-                , error = ""
-                , quiz_model =
-                    if Array.isEmpty model.quiz_model then
-                        quiz_vector
-                    else
-                        model.quiz_model
-                , index_model = Index.init slides
-                , effect_model =
-                    Effect.init narrator <|
-                        case get_slide model.current_slide slides of
-                            Just slide ->
-                                Just slide
+    model
 
-                            _ ->
-                                List.head slides
-                , code_model = code_vector
-                , survey_model =
-                    if Array.isEmpty model.survey_model then
-                        survey_vector
-                    else
-                        model.survey_model
-                , narrator =
-                    if narrator == "" then
-                        "US English Male"
-                    else
-                        narrator
-                , script = script
-            }
 
-        Err msg ->
-            { model | error = msg, script = script }
+
+-- case Lia.Parser.run script of
+--     Ok ( slides, code_vector, quiz_vector, survey_vector, narrator, scripts ) ->
+--         let
+--             x =
+--                 scripts
+--                     |> List.reverse
+--                     |> List.map load_js
+--         in
+--         { model
+--             | slides = slides
+--             , error = ""
+--             , quiz_model =
+--                 if Array.isEmpty model.quiz_model then
+--                     quiz_vector
+--                 else
+--                     model.quiz_model
+--             , index_model = Index.init slides
+--             , effect_model =
+--                 Effect.init narrator <|
+--                     case get_slide model.current_slide slides of
+--                         Just slide ->
+--                             Just slide
+--
+--                         _ ->
+--                             List.head slides
+--             , code_model = code_vector
+--             , survey_model =
+--                 if Array.isEmpty model.survey_model then
+--                     survey_vector
+--                 else
+--                     model.survey_model
+--             , narrator =
+--                 if narrator == "" then
+--                     "US English Male"
+--                 else
+--                     narrator
+--             , script = script
+--         }
+--
+--     Err msg ->
+--         { model | error = msg, script = script }
 
 
 view : Model -> Html Msg
@@ -183,22 +155,26 @@ slide_mode =
 
 restore : Model -> ( String, JE.Value ) -> Model
 restore model ( what, json ) =
-    case what of
-        "quiz" ->
-            case Quiz.json2model json of
-                Ok quiz_model ->
-                    { model | quiz_model = quiz_model }
+    model
 
-                _ ->
-                    model
 
-        "survey" ->
-            case Survey.json2model json of
-                Ok survey_model ->
-                    { model | survey_model = survey_model }
 
-                _ ->
-                    model
-
-        _ ->
-            model
+-- case what of
+--     "quiz" ->
+--         case Quiz.json2model json of
+--             Ok quiz_model ->
+--                 { model | quiz_model = quiz_model }
+--
+--             _ ->
+--                 model
+--
+--     "survey" ->
+--         case Survey.json2model json of
+--             Ok survey_model ->
+--                 { model | survey_model = survey_model }
+--
+--             _ ->
+--                 model
+--
+--     _ ->
+--         model

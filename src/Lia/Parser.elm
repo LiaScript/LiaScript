@@ -1,9 +1,13 @@
-module Lia.Parser exposing (run)
+module Lia.Parser exposing (..)
+
+--exposing (run)
 
 import Combine exposing (..)
 import Lia.Chart.Parser as Chart
 import Lia.Code.Parser exposing (..)
 import Lia.Code.Types exposing (CodeVector)
+import Lia.Definition.Parser
+import Lia.Definition.Types exposing (Definition)
 import Lia.Effect.Parser exposing (..)
 import Lia.Inline.Parser exposing (..)
 import Lia.Inline.Types exposing (Inline(..))
@@ -166,90 +170,88 @@ quote_block =
     (\q -> Quote <| combine <| List.concat q) <$> many1 p
 
 
-title_tag : Parser PState Int
+title_tag : Parser s Int
 title_tag =
-    String.length <$> (newlines *> regex "#+" <* whitespace)
+    String.length <$> (newlines *> regex "#*" <* whitespace)
 
 
-title_str : Parser PState String
+title_str : Parser s String
 title_str =
     String.trim <$> regex ".+[\\n]+"
 
 
-slide : Parser PState Slide
-slide =
-    lazy <|
-        \() ->
-            let
-                body =
-                    many (blocks <* newlines)
-
-                effect_counter =
-                    let
-                        pp par =
-                            succeed par.num_effects
-
-                        reset_effect c =
-                            { c | num_effects = 0 }
-                    in
-                    withState pp <* modifyState reset_effect
-            in
-            Slide <$> title_tag <*> title_str <*> body <*> effect_counter
-
-
-parse : Parser PState (List Slide)
-parse =
-    whitelines *> define_comment *> many1 slide
-
-
-define_comment : Parser PState ()
-define_comment =
+parse_defintion : String -> ( String, Definition )
+parse_defintion code =
     let
-        ending =
-            String.trim <$> regex "[^\\n]+"
-
-        author x =
-            modifyState (\s -> { s | def_author = x })
-
-        date x =
-            modifyState (\s -> { s | def_date = x })
-
-        email x =
-            modifyState (\s -> { s | def_email = x })
-
-        language x =
-            modifyState (\s -> { s | def_language = x })
-
-        narrator x =
-            modifyState (\s -> { s | def_narrator = x })
-
-        script x =
-            modifyState (\s -> { s | def_scripts = x :: s.def_scripts })
-
-        version x =
-            modifyState (\s -> { s | def_version = x })
-
-        list =
-            [ string "author:" *> (ending >>= author)
-            , string "date:" *> (ending >>= date)
-            , string "email:" *> (ending >>= email)
-            , string "language:" *> (ending >>= language)
-            , string "narrator:" *> (ending >>= narrator)
-            , string "script:" *> (ending >>= script)
-            , string "version:" *> (ending >>= version)
-            ]
+        default =
+            Lia.Definition.Types.default
     in
-    skip (comment (regex "[ \\t\\n]*" *> choice list <* regex "[\\n]+"))
+    case Combine.runParser Lia.Definition.Parser.parse default code of
+        Ok ( definition, data, _ ) ->
+            ( data.input, definition )
+
+        Err _ ->
+            ( code, default )
 
 
-run : String -> Result String ( List Slide, CodeVector, QuizVector, SurveyVector, String, List String )
-run script =
-    case Combine.runParser parse Lia.PState.init script of
-        Ok ( state, _, es ) ->
-            Ok ( es, state.code_vector, state.quiz_vector, state.survey_vector, state.def_narrator, state.def_scripts )
+title : Parser s ( Int, String )
+title =
+    let
+        rslt i s =
+            ( i, s )
+    in
+    rslt <$> title_tag <*> title_str
+
+
+parse_title : String -> Result String ( Int, String, String )
+parse_title string =
+    case Combine.parse title string of
+        Ok ( _, data, ( ident, title ) ) ->
+            Ok ( ident, title, data.input )
 
         Err ( _, stream, ms ) ->
-            Err <| formatError ms stream
+            formatError ms stream |> Err
+
+
+
+-- slide : Parser PState Slide
+-- slide =
+--     lazy <|
+--         \() ->
+--             let
+--                 body =
+--                     many (blocks <* newlines)
+--
+--                 effect_counter =
+--                     let
+--                         pp par =
+--                             succeed par.num_effects
+--
+--                         reset_effect c =
+--                             { c | num_effects = 0 }
+--                     in
+--                     withState pp <* modifyState reset_effect
+--             in
+--             Slide <$> title_tag <*> title_str <*> body <*> effect_counter
+--
+--
+-- parse : Parser PState (List Slide)
+-- parse =
+--     whitelines *> define_comment *> many1 slide
+--
+--
+--
+--
+-- run : String -> Result String ( List Slide, CodeVector, QuizVector, SurveyVector, String, List String )
+-- run script =
+--     case Combine.runParser parse Lia.PState.init script of
+--         Ok ( state, _, es ) ->
+--             Ok ( es, state.code_vector, state.quiz_vector, state.survey_vector, state.def_narrator, state.def_scripts )
+--
+--         Err ( _, stream, ms ) ->
+--             Err <| formatError ms stream
+--
+--
 
 
 formatError : List String -> InputStream -> String
