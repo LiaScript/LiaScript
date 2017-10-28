@@ -5,11 +5,12 @@ module Lia.Effect.Model
         , get_comment
         , init
         , init_silent
-        , scan_for_comments
+          --  , scan_for_comments
         )
 
+--import Lia.Index.Model exposing (parse_inlines)
+
 import Array exposing (Array)
-import Lia.Index.Model exposing (parse_inlines)
 import Lia.Types exposing (Block(..), Slide)
 
 
@@ -30,12 +31,11 @@ type Status
 
 init : String -> Maybe Slide -> Model
 init narrator maybe =
-    case maybe of
-        Just slide ->
-            Model 0 slide.effects Silent (scan_for_comments slide.effects slide.body) narrator
-
-        Nothing ->
-            Model 0 0 Silent Array.empty narrator
+    --case maybe of
+    --Just slide ->
+    --    Model 0 slide.effects Silent (scan_for_comments slide.effects slide.body) narrator
+    --Nothing ->
+    Model 0 0 Silent Array.empty narrator
 
 
 init_silent : Model
@@ -50,32 +50,33 @@ get_comment model =
         |> Maybe.andThen (\a -> a)
 
 
-scan_for_comments : Int -> List Block -> Array (Maybe String)
-scan_for_comments effect_count blocks =
-    let
-        ecomment block =
-            case block of
-                EComment idx paragraph ->
-                    Just ( idx, parse_inlines paragraph )
 
-                _ ->
-                    Nothing
-
-        find : List ( Int, String ) -> Int -> Maybe String -> Maybe String
-        find comments idx _ =
-            comments
-                |> List.filter (\( i, _ ) -> i == idx)
-                |> List.head
-                |> Maybe.andThen (\( _, str ) -> Just str)
-    in
-    case List.filterMap ecomment blocks of
-        [] ->
-            Array.empty
-
-        comments ->
-            let
-                find_comments =
-                    find comments
-            in
-            Array.repeat (effect_count + 1) Nothing
-                |> Array.indexedMap find_comments
+-- scan_for_comments : Int -> List Block -> Array (Maybe String)
+-- scan_for_comments effect_count blocks =
+--     let
+--         ecomment block =
+--             case block of
+--                 EComment idx paragraph ->
+--                     Just ( idx, parse_inlines paragraph )
+--
+--                 _ ->
+--                     Nothing
+--
+--         find : List ( Int, String ) -> Int -> Maybe String -> Maybe String
+--         find comments idx _ =
+--             comments
+--                 |> List.filter (\( i, _ ) -> i == idx)
+--                 |> List.head
+--                 |> Maybe.andThen (\( _, str ) -> Just str)
+--     in
+--     case List.filterMap ecomment blocks of
+--         [] ->
+--             Array.empty
+--
+--         comments ->
+--             let
+--                 find_comments =
+--                     find comments
+--             in
+--             Array.repeat (effect_count + 1) Nothing
+--                 |> Array.indexedMap find_comments

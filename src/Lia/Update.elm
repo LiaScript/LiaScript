@@ -1,5 +1,6 @@
 module Lia.Update exposing (Msg(..), update)
 
+import Array
 import Json.Encode as JE
 import Lia.Code.Update as Code
 import Lia.Effect.Model as EffectModel
@@ -17,11 +18,11 @@ type Msg
     = Load Int
     | PrevSlide Int
     | NextSlide Int
+    | ToggleLOC
+    | UpdateIndex Index.Msg
 
 
 
---    | ToggleContentsTable
---    | UpdateIndex Index.Msg
 --    | UpdateQuiz Quiz.Msg
 --    | UpdateCode Code.Msg
 --    | UpdateSurvey Survey.Msg
@@ -34,7 +35,22 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg, Maybe ( String, JE.Value ) )
 update msg model =
-    ( model, Cmd.none, Nothing )
+    case msg of
+        ToggleLOC ->
+            ( { model | loc = not model.loc }, Cmd.none, Nothing )
+
+        UpdateIndex childMsg ->
+            let
+                index =
+                    model.slides
+                        |> Array.map .code
+                        |> Array.toIndexedList
+                        |> Index.update childMsg model.model_index
+            in
+            ( { model | model_index = index }, Cmd.none, Nothing )
+
+        _ ->
+            ( model, Cmd.none, Nothing )
 
 
 

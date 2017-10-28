@@ -21,6 +21,8 @@ type alias Model =
         { theme : String
         , light : String
         }
+    , loc : Bool
+    , model_index : Lia.Index.Model.Model
 
     --    , show_contents : Bool
     --    , quiz_model : Lia.Quiz.Model.Model
@@ -58,6 +60,8 @@ init mode uid =
         { theme = init_style_theme
         , light = init_style_light
         }
+    , loc = True
+    , model_index = Lia.Index.Model.init
 
     --    , show_contents = True
     --    , quiz_model = Array.empty

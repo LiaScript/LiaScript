@@ -9,9 +9,7 @@ import Lia.Index.Update exposing (Msg(..))
 
 view : Model -> Html Msg
 view model =
-    Html.div
-        [ Attr.class "lia-toolbar"
-        ]
+    Html.div [ Attr.class "lia-toolbar" ]
         [ Html.input
             [ Attr.type_ "input"
             , Attr.value model.search

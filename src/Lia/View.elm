@@ -12,6 +12,7 @@ import Lia.Code.View as Codes
 import Lia.Effect.Model as Effect
 import Lia.Effect.View as Effects
 import Lia.Helper exposing (..)
+import Lia.Index.Model
 import Lia.Index.View
 import Lia.Inline.Types exposing (Inline)
 import Lia.Inline.View as Elem
@@ -26,10 +27,14 @@ import String
 view : Model -> Html Msg
 view model =
     Html.div [ styling model.style ]
-        [ model.slides
-            |> Array.map (\slide -> ( slide.title, slide.indentation ))
-            |> Array.toIndexedList
-            |> view_loc model.current_slide
+        [ if model.loc then
+            model.slides
+                |> Array.map (\slide -> ( slide.title, slide.indentation ))
+                |> Array.toIndexedList
+                |> view_aside model.model_index model.current_slide
+          else
+            Html.text ""
+        , view_article model
         ]
 
 
@@ -42,8 +47,8 @@ styling s =
         )
 
 
-view_loc : Int -> List ( Int, ( String, Int ) ) -> Html Msg
-view_loc current_slide titles =
+view_aside : Lia.Index.Model.Model -> Int -> List ( Int, ( String, Int ) ) -> Html Msg
+view_aside index current_slide titles =
     let
         loc ( idx, ( title, indent ) ) =
             Html.a
@@ -61,16 +66,87 @@ view_loc current_slide titles =
                 ]
                 [ Html.text title ]
     in
-    Html.div
+    Html.aside
         [ Attr.class "lia-toc" ]
-        [ --Html.map UpdateIndex <| Lia.Index.View.view model.index_model
-          titles
-            |> List.map loc
-            |> Html.div [ Attr.class "lia-content" ]
+        [ Html.map UpdateIndex <| Lia.Index.View.view index
+        , case index.index of
+            Just idxs ->
+                titles
+                    |> List.filter (\( idx, _ ) -> List.member idx idxs)
+                    |> List.map loc
+                    |> Html.div [ Attr.class "lia-content" ]
+
+            Nothing ->
+                titles
+                    |> List.map loc
+                    |> Html.div [ Attr.class "lia-content" ]
+        ]
+
+
+view_article : Model -> Html Msg
+view_article model =
+    Html.article [ Attr.class "lia-slide" ]
+        [ view_nav model
+        , Html.div [ Attr.class "lia-content" ] [ Html.text "WWWWWWWW" ]
+        ]
+
+
+view_nav : Model -> Html Msg
+view_nav model =
+    Html.nav [ Attr.class "lia-toolbar" ]
+        [ Html.button
+            [ onClick ToggleLOC
+            , Attr.class "lia-btn lia-toc-control lia-left"
+            ]
+            [ Html.text "toc" ]
         ]
 
 
 
+-- (List.append
+--     [ Html.button
+--         [ --onClick ToggleContentsTable
+--           Attr.class "lia-btn lia-toc-control lia-left"
+--         ]
+--         [ Html.text "toc" ]
+--     , Html.button
+--         [ Attr.class "lia-btn lia-left"
+--
+--         --, onClick SwitchMode
+--         ]
+--         [ case model.mode of
+--             Slides ->
+--                 Html.text "hearing"
+--
+--             _ ->
+--                 Html.text "visibility"
+--         ]
+--     , Html.span [ Attr.class "lia-spacer" ] []
+--
+--     --, loadButton "navigate_before" (PrevSlide hidden_effects)
+--     , Html.span [ Attr.class "lia-labeled lia-left" ]
+--         [ Html.span [ Attr.class "lia-label" ]
+--             [ Html.text (toString (model.current_slide + 1))
+--             , case model.mode of
+--                 Slides ->
+--                     Html.text <|
+--                         String.concat
+--                             [ " ("
+--                             , toString (model.effect_model.visible + 1)
+--                             , "/"
+--                             , toString (model.effect_model.effects + 1)
+--                             , ")"
+--                             ]
+--
+--                 _ ->
+--                     Html.text ""
+--             ]
+--         ]
+--     , loadButton "navigate_next" (NextSlide hidden_effects)
+--     , Html.span [ Attr.class "lia-spacer" ] []
+--     ]
+--     (view_themes model.theme model.theme_light)
+-- )
 -- case model.mode of
 --     Slides ->
 --         view_slides model

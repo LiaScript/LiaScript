@@ -7,8 +7,8 @@ type Msg
     = ScanIndex String
 
 
-update : Msg -> Model -> Model
-update msg model =
+update : Msg -> Model -> List ( Int, String ) -> Model
+update msg model sections =
     case msg of
         ScanIndex pattern ->
             let
@@ -16,14 +16,30 @@ update msg model =
                     if pattern == "" then
                         Nothing
                     else
-                        Just (scan model.index pattern)
+                        pattern
+                            |> scan sections
+                            |> Just
             in
-            { model | search = pattern, results = results }
+            { model
+                | search = pattern
+                , index = results
+            }
 
 
-scan : List String -> String -> List Int
+scan : List ( Int, String ) -> String -> List Int
 scan index pattern =
-    index
-        |> List.indexedMap (,)
-        |> List.filter (\( _, str ) -> String.contains (String.toLower pattern) str)
-        |> List.map (\( i, _ ) -> i)
+    let
+        check =
+            pattern
+                |> String.toLower
+                |> checker
+    in
+    List.filterMap check index
+
+
+checker : String -> ( Int, String ) -> Maybe Int
+checker pattern ( idx, string ) =
+    if String.contains pattern string then
+        Just idx
+    else
+        Nothing
