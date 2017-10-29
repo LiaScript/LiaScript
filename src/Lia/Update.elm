@@ -18,12 +18,13 @@ import Lia.Utils exposing (set_local)
 
 type Msg
     = Load ID
-    | PrevSlide Int
-    | NextSlide Int
+    | PrevSection Int
+    | NextSection Int
     | DesignTheme String
     | DesignLight
     | ToggleLOC
     | UpdateIndex Index.Msg
+    | SwitchMode
 
 
 
@@ -92,8 +93,22 @@ update msg model =
             else
                 ( model, Cmd.none, Nothing )
 
-        _ ->
-            ( model, Cmd.none, Nothing )
+        NextSection i ->
+            update (Load <| model.section_active + 1) model
+
+        PrevSection i ->
+            update (Load <| model.section_active - 1) model
+
+        SwitchMode ->
+            if model.mode == Presentation then
+                ( { model | mode = Slides }, Cmd.none, Nothing )
+            else
+                ( { model | mode = Presentation }, Cmd.none, Nothing )
+
+
+
+--        _ ->
+--            ( model, Cmd.none, Nothing )
 
 
 generate : ID -> Sections -> Sections

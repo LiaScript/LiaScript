@@ -7,7 +7,7 @@ import Lia.Effect.Model as Effect
 import Lia.Index.Model as Index
 import Lia.Quiz.Model as Quiz
 import Lia.Survey.Model as Survey
-import Lia.Types exposing (ID, Mode, Sections)
+import Lia.Types exposing (Design, ID, Mode, Sections)
 import Lia.Utils exposing (get_local, load_js, set_local)
 
 
@@ -17,10 +17,7 @@ type alias Model =
     , sections : Sections
     , section_active : ID
     , definition : Definition
-    , design :
-        { theme : String
-        , light : String
-        }
+    , design : Design
     , loc : Bool
     , index_model : Index.Model
 

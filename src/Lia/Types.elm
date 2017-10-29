@@ -1,4 +1,4 @@
-module Lia.Types exposing (Block(..), ID, Mode(..), Paragraph, Section, Sections)
+module Lia.Types exposing (Block(..), Design, ID, Mode(..), Paragraph, Section, Sections)
 
 import Array exposing (Array)
 import Lia.Chart.Types exposing (Chart)
@@ -16,6 +16,12 @@ type Mode
 
 type alias ID =
     Int
+
+
+type alias Design =
+    { theme : String
+    , light : String
+    }
 
 
 type alias Section =

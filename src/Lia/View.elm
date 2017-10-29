@@ -91,7 +91,7 @@ view_loc active titles =
 view_article : Model -> Html Msg
 view_article model =
     Html.article [ Attr.class "lia-slide" ]
-        [ view_nav model
+        [ view_nav model.section_active model.mode model.design
         , Html.div [ Attr.class "lia-content" ] [ Html.text "WWWWWWWW" ]
         ]
 
@@ -102,8 +102,8 @@ navButton str msg =
         [ Html.text str ]
 
 
-view_nav : Model -> Html Msg
-view_nav model =
+view_nav : ID -> Mode -> Design -> Html Msg
+view_nav section_active mode design =
     Html.nav [ Attr.class "lia-toolbar" ]
         [ Html.button
             [ onClick ToggleLOC
@@ -112,22 +112,39 @@ view_nav model =
             [ Html.text "toc" ]
         , Html.button
             [ Attr.class "lia-btn lia-left"
-
-            --         --, onClick SwitchMode
+            , onClick SwitchMode
             ]
-            [ case model.mode of
-                Slides ->
-                    Html.text "hearing"
-
-                _ ->
-                    Html.text "visibility"
+            [ if mode == Presentation then
+                Html.text "hearing"
+              else
+                Html.text "visibility"
             ]
         , Html.span [ Attr.class "lia-spacer" ] []
-        , navButton "navigate_before" (PrevSlide 0)
-        , navButton "navigate_next" (NextSlide 0)
+        , navButton "navigate_before" (PrevSection 0)
+        , Html.span [ Attr.class "lia-labeled lia-left" ]
+            [ Html.span [ Attr.class "lia-label" ]
+                [ Html.text (toString (section_active + 1))
+                , case mode of
+                    Presentation ->
+                        Html.text <|
+                            String.concat
+                                [ " ("
+
+                                --, toString (model.effect_model.visible + 1)
+                                , "/"
+
+                                --, toString (model.effect_model.effects + 1)
+                                , ")"
+                                ]
+
+                    _ ->
+                        Html.text ""
+                ]
+            ]
+        , navButton "navigate_next" (NextSection 0)
         , Html.span [ Attr.class "lia-spacer" ] []
-        , view_design_light model.design.light
-        , view_design_theme model.design.theme
+        , view_design_light design.light
+        , view_design_theme design.theme
         ]
 
 
