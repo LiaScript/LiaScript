@@ -92,8 +92,46 @@ view_article : Model -> Html Msg
 view_article model =
     Html.article [ Attr.class "lia-slide" ]
         [ view_nav model.section_active model.mode model.design
-        , Html.div [ Attr.class "lia-content" ] [ Html.text "WWWWWWWW" ]
+        , model.sections
+            |> Array.get model.section_active
+            |> Maybe.map view_section
+            |> Maybe.withDefault (Html.text "")
+        , view_footer
         ]
+
+
+view_section : Section -> Html Msg
+view_section sec =
+    case sec.error of
+        Just msg ->
+            Html.section [ Attr.class "lia-content" ]
+                [ view_header sec.indentation sec.title
+                , Html.text msg
+                ]
+
+        Nothing ->
+            sec.body
+                |> List.map view_block
+                |> (::) (view_header sec.indentation sec.title)
+                |> Html.section [ Attr.class "lia-content" ]
+
+
+view_footer : Html Msg
+view_footer =
+    Html.footer [] [ Html.text "footer" ]
+
+
+
+-- view_slide model slide =
+--     let
+--         ( is, slide_body ) =
+--             view_body model slide.body
+--     in
+--     slide_body
+--         |> List.append [ view_header slide.indentation slide.title ]
+--         |> (\b -> List.append b [ Html.footer [] [] ])
+--         |> Html.div [ Attr.class "lia-section" ]
+--         |> to_tuple is
 
 
 navButton : String -> msg -> Html msg
@@ -423,6 +461,8 @@ view_header indentation title =
                 _ ->
                     Html.h6 [ Attr.class "lia-inline lia-h6" ]
            )
+        |> List.singleton
+        |> Html.header []
 
 
 
@@ -448,7 +488,87 @@ zero_tuple =
     to_tuple 0
 
 
+view_block : Block -> Html Msg
+view_block block =
+    case block of
+        Paragraph elements ->
+            elements
+                |> List.map (\e -> Elem.view 10 e)
+                |> Html.p [ Attr.class "lia-inline lia-paragraph" ]
 
+        HLine ->
+            Html.hr [ Attr.class "lia-inline lia-horiz-line" ] []
+
+        _ ->
+            Html.text "to appear"
+
+
+
+--
+--         Table header format body ->
+--             body
+--                 |> view_table model header (Array.fromList format)
+--                 |> zero_tuple
+--
+--         Quote elements ->
+--             elements
+--                 |> List.map (\e -> Elem.view model.effect_model.visible e)
+--                 |> Html.blockquote [ Attr.class "lia-inline lia-quote" ]
+--                 |> zero_tuple
+--
+--         CodeBlock code ->
+--             code
+--                 |> Codes.view model.code_model
+--                 |> Html.map UpdateCode
+--                 |> zero_tuple
+--
+--         Quiz quiz Nothing ->
+--             Lia.Quiz.View.view model.quiz_model quiz False
+--                 |> Html.map UpdateQuiz
+--                 |> zero_tuple
+--
+--         Quiz quiz (Just ( answer, hidden_effects )) ->
+--             if Lia.Quiz.View.view_solution model.quiz_model quiz then
+--                 answer
+--                     |> view_body model
+--                     |> (\( _, html ) -> html)
+--                     |> List.append [ Html.map UpdateQuiz <| Lia.Quiz.View.view model.quiz_model quiz False ]
+--                     |> Html.div []
+--                     |> zero_tuple
+--             else
+--                 Lia.Quiz.View.view model.quiz_model quiz True
+--                     |> Html.map UpdateQuiz
+--                     |> to_tuple hidden_effects
+--
+--         SurveyBlock survey ->
+--             survey
+--                 |> Lia.Survey.View.view model.survey_model
+--                 |> Html.map UpdateSurvey
+--                 |> zero_tuple
+--
+--         EBlock idx effect_name sub_blocks ->
+--             Effects.view_block model.effect_model viewer idx effect_name sub_blocks
+--                 |> zero_tuple
+--
+--         BulletList list ->
+--             list
+--                 |> List.map (\l -> Html.li [] (List.map (\ll -> viewer ll) l))
+--                 |> Html.ul [ Attr.class "lia-inline lia-list lia-unordered" ]
+--                 |> zero_tuple
+--
+--         OrderedList list ->
+--             list
+--                 |> List.map (\l -> Html.li [] (List.map (\ll -> viewer ll) l))
+--                 |> Html.ol [ Attr.class "lia-inline lia-list lia-ordered" ]
+--                 |> zero_tuple
+--
+--         EComment idx comment ->
+--             let
+--                 class =
+--                     if model.show_contents then
+--                         "lia-effect-comment-toc"
+--                     else
+--                         "lia-effect-comment"
 -- view_block : Model -> Block -> ( Int, Html Msg )
 -- view_block model block =
 --     let
