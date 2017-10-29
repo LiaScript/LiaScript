@@ -1,28 +1,28 @@
 module Lia.Model exposing (..)
 
 import Array exposing (Array)
-import Lia.Code.Model
+import Lia.Code.Model as Code
 import Lia.Definition.Types as Definition exposing (Definition)
-import Lia.Effect.Model
-import Lia.Index.Model
-import Lia.Quiz.Model
-import Lia.Survey.Model
-import Lia.Types exposing (Mode, Slide)
+import Lia.Effect.Model as Effect
+import Lia.Index.Model as Index
+import Lia.Quiz.Model as Quiz
+import Lia.Survey.Model as Survey
+import Lia.Types exposing (ID, Mode, Sections)
 import Lia.Utils exposing (get_local, load_js, set_local)
 
 
 type alias Model =
     { uid : Maybe String
     , mode : Mode
-    , slides : Array Slide
-    , current_slide : Int
+    , sections : Sections
+    , section_active : ID
     , definition : Definition
-    , style :
+    , design :
         { theme : String
         , light : String
         }
     , loc : Bool
-    , model_index : Lia.Index.Model.Model
+    , index_model : Index.Model
 
     --    , show_contents : Bool
     --    , quiz_model : Lia.Quiz.Model.Model
@@ -45,23 +45,23 @@ init mode uid =
                 Just "Slides" ->
                     Lia.Types.Slides
 
-                Just "Slides_only" ->
-                    Lia.Types.Slides_only
+                Just "Presentation" ->
+                    Lia.Types.Presentation
 
                 _ ->
                     mode
     in
     { uid = uid
     , mode = local_mode
-    , slides = Array.empty
-    , current_slide = init_slide_number uid
+    , sections = Array.empty
+    , section_active = init_section uid
     , definition = Definition.default
-    , style =
-        { theme = init_style_theme
-        , light = init_style_light
+    , design =
+        { theme = init_design_theme
+        , light = init_design_light
         }
     , loc = True
-    , model_index = Lia.Index.Model.init
+    , index_model = Index.init
 
     --    , show_contents = True
     --    , quiz_model = Array.empty
@@ -76,22 +76,22 @@ init mode uid =
     }
 
 
-init_style_theme : String
-init_style_theme =
+init_design_theme : String
+init_design_theme =
     "theme"
         |> get_local
         |> Maybe.withDefault "default"
 
 
-init_style_light : String
-init_style_light =
+init_design_light : String
+init_design_light =
     "theme_light"
         |> get_local
         |> Maybe.withDefault "light"
 
 
-init_slide_number : Maybe String -> Int
-init_slide_number uid =
+init_section : Maybe String -> Int
+init_section uid =
     0
 
 

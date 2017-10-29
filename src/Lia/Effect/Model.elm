@@ -11,7 +11,7 @@ module Lia.Effect.Model
 --import Lia.Index.Model exposing (parse_inlines)
 
 import Array exposing (Array)
-import Lia.Types exposing (Block(..), Slide)
+import Lia.Types exposing (Block(..), Section)
 
 
 type alias Model =
@@ -29,7 +29,7 @@ type Status
     | Error String
 
 
-init : String -> Maybe Slide -> Model
+init : String -> Maybe Section -> Model
 init narrator maybe =
     --case maybe of
     --Just slide ->

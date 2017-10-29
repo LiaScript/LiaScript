@@ -1,16 +1,17 @@
 module Lia exposing (..)
 
+--import Lia.Helper exposing (get_slide)
+
 import Array
 import Html exposing (Html)
 import Json.Encode as JE
 import Lia.Effect.Model as Effect
-import Lia.Helper exposing (get_slide)
 import Lia.Index.Model as Index
 import Lia.Model
 import Lia.Parser
 import Lia.Quiz.Model as Quiz
 import Lia.Survey.Model as Survey
-import Lia.Types exposing (Slide)
+import Lia.Types exposing (Section, Sections)
 import Lia.Update
 import Lia.View
 import Regex
@@ -36,47 +37,53 @@ set_script model script =
     in
     { model
         | definition = definition
-        , slides =
+        , sections =
             code
                 |> Regex.split Regex.All (Regex.regex "\\n#")
-                |> List.map init_slide
+                |> List.map init_section
                 |> Array.fromList
+                |> Lia.Update.generate model.section_active
     }
 
 
-init_slide : String -> Slide
-init_slide code =
+init_section : String -> Section
+init_section code =
     let
-        slide =
+        sec =
             { code = code
             , title = ""
             , indentation = -1
             , body = []
             , error = Nothing
-            , effects = -1
+            , effects = 0
             , speach = []
             }
     in
     case Lia.Parser.parse_title code of
         Ok ( ident, title, body ) ->
-            { slide
+            { sec
                 | code = body
                 , title = title
                 , indentation = ident
             }
 
         Err msg ->
-            { slide | error = Just msg }
+            { sec | error = Just msg }
 
 
-init_plain : Maybe String -> Model
-init_plain uid =
+init_textbook : Maybe String -> Model
+init_textbook uid =
     Lia.Model.init Lia.Types.Textbook uid
 
 
 init_slides : Maybe String -> Model
 init_slides uid =
     Lia.Model.init Lia.Types.Slides uid
+
+
+init_presentation : Maybe String -> Model
+init_presentation uid =
+    Lia.Model.init Lia.Types.Presentation uid
 
 
 parse : String -> Model -> Model

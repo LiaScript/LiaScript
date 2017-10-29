@@ -45,6 +45,6 @@ get_local key =
     Native.Utils.get_local key
 
 
-set_local : String -> String -> Bool
+set_local : String -> String -> String
 set_local key value =
     Native.Utils.set_local key value

@@ -1,23 +1,27 @@
-module Lia.Update exposing (Msg(..), update)
+module Lia.Update exposing (Msg(..), generate, update)
+
+--import Lia.Helper exposing (get_slide)
 
 import Array
 import Json.Encode as JE
 import Lia.Code.Update as Code
 import Lia.Effect.Model as EffectModel
 import Lia.Effect.Update as Effect
-import Lia.Helper exposing (get_slide)
 import Lia.Index.Update as Index
 import Lia.Model exposing (..)
+import Lia.Parser exposing (parse_section)
 import Lia.Quiz.Update as Quiz
 import Lia.Survey.Update as Survey
-import Lia.Types exposing (Mode(..))
+import Lia.Types exposing (ID, Mode(..), Sections)
 import Lia.Utils exposing (set_local)
 
 
 type Msg
-    = Load Int
+    = Load ID
     | PrevSlide Int
     | NextSlide Int
+    | DesignTheme String
+    | DesignLight
     | ToggleLOC
     | UpdateIndex Index.Msg
 
@@ -42,15 +46,69 @@ update msg model =
         UpdateIndex childMsg ->
             let
                 index =
-                    model.slides
+                    model.sections
                         |> Array.map .code
                         |> Array.toIndexedList
-                        |> Index.update childMsg model.model_index
+                        |> Index.update childMsg model.index_model
             in
-            ( { model | model_index = index }, Cmd.none, Nothing )
+            ( { model | index_model = index }, Cmd.none, Nothing )
+
+        DesignTheme theme ->
+            ( { model
+                | design =
+                    { light = model.design.light
+                    , theme = set_local "theme" theme
+                    }
+              }
+            , Cmd.none
+            , Nothing
+            )
+
+        DesignLight ->
+            ( { model
+                | design =
+                    { light =
+                        set_local "theme_light" <|
+                            if model.design.light == "light" then
+                                "dark"
+                            else
+                                "light"
+                    , theme = model.design.theme
+                    }
+              }
+            , Cmd.none
+            , Nothing
+            )
+
+        Load idx ->
+            if (-1 < idx) && (idx < Array.length model.sections) then
+                ( { model
+                    | section_active = idx
+                    , sections = generate idx model.sections
+                  }
+                , Cmd.none
+                , Nothing
+                )
+            else
+                ( model, Cmd.none, Nothing )
 
         _ ->
             ( model, Cmd.none, Nothing )
+
+
+generate : ID -> Sections -> Sections
+generate idx sections =
+    case Array.get idx sections of
+        Just sec ->
+            case Lia.Parser.parse_section sec.code of
+                Ok blocks ->
+                    Array.set idx { sec | body = blocks, error = Nothing } sections
+
+                Err msg ->
+                    Array.set idx { sec | body = [], error = Just msg } sections
+
+        _ ->
+            sections
 
 
 

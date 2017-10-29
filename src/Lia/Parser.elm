@@ -196,16 +196,18 @@ parse_defintion code =
 
 title : Parser s ( Int, String )
 title =
-    let
-        rslt i s =
-            ( i, s )
-    in
-    rslt <$> title_tag <*> title_str
+    lazy <|
+        \() ->
+            let
+                rslt i s =
+                    ( i, s )
+            in
+            rslt <$> title_tag <*> title_str
 
 
 parse_title : String -> Result String ( Int, String, String )
-parse_title string =
-    case Combine.parse title string of
+parse_title str =
+    case Combine.parse title str of
         Ok ( _, data, ( ident, title ) ) ->
             Ok ( ident, title, data.input )
 
@@ -213,7 +215,24 @@ parse_title string =
             formatError ms stream |> Err
 
 
+section =
+    lazy <|
+        \() ->
+            many (blocks <* newlines)
 
+
+parse_section : String -> Result String (List Block)
+parse_section str =
+    case Combine.runParser section Lia.PState.init str of
+        Ok ( _, _, es ) ->
+            Ok es
+
+        Err ( _, stream, ms ) ->
+            formatError ms stream |> Err
+
+
+
+--
 -- slide : Parser PState Slide
 -- slide =
 --     lazy <|

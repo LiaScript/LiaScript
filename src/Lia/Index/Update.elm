@@ -11,18 +11,13 @@ update : Msg -> Model -> List ( Int, String ) -> Model
 update msg model sections =
     case msg of
         ScanIndex pattern ->
-            let
-                results =
-                    if pattern == "" then
-                        Nothing
-                    else
-                        pattern
-                            |> scan sections
-                            |> Just
-            in
             { model
                 | search = pattern
-                , index = results
+                , index =
+                    if pattern == "" then
+                        []
+                    else
+                        scan sections pattern
             }
 
 

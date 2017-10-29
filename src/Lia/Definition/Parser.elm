@@ -7,9 +7,11 @@ import Lia.Inline.Parser exposing (comment, comments, whitelines)
 
 parse : Parser Definition ()
 parse =
-    definition
-        *> many (choice [ whitelines, comments ])
-        |> skip
+    lazy <|
+        \() ->
+            definition
+                *> many (choice [ whitelines, comments ])
+                |> skip
 
 
 definition : Parser Definition ()
@@ -33,6 +35,7 @@ definition =
                 |> skip
 
 
+ending : Parser s String
 ending =
     String.trim <$> regex "[^\\n]+"
 

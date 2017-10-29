@@ -4,6 +4,7 @@ module Lia.View exposing (view)
 
 import Array exposing (Array)
 import Char
+import Debug
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
@@ -11,7 +12,6 @@ import Lia.Chart.View
 import Lia.Code.View as Codes
 import Lia.Effect.Model as Effect
 import Lia.Effect.View as Effects
-import Lia.Helper exposing (..)
 import Lia.Index.Model
 import Lia.Index.View
 import Lia.Inline.Types exposing (Inline)
@@ -26,19 +26,16 @@ import String
 
 view : Model -> Html Msg
 view model =
-    Html.div [ styling model.style ]
+    Html.div [ design model.design ]
         [ if model.loc then
-            model.slides
-                |> Array.map (\slide -> ( slide.title, slide.indentation ))
-                |> Array.toIndexedList
-                |> view_aside model.model_index model.current_slide
+            view_aside model.index_model model.section_active model.sections
           else
             Html.text ""
         , view_article model
         ]
 
 
-styling s =
+design s =
     Attr.class
         ("lia-canvas lia-theme-"
             ++ s.theme
@@ -47,8 +44,28 @@ styling s =
         )
 
 
-view_aside : Lia.Index.Model.Model -> Int -> List ( Int, ( String, Int ) ) -> Html Msg
-view_aside index current_slide titles =
+view_aside : Lia.Index.Model.Model -> ID -> Sections -> Html Msg
+view_aside index active sections =
+    Html.aside
+        [ Attr.class "lia-toc" ]
+        [ index
+            |> Lia.Index.View.view
+            |> Html.map UpdateIndex
+        , sections
+            |> Array.map (\sec -> ( sec.title, sec.indentation ))
+            |> Array.toIndexedList
+            |> (\titles ->
+                    if [] == index.index then
+                        titles
+                    else
+                        List.filter (\( idx, _ ) -> List.member idx index.index) titles
+               )
+            |> view_loc active
+        ]
+
+
+view_loc : ID -> List ( ID, ( String, Int ) ) -> Html Msg
+view_loc active titles =
     let
         loc ( idx, ( title, indent ) ) =
             Html.a
@@ -56,7 +73,7 @@ view_aside index current_slide titles =
                 , Attr.class
                     ("lia-toc-l"
                         ++ toString indent
-                        ++ (if current_slide == idx then
+                        ++ (if active == idx then
                                 " lia-active"
                             else
                                 ""
@@ -66,21 +83,9 @@ view_aside index current_slide titles =
                 ]
                 [ Html.text title ]
     in
-    Html.aside
-        [ Attr.class "lia-toc" ]
-        [ Html.map UpdateIndex <| Lia.Index.View.view index
-        , case index.index of
-            Just idxs ->
-                titles
-                    |> List.filter (\( idx, _ ) -> List.member idx idxs)
-                    |> List.map loc
-                    |> Html.div [ Attr.class "lia-content" ]
-
-            Nothing ->
-                titles
-                    |> List.map loc
-                    |> Html.div [ Attr.class "lia-content" ]
-        ]
+    titles
+        |> List.map loc
+        |> Html.div [ Attr.class "lia-content" ]
 
 
 view_article : Model -> Html Msg
@@ -91,6 +96,12 @@ view_article model =
         ]
 
 
+navButton : String -> msg -> Html msg
+navButton str msg =
+    Html.button [ onClick msg, Attr.class "lia-btn lia-slide-control lia-left" ]
+        [ Html.text str ]
+
+
 view_nav : Model -> Html Msg
 view_nav model =
     Html.nav [ Attr.class "lia-toolbar" ]
@@ -99,6 +110,24 @@ view_nav model =
             , Attr.class "lia-btn lia-toc-control lia-left"
             ]
             [ Html.text "toc" ]
+        , Html.button
+            [ Attr.class "lia-btn lia-left"
+
+            --         --, onClick SwitchMode
+            ]
+            [ case model.mode of
+                Slides ->
+                    Html.text "hearing"
+
+                _ ->
+                    Html.text "visibility"
+            ]
+        , Html.span [ Attr.class "lia-spacer" ] []
+        , navButton "navigate_before" (PrevSlide 0)
+        , navButton "navigate_next" (NextSlide 0)
+        , Html.span [ Attr.class "lia-spacer" ] []
+        , view_design_light model.design.light
+        , view_design_theme model.design.theme
         ]
 
 
@@ -271,33 +300,29 @@ capitalize s =
             s
 
 
+view_design_theme : String -> Html Msg
+view_design_theme theme =
+    [ "default", "amber", "blue", "green", "grey", "purple" ]
+        |> List.map
+            (\t ->
+                Html.option
+                    [ Attr.value t, Attr.selected (t == theme) ]
+                    [ Html.text (capitalize t) ]
+            )
+        |> Html.select [ onInput DesignTheme, Attr.class "lia-right lia-select" ]
 
--- view_themes : String -> Bool -> List (Html Msg)
--- view_themes current_theme light =
---     let
---         themes =
---             [ "default", "amber", "blue", "green", "grey", "purple" ]
---     in
---     [ Html.button [ Attr.class "lia-btn lia-right" ]
---         --, onClick ThemeLight ]
---         [ if light == "light" then
---             Html.text "star"
---           else
---             Html.text "star_border"
---         ]
---     , Html.select
---         [ --onInput Theme
---           Attr.class "lia-right lia-select"
---         ]
---         (themes
---             |> List.map
---                 (\t ->
---                     Html.option
---                         [ Attr.value t, Attr.selected (t == current_theme) ]
---                         [ Html.text (capitalize t ++ " Theme") ]
---                 )
---         )
---     ]
+
+view_design_light : String -> Html Msg
+view_design_light light =
+    Html.button [ Attr.class "lia-btn lia-right", onClick DesignLight ]
+        [ if light == "light" then
+            Html.text "star"
+          else
+            Html.text "star_border"
+        ]
+
+
+
 --
 -- view_contents : Model -> Html Msg
 -- view_contents model =

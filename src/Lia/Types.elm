@@ -1,5 +1,6 @@
-module Lia.Types exposing (Block(..), Id, Mode(..), Paragraph, Slide)
+module Lia.Types exposing (Block(..), ID, Mode(..), Paragraph, Section, Sections)
 
+import Array exposing (Array)
 import Lia.Chart.Types exposing (Chart)
 import Lia.Code.Types exposing (Code)
 import Lia.Inline.Types exposing (..)
@@ -8,16 +9,16 @@ import Lia.Survey.Types exposing (Survey)
 
 
 type Mode
-    = Slides
-    | Slides_only
+    = Presentation
+    | Slides
     | Textbook
 
 
-type alias Id =
+type alias ID =
     Int
 
 
-type alias Slide =
+type alias Section =
     { code : String
     , title : String
     , indentation : Int
@@ -26,6 +27,10 @@ type alias Slide =
     , effects : Int
     , speach : List String
     }
+
+
+type alias Sections =
+    Array Section
 
 
 type alias Paragraph =

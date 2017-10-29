@@ -116,9 +116,9 @@ var _user$project$Native_Utils = (function () {
     function set_local (key, value) {
         try {
             localStorage.setItem(key, value);
-            return true;
+            return value;
         } catch (e) {
-            return false;
+            return value;
         }
     };
 
