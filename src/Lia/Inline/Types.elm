@@ -17,7 +17,7 @@ type Inline
     | Strike Inline
     | Underline Inline
     | Superscript Inline
-    | Code String
+    | Verbatim String
     | Formula Bool String
     | Ref Reference
     | HTML String

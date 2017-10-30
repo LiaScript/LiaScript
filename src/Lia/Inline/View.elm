@@ -15,7 +15,7 @@ inline_class c =
 view : Int -> Inline -> Html msg
 view visible element =
     case element of
-        Code e ->
+        Verbatim e ->
             Html.code [ inline_class "lia-code" ]
                 [ Html.text e ]
 
