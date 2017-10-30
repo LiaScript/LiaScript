@@ -4,7 +4,6 @@ module Lia.View exposing (view)
 
 import Array exposing (Array)
 import Char
-import Debug
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
@@ -15,7 +14,7 @@ import Lia.Effect.View as Effects
 import Lia.Index.Model
 import Lia.Index.View
 import Lia.Inline.Types exposing (Inline)
-import Lia.Inline.View as Elem
+import Lia.Inline.View as InlineView
 import Lia.Model exposing (Model)
 import Lia.Quiz.View
 import Lia.Survey.View
@@ -94,14 +93,14 @@ view_article model =
         [ view_nav model.section_active model.mode model.design
         , model.sections
             |> Array.get model.section_active
-            |> Maybe.map view_section
+            |> Maybe.map2 view_section (Just 99)
             |> Maybe.withDefault (Html.text "")
         , view_footer
         ]
 
 
-view_section : Section -> Html Msg
-view_section sec =
+view_section : Int -> Section -> Html Msg
+view_section fragments sec =
     case sec.error of
         Just msg ->
             Html.section [ Attr.class "lia-content" ]
@@ -110,8 +109,12 @@ view_section sec =
                 ]
 
         Nothing ->
+            let
+                viewer =
+                    view_block fragments
+            in
             sec.body
-                |> List.map view_block
+                |> List.map viewer
                 |> (::) (view_header sec.indentation sec.title)
                 |> Html.section [ Attr.class "lia-content" ]
 
@@ -488,87 +491,56 @@ zero_tuple =
     to_tuple 0
 
 
-view_block : Block -> Html Msg
-view_block block =
+view_block : Int -> Block -> Html Msg
+view_block fragments block =
+    let
+        viewer =
+            InlineView.view fragments
+    in
     case block of
         Paragraph elements ->
             elements
-                |> List.map (\e -> Elem.view 10 e)
+                |> List.map viewer
                 |> Html.p [ Attr.class "lia-inline lia-paragraph" ]
 
         HLine ->
             Html.hr [ Attr.class "lia-inline lia-horiz-line" ] []
+
+        Table header format body ->
+            view_table viewer header format body
 
         _ ->
             Html.text "to appear"
 
 
 
---
---         Table header format body ->
---             body
---                 |> view_table model header (Array.fromList format)
---                 |> zero_tuple
---
---         Quote elements ->
---             elements
---                 |> List.map (\e -> Elem.view model.effect_model.visible e)
---                 |> Html.blockquote [ Attr.class "lia-inline lia-quote" ]
---                 |> zero_tuple
---
---         CodeBlock code ->
---             code
---                 |> Codes.view model.code_model
---                 |> Html.map UpdateCode
---                 |> zero_tuple
---
---         Quiz quiz Nothing ->
---             Lia.Quiz.View.view model.quiz_model quiz False
---                 |> Html.map UpdateQuiz
---                 |> zero_tuple
---
---         Quiz quiz (Just ( answer, hidden_effects )) ->
---             if Lia.Quiz.View.view_solution model.quiz_model quiz then
---                 answer
---                     |> view_body model
---                     |> (\( _, html ) -> html)
---                     |> List.append [ Html.map UpdateQuiz <| Lia.Quiz.View.view model.quiz_model quiz False ]
---                     |> Html.div []
---                     |> zero_tuple
---             else
---                 Lia.Quiz.View.view model.quiz_model quiz True
---                     |> Html.map UpdateQuiz
---                     |> to_tuple hidden_effects
---
---         SurveyBlock survey ->
---             survey
---                 |> Lia.Survey.View.view model.survey_model
---                 |> Html.map UpdateSurvey
---                 |> zero_tuple
---
---         EBlock idx effect_name sub_blocks ->
---             Effects.view_block model.effect_model viewer idx effect_name sub_blocks
---                 |> zero_tuple
---
---         BulletList list ->
---             list
---                 |> List.map (\l -> Html.li [] (List.map (\ll -> viewer ll) l))
---                 |> Html.ul [ Attr.class "lia-inline lia-list lia-unordered" ]
---                 |> zero_tuple
---
---         OrderedList list ->
---             list
---                 |> List.map (\l -> Html.li [] (List.map (\ll -> viewer ll) l))
---                 |> Html.ol [ Attr.class "lia-inline lia-list lia-ordered" ]
---                 |> zero_tuple
---
---         EComment idx comment ->
---             let
---                 class =
---                     if model.show_contents then
---                         "lia-effect-comment-toc"
---                     else
---                         "lia-effect-comment"
+--view_table : List Paragraph -> Array String -> List (List Paragraph) -> Html Msg
+
+
+view_table viewer header format body =
+    let
+        view_row fct row =
+            List.map2
+                (\r f -> r |> List.map viewer |> fct [ Attr.align f ])
+                row
+                format
+    in
+    body
+        |> List.map
+            (\row ->
+                row
+                    |> view_row Html.td
+                    |> Html.tr [ Attr.class "lia-inline lia-table-row" ]
+            )
+        |> (::)
+            (header
+                |> view_row Html.th
+                |> Html.thead [ Attr.class "lia-inline lia-table-head" ]
+            )
+        |> Html.table [ Attr.class "lia-inline lia-table" ]
+
+
+
 -- view_block : Model -> Block -> ( Int, Html Msg )
 -- view_block model block =
 --     let
