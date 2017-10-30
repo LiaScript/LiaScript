@@ -42,8 +42,8 @@ set_script model script =
                 |> Regex.split Regex.All (Regex.regex "\\n#")
                 |> List.map init_section
                 |> Array.fromList
-                |> Lia.Update.generate model.section_active
     }
+        |> Lia.Update.generate model.section_active
 
 
 init_section : String -> Section

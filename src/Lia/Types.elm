@@ -45,7 +45,7 @@ type alias Paragraph =
 
 type Block
     = HLine
-    | CodeBlock Code
+    | Code Code
     | Quote Paragraph
     | Paragraph Paragraph
     | Table (List Paragraph) (List String) (List (List Paragraph))
@@ -54,5 +54,5 @@ type Block
     | EComment Int Paragraph
     | BulletList (List (List Block))
     | OrderedList (List (List Block))
-    | SurveyBlock Survey
+    | Survey Survey
     | Chart Chart

@@ -1,15 +1,15 @@
-module Lia.Code.Parser exposing (code)
+module Lia.Code.Parser exposing (parse)
 
 import Array
 import Combine exposing (..)
-import Combine.Char exposing (anyChar)
+import Dict
 import Lia.Code.Types exposing (..)
-import Lia.Inline.Parser exposing (comment, stringTill)
+import Lia.Inline.Parser exposing (stringTill, whitelines)
 import Lia.PState exposing (PState)
 
 
-code : Parser PState Code
-code =
+parse : Parser PState Code
+parse =
     choice [ eval_js, block ]
 
 
@@ -32,14 +32,34 @@ eval_js : Parser PState Code
 eval_js =
     Evaluate
         <$> header (regex "([a-z,A-Z,0-9])*")
-        <*> (stringTill border >>= modify_PState)
-        <*> (regex "[ \\n]?" *> ((\c -> c |> String.fromList |> String.trim |> String.split "{X}") <$> comment anyChar))
+        <*> (sequence
+                [ stringTill border
+                , String.trim <$> regex "[ \\n]?<!--" *> stringTill (regex "(>){3,}")
+                ]
+                >>= modify_PState
+            )
+        <*> ((\js -> js |> String.trim |> String.split "{X}") <$> stringTill (string "-->"))
 
 
-modify_PState : String -> Parser PState Int
-modify_PState code_ =
-    let
-        add_state s =
-            { s | code_vector = Array.push { code = code_, result = Ok "", editing = False, running = False } s.code_vector }
-    in
-    withState (\s -> succeed (Array.length s.code_vector)) <* modifyState add_state
+modify_PState : List String -> Parser PState String
+modify_PState code_idx =
+    case code_idx of
+        [ code_, idx ] ->
+            let
+                add_state s =
+                    { s
+                        | code_vector =
+                            Dict.insert idx
+                                { code = code_
+                                , history = Array.fromList [ code_ ]
+                                , result = Ok ""
+                                , editing = False
+                                , running = False
+                                }
+                                s.code_vector
+                    }
+            in
+            withState (\s -> succeed idx) <* modifyState add_state
+
+        _ ->
+            fail "something went wrong"

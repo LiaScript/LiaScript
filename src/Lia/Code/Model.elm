@@ -4,4 +4,4 @@ import Lia.Code.Types exposing (..)
 
 
 type alias Model =
-    CodeVector
+    Codes

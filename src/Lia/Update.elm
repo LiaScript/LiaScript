@@ -24,6 +24,7 @@ type Msg
     | DesignLight
     | ToggleLOC
     | UpdateIndex Index.Msg
+    | UpdateCode Code.Msg
     | SwitchMode
 
 
@@ -54,6 +55,13 @@ update msg model =
             in
             ( { model | index_model = index }, Cmd.none, Nothing )
 
+        UpdateCode childMsg ->
+            let
+                ( code_model, cmd ) =
+                    Code.update childMsg model.code_model
+            in
+            ( { model | code_model = code_model }, Cmd.map UpdateCode cmd, Nothing )
+
         DesignTheme theme ->
             ( { model
                 | design =
@@ -83,10 +91,7 @@ update msg model =
 
         Load idx ->
             if (-1 < idx) && (idx < Array.length model.sections) then
-                ( { model
-                    | section_active = idx
-                    , sections = generate idx model.sections
-                  }
+                ( generate idx model
                 , Cmd.none
                 , Nothing
                 )
@@ -111,19 +116,38 @@ update msg model =
 --            ( model, Cmd.none, Nothing )
 
 
-generate : ID -> Sections -> Sections
-generate idx sections =
-    case Array.get idx sections of
+generate : ID -> Model -> Model
+generate idx model =
+    case Array.get idx model.sections of
         Just sec ->
             case Lia.Parser.parse_section sec.code of
-                Ok blocks ->
-                    Array.set idx { sec | body = blocks, error = Nothing } sections
+                Ok ( blocks, codes ) ->
+                    { model
+                        | section_active = idx
+                        , sections =
+                            Array.set idx
+                                { sec
+                                    | body = blocks
+                                    , error = Nothing
+                                }
+                                model.sections
+                        , code_model = codes
+                    }
 
                 Err msg ->
-                    Array.set idx { sec | body = [], error = Just msg } sections
+                    { model
+                        | section_active = idx
+                        , sections =
+                            Array.set idx
+                                { sec
+                                    | body = []
+                                    , error = Just msg
+                                }
+                                model.sections
+                    }
 
         _ ->
-            sections
+            model
 
 
 

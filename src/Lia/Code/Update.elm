@@ -1,60 +1,80 @@
 module Lia.Code.Update exposing (Msg(..), update)
 
-import Array
+import Array exposing (Array)
+import Dict
 import Lia.Code.Model exposing (Model)
 import Lia.Utils
 
 
 type Msg
-    = Eval Int (List String)
-    | Update Int String
-    | FlipMode Int
-    | EvalRslt (Result { id : Int, result : String } { id : Int, result : String })
+    = Eval String (List String)
+    | Update String String
+    | FlipMode String
+    | EvalRslt (Result { id : String, result : String } { id : String, result : String })
+
+
+last : Array String -> String
+last a =
+    a
+        |> Array.get (Array.length a - 1)
+        |> Maybe.withDefault ""
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Eval idx x ->
-            case Array.get idx model of
+            case Dict.get idx model of
                 Just elem ->
                     let
                         exec =
                             String.join elem.code x
                     in
-                    ( Array.set idx { elem | editing = False, running = True } model, Lia.Utils.evaluateJS2 EvalRslt idx exec )
+                    ( Dict.insert idx
+                        { elem
+                            | editing = False
+                            , running = True
+                            , history =
+                                if elem.code /= last elem.history then
+                                    Array.push elem.code elem.history
+                                else
+                                    elem.history
+                        }
+                        model
+                    , Lia.Utils.evaluateJS2 EvalRslt idx exec
+                    )
 
                 Nothing ->
                     ( model, Cmd.none )
 
         EvalRslt (Ok json) ->
-            case Array.get json.id model of
+            case Dict.get json.id model of
                 Just elem ->
-                    ( Array.set json.id { elem | result = Ok json.result, running = False } model, Cmd.none )
+                    ( Dict.insert json.id { elem | result = Ok json.result, running = False } model, Cmd.none )
 
                 Nothing ->
                     ( model, Cmd.none )
 
         EvalRslt (Err json) ->
-            case Array.get json.id model of
+            case Dict.get json.id model of
                 Just elem ->
-                    ( Array.set json.id { elem | result = Err json.result, running = False } model, Cmd.none )
+                    ( Dict.insert json.id { elem | result = Err json.result, running = False } model, Cmd.none )
 
                 Nothing ->
                     ( model, Cmd.none )
 
         Update idx code_str ->
-            case Array.get idx model of
+            case Dict.get idx model of
                 Just elem ->
-                    ( Array.set idx { elem | code = code_str } model, Cmd.none )
+                    ( Dict.insert idx { elem | code = code_str } model, Cmd.none )
 
                 Nothing ->
                     ( model, Cmd.none )
 
         FlipMode idx ->
-            case Array.get idx model of
+            case Dict.get idx model of
                 Just elem ->
-                    ( Array.set idx { elem | editing = not elem.editing } model, Cmd.none )
+                    ( Dict.insert idx { elem | editing = not elem.editing } model, Cmd.none )
 
                 Nothing ->
                     ( model, Cmd.none )

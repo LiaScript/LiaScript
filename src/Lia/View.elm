@@ -93,14 +93,14 @@ view_article model =
         [ view_nav model.section_active model.mode model.design
         , model.sections
             |> Array.get model.section_active
-            |> Maybe.map2 view_section (Just 99)
+            |> Maybe.map2 view_section (Just model)
             |> Maybe.withDefault (Html.text "")
         , view_footer
         ]
 
 
-view_section : Int -> Section -> Html Msg
-view_section fragments sec =
+view_section : Model -> Section -> Html Msg
+view_section model sec =
     case sec.error of
         Just msg ->
             Html.section [ Attr.class "lia-content" ]
@@ -111,7 +111,7 @@ view_section fragments sec =
         Nothing ->
             let
                 viewer =
-                    view_block fragments
+                    view_block model
             in
             sec.body
                 |> List.map viewer
@@ -491,11 +491,11 @@ zero_tuple =
     to_tuple 0
 
 
-view_block : Int -> Block -> Html Msg
-view_block fragments block =
+view_block : Model -> Block -> Html Msg
+view_block model block =
     let
         viewer =
-            InlineView.view fragments
+            InlineView.view 999
     in
     case block of
         Paragraph elements ->
@@ -508,6 +508,11 @@ view_block fragments block =
 
         Table header format body ->
             view_table viewer header format body
+
+        Code code ->
+            code
+                |> Codes.view model.code_model
+                |> Html.map UpdateCode
 
         _ ->
             Html.text "to appear"

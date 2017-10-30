@@ -4,8 +4,8 @@ module Lia.Parser exposing (..)
 
 import Combine exposing (..)
 import Lia.Chart.Parser as Chart
-import Lia.Code.Parser exposing (..)
-import Lia.Code.Types exposing (CodeVector)
+import Lia.Code.Parser as Code
+import Lia.Code.Types exposing (Codes)
 import Lia.Definition.Parser
 import Lia.Definition.Types exposing (Definition)
 import Lia.Effect.Parser exposing (..)
@@ -51,10 +51,10 @@ blocks =
                         , ecomment paragraph
                         , Chart <$> Chart.parse
                         , table
-                        , CodeBlock <$> code
+                        , Code <$> Code.parse
                         , quote_block
                         , horizontal_line
-                        , SurveyBlock <$> Survey.parse
+                        , Survey <$> Survey.parse
                         , Quiz <$> Quiz.parse <*> solution
                         , ordered_list
                         , unordered_list
@@ -221,11 +221,11 @@ section =
             many (blocks <* newlines)
 
 
-parse_section : String -> Result String (List Block)
+parse_section : String -> Result String ( List Block, Codes )
 parse_section str =
     case Combine.runParser section Lia.PState.init str of
-        Ok ( _, _, es ) ->
-            Ok es
+        Ok ( state, _, es ) ->
+            Ok ( es, state.code_vector )
 
         Err ( _, stream, ms ) ->
             formatError ms stream |> Err

@@ -1,14 +1,16 @@
-module Lia.Code.Types exposing (Code(..), CodeElement, CodeVector)
+module Lia.Code.Types exposing (Code(..), CodeElement, Codes)
 
 import Array exposing (Array)
+import Dict exposing (Dict)
 
 
-type alias CodeVector =
-    Array CodeElement
+type alias Codes =
+    Dict String CodeElement
 
 
 type alias CodeElement =
     { code : String
+    , history : Array String
     , result : Result String String
     , editing : Bool
     , running : Bool
@@ -16,5 +18,5 @@ type alias CodeElement =
 
 
 type Code
-    = Highlight String String
-    | Evaluate String Int (List String)
+    = Highlight String String -- Lang Code
+    | Evaluate String String (List String) -- Lang ID EvalString

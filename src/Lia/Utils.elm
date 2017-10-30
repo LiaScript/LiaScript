@@ -30,7 +30,7 @@ load_js url =
     Native.Utils.load_js url
 
 
-evaluateJS2 : (Result err ok -> msg) -> Int -> String -> Cmd msg
+evaluateJS2 : (Result err ok -> msg) -> String -> String -> Cmd msg
 evaluateJS2 resultToMessage idx code =
     attempt resultToMessage (Native.Utils.evaluate2 idx code)
 
