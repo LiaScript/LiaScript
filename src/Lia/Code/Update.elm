@@ -11,6 +11,7 @@ type Msg
     | Update String String
     | FlipMode String
     | EvalRslt (Result { id : String, result : String } { id : String, result : String })
+    | Load String Int
 
 
 last : Array String -> String
@@ -29,16 +30,21 @@ update msg model =
                     let
                         exec =
                             String.join elem.code x
+
+                        ( version, active ) =
+                            if ((elem.version_active + 1) == Array.length elem.version) && (elem.code /= last elem.version) then
+                                ( Array.push elem.code elem.version
+                                , Array.length elem.version
+                                )
+                            else
+                                ( elem.version, elem.version_active )
                     in
                     ( Dict.insert idx
                         { elem
                             | editing = False
                             , running = True
-                            , history =
-                                if elem.code /= last elem.history then
-                                    Array.push elem.code elem.history
-                                else
-                                    elem.history
+                            , version = version
+                            , version_active = active
                         }
                         model
                     , Lia.Utils.evaluateJS2 EvalRslt idx exec
@@ -75,6 +81,27 @@ update msg model =
             case Dict.get idx model of
                 Just elem ->
                     ( Dict.insert idx { elem | editing = not elem.editing } model, Cmd.none )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        Load idx version ->
+            case Dict.get idx model of
+                Just elem ->
+                    if (version >= 0) && (version < Array.length elem.version) then
+                        ( Dict.insert idx
+                            { elem
+                                | version_active = version
+                                , code =
+                                    elem.version
+                                        |> Array.get version
+                                        |> Maybe.withDefault elem.code
+                            }
+                            model
+                        , Cmd.none
+                        )
+                    else
+                        ( model, Cmd.none )
 
                 Nothing ->
                     ( model, Cmd.none )

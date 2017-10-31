@@ -10,7 +10,8 @@ type alias Codes =
 
 type alias CodeElement =
     { code : String
-    , history : Array String
+    , version : Array String
+    , version_active : Int
     , result : Result String String
     , editing : Bool
     , running : Bool

@@ -33,16 +33,30 @@ view model code =
                                 []
                           else
                             highlight lang elem.code idx
-                        , if elem.running then
-                            Html.button [ Attr.class "lia-btn lia-icon" ]
-                                [ Html.text "settings" ]
-                          else
-                            Html.button [ Attr.class "lia-btn", Attr.class "lia-icon", onClick (Eval idx x) ]
-                                [ Html.text "play_circle_filled" ]
-                        , if Array.length elem.history > 1 then
-                            Html.text (toString (Array.length elem.history))
-                          else
-                            Html.text ""
+                        , Html.div []
+                            [ if elem.running then
+                                Html.button [ Attr.class "lia-btn lia-icon" ]
+                                    [ Html.text "settings" ]
+                              else
+                                Html.button [ Attr.class "lia-btn lia-icon", onClick (Eval idx x) ]
+                                    [ Html.text "play_circle_filled" ]
+                            , Html.span [ Attr.class "lia-spacer" ] []
+                            , Html.button
+                                [ (elem.version_active - 1)
+                                    |> Load idx
+                                    |> onClick
+                                , Attr.class "lia-btn lia-icon lia-left"
+                                ]
+                                [ Html.text "navigate_before" ]
+                            , Html.span [ Attr.class "lia-label lia-left" ] [ Html.text (toString elem.version_active) ]
+                            , Html.button
+                                [ (elem.version_active + 1)
+                                    |> Load idx
+                                    |> onClick
+                                , Attr.class "lia-btn lia-icon lia-left"
+                                ]
+                                [ Html.text "navigate_next" ]
+                            ]
                         , case elem.result of
                             Ok rslt ->
                                 Html.pre [] [ Lia.Utils.stringToHtml rslt ]

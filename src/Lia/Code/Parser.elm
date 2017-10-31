@@ -51,7 +51,8 @@ modify_PState code_idx =
                         | code_vector =
                             Dict.insert idx
                                 { code = code_
-                                , history = Array.fromList [ code_ ]
+                                , version = Array.fromList [ code_ ]
+                                , version_active = 0
                                 , result = Ok ""
                                 , editing = False
                                 , running = False
