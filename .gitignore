@@ -4,3 +4,4 @@ public
 build
 *.tgz
 *~
+src/Lia/Helper.elm.bak

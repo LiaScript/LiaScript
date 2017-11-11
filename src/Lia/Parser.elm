@@ -231,6 +231,36 @@ parse_section str =
             formatError ms stream |> Err
 
 
+sections_ =
+    let
+        comment_ =
+            regex "<!--(.|[\x0D\n])*?-->"
+
+        code_ =
+            regex "```(.|[\x0D\n])*?```"
+
+        misc_ =
+            regex "([^\\#`<]|[\x0D\n])+"
+
+        sec : Parser s String
+        sec =
+            String.concat <$> many (choice [ misc_, comment_, code_, string "<", regex "\\.+" ])
+
+        secc =
+            (\a b -> a ++ b) <$> regex "^#.+" <*> sec
+    in
+    many secc
+
+
+splitter str =
+    case Combine.runParser sections_ () str of
+        Ok ( _, _, es ) ->
+            es
+
+        Err ( _, stream, ms ) ->
+            []
+
+
 
 --
 -- slide : Parser PState Slide

@@ -39,7 +39,7 @@ set_script model script =
         | definition = definition
         , sections =
             code
-                |> Regex.split Regex.All (Regex.regex "\\n#")
+                |> Lia.Parser.splitter
                 |> List.map init_section
                 |> Array.fromList
     }
