@@ -164,7 +164,6 @@ a starting backslash.
 ### Symbols
 
                                      --{{0}}--
-
 One thing that we missed in standard Markdown, was an implementation for arrows.
 The parenthesis shows, how arrows are defined in our Markdown implementation with
 their result on the right (these symbols are generated automatically for you).
