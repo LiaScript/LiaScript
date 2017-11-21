@@ -3,12 +3,14 @@ module Lia exposing (..)
 --import Lia.Helper exposing (get_slide)
 
 import Array
+import Debug
 import Html exposing (Html)
 import Json.Encode as JE
 import Lia.Effect.Model as Effect
 import Lia.Index.Model as Index
 import Lia.Model
 import Lia.Parser
+import Lia.Preprocessor
 import Lia.Quiz.Model as Quiz
 import Lia.Survey.Model as Survey
 import Lia.Types exposing (Section, Sections)
@@ -31,44 +33,36 @@ type alias Mode =
 
 set_script : Model -> String -> Model
 set_script model script =
-    let
-        ( code, definition ) =
-            Lia.Parser.parse_defintion script
-    in
-    { model
-        | definition = definition
-        , sections =
-            code
-                |> Lia.Parser.splitter
-                |> List.map init_section
-                |> Array.fromList
-    }
-        |> Lia.Update.generate model.section_active
+    case Lia.Parser.parse_defintion script of
+        Ok ( code, definition ) ->
+            case Lia.Parser.parse_titles code of
+                Ok title_sections ->
+                    { model
+                        | definition = definition
+                        , sections =
+                            title_sections
+                                |> List.map init_section
+                                |> Array.fromList
+                    }
+                        |> Lia.Update.generate
 
-
-init_section : String -> Section
-init_section code =
-    let
-        sec =
-            { code = code
-            , title = ""
-            , indentation = -1
-            , body = []
-            , error = Nothing
-            , effects = 0
-            , speach = []
-            }
-    in
-    case Lia.Parser.parse_title code of
-        Ok ( ident, title, body ) ->
-            { sec
-                | code = body
-                , title = title
-                , indentation = ident
-            }
+                Err msg ->
+                    { model | error = Just msg }
 
         Err msg ->
-            { sec | error = Just msg }
+            { model | error = Just msg }
+
+
+init_section : ( Int, String, String ) -> Section
+init_section ( tags, title, code ) =
+    { code = code
+    , title = title
+    , indentation = tags
+    , body = []
+    , error = Nothing
+    , effects = 0
+    , speach = []
+    }
 
 
 init_textbook : Maybe String -> Model

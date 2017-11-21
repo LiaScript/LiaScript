@@ -91,7 +91,7 @@ update msg model =
 
         Load idx ->
             if (-1 < idx) && (idx < Array.length model.sections) then
-                ( generate idx model
+                ( generate { model | section_active = idx }
                 , Cmd.none
                 , Nothing
                 )
@@ -116,16 +116,15 @@ update msg model =
 --            ( model, Cmd.none, Nothing )
 
 
-generate : ID -> Model -> Model
-generate idx model =
-    case Array.get idx model.sections of
+generate : Model -> Model
+generate model =
+    case Array.get model.section_active model.sections of
         Just sec ->
             case Lia.Parser.parse_section sec.code of
                 Ok ( blocks, codes ) ->
                     { model
-                        | section_active = idx
-                        , sections =
-                            Array.set idx
+                        | sections =
+                            Array.set model.section_active
                                 { sec
                                     | body = blocks
                                     , error = Nothing
@@ -136,9 +135,8 @@ generate idx model =
 
                 Err msg ->
                     { model
-                        | section_active = idx
-                        , sections =
-                            Array.set idx
+                        | sections =
+                            Array.set model.section_active
                                 { sec
                                     | body = []
                                     , error = Just msg

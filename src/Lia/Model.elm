@@ -15,6 +15,7 @@ import Lia.Utils exposing (get_local, load_js, set_local)
 type alias Model =
     { uid : Maybe String
     , mode : Mode
+    , error : Maybe String
     , sections : Sections
     , section_active : ID
     , definition : Definition
@@ -52,6 +53,7 @@ init mode uid =
     in
     { uid = uid
     , mode = local_mode
+    , error = Nothing
     , sections = Array.empty
     , section_active = init_section uid
     , definition = Definition.default

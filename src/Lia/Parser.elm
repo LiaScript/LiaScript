@@ -12,6 +12,7 @@ import Lia.Effect.Parser exposing (..)
 import Lia.Inline.Parser exposing (..)
 import Lia.Inline.Types exposing (Inline(..))
 import Lia.PState exposing (PState)
+import Lia.Preprocessor as Preprocessor
 import Lia.Quiz.Parser as Quiz
 import Lia.Quiz.Types exposing (QuizVector)
 import Lia.Survey.Parser as Survey
@@ -170,51 +171,27 @@ quote_block =
     (\q -> Quote <| combine <| List.concat q) <$> many1 p
 
 
-title_tag : Parser s Int
-title_tag =
-    String.length <$> (newlines *> regex "#*" <* whitespace)
-
-
-title_str : Parser s String
-title_str =
-    String.trim <$> regex ".+[\\n]+"
-
-
-parse_defintion : String -> ( String, Definition )
+parse_defintion : String -> Result String ( String, Definition )
 parse_defintion code =
-    let
-        default =
-            Lia.Definition.Types.default
-    in
-    case Combine.runParser Lia.Definition.Parser.parse default code of
+    case Combine.runParser Lia.Definition.Parser.parse Lia.Definition.Types.default code of
         Ok ( definition, data, _ ) ->
-            ( data.input, definition )
-
-        Err _ ->
-            ( code, default )
-
-
-title : Parser s ( Int, String )
-title =
-    lazy <|
-        \() ->
-            let
-                rslt i s =
-                    ( i, s )
-            in
-            rslt <$> title_tag <*> title_str
-
-
-parse_title : String -> Result String ( Int, String, String )
-parse_title str =
-    case Combine.parse title str of
-        Ok ( _, data, ( ident, title ) ) ->
-            Ok ( ident, title, data.input )
+            Ok ( data.input, definition )
 
         Err ( _, stream, ms ) ->
-            formatError ms stream |> Err
+            Err (formatError ms stream)
 
 
+parse_titles : String -> Result String (List ( Int, String, String ))
+parse_titles code =
+    case Combine.runParser Preprocessor.run () code of
+        Ok ( _, _, rslt ) ->
+            Ok rslt
+
+        Err ( _, stream, ms ) ->
+            Err (formatError ms stream)
+
+
+section : Parser PState (List Block)
 section =
     lazy <|
         \() ->
@@ -229,19 +206,6 @@ parse_section str =
 
         Err ( _, stream, ms ) ->
             formatError ms stream |> Err
-
-
-sections_ =
-    many <| regex "^#.+(([^\\\\#`<]|[\x0D\n])+|(<!--(.|[\x0D\n])*?-->)|(```(.|[\x0D\n])*?```)|(`.*?`)|(\\\\.)|[<`])+"
-
-
-splitter str =
-    case Combine.runParser sections_ () str of
-        Ok ( _, _, es ) ->
-            es
-
-        Err ( _, stream, ms ) ->
-            []
 
 
 
