@@ -22,7 +22,7 @@ comment : Parser s a -> Parser s (List a)
 comment p =
     lazy <|
         \() ->
-            string "<!--" *> manyTill p (string "-->")
+            (string "<!--" *> manyTill p (string "-->")) <?> "HTML comment"
 
 
 comments : Parser s ()
@@ -117,18 +117,15 @@ inlines : Parser PState Inline
 inlines =
     lazy <|
         \() ->
-            let
-                p =
-                    choice
-                        [ html
-                        , code
-                        , reference
-                        , formula
-                        , einline inlines
-                        , strings
-                        ]
-            in
-            comments *> p
+            comments
+                *> choice
+                    [ html
+                    , code
+                    , reference
+                    , formula
+                    , einline inlines
+                    , strings
+                    ]
 
 
 stringTill : Parser s p -> Parser s String
@@ -243,6 +240,7 @@ smileys =
                 , string ":')" $> Symbol "&#128514;" --"😂"
                 , string ":'(" $> Symbol "&#128554;" --"😢"😪
                 ]
+                <?> "smiley"
 
 
 between_ : String -> Parser PState Inline

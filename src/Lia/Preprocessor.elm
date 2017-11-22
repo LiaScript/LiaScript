@@ -10,7 +10,7 @@ title_tag =
 
 title_str : Parser s String
 title_str =
-    String.trim <$> regex ".+" <?> "section title"
+    (String.trim <$> regex ".+" <?> "section title") <* regex "[\x0D\n]+"
 
 
 comment : Parser s String
