@@ -8,9 +8,16 @@ import Lia.Inline.Parser exposing (stringTill, whitelines)
 import Lia.PState exposing (PState)
 
 
+type alias Data_ =
+    { lang : String, code : String }
+
+
 parse : Parser PState Code
 parse =
-    choice [ eval_js, block ]
+    choice
+        [ eval_js
+        , block
+        ]
 
 
 border : Parser PState String
@@ -18,20 +25,29 @@ border =
     string "```"
 
 
-header : Parser PState a -> Parser PState a
-header p =
-    border *> whitespace *> p <* regex "( *)\\n"
+header : Parser PState String
+header =
+    border *> whitespace *> regex "\\w*" <* regex "( *)\\n"
 
 
 block : Parser PState Code
 block =
-    Highlight <$> header (regex "([a-z,A-Z,0-9])*") <*> stringTill border
+    Highlight <$> header <*> stringTill border
+
+
+listing : Parser PState Data_
+listing =
+    Data_ <$> header <*> stringTill border
+
+
+comment =
+    maybe (String.trim <$> regex "[ \\n]?<!--" *> stringTill (string "-->"))
 
 
 eval_js : Parser PState Code
 eval_js =
     Evaluate
-        <$> header (regex "([a-z,A-Z,0-9])*")
+        <$> header
         <*> (sequence
                 [ stringTill border
                 , String.trim <$> regex "[ \\n]?<!--" *> stringTill (regex "(>){3,}")

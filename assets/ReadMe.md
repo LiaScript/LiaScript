@@ -533,7 +533,7 @@ for(i = 0; i<10000; i++) {
 // the last statement defines the return statement
 result;
 ```
-<!-- ggg >>> {X} -->
+<!-- {X} -->
 
 
 
@@ -557,7 +557,7 @@ new Chartist.Bar('#chart2', {
   series: [[5, 2, 8, 3]]
 });
 ```
-<!-- test 33 >>> {X} -->
+<!-- {X} -->
 
 <div class="ct-chart ct-golden-section" id="chart1"></div>
 <div class="ct-chart ct-golden-section" id="chart2"></div>
@@ -604,7 +604,7 @@ An example of a Computer-Algebra-System (Algebrit), see xxx for more examples:
 ```javascript
 x + x
 ```
-<!-- test 13 >>> Algebrite.run(`{X}`) -->
+<!-- Algebrite.run(`{X}`) -->
 
 
 ```javascript
@@ -614,7 +614,7 @@ f=circexp(f)
 
 defint(f,t,0,2*pi)
 ```
-<!-- test 2 >>> Algebrite.run(`{X}`) -->
+<!-- Algebrite.run(`{X}`) -->
 
 
 
@@ -639,8 +639,7 @@ int main() {
     return 0;
 }
 ```
-<!-- ggggggg >>>
-
+<!--
   var output = "";
   JSCPP.run(`{X}`, "", {stdio: {write: s => { output += s.replace(/\n/g, "<br>");}}});
   output;
@@ -657,7 +656,7 @@ def hello(i):
 
 hello(12)
 ```
-<!-- ffffff >>>
+<!--
 var output = "";
 
 function builtinRead(x) {
