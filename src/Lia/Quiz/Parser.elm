@@ -2,6 +2,7 @@ module Lia.Quiz.Parser exposing (parse)
 
 import Array
 import Combine exposing (..)
+import Lia.Helper exposing (ID)
 import Lia.Inline.Parser exposing (..)
 import Lia.Inline.Types exposing (..)
 import Lia.PState exposing (PState)

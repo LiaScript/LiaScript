@@ -1,4 +1,4 @@
-module Lia.Utils exposing (evaluateJS, evaluateJS2, formula, get_local, highlight, load_js, set_local, stringToHtml)
+module Lia.Utils exposing (evaluateJS, evaluateJS2, formula, get_local, guess, highlight, load_js, set_local, stringToHtml)
 
 --this is where we import the native module
 --import Array
@@ -13,6 +13,11 @@ import Task exposing (attempt)
 highlight : String -> String -> Html msg
 highlight language code =
     stringToHtml <| Native.Utils.highlight language code
+
+
+guess : String -> String
+guess code =
+    Native.Utils.highlightAuto code
 
 
 formula : Bool -> String -> Html msg

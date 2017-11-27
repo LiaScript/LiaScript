@@ -15,6 +15,14 @@ var _user$project$Native_Utils = (function () {
         }
     };
 
+    function highlightAuto (code) {
+        try {
+            return hljs.highlightAuto(code).language;
+        } catch (e) {
+            return "bash";
+        }
+    };
+
     function formula(dMode, str) {
         try{
             return katex.renderToString(str, {displayMode: dMode});
@@ -124,6 +132,7 @@ var _user$project$Native_Utils = (function () {
 
     return {
         highlight: F2(highlight),
+        highlightAuto: highlightAuto,
         formula: F2(formula),
         evaluate: evaluate,
         evaluate2: F2(evaluate2),

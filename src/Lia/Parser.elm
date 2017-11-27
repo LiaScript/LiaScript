@@ -198,9 +198,9 @@ section =
             many (blocks <* newlines)
 
 
-parse_section : String -> Result String ( List Block, Codes )
-parse_section str =
-    case Combine.runParser section Lia.PState.init str of
+parse_section : ID -> String -> Result String ( List Block, Codes )
+parse_section idx str =
+    case Combine.runParser section (Lia.PState.init idx) str of
         Ok ( state, _, es ) ->
             Ok ( es, state.code_vector )
 

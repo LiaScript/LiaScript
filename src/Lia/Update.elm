@@ -120,7 +120,7 @@ generate : Model -> Model
 generate model =
     case Array.get model.section_active model.sections of
         Just sec ->
-            case Lia.Parser.parse_section sec.code of
+            case Lia.Parser.parse_section model.section_active sec.code of
                 Ok ( blocks, codes ) ->
                     { model
                         | sections =

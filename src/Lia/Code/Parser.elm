@@ -2,22 +2,46 @@ module Lia.Code.Parser exposing (parse)
 
 import Array
 import Combine exposing (..)
-import Dict
 import Lia.Code.Types exposing (..)
-import Lia.Inline.Parser exposing (stringTill, whitelines)
+import Lia.Inline.Parser exposing (comment_string, stringTill, whitelines)
 import Lia.PState exposing (PState)
-
-
-type alias Data_ =
-    { lang : String, code : String }
+import Lia.Utils exposing (guess)
 
 
 parse : Parser PState Code
 parse =
-    choice
-        [ eval_js
-        , block
-        ]
+    listing *> maybe (regex "[ \\n]?" *> comment_string) >>= result
+
+
+result : Maybe String -> Parser PState Code
+result comment =
+    withState
+        (\s ->
+            let
+                ( l, code ) =
+                    s.code_temp
+
+                lang =
+                    if l == "" then
+                        "cpp"
+                    else
+                        l
+            in
+            case comment of
+                Just str ->
+                    evaluate lang code str
+
+                Nothing ->
+                    succeed <| Highlight lang code
+        )
+        <* modify_temp "" ""
+
+
+check_lang ( lang, code ) =
+    if lang == "" then
+        ( guess lang, code )
+    else
+        ( lang, code )
 
 
 border : Parser PState String
@@ -27,56 +51,45 @@ border =
 
 header : Parser PState String
 header =
-    border *> whitespace *> regex "\\w*" <* regex "( *)\\n"
+    whitespace *> regex "\\w*" <* regex "[ ]*\\n" <?> "language definition"
 
 
-block : Parser PState Code
-block =
-    Highlight <$> header <*> stringTill border
-
-
-listing : Parser PState Data_
+listing : Parser PState (Parser PState ())
 listing =
-    Data_ <$> header <*> stringTill border
+    modify_temp <$> (border *> header) <*> stringTill border
 
 
-comment =
-    maybe (String.trim <$> regex "[ \\n]?<!--" *> stringTill (string "-->"))
+modify_temp : String -> String -> Parser PState ()
+modify_temp lang code =
+    let
+        add_state s =
+            { s | code_temp = ( lang, code ) }
+    in
+    withState (\s -> succeed ()) <* modifyState add_state
 
 
-eval_js : Parser PState Code
-eval_js =
-    Evaluate
-        <$> header
-        <*> (sequence
-                [ stringTill border
-                , String.trim <$> regex "[ \\n]?<!--" *> stringTill (regex "(>){3,}")
-                ]
-                >>= modify_PState
-            )
-        <*> ((\js -> js |> String.trim |> String.split "{X}") <$> stringTill (string "-->"))
-
-
-modify_PState : List String -> Parser PState String
-modify_PState code_idx =
-    case code_idx of
-        [ code_, idx ] ->
-            let
-                add_state s =
-                    { s
-                        | code_vector =
-                            Dict.insert idx
-                                { code = code_
-                                , version = Array.fromList [ code_ ]
-                                , version_active = 0
-                                , result = Ok ""
-                                , editing = False
-                                , running = False
-                                }
-                                s.code_vector
-                    }
-            in
-            withState (\s -> succeed idx) <* modifyState add_state
-
-        _ ->
-            fail "something went wrong"
+evaluate : String -> String -> String -> Parser PState Code
+evaluate lang code comment =
+    let
+        add_state s =
+            { s
+                | code_vector =
+                    Array.push
+                        { code = code
+                        , version = Array.fromList [ code ]
+                        , version_active = 0
+                        , result = Ok ""
+                        , editing = False
+                        , running = False
+                        }
+                        s.code_vector
+            }
+    in
+    withState
+        (\s ->
+            comment
+                |> String.split "{X}"
+                |> Evaluate lang ( s.slide, Array.length s.code_vector )
+                |> succeed
+        )
+        <* modifyState add_state

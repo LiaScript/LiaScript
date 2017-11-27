@@ -9,7 +9,8 @@ module Lia.Quiz.Types
         )
 
 import Array exposing (Array)
-import Lia.Inline.Types exposing (ID, Line)
+import Lia.Helper exposing (ID)
+import Lia.Inline.Types exposing (Line)
 
 
 type alias QuizVector =

@@ -3,7 +3,7 @@ module Lia.Survey.Update exposing (Msg(..), update)
 import Array
 import Dict
 import Json.Encode as JE
-import Lia.Inline.Types exposing (ID)
+import Lia.Helper exposing (ID)
 import Lia.Survey.Model exposing (Model, model2json)
 import Lia.Survey.Types exposing (..)
 

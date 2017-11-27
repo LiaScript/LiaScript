@@ -3,7 +3,8 @@ module Lia.Survey.View exposing (view)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
-import Lia.Inline.Types exposing (ID, Inline, Line)
+import Lia.Helper exposing (ID)
+import Lia.Inline.Types exposing (Inline, Line)
 import Lia.Inline.View exposing (view_inf)
 import Lia.Survey.Model exposing (..)
 import Lia.Survey.Types exposing (..)
@@ -43,12 +44,12 @@ submit_button submitted idx =
     Html.div []
         [ if submitted then
             Html.button
-              [ Attr.class "lia-btn", Attr.disabled True ]
-              [ Html.text "Thanks" ]
+                [ Attr.class "lia-btn", Attr.disabled True ]
+                [ Html.text "Thanks" ]
           else
             Html.button
-              [ Attr.class "lia-btn", onClick <| Submit idx ]
-              [ Html.text "Submit" ]
+                [ Attr.class "lia-btn", onClick <| Submit idx ]
+                [ Html.text "Submit" ]
         ]
 
 
@@ -137,23 +138,39 @@ input : Bool -> Msg -> Bool -> Bool -> Html Msg
 input button msg checked submitted =
     -- FIXME: lia-label MUST be placed in here and not outside the lia-*-item
     -- !!! convert the lia-*-item span to a p element when lia-label is included here
-    Html.span [ Attr.class <| if button then "lia-check-item" else "lia-radio-item" ]
+    Html.span
+        [ Attr.class <|
+            if button then
+                "lia-check-item"
+            else
+                "lia-radio-item"
+        ]
         [ Html.input
-              [ Attr.type_ <|
-                    if button then
-                        "checkbox"
-                    else
-                        "radio"
-              , Attr.checked checked
-              , if submitted then
-                    Attr.disabled True
+            [ Attr.type_ <|
+                if button then
+                    "checkbox"
                 else
-                    onClick msg
-              ]
-              []
+                    "radio"
+            , Attr.checked checked
+            , if submitted then
+                Attr.disabled True
+              else
+                onClick msg
+            ]
+            []
         , Html.span
-            [ Attr.class <| if button then "lia-check-btn" else "lia-radio-btn" ]
-            [ Html.text <| if button then "check" else "" ]
+            [ Attr.class <|
+                if button then
+                    "lia-check-btn"
+                else
+                    "lia-radio-btn"
+            ]
+            [ Html.text <|
+                if button then
+                    "check"
+                else
+                    ""
+            ]
         ]
 
 

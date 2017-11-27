@@ -1,14 +1,14 @@
 module Lia.Model exposing (..)
 
 import Array exposing (Array)
-import Dict
 import Lia.Code.Model as Code
 import Lia.Definition.Types as Definition exposing (Definition)
 import Lia.Effect.Model as Effect
+import Lia.Helper exposing (ID)
 import Lia.Index.Model as Index
 import Lia.Quiz.Model as Quiz
 import Lia.Survey.Model as Survey
-import Lia.Types exposing (Design, ID, Mode, Sections)
+import Lia.Types exposing (Design, Mode, Sections)
 import Lia.Utils exposing (get_local, load_js, set_local)
 
 
@@ -63,7 +63,7 @@ init mode uid =
         }
     , loc = True
     , index_model = Index.init
-    , code_model = Dict.empty
+    , code_model = Array.empty
 
     --    , show_contents = True
     --    , quiz_model = Array.empty

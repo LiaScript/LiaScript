@@ -2,6 +2,7 @@ module Lia.Inline.Parser
     exposing
         ( combine
         , comment
+        , comment_string
         , comments
         , inlines
         , line
@@ -23,6 +24,13 @@ comment p =
     lazy <|
         \() ->
             (string "<!--" *> manyTill p (string "-->")) <?> "HTML comment"
+
+
+comment_string : Parser s String
+comment_string =
+    anyChar
+        |> comment
+        |> map (String.fromList >> String.trim)
 
 
 comments : Parser s ()
