@@ -15,12 +15,14 @@ type alias Array2D a =
     Array (Array a)
 
 
-get : Array2D a -> ID2 -> Maybe a
-get array ( id1, id2 ) =
-    array
-        |> Array.get id1
-        |> Maybe.withDefault Array.empty
-        |> Array.get id2
+get : ID2 -> Array2D a -> Maybe a
+get ( id1, id2 ) array =
+    case Array.get id1 array of
+        Just array_ ->
+            Array.get id2 array_
+
+        Nothing ->
+            Nothing
 
 
 set : ID2 -> a -> Array2D a -> Array2D a

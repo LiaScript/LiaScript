@@ -9,6 +9,7 @@ import Lia.Code.Types exposing (Codes)
 import Lia.Definition.Parser
 import Lia.Definition.Types exposing (Definition)
 import Lia.Effect.Parser exposing (..)
+import Lia.Helper exposing (ID)
 import Lia.Inline.Parser exposing (..)
 import Lia.Inline.Types exposing (Inline(..))
 import Lia.PState exposing (PState)

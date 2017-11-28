@@ -1,17 +1,17 @@
 module Lia.Code.Update exposing (Msg(..), update)
 
 import Array exposing (Array)
-import Dict
 import Lia.Code.Model exposing (Model)
+import Lia.Helper as Array2D
 import Lia.Utils
 
 
 type Msg
-    = Eval String (List String)
-    | Update String String
-    | FlipMode String
-    | EvalRslt (Result { id : String, result : String } { id : String, result : String })
-    | Load String Int
+    = Eval Array2D.ID2 (List String)
+    | Update Array2D.ID2 String
+    | FlipMode Array2D.ID2
+    | EvalRslt (Result { id : Array2D.ID2, result : String } { id : Array2D.ID2, result : String })
+    | Load Array2D.ID2 Int
 
 
 last : Array String -> String
@@ -25,7 +25,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Eval idx x ->
-            case Dict.get idx model of
+            case Array2D.get idx model of
                 Just elem ->
                     let
                         exec =
@@ -39,7 +39,7 @@ update msg model =
                             else
                                 ( elem.version, elem.version_active )
                     in
-                    ( Dict.insert idx
+                    ( Array2D.set idx
                         { elem
                             | editing = False
                             , running = True
@@ -54,42 +54,42 @@ update msg model =
                     ( model, Cmd.none )
 
         EvalRslt (Ok json) ->
-            case Dict.get json.id model of
+            case Array2D.get json.id model of
                 Just elem ->
-                    ( Dict.insert json.id { elem | result = Ok json.result, running = False } model, Cmd.none )
+                    ( Array2D.set json.id { elem | result = Ok json.result, running = False } model, Cmd.none )
 
                 Nothing ->
                     ( model, Cmd.none )
 
         EvalRslt (Err json) ->
-            case Dict.get json.id model of
+            case Array2D.get json.id model of
                 Just elem ->
-                    ( Dict.insert json.id { elem | result = Err json.result, running = False } model, Cmd.none )
+                    ( Array2D.set json.id { elem | result = Err json.result, running = False } model, Cmd.none )
 
                 Nothing ->
                     ( model, Cmd.none )
 
         Update idx code_str ->
-            case Dict.get idx model of
+            case Array2D.get idx model of
                 Just elem ->
-                    ( Dict.insert idx { elem | code = code_str } model, Cmd.none )
+                    ( Array2D.set idx { elem | code = code_str } model, Cmd.none )
 
                 Nothing ->
                     ( model, Cmd.none )
 
         FlipMode idx ->
-            case Dict.get idx model of
+            case Array2D.get idx model of
                 Just elem ->
-                    ( Dict.insert idx { elem | editing = not elem.editing } model, Cmd.none )
+                    ( Array2D.set idx { elem | editing = not elem.editing } model, Cmd.none )
 
                 Nothing ->
                     ( model, Cmd.none )
 
         Load idx version ->
-            case Dict.get idx model of
+            case Array2D.get idx model of
                 Just elem ->
                     if (version >= 0) && (version < Array.length elem.version) then
-                        ( Dict.insert idx
+                        ( Array2D.set idx
                             { elem
                                 | version_active = version
                                 , code =

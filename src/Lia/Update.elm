@@ -7,12 +7,13 @@ import Json.Encode as JE
 import Lia.Code.Update as Code
 import Lia.Effect.Model as EffectModel
 import Lia.Effect.Update as Effect
+import Lia.Helper exposing (ID)
 import Lia.Index.Update as Index
 import Lia.Model exposing (..)
 import Lia.Parser exposing (parse_section)
 import Lia.Quiz.Update as Quiz
 import Lia.Survey.Update as Survey
-import Lia.Types exposing (ID, Mode(..), Sections)
+import Lia.Types exposing (Mode(..), Sections)
 import Lia.Utils exposing (set_local)
 
 
@@ -130,7 +131,7 @@ generate model =
                                     , error = Nothing
                                 }
                                 model.sections
-                        , code_model = codes
+                        , code_model = Array.set model.section_active codes model.code_model
                     }
 
                 Err msg ->

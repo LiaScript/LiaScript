@@ -6,6 +6,7 @@ module Lia.Utils exposing (evaluateJS, evaluateJS2, formula, get_local, guess, h
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Encode
+import Lia.Helper exposing (ID2)
 import Native.Utils
 import Task exposing (attempt)
 
@@ -35,7 +36,7 @@ load_js url =
     Native.Utils.load_js url
 
 
-evaluateJS2 : (Result err ok -> msg) -> String -> String -> Cmd msg
+evaluateJS2 : (Result err ok -> msg) -> ID2 -> String -> Cmd msg
 evaluateJS2 resultToMessage idx code =
     attempt resultToMessage (Native.Utils.evaluate2 idx code)
 

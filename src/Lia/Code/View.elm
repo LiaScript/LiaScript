@@ -1,13 +1,12 @@
 module Lia.Code.View exposing (view)
 
-import Array
-import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onDoubleClick, onInput)
 import Lia.Code.Model exposing (Model)
 import Lia.Code.Types exposing (Code(..))
 import Lia.Code.Update exposing (Msg(..))
+import Lia.Helper as Array2D
 import Lia.Utils
 
 
@@ -15,10 +14,10 @@ view : Model -> Code -> Html Msg
 view model code =
     case code of
         Highlight lang block ->
-            highlight lang block ""
+            highlight lang block Nothing
 
         Evaluate lang idx x ->
-            case Dict.get idx model of
+            case Array2D.get idx model of
                 Just elem ->
                     Html.div [ Attr.class "lia-code-eval" ]
                         [ if elem.editing then
@@ -32,7 +31,7 @@ view model code =
                                 ]
                                 []
                           else
-                            highlight lang elem.code idx
+                            highlight lang elem.code (Just idx)
                         , Html.div []
                             [ if elem.running then
                                 Html.button [ Attr.class "lia-btn lia-icon" ]
@@ -69,13 +68,15 @@ view model code =
                     Html.text ""
 
 
-highlight : String -> String -> String -> Html Msg
+highlight : String -> String -> Maybe Array2D.ID2 -> Html Msg
 highlight lang code idx =
     Html.pre
-        (if idx == "" then
-            [ Attr.class "lia-code" ]
-         else
-            [ Attr.class "lia-code", onDoubleClick (FlipMode idx) ]
+        (case idx of
+            Nothing ->
+                [ Attr.class "lia-code" ]
+
+            Just idx_ ->
+                [ Attr.class "lia-code", onDoubleClick (FlipMode idx_) ]
         )
         [ Html.code [ Attr.class "lia-code-highlight" ]
             [ Lia.Utils.highlight lang code ]

@@ -11,6 +11,7 @@ import Lia.Chart.View
 import Lia.Code.View as Codes
 import Lia.Effect.Model as Effect
 import Lia.Effect.View as Effects
+import Lia.Helper exposing (ID)
 import Lia.Index.Model
 import Lia.Index.View
 import Lia.Inline.Types exposing (Inline)
