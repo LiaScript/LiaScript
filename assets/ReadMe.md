@@ -520,7 +520,7 @@ edit it and to change the output ...
 
 Double-click on the code to switch to edit mode and double-click to get out:
 
-```javascript
+```
 var i=0;
 var j=0;
 var result = 0;

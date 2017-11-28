@@ -52,7 +52,7 @@ border =
 
 header : Parser PState String
 header =
-    whitespace *> regex "\\w*" <* regex "[ ]*\\n" <?> "language definition"
+    String.trim <$> regex ".*\\n" <?> "language definition"
 
 
 listing : Parser PState ()
