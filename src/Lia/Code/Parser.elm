@@ -34,9 +34,10 @@ result comment =
                 Nothing ->
                     succeed <| Highlight lang code
         )
-        <* modify_temp "" ""
+        <* modify_temp ( "", "" )
 
 
+check_lang : ( String, String ) -> ( String, String )
 check_lang ( lang, code ) =
     if lang == "" then
         ( guess lang, code )
@@ -54,18 +55,14 @@ header =
     whitespace *> regex "\\w*" <* regex "[ ]*\\n" <?> "language definition"
 
 
-listing : Parser PState (Parser PState ())
+listing : Parser PState ()
 listing =
-    modify_temp <$> (border *> header) <*> stringTill border
+    ((\h s -> ( h, s )) <$> (border *> header) <*> stringTill border) >>= modify_temp
 
 
-modify_temp : String -> String -> Parser PState ()
-modify_temp lang code =
-    let
-        add_state s =
-            { s | code_temp = ( lang, code ) }
-    in
-    withState (\s -> succeed ()) <* modifyState add_state
+modify_temp : ( String, String ) -> Parser PState ()
+modify_temp lang_code =
+    modifyState (\s -> { s | code_temp = lang_code })
 
 
 evaluate : String -> String -> String -> Parser PState Code
