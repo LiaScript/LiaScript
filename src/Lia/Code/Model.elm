@@ -5,4 +5,4 @@ import Lia.Code.Types exposing (..)
 
 
 type alias Model =
-    Array (Maybe Codes)
+    Array Codes

@@ -131,13 +131,7 @@ generate model =
                                     , error = Nothing
                                 }
                                 model.sections
-                        , code_model =
-                            case Array.get model.section_active model.code_model of
-                                Just Nothing ->
-                                    Array.set model.section_active (Just codes) model.code_model
-
-                                _ ->
-                                    model.code_model
+                        , code_model = Lia.Helper.update model.section_active codes model.code_model
                     }
 
                 Err msg ->
