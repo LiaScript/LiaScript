@@ -17,8 +17,8 @@ type Inline
     | Formula Bool String
     | Ref Reference
     | HTML String
-    | EInline Int (Maybe String) (List Inline)
-    | Container (List Inline)
+    | EInline Int (Maybe String) Line
+    | Container Line
 
 
 type Url

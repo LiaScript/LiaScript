@@ -16,10 +16,11 @@ import Lia.Index.Model
 import Lia.Index.View
 import Lia.Inline.Types exposing (Inline)
 import Lia.Inline.View as InlineView
+import Lia.Markdown.Types exposing (..)
 import Lia.Model exposing (Model)
 import Lia.Quiz.View
 import Lia.Survey.View
-import Lia.Types exposing (..)
+import Lia.Types exposing (Section)
 import Lia.Update exposing (Msg(..))
 import String
 
@@ -311,7 +312,7 @@ zero_tuple =
     to_tuple 0
 
 
-view_block : Model -> Block -> Html Msg
+view_block : Model -> Markdown -> Html Msg
 view_block model block =
     let
         viewer =

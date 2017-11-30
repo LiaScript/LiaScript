@@ -7,19 +7,11 @@ import Char
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
-import Lia.Chart.View
-import Lia.Code.View as Codes
-import Lia.Effect.Model as Effect
-import Lia.Effect.View as Effects
 import Lia.Helper exposing (ID)
 import Lia.Index.Model
 import Lia.Index.View
-import Lia.Inline.Types exposing (Inline)
-import Lia.Inline.View as InlineView
 import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model)
-import Lia.Quiz.View
-import Lia.Survey.View
 import Lia.Types exposing (..)
 import Lia.Update exposing (Msg(..))
 import String

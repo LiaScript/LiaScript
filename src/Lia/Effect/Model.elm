@@ -9,9 +9,10 @@ module Lia.Effect.Model
         )
 
 --import Lia.Index.Model exposing (parse_inlines)
+--import Lia.Markdown.Types exposing (Markdown(..))
 
 import Array exposing (Array)
-import Lia.Types exposing (Block(..), Section)
+import Lia.Types exposing (Section)
 
 
 type alias Model =

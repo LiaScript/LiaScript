@@ -4,12 +4,12 @@ module Lia.Effect.Parser exposing (eblock, ecomment, einline)
 
 import Combine exposing (..)
 import Combine.Num exposing (int)
-import Lia.Inline.Types exposing (Inline(..))
+import Lia.Inline.Types exposing (Inline(..), Line)
+import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.PState exposing (PState)
-import Lia.Types exposing (Block(..))
 
 
-eblock : Parser PState Block -> Parser PState Block
+eblock : Parser PState Markdown -> Parser PState Markdown
 eblock blocks =
     let
         name =
@@ -58,7 +58,7 @@ effect_number =
     int >>= state
 
 
-ecomment : Parser PState (List Inline) -> Parser PState Block
+ecomment : Parser PState Line -> Parser PState Markdown
 ecomment paragraph =
     let
         number =

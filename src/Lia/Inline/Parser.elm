@@ -83,7 +83,7 @@ html_block =
     HTML <$> (whitespace *> string "<" *> regex "[a-zA-Z0-9]+" >>= p)
 
 
-combine : List Inline -> List Inline
+combine : Line -> Line
 combine list =
     case list of
         [] ->
@@ -101,7 +101,7 @@ combine list =
                     x1 :: combine (x2 :: xs)
 
 
-line : Parser PState (List Inline)
+line : Parser PState Line
 line =
     (\list -> combine <| List.append list [ Chars " " ]) <$> many1 inlines
 

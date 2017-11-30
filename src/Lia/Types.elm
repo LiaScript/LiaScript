@@ -1,9 +1,10 @@
-module Lia.Types exposing (Block(..), Design, Mode(..), Paragraph, Section, Sections)
+module Lia.Types exposing (Design, Mode(..), Section, Sections)
 
 import Array exposing (Array)
 import Lia.Chart.Types exposing (Chart)
 import Lia.Code.Types exposing (Code)
 import Lia.Inline.Types exposing (..)
+import Lia.Markdown.Types exposing (Markdown)
 import Lia.Quiz.Types exposing (Quiz)
 import Lia.Survey.Types exposing (Survey)
 
@@ -24,7 +25,7 @@ type alias Section =
     { code : String
     , title : String
     , indentation : Int
-    , body : List Block
+    , body : List Markdown
     , error : Maybe String
     , effects : Int
     , speach : List String
@@ -33,22 +34,3 @@ type alias Section =
 
 type alias Sections =
     Array Section
-
-
-type alias Paragraph =
-    List Inline
-
-
-type Block
-    = HLine
-    | Code Code
-    | Quote Paragraph
-    | Paragraph Paragraph
-    | Table (List Paragraph) (List String) (List (List Paragraph))
-    | Quiz Quiz (Maybe ( List Block, Int ))
-    | EBlock Int (Maybe String) (List Block)
-    | EComment Int Paragraph
-    | BulletList (List (List Block))
-    | OrderedList (List (List Block))
-    | Survey Survey
-    | Chart Chart

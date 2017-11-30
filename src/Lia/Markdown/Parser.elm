@@ -11,17 +11,17 @@ import Lia.Definition.Types exposing (Definition)
 import Lia.Effect.Parser exposing (..)
 import Lia.Helper exposing (ID)
 import Lia.Inline.Parser exposing (..)
-import Lia.Inline.Types exposing (Inline(..))
+import Lia.Inline.Types exposing (Inline(..), Line)
+import Lia.Markdown.Types exposing (..)
 import Lia.PState exposing (PState)
 import Lia.Preprocessor as Preprocessor
 import Lia.Quiz.Parser as Quiz
 import Lia.Quiz.Types exposing (QuizVector)
 import Lia.Survey.Parser as Survey
 import Lia.Survey.Types exposing (SurveyVector)
-import Lia.Types exposing (..)
 
 
-section : Parser PState (List Block)
+section : Parser PState (List Markdown)
 section =
     lazy <|
         \() ->
@@ -49,7 +49,7 @@ identation =
             withState ident <* modifyState reset
 
 
-blocks : Parser PState Block
+blocks : Parser PState Markdown
 blocks =
     lazy <|
         \() ->
@@ -73,7 +73,7 @@ blocks =
             comments *> b
 
 
-solution : Parser PState (Maybe ( List Block, Int ))
+solution : Parser PState (Maybe ( List Markdown, Int ))
 solution =
     let
         rslt e1 blocks_ e2 =
@@ -89,7 +89,7 @@ solution =
         )
 
 
-unordered_list : Parser PState Block
+unordered_list : Parser PState Markdown
 unordered_list =
     let
         mod_s b s =
@@ -109,7 +109,7 @@ unordered_list =
                 )
 
 
-ordered_list : Parser PState Block
+ordered_list : Parser PState Markdown
 ordered_list =
     let
         mod_s b s =
@@ -129,17 +129,17 @@ ordered_list =
                 )
 
 
-horizontal_line : Parser PState Block
+horizontal_line : Parser PState Markdown
 horizontal_line =
     HLine <$ (identation *> regex "--[\\-]+")
 
 
-paragraph : Parser PState Paragraph
+paragraph : Parser PState Line
 paragraph =
     (\l -> combine <| List.concat l) <$> many1 (identation *> line <* newline)
 
 
-table : Parser PState Block
+table : Parser PState Markdown
 table =
     let
         ending =
@@ -170,7 +170,7 @@ table =
     choice [ format_table, simple_table ]
 
 
-quote_block : Parser PState Block
+quote_block : Parser PState Markdown
 quote_block =
     let
         p =

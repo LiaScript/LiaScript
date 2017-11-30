@@ -8,9 +8,9 @@ import Lia.Definition.Parser
 import Lia.Definition.Types exposing (Definition)
 import Lia.Helper exposing (ID)
 import Lia.Markdown.Parser exposing (section)
+import Lia.Markdown.Types exposing (..)
 import Lia.PState exposing (PState)
 import Lia.Preprocessor as Preprocessor
-import Lia.Types exposing (..)
 
 
 parse_defintion : String -> Result String ( String, Definition )
@@ -33,7 +33,7 @@ parse_titles code =
             Err (formatError ms stream)
 
 
-parse_section : ID -> String -> Result String ( List Block, Codes )
+parse_section : ID -> String -> Result String ( List Markdown, Codes )
 parse_section idx str =
     case Combine.runParser section (Lia.PState.init idx) str of
         Ok ( state, _, es ) ->
