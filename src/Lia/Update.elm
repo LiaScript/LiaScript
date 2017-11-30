@@ -92,6 +92,15 @@ update msg model =
 
         Load idx ->
             if (-1 < idx) && (idx < Array.length model.sections) then
+                let
+                    unused =
+                        case model.uid of
+                            Just uid ->
+                                idx |> toString |> set_local uid
+
+                            Nothing ->
+                                ""
+                in
                 ( generate { model | section_active = idx }
                 , Cmd.none
                 , Nothing

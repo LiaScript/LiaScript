@@ -94,15 +94,11 @@ init_design_light =
 
 init_section : Maybe String -> Int
 init_section uid =
-    0
-
-
-
---    uid
---        |> Maybe.andThen get_local
---        |> Maybe.andThen String.toInt
---        |> Result.toMaybe
---        |> Maybe.withDefault 0
+    uid
+        |> Maybe.andThen get_local
+        |> Maybe.map String.toInt
+        |> Maybe.andThen Result.toMaybe
+        |> Maybe.withDefault 0
 
 
 init_sound : Bool
