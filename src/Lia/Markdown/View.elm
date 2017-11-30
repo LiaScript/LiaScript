@@ -15,14 +15,13 @@ import Lia.Helper exposing (ID)
 import Lia.Index.Model
 import Lia.Index.View
 import Lia.Inline.Types exposing (Inline)
-import Lia.Inline.View as InlineView
+import Lia.Inline.View exposing (view_inf)
 import Lia.Markdown.Types exposing (..)
 import Lia.Model exposing (Model)
 import Lia.Quiz.View
 import Lia.Survey.View
 import Lia.Types exposing (Section)
 import Lia.Update exposing (Msg(..))
-import String
 
 
 view : Model -> Section -> Html Msg
@@ -314,21 +313,32 @@ zero_tuple =
 
 view_block : Model -> Markdown -> Html Msg
 view_block model block =
-    let
-        viewer =
-            InlineView.view 999
-    in
     case block of
-        Paragraph elements ->
-            elements
-                |> List.map viewer
-                |> Html.p [ Attr.class "lia-inline lia-paragraph" ]
-
         HLine ->
             Html.hr [ Attr.class "lia-inline lia-horiz-line" ] []
 
+        Paragraph elements ->
+            elements
+                |> List.map view_inf
+                |> Html.p [ Attr.class "lia-inline lia-paragraph" ]
+
+        BulletList list ->
+            list
+                |> view_list model
+                |> Html.ul [ Attr.class "lia-inline lia-list lia-unordered" ]
+
+        OrderedList list ->
+            list
+                |> view_list model
+                |> Html.ol [ Attr.class "lia-inline lia-list lia-ordered" ]
+
         Table header format body ->
-            view_table viewer header format body
+            view_table header format body
+
+        Quote elements ->
+            elements
+                |> List.map view_inf
+                |> Html.blockquote [ Attr.class "lia-inline lia-quote" ]
 
         Code code ->
             code
@@ -339,15 +349,12 @@ view_block model block =
             Html.text "to appear"
 
 
-
---view_table : List Paragraph -> Array String -> List (List Paragraph) -> Html Msg
-
-
-view_table viewer header format body =
+view_table : MultiLine -> List String -> List MultiLine -> Html Msg
+view_table header format body =
     let
         view_row fct row =
             List.map2
-                (\r f -> r |> List.map viewer |> fct [ Attr.align f ])
+                (\r f -> r |> List.map view_inf |> fct [ Attr.align f ])
                 row
                 format
     in
@@ -364,6 +371,20 @@ view_table viewer header format body =
                 |> Html.thead [ Attr.class "lia-inline lia-table-head" ]
             )
         |> Html.table [ Attr.class "lia-inline lia-table" ]
+
+
+view_list : Model -> List (List Markdown) -> List (Html Msg)
+view_list model list =
+    let
+        viewer sub_list =
+            List.map (view_block model) sub_list
+
+        html =
+            Html.li []
+    in
+    list
+        |> List.map viewer
+        |> List.map html
 
 
 
