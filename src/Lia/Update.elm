@@ -142,7 +142,7 @@ generate : Model -> Model
 generate model =
     case get_active_section model of
         Just sec ->
-            case Lia.Parser.parse_section model.section_active sec.code of
+            case Lia.Parser.parse_section sec.code of
                 Ok ( blocks, codes ) ->
                     { model
                         | sections =

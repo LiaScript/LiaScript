@@ -32,7 +32,7 @@ update msg model =
                             String.join elem.code x
 
                         ( version, active ) =
-                            if ((elem.version_active + 1) == Array.length elem.version) && (elem.code /= last elem.version) then
+                            if elem.code /= last elem.version then
                                 ( Array.push elem.code elem.version
                                 , Array.length elem.version
                                 )

@@ -9,8 +9,7 @@ import Lia.Survey.Types exposing (SurveyVector)
 
 
 type alias PState =
-    { slide : Int
-    , identation : Int
+    { identation : Int
     , skip_identation : Bool
     , num_effects : Int
     , code_temp : ( String, String ) -- Lang Code
@@ -20,10 +19,9 @@ type alias PState =
     }
 
 
-init : Int -> PState
-init idx =
-    { slide = idx
-    , identation = 0
+init : PState
+init =
+    { identation = 0
     , skip_identation = False
     , num_effects = 0
     , code_temp = ( "", "" )
