@@ -3,7 +3,7 @@ module Lia.PState exposing (PState, init)
 --import Combine exposing (Parser, skip, string)
 
 import Array
-import Lia.Code.Types exposing (Codes)
+import Lia.Code.Types exposing (CodeVector)
 import Lia.Quiz.Types exposing (QuizVector)
 import Lia.Survey.Types exposing (SurveyVector)
 
@@ -14,7 +14,7 @@ type alias PState =
     , skip_identation : Bool
     , num_effects : Int
     , code_temp : ( String, String ) -- Lang Code
-    , code_vector : Codes
+    , code_vector : CodeVector
     , quiz_vector : QuizVector
     , survey_vector : SurveyVector
     }

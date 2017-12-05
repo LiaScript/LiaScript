@@ -43,7 +43,6 @@ set_script model script =
                             title_sections
                                 |> List.map init_section
                                 |> Array.fromList
-                        , code_model = Array.repeat (List.length title_sections) Array.empty
                     }
                         |> Lia.Update.generate
 
@@ -63,6 +62,7 @@ init_section ( tags, title, code ) =
     , error = Nothing
     , effects = 0
     , speach = []
+    , code_vector = Array.empty
     }
 
 

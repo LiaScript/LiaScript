@@ -85,10 +85,12 @@ view_article : Model -> Html Msg
 view_article model =
     Html.article [ Attr.class "lia-slide" ]
         [ view_nav model.section_active model.mode model.design
-        , model.sections
-            |> Array.get model.section_active
-            |> Maybe.map2 Markdown.view (Just model)
-            |> Maybe.withDefault (Html.text "")
+        , case Array.get model.section_active model.sections of
+            Just section ->
+                Html.map UpdateMarkdown <| Markdown.view section
+
+            Nothing ->
+                Html.text ""
         , view_footer
         ]
 

@@ -1,23 +1,23 @@
 module Lia.Code.View exposing (view)
 
+import Array
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onDoubleClick, onInput)
-import Lia.Code.Model exposing (Model)
-import Lia.Code.Types exposing (Code(..))
+import Lia.Code.Types exposing (Code(..), CodeVector)
 import Lia.Code.Update exposing (Msg(..))
-import Lia.Helper as Array2D
+import Lia.Helper exposing (ID)
 import Lia.Utils
 
 
-view : Model -> Code -> Html Msg
+view : CodeVector -> Code -> Html Msg
 view model code =
     case code of
         Highlight lang block ->
-            highlight lang block Nothing
+            highlight lang block -1
 
         Evaluate lang idx x ->
-            case Array2D.get idx model of
+            case Array.get idx model of
                 Just elem ->
                     Html.div [ Attr.class "lia-code-eval" ]
                         [ if elem.editing then
@@ -31,7 +31,7 @@ view model code =
                                 ]
                                 []
                           else
-                            highlight lang elem.code (Just idx)
+                            highlight lang elem.code idx
                         , Html.div []
                             [ if elem.running then
                                 Html.button [ Attr.class "lia-btn lia-icon" ]
@@ -68,15 +68,13 @@ view model code =
                     Html.text ""
 
 
-highlight : String -> String -> Maybe Array2D.ID2 -> Html Msg
+highlight : String -> String -> ID -> Html Msg
 highlight lang code idx =
     Html.pre
-        (case idx of
-            Nothing ->
-                [ Attr.class "lia-code" ]
-
-            Just idx_ ->
-                [ Attr.class "lia-code", onDoubleClick (FlipMode idx_) ]
+        (if idx < 0 then
+            [ Attr.class "lia-code" ]
+         else
+            [ Attr.class "lia-code", onDoubleClick (FlipMode idx) ]
         )
         [ Html.code [ Attr.class "lia-code-highlight" ]
             [ Lia.Utils.highlight lang code ]

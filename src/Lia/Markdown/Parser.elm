@@ -5,7 +5,7 @@ module Lia.Markdown.Parser exposing (section)
 import Combine exposing (..)
 import Lia.Chart.Parser as Chart
 import Lia.Code.Parser as Code
-import Lia.Code.Types exposing (Codes)
+import Lia.Code.Types exposing (CodeVector)
 import Lia.Definition.Parser
 import Lia.Definition.Types exposing (Definition)
 import Lia.Effect.Parser exposing (..)

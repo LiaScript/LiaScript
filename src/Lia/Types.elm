@@ -2,7 +2,7 @@ module Lia.Types exposing (Design, Mode(..), Section, Sections)
 
 import Array exposing (Array)
 import Lia.Chart.Types exposing (Chart)
-import Lia.Code.Types exposing (Code)
+import Lia.Code.Types exposing (Code, CodeVector)
 import Lia.Inline.Types exposing (..)
 import Lia.Markdown.Types exposing (Markdown)
 import Lia.Quiz.Types exposing (Quiz)
@@ -29,6 +29,7 @@ type alias Section =
     , error : Maybe String
     , effects : Int
     , speach : List String
+    , code_vector : CodeVector
     }
 
 

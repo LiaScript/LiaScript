@@ -1,10 +1,10 @@
-module Lia.Code.Types exposing (Code(..), CodeElement, Codes)
+module Lia.Code.Types exposing (Code(..), CodeElement, CodeVector)
 
 import Array exposing (Array)
-import Lia.Helper exposing (ID2)
+import Lia.Helper exposing (ID)
 
 
-type alias Codes =
+type alias CodeVector =
     Array CodeElement
 
 
@@ -20,4 +20,4 @@ type alias CodeElement =
 
 type Code
     = Highlight String String -- Lang Code
-    | Evaluate String ID2 (List String) -- Lang ID EvalString
+    | Evaluate String ID (List String) -- Lang ID EvalString

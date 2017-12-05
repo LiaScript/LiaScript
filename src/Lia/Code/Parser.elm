@@ -86,7 +86,7 @@ evaluate lang code comment =
         (\s ->
             comment
                 |> String.split "{X}"
-                |> Evaluate lang ( s.slide, Array.length s.code_vector )
+                |> Evaluate lang (Array.length s.code_vector)
                 |> succeed
         )
         <* modifyState add_state

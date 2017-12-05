@@ -3,7 +3,7 @@ module Lia.Parser exposing (..)
 --exposing (run)
 
 import Combine exposing (..)
-import Lia.Code.Types exposing (Codes)
+import Lia.Code.Types exposing (CodeVector)
 import Lia.Definition.Parser
 import Lia.Definition.Types exposing (Definition)
 import Lia.Helper exposing (ID)
@@ -33,7 +33,7 @@ parse_titles code =
             Err (formatError ms stream)
 
 
-parse_section : ID -> String -> Result String ( List Markdown, Codes )
+parse_section : ID -> String -> Result String ( List Markdown, CodeVector )
 parse_section idx str =
     case Combine.runParser section (Lia.PState.init idx) str of
         Ok ( state, _, es ) ->

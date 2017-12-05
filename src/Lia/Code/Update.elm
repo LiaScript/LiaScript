@@ -1,17 +1,17 @@
 module Lia.Code.Update exposing (Msg(..), update)
 
 import Array exposing (Array)
-import Lia.Code.Model exposing (Model)
-import Lia.Helper as Array2D
+import Lia.Code.Types exposing (CodeVector)
+import Lia.Helper exposing (ID)
 import Lia.Utils
 
 
 type Msg
-    = Eval Array2D.ID2 (List String)
-    | Update Array2D.ID2 String
-    | FlipMode Array2D.ID2
-    | EvalRslt (Result { id : Array2D.ID2, result : String } { id : Array2D.ID2, result : String })
-    | Load Array2D.ID2 Int
+    = Eval ID (List String)
+    | Update ID String
+    | FlipMode ID
+    | EvalRslt (Result { id : ID, result : String } { id : ID, result : String })
+    | Load ID Int
 
 
 last : Array String -> String
@@ -21,11 +21,11 @@ last a =
         |> Maybe.withDefault ""
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> CodeVector -> ( CodeVector, Cmd Msg )
 update msg model =
     case msg of
         Eval idx x ->
-            case Array2D.get idx model of
+            case Array.get idx model of
                 Just elem ->
                     let
                         exec =
@@ -39,7 +39,7 @@ update msg model =
                             else
                                 ( elem.version, elem.version_active )
                     in
-                    ( Array2D.set idx
+                    ( Array.set idx
                         { elem
                             | editing = False
                             , running = True
@@ -54,42 +54,42 @@ update msg model =
                     ( model, Cmd.none )
 
         EvalRslt (Ok json) ->
-            case Array2D.get json.id model of
+            case Array.get json.id model of
                 Just elem ->
-                    ( Array2D.set json.id { elem | result = Ok json.result, running = False } model, Cmd.none )
+                    ( Array.set json.id { elem | result = Ok json.result, running = False } model, Cmd.none )
 
                 Nothing ->
                     ( model, Cmd.none )
 
         EvalRslt (Err json) ->
-            case Array2D.get json.id model of
+            case Array.get json.id model of
                 Just elem ->
-                    ( Array2D.set json.id { elem | result = Err json.result, running = False } model, Cmd.none )
+                    ( Array.set json.id { elem | result = Err json.result, running = False } model, Cmd.none )
 
                 Nothing ->
                     ( model, Cmd.none )
 
         Update idx code_str ->
-            case Array2D.get idx model of
+            case Array.get idx model of
                 Just elem ->
-                    ( Array2D.set idx { elem | code = code_str } model, Cmd.none )
+                    ( Array.set idx { elem | code = code_str } model, Cmd.none )
 
                 Nothing ->
                     ( model, Cmd.none )
 
         FlipMode idx ->
-            case Array2D.get idx model of
+            case Array.get idx model of
                 Just elem ->
-                    ( Array2D.set idx { elem | editing = not elem.editing } model, Cmd.none )
+                    ( Array.set idx { elem | editing = not elem.editing } model, Cmd.none )
 
                 Nothing ->
                     ( model, Cmd.none )
 
         Load idx version ->
-            case Array2D.get idx model of
+            case Array.get idx model of
                 Just elem ->
                     if (version >= 0) && (version < Array.length elem.version) then
-                        ( Array2D.set idx
+                        ( Array.set idx
                             { elem
                                 | version_active = version
                                 , code =

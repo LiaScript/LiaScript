@@ -17,30 +17,30 @@ import Lia.Index.View
 import Lia.Inline.Types exposing (Inline)
 import Lia.Inline.View exposing (view_inf)
 import Lia.Markdown.Types exposing (..)
+import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Model exposing (Model)
 import Lia.Quiz.View
 import Lia.Survey.View
 import Lia.Types exposing (Section)
-import Lia.Update exposing (Msg(..))
 
 
-view : Model -> Section -> Html Msg
-view model sec =
-    case sec.error of
+view : Section -> Html Msg
+view section =
+    case section.error of
         Just msg ->
             Html.section [ Attr.class "lia-content" ]
-                [ view_header sec.indentation sec.title
+                [ view_header section.indentation section.title
                 , Html.text msg
                 ]
 
         Nothing ->
             let
                 viewer =
-                    view_block model
+                    view_block section
             in
-            sec.body
+            section.body
                 |> List.map viewer
-                |> (::) (view_header sec.indentation sec.title)
+                |> (::) (view_header section.indentation section.title)
                 |> Html.section [ Attr.class "lia-content" ]
 
 
@@ -311,8 +311,8 @@ zero_tuple =
     to_tuple 0
 
 
-view_block : Model -> Markdown -> Html Msg
-view_block model block =
+view_block : Section -> Markdown -> Html Msg
+view_block section block =
     case block of
         HLine ->
             Html.hr [ Attr.class "lia-inline lia-horiz-line" ] []
@@ -324,12 +324,12 @@ view_block model block =
 
         BulletList list ->
             list
-                |> view_list model
+                |> view_list section
                 |> Html.ul [ Attr.class "lia-inline lia-list lia-unordered" ]
 
         OrderedList list ->
             list
-                |> view_list model
+                |> view_list section
                 |> Html.ol [ Attr.class "lia-inline lia-list lia-ordered" ]
 
         Table header format body ->
@@ -342,7 +342,7 @@ view_block model block =
 
         Code code ->
             code
-                |> Codes.view model.code_model
+                |> Codes.view section.code_vector
                 |> Html.map UpdateCode
 
         _ ->
@@ -373,11 +373,11 @@ view_table header format body =
         |> Html.table [ Attr.class "lia-inline lia-table" ]
 
 
-view_list : Model -> List (List Markdown) -> List (Html Msg)
-view_list model list =
+view_list : Section -> List (List Markdown) -> List (Html Msg)
+view_list section list =
     let
         viewer sub_list =
-            List.map (view_block model) sub_list
+            List.map (view_block section) sub_list
 
         html =
             Html.li []

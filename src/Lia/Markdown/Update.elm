@@ -1,34 +1,14 @@
-module Lia.Update exposing (Msg(..), generate, update)
+module Lia.Markdown.Update exposing (Msg(..), update)
 
 --import Lia.Helper exposing (get_slide)
 
-import Array
 import Json.Encode as JE
-import Lia.Code.Types exposing (CodeVector)
 import Lia.Code.Update as Code
-import Lia.Effect.Model as EffectModel
-import Lia.Effect.Update as Effect
-import Lia.Helper exposing (ID)
-import Lia.Index.Update as Index
-import Lia.Markdown.Update as Markdown
-import Lia.Model exposing (..)
-import Lia.Parser exposing (parse_section)
-import Lia.Quiz.Update as Quiz
-import Lia.Survey.Update as Survey
-import Lia.Types exposing (Mode(..), Section, Sections)
-import Lia.Utils exposing (set_local)
+import Lia.Types exposing (Section)
 
 
 type Msg
-    = Load ID
-    | PrevSection Int
-    | NextSection Int
-    | DesignTheme String
-    | DesignLight
-    | ToggleLOC
-    | UpdateIndex Index.Msg
-    | UpdateMarkdown Markdown.Msg
-    | SwitchMode
+    = UpdateCode Code.Msg
 
 
 
@@ -42,132 +22,16 @@ type Msg
 --    | SwitchMode
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, Maybe ( String, JE.Value ) )
-update msg model =
+update : Msg -> Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
+update msg section =
     case msg of
-        ToggleLOC ->
-            ( { model | loc = not model.loc }, Cmd.none, Nothing )
-
-        UpdateIndex childMsg ->
+        UpdateCode childMsg ->
             let
-                index =
-                    model.sections
-                        |> Array.map .code
-                        |> Array.toIndexedList
-                        |> Index.update childMsg model.index_model
+                ( code_vector, cmd ) =
+                    Code.update childMsg section.code_vector
             in
-            ( { model | index_model = index }, Cmd.none, Nothing )
-
-        UpdateMarkdown childMsg ->
-            case get_active_section model of
-                Just sec ->
-                    let
-                        ( section, cmd, log ) =
-                            Markdown.update childMsg sec
-                    in
-                    ( { model | sections = Array.set model.section_active section model.sections }, Cmd.map UpdateMarkdown cmd, log )
-
-                Nothing ->
-                    ( model, Cmd.none, Nothing )
-
-        DesignTheme theme ->
-            ( { model
-                | design =
-                    { light = model.design.light
-                    , theme = set_local "theme" theme
-                    }
-              }
-            , Cmd.none
-            , Nothing
-            )
-
-        DesignLight ->
-            ( { model
-                | design =
-                    { light =
-                        set_local "theme_light" <|
-                            if model.design.light == "light" then
-                                "dark"
-                            else
-                                "light"
-                    , theme = model.design.theme
-                    }
-              }
-            , Cmd.none
-            , Nothing
-            )
-
-        Load idx ->
-            if (-1 < idx) && (idx < Array.length model.sections) then
-                let
-                    unused =
-                        case model.uid of
-                            Just uid ->
-                                idx |> toString |> set_local uid
-
-                            Nothing ->
-                                ""
-                in
-                ( generate { model | section_active = idx }
-                , Cmd.none
-                , Nothing
-                )
-            else
-                ( model, Cmd.none, Nothing )
-
-        NextSection i ->
-            update (Load <| model.section_active + 1) model
-
-        PrevSection i ->
-            update (Load <| model.section_active - 1) model
-
-        SwitchMode ->
-            if model.mode == Presentation then
-                ( { model | mode = Slides }, Cmd.none, Nothing )
-            else
-                ( { model | mode = Presentation }, Cmd.none, Nothing )
-
-
-
---        _ ->
---            ( model, Cmd.none, Nothing )
-
-
-get_active_section : Model -> Maybe Section
-get_active_section model =
-    Array.get model.section_active model.sections
-
-
-generate : Model -> Model
-generate model =
-    case get_active_section model of
-        Just sec ->
-            case Lia.Parser.parse_section model.section_active sec.code of
-                Ok ( blocks, codes ) ->
-                    { model
-                        | sections =
-                            Array.set model.section_active
-                                { sec
-                                    | body = blocks
-                                    , error = Nothing
-                                    , code_vector = codes
-                                }
-                                model.sections
-                    }
-
-                Err msg ->
-                    { model
-                        | sections =
-                            Array.set model.section_active
-                                { sec
-                                    | body = []
-                                    , error = Just msg
-                                }
-                                model.sections
-                    }
-
-        _ ->
-            model
+            --( { model | code_model = code_model }, Cmd.map UpdateCode cmd, Nothing )
+            ( { section | code_vector = code_vector }, Cmd.map UpdateCode cmd, Nothing )
 
 
 

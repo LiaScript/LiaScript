@@ -1,7 +1,6 @@
 module Lia.Model exposing (..)
 
 import Array exposing (Array)
-import Lia.Code.Model as Code
 import Lia.Definition.Types as Definition exposing (Definition)
 import Lia.Effect.Model as Effect
 import Lia.Helper exposing (ID)
@@ -25,8 +24,7 @@ type alias Model =
 
     --    , show_contents : Bool
     --    , quiz_model : Lia.Quiz.Model.Model
-    , code_model : Code.Model
-
+    --, code_model : CodeVector
     --    , effect_model : Lia.Effect.Model.Model
     --    , index_model : Lia.Index.Model.Model
     --    , survey_model : Lia.Survey.Model.Model
@@ -63,8 +61,8 @@ init mode uid =
         }
     , loc = True
     , index_model = Index.init
-    , code_model = Array.empty
 
+    --, code_model = Array.empty
     --    , show_contents = True
     --    , quiz_model = Array.empty
     --    , code_model = Array.empty
