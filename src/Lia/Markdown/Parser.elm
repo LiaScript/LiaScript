@@ -1,28 +1,19 @@
-module Lia.Markdown.Parser exposing (section)
-
---exposing (run)
+module Lia.Markdown.Parser exposing (run)
 
 import Combine exposing (..)
 import Lia.Chart.Parser as Chart
 import Lia.Code.Parser as Code
-import Lia.Code.Types exposing (CodeVector)
-import Lia.Definition.Parser
-import Lia.Definition.Types exposing (Definition)
 import Lia.Effect.Parser exposing (..)
-import Lia.Helper exposing (ID)
 import Lia.Inline.Parser exposing (..)
 import Lia.Inline.Types exposing (Inline(..), Line)
 import Lia.Markdown.Types exposing (..)
 import Lia.PState exposing (PState)
-import Lia.Preprocessor as Preprocessor
 import Lia.Quiz.Parser as Quiz
-import Lia.Quiz.Types exposing (QuizVector)
 import Lia.Survey.Parser as Survey
-import Lia.Survey.Types exposing (SurveyVector)
 
 
-section : Parser PState (List Markdown)
-section =
+run : Parser PState (List Markdown)
+run =
     lazy <|
         \() ->
             many (blocks <* newlines)
@@ -36,7 +27,7 @@ identation =
                 ident s =
                     if s.identation == 0 then
                         succeed ()
-                    else if s.skip_identation then
+                    else if s.identation_skip then
                         skip (succeed ())
                     else
                         String.repeat s.identation " "
@@ -44,7 +35,7 @@ identation =
                             |> skip
 
                 reset s =
-                    { s | skip_identation = False }
+                    { s | identation_skip = False }
             in
             withState ident <* modifyState reset
 
@@ -94,9 +85,9 @@ unordered_list =
     let
         mod_s b s =
             if b then
-                { s | skip_identation = True, identation = s.identation + 2 }
+                { s | identation_skip = True, identation = s.identation + 2 }
             else
-                { s | skip_identation = False, identation = s.identation - 2 }
+                { s | identation_skip = False, identation = s.identation - 2 }
     in
     BulletList
         <$> many1
@@ -114,9 +105,9 @@ ordered_list =
     let
         mod_s b s =
             if b then
-                { s | skip_identation = True, identation = s.identation + 3 }
+                { s | identation_skip = True, identation = s.identation + 3 }
             else
-                { s | skip_identation = False, identation = s.identation - 3 }
+                { s | identation_skip = False, identation = s.identation - 3 }
     in
     OrderedList
         <$> many1

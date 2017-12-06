@@ -6,7 +6,7 @@ import Combine exposing (..)
 import Lia.Code.Types exposing (CodeVector)
 import Lia.Definition.Parser
 import Lia.Definition.Types exposing (Definition)
-import Lia.Markdown.Parser exposing (section)
+import Lia.Markdown.Parser as Markdown
 import Lia.Markdown.Types exposing (..)
 import Lia.PState exposing (PState)
 import Lia.Preprocessor as Preprocessor
@@ -34,7 +34,7 @@ parse_titles code =
 
 parse_section : String -> Result String ( List Markdown, CodeVector )
 parse_section str =
-    case Combine.runParser section Lia.PState.init str of
+    case Combine.runParser Markdown.run Lia.PState.init str of
         Ok ( state, _, es ) ->
             Ok ( es, state.code_vector )
 
