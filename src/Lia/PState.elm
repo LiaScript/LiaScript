@@ -11,6 +11,8 @@ import Lia.Survey.Types exposing (SurveyVector)
 type alias PState =
     { identation : Int
     , identation_skip : Bool
+    , quotes : Int
+    , quotes_skip : Bool
     , num_effects : Int
     , code_temp : ( String, String ) -- Lang Code
     , code_vector : CodeVector
@@ -23,6 +25,8 @@ init : PState
 init =
     { identation = 0
     , identation_skip = False
+    , quotes = 0
+    , quotes_skip = False
     , num_effects = 0
     , code_temp = ( "", "" )
     , code_vector = Array.empty

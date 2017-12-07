@@ -4,6 +4,7 @@ module Lia.Markdown.View exposing (view)
 
 import Array exposing (Array)
 import Char
+import Debug
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
@@ -337,7 +338,7 @@ view_block section block =
 
         Quote elements ->
             elements
-                |> List.map view_inf
+                |> List.map (\e -> view_block section e)
                 |> Html.blockquote [ Attr.class "lia-inline lia-quote" ]
 
         Code code ->

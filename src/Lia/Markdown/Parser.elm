@@ -24,7 +24,7 @@ identation =
     lazy <|
         \() ->
             let
-                ident s =
+                par s =
                     if s.identation == 0 then
                         succeed ()
                     else if s.identation_skip then
@@ -37,7 +37,28 @@ identation =
                 reset s =
                     { s | identation_skip = False }
             in
-            withState ident <* modifyState reset
+            withState par <* modifyState reset
+
+
+quotes : Parser PState ()
+quotes =
+    lazy <|
+        \() ->
+            let
+                par s =
+                    if s.quotes == 0 then
+                        succeed ()
+                    else if s.quotes_skip then
+                        skip (succeed ())
+                    else
+                        String.repeat s.quotes ">( )*"
+                            |> regex
+                            |> skip
+
+                reset s =
+                    { s | quotes_skip = False }
+            in
+            withState par <* modifyState reset
 
 
 blocks : Parser PState Markdown
@@ -127,7 +148,7 @@ horizontal_line =
 
 paragraph : Parser PState Line
 paragraph =
-    (\l -> combine <| List.concat l) <$> many1 (identation *> line <* newline)
+    (\l -> combine <| List.concat l) <$> many1 (quotes *> identation *> line <* newline)
 
 
 table : Parser PState Markdown
@@ -137,10 +158,11 @@ table =
             regex "\\|[ \\t]*" *> newline
 
         row =
-            identation *> manyTill (string "|" *> many inlines) ending
+            quotes *> identation *> manyTill (string "|" *> line) ending
 
         format =
-            identation
+            quotes
+                *> identation
                 *> string "|"
                 *> sepBy1 (string "|")
                     (choice
@@ -163,8 +185,20 @@ table =
 
 quote_block : Parser PState Markdown
 quote_block =
+    --  let
+    --      p =
+    --          identation *> string ">" *> optional [ Chars "" ] line <* newline
+    --  in
+    --  (\q -> Quote <| combine <| List.concat q) <$> many1 p
     let
-        p =
-            identation *> string ">" *> optional [ Chars "" ] line <* newline
+        mod_s b s =
+            if b then
+                { s | quotes_skip = True, quotes = s.quotes + 1 }
+            else
+                { s | quotes_skip = False, quotes = s.quotes - 1 }
     in
-    (\q -> Quote <| combine <| List.concat q) <$> many1 p
+    Quote
+        <$> (quotes
+                *> string "> "
+                *> (modifyState (mod_s True) *> many1 blocks <* modifyState (mod_s False))
+            )

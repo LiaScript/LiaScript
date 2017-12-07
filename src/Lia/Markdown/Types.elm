@@ -13,7 +13,7 @@ type alias MultiLine =
 
 type Markdown
     = HLine
-    | Quote Line
+    | Quote (List Markdown)
     | Paragraph Line
     | BulletList (List (List Markdown))
     | OrderedList (List (List Markdown))
