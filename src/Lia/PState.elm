@@ -9,7 +9,7 @@ import Lia.Survey.Types exposing (SurveyVector)
 
 
 type alias PState =
-    { identation : Int
+    { identation : List String
     , identation_skip : Bool
     , quotes : Int
     , quotes_skip : Bool
@@ -23,7 +23,7 @@ type alias PState =
 
 init : PState
 init =
-    { identation = 0
+    { identation = []
     , identation_skip = False
     , quotes = 0
     , quotes_skip = False

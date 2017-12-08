@@ -25,12 +25,12 @@ identation =
         \() ->
             let
                 par s =
-                    if s.identation == 0 then
+                    if s.identation == [] then
                         succeed ()
                     else if s.identation_skip then
                         skip (succeed ())
                     else
-                        String.repeat s.identation " "
+                        String.concat s.identation
                             |> string
                             |> skip
 
@@ -40,25 +40,24 @@ identation =
             withState par <* modifyState reset
 
 
-quotes : Parser PState ()
-quotes =
-    lazy <|
-        \() ->
-            let
-                par s =
-                    if s.quotes == 0 then
-                        succeed ()
-                    else if s.quotes_skip then
-                        skip (succeed ())
-                    else
-                        String.repeat s.quotes ">( )*"
-                            |> regex
-                            |> skip
+identation_append : String -> PState -> PState
+identation_append str state =
+    { state
+        | identation_skip = True
+        , identation = List.append state.identation [ str ]
+    }
 
-                reset s =
-                    { s | quotes_skip = False }
-            in
-            withState par <* modifyState reset
+
+identation_pop : PState -> PState
+identation_pop state =
+    { state
+        | identation_skip = False
+        , identation =
+            state.identation
+                |> List.reverse
+                |> List.drop 1
+                |> List.reverse
+    }
 
 
 blocks : Parser PState Markdown
@@ -73,7 +72,7 @@ blocks =
                         , Chart <$> Chart.parse
                         , table
                         , Code <$> Code.parse
-                        , quote_block
+                        , quote
                         , horizontal_line
                         , Survey <$> Survey.parse
                         , Quiz <$> Quiz.parse <*> solution
@@ -103,40 +102,26 @@ solution =
 
 unordered_list : Parser PState Markdown
 unordered_list =
-    let
-        mod_s b s =
-            if b then
-                { s | identation_skip = True, identation = s.identation + 2 }
-            else
-                { s | identation_skip = False, identation = s.identation - 2 }
-    in
     BulletList
         <$> many1
                 (identation
                     *> regex "[*+-]( )"
-                    *> (modifyState (mod_s True)
+                    *> (modifyState (identation_append "  ")
                             *> many1 (blocks <* regex "[\\n]?")
-                            <* modifyState (mod_s False)
+                            <* modifyState identation_pop
                        )
                 )
 
 
 ordered_list : Parser PState Markdown
 ordered_list =
-    let
-        mod_s b s =
-            if b then
-                { s | identation_skip = True, identation = s.identation + 3 }
-            else
-                { s | identation_skip = False, identation = s.identation - 3 }
-    in
     OrderedList
         <$> many1
                 (identation
                     *> regex "[0-9]+\\. "
-                    *> (modifyState (mod_s True)
+                    *> (modifyState (identation_append "   ")
                             *> many1 (blocks <* regex "[\\n]?")
-                            <* modifyState (mod_s False)
+                            <* modifyState identation_pop
                        )
                 )
 
@@ -148,7 +133,7 @@ horizontal_line =
 
 paragraph : Parser PState Line
 paragraph =
-    (\l -> combine <| List.concat l) <$> many1 (quotes *> identation *> line <* newline)
+    (\l -> combine <| List.concat l) <$> many1 (identation *> line <* newline)
 
 
 table : Parser PState Markdown
@@ -158,11 +143,10 @@ table =
             regex "\\|[ \\t]*" *> newline
 
         row =
-            quotes *> identation *> manyTill (string "|" *> line) ending
+            identation *> manyTill (string "|" *> line) ending
 
         format =
-            quotes
-                *> identation
+            identation
                 *> string "|"
                 *> sepBy1 (string "|")
                     (choice
@@ -183,22 +167,9 @@ table =
     choice [ format_table, simple_table ]
 
 
-quote_block : Parser PState Markdown
-quote_block =
-    --  let
-    --      p =
-    --          identation *> string ">" *> optional [ Chars "" ] line <* newline
-    --  in
-    --  (\q -> Quote <| combine <| List.concat q) <$> many1 p
-    let
-        mod_s b s =
-            if b then
-                { s | quotes_skip = True, quotes = s.quotes + 1 }
-            else
-                { s | quotes_skip = False, quotes = s.quotes - 1 }
-    in
+quote : Parser PState Markdown
+quote =
     Quote
-        <$> (quotes
-                *> string "> "
-                *> (modifyState (mod_s True) *> many1 blocks <* modifyState (mod_s False))
+        <$> (string "> "
+                *> (modifyState (identation_append "> ") *> many1 blocks <* modifyState identation_pop)
             )
