@@ -5,9 +5,9 @@ import Lia.Chart.Parser as Chart
 import Lia.Code.Parser as Code
 import Lia.Effect.Parser exposing (..)
 import Lia.Inline.Parser exposing (..)
-import Lia.Inline.Types exposing (Inline(..), Inlines)
+import Lia.Inline.Types exposing (Inlines, MultInlines)
 import Lia.Markdown.Types exposing (..)
-import Lia.PState exposing (PState)
+import Lia.PState exposing (..)
 import Lia.Quiz.Parser as Quiz
 import Lia.Survey.Parser as Survey
 
@@ -17,47 +17,6 @@ run =
     lazy <|
         \() ->
             many (blocks <* newlines)
-
-
-identation : Parser PState ()
-identation =
-    lazy <|
-        \() ->
-            let
-                par s =
-                    if s.identation == [] then
-                        succeed ()
-                    else if s.identation_skip then
-                        skip (succeed ())
-                    else
-                        String.concat s.identation
-                            |> string
-                            |> skip
-
-                reset s =
-                    { s | identation_skip = False }
-            in
-            withState par <* modifyState reset
-
-
-identation_append : String -> PState -> PState
-identation_append str state =
-    { state
-        | identation_skip = True
-        , identation = List.append state.identation [ str ]
-    }
-
-
-identation_pop : PState -> PState
-identation_pop state =
-    { state
-        | identation_skip = False
-        , identation =
-            state.identation
-                |> List.reverse
-                |> List.drop 1
-                |> List.reverse
-    }
 
 
 blocks : Parser PState Markdown
@@ -70,9 +29,10 @@ blocks =
                         [ eblock blocks
                         , ecomment paragraph
                         , Chart <$> Chart.parse
-                        , table
+                        , formated_table
+                        , simple_table
                         , Code <$> Code.parse
-                        , Quote <$> (identation *> quote)
+                        , quote
                         , horizontal_line
                         , Survey <$> Survey.parse
                         , Quiz <$> Quiz.parse <*> solution
@@ -81,7 +41,7 @@ blocks =
                         , Paragraph <$> paragraph
                         ]
             in
-            comments *> b
+            comments *> identation *> b
 
 
 solution : Parser PState (Maybe ( List Markdown, Int ))
@@ -104,11 +64,10 @@ unordered_list : Parser PState Markdown
 unordered_list =
     BulletList
         <$> many1
-                (identation
-                    *> regex "[*+-]( )"
-                    *> (modifyState (identation_append "  ")
+                (regex "[*+-]( )"
+                    *> (identation_append "  "
                             *> many1 (blocks <* regex "[\\n]?")
-                            <* modifyState identation_pop
+                            <* identation_pop
                        )
                 )
 
@@ -117,34 +76,37 @@ ordered_list : Parser PState Markdown
 ordered_list =
     OrderedList
         <$> many1
-                (identation
-                    *> regex "[0-9]+\\. "
-                    *> (modifyState (identation_append "   ")
+                (regex "[0-9]+\\. "
+                    *> (identation_append "   "
                             *> many1 (blocks <* regex "[\\n]?")
-                            <* modifyState identation_pop
+                            <* identation_pop
                        )
                 )
 
 
 horizontal_line : Parser PState Markdown
 horizontal_line =
-    HLine <$ (identation *> regex "--[\\-]+")
+    HLine <$ regex "--[\\-]+"
 
 
 paragraph : Parser PState Inlines
 paragraph =
-    (\l -> combine <| List.concat l) <$> many1 (identation *> line <* newline)
+    ident_skip *> ((\l -> combine <| List.concat l) <$> many1 (identation *> line <* newline))
 
 
-table : Parser PState Markdown
-table =
+table_row : Parser PState MultInlines
+table_row =
+    identation *> manyTill (string "|" *> line) (regex "\\|[ \\t]*\\n")
+
+
+simple_table : Parser PState Markdown
+simple_table =
+    ident_skip *> (Table [] [] <$> many1 table_row) <* newline
+
+
+formated_table : Parser PState Markdown
+formated_table =
     let
-        ending =
-            regex "\\|[ \\t]*" *> newline
-
-        row =
-            identation *> manyTill (string "|" *> line) ending
-
         format =
             identation
                 *> string "|"
@@ -156,22 +118,16 @@ table =
                         , regex "[ \\t]*--[\\-]+[ \\t]*" $> "left"
                         ]
                     )
-                <* ending
-
-        simple_table =
-            (Table [] [] <$> many1 row) <* newline
-
-        format_table =
-            (Table <$> row <*> format <*> many row) <* newline
+                <* regex "\\|[ \\t]*\\n"
     in
-    choice [ format_table, simple_table ]
+    ident_skip *> (Table <$> table_row <*> format <*> many table_row) <* newline
 
 
-
---quote : Parser PState Markdown
-
-
-quote : Parser PState (List Markdown)
+quote : Parser PState Markdown
 quote =
     string "> "
-        *> (modifyState (identation_append "> ") *> many1 blocks <* modifyState identation_pop)
+        *> identation_append "> "
+        *> (Quote
+                <$> many1 blocks
+           )
+        <* identation_pop
