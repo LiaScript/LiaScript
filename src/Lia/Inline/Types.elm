@@ -1,8 +1,12 @@
-module Lia.Inline.Types exposing (Inline(..), Line, Reference(..), Url(..))
+module Lia.Inline.Types exposing (Inline(..), Inlines, MultInlines, Reference(..), Url(..))
 
 
-type alias Line =
+type alias Inlines =
     List Inline
+
+
+type alias MultInlines =
+    List Inlines
 
 
 type Inline
@@ -17,8 +21,8 @@ type Inline
     | Formula Bool String
     | Ref Reference
     | HTML String
-    | EInline Int (Maybe String) Line
-    | Container Line
+    | EInline Int (Maybe String) Inlines
+    | Container Inlines
 
 
 type Url

@@ -10,7 +10,7 @@ module Lia.Quiz.Types
 
 import Array exposing (Array)
 import Lia.Helper exposing (ID)
-import Lia.Inline.Types exposing (Line)
+import Lia.Inline.Types exposing (MultInlines)
 
 
 type alias QuizVector =
@@ -18,7 +18,7 @@ type alias QuizVector =
 
 
 type alias Hints =
-    List Line
+    MultInlines
 
 
 type Solution
@@ -43,5 +43,5 @@ type QuizState
 
 type Quiz
     = Text String ID Hints
-    | SingleChoice Int (List Line) ID Hints
-    | MultipleChoice (Array Bool) (List Line) ID Hints
+    | SingleChoice Int MultInlines ID Hints
+    | MultipleChoice (Array Bool) MultInlines ID Hints

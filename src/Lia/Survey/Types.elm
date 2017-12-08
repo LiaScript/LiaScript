@@ -3,7 +3,7 @@ module Lia.Survey.Types exposing (..)
 import Array exposing (Array)
 import Dict exposing (Dict)
 import Lia.Helper exposing (ID)
-import Lia.Inline.Types exposing (Line)
+import Lia.Inline.Types exposing (Inlines, MultInlines)
 
 
 type alias Var =
@@ -26,5 +26,5 @@ type SurveyState
 
 type Survey
     = Text Int ID
-    | Vector Bool (List ( Var, Line )) ID
-    | Matrix Bool (List Var) (List Line) ID
+    | Vector Bool (List ( Var, Inlines )) ID
+    | Matrix Bool (List Var) MultInlines ID

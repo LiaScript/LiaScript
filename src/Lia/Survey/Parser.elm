@@ -66,7 +66,7 @@ header p =
         <* newline
 
 
-questions : Parser PState (List Line)
+questions : Parser PState MultInlines
 questions =
     many1 (regex "[ \\t]*\\[[ \\t]+\\]" *> line <* newline)
 

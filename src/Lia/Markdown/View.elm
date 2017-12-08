@@ -15,7 +15,7 @@ import Lia.Effect.View as Effects
 import Lia.Helper exposing (ID)
 import Lia.Index.Model
 import Lia.Index.View
-import Lia.Inline.Types exposing (Inline)
+import Lia.Inline.Types exposing (Inline, MultInlines)
 import Lia.Inline.View exposing (view_inf)
 import Lia.Markdown.Types exposing (..)
 import Lia.Markdown.Update exposing (Msg(..))
@@ -350,7 +350,7 @@ view_block section block =
             Html.text "to appear"
 
 
-view_table : MultiLine -> List String -> List MultiLine -> Html Msg
+view_table : MultInlines -> List String -> List MultInlines -> Html Msg
 view_table header format body =
     let
         view_row fct row =

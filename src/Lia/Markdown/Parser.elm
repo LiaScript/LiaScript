@@ -5,7 +5,7 @@ import Lia.Chart.Parser as Chart
 import Lia.Code.Parser as Code
 import Lia.Effect.Parser exposing (..)
 import Lia.Inline.Parser exposing (..)
-import Lia.Inline.Types exposing (Inline(..), Line)
+import Lia.Inline.Types exposing (Inline(..), Inlines)
 import Lia.Markdown.Types exposing (..)
 import Lia.PState exposing (PState)
 import Lia.Quiz.Parser as Quiz
@@ -72,7 +72,7 @@ blocks =
                         , Chart <$> Chart.parse
                         , table
                         , Code <$> Code.parse
-                        , quote
+                        , Quote <$> (identation *> quote)
                         , horizontal_line
                         , Survey <$> Survey.parse
                         , Quiz <$> Quiz.parse <*> solution
@@ -131,7 +131,7 @@ horizontal_line =
     HLine <$ (identation *> regex "--[\\-]+")
 
 
-paragraph : Parser PState Line
+paragraph : Parser PState Inlines
 paragraph =
     (\l -> combine <| List.concat l) <$> many1 (identation *> line <* newline)
 
@@ -167,9 +167,11 @@ table =
     choice [ format_table, simple_table ]
 
 
-quote : Parser PState Markdown
+
+--quote : Parser PState Markdown
+
+
+quote : Parser PState (List Markdown)
 quote =
-    Quote
-        <$> (string "> "
-                *> (modifyState (identation_append "> ") *> many1 blocks <* modifyState identation_pop)
-            )
+    string "> "
+        *> (modifyState (identation_append "> ") *> many1 blocks <* modifyState identation_pop)

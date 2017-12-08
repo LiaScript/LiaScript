@@ -4,7 +4,7 @@ import Array exposing (Array)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
-import Lia.Inline.Types exposing (Line)
+import Lia.Inline.Types exposing (MultInlines)
 import Lia.Inline.View exposing (view_inf)
 import Lia.Quiz.Model exposing (..)
 import Lia.Quiz.Types exposing (..)
@@ -28,7 +28,7 @@ view model quiz show_solution =
             view_quiz show_solution (state idx) (view_multiple_choice questions) idx hints (MultipleChoiceState solution)
 
 
-view_quiz : Bool -> Maybe QuizElement -> (Int -> QuizState -> Bool -> Html Msg) -> Int -> List Line -> QuizState -> Html Msg
+view_quiz : Bool -> Maybe QuizElement -> (Int -> QuizState -> Bool -> Html Msg) -> Int -> MultInlines -> QuizState -> Html Msg
 view_quiz show_solution state fn_view idx hints solution =
     case state of
         Just s ->
@@ -92,7 +92,7 @@ view_text idx state solved =
             Html.text ""
 
 
-view_single_choice : List Line -> Int -> QuizState -> Bool -> Html Msg
+view_single_choice : MultInlines -> Int -> QuizState -> Bool -> Html Msg
 view_single_choice questions idx state solved =
     case state of
         SingleChoiceState x ->
@@ -120,7 +120,7 @@ view_single_choice questions idx state solved =
             Html.text ""
 
 
-view_multiple_choice : List Line -> Int -> QuizState -> Bool -> Html Msg
+view_multiple_choice : MultInlines -> Int -> QuizState -> Bool -> Html Msg
 view_multiple_choice questions idx state solved =
     let
         fn b ( i, line ) =
@@ -149,7 +149,7 @@ view_multiple_choice questions idx state solved =
             Html.text ""
 
 
-view_hints : Int -> Int -> List Line -> List (Html Msg)
+view_hints : Int -> Int -> MultInlines -> List (Html Msg)
 view_hints idx counter hints =
     let
         v_hints h c =

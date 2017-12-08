@@ -29,7 +29,7 @@ pattern p =
     regex "[ \\t]*\\[" *> p <* string "]"
 
 
-quest : Parser PState a -> Parser PState Line
+quest : Parser PState a -> Parser PState Inlines
 quest p =
     pattern p *> line <* newline
 
@@ -78,7 +78,7 @@ single_choice =
     par <$> wrong <*> correct <*> wrong
 
 
-hints : Parser PState (List Line)
+hints : Parser PState MultInlines
 hints =
     many (quest (string "[?]"))
 

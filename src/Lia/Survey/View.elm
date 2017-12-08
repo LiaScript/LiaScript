@@ -4,7 +4,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import Lia.Helper exposing (ID)
-import Lia.Inline.Types exposing (Inline, Line)
+import Lia.Inline.Types exposing (Inline, Inlines)
 import Lia.Inline.View exposing (view_inf)
 import Lia.Survey.Model exposing (..)
 import Lia.Survey.Types exposing (..)
@@ -74,7 +74,7 @@ view_text str lines idx submitted =
         ]
 
 
-view_vector : List ( Var, Line ) -> (Bool -> ( Var, Line ) -> Html Msg) -> Bool -> Html Msg
+view_vector : List ( Var, Inlines ) -> (Bool -> ( Var, Inlines ) -> Html Msg) -> Bool -> Html Msg
 view_vector questions fn submitted =
     let
         fnX =
@@ -83,7 +83,7 @@ view_vector questions fn submitted =
     Html.div [] <| List.map fnX questions
 
 
-view_matrix : List Var -> List Line -> (Bool -> ( Int, Line ) -> Html Msg) -> Bool -> Html Msg
+view_matrix : List Var -> List Inlines -> (Bool -> ( Int, Inlines ) -> Html Msg) -> Bool -> Html Msg
 view_matrix vars questions fn submitted =
     let
         th =
@@ -106,14 +106,14 @@ mat_attr =
     Attr.align "center"
 
 
-vector : Bool -> (Var -> Msg) -> (Var -> Bool) -> Bool -> ( Var, Line ) -> Html Msg
+vector : Bool -> (Var -> Msg) -> (Var -> Bool) -> Bool -> ( Var, Inlines ) -> Html Msg
 vector button msg fn submitted ( var, elements ) =
     Html.p
         []
         [ input button (msg var) (fn var) submitted, inline elements ]
 
 
-matrix : Bool -> (ID -> Var -> Msg) -> (ID -> Var -> Bool) -> List Var -> Bool -> ( ID, Line ) -> Html Msg
+matrix : Bool -> (ID -> Var -> Msg) -> (ID -> Var -> Bool) -> List Var -> Bool -> ( ID, Inlines ) -> Html Msg
 matrix button msg fn vars submitted ( row, elements ) =
     let
         msgX =
@@ -174,6 +174,6 @@ input button msg checked submitted =
         ]
 
 
-inline : Line -> Html Msg
+inline : Inlines -> Html Msg
 inline elements =
     Html.span [] <| List.map view_inf elements
