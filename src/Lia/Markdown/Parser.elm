@@ -125,9 +125,10 @@ formated_table =
 
 quote : Parser PState Markdown
 quote =
-    string "> "
-        *> identation_append "> "
-        *> (Quote
-                <$> many1 blocks
-           )
-        <* identation_pop
+    Quote
+        <$> (string "> "
+                *> (identation_append ">( )?"
+                        *> many1 (blocks <* maybe identation <* regex "[\\n]?")
+                        <* identation_pop
+                   )
+            )

@@ -44,7 +44,7 @@ identation =
                         skip (succeed ())
                     else
                         String.concat s.identation
-                            |> string
+                            |> regex
                             |> skip
 
                 reset s =
