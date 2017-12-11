@@ -3,8 +3,8 @@ module Lia.Code.Parser exposing (parse)
 import Array
 import Combine exposing (..)
 import Lia.Code.Types exposing (..)
-import Lia.Inline.Parser exposing (comment_string, stringTill, whitelines)
-import Lia.PState exposing (PState)
+import Lia.Inline.Parser exposing (comment_string, whitelines)
+import Lia.PState exposing (..)
 import Lia.Utils exposing (guess)
 
 
@@ -55,9 +55,14 @@ header =
     String.trim <$> regex ".*\\n" <?> "language definition"
 
 
+code_line : Parser PState String
+code_line =
+    maybe identation *> regex "(.(?!```))*\\n?"
+
+
 listing : Parser PState ()
 listing =
-    ((\h s -> ( h, s )) <$> (border *> header) <*> stringTill border) >>= modify_temp
+    ((\h s -> ( h, String.concat s )) <$> (border *> header) <*> manyTill code_line (identation *> border)) >>= modify_temp
 
 
 modify_temp : ( String, String ) -> Parser PState ()
