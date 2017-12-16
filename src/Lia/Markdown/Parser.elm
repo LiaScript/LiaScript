@@ -3,7 +3,7 @@ module Lia.Markdown.Parser exposing (run)
 import Combine exposing (..)
 import Lia.Chart.Parser as Chart
 import Lia.Code.Parser as Code
-import Lia.Effect.Parser exposing (..)
+import Lia.Effect.Parser as Effect
 import Lia.Inline.Parser exposing (..)
 import Lia.Inline.Types exposing (Inlines, MultInlines)
 import Lia.Markdown.Types exposing (..)
@@ -26,8 +26,8 @@ blocks =
             let
                 b =
                     choice
-                        [ eblock blocks
-                        , ecomment paragraph
+                        [ Effect.markdown blocks
+                        , Effect.comment paragraph
                         , Chart <$> Chart.parse
                         , formated_table
                         , simple_table

@@ -1,6 +1,4 @@
-module Lia.Effect.Parser exposing (eblock, ecomment, einline)
-
---import Lia.Effect.Types exposing (Comment)
+module Lia.Effect.Parser exposing (comment, inline, markdown)
 
 import Combine exposing (..)
 import Combine.Num exposing (int)
@@ -9,30 +7,32 @@ import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.PState exposing (PState)
 
 
-eblock : Parser PState Markdown -> Parser PState Markdown
-eblock blocks =
-    let
-        name =
-            maybe (regex "[a-zA-Z0-9 ]+")
-
-        multi_block =
-            regex "( *){{[\\n]+" *> manyTill (blocks <* regex "[ \\n\\t]*") (regex "( *)}}")
-
-        single_block =
-            List.singleton <$> (regex "[ \\n\\t]*" *> blocks)
-    in
-    EBlock
+markdown : Parser PState Markdown -> Parser PState Markdown
+markdown blocks =
+    Effect
         <$> (regex "( *){{" *> effect_number)
         <*> (regex "( *)" *> name <* regex "}}( *)[\\n]")
-        <*> (multi_block <|> single_block)
+        <*> (multi blocks <|> single blocks)
 
 
-einline : Parser PState Inline -> Parser PState Inline
-einline inlines =
+single : Parser PState Markdown -> Parser PState (List Markdown)
+single blocks =
+    List.singleton <$> (regex "[ \\n\\t]*" *> blocks)
+
+
+multi : Parser PState Markdown -> Parser PState (List Markdown)
+multi blocks =
+    regex "( *){{[\\n]+" *> manyTill (blocks <* regex "[ \\n\\t]*") (regex "( *)}}")
+
+
+name : Parser PState (Maybe String)
+name =
+    maybe (regex "[a-zA-Z0-9 ]+")
+
+
+inline : Parser PState Inline -> Parser PState Inline
+inline inlines =
     let
-        name =
-            maybe (regex "[a-zA-Z0-9 ]+")
-
         multi_inline =
             string "{{" *> manyTill inlines (string "}}")
     in
@@ -58,10 +58,10 @@ effect_number =
     int >>= state
 
 
-ecomment : Parser PState Inlines -> Parser PState Markdown
-ecomment paragraph =
+comment : Parser PState Inlines -> Parser PState Markdown
+comment paragraph =
     let
         number =
             regex "( *)--{{" *> effect_number <* regex "}}--( *)[\\n]+"
     in
-    EComment <$> number <*> paragraph
+    Comment <$> number <*> paragraph

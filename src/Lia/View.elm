@@ -7,14 +7,14 @@ import Char
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
+import Lia.Effect.View exposing (state)
 import Lia.Helper exposing (ID)
 import Lia.Index.Model
 import Lia.Index.View
 import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model)
 import Lia.Types exposing (..)
-import Lia.Update exposing (Msg(..))
-import String
+import Lia.Update exposing (Msg(..), get_active_section)
 
 
 view : Model -> Html Msg
@@ -84,7 +84,12 @@ view_loc active titles =
 view_article : Model -> Html Msg
 view_article model =
     Html.article [ Attr.class "lia-slide" ]
-        [ view_nav model.section_active model.mode model.design
+        [ model
+            |> get_active_section
+            |> Maybe.map .effect_model
+            |> Maybe.map state
+            |> Maybe.withDefault ""
+            |> view_nav model.section_active model.mode model.design
         , case Array.get model.section_active model.sections of
             Just section ->
                 Html.map UpdateMarkdown <| Markdown.view section
@@ -119,8 +124,8 @@ navButton str msg =
         [ Html.text str ]
 
 
-view_nav : ID -> Mode -> Design -> Html Msg
-view_nav section_active mode design =
+view_nav : ID -> Mode -> Design -> String -> Html Msg
+view_nav section_active mode design state =
     Html.nav [ Attr.class "lia-toolbar" ]
         [ Html.button
             [ onClick ToggleLOC
@@ -137,28 +142,20 @@ view_nav section_active mode design =
                 Html.text "visibility"
             ]
         , Html.span [ Attr.class "lia-spacer" ] []
-        , navButton "navigate_before" (PrevSection 0)
+        , navButton "navigate_before" PrevSection
         , Html.span [ Attr.class "lia-labeled lia-left" ]
             [ Html.span [ Attr.class "lia-label" ]
                 [ Html.text (toString (section_active + 1))
-                , case mode of
-                    Presentation ->
-                        Html.text <|
-                            String.concat
-                                [ " ("
+                , Html.text <|
+                    case mode of
+                        Presentation ->
+                            " " ++ state
 
-                                --, toString (model.effect_model.visible + 1)
-                                , "/"
-
-                                --, toString (model.effect_model.effects + 1)
-                                , ")"
-                                ]
-
-                    _ ->
-                        Html.text ""
+                        _ ->
+                            ""
                 ]
             ]
-        , navButton "navigate_next" (NextSection 0)
+        , navButton "navigate_next" NextSection
         , Html.span [ Attr.class "lia-spacer" ] []
         , view_design_light design.light
         , view_design_theme design.theme

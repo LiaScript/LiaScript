@@ -63,6 +63,7 @@ init_section ( tags, title, code ) =
     , effects = 0
     , speach = []
     , code_vector = Array.empty
+    , effect_model = Effect.init
     }
 
 

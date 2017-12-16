@@ -14,7 +14,7 @@ module Lia.Inline.Parser
 
 import Combine exposing (..)
 import Combine.Char exposing (..)
-import Lia.Effect.Parser exposing (einline)
+import Lia.Effect.Parser as Effect
 import Lia.Inline.Types exposing (..)
 import Lia.PState exposing (PState)
 
@@ -131,7 +131,7 @@ inlines =
                     , code
                     , reference
                     , formula
-                    , einline inlines
+                    , Effect.inline inlines
                     , strings
                     ]
 

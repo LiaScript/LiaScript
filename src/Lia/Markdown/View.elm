@@ -323,6 +323,9 @@ view_block section block =
                 |> List.map view_inf
                 |> Html.p [ Attr.class "lia-inline lia-paragraph" ]
 
+        Effect idx effect_name sub_blocks ->
+            Effects.view_block section.effect_model (view_block section) idx effect_name sub_blocks
+
         BulletList list ->
             list
                 |> view_list section

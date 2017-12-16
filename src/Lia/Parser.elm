@@ -32,11 +32,11 @@ parse_titles code =
             Err (formatError ms stream)
 
 
-parse_section : String -> Result String ( List Markdown, CodeVector )
+parse_section : String -> Result String ( List Markdown, CodeVector, Int )
 parse_section str =
     case Combine.runParser Markdown.run Lia.PState.init str of
         Ok ( state, _, es ) ->
-            Ok ( es, state.code_vector )
+            Ok ( es, state.code_vector, state.num_effects )
 
         Err ( _, stream, ms ) ->
             formatError ms stream |> Err

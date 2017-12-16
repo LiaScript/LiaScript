@@ -1,14 +1,16 @@
-module Lia.Markdown.Update exposing (Msg(..), update)
+module Lia.Markdown.Update exposing (Msg(..), nextEffect, previousEffect, update)
 
 --import Lia.Helper exposing (get_slide)
 
 import Json.Encode as JE
 import Lia.Code.Update as Code
+import Lia.Effect.Update as Effect
 import Lia.Types exposing (Section)
 
 
 type Msg
     = UpdateCode Code.Msg
+    | UpdateEffect Effect.Msg
 
 
 
@@ -32,6 +34,33 @@ update msg section =
             in
             --( { model | code_model = code_model }, Cmd.map UpdateCode cmd, Nothing )
             ( { section | code_vector = code_vector }, Cmd.map UpdateCode cmd, Nothing )
+
+        UpdateEffect childMsg ->
+            let
+                ( effect_model, cmd ) =
+                    Effect.update childMsg section.effect_model
+            in
+            ( { section | effect_model = effect_model }, Cmd.map UpdateEffect cmd, Nothing )
+
+
+nextEffect : Section -> Maybe Section
+nextEffect section =
+    case Effect.next section.effect_model of
+        Just effect_model ->
+            Just { section | effect_model = effect_model }
+
+        _ ->
+            Nothing
+
+
+previousEffect : Section -> Maybe Section
+previousEffect section =
+    case Effect.previous section.effect_model of
+        Just effect_model ->
+            Just { section | effect_model = effect_model }
+
+        _ ->
+            Nothing
 
 
 

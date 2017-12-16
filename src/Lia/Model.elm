@@ -2,11 +2,8 @@ module Lia.Model exposing (..)
 
 import Array exposing (Array)
 import Lia.Definition.Types as Definition exposing (Definition)
-import Lia.Effect.Model as Effect
 import Lia.Helper exposing (ID)
 import Lia.Index.Model as Index
-import Lia.Quiz.Model as Quiz
-import Lia.Survey.Model as Survey
 import Lia.Types exposing (Design, Mode, Sections)
 import Lia.Utils exposing (get_local, load_js, set_local)
 

@@ -1,4 +1,4 @@
-module Lia.Effect.View exposing (comment, view, view_block)
+module Lia.Effect.View exposing (comment, state, view, view_block)
 
 --, view_comment)
 
@@ -106,3 +106,11 @@ responsive silent msg =
                 []
             ]
         ]
+
+
+state : Model -> String
+state model =
+    if model.effects == 0 then
+        ""
+    else
+        "(" ++ toString (model.visible + 1) ++ "/" ++ toString (model.effects + 1) ++ ")"

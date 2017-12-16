@@ -1,4 +1,4 @@
-module Lia.Update exposing (Msg(..), generate, update)
+module Lia.Update exposing (Msg(..), generate, get_active_section, update)
 
 --import Lia.Helper exposing (get_slide)
 
@@ -21,8 +21,8 @@ import Lia.Utils exposing (set_local)
 
 type Msg
     = Load ID
-    | PrevSection Int
-    | NextSection Int
+    | PrevSection
+    | NextSection
     | DesignTheme String
     | DesignLight
     | ToggleLOC
@@ -44,11 +44,11 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg, Maybe ( String, JE.Value ) )
 update msg model =
-    case msg of
-        ToggleLOC ->
+    case ( msg, get_active_section model ) of
+        ( ToggleLOC, _ ) ->
             ( { model | loc = not model.loc }, Cmd.none, Nothing )
 
-        UpdateIndex childMsg ->
+        ( UpdateIndex childMsg, _ ) ->
             let
                 index =
                     model.sections
@@ -58,19 +58,14 @@ update msg model =
             in
             ( { model | index_model = index }, Cmd.none, Nothing )
 
-        UpdateMarkdown childMsg ->
-            case get_active_section model of
-                Just sec ->
-                    let
-                        ( section, cmd, log ) =
-                            Markdown.update childMsg sec
-                    in
-                    ( { model | sections = Array.set model.section_active section model.sections }, Cmd.map UpdateMarkdown cmd, log )
+        ( UpdateMarkdown childMsg, Just sec ) ->
+            let
+                ( section, cmd, log ) =
+                    Markdown.update childMsg sec
+            in
+            ( set_active_section model section, Cmd.map UpdateMarkdown cmd, log )
 
-                Nothing ->
-                    ( model, Cmd.none, Nothing )
-
-        DesignTheme theme ->
+        ( DesignTheme theme, _ ) ->
             ( { model
                 | design =
                     { light = model.design.light
@@ -81,7 +76,7 @@ update msg model =
             , Nothing
             )
 
-        DesignLight ->
+        ( DesignLight, _ ) ->
             ( { model
                 | design =
                     { light =
@@ -97,7 +92,7 @@ update msg model =
             , Nothing
             )
 
-        Load idx ->
+        ( Load idx, Just sec ) ->
             if (-1 < idx) && (idx < Array.length model.sections) then
                 let
                     unused =
@@ -115,22 +110,30 @@ update msg model =
             else
                 ( model, Cmd.none, Nothing )
 
-        NextSection i ->
-            update (Load <| model.section_active + 1) model
+        ( NextSection, Just sec ) ->
+            case Markdown.nextEffect sec of
+                Just section ->
+                    ( set_active_section model section, Cmd.none, Nothing )
 
-        PrevSection i ->
-            update (Load <| model.section_active - 1) model
+                Nothing ->
+                    update (Load <| model.section_active + 1) model
 
-        SwitchMode ->
+        ( PrevSection, Just sec ) ->
+            case Markdown.previousEffect sec of
+                Just section ->
+                    ( set_active_section model section, Cmd.none, Nothing )
+
+                Nothing ->
+                    update (Load <| model.section_active - 1) model
+
+        ( SwitchMode, Just sec ) ->
             if model.mode == Presentation then
                 ( { model | mode = Slides }, Cmd.none, Nothing )
             else
                 ( { model | mode = Presentation }, Cmd.none, Nothing )
 
-
-
---        _ ->
---            ( model, Cmd.none, Nothing )
+        _ ->
+            ( model, Cmd.none, Nothing )
 
 
 get_active_section : Model -> Maybe Section
@@ -138,35 +141,32 @@ get_active_section model =
     Array.get model.section_active model.sections
 
 
+set_active_section : Model -> Section -> Model
+set_active_section model section =
+    { model | sections = Array.set model.section_active section model.sections }
+
+
 generate : Model -> Model
 generate model =
     case get_active_section model of
         Just sec ->
-            case Lia.Parser.parse_section sec.code of
-                Ok ( blocks, codes ) ->
-                    { model
-                        | sections =
-                            Array.set model.section_active
-                                { sec
-                                    | body = blocks
-                                    , error = Nothing
-                                    , code_vector = codes
-                                }
-                                model.sections
-                    }
+            set_active_section model <|
+                case Lia.Parser.parse_section sec.code of
+                    Ok ( blocks, codes, num_effects ) ->
+                        { sec
+                            | body = blocks
+                            , error = Nothing
+                            , code_vector = codes
+                            , effect_model = { effects = num_effects, visible = 0 }
+                        }
 
-                Err msg ->
-                    { model
-                        | sections =
-                            Array.set model.section_active
-                                { sec
-                                    | body = []
-                                    , error = Just msg
-                                }
-                                model.sections
-                    }
+                    Err msg ->
+                        { sec
+                            | body = []
+                            , error = Just msg
+                        }
 
-        _ ->
+        Nothing ->
             model
 
 

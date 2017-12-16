@@ -1,57 +1,55 @@
 module Lia.Effect.Model
     exposing
         ( Model
-        , Status(..)
-        , get_comment
+          --    , Status(..)
+          --    , get_comment
         , init
-        , init_silent
+          --      , init_silent
           --  , scan_for_comments
         )
 
 --import Lia.Index.Model exposing (parse_inlines)
 --import Lia.Markdown.Types exposing (Markdown(..))
-
-import Array exposing (Array)
-import Lia.Types exposing (Section)
+--import Array exposing (Array)
+--import Lia.Types exposing (Section)
 
 
 type alias Model =
     { visible : Int
     , effects : Int
-    , status : Status
-    , comments : Array (Maybe String)
-    , narrator : String
+
+    --    , status : Status
+    --    , comments : Array (Maybe String)
+    --    , narrator : String
     }
 
 
-type Status
-    = Speaking
-    | Silent
-    | Error String
+
+--type Status
+--    = Speaking
+--    | Silent
+--    | Error String
+--init : String -> Maybe Section -> Model
 
 
-init : String -> Maybe Section -> Model
-init narrator maybe =
+init =
     --case maybe of
     --Just slide ->
     --    Model 0 slide.effects Silent (scan_for_comments slide.effects slide.body) narrator
     --Nothing ->
-    Model 0 0 Silent Array.empty narrator
-
-
-init_silent : Model
-init_silent =
-    Model 9999 9999 Silent Array.empty ""
-
-
-get_comment : Model -> Maybe String
-get_comment model =
-    model.comments
-        |> Array.get model.visible
-        |> Maybe.andThen (\a -> a)
+    Model 0 0
 
 
 
+--Silent Array.empty narrator
+--init_silent : Model
+--init_silent =
+--    Model 9999 9999 Silent Array.empty ""
+--get_comment : Model -> Maybe String
+--get_comment model =
+--    model.comments
+--        |> Array.get model.visible
+--        |> Maybe.andThen (\a -> a)
 -- scan_for_comments : Int -> List Block -> Array (Maybe String)
 -- scan_for_comments effect_count blocks =
 --     let
