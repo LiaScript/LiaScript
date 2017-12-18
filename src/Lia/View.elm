@@ -28,6 +28,7 @@ view model =
         ]
 
 
+design : { theme : String, light : String } -> Html.Attribute msg
 design s =
     Attr.class
         ("lia-canvas lia-theme-"
