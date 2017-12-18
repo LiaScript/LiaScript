@@ -15,18 +15,18 @@ import Lia.Effect.View as Effects
 import Lia.Helper exposing (ID)
 import Lia.Index.Model
 import Lia.Index.View
-import Lia.Inline.Types exposing (Inline, MultInlines)
-import Lia.Inline.View exposing (view_inf)
+import Lia.Inline.Types exposing (Inlines, MultInlines)
+import Lia.Inline.View exposing (viewer)
 import Lia.Markdown.Types exposing (..)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Model exposing (Model)
 import Lia.Quiz.View
 import Lia.Survey.View
-import Lia.Types exposing (Section)
+import Lia.Types exposing (Mode(..), Section)
 
 
-view : Section -> Html Msg
-view section =
+view : Mode -> Section -> Html Msg
+view mode section =
     case section.error of
         Just msg ->
             Html.section [ Attr.class "lia-content" ]
@@ -36,11 +36,17 @@ view section =
 
         Nothing ->
             let
-                viewer =
-                    view_block section
+                show =
+                    view_block
+                        (if mode == Presentation then
+                            viewer section.effect_model.visible
+                         else
+                            viewer 9999
+                        )
+                        section
             in
             section.body
-                |> List.map viewer
+                |> List.map show
                 |> (::) (view_header section.indentation section.title)
                 |> Html.section [ Attr.class "lia-content" ]
 
@@ -312,36 +318,34 @@ zero_tuple =
     to_tuple 0
 
 
-view_block : Section -> Markdown -> Html Msg
-view_block section block =
+view_block : (Inlines -> List (Html Msg)) -> Section -> Markdown -> Html Msg
+view_block show section block =
     case block of
         HLine ->
             Html.hr [ Attr.class "lia-inline lia-horiz-line" ] []
 
         Paragraph elements ->
-            elements
-                |> List.map view_inf
-                |> Html.p [ Attr.class "lia-inline lia-paragraph" ]
+            Html.p [ Attr.class "lia-inline lia-paragraph" ] (show elements)
 
         Effect idx effect_name sub_blocks ->
-            Effects.view_block section.effect_model (view_block section) idx effect_name sub_blocks
+            Effects.view_block section.effect_model (view_block show section) idx effect_name sub_blocks
 
         BulletList list ->
             list
-                |> view_list section
+                |> view_list show section
                 |> Html.ul [ Attr.class "lia-inline lia-list lia-unordered" ]
 
         OrderedList list ->
             list
-                |> view_list section
+                |> view_list show section
                 |> Html.ol [ Attr.class "lia-inline lia-list lia-ordered" ]
 
         Table header format body ->
-            view_table header format body
+            view_table show header format body
 
         Quote elements ->
             elements
-                |> List.map (\e -> view_block section e)
+                |> List.map (\e -> view_block show section e)
                 |> Html.blockquote [ Attr.class "lia-inline lia-quote" ]
 
         Code code ->
@@ -353,12 +357,12 @@ view_block section block =
             Html.text "to appear"
 
 
-view_table : MultInlines -> List String -> List MultInlines -> Html Msg
-view_table header format body =
+view_table : (Inlines -> List (Html Msg)) -> MultInlines -> List String -> List MultInlines -> Html Msg
+view_table show header format body =
     let
         view_row fct row =
             List.map2
-                (\r f -> r |> List.map view_inf |> fct [ Attr.align f ])
+                (\r f -> r |> show |> fct [ Attr.align f ])
                 row
                 format
     in
@@ -377,11 +381,11 @@ view_table header format body =
         |> Html.table [ Attr.class "lia-inline lia-table" ]
 
 
-view_list : Section -> List (List Markdown) -> List (Html Msg)
-view_list section list =
+view_list : (Inlines -> List (Html Msg)) -> Section -> List (List Markdown) -> List (Html Msg)
+view_list show section list =
     let
         viewer sub_list =
-            List.map (view_block section) sub_list
+            List.map (view_block show section) sub_list
 
         html =
             Html.li []

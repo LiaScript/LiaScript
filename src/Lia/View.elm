@@ -92,7 +92,7 @@ view_article model =
             |> view_nav model.section_active model.mode model.design
         , case Array.get model.section_active model.sections of
             Just section ->
-                Html.map UpdateMarkdown <| Markdown.view section
+                Html.map UpdateMarkdown <| Markdown.view model.mode section
 
             Nothing ->
                 Html.text ""

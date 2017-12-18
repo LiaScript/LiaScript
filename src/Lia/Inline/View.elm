@@ -1,15 +1,20 @@
-module Lia.Inline.View exposing (reference, view, view_inf)
+module Lia.Inline.View exposing (reference, view, view_inf, viewer)
 
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Lia.Effect.View as Effect
-import Lia.Inline.Types exposing (Inline(..), Reference(..), Url(..))
+import Lia.Inline.Types exposing (Inline(..), Inlines, Reference(..), Url(..))
 import Lia.Utils
 
 
 inline_class : String -> Attribute msg
 inline_class c =
     Attr.class ("lia-inline" ++ c)
+
+
+viewer : Int -> Inlines -> List (Html msg)
+viewer visible elements =
+    List.map (view visible) elements
 
 
 view : Int -> Inline -> Html msg

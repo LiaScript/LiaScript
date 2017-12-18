@@ -111,19 +111,19 @@ update msg model =
                 ( model, Cmd.none, Nothing )
 
         ( NextSection, Just sec ) ->
-            case Markdown.nextEffect sec of
-                Just section ->
+            case ( Markdown.nextEffect sec, model.mode ) of
+                ( Just section, Presentation ) ->
                     ( set_active_section model section, Cmd.none, Nothing )
 
-                Nothing ->
+                _ ->
                     update (Load <| model.section_active + 1) model
 
         ( PrevSection, Just sec ) ->
-            case Markdown.previousEffect sec of
-                Just section ->
+            case ( Markdown.previousEffect sec, model.mode ) of
+                ( Just section, Presentation ) ->
                     ( set_active_section model section, Cmd.none, Nothing )
 
-                Nothing ->
+                _ ->
                     update (Load <| model.section_active - 1) model
 
         ( SwitchMode, Just sec ) ->
