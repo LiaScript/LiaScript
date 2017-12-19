@@ -10,8 +10,8 @@ import Lia.PState exposing (PState)
 markdown : Parser PState Markdown -> Parser PState Markdown
 markdown blocks =
     Effect
-        <$> (regex "( *){{" *> effect_number)
-        <*> (regex "( *)" *> name <* regex "}}( *)[\\n]")
+        <$> (regex "[\\t ]*{{" *> effect_number)
+        <*> (regex "[\\t ]*" *> name <* regex "}}[\\t ]*\\n")
         <*> (multi blocks <|> single blocks)
 
 
@@ -22,12 +22,12 @@ single blocks =
 
 multi : Parser PState Markdown -> Parser PState (List Markdown)
 multi blocks =
-    regex "( *){{[\\n]+" *> manyTill (blocks <* regex "[ \\n\\t]*") (regex "( *)}}")
+    regex "[\\t ]*[=]{3,}[\\n]+" *> manyTill (blocks <* regex "[ \\n\\t]*") (regex "[\\t ]*[=]{3,}")
 
 
 name : Parser PState (Maybe String)
 name =
-    maybe (regex "[a-zA-Z0-9 ]+")
+    maybe (regex "[\\w ]+")
 
 
 inline : Parser PState Inline -> Parser PState Inline
@@ -38,7 +38,7 @@ inline inlines =
     in
     EInline
         <$> (string "{{" *> effect_number)
-        <*> (regex "( *)" *> name <* string "}}")
+        <*> (regex "[\\t ]*" *> name <* string "}}")
         <*> multi_inline
 
 
@@ -62,6 +62,6 @@ comment : Parser PState Inlines -> Parser PState Markdown
 comment paragraph =
     let
         number =
-            regex "( *)--{{" *> effect_number <* regex "}}--( *)[\\n]+"
+            regex "[\\t ]*--{{" *> effect_number <* regex "}}--[\\t ]*[\\n]+"
     in
     Comment <$> number <*> paragraph

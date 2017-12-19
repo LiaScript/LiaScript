@@ -129,7 +129,7 @@ through or the application of superscript. If you, for example, superscript
 superscript you can get even smaller.
 
                                        {{1}}
-{{
+================================================================================
 
 \~\~underline\~\~ -> ~~underline~~
 
@@ -137,7 +137,7 @@ superscript you can get even smaller.
 
 \^superscript\^ -> ^superscript^ ^^superscript^^ ^^^superscript^^^
 
-}}
+================================================================================
 
 
 #### Combinations
@@ -258,8 +258,8 @@ also be used to apply graphical filters of for positioning.
                                      --{{1}}--
 The same technique can also be applied to style and format movies...
 
-{{1}}
-{{
+                                       {{1}}
+================================================================================
 
 !![movie](https://www.youtube.com/embed/XsNk5aOpqUc)<!--
   width: 100px;
@@ -286,7 +286,7 @@ The same technique can also be applied to style and format movies...
   filter: blur(5px);
 -->
 
-}}
+================================================================================
 
 ### Lists & Tables
 
@@ -919,8 +919,8 @@ further effects.
                       {{1}}
 This is an example for a *single* block effect.
 
-                   {{2 zoomIn}}
-{{
+                               {{2 zoomIn}}
+================================================================================
 
 This is an example for a ... wait a second {{3 rubberBand}}{{**multi**}} ...
 block effect.
@@ -929,14 +929,14 @@ block effect.
 * beta
 * gamma
 
-}}
+================================================================================
 ```
 
                                   {{1}}
 This is an example for a *single* block effect.
 
                                {{2 zoomIn}}
-{{
+================================================================================
 
 This is an example for a ... wait a second {{3 rubberBand}}{{**multi**}} ...
 block effect.
@@ -945,7 +945,7 @@ block effect.
 * beta
 * gamma
 
-}}
+================================================================================
 
                                 --{{4}}--
 You can put spaces before the definition of a block effect, to prevent github
