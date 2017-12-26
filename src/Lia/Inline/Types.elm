@@ -1,4 +1,6 @@
-module Lia.Inline.Types exposing (Inline(..), Inlines, MultInlines, Reference(..), Url(..))
+module Lia.Inline.Types exposing (Annotation, Inline(..), Inlines, MultInlines, Reference(..), Url(..))
+
+import Dict exposing (Dict)
 
 
 type alias Inlines =
@@ -9,10 +11,14 @@ type alias MultInlines =
     List Inlines
 
 
+type alias Annotation =
+    Maybe (Dict String String)
+
+
 type Inline
     = Chars String
     | Symbol String
-    | Bold Inline
+    | Bold Inline Annotation
     | Italic Inline
     | Strike Inline
     | Underline Inline
@@ -21,8 +27,12 @@ type Inline
     | Formula Bool String
     | Ref Reference
     | HTML String
-    | EInline Int (Maybe String) Inlines
+    | EInline Int (Maybe String) String Inlines
     | Container Inlines
+
+
+
+--| Annotated Inline Parameters
 
 
 type Url

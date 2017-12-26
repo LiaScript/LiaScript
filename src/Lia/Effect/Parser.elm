@@ -11,7 +11,8 @@ markdown : Parser PState Markdown -> Parser PState Markdown
 markdown blocks =
     Effect
         <$> (regex "[\\t ]*{{" *> effect_number)
-        <*> (regex "[\\t ]*" *> name <* regex "}}[\\t ]*\\n")
+        <*> (regex "[\\t ]*" *> name)
+        <*> (time <* regex "}}[\\t ]*\\n")
         <*> (multi blocks <|> single blocks)
 
 
@@ -30,6 +31,16 @@ name =
     maybe (regex "[\\w ]+")
 
 
+time : Parser PState String
+time =
+    optional "" (string "|" *> regex "[\\w;:, -]+")
+
+
+css : Parser PState ( String, String )
+css =
+    (\a b -> ( String.trim a, String.trim b )) <$> regex "[\\w -]+" <*> (string ":" *> regex "[\\w ]+")
+
+
 inline : Parser PState Inline -> Parser PState Inline
 inline inlines =
     let
@@ -38,7 +49,8 @@ inline inlines =
     in
     EInline
         <$> (string "{{" *> effect_number)
-        <*> (regex "[\\t ]*" *> name <* string "}}")
+        <*> (regex "[\\t ]*" *> name)
+        <*> (time <* string "}}")
         <*> multi_inline
 
 

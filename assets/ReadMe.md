@@ -28,7 +28,7 @@ script:   https://interactivepython.org/runestone/static/thinkcspy/_static/skulp
 
 See the online rendered version at: https://liascript.github.io
 
-Lia-Script is an extended Markdown format for writing interactive online
+*Lia-Script* <!-- class = "animated infinite bounce" style = "color: red;" --> is an extended Markdown format for writing interactive online
 courses. Imagine all schoolbooks, technical or scientific literature could
 become open-source projects and more interactive ... with collaborating teachers
 and students ...
@@ -231,28 +231,30 @@ also be used to apply graphical filters of for positioning.
 
 
 ![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)<!--
+style="
   width: 100px;
-  border: 10px solid;
+  border: 10px solid;"
 -->
 ![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)<!--
+style="
   width: 120px;
-  border: 10px solid;
+  border: 10px solid;"
 -->
 ![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)<!--
-  width: 140px;
-  border: 10px solid;
+  style="width: 140px;
+  border: 10px solid;"
 -->
 ![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)<!--
-  width: 120px;
+  style="width: 120px;
   border: 10px solid;
   -webkit-filter: grayscale(100%); /* Safari 6.0 - 9.0 */
-  filter: grayscale(100%);
+  filter: grayscale(100%);"
 -->
 ![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)<!--
-  width: 100px;
+  style="width: 100px;
   border: 10px solid;
   -webkit-filter: blur(5px); /* Safari 6.0 - 9.0 */
-  filter: blur(5px);
+  filter: blur(5px);"
 -->
 
                                      --{{1}}--
@@ -890,13 +892,13 @@ within the examples.
 See https://daneden.github.io/animate.css for more animation effects.
 
 ``` markdown
-* {{0 infinite bounce}}{{ *bounce* }}
+* {{0 infinite bounce | animation-delay: 5s; }}{{ *bounce* }}
 * {{1 zoomIn}}{{zoomIn}}
 * {{2 zoomIn}}{{zoomOut}}
 * {{3 rubberBand}}{{![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)}}
 ```
 
-* {{0 infinite bounce}}{{ *bounce* }}
+* {{0 infinite bounce | animation-delay: 5s;}}{{ *bounce* }}
 * {{1 zoomIn}}{{zoomIn}}
 * {{2 zoomOut}}{{zoomOut}}
 * {{3 rubberBand}}{{![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)}}

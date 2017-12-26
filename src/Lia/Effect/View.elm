@@ -1,6 +1,7 @@
 module Lia.Effect.View exposing (comment, state, view, view_block)
 
 --, view_comment)
+--import Lia.Utils exposing (stringToHtml)
 
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -8,22 +9,17 @@ import Html.Events exposing (onClick)
 import Lia.Effect.Model exposing (Model)
 
 
---import Lia.Utils exposing (stringToHtml)
---spaces =
---stringToHtml "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
---    Html.text " "
-
-
-view : (inline -> Html msg) -> Int -> Int -> Maybe String -> List inline -> Html msg
-view viewer idx visible effect_name elements =
+view : (inline -> Html msg) -> Int -> Int -> Maybe String -> String -> List inline -> Html msg
+view viewer idx visible name time elements =
     Html.span
         [ Attr.id (toString idx)
         , Attr.hidden (idx > visible)
-        , if idx > visible then
-            Attr.style []
-          else
-            Attr.style [ ( "display", "inline-block" ) ]
-        , case effect_name of
+        , Attr.attribute "style" <|
+            if idx > visible then
+                ""
+            else
+                "display: inline-block;"
+        , case name of
             Nothing ->
                 Attr.class "lia-effect-inline"
 
@@ -32,7 +28,7 @@ view viewer idx visible effect_name elements =
         ]
         (Html.span
             [ Attr.class
-                (if effect_name == Nothing then
+                (if name == Nothing then
                     "lia-effect-circle"
                  else
                     "lia-effect-circle animated"
@@ -44,12 +40,12 @@ view viewer idx visible effect_name elements =
         )
 
 
-view_block : Model -> (block -> Html msg) -> Int -> Maybe String -> List block -> Html msg
-view_block model viewer idx effect_name blocks =
+view_block : Model -> (block -> Html msg) -> Int -> Maybe String -> String -> List block -> Html msg
+view_block model viewer idx name time blocks =
     Html.div
         [ Attr.id (toString idx)
         , Attr.hidden (idx > model.visible)
-        , case effect_name of
+        , case name of
             Nothing ->
                 Attr.class "lia-effect-inline"
 

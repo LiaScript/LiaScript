@@ -327,8 +327,8 @@ view_block show section block =
         Paragraph elements ->
             Html.p [ Attr.class "lia-inline lia-paragraph" ] (show elements)
 
-        Effect idx effect_name sub_blocks ->
-            Effects.view_block section.effect_model (view_block show section) idx effect_name sub_blocks
+        Effect idx name time sub_blocks ->
+            Effects.view_block section.effect_model (view_block show section) idx name time sub_blocks
 
         BulletList list ->
             list

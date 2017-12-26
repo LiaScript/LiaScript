@@ -1,15 +1,37 @@
 module Lia.Inline.View exposing (reference, view, view_inf, viewer)
 
+import Dict
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Lia.Effect.View as Effect
-import Lia.Inline.Types exposing (Inline(..), Inlines, Reference(..), Url(..))
+import Lia.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..), Url(..))
 import Lia.Utils
 
 
 inline_class : String -> Attribute msg
 inline_class c =
     Attr.class ("lia-inline" ++ c)
+
+
+annotation : Annotation -> String -> List (Attribute msg)
+annotation attr cls =
+    case attr of
+        Just dict ->
+            --Dict.update "class" (\v -> Maybe.map ()(++)(cls ++ " ")) v) dict
+            dict
+                |> Dict.insert "class"
+                    (case Dict.get "class" dict of
+                        Just c ->
+                            "lia-inline " ++ cls ++ " " ++ c
+
+                        Nothing ->
+                            "lia-inline " ++ cls
+                    )
+                |> Dict.toList
+                |> List.map (\( key, value ) -> Attr.attribute key value)
+
+        Nothing ->
+            [ Attr.class ("lia-inline " ++ cls) ]
 
 
 viewer : Int -> Inlines -> List (Html msg)
@@ -27,8 +49,8 @@ view visible element =
         Chars e ->
             Html.text e
 
-        Bold e ->
-            Html.b [ inline_class "lia-bold" ]
+        Bold e attr ->
+            Html.b (annotation attr "lia-bold")
                 [ view visible e ]
 
         Italic e ->
@@ -64,8 +86,8 @@ view visible element =
         HTML e ->
             Lia.Utils.stringToHtml e
 
-        EInline idx effect_name elements ->
-            Effect.view (view visible) idx visible effect_name elements
+        EInline idx name time elements ->
+            Effect.view (view visible) idx visible name time elements
 
 
 view_inf : Inline -> Html msg

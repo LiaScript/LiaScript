@@ -14,6 +14,7 @@ module Lia.Inline.Parser
 
 import Combine exposing (..)
 import Combine.Char exposing (..)
+import Dict exposing (Dict)
 import Lia.Effect.Parser as Effect
 import Lia.Inline.Types exposing (..)
 import Lia.PState exposing (PState)
@@ -36,6 +37,33 @@ comment_string =
 comments : Parser s ()
 comments =
     skip (many (comment anyChar))
+
+
+
+--attributes : Parser s Inline
+
+
+attribute : Parser s ( String, String )
+attribute =
+    (\k v -> ( k, String.fromList v )) <$> (whitelines *> regex "\\w+" <* regex "[ \\t\\n]*=[ \\t\\n]*\"") <*> manyTill anyChar (regex "\"[ \\t\\n]*")
+
+
+annotations : Parser s Annotation
+annotations =
+    maybe (Dict.fromList >> attr_ <$> (regex "[ \\t]*" *> comment attribute))
+
+
+attr_ : Dict String String -> Dict String String
+attr_ dict =
+    Dict.insert "style"
+        (case Dict.get "style" dict of
+            Just value ->
+                "display: inline-block;" ++ value
+
+            Nothing ->
+                "display: inline-block;"
+        )
+        dict
 
 
 html : Parser s Inline
@@ -103,7 +131,7 @@ combine list =
 
 line : Parser PState Inlines
 line =
-    (\list -> combine <| List.append list [ Chars " " ]) <$> many1 inlines
+    (combine >> List.append [ Chars " " ]) <$> many1 inlines
 
 
 newline : Parser s ()
@@ -125,15 +153,14 @@ inlines : Parser PState Inline
 inlines =
     lazy <|
         \() ->
-            comments
-                *> choice
-                    [ html
-                    , code
-                    , reference
-                    , formula
-                    , Effect.inline inlines
-                    , strings
-                    ]
+            choice
+                [ html
+                , code
+                , reference
+                , formula
+                , Effect.inline inlines
+                , strings
+                ]
 
 
 stringTill : Parser s p -> Parser s String
@@ -196,10 +223,16 @@ reference =
                     Link <$> info <*> url_
 
                 image =
-                    Image <$> (string "!" *> info) <*> url_ <*> style
+                    Image
+                        <$> (string "!" *> info)
+                        <*> url_
+                        <*> style
 
                 movie =
-                    Movie <$> (string "!!" *> info) <*> url_ <*> style
+                    Movie
+                        <$> (string "!!" *> info)
+                        <*> url_
+                        <*> style
             in
             Ref <$> choice [ movie, image, link ]
 
@@ -257,7 +290,7 @@ between_ str =
         \() ->
             choice
                 [ string str *> inlines <* string str
-                , Container <$> (string str *> manyTill inlines (string str))
+                , combine >> Container <$> (string str *> manyTill inlines (string str))
                 ]
 
 
@@ -300,7 +333,7 @@ strings =
                 , arrows
                 , smileys
                 , escape
-                , bold
+                , bold <*> annotations
                 , italic
                 , underline
                 , strike

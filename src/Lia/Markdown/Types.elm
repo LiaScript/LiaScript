@@ -16,8 +16,12 @@ type Markdown
     | OrderedList (List (List Markdown))
     | Table MultInlines (List String) (List MultInlines)
     | Quiz Quiz (Maybe ( List Markdown, Int ))
-    | Effect ID (Maybe String) (List Markdown)
+    | Effect ID (Maybe String) String (List Markdown)
     | Comment ID Inlines
     | Survey Survey
     | Chart Chart
     | Code Code
+
+
+
+--  | AnnotatedMarkdown Markdown Parameters
