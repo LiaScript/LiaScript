@@ -3,20 +3,17 @@ module Lia.Markdown.View exposing (view)
 --import Html.Lazy exposing (lazy2)
 
 import Array exposing (Array)
-import Char
-import Debug
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import Lia.Chart.View
 import Lia.Code.View as Codes
-import Lia.Effect.Model as Effect
 import Lia.Effect.View as Effects
 import Lia.Helper exposing (ID)
 import Lia.Index.Model
 import Lia.Index.View
-import Lia.Inline.Types exposing (Inlines, MultInlines)
-import Lia.Inline.View exposing (viewer)
+import Lia.Inline.Types exposing (Annotation, Inlines, MultInlines)
+import Lia.Inline.View exposing (annotation, viewer)
 import Lia.Markdown.Types exposing (..)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Model exposing (Model)
@@ -324,8 +321,8 @@ view_block show section block =
         HLine ->
             Html.hr [ Attr.class "lia-inline lia-horiz-line" ] []
 
-        Paragraph elements ->
-            Html.p [ Attr.class "lia-inline lia-paragraph" ] (show elements)
+        Paragraph attr elements ->
+            Html.p (annotation attr "lia-paragraph") (show elements)
 
         Effect idx name time sub_blocks ->
             Effects.view_block section.effect_model (view_block show section) idx name time sub_blocks
@@ -340,13 +337,13 @@ view_block show section block =
                 |> view_list show section
                 |> Html.ol [ Attr.class "lia-inline lia-list lia-ordered" ]
 
-        Table header format body ->
-            view_table show header format body
+        Table attr header format body ->
+            view_table show attr header format body
 
-        Quote elements ->
+        Quote attr elements ->
             elements
                 |> List.map (\e -> view_block show section e)
-                |> Html.blockquote [ Attr.class "lia-inline lia-quote" ]
+                |> Html.blockquote (annotation attr "lia-quote")
 
         Code code ->
             code
@@ -357,8 +354,8 @@ view_block show section block =
             Html.text "to appear"
 
 
-view_table : (Inlines -> List (Html Msg)) -> MultInlines -> List String -> List MultInlines -> Html Msg
-view_table show header format body =
+view_table : (Inlines -> List (Html Msg)) -> Annotation -> MultInlines -> List String -> List MultInlines -> Html Msg
+view_table show attr header format body =
     let
         view_row fct row =
             List.map2
@@ -378,7 +375,7 @@ view_table show header format body =
                 |> view_row Html.th
                 |> Html.thead [ Attr.class "lia-inline lia-table-head" ]
             )
-        |> Html.table [ Attr.class "lia-inline lia-table" ]
+        |> Html.table (annotation attr "lia-table")
 
 
 view_list : (Inlines -> List (Html Msg)) -> Section -> List (List Markdown) -> List (Html Msg)

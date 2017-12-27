@@ -10,11 +10,11 @@ import Lia.Survey.Types exposing (Survey)
 
 type Markdown
     = HLine
-    | Quote (List Markdown)
-    | Paragraph Inlines
+    | Quote Annotation (List Markdown)
+    | Paragraph Annotation Inlines
     | BulletList (List (List Markdown))
     | OrderedList (List (List Markdown))
-    | Table MultInlines (List String) (List MultInlines)
+    | Table Annotation MultInlines (List String) (List MultInlines)
     | Quiz Quiz (Maybe ( List Markdown, Int ))
     | Effect ID (Maybe String) String (List Markdown)
     | Comment ID Inlines

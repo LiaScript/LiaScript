@@ -5,7 +5,7 @@ import Lia.Chart.Parser as Chart
 import Lia.Code.Parser as Code
 import Lia.Effect.Parser as Effect
 import Lia.Inline.Parser exposing (..)
-import Lia.Inline.Types exposing (Inlines, MultInlines)
+import Lia.Inline.Types exposing (Annotation, Inlines, MultInlines)
 import Lia.Markdown.Types exposing (..)
 import Lia.PState exposing (..)
 import Lia.Quiz.Parser as Quiz
@@ -38,10 +38,10 @@ blocks =
                         , Quiz <$> Quiz.parse <*> solution
                         , ordered_list
                         , unordered_list
-                        , Paragraph <$> paragraph
+                        , Paragraph <$> md_annotations <*> paragraph
                         ]
             in
-            comments *> identation *> b
+            identation *> b
 
 
 solution : Parser PState (Maybe ( List Markdown, Int ))
@@ -101,7 +101,7 @@ table_row =
 
 simple_table : Parser PState Markdown
 simple_table =
-    ident_skip *> (Table [] [] <$> many1 table_row) <* newline
+    ident_skip *> ((\a b -> Table a [] [] b) <$> md_annotations <*> many1 table_row) <* newline
 
 
 formated_table : Parser PState Markdown
@@ -110,7 +110,7 @@ formated_table =
         format =
             identation
                 *> string "|"
-                *> sepBy1 (string "|")
+                *> sepEndBy (string "|")
                     (choice
                         [ regex "[ \\t]*:--[\\-]+:[ \\t]*" $> "center"
                         , regex "[ \\t]*:--[\\-]+[ \\t]*" $> "left"
@@ -118,17 +118,23 @@ formated_table =
                         , regex "[ \\t]*--[\\-]+[ \\t]*" $> "left"
                         ]
                     )
-                <* regex "\\|[ \\t]*\\n"
+                <* regex "[ \\t]*\\n"
     in
-    ident_skip *> (Table <$> table_row <*> format <*> many table_row) <* newline
+    ident_skip *> (Table <$> md_annotations <*> table_row <*> format <*> many table_row) <* newline
 
 
 quote : Parser PState Markdown
 quote =
     Quote
-        <$> (string "> "
+        <$> md_annotations
+        <*> (string "> "
                 *> (identation_append ">( )?"
                         *> many1 (blocks <* maybe identation <* regex "[\\n]?")
                         <* identation_pop
                    )
             )
+
+
+md_annotations : Parser PState Annotation
+md_annotations =
+    annotations <* maybe (regex "[ \\t]*\\n")

@@ -1,4 +1,4 @@
-module Lia.Inline.View exposing (reference, view, view_inf, viewer)
+module Lia.Inline.View exposing (annotation, reference, view, view_inf, viewer)
 
 import Dict
 import Html exposing (Attribute, Html)
@@ -6,11 +6,6 @@ import Html.Attributes as Attr
 import Lia.Effect.View as Effect
 import Lia.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..), Url(..))
 import Lia.Utils
-
-
-inline_class : String -> Attribute msg
-inline_class c =
-    Attr.class ("lia-inline" ++ c)
 
 
 annotation : Annotation -> String -> List (Attribute msg)

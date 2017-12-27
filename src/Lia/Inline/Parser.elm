@@ -1,6 +1,7 @@
 module Lia.Inline.Parser
     exposing
-        ( combine
+        ( annotations
+        , combine
         , comment
         , comment_string
         , comments
@@ -209,8 +210,6 @@ reference =
                 info =
                     brackets (regex "[^\\]\n]*")
 
-                --style =
-                --    maybe (String.fromList <$> comment anyChar)
                 url_ =
                     parens (url <|> (Partial <$> regex "[^\\)\n]*"))
 
@@ -222,13 +221,10 @@ reference =
                         <$> (string "!" *> info)
                         <*> url_
 
-                --      <*> style
                 movie =
                     Movie
                         <$> (string "!!" *> info)
                         <*> url_
-
-                --    <*> style
             in
             Ref <$> choice [ movie, image, link ]
 

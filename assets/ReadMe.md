@@ -52,6 +52,7 @@ client-side.
 
 ## Markdown-Syntax
 
+<!-- class = "animated infinite bounce" style = "color: red;" -->
 This section is intended to give a brief overview on the basic Markdown
 formatting elements. The only difference to common Markdown at this point is,
 that every course has to start with a comment, which defines authors, a language
@@ -395,6 +396,9 @@ Quote break.
 
 Result:
 
+<!--
+style="font-size: 18px; font-style: italic; width: 500px; margin: 0.25em 0;"
+-->
 > Blockquotes are very handy in email to emulate reply text.
 > This line is part of the same quote.
 
@@ -404,6 +408,7 @@ Quote break.
 
 hhhh
 
+> <!-- style="font-size: 18px; font-style: italic; width: 500px; margin: 0.25em 0;" -->
 > | Tables            | Are           | Cool  |
 > | ----------------- |:-------------:| -----:|
 > | *** col 3 is ***  | right-aligned | $1600 |
