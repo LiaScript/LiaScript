@@ -324,8 +324,13 @@ view_block show section block =
         Paragraph attr elements ->
             Html.p (annotation attr "lia-paragraph") (show elements)
 
-        Effect idx name time sub_blocks ->
-            Effects.view_block section.effect_model (view_block show section) idx name time sub_blocks
+        Effect attr idx sub_blocks ->
+            if idx <= section.effect_model.visible then
+                Html.div
+                    (Attr.id (toString idx) :: annotation attr "lia-effect-inline")
+                    (Effects.view_block (view_block show section) idx sub_blocks)
+            else
+                Html.text ""
 
         BulletList attr list ->
             list

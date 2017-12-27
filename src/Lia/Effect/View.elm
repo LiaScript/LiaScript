@@ -7,6 +7,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Lia.Effect.Model exposing (Model)
+import Lia.Inline.Types exposing (Annotation)
 
 
 view : (List inline -> List (Html msg)) -> Int -> List inline -> List (Html msg)
@@ -21,21 +22,10 @@ view viewer idx elements =
         :: viewer elements
 
 
-view_block : Model -> (block -> Html msg) -> Int -> Maybe String -> String -> List block -> Html msg
-view_block model viewer idx name time blocks =
-    Html.div
-        [ Attr.id (toString idx)
-        , Attr.hidden (idx > model.visible)
-        , case name of
-            Nothing ->
-                Attr.class "lia-effect-inline"
-
-            Just name ->
-                Attr.class ("lia-effect-inline animated " ++ name)
-        ]
-        (Html.span [ Attr.class "lia-effect-circle" ] [ Html.text (toString idx) ]
-            :: List.map viewer blocks
-        )
+view_block : (block -> Html msg) -> Int -> List block -> List (Html msg)
+view_block viewer idx blocks =
+    Html.span [ Attr.class "lia-effect-circle" ] [ Html.text (toString idx) ]
+        :: List.map viewer blocks
 
 
 comment : String -> Bool -> Bool -> msg -> Model -> (inline -> Html msg) -> Int -> List inline -> Html msg

@@ -27,7 +27,7 @@ blocks =
             let
                 b =
                     choice
-                        [ Effect.markdown blocks
+                        [ Effect.markdown md_annotations blocks
                         , Effect.comment paragraph
                         , Chart <$> Chart.parse
                         , formated_table
@@ -136,12 +136,6 @@ quote =
                         <* identation_pop
                    )
             )
-
-
-
---md_annotations : Parser PState Annotation
---md_annotations =
---    annotations <* maybe (regex "[ \\t]*\\n" <* identation)
 
 
 md_annotations : Parser PState Annotation

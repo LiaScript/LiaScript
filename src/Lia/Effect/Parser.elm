@@ -7,12 +7,11 @@ import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.PState exposing (PState)
 
 
-markdown : Parser PState Markdown -> Parser PState Markdown
-markdown blocks =
+markdown : Parser PState Annotation -> Parser PState Markdown -> Parser PState Markdown
+markdown annotation blocks =
     Effect
-        <$> (regex "[\\t ]*{{" *> effect_number)
-        <*> (regex "[\\t ]*" *> name)
-        <*> (time <* regex "}}[\\t ]*\\n")
+        <$> annotation
+        <*> (regex "[\\t ]*{{" *> effect_number <* regex "}}[\\t ]*\\n")
         <*> (multi blocks <|> single blocks)
 
 
@@ -24,21 +23,6 @@ single blocks =
 multi : Parser PState Markdown -> Parser PState (List Markdown)
 multi blocks =
     regex "[\\t ]*[=]{3,}[\\n]+" *> manyTill (blocks <* regex "[ \\n\\t]*") (regex "[\\t ]*[=]{3,}")
-
-
-name : Parser PState (Maybe String)
-name =
-    maybe (regex "[\\w ]+")
-
-
-time : Parser PState String
-time =
-    optional "" (string "|" *> regex "[\\w;:, -]+")
-
-
-css : Parser PState ( String, String )
-css =
-    (\a b -> ( String.trim a, String.trim b )) <$> regex "[\\w -]+" <*> (string ":" *> regex "[\\w ]+")
 
 
 inline : Parser PState Inline -> Parser PState (Annotation -> Inline)

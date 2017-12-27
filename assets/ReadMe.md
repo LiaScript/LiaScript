@@ -904,10 +904,10 @@ See https://daneden.github.io/animate.css for more animation effects.
 * {{3}}{{![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)}} <!-- class = "animated rubberBand" -->
 ```
 
-* a {{0}}{{ *bounce* }} <!-- class = "animated infinite bounce" style = "animation-delay: 5s;" -->
-* d {{1}}{{zoomIn}} <!-- class = "animated zoomIn" -->
-* v {{2}}{{zoomOut}} <!-- class = "animated zoomOut" -->
-* f {{3}}{{![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)}} <!-- class = "animated rubberBand" -->
+* {{0}}{{ *bounce* }} <!-- class = "animated infinite bounce" style = "animation-delay: 5s;" -->
+* {{1}}{{zoomIn}} <!-- class = "animated zoomIn" -->
+* {{2}}{{zoomOut}} <!-- class = "animated zoomOut" -->
+* {{3}}{{![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)}} <!-- class = "animated rubberBand" -->
 
 ### Block Effects
 
@@ -926,7 +926,7 @@ further effects.
                       {{1}}
 This is an example for a *single* block effect.
 
-                               {{2 zoomIn}}
+                               {{2}}
 ================================================================================
 
 This is an example for a ... wait a second {{3 rubberBand}}{{**multi**}} ...
@@ -942,10 +942,10 @@ block effect.
                                   {{1}}
 This is an example for a *single* block effect.
 
-                               {{2 zoomIn}}
+                               {{2}}
 ================================================================================
 
-This is an example for a ... wait a second {{3 rubberBand}}{{**multi**}} ...
+This is an example for a ... wait a second {{3}}{{**multi**}} ...
 block effect.
 
 * alpha
