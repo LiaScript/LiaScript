@@ -16,17 +16,17 @@ type alias Annotation =
 
 
 type Inline
-    = Chars String
-    | Symbol String
+    = Chars String Annotation
+    | Symbol String Annotation
     | Bold Inline Annotation
-    | Italic Inline
-    | Strike Inline
-    | Underline Inline
-    | Superscript Inline
-    | Verbatim String
-    | Formula Bool String
-    | Ref Reference
-    | HTML String
+    | Italic Inline Annotation
+    | Strike Inline Annotation
+    | Underline Inline Annotation
+    | Superscript Inline Annotation
+    | Verbatim String Annotation
+    | Formula Bool String Annotation
+    | Ref Reference Annotation
+    | HTML String Annotation
     | EInline Int (Maybe String) String Inlines
     | Container Inlines
 
@@ -43,5 +43,5 @@ type Url
 
 type Reference
     = Link String Url
-    | Image String Url (Maybe String)
-    | Movie String Url (Maybe String)
+    | Image String Url
+    | Movie String Url

@@ -42,49 +42,60 @@ viewer visible elements =
 view : Int -> Inline -> Html msg
 view visible element =
     case element of
-        Verbatim e ->
-            Html.code [ inline_class "lia-code" ]
-                [ Html.text e ]
-
-        Chars e ->
+        Chars e Nothing ->
             Html.text e
+
+        Chars e attr ->
+            Html.span (annotation attr "lia-container") [ Html.text e ]
 
         Bold e attr ->
             Html.b (annotation attr "lia-bold")
                 [ view visible e ]
 
-        Italic e ->
-            Html.em [ inline_class "lia-italic" ]
+        Italic e attr ->
+            Html.em (annotation attr "lia-italic")
                 [ view visible e ]
 
-        Strike e ->
-            Html.s [ inline_class "lia-strike" ]
+        Strike e attr ->
+            Html.s (annotation attr "lia-strike")
                 [ view visible e ]
 
-        Underline e ->
-            Html.u [ inline_class "lia-underline" ]
+        Underline e attr ->
+            Html.u (annotation attr "lia-underline")
                 [ view visible e ]
 
-        Superscript e ->
-            Html.sup [ inline_class "lia-superscript" ]
+        Superscript e attr ->
+            Html.sup (annotation attr "lia-superscript")
                 [ view visible e ]
+
+        Verbatim e attr ->
+            Html.code (annotation attr "lia-code") [ Html.text e ]
 
         Container list ->
             list
                 |> List.map (\e -> view visible e)
                 |> Html.span [ inline_class "lia-container" ]
 
-        Ref e ->
-            reference e
+        Ref e attr ->
+            reference e attr
 
-        Formula mode e ->
+        Formula mode e Nothing ->
             Lia.Utils.formula mode e
 
-        Symbol e ->
+        Formula mode e attr ->
+            Html.span (annotation attr "lia-container") [ Lia.Utils.formula mode e ]
+
+        Symbol e Nothing ->
             Lia.Utils.stringToHtml e
 
-        HTML e ->
+        Symbol e attr ->
+            Html.span (annotation attr "lia-container") [ Lia.Utils.stringToHtml e ]
+
+        HTML e Nothing ->
             Lia.Utils.stringToHtml e
+
+        HTML e attr ->
+            Html.span (annotation attr "lia-container") [ Lia.Utils.stringToHtml e ]
 
         EInline idx name time elements ->
             Effect.view (view visible) idx visible name time elements
@@ -95,28 +106,17 @@ view_inf =
     view 99999
 
 
-reference : Reference -> Html msg
-reference ref =
-    let
-        media url_ style_ =
-            case style_ of
-                Nothing ->
-                    [ Attr.src <| get_url url_ ]
-
-                Just s ->
-                    [ Attr.src <| get_url url_
-                    , Attr.attribute "style" s
-                    ]
-    in
+reference : Reference -> Annotation -> Html msg
+reference ref attr =
     case ref of
         Link alt_ url_ ->
-            view_link alt_ url_
+            view_link alt_ url_ attr
 
-        Image alt_ url_ style_ ->
-            Html.img (media url_ style_) [ Html.text alt_ ]
+        Image alt_ url_ ->
+            Html.img (Attr.src (get_url url_) :: annotation attr "lia-image") [ Html.text alt_ ]
 
-        Movie alt_ url_ style_ ->
-            Html.iframe (media url_ style_) [ Html.text alt_ ]
+        Movie alt_ url_ ->
+            Html.iframe (Attr.src (get_url url_) :: annotation attr "lia-movie") [ Html.text alt_ ]
 
 
 get_url : Url -> String
@@ -132,14 +132,18 @@ get_url url =
             str
 
 
-view_link : String -> Url -> Html msg
-view_link alt_ url_ =
-    case url_ of
+view_link : String -> Url -> Annotation -> Html msg
+view_link alt_ url_ attr =
+    (case url_ of
         Full str ->
-            Html.a [ Attr.href str, inline_class "lia-link", Attr.target "_blank" ] [ Html.text alt_ ]
+            [ Attr.href str, Attr.target "_blank" ]
 
         Mail str ->
-            Html.a [ Attr.href ("mailto:" ++ str), inline_class "lia-link" ] [ Html.text alt_ ]
+            [ Attr.href ("mailto:" ++ str) ]
 
         Partial str ->
-            Html.a [ Attr.href str, inline_class "lia-link", Attr.target "_blank" ] [ Html.text alt_ ]
+            [ Attr.href str, Attr.target "_blank" ]
+    )
+        |> List.append (annotation attr "lia-link")
+        |> Html.a
+        |> (\a -> a [ Html.text alt_ ])

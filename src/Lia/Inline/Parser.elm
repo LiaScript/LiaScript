@@ -39,10 +39,6 @@ comments =
     skip (many (comment anyChar))
 
 
-
---attributes : Parser s Inline
-
-
 attribute : Parser s ( String, String )
 attribute =
     (\k v -> ( k, String.fromList v )) <$> (whitelines *> regex "\\w+" <* regex "[ \\t\\n]*=[ \\t\\n]*\"") <*> manyTill anyChar (regex "\"[ \\t\\n]*")
@@ -66,12 +62,12 @@ attr_ dict =
         dict
 
 
-html : Parser s Inline
+html : Parser s (Annotation -> Inline)
 html =
     html_void <|> html_block
 
 
-html_void : Parser s Inline
+html_void : Parser s (Annotation -> Inline)
 html_void =
     lazy <|
         \() ->
@@ -96,7 +92,7 @@ html_void =
                         ]
 
 
-html_block : Parser s Inline
+html_block : Parser s (Annotation -> Inline)
 html_block =
     let
         p tag =
@@ -122,8 +118,8 @@ combine list =
 
         x1 :: x2 :: xs ->
             case ( x1, x2 ) of
-                ( Chars str1, Chars str2 ) ->
-                    combine (Chars (str1 ++ str2) :: xs)
+                ( Chars str1 Nothing, Chars str2 Nothing ) ->
+                    combine (Chars (str1 ++ str2) Nothing :: xs)
 
                 _ ->
                     x1 :: combine (x2 :: xs)
@@ -131,7 +127,7 @@ combine list =
 
 line : Parser PState Inlines
 line =
-    (combine >> List.append [ Chars " " ]) <$> many1 inlines
+    (List.append [ Chars " " Nothing ] >> combine) <$> many1 inlines
 
 
 newline : Parser s ()
@@ -154,12 +150,12 @@ inlines =
     lazy <|
         \() ->
             choice
-                [ html
-                , code
-                , reference
-                , formula
+                [ html <*> annotations
+                , code <*> annotations
+                , reference <*> annotations
+                , formula <*> annotations
                 , Effect.inline inlines
-                , strings
+                , strings <*> annotations
                 ]
 
 
@@ -168,7 +164,7 @@ stringTill p =
     String.fromList <$> manyTill anyChar p
 
 
-formula : Parser s Inline
+formula : Parser s (Annotation -> Inline)
 formula =
     let
         p1 =
@@ -205,7 +201,7 @@ inline_url =
     (\u -> Link u (Full u)) <$> (url_full <|> url_mail)
 
 
-reference : Parser s Inline
+reference : Parser s (Annotation -> Inline)
 reference =
     lazy <|
         \() ->
@@ -213,9 +209,8 @@ reference =
                 info =
                     brackets (regex "[^\\]\n]*")
 
-                style =
-                    maybe (String.fromList <$> comment anyChar)
-
+                --style =
+                --    maybe (String.fromList <$> comment anyChar)
                 url_ =
                     parens (url <|> (Partial <$> regex "[^\\)\n]*"))
 
@@ -226,18 +221,19 @@ reference =
                     Image
                         <$> (string "!" *> info)
                         <*> url_
-                        <*> style
 
+                --      <*> style
                 movie =
                     Movie
                         <$> (string "!!" *> info)
                         <*> url_
-                        <*> style
+
+                --    <*> style
             in
             Ref <$> choice [ movie, image, link ]
 
 
-arrows : Parser s Inline
+arrows : Parser s (Annotation -> Inline)
 arrows =
     lazy <|
         \() ->
@@ -263,7 +259,7 @@ arrows =
                 ]
 
 
-smileys : Parser s Inline
+smileys : Parser s (Annotation -> Inline)
 smileys =
     lazy <|
         \() ->
@@ -294,7 +290,7 @@ between_ str =
                 ]
 
 
-strings : Parser PState Inline
+strings : Parser PState (Annotation -> Inline)
 strings =
     lazy <|
         \() ->
@@ -333,7 +329,7 @@ strings =
                 , arrows
                 , smileys
                 , escape
-                , bold <*> annotations
+                , bold
                 , italic
                 , underline
                 , strike
@@ -343,6 +339,6 @@ strings =
                 ]
 
 
-code : Parser s Inline
+code : Parser s (Annotation -> Inline)
 code =
     Verbatim <$> (string "`" *> regex "[^`\\n]+" <* string "`") <?> "inline code"

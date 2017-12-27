@@ -180,7 +180,7 @@ But you can also use some basic smileys. We will try to extend this partial
 support in the future.
 
                                        {{1}}
-`:-)` :-), `;-)` ;-), `:-D` :-D, `:-O` :-O, `:-(` :-(, `:-|` :-|,
+`:-)` :-) <!-- class = "animated infinite bounce" style = "color: red;" -->, `;-)` ;-), `:-D` :-D, `:-O` :-O, `:-(` :-(, `:-|` :-|,
 `:-/` :-/, `:-P` :-P, `:-*` :-*, `:')` :'), `:'(` :'(
 
 ### References
@@ -227,7 +227,7 @@ everything within this comment is treated as a style attribute, so that it can
 also be used to apply graphical filters of for positioning.
 
 
-`![image](...Creative-Tail-Animal-lion.svg)<!-- width: 100px; border: 10px solid; filter: grayscale(100%); -->`
+`![image](...Creative-Tail-Animal-lion.svg)<!-- style="width: 100px; border: 10px solid; filter: grayscale(100%);" -->`
 
 
 ![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)<!--
