@@ -9,35 +9,16 @@ import Html.Events exposing (onClick)
 import Lia.Effect.Model exposing (Model)
 
 
-view : (inline -> Html msg) -> Int -> Int -> Maybe String -> String -> List inline -> Html msg
-view viewer idx visible name time elements =
-    Html.span
-        [ Attr.id (toString idx)
-        , Attr.hidden (idx > visible)
-        , Attr.attribute "style" <|
-            if idx > visible then
-                ""
-            else
-                "display: inline-block;"
-        , case name of
-            Nothing ->
-                Attr.class "lia-effect-inline"
-
-            Just name ->
-                Attr.class ("lia-effect-inline animated " ++ name)
-        ]
-        (Html.span
-            [ Attr.class
-                (if name == Nothing then
-                    "lia-effect-circle"
-                 else
-                    "lia-effect-circle animated"
-                )
-            ]
-            [ Html.text (toString idx) ]
-            :: Html.text " "
-            :: List.map viewer elements
-        )
+view : (List inline -> List (Html msg)) -> Int -> List inline -> List (Html msg)
+view viewer idx elements =
+    (idx
+        |> toString
+        |> Html.text
+        |> List.singleton
+        |> Html.span [ Attr.class "lia-effect-circle" ]
+    )
+        :: Html.text " "
+        :: viewer elements
 
 
 view_block : Model -> (block -> Html msg) -> Int -> Maybe String -> String -> List block -> Html msg

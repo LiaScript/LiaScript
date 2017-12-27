@@ -892,17 +892,16 @@ within the examples.
 See https://daneden.github.io/animate.css for more animation effects.
 
 ``` markdown
-* {{0 infinite bounce | animation-delay: 5s; }}{{ *bounce* }}
-* {{1 zoomIn}}{{zoomIn}}
-* {{2 zoomIn}}{{zoomOut}}
-* {{3 rubberBand}}{{![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)}}
+* {{0}}{{ *bounce* }} <!-- class = "animated infinite bounce" style = "animation-delay: 5s;" -->
+* {{1}}{{zoomIn}} <!-- class = "animated zoomIn" -->
+* {{2}}{{zoomOut}} <!-- class = "animated zoomOut" -->
+* {{3}}{{![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)}} <!-- class = "animated rubberBand" -->
 ```
 
-* {{0 infinite bounce | animation-delay: 5s;}}{{ *bounce* }}
-* {{1 zoomIn}}{{zoomIn}}
-* {{2 zoomOut}}{{zoomOut}}
-* {{3 rubberBand}}{{![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)}}
-
+* a {{0}}{{ *bounce* }} <!-- class = "animated infinite bounce" style = "animation-delay: 5s;" -->
+* d {{1}}{{zoomIn}} <!-- class = "animated zoomIn" -->
+* v {{2}}{{zoomOut}} <!-- class = "animated zoomOut" -->
+* f {{3}}{{![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)}} <!-- class = "animated rubberBand" -->
 
 ### Block Effects
 

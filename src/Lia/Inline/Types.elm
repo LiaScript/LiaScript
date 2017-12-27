@@ -27,7 +27,7 @@ type Inline
     | Formula Bool String Annotation
     | Ref Reference Annotation
     | HTML String Annotation
-    | EInline Int (Maybe String) String Inlines
+    | EInline Int Inlines Annotation
     | Container Inlines
 
 

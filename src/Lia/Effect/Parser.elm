@@ -2,7 +2,7 @@ module Lia.Effect.Parser exposing (comment, inline, markdown)
 
 import Combine exposing (..)
 import Combine.Num exposing (int)
-import Lia.Inline.Types exposing (Inline(..), Inlines)
+import Lia.Inline.Types exposing (Annotation, Inline(..), Inlines)
 import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.PState exposing (PState)
 
@@ -41,17 +41,11 @@ css =
     (\a b -> ( String.trim a, String.trim b )) <$> regex "[\\w -]+" <*> (string ":" *> regex "[\\w ]+")
 
 
-inline : Parser PState Inline -> Parser PState Inline
+inline : Parser PState Inline -> Parser PState (Annotation -> Inline)
 inline inlines =
-    let
-        multi_inline =
-            string "{{" *> manyTill inlines (string "}}")
-    in
     EInline
-        <$> (string "{{" *> effect_number)
-        <*> (regex "[\\t ]*" *> name)
-        <*> (time <* string "}}")
-        <*> multi_inline
+        <$> (string "{{" *> effect_number <* string "}}")
+        <*> (string "{{" *> manyTill inlines (string "}}"))
 
 
 effect_number : Parser PState Int

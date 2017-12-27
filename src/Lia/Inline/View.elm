@@ -97,8 +97,13 @@ view visible element =
         HTML e attr ->
             Html.span (annotation attr "lia-container") [ Lia.Utils.stringToHtml e ]
 
-        EInline idx name time elements ->
-            Effect.view (view visible) idx visible name time elements
+        EInline idx e attr ->
+            if idx <= visible then
+                Html.span
+                    (Attr.id (toString idx) :: annotation attr "lia-effect-inline")
+                    (Effect.view (viewer visible) idx e)
+            else
+                Html.text ""
 
 
 view_inf : Inline -> Html msg

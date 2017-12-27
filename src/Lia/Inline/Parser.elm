@@ -154,7 +154,7 @@ inlines =
                 , code <*> annotations
                 , reference <*> annotations
                 , formula <*> annotations
-                , Effect.inline inlines
+                , Effect.inline inlines <*> annotations
                 , strings <*> annotations
                 ]
 
