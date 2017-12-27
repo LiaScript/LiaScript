@@ -1,6 +1,7 @@
 module Lia.Inline.Parser
     exposing
         ( annotations
+        , attribute
         , combine
         , comment
         , comment_string
@@ -42,7 +43,9 @@ comments =
 
 attribute : Parser s ( String, String )
 attribute =
-    (\k v -> ( k, String.fromList v )) <$> (whitelines *> regex "\\w+" <* regex "[ \\t\\n]*=[ \\t\\n]*\"") <*> manyTill anyChar (regex "\"[ \\t\\n]*")
+    (\k v -> ( k, String.fromList v ))
+        <$> (whitelines *> regex "\\w+" <* regex "[ \\t\\n]*=[ \\t\\n]*\"")
+        <*> manyTill anyChar (regex "\"[ \\t\\n]*")
 
 
 annotations : Parser s Annotation

@@ -1,6 +1,7 @@
 module Lia.Markdown.Parser exposing (run)
 
 import Combine exposing (..)
+import Dict
 import Lia.Chart.Parser as Chart
 import Lia.Code.Parser as Code
 import Lia.Effect.Parser as Effect
@@ -31,7 +32,7 @@ blocks =
                         , Chart <$> Chart.parse
                         , formated_table
                         , simple_table
-                        , Code <$> Code.parse
+                        , Code <$> md_annotations <*> Code.parse
                         , quote
                         , horizontal_line
                         , Survey <$> Survey.parse
@@ -63,7 +64,8 @@ solution =
 unordered_list : Parser PState Markdown
 unordered_list =
     BulletList
-        <$> many1
+        <$> md_annotations
+        <*> many1
                 (regex "[*+-]( )"
                     *> (identation_append "  "
                             *> many1 (blocks <* regex "[\\n]?")
@@ -75,7 +77,8 @@ unordered_list =
 ordered_list : Parser PState Markdown
 ordered_list =
     OrderedList
-        <$> many1
+        <$> md_annotations
+        <*> many1
                 (regex "[0-9]+\\. "
                     *> (identation_append "   "
                             *> many1 (blocks <* regex "[\\n]?")
@@ -86,7 +89,7 @@ ordered_list =
 
 horizontal_line : Parser PState Markdown
 horizontal_line =
-    HLine <$ regex "--[\\-]+"
+    HLine <$> md_annotations <* regex "--[\\-]+"
 
 
 paragraph : Parser PState Inlines
@@ -135,6 +138,12 @@ quote =
             )
 
 
+
+--md_annotations : Parser PState Annotation
+--md_annotations =
+--    annotations <* maybe (regex "[ \\t]*\\n" <* identation)
+
+
 md_annotations : Parser PState Annotation
 md_annotations =
-    annotations <* maybe (regex "[ \\t]*\\n")
+    maybe (Dict.fromList <$> (regex "[ \\t]*" *> comment attribute <* maybe (regex "[ \\t]*\\n" <* identation)))

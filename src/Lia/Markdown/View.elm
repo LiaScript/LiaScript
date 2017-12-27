@@ -318,8 +318,8 @@ zero_tuple =
 view_block : (Inlines -> List (Html Msg)) -> Section -> Markdown -> Html Msg
 view_block show section block =
     case block of
-        HLine ->
-            Html.hr [ Attr.class "lia-inline lia-horiz-line" ] []
+        HLine attr ->
+            Html.hr (annotation attr "lia-horiz-line") []
 
         Paragraph attr elements ->
             Html.p (annotation attr "lia-paragraph") (show elements)
@@ -327,15 +327,15 @@ view_block show section block =
         Effect idx name time sub_blocks ->
             Effects.view_block section.effect_model (view_block show section) idx name time sub_blocks
 
-        BulletList list ->
+        BulletList attr list ->
             list
                 |> view_list show section
-                |> Html.ul [ Attr.class "lia-inline lia-list lia-unordered" ]
+                |> Html.ul (annotation attr "lia-list lia-unordered")
 
-        OrderedList list ->
+        OrderedList attr list ->
             list
                 |> view_list show section
-                |> Html.ol [ Attr.class "lia-inline lia-list lia-ordered" ]
+                |> Html.ol (annotation attr "lia-list lia-ordered")
 
         Table attr header format body ->
             view_table show attr header format body
@@ -345,9 +345,9 @@ view_block show section block =
                 |> List.map (\e -> view_block show section e)
                 |> Html.blockquote (annotation attr "lia-quote")
 
-        Code code ->
+        Code attr code ->
             code
-                |> Codes.view section.code_vector
+                |> Codes.view attr section.code_vector
                 |> Html.map UpdateCode
 
         _ ->

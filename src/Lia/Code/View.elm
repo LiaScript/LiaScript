@@ -7,14 +7,16 @@ import Html.Events exposing (onClick, onDoubleClick, onInput)
 import Lia.Code.Types exposing (Code(..), CodeVector)
 import Lia.Code.Update exposing (Msg(..))
 import Lia.Helper exposing (ID)
+import Lia.Inline.Types exposing (Annotation)
+import Lia.Inline.View exposing (annotation)
 import Lia.Utils
 
 
-view : CodeVector -> Code -> Html Msg
-view model code =
+view : Annotation -> CodeVector -> Code -> Html Msg
+view attr model code =
     case code of
         Highlight lang block ->
-            highlight lang block -1
+            highlight attr lang block -1
 
         Evaluate lang idx x ->
             case Array.get idx model of
@@ -31,7 +33,7 @@ view model code =
                                 ]
                                 []
                           else
-                            highlight lang elem.code idx
+                            highlight attr lang elem.code idx
                         , Html.div []
                             [ if elem.running then
                                 Html.button [ Attr.class "lia-btn lia-icon" ]
@@ -68,13 +70,13 @@ view model code =
                     Html.text ""
 
 
-highlight : String -> String -> ID -> Html Msg
-highlight lang code idx =
+highlight : Annotation -> String -> String -> ID -> Html Msg
+highlight attr lang code idx =
     Html.pre
         (if idx < 0 then
-            [ Attr.class "lia-code" ]
+            annotation attr "lia-code"
          else
-            [ Attr.class "lia-code", onDoubleClick (FlipMode idx) ]
+            onDoubleClick (FlipMode idx) :: annotation attr "lia-code"
         )
         [ Html.code [ Attr.class "lia-code-highlight" ]
             [ Lia.Utils.highlight lang code ]
