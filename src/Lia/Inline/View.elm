@@ -45,36 +45,23 @@ view visible element =
         Chars e Nothing ->
             Html.text e
 
-        Chars e attr ->
-            Html.span (annotation attr "lia-container") [ Html.text e ]
-
         Bold e attr ->
-            Html.b (annotation attr "lia-bold")
-                [ view visible e ]
+            Html.b (annotation attr "lia-bold") [ view visible e ]
 
         Italic e attr ->
-            Html.em (annotation attr "lia-italic")
-                [ view visible e ]
+            Html.em (annotation attr "lia-italic") [ view visible e ]
 
         Strike e attr ->
-            Html.s (annotation attr "lia-strike")
-                [ view visible e ]
+            Html.s (annotation attr "lia-strike") [ view visible e ]
 
         Underline e attr ->
-            Html.u (annotation attr "lia-underline")
-                [ view visible e ]
+            Html.u (annotation attr "lia-underline") [ view visible e ]
 
         Superscript e attr ->
-            Html.sup (annotation attr "lia-superscript")
-                [ view visible e ]
+            Html.sup (annotation attr "lia-superscript") [ view visible e ]
 
         Verbatim e attr ->
             Html.code (annotation attr "lia-code") [ Html.text e ]
-
-        Container list ->
-            list
-                |> List.map (\e -> view visible e)
-                |> Html.span [ inline_class "lia-container" ]
 
         Ref e attr ->
             reference e attr
@@ -82,20 +69,16 @@ view visible element =
         Formula mode e Nothing ->
             Lia.Utils.formula mode e
 
-        Formula mode e attr ->
-            Html.span (annotation attr "lia-container") [ Lia.Utils.formula mode e ]
-
         Symbol e Nothing ->
             Lia.Utils.stringToHtml e
 
-        Symbol e attr ->
-            Html.span (annotation attr "lia-container") [ Lia.Utils.stringToHtml e ]
+        Container list attr ->
+            list
+                |> List.map (\e -> view visible e)
+                |> Html.span (annotation attr "lia-container")
 
         HTML e Nothing ->
             Lia.Utils.stringToHtml e
-
-        HTML e attr ->
-            Html.span (annotation attr "lia-container") [ Lia.Utils.stringToHtml e ]
 
         EInline idx e attr ->
             if idx <= visible then
@@ -104,6 +87,18 @@ view visible element =
                     (Effect.view (viewer visible) idx e)
             else
                 Html.text ""
+
+        Symbol e attr ->
+            view visible (Container [ Symbol e Nothing ] attr)
+
+        HTML e attr ->
+            view visible (Container [ HTML e Nothing ] attr)
+
+        Chars e attr ->
+            view visible (Container [ Chars e Nothing ] attr)
+
+        Formula mode e attr ->
+            view visible (Container [ Formula mode e Nothing ] attr)
 
 
 view_inf : Inline -> Html msg

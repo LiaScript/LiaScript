@@ -286,7 +286,7 @@ between_ str =
         \() ->
             choice
                 [ string str *> inlines <* string str
-                , combine >> Container <$> (string str *> manyTill inlines (string str))
+                , (\list -> Container (combine list) Nothing) <$> (string str *> manyTill inlines (string str))
                 ]
 
 

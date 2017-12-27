@@ -28,7 +28,7 @@ type Inline
     | Ref Reference Annotation
     | HTML String Annotation
     | EInline Int Inlines Annotation
-    | Container Inlines
+    | Container Inlines Annotation
 
 
 
