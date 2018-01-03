@@ -8,11 +8,6 @@ import Lia.Survey.Model exposing (Model, model2json)
 import Lia.Survey.Types exposing (..)
 
 
---import Lia.Helper exposing (get_slide_effects)
---import Lia.Index
---import Lia.Model exposing (..)
-
-
 type Msg
     = TextUpdate ID String
     | VectorUpdate ID String
@@ -105,7 +100,7 @@ update_matrix model idx row var =
             model
 
 
-set_state : Model -> ID -> SurveyState -> Model
+set_state : Model -> ID -> State -> Model
 set_state model idx state =
     Array.set idx ( False, state ) model
 

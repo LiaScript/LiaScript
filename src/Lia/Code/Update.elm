@@ -1,7 +1,7 @@
 module Lia.Code.Update exposing (Msg(..), update)
 
 import Array exposing (Array)
-import Lia.Code.Types exposing (CodeVector)
+import Lia.Code.Types exposing (Vector)
 import Lia.Helper exposing (ID)
 import Lia.Utils
 
@@ -21,7 +21,7 @@ last a =
         |> Maybe.withDefault ""
 
 
-update : Msg -> CodeVector -> ( CodeVector, Cmd Msg )
+update : Msg -> Vector -> ( Vector, Cmd Msg )
 update msg model =
     case msg of
         Eval idx x ->

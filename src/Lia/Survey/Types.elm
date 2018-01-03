@@ -10,15 +10,15 @@ type alias Var =
     String
 
 
-type alias SurveyVector =
-    Array SurveyElement
+type alias Vector =
+    Array Element
 
 
-type alias SurveyElement =
-    ( Bool, SurveyState )
+type alias Element =
+    ( Bool, State )
 
 
-type SurveyState
+type State
     = TextState String
     | VectorState Bool (Dict Var Bool)
     | MatrixState Bool (Array (Dict Var Bool))

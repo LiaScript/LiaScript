@@ -1,14 +1,14 @@
-module Lia.Code.Types exposing (Code(..), CodeElement, CodeVector)
+module Lia.Code.Types exposing (Code(..), Element, Vector)
 
 import Array exposing (Array)
 import Lia.Helper exposing (ID)
 
 
-type alias CodeVector =
-    Array CodeElement
+type alias Vector =
+    Array Element
 
 
-type alias CodeElement =
+type alias Element =
     { code : String
     , version : Array String
     , version_active : Int

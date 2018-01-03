@@ -4,7 +4,7 @@ import Array
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onDoubleClick, onInput)
-import Lia.Code.Types exposing (Code(..), CodeVector)
+import Lia.Code.Types exposing (Code(..), Vector)
 import Lia.Code.Update exposing (Msg(..))
 import Lia.Helper exposing (ID)
 import Lia.Markdown.Inline.Types exposing (Annotation)
@@ -12,7 +12,7 @@ import Lia.Markdown.Inline.View exposing (annotation)
 import Lia.Utils
 
 
-view : Annotation -> CodeVector -> Code -> Html Msg
+view : Annotation -> Vector -> Code -> Html Msg
 view attr model code =
     case code of
         Highlight lang block ->

@@ -17,7 +17,7 @@ import Lia.Survey.Types exposing (..)
 
 
 type alias Model =
-    SurveyVector
+    Vector
 
 
 get_submission_state : Model -> Int -> Bool
@@ -65,14 +65,14 @@ get_matrix_state model idx row var =
             False
 
 
-model2json : SurveyVector -> JE.Value
+model2json : Vector -> JE.Value
 model2json vector =
     vector
         |> Array.map element2json
         |> JE.array
 
 
-element2json : SurveyElement -> JE.Value
+element2json : Element -> JE.Value
 element2json ( b, state ) =
     JE.object
         [ ( "submitted", JE.bool b )
@@ -80,7 +80,7 @@ element2json ( b, state ) =
         ]
 
 
-state2json : SurveyState -> JE.Value
+state2json : State -> JE.Value
 state2json state =
     let
         dict2json dict =
@@ -119,14 +119,14 @@ json2model json =
     JD.decodeValue (JD.array json2element) json
 
 
-json2element : JD.Decoder SurveyElement
+json2element : JD.Decoder Element
 json2element =
     JD.map2 (,)
         (JD.field "submitted" JD.bool)
         (JD.field "state" json2state)
 
 
-json2state : JD.Decoder SurveyState
+json2state : JD.Decoder State
 json2state =
     let
         value =

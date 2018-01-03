@@ -3,7 +3,7 @@ module Lia.Parser exposing (..)
 --exposing (run)
 
 import Combine exposing (..)
-import Lia.Code.Types exposing (CodeVector)
+import Lia.Code.Types as Code
 import Lia.Definition.Parser
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Parser as Markdown
@@ -11,7 +11,7 @@ import Lia.Markdown.Types exposing (..)
 import Lia.PState exposing (PState)
 import Lia.Preprocessor as Preprocessor
 import Lia.Quiz.Types as Quiz
-import Lia.Survey.Types exposing (SurveyVector)
+import Lia.Survey.Types as Survey
 
 
 parse_defintion : String -> Result String ( String, Definition )
@@ -34,7 +34,7 @@ parse_titles code =
             Err (formatError ms stream)
 
 
-parse_section : String -> Result String ( List Markdown, CodeVector, Quiz.Vector, SurveyVector, Int )
+parse_section : String -> Result String ( List Markdown, Code.Vector, Quiz.Vector, Survey.Vector, Int )
 parse_section str =
     case Combine.runParser Markdown.run Lia.PState.init str of
         Ok ( state, _, es ) ->
