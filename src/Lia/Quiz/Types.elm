@@ -1,11 +1,11 @@
 module Lia.Quiz.Types
     exposing
-        ( Hints
+        ( Element
+        , Hints
         , Quiz(..)
-        , QuizElement
-        , QuizState(..)
-        , QuizVector
         , Solution(..)
+        , State(..)
+        , Vector
         )
 
 import Array exposing (Array)
@@ -13,8 +13,8 @@ import Lia.Helper exposing (ID)
 import Lia.Markdown.Inline.Types exposing (MultInlines)
 
 
-type alias QuizVector =
-    Array QuizElement
+type alias Vector =
+    Array Element
 
 
 type alias Hints =
@@ -27,15 +27,15 @@ type Solution
     | ReSolved
 
 
-type alias QuizElement =
+type alias Element =
     { solved : Solution
-    , state : QuizState
+    , state : State
     , trial : Int
     , hint : Int
     }
 
 
-type QuizState
+type State
     = TextState String
     | SingleChoiceState Int
     | MultipleChoiceState (Array Bool)

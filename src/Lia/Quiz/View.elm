@@ -28,7 +28,7 @@ view model quiz show_solution =
             view_quiz show_solution (state idx) (view_multiple_choice questions) idx hints (MultipleChoiceState solution)
 
 
-view_quiz : Bool -> Maybe QuizElement -> (Int -> QuizState -> Bool -> Html Msg) -> Int -> MultInlines -> QuizState -> Html Msg
+view_quiz : Bool -> Maybe Element -> (Int -> State -> Bool -> Html Msg) -> Int -> MultInlines -> State -> Html Msg
 view_quiz show_solution state fn_view idx hints solution =
     case state of
         Just s ->
@@ -75,7 +75,7 @@ view_button trials solved msg =
                 [ Html.text "Resolved" ]
 
 
-view_text : Int -> QuizState -> Bool -> Html Msg
+view_text : Int -> State -> Bool -> Html Msg
 view_text idx state solved =
     case state of
         TextState x ->
@@ -92,7 +92,7 @@ view_text idx state solved =
             Html.text ""
 
 
-view_single_choice : MultInlines -> Int -> QuizState -> Bool -> Html Msg
+view_single_choice : MultInlines -> Int -> State -> Bool -> Html Msg
 view_single_choice questions idx state solved =
     case state of
         SingleChoiceState x ->
@@ -120,7 +120,7 @@ view_single_choice questions idx state solved =
             Html.text ""
 
 
-view_multiple_choice : MultInlines -> Int -> QuizState -> Bool -> Html Msg
+view_multiple_choice : MultInlines -> Int -> State -> Bool -> Html Msg
 view_multiple_choice questions idx state solved =
     let
         fn b ( i, line ) =

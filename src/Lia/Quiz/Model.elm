@@ -13,10 +13,10 @@ import Lia.Quiz.Types exposing (..)
 
 
 type alias Model =
-    QuizVector
+    Vector
 
 
-get_state : QuizVector -> Int -> Maybe QuizElement
+get_state : Vector -> Int -> Maybe Element
 get_state vector idx =
     vector
         |> Array.get idx
@@ -27,7 +27,7 @@ model2json model =
     JE.array <| Array.map element2json model
 
 
-element2json : QuizElement -> JE.Value
+element2json : Element -> JE.Value
 element2json element =
     JE.object
         [ ( "solved"
@@ -49,7 +49,7 @@ element2json element =
         ]
 
 
-state2json : QuizState -> JE.Value
+state2json : State -> JE.Value
 state2json state =
     JE.object <|
         case state of
@@ -74,7 +74,7 @@ json2model json =
     JD.decodeValue (JD.array json2element) json
 
 
-json2element : JD.Decoder QuizElement
+json2element : JD.Decoder Element
 json2element =
     let
         solved_decoder i =
@@ -88,14 +88,14 @@ json2element =
                 _ ->
                     JD.succeed ReSolved
     in
-    JD.map4 QuizElement
+    JD.map4 Element
         (JD.field "solved" JD.int |> JD.andThen solved_decoder)
         (JD.field "state" json2state)
         (JD.field "hints" JD.int)
         (JD.field "trial" JD.int)
 
 
-json2state : JD.Decoder QuizState
+json2state : JD.Decoder State
 json2state =
     let
         state_decoder type_ =

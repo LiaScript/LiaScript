@@ -10,7 +10,7 @@ import Lia.Markdown.Parser as Markdown
 import Lia.Markdown.Types exposing (..)
 import Lia.PState exposing (PState)
 import Lia.Preprocessor as Preprocessor
-import Lia.Quiz.Types exposing (QuizVector)
+import Lia.Quiz.Types as Quiz
 import Lia.Survey.Types exposing (SurveyVector)
 
 
@@ -34,7 +34,7 @@ parse_titles code =
             Err (formatError ms stream)
 
 
-parse_section : String -> Result String ( List Markdown, CodeVector, QuizVector, SurveyVector, Int )
+parse_section : String -> Result String ( List Markdown, CodeVector, Quiz.Vector, SurveyVector, Int )
 parse_section str =
     case Combine.runParser Markdown.run Lia.PState.init str of
         Ok ( state, _, es ) ->

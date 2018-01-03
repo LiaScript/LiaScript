@@ -5,7 +5,7 @@ module Lia.PState exposing (..)
 import Array
 import Combine exposing (..)
 import Lia.Code.Types exposing (CodeVector)
-import Lia.Quiz.Types exposing (QuizVector)
+import Lia.Quiz.Types as Quiz
 import Lia.Survey.Types exposing (SurveyVector)
 
 
@@ -15,7 +15,7 @@ type alias PState =
     , num_effects : Int
     , code_temp : ( String, String ) -- Lang Code
     , code_vector : CodeVector
-    , quiz_vector : QuizVector
+    , quiz_vector : Quiz.Vector
     , survey_vector : SurveyVector
     }
 

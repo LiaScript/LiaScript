@@ -10,9 +10,9 @@ type Msg
     = CheckBox Int Int
     | RadioButton Int Int
     | Input Int String
-    | Check Int QuizState
+    | Check Int State
     | ShowHint Int
-    | ShowSolution Int QuizState
+    | ShowSolution Int State
 
 
 update : Msg -> Model -> ( Model, Maybe JE.Value )
@@ -45,7 +45,7 @@ update msg model =
             ( new_model, Just <| model2json new_model )
 
 
-get : Int -> QuizVector -> Maybe QuizElement
+get : Int -> Vector -> Maybe Element
 get idx model =
     case Array.get idx model of
         Just elem ->
@@ -58,7 +58,7 @@ get idx model =
             Nothing
 
 
-update_input : Int -> String -> QuizVector -> QuizVector
+update_input : Int -> String -> Vector -> Vector
 update_input idx text vector =
     case get idx vector of
         Just elem ->
@@ -73,7 +73,7 @@ update_input idx text vector =
             vector
 
 
-update_hint : Int -> QuizVector -> QuizVector
+update_hint : Int -> Vector -> Vector
 update_hint idx vector =
     case get idx vector of
         Just elem ->
@@ -83,7 +83,7 @@ update_hint idx vector =
             vector
 
 
-update_solution : Int -> QuizVector -> QuizState -> QuizVector
+update_solution : Int -> Vector -> State -> Vector
 update_solution idx vector quiz_solution =
     case get idx vector of
         Just elem ->
@@ -98,7 +98,7 @@ update_solution idx vector quiz_solution =
             vector
 
 
-flip_check : Int -> Int -> QuizVector -> QuizVector
+flip_check : Int -> Int -> Vector -> Vector
 flip_check idx question_id vector =
     case get idx vector of
         Just elem ->
@@ -124,7 +124,7 @@ flip_check idx question_id vector =
             vector
 
 
-check_answer : Int -> QuizState -> QuizVector -> QuizVector
+check_answer : Int -> State -> Vector -> Vector
 check_answer idx solution vector =
     case get idx vector of
         Just elem ->

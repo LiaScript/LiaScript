@@ -6,7 +6,7 @@ import Lia.Helper exposing (ID)
 import Lia.Markdown.Inline.Parser exposing (..)
 import Lia.Markdown.Inline.Types exposing (..)
 import Lia.PState exposing (PState)
-import Lia.Quiz.Types exposing (Hints, Quiz(..), QuizState(..), QuizVector, Solution(..))
+import Lia.Quiz.Types exposing (Hints, Quiz(..), Solution(..), State(..), Vector)
 
 
 parse : Parser PState Quiz
