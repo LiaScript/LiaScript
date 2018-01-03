@@ -324,7 +324,7 @@ view_block show section block =
         Paragraph attr elements ->
             Html.p (annotation attr "lia-paragraph") (show elements)
 
-        Effect attr idx sub_blocks ->
+        Effect attr ( idx, sub_blocks ) ->
             if idx <= section.effect_model.visible then
                 Html.div
                     (Attr.id (toString idx) :: annotation attr "lia-effect-inline")
