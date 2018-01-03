@@ -3,8 +3,8 @@ module Lia.Quiz.Parser exposing (parse)
 import Array
 import Combine exposing (..)
 import Lia.Helper exposing (ID)
-import Lia.Inline.Parser exposing (..)
-import Lia.Inline.Types exposing (..)
+import Lia.Markdown.Inline.Parser exposing (..)
+import Lia.Markdown.Inline.Types exposing (..)
 import Lia.PState exposing (PState)
 import Lia.Quiz.Types exposing (Hints, Quiz(..), QuizState(..), QuizVector, Solution(..))
 

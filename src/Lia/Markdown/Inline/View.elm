@@ -1,10 +1,10 @@
-module Lia.Inline.View exposing (annotation, reference, view, view_inf, viewer)
+module Lia.Markdown.Inline.View exposing (annotation, reference, view, view_inf, viewer)
 
 import Dict
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Lia.Effect.View as Effect
-import Lia.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..), Url(..))
+import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..), Url(..))
 import Lia.Utils
 
 

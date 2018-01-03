@@ -3,7 +3,7 @@ module Lia.Survey.Types exposing (..)
 import Array exposing (Array)
 import Dict exposing (Dict)
 import Lia.Helper exposing (ID)
-import Lia.Inline.Types exposing (Inlines, MultInlines)
+import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
 
 
 type alias Var =

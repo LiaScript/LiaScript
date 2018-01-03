@@ -12,8 +12,8 @@ import Lia.Effect.View as Effects
 import Lia.Helper exposing (ID)
 import Lia.Index.Model
 import Lia.Index.View
-import Lia.Inline.Types exposing (Annotation, Inlines, MultInlines)
-import Lia.Inline.View exposing (annotation, viewer)
+import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
+import Lia.Markdown.Inline.View exposing (annotation, viewer)
 import Lia.Markdown.Types exposing (..)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Model exposing (Model)

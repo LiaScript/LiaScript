@@ -1,4 +1,12 @@
-module Lia.Inline.Types exposing (Annotation, Inline(..), Inlines, MultInlines, Reference(..), Url(..))
+module Lia.Markdown.Inline.Types
+    exposing
+        ( Annotation
+        , Inline(..)
+        , Inlines
+        , MultInlines
+        , Reference(..)
+        , Url(..)
+        )
 
 import Dict exposing (Dict)
 

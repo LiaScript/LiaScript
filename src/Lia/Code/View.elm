@@ -7,8 +7,8 @@ import Html.Events exposing (onClick, onDoubleClick, onInput)
 import Lia.Code.Types exposing (Code(..), CodeVector)
 import Lia.Code.Update exposing (Msg(..))
 import Lia.Helper exposing (ID)
-import Lia.Inline.Types exposing (Annotation)
-import Lia.Inline.View exposing (annotation)
+import Lia.Markdown.Inline.Types exposing (Annotation)
+import Lia.Markdown.Inline.View exposing (annotation)
 import Lia.Utils
 
 

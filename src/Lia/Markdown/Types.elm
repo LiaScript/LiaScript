@@ -3,7 +3,7 @@ module Lia.Markdown.Types exposing (Markdown(..))
 import Lia.Chart.Types exposing (Chart)
 import Lia.Code.Types exposing (Code)
 import Lia.Helper exposing (ID)
-import Lia.Inline.Types exposing (..)
+import Lia.Markdown.Inline.Types exposing (..)
 import Lia.Quiz.Types exposing (Quiz)
 import Lia.Survey.Types exposing (Survey)
 

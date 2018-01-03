@@ -2,7 +2,7 @@ module Lia.Effect.Parser exposing (comment, inline, markdown)
 
 import Combine exposing (..)
 import Combine.Num exposing (int)
-import Lia.Inline.Types exposing (Annotation, Inline(..), Inlines)
+import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines)
 import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.PState exposing (PState)
 

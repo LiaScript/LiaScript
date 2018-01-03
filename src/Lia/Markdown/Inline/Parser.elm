@@ -1,4 +1,4 @@
-module Lia.Inline.Parser
+module Lia.Markdown.Inline.Parser
     exposing
         ( annotations
         , attribute
@@ -18,7 +18,7 @@ import Combine exposing (..)
 import Combine.Char exposing (..)
 import Dict exposing (Dict)
 import Lia.Effect.Parser as Effect
-import Lia.Inline.Types exposing (..)
+import Lia.Markdown.Inline.Types exposing (..)
 import Lia.PState exposing (PState)
 
 

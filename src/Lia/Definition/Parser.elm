@@ -2,7 +2,7 @@ module Lia.Definition.Parser exposing (parse)
 
 import Combine exposing (..)
 import Lia.Definition.Types exposing (Definition)
-import Lia.Inline.Parser exposing (comment, comments, whitelines)
+import Lia.Markdown.Inline.Parser exposing (comment, comments, whitelines)
 
 
 parse : Parser Definition ()

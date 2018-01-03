@@ -5,8 +5,8 @@ import Dict
 import Lia.Chart.Parser as Chart
 import Lia.Code.Parser as Code
 import Lia.Effect.Parser as Effect
-import Lia.Inline.Parser exposing (..)
-import Lia.Inline.Types exposing (Annotation, Inlines, MultInlines)
+import Lia.Markdown.Inline.Parser exposing (..)
+import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
 import Lia.Markdown.Types exposing (..)
 import Lia.PState exposing (..)
 import Lia.Quiz.Parser as Quiz

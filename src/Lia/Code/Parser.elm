@@ -3,7 +3,7 @@ module Lia.Code.Parser exposing (parse)
 import Array
 import Combine exposing (..)
 import Lia.Code.Types exposing (..)
-import Lia.Inline.Parser exposing (comment_string, whitelines)
+import Lia.Markdown.Inline.Parser exposing (comment_string, whitelines)
 import Lia.PState exposing (..)
 import Lia.Utils exposing (guess)
 

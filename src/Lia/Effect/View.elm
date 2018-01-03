@@ -7,7 +7,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Lia.Effect.Model exposing (Model)
-import Lia.Inline.Types exposing (Annotation)
+import Lia.Markdown.Inline.Types exposing (Annotation)
 
 
 view : (List inline -> List (Html msg)) -> Int -> List inline -> List (Html msg)
