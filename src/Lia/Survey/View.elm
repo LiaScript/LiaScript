@@ -11,7 +11,7 @@ import Lia.Survey.Types exposing (..)
 import Lia.Survey.Update exposing (Msg(..))
 
 
-view : Model -> Survey -> Html Msg
+view : Vector -> Survey -> Html Msg
 view model survey =
     Html.p [ Attr.class "lia-card" ] <|
         case survey of
@@ -30,7 +30,7 @@ view model survey =
                     |> view_survey model idx
 
 
-view_survey : Model -> Int -> (Bool -> Html Msg) -> List (Html Msg)
+view_survey : Vector -> ID -> (Bool -> Html Msg) -> List (Html Msg)
 view_survey model idx fn =
     let
         submitted =

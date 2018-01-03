@@ -1,12 +1,11 @@
 module Lia.Survey.Model
     exposing
-        ( Model
-        , get_matrix_state
+        ( get_matrix_state
         , get_submission_state
         , get_text_state
         , get_vector_state
-        , json2model
-        , model2json
+        , json2vector
+        , vector2json
         )
 
 import Array
@@ -16,13 +15,9 @@ import Json.Encode as JE
 import Lia.Survey.Types exposing (..)
 
 
-type alias Model =
-    Vector
-
-
-get_submission_state : Model -> Int -> Bool
-get_submission_state model idx =
-    case Array.get idx model of
+get_submission_state : Vector -> Int -> Bool
+get_submission_state vector idx =
+    case Array.get idx vector of
         Just ( True, _ ) ->
             True
 
@@ -30,9 +25,9 @@ get_submission_state model idx =
             False
 
 
-get_text_state : Model -> Int -> String
-get_text_state model idx =
-    case Array.get idx model of
+get_text_state : Vector -> Int -> String
+get_text_state vector idx =
+    case Array.get idx vector of
         Just ( _, TextState str ) ->
             str
 
@@ -40,9 +35,9 @@ get_text_state model idx =
             ""
 
 
-get_vector_state : Model -> Int -> String -> Bool
-get_vector_state model idx var =
-    case Array.get idx model of
+get_vector_state : Vector -> Int -> String -> Bool
+get_vector_state vector idx var =
+    case Array.get idx vector of
         Just ( _, VectorState _ state ) ->
             state
                 |> Dict.get var
@@ -52,9 +47,9 @@ get_vector_state model idx var =
             False
 
 
-get_matrix_state : Model -> Int -> Int -> String -> Bool
-get_matrix_state model idx row var =
-    case Array.get idx model of
+get_matrix_state : Vector -> Int -> Int -> String -> Bool
+get_matrix_state vector idx row var =
+    case Array.get idx vector of
         Just ( _, MatrixState _ matrix ) ->
             matrix
                 |> Array.get row
@@ -65,8 +60,8 @@ get_matrix_state model idx row var =
             False
 
 
-model2json : Vector -> JE.Value
-model2json vector =
+vector2json : Vector -> JE.Value
+vector2json vector =
     vector
         |> Array.map element2json
         |> JE.array
@@ -114,8 +109,8 @@ state2json state =
                 ]
 
 
-json2model : JD.Value -> Result String Model
-json2model json =
+json2vector : JD.Value -> Result String Vector
+json2vector json =
     JD.decodeValue (JD.array json2element) json
 
 

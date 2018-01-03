@@ -4,7 +4,7 @@ import Array
 import Dict
 import Json.Encode as JE
 import Lia.Helper exposing (ID)
-import Lia.Survey.Model exposing (Model, model2json)
+import Lia.Survey.Model exposing (vector2json)
 import Lia.Survey.Types exposing (..)
 
 
@@ -15,121 +15,121 @@ type Msg
     | Submit ID
 
 
-update : Msg -> Model -> ( Model, Maybe JE.Value )
-update msg model =
+update : Msg -> Vector -> ( Vector, Maybe JE.Value )
+update msg vector =
     case msg of
         TextUpdate idx str ->
-            ( update_text model idx str, Nothing )
+            ( update_text vector idx str, Nothing )
 
         VectorUpdate idx var ->
-            ( update_vector model idx var, Nothing )
+            ( update_vector vector idx var, Nothing )
 
         MatrixUpdate idx row var ->
-            ( update_matrix model idx row var, Nothing )
+            ( update_matrix vector idx row var, Nothing )
 
         Submit idx ->
-            if submitable model idx then
+            if submitable vector idx then
                 let
-                    new_model =
-                        submit model idx
+                    new_vector =
+                        submit vector idx
                 in
-                ( new_model, Just <| model2json new_model )
+                ( new_vector, Just <| vector2json new_vector )
             else
-                ( model, Nothing )
+                ( vector, Nothing )
 
 
-update_text : Model -> ID -> String -> Model
-update_text model idx str =
-    case Array.get idx model of
+update_text : Vector -> ID -> String -> Vector
+update_text vector idx str =
+    case Array.get idx vector of
         Just ( False, TextState _ ) ->
-            set_state model idx (TextState str)
+            set_state vector idx (TextState str)
 
         _ ->
-            model
-
-
-update_vector : Model -> ID -> String -> Model
-update_vector model idx var =
-    case Array.get idx model of
-        Just ( False, VectorState False vector ) ->
             vector
+
+
+update_vector : Vector -> ID -> String -> Vector
+update_vector vector idx var =
+    case Array.get idx vector of
+        Just ( False, VectorState False element ) ->
+            element
                 |> Dict.map (\_ _ -> False)
                 |> Dict.update var (\_ -> Just True)
                 |> VectorState False
-                |> set_state model idx
+                |> set_state vector idx
 
-        Just ( False, VectorState True vector ) ->
-            vector
+        Just ( False, VectorState True element ) ->
+            element
                 |> Dict.update var (\b -> Maybe.map not b)
                 |> VectorState True
-                |> set_state model idx
+                |> set_state vector idx
 
         _ ->
-            model
+            vector
 
 
-update_matrix : Model -> ID -> ID -> String -> Model
-update_matrix model idx row var =
-    case Array.get idx model of
+update_matrix : Vector -> ID -> ID -> String -> Vector
+update_matrix vector col_id row_id var =
+    case Array.get col_id vector of
         Just ( False, MatrixState False matrix ) ->
             let
-                vector =
-                    Array.get row matrix
+                row =
+                    Array.get row_id matrix
             in
-            vector
+            row
                 |> Maybe.map (\d -> Dict.map (\_ _ -> False) d)
                 |> Maybe.map (\d -> Dict.update var (\_ -> Just True) d)
-                |> Maybe.map (\d -> Array.set row d matrix)
+                |> Maybe.map (\d -> Array.set row_id d matrix)
                 |> Maybe.withDefault matrix
                 |> MatrixState False
-                |> set_state model idx
+                |> set_state vector col_id
 
         Just ( False, MatrixState True matrix ) ->
             let
-                vector =
-                    Array.get row matrix
+                row =
+                    Array.get row_id matrix
             in
-            vector
+            row
                 |> Maybe.map (\d -> Dict.update var (\b -> Maybe.map not b) d)
-                |> Maybe.map (\d -> Array.set row d matrix)
+                |> Maybe.map (\d -> Array.set row_id d matrix)
                 |> Maybe.withDefault matrix
                 |> MatrixState True
-                |> set_state model idx
+                |> set_state vector col_id
 
         _ ->
-            model
-
-
-set_state : Model -> ID -> State -> Model
-set_state model idx state =
-    Array.set idx ( False, state ) model
-
-
-submit : Model -> ID -> Model
-submit model idx =
-    case Array.get idx model of
-        Just ( False, state ) ->
-            Array.set idx ( True, state ) model
-
-        _ ->
-            model
-
-
-submitable : Model -> ID -> Bool
-submitable model idx =
-    case Array.get idx model of
-        Just ( False, TextState str ) ->
-            str /= ""
-
-        Just ( False, VectorState _ vector ) ->
             vector
+
+
+set_state : Vector -> ID -> State -> Vector
+set_state vector idx state =
+    Array.set idx ( False, state ) vector
+
+
+submit : Vector -> ID -> Vector
+submit vector idx =
+    case Array.get idx vector of
+        Just ( False, state ) ->
+            Array.set idx ( True, state ) vector
+
+        _ ->
+            vector
+
+
+submitable : Vector -> ID -> Bool
+submitable vector idx =
+    case Array.get idx vector of
+        Just ( False, TextState state ) ->
+            state /= ""
+
+        Just ( False, VectorState _ state ) ->
+            state
                 |> Dict.values
                 |> List.filter (\a -> a)
                 |> List.length
                 |> (\s -> s > 0)
 
-        Just ( False, MatrixState _ matrix ) ->
-            matrix
+        Just ( False, MatrixState _ state ) ->
+            state
                 |> Array.toList
                 |> List.map Dict.values
                 |> List.map (\l -> List.filter (\a -> a) l)
