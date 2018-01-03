@@ -6,6 +6,7 @@ import Json.Encode as JE
 import Lia.Code.Update as Code
 import Lia.Effect.Update as Effect
 import Lia.Quiz.Update as Quiz
+import Lia.Survey.Update as Survey
 import Lia.Types exposing (Section)
 
 
@@ -13,6 +14,7 @@ type Msg
     = UpdateEffect Effect.Msg
     | UpdateCode Code.Msg
     | UpdateQuiz Quiz.Msg
+    | UpdateSurvey Survey.Msg
 
 
 
@@ -49,6 +51,13 @@ update msg section =
                     Quiz.update childMsg section.quiz_vector
             in
             ( { section | quiz_vector = quiz_vector }, Cmd.none, Nothing )
+
+        UpdateSurvey childMsg ->
+            let
+                ( survey_vector, log ) =
+                    Survey.update childMsg section.survey_vector
+            in
+            ( { section | survey_vector = survey_vector }, Cmd.none, Nothing )
 
 
 nextEffect : Section -> Maybe Section

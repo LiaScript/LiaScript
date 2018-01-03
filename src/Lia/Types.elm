@@ -5,6 +5,7 @@ import Lia.Code.Types exposing (CodeVector)
 import Lia.Effect.Model as Effect
 import Lia.Markdown.Types exposing (Markdown)
 import Lia.Quiz.Types exposing (QuizVector)
+import Lia.Survey.Types exposing (SurveyVector)
 
 
 --import Lia.Survey.Types exposing (Survey)
@@ -32,6 +33,7 @@ type alias Section =
     , speach : List String
     , code_vector : CodeVector
     , quiz_vector : QuizVector
+    , survey_vector : SurveyVector
     , effect_model : Effect.Model
     }
 

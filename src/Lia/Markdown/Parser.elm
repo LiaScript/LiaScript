@@ -35,7 +35,7 @@ blocks =
                         , Code <$> md_annotations <*> Code.parse
                         , quote
                         , horizontal_line
-                        , Survey <$> Survey.parse
+                        , Survey <$> md_annotations <*> Survey.parse
                         , Quiz <$> md_annotations <*> Quiz.parse <*> solution
                         , ordered_list
                         , unordered_list

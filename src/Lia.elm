@@ -58,6 +58,7 @@ init_section ( tags, title, code ) =
     , speach = []
     , code_vector = Array.empty
     , quiz_vector = Array.empty
+    , survey_vector = Array.empty
     , effect_model = Effect.init
     }
 

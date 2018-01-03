@@ -361,6 +361,11 @@ view_block show section block =
                 Quizzes.view section.quiz_vector quiz True
                     |> Html.map UpdateQuiz
 
+        Survey attr survey ->
+            survey
+                |> Surveys.view section.survey_vector
+                |> Html.map UpdateSurvey
+
         _ ->
             Html.text "to appear"
 

@@ -18,7 +18,7 @@ type Markdown
     | Quiz Annotation Quiz (Maybe ( List Markdown, Int ))
     | Effect Annotation ( ID, List Markdown )
     | Comment ID Inlines
-    | Survey Survey
+    | Survey Annotation Survey
     | Chart Chart
     | Code Annotation Code
 
