@@ -1,13 +1,13 @@
 module Lia.Types exposing (Design, Mode(..), Section, Sections)
 
 import Array exposing (Array)
-import Lia.Chart.Types exposing (Chart)
-import Lia.Code.Types exposing (Code, CodeVector)
+import Lia.Code.Types exposing (CodeVector)
 import Lia.Effect.Model as Effect
-import Lia.Markdown.Inline.Types exposing (..)
 import Lia.Markdown.Types exposing (Markdown)
-import Lia.Quiz.Types exposing (Quiz)
-import Lia.Survey.Types exposing (Survey)
+import Lia.Quiz.Types exposing (QuizVector)
+
+
+--import Lia.Survey.Types exposing (Survey)
 
 
 type Mode
@@ -31,6 +31,7 @@ type alias Section =
     , effects : Int
     , speach : List String
     , code_vector : CodeVector
+    , quiz_vector : QuizVector
     , effect_model : Effect.Model
     }
 

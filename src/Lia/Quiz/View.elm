@@ -46,7 +46,7 @@ view_quiz show_solution state fn_view idx hints solution =
                         else
                             Html.text ""
                        )
-                    :: view_hints idx s.hints hints
+                    :: view_hints idx s.hint hints
                 )
 
         Nothing ->

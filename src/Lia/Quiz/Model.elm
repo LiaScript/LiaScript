@@ -45,7 +45,7 @@ element2json element =
           )
         , ( "state", state2json element.state )
         , ( "trial", JE.int element.trial )
-        , ( "hints", JE.int element.hints )
+        , ( "hint", JE.int element.hint )
         ]
 
 

@@ -10,6 +10,7 @@ import Lia.Markdown.Parser as Markdown
 import Lia.Markdown.Types exposing (..)
 import Lia.PState exposing (PState)
 import Lia.Preprocessor as Preprocessor
+import Lia.Quiz.Types exposing (QuizVector)
 
 
 parse_defintion : String -> Result String ( String, Definition )
@@ -32,56 +33,14 @@ parse_titles code =
             Err (formatError ms stream)
 
 
-parse_section : String -> Result String ( List Markdown, CodeVector, Int )
+parse_section : String -> Result String ( List Markdown, CodeVector, QuizVector, Int )
 parse_section str =
     case Combine.runParser Markdown.run Lia.PState.init str of
         Ok ( state, _, es ) ->
-            Ok ( es, state.code_vector, state.num_effects )
+            Ok ( es, state.code_vector, state.quiz_vector, state.num_effects )
 
         Err ( _, stream, ms ) ->
             formatError ms stream |> Err
-
-
-
---
--- slide : Parser PState Slide
--- slide =
---     lazy <|
---         \() ->
---             let
---                 body =
---                     many (blocks <* newlines)
---
---                 effect_counter =
---                     let
---                         pp par =
---                             succeed par.num_effects
---
---                         reset_effect c =
---                             { c | num_effects = 0 }
---                     in
---                     withState pp <* modifyState reset_effect
---             in
---             Slide <$> title_tag <*> title_str <*> body <*> effect_counter
---
---
--- parse : Parser PState (List Slide)
--- parse =
---     whitelines *> define_comment *> many1 slide
---
---
---
---
--- run : String -> Result String ( List Slide, CodeVector, QuizVector, SurveyVector, String, List String )
--- run script =
---     case Combine.runParser parse Lia.PState.init script of
---         Ok ( state, _, es ) ->
---             Ok ( es, state.code_vector, state.quiz_vector, state.survey_vector, state.def_narrator, state.def_scripts )
---
---         Err ( _, stream, ms ) ->
---             Err <| formatError ms stream
---
---
 
 
 formatError : List String -> InputStream -> String

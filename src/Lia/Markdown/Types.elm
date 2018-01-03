@@ -15,7 +15,7 @@ type Markdown
     | BulletList Annotation (List (List Markdown))
     | OrderedList Annotation (List (List Markdown))
     | Table Annotation MultInlines (List String) (List MultInlines)
-    | Quiz Quiz (Maybe ( List Markdown, Int ))
+    | Quiz Annotation Quiz (Maybe ( List Markdown, Int ))
     | Effect Annotation ( ID, List Markdown )
     | Comment ID Inlines
     | Survey Survey

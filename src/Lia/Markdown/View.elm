@@ -1,24 +1,16 @@
 module Lia.Markdown.View exposing (view)
 
---import Html.Lazy exposing (lazy2)
-
-import Array exposing (Array)
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Html.Events exposing (onClick, onInput)
-import Lia.Chart.View
+import Lia.Chart.View as Charts
 import Lia.Code.View as Codes
 import Lia.Effect.View as Effects
-import Lia.Helper exposing (ID)
-import Lia.Index.Model
-import Lia.Index.View
 import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
 import Lia.Markdown.Inline.View exposing (annotation, viewer)
 import Lia.Markdown.Types exposing (..)
 import Lia.Markdown.Update exposing (Msg(..))
-import Lia.Model exposing (Model)
-import Lia.Quiz.View
-import Lia.Survey.View
+import Lia.Quiz.View as Quizzes
+import Lia.Survey.View as Surveys
 import Lia.Types exposing (Mode(..), Section)
 
 
@@ -354,6 +346,20 @@ view_block show section block =
             code
                 |> Codes.view attr section.code_vector
                 |> Html.map UpdateCode
+
+        Quiz attr quiz Nothing ->
+            Quizzes.view section.quiz_vector quiz False
+                |> Html.map UpdateQuiz
+
+        Quiz attr quiz (Just ( answer, hidden_effects )) ->
+            if Quizzes.view_solution section.quiz_vector quiz then
+                answer
+                    |> List.map (view_block show section)
+                    |> List.append [ Html.map UpdateQuiz <| Quizzes.view section.quiz_vector quiz False ]
+                    |> Html.div []
+            else
+                Quizzes.view section.quiz_vector quiz True
+                    |> Html.map UpdateQuiz
 
         _ ->
             Html.text "to appear"

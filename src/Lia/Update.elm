@@ -1,20 +1,12 @@
 module Lia.Update exposing (Msg(..), generate, get_active_section, update)
 
---import Lia.Helper exposing (get_slide)
-
 import Array
 import Json.Encode as JE
-import Lia.Code.Types exposing (CodeVector)
-import Lia.Code.Update as Code
-import Lia.Effect.Model as EffectModel
-import Lia.Effect.Update as Effect
 import Lia.Helper exposing (ID)
 import Lia.Index.Update as Index
 import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (..)
 import Lia.Parser exposing (parse_section)
-import Lia.Quiz.Update as Quiz
-import Lia.Survey.Update as Survey
 import Lia.Types exposing (Mode(..), Section, Sections)
 import Lia.Utils exposing (set_local)
 
@@ -152,11 +144,20 @@ generate model =
         Just sec ->
             set_active_section model <|
                 case Lia.Parser.parse_section sec.code of
-                    Ok ( blocks, codes, num_effects ) ->
+                    Ok ( blocks, codes, quizzes, num_effects ) ->
                         { sec
                             | body = blocks
                             , error = Nothing
-                            , code_vector = codes
+                            , code_vector =
+                                if Array.isEmpty sec.code_vector then
+                                    codes
+                                else
+                                    sec.code_vector
+                            , quiz_vector =
+                                if Array.isEmpty sec.quiz_vector then
+                                    quizzes
+                                else
+                                    sec.quiz_vector
                             , effect_model = { effects = num_effects, visible = 0 }
                         }
 

@@ -6,11 +6,6 @@ import Lia.Quiz.Model exposing (Model, model2json)
 import Lia.Quiz.Types exposing (..)
 
 
---import Lia.Helper exposing (get_slide_effects)
---import Lia.Index
---import Lia.Model exposing (..)
-
-
 type Msg
     = CheckBox Int Int
     | RadioButton Int Int
@@ -82,7 +77,7 @@ update_hint : Int -> QuizVector -> QuizVector
 update_hint idx vector =
     case get idx vector of
         Just elem ->
-            Array.set idx { elem | hints = elem.hints + 1 } vector
+            Array.set idx { elem | hint = elem.hint + 1 } vector
 
         _ ->
             vector

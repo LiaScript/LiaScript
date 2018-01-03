@@ -30,8 +30,8 @@ type Solution
 type alias QuizElement =
     { solved : Solution
     , state : QuizState
-    , hints : Int
     , trial : Int
+    , hint : Int
     }
 
 

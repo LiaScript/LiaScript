@@ -3,20 +3,14 @@ module Lia exposing (..)
 --import Lia.Helper exposing (get_slide)
 
 import Array
-import Debug
 import Html exposing (Html)
 import Json.Encode as JE
 import Lia.Effect.Model as Effect
-import Lia.Index.Model as Index
 import Lia.Model
 import Lia.Parser
-import Lia.Preprocessor
-import Lia.Quiz.Model as Quiz
-import Lia.Survey.Model as Survey
 import Lia.Types exposing (Section, Sections)
 import Lia.Update
 import Lia.View
-import Regex
 
 
 type alias Model =
@@ -63,6 +57,7 @@ init_section ( tags, title, code ) =
     , effects = 0
     , speach = []
     , code_vector = Array.empty
+    , quiz_vector = Array.empty
     , effect_model = Effect.init
     }
 

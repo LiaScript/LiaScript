@@ -5,12 +5,14 @@ module Lia.Markdown.Update exposing (Msg(..), nextEffect, previousEffect, update
 import Json.Encode as JE
 import Lia.Code.Update as Code
 import Lia.Effect.Update as Effect
+import Lia.Quiz.Update as Quiz
 import Lia.Types exposing (Section)
 
 
 type Msg
-    = UpdateCode Code.Msg
-    | UpdateEffect Effect.Msg
+    = UpdateEffect Effect.Msg
+    | UpdateCode Code.Msg
+    | UpdateQuiz Quiz.Msg
 
 
 
@@ -27,20 +29,26 @@ type Msg
 update : Msg -> Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
 update msg section =
     case msg of
-        UpdateCode childMsg ->
-            let
-                ( code_vector, cmd ) =
-                    Code.update childMsg section.code_vector
-            in
-            --( { model | code_model = code_model }, Cmd.map UpdateCode cmd, Nothing )
-            ( { section | code_vector = code_vector }, Cmd.map UpdateCode cmd, Nothing )
-
         UpdateEffect childMsg ->
             let
                 ( effect_model, cmd ) =
                     Effect.update childMsg section.effect_model
             in
             ( { section | effect_model = effect_model }, Cmd.map UpdateEffect cmd, Nothing )
+
+        UpdateCode childMsg ->
+            let
+                ( code_vector, cmd ) =
+                    Code.update childMsg section.code_vector
+            in
+            ( { section | code_vector = code_vector }, Cmd.map UpdateCode cmd, Nothing )
+
+        UpdateQuiz childMsg ->
+            let
+                ( quiz_vector, log ) =
+                    Quiz.update childMsg section.quiz_vector
+            in
+            ( { section | quiz_vector = quiz_vector }, Cmd.none, Nothing )
 
 
 nextEffect : Section -> Maybe Section
