@@ -2,7 +2,7 @@ module Lia.Quiz.Update exposing (Msg(..), update)
 
 import Array
 import Json.Encode as JE
-import Lia.Quiz.Model exposing (Model, model2json)
+import Lia.Quiz.Model exposing (vector2json)
 import Lia.Quiz.Types exposing (..)
 
 
@@ -15,39 +15,39 @@ type Msg
     | ShowSolution Int State
 
 
-update : Msg -> Model -> ( Model, Maybe JE.Value )
-update msg model =
+update : Msg -> Vector -> ( Vector, Maybe JE.Value )
+update msg vector =
     case msg of
         CheckBox idx question_id ->
-            ( flip_check idx question_id model, Nothing )
+            ( flip_check idx question_id vector, Nothing )
 
         RadioButton idx answer ->
-            ( flip_check idx answer model, Nothing )
+            ( flip_check idx answer vector, Nothing )
 
         Input idx string ->
-            ( update_input idx string model, Nothing )
+            ( update_input idx string vector, Nothing )
 
         Check idx solution ->
             let
-                new_model =
-                    check_answer idx solution model
+                new_vector =
+                    check_answer idx solution vector
             in
-            ( new_model, Just <| model2json new_model )
+            ( new_vector, Just <| vector2json new_vector )
 
         ShowHint idx ->
-            ( update_hint idx model, Nothing )
+            ( update_hint idx vector, Nothing )
 
         ShowSolution idx solution ->
             let
-                new_model =
-                    update_solution idx model solution
+                new_vector =
+                    update_solution idx vector solution
             in
-            ( new_model, Just <| model2json new_model )
+            ( new_vector, Just <| vector2json new_vector )
 
 
 get : Int -> Vector -> Maybe Element
-get idx model =
-    case Array.get idx model of
+get idx vector =
+    case Array.get idx vector of
         Just elem ->
             if (elem.solved == Solved) || (elem.solved == ReSolved) then
                 Nothing

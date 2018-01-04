@@ -11,11 +11,11 @@ import Lia.Quiz.Types exposing (..)
 import Lia.Quiz.Update exposing (Msg(..))
 
 
-view : Model -> Quiz -> Bool -> Html Msg
-view model quiz show_solution =
+view : Vector -> Quiz -> Bool -> Html Msg
+view vector quiz show_solution =
     let
         state =
-            get_state model
+            get_state vector
     in
     case quiz of
         Text solution idx hints ->
@@ -189,8 +189,8 @@ view_hints idx counter hints =
         ]
 
 
-view_solution : Model -> Quiz -> Bool
-view_solution model quiz =
+view_solution : Vector -> Quiz -> Bool
+view_solution vector quiz =
     let
         idx =
             case quiz of
@@ -204,7 +204,7 @@ view_solution model quiz =
                     idx
     in
     idx
-        |> get_state model
+        |> get_state vector
         |> Maybe.map .solved
         |> Maybe.map (\s -> s /= Open)
         |> Maybe.withDefault False

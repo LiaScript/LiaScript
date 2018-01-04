@@ -1,9 +1,8 @@
 module Lia.Quiz.Model
     exposing
-        ( Model
-        , get_state
-        , json2model
-        , model2json
+        ( get_state
+        , json2vector
+        , vector2json
         )
 
 import Array exposing (Array)
@@ -12,19 +11,15 @@ import Json.Encode as JE
 import Lia.Quiz.Types exposing (..)
 
 
-type alias Model =
-    Vector
-
-
 get_state : Vector -> Int -> Maybe Element
 get_state vector idx =
     vector
         |> Array.get idx
 
 
-model2json : Model -> JE.Value
-model2json model =
-    JE.array <| Array.map element2json model
+vector2json : Vector -> JE.Value
+vector2json vector =
+    JE.array <| Array.map element2json vector
 
 
 element2json : Element -> JE.Value
@@ -69,8 +64,8 @@ state2json state =
                 ]
 
 
-json2model : JD.Value -> Result String Model
-json2model json =
+json2vector : JD.Value -> Result String Vector
+json2vector json =
     JD.decodeValue (JD.array json2element) json
 
 
