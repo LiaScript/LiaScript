@@ -1,6 +1,6 @@
 module Lia.Update exposing (Msg(..), generate, get_active_section, update)
 
-import Array
+import Array exposing (Array)
 import Json.Encode as JE
 import Lia.Helper exposing (ID)
 import Lia.Index.Update as Index
@@ -148,21 +148,9 @@ generate model =
                         { sec
                             | body = blocks
                             , error = Nothing
-                            , code_vector =
-                                if Array.isEmpty sec.code_vector then
-                                    codes
-                                else
-                                    sec.code_vector
-                            , quiz_vector =
-                                if Array.isEmpty sec.quiz_vector then
-                                    quizzes
-                                else
-                                    sec.quiz_vector
-                            , survey_vector =
-                                if Array.isEmpty sec.survey_vector then
-                                    surveys
-                                else
-                                    sec.survey_vector
+                            , code_vector = if_update sec.code_vector codes
+                            , quiz_vector = if_update sec.quiz_vector quizzes
+                            , survey_vector = if_update sec.survey_vector surveys
                             , effect_model = { effects = num_effects, visible = 0 }
                         }
 
@@ -174,6 +162,14 @@ generate model =
 
         Nothing ->
             model
+
+
+if_update : Array a -> Array a -> Array a
+if_update orig new =
+    if Array.isEmpty orig then
+        new
+    else
+        orig
 
 
 
