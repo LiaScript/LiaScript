@@ -1,6 +1,7 @@
 module Lia.Update exposing (Msg(..), generate, get_active_section, update)
 
 import Array exposing (Array)
+import Debug
 import Json.Encode as JE
 import Lia.Helper exposing (ID)
 import Lia.Index.Update as Index
@@ -90,10 +91,10 @@ update msg model =
                     unused =
                         case model.uid of
                             Just uid ->
-                                idx |> toString |> set_local uid
+                                set_local uid idx
 
                             Nothing ->
-                                ""
+                                0
                 in
                 ( generate { model | section_active = idx }
                 , Cmd.none
@@ -120,9 +121,9 @@ update msg model =
 
         ( SwitchMode, Just sec ) ->
             if model.mode == Presentation then
-                ( { model | mode = Slides }, Cmd.none, Nothing )
+                ( { model | mode = set_local "mode" Slides }, Cmd.none, Nothing )
             else
-                ( { model | mode = Presentation }, Cmd.none, Nothing )
+                ( { model | mode = set_local "mode" Presentation }, Cmd.none, Nothing )
 
         _ ->
             ( model, Cmd.none, Nothing )
