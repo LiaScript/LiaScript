@@ -1,7 +1,6 @@
 module Lia.Update exposing (Msg(..), generate, get_active_section, update)
 
 import Array exposing (Array)
-import Debug
 import Json.Encode as JE
 import Lia.Helper exposing (ID)
 import Lia.Index.Update as Index
@@ -85,7 +84,7 @@ update msg model =
             , Nothing
             )
 
-        ( Load idx, Just sec ) ->
+        ( Load idx, Just _ ) ->
             if (-1 < idx) && (idx < Array.length model.sections) then
                 let
                     unused =
@@ -119,7 +118,7 @@ update msg model =
                 _ ->
                     update (Load <| model.section_active - 1) model
 
-        ( SwitchMode, Just sec ) ->
+        ( SwitchMode, Just _ ) ->
             if model.mode == Presentation then
                 ( { model | mode = set_local "mode" Slides }, Cmd.none, Nothing )
             else

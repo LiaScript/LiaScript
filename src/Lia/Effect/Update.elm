@@ -84,10 +84,7 @@ has_next model =
     model.visible < model.effects
 
 
-
---next : Model -> ( Model, Cmd Msg )
-
-
+next : Model -> Maybe Model
 next model =
     if model.visible < model.effects then
         Just { model | visible = model.visible + 1 }
@@ -101,10 +98,7 @@ has_previous model =
     model.visible > 0
 
 
-
---previous : Model -> ( Model, Cmd Msg )
-
-
+previous : Model -> Maybe Model
 previous model =
     if model.visible > 0 then
         Just { model | visible = model.visible - 1 }

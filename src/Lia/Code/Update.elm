@@ -1,7 +1,7 @@
 module Lia.Code.Update exposing (Msg(..), update)
 
 import Array exposing (Array)
-import Lia.Code.Types exposing (Vector)
+import Lia.Code.Types exposing (Element, Vector)
 import Lia.Helper exposing (ID)
 import Lia.Utils
 
@@ -53,55 +53,43 @@ update msg model =
                 Nothing ->
                     ( model, Cmd.none )
 
-        EvalRslt (Ok json) ->
-            case Array.get json.id model of
-                Just elem ->
-                    ( Array.set json.id { elem | result = Ok json.result, running = False } model, Cmd.none )
+        EvalRslt (Ok { id, result }) ->
+            update_ id model (\e -> { e | result = Ok result, running = False })
 
-                Nothing ->
-                    ( model, Cmd.none )
-
-        EvalRslt (Err json) ->
-            case Array.get json.id model of
-                Just elem ->
-                    ( Array.set json.id { elem | result = Err json.result, running = False } model, Cmd.none )
-
-                Nothing ->
-                    ( model, Cmd.none )
+        EvalRslt (Err { id, result }) ->
+            update_ id model (\e -> { e | result = Err result, running = False })
 
         Update idx code_str ->
-            case Array.get idx model of
-                Just elem ->
-                    ( Array.set idx { elem | code = code_str } model, Cmd.none )
-
-                Nothing ->
-                    ( model, Cmd.none )
+            update_ idx model (\e -> { e | code = code_str })
 
         FlipMode idx ->
-            case Array.get idx model of
-                Just elem ->
-                    ( Array.set idx { elem | editing = not elem.editing } model, Cmd.none )
-
-                Nothing ->
-                    ( model, Cmd.none )
+            update_ idx model (\e -> { e | editing = not e.editing })
 
         Load idx version ->
-            case Array.get idx model of
-                Just elem ->
-                    if (version >= 0) && (version < Array.length elem.version) then
-                        ( Array.set idx
-                            { elem
-                                | version_active = version
-                                , code =
-                                    elem.version
-                                        |> Array.get version
-                                        |> Maybe.withDefault elem.code
-                            }
-                            model
-                        , Cmd.none
-                        )
-                    else
-                        ( model, Cmd.none )
+            update_ idx model (load version)
 
-                Nothing ->
-                    ( model, Cmd.none )
+
+update_ : ID -> Vector -> (Element -> Element) -> ( Vector, Cmd msg )
+update_ idx model f =
+    ( case Array.get idx model of
+        Just elem ->
+            Array.set idx (f elem) model
+
+        Nothing ->
+            model
+    , Cmd.none
+    )
+
+
+load : Int -> Element -> Element
+load version elem =
+    if (version >= 0) && (version < Array.length elem.version) then
+        { elem
+            | version_active = version
+            , code =
+                elem.version
+                    |> Array.get version
+                    |> Maybe.withDefault elem.code
+        }
+    else
+        elem
