@@ -153,14 +153,17 @@ inlines : Parser PState Inline
 inlines =
     lazy <|
         \() ->
-            choice
-                [ html <*> annotations
-                , code <*> annotations
-                , reference <*> annotations
-                , formula <*> annotations
-                , Effect.inline inlines <*> annotations
-                , strings <*> annotations
+            (choice
+                [ html
+                , code
+                , reference
+                , formula
+                , Effect.inline inlines
+                , strings
                 ]
+                <*> annotations
+            )
+                <* maybe (comments *> succeed (Chars "" Nothing))
 
 
 stringTill : Parser s p -> Parser s String

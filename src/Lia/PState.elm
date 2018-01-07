@@ -46,11 +46,8 @@ identation =
                         String.concat s.identation
                             |> regex
                             |> skip
-
-                reset s =
-                    { s | identation_skip = False }
             in
-            withState par <* modifyState reset
+            withState par <* modifyState (\s -> { s | identation_skip = False })
 
 
 identation_append : String -> Parser PState ()

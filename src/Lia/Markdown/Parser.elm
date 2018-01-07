@@ -140,4 +140,7 @@ quote =
 
 md_annotations : Parser PState Annotation
 md_annotations =
-    maybe (Dict.fromList <$> (regex "[ \\t]*" *> comment attribute <* maybe (regex "[ \\t]*\\n" <* identation)))
+    maybe
+        (Dict.fromList
+            <$> (regex "[ \\t]*" *> comment attribute <* maybe (regex "[ \\t]*\\n" <* identation))
+        )

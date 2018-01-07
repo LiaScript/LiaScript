@@ -52,11 +52,11 @@ client-side.
 
 ## Markdown-Syntax
 
-<!-- class = "animated infinite bounce" style = "color: red;" -->
+<!-- class  "animated infinite bounce" style = "color: red;" -->
 This section is intended to give a brief overview on the basic Markdown
 formatting elements. The only difference to common Markdown at this point is,
 that every course has to start with a comment, which defines authors, a language
-and  a narrator voice, see https://responsivevoice.org for all supported voices.
+and  a narrator voice, see https://responsivevoice.org for all supported<!-- voices --> .
 
 
 ``` XML
