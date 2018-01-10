@@ -121,6 +121,11 @@
                     color: darken($fg, 30%);
                 }
 
+                &.lia-error {
+                    color: rgb(1,0,0);
+                    background: rgb(1,0,0);
+                }
+
                 &.lia-toc-l {
                     &1 { padding-left: 0 * map-get($config, spacing-large) + map-get($config, spacing-normal); }
                     &2 { padding-left: 1 * map-get($config, spacing-large) + map-get($config, spacing-normal); }
