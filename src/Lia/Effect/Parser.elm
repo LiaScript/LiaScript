@@ -7,9 +7,7 @@ import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.PState exposing (PState)
 
 
---markdown : Parser PState Annotation -> Parser PState Markdown -> Parser PState Markdown
-
-
+markdown : Parser PState Markdown -> Parser PState ( Int, List Markdown )
 markdown blocks =
     (\i list -> ( i, list ))
         <$> (regex "[\\t ]*{{" *> effect_number <* regex "}}[\\t ]*\\n")
