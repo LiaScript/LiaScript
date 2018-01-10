@@ -46,7 +46,7 @@ view_aside index active sections =
             |> Lia.Index.View.view
             |> Html.map UpdateIndex
         , sections
-            |> Array.map (\sec -> ( sec.title, sec.indentation ))
+            |> Array.map (\sec -> ( sec.title, sec.indentation, sec.visited ))
             |> Array.toIndexedList
             |> (\titles ->
                     if [] == index.index then
@@ -58,10 +58,10 @@ view_aside index active sections =
         ]
 
 
-view_loc : ID -> List ( ID, ( String, Int ) ) -> Html Msg
+view_loc : ID -> List ( ID, ( String, Int, Bool ) ) -> Html Msg
 view_loc active titles =
     let
-        loc ( idx, ( title, indent ) ) =
+        loc ( idx, ( title, indent, visited ) ) =
             Html.a
                 [ onClick (Load idx)
                 , Attr.class
@@ -69,8 +69,10 @@ view_loc active titles =
                         ++ toString indent
                         ++ (if active == idx then
                                 " lia-active"
-                            else
+                            else if visited then
                                 ""
+                            else
+                                " lia-not-visited"
                            )
                     )
                 , Attr.style [ ( "cursor", "pointer" ) ]

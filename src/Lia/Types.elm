@@ -26,6 +26,7 @@ type alias Design =
 type alias Section =
     { code : String
     , title : String
+    , visited : Bool
     , indentation : Int
     , body : List Markdown
     , error : Maybe String

@@ -51,6 +51,7 @@ init_section : ( Int, String, String ) -> Section
 init_section ( tags, title, code ) =
     { code = code
     , title = title
+    , visited = False
     , indentation = tags
     , body = []
     , error = Nothing

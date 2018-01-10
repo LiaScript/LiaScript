@@ -148,6 +148,7 @@ generate model =
                         { sec
                             | body = blocks
                             , error = Nothing
+                            , visited = True
                             , code_vector = if_update sec.code_vector codes
                             , quiz_vector = if_update sec.quiz_vector quizzes
                             , survey_vector = if_update sec.survey_vector surveys
