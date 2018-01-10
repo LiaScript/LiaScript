@@ -47,10 +47,10 @@ effect_number =
     int >>= state
 
 
-comment : Parser PState Inlines -> Parser PState Markdown
+comment : Parser PState Inlines -> Parser PState ( Int, Inlines )
 comment paragraph =
     let
         number =
             regex "[\\t ]*--{{" *> effect_number <* regex "}}--[\\t ]*[\\n]+"
     in
-    Comment <$> number <*> paragraph
+    (\n p -> ( n, p )) <$> number <*> paragraph

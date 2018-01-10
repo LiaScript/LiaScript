@@ -43,7 +43,7 @@ comments =
 
 attribute : Parser s ( String, String )
 attribute =
-    (\k v -> ( k, String.fromList v ))
+    (\k v -> ( String.toLower k, String.fromList v ))
         <$> (whitelines *> regex "\\w+" <* regex "[ \\t\\n]*=[ \\t\\n]*\"")
         <*> manyTill anyChar (regex "\"[ \\t\\n]*")
 

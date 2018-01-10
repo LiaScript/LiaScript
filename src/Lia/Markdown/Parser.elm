@@ -28,7 +28,7 @@ blocks =
                 b =
                     choice
                         [ Effect <$> md_annotations <*> Effect.markdown blocks
-                        , Effect.comment paragraph
+                        , Effect.comment md_annotations paragraph
                         , Chart <$> Chart.parse
                         , formated_table
                         , simple_table
