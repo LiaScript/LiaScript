@@ -39,10 +39,6 @@ type Inline
     | Container Inlines Annotation
 
 
-
---| Annotated Inline Parameters
-
-
 type Url
     = Mail String
     | Full String

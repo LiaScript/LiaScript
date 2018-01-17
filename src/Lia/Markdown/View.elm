@@ -366,6 +366,14 @@ view_block show section block =
                 |> Surveys.view section.survey_vector
                 |> Html.map UpdateSurvey
 
+        Comment attr ( idx, paragraph, str ) ->
+            --if idx <= section.effect_model.visible then
+            --    Html.div
+            --        (Attr.id (toString idx) :: annotation attr "lia-effect-inline")
+            --      (Effects.view_block (view_block show section) idx paragraph)
+            --else
+            Html.text ""
+
         --        Comment attr ( idx, par ) ->
         --            if idx <= section.effect_model.visible then
         --                Html.div

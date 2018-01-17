@@ -2,6 +2,7 @@ module Lia.Effect.Parser exposing (comment, inline, markdown)
 
 import Combine exposing (..)
 import Combine.Num exposing (int)
+import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines)
 import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.PState exposing (PState)
@@ -47,10 +48,10 @@ effect_number =
     int >>= state
 
 
-comment : Parser PState Inlines -> Parser PState ( Int, Inlines )
+comment : Parser PState Inlines -> Parser PState ( Int, Inlines, String )
 comment paragraph =
     let
         number =
             regex "[\\t ]*--{{" *> effect_number <* regex "}}--[\\t ]*[\\n]+"
     in
-    (\n p -> ( n, p )) <$> number <*> paragraph
+    (\n p -> ( n, p, stringify p )) <$> number <*> paragraph
