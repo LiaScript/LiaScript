@@ -3,6 +3,7 @@ module Lia.Types exposing (Design, Mode(..), Section, Sections)
 import Array exposing (Array)
 import Lia.Code.Types as Code
 import Lia.Effect.Model as Effect
+import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Types exposing (Markdown)
 import Lia.Quiz.Types as Quiz
 import Lia.Survey.Types as Survey
@@ -25,7 +26,7 @@ type alias Design =
 
 type alias Section =
     { code : String
-    , title : String
+    , title : Inlines
     , visited : Bool
     , indentation : Int
     , body : List Markdown

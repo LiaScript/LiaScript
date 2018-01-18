@@ -50,7 +50,7 @@ start directly to create and share your course on github. The entire parsing and
 transformation of Lia-Markdown to any other format is done within the browser at
 client-side.
 
-## Markdown-Syntax
+## *Markdown*-Syntax
 
 <!-- class  ="animated infinite bounce" style = "color: red;" -->
 This section is intended to give a brief overview on the basic Markdown

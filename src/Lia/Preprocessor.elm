@@ -1,44 +1,47 @@
 module Lia.Preprocessor exposing (run)
 
 import Combine exposing (..)
+import Lia.Markdown.Inline.Parser exposing (line)
+import Lia.Markdown.Inline.Types exposing (Inlines)
+import Lia.PState exposing (PState)
 
 
-title_tag : Parser s Int
+title_tag : Parser PState Int
 title_tag =
     String.length <$> regex "#+" <?> "title tags"
 
 
-title_str : Parser s String
+title_str : Parser PState Inlines
 title_str =
-    (String.trim <$> regex ".+" <?> "section title") <* regex "[\x0D\n]+"
+    regex "[ \\t]*" *> line <* regex "[\x0D\n]+"
 
 
-comment : Parser s String
+comment : Parser PState String
 comment =
     regex "<!--(.|[\x0D\n])*?-->" <?> "comment"
 
 
-misc : Parser s String
+misc : Parser PState String
 misc =
     regex "([^\\\\#`<]|[\x0D\n])+"
 
 
-misc2 : Parser s String
+misc2 : Parser PState String
 misc2 =
     regex "((\\\\.)|[<`])"
 
 
-code_block : Parser s String
+code_block : Parser PState String
 code_block =
     regex "```(.|[\x0D\n])*?```" <?> "code block"
 
 
-code_inline : Parser s String
+code_inline : Parser PState String
 code_inline =
     regex "`.*?`" <?> "inline code"
 
 
-body : Parser s String
+body : Parser PState String
 body =
     lazy <|
         \() ->
@@ -53,11 +56,11 @@ body =
                 |> map String.concat
 
 
-section : Parser s ( Int, String, String )
+section : Parser PState ( Int, Inlines, String )
 section =
     (\i s b -> ( i, s, b )) <$> title_tag <*> title_str <*> body
 
 
-run : Parser s (List ( Int, String, String ))
+run : Parser PState (List ( Int, Inlines, String ))
 run =
     many section

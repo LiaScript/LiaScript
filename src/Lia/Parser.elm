@@ -6,6 +6,7 @@ import Combine exposing (..)
 import Lia.Code.Types as Code
 import Lia.Definition.Parser
 import Lia.Definition.Types exposing (Definition)
+import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Parser as Markdown
 import Lia.Markdown.Types exposing (..)
 import Lia.PState exposing (PState)
@@ -24,9 +25,9 @@ parse_defintion code =
             Err (formatError ms stream)
 
 
-parse_titles : String -> Result String (List ( Int, String, String ))
+parse_titles : String -> Result String (List ( Int, Inlines, String ))
 parse_titles code =
-    case Combine.runParser Preprocessor.run () code of
+    case Combine.runParser Preprocessor.run Lia.PState.init code of
         Ok ( _, _, rslt ) ->
             Ok rslt
 

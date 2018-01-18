@@ -11,6 +11,8 @@ import Lia.Effect.View exposing (state)
 import Lia.Helper exposing (ID)
 import Lia.Index.Model
 import Lia.Index.View
+import Lia.Markdown.Inline.Types exposing (Inlines)
+import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model)
 import Lia.Types exposing (..)
@@ -70,7 +72,7 @@ view_aside index active sections =
         ]
 
 
-view_loc : ID -> List ( ID, ( String, Int, Bool, Bool ) ) -> Html Msg
+view_loc : ID -> List ( ID, ( Inlines, Int, Bool, Bool ) ) -> Html Msg
 view_loc active titles =
     let
         loc ( idx, ( title, indent, visited, error ) ) =
@@ -91,7 +93,7 @@ view_loc active titles =
                     )
                 , Attr.style [ ( "cursor", "pointer" ) ]
                 ]
-                [ Html.text title ]
+                (viewer 9999 title)
     in
     titles
         |> List.map loc

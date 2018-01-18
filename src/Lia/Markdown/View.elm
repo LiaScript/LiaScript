@@ -16,27 +16,28 @@ import Lia.Types exposing (Mode(..), Section)
 
 view : Mode -> Section -> Html Msg
 view mode section =
+    let
+        viewer_ =
+            if mode == Presentation then
+                viewer section.effect_model.visible
+            else
+                viewer 9999
+    in
     case section.error of
         Just msg ->
             Html.section [ Attr.class "lia-content" ]
-                [ view_header section.indentation section.title
+                [ view_header viewer_ section.indentation section.title
                 , Html.text msg
                 ]
 
         Nothing ->
             let
                 show =
-                    view_block
-                        (if mode == Presentation then
-                            viewer section.effect_model.visible
-                         else
-                            viewer 9999
-                        )
-                        section
+                    view_block viewer_ section
             in
             section.body
                 |> List.map show
-                |> (::) (view_header section.indentation section.title)
+                |> (::) (view_header viewer_ section.indentation section.title)
                 |> Html.section [ Attr.class "lia-content" ]
 
 
@@ -258,9 +259,9 @@ view mode section =
 --         |> to_tuple is
 
 
-view_header : Int -> String -> Html Msg
-view_header indentation title =
-    [ Html.text title ]
+view_header : (Inlines -> List (Html Msg)) -> Int -> Inlines -> Html Msg
+view_header show indentation title =
+    show title
         |> (case indentation of
                 0 ->
                     Html.h1 [ Attr.class "lia-inline lia-h1" ]

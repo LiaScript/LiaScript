@@ -6,6 +6,7 @@ import Array
 import Html exposing (Html)
 import Json.Encode as JE
 import Lia.Effect.Model as Effect
+import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Model
 import Lia.Parser
 import Lia.Types exposing (Section, Sections)
@@ -47,7 +48,7 @@ set_script model script =
             { model | error = Just msg }
 
 
-init_section : ( Int, String, String ) -> Section
+init_section : ( Int, Inlines, String ) -> Section
 init_section ( tags, title, code ) =
     { code = code
     , title = title
