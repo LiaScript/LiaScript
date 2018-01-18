@@ -17,7 +17,7 @@ type Markdown
     | Table Annotation MultInlines (List String) (List MultInlines)
     | Quiz Annotation Quiz (Maybe ( List Markdown, Int ))
     | Effect Annotation ( ID, List Markdown )
-    | Comment Annotation ( ID, Inlines, String )
+    | Comment Annotation ( ID, Maybe String, Inlines, String )
     | Survey Annotation Survey
     | Chart Chart
     | Code Annotation Code

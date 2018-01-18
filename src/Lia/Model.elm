@@ -27,8 +27,6 @@ type alias Model =
     --    , survey_model : Lia.Survey.Model.Model
     --    , narrator : String
     --    , silent : Bool
-    --    , theme : String
-    --    , theme_light : Bool
     }
 
 

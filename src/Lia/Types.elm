@@ -9,13 +9,11 @@ import Lia.Quiz.Types as Quiz
 import Lia.Survey.Types as Survey
 
 
---import Lia.Survey.Types exposing (Survey)
-
-
 type Mode
     = Presentation
     | Slides
     | Textbook
+    | PresentationWithSubtitles
 
 
 type alias Design =
