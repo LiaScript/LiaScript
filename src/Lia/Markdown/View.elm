@@ -14,30 +14,36 @@ import Lia.Survey.View as Surveys
 import Lia.Types exposing (Mode(..), Section)
 
 
+type alias Config =
+    { mode : Mode
+    , view : Inlines -> List (Html Msg)
+    , section : Section
+    }
+
+
 view : Mode -> Section -> Html Msg
 view mode section =
     let
-        viewer_ =
-            if mode == Presentation then
-                viewer section.effect_model.visible
-            else
-                viewer 9999
+        config =
+            Config mode
+                (if mode == Presentation then
+                    viewer section.effect_model.visible
+                 else
+                    viewer 9999
+                )
+                section
     in
     case section.error of
         Just msg ->
             Html.section [ Attr.class "lia-content" ]
-                [ view_header viewer_ section.indentation section.title
+                [ view_header config
                 , Html.text msg
                 ]
 
         Nothing ->
-            let
-                show =
-                    view_block viewer_ section
-            in
             section.body
-                |> List.map show
-                |> (::) (view_header viewer_ section.indentation section.title)
+                |> List.map (view_block config)
+                |> (::) (view_header config)
                 |> Html.section [ Attr.class "lia-content" ]
 
 
@@ -259,10 +265,10 @@ view mode section =
 --         |> to_tuple is
 
 
-view_header : (Inlines -> List (Html Msg)) -> Int -> Inlines -> Html Msg
-view_header show indentation title =
-    show title
-        |> (case indentation of
+view_header : Config -> Html Msg
+view_header config =
+    config.view config.section.title
+        |> (case config.section.indentation of
                 0 ->
                     Html.h1 [ Attr.class "lia-inline lia-h1" ]
 
@@ -308,72 +314,74 @@ zero_tuple =
     to_tuple 0
 
 
-view_block : (Inlines -> List (Html Msg)) -> Section -> Markdown -> Html Msg
-view_block show section block =
+view_block : Config -> Markdown -> Html Msg
+view_block config block =
     case block of
         HLine attr ->
             Html.hr (annotation attr "lia-horiz-line") []
 
         Paragraph attr elements ->
-            Html.p (annotation attr "lia-paragraph") (show elements)
+            Html.p (annotation attr "lia-paragraph") (config.view elements)
 
         Effect attr ( idx, sub_blocks ) ->
-            if idx <= section.effect_model.visible then
+            if idx <= config.section.effect_model.visible then
                 Html.div
                     (Attr.id (toString idx) :: annotation attr "lia-effect-inline")
-                    (Effects.view_block (view_block show section) idx sub_blocks)
+                    (Effects.view_block (view_block config) idx sub_blocks)
             else
                 Html.text ""
 
         BulletList attr list ->
             list
-                |> view_list show section
+                |> view_list config
                 |> Html.ul (annotation attr "lia-list lia-unordered")
 
         OrderedList attr list ->
             list
-                |> view_list show section
+                |> view_list config
                 |> Html.ol (annotation attr "lia-list lia-ordered")
 
         Table attr header format body ->
-            view_table show attr header format body
+            view_table config attr header format body
 
         Quote attr elements ->
             elements
-                |> List.map (\e -> view_block show section e)
+                |> List.map (\e -> view_block config e)
                 |> Html.blockquote (annotation attr "lia-quote")
 
         Code attr code ->
             code
-                |> Codes.view attr section.code_vector
+                |> Codes.view attr config.section.code_vector
                 |> Html.map UpdateCode
 
         Quiz attr quiz Nothing ->
-            Quizzes.view section.quiz_vector quiz False
+            Quizzes.view config.section.quiz_vector quiz False
                 |> Html.map UpdateQuiz
 
         Quiz attr quiz (Just ( answer, hidden_effects )) ->
-            if Quizzes.view_solution section.quiz_vector quiz then
+            if Quizzes.view_solution config.section.quiz_vector quiz then
                 answer
-                    |> List.map (view_block show section)
-                    |> List.append [ Html.map UpdateQuiz <| Quizzes.view section.quiz_vector quiz False ]
+                    |> List.map (view_block config)
+                    |> List.append [ Html.map UpdateQuiz <| Quizzes.view config.section.quiz_vector quiz False ]
                     |> Html.div []
             else
-                Quizzes.view section.quiz_vector quiz True
+                Quizzes.view config.section.quiz_vector quiz True
                     |> Html.map UpdateQuiz
 
         Survey attr survey ->
             survey
-                |> Surveys.view section.survey_vector
+                |> Surveys.view config.section.survey_vector
                 |> Html.map UpdateSurvey
 
         Comment attr ( idx, paragraph, str ) ->
-            --if idx <= section.effect_model.visible then
-            --    Html.div
-            --        (Attr.id (toString idx) :: annotation attr "lia-effect-inline")
-            --      (Effects.view_block (view_block show section) idx paragraph)
-            --else
-            Html.text ""
+            case ( config.mode, idx <= config.section.effect_model.visible ) of
+                ( Slides, _ ) ->
+                    paragraph
+                        |> Paragraph attr
+                        |> view_block config
+
+                _ ->
+                    Html.text ""
 
         --        Comment attr ( idx, par ) ->
         --            if idx <= section.effect_model.visible then
@@ -386,12 +394,12 @@ view_block show section block =
             Html.text "to appear"
 
 
-view_table : (Inlines -> List (Html Msg)) -> Annotation -> MultInlines -> List String -> List MultInlines -> Html Msg
-view_table show attr header format body =
+view_table : Config -> Annotation -> MultInlines -> List String -> List MultInlines -> Html Msg
+view_table config attr header format body =
     let
         view_row fct row =
             List.map2
-                (\r f -> r |> show |> fct [ Attr.align f ])
+                (\r f -> r |> config.view |> fct [ Attr.align f ])
                 row
                 format
     in
@@ -410,11 +418,11 @@ view_table show attr header format body =
         |> Html.table (annotation attr "lia-table")
 
 
-view_list : (Inlines -> List (Html Msg)) -> Section -> List (List Markdown) -> List (Html Msg)
-view_list show section list =
+view_list : Config -> List (List Markdown) -> List (Html Msg)
+view_list config list =
     let
         viewer sub_list =
-            List.map (view_block show section) sub_list
+            List.map (view_block config) sub_list
 
         html =
             Html.li []
