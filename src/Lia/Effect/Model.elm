@@ -13,10 +13,13 @@ module Lia.Effect.Model
 --import Array exposing (Array)
 --import Lia.Types exposing (Section)
 
+import Dict exposing (Dict)
+
 
 type alias Model =
     { visible : Int
     , effects : Int
+    , comments : Dict Int String
 
     --    , status : Status
     --    , comments : Array (Maybe String)
@@ -32,12 +35,13 @@ type alias Model =
 --init : String -> Maybe Section -> Model
 
 
+init : Model
 init =
     --case maybe of
     --Just slide ->
     --    Model 0 slide.effects Silent (scan_for_comments slide.effects slide.body) narrator
     --Nothing ->
-    Model 0 0
+    Model 0 0 Dict.empty
 
 
 

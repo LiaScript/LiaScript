@@ -4,6 +4,7 @@ module Lia.PState exposing (..)
 
 import Array
 import Combine exposing (..)
+import Dict exposing (Dict)
 import Lia.Code.Types as Code
 import Lia.Quiz.Types as Quiz
 import Lia.Survey.Types as Survey
@@ -17,6 +18,7 @@ type alias PState =
     , code_vector : Code.Vector
     , quiz_vector : Quiz.Vector
     , survey_vector : Survey.Vector
+    , comments : Dict Int String
     }
 
 
@@ -29,6 +31,7 @@ init =
     , code_vector = Array.empty
     , quiz_vector = Array.empty
     , survey_vector = Array.empty
+    , comments = Dict.empty
     }
 
 

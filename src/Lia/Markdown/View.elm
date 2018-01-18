@@ -373,7 +373,7 @@ view_block config block =
                 |> Surveys.view config.section.survey_vector
                 |> Html.map UpdateSurvey
 
-        Comment attr ( idx, narrator, paragraph, str ) ->
+        Comment attr ( idx, paragraph ) ->
             case ( config.mode, idx == config.section.effect_model.visible ) of
                 ( Slides, _ ) ->
                     paragraph

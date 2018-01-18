@@ -144,7 +144,7 @@ generate model =
         Just sec ->
             set_active_section model <|
                 case Lia.Parser.parse_section sec.code of
-                    Ok ( blocks, codes, quizzes, surveys, num_effects ) ->
+                    Ok ( blocks, codes, quizzes, surveys, effects ) ->
                         { sec
                             | body = blocks
                             , error = Nothing
@@ -152,7 +152,7 @@ generate model =
                             , code_vector = if_update sec.code_vector codes
                             , quiz_vector = if_update sec.quiz_vector quizzes
                             , survey_vector = if_update sec.survey_vector surveys
-                            , effect_model = { effects = num_effects, visible = 0 }
+                            , effect_model = effects
                         }
 
                     Err msg ->
