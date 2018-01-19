@@ -58,6 +58,10 @@ update msg speak model =
         Speak ->
             case ( speak, Dict.get model.visible model.comments ) of
                 ( True, Just str ) ->
+                    let
+                        c =
+                            Tts.Responsive.cancel ()
+                    in
                     ( model, Tts.Responsive.speak TTS "US English Female" str )
 
                 _ ->
