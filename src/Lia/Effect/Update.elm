@@ -54,6 +54,13 @@ update msg model =
                 --update (Speak silent)
                 ( model, Cmd.none )
 
+        --        Speak ->
+        --                case Dict.get model.visible model.comments of
+        --                  Just str ->
+        --                      ( model, Tts.Responsive.speak TTS model.narrator str )
+        --
+        --                _ ->
+        --                    ( model, Cmd.none, False )
         _ ->
             ( model, Cmd.none )
 

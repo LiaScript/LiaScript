@@ -8,11 +8,6 @@ module Lia.Effect.Model
           --  , scan_for_comments
         )
 
---import Lia.Index.Model exposing (parse_inlines)
---import Lia.Markdown.Types exposing (Markdown(..))
---import Array exposing (Array)
---import Lia.Types exposing (Section)
-
 import Dict exposing (Dict)
 
 
