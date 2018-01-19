@@ -34,7 +34,7 @@ update msg section =
         UpdateEffect childMsg ->
             let
                 ( effect_model, cmd ) =
-                    Effect.update childMsg section.effect_model
+                    Effect.update childMsg True section.effect_model
             in
             ( { section | effect_model = effect_model }, Cmd.map UpdateEffect cmd, Nothing )
 
@@ -60,24 +60,14 @@ update msg section =
             ( { section | survey_vector = survey_vector }, Cmd.none, Nothing )
 
 
-nextEffect : Section -> Maybe Section
-nextEffect section =
-    case Effect.next section.effect_model of
-        Just effect_model ->
-            Just { section | effect_model = effect_model }
-
-        _ ->
-            Nothing
+nextEffect : Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
+nextEffect =
+    update (UpdateEffect Effect.next)
 
 
-previousEffect : Section -> Maybe Section
-previousEffect section =
-    case Effect.previous section.effect_model of
-        Just effect_model ->
-            Just { section | effect_model = effect_model }
-
-        _ ->
-            Nothing
+previousEffect : Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
+previousEffect =
+    update (UpdateEffect Effect.previous)
 
 
 

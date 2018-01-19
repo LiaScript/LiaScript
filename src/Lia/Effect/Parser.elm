@@ -63,13 +63,13 @@ add_comment ( idx, par ) =
     let
         mod s =
             { s
-                | comments =
-                    case Dict.get idx s.comments of
+                | comment_map =
+                    case Dict.get idx s.comment_map of
                         Just str ->
-                            Dict.insert idx (str ++ "\\n" ++ stringify par) s.comments
+                            Dict.insert idx (str ++ "\\n" ++ stringify par) s.comment_map
 
                         _ ->
-                            Dict.insert idx (stringify par) s.comments
+                            Dict.insert idx (stringify par) s.comment_map
             }
     in
     modifyState mod *> succeed ( idx, par )

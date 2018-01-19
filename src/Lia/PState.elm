@@ -2,10 +2,11 @@ module Lia.PState exposing (..)
 
 --import Combine exposing (Parser, skip, string)
 
-import Array
+import Array exposing (Array)
 import Combine exposing (..)
 import Dict exposing (Dict)
 import Lia.Code.Types as Code
+import Lia.Effect.Model as Effect
 import Lia.Quiz.Types as Quiz
 import Lia.Survey.Types as Survey
 
@@ -18,7 +19,7 @@ type alias PState =
     , code_vector : Code.Vector
     , quiz_vector : Quiz.Vector
     , survey_vector : Survey.Vector
-    , comments : Dict Int String
+    , comment_map : Effect.Map
     }
 
 
@@ -31,7 +32,7 @@ init =
     , code_vector = Array.empty
     , quiz_vector = Array.empty
     , survey_vector = Array.empty
-    , comments = Dict.empty
+    , comment_map = Dict.empty
     }
 
 

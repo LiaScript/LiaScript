@@ -13,7 +13,6 @@ type Mode
     = Presentation
     | Slides
     | Textbook
-    | PresentationWithSubtitles
 
 
 type alias Design =

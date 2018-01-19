@@ -45,7 +45,7 @@ parse_section str =
                 , state.code_vector
                 , state.quiz_vector
                 , state.survey_vector
-                , Effect.Model state.num_effects 0 state.comments
+                , Effect.Model 0 state.num_effects state.comment_map
                 )
 
         Err ( _, stream, ms ) ->

@@ -2,6 +2,7 @@ module Lia.Update exposing (Msg(..), generate, get_active_section, update)
 
 import Array exposing (Array)
 import Json.Encode as JE
+import Lia.Effect.Update as Effect
 import Lia.Helper exposing (ID)
 import Lia.Index.Update as Index
 import Lia.Markdown.Update as Markdown
@@ -103,17 +104,25 @@ update msg model =
                 ( model, Cmd.none, Nothing )
 
         ( NextSection, Just sec ) ->
-            case ( Markdown.nextEffect sec, model.mode ) of
-                ( Just section, Presentation ) ->
-                    ( set_active_section model section, Cmd.none, Nothing )
+            case ( Effect.has_next sec.effect_model, model.mode ) of
+                ( True, Presentation ) ->
+                    let
+                        ( sec_, cmd_, log_ ) =
+                            Markdown.nextEffect sec
+                    in
+                    ( set_active_section model sec_, Cmd.map UpdateMarkdown cmd_, log_ )
 
                 _ ->
                     update (Load <| model.section_active + 1) model
 
         ( PrevSection, Just sec ) ->
-            case ( Markdown.previousEffect sec, model.mode ) of
-                ( Just section, Presentation ) ->
-                    ( set_active_section model section, Cmd.none, Nothing )
+            case ( Effect.has_previous sec.effect_model, model.mode ) of
+                ( True, Presentation ) ->
+                    let
+                        ( sec_, cmd_, log_ ) =
+                            Markdown.previousEffect sec
+                    in
+                    ( set_active_section model sec_, Cmd.map UpdateMarkdown cmd_, log_ )
 
                 _ ->
                     update (Load <| model.section_active - 1) model

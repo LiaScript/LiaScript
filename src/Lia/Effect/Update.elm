@@ -2,6 +2,7 @@ module Lia.Effect.Update exposing (Msg(..), has_next, has_previous, init, next, 
 
 --, Status(..), get_comment)
 
+import Dict
 import Lia.Effect.Model exposing (Model)
 import Tts.Responsive
 
@@ -18,8 +19,8 @@ type Msg
     | TTS (Result String Never)
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Msg -> Bool -> Model -> ( Model, Cmd Msg )
+update msg speak model =
     --    let
     --        stop_talking model =
     --            case model.status of
@@ -39,7 +40,7 @@ update msg model =
         Next ->
             if has_next model then
                 --    stop_talking model
-                ( { model | visible = model.visible + 1 }, Cmd.none )
+                update Speak speak { model | visible = model.visible + 1 }
             else
                 --update (Speak silent)
                 ( model, Cmd.none )
@@ -48,12 +49,22 @@ update msg model =
         --            update (Speak silent) model
         Previous ->
             if has_previous model then
-                ( { model | visible = model.visible - 1 }, Cmd.none )
+                update Speak speak { model | visible = model.visible - 1 }
                 --stop_talking model
             else
                 --update (Speak silent)
                 ( model, Cmd.none )
 
+        Speak ->
+            case ( speak, Dict.get model.visible model.comments ) of
+                ( True, Just str ) ->
+                    ( model, Tts.Responsive.speak TTS "US English Female" str )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        --    else
+        --        ( model, Cmd.none )
         --        Speak ->
         --                case Dict.get model.visible model.comments of
         --                  Just str ->
@@ -81,7 +92,7 @@ update msg model =
 --            ( { model | status = Error m }, Cmd.none, False )
 
 
-init : Model -> ( Model, Cmd Msg )
+init : Bool -> Model -> ( Model, Cmd Msg )
 init =
     update Init
 
@@ -91,13 +102,8 @@ has_next model =
     model.visible < model.effects
 
 
-next : Model -> Maybe Model
-next model =
-    if model.visible < model.effects then
-        Just { model | visible = model.visible + 1 }
-    else
-        --update (Speak silent)
-        Nothing
+
+--next : Bool -> Model -> ( Model, Cmd Msg )
 
 
 has_previous : Model -> Bool
@@ -105,18 +111,19 @@ has_previous model =
     model.visible > 0
 
 
-previous : Model -> Maybe Model
-previous model =
-    if model.visible > 0 then
-        Just { model | visible = model.visible - 1 }
-    else
-        --update (Speak silent)
-        Nothing
+next : Msg
+next =
+    Next
 
 
-repeat : Model -> ( Model, Cmd Msg )
+previous : Msg
+previous =
+    Previous
+
+
+repeat : Msg
 repeat =
-    update Repeat
+    Repeat
 
 
 

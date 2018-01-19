@@ -1,11 +1,8 @@
 module Lia.Effect.Model
     exposing
-        ( Model
-          --    , Status(..)
-          --    , get_comment
+        ( Map
+        , Model
         , init
-          --      , init_silent
-          --  , scan_for_comments
         )
 
 import Dict exposing (Dict)
@@ -14,12 +11,16 @@ import Dict exposing (Dict)
 type alias Model =
     { visible : Int
     , effects : Int
-    , comments : Dict Int String
+    , comments : Map
 
     --    , status : Status
     --    , comments : Array (Maybe String)
     --    , narrator : String
     }
+
+
+type alias Map =
+    Dict Int String
 
 
 
