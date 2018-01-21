@@ -20,11 +20,12 @@ type alias PState =
     , quiz_vector : Quiz.Vector
     , survey_vector : Survey.Vector
     , comment_map : Effect.Map
+    , narrator : String
     }
 
 
-init : PState
-init =
+init : String -> PState
+init narrator =
     { identation = []
     , identation_skip = False
     , num_effects = 0
@@ -33,6 +34,7 @@ init =
     , quiz_vector = Array.empty
     , survey_vector = Array.empty
     , comment_map = Dict.empty
+    , narrator = narrator
     }
 
 

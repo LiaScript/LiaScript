@@ -30,7 +30,7 @@ set_script : Model -> String -> Model
 set_script model script =
     case Lia.Parser.parse_defintion script of
         Ok ( code, definition ) ->
-            case Lia.Parser.parse_titles code of
+            case Lia.Parser.parse_titles definition.narrator code of
                 Ok title_sections ->
                     { model
                         | definition = definition

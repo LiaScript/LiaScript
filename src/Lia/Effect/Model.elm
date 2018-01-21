@@ -20,7 +20,7 @@ type alias Model =
 
 
 type alias Map =
-    Dict Int String
+    Dict Int ( String, String )
 
 
 

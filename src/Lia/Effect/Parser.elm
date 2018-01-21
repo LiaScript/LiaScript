@@ -65,11 +65,11 @@ add_comment ( idx, par ) =
             { s
                 | comment_map =
                     case Dict.get idx s.comment_map of
-                        Just str ->
-                            Dict.insert idx (str ++ "\\n" ++ stringify par) s.comment_map
+                        Just ( narrator, str ) ->
+                            Dict.insert idx ( narrator, str ++ "\\n" ++ stringify par ) s.comment_map
 
                         _ ->
-                            Dict.insert idx (stringify par) s.comment_map
+                            Dict.insert idx ( s.narrator, stringify par ) s.comment_map
             }
     in
     modifyState mod *> succeed ( idx, par )
