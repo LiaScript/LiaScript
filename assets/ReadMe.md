@@ -877,13 +877,13 @@ effects can be combined, due to the usage of equal numbers):
 ``` markdown
 * no effect here
 * but in this line {{1}}{{show *** first ***}}
-* as well as this one {{1}}{{show *** first ***}}, which contains two effects
+* as well as this one {{1-2}}{{show *** first ***}}, which contains two effects
   {{2}}{{![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)}}
 ```
 
 * no effect here
 * but in this line {{1}}{{show *** first ***}}
-* as well as this one {{1}}{{show *** first ***}}, which contains two effects
+* as well as this one {{1-2}}{{show *** first ***}}, which contains two effects
   {{2}}{{![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)}}
 
 
@@ -899,14 +899,14 @@ See https://daneden.github.io/animate.css for more animation effects.
 
 ``` markdown
 * {{0}}{{ *bounce* }} <!-- class = "animated infinite bounce" style = "animation-delay: 5s;" -->
-* {{1}}{{zoomIn}} <!-- class = "animated zoomIn" -->
-* {{2}}{{zoomOut}} <!-- class = "animated zoomOut" -->
+* {{1-2}}{{zoomIn}} <!-- class = "animated zoomIn" -->
+* {{2-3}}{{zoomOut}} <!-- class = "animated zoomOut" -->
 * {{3}}{{![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)}} <!-- class = "animated rubberBand" -->
 ```
 
 * {{0}}{{ *bounce* }} <!-- class = "animated infinite bounce" style = "animation-delay: 5s;" -->
-* {{1}}{{zoomIn}} <!-- class = "animated zoomIn" -->
-* {{2}}{{zoomOut}} <!-- class = "animated zoomOut" -->
+* {{1-2}}{{zoomIn}} <!-- class = "animated zoomIn" -->
+* {{2-3}}{{zoomOut}} <!-- class = "animated zoomOut" -->
 * {{3}}{{![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)}} <!-- class = "animated rubberBand" -->
 
 ### Block Effects
@@ -923,10 +923,10 @@ further effects.
 
 
 ``` markdown
-                      {{1}}
+                      {{1-3}}
 This is an example for a *single* block effect.
 
-                               {{2}}
+                               {{2-4}}
 ================================================================================
 
 This is an example for a ... wait a second {{3 rubberBand}}{{**multi**}} ...
@@ -939,10 +939,10 @@ block effect.
 ================================================================================
 ```
 
-                                  {{1}}
+                                  {{1-3}}
 This is an example for a *single* block effect.
 
-                               {{2}}
+                               {{2-4}}
 ================================================================================
 
 This is an example for a ... wait a second {{3}}{{**multi**}} ...

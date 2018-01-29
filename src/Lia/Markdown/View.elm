@@ -325,11 +325,11 @@ view_block config block =
         Paragraph attr elements ->
             Html.p (annotation attr "lia-paragraph") (config.view elements)
 
-        Effect attr ( idx, sub_blocks ) ->
-            if idx <= config.section.effect_model.visible then
+        Effect attr ( id_in, id_out, sub_blocks ) ->
+            if (id_in <= config.section.effect_model.visible) && (id_out > config.section.effect_model.visible) then
                 Html.div
-                    (Attr.id (toString idx) :: annotation attr "lia-effect-inline")
-                    (Effects.view_block (view_block config) idx sub_blocks)
+                    (Attr.id (toString id_in) :: annotation attr "lia-effect-inline")
+                    (Effects.view_block (view_block config) id_in sub_blocks)
             else
                 Html.text ""
 

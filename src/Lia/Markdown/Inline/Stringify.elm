@@ -46,7 +46,7 @@ inline2string inline =
         HTML str _ ->
             ""
 
-        EInline _ inlines _ ->
+        EInline _ _ inlines _ ->
             stringify inlines
 
         Container inlines _ ->

@@ -9,10 +9,11 @@ import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.PState exposing (PState)
 
 
-markdown : Parser PState Markdown -> Parser PState ( Int, List Markdown )
+markdown : Parser PState Markdown -> Parser PState ( Int, Int, List Markdown )
 markdown blocks =
-    (\i list -> ( i, list ))
-        <$> (regex "[\\t ]*{{" *> effect_number <* regex "}}[\\t ]*\\n")
+    (\i j list -> ( i, j, list ))
+        <$> (regex "[\\t ]*{{" *> effect_number)
+        <*> (optional 99999 (regex "[\t ]*-[\t ]*" *> int) <* regex "}}[\\t ]*\\n")
         <*> (multi blocks <|> single blocks)
 
 
@@ -29,7 +30,8 @@ multi blocks =
 inline : Parser PState Inline -> Parser PState (Annotation -> Inline)
 inline inlines =
     EInline
-        <$> (string "{{" *> effect_number <* string "}}")
+        <$> (string "{{" *> effect_number)
+        <*> (optional 99999 (regex "[\t ]*-[\t ]*" *> int) <* string "}}")
         <*> (string "{{" *> manyTill inlines (string "}}"))
 
 

@@ -75,11 +75,11 @@ view visible element =
         HTML e Nothing ->
             Lia.Utils.stringToHtml e
 
-        EInline idx e attr ->
-            if idx <= visible then
+        EInline id_in id_out e attr ->
+            if (id_in <= visible) && (id_out > visible) then
                 Html.span
-                    (Attr.id (toString idx) :: annotation attr "lia-effect-inline")
-                    (Effect.view (viewer visible) idx e)
+                    (Attr.id (toString id_in) :: annotation attr "lia-effect-inline")
+                    (Effect.view (viewer visible) id_in e)
             else
                 Html.text ""
 

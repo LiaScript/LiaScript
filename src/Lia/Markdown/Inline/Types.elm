@@ -35,7 +35,7 @@ type Inline
     | Formula Bool String Annotation
     | Ref Reference Annotation
     | HTML String Annotation
-    | EInline Int Inlines Annotation
+    | EInline Int Int Inlines Annotation
     | Container Inlines Annotation
 
 
