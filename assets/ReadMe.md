@@ -860,8 +860,9 @@ There are currently three types of effects, that are supported by liaScript:
 2. Block effects
 3. and a narrator
 
-Every effect is defined by two braces around a number `{{1}}`, which marks the
-order of their appearance.
+Every effect is defined by two braces around one or two numbers `{{1-2}}`, which
+marks the order of their appearance. The second and optional number defines, at
+which step the element becomes invisible again.
 
 ### Inline Effects
 
