@@ -14,14 +14,6 @@ type Msg
     | Load ID Int
 
 
-last : Array ( String, rslt ) -> String
-last a =
-    a
-        |> Array.get (Array.length a - 1)
-        |> Maybe.map (\( c, _ ) -> c)
-        |> Maybe.withDefault ""
-
-
 update : Msg -> Vector -> ( Vector, Cmd Msg )
 update msg model =
     case msg of
