@@ -10,7 +10,7 @@ type alias Vector =
 
 type alias Element =
     { code : String
-    , version : Array String
+    , version : Array ( String, Result String String )
     , version_active : Int
     , result : Result String String
     , editing : Bool

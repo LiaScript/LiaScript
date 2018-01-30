@@ -78,7 +78,7 @@ evaluate lang code comment =
                 | code_vector =
                     Array.push
                         { code = code
-                        , version = Array.fromList [ code ]
+                        , version = Array.fromList [ ( code, Ok "" ) ]
                         , version_active = 0
                         , result = Ok ""
                         , editing = False

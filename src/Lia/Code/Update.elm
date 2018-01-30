@@ -14,10 +14,11 @@ type Msg
     | Load ID Int
 
 
-last : Array String -> String
+last : Array ( String, rslt ) -> String
 last a =
     a
         |> Array.get (Array.length a - 1)
+        |> Maybe.map (\( c, _ ) -> c)
         |> Maybe.withDefault ""
 
 
@@ -27,69 +28,81 @@ update msg model =
         Eval idx x ->
             case Array.get idx model of
                 Just elem ->
-                    let
-                        exec =
-                            String.join elem.code x
-
-                        ( version, active ) =
-                            if elem.code /= last elem.version then
-                                ( Array.push elem.code elem.version
-                                , Array.length elem.version
-                                )
-                            else
-                                ( elem.version, elem.version_active )
-                    in
-                    ( Array.set idx
-                        { elem
-                            | editing = False
-                            , running = True
-                            , version = version
-                            , version_active = active
-                        }
+                    update_ idx
                         model
-                    , Lia.Utils.evaluateJS2 EvalRslt idx exec
-                    )
+                        (\e -> { e | editing = False, running = True })
+                        (String.join elem.code x |> Lia.Utils.evaluateJS2 EvalRslt idx)
 
                 Nothing ->
                     ( model, Cmd.none )
 
         EvalRslt (Ok { id, result }) ->
-            update_ id model (\e -> { e | result = Ok result, running = False })
+            update_ id model (resulting (Ok result)) Cmd.none
 
         EvalRslt (Err { id, result }) ->
-            update_ id model (\e -> { e | result = Err result, running = False })
+            update_ id model (resulting (Err result)) Cmd.none
 
         Update idx code_str ->
-            update_ idx model (\e -> { e | code = code_str })
+            update_ idx model (\e -> { e | code = code_str }) Cmd.none
 
         FlipMode idx ->
-            update_ idx model (\e -> { e | editing = not e.editing })
+            update_ idx model (\e -> { e | editing = not e.editing }) Cmd.none
 
         Load idx version ->
-            update_ idx model (load version)
+            update_ idx model (load version) Cmd.none
 
 
-update_ : ID -> Vector -> (Element -> Element) -> ( Vector, Cmd msg )
-update_ idx model f =
+update_ : ID -> Vector -> (Element -> Element) -> Cmd msg -> ( Vector, Cmd msg )
+update_ idx model f cmd =
     ( case Array.get idx model of
         Just elem ->
             Array.set idx (f elem) model
 
         Nothing ->
             model
-    , Cmd.none
+    , cmd
     )
+
+
+resulting : Result String String -> Element -> Element
+resulting result elem =
+    let
+        ( code, _ ) =
+            elem.version
+                |> Array.get elem.version_active
+                |> Maybe.withDefault ( "", Ok "" )
+
+        e =
+            { elem | result = result, running = False }
+    in
+    if code == e.code then
+        { e
+            | version = Array.set e.version_active ( code, result ) e.version
+        }
+    else
+        { e
+            | version = Array.push ( e.code, result ) e.version
+            , version_active = Array.length e.version
+        }
+
+
+
+--version = Array.push elem.version }
 
 
 load : Int -> Element -> Element
 load version elem =
     if (version >= 0) && (version < Array.length elem.version) then
-        { elem
-            | version_active = version
-            , code =
+        let
+            ( code, result ) =
                 elem.version
                     |> Array.get version
-                    |> Maybe.withDefault elem.code
+                    |> Maybe.withDefault ( elem.code, Ok "" )
+        in
+        { elem
+            | version_active = version
+            , code = code
+            , result = result
         }
     else
         elem
