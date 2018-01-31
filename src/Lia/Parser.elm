@@ -26,9 +26,9 @@ parse_defintion code =
             Err (formatError ms stream)
 
 
-parse_titles : String -> String -> Result String (List ( Int, Inlines, String ))
-parse_titles narrator code =
-    case Combine.runParser Preprocessor.run (Lia.PState.init narrator) code of
+parse_titles : Definition -> String -> Result String (List ( Int, Inlines, String ))
+parse_titles defines code =
+    case Combine.runParser Preprocessor.run (Lia.PState.init defines) code of
         Ok ( _, _, rslt ) ->
             Ok rslt
 
@@ -36,9 +36,9 @@ parse_titles narrator code =
             Err (formatError ms stream)
 
 
-parse_section : String -> String -> Result String ( List Markdown, Code.Vector, Quiz.Vector, Survey.Vector, Effect.Model )
-parse_section narrator str =
-    case Combine.runParser Markdown.run (Lia.PState.init narrator) str of
+parse_section : Definition -> String -> Result String ( List Markdown, Code.Vector, Quiz.Vector, Survey.Vector, Effect.Model )
+parse_section defines str =
+    case Combine.runParser Markdown.run (Lia.PState.init defines) str of
         Ok ( state, _, es ) ->
             Ok
                 ( es

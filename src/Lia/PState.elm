@@ -1,11 +1,10 @@
 module Lia.PState exposing (..)
 
---import Combine exposing (Parser, skip, string)
-
 import Array exposing (Array)
 import Combine exposing (..)
 import Dict exposing (Dict)
 import Lia.Code.Types as Code
+import Lia.Definition.Types exposing (Definition)
 import Lia.Effect.Model as Effect
 import Lia.Quiz.Types as Quiz
 import Lia.Survey.Types as Survey
@@ -20,12 +19,12 @@ type alias PState =
     , quiz_vector : Quiz.Vector
     , survey_vector : Survey.Vector
     , comment_map : Effect.Map
-    , narrator : String
+    , defines : { global : Definition, local : Maybe Definition }
     }
 
 
-init : String -> PState
-init narrator =
+init : Definition -> PState
+init def =
     { identation = []
     , identation_skip = False
     , num_effects = 0
@@ -34,7 +33,7 @@ init narrator =
     , quiz_vector = Array.empty
     , survey_vector = Array.empty
     , comment_map = Dict.empty
-    , narrator = narrator
+    , defines = { global = def, local = Nothing }
     }
 
 

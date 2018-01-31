@@ -1,7 +1,5 @@
 module Lia exposing (..)
 
---import Lia.Helper exposing (get_slide)
-
 import Array
 import Html exposing (Html)
 import Json.Encode as JE
@@ -38,7 +36,7 @@ set_script model script =
                         |> List.reverse
                         |> List.map load_js
             in
-            case Lia.Parser.parse_titles definition.narrator code of
+            case Lia.Parser.parse_titles definition code of
                 Ok title_sections ->
                     { model
                         | definition = definition

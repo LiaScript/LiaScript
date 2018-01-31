@@ -152,7 +152,7 @@ generate model =
     case get_active_section model of
         Just sec ->
             set_active_section model <|
-                case Lia.Parser.parse_section model.definition.narrator sec.code of
+                case Lia.Parser.parse_section model.definition sec.code of
                     Ok ( blocks, codes, quizzes, surveys, effects ) ->
                         { sec
                             | body = blocks

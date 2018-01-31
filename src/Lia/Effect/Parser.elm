@@ -71,7 +71,7 @@ add_comment ( idx, par ) =
                             Dict.insert idx ( narrator, str ++ "\\n" ++ stringify par ) s.comment_map
 
                         _ ->
-                            Dict.insert idx ( s.narrator, stringify par ) s.comment_map
+                            Dict.insert idx ( s.defines.global.narrator, stringify par ) s.comment_map
             }
     in
     modifyState mod *> succeed ( idx, par )
