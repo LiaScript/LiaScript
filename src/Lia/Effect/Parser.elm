@@ -64,14 +64,23 @@ add_comment : ( Int, Inlines ) -> Parser PState ( Int, Inlines )
 add_comment ( idx, par ) =
     let
         mod s =
+            let
+                narrator =
+                    case s.defines.local of
+                        Just local ->
+                            local.narrator
+
+                        Nothing ->
+                            s.defines.global.narrator
+            in
             { s
                 | comment_map =
                     case Dict.get idx s.comment_map of
-                        Just ( narrator, str ) ->
-                            Dict.insert idx ( narrator, str ++ "\\n" ++ stringify par ) s.comment_map
+                        Just ( nrt, str ) ->
+                            Dict.insert idx ( nrt, str ++ "\\n" ++ stringify par ) s.comment_map
 
                         _ ->
-                            Dict.insert idx ( s.defines.global.narrator, stringify par ) s.comment_map
+                            Dict.insert idx ( narrator, stringify par ) s.comment_map
             }
     in
     modifyState mod *> succeed ( idx, par )

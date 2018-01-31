@@ -28,7 +28,7 @@ parse_defintion code =
 
 parse_titles : Definition -> String -> Result String (List ( Int, Inlines, String ))
 parse_titles defines code =
-    case Combine.runParser Preprocessor.run (Lia.PState.init defines) code of
+    case Combine.runParser Preprocessor.run (Lia.PState.init defines Nothing) code of
         Ok ( _, _, rslt ) ->
             Ok rslt
 
@@ -37,8 +37,17 @@ parse_titles defines code =
 
 
 parse_section : Definition -> String -> Result String ( List Markdown, Code.Vector, Quiz.Vector, Survey.Vector, Effect.Model )
-parse_section defines str =
-    case Combine.runParser Markdown.run (Lia.PState.init defines) str of
+parse_section global str =
+    let
+        ( code, local ) =
+            case parse_defintion str of
+                Ok ( c, defs ) ->
+                    ( c, Just defs )
+
+                Err m ->
+                    ( str, Nothing )
+    in
+    case Combine.runParser Markdown.run (Lia.PState.init global local) code of
         Ok ( state, _, es ) ->
             Ok
                 ( es

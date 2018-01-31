@@ -23,8 +23,8 @@ type alias PState =
     }
 
 
-init : Definition -> PState
-init def =
+init : Definition -> Maybe Definition -> PState
+init global local =
     { identation = []
     , identation_skip = False
     , num_effects = 0
@@ -33,7 +33,7 @@ init def =
     , quiz_vector = Array.empty
     , survey_vector = Array.empty
     , comment_map = Dict.empty
-    , defines = { global = def, local = Nothing }
+    , defines = { global = global, local = local }
     }
 
 

@@ -25,6 +25,13 @@ script:   https://interactivepython.org/runestone/static/thinkcspy/_static/skulp
 -->
 
 # Lia-Script
+<!--
+language: en_US
+narrator: Russian Female
+-->
+
+
+
 
 See the online rendered version at: https://liascript.github.io
 
