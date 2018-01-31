@@ -1009,7 +1009,7 @@ Markdown-format:
 
 Result:
 
-                                     diagram titel
+                            diagram titel
     1.5 |           *
         |
       y |        *      *

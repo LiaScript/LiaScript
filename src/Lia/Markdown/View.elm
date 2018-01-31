@@ -126,17 +126,17 @@ view_block config block =
                 |> Html.map UpdateCode
 
         Quiz attr quiz Nothing ->
-            Quizzes.view config.section.quiz_vector quiz False
+            Quizzes.view False attr quiz config.section.quiz_vector
                 |> Html.map UpdateQuiz
 
         Quiz attr quiz (Just ( answer, hidden_effects )) ->
             if Quizzes.view_solution config.section.quiz_vector quiz then
                 answer
                     |> List.map (view_block config)
-                    |> List.append [ Html.map UpdateQuiz <| Quizzes.view config.section.quiz_vector quiz False ]
+                    |> List.append [ Html.map UpdateQuiz <| Quizzes.view False attr quiz config.section.quiz_vector ]
                     |> Html.div []
             else
-                Quizzes.view config.section.quiz_vector quiz True
+                Quizzes.view True attr quiz config.section.quiz_vector
                     |> Html.map UpdateQuiz
 
         Survey attr survey ->
@@ -156,7 +156,7 @@ view_block config block =
                     Html.text ""
 
         Chart attr chart ->
-            Charts.view chart
+            Charts.view attr chart
 
 
 view_table : Config -> Annotation -> MultInlines -> List String -> List MultInlines -> Html Msg

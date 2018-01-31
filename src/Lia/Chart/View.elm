@@ -4,6 +4,8 @@ import Char exposing (isLower, toLower)
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Lia.Chart.Types exposing (..)
+import Lia.Markdown.Inline.Types exposing (Annotation)
+import Lia.Markdown.Inline.View exposing (annotation)
 import Plot
 import Svg.Attributes as Attr
 
@@ -29,13 +31,13 @@ y_label str summary =
         (summary.y.max / 2.0)
 
 
-view : Chart -> Html msg
-view chart =
+view : Annotation -> Chart -> Html msg
+view attr chart =
     let
         custom =
             Plot.defaultSeriesPlotCustomizations
     in
-    Html.div []
+    Html.div (annotation attr "lia-chart")
         [ Plot.viewSeriesCustom
             { custom
                 | junk =

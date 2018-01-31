@@ -4,35 +4,35 @@ import Array exposing (Array)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
-import Lia.Markdown.Inline.Types exposing (MultInlines)
-import Lia.Markdown.Inline.View exposing (view_inf)
+import Lia.Markdown.Inline.Types exposing (Annotation, MultInlines)
+import Lia.Markdown.Inline.View exposing (annotation, view_inf)
 import Lia.Quiz.Model exposing (..)
 import Lia.Quiz.Types exposing (..)
 import Lia.Quiz.Update exposing (Msg(..))
 
 
-view : Vector -> Quiz -> Bool -> Html Msg
-view vector quiz show_solution =
+view : Bool -> Annotation -> Quiz -> Vector -> Html Msg
+view show_solution attr quiz vector =
     let
         state =
             get_state vector
     in
     case quiz of
         Text solution idx hints ->
-            view_quiz show_solution (state idx) view_text idx hints (TextState solution)
+            view_quiz attr show_solution (state idx) view_text idx hints (TextState solution)
 
         SingleChoice solution questions idx hints ->
-            view_quiz show_solution (state idx) (view_single_choice questions) idx hints (SingleChoiceState solution)
+            view_quiz attr show_solution (state idx) (view_single_choice questions) idx hints (SingleChoiceState solution)
 
         MultipleChoice solution questions idx hints ->
-            view_quiz show_solution (state idx) (view_multiple_choice questions) idx hints (MultipleChoiceState solution)
+            view_quiz attr show_solution (state idx) (view_multiple_choice questions) idx hints (MultipleChoiceState solution)
 
 
-view_quiz : Bool -> Maybe Element -> (Int -> State -> Bool -> Html Msg) -> Int -> MultInlines -> State -> Html Msg
-view_quiz show_solution state fn_view idx hints solution =
+view_quiz : Annotation -> Bool -> Maybe Element -> (Int -> State -> Bool -> Html Msg) -> Int -> MultInlines -> State -> Html Msg
+view_quiz attr show_solution state fn_view idx hints solution =
     case state of
         Just s ->
-            Html.p [ Attr.class "lia-quiz" ]
+            Html.p (annotation attr "lia-quiz")
                 (fn_view idx s.state (s.solved /= Open)
                     :: view_button s.trial s.solved (Check idx solution)
                     :: (if show_solution then
