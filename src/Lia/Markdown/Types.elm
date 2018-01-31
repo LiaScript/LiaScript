@@ -19,7 +19,7 @@ type Markdown
     | Effect Annotation ( ID, ID, List Markdown )
     | Comment Annotation ( ID, Inlines )
     | Survey Annotation Survey
-    | Chart Chart
+    | Chart Annotation Chart
     | Code Annotation Code
 
 

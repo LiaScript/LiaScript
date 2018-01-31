@@ -4,16 +4,16 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import Lia.Helper exposing (ID)
-import Lia.Markdown.Inline.Types exposing (Inline, Inlines)
-import Lia.Markdown.Inline.View exposing (view_inf)
+import Lia.Markdown.Inline.Types exposing (Annotation, Inline, Inlines)
+import Lia.Markdown.Inline.View exposing (annotation, view_inf)
 import Lia.Survey.Model exposing (..)
 import Lia.Survey.Types exposing (..)
 import Lia.Survey.Update exposing (Msg(..))
 
 
-view : Vector -> Survey -> Html Msg
-view model survey =
-    Html.p [ Attr.class "lia-card" ] <|
+view : Annotation -> Survey -> Vector -> Html Msg
+view attr survey model =
+    Html.p (annotation attr "lia-card") <|
         case survey of
             Text lines idx ->
                 view_text (get_text_state model idx) lines idx

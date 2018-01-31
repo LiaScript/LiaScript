@@ -140,8 +140,8 @@ view_block config block =
                     |> Html.map UpdateQuiz
 
         Survey attr survey ->
-            survey
-                |> Surveys.view config.section.survey_vector
+            config.section.survey_vector
+                |> Surveys.view attr survey
                 |> Html.map UpdateSurvey
 
         Comment attr ( idx, paragraph ) ->
@@ -155,9 +155,8 @@ view_block config block =
                 _ ->
                     Html.text ""
 
-        Chart chart ->
-            chart
-                |> Charts.view
+        Chart attr chart ->
+            Charts.view chart
 
 
 view_table : Config -> Annotation -> MultInlines -> List String -> List MultInlines -> Html Msg

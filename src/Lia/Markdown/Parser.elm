@@ -29,7 +29,7 @@ blocks =
                     choice
                         [ Effect <$> md_annotations <*> Effect.markdown blocks
                         , Comment <$> md_annotations <*> Effect.comment paragraph
-                        , Chart <$> Chart.parse
+                        , Chart <$> md_annotations <*> Chart.parse
                         , formated_table
                         , simple_table
                         , Code <$> md_annotations <*> Code.parse
