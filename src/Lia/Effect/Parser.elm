@@ -53,24 +53,30 @@ effect_number =
 
 comment : Parser PState Inlines -> Parser PState ( Int, Inlines )
 comment paragraph =
-    let
-        number =
-            regex "[\\t ]*--{{" *> effect_number <* regex "}}--[\\t ]*[\\n]+"
-    in
-    ((\n p -> ( n, p )) <$> number <*> paragraph) >>= add_comment
+    ((\i n p -> ( i, n, p ))
+        <$> (regex "[ \\t]*--{{" *> effect_number)
+        <*> (maybe (regex "[ \\t]*<!--" *> regex "[A-Za-z ]+" <* regex "-->[ \\t]*")
+                <* regex "}}--[ \\t]*[\\n]+"
+            )
+        <*> paragraph
+    )
+        >>= add_comment
 
 
-add_comment : ( Int, Inlines ) -> Parser PState ( Int, Inlines )
-add_comment ( idx, par ) =
+add_comment : ( Int, Maybe String, Inlines ) -> Parser PState ( Int, Inlines )
+add_comment ( idx, temp_narrator, par ) =
     let
         mod s =
             let
                 narrator =
-                    case s.defines.local of
-                        Just local ->
+                    case ( temp_narrator, s.defines.local ) of
+                        ( Just tmp, _ ) ->
+                            String.trim tmp
+
+                        ( Nothing, Just local ) ->
                             local.narrator
 
-                        Nothing ->
+                        _ ->
                             s.defines.global.narrator
             in
             { s
