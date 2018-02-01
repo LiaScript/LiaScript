@@ -55,7 +55,7 @@ comment : Parser PState Inlines -> Parser PState ( Int, Inlines )
 comment paragraph =
     ((\i n p -> ( i, n, p ))
         <$> (regex "[ \\t]*--{{" *> effect_number)
-        <*> (maybe (regex "[ \\t]*<!--" *> regex "[A-Za-z ]+" <* regex "-->[ \\t]*")
+        <*> (maybe (regex "[ \\t]*<!--" *> regex "[A-Za-z0-9 ]+" <* regex "-->[ \\t]*")
                 <* regex "}}--[ \\t]*[\\n]+"
             )
         <*> paragraph
