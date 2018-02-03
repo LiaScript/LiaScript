@@ -1,8 +1,10 @@
 module Lia.Effect.Parser exposing (comment, inline, markdown)
 
+import Array
 import Combine exposing (..)
 import Combine.Num exposing (int)
 import Dict
+import Lia.Effect.Model exposing (Element)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines)
 import Lia.Markdown.Types exposing (Markdown(..))
@@ -51,7 +53,7 @@ effect_number =
     int >>= state
 
 
-comment : Parser PState Inlines -> Parser PState ( Int, Inlines )
+comment : Parser PState Inlines -> Parser PState ( Int, Int )
 comment paragraph =
     ((\i n p -> ( i, n, p ))
         <$> (regex "[ \\t]*--{{" *> effect_number)
@@ -63,7 +65,7 @@ comment paragraph =
         >>= add_comment
 
 
-add_comment : ( Int, Maybe String, Inlines ) -> Parser PState ( Int, Inlines )
+add_comment : ( Int, Maybe String, Inlines ) -> Parser PState ( Int, Int )
 add_comment ( idx, temp_narrator, par ) =
     let
         mod s =
@@ -82,11 +84,13 @@ add_comment ( idx, temp_narrator, par ) =
             { s
                 | comment_map =
                     case Dict.get idx s.comment_map of
-                        Just ( nrt, str ) ->
-                            Dict.insert idx ( nrt, str ++ "\\n" ++ stringify par ) s.comment_map
+                        Just cmt ->
+                            Dict.insert idx { cmt | comment = cmt.comment ++ "\\n" ++ stringify par } s.comment_map
 
                         _ ->
-                            Dict.insert idx ( narrator, stringify par ) s.comment_map
+                            Dict.insert idx
+                                (Element narrator (stringify par) (Array.fromList [ ( Nothing, par ) ]))
+                                s.comment_map
             }
     in
-    modifyState mod *> succeed ( idx, par )
+    modifyState mod *> succeed ( idx, 0 )

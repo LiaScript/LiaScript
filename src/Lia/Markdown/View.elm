@@ -4,6 +4,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Lia.Chart.View as Charts
 import Lia.Code.View as Codes
+import Lia.Effect.Model as Comments
 import Lia.Effect.View as Effects
 import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
 import Lia.Markdown.Inline.View exposing (annotation, viewer)
@@ -18,7 +19,6 @@ type alias Config =
     { mode : Mode
     , view : Inlines -> List (Html Msg)
     , section : Section
-    , comments : List Markdown
     }
 
 
@@ -33,7 +33,6 @@ view mode section =
                     viewer 9999
                 )
                 section
-                []
     in
     case section.error of
         Just msg ->
@@ -73,16 +72,6 @@ view_header config =
            )
         |> List.singleton
         |> Html.header []
-
-
-to_tuple : List Markdown -> Html Msg -> ( List Markdown, Html Msg )
-to_tuple l html =
-    ( l, html )
-
-
-zero_tuple : Config -> Html Msg -> ( List Markdown, Html Msg )
-zero_tuple config =
-    to_tuple config.comments
 
 
 view_block : Config -> Markdown -> Html Msg
@@ -144,10 +133,15 @@ view_block config block =
                 |> Surveys.view attr survey
                 |> Html.map UpdateSurvey
 
-        Comment attr ( idx, paragraph ) ->
-            case ( config.mode, idx == config.section.effect_model.visible ) of
-                ( Slides, _ ) ->
-                    paragraph
+        Comment ( id1, id2 ) ->
+            case
+                ( config.mode
+                , id1 == config.section.effect_model.visible
+                , Comments.get_paragraph id1 id2 config.section.effect_model
+                )
+            of
+                ( Slides, _, Just ( attr, par ) ) ->
+                    par
                         |> Paragraph attr
                         |> view_block config
 

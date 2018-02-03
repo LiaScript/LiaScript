@@ -28,7 +28,7 @@ blocks =
                 b =
                     choice
                         [ Effect <$> md_annotations <*> Effect.markdown blocks
-                        , Comment <$> md_annotations <*> Effect.comment paragraph
+                        , to_comment <$> md_annotations <*> Effect.comment paragraph
                         , Chart <$> md_annotations <*> Chart.parse
                         , formated_table
                         , simple_table
@@ -43,6 +43,10 @@ blocks =
                         ]
             in
             identation *> b
+
+
+to_comment attr ( id1, id2 ) =
+    Comment ( id1, id2 )
 
 
 solution : Parser PState (Maybe ( List Markdown, Int ))

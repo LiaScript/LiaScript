@@ -1,12 +1,9 @@
 module Lia.Effect.View exposing (comment, state, view, view_block)
 
---, view_comment)
---import Lia.Utils exposing (stringToHtml)
-
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
-import Lia.Effect.Model exposing (Model)
+import Lia.Effect.Model exposing (Model, current_paragraphs)
 
 
 view : (List inline -> List (Html msg)) -> Int -> List inline -> List (Html msg)

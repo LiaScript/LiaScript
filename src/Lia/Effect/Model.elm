@@ -1,26 +1,67 @@
 module Lia.Effect.Model
     exposing
-        ( Map
+        ( Element
+        , Map
         , Model
+        , current_comment
+        , current_paragraphs
+        , get_paragraph
         , init
         )
 
+import Array exposing (Array)
 import Dict exposing (Dict)
+import Lia.Markdown.Inline.Types exposing (Annotation, Inlines)
 
 
 type alias Model =
     { visible : Int
     , effects : Int
     , comments : Map
-
-    --    , status : Status
-    --    , comments : Array (Maybe String)
-    --    , narrator : String
     }
 
 
 type alias Map =
-    Dict Int ( String, String )
+    Dict Int Element
+
+
+type alias Element =
+    { narrator : String
+    , comment : String
+    , paragraphs : Array ( Annotation, Inlines )
+    }
+
+
+get_paragraph : Int -> Int -> Model -> Maybe ( Annotation, Inlines )
+get_paragraph id1 id2 model =
+    case
+        model.comments
+            |> Dict.get id1
+            |> Maybe.map .paragraphs
+            |> Maybe.map (Array.get id2)
+    of
+        Just a ->
+            a
+
+        _ ->
+            Nothing
+
+
+current_paragraphs : Model -> List ( Annotation, Inlines )
+current_paragraphs model =
+    case Dict.get model.visible model.comments of
+        Just e ->
+            Array.toList e.paragraphs
+
+        Nothing ->
+            []
+
+
+current_comment : Model -> Maybe String
+current_comment model =
+    model.comments
+        |> Dict.get model.visible
+        |> Maybe.map .comment
 
 
 
