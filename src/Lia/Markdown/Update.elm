@@ -1,4 +1,4 @@
-module Lia.Markdown.Update exposing (Msg(..), nextEffect, previousEffect, update)
+module Lia.Markdown.Update exposing (Msg(..), initEffect, nextEffect, previousEffect, update)
 
 --import Lia.Helper exposing (get_slide)
 
@@ -68,6 +68,11 @@ nextEffect =
 previousEffect : Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
 previousEffect =
     update (UpdateEffect Effect.previous)
+
+
+initEffect : Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
+initEffect =
+    update (UpdateEffect Effect.init)
 
 
 

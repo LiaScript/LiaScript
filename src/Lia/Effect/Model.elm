@@ -57,11 +57,11 @@ current_paragraphs model =
             []
 
 
-current_comment : Model -> Maybe String
+current_comment : Model -> Maybe ( String, String )
 current_comment model =
     model.comments
         |> Dict.get model.visible
-        |> Maybe.map .comment
+        |> Maybe.map (\e -> ( e.comment, e.narrator ))
 
 
 

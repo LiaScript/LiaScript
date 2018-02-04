@@ -14,6 +14,7 @@ import Lia.Utils exposing (set_local)
 
 type Msg
     = Load ID
+    | InitSection
     | PrevSection
     | NextSection
     | DesignTheme String
@@ -96,12 +97,21 @@ update msg model =
                             Nothing ->
                                 0
                 in
-                ( generate { model | section_active = idx }
-                , Cmd.none
-                , Nothing
-                )
+                update InitSection (generate { model | section_active = idx })
             else
                 ( model, Cmd.none, Nothing )
+
+        ( InitSection, Just sec ) ->
+            case model.mode of
+                Presentation ->
+                    let
+                        ( sec_, cmd_, log_ ) =
+                            Markdown.initEffect sec
+                    in
+                    ( set_active_section model sec_, Cmd.map UpdateMarkdown cmd_, log_ )
+
+                _ ->
+                    ( model, Cmd.none, Nothing )
 
         ( NextSection, Just sec ) ->
             case ( Effect.has_next sec.effect_model, model.mode ) of

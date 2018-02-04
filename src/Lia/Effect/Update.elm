@@ -1,9 +1,6 @@
 module Lia.Effect.Update exposing (Msg(..), has_next, has_previous, init, next, previous, repeat, update)
 
---, Status(..), get_comment)
-
-import Dict
-import Lia.Effect.Model exposing (Model)
+import Lia.Effect.Model exposing (Model, current_comment)
 import Tts.Responsive
 
 
@@ -35,8 +32,9 @@ update msg speak model =
     --                    ( model, Cmd.none, True )
     --    in
     case msg of
-        --      Init silent ->
-        --          update (Speak silent) model
+        Init ->
+            update Speak speak model
+
         Next ->
             if has_next model then
                 --    stop_talking model
@@ -56,13 +54,13 @@ update msg speak model =
                 ( model, Cmd.none )
 
         Speak ->
-            case ( speak, Dict.get model.visible model.comments ) of
-                ( True, Just cmt ) ->
+            case ( speak, current_comment model ) of
+                ( True, Just ( comment, narrator ) ) ->
                     let
                         c =
                             Tts.Responsive.cancel ()
                     in
-                    ( model, Tts.Responsive.speak TTS cmt.narrator cmt.comment )
+                    ( model, Tts.Responsive.speak TTS narrator comment )
 
                 _ ->
                     ( model, Cmd.none )
@@ -96,9 +94,9 @@ update msg speak model =
 --            ( { model | status = Error m }, Cmd.none, False )
 
 
-init : Bool -> Model -> ( Model, Cmd Msg )
+init : Msg
 init =
-    update Init
+    Init
 
 
 has_next : Model -> Bool
