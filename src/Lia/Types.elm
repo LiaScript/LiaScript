@@ -10,9 +10,9 @@ import Lia.Survey.Types as Survey
 
 
 type Mode
-    = Presentation
-    | Slides
-    | Textbook
+    = Slides -- Underline Comments and Effects
+    | Presentation -- Only effects
+    | Textbook -- Render Comments and Effects at ones
 
 
 type alias Design =

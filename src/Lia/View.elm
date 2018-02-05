@@ -8,7 +8,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import Lia.Effect.Model exposing (current_paragraphs)
-import Lia.Effect.View exposing (state)
+import Lia.Effect.View exposing (responsive, state)
 import Lia.Helper exposing (ID)
 import Lia.Index.Model
 import Lia.Index.View
@@ -111,22 +111,28 @@ view_article model =
                     |> state
                     |> view_nav model.section_active model.mode model.design
                 , Html.map UpdateMarkdown <| Markdown.view model.mode section
-                , view_footer model.mode section.effect_model
+                , view_footer model.sound model.mode section.effect_model
                 ]
 
             Nothing ->
                 [ Html.text "" ]
 
 
+view_footer : Bool -> Mode -> Lia.Effect.Model.Model -> Html Msg
+view_footer sound mode effects =
+    case mode of
+        Slides ->
+            effects
+                |> current_paragraphs
+                |> List.map (\( a, par ) -> Html.p [] (viewer 9999 par))
+                |> (\l -> List.append l [ responsive sound ToggleSound ])
+                |> Html.footer []
 
---view_footer : Mode ->  -> Html Msg
+        Presentation ->
+            Html.footer [] [ responsive sound ToggleSound ]
 
-
-view_footer mode effects =
-    effects
-        |> current_paragraphs
-        |> List.map (\( a, par ) -> Html.p [] (viewer 9999 par))
-        |> Html.footer []
+        Textbook ->
+            Html.text ""
 
 
 
@@ -151,10 +157,15 @@ view_nav section_active mode design state =
             [ Attr.class "lia-btn lia-left"
             , onClick SwitchMode
             ]
-            [ if mode == Presentation then
-                Html.text "hearing"
-              else
-                Html.text "visibility"
+            [ case mode of
+                Slides ->
+                    Html.text "visibility"
+
+                Presentation ->
+                    Html.text "hearing"
+
+                Textbook ->
+                    Html.text "book"
             ]
         , Html.span [ Attr.class "lia-spacer" ] []
         , navButton "navigate_before" PrevSection
@@ -163,11 +174,11 @@ view_nav section_active mode design state =
                 [ Html.text (toString (section_active + 1))
                 , Html.text <|
                     case mode of
-                        Presentation ->
-                            " " ++ state
+                        Textbook ->
+                            ""
 
                         _ ->
-                            ""
+                            " " ++ state
                 ]
             ]
         , navButton "navigate_next" NextSection

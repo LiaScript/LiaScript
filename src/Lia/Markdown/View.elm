@@ -27,10 +27,11 @@ view mode section =
     let
         config =
             Config mode
-                (if mode == Presentation then
-                    viewer section.effect_model.visible
-                 else
-                    viewer 9999
+                (viewer <|
+                    if mode == Textbook then
+                        99999
+                    else
+                        section.effect_model.visible
                 )
                 section
     in
@@ -140,7 +141,7 @@ view_block config block =
                 , Comments.get_paragraph id1 id2 config.section.effect_model
                 )
             of
-                ( Slides, _, Just ( attr, par ) ) ->
+                ( Textbook, _, Just ( attr, par ) ) ->
                     par
                         |> Paragraph attr
                         |> view_block config

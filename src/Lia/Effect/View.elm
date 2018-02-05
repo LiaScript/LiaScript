@@ -1,4 +1,4 @@
-module Lia.Effect.View exposing (comment, state, view, view_block)
+module Lia.Effect.View exposing (comment, responsive, state, view, view_block)
 
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -46,13 +46,13 @@ comment class show_inline silent msg model viewer idx elements =
 
 
 responsive : Bool -> msg -> Html msg
-responsive silent msg =
+responsive sound msg =
     Html.span []
         [ Html.button [ Attr.class "lia-btn lia-icon", onClick msg ]
-            [ if silent then
-                Html.text "volume_off"
-              else
+            [ if sound then
                 Html.text "volume_up"
+              else
+                Html.text "volume_off"
             ]
         , Html.a [ Attr.href "https://responsivevoice.org" ]
             [ Html.text "ResponsiveVoice-NonCommercial" ]

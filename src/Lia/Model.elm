@@ -18,6 +18,7 @@ type alias Model =
     , design : Design
     , loc : Bool
     , index_model : Index.Model
+    , sound : Bool
 
     --    , show_contents : Bool
     --    , quiz_model : Lia.Quiz.Model.Model
@@ -56,6 +57,7 @@ init mode uid =
         }
     , loc = True
     , index_model = Index.init
+    , sound = init_sound
 
     --, code_model = Array.empty
     --    , show_contents = True
@@ -96,7 +98,7 @@ init_section uid =
 
 init_sound : Bool
 init_sound =
-    "silent"
+    "sound"
         |> get_local
         |> Maybe.andThen (\b -> b /= "false" |> Just)
         |> Maybe.withDefault True

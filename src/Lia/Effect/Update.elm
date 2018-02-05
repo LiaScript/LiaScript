@@ -17,7 +17,7 @@ type Msg
 
 
 update : Msg -> Bool -> Model -> ( Model, Cmd Msg )
-update msg speak model =
+update msg sound model =
     --    let
     --        stop_talking model =
     --            case model.status of
@@ -33,12 +33,12 @@ update msg speak model =
     --    in
     case msg of
         Init ->
-            update Speak speak model
+            update Speak sound model
 
         Next ->
             if has_next model then
                 --    stop_talking model
-                update Speak speak { model | visible = model.visible + 1 }
+                update Speak sound { model | visible = model.visible + 1 }
             else
                 --update (Speak silent)
                 ( model, Cmd.none )
@@ -47,14 +47,14 @@ update msg speak model =
         --            update (Speak silent) model
         Previous ->
             if has_previous model then
-                update Speak speak { model | visible = model.visible - 1 }
+                update Speak sound { model | visible = model.visible - 1 }
                 --stop_talking model
             else
                 --update (Speak silent)
                 ( model, Cmd.none )
 
         Speak ->
-            case ( speak, current_comment model ) of
+            case ( sound, current_comment model ) of
                 ( True, Just ( comment, narrator ) ) ->
                     let
                         c =

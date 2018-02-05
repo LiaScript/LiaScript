@@ -31,8 +31,6 @@ narrator: Russian Female
 -->
 
 
-
-
 See the online rendered version at: https://liascript.github.io
 
 *Lia-Script* <!-- class = "animated infinite bounce" style = "color: red;" --> is an extended Markdown format for writing interactive online
@@ -51,7 +49,7 @@ With Lia, we try to implement an extended Markdown format that should enable
 everyone to create, share, adapt, translate or correct and extend online courses
 without the need of being a web-developer.
 
-                                     --{{2<!-- Deutsch Female -->}}--
+                                     --{{2}}--
 Everything that is required is simple text-editor and a web-browser. Or you
 start directly to create and share your course on github. The entire parsing and
 transformation of Lia-Markdown to any other format is done within the browser at

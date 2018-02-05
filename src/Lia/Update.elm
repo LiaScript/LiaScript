@@ -23,6 +23,7 @@ type Msg
     | UpdateIndex Index.Msg
     | UpdateMarkdown Markdown.Msg
     | SwitchMode
+    | ToggleSound
 
 
 
@@ -103,45 +104,57 @@ update msg model =
 
         ( InitSection, Just sec ) ->
             case model.mode of
-                Presentation ->
+                Textbook ->
+                    ( model, Cmd.none, Nothing )
+
+                _ ->
                     let
                         ( sec_, cmd_, log_ ) =
                             Markdown.initEffect sec
                     in
                     ( set_active_section model sec_, Cmd.map UpdateMarkdown cmd_, log_ )
 
-                _ ->
-                    ( model, Cmd.none, Nothing )
-
         ( NextSection, Just sec ) ->
-            case ( Effect.has_next sec.effect_model, model.mode ) of
-                ( True, Presentation ) ->
-                    let
-                        ( sec_, cmd_, log_ ) =
-                            Markdown.nextEffect sec
-                    in
-                    ( set_active_section model sec_, Cmd.map UpdateMarkdown cmd_, log_ )
-
-                _ ->
-                    update (Load <| model.section_active + 1) model
+            if (model.mode == Textbook) || not (Effect.has_next sec.effect_model) then
+                update (Load <| model.section_active + 1) model
+            else
+                let
+                    ( sec_, cmd_, log_ ) =
+                        Markdown.nextEffect sec
+                in
+                ( set_active_section model sec_, Cmd.map UpdateMarkdown cmd_, log_ )
 
         ( PrevSection, Just sec ) ->
-            case ( Effect.has_previous sec.effect_model, model.mode ) of
-                ( True, Presentation ) ->
-                    let
-                        ( sec_, cmd_, log_ ) =
-                            Markdown.previousEffect sec
-                    in
-                    ( set_active_section model sec_, Cmd.map UpdateMarkdown cmd_, log_ )
-
-                _ ->
-                    update (Load <| model.section_active - 1) model
+            if (model.mode == Textbook) || not (Effect.has_previous sec.effect_model) then
+                update (Load <| model.section_active - 1) model
+            else
+                let
+                    ( sec_, cmd_, log_ ) =
+                        Markdown.previousEffect sec
+                in
+                ( set_active_section model sec_, Cmd.map UpdateMarkdown cmd_, log_ )
 
         ( SwitchMode, Just _ ) ->
-            if model.mode == Presentation then
-                ( { model | mode = set_local "mode" Slides }, Cmd.none, Nothing )
-            else
-                ( { model | mode = set_local "mode" Presentation }, Cmd.none, Nothing )
+            ( { model
+                | mode =
+                    set_local "mode"
+                        (case model.mode of
+                            Presentation ->
+                                Slides
+
+                            Slides ->
+                                Textbook
+
+                            Textbook ->
+                                Presentation
+                        )
+              }
+            , Cmd.none
+            , Nothing
+            )
+
+        ( ToggleSound, _ ) ->
+            ( { model | sound = set_local "sound" (not model.sound) }, Cmd.none, Nothing )
 
         _ ->
             ( model, Cmd.none, Nothing )
