@@ -29,7 +29,6 @@ type alias Section =
     , body : List Markdown
     , error : Maybe String
     , effects : Int
-    , speach : List String
     , code_vector : Code.Vector
     , quiz_vector : Quiz.Vector
     , survey_vector : Survey.Vector

@@ -63,7 +63,6 @@ init_section ( tags, title, code ) =
     , body = []
     , error = Nothing
     , effects = 0
-    , speach = []
     , code_vector = Array.empty
     , quiz_vector = Array.empty
     , survey_vector = Array.empty
