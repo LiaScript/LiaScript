@@ -78,10 +78,6 @@ resulting result elem =
         }
 
 
-
---version = Array.push elem.version }
-
-
 load : Int -> Element -> Element
 load version elem =
     if (version >= 0) && (version < Array.length elem.version) then

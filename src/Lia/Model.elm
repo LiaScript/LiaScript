@@ -19,15 +19,6 @@ type alias Model =
     , loc : Bool
     , index_model : Index.Model
     , sound : Bool
-
-    --    , show_contents : Bool
-    --    , quiz_model : Lia.Quiz.Model.Model
-    --, code_model : CodeVector
-    --    , effect_model : Lia.Effect.Model.Model
-    --    , index_model : Lia.Index.Model.Model
-    --    , survey_model : Lia.Survey.Model.Model
-    --    , narrator : String
-    --    , silent : Bool
     }
 
 
@@ -58,18 +49,6 @@ init mode uid =
     , loc = True
     , index_model = Index.init
     , sound = init_sound
-
-    --, code_model = Array.empty
-    --    , show_contents = True
-    --    , quiz_model = Array.empty
-    --    , code_model = Array.empty
-    --    , survey_model = Array.empty
-    --    , index_model = Index.init []
-    --    , effect_model = Effect.init "US English Male" Nothing
-    --    , narrator = "US English Male"
-    --    , silent = local_silent
-    --    , theme = init_theme
-    --    , theme_light = local_light
     }
 
 

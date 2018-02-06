@@ -21,7 +21,3 @@ type Markdown
     | Survey Annotation Survey
     | Chart Annotation Chart
     | Code Annotation Code
-
-
-
---  | AnnotatedMarkdown Markdown Parameters

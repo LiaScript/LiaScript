@@ -4,6 +4,7 @@ import Combine exposing (..)
 import Dict
 import Lia.Chart.Parser as Chart
 import Lia.Code.Parser as Code
+import Lia.Effect.Model exposing (set_annotation)
 import Lia.Effect.Parser as Effect
 import Lia.Markdown.Inline.Parser exposing (..)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
@@ -47,6 +48,17 @@ blocks =
 
 to_comment attr ( id1, id2 ) =
     Comment ( id1, id2 )
+
+
+
+--identation_append : String -> Parser PState ()
+--to_comment : Annotation -> ( Int, Int ) -> Parser PState Markdown
+--to_comment attr ( id1, id2 ) =
+--    modifyState
+--        (\s ->
+--            { s | comment_map = set_annotation id1 id2 s.comment_map attr }
+--        )
+--        >>= (\x -> Comment ( id1, id2 ))
 
 
 solution : Parser PState (Maybe ( List Markdown, Int ))
