@@ -75,6 +75,13 @@ view visible element =
         HTML e Nothing ->
             Lia.Utils.stringToHtml e
 
+        JavaScirpt code _ ->
+            let
+                c =
+                    Lia.Utils.evaluateJS code
+            in
+            Html.text ""
+
         EInline id_in id_out e attr ->
             if (id_in <= visible) && (id_out > visible) then
                 Html.span

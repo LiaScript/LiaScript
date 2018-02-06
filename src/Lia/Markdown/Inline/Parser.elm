@@ -111,6 +111,11 @@ html_block =
     HTML <$> (whitespace *> string "<" *> regex "[a-zA-Z0-9]+" >>= p)
 
 
+javascript : Parser s (Annotation -> Inline)
+javascript =
+    JavaScirpt <$> (string "<script>" *> stringTill (string "</script>"))
+
+
 combine : Inlines -> Inlines
 combine list =
     case list of
@@ -154,7 +159,8 @@ inlines =
     lazy <|
         \() ->
             (choice
-                [ html
+                [ javascript
+                , html
                 , code
                 , reference
                 , formula

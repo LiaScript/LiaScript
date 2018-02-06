@@ -2,6 +2,7 @@ module Lia.Effect.Model
     exposing
         ( Element
         , Map
+        , MapJS
         , Model
         , current_comment
         , current_paragraphs
@@ -19,11 +20,16 @@ type alias Model =
     { visible : Int
     , effects : Int
     , comments : Map
+    , javascript : MapJS
     }
 
 
 type alias Map =
     Dict Int Element
+
+
+type alias MapJS =
+    Dict Int (Array String)
 
 
 type alias Element =
@@ -88,4 +94,4 @@ current_comment model =
 
 init : Model
 init =
-    Model 0 0 Dict.empty
+    Model 0 0 Dict.empty Dict.empty

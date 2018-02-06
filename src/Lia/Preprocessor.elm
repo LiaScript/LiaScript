@@ -1,7 +1,7 @@
 module Lia.Preprocessor exposing (run)
 
 import Combine exposing (..)
-import Lia.Markdown.Inline.Parser exposing (line)
+import Lia.Markdown.Inline.Parser exposing (line, stringTill)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.PState exposing (PState)
 
@@ -41,12 +41,28 @@ code_inline =
     regex "`.*?`" <?> "inline code"
 
 
+html_block : Parser PState String
+html_block =
+    let
+        p tag =
+            (\c ->
+                String.append ("<" ++ tag) c
+                    ++ "</"
+                    ++ tag
+                    ++ ">"
+            )
+                <$> stringTill (string "</" *> string tag <* string ">")
+    in
+    whitespace *> string "<" *> regex "[a-zA-Z0-9]+" >>= p
+
+
 body : Parser PState String
 body =
     lazy <|
         \() ->
             [ misc
             , comment
+            , html_block
             , code_block
             , code_inline
             , misc2

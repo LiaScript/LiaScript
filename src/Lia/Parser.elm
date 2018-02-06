@@ -52,7 +52,7 @@ parse_section global str =
                 , state.code_vector
                 , state.quiz_vector
                 , state.survey_vector
-                , Effect.Model 0 state.num_effects state.comment_map
+                , state.effect_model
                 )
 
         Err ( _, stream, ms ) ->

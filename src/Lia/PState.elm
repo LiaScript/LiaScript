@@ -2,7 +2,6 @@ module Lia.PState exposing (..)
 
 import Array exposing (Array)
 import Combine exposing (..)
-import Dict exposing (Dict)
 import Lia.Code.Types as Code
 import Lia.Definition.Types exposing (Definition)
 import Lia.Effect.Model as Effect
@@ -13,12 +12,12 @@ import Lia.Survey.Types as Survey
 type alias PState =
     { identation : List String
     , identation_skip : Bool
-    , num_effects : Int
     , code_temp : ( String, String ) -- Lang Code
     , code_vector : Code.Vector
     , quiz_vector : Quiz.Vector
     , survey_vector : Survey.Vector
-    , comment_map : Effect.Map
+    , effect_model : Effect.Model
+    , effect_number : List Int
     , defines : { global : Definition, local : Maybe Definition }
     }
 
@@ -27,12 +26,12 @@ init : Definition -> Maybe Definition -> PState
 init global local =
     { identation = []
     , identation_skip = False
-    , num_effects = 0
     , code_temp = ( "", "" )
     , code_vector = Array.empty
     , quiz_vector = Array.empty
     , survey_vector = Array.empty
-    , comment_map = Dict.empty
+    , effect_model = Effect.init
+    , effect_number = [ 0 ]
     , defines = { global = global, local = local }
     }
 

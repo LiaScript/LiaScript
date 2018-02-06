@@ -46,6 +46,9 @@ inline2string inline =
         HTML str _ ->
             ""
 
+        JavaScirpt _ _ ->
+            ""
+
         EInline _ _ inlines _ ->
             stringify inlines
 

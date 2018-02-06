@@ -43,10 +43,17 @@ effect_number =
         state n =
             modifyState
                 (\s ->
-                    if n > s.num_effects then
-                        { s | num_effects = n }
-                    else
-                        s
+                    { s
+                        | effect_model =
+                            if n > s.effect_model.effects then
+                                let
+                                    e =
+                                        s.effect_model
+                                in
+                                { e | effects = n }
+                            else
+                                s.effect_model
+                    }
                 )
                 *> succeed n
     in
@@ -82,20 +89,31 @@ add_comment ( idx, temp_narrator, par ) =
                             s.defines.global.narrator
             in
             { s
-                | comment_map =
-                    case Dict.get idx s.comment_map of
-                        Just cmt ->
-                            Dict.insert idx
-                                { cmt
-                                    | comment = cmt.comment ++ "\\n" ++ stringify par
-                                    , paragraphs = Array.push ( Nothing, par ) cmt.paragraphs
-                                }
-                                s.comment_map
+                | effect_model =
+                    let
+                        e =
+                            s.effect_model
+                    in
+                    { e
+                        | comments =
+                            case Dict.get idx e.comments of
+                                Just cmt ->
+                                    Dict.insert idx
+                                        { cmt
+                                            | comment = cmt.comment ++ "\\n" ++ stringify par
+                                            , paragraphs = Array.push ( Nothing, par ) cmt.paragraphs
+                                        }
+                                        e.comments
 
-                        _ ->
-                            Dict.insert idx
-                                (Element narrator (stringify par) (Array.fromList [ ( Nothing, par ) ]))
-                                s.comment_map
+                                _ ->
+                                    Dict.insert idx
+                                        (Element
+                                            narrator
+                                            (stringify par)
+                                            (Array.fromList [ ( Nothing, par ) ])
+                                        )
+                                        e.comments
+                    }
             }
 
         rslt id2 =
@@ -109,7 +127,7 @@ get_counter idx =
     withState
         (\s ->
             succeed <|
-                case Dict.get idx s.comment_map of
+                case Dict.get idx s.effect_model.comments of
                     Just e ->
                         Array.length e.paragraphs - 1
 
