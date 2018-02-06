@@ -22,6 +22,17 @@ script:   https://interactivepython.org/runestone/static/thinkcspy/_static/skulp
 
 script:   https://interactivepython.org/runestone/static/thinkcspy/_static/skulpt-stdlib.js
 
+
+script:   https://use.edgefonts.net/source-code-pro.js
+
+script:   https://cdn.rawgit.com/dataarts/dat.gui/master/build/dat.gui.min.js
+
+script:   https://cdn.rawgit.com/mrdoob/stats.js/master/build/stats.min.js
+
+script:   https://cdnjs.cloudflare.com/ajax/libs/three.js/87/three.min.js
+
+script:   https://cdnjs.cloudflare.com/ajax/libs/ami.js/0.0.22/ami.min.js
+
 -->
 
 # Lia-Script
@@ -64,12 +75,209 @@ and students ...
 With Lia, we try to implement an extended Markdown format that should enable
 everyone to create, share, adapt, translate or correct and extend online courses
 without the need of being a web-developer.
+<script>
+// Initialize a Line chart in the container with the ID chart1
+new Chartist.Line('#chart1', {
+  labels: [1, 2, 3, 4],
+  series: [[100, 120, 10, 20]]
+});
+
+// Initialize a Line chart in the container with the ID chart2
+</script>
 
                                      --{{2}}--
 Everything that is required is simple text-editor and a web-browser. Or you
 start directly to create and share your course on github. The entire parsing and
 transformation of Lia-Markdown to any other format is done within the browser at
 client-side.
+
+## Jaavascript
+
+--{{1}}--
+With Lia, we try to implement an extended Markdown format that should enable
+everyone to create, share, adapt, translate or correct and extend online courses
+without the need of being a web-developer.
+
+<div id="my-gui-container" style="position: fixed;
+  top: 50px;
+  right: 10px;
+  z-index:1;"></div>
+<div id="container" style=" background-color: #000;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow:hidden;"></div>
+
+<script>
+
+/* globals dat, AMI*/
+
+// Setup renderer
+var container = document.getElementById('container');
+var renderer = new THREE.WebGLRenderer({
+    antialias: true
+});
+renderer.setSize(container.offsetWidth, container.offsetHeight);
+renderer.setClearColor(0x353535, 1);
+renderer.setPixelRatio(window.devicePixelRatio);
+container.appendChild(renderer.domElement);
+
+// Setup scene
+var scene = new THREE.Scene();
+
+// Setup camera
+var camera = new THREE.PerspectiveCamera(45, container.offsetWidth / container.offsetHeight, 0.01, 10000000);
+camera.position.x = 150;
+camera.position.y = 150;
+camera.position.z = 100;
+
+// Setup controls
+var controls = new AMI.TrackballControl(camera, container);
+
+/**
+ * Handle window resize
+ */
+function onWindowResize() {
+    camera.aspect = container.offsetWidth / container.offsetHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(container.offsetWidth, container.offsetHeight);
+}
+
+window.addEventListener('resize', onWindowResize, false);
+
+/**
+ * Build GUI
+ */
+function gui(stackHelper) {
+    var stack = stackHelper.stack;
+    var gui = new dat.GUI({
+        autoPlace: false,
+    });
+    var customContainer = document.getElementById('my-gui-container');
+    customContainer.appendChild(gui.domElement);
+
+    // stack
+    var stackFolder = gui.addFolder('Stack');
+    // index range depends on stackHelper orientation.
+    var index = stackFolder
+        .add(stackHelper, 'index', 0, stack.dimensionsIJK.z - 1)
+        .step(1)
+        .listen();
+    var orientation = stackFolder
+        .add(stackHelper, 'orientation', 0, 2)
+        .step(1)
+        .listen();
+    orientation.onChange(function(value) {
+        index.__max = stackHelper.orientationMaxIndex;
+        // center index
+        stackHelper.index = Math.floor(index.__max / 2);
+    });
+    stackFolder.open();
+
+    // slice
+    var sliceFolder = gui.addFolder('Slice');
+    sliceFolder
+        .add(stackHelper.slice, 'windowWidth', 1, stack.minMax[1] - stack.minMax[0])
+        .step(1)
+        .listen();
+    sliceFolder
+        .add(stackHelper.slice, 'windowCenter', stack.minMax[0], stack.minMax[1])
+        .step(1)
+        .listen();
+    sliceFolder.add(stackHelper.slice, 'intensityAuto').listen();
+    sliceFolder.add(stackHelper.slice, 'invert');
+    sliceFolder.open();
+
+    // bbox
+    var bboxFolder = gui.addFolder('Bounding Box');
+    bboxFolder.add(stackHelper.bbox, 'visible');
+    bboxFolder.addColor(stackHelper.bbox, 'color');
+    bboxFolder.open();
+
+    // border
+    var borderFolder = gui.addFolder('Border');
+    borderFolder.add(stackHelper.border, 'visible');
+    borderFolder.addColor(stackHelper.border, 'color');
+    borderFolder.open();
+}
+
+/**
+ * Start animation loop
+ */
+function animate() {
+    controls.update();
+    renderer.render(scene, camera);
+
+    // request new frame
+    requestAnimationFrame(function() {
+        animate();
+    });
+}
+animate();
+
+// Setup loader
+var loader = new AMI.VolumeLoader(container);
+
+var t2 = [
+    '36444280',
+    '36444294',
+    '36444308',
+    '36444322',
+    '36444336',
+    '36444350',
+    '36444364',
+    '36444378',
+    '36444392',
+    '36444406',
+    '36444434',
+    '36444448',
+    '36444462',
+    '36444476',
+    '36444490',
+    '36444504',
+    '36444518',
+    '36444532',
+    '36746856'
+];
+var files = t2.map(function(v) {
+    return 'https://cdn.rawgit.com/FNNDSC/data/master/dicom/adi_brain/' + v;
+});
+
+loader
+    .load(files)
+    .then(function() {
+        // merge files into clean series/stack/frame structure
+        var series = loader.data[0].mergeSeries(loader.data);
+        var stack = series[0].stack[0];
+        loader.free();
+        loader = null;
+        // be carefull that series and target stack exist!
+        var stackHelper = new AMI.StackHelper(stack);
+        stackHelper.bbox.color = 0x8bc34a;
+        stackHelper.border.color = 0xf44336;
+
+        scene.add(stackHelper);
+
+        // build the gui
+        gui(stackHelper);
+
+        // center camera and interactor to center of bouding box
+        var centerLPS = stackHelper.stack.worldCenter();
+        camera.lookAt(centerLPS.x, centerLPS.y, centerLPS.z);
+        camera.updateProjectionMatrix();
+        controls.target.set(centerLPS.x, centerLPS.y, centerLPS.z);
+    })
+    .catch(function(error) {
+        window.console.log('oops... something went wrong...');
+        window.console.log(error);
+    });
+
+</script>
 
 ## *Markdown*-Syntax
 
