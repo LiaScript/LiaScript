@@ -26,17 +26,6 @@ type Msg
     | ToggleSound
 
 
-
---    | UpdateQuiz Quiz.Msg
---    | UpdateCode Code.Msg
---    | UpdateSurvey Survey.Msg
---    | UpdateEffect Effect.Msg
---    | Theme String
---    | ThemeLight
---    | ToggleSpeech
---    | SwitchMode
-
-
 update : Msg -> Model -> ( Model, Cmd Msg, Maybe ( String, JE.Value ) )
 update msg model =
     case ( msg, get_active_section model ) of
@@ -110,7 +99,7 @@ update msg model =
                 _ ->
                     let
                         ( sec_, cmd_, log_ ) =
-                            Markdown.initEffect sec
+                            Markdown.initEffect model.sound sec
                     in
                     ( set_active_section model sec_, Cmd.map UpdateMarkdown cmd_, log_ )
 
@@ -120,7 +109,7 @@ update msg model =
             else
                 let
                     ( sec_, cmd_, log_ ) =
-                        Markdown.nextEffect sec
+                        Markdown.nextEffect model.sound sec
                 in
                 ( set_active_section model sec_, Cmd.map UpdateMarkdown cmd_, log_ )
 
@@ -130,7 +119,7 @@ update msg model =
             else
                 let
                     ( sec_, cmd_, log_ ) =
-                        Markdown.previousEffect sec
+                        Markdown.previousEffect model.sound sec
                 in
                 ( set_active_section model sec_, Cmd.map UpdateMarkdown cmd_, log_ )
 
@@ -153,8 +142,12 @@ update msg model =
             , Nothing
             )
 
-        ( ToggleSound, _ ) ->
-            ( { model | sound = set_local "sound" (not model.sound) }, Cmd.none, Nothing )
+        ( ToggleSound, Just sec ) ->
+            let
+                ( sec_, cmd_, log_ ) =
+                    Markdown.initEffect (not model.sound) sec
+            in
+            ( { model | sound = set_local "sound" (not model.sound) }, Cmd.map UpdateMarkdown cmd_, log_ )
 
         _ ->
             ( model, Cmd.none, Nothing )

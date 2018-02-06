@@ -11,7 +11,7 @@ import Lia.Types exposing (Section)
 
 
 type Msg
-    = UpdateEffect Effect.Msg
+    = UpdateEffect Bool Effect.Msg
     | UpdateCode Code.Msg
     | UpdateQuiz Quiz.Msg
     | UpdateSurvey Survey.Msg
@@ -31,12 +31,12 @@ type Msg
 update : Msg -> Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
 update msg section =
     case msg of
-        UpdateEffect childMsg ->
+        UpdateEffect sound childMsg ->
             let
                 ( effect_model, cmd ) =
-                    Effect.update childMsg True section.effect_model
+                    Effect.update childMsg sound section.effect_model
             in
-            ( { section | effect_model = effect_model }, Cmd.map UpdateEffect cmd, Nothing )
+            ( { section | effect_model = effect_model }, Cmd.map (UpdateEffect sound) cmd, Nothing )
 
         UpdateCode childMsg ->
             let
@@ -60,19 +60,19 @@ update msg section =
             ( { section | survey_vector = survey_vector }, Cmd.none, Nothing )
 
 
-nextEffect : Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
-nextEffect =
-    update (UpdateEffect Effect.next)
+nextEffect : Bool -> Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
+nextEffect sound =
+    update (UpdateEffect sound Effect.next)
 
 
-previousEffect : Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
-previousEffect =
-    update (UpdateEffect Effect.previous)
+previousEffect : Bool -> Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
+previousEffect sound =
+    update (UpdateEffect sound Effect.previous)
 
 
-initEffect : Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
-initEffect =
-    update (UpdateEffect Effect.init)
+initEffect : Bool -> Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
+initEffect sound =
+    update (UpdateEffect sound Effect.init)
 
 
 
