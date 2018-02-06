@@ -75,13 +75,6 @@ view visible element =
         HTML e Nothing ->
             Lia.Utils.stringToHtml e
 
-        JavaScirpt code _ ->
-            let
-                c =
-                    Lia.Utils.evaluateJS code
-            in
-            Html.text ""
-
         EInline id_in id_out e attr ->
             if (id_in <= visible) && (id_out > visible) then
                 Html.span
@@ -101,6 +94,13 @@ view visible element =
 
         Formula mode e attr ->
             view visible (Container [ Formula mode e Nothing ] attr)
+
+        JavaScirpt code _ ->
+            let
+                c =
+                    Lia.Utils.execute 100 code
+            in
+            Html.text ""
 
 
 view_inf : Inline -> Html msg

@@ -34,7 +34,7 @@ narrator: Russian Female
 <link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
 
 <div class="ct-chart ct-golden-section" id="chart1"></div>
-<div class="ct-chart ct-golden-section" id="chart2"></div>
+
 
 
 <script>
@@ -45,12 +45,6 @@ new Chartist.Line('#chart1', {
 });
 
 // Initialize a Line chart in the container with the ID chart2
-new Chartist.Bar('#chart2', {
-  labels: [1, 2, 3, 4],
-  series: [[5, 2, 8, 3]]
-});
-
-alert("Hello JavaScript!");
 </script>
 
 See the online rendered version at: https://liascript.github.io

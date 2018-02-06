@@ -46,6 +46,17 @@ var _user$project$Native_Utils = (function () {
         }
     };
 
+    function execute(delay, code)
+    {
+        setTimeout(function(){
+          try {
+              var rslt = String(eval(code));
+          }
+          catch (e) { }
+        }, delay);
+
+    };
+
 /*
     function wait(ms) {
         var start = new Date().getTime();
@@ -136,6 +147,7 @@ var _user$project$Native_Utils = (function () {
         formula: F2(formula),
         evaluate: evaluate,
         evaluate2: F2(evaluate2),
+        execute: F2(execute),
         load_js: load_js,
         get_local: get_local,
         set_local: F2(set_local)

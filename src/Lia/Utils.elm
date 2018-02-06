@@ -1,4 +1,4 @@
-module Lia.Utils exposing (evaluateJS, evaluateJS2, formula, get_local, guess, highlight, load_js, set_local, stringToHtml)
+module Lia.Utils exposing (evaluateJS, evaluateJS2, execute, formula, get_local, guess, highlight, load_js, set_local, stringToHtml)
 
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -26,6 +26,11 @@ formula displayMode string =
 evaluateJS : String -> Result String String
 evaluateJS code =
     Native.Utils.evaluate code
+
+
+execute : Int -> String -> ()
+execute delay code =
+    Native.Utils.execute delay code
 
 
 load_js : String -> Result String String

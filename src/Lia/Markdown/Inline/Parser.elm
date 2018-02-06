@@ -66,9 +66,14 @@ attr_ dict =
         dict
 
 
+javascript : Parser s (Annotation -> Inline)
+javascript =
+    JavaScirpt <$> (string "<script>" *> stringTill (string "</script>"))
+
+
 html : Parser s (Annotation -> Inline)
 html =
-    html_void <|> html_block
+    javascript <|> html_void <|> html_block
 
 
 html_void : Parser s (Annotation -> Inline)
@@ -108,12 +113,7 @@ html_block =
             )
                 <$> stringTill (string "</" *> string tag <* string ">")
     in
-    HTML <$> (whitespace *> string "<" *> regex "[a-zA-Z0-9]+" >>= p)
-
-
-javascript : Parser s (Annotation -> Inline)
-javascript =
-    JavaScirpt <$> (string "<script>" *> stringTill (string "</script>"))
+    HTML <$> (string "<" *> regex "[a-zA-Z0-9]+" >>= p)
 
 
 combine : Inlines -> Inlines
@@ -159,8 +159,7 @@ inlines =
     lazy <|
         \() ->
             (choice
-                [ javascript
-                , html
+                [ html
                 , code
                 , reference
                 , formula
