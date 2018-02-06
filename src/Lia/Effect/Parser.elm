@@ -85,12 +85,34 @@ add_comment ( idx, temp_narrator, par ) =
                 | comment_map =
                     case Dict.get idx s.comment_map of
                         Just cmt ->
-                            Dict.insert idx { cmt | comment = cmt.comment ++ "\\n" ++ stringify par } s.comment_map
+                            Dict.insert idx
+                                { cmt
+                                    | comment = cmt.comment ++ "\\n" ++ stringify par
+                                    , paragraphs = Array.push ( Nothing, par ) cmt.paragraphs
+                                }
+                                s.comment_map
 
                         _ ->
                             Dict.insert idx
                                 (Element narrator (stringify par) (Array.fromList [ ( Nothing, par ) ]))
                                 s.comment_map
             }
+
+        rslt id2 =
+            succeed ( idx, id2 )
     in
-    modifyState mod *> succeed ( idx, 0 )
+    (modifyState mod *> get_counter idx) >>= rslt
+
+
+get_counter : Int -> Parser PState Int
+get_counter idx =
+    withState
+        (\s ->
+            succeed <|
+                case Dict.get idx s.comment_map of
+                    Just e ->
+                        Array.length e.paragraphs - 1
+
+                    Nothing ->
+                        0
+        )
