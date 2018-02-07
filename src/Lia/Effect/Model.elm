@@ -2,7 +2,6 @@ module Lia.Effect.Model
     exposing
         ( Element
         , Map
-        , MapJS
         , Model
         , current_comment
         , current_paragraphs
@@ -19,17 +18,13 @@ import Lia.Markdown.Inline.Types exposing (Annotation, Inlines)
 type alias Model =
     { visible : Int
     , effects : Int
-    , comments : Map
-    , javascript : MapJS
+    , comments : Map Element
+    , javascript : Map (Array String)
     }
 
 
-type alias Map =
-    Dict Int Element
-
-
-type alias MapJS =
-    Dict Int (Array String)
+type alias Map e =
+    Dict Int e
 
 
 type alias Element =
@@ -39,7 +34,7 @@ type alias Element =
     }
 
 
-set_annotation : Int -> Int -> Map -> Annotation -> Map
+set_annotation : Int -> Int -> Map Element -> Annotation -> Map Element
 set_annotation id1 id2 m attr =
     case Dict.get id1 m of
         Just e ->
