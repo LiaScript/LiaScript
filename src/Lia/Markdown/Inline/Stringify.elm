@@ -43,10 +43,10 @@ inline2string inline =
         Ref ref _ ->
             ref2string ref
 
-        HTML str _ ->
+        HTML str ->
             ""
 
-        JavaScirpt _ _ ->
+        JavaScirpt _ ->
             ""
 
         EInline _ _ inlines _ ->

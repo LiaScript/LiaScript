@@ -7,6 +7,7 @@ module Lia.Markdown.Inline.Parser
         , comment_string
         , comments
         , inlines
+        , javascript
         , line
         , newline
         , newlines
@@ -66,17 +67,17 @@ attr_ dict =
         dict
 
 
-javascript : Parser s (Annotation -> Inline)
+javascript : Parser s String
 javascript =
-    JavaScirpt <$> (string "<script>" *> stringTill (string "</script>"))
+    string "<script>" *> stringTill (string "</script>")
 
 
-html : Parser s (Annotation -> Inline)
+html : Parser s Inline
 html =
-    javascript <|> html_void <|> html_block
+    (JavaScirpt <$> javascript) <|> html_void <|> html_block
 
 
-html_void : Parser s (Annotation -> Inline)
+html_void : Parser s Inline
 html_void =
     lazy <|
         \() ->
@@ -101,7 +102,7 @@ html_void =
                         ]
 
 
-html_block : Parser s (Annotation -> Inline)
+html_block : Parser s Inline
 html_block =
     let
         p tag =
@@ -158,15 +159,16 @@ inlines : Parser PState Inline
 inlines =
     lazy <|
         \() ->
-            (choice
-                [ html
-                , code
-                , reference
-                , formula
-                , Effect.inline inlines
-                , strings
-                ]
-                <*> annotations
+            (html
+                <|> (choice
+                        [ code
+                        , reference
+                        , formula
+                        , Effect.inline inlines
+                        , strings
+                        ]
+                        <*> annotations
+                    )
             )
                 <* maybe (comments *> succeed (Chars "" Nothing))
 
@@ -332,7 +334,6 @@ strings =
             choice
                 [ Ref <$> inline_url
                 , base
-                , html
                 , arrows
                 , smileys
                 , escape

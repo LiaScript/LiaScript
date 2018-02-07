@@ -93,10 +93,7 @@ client-side.
 
 ## Jaavascript
 
---{{1}}--
-With Lia, we try to implement an extended Markdown format that should enable
-everyone to create, share, adapt, translate or correct and extend online courses
-without the need of being a web-developer.
+
 
 <div id="my-gui-container" style="position: fixed;
   top: 50px;
@@ -278,6 +275,17 @@ loader
     });
 
 </script>
+
+
+--{{1}}--
+With Lia, we try to implement an extended Markdown format that should enable
+everyone to create, share, adapt, translate or correct and extend online courses
+without the need of being a web-developer.
+
+{{1}}
+With Lia, we try to implement an extended Markdown format that should enable
+everyone to create, share, adapt, translate or correct and extend online courses
+without the need of being a web-developer.
 
 ## *Markdown*-Syntax
 
@@ -781,7 +789,7 @@ for(i = 0; i<10000; i++) {
 // the last statement defines the return statement
 result;
 ```
-<!-- {X} -->
+<script> {X} </script>
 
 
 
@@ -805,7 +813,7 @@ new Chartist.Bar('#chart2', {
   series: [[5, 2, 8, 3]]
 });
 ```
-<!-- {X} -->
+<script> {X} </script>
 
 <div class="ct-chart ct-golden-section" id="chart1"></div>
 <div class="ct-chart ct-golden-section" id="chart2"></div>
@@ -852,7 +860,8 @@ An example of a Computer-Algebra-System (Algebrit), see xxx for more examples:
 ```javascript
 x + x
 ```
-<!-- Algebrite.run(`{X}`) -->
+<script> Algebrite.run(`{X}`) </script>
+
 
 
 ```javascript
@@ -862,7 +871,7 @@ f=circexp(f)
 
 defint(f,t,0,2*pi)
 ```
-<!-- Algebrite.run(`{X}`) -->
+<script> Algebrite.run(`{X}`) </script>
 
 
 
@@ -887,11 +896,11 @@ int main() {
     return 0;
 }
 ```
-<!--
+<script>
   var output = "";
   JSCPP.run(`{X}`, "", {stdio: {write: s => { output += s.replace(/\n/g, "<br>");}}});
   output;
--->
+</script>
 
 #### Python
 
@@ -904,7 +913,7 @@ def hello(i):
 
 hello(12)
 ```
-<!--
+<script>
 var output = "";
 
 function builtinRead(x) {
@@ -926,7 +935,7 @@ myPromise.then(function(mod) {
    console.log(err.toString());
 });
 output;
--->
+</script>
 
 
 

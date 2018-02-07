@@ -72,7 +72,7 @@ view visible element =
                 |> List.map (\e -> view visible e)
                 |> Html.span (annotation attr "lia-container")
 
-        HTML e Nothing ->
+        HTML e ->
             Lia.Utils.stringToHtml e
 
         EInline id_in id_out e attr ->
@@ -86,16 +86,13 @@ view visible element =
         Symbol e attr ->
             view visible (Container [ Symbol e Nothing ] attr)
 
-        HTML e attr ->
-            view visible (Container [ HTML e Nothing ] attr)
-
         Chars e attr ->
             view visible (Container [ Chars e Nothing ] attr)
 
         Formula mode e attr ->
             view visible (Container [ Formula mode e Nothing ] attr)
 
-        JavaScirpt code _ ->
+        JavaScirpt code ->
             let
                 c =
                     Lia.Utils.execute 100 code
