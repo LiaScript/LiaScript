@@ -1,4 +1,4 @@
-module Lia.Update exposing (Msg(..), generate, get_active_section, update)
+module Lia.Update exposing (Msg(..), get_active_section, update)
 
 import Array exposing (Array)
 import Json.Encode as JE

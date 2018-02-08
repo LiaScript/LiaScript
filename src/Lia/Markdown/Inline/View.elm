@@ -92,13 +92,6 @@ view visible element =
         Formula mode e attr ->
             view visible (Container [ Formula mode e Nothing ] attr)
 
-        JavaScirpt code ->
-            let
-                c =
-                    Lia.Utils.execute 100 code
-            in
-            Html.text ""
-
 
 view_inf : Inline -> Html msg
 view_inf =

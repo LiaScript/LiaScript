@@ -3,8 +3,10 @@ module Lia.Effect.Model
         ( Element
         , Map
         , Model
+        , add_javascript
         , current_comment
         , current_paragraphs
+        , get_javascript
         , get_paragraph
         , init
         , set_annotation
@@ -32,6 +34,32 @@ type alias Element =
     , comment : String
     , paragraphs : Array ( Annotation, Inlines )
     }
+
+
+add_javascript : Int -> String -> Model -> Model
+add_javascript idx script model =
+    { model
+        | javascript =
+            Dict.insert idx
+                (case Dict.get idx model.javascript of
+                    Just a ->
+                        Array.push script a
+
+                    Nothing ->
+                        Array.fromList [ script ]
+                )
+                model.javascript
+    }
+
+
+get_javascript : Model -> List String
+get_javascript model =
+    case Dict.get model.visible model.javascript of
+        Just a ->
+            Array.toList a
+
+        _ ->
+            []
 
 
 set_annotation : Int -> Int -> Map Element -> Annotation -> Map Element

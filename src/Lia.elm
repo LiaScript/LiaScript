@@ -8,7 +8,7 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Model
 import Lia.Parser
 import Lia.Types exposing (Section, Sections)
-import Lia.Update
+import Lia.Update exposing (Msg(..))
 import Lia.Utils exposing (load_js)
 import Lia.View
 
@@ -45,7 +45,6 @@ set_script model script =
                                 |> List.map init_section
                                 |> Array.fromList
                     }
-                        |> Lia.Update.generate
 
                 Err msg ->
                     { model | error = Just msg }
@@ -62,7 +61,6 @@ init_section ( tags, title, code ) =
     , indentation = tags
     , body = []
     , error = Nothing
-    , effects = 0
     , code_vector = Array.empty
     , quiz_vector = Array.empty
     , survey_vector = Array.empty
@@ -85,11 +83,6 @@ init_presentation uid =
     Lia.Model.init Lia.Types.Presentation uid
 
 
-parse : String -> Model -> Model
-parse script model =
-    model
-
-
 view : Model -> Html Msg
 view model =
     Lia.View.view model
@@ -98,6 +91,11 @@ view model =
 update : Msg -> Model -> ( Model, Cmd Msg, Maybe ( String, JE.Value ) )
 update =
     Lia.Update.update
+
+
+init : Model -> ( Model, Cmd Msg, Maybe ( String, JE.Value ) )
+init model =
+    Lia.Update.update (Load model.section_active) model
 
 
 switch_mode : Mode -> Model -> Model

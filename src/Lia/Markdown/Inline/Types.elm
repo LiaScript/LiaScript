@@ -35,7 +35,6 @@ type Inline
     | Formula Bool String Annotation
     | Ref Reference Annotation
     | HTML String
-    | JavaScirpt String
     | EInline Int Int Inlines Annotation
     | Container Inlines Annotation
 

@@ -53,9 +53,14 @@ type alias Model =
 init : Flags -> ( Model, Cmd Msg )
 init flags =
     if flags.script /= "" then
-        -- TODO: remove Just and set it to Nothing
-        ( Model "" (Lia.set_script (Lia.init_slides (Just "1111")) flags.script) LoadOk ""
-        , Cmd.none
+        let
+            -- TODO: remove Just and set it to Nothing
+            ( lia, cmd, _ ) =
+                Lia.set_script (Lia.init_slides (Just "1111")) flags.script
+                    |> Lia.init
+        in
+        ( Model "" lia LoadOk ""
+        , Cmd.map LIA cmd
         )
     else if flags.url /= "" then
         ( Model flags.url (Lia.init_slides (Just flags.url)) Loading ""
@@ -95,12 +100,18 @@ update msg model =
                     ( { model | lia = lia }, Cmd.map LIA cmd )
 
         GET (Ok script) ->
+            let
+                ( lia, cmd, _ ) =
+                    script
+                        |> Lia.set_script model.lia
+                        |> Lia.init
+            in
             ( { model
-                | lia = Lia.parse script model.lia
+                | lia = lia
                 , error = ""
                 , state = LoadOk
               }
-            , Cmd.none
+            , Cmd.map LIA cmd
             )
 
         GET (Err msg) ->

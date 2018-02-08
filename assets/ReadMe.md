@@ -55,6 +55,7 @@ new Chartist.Line('#chart1', {
   series: [[100, 120, 180, 200]]
 });
 
+
 // Initialize a Line chart in the container with the ID chart2
 </script>
 

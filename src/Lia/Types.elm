@@ -28,7 +28,6 @@ type alias Section =
     , indentation : Int
     , body : List Markdown
     , error : Maybe String
-    , effects : Int
     , code_vector : Code.Vector
     , quiz_vector : Quiz.Vector
     , survey_vector : Survey.Vector

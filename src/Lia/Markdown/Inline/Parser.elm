@@ -18,6 +18,7 @@ module Lia.Markdown.Inline.Parser
 import Combine exposing (..)
 import Combine.Char exposing (..)
 import Dict exposing (Dict)
+import Lia.Effect.Model exposing (add_javascript)
 import Lia.Effect.Parser as Effect
 import Lia.Markdown.Inline.Types exposing (..)
 import Lia.PState exposing (PState)
@@ -72,9 +73,25 @@ javascript =
     string "<script>" *> stringTill (string "</script>")
 
 
-html : Parser s Inline
+html : Parser PState Inline
 html =
-    (JavaScirpt <$> javascript) <|> html_void <|> html_block
+    let
+        state script =
+            modifyState
+                (\s ->
+                    { s
+                        | effect_model =
+                            add_javascript
+                                (s.effect_number
+                                    |> List.head
+                                    |> Maybe.withDefault 0
+                                )
+                                script
+                                s.effect_model
+                    }
+                )
+    in
+    ((javascript >>= state) *> succeed (Chars "" Nothing)) <|> html_void <|> html_block
 
 
 html_void : Parser s Inline

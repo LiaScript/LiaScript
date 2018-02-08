@@ -17,6 +17,7 @@ markdown blocks =
         <$> (regex "[\\t ]*{{" *> effect_number)
         <*> (optional 99999 (regex "[\t ]*-[\t ]*" *> int) <* regex "}}[\\t ]*\\n")
         <*> (multi blocks <|> single blocks)
+        <* reset_effect_number
 
 
 single : Parser PState Markdown -> Parser PState (List Markdown)
@@ -35,6 +36,7 @@ inline inlines =
         <$> (string "{{" *> effect_number)
         <*> (optional 99999 (regex "[\t ]*-[\t ]*" *> int) <* string "}}")
         <*> (string "{{" *> manyTill inlines (string "}}"))
+        <* reset_effect_number
 
 
 effect_number : Parser PState Int
@@ -53,11 +55,22 @@ effect_number =
                                 { e | effects = n }
                             else
                                 s.effect_model
+                        , effect_number = n :: s.effect_number
                     }
                 )
                 *> succeed n
     in
     int >>= state
+
+
+reset_effect_number : Parser PState ()
+reset_effect_number =
+    modifyState
+        (\s ->
+            { s
+                | effect_number = List.drop 1 s.effect_number
+            }
+        )
 
 
 comment : Parser PState Inlines -> Parser PState ( Int, Int )
@@ -68,6 +81,7 @@ comment paragraph =
                 <* regex "}}--[ \\t]*[\\n]+"
             )
         <*> paragraph
+        <* reset_effect_number
     )
         >>= add_comment
 

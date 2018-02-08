@@ -1,6 +1,7 @@
-module Lia.Effect.Update exposing (Msg(..), has_next, has_previous, init, next, previous, update)
+module Lia.Effect.Update exposing (Msg(..), has_next, has_previous, init, initialize, next, previous, update)
 
-import Lia.Effect.Model exposing (Model, current_comment)
+import Lia.Effect.Model exposing (Map, Model, current_comment, get_javascript)
+import Lia.Utils
 import Tts.Responsive
 
 
@@ -19,17 +20,23 @@ update : Msg -> Bool -> Model -> ( Model, Cmd Msg )
 update msg sound model =
     case msg of
         Init ->
-            update Speak sound model
+            model
+                |> execute
+                |> update Speak sound
 
         Next ->
             if has_next model then
-                update Speak sound { model | visible = model.visible + 1 }
+                { model | visible = model.visible + 1 }
+                    |> execute
+                    |> update Speak sound
             else
                 ( model, Cmd.none )
 
         Previous ->
             if has_previous model then
-                update Speak sound { model | visible = model.visible - 1 }
+                { model | visible = model.visible - 1 }
+                    |> execute
+                    |> update Speak sound
             else
                 ( model, Cmd.none )
 
@@ -57,6 +64,17 @@ update msg sound model =
 --            ( { model | status = Error m }, Cmd.none, False )
 
 
+execute : Model -> Model
+execute model =
+    let
+        c =
+            model
+                |> get_javascript
+                |> List.map (Lia.Utils.execute 300)
+    in
+    model
+
+
 has_next : Model -> Bool
 has_next model =
     model.visible < model.effects
@@ -70,6 +88,15 @@ has_previous model =
 init : Msg
 init =
     Init
+
+
+initialize : Bool -> Model -> Model
+initialize sound model =
+    let
+        ( m, cmd ) =
+            update Init sound model
+    in
+    m
 
 
 next : Msg
