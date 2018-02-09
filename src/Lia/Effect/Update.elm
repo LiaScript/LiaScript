@@ -1,6 +1,6 @@
-module Lia.Effect.Update exposing (Msg(..), has_next, has_previous, init, initialize, next, previous, update)
+module Lia.Effect.Update exposing (Msg(..), has_next, has_previous, init, next, previous, update)
 
-import Lia.Effect.Model exposing (Map, Model, current_comment, get_javascript)
+import Lia.Effect.Model exposing (Map, Model, current_comment, get_all_javascript, get_javascript)
 import Lia.Utils
 import Tts.Responsive
 
@@ -9,7 +9,7 @@ import Tts.Responsive
 
 
 type Msg
-    = Init
+    = Init Bool
     | Next
     | Previous
     | Speak
@@ -19,15 +19,15 @@ type Msg
 update : Msg -> Bool -> Model -> ( Model, Cmd Msg )
 update msg sound model =
     case msg of
-        Init ->
+        Init run_all_javascript ->
             model
-                |> execute
+                |> execute run_all_javascript 300
                 |> update Speak sound
 
         Next ->
             if has_next model then
                 { model | visible = model.visible + 1 }
-                    |> execute
+                    |> execute False 100
                     |> update Speak sound
             else
                 ( model, Cmd.none )
@@ -35,7 +35,7 @@ update msg sound model =
         Previous ->
             if has_previous model then
                 { model | visible = model.visible - 1 }
-                    |> execute
+                    |> execute False 100
                     |> update Speak sound
             else
                 ( model, Cmd.none )
@@ -64,13 +64,17 @@ update msg sound model =
 --            ( { model | status = Error m }, Cmd.none, False )
 
 
-execute : Model -> Model
-execute model =
+execute : Bool -> Int -> Model -> Model
+execute run_all delay model =
     let
+        javascript =
+            if run_all then
+                get_all_javascript model
+            else
+                get_javascript model
+
         c =
-            model
-                |> get_javascript
-                |> List.map (Lia.Utils.execute 300)
+            List.map (Lia.Utils.execute delay) javascript
     in
     model
 
@@ -85,18 +89,9 @@ has_previous model =
     model.visible > 0
 
 
-init : Msg
-init =
-    Init
-
-
-initialize : Bool -> Model -> Model
-initialize sound model =
-    let
-        ( m, cmd ) =
-            update Init sound model
-    in
-    m
+init : Bool -> Msg
+init run_all_javascript =
+    Init run_all_javascript
 
 
 next : Msg

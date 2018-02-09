@@ -6,6 +6,7 @@ module Lia.Effect.Model
         , add_javascript
         , current_comment
         , current_paragraphs
+        , get_all_javascript
         , get_javascript
         , get_paragraph
         , init
@@ -21,7 +22,7 @@ type alias Model =
     { visible : Int
     , effects : Int
     , comments : Map Element
-    , javascript : Map (Array String)
+    , javascript : Map (List String)
     }
 
 
@@ -43,10 +44,10 @@ add_javascript idx script model =
             Dict.insert idx
                 (case Dict.get idx model.javascript of
                     Just a ->
-                        Array.push script a
+                        List.append a [ script ]
 
                     Nothing ->
-                        Array.fromList [ script ]
+                        [ script ]
                 )
                 model.javascript
     }
@@ -56,10 +57,19 @@ get_javascript : Model -> List String
 get_javascript model =
     case Dict.get model.visible model.javascript of
         Just a ->
-            Array.toList a
+            a
 
         _ ->
             []
+
+
+get_all_javascript : Model -> List String
+get_all_javascript model =
+    model.javascript
+        |> Dict.toList
+        |> List.sort
+        |> List.map (\( _, v ) -> v)
+        |> List.concat
 
 
 set_annotation : Int -> Int -> Map Element -> Annotation -> Map Element

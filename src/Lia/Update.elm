@@ -92,16 +92,16 @@ update msg model =
                 ( model, Cmd.none, Nothing )
 
         ( InitSection, Just sec ) ->
-            case model.mode of
-                Textbook ->
-                    ( model, Cmd.none, Nothing )
+            let
+                ( sec_, cmd_, log_ ) =
+                    case model.mode of
+                        Textbook ->
+                            Markdown.initEffect True False sec
 
-                _ ->
-                    let
-                        ( sec_, cmd_, log_ ) =
-                            Markdown.initEffect model.sound sec
-                    in
-                    ( set_active_section model sec_, Cmd.map UpdateMarkdown cmd_, log_ )
+                        _ ->
+                            Markdown.initEffect False model.sound sec
+            in
+            ( set_active_section model sec_, Cmd.map UpdateMarkdown cmd_, log_ )
 
         ( NextSection, Just sec ) ->
             if (model.mode == Textbook) || not (Effect.has_next sec.effect_model) then
@@ -123,9 +123,9 @@ update msg model =
                 in
                 ( set_active_section model sec_, Cmd.map UpdateMarkdown cmd_, log_ )
 
-        ( SwitchMode, Just _ ) ->
-            ( { model
-                | mode =
+        ( SwitchMode, Just sec ) ->
+            let
+                mode =
                     set_local "mode"
                         (case model.mode of
                             Presentation ->
@@ -137,15 +137,24 @@ update msg model =
                             Textbook ->
                                 Presentation
                         )
-              }
-            , Cmd.none
-            , Nothing
+
+                ( sec_, cmd_, log_ ) =
+                    case mode of
+                        Textbook ->
+                            Markdown.initEffect True False sec
+
+                        _ ->
+                            Markdown.initEffect False False sec
+            in
+            ( set_active_section { model | mode = mode } sec_
+            , Cmd.map UpdateMarkdown cmd_
+            , log_
             )
 
         ( ToggleSound, Just sec ) ->
             let
                 ( sec_, cmd_, log_ ) =
-                    Markdown.initEffect (not model.sound) sec
+                    Markdown.initEffect False (not model.sound) sec
             in
             ( { model | sound = set_local "sound" (not model.sound) }, Cmd.map UpdateMarkdown cmd_, log_ )
 

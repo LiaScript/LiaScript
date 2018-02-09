@@ -44,20 +44,30 @@ narrator: Russian Female
 
 <link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
 
+    {{0-1}}
 <div class="ct-chart ct-golden-section" id="chart1"></div>
-
-
-
 <script>
 // Initialize a Line chart in the container with the ID chart1
 new Chartist.Line('#chart1', {
   labels: [1, 2, 3, 4],
   series: [[100, 120, 180, 200]]
 });
+// Initialize a Line chart in the container with the ID chart2
+</script>
 
+
+    {{1}}
+<div class="ct-chart ct-golden-section" id="chart2"></div>
+<script>
+// Initialize a Line chart in the container with the ID chart1
+new Chartist.Line('#chart2', {
+  labels: [1, 2, 3, 4],
+  series: [[100, 120, 10, 20]]
+});
 
 // Initialize a Line chart in the container with the ID chart2
 </script>
+
 
 See the online rendered version at: https://liascript.github.io
 
@@ -76,15 +86,7 @@ and students ...
 With Lia, we try to implement an extended Markdown format that should enable
 everyone to create, share, adapt, translate or correct and extend online courses
 without the need of being a web-developer.
-<script>
-// Initialize a Line chart in the container with the ID chart1
-new Chartist.Line('#chart1', {
-  labels: [1, 2, 3, 4],
-  series: [[100, 120, 10, 20]]
-});
 
-// Initialize a Line chart in the container with the ID chart2
-</script>
 
                                      --{{2}}--
 Everything that is required is simple text-editor and a web-browser. Or you

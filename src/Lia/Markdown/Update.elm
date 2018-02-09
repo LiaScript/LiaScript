@@ -59,9 +59,9 @@ previousEffect sound =
     update (UpdateEffect sound Effect.previous)
 
 
-initEffect : Bool -> Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
-initEffect sound =
-    update (UpdateEffect sound Effect.init)
+initEffect : Bool -> Bool -> Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
+initEffect run_all_javascript sound =
+    update (UpdateEffect sound (Effect.init run_all_javascript))
 
 
 log : String -> Maybe JE.Value -> Maybe ( String, JE.Value )
