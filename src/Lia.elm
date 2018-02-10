@@ -9,7 +9,7 @@ import Lia.Model
 import Lia.Parser
 import Lia.Types exposing (Section, Sections)
 import Lia.Update exposing (Msg(..))
-import Lia.Utils exposing (load_js)
+import Lia.Utils exposing (load_js, toUnixNewline)
 import Lia.View
 
 
@@ -27,7 +27,7 @@ type alias Mode =
 
 set_script : Model -> String -> Model
 set_script model script =
-    case Lia.Parser.parse_defintion script of
+    case script |> toUnixNewline |> Lia.Parser.parse_defintion of
         Ok ( code, definition ) ->
             let
                 x =

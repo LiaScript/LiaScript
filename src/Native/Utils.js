@@ -57,6 +57,11 @@ var _user$project$Native_Utils = (function () {
 
     };
 
+    function toUnixNewline(code)
+    {
+        return code.replace("\r\n", "\n");
+    }
+
 /*
     function wait(ms) {
         var start = new Date().getTime();
@@ -150,6 +155,7 @@ var _user$project$Native_Utils = (function () {
         execute: F2(execute),
         load_js: load_js,
         get_local: get_local,
-        set_local: F2(set_local)
+        set_local: F2(set_local),
+        toUnixNewline: toUnixNewline
     };
 })();

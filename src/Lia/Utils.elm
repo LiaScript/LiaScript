@@ -1,4 +1,17 @@
-module Lia.Utils exposing (evaluateJS, evaluateJS2, execute, formula, get_local, guess, highlight, load_js, set_local, stringToHtml)
+module Lia.Utils
+    exposing
+        ( evaluateJS
+        , evaluateJS2
+        , execute
+        , formula
+        , get_local
+        , guess
+        , highlight
+        , load_js
+        , set_local
+        , stringToHtml
+        , toUnixNewline
+        )
 
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -60,3 +73,8 @@ set_local key value =
             Native.Utils.set_local key (toString value)
     in
     value
+
+
+toUnixNewline : String -> String
+toUnixNewline code =
+    Native.Utils.toUnixNewline code
