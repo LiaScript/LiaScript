@@ -51,7 +51,7 @@ and students ...
 
 * easy to share adapt and translate
 * no additional software required, everything is implemented in JavaScirpt/Elm
-  and runs directly within the browser
+  and runs directly within the browser (online)
 * automatic conversion to epub, pdf, ...
 
 
@@ -1439,34 +1439,6 @@ Result:
     [                     ] question 2 ?
     [                     ] question 3 ?
 
-## JavaScript
-
-
-<link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
-
-    {{0-1}}
-<div class="ct-chart ct-golden-section" id="chart1"></div>
-<script>
-// Initialize a Line chart in the container with the ID chart1
-new Chartist.Line('#chart1', {
-  labels: [1, 2, 3, 4],
-  series: [[100, 120, 180, 200]]
-});
-// Initialize a Line chart in the container with the ID chart2
-</script>
-
-
-    {{1}}
-<div class="ct-chart ct-golden-section" id="chart2"></div>
-<script>
-// Initialize a Line chart in the container with the ID chart1
-new Chartist.Line('#chart2', {
-  labels: [1, 2, 3, 4],
-  series: [[100, 120, 10, 20]]
-});
-
-// Initialize a Line chart in the container with the ID chart2
-</script>
 
 ## Future Work
 
