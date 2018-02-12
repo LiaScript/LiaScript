@@ -1137,6 +1137,12 @@ and others from adding the definition to a Markdown paragraph, and thus, to
 render the script properly.
 
 ### Narrator
+<!--
+language: en_UK
+
+narrator: UK English Male
+-->
+
 
 1. we are using the text-to-speech engine of https://responsivevoice.org
 2. the narrator voice must be defined within the initial comment of a script
@@ -1150,10 +1156,12 @@ click on the ear button at the navigation panel, then this paragraph gets
 rendered at the place where it is defined.
 
                                --{{3 <!-- Deutsch Female-->}}--
-... deutscher Text ...
+Markdown ist eine vereinfachte Auszeichnungssprache, die von John Gruber und
+Aaron Swartz entworfen und im Dezember 2004 mit Version 1.0.1 spezifiziert ...
 
                                --{{4 <!-- Russian Female-->}}--
-... русский текст ...
+Первоначально создан в 2004 году Джоном Грубером (англ. John Gruber) и Аароном
+Шварцем. Многие идеи языка были позаимствованы из существующих соглашений ...
 ```
 
                                 --{{1}}--

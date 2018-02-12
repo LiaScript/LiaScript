@@ -17,7 +17,7 @@ inline2string inline =
             str
 
         Symbol str _ ->
-            str
+            ""
 
         Bold x _ ->
             inline2string x
