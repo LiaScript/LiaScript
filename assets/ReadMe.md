@@ -23,53 +23,26 @@ script:   https://interactivepython.org/runestone/static/thinkcspy/_static/skulp
 script:   https://interactivepython.org/runestone/static/thinkcspy/_static/skulpt-stdlib.js
 
 
-script:   https://use.edgefonts.net/source-code-pro.js
+script:   https://curiosity-driven.github.io/prolog-interpreter/parser.js
 
-script:   https://cdn.rawgit.com/dataarts/dat.gui/master/build/dat.gui.min.js
-
-script:   https://cdn.rawgit.com/mrdoob/stats.js/master/build/stats.min.js
-
-script:   https://cdnjs.cloudflare.com/ajax/libs/three.js/87/three.min.js
-
-script:   https://cdnjs.cloudflare.com/ajax/libs/ami.js/0.0.22/ami.min.js
+script:   https://curiosity-driven.github.io/prolog-interpreter/interpreter.js
 
 -->
 
 # Lia-Script
-<!--
-language: en_US
-narrator: Russian Female
--->
 
-
-<link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
-
-    {{0-1}}
-<div class="ct-chart ct-golden-section" id="chart1"></div>
-<script>
-// Initialize a Line chart in the container with the ID chart1
-new Chartist.Line('#chart1', {
-  labels: [1, 2, 3, 4],
-  series: [[100, 120, 180, 200]]
-});
-// Initialize a Line chart in the container with the ID chart2
-</script>
-
-
-    {{1}}
-<div class="ct-chart ct-golden-section" id="chart2"></div>
-<script>
-// Initialize a Line chart in the container with the ID chart1
-new Chartist.Line('#chart2', {
-  labels: [1, 2, 3, 4],
-  series: [[100, 120, 10, 20]]
-});
-
-// Initialize a Line chart in the container with the ID chart2
-</script>
-
+                                    --{{0}}--
+With Lia, we try to implement an extended Markdown format that should enable
+everyone to create, share, adapt, translate or correct and extend online courses
+without the need of being a web-developer.
 
 See the online rendered version at: https://liascript.github.io
+
+
+                                    --{{0}}--
+Click on the (ear) button at the navigation bar to switch between spoken and
+plain text mode format. And use the arrows-buttons at the top for navigating.
+
 
 *Lia-Script* <!-- class = "animated infinite bounce" style = "color: red;" --> is an extended Markdown format for writing interactive online
 courses. Imagine all schoolbooks, technical or scientific literature could
@@ -83,221 +56,22 @@ and students ...
 
 
                                      --{{1}}--
-With Lia, we try to implement an extended Markdown format that should enable
-everyone to create, share, adapt, translate or correct and extend online courses
-without the need of being a web-developer.
-
-
-                                     --{{2}}--
 Everything that is required is simple text-editor and a web-browser. Or you
 start directly to create and share your course on github. The entire parsing and
 transformation of Lia-Markdown to any other format is done within the browser at
 client-side.
 
-## Jaavascript
-
-
-
-<div id="my-gui-container" style="position: fixed;
-  top: 50px;
-  right: 10px;
-  z-index:1;"></div>
-<div id="container" style=" background-color: #000;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  overflow:hidden;"></div>
-
-<script>
-
-/* globals dat, AMI*/
-
-// Setup renderer
-var container = document.getElementById('container');
-var renderer = new THREE.WebGLRenderer({
-    antialias: true
-});
-renderer.setSize(container.offsetWidth, container.offsetHeight);
-renderer.setClearColor(0x353535, 1);
-renderer.setPixelRatio(window.devicePixelRatio);
-container.appendChild(renderer.domElement);
-
-// Setup scene
-var scene = new THREE.Scene();
-
-// Setup camera
-var camera = new THREE.PerspectiveCamera(45, container.offsetWidth / container.offsetHeight, 0.01, 10000000);
-camera.position.x = 150;
-camera.position.y = 150;
-camera.position.z = 100;
-
-// Setup controls
-var controls = new AMI.TrackballControl(camera, container);
-
-/**
- * Handle window resize
- */
-function onWindowResize() {
-    camera.aspect = container.offsetWidth / container.offsetHeight;
-    camera.updateProjectionMatrix();
-
-    renderer.setSize(container.offsetWidth, container.offsetHeight);
-}
-
-window.addEventListener('resize', onWindowResize, false);
-
-/**
- * Build GUI
- */
-function gui(stackHelper) {
-    var stack = stackHelper.stack;
-    var gui = new dat.GUI({
-        autoPlace: false,
-    });
-    var customContainer = document.getElementById('my-gui-container');
-    customContainer.appendChild(gui.domElement);
-
-    // stack
-    var stackFolder = gui.addFolder('Stack');
-    // index range depends on stackHelper orientation.
-    var index = stackFolder
-        .add(stackHelper, 'index', 0, stack.dimensionsIJK.z - 1)
-        .step(1)
-        .listen();
-    var orientation = stackFolder
-        .add(stackHelper, 'orientation', 0, 2)
-        .step(1)
-        .listen();
-    orientation.onChange(function(value) {
-        index.__max = stackHelper.orientationMaxIndex;
-        // center index
-        stackHelper.index = Math.floor(index.__max / 2);
-    });
-    stackFolder.open();
-
-    // slice
-    var sliceFolder = gui.addFolder('Slice');
-    sliceFolder
-        .add(stackHelper.slice, 'windowWidth', 1, stack.minMax[1] - stack.minMax[0])
-        .step(1)
-        .listen();
-    sliceFolder
-        .add(stackHelper.slice, 'windowCenter', stack.minMax[0], stack.minMax[1])
-        .step(1)
-        .listen();
-    sliceFolder.add(stackHelper.slice, 'intensityAuto').listen();
-    sliceFolder.add(stackHelper.slice, 'invert');
-    sliceFolder.open();
-
-    // bbox
-    var bboxFolder = gui.addFolder('Bounding Box');
-    bboxFolder.add(stackHelper.bbox, 'visible');
-    bboxFolder.addColor(stackHelper.bbox, 'color');
-    bboxFolder.open();
-
-    // border
-    var borderFolder = gui.addFolder('Border');
-    borderFolder.add(stackHelper.border, 'visible');
-    borderFolder.addColor(stackHelper.border, 'color');
-    borderFolder.open();
-}
-
-/**
- * Start animation loop
- */
-function animate() {
-    controls.update();
-    renderer.render(scene, camera);
-
-    // request new frame
-    requestAnimationFrame(function() {
-        animate();
-    });
-}
-animate();
-
-// Setup loader
-var loader = new AMI.VolumeLoader(container);
-
-var t2 = [
-    '36444280',
-    '36444294',
-    '36444308',
-    '36444322',
-    '36444336',
-    '36444350',
-    '36444364',
-    '36444378',
-    '36444392',
-    '36444406',
-    '36444434',
-    '36444448',
-    '36444462',
-    '36444476',
-    '36444490',
-    '36444504',
-    '36444518',
-    '36444532',
-    '36746856'
-];
-var files = t2.map(function(v) {
-    return 'https://cdn.rawgit.com/FNNDSC/data/master/dicom/adi_brain/' + v;
-});
-
-loader
-    .load(files)
-    .then(function() {
-        // merge files into clean series/stack/frame structure
-        var series = loader.data[0].mergeSeries(loader.data);
-        var stack = series[0].stack[0];
-        loader.free();
-        loader = null;
-        // be carefull that series and target stack exist!
-        var stackHelper = new AMI.StackHelper(stack);
-        stackHelper.bbox.color = 0x8bc34a;
-        stackHelper.border.color = 0xf44336;
-
-        scene.add(stackHelper);
-
-        // build the gui
-        gui(stackHelper);
-
-        // center camera and interactor to center of bouding box
-        var centerLPS = stackHelper.stack.worldCenter();
-        camera.lookAt(centerLPS.x, centerLPS.y, centerLPS.z);
-        camera.updateProjectionMatrix();
-        controls.target.set(centerLPS.x, centerLPS.y, centerLPS.z);
-    })
-    .catch(function(error) {
-        window.console.log('oops... something went wrong...');
-        window.console.log(error);
-    });
-
-</script>
-
-
---{{1}}--
-With Lia, we try to implement an extended Markdown format that should enable
-everyone to create, share, adapt, translate or correct and extend online courses
-without the need of being a web-developer.
-
-{{1}}
-With Lia, we try to implement an extended Markdown format that should enable
-everyone to create, share, adapt, translate or correct and extend online courses
-without the need of being a web-developer.
 
 ## *Markdown*-Syntax
 
-<!-- class  ="animated infinite bounce" style = "color: red;" -->
+
+                                     --{{0}}--
 This section is intended to give a brief overview on the basic Markdown
 formatting elements. The only difference to common Markdown at this point is,
 that every course has to start with a comment, which defines authors, a language
-and  a narrator voice, see https://responsivevoice.org for all supported<!-- voices --> .
+and  a narrator voice, see https://responsivevoice.org for all supported voices.
 
+Initial LIA-comment-tag for basic definitions:
 
 ``` XML
 <!--
@@ -318,10 +92,6 @@ script:   another javascript resourse url
 
 -->
 ```
-
-                                    --{{0}}--
-Click on the (ear) button at the navigation bar to switch between spoken and
-plain text mode format. And please click on the at the top for navigating.
 
 ### Structuring
 
@@ -421,7 +191,7 @@ But you can also use some basic smileys. We will try to extend this partial
 support in the future.
 
                                        {{1}}
-`:-)` :-) <!-- class = "animated infinite bounce" style = "color: red;" -->, `;-)` ;-), `:-D` :-D, `:-O` :-O, `:-(` :-(, `:-|` :-|,
+`:-)` :-), `;-)` ;-), `:-D` :-D, `:-O` :-O, `:-(` :-(, `:-|` :-|,
 `:-/` :-/, `:-P` :-P, `:-*` :-*, `:')` :'), `:'(` :'(
 
 ### References
@@ -461,21 +231,32 @@ defined by two exclamation marks.
   to get an overview on how a YouTube link has to be formatted to add a starting
   and/or end point, autoplay, subtitles, and other options.
 
-##### Styling
+### Styling
 
                                     --{{0}}--
-Adding CSS elements to images is implemented via a trailing comment-tag,
-everything within this comment is treated as a style attribute, so that it can
+Adding CSS elements or classes or any other HTML setting to an image or to any
+other Markdown element is implemented via a trailing comment-tag, everything
+within this comment is treated as a HTML attribute, so that it can
 also be used to apply graphical filters of for positioning.
 
 
-`![image](...Creative-Tail-Animal-lion.svg)<!-- style="width: 100px; border: 10px solid; filter: grayscale(100%);" -->`
+``` markdown
+![image](...Creative-Tail-Animal-lion.svg)<!--
+style = "width: 100px;
+         border: 10px solid;
+         filter: grayscale(100%);"
+
+class = "animated infinite bounce"
+-->
+```
 
 
 ![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)<!--
-style="
-  width: 100px;
-  border: 10px solid;"
+style = "width: 100px;
+         border: 10px solid;
+         filter: grayscale(100%);"
+
+class = "animated infinite bounce"
 -->
 ![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)<!--
 style="
@@ -500,37 +281,59 @@ style="
 -->
 
                                      --{{1}}--
-The same technique can also be applied to style and format movies...
+The same technique can also be applied to style and format movies and other inline
+elements, such as links, words, symbols, or code...
 
                                        {{1}}
 ================================================================================
 
 !![movie](https://www.youtube.com/embed/XsNk5aOpqUc)<!--
-  width: 100px;
-  height: 60px;
+style = "width: 100px; height: 60px;"
 -->
 !![movie](https://www.youtube.com/embed/XsNk5aOpqUc)<!--
-  width: 120px;
-  height: 70px;
+style = "width: 120px; height: 70px;"
 -->
 !![movie](https://www.youtube.com/embed/XsNk5aOpqUc)<!--
-  width: 140px;
-  height: 80px;
+style = "width: 140px; height: 80px;"
 -->
 !![movie](https://www.youtube.com/embed/XsNk5aOpqUc)<!--
-  width: 120px;
-  height: 70px;
-  -webkit-filter: grayscale(100%); /* Safari 6.0 - 9.0 */
-  filter: grayscale(100%);
+style = "width: 120px;
+         height: 70px;
+         -webkit-filter: grayscale(100%); /* Safari 6.0 - 9.0 */
+         filter: grayscale(100%);"
 -->
 !![movie](https://www.youtube.com/embed/XsNk5aOpqUc)<!--
-  width: 100px;
-  height: 60px;
-  -webkit-filter: blur(5px); /* Safari 6.0 - 9.0 */
-  filter: blur(5px);
+style = "width: 100px;
+         height: 60px;
+         -webkit-filter: blur(5px); /* Safari 6.0 - 9.0 */
+         filter: blur(5px);"
 -->
 
+`:-) <!-- class = "animated infinite bounce" -->` --> :-) <!-- class = "animated infinite bounce" -->
+
+`[google](www.google.de) <!-- style = "color: red;" -->` --> [google](www.google.de) <!-- style = "color: red;" -->
+
 ================================================================================
+
+#### Block-Styling
+
+                                  --{{0}}--
+Settings for entire blocks can be set with a **starting** comment that includes
+all required HTML-attributes and can even contain animation settings. These can
+be used to highlight specific elements of your slides.
+
+
+``` markdown
+<!-- class = "animated rollIn" style = "animation-delay: 3s; color: purple" -->
+The whole text-block should appear in purple color and with a wobbling effect.
+Which is a **bad** example, please use it with causion ...
+~~ ;-) ~~ <!-- class = "animated infinite bounce" style = "color: red;" -->
+```
+
+<!-- class = "animated rollIn" style = "animation-delay: 3s; color: purple" -->
+The whole text-block should appear in purple color and with a wobbling effect.
+Which is a **bad** example, please use it with causion ...
+~~ ;-) ~~ <!-- class = "animated infinite bounce" style = "color: red;" -->
 
 ### Lists & Tables
 
@@ -540,7 +343,7 @@ if you are already familiar with it.
 
 #### Unordered Lists
 
-                                 --{{1}}--
+                                 --{{0}}--
 To define unordered list, starting stars, pluses, and minuses can be used and
 mixed. If one point has more than one line, you can also use newlines, but with
 spaces at the beginning. Paragraphs can be included in the same way, by using
@@ -569,7 +372,7 @@ Result:
 
 #### Ordered Lists
 
-                                 --{{1}}--
+                                 --{{0}}--
 Ordered list start with a number and a dot. As you can see from the example, the
 number does not count at the moment, the generated list will always count by the
 order of appearance. And it is also possible to mix lists with other lists and
@@ -627,6 +430,9 @@ Result:
 Markdown-format:
 
 ``` markdown
+<!--
+style="font-size: 18px; font-style: italic; width: 500px; margin: 0.25em 0;"
+-->
 > Blockquotes are very handy in email to emulate reply text.
 > This line is part of the same quote.
 
@@ -647,17 +453,33 @@ Quote break.
 
 > This is a very long line that will still be quoted properly when it wraps. Oh boy let's keep writing to make sure this is long enough to actually wrap for everyone. Oh, you can *put* **Markdown** into a blockquote.
 
-hhhh
 
-> <!-- style="font-size: 18px; font-style: italic; width: 500px; margin: 0.25em 0;" -->
+                                   --{{1}}--
+Next to simple paragraphs also any other block element can be included ...
+
+
+                                     {{1}}
+================================================================================
+
+``` markdown
+> <!-- style="font-size: 18px; font-style: italic; width: 500px; margin: 5.25em 0;" -->
+> | Tables            | Are           | Cool  |
+> | ----------------- |:-------------:| -----:|
+> | *** col 3 is ***  | right-aligned | $1600 |
+> | ** col 2 is **    | centered      |   $12 |
+> | * zebra stripes * | are neat      |    $1 |
+```
+
+Result:
+
+> <!-- style="font-size: 18px; font-style: italic; width: 500px; margin: 5.25em 0;" -->
 > | Tables            | Are           | Cool  |
 > | ----------------- |:-------------:| -----:|
 > | *** col 3 is ***  | right-aligned | $1600 |
 > | ** col 2 is **    | centered      |   $12 |
 > | * zebra stripes * | are neat      |    $1 |
 
-kkkkk
-
+================================================================================
 
 ### HTML
 
@@ -684,6 +506,54 @@ Test **bold** and <b> HTML bold</b> works also inline
   <dt><b>Markdown in HTML</b></dt>
   <dd>Does *not* work **very** well. Use HTML <em>tags</em>.</dd>
 </dl>
+
+#### HTML & JavaScirpt
+
+                                 --{{0}}--
+In contrast to common Markdown-Parsers it is also possible to include and
+execute javascript code. If you combine it with your HTML elements, you are free
+to integrate whatever you want.
+
+``` markdown
+<link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
+<div class="ct-chart ct-golden-section" id="chart"></div>
+<script>
+    // Initialize a Line chart in the container with the ID chart
+    new Chartist.Line('#chart', {
+        labels: [1, 2, 3, 4],
+        series: [[100, 120, 180, 200]]
+    });
+</script>
+```
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
+
+
+                                   {{0-1}}
+<div class="ct-chart ct-golden-section" id="chart1"></div>
+<script>
+// Initialize a Line chart in the container with the ID chart1
+new Chartist.Line('#chart1', {
+  labels: [1, 2, 3, 4],
+  series: [[100, 120, 180, 200]]
+});
+</script>
+
+
+                                     {{1}}
+<div class="ct-chart ct-golden-section" id="chart2"></div>
+<script>
+// Initialize a Line chart in the container with the ID chart2
+new Chartist.Line('#chart2', {
+  labels: [1, 2, 3, 4],
+  series: [[-100, 120, 180, 20]]
+});
+</script>
+
+                                --{{1}}--
+Note, you have to include all required JavaScirpt-resourses in the initial
+comment after the script definition. And by combining this feature with
+LiaScript effects, you can build even more sophisticated courses.
 
 
 ## Math-Mode
@@ -761,11 +631,11 @@ required resources to the initial comment with keyword `script`.
 
 1. Add resource to main-comment: `script: url.js`
 
-2. Add a trailing comment to your code: `<!-- `{X}` -->`
+2. Add a trailing script-tag to your code: `<script> {X} </script>`
 
 
                                      --{{1}}--
-And add an additional comment tag to the end of your language definition with an
+And add an additional script tag to the end of your language definition with an
 big X in braces. This element is afterwards substituted with your code and
 executed. We provide some basic examples within the following section.
 
@@ -784,7 +654,7 @@ var i=0;
 var j=0;
 var result = 0;
 
-for(i = 0; i<10000; i++) {
+for(i = 0; i<1000; i++) {
     for(j = 0; j<i; j++) {
         result += j;
     }
@@ -821,6 +691,29 @@ new Chartist.Bar('#chart2', {
 <div class="ct-chart ct-golden-section" id="chart1"></div>
 <div class="ct-chart ct-golden-section" id="chart2"></div>
 
+
+#### Computer-Algebra
+
+An example of a Computer-Algebra-System (Algebrit), see xxx for more examples:
+
+```javascript
+x + x
+```
+<script> Algebrite.run(`{X}`) </script>
+
+
+
+```javascript
+f=sin(t)^4-2*cos(t/2)^3*sin(t)
+
+f=circexp(f)
+
+defint(f,t,0,2*pi)
+```
+<script> Algebrite.run(`{X}`) </script>
+
+
+
 #### Elm
 
 ```elm
@@ -854,29 +747,6 @@ update msg model =
     Decrement ->
       model - 1
 ```
-
-
-#### Computer-Algebra
-
-An example of a Computer-Algebra-System (Algebrit), see xxx for more examples:
-
-```javascript
-x + x
-```
-<script> Algebrite.run(`{X}`) </script>
-
-
-
-```javascript
-f=sin(t)^4-2*cos(t/2)^3*sin(t)
-
-f=circexp(f)
-
-defint(f,t,0,2*pi)
-```
-<script> Algebrite.run(`{X}`) </script>
-
-
 
 
 #### C++
@@ -944,20 +814,86 @@ output;
 
 #### Prolog
 
-No simple library found yet ;-)
+See the implementation details at: https://curiosity-driven.org/prolog-interpreter
+
+
+** Load Database and Rules: **
 
 ```prolog
-likes(sam, salad).
-likes(dean, pie).
-likes(sam, apples).
-likes(dean, whiskey).
-```
+exists(A, list(A, _, _, _, _)).
+exists(A, list(_, A, _, _, _)).
+exists(A, list(_, _, A, _, _)).
+exists(A, list(_, _, _, A, _)).
+exists(A, list(_, _, _, _, A)).
 
+rightOf(R, L, list(L, R, _, _, _)).
+rightOf(R, L, list(_, L, R, _, _)).
+rightOf(R, L, list(_, _, L, R, _)).
+rightOf(R, L, list(_, _, _, L, R)).
+
+middle(A, list(_, _, A, _, _)).
+
+first(A, list(A, _, _, _, _)).
+
+nextTo(A, B, list(B, A, _, _, _)).
+nextTo(A, B, list(_, B, A, _, _)).
+nextTo(A, B, list(_, _, B, A, _)).
+nextTo(A, B, list(_, _, _, B, A)).
+nextTo(A, B, list(A, B, _, _, _)).
+nextTo(A, B, list(_, A, B, _, _)).
+nextTo(A, B, list(_, _, A, B, _)).
+nextTo(A, B, list(_, _, _, A, B)).
+
+puzzle(Houses) :-
+    exists(house(red, english, _, _, _), Houses),
+    exists(house(_, spaniard, _, _, dog), Houses),
+    exists(house(green, _, coffee, _, _), Houses),
+    exists(house(_, ukrainian, tea, _, _), Houses),
+    rightOf(house(green, _, _, _, _), house(ivory, _, _, _, _), Houses),
+    exists(house(_, _, _, oldgold, snails), Houses),
+    exists(house(yellow, _, _, kools, _), Houses),
+    middle(house(_, _, milk, _, _), Houses),
+    first(house(_, norwegian, _, _, _), Houses),
+    nextTo(house(_, _, _, chesterfield, _), house(_, _, _, _, fox), Houses),
+    nextTo(house(_, _, _, kools, _),house(_, _, _, _, horse), Houses),
+    exists(house(_, _, orangejuice, luckystike, _), Houses),
+    exists(house(_, japanese, _, parliament, _), Houses),
+    nextTo(house(_, norwegian, _, _, _), house(blue, _, _, _, _), Houses),
+    exists(house(_, _, water, _, _), Houses),
+    exists(house(_, _, _, _, zebra), Houses).
+
+solution(WaterDrinker, ZebraOwner) :-
+    puzzle(Houses),
+    exists(house(_, WaterDrinker, water, _, _), Houses),
+    exists(house(_, ZebraOwner, _, _, zebra), Houses).
+```
+<script>
+var rules = parser(lexer(`{X}`)).parseRules();
+window['prolog_db'] = new Database(rules);
+
+"database loaded";
+</script>
+
+** Query: ( it may take some time ;-) ) **
 
 ```prolog
-likes(sam, X)
+solution(WaterDrinker, ZebraOwner)
 ```
+<script>
+var rslt = "";
 
+var goal = parser(lexer(`{X}`)).parseTerm();
+
+for (var item of window.prolog_db.query(goal)) {
+    rslt += "Yes: " + item + "<br>";
+}
+
+if (rslt === "") {
+   'No';
+} else {
+   rslt;
+}
+</script>
 
 ## Quizzes
 
@@ -1133,8 +1069,8 @@ effects can be combined, due to the usage of equal numbers):
 
                                    --{{0}}--
 To define animations and transitions, you can use the animate.css notation,
-simply place an animation definition after the effect number, as it is done
-within the examples.
+simply place an animation definition within the comment tag after the effects,
+as it is done within the examples.
 
 
 See https://daneden.github.io/animate.css for more animation effects.
@@ -1159,13 +1095,12 @@ one additional newline after the effect definition. The following Markdown block
 is then entirely associated with this effect.
 
                                    --{{1}}--
-You can put many blocks into double curly braces to enclose multiple Markdown
-blocks and as you can see from the examples below, an effect can also contain
-further effects.
+You can combine blocks by enclosing them into two lines of equality signs, as
+you can see from the examples below, an effect can also contain further effects.
 
 
 ``` markdown
-                      {{1-3}}
+                               {{1-3}}
 This is an example for a *single* block effect.
 
                                {{2-4}}
@@ -1184,7 +1119,7 @@ block effect.
                                   {{1-3}}
 This is an example for a *single* block effect.
 
-                               {{2-4}}
+                                  {{2-4}}
 ================================================================================
 
 This is an example for a ... wait a second {{3}}{{**multi**}} ...
@@ -1213,6 +1148,12 @@ The entire ***Markdown*** paragraph right below the effect definition in double
 minus notation is sent to responsivevoice to speak the text out loud. If you
 click on the ear button at the navigation panel, then this paragraph gets
 rendered at the place where it is defined.
+
+                               --{{3 <!-- Deutsch Female-->}}--
+... deutscher Text ...
+
+                               --{{4 <!-- Russian Female-->}}--
+... русский текст ...
 ```
 
                                 --{{1}}--
@@ -1220,6 +1161,26 @@ The entire ***Markdown*** paragraph right below the effect definition in double
 minus notation is sent to responsivevoice to speak the text out loud. If you
 click on the ear button at the navigation panel, then this paragraph gets
 rendered at the place where it is defined.
+
+                                --{{2}}--
+The narrator voice is defined within the initial comment, but you can reset this
+for the entire section, by adding such a definition directly after the title
+tag, or you can add a comment directly after the comment identifier to let your
+script talk in different languages. Proceed and listen ;-)
+
+                                --{{3 <!-- Deutsch Female -->}}--
+Markdown ist eine vereinfachte Auszeichnungssprache, die von John Gruber und
+Aaron Swartz entworfen und im Dezember 2004 mit Version 1.0.1 spezifiziert
+wurde. Ein Ziel von Markdown ist, dass schon die Ausgangsform ohne weitere
+Konvertierung leicht lesbar ist.
+
+                               --{{4 <!-- Russian Female -->}}--
+Первоначально создан в 2004 году Джоном Грубером (англ. John Gruber) и Аароном
+Шварцем. Многие идеи языка были позаимствованы из существующих соглашений по
+разметке текста в электронных письмах. Реализации языка Markdown преобразуют
+текст в формате Markdown в валидный, правильно построенный XHTML и заменяют
+ левые угловые скобки («<») и амперсанды («&») на соответствующие коды сущностей.
+
 
 ## Charts
 
@@ -1470,6 +1431,34 @@ Result:
     [                     ] question 2 ?
     [                     ] question 3 ?
 
+## JavaScript
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
+
+    {{0-1}}
+<div class="ct-chart ct-golden-section" id="chart1"></div>
+<script>
+// Initialize a Line chart in the container with the ID chart1
+new Chartist.Line('#chart1', {
+  labels: [1, 2, 3, 4],
+  series: [[100, 120, 180, 200]]
+});
+// Initialize a Line chart in the container with the ID chart2
+</script>
+
+
+    {{1}}
+<div class="ct-chart ct-golden-section" id="chart2"></div>
+<script>
+// Initialize a Line chart in the container with the ID chart1
+new Chartist.Line('#chart2', {
+  labels: [1, 2, 3, 4],
+  series: [[100, 120, 10, 20]]
+});
+
+// Initialize a Line chart in the container with the ID chart2
+</script>
 
 ## Future Work
 
