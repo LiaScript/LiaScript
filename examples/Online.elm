@@ -8,7 +8,6 @@ import Json.Decode as JD
 import Json.Encode as JE
 import Lia
 import Navigation
-import UrlParser as Url exposing ((</>), (<?>), int, s, stringParam, top)
 
 
 port tx_log : ( String, JE.Value ) -> Cmd msg
@@ -17,10 +16,7 @@ port tx_log : ( String, JE.Value ) -> Cmd msg
 port rx_log : (( String, JD.Value ) -> msg) -> Sub msg
 
 
-
---main : Program Flags Model Msg
-
-
+main : Program Never Model Msg
 main =
     Navigation.program UrlChange
         { init = init
@@ -39,12 +35,6 @@ type State
     | Waiting
     | LoadOk
     | LoadFail
-
-
-type alias Flags =
-    { url : String
-    , script : String
-    }
 
 
 type alias Model =
