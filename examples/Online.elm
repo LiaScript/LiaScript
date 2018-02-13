@@ -7,6 +7,8 @@ import Http
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia
+import Navigation
+import UrlParser as Url exposing ((</>), (<?>), int, s, stringParam, top)
 
 
 port tx_log : ( String, JE.Value ) -> Cmd msg
@@ -15,9 +17,12 @@ port tx_log : ( String, JE.Value ) -> Cmd msg
 port rx_log : (( String, JD.Value ) -> msg) -> Sub msg
 
 
-main : Program Flags Model Msg
+
+--main : Program Flags Model Msg
+
+
 main =
-    Html.programWithFlags
+    Navigation.program UrlChange
         { init = init
         , view = view
         , update = update
@@ -50,26 +55,18 @@ type alias Model =
     }
 
 
-init : Flags -> ( Model, Cmd Msg )
-init flags =
-    if flags.script /= "" then
-        let
-            -- TODO: remove Just and set it to Nothing
-            ( lia, cmd, _ ) =
-                Lia.set_script (Lia.init_slides (Just "1111")) flags.script
-                    |> Lia.init
-        in
-        ( Model "" lia LoadOk ""
-        , Cmd.map LIA cmd
-        )
-    else if flags.url /= "" then
-        ( Model flags.url (Lia.init_slides (Just flags.url)) Loading ""
-        , getCourse flags.url
-        )
-    else
-        ( Model "https://raw.githubusercontent.com/liaScript/liascript.github.com/master/README.md" (Lia.init_slides (Just "https://raw.githubusercontent.com/liaScript/liascript.github.com/master/README.md")) Waiting ""
-        , Cmd.none
-        )
+init : Navigation.Location -> ( Model, Cmd Msg )
+init location =
+    let
+        x =
+            Debug.log "LOC" location
+
+        url =
+            "www.web.de"
+
+        --Debug.log "ddddd" (Url.parsePath route location)
+    in
+    ( Model url (Lia.init_slides (Just url)) Waiting "", getCourse url )
 
 
 
@@ -82,6 +79,7 @@ type Msg
     | RxLog ( String, JE.Value )
     | Update String
     | Load
+    | UrlChange Navigation.Location
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -125,6 +123,9 @@ update msg model =
 
         Load ->
             ( { model | state = Loading }, getCourse model.url )
+
+        _ ->
+            ( model, Cmd.none )
 
 
 
