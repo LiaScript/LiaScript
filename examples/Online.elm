@@ -18,7 +18,7 @@ port rx_log : (( String, JD.Value ) -> msg) -> Sub msg
 
 main : Program Never Model Msg
 main =
-    Navigation.program Url
+    Navigation.program UrlChange
         { init = init
         , view = view
         , update = update
@@ -39,6 +39,7 @@ type State
 
 type alias Model =
     { url : String
+    , origin : String
     , lia : Lia.Model
     , state : State
     , error : String
@@ -48,23 +49,33 @@ type alias Model =
 init : Navigation.Location -> ( Model, Cmd Msg )
 init location =
     let
-        x =
-            Debug.log "LOC" location
-
         url =
             String.dropLeft 1 location.search
 
         slide =
-            location.hash
-                |> String.dropLeft 1
-                |> String.toInt
+            get_hash location
 
-        --Debug.log "ddddd" (Url.parsePath route location)
+        origin =
+            location.origin
     in
     if url == "" then
-        ( Model "" (Lia.init_slides Nothing) Waiting "", Cmd.none )
+        ( Model "https://raw.githubusercontent.com/liaScript/liascript.github.com/master/README.md"
+            origin
+            (Lia.init_presentation Nothing Nothing)
+            Waiting
+            ""
+        , Cmd.none
+        )
     else
-        ( Model url (Lia.init_slides (Just url)) Waiting "", getCourse url )
+        ( Model url origin (Lia.init_presentation (Just url) slide) Loading "", getCourse url )
+
+
+get_hash : Navigation.Location -> Maybe Int
+get_hash location =
+    location.hash
+        |> String.dropLeft 1
+        |> String.toInt
+        |> Result.toMaybe
 
 
 
@@ -77,7 +88,7 @@ type Msg
     | RxLog ( String, JE.Value )
     | Update String
     | Load
-    | Url Navigation.Location
+    | UrlChange Navigation.Location
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -107,7 +118,16 @@ update msg model =
                 , error = ""
                 , state = LoadOk
               }
-            , Cmd.map LIA cmd
+            , Cmd.batch
+                [ Navigation.newUrl
+                    (model.origin
+                        ++ "?"
+                        ++ model.url
+                        ++ "#"
+                        ++ toString (lia.section_active + 1)
+                    )
+                , Cmd.map LIA cmd
+                ]
             )
 
         GET (Err msg) ->
@@ -120,10 +140,23 @@ update msg model =
             ( { model | url = url }, Cmd.none )
 
         Load ->
+            let
+                x =
+                    Navigation.newUrl model.url
+            in
             ( { model | state = Loading }, getCourse model.url )
 
-        _ ->
-            ( model, Cmd.none )
+        UrlChange location ->
+            case get_hash location of
+                Just idx ->
+                    let
+                        ( lia, cmd, _ ) =
+                            Lia.load_slide model.lia (idx - 1)
+                    in
+                    ( { model | lia = lia }, Cmd.map LIA cmd )
+
+                Nothing ->
+                    ( model, Cmd.none )
 
 
 

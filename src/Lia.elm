@@ -25,6 +25,11 @@ type alias Mode =
     Lia.Types.Mode
 
 
+load_slide : Model -> Int -> ( Model, Cmd Msg, Maybe ( String, JE.Value ) )
+load_slide model idx =
+    Lia.Update.update (Load idx) model
+
+
 set_script : Model -> String -> Model
 set_script model script =
     case script |> toUnixNewline |> Lia.Parser.parse_defintion of
@@ -38,12 +43,20 @@ set_script model script =
             in
             case Lia.Parser.parse_titles definition code of
                 Ok title_sections ->
-                    { model
-                        | definition = definition
-                        , sections =
+                    let
+                        sections =
                             title_sections
                                 |> List.map init_section
                                 |> Array.fromList
+                    in
+                    { model
+                        | definition = definition
+                        , sections = sections
+                        , section_active =
+                            if Array.length sections > model.section_active then
+                                model.section_active
+                            else
+                                0
                     }
 
                 Err msg ->
@@ -70,17 +83,17 @@ init_section ( tags, title, code ) =
 
 init_textbook : Maybe String -> Model
 init_textbook uid =
-    Lia.Model.init Lia.Types.Textbook uid
+    Lia.Model.init Lia.Types.Textbook uid Nothing
 
 
-init_slides : Maybe String -> Model
-init_slides uid =
-    Lia.Model.init Lia.Types.Slides uid
+init_slides : Maybe String -> Maybe Int -> Model
+init_slides uid slide_number =
+    Lia.Model.init Lia.Types.Slides uid slide_number
 
 
-init_presentation : Maybe String -> Model
-init_presentation uid =
-    Lia.Model.init Lia.Types.Presentation uid
+init_presentation : Maybe String -> Maybe Int -> Model
+init_presentation uid slide_number =
+    Lia.Model.init Lia.Types.Presentation uid slide_number
 
 
 view : Model -> Html Msg

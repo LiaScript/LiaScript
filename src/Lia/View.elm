@@ -92,7 +92,7 @@ view_loc active titles =
                                 " lia-not-visited"
                            )
                     )
-                , Attr.style [ ( "cursor", "pointer" ) ]
+                , Attr.href ("#" ++ toString (idx + 1))
                 ]
                 (viewer 9999 title)
     in
@@ -141,7 +141,7 @@ view_footer sound mode effects =
 
 navButton : String -> msg -> Html msg
 navButton str msg =
-    Html.button [ onClick msg, Attr.class "lia-btn lia-slide-control lia-left" ]
+    Html.button [ Attr.href "#33", onClick msg, Attr.class "lia-btn lia-slide-control lia-left" ]
         [ Html.text str ]
 
 

@@ -101,7 +101,10 @@ update msg model =
                         _ ->
                             Markdown.initEffect False model.sound sec
             in
-            ( set_active_section model sec_, Cmd.map UpdateMarkdown cmd_, log_ )
+            ( set_active_section model sec_
+            , Cmd.map UpdateMarkdown cmd_
+            , log_
+            )
 
         ( NextSection, Just sec ) ->
             if (model.mode == Textbook) || not (Effect.has_next sec.effect_model) then

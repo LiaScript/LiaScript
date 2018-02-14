@@ -22,8 +22,8 @@ type alias Model =
     }
 
 
-init : Mode -> Maybe String -> Model
-init mode uid =
+init : Mode -> Maybe String -> Maybe Int -> Model
+init mode uid slide_number =
     let
         local_mode =
             case get_local "mode" of
@@ -40,7 +40,16 @@ init mode uid =
     , mode = local_mode
     , error = Nothing
     , sections = Array.empty
-    , section_active = init_section uid
+    , section_active =
+        case slide_number of
+            Just idx ->
+                if (idx - 1) > 0 then
+                    idx - 1
+                else
+                    0
+
+            Nothing ->
+                init_section uid
     , definition = Definition.default
     , design =
         { theme = init_design_theme
