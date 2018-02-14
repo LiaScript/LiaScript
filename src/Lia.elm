@@ -4,12 +4,13 @@ import Array
 import Html exposing (Html)
 import Json.Encode as JE
 import Lia.Effect.Model as Effect
+import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Model
 import Lia.Parser
 import Lia.Types exposing (Section, Sections)
 import Lia.Update exposing (Msg(..))
-import Lia.Utils exposing (load_js, toUnixNewline)
+import Lia.Utils exposing (load_js, set_title, toUnixNewline)
 import Lia.View
 
 
@@ -48,6 +49,15 @@ set_script model script =
                             title_sections
                                 |> List.map init_section
                                 |> Array.fromList
+
+                        title =
+                            sections
+                                |> Array.get 0
+                                |> Maybe.map (\s -> stringify s.title)
+                                |> Maybe.withDefault "Lia Script"
+                                |> String.trim
+                                |> (++) "Lia: "
+                                |> set_title
                     in
                     { model
                         | definition = definition

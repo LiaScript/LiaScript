@@ -9,6 +9,7 @@ module Lia.Utils
         , highlight
         , load_js
         , set_local
+        , set_title
         , stringToHtml
         , toUnixNewline
         )
@@ -78,3 +79,8 @@ set_local key value =
 toUnixNewline : String -> String
 toUnixNewline code =
     Native.Utils.toUnixNewline code
+
+
+set_title : String -> ()
+set_title title =
+    Native.Utils.set_title title

@@ -149,6 +149,10 @@ var _user$project$Native_Utils = (function () {
         }
     };
 
+    function set_title (title) {
+        document.title = title;
+    };
+
     return {
         highlight: F2(highlight),
         highlightAuto: highlightAuto,
@@ -159,6 +163,7 @@ var _user$project$Native_Utils = (function () {
         load_js: load_js,
         get_local: get_local,
         set_local: F2(set_local),
-        toUnixNewline: toUnixNewline
+        toUnixNewline: toUnixNewline,
+        set_title: set_title
     };
 })();
