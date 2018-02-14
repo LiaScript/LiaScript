@@ -18,7 +18,7 @@ port rx_log : (( String, JD.Value ) -> msg) -> Sub msg
 
 main : Program Never Model Msg
 main =
-    Navigation.program UrlChange
+    Navigation.program Url
         { init = init
         , view = view
         , update = update
@@ -52,11 +52,19 @@ init location =
             Debug.log "LOC" location
 
         url =
-            "www.web.de"
+            String.dropLeft 1 location.search
+
+        slide =
+            location.hash
+                |> String.dropLeft 1
+                |> String.toInt
 
         --Debug.log "ddddd" (Url.parsePath route location)
     in
-    ( Model url (Lia.init_slides (Just url)) Waiting "", getCourse url )
+    if url == "" then
+        ( Model "" (Lia.init_slides Nothing) Waiting "", Cmd.none )
+    else
+        ( Model url (Lia.init_slides (Just url)) Waiting "", getCourse url )
 
 
 
@@ -69,7 +77,7 @@ type Msg
     | RxLog ( String, JE.Value )
     | Update String
     | Load
-    | UrlChange Navigation.Location
+    | Url Navigation.Location
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
