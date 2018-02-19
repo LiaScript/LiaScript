@@ -1155,11 +1155,11 @@ minus notation is sent to responsivevoice to speak the text out loud. If you
 click on the ear button at the navigation panel, then this paragraph gets
 rendered at the place where it is defined.
 
-                               --{{3 <!-- Deutsch Female-->}}--
+                               --{{3 Deutsch Female}}--
 Markdown ist eine vereinfachte Auszeichnungssprache, die von John Gruber und
 Aaron Swartz entworfen und im Dezember 2004 mit Version 1.0.1 spezifiziert ...
 
-                               --{{4 <!-- Russian Female-->}}--
+                               --{{4 Russian Female}}--
 Первоначально создан в 2004 году Джоном Грубером (англ. John Gruber) и Аароном
 Шварцем. Многие идеи языка были позаимствованы из существующих соглашений ...
 ```
@@ -1173,16 +1173,16 @@ rendered at the place where it is defined.
                                 --{{2}}--
 The narrator voice is defined within the initial comment, but you can reset this
 for the entire section, by adding such a definition directly after the title
-tag, or you can add a comment directly after the comment identifier to let your
-script talk in different languages. Proceed and listen ;-)
+tag, or you can add a voice directly after the comment number to let your script
+talk in different languages. Proceed and listen ;-)
 
-                                --{{3 <!-- Deutsch Female -->}}--
+                                --{{3 Deutsch Female}}--
 Markdown ist eine vereinfachte Auszeichnungssprache, die von John Gruber und
 Aaron Swartz entworfen und im Dezember 2004 mit Version 1.0.1 spezifiziert
 wurde. Ein Ziel von Markdown ist, dass schon die Ausgangsform ohne weitere
 Konvertierung leicht lesbar ist.
 
-                               --{{4 <!-- Russian Female -->}}--
+                               --{{4 Russian Female}}--
 Первоначально создан в 2004 году Джоном Грубером (англ. John Gruber) и Аароном
 Шварцем. Многие идеи языка были позаимствованы из существующих соглашений по
 разметке текста в электронных письмах. Реализации языка Markdown преобразуют

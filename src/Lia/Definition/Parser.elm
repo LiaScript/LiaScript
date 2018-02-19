@@ -3,18 +3,19 @@ module Lia.Definition.Parser exposing (parse)
 import Combine exposing (..)
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Inline.Parser exposing (comment, comments, whitelines)
+import Lia.PState exposing (PState)
 
 
-parse : Parser Definition ()
+parse : Parser PState ()
 parse =
     lazy <|
         \() ->
-            definition
+            maybe definition
                 *> many (choice [ whitelines, comments ])
                 |> skip
 
 
-definition : Parser Definition ()
+definition : Parser PState ()
 definition =
     lazy <|
         \() ->
@@ -22,6 +23,8 @@ definition =
                 list =
                     choice
                         [ string "author:" *> (ending >>= author)
+                        , string "base:" *> (ending >>= base)
+                        , string "comment:" *> (ending >>= comment_)
                         , string "date:" *> (ending >>= date)
                         , string "email:" *> (ending >>= email)
                         , string "language:" *> (ending >>= language)
@@ -40,29 +43,57 @@ ending =
     String.trim <$> regex "[^\\n]+"
 
 
+author : String -> Parser PState ()
 author x =
-    modifyState (\s -> { s | author = x })
+    set (\def -> { def | author = x })
 
 
+base : String -> Parser PState ()
+base x =
+    set (\def -> { def | base = x })
+
+
+comment_ : String -> Parser PState ()
+comment_ x =
+    set (\def -> { def | comment = x })
+
+
+date : String -> Parser PState ()
 date x =
-    modifyState (\s -> { s | date = x })
+    set (\def -> { def | date = x })
 
 
+email : String -> Parser PState ()
 email x =
-    modifyState (\s -> { s | email = x })
+    set (\def -> { def | email = x })
 
 
+language : String -> Parser PState ()
 language x =
-    modifyState (\s -> { s | language = x })
+    set (\def -> { def | language = x })
 
 
+narrator : String -> Parser PState ()
 narrator x =
-    modifyState (\s -> { s | narrator = x })
+    set (\def -> { def | narrator = x })
 
 
+script : String -> Parser PState ()
 script x =
-    modifyState (\s -> { s | scripts = x :: s.scripts })
+    set (\def -> { def | scripts = x :: def.scripts })
 
 
+version : String -> Parser PState ()
 version x =
-    modifyState (\s -> { s | version = x })
+    set (\def -> { def | version = x })
+
+
+
+--set : (Definition -> Definition) -> PState -> PState
+--set fct state =
+--        { state | defines = fct state.defines }
+
+
+set : (Definition -> Definition) -> Parser PState ()
+set fct =
+    modifyState (\s -> { s | defines = fct s.defines })

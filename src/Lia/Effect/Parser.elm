@@ -77,9 +77,8 @@ comment : Parser PState Inlines -> Parser PState ( Int, Int )
 comment paragraph =
     ((\i n p -> ( i, n, p ))
         <$> (regex "[ \\t]*--{{" *> effect_number)
-        <*> (maybe (regex "[ \\t]*<!--" *> regex "[A-Za-z0-9 ]+" <* regex "-->[ \\t]*")
-                <* regex "}}--[ \\t]*[\\n]+"
-            )
+        <*> maybe (regex "[ \\t]+" *> regex "[A-Za-z0-9 ]+")
+        <* regex "}}--[ \\t]*[\\n]+"
         <*> paragraph
         <* reset_effect_number
     )
@@ -92,15 +91,9 @@ add_comment ( idx, temp_narrator, par ) =
         mod s =
             let
                 narrator =
-                    case ( temp_narrator, s.defines.local ) of
-                        ( Just tmp, _ ) ->
-                            String.trim tmp
-
-                        ( Nothing, Just local ) ->
-                            local.narrator
-
-                        _ ->
-                            s.defines.global.narrator
+                    temp_narrator
+                        |> Maybe.map String.trim
+                        |> Maybe.withDefault s.defines.narrator
             in
             { s
                 | effect_model =

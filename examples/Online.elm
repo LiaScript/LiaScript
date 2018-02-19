@@ -16,9 +16,9 @@ port tx_log : ( String, JE.Value ) -> Cmd msg
 port rx_log : (( String, JD.Value ) -> msg) -> Sub msg
 
 
-main : Program Never Model Msg
+main : Program { url : String, script : String } Model Msg
 main =
-    Navigation.program UrlChange
+    Navigation.programWithFlags UrlChange
         { init = init
         , view = view
         , update = update
@@ -46,8 +46,8 @@ type alias Model =
     }
 
 
-init : Navigation.Location -> ( Model, Cmd Msg )
-init location =
+init : { url : String, script : String } -> Navigation.Location -> ( Model, Cmd Msg )
+init flags location =
     let
         url =
             String.dropLeft 1 location.search
@@ -58,7 +58,15 @@ init location =
         origin =
             location.origin
     in
-    if url == "" then
+    if flags.script /= "" then
+        let
+            ( lia, cmd, _ ) =
+                flags.script
+                    |> Lia.set_script (Lia.init_presentation Nothing Nothing)
+                    |> Lia.init
+        in
+        ( Model "" "" lia LoadOk "", Cmd.map LIA cmd )
+    else if url == "" then
         ( Model "https://raw.githubusercontent.com/liaScript/liascript.github.com/master/README.md"
             origin
             (Lia.init_presentation Nothing Nothing)

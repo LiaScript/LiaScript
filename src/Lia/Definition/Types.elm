@@ -10,12 +10,13 @@ type alias Definition =
     , version : String
     , comment : String
     , scripts : List String
+    , base : String
     }
 
 
 default : Definition
 default =
-    { author = "unknown"
+    { author = "Unknown"
     , date = ""
     , email = ""
     , language = "en_US"
@@ -23,4 +24,5 @@ default =
     , version = ""
     , comment = ""
     , scripts = []
+    , base = ""
     }

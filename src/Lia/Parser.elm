@@ -16,9 +16,9 @@ import Lia.Survey.Types as Survey
 
 parse_defintion : String -> Result String ( String, Definition )
 parse_defintion code =
-    case Combine.runParser Lia.Definition.Parser.parse Lia.Definition.Types.default code of
-        Ok ( definition, data, _ ) ->
-            Ok ( data.input, definition )
+    case Combine.runParser Lia.Definition.Parser.parse (Lia.PState.init Lia.Definition.Types.default) code of
+        Ok ( state, data, _ ) ->
+            Ok ( data.input, state.defines )
 
         Err ( _, stream, ms ) ->
             Err (formatError ms stream)
@@ -26,7 +26,7 @@ parse_defintion code =
 
 parse_titles : Definition -> String -> Result String (List ( Int, Inlines, String ))
 parse_titles defines code =
-    case Combine.runParser Preprocessor.run (Lia.PState.init defines Nothing) code of
+    case Combine.runParser Preprocessor.run (Lia.PState.init defines) code of
         Ok ( _, _, rslt ) ->
             Ok rslt
 
@@ -35,17 +35,8 @@ parse_titles defines code =
 
 
 parse_section : Definition -> String -> Result String ( List Markdown, Code.Vector, Quiz.Vector, Survey.Vector, Effect.Model )
-parse_section global str =
-    let
-        ( code, local ) =
-            case parse_defintion str of
-                Ok ( c, defs ) ->
-                    ( c, Just defs )
-
-                Err m ->
-                    ( str, Nothing )
-    in
-    case Combine.runParser Markdown.run (Lia.PState.init global local) code of
+parse_section global code =
+    case Combine.runParser (Lia.Definition.Parser.parse *> Markdown.run) (Lia.PState.init global) code of
         Ok ( state, _, es ) ->
             Ok
                 ( es

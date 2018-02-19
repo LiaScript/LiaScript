@@ -10,7 +10,8 @@ import Lia.Survey.Types as Survey
 
 
 type alias PState =
-    { identation : List String
+    { base_url : String
+    , identation : List String
     , identation_skip : Bool
     , code_temp : ( String, String ) -- Lang Code
     , code_vector : Code.Vector
@@ -18,13 +19,14 @@ type alias PState =
     , survey_vector : Survey.Vector
     , effect_model : Effect.Model
     , effect_number : List Int
-    , defines : { global : Definition, local : Maybe Definition }
+    , defines : Definition
     }
 
 
-init : Definition -> Maybe Definition -> PState
-init global local =
-    { identation = []
+init : Definition -> PState
+init global =
+    { base_url = ""
+    , identation = []
     , identation_skip = False
     , code_temp = ( "", "" )
     , code_vector = Array.empty
@@ -32,7 +34,7 @@ init global local =
     , survey_vector = Array.empty
     , effect_model = Effect.init
     , effect_number = [ 0 ]
-    , defines = { global = global, local = local }
+    , defines = global
     }
 
 
