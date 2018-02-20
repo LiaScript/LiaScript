@@ -62,20 +62,25 @@ init flags location =
         let
             ( lia, cmd, _ ) =
                 flags.script
-                    |> Lia.set_script (Lia.init_presentation Nothing Nothing)
+                    |> Lia.set_script (Lia.init_presentation (get_base url) Nothing)
                     |> Lia.init
         in
         ( Model "" "" lia LoadOk "", Cmd.map LIA cmd )
     else if url == "" then
         ( Model "https://raw.githubusercontent.com/liaScript/liascript.github.com/master/README.md"
             origin
-            (Lia.init_presentation Nothing Nothing)
+            (Lia.init_presentation "" Nothing)
             Waiting
             ""
         , Cmd.none
         )
     else
-        ( Model url origin (Lia.init_presentation (Just url) slide) Loading "", getCourse url )
+        ( Model url origin (Lia.init_presentation (get_base url) slide) Loading "", getCourse url )
+
+
+get_base : String -> String
+get_base url =
+    url |> String.split "/" |> List.reverse |> List.drop 1 |> (::) "" |> List.reverse |> String.join "/"
 
 
 get_hash : Navigation.Location -> Maybe Int

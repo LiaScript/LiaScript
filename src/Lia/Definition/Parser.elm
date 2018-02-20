@@ -52,6 +52,20 @@ ending =
     String.trim <$> regex "[^\\n]+"
 
 
+base : String -> Parser PState ()
+base x =
+    set
+        (\def ->
+            { def
+                | base =
+                    if String.startsWith "http" x then
+                        x
+                    else
+                        def.base ++ x
+            }
+        )
+
+
 set : (Definition -> Definition) -> Parser PState ()
 set fct =
     modifyState (\s -> { s | defines = fct s.defines })

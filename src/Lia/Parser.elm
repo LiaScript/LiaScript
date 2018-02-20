@@ -14,9 +14,9 @@ import Lia.Quiz.Types as Quiz
 import Lia.Survey.Types as Survey
 
 
-parse_defintion : String -> Result String ( String, Definition )
-parse_defintion code =
-    case Combine.runParser Lia.Definition.Parser.parse (Lia.PState.init Lia.Definition.Types.default) code of
+parse_defintion : String -> String -> Result String ( String, Definition )
+parse_defintion base code =
+    case Combine.runParser Lia.Definition.Parser.parse (Lia.PState.init <| Lia.Definition.Types.default base) code of
         Ok ( state, data, _ ) ->
             Ok ( data.input, state.defines )
 

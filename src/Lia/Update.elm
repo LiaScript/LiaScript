@@ -80,12 +80,10 @@ update msg model =
             if (-1 < idx) && (idx < Array.length model.sections) then
                 let
                     unused =
-                        case model.url of
-                            Just url ->
-                                set_local url idx
-
-                            Nothing ->
-                                0
+                        if model.url == "" then
+                            0
+                        else
+                            set_local model.url idx
                 in
                 update InitSection (generate { model | section_active = idx })
             else

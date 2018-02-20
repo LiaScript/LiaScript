@@ -14,8 +14,8 @@ type alias Definition =
     }
 
 
-default : Definition
-default =
+default : String -> Definition
+default base =
     { author = "Unknown"
     , date = ""
     , email = ""
@@ -24,5 +24,5 @@ default =
     , version = ""
     , comment = ""
     , scripts = []
-    , base = ""
+    , base = base
     }

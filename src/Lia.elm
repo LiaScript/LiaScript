@@ -33,7 +33,7 @@ load_slide model idx =
 
 set_script : Model -> String -> Model
 set_script model script =
-    case script |> toUnixNewline |> Lia.Parser.parse_defintion of
+    case script |> toUnixNewline |> Lia.Parser.parse_defintion model.url of
         Ok ( code, definition ) ->
             let
                 x =
@@ -91,17 +91,17 @@ init_section ( tags, title, code ) =
     }
 
 
-init_textbook : Maybe String -> Model
+init_textbook : String -> Model
 init_textbook url =
     Lia.Model.init Lia.Types.Textbook url Nothing
 
 
-init_slides : Maybe String -> Maybe Int -> Model
+init_slides : String -> Maybe Int -> Model
 init_slides url slide_number =
     Lia.Model.init Lia.Types.Slides url slide_number
 
 
-init_presentation : Maybe String -> Maybe Int -> Model
+init_presentation : String -> Maybe Int -> Model
 init_presentation url slide_number =
     Lia.Model.init Lia.Types.Presentation url slide_number
 
