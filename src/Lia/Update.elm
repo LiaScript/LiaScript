@@ -80,9 +80,9 @@ update msg model =
             if (-1 < idx) && (idx < Array.length model.sections) then
                 let
                     unused =
-                        case model.uid of
-                            Just uid ->
-                                set_local uid idx
+                        case model.url of
+                            Just url ->
+                                set_local url idx
 
                             Nothing ->
                                 0

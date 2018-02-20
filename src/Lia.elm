@@ -92,18 +92,18 @@ init_section ( tags, title, code ) =
 
 
 init_textbook : Maybe String -> Model
-init_textbook uid =
-    Lia.Model.init Lia.Types.Textbook uid Nothing
+init_textbook url =
+    Lia.Model.init Lia.Types.Textbook url Nothing
 
 
 init_slides : Maybe String -> Maybe Int -> Model
-init_slides uid slide_number =
-    Lia.Model.init Lia.Types.Slides uid slide_number
+init_slides url slide_number =
+    Lia.Model.init Lia.Types.Slides url slide_number
 
 
 init_presentation : Maybe String -> Maybe Int -> Model
-init_presentation uid slide_number =
-    Lia.Model.init Lia.Types.Presentation uid slide_number
+init_presentation url slide_number =
+    Lia.Model.init Lia.Types.Presentation url slide_number
 
 
 view : Model -> Html Msg

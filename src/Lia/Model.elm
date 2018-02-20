@@ -9,7 +9,7 @@ import Lia.Utils exposing (get_local, load_js, set_local)
 
 
 type alias Model =
-    { uid : Maybe String
+    { url : Maybe String
     , mode : Mode
     , error : Maybe String
     , sections : Sections
@@ -23,7 +23,7 @@ type alias Model =
 
 
 init : Mode -> Maybe String -> Maybe Int -> Model
-init mode uid slide_number =
+init mode url slide_number =
     let
         local_mode =
             case get_local "mode" of
@@ -36,7 +36,7 @@ init mode uid slide_number =
                 _ ->
                     mode
     in
-    { uid = uid
+    { url = url
     , mode = local_mode
     , error = Nothing
     , sections = Array.empty
@@ -49,7 +49,7 @@ init mode uid slide_number =
                     0
 
             Nothing ->
-                init_section uid
+                init_section url
     , definition = Definition.default
     , design =
         { theme = init_design_theme
