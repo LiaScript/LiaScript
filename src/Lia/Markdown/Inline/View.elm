@@ -4,7 +4,7 @@ import Dict
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Lia.Effect.View as Effect
-import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..), Url(..))
+import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..))
 import Lia.Utils
 
 
@@ -102,40 +102,21 @@ reference : Reference -> Annotation -> Html msg
 reference ref attr =
     case ref of
         Link alt_ url_ ->
-            view_link alt_ url_ attr
+            view_url alt_ url_ attr
 
         Image alt_ url_ ->
-            Html.img (Attr.src (get_url url_) :: annotation attr "lia-image") [ Html.text alt_ ]
+            Html.img (Attr.src url_ :: annotation attr "lia-image") [ Html.text alt_ ]
 
         Movie alt_ url_ ->
-            Html.iframe (Attr.src (get_url url_) :: annotation attr "lia-movie") [ Html.text alt_ ]
+            Html.iframe (Attr.src url_ :: annotation attr "lia-movie") [ Html.text alt_ ]
+
+        Mail alt_ url_ ->
+            view_url alt_ ("mailto:" ++ url_) attr
 
 
-get_url : Url -> String
-get_url url =
-    case url of
-        Full str ->
-            str
-
-        Mail str ->
-            str
-
-        Partial str ->
-            str
-
-
-view_link : String -> Url -> Annotation -> Html msg
-view_link alt_ url_ attr =
-    (case url_ of
-        Full str ->
-            [ Attr.href str, Attr.target "_blank" ]
-
-        Mail str ->
-            [ Attr.href ("mailto:" ++ str) ]
-
-        Partial str ->
-            [ Attr.href str, Attr.target "_blank" ]
-    )
+view_url : String -> String -> Annotation -> Html msg
+view_url alt_ url_ attr =
+    [ Attr.href url_, Attr.target "_blank" ]
         |> List.append (annotation attr "lia-link")
         |> Html.a
         |> (\a -> a [ Html.text alt_ ])

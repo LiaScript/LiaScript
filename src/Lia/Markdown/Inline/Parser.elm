@@ -207,32 +207,22 @@ formula =
     choice [ p2, p1 ]
 
 
-url_full : Parser s String
-url_full =
+url : Parser s String
+url =
     regex "[a-zA-Z]+://(/)?[a-zA-Z0-9\\.\\-\\_]+\\.([a-z\\.]{2,6})[^ \\)\\t\\n]*"
 
 
-url_mail : Parser s String
-url_mail =
+email : Parser s String
+email =
     maybe (string "mailto:") *> regex "[a-zA-Z0-9_.\\-]+@[a-zA-Z0-9_.\\-]+"
-
-
-url : Parser s Url
-url =
-    lazy <|
-        \() ->
-            choice
-                [ Mail <$> url_mail
-                , Full <$> url_full
-                ]
 
 
 inline_url : Parser s Reference
 inline_url =
-    (\u -> Link u (Full u)) <$> (url_full <|> url_mail)
+    (\u -> Link u u) <$> url
 
 
-reference : Parser s (Annotation -> Inline)
+reference : Parser PState (Annotation -> Inline)
 reference =
     lazy <|
         \() ->
@@ -241,7 +231,10 @@ reference =
                     brackets (regex "[^\\]\n]*")
 
                 url_ =
-                    parens (url <|> (Partial <$> regex "[^\\)\n]*"))
+                    parens (url <|> ((++) <$> withState (\s -> succeed s.defines.base) <*> regex "[^\\)\n]*"))
+
+                mail_ =
+                    Mail <$> info <*> parens email
 
                 link =
                     Link <$> info <*> url_
@@ -256,7 +249,7 @@ reference =
                         <$> (string "!!" *> info)
                         <*> url_
             in
-            Ref <$> choice [ movie, image, link ]
+            Ref <$> choice [ movie, image, mail_, link ]
 
 
 arrows : Parser s (Annotation -> Inline)

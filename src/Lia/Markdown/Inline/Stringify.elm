@@ -64,3 +64,6 @@ ref2string ref =
 
         Link alt _ ->
             alt
+
+        Mail alt _ ->
+            alt

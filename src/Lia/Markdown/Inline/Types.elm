@@ -5,7 +5,6 @@ module Lia.Markdown.Inline.Types
         , Inlines
         , MultInlines
         , Reference(..)
-        , Url(..)
         )
 
 import Dict exposing (Dict)
@@ -39,13 +38,8 @@ type Inline
     | Container Inlines Annotation
 
 
-type Url
-    = Mail String
-    | Full String
-    | Partial String
-
-
 type Reference
-    = Link String Url
-    | Image String Url
-    | Movie String Url
+    = Link String String
+    | Image String String
+    | Movie String String
+    | Mail String String
