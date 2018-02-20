@@ -108,7 +108,10 @@ reference ref attr =
             Html.img (Attr.src url_ :: annotation attr "lia-image") [ Html.text alt_ ]
 
         Movie alt_ url_ ->
-            Html.iframe (Attr.src url_ :: annotation attr "lia-movie") [ Html.text alt_ ]
+            if url_ |> String.toLower |> String.contains "https://www.youtube" then
+                Html.iframe (Attr.src url_ :: annotation attr "lia-movie") [ Html.text alt_ ]
+            else
+                Html.video (Attr.controls True :: annotation attr "lia-movie") [ Html.source [ Attr.src url_ ] [], Html.text alt_ ]
 
         Mail alt_ url_ ->
             view_url alt_ ("mailto:" ++ url_) attr
