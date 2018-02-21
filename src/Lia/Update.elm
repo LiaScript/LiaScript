@@ -10,6 +10,7 @@ import Lia.Model exposing (..)
 import Lia.Parser exposing (parse_section)
 import Lia.Types exposing (Mode(..), Section, Sections)
 import Lia.Utils exposing (set_local)
+import Navigation
 
 
 type Msg
@@ -24,6 +25,7 @@ type Msg
     | UpdateMarkdown Markdown.Msg
     | SwitchMode
     | ToggleSound
+    | Location String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, Maybe ( String, JE.Value ) )
@@ -158,6 +160,9 @@ update msg model =
                     Markdown.initEffect False (not model.sound) sec
             in
             ( { model | sound = set_local "sound" (not model.sound) }, Cmd.map UpdateMarkdown cmd_, log_ )
+
+        ( Location url, _ ) ->
+            ( model, Navigation.load url, Nothing )
 
         _ ->
             ( model, Cmd.none, Nothing )

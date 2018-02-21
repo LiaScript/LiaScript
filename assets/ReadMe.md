@@ -48,7 +48,7 @@ Click on the (ear) button at the navigation bar to switch between spoken and
 plain text mode format. And use the arrows-buttons at the top for navigating.
 
 
-*Lia-Script* <!-- class = "animated infinite bounce" style = "color: red;" --> is an extended Markdown format for writing interactive online
+*Lia-Script* <!-- class = "animated infinite bounce" style = "color: red;" onclick = "alert('DDDDD');" --> is an extended Markdown format for writing interactive online
 courses. Imagine all schoolbooks, technical or scientific literature could
 become open-source projects and more interactive ... with collaborating teachers
 and students ...

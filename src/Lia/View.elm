@@ -7,6 +7,7 @@ import Char
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
+import Lia.Definition.Types exposing (get_translations)
 import Lia.Effect.Model exposing (current_paragraphs)
 import Lia.Effect.View exposing (responsive, state)
 import Lia.Helper exposing (ID)
@@ -109,7 +110,7 @@ view_article model =
                 [ section
                     |> .effect_model
                     |> state
-                    |> view_nav model.section_active model.mode model.design
+                    |> view_nav model.section_active model.mode model.design model.url (get_translations model.definition)
                 , Html.map UpdateMarkdown <| Markdown.view model.mode section
                 , view_footer model.sound model.mode section.effect_model
                 ]
@@ -141,8 +142,8 @@ navButton str msg =
         [ Html.text str ]
 
 
-view_nav : ID -> Mode -> Design -> String -> Html Msg
-view_nav section_active mode design state =
+view_nav : ID -> Mode -> Design -> String -> List ( String, String ) -> String -> Html Msg
+view_nav section_active mode design base translations state =
     Html.nav [ Attr.class "lia-toolbar" ]
         [ Html.button
             [ onClick ToggleLOC
@@ -181,6 +182,7 @@ view_nav section_active mode design state =
         , Html.span [ Attr.class "lia-spacer" ] []
         , view_design_light design.light
         , view_design_theme design.theme
+        , view_translation base translations
         ]
 
 
@@ -214,3 +216,19 @@ view_design_light light =
           else
             Html.text "star_border"
         ]
+
+
+view_translation : String -> List ( String, String ) -> Html Msg
+view_translation base list =
+    if list == [] then
+        Html.text ""
+    else
+        list
+            |> (::) ( "Lang", "" )
+            |> List.map
+                (\( lang, url ) ->
+                    Html.option
+                        [ Attr.value (base ++ "?" ++ url) ]
+                        [ Html.text lang ]
+                )
+            |> Html.select [ onInput Location, Attr.class "lia-right lia-select" ]
