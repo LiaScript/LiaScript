@@ -135,10 +135,6 @@ view_footer sound mode effects =
             Html.text ""
 
 
-
---|> Html.footer
-
-
 navButton : String -> msg -> Html msg
 navButton str msg =
     Html.button [ Attr.href "#33", onClick msg, Attr.class "lia-btn lia-slide-control lia-left" ]

@@ -69,10 +69,10 @@ solution =
     in
     maybe
         (rslt
-            <$> (regex "( *)\\[\\[\\[[\\n]+"
+            <$> (regex "[\\t ]*[=]{3,}[\\n]+"
                     *> withState (\s -> succeed s.effect_model.effects)
                 )
-            <*> manyTill (blocks <* regex "[ \\n\\t]*") (regex "\\]\\]\\]")
+            <*> manyTill (blocks <* regex "[ \\n\\t]*") (regex "[ \\t]*[=]{3,}")
             <*> withState (\s -> succeed s.effect_model.effects)
         )
 

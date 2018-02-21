@@ -1,7 +1,7 @@
 module Lia.Definition.Parser exposing (parse)
 
 import Combine exposing (..)
-import Lia.Definition.Types exposing (Definition)
+import Lia.Definition.Types exposing (Definition, add_translation)
 import Lia.Markdown.Inline.Parser exposing (comment, comments, whitelines)
 import Lia.PState exposing (PState)
 
@@ -38,6 +38,8 @@ definition =
                             *> (ending >>= (\x -> set (\def -> { def | narrator = x })))
                         , string "script:"
                             *> (ending >>= (\x -> set (\def -> { def | scripts = x :: def.scripts })))
+                        , string "translation:"
+                            *> (ending >>= (\x -> set (add_translation x)))
                         , string "version:"
                             *> (ending >>= (\x -> set (\def -> { def | author = x })))
                         ]
