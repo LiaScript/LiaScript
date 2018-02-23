@@ -25,7 +25,7 @@ view : Model -> Html Msg
 view model =
     Html.div [ design model.design ]
         [ if model.loc then
-            view_aside model.index_model model.section_active model.sections
+            view_aside model
           else
             Html.text ""
         , view_article model
@@ -42,14 +42,14 @@ design s =
         )
 
 
-view_aside : Lia.Index.Model.Model -> ID -> Sections -> Html Msg
-view_aside index active sections =
+view_aside : Model -> Html Msg
+view_aside model =
     Html.aside
         [ Attr.class "lia-toc" ]
-        [ index
+        [ model.index_model
             |> Lia.Index.View.view
             |> Html.map UpdateIndex
-        , sections
+        , model.sections
             |> Array.map
                 (\sec ->
                     ( sec.title
@@ -65,12 +65,12 @@ view_aside index active sections =
                 )
             |> Array.toIndexedList
             |> (\titles ->
-                    if [] == index.index then
+                    if [] == model.index_model.index then
                         titles
                     else
-                        List.filter (\( idx, _ ) -> List.member idx index.index) titles
+                        List.filter (\( idx, _ ) -> List.member idx model.index_model.index) titles
                )
-            |> view_loc active
+            |> view_loc model.section_active
         ]
 
 

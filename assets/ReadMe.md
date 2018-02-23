@@ -1,35 +1,23 @@
 <!--
 
 author:   Andre Dietrich
-
 email:    dietrich@ivs.cs.uni-magdeburg.de
-
 version:  1.0.0
-
 language: en_US
-
 narrator: US English Female
 
-
 script:   https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.js
-
 script:   https://cdn.rawgit.com/davidedc/Algebrite/master/dist/algebrite.bundle-for-browser.js
-
 script:   https://felixhao28.github.io/JSCPP/dist/JSCPP.es5.min.js
 
-
 script:   https://interactivepython.org/runestone/static/thinkcspy/_static/skulpt.min.js
-
 script:   https://interactivepython.org/runestone/static/thinkcspy/_static/skulpt-stdlib.js
 
-
 script:   https://curiosity-driven.github.io/prolog-interpreter/parser.js
-
 script:   https://curiosity-driven.github.io/prolog-interpreter/interpreter.js
 
 translation: French   translation/French.md
 translation: Russian  translation/Russian.md
-
 
 -->
 
@@ -554,7 +542,7 @@ new Chartist.Line('#chart2', {
 });
 </script>
 
-                                --{{1}}--
+                                --{{2}}--
 Note, you have to include all required JavaScirpt-resourses in the initial
 comment after the script definition. And by combining this feature with
 LiaScript effects, you can build even more sophisticated courses.
