@@ -20,6 +20,7 @@ type alias Model =
     , index_model : Index.Model
     , sound : Bool
     , show_settings : Bool
+    , javascript : List String
     }
 
 
@@ -60,6 +61,7 @@ init mode url slide_number =
     , index_model = Index.init
     , sound = init_sound
     , show_settings = False
+    , javascript = []
     }
 
 
@@ -95,3 +97,18 @@ init_sound =
         |> get_local
         |> Maybe.andThen (\b -> b /= "false" |> Just)
         |> Maybe.withDefault True
+
+
+load_javascript : List String -> List String -> List String
+load_javascript old new =
+    let
+        member x =
+            not (List.member x old)
+
+        to_load =
+            List.filter member new
+
+        x =
+            List.map load_js to_load
+    in
+    List.append old to_load

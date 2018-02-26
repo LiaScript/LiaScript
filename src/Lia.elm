@@ -10,7 +10,7 @@ import Lia.Model
 import Lia.Parser
 import Lia.Types exposing (Section, Sections)
 import Lia.Update exposing (Msg(..))
-import Lia.Utils exposing (load_js, set_title, toUnixNewline)
+import Lia.Utils exposing (set_title, toUnixNewline)
 import Lia.View
 
 
@@ -35,10 +35,6 @@ set_script : Model -> String -> Model
 set_script model script =
     case script |> toUnixNewline |> Lia.Parser.parse_defintion model.url of
         Ok ( code, definition ) ->
-            let
-                x =
-                    List.map load_js definition.scripts
-            in
             case Lia.Parser.parse_titles definition code of
                 Ok title_sections ->
                     let
@@ -64,6 +60,8 @@ set_script model script =
                                 model.section_active
                             else
                                 0
+                        , javascript =
+                            Lia.Model.load_javascript model.javascript definition.scripts
                     }
 
                 Err msg ->

@@ -59,7 +59,9 @@ var _user$project$Native_Utils = (function () {
 
     function toUnixNewline(code)
     {
-        if (code.search("\r") == -1)
+        var pos = code.search("\n");
+
+        if (code[pos+1] != "\r")
             return code
         else
             return code.replace(/\r/g, "");

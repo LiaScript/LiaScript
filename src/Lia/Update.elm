@@ -182,25 +182,36 @@ generate : Model -> Model
 generate model =
     case get_active_section model of
         Just sec ->
-            set_active_section model <|
-                case Lia.Parser.parse_section model.definition sec.code of
-                    Ok ( blocks, codes, quizzes, surveys, effects, defines ) ->
-                        { sec
-                            | body = blocks
-                            , error = Nothing
-                            , visited = True
-                            , code_vector = if_update sec.code_vector codes
-                            , quiz_vector = if_update sec.quiz_vector quizzes
-                            , survey_vector = if_update sec.survey_vector surveys
-                            , effect_model = effects
-                            , definition = defines
-                        }
+            let
+                section =
+                    case Lia.Parser.parse_section model.definition sec.code of
+                        Ok ( blocks, codes, quizzes, surveys, effects, defines ) ->
+                            { sec
+                                | body = blocks
+                                , error = Nothing
+                                , visited = True
+                                , code_vector = if_update sec.code_vector codes
+                                , quiz_vector = if_update sec.quiz_vector quizzes
+                                , survey_vector = if_update sec.survey_vector surveys
+                                , effect_model = effects
+                                , definition = defines
+                            }
 
-                    Err msg ->
-                        { sec
-                            | body = []
-                            , error = Just msg
-                        }
+                        Err msg ->
+                            { sec
+                                | body = []
+                                , error = Just msg
+                            }
+            in
+            set_active_section
+                { model
+                    | javascript =
+                        section.definition
+                            |> Maybe.map .scripts
+                            |> Maybe.map (load_javascript model.javascript)
+                            |> Maybe.withDefault model.javascript
+                }
+                section
 
         Nothing ->
             model
