@@ -315,7 +315,7 @@ strings =
         \() ->
             let
                 base =
-                    Chars <$> regex "[^#*_~:;`!\\^\\[|{}\\\\\\n\\-<>=$ ]+" <?> "base string"
+                    Chars <$> regex "[^*_~:;`!\\^\\[|{}\\\\\\n\\-<>=$ ]+" <?> "base string"
 
                 escape =
                     Chars <$> (string "\\" *> regex "[\\^#*_~`\\\\${}\\[\\]|]") <?> "escape string"
@@ -339,7 +339,7 @@ strings =
                     Chars <$> regex "[~:_;\\-<>=${} ]"
 
                 base2 =
-                    Chars <$> regex "[^#\\n|*]+" <?> "base string"
+                    Chars <$> regex "[^\\n|*]+" <?> "base string"
             in
             choice
                 [ Ref <$> inline_url
