@@ -3,14 +3,14 @@ module Lia.Definition.Parser exposing (parse)
 import Combine exposing (..)
 import Lia.Definition.Types exposing (Definition, add_translation)
 import Lia.Markdown.Inline.Parser exposing (comment, comments, whitelines)
-import Lia.PState exposing (PState)
+import Lia.PState exposing (PState, ident_skip, identation, identation_append, identation_pop)
 
 
 parse : Parser PState ()
 parse =
     lazy <|
         \() ->
-            maybe definition
+            maybe (definition *> modifyState (\s -> { s | defines_updated = True }))
                 *> many (choice [ whitelines, comments ])
                 |> skip
 
@@ -27,7 +27,7 @@ definition =
                         , string "base:"
                             *> (ending >>= (\x -> set (\def -> { def | base = x })))
                         , string "comment:"
-                            *> (ending >>= (\x -> set (\def -> { def | comment = x })))
+                            *> (ending >>= (\x -> set (\def -> { def | comment = x |> String.split "\n" |> String.join " " })))
                         , string "date:"
                             *> (ending >>= (\x -> set (\def -> { def | date = x })))
                         , string "email:"
@@ -37,21 +37,26 @@ definition =
                         , string "narrator:"
                             *> (ending >>= (\x -> set (\def -> { def | narrator = x })))
                         , string "script:"
-                            *> (ending >>= (\x -> set (\def -> { def | scripts = x :: def.scripts })))
+                            *> (ending >>= (\x -> set (\def -> { def | scripts = List.append def.scripts (String.split "\n" x) })))
                         , string "translation:"
                             *> (ending >>= (\x -> set (add_translation x)))
                         , string "version:"
-                            *> (ending >>= (\x -> set (\def -> { def | author = x })))
+                            *> (ending >>= (\x -> set (\def -> { def | version = x })))
                         ]
             in
-            (whitelines *> list <* whitelines)
+            (many1 (whitelines *> list) <* whitelines)
                 |> comment
                 |> skip
 
 
-ending : Parser s String
+ending : Parser PState String
 ending =
-    String.trim <$> regex "[^\\n]+"
+    (\list -> list |> List.map String.trimLeft |> String.concat |> String.trimRight)
+        <$> (identation_append "  "
+                *> ident_skip
+                *> many1 (identation *> regex ".+\\n")
+                <* identation_pop
+            )
 
 
 base : String -> Parser PState ()

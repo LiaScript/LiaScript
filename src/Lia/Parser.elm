@@ -34,7 +34,7 @@ parse_titles defines code =
             Err (formatError ms stream)
 
 
-parse_section : Definition -> String -> Result String ( List Markdown, Code.Vector, Quiz.Vector, Survey.Vector, Effect.Model )
+parse_section : Definition -> String -> Result String ( List Markdown, Code.Vector, Quiz.Vector, Survey.Vector, Effect.Model, Maybe Definition )
 parse_section global code =
     case Combine.runParser (Lia.Definition.Parser.parse *> Markdown.run) (Lia.PState.init global) code of
         Ok ( state, _, es ) ->
@@ -44,6 +44,10 @@ parse_section global code =
                 , state.quiz_vector
                 , state.survey_vector
                 , state.effect_model
+                , if state.defines_updated then
+                    Just state.defines
+                  else
+                    Nothing
                 )
 
         Err ( _, stream, ms ) ->

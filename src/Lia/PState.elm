@@ -19,6 +19,7 @@ type alias PState =
     , effect_model : Effect.Model
     , effect_number : List Int
     , defines : Definition
+    , defines_updated : Bool
     }
 
 
@@ -33,6 +34,7 @@ init global =
     , effect_model = Effect.init
     , effect_number = [ 0 ]
     , defines = global
+    , defines_updated = False
     }
 
 

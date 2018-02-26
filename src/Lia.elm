@@ -88,6 +88,7 @@ init_section ( tags, title, code ) =
     , quiz_vector = Array.empty
     , survey_vector = Array.empty
     , effect_model = Effect.init
+    , definition = Nothing
     }
 
 

@@ -2,6 +2,7 @@ module Lia.Types exposing (Design, Mode(..), Section, Sections)
 
 import Array exposing (Array)
 import Lia.Code.Types as Code
+import Lia.Definition.Types exposing (Definition)
 import Lia.Effect.Model as Effect
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Types exposing (Markdown)
@@ -32,6 +33,7 @@ type alias Section =
     , quiz_vector : Quiz.Vector
     , survey_vector : Survey.Vector
     , effect_model : Effect.Model
+    , definition : Maybe Definition
     }
 
 
