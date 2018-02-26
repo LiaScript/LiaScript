@@ -37,10 +37,7 @@ set_script model script =
         Ok ( code, definition ) ->
             let
                 x =
-                    definition
-                        |> .scripts
-                        |> List.reverse
-                        |> List.map load_js
+                    List.map load_js definition.scripts
             in
             case Lia.Parser.parse_titles definition code of
                 Ok title_sections ->
