@@ -19,6 +19,7 @@ type alias Model =
     , loc : Bool
     , index_model : Index.Model
     , sound : Bool
+    , show_settings : Bool
     }
 
 
@@ -58,6 +59,7 @@ init mode url slide_number =
     , loc = True
     , index_model = Index.init
     , sound = init_sound
+    , show_settings = False
     }
 
 

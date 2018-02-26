@@ -1,6 +1,7 @@
 module Lia.Definition.Types
     exposing
         ( Definition
+        , add_macro
         , add_translation
         , default
         , get_translations
@@ -20,6 +21,7 @@ type alias Definition =
     , scripts : List String
     , base : String
     , translation : Dict String String
+    , macro : Dict String String
     }
 
 
@@ -35,6 +37,7 @@ default base =
     , scripts = []
     , base = base
     , translation = Dict.empty
+    , macro = Dict.empty
     }
 
 
@@ -55,6 +58,11 @@ add_translation str def =
 
         _ ->
             def
+
+
+add_macro : String -> String -> Definition -> Definition
+add_macro name code def =
+    { def | macro = Dict.insert name code def.macro }
 
 
 get_translations : Definition -> List ( String, String )
