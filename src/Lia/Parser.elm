@@ -12,6 +12,7 @@ import Lia.PState exposing (PState)
 import Lia.Preprocessor as Preprocessor
 import Lia.Quiz.Types as Quiz
 import Lia.Survey.Types as Survey
+import Lia.Utils exposing (string_replace)
 
 
 parse_defintion : String -> String -> Result String ( String, Definition )

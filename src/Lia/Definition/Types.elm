@@ -60,8 +60,8 @@ add_translation str def =
             def
 
 
-add_macro : String -> String -> Definition -> Definition
-add_macro name code def =
+add_macro : ( String, String ) -> Definition -> Definition
+add_macro ( name, code ) def =
     { def | macro = Dict.insert name code def.macro }
 
 

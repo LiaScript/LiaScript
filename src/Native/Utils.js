@@ -67,6 +67,11 @@ var _user$project$Native_Utils = (function () {
             return code.replace(/\r/g, "");
     }
 
+    function string_replace(s, r, string)
+    {
+        return string.replace(new RegExp(s, 'g'), r);
+    }
+
 /*
     function wait(ms) {
         var start = new Date().getTime();
@@ -166,6 +171,7 @@ var _user$project$Native_Utils = (function () {
         get_local: get_local,
         set_local: F2(set_local),
         toUnixNewline: toUnixNewline,
-        set_title: set_title
+        set_title: set_title,
+        string_replace: F3(string_replace)
     };
 })();

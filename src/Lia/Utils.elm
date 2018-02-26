@@ -11,6 +11,7 @@ module Lia.Utils
         , set_local
         , set_title
         , stringToHtml
+        , string_replace
         , toUnixNewline
         )
 
@@ -84,3 +85,8 @@ toUnixNewline code =
 set_title : String -> ()
 set_title title =
     Native.Utils.set_title title
+
+
+string_replace : String -> String -> String -> String
+string_replace search replace string =
+    Native.Utils.string_replace search replace string

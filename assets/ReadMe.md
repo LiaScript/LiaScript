@@ -15,6 +15,10 @@ script:   https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.js
 translation: French   translation/French.md
 translation: Russian  translation/Russian.md
 
+@sucker
+  ***sucker***
+@end
+
 -->
 
 # Lia-Script
@@ -24,7 +28,7 @@ With Lia, we try to implement an extended Markdown format that should enable
 everyone to create, share, adapt, translate or correct and extend online courses
 without the need of being a web-developer.
 
-See the online rendered version at: https://liascript.github.io
+See the online @sucker rendered version at: https://liascript.github.io
 
 
                                     --{{0}}--
