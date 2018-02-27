@@ -43,8 +43,8 @@ definition =
                         , string "version:"
                             *> (ending >>= (\x -> set (\def -> { def | version = x })))
                         , ((\name body -> ( name, body ))
-                            <$> (regex "@[a-zA-Z0-9_]+" <* regex "[ \\t]*\\n")
-                            <*> stringTill (string "@end")
+                            <$> (macro <* regex "[ \\t]*\\n")
+                            <*> stringTill (string "\n@end")
                           )
                             >>= (\x -> set (add_macro x))
                         ]
@@ -81,3 +81,17 @@ base x =
 set : (Definition -> Definition) -> Parser PState ()
 set fct =
     modifyState (\s -> { s | defines = fct s.defines })
+
+
+macro : Parser PState String
+macro =
+    regex "@[a-zA-Z0-9_]+"
+
+
+
+--eval_macro name =
+--  let
+--    inject state input context =
+--
+--  in
+--  pri
