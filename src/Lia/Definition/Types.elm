@@ -1,10 +1,8 @@
 module Lia.Definition.Types
     exposing
         ( Definition
-        , add_macro
         , add_translation
         , default
-        , get_macro
         , get_translations
         )
 
@@ -59,30 +57,6 @@ add_translation str def =
 
         _ ->
             def
-
-
-add_macro : ( String, String ) -> Definition -> Definition
-add_macro ( name, code ) def =
-    { def | macro = Dict.insert name code def.macro }
-
-
-get_macro : String -> Definition -> Maybe String
-get_macro name def =
-    case name of
-        "@author" ->
-            Just def.author
-
-        "@date" ->
-            Just def.date
-
-        "@email" ->
-            Just def.email
-
-        "@version" ->
-            Just def.version
-
-        _ ->
-            Dict.get name def.macro
 
 
 get_translations : Definition -> List ( String, String )

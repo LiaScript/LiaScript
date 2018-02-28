@@ -6,6 +6,7 @@ import Lia.Chart.Parser as Chart
 import Lia.Code.Parser as Code
 import Lia.Effect.Model exposing (set_annotation)
 import Lia.Effect.Parser as Effect
+import Lia.Macro.Parser exposing (macro)
 import Lia.Markdown.Inline.Parser exposing (..)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
 import Lia.Markdown.Types exposing (..)
@@ -43,7 +44,7 @@ blocks =
                         , Paragraph <$> md_annotations <*> paragraph
                         ]
             in
-            identation *> maybe_macro *> b
+            identation *> macro *> b
 
 
 to_comment attr ( id1, id2 ) =
@@ -158,7 +159,7 @@ md_annotations : Parser PState Annotation
 md_annotations =
     maybe
         (regex "[ \\t]*"
-            *> maybe_macro
+            *> macro
             *> (Dict.fromList
                     <$> (comment attribute
                             <|> (comments *> succeed [])

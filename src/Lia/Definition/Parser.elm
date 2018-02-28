@@ -1,8 +1,9 @@
 module Lia.Definition.Parser exposing (parse)
 
 import Combine exposing (..)
-import Lia.Definition.Types exposing (Definition, add_macro, add_translation)
-import Lia.Markdown.Inline.Parser exposing (comment, comments, macro, stringTill, whitelines)
+import Lia.Definition.Types exposing (Definition, add_translation)
+import Lia.Macro.Parser as Macro
+import Lia.Markdown.Inline.Parser exposing (comment, comments, stringTill, whitelines)
 import Lia.PState exposing (PState, ident_skip, identation, identation_append, identation_pop)
 
 
@@ -43,10 +44,10 @@ definition =
                         , string "version:"
                             *> (ending >>= (\x -> set (\def -> { def | version = x })))
                         , ((\name body -> ( name, body ))
-                            <$> (macro <* regex "[ \\t]*\\n")
+                            <$> (Macro.pattern <* regex "[ \\t]*\\n")
                             <*> stringTill (string "\n@end")
                           )
-                            >>= (\x -> set (add_macro x))
+                            >>= (\x -> set (Macro.add x))
                         ]
             in
             (many1 (whitelines *> list) <* whitelines)

@@ -15,9 +15,6 @@ script:   https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.js
 translation: French   translation/French.md
 translation: Russian  translation/Russian.md
 
-@sucker222
-  ***sucker33333333***
-@end
 -->
 
 # Lia-Script
@@ -1160,6 +1157,14 @@ render the script properly.
 language: en_UK
 
 narrator: UK English Male
+
+@Tom
+UK English Male
+@end
+
+@Tanja
+Russian Female
+@end
 -->
 
 
@@ -1178,7 +1183,7 @@ rendered at the place where it is defined.
 Markdown ist eine vereinfachte Auszeichnungssprache, die von John Gruber und
 Aaron Swartz entworfen und im Dezember 2004 mit Version 1.0.1 spezifiziert ...
 
-                               --{{4 Russian Female}}--
+                               --{{4 @Tanja}}--
 Первоначально создан в 2004 году Джоном Грубером (англ. John Gruber) и Аароном
 Шварцем. Многие идеи языка были позаимствованы из существующих соглашений ...
 ```
@@ -1201,7 +1206,7 @@ Aaron Swartz entworfen und im Dezember 2004 mit Version 1.0.1 spezifiziert
 wurde. Ein Ziel von Markdown ist, dass schon die Ausgangsform ohne weitere
 Konvertierung leicht lesbar ist.
 
-                               --{{4 Russian Female}}--
+                               --{{4 @Tanja}}--
 Первоначально создан в 2004 году Джоном Грубером (англ. John Gruber) и Аароном
 Шварцем. Многие идеи языка были позаимствованы из существующих соглашений по
 разметке текста в электронных письмах. Реализации языка Markdown преобразуют

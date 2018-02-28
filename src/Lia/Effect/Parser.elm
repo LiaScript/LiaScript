@@ -5,6 +5,7 @@ import Combine exposing (..)
 import Combine.Num exposing (int)
 import Dict
 import Lia.Effect.Model exposing (Element)
+import Lia.Macro.Parser exposing (macro)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines)
 import Lia.Markdown.Types exposing (Markdown(..))
@@ -77,7 +78,7 @@ comment : Parser PState Inlines -> Parser PState ( Int, Int )
 comment paragraph =
     ((\i n p -> ( i, n, p ))
         <$> (regex "[ \\t]*--{{" *> effect_number)
-        <*> maybe (regex "[ \\t]+" *> regex "[A-Za-z0-9 ]+")
+        <*> maybe (regex "[ \\t]+" *> macro *> regex "[A-Za-z0-9 ]+")
         <* regex "}}--[ \\t]*[\\n]+"
         <*> paragraph
         <* reset_effect_number
