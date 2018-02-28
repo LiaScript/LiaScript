@@ -158,6 +158,7 @@ md_annotations : Parser PState Annotation
 md_annotations =
     maybe
         (regex "[ \\t]*"
+            *> maybe_macro
             *> (Dict.fromList
                     <$> (comment attribute
                             <|> (comments *> succeed [])

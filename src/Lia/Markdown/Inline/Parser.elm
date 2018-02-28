@@ -188,7 +188,7 @@ inlines =
                                 , Effect.inline inlines
                                 , strings
                                 ]
-                                <*> annotations
+                                <*> (maybe_macro *> annotations)
                             )
                    )
                 <* (maybe comments *> succeed (Chars "" Nothing))
