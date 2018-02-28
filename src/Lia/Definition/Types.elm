@@ -68,7 +68,21 @@ add_macro ( name, code ) def =
 
 get_macro : String -> Definition -> Maybe String
 get_macro name def =
-    Dict.get name def.macro
+    case name of
+        "@author" ->
+            Just def.author
+
+        "@date" ->
+            Just def.date
+
+        "@email" ->
+            Just def.email
+
+        "@version" ->
+            Just def.version
+
+        _ ->
+            Dict.get name def.macro
 
 
 get_translations : Definition -> List ( String, String )
