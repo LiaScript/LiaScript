@@ -3,14 +3,14 @@ module Lia.Code.Parser exposing (parse)
 import Array
 import Combine exposing (..)
 import Lia.Code.Types exposing (..)
-import Lia.Markdown.Inline.Parser exposing (javascript, whitelines)
+import Lia.Markdown.Inline.Parser exposing (javascript, maybe_macro, whitelines)
 import Lia.PState exposing (..)
 import Lia.Utils exposing (guess)
 
 
 parse : Parser PState Code
 parse =
-    listing *> maybe (regex "[ \\n]?" *> javascript) >>= result
+    listing *> maybe (regex "[ \\n]?" *> maybe_macro *> javascript) >>= result
 
 
 result : Maybe String -> Parser PState Code

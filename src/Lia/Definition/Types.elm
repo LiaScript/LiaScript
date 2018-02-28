@@ -4,6 +4,7 @@ module Lia.Definition.Types
         , add_macro
         , add_translation
         , default
+        , get_macro
         , get_translations
         )
 
@@ -63,6 +64,11 @@ add_translation str def =
 add_macro : ( String, String ) -> Definition -> Definition
 add_macro ( name, code ) def =
     { def | macro = Dict.insert name code def.macro }
+
+
+get_macro : String -> Definition -> Maybe String
+get_macro name def =
+    Dict.get name def.macro
 
 
 get_translations : Definition -> List ( String, String )

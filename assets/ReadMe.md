@@ -15,10 +15,6 @@ script:   https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.js
 translation: French   translation/French.md
 translation: Russian  translation/Russian.md
 
-@sucker
-  ***sucker***
-@end
-
 @sucker222
   ***sucker33333333***
 @end
@@ -27,7 +23,12 @@ translation: Russian  translation/Russian.md
 # Lia-Script
 <!--
 @sucker
-  ***sucker33333333***
+
+* Full @sucker222
+* asdfasfd
+* asdfassdf
+* asdfa
+
 @end
 -->
 
@@ -36,8 +37,9 @@ With Lia, we try to implement an extended Markdown format that should enable
 everyone to create, share, adapt, translate or correct and extend online courses
 without the need of being a web-developer.
 
-See the online @sucker rendered version at: https://liascript.github.io
+See the online **@sucke** rendered version at: https://liascript.github.io
 
+@sucker
 
                                     --{{0}}--
 Click on the (ear) button at the navigation bar to switch between spoken and
@@ -642,6 +644,11 @@ executed. We provide some basic examples within the following section.
 
 
 #### JavaScript
+<!--
+@eval
+<script> {X} </script>
+@end
+-->
 
                                     --{{0}}--
 Click on the run-button to execute the script or double-click on the code to
@@ -662,7 +669,7 @@ for(i = 0; i<1000; i++) {
 // the last statement defines the return statement
 result;
 ```
-<script> {X} </script>
+@eval
 
 
 

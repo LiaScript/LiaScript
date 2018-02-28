@@ -43,7 +43,7 @@ blocks =
                         , Paragraph <$> md_annotations <*> paragraph
                         ]
             in
-            identation *> b
+            identation *> maybe_macro *> b
 
 
 to_comment attr ( id1, id2 ) =

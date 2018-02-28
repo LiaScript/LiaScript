@@ -9,6 +9,8 @@ module Lia.Markdown.Inline.Parser
         , inlines
         , javascript
         , line
+        , macro
+        , maybe_macro
         , newline
         , newlines
         , stringTill
@@ -18,6 +20,7 @@ module Lia.Markdown.Inline.Parser
 import Combine exposing (..)
 import Combine.Char exposing (..)
 import Dict exposing (Dict)
+import Lia.Definition.Types exposing (get_macro)
 import Lia.Effect.Model exposing (add_javascript)
 import Lia.Effect.Parser as Effect
 import Lia.Markdown.Inline.Types exposing (..)
@@ -176,18 +179,19 @@ inlines : Parser PState Inline
 inlines =
     lazy <|
         \() ->
-            (html
-                <|> (choice
-                        [ code
-                        , reference
-                        , formula
-                        , Effect.inline inlines
-                        , strings
-                        ]
-                        <*> annotations
-                    )
-            )
-                <* maybe (comments *> succeed (Chars "" Nothing))
+            maybe_macro
+                *> (html
+                        <|> (choice
+                                [ code
+                                , reference
+                                , formula
+                                , Effect.inline inlines
+                                , strings
+                                ]
+                                <*> annotations
+                            )
+                   )
+                <* (maybe comments *> succeed (Chars "" Nothing))
 
 
 stringTill : Parser s p -> Parser s String
@@ -360,3 +364,27 @@ strings =
 code : Parser s (Annotation -> Inline)
 code =
     Verbatim <$> (string "`" *> regex "[^`\\n]+" <* string "`") <?> "inline code"
+
+
+macro : Parser s String
+macro =
+    regex "@[a-zA-Z0-9_]+"
+
+
+maybe_macro : Parser PState ()
+maybe_macro =
+    skip (maybe (macro >>= inject_macro))
+
+
+inject_macro : String -> Parser PState ()
+inject_macro name =
+    let
+        inject code =
+            case code of
+                Just str ->
+                    modifyStream ((++) str) *> succeed ()
+
+                Nothing ->
+                    modifyStream ((++) name) *> succeed ()
+    in
+    withState (\s -> s.defines |> get_macro name |> succeed) >>= inject

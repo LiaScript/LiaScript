@@ -2,7 +2,7 @@ module Lia.Definition.Parser exposing (parse)
 
 import Combine exposing (..)
 import Lia.Definition.Types exposing (Definition, add_macro, add_translation)
-import Lia.Markdown.Inline.Parser exposing (comment, comments, stringTill, whitelines)
+import Lia.Markdown.Inline.Parser exposing (comment, comments, macro, stringTill, whitelines)
 import Lia.PState exposing (PState, ident_skip, identation, identation_append, identation_pop)
 
 
@@ -81,17 +81,3 @@ base x =
 set : (Definition -> Definition) -> Parser PState ()
 set fct =
     modifyState (\s -> { s | defines = fct s.defines })
-
-
-macro : Parser PState String
-macro =
-    regex "@[a-zA-Z0-9_]+"
-
-
-
---eval_macro name =
---  let
---    inject state input context =
---
---  in
---  pri
