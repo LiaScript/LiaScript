@@ -4,6 +4,7 @@ import Combine exposing (..)
 import Dict exposing (Dict)
 import Lia.Definition.Types exposing (Definition)
 import Lia.PState exposing (PState)
+import Lia.Utils exposing (string_replace)
 
 
 pattern : Parser s String
@@ -13,18 +14,31 @@ pattern =
 
 macro : Parser PState ()
 macro =
-    skip (maybe (pattern >>= inject_macro))
+    let
+        temp p =
+            maybe (String.split "," <$> parens (regex "[^)]+")) >>= inject_macro p
+    in
+    skip (maybe (pattern >>= temp))
 
 
-inject_macro : String -> Parser PState ()
-inject_macro name =
+inject_macro : String -> Maybe (List String) -> Parser PState ()
+inject_macro name params =
     let
         inject code =
-            case code of
-                Just str ->
+            case ( code, params ) of
+                ( Just str, Nothing ) ->
                     modifyStream ((++) str) *> succeed ()
 
-                Nothing ->
+                ( Just str, Just list ) ->
+                    let
+                        new_code =
+                            list
+                                |> List.indexedMap (\k v -> ( "@" ++ toString k, v ))
+                                |> List.foldr (\( k, v ) s -> string_replace k v s) str
+                    in
+                    modifyStream ((++) new_code) *> succeed ()
+
+                _ ->
                     modifyStream ((++) name) *> succeed ()
     in
     withState (\s -> s.defines |> get name |> succeed) >>= inject

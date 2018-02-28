@@ -18,16 +18,6 @@ translation: Russian  translation/Russian.md
 -->
 
 # Lia-Script
-<!--
-@sucker
-
-* Full @sucker222
-* asdfasfd
-* asdfassdf
-* asdfa
-
-@end
--->
 
                                     --{{0}}--
 With Lia, we try to implement an extended Markdown format that should enable
@@ -35,8 +25,6 @@ everyone to create, share, adapt, translate or correct and extend online courses
 without the need of being a web-developer.
 
 See the online **@sucke** rendered version at: https://liascript.github.io
-
-@sucker
 
                                     --{{0}}--
 Click on the (ear) button at the navigation bar to switch between spoken and
