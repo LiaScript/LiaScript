@@ -14,7 +14,7 @@ import Lia.PState exposing (PState)
 
 markdown : Parser PState Markdown -> Parser PState ( Int, Int, List Markdown )
 markdown blocks =
-    (\i j list -> ( i, j, list ))
+    (,,)
         <$> (regex "[\\t ]*{{" *> effect_number)
         <*> (optional 99999 (regex "[\t ]*-[\t ]*" *> int) <* regex "}}[\\t ]*\\n")
         <*> (multi blocks <|> single blocks)
@@ -76,7 +76,7 @@ reset_effect_number =
 
 comment : Parser PState Inlines -> Parser PState ( Int, Int )
 comment paragraph =
-    ((\i n p -> ( i, n, p ))
+    ((,,)
         <$> (regex "[ \\t]*--{{" *> effect_number)
         <*> maybe (regex "[ \\t]+" *> macro *> regex "[A-Za-z0-9 ]+")
         <* regex "}}--[ \\t]*[\\n]+"

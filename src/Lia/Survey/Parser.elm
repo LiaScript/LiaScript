@@ -73,7 +73,7 @@ questions =
 
 question : Parser PState a -> Parser PState ( a, List Inline )
 question p =
-    (\i l -> ( i, l )) <$> p <*> (line <* newline)
+    (,) <$> p <*> (line <* newline)
 
 
 modify_PState : Survey -> Parser PState Survey
