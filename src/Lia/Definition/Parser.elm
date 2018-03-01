@@ -43,7 +43,12 @@ definition =
                             *> (ending >>= (\x -> set (add_translation x)))
                         , string "version:"
                             *> (ending >>= (\x -> set (\def -> { def | version = x })))
-                        , ((\name body -> ( name, body ))
+                        , ((,)
+                            <$> (Macro.pattern <* regex "[ \\t]*:[ \\t]*")
+                            <*> (regex ".+" <* string "\n")
+                          )
+                            >>= (\x -> set (Macro.add x))
+                        , ((,)
                             <$> (Macro.pattern <* regex "[ \\t]*\\n")
                             <*> stringTill (string "\n@end")
                           )
