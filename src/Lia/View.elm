@@ -78,7 +78,7 @@ view_aside model =
 menu show design =
     Html.div []
         [ if show.settings then
-            design_theme design.theme
+            design_theme design
           else if show.informations then
             Html.text "informations"
           else if show.translations then
@@ -99,26 +99,20 @@ dropdown name cls msg =
     Html.button [ onClick msg, Attr.class <| "lia-btn lia-icon" ++ cls ] [ Html.text name ]
 
 
-design_theme : String -> Html Msg
-design_theme theme =
+design_theme : Design -> Html Msg
+design_theme design =
     [ "default", "amber", "blue", "green", "grey", "purple" ]
-        |> List.map
-            (\t ->
-                Html.a
-                    [ onClick (DesignTheme t)
-                    , Attr.class "lia-toc-l1"
-                    ]
-                    [ Html.text (capitalize t)
-                    , Html.text
-                        (if t == theme then
-                            "check"
-                         else
-                            ""
-                        )
-                    ]
-            )
-        |> List.intersperse (Html.br [] [])
+        |> List.map (\c -> check_list (c == design.theme) c)
         |> Html.div []
+
+
+check_list : Bool -> String -> Html Msg
+check_list checked label =
+    Html.p [ Attr.class "lia-radio-item" ]
+        [ Html.input [ Attr.type_ "radio", Attr.checked checked, onClick (DesignTheme label) ] []
+        , Html.span [ Attr.class "lia-radio-btn" ] []
+        , Html.span [ Attr.class "lia-label" ] [ Html.text (capitalize label) ]
+        ]
 
 
 view_loc : ID -> List ( ID, ( Inlines, Int, Bool, Bool ) ) -> Html Msg
