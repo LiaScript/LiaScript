@@ -16,10 +16,9 @@ type alias Model =
     , section_active : ID
     , definition : Definition
     , design : Design
-    , loc : Bool
     , index_model : Index.Model
     , sound : Bool
-    , show_settings : Bool
+    , show : { loc : Bool, settings : Bool, informations : Bool, translations : Bool }
     , javascript : List String
     }
 
@@ -57,10 +56,9 @@ init mode url slide_number =
         { theme = init_design_theme
         , light = init_design_light
         }
-    , loc = True
     , index_model = Index.init
     , sound = init_sound
-    , show_settings = False
+    , show = { loc = True, settings = False, informations = False, translations = False }
     , javascript = []
     }
 
@@ -69,6 +67,7 @@ init_design_theme : String
 init_design_theme =
     "theme"
         |> get_local
+        |> Maybe.map (String.dropLeft 1 >> String.dropRight 1)
         |> Maybe.withDefault "default"
 
 

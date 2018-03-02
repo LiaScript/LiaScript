@@ -18,13 +18,13 @@ import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model)
 import Lia.Types exposing (..)
-import Lia.Update exposing (Msg(..), get_active_section)
+import Lia.Update exposing (Msg(..), Toggle(..), get_active_section)
 
 
 view : Model -> Html Msg
 view model =
     Html.div [ design model.design ]
-        [ if model.loc then
+        [ if model.show.loc then
             view_aside model
           else
             Html.text ""
@@ -71,7 +71,54 @@ view_aside model =
                         List.filter (\( idx, _ ) -> List.member idx model.index_model.index) titles
                )
             |> view_loc model.section_active
+        , menu model.show model.design
         ]
+
+
+menu show design =
+    Html.div []
+        [ if show.settings then
+            design_theme design.theme
+          else if show.informations then
+            Html.text "informations"
+          else if show.translations then
+            Html.text "translations"
+          else
+            Html.text ""
+        , Html.div []
+            [ dropdown "settings" " lia-left" (Toggle Settings)
+            , Html.span [ Attr.class "lia-spacer" ] []
+            , dropdown "info" "" (Toggle Informations)
+            , Html.span [ Attr.class "lia-spacer" ] []
+            , dropdown "translate" " lia-right" (Toggle Translations)
+            ]
+        ]
+
+
+dropdown name cls msg =
+    Html.button [ onClick msg, Attr.class <| "lia-btn lia-icon" ++ cls ] [ Html.text name ]
+
+
+design_theme : String -> Html Msg
+design_theme theme =
+    [ "default", "amber", "blue", "green", "grey", "purple" ]
+        |> List.map
+            (\t ->
+                Html.a
+                    [ onClick (DesignTheme t)
+                    , Attr.class "lia-toc-l1"
+                    ]
+                    [ Html.text (capitalize t)
+                    , Html.text
+                        (if t == theme then
+                            "check"
+                         else
+                            ""
+                        )
+                    ]
+            )
+        |> List.intersperse (Html.br [] [])
+        |> Html.div []
 
 
 view_loc : ID -> List ( ID, ( Inlines, Int, Bool, Bool ) ) -> Html Msg
@@ -126,11 +173,11 @@ view_footer sound mode effects =
             effects
                 |> current_paragraphs
                 |> List.map (\( a, par ) -> Html.p [] (viewer 9999 par))
-                |> (\l -> List.append l [ responsive sound ToggleSound ])
+                |> (\l -> List.append l [ responsive sound (Toggle Sound) ])
                 |> Html.footer []
 
         Presentation ->
-            Html.footer [] [ responsive sound ToggleSound ]
+            Html.footer [] [ responsive sound (Toggle Sound) ]
 
         Textbook ->
             Html.text ""
@@ -146,24 +193,10 @@ view_nav : ID -> Mode -> Design -> String -> List ( String, String ) -> String -
 view_nav section_active mode design base translations state =
     Html.nav [ Attr.class "lia-toolbar" ]
         [ Html.button
-            [ onClick ToggleLOC
+            [ onClick (Toggle LOC)
             , Attr.class "lia-btn lia-toc-control lia-left"
             ]
             [ Html.text "toc" ]
-        , Html.button
-            [ Attr.class "lia-btn lia-left"
-            , onClick SwitchMode
-            ]
-            [ case mode of
-                Slides ->
-                    Html.text "visibility"
-
-                Presentation ->
-                    Html.text "hearing"
-
-                Textbook ->
-                    Html.text "book"
-            ]
         , Html.span [ Attr.class "lia-spacer" ] []
         , navButton "navigate_before" PrevSection
         , Html.span [ Attr.class "lia-labeled lia-left" ]
@@ -180,9 +213,24 @@ view_nav section_active mode design base translations state =
             ]
         , navButton "navigate_next" NextSection
         , Html.span [ Attr.class "lia-spacer" ] []
-        , view_design_light design.light
-        , view_design_theme design.theme
-        , view_translation base translations
+        , Html.button
+            [ Attr.class "lia-btn lia-right"
+            , onClick SwitchMode
+            ]
+            [ case mode of
+                Slides ->
+                    Html.text "visibility"
+
+                Presentation ->
+                    Html.text "hearing"
+
+                Textbook ->
+                    Html.text "book"
+            ]
+
+        --, view_design_light design.light
+        --, view_design_theme design.theme
+        --, view_translation base translations
         ]
 
 

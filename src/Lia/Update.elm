@@ -1,4 +1,4 @@
-module Lia.Update exposing (Msg(..), get_active_section, update)
+module Lia.Update exposing (Msg(..), Toggle(..), get_active_section, update)
 
 import Array exposing (Array)
 import Json.Encode as JE
@@ -20,20 +20,24 @@ type Msg
     | NextSection
     | DesignTheme String
     | DesignLight
-    | ToggleLOC
     | UpdateIndex Index.Msg
     | UpdateMarkdown Markdown.Msg
     | SwitchMode
-    | ToggleSound
+    | Toggle Toggle
     | Location String
+
+
+type Toggle
+    = LOC
+    | Settings
+    | Translations
+    | Informations
+    | Sound
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, Maybe ( String, JE.Value ) )
 update msg model =
     case ( msg, get_active_section model ) of
-        ( ToggleLOC, _ ) ->
-            ( { model | loc = not model.loc }, Cmd.none, Nothing )
-
         ( UpdateIndex childMsg, _ ) ->
             let
                 index =
@@ -154,12 +158,34 @@ update msg model =
             , log_
             )
 
-        ( ToggleSound, Just sec ) ->
-            let
-                ( sec_, cmd_, log_ ) =
-                    Markdown.initEffect False (not model.sound) sec
-            in
-            ( { model | sound = set_local "sound" (not model.sound) }, Cmd.map UpdateMarkdown cmd_, log_ )
+        ( Toggle what, Just sec ) ->
+            case what of
+                Sound ->
+                    let
+                        ( sec_, cmd_, log_ ) =
+                            Markdown.initEffect False (not model.sound) sec
+                    in
+                    ( { model | sound = set_local "sound" (not model.sound) }, Cmd.map UpdateMarkdown cmd_, log_ )
+
+                _ ->
+                    let
+                        show =
+                            model.show
+                    in
+                    ( { model
+                        | show =
+                            if what == LOC then
+                                { show | loc = not show.loc }
+                            else if what == Settings then
+                                { show | settings = not show.settings, informations = False, translations = False }
+                            else if what == Informations then
+                                { show | settings = False, informations = not show.informations, translations = False }
+                            else
+                                { show | settings = False, informations = False, translations = not show.translations }
+                      }
+                    , Cmd.none
+                    , Nothing
+                    )
 
         ( Location url, _ ) ->
             ( model, Navigation.load url, Nothing )
