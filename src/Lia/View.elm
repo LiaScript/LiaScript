@@ -19,6 +19,8 @@ import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model)
 import Lia.Types exposing (..)
 import Lia.Update exposing (Msg(..), Toggle(..), get_active_section)
+import Navigation
+import QRCode
 
 
 view : Model -> Html Msg
@@ -81,10 +83,11 @@ view_aside model =
                 |> Maybe.andThen .definition
                 |> Maybe.withDefault model.definition
             )
+            (model.url ++ "?" ++ model.readme)
         ]
 
 
-menu show design defines =
+menu show design defines url =
     Html.div []
         [ if show.settings then
             Html.div []
@@ -100,7 +103,7 @@ menu show design defines =
           else if show.translations then
             view_translations defines.base (Lia.Definition.Types.get_translations defines)
           else if show.share then
-            Html.text "DDDDDDD"
+            qrCodeView url
           else
             Html.text ""
         , Html.div []
@@ -171,6 +174,14 @@ check_list checked label =
         , Html.span [ Attr.class "lia-radio-btn" ] []
         , Html.span [ Attr.class "lia-label" ] [ Html.text (capitalize label) ]
         ]
+
+
+qrCodeView : String -> Html msg
+qrCodeView message =
+    QRCode.encode message
+        |> Result.map QRCode.toSvg
+        |> Result.withDefault
+            (Html.text "Error while encoding to QRCode.")
 
 
 view_loc : ID -> List ( ID, ( Inlines, Int, Bool, Bool ) ) -> Html Msg

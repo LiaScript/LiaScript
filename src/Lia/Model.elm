@@ -14,6 +14,7 @@ type alias Toogler =
 
 type alias Model =
     { url : String
+    , readme : String
     , mode : Mode
     , error : Maybe String
     , sections : Sections
@@ -27,8 +28,8 @@ type alias Model =
     }
 
 
-init : Mode -> String -> Maybe Int -> Model
-init mode url slide_number =
+init : Mode -> String -> String -> Maybe Int -> Model
+init mode url readme slide_number =
     let
         local_mode =
             case get_local "mode" of
@@ -42,6 +43,7 @@ init mode url slide_number =
                     mode
     in
     { url = url
+    , readme = readme
     , mode = local_mode
     , error = Nothing
     , sections = Array.empty
