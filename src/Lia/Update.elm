@@ -25,6 +25,7 @@ type Msg
     | SwitchMode
     | Toggle Toggle
     | Location String
+    | IncreaseFontSize Bool
 
 
 type Toggle
@@ -32,6 +33,7 @@ type Toggle
     | Settings
     | Translations
     | Informations
+    | Share
     | Sound
 
 
@@ -60,6 +62,7 @@ update msg model =
                 | design =
                     { light = model.design.light
                     , theme = set_local "theme" theme
+                    , font_size = model.design.font_size
                     }
               }
             , Cmd.none
@@ -76,6 +79,7 @@ update msg model =
                             else
                                 "light"
                     , theme = model.design.theme
+                    , font_size = model.design.font_size
                     }
               }
             , Cmd.none
@@ -170,18 +174,25 @@ update msg model =
                 _ ->
                     let
                         show =
-                            model.show
+                            Toogler model.show.loc False False False False
                     in
                     ( { model
                         | show =
-                            if what == LOC then
-                                { show | loc = not show.loc }
-                            else if what == Settings then
-                                { show | settings = not show.settings, informations = False, translations = False }
-                            else if what == Informations then
-                                { show | settings = False, informations = not show.informations, translations = False }
-                            else
-                                { show | settings = False, informations = False, translations = not show.translations }
+                            case what of
+                                LOC ->
+                                    { show | loc = not show.loc }
+
+                                Settings ->
+                                    { show | settings = not model.show.settings }
+
+                                Informations ->
+                                    { show | informations = not model.show.informations }
+
+                                Translations ->
+                                    { show | translations = not model.show.translations }
+
+                                _ ->
+                                    { show | share = not model.show.share }
                       }
                     , Cmd.none
                     , Nothing
@@ -189,6 +200,28 @@ update msg model =
 
         ( Location url, _ ) ->
             ( model, Navigation.load url, Nothing )
+
+        ( IncreaseFontSize positive, _ ) ->
+            let
+                design =
+                    model.design
+            in
+            ( { model
+                | design =
+                    { design
+                        | font_size =
+                            set_local "font_size" <|
+                                if positive then
+                                    design.font_size + 10
+                                else if design.font_size <= 10 then
+                                    design.font_size
+                                else
+                                    design.font_size - 10
+                    }
+              }
+            , Cmd.none
+            , Nothing
+            )
 
         _ ->
             ( model, Cmd.none, Nothing )

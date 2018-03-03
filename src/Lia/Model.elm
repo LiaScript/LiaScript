@@ -8,6 +8,10 @@ import Lia.Types exposing (Design, Mode, Sections)
 import Lia.Utils exposing (get_local, load_js, set_local)
 
 
+type alias Toogler =
+    { loc : Bool, settings : Bool, informations : Bool, translations : Bool, share : Bool }
+
+
 type alias Model =
     { url : String
     , mode : Mode
@@ -18,7 +22,7 @@ type alias Model =
     , design : Design
     , index_model : Index.Model
     , sound : Bool
-    , show : { loc : Bool, settings : Bool, informations : Bool, translations : Bool }
+    , show : Toogler
     , javascript : List String
     }
 
@@ -55,10 +59,11 @@ init mode url slide_number =
     , design =
         { theme = init_design_theme
         , light = init_design_light
+        , font_size = init_font_size
         }
     , index_model = Index.init
     , sound = init_sound
-    , show = { loc = True, settings = False, informations = False, translations = False }
+    , show = Toogler True False False False False
     , javascript = []
     }
 
@@ -75,6 +80,7 @@ init_design_light : String
 init_design_light =
     "theme_light"
         |> get_local
+        |> Maybe.map (String.dropLeft 1 >> String.dropRight 1)
         |> Maybe.withDefault "light"
 
 
@@ -96,6 +102,15 @@ init_sound =
         |> get_local
         |> Maybe.andThen (\b -> b /= "false" |> Just)
         |> Maybe.withDefault True
+
+
+init_font_size : Int
+init_font_size =
+    "font_size"
+        |> get_local
+        |> Maybe.map String.toInt
+        |> Maybe.andThen Result.toMaybe
+        |> Maybe.withDefault 100
 
 
 load_javascript : List String -> List String -> List String

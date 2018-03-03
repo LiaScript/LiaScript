@@ -7,7 +7,7 @@ import Char
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
-import Lia.Definition.Types exposing (get_translations)
+import Lia.Definition.Types exposing (Definition, get_translations)
 import Lia.Effect.Model exposing (current_paragraphs)
 import Lia.Effect.View exposing (responsive, state)
 import Lia.Helper exposing (ID)
@@ -23,7 +23,8 @@ import Lia.Update exposing (Msg(..), Toggle(..), get_active_section)
 
 view : Model -> Html Msg
 view model =
-    Html.div [ design model.design ]
+    Html.div
+        (design model.design)
         [ if model.show.loc then
             view_aside model
           else
@@ -32,14 +33,16 @@ view model =
         ]
 
 
-design : { theme : String, light : String } -> Html.Attribute msg
+design : Design -> List (Html.Attribute msg)
 design s =
-    Attr.class
+    [ Attr.class
         ("lia-canvas lia-theme-"
             ++ s.theme
             ++ " lia-variant-"
             ++ s.light
         )
+    , Attr.style [ ( "font-size", toString s.font_size ++ "%" ) ]
+    ]
 
 
 view_aside : Model -> Html Msg
@@ -71,32 +74,62 @@ view_aside model =
                         List.filter (\( idx, _ ) -> List.member idx model.index_model.index) titles
                )
             |> view_loc model.section_active
-        , menu model.show model.design
+        , menu model.show
+            model.design
+            (model
+                |> get_active_section
+                |> Maybe.andThen .definition
+                |> Maybe.withDefault model.definition
+            )
         ]
 
 
-menu show design =
+menu show design defines =
     Html.div []
         [ if show.settings then
-            design_theme design
+            Html.div []
+                [ Html.hr [] []
+                , Html.text "Settings"
+                , design_theme design
+                , view_design_light design.light
+                , Html.hr [] []
+                , inc_font_size design.font_size
+                ]
           else if show.informations then
-            Html.text "informations"
+            view_information defines
           else if show.translations then
-            Html.text "translations"
+            view_translations defines.base (Lia.Definition.Types.get_translations defines)
+          else if show.share then
+            Html.text "DDDDDDD"
           else
             Html.text ""
         , Html.div []
             [ dropdown "settings" " lia-left" (Toggle Settings)
-            , Html.span [ Attr.class "lia-spacer" ] []
+
+            --, Html.span [ Attr.class "lia-spacer" ] []
             , dropdown "info" "" (Toggle Informations)
-            , Html.span [ Attr.class "lia-spacer" ] []
+
+            --, Html.span [ Attr.class "lia-spacer" ] []
             , dropdown "translate" " lia-right" (Toggle Translations)
+
+            --, Html.span [ Attr.class "lia-spacer" ] []
+            , dropdown "share" " lia-right" (Toggle Share)
             ]
         ]
 
 
 dropdown name cls msg =
-    Html.button [ onClick msg, Attr.class <| "lia-btn lia-icon" ++ cls ] [ Html.text name ]
+    Html.button [ onClick msg, Attr.class <| "lia-btn lia-icon" ++ cls, Attr.style [ ( "width", "40px" ) ] ] [ Html.text name ]
+
+
+inc_font_size : Int -> Html Msg
+inc_font_size int =
+    Html.div []
+        [ Html.text "Font-Size:"
+        , navButton "-" (IncreaseFontSize False)
+        , Html.text (toString int ++ "%")
+        , navButton "+" (IncreaseFontSize True)
+        ]
 
 
 design_theme : Design -> Html Msg
@@ -104,6 +137,31 @@ design_theme design =
     [ "default", "amber", "blue", "green", "grey", "purple" ]
         |> List.map (\c -> check_list (c == design.theme) c)
         |> Html.div []
+
+
+view_information : Definition -> Html Msg
+view_information definition =
+    Html.div []
+        [ Html.p [] [ Html.text ("Author: " ++ definition.author) ]
+        , Html.p [] [ Html.text "Email: ", Html.a [ Attr.href definition.email ] [ Html.text definition.email ] ]
+        , Html.p [] [ Html.text ("Version: " ++ definition.version) ]
+        , Html.p [] [ Html.text ("Date: " ++ definition.date) ]
+        ]
+
+
+view_translations : String -> List ( String, String ) -> Html Msg
+view_translations base list =
+    if List.isEmpty list then
+        Html.text "no translations yet"
+    else
+        list
+            |> List.map
+                (\( lang, url ) ->
+                    Html.a
+                        [ onClick (Location (base ++ "?" ++ url)) ]
+                        [ Html.text lang ]
+                )
+            |> Html.div [ Attr.class "lia-toc" ]
 
 
 check_list : Bool -> String -> Html Msg
@@ -179,7 +237,7 @@ view_footer sound mode effects =
 
 navButton : String -> msg -> Html msg
 navButton str msg =
-    Html.button [ Attr.href "#33", onClick msg, Attr.class "lia-btn lia-slide-control lia-left" ]
+    Html.button [ onClick msg, Attr.class "lia-btn lia-slide-control lia-left" ]
         [ Html.text str ]
 
 

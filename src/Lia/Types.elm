@@ -19,6 +19,7 @@ type Mode
 type alias Design =
     { theme : String
     , light : String
+    , font_size : Int
     }
 
 
