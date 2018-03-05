@@ -81,10 +81,11 @@ view_aside model =
                 |> Maybe.andThen .definition
                 |> Maybe.withDefault model.definition
             )
+            (model.url ++ "?" ++ model.readme)
         ]
 
 
-menu show design defines =
+menu show design defines url =
     Html.div []
         [ if show.settings then
             Html.div []
@@ -100,7 +101,7 @@ menu show design defines =
           else if show.translations then
             view_translations defines.base (Lia.Definition.Types.get_translations defines)
           else if show.share then
-            Html.text "DDDDDDD"
+            qrCodeView url
           else
             Html.text ""
         , Html.div []
@@ -158,7 +159,7 @@ view_translations base list =
             |> List.map
                 (\( lang, url ) ->
                     Html.a
-                        [ onClick (Location (base ++ "?" ++ url)) ]
+                        [ Attr.href (base ++ "?" ++ url) ]
                         [ Html.text lang ]
                 )
             |> Html.div [ Attr.class "lia-toc" ]
@@ -171,6 +172,15 @@ check_list checked label =
         , Html.span [ Attr.class "lia-radio-btn" ] []
         , Html.span [ Attr.class "lia-label" ] [ Html.text (capitalize label) ]
         ]
+
+
+qrCodeView : String -> Html msg
+qrCodeView url =
+    Html.img
+        [ Attr.src ("https://api.qrserver.com/v1/create-qr-code/?size=222x222&data=" ++ url)
+        , Attr.style [ ( "width", "99%" ) ]
+        ]
+        []
 
 
 view_loc : ID -> List ( ID, ( Inlines, Int, Bool, Bool ) ) -> Html Msg

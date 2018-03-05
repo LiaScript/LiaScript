@@ -56,26 +56,26 @@ init flags location =
             get_hash location
 
         origin =
-            location.origin
+            location.origin ++ location.pathname
     in
     if flags.script /= "" then
         let
             ( lia, cmd, _ ) =
                 flags.script
-                    |> Lia.set_script (Lia.init_presentation (get_base url) Nothing)
+                    |> Lia.set_script (Lia.init_presentation (get_base url) "" Nothing)
                     |> Lia.init
         in
         ( Model "" "" lia LoadOk "", Cmd.map LIA cmd )
     else if url == "" then
-        ( Model "https://raw.githubusercontent.com/liaScript/liascript.github.com/master/README.md"
+        ( Model "https://raw.githubusercontent.com/liaScript/docs/master/README.md"
             origin
-            (Lia.init_presentation "" Nothing)
+            (Lia.init_presentation "" "" Nothing)
             Waiting
             ""
         , Cmd.none
         )
     else
-        ( Model url origin (Lia.init_presentation (get_base url) slide) Loading "", getCourse url )
+        ( Model url origin (Lia.init_presentation (get_base url) url slide) Loading "", getCourse url )
 
 
 get_base : String -> String
@@ -127,7 +127,7 @@ update msg model =
                         |> Lia.init
             in
             ( { model
-                | lia = lia
+                | lia = { lia | readme = model.url }
                 , error = ""
                 , state = LoadOk
               }
