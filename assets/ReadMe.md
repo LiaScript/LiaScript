@@ -15,8 +15,6 @@ script:   https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.js
 translation: French   translation/French.md
 translation: Russian  translation/Russian.md
 
-@sucker : jjjjj
-
 -->
 
 # Lia-Script
@@ -26,14 +24,15 @@ With Lia, we try to implement an extended Markdown format that should enable
 everyone to create, share, adapt, translate or correct and extend online courses
 without the need of being a web-developer.
 
-See the online **@sucker** rendered version at: https://liascript.github.io
+See the online rendered version at: https://liascript.github.io
 
                                     --{{0}}--
 Click on the (ear) button at the navigation bar to switch between spoken and
 plain text mode format. And use the arrows-buttons at the top for navigating.
 
 
-*Lia-Script* <!-- class = "animated infinite bounce" style = "color: red;" onclick = "alert('DDDDD');" --> is an extended Markdown format for writing interactive online
+*Lia-Script* <!-- class = "animated infinite bounce" style = "color: red;" onclick = "alert('It started with a click!');" -->
+is an extended Markdown format for writing interactive online
 courses. Imagine all schoolbooks, technical or scientific literature could
 become open-source projects and more interactive ... with collaborating teachers
 and students ...

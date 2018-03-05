@@ -87,19 +87,19 @@ init_section ( tags, title, code ) =
     }
 
 
-init_textbook : String -> String -> Model
-init_textbook url readme =
-    Lia.Model.init Lia.Types.Textbook url readme Nothing
+init_textbook : String -> String -> String -> Model
+init_textbook url readme origin =
+    Lia.Model.init Lia.Types.Textbook url readme origin Nothing
 
 
-init_slides : String -> String -> Maybe Int -> Model
-init_slides url readme slide_number =
-    Lia.Model.init Lia.Types.Slides url readme slide_number
+init_slides : String -> String -> String -> Maybe Int -> Model
+init_slides url readme origin slide_number =
+    Lia.Model.init Lia.Types.Slides url readme origin slide_number
 
 
-init_presentation : String -> String -> Maybe Int -> Model
-init_presentation url readme slide_number =
-    Lia.Model.init Lia.Types.Presentation url readme slide_number
+init_presentation : String -> String -> String -> Maybe Int -> Model
+init_presentation url readme origin slide_number =
+    Lia.Model.init Lia.Types.Presentation url readme origin slide_number
 
 
 view : Model -> Html Msg

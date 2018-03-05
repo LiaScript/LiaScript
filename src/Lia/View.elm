@@ -81,11 +81,12 @@ view_aside model =
                 |> Maybe.andThen .definition
                 |> Maybe.withDefault model.definition
             )
-            (model.url ++ "?" ++ model.readme)
+            (model.origin ++ "?" ++ model.readme)
+            model.origin
         ]
 
 
-menu show design defines url =
+menu show design defines url origin =
     Html.div []
         [ if show.settings then
             Html.div []
@@ -99,7 +100,7 @@ menu show design defines url =
           else if show.informations then
             view_information defines
           else if show.translations then
-            view_translations defines.base (Lia.Definition.Types.get_translations defines)
+            view_translations (origin ++ "?") (Lia.Definition.Types.get_translations defines)
           else if show.share then
             qrCodeView url
           else
@@ -159,7 +160,7 @@ view_translations base list =
             |> List.map
                 (\( lang, url ) ->
                     Html.a
-                        [ Attr.href (base ++ "?" ++ url) ]
+                        [ Attr.href (base ++ url) ]
                         [ Html.text lang ]
                 )
             |> Html.div [ Attr.class "lia-toc" ]
