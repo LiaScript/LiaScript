@@ -19,8 +19,6 @@ import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model)
 import Lia.Types exposing (..)
 import Lia.Update exposing (Msg(..), Toggle(..), get_active_section)
-import Navigation
-import QRCode
 
 
 view : Model -> Html Msg
@@ -161,7 +159,7 @@ view_translations base list =
             |> List.map
                 (\( lang, url ) ->
                     Html.a
-                        [ onClick (Location (base ++ "?" ++ url)) ]
+                        [ Attr.href (base ++ "?" ++ url) ]
                         [ Html.text lang ]
                 )
             |> Html.div [ Attr.class "lia-toc" ]
@@ -177,11 +175,12 @@ check_list checked label =
 
 
 qrCodeView : String -> Html msg
-qrCodeView message =
-    QRCode.encode message
-        |> Result.map QRCode.toSvg
-        |> Result.withDefault
-            (Html.text "Error while encoding to QRCode.")
+qrCodeView url =
+    Html.img
+        [ Attr.src ("https://api.qrserver.com/v1/create-qr-code/?size=222x222&data=" ++ url)
+        , Attr.style [ ( "width", "99%" ) ]
+        ]
+        []
 
 
 view_loc : ID -> List ( ID, ( Inlines, Int, Bool, Bool ) ) -> Html Msg

@@ -56,10 +56,7 @@ init flags location =
             get_hash location
 
         origin =
-            location.origin
-
-        xxx =
-            Debug.log "DDDDD" location
+            location.origin ++ location.pathname
     in
     if flags.script /= "" then
         let
@@ -70,7 +67,7 @@ init flags location =
         in
         ( Model "" "" lia LoadOk "", Cmd.map LIA cmd )
     else if url == "" then
-        ( Model "https://raw.githubusercontent.com/liaScript/liascript.github.com/master/README.md"
+        ( Model "https://raw.githubusercontent.com/liaScript/docs/master/README.md"
             origin
             (Lia.init_presentation "" "" Nothing)
             Waiting
