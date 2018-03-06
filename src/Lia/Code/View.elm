@@ -37,7 +37,7 @@ view attr model code =
                         , Html.div []
                             [ if elem.running then
                                 Html.button [ Attr.class "lia-btn lia-icon" ]
-                                    [ Html.text "settings" ]
+                                    [ Html.text "sync" ]
                               else
                                 Html.button [ Attr.class "lia-btn lia-icon", onClick (Eval idx x) ]
                                     [ Html.text "play_circle_filled" ]

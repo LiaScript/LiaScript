@@ -1,4 +1,4 @@
-module Lia.Macro.Parser exposing (..)
+module Lia.Macro.Parser exposing (add, get, macro, pattern)
 
 import Combine exposing (..)
 import Dict exposing (Dict)
@@ -66,3 +66,13 @@ get name def =
 add : ( String, String ) -> Definition -> Definition
 add ( name, code ) def =
     { def | macro = Dict.insert name code def.macro }
+
+
+parse : String -> PState -> String
+parse str defines =
+    case runParser (String.concat <$> many (regex "[^@]*[\\n]*" <|> (macro *> succeed ""))) defines str of
+        Ok ( _, _, s ) ->
+            s
+
+        _ ->
+            str
