@@ -12,11 +12,20 @@ pattern =
     regex "@[a-zA-Z0-9_]+"
 
 
+params : Parser PState String
+params =
+    choice
+        [ string "`" *> regex "[^`\\n]+" <* string "`"
+        , string "```" *> regex "([^`]+|(\\`)|\\n)+" <* string "```"
+        , regex "[^),]+"
+        ]
+
+
 macro : Parser PState ()
 macro =
     let
         temp p =
-            maybe (String.split "," <$> parens (regex "[^)]+")) >>= inject_macro p
+            maybe (parens (sepBy (string ",") params)) >>= inject_macro p
     in
     skip (maybe (pattern >>= temp))
 
@@ -24,24 +33,24 @@ macro =
 inject_macro : String -> Maybe (List String) -> Parser PState ()
 inject_macro name params =
     let
-        inject code =
-            case ( code, params ) of
-                ( Just str, Nothing ) ->
-                    modifyStream ((++) str) *> succeed ()
+        inject state =
+            case ( get name state.defines, params ) of
+                ( Just code, Nothing ) ->
+                    modifyStream ((++) code) *> succeed ()
 
-                ( Just str, Just list ) ->
+                ( Just code, Just list ) ->
                     let
                         new_code =
                             list
-                                |> List.indexedMap (\k v -> ( "@" ++ toString k, v ))
-                                |> List.foldr (\( k, v ) s -> string_replace k v s) str
+                                |> List.indexedMap (\k v -> ( "@" ++ toString k, parse v state ))
+                                |> List.foldr (\( k, v ) s -> string_replace k v s) code
                     in
                     modifyStream ((++) new_code) *> succeed ()
 
                 _ ->
                     modifyStream ((++) name) *> succeed ()
     in
-    withState (\s -> s.defines |> get name |> succeed) >>= inject
+    withState succeed >>= inject
 
 
 get : String -> Definition -> Maybe String
@@ -70,7 +79,7 @@ add ( name, code ) def =
 
 parse : String -> PState -> String
 parse str defines =
-    case runParser (String.concat <$> many (regex "[^@]*[\\n]*" <|> (macro *> succeed ""))) defines str of
+    case runParser (String.concat <$> many1 (macro *> regex "[^@]+")) defines str of
         Ok ( _, _, s ) ->
             s
 
