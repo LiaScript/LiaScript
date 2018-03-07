@@ -12,8 +12,8 @@ pattern =
     regex "@[a-zA-Z0-9_]+"
 
 
-params : Parser PState String
-params =
+param : Parser PState String
+param =
     choice
         [ string "`" *> regex "[^`\\n]+" <* string "`"
         , string "```" *> regex "([^`]+|(\\`)|\\n)+" <* string "```"
@@ -21,33 +21,38 @@ params =
         ]
 
 
+param_list : Parser PState (List String)
+param_list =
+    optional [] (parens (sepBy (string ",") param))
+
+
 macro : Parser PState ()
 macro =
-    let
-        temp p =
-            maybe (parens (sepBy (string ",") params)) >>= inject_macro p
-    in
-    skip (maybe (pattern >>= temp))
+    skip
+        (maybe
+            (pattern
+                >>= (\name ->
+                        param_list >>= inject_macro name
+                    )
+            )
+        )
 
 
-inject_macro : String -> Maybe (List String) -> Parser PState ()
+inject_macro : String -> List String -> Parser PState ()
 inject_macro name params =
     let
         inject state =
-            case ( get name state.defines, params ) of
-                ( Just code, Nothing ) ->
-                    modifyStream ((++) code) *> succeed ()
-
-                ( Just code, Just list ) ->
+            case get name state.defines of
+                Just code ->
                     let
                         new_code =
-                            list
-                                |> List.indexedMap (\k v -> ( "@" ++ toString k, parse v state ))
+                            params
+                                |> List.indexedMap (\k v -> ( "@" ++ toString k, macro_parse v state ))
                                 |> List.foldr (\( k, v ) s -> string_replace k v s) code
                     in
                     modifyStream ((++) new_code) *> succeed ()
 
-                _ ->
+                Nothing ->
                     fail "macro not found"
     in
     withState succeed >>= inject
@@ -77,8 +82,8 @@ add ( name, code ) def =
     { def | macro = Dict.insert name code def.macro }
 
 
-parse : String -> PState -> String
-parse str defines =
+macro_parse : String -> PState -> String
+macro_parse str defines =
     case runParser (String.concat <$> many1 (macro *> regex "[^@]+")) defines str of
         Ok ( _, _, s ) ->
             s
