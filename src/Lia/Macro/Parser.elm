@@ -15,8 +15,8 @@ pattern =
 param : Parser PState String
 param =
     choice
-        [ string "`" *> regex "[^`\\n]+" <* string "`"
-        , string "```" *> regex "([^`]+|(\\`)|\\n)+" <* string "```"
+        [ string "```" *> regex "([^`]+|\\n)+" <* string "```"
+        , string "`" *> regex "[^`\\n]+" <* string "`"
         , regex "[^),]+"
         ]
 
