@@ -48,7 +48,7 @@ inject_macro name params =
                     modifyStream ((++) new_code) *> succeed ()
 
                 _ ->
-                    modifyStream ((++) name) *> succeed ()
+                    fail "macro not found"
     in
     withState succeed >>= inject
 
