@@ -3,7 +3,7 @@ module Lia.Macro.Parser exposing (add, get, macro, pattern)
 import Combine exposing (..)
 import Dict exposing (Dict)
 import Lia.Definition.Types exposing (Definition)
-import Lia.PState exposing (PState)
+import Lia.PState exposing (PState, identation)
 import Lia.Utils exposing (string_replace)
 
 
@@ -30,10 +30,12 @@ macro : Parser PState ()
 macro =
     skip
         (maybe
-            (pattern
+            ((pattern
                 >>= (\name ->
                         param_list >>= inject_macro name
                     )
+             )
+                <|> macro_listing
             )
         )
 
@@ -90,3 +92,22 @@ macro_parse str defines =
 
         _ ->
             str
+
+
+code_line : Parser PState String
+code_line =
+    maybe identation *> regex "(.(?!```))*\\n?"
+
+
+macro_listing : Parser PState ()
+macro_listing =
+    (string "```" *> regex ".*\\n" *> identation *> pattern)
+        >>= (\name ->
+                (param_list <* regex "[ \\t]*\\n")
+                    >>= (\params ->
+                            ((\code -> List.append params [ String.concat code ])
+                                <$> manyTill code_line (identation *> string "```")
+                            )
+                                >>= inject_macro name
+                        )
+            )
