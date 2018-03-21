@@ -87,6 +87,10 @@ script:   another javascript resourse url
 A course is structured as any other Markdown document with starting hash-tags,
 whereby the number of hash-tags is used to define the hierarchy.
 
+link [test](#1)
+
+<a href="#2">fff</a>
+
 ```markdown
 # Main Title
 
@@ -1499,4 +1503,4 @@ Coordinator and embedded development guru ...
 {{6}}{{<h1> Karl Fessel     </h1>}} <!-- class = "animated fadeInUpBig" -->
 
 --{{6}}--
-Embedded systems developer, creator or arduinoview, and Markdown evangelist ...
+Embedded systems developer, creator of arduinoview, and Markdown evangelist ...

@@ -8,7 +8,7 @@ import Lia.PState exposing (PState)
 
 title_tag : Parser PState Int
 title_tag =
-    String.length <$> regex "#+" <?> "title tags"
+    String.length <$> regex "^#+" <?> "title tags"
 
 
 title_str : Parser PState Inlines
@@ -23,12 +23,17 @@ comment =
 
 misc : Parser PState String
 misc =
-    regex "([^\\\\#`<]|[\x0D\n])+"
+    regex "([^\\\\#`<\\[]|[\x0D\n])+"
 
 
 misc2 : Parser PState String
 misc2 =
-    regex "((\\\\.)|[<`])"
+    regex "((\\\\.)|[<`\\[])"
+
+
+link : Parser PState String
+link =
+    regex "\\[[^\\]]*\\]\\([^\\)]*\\)"
 
 
 code_block : Parser PState String
@@ -61,6 +66,7 @@ body =
     lazy <|
         \() ->
             [ misc
+            , link
             , comment
             , html_block
             , code_block

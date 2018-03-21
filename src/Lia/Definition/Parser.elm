@@ -38,7 +38,20 @@ definition =
                         , string "narrator:"
                             *> (ending >>= (\x -> set (\def -> { def | narrator = x })))
                         , string "script:"
-                            *> (ending >>= (\x -> set (\def -> { def | scripts = List.append def.scripts (String.split "\n" x) })))
+                            *> (ending
+                                    >>= (\x ->
+                                            set
+                                                (\def ->
+                                                    { def
+                                                        | scripts =
+                                                            x
+                                                                |> String.split "\n"
+                                                                |> List.map (toURL def.base)
+                                                                |> List.append def.scripts
+                                                    }
+                                                )
+                                        )
+                               )
                         , string "translation:"
                             *> (ending >>= (\x -> set (add_translation x)))
                         , string "version:"
@@ -74,14 +87,16 @@ base : String -> Parser PState ()
 base x =
     set
         (\def ->
-            { def
-                | base =
-                    if String.startsWith "http" x then
-                        x
-                    else
-                        def.base ++ x
-            }
+            { def | base = toURL def.base x }
         )
+
+
+toURL : String -> String -> String
+toURL base url =
+    if String.startsWith "http" url then
+        url
+    else
+        base ++ url
 
 
 set : (Definition -> Definition) -> Parser PState ()

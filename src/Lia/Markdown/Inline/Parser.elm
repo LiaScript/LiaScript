@@ -232,24 +232,27 @@ reference =
                 info =
                     brackets (regex "[^\\]\n]*")
 
-                url_ =
+                url_1 =
+                    parens (url <|> regex "[^\\)\n]*")
+
+                url_2 =
                     parens (url <|> ((++) <$> withState (\s -> succeed s.defines.base) <*> regex "[^\\)\n]*"))
 
                 mail_ =
                     Mail <$> info <*> parens email
 
                 link =
-                    Link <$> info <*> url_
+                    Link <$> info <*> url_1
 
                 image =
                     Image
                         <$> (string "!" *> info)
-                        <*> url_
+                        <*> url_2
 
                 movie =
                     Movie
                         <$> (string "!!" *> info)
-                        <*> url_
+                        <*> url_2
             in
             Ref <$> choice [ movie, image, mail_, link ]
 
@@ -320,7 +323,7 @@ strings =
                     Chars <$> regex "[^*_~:;`!\\^\\[|{}\\\\\\n\\-<>=$ ]+" <?> "base string"
 
                 escape =
-                    Chars <$> (string "\\" *> regex "[\\^#*_~`\\\\${}\\[\\]|]") <?> "escape string"
+                    Chars <$> (string "\\" *> regex "[\\^*_~`\\\\${}\\[\\]|]") <?> "escape string"
 
                 italic =
                     Italic <$> (between_ "*" <|> between_ "_") <?> "italic string"

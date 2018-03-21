@@ -119,7 +119,7 @@ reference ref attr =
 
 view_url : String -> String -> Annotation -> Html msg
 view_url alt_ url_ attr =
-    [ Attr.href url_, Attr.target "_blank" ]
+    [ Attr.href url_ ]
         |> List.append (annotation attr "lia-link")
         |> Html.a
         |> (\a -> a [ Html.text alt_ ])
