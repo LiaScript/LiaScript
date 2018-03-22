@@ -70,10 +70,11 @@ solution =
     in
     maybe
         (rslt
-            <$> (regex "[\\t ]*[=]{3,}[\\n]+"
+            <$> (identation
+                    *> regex "[\\t ]*[=]{3,}[\\t ]*[\\n]+"
                     *> withState (\s -> succeed s.effect_model.effects)
                 )
-            <*> manyTill (blocks <* regex "[ \\n\\t]*") (regex "[ \\t]*[=]{3,}")
+            <*> manyTill (blocks <* regex "\\n*") (identation *> regex "[ \\t]*[=]{3,}[\\t ]*")
             <*> withState (\s -> succeed s.effect_model.effects)
         )
 
@@ -85,7 +86,7 @@ unordered_list =
         <*> many1
                 (regex "[*+-]( )"
                     *> (identation_append "  "
-                            *> many1 (blocks <* regex "[\\n]?")
+                            *> many1 (blocks <* regex "\\n?\\n?")
                             <* identation_pop
                        )
                 )
@@ -98,7 +99,7 @@ ordered_list =
         <*> many1
                 (regex "[0-9]+\\. "
                     *> (identation_append "   "
-                            *> many1 (blocks <* regex "[\\n]?")
+                            *> many1 (blocks <* regex "\\n?\\n?")
                             <* identation_pop
                        )
                 )
