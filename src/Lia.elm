@@ -53,7 +53,7 @@ set_script model script =
                                 |> set_title
                     in
                     { model
-                        | definition = definition
+                        | definition = { definition | scripts = [] }
                         , sections = sections
                         , section_active =
                             if Array.length sections > model.section_active then

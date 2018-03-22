@@ -58,12 +58,19 @@ view attr model code =
                                 ]
                                 [ Html.text "navigate_next" ]
                             ]
-                        , case elem.result of
-                            Ok rslt ->
-                                Html.pre [] [ Lia.Utils.stringToHtml rslt ]
+                        , Html.div
+                            [ Attr.style
+                                [ ( "max-height", "250px" )
+                                , ( "overflow", "auto" )
+                                ]
+                            ]
+                            [ case elem.result of
+                                Ok rslt ->
+                                    Html.pre [] [ Lia.Utils.stringToHtml rslt ]
 
-                            Err rslt ->
-                                Html.pre [ Attr.style [ ( "color", "red" ) ] ] [ Html.text ("Error: " ++ rslt) ]
+                                Err rslt ->
+                                    Html.pre [ Attr.style [ ( "color", "red" ) ] ] [ Html.text ("Error: " ++ rslt) ]
+                            ]
                         ]
 
                 Nothing ->
