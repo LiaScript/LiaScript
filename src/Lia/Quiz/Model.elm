@@ -48,6 +48,9 @@ state2json : State -> JE.Value
 state2json state =
     JE.object <|
         case state of
+            EmptyState ->
+                [ ( "type", JE.string "Empty" ) ]
+
             TextState x ->
                 [ ( "type", JE.string "Text" )
                 , ( "value", JE.string x )

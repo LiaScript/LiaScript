@@ -11,7 +11,7 @@ import Lia.Utils exposing (guess)
 
 parse : Parser PState Code
 parse =
-    listing *> maybe (regex "[ \\n]?" *> macro *> javascript) >>= result
+    listing *> maybe (regex "[ \\n]?" *> maybe identation *> macro *> javascript) >>= result
 
 
 result : Maybe String -> Parser PState Code

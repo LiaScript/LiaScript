@@ -18,6 +18,32 @@ view show_solution attr quiz vector =
             get_state vector
     in
     case quiz of
+        Empty query idx hints ->
+            case state idx of
+                Just s ->
+                    query
+                        |> List.map view_inf
+                        |> (\l ->
+                                List.append l
+                                    ((if show_solution then
+                                        Html.a
+                                            [ Attr.class "lia-hint-btn"
+                                            , Attr.href "#"
+                                            , onClick (ShowSolution idx EmptyState)
+                                            , Attr.title "show solution"
+                                            ]
+                                            [ Html.text "info" ]
+                                      else
+                                        Html.text ""
+                                     )
+                                        :: view_hints idx s.hint hints
+                                    )
+                           )
+                        |> Html.div []
+
+                Nothing ->
+                    Html.text ""
+
         Text solution idx hints ->
             view_quiz attr show_solution (state idx) view_text idx hints (TextState solution)
 
@@ -194,6 +220,9 @@ view_solution vector quiz =
     let
         idx =
             case quiz of
+                Empty _ idx _ ->
+                    idx
+
                 Text _ idx _ ->
                     idx
 

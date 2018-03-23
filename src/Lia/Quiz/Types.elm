@@ -10,7 +10,7 @@ module Lia.Quiz.Types
 
 import Array exposing (Array)
 import Lia.Helper exposing (ID)
-import Lia.Markdown.Inline.Types exposing (MultInlines)
+import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
 
 
 type alias Vector =
@@ -36,12 +36,14 @@ type alias Element =
 
 
 type State
-    = TextState String
+    = EmptyState
+    | TextState String
     | SingleChoiceState Int
     | MultipleChoiceState (Array Bool)
 
 
 type Quiz
-    = Text String ID Hints
+    = Empty Inlines ID Hints
+    | Text String ID Hints
     | SingleChoice Int MultInlines ID Hints
     | MultipleChoice (Array Bool) MultInlines ID Hints

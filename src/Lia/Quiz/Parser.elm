@@ -16,7 +16,7 @@ parse =
 
 quiz : Parser PState Quiz
 quiz =
-    choice [ single_choice, multi_choice, text ] <*> get_counter <*> hints
+    choice [ single_choice, multi_choice, empty, text ] <*> get_counter <*> hints
 
 
 get_counter : Parser PState Int
@@ -32,6 +32,11 @@ pattern p =
 quest : Parser PState a -> Parser PState Inlines
 quest p =
     pattern p *> line <* newline
+
+
+empty : Parser PState (ID -> Hints -> Quiz)
+empty =
+    Empty <$> (string "[[!]]" *> line <* newline)
 
 
 text : Parser PState (ID -> Hints -> Quiz)
@@ -96,6 +101,9 @@ modify_PState quiz_ =
 
         state =
             case quiz_ of
+                Empty _ _ _ ->
+                    EmptyState
+
                 Text _ _ _ ->
                     TextState ""
 

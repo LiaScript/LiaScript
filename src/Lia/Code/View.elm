@@ -24,13 +24,16 @@ view attr model code =
                     Html.div [ Attr.class "lia-code-eval" ]
                         [ if elem.editing then
                             Html.textarea
-                                [ Attr.style [ ( "width", "100%" ) ]
-                                , Attr.class "lia-input"
-                                , elem.code |> String.lines |> List.length |> Attr.rows
-                                , onInput <| Update idx
-                                , Attr.value elem.code
-                                , onDoubleClick (FlipMode idx)
-                                ]
+                                (List.append
+                                    (annotation attr "lia-input")
+                                    [ Attr.style [ ( "width", "100%" ), ( "overflow", "auto" ) ]
+                                    , elem.code |> String.lines |> List.length |> Attr.rows
+                                    , onInput <| Update idx
+                                    , Attr.value elem.code
+                                    , Attr.wrap "off"
+                                    , onDoubleClick (FlipMode idx)
+                                    ]
+                                )
                                 []
                           else
                             highlight attr lang elem.code idx
@@ -81,9 +84,12 @@ highlight : Annotation -> String -> String -> ID -> Html Msg
 highlight attr lang code idx =
     Html.pre
         (if idx < 0 then
-            annotation attr "lia-code"
+            Attr.style [ ( "overflow-x", "auto" ) ]
+                :: annotation attr "lia-code"
          else
-            onDoubleClick (FlipMode idx) :: annotation attr "lia-code"
+            Attr.style [ ( "overflow-x", "auto" ) ]
+                :: onDoubleClick (FlipMode idx)
+                :: annotation attr "lia-code"
         )
         [ Html.code [ Attr.class "lia-code-highlight" ]
             [ Lia.Utils.highlight lang code ]
