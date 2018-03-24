@@ -87,7 +87,13 @@ view_block config block =
         Effect attr ( id_in, id_out, sub_blocks ) ->
             if config.mode == Textbook || ((id_in <= config.section.effect_model.visible) && (id_out > config.section.effect_model.visible)) then
                 Html.div
-                    (Attr.id (toString id_in) :: annotation attr "lia-effect-inline")
+                    ((if id_in == config.section.effect_model.visible then
+                        Attr.id "focused"
+                      else
+                        Attr.id (toString id_in)
+                     )
+                        :: annotation attr "lia-effect-inline"
+                    )
                     (Effects.view_block (view_block config) id_in sub_blocks)
             else
                 Html.text ""

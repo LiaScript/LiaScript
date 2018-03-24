@@ -160,6 +160,17 @@ var _user$project$Native_Utils = (function () {
         document.title = title;
     };
 
+    function scrollIntoView (id) {
+        try {
+            setTimeout(function(e){
+                document.getElementById(id).scrollIntoView({behavior: "smooth"});
+            }, 500);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    };
+
     return {
         highlight: F2(highlight),
         highlightAuto: highlightAuto,
@@ -172,6 +183,7 @@ var _user$project$Native_Utils = (function () {
         set_local: F2(set_local),
         toUnixNewline: toUnixNewline,
         set_title: set_title,
-        string_replace: F3(string_replace)
+        string_replace: F3(string_replace),
+        scrollIntoView: scrollIntoView
     };
 })();

@@ -14,6 +14,7 @@ type Msg
     | Previous
     | Speak
     | TTS (Result String Never)
+    | NoOp
 
 
 update : Msg -> Bool -> Model -> ( Model, Cmd Msg )
@@ -44,6 +45,9 @@ update msg sound model =
             let
                 c =
                     Tts.Responsive.cancel ()
+
+                d =
+                    Lia.Utils.scrollIntoView "focused"
             in
             case ( sound, current_comment model ) of
                 ( True, Just ( comment, narrator ) ) ->

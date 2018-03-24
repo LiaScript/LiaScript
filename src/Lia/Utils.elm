@@ -8,6 +8,7 @@ module Lia.Utils
         , guess
         , highlight
         , load_js
+        , scrollIntoView
         , set_local
         , set_title
         , stringToHtml
@@ -90,3 +91,8 @@ set_title title =
 string_replace : String -> String -> String -> String
 string_replace search replace string =
     Native.Utils.string_replace search replace string
+
+
+scrollIntoView : String -> Bool
+scrollIntoView idx =
+    Native.Utils.scrollIntoView idx
