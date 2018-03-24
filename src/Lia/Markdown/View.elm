@@ -124,16 +124,37 @@ view_block config block =
         Quiz attr quiz Nothing ->
             Quizzes.view False attr quiz config.section.quiz_vector
                 |> Html.map UpdateQuiz
+                |> List.singleton
+                |> Html.div
+                    [ Attr.style
+                        [ ( "border", "2px solid black" )
+                        , ( "padding", "10px" )
+                        , ( "border-radius", "15px" )
+                        ]
+                    ]
 
         Quiz attr quiz (Just ( answer, hidden_effects )) ->
             if Quizzes.view_solution config.section.quiz_vector quiz then
-                answer
-                    |> List.map (view_block config)
-                    |> List.append [ Html.map UpdateQuiz <| Quizzes.view False attr quiz config.section.quiz_vector ]
-                    |> Html.div []
+                List.append [ Html.map UpdateQuiz <| Quizzes.view False attr quiz config.section.quiz_vector ]
+                    (Html.hr [] [] :: List.map (view_block config) answer)
+                    |> Html.div
+                        [ Attr.style
+                            [ ( "border", "2px solid black" )
+                            , ( "padding", "10px" )
+                            , ( "border-radius", "15px" )
+                            ]
+                        ]
             else
                 Quizzes.view True attr quiz config.section.quiz_vector
                     |> Html.map UpdateQuiz
+                    |> List.singleton
+                    |> Html.div
+                        [ Attr.style
+                            [ ( "border", "2px solid black" )
+                            , ( "padding", "10px" )
+                            , ( "border-radius", "15px" )
+                            ]
+                        ]
 
         Survey attr survey ->
             config.section.survey_vector
