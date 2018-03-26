@@ -122,38 +122,28 @@ view_block config block =
                 |> Html.map UpdateCode
 
         Quiz attr quiz Nothing ->
-            Quizzes.view False attr quiz config.section.quiz_vector
-                |> Html.map UpdateQuiz
-                |> List.singleton
-                |> Html.div
-                    [ Attr.style
-                        [ ( "border", "2px solid black" )
-                        , ( "padding", "10px" )
-                        , ( "border-radius", "15px" )
-                        ]
-                    ]
+            margin
+                [ Quizzes.view False attr quiz config.section.quiz_vector
+                    |> Html.map UpdateQuiz
+                ]
 
         Quiz attr quiz (Just ( answer, hidden_effects )) ->
-            if Quizzes.view_solution config.section.quiz_vector quiz then
-                List.append [ Html.map UpdateQuiz <| Quizzes.view False attr quiz config.section.quiz_vector ]
-                    (Html.hr [] [] :: List.map (view_block config) answer)
-                    |> Html.div
-                        [ Attr.style
-                            [ ( "border", "2px solid black" )
-                            , ( "padding", "10px" )
-                            , ( "border-radius", "15px" )
-                            ]
-                        ]
-            else
-                Quizzes.view True attr quiz config.section.quiz_vector
-                    |> Html.map UpdateQuiz
-                    |> List.singleton
-                    |> Html.div
-                        [ Attr.style
-                            [ ( "border", "2px solid black" )
-                            , ( "padding", "10px" )
-                            , ( "border-radius", "15px" )
-                            ]
+            margin <|
+                case Quizzes.view_solution config.section.quiz_vector quiz of
+                    ( empty, True ) ->
+                        List.append
+                            [ Html.map UpdateQuiz <| Quizzes.view False attr quiz config.section.quiz_vector ]
+                            ((if empty then
+                                Html.text ""
+                              else
+                                Html.hr [] []
+                             )
+                                :: List.map (view_block config) answer
+                            )
+
+                    _ ->
+                        [ Quizzes.view True attr quiz config.section.quiz_vector
+                            |> Html.map UpdateQuiz
                         ]
 
         Survey attr survey ->
@@ -179,6 +169,17 @@ view_block config block =
 
         Chart attr chart ->
             Charts.view attr chart
+
+
+margin : List (Html Msg) -> Html Msg
+margin =
+    Html.div
+        [ Attr.style
+            [ ( "border", "2px solid black" )
+            , ( "padding", "10px" )
+            , ( "border-radius", "15px" )
+            ]
+        ]
 
 
 view_table : Config -> Annotation -> MultInlines -> List String -> List MultInlines -> Html Msg

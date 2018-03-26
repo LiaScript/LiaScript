@@ -161,14 +161,11 @@ var _user$project$Native_Utils = (function () {
     };
 
     function scrollIntoView (id) {
-        try {
-            setTimeout(function(e){
+        setTimeout(function(e){
+            try {
                 document.getElementById(id).scrollIntoView({behavior: "smooth"});
-            }, 500);
-            return true;
-        } catch (e) {
-            return false;
-        }
+            } catch (e) {}
+        }, 500);
     };
 
     return {

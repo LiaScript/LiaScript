@@ -18,27 +18,22 @@ view show_solution attr quiz vector =
             get_state vector
     in
     case quiz of
-        Empty query idx hints ->
+        Empty idx hints ->
             case state idx of
                 Just s ->
-                    query
-                        |> List.map view_inf
-                        |> (\l ->
-                                List.append l
-                                    ((if show_solution then
-                                        Html.a
-                                            [ Attr.class "lia-hint-btn"
-                                            , Attr.href "#"
-                                            , onClick (ShowSolution idx EmptyState)
-                                            , Attr.title "show solution"
-                                            ]
-                                            [ Html.text "info" ]
-                                      else
-                                        Html.text ""
-                                     )
-                                        :: view_hints idx s.hint hints
-                                    )
-                           )
+                    ((if show_solution then
+                        Html.a
+                            [ Attr.class "lia-hint-btn"
+                            , Attr.href "#"
+                            , onClick (ShowSolution idx EmptyState)
+                            , Attr.title "show solution"
+                            ]
+                            [ Html.text "info" ]
+                      else
+                        Html.text ""
+                     )
+                        :: view_hints idx s.hint hints
+                    )
                         |> Html.div []
 
                 Nothing ->
@@ -215,25 +210,26 @@ view_hints idx counter hints =
         ]
 
 
-view_solution : Vector -> Quiz -> Bool
+view_solution : Vector -> Quiz -> ( Bool, Bool )
 view_solution vector quiz =
     let
-        idx =
+        ( idx, empty ) =
             case quiz of
-                Empty _ idx _ ->
-                    idx
+                Empty idx _ ->
+                    ( idx, True )
 
                 Text _ idx _ ->
-                    idx
+                    ( idx, False )
 
                 SingleChoice _ _ idx _ ->
-                    idx
+                    ( idx, False )
 
                 MultipleChoice _ _ idx _ ->
-                    idx
+                    ( idx, False )
     in
     idx
         |> get_state vector
         |> Maybe.map .solved
         |> Maybe.map (\s -> s /= Open)
         |> Maybe.withDefault False
+        |> (,) empty

@@ -36,7 +36,7 @@ quest p =
 
 empty : Parser PState (ID -> Hints -> Quiz)
 empty =
-    Empty <$> (string "[[!]]" *> line <* newline)
+    (regex "[ \\t]*" *> string "[[!]]" *> newline) $> Empty
 
 
 text : Parser PState (ID -> Hints -> Quiz)
@@ -101,7 +101,7 @@ modify_PState quiz_ =
 
         state =
             case quiz_ of
-                Empty _ _ _ ->
+                Empty _ _ ->
                     EmptyState
 
                 Text _ _ _ ->

@@ -93,6 +93,6 @@ string_replace search replace string =
     Native.Utils.string_replace search replace string
 
 
-scrollIntoView : String -> Bool
+scrollIntoView : String -> ()
 scrollIntoView idx =
     Native.Utils.scrollIntoView idx

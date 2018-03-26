@@ -43,7 +43,7 @@ type State
 
 
 type Quiz
-    = Empty Inlines ID Hints
+    = Empty ID Hints
     | Text String ID Hints
     | SingleChoice Int MultInlines ID Hints
     | MultipleChoice (Array Bool) MultInlines ID Hints
