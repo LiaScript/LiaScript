@@ -28,7 +28,7 @@ single blocks =
 
 multi : Parser PState Markdown -> Parser PState (List Markdown)
 multi blocks =
-    identation *> regex "[\\t ]*[=]{3,}[\\n]+" *> manyTill (blocks <* regex "[ \\n\\t]*") (regex "[\\t ]*[=]{3,}")
+    identation *> regex "[\\t ]*\\*{3,}[\\n]+" *> manyTill (blocks <* regex "[ \\n\\t]*") (regex "[\\t ]*\\*{3,}")
 
 
 inline : Parser PState Inline -> Parser PState (Annotation -> Inline)
@@ -79,8 +79,9 @@ comment paragraph =
     ((,,)
         <$> (regex "[ \\t]*{-{" *> effect_number)
         <*> maybe (regex "[ \\t]+" *> macro *> regex "[A-Za-z0-9 ]+")
-        <* regex "}-}[ \\t]*[\\n]+"
-        <*> paragraph
+        <* regex "}-}[ \\t]*"
+        <* maybe (regex "\\n+" <* ident_skip)
+        <*> (identation *> paragraph)
         <* reset_effect_number
     )
         >>= add_comment

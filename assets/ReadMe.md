@@ -132,7 +132,7 @@ through or the application of superscript. If you, for example, superscript
 superscript you can get even smaller.
 
                                        {{1}}
-================================================================================
+********************************************************************************
 
 \~\~underline\~\~ -> ~~underline~~
 
@@ -140,7 +140,7 @@ superscript you can get even smaller.
 
 \^superscript\^ -> ^superscript^ ^^superscript^^ ^^^superscript^^^
 
-================================================================================
+********************************************************************************
 
 
 #### Combinations
@@ -277,7 +277,7 @@ The same technique can also be applied to style and format movies and other inli
 elements, such as links, words, symbols, or code...
 
                                        {{1}}
-================================================================================
+********************************************************************************
 
 !![movie](https://www.youtube.com/embed/XsNk5aOpqUc)<!--
 style = "width: 100px; height: 60px;"
@@ -305,7 +305,7 @@ style = "width: 100px;
 
 `[google](www.google.de) <!-- style = "color: red;" -->` --> [google](www.google.de) <!-- style = "color: red;" -->
 
-================================================================================
+********************************************************************************
 
 #### Block-Styling
 
@@ -451,7 +451,7 @@ Next to simple paragraphs also any other block element can be included ...
 
 
                                      {{1}}
-================================================================================
+********************************************************************************
 
 ``` markdown
 > <!-- style="font-size: 18px; font-style: italic; width: 500px; margin: 5.25em 0;" -->
@@ -471,7 +471,7 @@ Result:
 > | ** col 2 is **    | centered      |   $12 |
 > | * zebra stripes * | are neat      |    $1 |
 
-================================================================================
+********************************************************************************
 
 ### HTML
 
@@ -1006,7 +1006,7 @@ Markdown-format:
     [[super]]
     [[?]] hint 1
     [[?]] hint 2
-    =====================================================================
+    *********************************************************************
 
                                 {{1}}
 You are right, super was the correct answer again
@@ -1017,7 +1017,7 @@ You are right, super was the correct answer again
 
 ![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)
 
-    =====================================================================
+    *********************************************************************
 ```
 
 A quiz with hints and a revealed result.
@@ -1025,7 +1025,7 @@ A quiz with hints and a revealed result.
     [[super]]
     [[?]] hint 1
     [[?]] hint 2
-    =====================================================================
+    *********************************************************************
 
                                     {{1}}
 You are right, super was the correct answer again
@@ -1036,7 +1036,7 @@ You are right, super was the correct answer again
 
 ![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)
 
-    =====================================================================
+    *********************************************************************
 
 ## Effects
 
@@ -1113,7 +1113,7 @@ you can see from the examples below, an effect can also contain further effects.
 This is an example for a *single* block effect.
 
                                {{2-4}}
-================================================================================
+********************************************************************************
 
 This is an example for a ... wait a second {3}{**multi**} ...
 block effect.
@@ -1122,14 +1122,14 @@ block effect.
 * beta
 * gamma
 
-================================================================================
+********************************************************************************
 ```
 
 {{1-3}} This is an example for
 a *single* block effect.
 
                                   {{2-4}}
-================================================================================
+********************************************************************************
 
 This is an example for a ... wait a second {3}{**multi**} ...
 block effect.
@@ -1138,7 +1138,7 @@ block effect.
 * beta
 * gamma
 
-================================================================================
+********************************************************************************
 
                                 {-{4}-}
 You can put spaces before the definition of a block effect, to prevent github
