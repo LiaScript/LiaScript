@@ -9,34 +9,34 @@ import Lia.Macro.Parser exposing (macro)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines)
 import Lia.Markdown.Types exposing (Markdown(..))
-import Lia.PState exposing (PState)
+import Lia.PState exposing (PState, ident_skip, identation)
 
 
 markdown : Parser PState Markdown -> Parser PState ( Int, Int, List Markdown )
 markdown blocks =
     (,,)
         <$> (regex "[\\t ]*{{" *> effect_number)
-        <*> (optional 99999 (regex "[\t ]*-[\t ]*" *> int) <* regex "}}[\\t ]*\\n")
+        <*> (optional 99999 (regex "[\t ]*-[\t ]*" *> int) <* regex "}}[\\t ]*" <* maybe (string "\n" <* ident_skip))
         <*> (multi blocks <|> single blocks)
         <* reset_effect_number
 
 
 single : Parser PState Markdown -> Parser PState (List Markdown)
 single blocks =
-    List.singleton <$> (regex "[ \\n\\t]*" *> blocks)
+    List.singleton <$> blocks
 
 
 multi : Parser PState Markdown -> Parser PState (List Markdown)
 multi blocks =
-    regex "[\\t ]*[=]{3,}[\\n]+" *> manyTill (blocks <* regex "[ \\n\\t]*") (regex "[\\t ]*[=]{3,}")
+    identation *> regex "[\\t ]*[=]{3,}[\\n]+" *> manyTill (blocks <* regex "[ \\n\\t]*") (regex "[\\t ]*[=]{3,}")
 
 
 inline : Parser PState Inline -> Parser PState (Annotation -> Inline)
 inline inlines =
     EInline
-        <$> (string "{{" *> effect_number)
-        <*> (optional 99999 (regex "[\t ]*-[\t ]*" *> int) <* string "}}")
-        <*> (string "{{" *> manyTill inlines (string "}}"))
+        <$> (string "{" *> effect_number)
+        <*> (optional 99999 (regex "[\t ]*-[\t ]*" *> int) <* string "}")
+        <*> (string "{" *> manyTill inlines (string "}"))
         <* reset_effect_number
 
 
@@ -77,9 +77,9 @@ reset_effect_number =
 comment : Parser PState Inlines -> Parser PState ( Int, Int )
 comment paragraph =
     ((,,)
-        <$> (regex "[ \\t]*--{{" *> effect_number)
+        <$> (regex "[ \\t]*{-{" *> effect_number)
         <*> maybe (regex "[ \\t]+" *> macro *> regex "[A-Za-z0-9 ]+")
-        <* regex "}}--[ \\t]*[\\n]+"
+        <* regex "}-}[ \\t]*[\\n]+"
         <*> paragraph
         <* reset_effect_number
     )
