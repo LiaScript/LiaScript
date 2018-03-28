@@ -77,9 +77,9 @@ reset_effect_number =
 comment : Parser PState Inlines -> Parser PState ( Int, Int )
 comment paragraph =
     ((,,)
-        <$> (regex "[ \\t]*{-{" *> effect_number)
+        <$> (regex "[ \\t]*--{{" *> effect_number)
         <*> maybe (regex "[ \\t]+" *> macro *> regex "[A-Za-z0-9 ]+")
-        <* regex "}-}[ \\t]*"
+        <* regex "}}--[ \\t]*"
         <* maybe (regex "\\n+" <* ident_skip)
         <*> (identation *> paragraph)
         <* reset_effect_number

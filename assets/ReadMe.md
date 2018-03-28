@@ -19,14 +19,14 @@ translation: Russian  translation/Russian.md
 
 # Lia-Script
 
-                                    {-{0}-}
+                                    --{{0}}--
 With Lia, we try to implement an extended Markdown format that should enable
 everyone to create, share, adapt, translate or correct and extend online courses
 without the need of being a web-developer.
 
 See the online rendered version at: https://liascript.github.io
 
-                                    {-{0}-}
+                                    --{{0}}--
 Click on the (ear) button at the navigation bar to switch between spoken and
 plain text mode format. And use the arrows-buttons at the top for navigating.
 
@@ -43,7 +43,7 @@ and students ...
 * automatic conversion to epub, pdf, ...
 
 
-                                     {-{1}-}
+                                     --{{1}}--
 Everything that is required is simple text-editor and a web-browser. Or you
 start directly to create and share your course on github. The entire parsing and
 transformation of Lia-Markdown to any other format is done within the browser at
@@ -53,7 +53,7 @@ client-side.
 ## *Markdown*-Syntax
 
 
-                                     {-{0}-}
+                                     --{{0}}--
 This section is intended to give a brief overview on the basic Markdown
 formatting elements. The only difference to common Markdown at this point is,
 that every course has to start with a comment, which defines authors, a language
@@ -83,13 +83,9 @@ script:   another javascript resourse url
 
 ### Structuring
 
-                                    {-{0}-}
+                                    --{{0}}--
 A course is structured as any other Markdown document with starting hash-tags,
 whereby the number of hash-tags is used to define the hierarchy.
-
-link [test](#1)
-
-<a href="#2">fff</a>
 
 ```markdown
 # Main Title
@@ -108,7 +104,7 @@ link [test](#1)
 
 ### Text-Formatting
 
-                                    {-{0}-}
+                                    --{{0}}--
 We tried to use the github flavored Markdown style for simple formatting with
 some additional elements.
 
@@ -126,7 +122,7 @@ some additional elements.
 
 \~strike\~ -> ~strike~
 
-                                     {-{1}-}
+                                     --{{1}}--
 These exceptions are for example underline and its combination with strike
 through or the application of superscript. If you, for example, superscript
 superscript you can get even smaller.
@@ -145,7 +141,7 @@ superscript you can get even smaller.
 
 #### Combinations
 
-                                     {-{0}-}
+                                     --{{0}}--
 As you can see from the examples, you can combine all elements freely.
 
 
@@ -157,16 +153,16 @@ As you can see from the examples, you can combine all elements freely.
 
 #### Escape Characters
 
-\*, \~, \_, \#, \{, \}, \[, \], \|, \`, \$
+\*, \~, \_, \{, \}, \[, \], \|, \`, \$
 
-                                     {-{0}-}
-If you want to use multiple stars, hash-tags, or other syntax elements within
-your script without applying their functionality, then you can escape them with
-a starting backslash.
+                                     --{{0}}--
+If you want to use multiple stars, braces, or other syntax elements within your
+script without applying their functionality, then you can escape them with a
+starting backslash.
 
 ### Symbols
 
-                                     {-{0}-}
+                                     --{{0}}--
 One thing that we missed in standard Markdown, was an implementation for arrows.
 The parenthesis shows, how arrows are defined in our Markdown implementation with
 their result on the right (these symbols are generated automatically for you).
@@ -178,7 +174,7 @@ their result on the right (these symbols are generated automatically for you).
 
 (`~>`) ~>, (`<~`) <~
 
-                                     {-{1}-}
+                                     --{{1}}--
 But you can also use some basic smileys. We will try to extend this partial
 support in the future.
 
@@ -192,7 +188,7 @@ The next section shows how external resources can be integrated.
 
 #### Simple Links
 
-                                     {-{0}-}
+                                     --{{0}}--
 There are two ways of adding links to a Markdown document, either by inlining
 the url directly or you can name it, as shown in listing 2, by applying the
 typical brackets and parenthesis notation.
@@ -207,7 +203,7 @@ typical brackets and parenthesis notation.
 
 #### Images and Movies
 
-                                    {-{0}-}
+                                    --{{0}}--
 Images are marked with a starting exclamation mark before the link, movies are
 defined by two exclamation marks.
 
@@ -225,7 +221,7 @@ defined by two exclamation marks.
 
 ### Styling
 
-                                    {-{0}-}
+                                    --{{0}}--
 Adding CSS elements or classes or any other HTML setting to an image or to any
 other Markdown element is implemented via a trailing comment-tag, everything
 within this comment is treated as a HTML attribute, so that it can
@@ -272,7 +268,7 @@ style="
   filter: blur(5px);"
 -->
 
-                                     {-{1}-}
+                                     --{{1}}--
 The same technique can also be applied to style and format movies and other inline
 elements, such as links, words, symbols, or code...
 
@@ -309,7 +305,7 @@ style = "width: 100px;
 
 #### Block-Styling
 
-                                  {-{0}-}
+                                  --{{0}}--
 Settings for entire blocks can be set with a **starting** comment that includes
 all required HTML-attributes and can even contain animation settings. These can
 be used to highlight specific elements of your slides.
@@ -335,7 +331,7 @@ if you are already familiar with it.
 
 #### Unordered Lists
 
-                                 {-{0}-}
+                                 --{{0}}--
 To define unordered list, starting stars, pluses, and minuses can be used and
 mixed. If one point has more than one line, you can also use newlines, but with
 spaces at the beginning. Paragraphs can be included in the same way, by using
@@ -364,7 +360,7 @@ Result:
 
 #### Ordered Lists
 
-                                 {-{0}-}
+                                 --{{0}}--
 Ordered list start with a number and a dot. As you can see from the example, the
 number does not count at the moment, the generated list will always count by the
 order of appearance. And it is also possible to mix lists with other lists and
@@ -392,7 +388,7 @@ Result:
 
 #### Tables
 
-                                   {-{0}-}
+                                   --{{0}}--
 Tables, we hope, are self-explanatory. The second line is used to define a table
 header as well as the alignment of the column, which is indicated by the colon.
 The default is left alignment.
@@ -446,7 +442,7 @@ Quote break.
 > This is a very long line that will still be quoted properly when it wraps. Oh boy let's keep writing to make sure this is long enough to actually wrap for everyone. Oh, you can *put* **Markdown** into a blockquote.
 
 
-                                   {-{1}-}
+                                   --{{1}}--
 Next to simple paragraphs also any other block element can be included ...
 
 
@@ -501,7 +497,7 @@ Test **bold** and <b> HTML bold</b> works also inline
 
 #### HTML & JavaScirpt
 
-                                 {-{0}-}
+                                 --{{0}}--
 In contrast to common Markdown-Parsers it is also possible to include and
 execute javascript code. If you combine it with your HTML elements, you are free
 to integrate whatever you want.
@@ -542,7 +538,7 @@ new Chartist.Line('#chart2', {
 });
 </script>
 
-                                {-{2}-}
+                                --{{2}}--
 Note, you have to include all required JavaScirpt-resourses in the initial
 comment after the script definition. And by combining this feature with
 LiaScript effects, you can build even more sophisticated courses.
@@ -560,13 +556,13 @@ $$
   \frac{a}{\sum{b+i}}
 $$
 
-                                    {-{0}-}
+                                    --{{0}}--
 We apply KaTeX for math-formatting, see the documentation at www.katex.org.
 
-                                    {-{1}-}
+                                    --{{1}}--
 A formula can be either inline with single dollars.
 
-                                    {-{2}-}
+                                    --{{2}}--
 Or multi-line by using the double dollar notation.
 
 ## Syntax Highlighting
@@ -581,7 +577,7 @@ Inline code via \` enter some code in here 1\#\#\#\$& \` -> ` enter some code in
 
 ### Block-Code
 
-                                {-{0}-}
+                                --{{0}}--
 Syntax highlighting is enabled with highlight.js. Blocks of code are either by
 lines with three back-ticks \`\`\` and an identifier for the language. See a
 complete list of examples and how to write language names at the
@@ -615,7 +611,7 @@ def lia_sqrt(val):
 
 ### Interactive Code
 
-                                    {-{0}-}
+                                    --{{0}}--
 
 Why should code examples not be interactive and editable, especially if it is
 JavaScript or any other language that has been ported to it? Simply add the
@@ -626,7 +622,7 @@ required resources to the initial comment with keyword `script`.
 2. Add a trailing script-tag to your code: `<script> {X} </script>`
 
 
-                                     {-{1}-}
+                                     --{{1}}--
 And add an additional script tag to the end of your language definition with an
 big X in braces. This element is afterwards substituted with your code and
 executed. We provide some basic examples within the following section.
@@ -640,7 +636,7 @@ executed. We provide some basic examples within the following section.
 @end
 -->
 
-                                    {-{0}-}
+                                    --{{0}}--
 Click on the run-button to execute the script or double-click on the code to
 edit it and to change the output ...
 
@@ -912,7 +908,7 @@ quizzes which can be tweaked, if required.
 
 ### Text Inputs
 
-                                  {-{0}-}
+                                  --{{0}}--
 A text input field is defined simply by a newline and two brackets around the
 solution word, value or sentence. In the depicted example, the word solution is
 the solution. If you enter something else, the check will fail.
@@ -925,7 +921,7 @@ Please enter the word * "solution" * into the text-field!
 
 ### Single-Choice
 
-                                  {-{0}-}
+                                  --{{0}}--
 A single choice quiz can be defined with parenthesis within brackets and an X,
 which marks the only correct answer option. The additional text is Lia-Markdown
 again.
@@ -947,7 +943,7 @@ Only one element can be selected!
 
 ### Multiple-Choice
 
-                                  {-{0}-}
+                                  --{{0}}--
 A multiple choice quiz can be defined with brackets within brackets and an X,
 which are used to mark the correct answer option. In contrast to single choice
 quizzes, there can be multiple selected choices or no one, which is also allowed.
@@ -968,7 +964,7 @@ Multiple of them can be selected, or all, or none of them ...
 
 ### Hints
 
-                                  {-{0}-}
+                                  --{{0}}--
 To any type of quiz you can add as many hints as you want, which are revealed in
 order by clicking onto the question mark.
 
@@ -993,7 +989,7 @@ A text input with additional hints:
 
 ### Solution
 
-                                   {-{0}-}
+                                   --{{0}}--
 And finally, some quizzes might require some more explanations, if they are
 solved or not. That is why, with additional three opening and three closing
 brackets you mark the beginning and the end of your solution, which can contain
@@ -1052,7 +1048,7 @@ which step the element becomes invisible again.
 
 ### Inline Effects
 
-                                   {-{0}-}
+                                   --{{0}}--
 Inline effects can be used in nearly all liaScript elements, as already
 mentioned, the first number within curly braces defines the number of appearance
 while the second part defines those Markdown elements that should be revealed
@@ -1076,7 +1072,7 @@ effects can be combined, due to the usage of equal numbers):
 
 ### Animations
 
-                                   {-{0}-}
+                                   --{{0}}--
 To define animations and transitions, you can use the animate.css notation,
 simply place an animation definition within the comment tag after the effects,
 as it is done within the examples.
@@ -1098,12 +1094,12 @@ See https://daneden.github.io/animate.css for more animation effects.
 
 ### Block Effects
 
-                                   {-{0}-}
+                                   --{{0}}--
 Block effects as animations are defined similarly to inline effects, just with
 one additional newline after the effect definition. The following Markdown block
 is then entirely associated with this effect.
 
-                                   {-{1}-}
+                                   --{{1}}--
 You can combine blocks by enclosing them into two lines of equality signs, as
 you can see from the examples below, an effect can also contain further effects.
 
@@ -1140,7 +1136,7 @@ block effect.
 
 ********************************************************************************
 
-                                {-{4}-}
+                                --{{4}}--
 You can put spaces before the definition of a block effect, to prevent github
 and others from adding the definition to a Markdown paragraph, and thus, to
 render the script properly.
@@ -1163,43 +1159,43 @@ Russian Female
 
 1. we are using the text-to-speech engine of https://responsivevoice.org
 2. the narrator voice must be defined within the initial comment of a script
-3. use `{-{id}-}` to indicate what is spoken and when
+3. use `--{{id}}--` to indicate what is spoken and when
 
 ``` markdown
-                                {-{1}-}
+                                --{{1}}--
 The entire ***Markdown*** paragraph right below the effect definition in double
 minus notation is sent to responsivevoice to speak the text out loud. If you
 click on the ear button at the navigation panel, then this paragraph gets
 rendered at the place where it is defined.
 
-                               {-{3 Deutsch Female}-}
+                               --{{3 Deutsch Female}}--
 Markdown ist eine vereinfachte Auszeichnungssprache, die von John Gruber und
 Aaron Swartz entworfen und im Dezember 2004 mit Version 1.0.1 spezifiziert ...
 
-                               {-{4 @Tanja}-}
+                               --{{4 @Tanja}}--
 Первоначально создан в 2004 году Джоном Грубером (англ. John Gruber) и Аароном
 Шварцем. Многие идеи языка были позаимствованы из существующих соглашений ...
 ```
 
-                                {-{1}-}
+                                --{{1}}--
 The entire ***Markdown*** paragraph right below the effect definition in double
 minus notation is sent to responsivevoice to speak the text out loud. If you
 click on the ear button at the navigation panel, then this paragraph gets
 rendered at the place where it is defined.
 
-                                {-{2}-}
+                                --{{2}}--
 The narrator voice is defined within the initial comment, but you can reset this
 for the entire section, by adding such a definition directly after the title
 tag, or you can add a voice directly after the comment number to let your script
 talk in different languages. Proceed and listen ;-)
 
-                                {-{3 Deutsch Female}-}
+                                --{{3 Deutsch Female}}--
 Markdown ist eine vereinfachte Auszeichnungssprache, die von John Gruber und
 Aaron Swartz entworfen und im Dezember 2004 mit Version 1.0.1 spezifiziert
 wurde. Ein Ziel von Markdown ist, dass schon die Ausgangsform ohne weitere
 Konvertierung leicht lesbar ist.
 
-                               {-{4 @Tanja}-}
+                               --{{4 @Tanja}}--
 Первоначально создан в 2004 году Джоном Грубером (англ. John Gruber) и Аароном
 Шварцем. Многие идеи языка были позаимствованы из существующих соглашений по
 разметке текста в электронных письмах. Реализации языка Markdown преобразуют
@@ -1252,7 +1248,7 @@ Result:
 
 ### Line-Plots 2
 
-                                {-{0}-}
+                                --{{0}}--
 All diagram titles, labels, limits are optional, and if you do not define
 limits, then the min max values 0 and 1 are used by default.
 
@@ -1281,7 +1277,7 @@ Markdown-format:
 
 ### Multi-Line-Plots
 
-                             {-{0}-}
+                             --{{0}}--
 Next to stars, you can also use any kind of character to define another line,
 where the character defines the color. For example an r marks the color red and
 a b the color blue.
@@ -1316,7 +1312,7 @@ Markdown-format:
 
 ### Dot-Plots
 
-                                 {-{0}-}
+                                 --{{0}}--
 If the there are more point with the same character for one x-value, then only
 dots are plotted. And by using upper and lower case characters you can also
 define the size of the dots.
@@ -1357,7 +1353,7 @@ Markdown-format:
 
 ## Surveys
 
-                             {-{0}-}
+                             --{{0}}--
 A script should not define a one-way road to the student! So surveys are
 required.
 
@@ -1374,7 +1370,7 @@ What is your opinion on ... :
 
 ### Single Choice Vector
 
-                              {-{0}-}
+                              --{{0}}--
 And also this kind of survey is similar to a single choice quiz, but in this
 case numbers within parenthesis are used to define some kind of variable
 identifier. That is why they do not have to be in order.
@@ -1396,7 +1392,7 @@ You can only select one option:
 
 ### Multi Choice Vector
 
-                               {-{0}-}
+                               --{{0}}--
 Similar to multi-choice quizzes, you can define multi-choice survey vectors with
 a number in double square brackets. But, and this is also possible for all other
 kinds of surveys you can define some kind of variable name with a starting colon.
@@ -1417,7 +1413,7 @@ Select some of your favored colors!
 
 ### Single Choice Matrix
 
-                              {-{0}-}
+                              --{{0}}--
 For defining survey blocks you only have to a header row, whose definition is
 also used by the trailing rows.
 
@@ -1437,7 +1433,7 @@ Markdown-format:
 
 ### Multi Choice Matrix
 
-                               {-{0}-}
+                               --{{0}}--
 I guess, multi-choice blocks are self-explanatory...
 
 Markdown-format:
@@ -1471,37 +1467,37 @@ Result:
 <!-- class = "animated fadeInUpBig" -->
 {{1}} <h1> André Dietrich  </h1>
 
-{-{1}-}
+--{{1}}--
 Programming paradigm experimenter and creator of liaScript and SelectScript...
 
 
 <!-- class = "animated fadeInUpBig" -->
 {{2}} <h1> Sebastian Zug   </h1>
 
-{-{2}-}
+--{{2}}--
 The mind in the dark and the man behind the eLab-project ...
 
 
 <!-- class = "animated fadeInUpBig" -->
 {{3}}<h1> Fin Christensen </h1>
 
-{-{3}-}
+--{{3}}--
 CSS and Web development enthusiast, outstanding git user ...
 
 <!-- class = "animated fadeInUpBig" -->
 {{4}} <h1> Martin Koppehel </h1>
 
-{-{4}-}
+--{{4}}--
 Hardware-architect and fully Fullstack developer ...
 
 <!-- class = "animated fadeInUpBig" -->
 {{5}} <h1> Leon Wehmeier   </h1>
 
-{-{5}-}
+--{{5}}--
 Coordinator and embedded development guru ...
 
 <!-- class = "animated fadeInUpBig" -->
 {{6}} <h1> Karl Fessel     </h1>
 
-{-{6}-}
+--{{6}}--
 Embedded systems developer, creator of arduinoview, and Markdown evangelist ...
