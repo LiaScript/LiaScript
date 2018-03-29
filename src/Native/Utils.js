@@ -48,13 +48,7 @@ var _user$project$Native_Utils = (function () {
 
     function execute(delay, code)
     {
-        setTimeout(function(){
-          try {
-              var rslt = String(eval(code));
-          }
-          catch (e) { }
-        }, delay);
-
+        setTimeout(() => {eval(code)}, delay);
     };
 
     function toUnixNewline(code)
@@ -89,22 +83,19 @@ var _user$project$Native_Utils = (function () {
 
         console.log("url: ", lib_js_counter, url);
 
+        try {
+            var scriptTag = document.createElement('script');
+            scriptTag.src = url;
+            document.head.appendChild(scriptTag);
 
-        setTimeout( function () {
-          try {
-              var scriptTag = document.createElement('script');
-              scriptTag.src = url;
-              document.head.appendChild(scriptTag);
+        } catch (e) {
+            console.log(e.message);
+        }
 
-          } catch (e) {
-              console.log(e.message);
-          }
-      }, lib_js_counter * 100);
-
-      return {
-          ctor: "Ok",
-          _0: ""
-      };
+        return {
+            ctor: "Ok",
+            _0: ""
+        };
     };
 
 

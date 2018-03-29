@@ -86,7 +86,7 @@ unordered_list =
         <*> many1
                 (regex "[*+-]( )"
                     *> (identation_append "  "
-                            *> many1 (blocks <* regex "\\n?\\n?")
+                            *> many1 (blocks <* regex "\\n?")
                             <* identation_pop
                        )
                 )
@@ -99,7 +99,7 @@ ordered_list =
         <*> many1
                 (regex "[0-9]+\\. "
                     *> (identation_append "   "
-                            *> many1 (blocks <* regex "\\n?\\n?")
+                            *> many1 (blocks <* regex "\\n?")
                             <* identation_pop
                        )
                 )

@@ -22,7 +22,7 @@ update msg sound model =
     case msg of
         Init run_all_javascript ->
             model
-                |> execute run_all_javascript 300
+                |> execute run_all_javascript 1300
                 |> update Speak sound
 
         Next ->
