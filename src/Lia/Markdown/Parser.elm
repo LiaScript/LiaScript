@@ -161,10 +161,6 @@ md_annotations =
     maybe
         (regex "[ \\t]*"
             *> macro
-            *> (Dict.fromList
-                    <$> (comment attribute
-                            <|> (comments *> succeed [])
-                        )
-               )
+            *> (Dict.fromList <$> comment attribute)
             <* maybe (regex "[ \\t]*\\n" <* identation)
         )

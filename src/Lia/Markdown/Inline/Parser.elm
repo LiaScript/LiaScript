@@ -41,7 +41,7 @@ comment_string =
 
 comments : Parser s ()
 comments =
-    skip (many (comment anyChar))
+    skip (many (whitespace *> comment anyChar))
 
 
 attribute : Parser s ( String, String )
@@ -53,7 +53,7 @@ attribute =
 
 annotations : Parser s Annotation
 annotations =
-    maybe (Dict.fromList >> attr_ <$> (regex "[ \\t]*" *> comment attribute))
+    maybe (Dict.fromList >> attr_ <$> (regex "[ \\t]*" *> comment attribute)) <* comments
 
 
 attr_ : Dict String String -> Dict String String
@@ -189,7 +189,10 @@ inlines =
                                 <*> (Macro.macro *> annotations)
                             )
                    )
-                <* (maybe comments *> succeed (Chars "" Nothing))
+
+
+
+--          <* (maybe comments *> succeed (Chars "" Nothing))
 
 
 stringTill : Parser s p -> Parser s String
