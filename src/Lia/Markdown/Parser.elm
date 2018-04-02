@@ -44,7 +44,7 @@ blocks =
                         , Paragraph <$> md_annotations <*> paragraph
                         ]
             in
-            identation *> macro *> b
+            identation *> macro *> b <* maybe (whitelines *> Effect.hidden_comment)
 
 
 to_comment attr ( id1, id2 ) =

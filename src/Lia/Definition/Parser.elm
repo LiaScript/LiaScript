@@ -12,7 +12,7 @@ parse =
     lazy <|
         \() ->
             maybe (definition *> modifyState (\s -> { s | defines_updated = True }))
-                *> many (choice [ whitelines, comments ])
+                *> whitelines
                 |> skip
 
 

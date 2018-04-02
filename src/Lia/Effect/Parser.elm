@@ -1,7 +1,8 @@
-module Lia.Effect.Parser exposing (comment, inline, markdown)
+module Lia.Effect.Parser exposing (comment, hidden_comment, inline, markdown)
 
 import Array
 import Combine exposing (..)
+import Combine.Char exposing (anyChar)
 import Combine.Num exposing (int)
 import Dict
 import Lia.Effect.Model exposing (Element)
@@ -84,11 +85,27 @@ comment paragraph =
         <*> (identation *> paragraph)
         <* reset_effect_number
     )
-        >>= add_comment
+        >>= add_comment True
 
 
-add_comment : ( Int, Maybe String, Inlines ) -> Parser PState ( Int, Int )
-add_comment ( idx, temp_narrator, par ) =
+hidden_comment : Parser PState ()
+hidden_comment =
+    skip
+        (((\i voice text ->
+            ( i, voice, [ Chars (text |> String.fromList |> String.trim) Nothing ] )
+          )
+            <$> (regex "<!--[ \\t]*--{{" *> effect_number)
+            <*> maybe (regex "[ \\t]+" *> macro *> regex "[A-Za-z0-9 ]+")
+            <* regex "}}--[ \\t]*"
+            <*> manyTill anyChar (string "-->")
+            <* reset_effect_number
+         )
+            >>= add_comment False
+        )
+
+
+add_comment : Bool -> ( Int, Maybe String, Inlines ) -> Parser PState ( Int, Int )
+add_comment visible ( idx, temp_narrator, par ) =
     let
         mod s =
             let
@@ -108,10 +125,14 @@ add_comment ( idx, temp_narrator, par ) =
                             case Dict.get idx e.comments of
                                 Just cmt ->
                                     Dict.insert idx
-                                        { cmt
-                                            | comment = cmt.comment ++ "\\n" ++ stringify par
-                                            , paragraphs = Array.push ( Nothing, par ) cmt.paragraphs
-                                        }
+                                        (if visible then
+                                            { cmt
+                                                | comment = cmt.comment ++ "\n" ++ stringify par
+                                                , paragraphs = Array.push ( Nothing, par ) cmt.paragraphs
+                                            }
+                                         else
+                                            { cmt | comment = cmt.comment ++ "\n" ++ stringify par }
+                                        )
                                         e.comments
 
                                 _ ->
@@ -119,7 +140,12 @@ add_comment ( idx, temp_narrator, par ) =
                                         (Element
                                             narrator
                                             (stringify par)
-                                            (Array.fromList [ ( Nothing, par ) ])
+                                            (Array.fromList <|
+                                                if visible then
+                                                    [ ( Nothing, par ) ]
+                                                else
+                                                    []
+                                            )
                                         )
                                         e.comments
                     }

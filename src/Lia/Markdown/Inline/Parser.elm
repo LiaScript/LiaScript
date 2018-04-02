@@ -39,9 +39,9 @@ comment_string =
         |> map (String.fromList >> String.trim)
 
 
-comments : Parser s ()
+comments : Parser PState ()
 comments =
-    skip (many (whitespace *> comment anyChar))
+    skip (many (Effect.hidden_comment <|> skip (comment anyChar)))
 
 
 attribute : Parser s ( String, String )
@@ -51,7 +51,7 @@ attribute =
         <*> manyTill anyChar (regex "\"[ \\t\\n]*")
 
 
-annotations : Parser s Annotation
+annotations : Parser PState Annotation
 annotations =
     maybe (Dict.fromList >> attr_ <$> (regex "[ \\t]*" *> comment attribute)) <* comments
 
