@@ -122,13 +122,13 @@ view_block config block =
                 |> Html.map UpdateCode
 
         Quiz attr quiz Nothing ->
-            margin
+            Html.div [ Attr.class "lia-quiz" ]
                 [ Quizzes.view False attr quiz config.section.quiz_vector
                     |> Html.map UpdateQuiz
                 ]
 
         Quiz attr quiz (Just ( answer, hidden_effects )) ->
-            margin <|
+            Html.div [ Attr.class "lia-quiz" ] <|
                 case Quizzes.view_solution config.section.quiz_vector quiz of
                     ( empty, True ) ->
                         List.append
@@ -169,17 +169,6 @@ view_block config block =
 
         Chart attr chart ->
             Charts.view attr chart
-
-
-margin : List (Html Msg) -> Html Msg
-margin =
-    Html.div
-        [ Attr.style
-            [ ( "border", "2px solid black" )
-            , ( "padding", "10px" )
-            , ( "border-radius", "15px" )
-            ]
-        ]
 
 
 view_table : Config -> Annotation -> MultInlines -> List String -> List MultInlines -> Html Msg

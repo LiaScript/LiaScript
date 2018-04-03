@@ -89,6 +89,12 @@
                 color: map-get($theme, text);
                 vertical-align: middle;
             }
+
+            .lia-quiz {
+              border: 3px solid map-get($theme, primary);
+              padding: 10px;
+              border-radius: 10px;
+            }
         }
     }
 }
