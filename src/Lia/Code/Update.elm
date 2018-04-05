@@ -1,13 +1,13 @@
 module Lia.Code.Update exposing (Msg(..), update)
 
 import Array exposing (Array)
-import Lia.Code.Types exposing (Element, Vector)
+import Lia.Code.Types exposing (Element, EvalString, Vector)
 import Lia.Helper exposing (ID)
 import Lia.Utils
 
 
 type Msg
-    = Eval ID (List String)
+    = Eval ID EvalString
     | Update ID String
     | FlipMode ID
     | EvalRslt (Result { id : ID, result : String } { id : ID, result : String })

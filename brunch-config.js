@@ -35,7 +35,7 @@ module.exports = {
                 mainModules: ["examples/Online.elm"],
                 outputFolder: "public/js/",
                 outputFile: 'app.js',
-                makeParameters: [] //'--debug'],
+                makeParameters: ['--debug'],
             },
             sass: {
                 mode: "native",

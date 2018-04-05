@@ -4,6 +4,7 @@ import Array exposing (Array)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
+import Lia.Code.Types exposing (EvalString)
 import Lia.Markdown.Inline.Types exposing (Annotation, MultInlines)
 import Lia.Markdown.Inline.View exposing (annotation, view_inf)
 import Lia.Quiz.Model exposing (..)
@@ -18,44 +19,51 @@ view show_solution attr quiz vector =
             get_state vector
     in
     case quiz of
-        Empty idx hints ->
+        Empty idx hints eval_string ->
             case state idx of
                 Just s ->
-                    ((if show_solution then
-                        Html.a
-                            [ Attr.class "lia-hint-btn"
-                            , Attr.href "#"
-                            , onClick (ShowSolution idx EmptyState)
-                            , Attr.title "show solution"
-                            ]
-                            [ Html.text "info" ]
-                      else
-                        Html.text ""
-                     )
-                        :: view_hints idx s.hint hints
+                    (case eval_string of
+                        Just code ->
+                            view_button s.trial s.solved (Check idx s.state eval_string)
+
+                        Nothing ->
+                            Html.text ""
                     )
+                        :: ((if show_solution then
+                                Html.a
+                                    [ Attr.class "lia-hint-btn"
+                                    , Attr.href "#"
+                                    , onClick (ShowSolution idx EmptyState)
+                                    , Attr.title "show solution"
+                                    ]
+                                    [ Html.text "info" ]
+                             else
+                                Html.text ""
+                            )
+                                :: view_hints idx s.hint hints
+                           )
                         |> Html.div []
 
                 Nothing ->
                     Html.text ""
 
-        Text solution idx hints ->
-            view_quiz attr show_solution (state idx) view_text idx hints (TextState solution)
+        Text solution idx hints eval_string ->
+            view_quiz attr show_solution (state idx) view_text idx hints eval_string (TextState solution)
 
-        SingleChoice solution questions idx hints ->
-            view_quiz attr show_solution (state idx) (view_single_choice questions) idx hints (SingleChoiceState solution)
+        SingleChoice solution questions idx hints eval_string ->
+            view_quiz attr show_solution (state idx) (view_single_choice questions) idx hints eval_string (SingleChoiceState solution)
 
-        MultipleChoice solution questions idx hints ->
-            view_quiz attr show_solution (state idx) (view_multiple_choice questions) idx hints (MultipleChoiceState solution)
+        MultipleChoice solution questions idx hints eval_string ->
+            view_quiz attr show_solution (state idx) (view_multiple_choice questions) idx hints eval_string (MultipleChoiceState solution)
 
 
-view_quiz : Annotation -> Bool -> Maybe Element -> (Int -> State -> Bool -> Html Msg) -> Int -> MultInlines -> State -> Html Msg
-view_quiz attr show_solution state fn_view idx hints solution =
+view_quiz : Annotation -> Bool -> Maybe Element -> (Int -> State -> Bool -> Html Msg) -> Int -> MultInlines -> Maybe EvalString -> State -> Html Msg
+view_quiz attr show_solution state fn_view idx hints eval_string solution =
     case state of
         Just s ->
             Html.p (annotation attr "")
                 (fn_view idx s.state (s.solved /= Open)
-                    :: view_button s.trial s.solved (Check idx solution)
+                    :: view_button s.trial s.solved (Check idx solution eval_string)
                     :: (if show_solution then
                             Html.a
                                 [ Attr.class "lia-hint-btn"
@@ -215,16 +223,16 @@ view_solution vector quiz =
     let
         ( idx, empty ) =
             case quiz of
-                Empty idx _ ->
+                Empty idx _ _ ->
                     ( idx, True )
 
-                Text _ idx _ ->
+                Text _ idx _ _ ->
                     ( idx, False )
 
-                SingleChoice _ _ idx _ ->
+                SingleChoice _ _ idx _ _ ->
                     ( idx, False )
 
-                MultipleChoice _ _ idx _ ->
+                MultipleChoice _ _ idx _ _ ->
                     ( idx, False )
     in
     idx

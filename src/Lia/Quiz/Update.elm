@@ -2,15 +2,17 @@ module Lia.Quiz.Update exposing (Msg(..), update)
 
 import Array
 import Json.Encode as JE
+import Lia.Code.Types exposing (EvalString)
 import Lia.Quiz.Model exposing (vector2json)
 import Lia.Quiz.Types exposing (..)
+import Lia.Utils
 
 
 type Msg
     = CheckBox Int Int
     | RadioButton Int Int
     | Input Int String
-    | Check Int State
+    | Check Int State (Maybe EvalString)
     | ShowHint Int
     | ShowSolution Int State
 
@@ -27,7 +29,7 @@ update msg vector =
         Input idx string ->
             ( update_ idx vector (input string), Nothing )
 
-        Check idx solution ->
+        Check idx solution eval_string ->
             let
                 new_vector =
                     update_ idx
@@ -36,10 +38,47 @@ update msg vector =
                             { e
                                 | trial = e.trial + 1
                                 , solved =
-                                    if e.state == solution then
-                                        Solved
-                                    else
-                                        Open
+                                    case eval_string of
+                                        Just code ->
+                                            let
+                                                state =
+                                                    case e.state of
+                                                        TextState str ->
+                                                            str
+
+                                                        SingleChoiceState i ->
+                                                            toString i
+
+                                                        MultipleChoiceState array ->
+                                                            array
+                                                                |> Array.map
+                                                                    (\s ->
+                                                                        if s then
+                                                                            1
+                                                                        else
+                                                                            0
+                                                                    )
+                                                                |> Array.toList
+                                                                |> toString
+
+                                                        _ ->
+                                                            toString e.state
+                                            in
+                                            case
+                                                String.join state code
+                                                    |> Lia.Utils.evaluateJS
+                                            of
+                                                Ok "true" ->
+                                                    Solved
+
+                                                _ ->
+                                                    Open
+
+                                        Nothing ->
+                                            if e.state == solution then
+                                                Solved
+                                            else
+                                                Open
                             }
                         )
             in

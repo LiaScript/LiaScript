@@ -2,6 +2,7 @@ module Lia.Quiz.Parser exposing (parse)
 
 import Array
 import Combine exposing (..)
+import Lia.Code.Types exposing (EvalString)
 import Lia.Helper exposing (ID)
 import Lia.Markdown.Inline.Parser exposing (..)
 import Lia.Markdown.Inline.Types exposing (..)
@@ -16,7 +17,10 @@ parse =
 
 quiz : Parser PState Quiz
 quiz =
-    choice [ single_choice, multi_choice, empty, text ] <*> get_counter <*> hints
+    choice [ single_choice, multi_choice, empty, text ]
+        <*> get_counter
+        <*> hints
+        <*> maybe (String.split "{X}" <$> (regex "[ \\t]*" *> javascript <* newline))
 
 
 get_counter : Parser PState Int
@@ -34,17 +38,17 @@ quest p =
     pattern p *> line <* newline
 
 
-empty : Parser PState (ID -> Hints -> Quiz)
+empty : Parser PState (ID -> Hints -> Maybe EvalString -> Quiz)
 empty =
     (regex "[ \\t]*" *> string "[[!]]" *> newline) $> Empty
 
 
-text : Parser PState (ID -> Hints -> Quiz)
+text : Parser PState (ID -> Hints -> Maybe EvalString -> Quiz)
 text =
     Text <$> pattern (string "[" *> regex "[^\n\\]]+" <* regex "\\][ \\t]*") <* newline
 
 
-multi_choice : Parser PState (ID -> Hints -> Quiz)
+multi_choice : Parser PState (ID -> Hints -> Maybe EvalString -> Quiz)
 multi_choice =
     let
         checked b p =
@@ -66,7 +70,7 @@ multi_choice =
                 )
 
 
-single_choice : Parser PState (ID -> Hints -> Quiz)
+single_choice : Parser PState (ID -> Hints -> Maybe EvalString -> Quiz)
 single_choice =
     let
         wrong =
@@ -101,16 +105,16 @@ modify_PState quiz_ =
 
         state =
             case quiz_ of
-                Empty _ _ ->
+                Empty _ _ _ ->
                     EmptyState
 
-                Text _ _ _ ->
+                Text _ _ _ _ ->
                     TextState ""
 
-                SingleChoice _ _ _ _ ->
+                SingleChoice _ _ _ _ _ ->
                     SingleChoiceState -1
 
-                MultipleChoice x _ _ _ ->
+                MultipleChoice x _ _ _ _ ->
                     MultipleChoiceState (Array.repeat (Array.length x) False)
     in
     modifyState (add_state state) *> succeed quiz_
