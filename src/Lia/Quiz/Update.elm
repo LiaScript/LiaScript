@@ -35,51 +35,59 @@ update msg vector =
                     update_ idx
                         vector
                         (\e ->
-                            { e
-                                | trial = e.trial + 1
-                                , solved =
-                                    case eval_string of
-                                        Just code ->
-                                            let
-                                                state =
-                                                    case e.state of
-                                                        TextState str ->
-                                                            str
-
-                                                        SingleChoiceState i ->
-                                                            toString i
-
-                                                        MultipleChoiceState array ->
-                                                            array
-                                                                |> Array.map
-                                                                    (\s ->
-                                                                        if s then
-                                                                            1
-                                                                        else
-                                                                            0
-                                                                    )
-                                                                |> Array.toList
-                                                                |> toString
-
-                                                        _ ->
-                                                            toString e.state
-                                            in
-                                            case
-                                                String.join state code
-                                                    |> Lia.Utils.evaluateJS
-                                            of
-                                                Ok "true" ->
-                                                    Solved
-
-                                                _ ->
-                                                    Open
-
-                                        Nothing ->
+                            case eval_string of
+                                Nothing ->
+                                    { e
+                                        | trial = e.trial + 1
+                                        , solved =
                                             if e.state == solution then
                                                 Solved
                                             else
                                                 Open
-                            }
+                                    }
+
+                                Just code ->
+                                    let
+                                        state =
+                                            case e.state of
+                                                TextState str ->
+                                                    str
+
+                                                SingleChoiceState i ->
+                                                    toString i
+
+                                                MultipleChoiceState array ->
+                                                    array
+                                                        |> Array.map
+                                                            (\s ->
+                                                                if s then
+                                                                    1
+                                                                else
+                                                                    0
+                                                            )
+                                                        |> Array.toList
+                                                        |> toString
+
+                                                _ ->
+                                                    toString e.state
+                                    in
+                                    case String.join state code |> Lia.Utils.evaluateJS of
+                                        Ok "true" ->
+                                            { e
+                                                | trial = e.trial + 1
+                                                , solved = Solved
+                                                , error_msg = ""
+                                            }
+
+                                        Ok _ ->
+                                            { e
+                                                | trial = e.trial + 1
+                                                , solved = Open
+                                                , error_msg = ""
+                                            }
+
+                                        Err msg ->
+                                            { e | error_msg = msg }
                         )
             in
             ( new_vector, Just <| vector2json new_vector )

@@ -5,6 +5,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import Lia.Code.Types exposing (EvalString)
+import Lia.Code.View exposing (error)
 import Lia.Markdown.Inline.Types exposing (Annotation, MultInlines)
 import Lia.Markdown.Inline.View exposing (annotation, view_inf)
 import Lia.Quiz.Model exposing (..)
@@ -74,6 +75,16 @@ view_quiz attr show_solution state fn_view idx hints eval_string solution =
                                 [ Html.text "info" ]
                         else
                             Html.text ""
+                       )
+                    :: (if s.error_msg == "" then
+                            Html.text ""
+                        else
+                            Html.br [] []
+                       )
+                    :: (if s.error_msg == "" then
+                            Html.text ""
+                        else
+                            error s.error_msg
                        )
                     :: view_hints idx s.hint hints
                 )

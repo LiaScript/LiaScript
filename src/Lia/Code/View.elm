@@ -1,4 +1,4 @@
-module Lia.Code.View exposing (view)
+module Lia.Code.View exposing (error, view)
 
 import Array
 import Html exposing (Html)
@@ -72,7 +72,7 @@ view attr model code =
                                     Html.pre [] [ Lia.Utils.stringToHtml rslt ]
 
                                 Err rslt ->
-                                    Html.pre [ Attr.style [ ( "color", "red" ) ] ] [ Html.text ("Error: " ++ rslt) ]
+                                    error rslt
                             ]
                         ]
 
@@ -94,3 +94,8 @@ highlight attr lang code idx =
         [ Html.code [ Attr.class "lia-code-highlight" ]
             [ Lia.Utils.highlight lang code ]
         ]
+
+
+error : String -> Html msg
+error info =
+    Html.pre [ Attr.style [ ( "color", "red" ) ] ] [ Html.text ("Error: " ++ info) ]

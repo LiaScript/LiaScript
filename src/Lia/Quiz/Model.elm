@@ -86,11 +86,12 @@ json2element =
                 _ ->
                     JD.succeed ReSolved
     in
-    JD.map4 Element
+    JD.map5 Element
         (JD.field "solved" JD.int |> JD.andThen solved_decoder)
         (JD.field "state" json2state)
         (JD.field "hints" JD.int)
         (JD.field "trial" JD.int)
+        (JD.field "error_msg" JD.string)
 
 
 json2state : JD.Decoder State

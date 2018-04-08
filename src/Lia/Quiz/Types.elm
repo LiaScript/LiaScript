@@ -33,6 +33,7 @@ type alias Element =
     , state : State
     , trial : Int
     , hint : Int
+    , error_msg : String
     }
 
 

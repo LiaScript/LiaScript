@@ -99,7 +99,7 @@ modify_PState quiz_ =
             { s
                 | quiz_vector =
                     Array.push
-                        { solved = Open, state = e, trial = 0, hint = 0 }
+                        { solved = Open, state = e, trial = 0, hint = 0, error_msg = "" }
                         s.quiz_vector
             }
 
