@@ -123,7 +123,7 @@ view_block config block =
 
         Quiz attr quiz Nothing ->
             Html.div [ Attr.class "lia-quiz" ]
-                [ Quizzes.view False attr quiz config.section.quiz_vector
+                [ Quizzes.view attr quiz config.section.quiz_vector
                     |> Html.map UpdateQuiz
                 ]
 
@@ -132,7 +132,7 @@ view_block config block =
                 case Quizzes.view_solution config.section.quiz_vector quiz of
                     ( empty, True ) ->
                         List.append
-                            [ Html.map UpdateQuiz <| Quizzes.view False attr quiz config.section.quiz_vector ]
+                            [ Html.map UpdateQuiz <| Quizzes.view attr quiz config.section.quiz_vector ]
                             ((if empty then
                                 Html.text ""
                               else
@@ -142,7 +142,7 @@ view_block config block =
                             )
 
                     _ ->
-                        [ Quizzes.view True attr quiz config.section.quiz_vector
+                        [ Quizzes.view attr quiz config.section.quiz_vector
                             |> Html.map UpdateQuiz
                         ]
 

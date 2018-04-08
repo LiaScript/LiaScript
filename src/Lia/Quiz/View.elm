@@ -13,8 +13,8 @@ import Lia.Quiz.Types exposing (..)
 import Lia.Quiz.Update exposing (Msg(..))
 
 
-view : Bool -> Annotation -> Quiz -> Vector -> Html Msg
-view show_solution attr quiz vector =
+view : Annotation -> Quiz -> Vector -> Html Msg
+view attr quiz vector =
     let
         state =
             get_state vector
@@ -30,52 +30,31 @@ view show_solution attr quiz vector =
                         Nothing ->
                             Html.text ""
                     )
-                        :: ((if show_solution then
-                                Html.a
-                                    [ Attr.class "lia-hint-btn"
-                                    , Attr.href "#"
-                                    , onClick (ShowSolution idx EmptyState)
-                                    , Attr.title "show solution"
-                                    ]
-                                    [ Html.text "info" ]
-                             else
-                                Html.text ""
-                            )
-                                :: view_hints idx s.hint hints
-                           )
+                        :: view_button_solution s.solved (ShowSolution idx EmptyState)
+                        :: view_hints idx s.hint hints
                         |> Html.div []
 
                 Nothing ->
                     Html.text ""
 
         Text solution idx hints eval_string ->
-            view_quiz attr show_solution (state idx) view_text idx hints eval_string (TextState solution)
+            view_quiz attr (state idx) view_text idx hints eval_string (TextState solution)
 
         SingleChoice solution questions idx hints eval_string ->
-            view_quiz attr show_solution (state idx) (view_single_choice questions) idx hints eval_string (SingleChoiceState solution)
+            view_quiz attr (state idx) (view_single_choice questions) idx hints eval_string (SingleChoiceState solution)
 
         MultipleChoice solution questions idx hints eval_string ->
-            view_quiz attr show_solution (state idx) (view_multiple_choice questions) idx hints eval_string (MultipleChoiceState solution)
+            view_quiz attr (state idx) (view_multiple_choice questions) idx hints eval_string (MultipleChoiceState solution)
 
 
-view_quiz : Annotation -> Bool -> Maybe Element -> (Int -> State -> Bool -> Html Msg) -> Int -> MultInlines -> Maybe EvalString -> State -> Html Msg
-view_quiz attr show_solution state fn_view idx hints eval_string solution =
+view_quiz : Annotation -> Maybe Element -> (Int -> State -> Bool -> Html Msg) -> Int -> MultInlines -> Maybe EvalString -> State -> Html Msg
+view_quiz attr state fn_view idx hints eval_string solution =
     case state of
         Just s ->
             Html.p (annotation attr "")
                 (fn_view idx s.state (s.solved /= Open)
                     :: view_button s.trial s.solved (Check idx solution eval_string)
-                    :: (if show_solution then
-                            Html.a
-                                [ Attr.class "lia-hint-btn"
-                                , Attr.href "#"
-                                , onClick (ShowSolution idx solution)
-                                , Attr.title "show solution"
-                                ]
-                                [ Html.text "info" ]
-                        else
-                            Html.text ""
-                       )
+                    :: view_button_solution s.solved (ShowSolution idx solution)
                     :: (if s.error_msg == "" then
                             Html.text ""
                         else
@@ -91,6 +70,20 @@ view_quiz attr show_solution state fn_view idx hints eval_string solution =
 
         Nothing ->
             Html.text ""
+
+
+view_button_solution : Solution -> Msg -> Html Msg
+view_button_solution solution msg =
+    if solution == Open then
+        Html.a
+            [ Attr.class "lia-hint-btn"
+            , Attr.href "#"
+            , onClick msg
+            , Attr.title "show solution"
+            ]
+            [ Html.text "info" ]
+    else
+        Html.text ""
 
 
 view_button : Int -> Solution -> Msg -> Html Msg

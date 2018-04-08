@@ -98,7 +98,7 @@ update msg vector =
         ShowSolution idx solution ->
             let
                 new_vector =
-                    update_ idx vector (\e -> { e | state = solution, solved = ReSolved })
+                    update_ idx vector (\e -> { e | state = solution, solved = ReSolved, error_msg = "" })
             in
             ( new_vector, Just <| vector2json new_vector )
 
