@@ -31,6 +31,16 @@ view attr quiz vector =
                             Html.text ""
                     )
                         :: view_button_solution s.solved (ShowSolution idx EmptyState)
+                        :: (if s.error_msg == "" then
+                                Html.text ""
+                            else
+                                Html.br [] []
+                           )
+                        :: (if s.error_msg == "" then
+                                Html.text ""
+                            else
+                                error s.error_msg
+                           )
                         :: view_hints idx s.hint hints
                         |> Html.div []
 

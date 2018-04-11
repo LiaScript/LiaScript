@@ -41,12 +41,16 @@ formula displayMode string =
 
 evaluateJS : String -> Result String String
 evaluateJS code =
-    Native.Utils.evaluate code
+    code
+        |> toJSstring
+        |> Native.Utils.evaluate
 
 
 execute : Int -> String -> ()
 execute delay code =
-    Native.Utils.execute delay code
+    code
+        |> toJSstring
+        |> Native.Utils.execute delay
 
 
 load_js : String -> Result String String
@@ -56,7 +60,10 @@ load_js url =
 
 evaluateJS2 : (Result err ok -> msg) -> ID -> String -> Cmd msg
 evaluateJS2 resultToMessage idx code =
-    attempt resultToMessage (Native.Utils.evaluate2 idx code)
+    code
+        |> toJSstring
+        |> Native.Utils.evaluate2 idx
+        |> attempt resultToMessage
 
 
 stringToHtml : String -> Html msg
@@ -96,3 +103,8 @@ string_replace search replace string =
 scrollIntoView : String -> ()
 scrollIntoView idx =
     Native.Utils.scrollIntoView idx
+
+
+toJSstring : String -> String
+toJSstring str =
+    str |> String.split "\\" |> String.join "\\\\"

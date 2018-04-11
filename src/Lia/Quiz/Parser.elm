@@ -4,6 +4,7 @@ import Array
 import Combine exposing (..)
 import Lia.Code.Types exposing (EvalString)
 import Lia.Helper exposing (ID)
+import Lia.Macro.Parser exposing (macro)
 import Lia.Markdown.Inline.Parser exposing (..)
 import Lia.Markdown.Inline.Types exposing (..)
 import Lia.PState exposing (PState)
@@ -20,7 +21,9 @@ quiz =
     choice [ single_choice, multi_choice, empty, text ]
         <*> get_counter
         <*> hints
-        <*> maybe (String.split "{X}" <$> (regex "[ \\t]*" *> javascript <* newline))
+        <*> (macro
+                *> maybe (String.split "{X}" <$> (regex "[ \\t]*" *> javascript <* newline))
+            )
 
 
 get_counter : Parser PState Int

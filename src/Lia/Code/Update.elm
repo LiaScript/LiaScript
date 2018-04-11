@@ -23,11 +23,7 @@ update msg model =
                     update_ idx
                         model
                         (\e -> { e | editing = False, running = True })
-                        (String.join
-                            (elem.code |> String.split "\\" |> String.join "\\\\")
-                            x
-                            |> Lia.Utils.evaluateJS2 EvalRslt idx
-                        )
+                        (String.join elem.code x |> Lia.Utils.evaluateJS2 EvalRslt idx)
 
                 Nothing ->
                     ( model, Cmd.none )
