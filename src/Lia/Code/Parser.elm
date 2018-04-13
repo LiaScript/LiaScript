@@ -19,7 +19,7 @@ result comment =
     withState
         (\s ->
             let
-                ( l, code ) =
+                ( l, t, code ) =
                     s.code_temp
 
                 lang =
@@ -27,15 +27,21 @@ result comment =
                         "cpp"
                     else
                         l
+
+                title =
+                    if t == "" then
+                        lang
+                    else
+                        t
             in
             case comment of
                 Just str ->
-                    evaluate lang code str
+                    evaluate lang title code str
 
                 Nothing ->
-                    succeed <| Highlight lang code
+                    succeed <| Highlight lang title code
         )
-        <* modify_temp ( "", "" )
+        <* modify_temp ( "", "", "" )
 
 
 check_lang : ( String, String ) -> ( String, String )
@@ -53,7 +59,12 @@ border =
 
 header : Parser PState String
 header =
-    String.trim <$> regex ".*\\n" <?> "language definition"
+    regex "[ \\t]*" *> regex "\\w*" <?> "language definition"
+
+
+title : Parser PState String
+title =
+    regex "[ \\t]*" *> regex ".*" <* string "\n" <?> "code title"
 
 
 code_line : Parser PState String
@@ -63,16 +74,16 @@ code_line =
 
 listing : Parser PState ()
 listing =
-    ((\h s -> ( h, String.concat s )) <$> (border *> header) <*> manyTill code_line (identation *> border)) >>= modify_temp
+    ((\h t s -> ( h, t, String.concat s )) <$> (border *> header) <*> title <*> manyTill code_line (identation *> border)) >>= modify_temp
 
 
-modify_temp : ( String, String ) -> Parser PState ()
+modify_temp : ( String, String, String ) -> Parser PState ()
 modify_temp lang_code =
     modifyState (\s -> { s | code_temp = lang_code })
 
 
-evaluate : String -> String -> String -> Parser PState Code
-evaluate lang code comment =
+evaluate : String -> String -> String -> String -> Parser PState Code
+evaluate lang title code comment =
     let
         add_state s =
             { s
@@ -83,6 +94,7 @@ evaluate lang code comment =
                         , version_active = 0
                         , result = Ok ""
                         , editing = False
+                        , visible = True
                         , running = False
                         }
                         s.code_vector
@@ -92,7 +104,7 @@ evaluate lang code comment =
         (\s ->
             comment
                 |> String.split "{X}"
-                |> Evaluate lang (Array.length s.code_vector)
+                |> Evaluate lang title (Array.length s.code_vector)
                 |> succeed
         )
         <* modifyState add_state

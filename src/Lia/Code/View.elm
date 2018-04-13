@@ -15,14 +15,25 @@ import Lia.Utils
 view : Annotation -> Vector -> Code -> Html Msg
 view attr model code =
     case code of
-        Highlight lang block ->
-            highlight attr lang block -1
+        Highlight lang title block ->
+            Html.div []
+                [ Html.button [] [ Html.text title ]
+                , highlight attr lang block -1 True
+                ]
 
-        Evaluate lang idx x ->
+        Evaluate lang title idx x ->
             case Array.get idx model of
                 Just elem ->
-                    Html.div [ Attr.class "lia-code-eval" ]
-                        [ if elem.editing then
+                    Html.div []
+                        [ Html.button
+                            [ onClick <| FlipView idx
+                            , Attr.classList
+                                [ ( "lia-accordion", True )
+                                , ( "active", elem.visible )
+                                ]
+                            ]
+                            [ Html.text title ]
+                        , if elem.editing then
                             Html.textarea
                                 (List.append
                                     (annotation attr "lia-input")
@@ -36,7 +47,7 @@ view attr model code =
                                 )
                                 []
                           else
-                            highlight attr lang elem.code idx
+                            highlight attr lang elem.code idx elem.visible
                         , Html.div []
                             [ if elem.running then
                                 Html.button [ Attr.class "lia-btn lia-icon" ]
@@ -60,19 +71,19 @@ view attr model code =
                                 , Attr.class "lia-btn lia-icon lia-left"
                                 ]
                                 [ Html.text "navigate_next" ]
-                            ]
-                        , Html.div
-                            [ Attr.style
-                                [ ( "max-height", "250px" )
-                                , ( "overflow", "auto" )
+                            , Html.div
+                                [ Attr.style
+                                    [ ( "max-height", "250px" )
+                                    , ( "overflow", "auto" )
+                                    ]
                                 ]
-                            ]
-                            [ case elem.result of
-                                Ok rslt ->
-                                    Html.pre [] [ Lia.Utils.stringToHtml rslt ]
+                                [ case elem.result of
+                                    Ok rslt ->
+                                        Html.pre [] [ Lia.Utils.stringToHtml rslt ]
 
-                                Err rslt ->
-                                    error rslt
+                                    Err rslt ->
+                                        error rslt
+                                ]
                             ]
                         ]
 
@@ -80,15 +91,21 @@ view attr model code =
                     Html.text ""
 
 
-highlight : Annotation -> String -> String -> ID -> Html Msg
-highlight attr lang code idx =
+highlight : Annotation -> String -> String -> ID -> Bool -> Html Msg
+highlight attr lang code idx visible =
     Html.pre
         (if idx < 0 then
-            Attr.style [ ( "overflow-x", "auto" ) ]
-                :: annotation attr "lia-code"
+            annotation attr "lia-code"
          else
-            Attr.style [ ( "overflow-x", "auto" ) ]
-                :: onDoubleClick (FlipMode idx)
+            onDoubleClick (FlipMode idx)
+                :: Attr.style
+                    [ ( "max-height"
+                      , if visible then
+                            "250px"
+                        else
+                            "0px"
+                      )
+                    ]
                 :: annotation attr "lia-code"
         )
         [ Html.code [ Attr.class "lia-code-highlight" ]

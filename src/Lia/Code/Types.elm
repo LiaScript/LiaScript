@@ -14,6 +14,7 @@ type alias Element =
     , version_active : Int
     , result : Result String String
     , editing : Bool
+    , visible : Bool
     , running : Bool
     }
 
@@ -23,5 +24,5 @@ type alias EvalString =
 
 
 type Code
-    = Highlight String String -- Lang Code
-    | Evaluate String ID EvalString -- Lang ID EvalString
+    = Highlight String String String -- Lang Title Code
+    | Evaluate String String ID EvalString -- Lang Title ID EvalString

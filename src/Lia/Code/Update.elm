@@ -10,6 +10,7 @@ type Msg
     = Eval ID EvalString
     | Update ID String
     | FlipMode ID
+    | FlipView ID
     | EvalRslt (Result { id : ID, result : String } { id : ID, result : String })
     | Load ID Int
 
@@ -39,6 +40,9 @@ update msg model =
 
         FlipMode idx ->
             update_ idx model (\e -> { e | editing = not e.editing }) Cmd.none
+
+        FlipView idx ->
+            update_ idx model (\e -> { e | visible = not e.visible }) Cmd.none
 
         Load idx version ->
             update_ idx model (load version) Cmd.none

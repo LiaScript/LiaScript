@@ -62,9 +62,13 @@
         font-family: "Roboto Mono";
         background: $bg;
         color: color-contrast($bg, $fg, $fg-inv);
-        border-radius: map-get($config, spacing-small);
+        border-bottom-left-radius: map-get($config, spacing-small);
+        border-bottom-right-radius: map-get($config, spacing-small);
         padding: $vert $horiz;
         font-size: map-get($config, code-size);
+        overflow-x: auto;
+        margin: 0px;
+        transition: max-height 0.5s ease-out;
     }
 
     .lia-code:not(.lia-inline) {
@@ -75,6 +79,46 @@
         padding: map-get($config, spacing-normal);
         font-size: map-get($config, code-size);
         overflow-x: auto;
+    }
+
+    .lia-accordion {
+        $bg: map-get($theme, primary);
+        $fg: map-get($theme, background);
+        $rd: map-get($config, spacing-small);
+
+        background-color: $bg;
+        color: $fg;
+        cursor: pointer;
+        padding: 6px;
+        width: 100%;
+        border: none;
+        text-align: left;
+        outline: none;
+        font-size: 15px;
+        border-top-left-radius: $rd;
+        border-top-right-radius: $rd;
+        transition: 0.4s;
+        font-family: "Roboto Mono";
+        font-size: map-get($config, code-size);
+
+        .active, &:hover {
+            background-color: mix($bg, $fg, 80%);
+        }
+
+        &:after {
+          content: '\2212';
+          color: $fg;
+          font-weight: bold;
+          float: right;
+          margin-left: 5px;
+        }
+
+        &.active:after {
+            content: '\002B';
+            border-bottom-left-radius: $rd;
+            border-bottom-right-radius: $rd;
+        }
+
     }
 
     .lia-label {
@@ -113,7 +157,7 @@
 
             &:hover {
                 cursor: pointer;
-                background: mix($bg, $fg, 90%);
+                background: mix($bg, $fg, 80%);
             }
         }
 
@@ -147,7 +191,7 @@
             color: $fg;
 
             &:hover {
-                background: mix($bg, $fg, 90%);
+                background: mix($bg, $fg, 80%);
             }
 
             .lia-ripple {
@@ -163,7 +207,7 @@
             color: $fg;
 
             &:hover {
-                background: mix($bg, $fg, 90%);
+                background: mix($bg, $fg, 80%);
             }
 
             .lia-ripple {
@@ -419,7 +463,7 @@
             color: $fg;
 
             &:hover {
-                background: mix(transparent, $fg, 90%);
+                background: mix(transparent, $fg, 80%);
             }
 
             .lia-ripple {
