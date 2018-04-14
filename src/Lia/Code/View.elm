@@ -4,7 +4,7 @@ import Array
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onDoubleClick, onInput)
-import Lia.Code.Types exposing (Code(..), Vector)
+import Lia.Code.Types exposing (Code(..), EvalString, Vector)
 import Lia.Code.Update exposing (Msg(..))
 import Lia.Helper exposing (ID)
 import Lia.Markdown.Inline.Types exposing (Annotation)
@@ -48,43 +48,8 @@ view attr model code =
                                 []
                           else
                             highlight attr lang elem.code idx elem.visible
-                        , Html.div []
-                            [ if elem.running then
-                                Html.button [ Attr.class "lia-btn lia-icon" ]
-                                    [ Html.text "sync" ]
-                              else
-                                Html.button [ Attr.class "lia-btn lia-icon", onClick (Eval idx x) ]
-                                    [ Html.text "play_circle_filled" ]
-                            , Html.span [ Attr.class "lia-spacer" ] []
-                            , Html.button
-                                [ (elem.version_active - 1)
-                                    |> Load idx
-                                    |> onClick
-                                , Attr.class "lia-btn lia-icon lia-left"
-                                ]
-                                [ Html.text "navigate_before" ]
-                            , Html.span [ Attr.class "lia-label lia-left" ] [ Html.text (toString elem.version_active) ]
-                            , Html.button
-                                [ (elem.version_active + 1)
-                                    |> Load idx
-                                    |> onClick
-                                , Attr.class "lia-btn lia-icon lia-left"
-                                ]
-                                [ Html.text "navigate_next" ]
-                            , Html.div
-                                [ Attr.style
-                                    [ ( "max-height", "250px" )
-                                    , ( "overflow", "auto" )
-                                    ]
-                                ]
-                                [ case elem.result of
-                                    Ok rslt ->
-                                        Html.pre [] [ Lia.Utils.stringToHtml rslt ]
-
-                                    Err rslt ->
-                                        error rslt
-                                ]
-                            ]
+                        , view_control idx x elem.version_active elem.running
+                        , view_result elem.result
                         ]
 
                 Nothing ->
@@ -115,4 +80,57 @@ highlight attr lang code idx visible =
 
 error : String -> Html msg
 error info =
-    Html.pre [ Attr.style [ ( "color", "red" ) ] ] [ Html.text ("Error: " ++ info) ]
+    Html.pre
+        [ Attr.class "lia-code-stdout"
+        , Attr.style [ ( "color", "red" ) ]
+        ]
+        [ Html.text ("Error: " ++ info) ]
+
+
+view_result : Result String String -> Html msg
+view_result rslt =
+    case rslt of
+        Ok str ->
+            if str == "" then
+                Html.div [ Attr.style [ ( "margin-top", "8px" ) ] ] []
+            else
+                Html.pre [ Attr.class "lia-code-stdout" ] [ Lia.Utils.stringToHtml str ]
+
+        Err str ->
+            error str
+
+
+view_control : ID -> EvalString -> Int -> Bool -> Html Msg
+view_control idx x version_active running =
+    Html.div [ Attr.style [ ( "padding", "0px" ), ( "width", "100%" ) ] ]
+        [ if running then
+            Html.button
+                [ Attr.class "lia-btn lia-icon"
+                , Attr.style [ ( "margin-left", "0px" ) ]
+                ]
+                [ Html.text "sync" ]
+          else
+            Html.button
+                [ Attr.class "lia-btn lia-icon"
+                , onClick (Eval idx x)
+                , Attr.style [ ( "margin-left", "0px" ) ]
+                ]
+                [ Html.text "play_circle_filled" ]
+        , Html.button
+            [ (version_active + 1) |> Load idx |> onClick
+            , Attr.class "lia-btn lia-icon"
+            , Attr.style [ ( "float", "right" ), ( "margin-right", "0px" ) ]
+            ]
+            [ Html.text "navigate_next" ]
+        , Html.span
+            [ Attr.class "lia-label"
+            , Attr.style [ ( "float", "right" ) ]
+            ]
+            [ Html.text (toString version_active) ]
+        , Html.button
+            [ (version_active - 1) |> Load idx |> onClick
+            , Attr.class "lia-btn lia-icon"
+            , Attr.style [ ( "float", "right" ) ]
+            ]
+            [ Html.text "navigate_before" ]
+        ]

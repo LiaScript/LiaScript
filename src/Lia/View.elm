@@ -25,10 +25,7 @@ view : Model -> Html Msg
 view model =
     Html.div
         (design model.design)
-        [ if model.show.loc then
-            view_aside model
-          else
-            Html.text ""
+        [ view_aside model
         , view_article model
         ]
 
@@ -48,7 +45,16 @@ design s =
 view_aside : Model -> Html Msg
 view_aside model =
     Html.aside
-        [ Attr.class "lia-toc" ]
+        [ Attr.class "lia-toc"
+        , Attr.style
+            [ ( "max-width"
+              , if model.show.loc then
+                    "250px"
+                else
+                    "0px"
+              )
+            ]
+        ]
         [ model.index_model
             |> Lia.Index.View.view
             |> Html.map UpdateIndex
@@ -74,7 +80,7 @@ view_aside model =
                         List.filter (\( idx, _ ) -> List.member idx model.index_model.index) titles
                )
             |> view_loc model.section_active
-        , menu model.show
+        , settings model.show
             model.design
             (model
                 |> get_active_section
@@ -86,48 +92,67 @@ view_aside model =
         ]
 
 
-menu show design defines url origin =
-    Html.div []
-        [ if show.settings then
-            Html.div []
-                [ Html.hr [] []
-                , Html.text "Settings"
+settings show design defines url origin =
+    Html.div
+        [ Attr.style
+            [ ( "border-top", "4px solid black" )
+            ]
+        ]
+        [ Html.div
+            [ Attr.style
+                [ ( "max-height"
+                  , if show.settings then
+                        "250px"
+                    else
+                        "0px"
+                  )
+                , ( "margin-left", "4px" )
+                , ( "padding-left", "5px" )
+                , ( "margin-right", "4px" )
+                , ( "padding-right", "5px" )
+                , ( "overflow-y", "auto" )
+                , ( "transition", "max-height 0.5s ease-out" )
+                ]
+            ]
+            [ Html.p []
+                [ Html.text "Settings"
                 , design_theme design
                 , view_design_light design.light
                 , Html.hr [] []
                 , inc_font_size design.font_size
                 ]
-          else if show.informations then
-            view_information defines
-          else if show.translations then
-            view_translations (origin ++ "?") (Lia.Definition.Types.get_translations defines)
-          else if show.share then
-            qrCodeView url
-          else
-            Html.text ""
-        , Html.div []
-            [ dropdown "settings" " lia-left" (Toggle Settings)
+            ]
+        , view_information show.informations defines
+        , view_translations show.translations (origin ++ "?") (Lia.Definition.Types.get_translations defines)
+        , qrCodeView show.share url
+        , Html.div
+            [ Attr.style
+                [ ( "overflow-x", "auto" )
 
-            --, Html.span [ Attr.class "lia-spacer" ] []
-            , dropdown "info" "" (Toggle Informations)
-
-            --, Html.span [ Attr.class "lia-spacer" ] []
-            , dropdown "translate" " lia-right" (Toggle Translations)
-
-            --, Html.span [ Attr.class "lia-spacer" ] []
-            , dropdown "share" " lia-right" (Toggle Share)
+                --, ( "border-top", "4px solid black" )
+                ]
+            ]
+            [ dropdown "settings" (Toggle Settings)
+            , dropdown "info" (Toggle Informations)
+            , dropdown "translate" (Toggle Translations)
+            , dropdown "share" (Toggle Share)
             ]
         ]
 
 
-dropdown name cls msg =
-    Html.button [ onClick msg, Attr.class <| "lia-btn lia-icon" ++ cls, Attr.style [ ( "width", "40px" ) ] ] [ Html.text name ]
+dropdown name msg =
+    Html.button
+        [ onClick msg
+        , Attr.class "lia-btn lia-icon"
+        , Attr.style [ ( "width", "40px" ), ( "padding", "0px" ) ]
+        ]
+        [ Html.text name ]
 
 
 inc_font_size : Int -> Html Msg
 inc_font_size int =
     Html.div []
-        [ Html.text "Font-Size:"
+        [ Html.text "Font:"
         , navButton "-" (IncreaseFontSize False)
         , Html.text (toString int ++ "%")
         , navButton "+" (IncreaseFontSize True)
@@ -141,9 +166,24 @@ design_theme design =
         |> Html.div []
 
 
-view_information : Definition -> Html Msg
-view_information definition =
-    Html.div []
+view_information : Bool -> Definition -> Html Msg
+view_information visible definition =
+    Html.div
+        [ Attr.style
+            [ ( "max-height"
+              , if visible then
+                    "250px"
+                else
+                    "0px"
+              )
+            , ( "margin-left", "4px" )
+            , ( "padding-left", "5px" )
+            , ( "margin-right", "4px" )
+            , ( "padding-right", "5px" )
+            , ( "overflow-y", "auto" )
+            , ( "transition", "max-height 0.5s ease-out" )
+            ]
+        ]
         [ Html.p [] [ Html.text ("Author: " ++ definition.author) ]
         , Html.p [] [ Html.text "Email: ", Html.a [ Attr.href definition.email ] [ Html.text definition.email ] ]
         , Html.p [] [ Html.text ("Version: " ++ definition.version) ]
@@ -151,19 +191,35 @@ view_information definition =
         ]
 
 
-view_translations : String -> List ( String, String ) -> Html Msg
-view_translations base list =
-    if List.isEmpty list then
-        Html.text "no translations yet"
-    else
-        list
-            |> List.map
-                (\( lang, url ) ->
-                    Html.a
-                        [ Attr.href (base ++ url) ]
-                        [ Html.text lang ]
-                )
-            |> Html.div [ Attr.class "lia-toc" ]
+view_translations : Bool -> String -> List ( String, String ) -> Html Msg
+view_translations visible base list =
+    Html.div
+        [ Attr.style
+            [ ( "max-height"
+              , if visible then
+                    "250px"
+                else
+                    "0px"
+              )
+            , ( "margin-left", "4px" )
+            , ( "padding-left", "5px" )
+            , ( "margin-right", "4px" )
+            , ( "padding-right", "5px" )
+            , ( "overflow-y", "auto" )
+            , ( "transition", "max-height 0.5s ease-out" )
+            ]
+        ]
+    <|
+        if List.isEmpty list then
+            [ Html.text "no translations yet" ]
+        else
+            list
+                |> List.map
+                    (\( lang, url ) ->
+                        Html.a
+                            [ Attr.href (base ++ url) ]
+                            [ Html.text lang ]
+                    )
 
 
 check_list : Bool -> String -> Html Msg
@@ -175,13 +231,32 @@ check_list checked label =
         ]
 
 
-qrCodeView : String -> Html msg
-qrCodeView url =
-    Html.img
-        [ Attr.src ("https://api.qrserver.com/v1/create-qr-code/?size=222x222&data=" ++ url)
-        , Attr.style [ ( "width", "99%" ) ]
+qrCodeView : Bool -> String -> Html msg
+qrCodeView visible url =
+    Html.div
+        [ Attr.style
+            [ ( "max-height"
+              , if visible then
+                    "250px"
+                else
+                    "0px"
+              )
+            , ( "margin-left", "4px" )
+            , ( "padding-left", "5px" )
+            , ( "margin-right", "4px" )
+            , ( "padding-right", "5px" )
+            , ( "overflow-y", "auto" )
+            , ( "transition", "max-height 0.5s ease-out" )
+            ]
         ]
-        []
+        [ Html.p []
+            [ Html.img
+                [ Attr.src ("https://api.qrserver.com/v1/create-qr-code/?size=222x222&data=" ++ url)
+                , Attr.style [ ( "width", "99%" ) ]
+                ]
+                []
+            ]
+        ]
 
 
 view_loc : ID -> List ( ID, ( Inlines, Int, Bool, Bool ) ) -> Html Msg
@@ -237,10 +312,10 @@ view_footer sound mode effects =
                 |> current_paragraphs
                 |> List.map (\( a, par ) -> Html.p [] (viewer 9999 par))
                 |> (\l -> List.append l [ responsive sound (Toggle Sound) ])
-                |> Html.footer []
+                |> Html.footer [ Attr.class "lia-footer" ]
 
         Presentation ->
-            Html.footer [] [ responsive sound (Toggle Sound) ]
+            Html.footer [ Attr.class "lia-footer" ] [ responsive sound (Toggle Sound) ]
 
         Textbook ->
             Html.text ""
@@ -290,10 +365,6 @@ view_nav section_active mode design base translations state =
                 Textbook ->
                     Html.text "book"
             ]
-
-        --, view_design_light design.light
-        --, view_design_theme design.theme
-        --, view_translation base translations
         ]
 
 
@@ -307,18 +378,6 @@ capitalize s =
             s
 
 
-view_design_theme : String -> Html Msg
-view_design_theme theme =
-    [ "default", "amber", "blue", "green", "grey", "purple" ]
-        |> List.map
-            (\t ->
-                Html.option
-                    [ Attr.value t, Attr.selected (t == theme) ]
-                    [ Html.text (capitalize t) ]
-            )
-        |> Html.select [ onInput DesignTheme, Attr.class "lia-right lia-select" ]
-
-
 view_design_light : String -> Html Msg
 view_design_light light =
     Html.button [ Attr.class "lia-btn lia-right", onClick DesignLight ]
@@ -327,19 +386,3 @@ view_design_light light =
           else
             Html.text "star_border"
         ]
-
-
-view_translation : String -> List ( String, String ) -> Html Msg
-view_translation base list =
-    if list == [] then
-        Html.text ""
-    else
-        list
-            |> (::) ( "Lang", "" )
-            |> List.map
-                (\( lang, url ) ->
-                    Html.option
-                        [ Attr.value (base ++ "?" ++ url) ]
-                        [ Html.text lang ]
-                )
-            |> Html.select [ onInput Location, Attr.class "lia-right lia-select" ]

@@ -18,6 +18,20 @@
             }
         }
 
+        .lia-footer {
+            $bg: map-get($theme, background);
+            $fg: color-contrast($bg);
+            $horiz: map-get($config, spacing-normal);
+
+            //background-color: $bg;
+            background: mix($bg, $fg, 95%);
+            padding-left: $horiz;
+            padding-right: $horiz;
+            max-height: 400px;
+            overflow: auto;
+            border-top: map-get($config, spacing-small) solid mix($fg, $bg, 20%);
+        }
+
         .lia-content {
             $horiz: map-get($config, spacing-huge);
             $vert: map-get($config, spacing-large);

@@ -121,6 +121,18 @@
 
     }
 
+    .lia-code-stdout {
+        font-family: "Roboto Mono";
+        background: #111;
+        color: #eee;
+        padding: map-get($config, spacing-normal);
+        margin-top: 0px;
+        font-size: map-get($config, code-size);
+        overflow-x: auto;
+        max-height: 250px;
+        border-radius: map-get($config, spacing-small);
+    }
+
     .lia-label {
       white-space: nowrap;
     }

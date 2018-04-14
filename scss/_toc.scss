@@ -10,6 +10,8 @@
         position: relative;
         background: mix($bg, $fg, 95%);
 
+        transition: max-width 0.5s ease-out;
+
         &::after {
             content: "";
             position: absolute;
