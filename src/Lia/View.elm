@@ -115,9 +115,9 @@ settings show design defines url origin =
                 ]
             ]
             [ Html.p []
-                [ Html.text "Settings"
-                , design_theme design
+                [ Html.text "Color"
                 , view_design_light design.light
+                , design_theme design
                 , Html.hr [] []
                 , inc_font_size design.font_size
                 ]
@@ -161,9 +161,15 @@ inc_font_size int =
 
 design_theme : Design -> Html Msg
 design_theme design =
-    [ "default", "amber", "blue", "green", "grey", "purple" ]
-        |> List.map (\c -> check_list (c == design.theme) c)
-        |> Html.div []
+    [ ( "default", "left" )
+    , ( "amber", "right" )
+    , ( "blue", "left" )
+    , ( "green", "right" )
+    , ( "grey", "left" )
+    , ( "purple", "right" )
+    ]
+        |> List.map (\( c, b ) -> check_list (c == design.theme) c b)
+        |> Html.div [ Attr.class "lia-color" ]
 
 
 view_information : Bool -> Definition -> Html Msg
@@ -222,12 +228,14 @@ view_translations visible base list =
                     )
 
 
-check_list : Bool -> String -> Html Msg
-check_list checked label =
-    Html.p [ Attr.class "lia-radio-item" ]
-        [ Html.input [ Attr.type_ "radio", Attr.checked checked, onClick (DesignTheme label) ] []
-        , Html.span [ Attr.class "lia-radio-btn" ] []
-        , Html.span [ Attr.class "lia-label" ] [ Html.text (capitalize label) ]
+check_list : Bool -> String -> String -> Html Msg
+check_list checked label dir =
+    Html.label
+        [ Attr.class label, Attr.style [ ( "float", dir ) ] ]
+        [ Html.input [ Attr.type_ "radio", Attr.name "toggle", Attr.checked checked, onClick (DesignTheme label) ] []
+        , Html.span
+            []
+            [ Html.text (capitalize label) ]
         ]
 
 
