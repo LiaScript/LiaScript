@@ -1,22 +1,42 @@
-module Lia.Code.Types exposing (Code(..), Element, EvalString, Vector)
+module Lia.Code.Types exposing (Code(..), EvalString, File, Project, Vector)
 
 import Array exposing (Array)
 import Lia.Helper exposing (ID)
 
 
 type alias Vector =
-    Array Element
+    Array Project
 
 
-type alias Element =
-    { code : String
-    , version : Array ( String, Result String String )
+type alias Project =
+    { file : Array File
+    , version : Array ( Array String, Result String String )
+    , evaluation : String
     , version_active : Int
     , result : Result String String
-    , editing : Bool
-    , visible : Bool
     , running : Bool
     }
+
+
+type alias File =
+    { lang : String
+    , name : String
+    , code : String
+    , editing : Bool
+    , visible : Bool
+    }
+
+
+
+--type alias Element =
+--    { code : Array String
+--  , version : Array ( Array String, Result String String )
+--    , version_active : Int
+--    , result : Result String String
+--    , editing : Bool
+--    , visible : Bool
+--    , running : Bool
+--    }
 
 
 type alias EvalString =
@@ -24,5 +44,5 @@ type alias EvalString =
 
 
 type Code
-    = Highlight String String String -- Lang Title Code
-    | Evaluate String String ID EvalString -- Lang Title ID EvalString
+    = Highlight (List ( String, String, String )) -- Lang Title Code
+    | Evaluate ID --EvalString -- Lang Title ID EvalString

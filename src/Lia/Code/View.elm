@@ -15,54 +15,75 @@ import Lia.Utils
 view : Annotation -> Vector -> Code -> Html Msg
 view attr model code =
     case code of
-        Highlight lang title block ->
-            Html.div []
-                [ Html.button [] [ Html.text title ]
-                , highlight attr lang block -1 True
-                ]
+        Highlight lang_title_code ->
+            lang_title_code
+                |> List.map (hh1 attr)
+                |> Html.div []
 
-        Evaluate lang title idx x ->
+        Evaluate idx ->
             case Array.get idx model of
-                Just elem ->
+                Just project ->
                     Html.div []
-                        [ Html.button
-                            [ onClick <| FlipView idx
-                            , Attr.classList
-                                [ ( "lia-accordion", True )
-                                , ( "active", elem.visible )
-                                ]
-                            ]
-                            [ Html.text title ]
-                        , if elem.editing then
-                            Html.textarea
-                                (List.append
-                                    (annotation attr "lia-input")
-                                    [ Attr.style [ ( "width", "100%" ), ( "overflow", "auto" ) ]
-                                    , elem.code |> String.lines |> List.length |> Attr.rows
-                                    , onInput <| Update idx
-                                    , Attr.value elem.code
-                                    , Attr.wrap "off"
-                                    , onDoubleClick (FlipMode idx)
-                                    ]
-                                )
-                                []
-                          else
-                            highlight attr lang elem.code idx elem.visible
-                        , view_control idx x elem.version_active elem.running
-                        , view_result elem.result
+                        [ project.file
+                            |> Array.indexedMap (\id_2 file -> hh2 attr idx id_2 file)
+                            |> Array.toList
+                            |> Html.div []
+                        , view_control idx project.version_active project.running
+                        , view_result project.result
                         ]
 
                 Nothing ->
                     Html.text ""
 
 
-highlight : Annotation -> String -> String -> ID -> Bool -> Html Msg
-highlight attr lang code idx visible =
+hh1 attr ( lang, title, code ) =
+    Html.div []
+        [ if title == "" then
+            Html.text ""
+          else
+            Html.button [] [ Html.text title ]
+        , highlight attr lang code -1 -1 True
+        ]
+
+
+hh2 attr id_1 id_2 file =
+    Html.div []
+        [ if file.name == "" then
+            Html.text ""
+          else
+            Html.button
+                [ onClick <| FlipView id_1 id_2
+                , Attr.classList
+                    [ ( "lia-accordion", True )
+                    , ( "active", file.visible )
+                    ]
+                ]
+                [ Html.text file.name ]
+        , if file.editing then
+            Html.textarea
+                (List.append
+                    (annotation attr "lia-input")
+                    [ Attr.style [ ( "width", "100%" ), ( "overflow", "auto" ) ]
+                    , file.code |> String.lines |> List.length |> Attr.rows
+                    , onInput <| Update id_1 id_2
+                    , Attr.value file.code
+                    , Attr.wrap "off"
+                    , onDoubleClick (FlipMode id_1 id_2)
+                    ]
+                )
+                []
+          else
+            highlight attr file.lang file.code id_1 id_2 file.visible
+        ]
+
+
+highlight : Annotation -> String -> String -> ID -> ID -> Bool -> Html Msg
+highlight attr lang code id_1 id_2 visible =
     Html.pre
-        (if idx < 0 then
+        (if id_1 < 0 then
             annotation attr "lia-code"
          else
-            onDoubleClick (FlipMode idx)
+            onDoubleClick (FlipMode id_1 id_2)
                 :: Attr.style
                     [ ( "max-height"
                       , if visible then
@@ -100,8 +121,8 @@ view_result rslt =
             error str
 
 
-view_control : ID -> EvalString -> Int -> Bool -> Html Msg
-view_control idx x version_active running =
+view_control : ID -> Int -> Bool -> Html Msg
+view_control idx version_active running =
     Html.div [ Attr.style [ ( "padding", "0px" ), ( "width", "100%" ) ] ]
         [ if running then
             Html.button
@@ -112,7 +133,7 @@ view_control idx x version_active running =
           else
             Html.button
                 [ Attr.class "lia-btn lia-icon"
-                , onClick (Eval idx x)
+                , onClick (Eval idx)
                 , Attr.style [ ( "margin-left", "0px" ) ]
                 ]
                 [ Html.text "play_circle_filled" ]

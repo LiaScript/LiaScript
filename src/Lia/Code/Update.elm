@@ -1,16 +1,16 @@
 module Lia.Code.Update exposing (Msg(..), update)
 
 import Array exposing (Array)
-import Lia.Code.Types exposing (Element, EvalString, Vector)
+import Lia.Code.Types exposing (EvalString, File, Project, Vector)
 import Lia.Helper exposing (ID)
 import Lia.Utils
 
 
 type Msg
-    = Eval ID EvalString
-    | Update ID String
-    | FlipMode ID
-    | FlipView ID
+    = Eval ID
+    | Update ID ID String
+    | FlipMode ID ID
+    | FlipView ID ID
     | EvalRslt (Result { id : ID, result : String } { id : ID, result : String })
     | Load ID Int
 
@@ -18,13 +18,16 @@ type Msg
 update : Msg -> Vector -> ( Vector, Cmd Msg )
 update msg model =
     case msg of
-        Eval idx x ->
+        Eval idx ->
             case Array.get idx model of
-                Just elem ->
-                    update_ idx
+                Just project ->
+                    ( set_running idx
                         model
-                        (\e -> { e | editing = False, running = True })
-                        (String.join elem.code x |> Lia.Utils.evaluateJS2 EvalRslt idx)
+                    , project.file
+                        |> Array.indexedMap (\i f -> ( i, f.code ))
+                        |> Array.foldl replace project.evaluation
+                        |> Lia.Utils.evaluateJS2 EvalRslt idx
+                    )
 
                 Nothing ->
                     ( model, Cmd.none )
@@ -35,20 +38,26 @@ update msg model =
         EvalRslt (Err { id, result }) ->
             update_ id model (resulting (Err result)) Cmd.none
 
-        Update idx code_str ->
-            update_ idx model (\e -> { e | code = code_str }) Cmd.none
+        Update id_1 id_2 code_str ->
+            update_file id_1 id_2 model (\f -> { f | code = code_str }) Cmd.none
 
-        FlipMode idx ->
-            update_ idx model (\e -> { e | editing = not e.editing }) Cmd.none
+        FlipMode id_1 id_2 ->
+            update_file id_1 id_2 model (\f -> { f | editing = not f.editing }) Cmd.none
 
-        FlipView idx ->
-            update_ idx model (\e -> { e | visible = not e.visible }) Cmd.none
+        FlipView id_1 id_2 ->
+            update_file id_1 id_2 model (\f -> { f | visible = not f.visible }) Cmd.none
 
         Load idx version ->
             update_ idx model (load version) Cmd.none
 
 
-update_ : ID -> Vector -> (Element -> Element) -> Cmd msg -> ( Vector, Cmd msg )
+replace ( int, insert ) into =
+    into
+        |> String.split ("{{" ++ toString int ++ "}}")
+        |> String.join insert
+
+
+update_ : ID -> Vector -> (Project -> Project) -> Cmd msg -> ( Vector, Cmd msg )
 update_ idx model f cmd =
     ( case Array.get idx model of
         Just elem ->
@@ -60,40 +69,75 @@ update_ idx model f cmd =
     )
 
 
-resulting : Result String String -> Element -> Element
+update_file : ID -> ID -> Vector -> (File -> File) -> Cmd msg -> ( Vector, Cmd msg )
+update_file id_1 id_2 model f cmd =
+    ( case Array.get id_1 model of
+        Just project ->
+            case Array.get id_2 project.file of
+                Just file ->
+                    Array.set id_1 { project | file = Array.set id_2 (f file) project.file } model
+
+                Nothing ->
+                    model
+
+        Nothing ->
+            model
+    , cmd
+    )
+
+
+set_running : ID -> Vector -> Vector
+set_running i vector =
+    case Array.get i vector of
+        Just project ->
+            Array.set i
+                { project
+                    | running = True
+                    , file = Array.map (\s -> { s | editing = False }) project.file
+                }
+                vector
+
+        Nothing ->
+            vector
+
+
+resulting : Result String String -> Project -> Project
 resulting result elem =
     let
         ( code, _ ) =
             elem.version
                 |> Array.get elem.version_active
-                |> Maybe.withDefault ( "", Ok "" )
+                |> Maybe.withDefault ( Array.fromList [], Ok "" )
 
         e =
             { elem | result = result, running = False }
+
+        new_code =
+            e.file |> Array.map .code
     in
-    if code == e.code then
+    if code == new_code then
         { e
             | version = Array.set e.version_active ( code, result ) e.version
         }
     else
         { e
-            | version = Array.push ( e.code, result ) e.version
+            | version = Array.push ( new_code, result ) e.version
             , version_active = Array.length e.version
         }
 
 
-load : Int -> Element -> Element
+load : Int -> Project -> Project
 load version elem =
     if (version >= 0) && (version < Array.length elem.version) then
         let
             ( code, result ) =
                 elem.version
                     |> Array.get version
-                    |> Maybe.withDefault ( elem.code, Ok "" )
+                    |> Maybe.withDefault ( Array.empty, Ok "" )
         in
         { elem
             | version_active = version
-            , code = code
+            , file = Array.indexedMap (\i a -> { a | code = Array.get i code |> Maybe.withDefault a.code }) elem.file
             , result = result
         }
     else

@@ -11,37 +11,23 @@ import Lia.Utils exposing (guess)
 
 parse : Parser PState Code
 parse =
-    listing *> maybe (regex "[ \\n]?" *> maybe identation *> macro *> javascript) >>= result
+    ((,) <$> many1 (listing <* string "\n") <*> maybe (regex "[ \\n]?" *> maybe identation *> macro *> javascript)) >>= result
 
 
-result : Maybe String -> Parser PState Code
-result comment =
+result : ( List ( String, String, String, Bool ), Maybe String ) -> Parser PState Code
+result ( lst, script ) =
     withState
         (\s ->
-            let
-                ( l, t, code ) =
-                    s.code_temp
-
-                lang =
-                    if l == "" then
-                        "cpp"
-                    else
-                        l
-
-                title =
-                    if t == "" then
-                        lang
-                    else
-                        t
-            in
-            case comment of
+            case script of
                 Just str ->
-                    evaluate lang title code str
+                    evaluate lst str
 
                 Nothing ->
-                    succeed <| Highlight lang title code
+                    lst
+                        |> List.map (\( lang, title, code, _ ) -> ( lang, title, code ))
+                        |> Highlight
+                        |> succeed
         )
-        <* modify_temp ( "", "", "" )
 
 
 check_lang : ( String, String ) -> ( String, String )
@@ -62,9 +48,20 @@ header =
     regex "[ \\t]*" *> regex "\\w*" <?> "language definition"
 
 
-title : Parser PState String
+title : Parser PState ( Bool, String )
 title =
-    regex "[ \\t]*" *> regex ".*" <* string "\n" <?> "code title"
+    (,)
+        <$> (regex "[ \\t]*"
+                *> optional True
+                    (choice
+                        [ True <$ string "+"
+                        , False <$ string "-"
+                        ]
+                    )
+            )
+        <*> regex ".*"
+        <* string "\n"
+        <?> "code title"
 
 
 code_line : Parser PState String
@@ -72,29 +69,38 @@ code_line =
     maybe identation *> regex "(.(?!```))*\\n?"
 
 
-listing : Parser PState ()
+listing : Parser PState ( String, String, String, Bool )
 listing =
-    ((\h t s -> ( h, t, String.concat s )) <$> (border *> header) <*> title <*> manyTill code_line (identation *> border)) >>= modify_temp
+    (\h ( v, t ) s -> ( h, t, String.concat s, v )) <$> (border *> header) <*> title <*> manyTill code_line (identation *> border)
 
 
-modify_temp : ( String, String, String ) -> Parser PState ()
+modify_temp : List ( String, String, String ) -> Parser PState ()
 modify_temp lang_code =
     modifyState (\s -> { s | code_temp = lang_code })
 
 
-evaluate : String -> String -> String -> String -> Parser PState Code
-evaluate lang title code comment =
+evaluate : List ( String, String, String, Bool ) -> String -> Parser PState Code
+evaluate lang_title_code comment =
     let
         add_state s =
             { s
                 | code_vector =
                     Array.push
-                        { code = code
-                        , version = Array.fromList [ ( code, Ok "" ) ]
+                        { file =
+                            lang_title_code
+                                |> List.map (\( lang, name, code, visible ) -> File lang name code False visible)
+                                |> Array.fromList
+                        , version =
+                            Array.fromList
+                                [ ( lang_title_code
+                                        |> List.map (\( _, _, code, _ ) -> code)
+                                        |> Array.fromList
+                                  , Ok ""
+                                  )
+                                ]
+                        , evaluation = comment
                         , version_active = 0
                         , result = Ok ""
-                        , editing = False
-                        , visible = True
                         , running = False
                         }
                         s.code_vector
@@ -102,9 +108,9 @@ evaluate lang title code comment =
     in
     withState
         (\s ->
-            comment
-                |> String.split "{X}"
-                |> Evaluate lang title (Array.length s.code_vector)
+            s.code_vector
+                |> Array.length
+                |> Evaluate
                 |> succeed
         )
         <* modifyState add_state
