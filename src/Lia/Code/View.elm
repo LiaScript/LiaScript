@@ -18,12 +18,12 @@ view attr model code =
         Highlight lang_title_code ->
             lang_title_code
                 |> List.map (hh1 attr)
-                |> Html.div []
+                |> Html.div [ Attr.style [ ( "margin-top", "16px" ), ( "margin-bottom", "16px" ) ] ]
 
         Evaluate idx ->
             case Array.get idx model of
                 Just project ->
-                    Html.div []
+                    Html.div [ Attr.style [ ( "margin-top", "16px" ), ( "margin-bottom", "16px" ) ] ]
                         [ project.file
                             |> Array.indexedMap (\id_2 file -> hh2 attr idx id_2 file)
                             |> Array.toList
@@ -45,7 +45,13 @@ hh1 attr ( lang, title, code ) =
         [ if headless then
             Html.text ""
           else
-            Html.button [] [ Html.text title ]
+            Html.button
+                [ Attr.classList
+                    [ ( "lia-accordion", True )
+                    , ( "active", True )
+                    ]
+                ]
+                [ Html.text title ]
         , highlight attr lang code -1 -1 True headless
         ]
 
