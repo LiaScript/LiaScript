@@ -71,6 +71,11 @@
         transition: max-height 0.5s ease-out;
     }
 
+    .headless {
+        border-top-left-radius: map-get($config, spacing-small);
+        border-top-right-radius: map-get($config, spacing-small);
+    }
+
     .lia-code:not(.lia-inline) {
         $bg: mix(map-get($theme, background), map-get($theme, background-inv), 95%);
 

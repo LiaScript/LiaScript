@@ -37,18 +37,26 @@ view attr model code =
 
 
 hh1 attr ( lang, title, code ) =
+    let
+        headless =
+            title == ""
+    in
     Html.div []
-        [ if title == "" then
+        [ if headless then
             Html.text ""
           else
             Html.button [] [ Html.text title ]
-        , highlight attr lang code -1 -1 True
+        , highlight attr lang code -1 -1 True headless
         ]
 
 
 hh2 attr id_1 id_2 file =
+    let
+        headless =
+            file.name == ""
+    in
     Html.div []
-        [ if file.name == "" then
+        [ if headless then
             Html.text ""
           else
             Html.button
@@ -73,15 +81,22 @@ hh2 attr id_1 id_2 file =
                 )
                 []
           else
-            highlight attr file.lang file.code id_1 id_2 file.visible
+            highlight attr file.lang file.code id_1 id_2 file.visible headless
         ]
 
 
-highlight : Annotation -> String -> String -> ID -> ID -> Bool -> Html Msg
-highlight attr lang code id_1 id_2 visible =
+highlight : Annotation -> String -> String -> ID -> ID -> Bool -> Bool -> Html Msg
+highlight attr lang code id_1 id_2 visible headless =
     Html.pre
         (if id_1 < 0 then
-            annotation attr "lia-code"
+            annotation attr
+                ("lia-code"
+                    ++ (if headless then
+                            " headless"
+                        else
+                            ""
+                       )
+                )
          else
             onDoubleClick (FlipMode id_1 id_2)
                 :: Attr.style
@@ -92,9 +107,18 @@ highlight attr lang code id_1 id_2 visible =
                             "0px"
                       )
                     ]
-                :: annotation attr "lia-code"
+                :: annotation attr
+                    ("lia-code"
+                        ++ (if headless then
+                                " headless"
+                            else
+                                ""
+                           )
+                    )
         )
-        [ Html.code [ Attr.class "lia-code-highlight" ]
+        [ Html.code
+            [ Attr.class "lia-code-highlight"
+            ]
             [ Lia.Utils.highlight lang code ]
         ]
 
