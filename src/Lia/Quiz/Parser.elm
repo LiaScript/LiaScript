@@ -22,7 +22,7 @@ quiz =
         <*> get_counter
         <*> hints
         <*> (macro
-                *> maybe (String.split "{X}" <$> (regex "[ \\t]*" *> javascript <* newline))
+                *> maybe (String.split "{{0}}" <$> (regex "[ \\t]*" *> javascript <* newline))
             )
 
 

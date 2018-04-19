@@ -36,6 +36,9 @@
 
                       const app = Elm.Main.embed(document.body, {url: "", script: "" }); //rawFile.responseText });
 
+                      app.ports.speak.subscribe(function(word) {
+                          console.log(word);
+                      });
                   }
               }
           }

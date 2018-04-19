@@ -1,4 +1,4 @@
-module Lia.Effect.Update exposing (Msg(..), has_next, has_previous, init, next, previous, update)
+port module Lia.Effect.Update exposing (Msg(..), has_next, has_previous, init, next, previous, update)
 
 import Lia.Effect.Model exposing (Map, Model, current_comment, get_all_javascript, get_javascript)
 import Lia.Utils
@@ -6,6 +6,9 @@ import Tts.Responsive
 
 
 --import Tts.Tts as Tts
+
+
+port speak : ( String, String ) -> Cmd msg
 
 
 type Msg
@@ -21,6 +24,10 @@ update : Msg -> Bool -> Model -> ( Model, Cmd Msg )
 update msg sound model =
     case msg of
         Init run_all_javascript ->
+            let
+                x =
+                    speak ( "sssss", "fuck...." )
+            in
             model
                 |> execute run_all_javascript 1300
                 |> update Speak sound
