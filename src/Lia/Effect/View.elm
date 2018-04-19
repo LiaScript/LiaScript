@@ -71,9 +71,9 @@ responsive sound msg =
         ]
 
 
-state : Model -> String
+state : Model -> ( Bool, String )
 state model =
     if model.effects == 0 then
-        ""
+        ( False, "" )
     else
-        "(" ++ toString (model.visible + 1) ++ "/" ++ toString (model.effects + 1) ++ ")"
+        ( model.speaking, "(" ++ toString (model.visible + 1) ++ "/" ++ toString (model.effects + 1) ++ ")" )

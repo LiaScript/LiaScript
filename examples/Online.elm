@@ -237,4 +237,4 @@ getCourse url =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch [ rx_log RxLog ]
+    Sub.batch [ rx_log RxLog, Sub.map LIA (Lia.subscriptions model.lia) ]

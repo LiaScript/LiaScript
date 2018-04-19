@@ -1,14 +1,17 @@
-port module Lia.Effect.Update exposing (Msg(..), has_next, has_previous, init, next, previous, update)
+port module Lia.Effect.Update exposing (Msg(..), has_next, has_previous, init, next, previous, subscriptions, update)
 
 import Lia.Effect.Model exposing (Map, Model, current_comment, get_all_javascript, get_javascript)
 import Lia.Utils
-import Tts.Responsive
 
 
---import Tts.Tts as Tts
+port speech_out : List String -> Cmd msg
 
 
-port speak : ( String, String ) -> Cmd msg
+port speech_in : (( String, String ) -> msg) -> Sub msg
+
+
+
+--port suggestions : (List String -> msg) -> Sub msg
 
 
 type Msg
@@ -16,18 +19,14 @@ type Msg
     | Next
     | Previous
     | Speak
-    | TTS (Result String Never)
     | NoOp
+    | SpeakRslt ( String, String )
 
 
 update : Msg -> Bool -> Model -> ( Model, Cmd Msg )
 update msg sound model =
     case msg of
         Init run_all_javascript ->
-            let
-                x =
-                    speak ( "sssss", "fuck...." )
-            in
             model
                 |> execute run_all_javascript 1300
                 |> update Speak sound
@@ -51,28 +50,35 @@ update msg sound model =
         Speak ->
             let
                 c =
-                    Tts.Responsive.cancel ()
+                    speech_out [ "cancel" ]
 
                 d =
                     Lia.Utils.scrollIntoView "focused"
             in
             case ( sound, current_comment model ) of
                 ( True, Just ( comment, narrator ) ) ->
-                    ( model, Tts.Responsive.speak TTS narrator comment )
+                    ( { model | speaking = True }, speech_out [ "speak", narrator, comment ] )
 
                 _ ->
                     ( model, Cmd.none )
+
+        SpeakRslt ( "end", msg ) ->
+            ( { model | speaking = False }, Cmd.none )
+
+        SpeakRslt ( "error", msg ) ->
+            let
+                error =
+                    Debug.log "TTS error: " msg
+            in
+            ( { model | speaking = False }, Cmd.none )
 
         _ ->
             ( model, Cmd.none )
 
 
-
---        TTS (Result.Ok _) ->
---            ( { model | status = Silent }, Cmd.none, False )
---
---        TTS (Result.Err m) ->
---            ( { model | status = Error m }, Cmd.none, False )
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.batch [ speech_in SpeakRslt ]
 
 
 execute : Bool -> Int -> Model -> Model

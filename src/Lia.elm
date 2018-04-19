@@ -107,6 +107,11 @@ view model =
     Lia.View.view model
 
 
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Lia.Update.subscriptions model
+
+
 update : Msg -> Model -> ( Model, Cmd Msg, Maybe ( String, JE.Value ) )
 update =
     Lia.Update.update

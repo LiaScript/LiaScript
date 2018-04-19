@@ -1,4 +1,12 @@
-module Lia.Markdown.Update exposing (Msg(..), initEffect, nextEffect, previousEffect, update)
+module Lia.Markdown.Update
+    exposing
+        ( Msg(..)
+        , initEffect
+        , nextEffect
+        , previousEffect
+        , subscriptions
+        , update
+        )
 
 --import Lia.Helper exposing (get_slide)
 
@@ -15,6 +23,11 @@ type Msg
     | UpdateCode Code.Msg
     | UpdateQuiz Quiz.Msg
     | UpdateSurvey Survey.Msg
+
+
+subscriptions : Section -> Sub Msg
+subscriptions section =
+    Sub.batch [ Sub.map (UpdateEffect False) (Effect.subscriptions section.effect_model) ]
 
 
 update : Msg -> Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )

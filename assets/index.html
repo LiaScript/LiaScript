@@ -36,8 +36,28 @@
 
                       const app = Elm.Main.embed(document.body, {url: "", script: "" }); //rawFile.responseText });
 
-                      app.ports.speak.subscribe(function(word) {
-                          console.log(word);
+                      app.ports.speech_out.subscribe(function(cmd) {
+                        try {
+                          switch (cmd[0]) {
+                            case "speak":
+                              responsiveVoice.speak( cmd[2], cmd[1],
+                                                     { onend: e => {
+                                                         app.ports.speech_in.send(["end", ""]);
+                                                       },
+                                                       onerror: e => {
+                                                         app.ports.speech_in.send(["error", e]);
+                                                       }
+                                                      } );
+                              break;
+                            case "cancel":
+                              responsiveVoice.cancel()
+                              break;
+                            default:
+                              console.log(cmd);
+                          }
+                        } catch (e) {
+                          app.ports.speech_in.send(["error", e]);
+                        }
                       });
                   }
               }

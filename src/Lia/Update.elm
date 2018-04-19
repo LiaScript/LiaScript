@@ -1,4 +1,11 @@
-module Lia.Update exposing (Msg(..), Toggle(..), get_active_section, update)
+module Lia.Update
+    exposing
+        ( Msg(..)
+        , Toggle(..)
+        , get_active_section
+        , subscriptions
+        , update
+        )
 
 import Array exposing (Array)
 import Json.Encode as JE
@@ -11,6 +18,16 @@ import Lia.Parser exposing (parse_section)
 import Lia.Types exposing (Mode(..), Section, Sections)
 import Lia.Utils exposing (set_local)
 import Navigation
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    case get_active_section model of
+        Just section ->
+            Sub.batch [ Sub.map UpdateMarkdown (Markdown.subscriptions section) ]
+
+        Nothing ->
+            Sub.none
 
 
 type Msg

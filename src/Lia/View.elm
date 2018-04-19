@@ -335,8 +335,8 @@ navButton str msg =
         [ Html.text str ]
 
 
-view_nav : ID -> Mode -> Design -> String -> List ( String, String ) -> String -> Html Msg
-view_nav section_active mode design base translations state =
+view_nav : ID -> Mode -> Design -> String -> List ( String, String ) -> ( Bool, String ) -> Html Msg
+view_nav section_active mode design base translations ( speaking, state ) =
     Html.nav [ Attr.class "lia-toolbar" ]
         [ Html.button
             [ onClick (Toggle LOC)
@@ -346,7 +346,14 @@ view_nav section_active mode design base translations state =
         , Html.span [ Attr.class "lia-spacer" ] []
         , navButton "navigate_before" PrevSection
         , Html.span [ Attr.class "lia-labeled lia-left" ]
-            [ Html.span [ Attr.class "lia-label" ]
+            [ Html.span
+                [ Attr.class "lia-label"
+                , Attr.style <|
+                    if speaking then
+                        [ ( "text-decoration", "underline" ) ]
+                    else
+                        []
+                ]
                 [ Html.text (toString (section_active + 1))
                 , Html.text <|
                     case mode of
