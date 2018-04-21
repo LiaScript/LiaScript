@@ -15,9 +15,7 @@
         "elm-lang/html": "2.0.0 <= v < 3.0.0",
         "elm-lang/http": "1.0.0 <= v < 2.0.0",
         "elm-lang/svg": "2.0.0 <= v < 3.0.0",
-        "terezka/elm-plot": "5.1.0 <= v < 6.0.0",
-        "ericgj/elm-accordion-menu": "1.0.0 <= v < 2.0.0"
-
+        "terezka/elm-plot": "5.1.0 <= v < 6.0.0"
     },
     "elm-version": "0.18.0 <= v < 0.19.0"
 }

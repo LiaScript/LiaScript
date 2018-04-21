@@ -71,7 +71,7 @@ code_line =
 
 listing : Parser PState ( String, String, String, Bool )
 listing =
-    (\h ( v, t ) s -> ( h, t, String.concat s, v )) <$> (border *> header) <*> title <*> manyTill code_line (identation *> border)
+    (\h ( v, t ) s -> ( h, t, String.concat s |> String.dropRight 1, v )) <$> (border *> header) <*> title <*> manyTill code_line (identation *> border)
 
 
 modify_temp : List ( String, String, String ) -> Parser PState ()

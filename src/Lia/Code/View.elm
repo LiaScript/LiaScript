@@ -4,6 +4,7 @@ import Array
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onDoubleClick, onInput)
+import Lia.Ace as Ace
 import Lia.Code.Types exposing (Code(..), EvalString, Vector)
 import Lia.Code.Update exposing (Msg(..))
 import Lia.Helper exposing (ID)
@@ -14,21 +15,30 @@ import Lia.Utils
 
 view : Annotation -> Vector -> Code -> Html Msg
 view attr model code =
+    let
+        div_ =
+            Html.div
+                [ Attr.style
+                    [ ( "margin-top", "16px" )
+                    , ( "margin-bottom", "16px" )
+                    ]
+                ]
+    in
     case code of
         Highlight lang_title_code ->
             lang_title_code
-                |> List.map (hh1 attr)
-                |> Html.div [ Attr.style [ ( "margin-top", "16px" ), ( "margin-bottom", "16px" ) ] ]
+                |> List.map (view_code attr)
+                |> div_
 
-        Evaluate idx ->
-            case Array.get idx model of
+        Evaluate id_1 ->
+            case Array.get id_1 model of
                 Just project ->
-                    Html.div [ Attr.style [ ( "margin-top", "16px" ), ( "margin-bottom", "16px" ) ] ]
+                    div_
                         [ project.file
-                            |> Array.indexedMap (\id_2 file -> hh2 attr idx id_2 file)
+                            |> Array.indexedMap (view_eval attr id_1)
                             |> Array.toList
                             |> Html.div []
-                        , view_control idx project.version_active project.running
+                        , view_control id_1 project.version_active project.running
                         , view_result project.result
                         ]
 
@@ -36,7 +46,7 @@ view attr model code =
                     Html.text ""
 
 
-hh1 attr ( lang, title, code ) =
+view_code attr ( lang, title, code ) =
     let
         headless =
             title == ""
@@ -46,17 +56,13 @@ hh1 attr ( lang, title, code ) =
             Html.text ""
           else
             Html.button
-                [ Attr.classList
-                    [ ( "lia-accordion", True )
-                    , ( "active", True )
-                    ]
-                ]
+                [ Attr.class "lia-accordion active" ]
                 [ Html.text title ]
-        , highlight attr lang code -1 -1 True headless
+        , highlight attr lang code headless
         ]
 
 
-hh2 attr id_1 id_2 file =
+view_eval attr id_1 id_2 file =
     let
         headless =
             file.name == ""
@@ -67,65 +73,181 @@ hh2 attr id_1 id_2 file =
           else
             Html.button
                 [ onClick <| FlipView id_1 id_2
-                , Attr.classList
-                    [ ( "lia-accordion", True )
-                    , ( "active", file.visible )
-                    ]
+                , Attr.classList [ ( "lia-accordion", True ), ( "active", file.visible ) ]
                 ]
                 [ Html.text file.name ]
-        , if file.editing then
-            Html.textarea
-                (List.append
-                    (annotation attr "lia-input")
-                    [ Attr.style [ ( "width", "100%" ), ( "overflow", "auto" ) ]
-                    , file.code |> String.lines |> List.length |> Attr.rows
-                    , onInput <| Update id_1 id_2
-                    , Attr.value file.code
-                    , Attr.wrap "off"
-                    , onDoubleClick (FlipMode id_1 id_2)
-                    ]
-                )
-                []
-          else
-            highlight attr file.lang file.code id_1 id_2 file.visible headless
+        , evaluate attr id_1 id_2 file.lang file.code file.visible
         ]
 
 
-highlight : Annotation -> String -> String -> ID -> ID -> Bool -> Bool -> Html Msg
-highlight attr lang code id_1 id_2 visible headless =
-    Html.pre
-        (if id_1 < 0 then
-            annotation attr
-                ("lia-code"
-                    ++ (if headless then
-                            " headless"
-                        else
-                            ""
-                       )
-                )
-         else
-            onDoubleClick (FlipMode id_1 id_2)
-                :: Attr.style
-                    [ ( "max-height"
-                      , if visible then
-                            "250px"
-                        else
-                            "0px"
+highlight2 : Annotation -> String -> String -> ID -> ID -> Bool -> Bool -> Html Msg
+highlight2 attr lang code id_1 id_2 visible headless =
+    {- Html.pre
+       (if id_1 < 0 then
+           annotation attr
+               ("lia-code"
+                   ++ (if headless then
+                           " headless"
+                       else
+                           ""
                       )
-                    ]
-                :: annotation attr
-                    ("lia-code"
-                        ++ (if headless then
-                                " headless"
-                            else
-                                ""
-                           )
-                    )
-        )
-        [ Html.code
-            [ Attr.class "lia-code-highlight"
+               )
+        else
+           onDoubleClick (FlipMode id_1 id_2)
+               :: Attr.style
+                   [ ( "max-height"
+                     , if visible then
+                           "250px"
+                       else
+                           "0px"
+                     )
+                   ]
+               :: annotation attr
+                   ("lia-code"
+                       ++ (if headless then
+                               " headless"
+                           else
+                               ""
+                          )
+                   )
+       )
+       [
+    -}
+    let
+        lines =
+            code
+                |> String.lines
+                |> List.length
+
+        height =
+            lines * 16
+
+        hhhh =
+            if height >= 250 then
+                "250px"
+            else
+                toString height ++ "px"
+    in
+    Html.div
+        [--Attr.class "lia-code-highlight"
+        ]
+        --[ Lia.Utils.highlight lang code ]
+        [ Ace.toHtml
+            [ Ace.onSourceChange <| Update id_1 id_2
+            , Ace.value code
+            , Ace.mode lang
+            , Ace.theme "monokai"
+            , Ace.enableBasicAutocompletion True
+            , Ace.enableLiveAutocompletion True
+            , Ace.enableSnippets True
+            , Ace.tabSize 2
+            , Ace.useSoftTabs False
+            , Ace.extensions [ "language_tools" ]
+            , Attr.style
+                [ ( "height", hhhh )
+                , ( "font-size", "13px" )
+                , ( "max-height"
+                  , if visible then
+                        hhhh
+                    else
+                        "0px"
+                  )
+                , ( "font-family", "monospace" )
+
+                --, ( "overflow", "auto" )
+                , ( "transition", "max-height 0.5s ease-out" )
+                ]
+            , Ace.maxLines <|
+                if height >= 16 then
+                    16
+                else
+                    lines
             ]
-            [ Lia.Utils.highlight lang code ]
+            []
+        ]
+
+
+style visible height_ =
+    let
+        height_str =
+            toString height_ ++ "px"
+    in
+    [ ( "height", height_str )
+    , ( "font-size", "13px" )
+    , ( "max-height"
+      , if visible then
+            height_str
+        else
+            "0px"
+      )
+    , ( "font-family", "monospace" )
+    , ( "transition", "max-height 0.5s ease-out" )
+    ]
+
+
+lines : String -> Int
+lines code =
+    code
+        |> String.lines
+        |> List.length
+
+
+pixel : Int -> Int
+pixel lines =
+    lines * 16
+
+
+highlight : Annotation -> String -> String -> Bool -> Html Msg
+highlight attr lang code headless =
+    Ace.toHtml
+        [ Ace.value code
+        , Ace.mode lang
+        , Ace.theme "monokai"
+        , Ace.tabSize 2
+        , Ace.useSoftTabs False
+        , Ace.readOnly True
+        , Ace.showCursor False
+        , Ace.highlightActiveLine False
+        , Ace.showGutter False
+        , Ace.showPrintMargin False
+        , code |> lines |> pixel |> style True |> Attr.style
+        ]
+        []
+
+
+evaluate : Annotation -> ID -> ID -> String -> String -> Bool -> Html Msg
+evaluate attr id_1 id_2 lang code visible =
+    let
+        total_lines =
+            lines code
+
+        max_lines =
+            if total_lines > 16 then
+                16
+            else
+                total_lines
+
+        style_ =
+            max_lines
+                |> pixel
+                |> style visible
+    in
+    Html.div []
+        [ Ace.toHtml
+            [ Ace.onSourceChange <| Update id_1 id_2
+            , Ace.value code
+            , Ace.mode lang
+            , Ace.theme "monokai"
+            , Ace.enableBasicAutocompletion True
+            , Ace.enableLiveAutocompletion True
+            , Ace.enableSnippets True
+            , Ace.tabSize 2
+            , Ace.useSoftTabs False
+            , Ace.extensions [ "language_tools" ]
+            , Attr.style style_
+            , Ace.maxLines 16
+            ]
+            []
         ]
 
 
