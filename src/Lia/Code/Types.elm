@@ -22,7 +22,6 @@ type alias File =
     { lang : String
     , name : String
     , code : String
-    , editing : Bool
     , visible : Bool
     }
 

@@ -88,7 +88,7 @@ evaluate lang_title_code comment =
                     Array.push
                         { file =
                             lang_title_code
-                                |> List.map (\( lang, name, code, visible ) -> File lang name code False visible)
+                                |> List.map (\( lang, name, code, visible ) -> File lang name code visible)
                                 |> Array.fromList
                         , version =
                             Array.fromList

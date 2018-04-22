@@ -5,7 +5,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onDoubleClick, onInput)
 import Lia.Ace as Ace
-import Lia.Code.Types exposing (Code(..), EvalString, Vector)
+import Lia.Code.Types exposing (Code(..), EvalString, File, Vector)
 import Lia.Code.Update exposing (Msg(..))
 import Lia.Helper exposing (ID)
 import Lia.Markdown.Inline.Types exposing (Annotation)
@@ -46,6 +46,7 @@ view attr model code =
                     Html.text ""
 
 
+view_code : Annotation -> ( String, String, String ) -> Html Msg
 view_code attr ( lang, title, code ) =
     let
         headless =
@@ -62,6 +63,7 @@ view_code attr ( lang, title, code ) =
         ]
 
 
+view_eval : Annotation -> ID -> ID -> File -> Html Msg
 view_eval attr id_1 id_2 file =
     let
         headless =
@@ -73,104 +75,27 @@ view_eval attr id_1 id_2 file =
           else
             Html.button
                 [ onClick <| FlipView id_1 id_2
-                , Attr.classList [ ( "lia-accordion", True ), ( "active", file.visible ) ]
+                , Attr.classList
+                    [ ( "lia-accordion", True )
+                    , ( "active", file.visible )
+                    ]
                 ]
                 [ Html.text file.name ]
-        , evaluate attr id_1 id_2 file.lang file.code file.visible
+        , evaluate attr id_1 id_2 file.lang file.code file.visible headless
         ]
 
 
-highlight2 : Annotation -> String -> String -> ID -> ID -> Bool -> Bool -> Html Msg
-highlight2 attr lang code id_1 id_2 visible headless =
-    {- Html.pre
-       (if id_1 < 0 then
-           annotation attr
-               ("lia-code"
-                   ++ (if headless then
-                           " headless"
-                       else
-                           ""
-                      )
-               )
-        else
-           onDoubleClick (FlipMode id_1 id_2)
-               :: Attr.style
-                   [ ( "max-height"
-                     , if visible then
-                           "250px"
-                       else
-                           "0px"
-                     )
-                   ]
-               :: annotation attr
-                   ("lia-code"
-                       ++ (if headless then
-                               " headless"
-                           else
-                               ""
-                          )
-                   )
-       )
-       [
-    -}
-    let
-        lines =
-            code
-                |> String.lines
-                |> List.length
-
-        height =
-            lines * 16
-
-        hhhh =
-            if height >= 250 then
-                "250px"
-            else
-                toString height ++ "px"
-    in
-    Html.div
-        [--Attr.class "lia-code-highlight"
-        ]
-        --[ Lia.Utils.highlight lang code ]
-        [ Ace.toHtml
-            [ Ace.onSourceChange <| Update id_1 id_2
-            , Ace.value code
-            , Ace.mode lang
-            , Ace.theme "monokai"
-            , Ace.enableBasicAutocompletion True
-            , Ace.enableLiveAutocompletion True
-            , Ace.enableSnippets True
-            , Ace.tabSize 2
-            , Ace.useSoftTabs False
-            , Ace.extensions [ "language_tools" ]
-            , Attr.style
-                [ ( "height", hhhh )
-                , ( "font-size", "13px" )
-                , ( "max-height"
-                  , if visible then
-                        hhhh
-                    else
-                        "0px"
-                  )
-                , ( "font-family", "monospace" )
-
-                --, ( "overflow", "auto" )
-                , ( "transition", "max-height 0.5s ease-out" )
-                ]
-            , Ace.maxLines <|
-                if height >= 16 then
-                    16
-                else
-                    lines
-            ]
-            []
-        ]
-
-
-style visible height_ =
+style : Bool -> Bool -> Int -> List ( String, String )
+style visible headless height_ =
     let
         height_str =
             toString height_ ++ "px"
+
+        top_border =
+            if headless then
+                "4px"
+            else
+                "0px"
     in
     [ ( "height", height_str )
     , ( "font-size", "13px" )
@@ -182,6 +107,10 @@ style visible height_ =
       )
     , ( "font-family", "monospace" )
     , ( "transition", "max-height 0.5s ease-out" )
+    , ( "border-bottom-left-radius", "4px" )
+    , ( "border-bottom-right-radius", "4px" )
+    , ( "border-top-left-radius", top_border )
+    , ( "border-top-right-radius", top_border )
     ]
 
 
@@ -194,7 +123,7 @@ lines code =
 
 pixel : Int -> Int
 pixel lines =
-    lines * 16
+    lines * 16 + 16
 
 
 highlight : Annotation -> String -> String -> Bool -> Html Msg
@@ -210,13 +139,13 @@ highlight attr lang code headless =
         , Ace.highlightActiveLine False
         , Ace.showGutter False
         , Ace.showPrintMargin False
-        , code |> lines |> pixel |> style True |> Attr.style
+        , code |> lines |> pixel |> style True headless |> Attr.style
         ]
         []
 
 
-evaluate : Annotation -> ID -> ID -> String -> String -> Bool -> Html Msg
-evaluate attr id_1 id_2 lang code visible =
+evaluate : Annotation -> ID -> ID -> String -> String -> Bool -> Bool -> Html Msg
+evaluate attr id_1 id_2 lang code visible headless =
     let
         total_lines =
             lines code
@@ -230,7 +159,7 @@ evaluate attr id_1 id_2 lang code visible =
         style_ =
             max_lines
                 |> pixel
-                |> style visible
+                |> style visible headless
     in
     Html.div []
         [ Ace.toHtml
