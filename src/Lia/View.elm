@@ -404,14 +404,18 @@ view_design_light light =
         ]
 
 
-option : ( String, String ) -> Html Msg
-option ( string, string2 ) =
-    Html.option [] [ Html.text string2 ]
+option : String -> ( String, String ) -> Html Msg
+option current ( val, text ) =
+    Html.option [ Attr.value val, Attr.selected (val == current) ] [ Html.text text ]
 
 
 view_ace : String -> Html Msg
 view_ace theme =
-    Html.select []
+    let
+        op =
+            option theme
+    in
+    Html.select [ onInput DesignAce ]
         [ [ ( "chrome", "Chrome" )
           , ( "clouds", "Clouds" )
           , ( "crimson_editor", "Crimson Editor" )
@@ -428,7 +432,7 @@ view_ace theme =
           , ( "katzenmilch", "KatzenMilch" )
           , ( "sqlserver", "SQL Server" )
           ]
-            |> List.map option
+            |> List.map op
             |> Html.optgroup [ Attr.attribute "label" "Bright" ]
         , [ ( "ambiance", "Ambiance" )
           , ( "chaos", "Chaos" )
@@ -453,7 +457,7 @@ view_ace theme =
           , ( "twilight", "Twilight" )
           , ( "vibrant_ink", "Vibrant Ink" )
           ]
-            |> List.map option
+            |> List.map op
             |> Html.optgroup [ Attr.attribute "label" "Dark" ]
         ]
 
