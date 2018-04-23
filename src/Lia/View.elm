@@ -120,6 +120,7 @@ settings show design defines url origin =
                 , design_theme design
                 , Html.hr [] []
                 , inc_font_size design.font_size
+                , view_ace design.ace
                 ]
             ]
         , view_information show.informations defines
@@ -304,7 +305,7 @@ view_article model =
                     |> .effect_model
                     |> state
                     |> view_nav model.section_active model.mode model.design model.url (get_translations model.definition)
-                , Html.map UpdateMarkdown <| Markdown.view model.mode section
+                , Html.map UpdateMarkdown <| Markdown.view model.mode section model.design.ace
                 , view_footer model.sound model.mode section.effect_model
                 ]
 
@@ -401,3 +402,66 @@ view_design_light light =
           else
             Html.text "star_border"
         ]
+
+
+option : ( String, String ) -> Html Msg
+option ( string, string2 ) =
+    Html.option [] [ Html.text string2 ]
+
+
+view_ace : String -> Html Msg
+view_ace theme =
+    Html.select []
+        [ [ ( "chrome", "Chrome" )
+          , ( "clouds", "Clouds" )
+          , ( "crimson_editor", "Crimson Editor" )
+          , ( "dawn", "Dawn" )
+          , ( "dreamweaver", "Dreamweaver" )
+          , ( "eclipse", "Eclipse" )
+          , ( "github", "Github" )
+          , ( "iplastic", "IPlastic" )
+          , ( "solarized_light", "Solarized Light" )
+          , ( "textmate", "TextMate" )
+          , ( "tomorrow", "Tomorrow" )
+          , ( "xcode", "XCode" )
+          , ( "kuroir", "Kuroir" )
+          , ( "katzenmilch", "KatzenMilch" )
+          , ( "sqlserver", "SQL Server" )
+          ]
+            |> List.map option
+            |> Html.optgroup [ Attr.attribute "label" "Bright" ]
+        , [ ( "ambiance", "Ambiance" )
+          , ( "chaos", "Chaos" )
+          , ( "clouds_midnight", "Clouds Midnight" )
+          , ( "dracula", "Dracula" )
+          , ( "cobalt", "Cobalt" )
+          , ( "gruvbox", "Gruvbox" )
+          , ( "gob", "Green on Black" )
+          , ( "idle_fingers", "idle Fingers" )
+          , ( "kr_theme", "krTheme" )
+          , ( "merbivore", "Merbivore" )
+          , ( "merbivore_soft", "Merbivore Soft" )
+          , ( "mono_industrial", "Mono Industrial" )
+          , ( "monokai", "Monokai" )
+          , ( "pastel_on_dark", "Pastel on dark" )
+          , ( "solarized_dark", "Solarized Dark" )
+          , ( "terminal", "Terminal" )
+          , ( "tomorrow_night", "Tomorrow Night" )
+          , ( "tomorrow_night_blue", "Tomorrow Night Blue" )
+          , ( "tomorrow_night_bright", "Tomorrow Night Bright" )
+          , ( "tomorrow_night_eighties", "Tomorrow Night 80s" )
+          , ( "twilight", "Twilight" )
+          , ( "vibrant_ink", "Vibrant Ink" )
+          ]
+            |> List.map option
+            |> Html.optgroup [ Attr.attribute "label" "Dark" ]
+        ]
+
+
+
+{- "Bright">
+
+
+   <optgroup label="Dark">
+
+-}

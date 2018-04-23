@@ -13,8 +13,8 @@ import Lia.Markdown.Inline.View exposing (annotation)
 import Lia.Utils
 
 
-view : Annotation -> Vector -> Code -> Html Msg
-view attr model code =
+view : String -> Annotation -> Vector -> Code -> Html Msg
+view theme attr model code =
     let
         div_ =
             Html.div
@@ -27,7 +27,7 @@ view attr model code =
     case code of
         Highlight lang_title_code ->
             lang_title_code
-                |> List.map (view_code attr)
+                |> List.map (view_code theme attr)
                 |> div_
 
         Evaluate id_1 ->
@@ -35,7 +35,7 @@ view attr model code =
                 Just project ->
                     div_
                         [ project.file
-                            |> Array.indexedMap (view_eval attr id_1)
+                            |> Array.indexedMap (view_eval theme attr id_1)
                             |> Array.toList
                             |> Html.div []
                         , view_control id_1 project.version_active project.running
@@ -46,8 +46,8 @@ view attr model code =
                     Html.text ""
 
 
-view_code : Annotation -> ( String, String, String ) -> Html Msg
-view_code attr ( lang, title, code ) =
+view_code : String -> Annotation -> ( String, String, String ) -> Html Msg
+view_code theme attr ( lang, title, code ) =
     let
         headless =
             title == ""
@@ -59,12 +59,12 @@ view_code attr ( lang, title, code ) =
             Html.button
                 [ Attr.class "lia-accordion active" ]
                 [ Html.text title ]
-        , highlight attr lang code headless
+        , highlight theme attr lang code headless
         ]
 
 
-view_eval : Annotation -> ID -> ID -> File -> Html Msg
-view_eval attr id_1 id_2 file =
+view_eval : String -> Annotation -> ID -> ID -> File -> Html Msg
+view_eval theme attr id_1 id_2 file =
     let
         headless =
             file.name == ""
@@ -81,7 +81,7 @@ view_eval attr id_1 id_2 file =
                     ]
                 ]
                 [ Html.text file.name ]
-        , evaluate attr id_1 id_2 file.lang file.code file.visible headless
+        , evaluate theme attr id_1 id_2 file.lang file.code file.visible headless
         ]
 
 
@@ -126,12 +126,12 @@ pixel lines =
     lines * 16 + 16
 
 
-highlight : Annotation -> String -> String -> Bool -> Html Msg
-highlight attr lang code headless =
+highlight : String -> Annotation -> String -> String -> Bool -> Html Msg
+highlight theme attr lang code headless =
     Ace.toHtml
         [ Ace.value code
         , Ace.mode lang
-        , Ace.theme "monokai"
+        , Ace.theme theme
         , Ace.tabSize 2
         , Ace.useSoftTabs False
         , Ace.readOnly True
@@ -144,8 +144,8 @@ highlight attr lang code headless =
         []
 
 
-evaluate : Annotation -> ID -> ID -> String -> String -> Bool -> Bool -> Html Msg
-evaluate attr id_1 id_2 lang code visible headless =
+evaluate : String -> Annotation -> ID -> ID -> String -> String -> Bool -> Bool -> Html Msg
+evaluate theme attr id_1 id_2 lang code visible headless =
     let
         total_lines =
             lines code
@@ -166,7 +166,7 @@ evaluate attr id_1 id_2 lang code visible headless =
             [ Ace.onSourceChange <| Update id_1 id_2
             , Ace.value code
             , Ace.mode lang
-            , Ace.theme "monokai"
+            , Ace.theme theme
             , Ace.enableBasicAutocompletion True
             , Ace.enableLiveAutocompletion True
             , Ace.enableSnippets True

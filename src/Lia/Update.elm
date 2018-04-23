@@ -37,6 +37,7 @@ type Msg
     | NextSection
     | DesignTheme String
     | DesignLight
+    | DesignAce String
     | UpdateIndex Index.Msg
     | UpdateMarkdown Markdown.Msg
     | SwitchMode
@@ -80,6 +81,7 @@ update msg model =
                     { light = model.design.light
                     , theme = set_local "theme" theme
                     , font_size = model.design.font_size
+                    , ace = model.design.ace
                     }
               }
             , Cmd.none
@@ -97,6 +99,20 @@ update msg model =
                                 "light"
                     , theme = model.design.theme
                     , font_size = model.design.font_size
+                    , ace = model.design.ace
+                    }
+              }
+            , Cmd.none
+            , Nothing
+            )
+
+        ( DesignAce theme, _ ) ->
+            ( { model
+                | design =
+                    { light = model.design.light
+                    , theme = model.design.theme
+                    , font_size = model.design.font_size
+                    , ace = set_local "ace" theme
                     }
               }
             , Cmd.none

@@ -61,9 +61,10 @@ init mode url readme origin slide_number =
                 init_section url
     , definition = Definition.default url
     , design =
-        { theme = init_design_theme
-        , light = init_design_light
+        { theme = init_string "theme" "default"
+        , light = init_string "theme_light" "light"
         , font_size = init_font_size
+        , ace = init_string "ace" "dreamweaver"
         }
     , index_model = Index.init
     , sound = init_sound
@@ -72,20 +73,12 @@ init mode url readme origin slide_number =
     }
 
 
-init_design_theme : String
-init_design_theme =
-    "theme"
+init_string : String -> String -> String
+init_string id_ default =
+    id_
         |> get_local
         |> Maybe.map (String.dropLeft 1 >> String.dropRight 1)
-        |> Maybe.withDefault "default"
-
-
-init_design_light : String
-init_design_light =
-    "theme_light"
-        |> get_local
-        |> Maybe.map (String.dropLeft 1 >> String.dropRight 1)
-        |> Maybe.withDefault "light"
+        |> Maybe.withDefault default
 
 
 init_section : String -> Int

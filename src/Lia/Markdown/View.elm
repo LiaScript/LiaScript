@@ -19,11 +19,12 @@ type alias Config =
     { mode : Mode
     , view : Inlines -> List (Html Msg)
     , section : Section
+    , ace_theme : String
     }
 
 
-view : Mode -> Section -> Html Msg
-view mode section =
+view : Mode -> Section -> String -> Html Msg
+view mode section ace_theme =
     let
         config =
             Config mode
@@ -34,6 +35,7 @@ view mode section =
                         section.effect_model.visible
                 )
                 section
+                ace_theme
     in
     case section.error of
         Just msg ->
@@ -118,7 +120,7 @@ view_block config block =
 
         Code attr code ->
             code
-                |> Codes.view attr config.section.code_vector
+                |> Codes.view config.ace_theme attr config.section.code_vector
                 |> Html.map UpdateCode
 
         Quiz attr quiz Nothing ->
