@@ -1,4 +1,12 @@
-module Lia.Code.Types exposing (Code(..), EvalString, File, Project, Vector)
+module Lia.Code.Types
+    exposing
+        ( Code(..)
+        , EvalString
+        , File
+        , Project
+        , Rslt
+        , Vector
+        )
 
 import Array exposing (Array)
 import Lia.Helper exposing (ID)
@@ -15,6 +23,19 @@ type alias Project =
     , version_active : Int
     , result : Result String String
     , running : Bool
+    }
+
+
+type alias Rslt =
+    { message : String
+    , details :
+        Maybe List
+            { idx : Int
+            , msg : String
+            , typ : String
+            , row : Int
+            , col : Int
+            }
     }
 
 

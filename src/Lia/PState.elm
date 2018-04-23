@@ -12,7 +12,6 @@ import Lia.Survey.Types as Survey
 type alias PState =
     { identation : List String
     , identation_skip : Bool
-    , code_temp : List ( String, String, String ) -- Lang Title Code
     , code_vector : Code.Vector
     , quiz_vector : Quiz.Vector
     , survey_vector : Survey.Vector
@@ -27,7 +26,6 @@ init : Definition -> PState
 init global =
     { identation = []
     , identation_skip = False
-    , code_temp = []
     , code_vector = Array.empty
     , quiz_vector = Array.empty
     , survey_vector = Array.empty

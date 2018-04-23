@@ -11,7 +11,16 @@ import Lia.Utils exposing (guess)
 
 parse : Parser PState Code
 parse =
-    ((,) <$> sepBy1 (string "\n") listing <*> maybe (regex "[ \\n]?" *> maybe identation *> macro *> javascript)) >>= result
+    ((,)
+        <$> sepBy1 (string "\n") listing
+        <*> maybe (regex "[ \\n]?" *> maybe identation *> macro *> javascript)
+    )
+        >>= result
+
+
+result_to_highlight : ( String, String, String, Bool ) -> ( String, String, String )
+result_to_highlight ( lang, title, code, _ ) =
+    ( lang, title, code )
 
 
 result : ( List ( String, String, String, Bool ), Maybe String ) -> Parser PState Code
@@ -24,7 +33,7 @@ result ( lst, script ) =
 
                 Nothing ->
                     lst
-                        |> List.map (\( lang, title, code, _ ) -> ( lang, title, code ))
+                        |> List.map result_to_highlight
                         |> Highlight
                         |> succeed
         )
@@ -72,11 +81,6 @@ code_line =
 listing : Parser PState ( String, String, String, Bool )
 listing =
     (\h ( v, t ) s -> ( h, t, String.concat s |> String.dropRight 1, v )) <$> (border *> header) <*> title <*> manyTill code_line (identation *> border)
-
-
-modify_temp : List ( String, String, String ) -> Parser PState ()
-modify_temp lang_code =
-    modifyState (\s -> { s | code_temp = lang_code })
 
 
 evaluate : List ( String, String, String, Bool ) -> String -> Parser PState Code
