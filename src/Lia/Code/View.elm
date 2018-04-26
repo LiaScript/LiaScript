@@ -4,8 +4,9 @@ import Array
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onDoubleClick, onInput)
+import Json.Encode as JE
 import Lia.Ace as Ace
-import Lia.Code.Types exposing (Code(..), EvalString, File, Vector)
+import Lia.Code.Types exposing (..)
 import Lia.Code.Update exposing (Msg(..))
 import Lia.Helper exposing (ID)
 import Lia.Markdown.Inline.Types exposing (Annotation)
@@ -15,15 +16,6 @@ import Lia.Utils
 
 view : String -> Annotation -> Vector -> Code -> Html Msg
 view theme attr model code =
-    let
-        div_ =
-            Html.div
-                [ Attr.style
-                    [ ( "margin-top", "16px" )
-                    , ( "margin-bottom", "16px" )
-                    ]
-                ]
-    in
     case code of
         Highlight lang_title_code ->
             lang_title_code
@@ -33,9 +25,13 @@ view theme attr model code =
         Evaluate id_1 ->
             case Array.get id_1 model of
                 Just project ->
+                    let
+                        errors =
+                            get_annotations project.result
+                    in
                     div_
                         [ project.file
-                            |> Array.indexedMap (view_eval theme attr id_1)
+                            |> Array.indexedMap (view_eval theme attr errors id_1)
                             |> Array.toList
                             |> Html.div []
                         , view_control id_1 project.version_active project.running
@@ -44,6 +40,29 @@ view theme attr model code =
 
                 Nothing ->
                     Html.text ""
+
+
+get_annotations : Result Rslt Rslt -> ID -> JE.Value
+get_annotations rslt file_id =
+    (case rslt of
+        Ok info ->
+            info.details
+
+        Err info ->
+            info.details
+    )
+        |> Array.get file_id
+        |> Maybe.withDefault JE.null
+
+
+div_ : List (Html msg) -> Html msg
+div_ =
+    Html.div
+        [ Attr.style
+            [ ( "margin-top", "16px" )
+            , ( "margin-bottom", "16px" )
+            ]
+        ]
 
 
 view_code : String -> Annotation -> ( String, String, String ) -> Html Msg
@@ -63,8 +82,8 @@ view_code theme attr ( lang, title, code ) =
         ]
 
 
-view_eval : String -> Annotation -> ID -> ID -> File -> Html Msg
-view_eval theme attr id_1 id_2 file =
+view_eval : String -> Annotation -> (ID -> JE.Value) -> ID -> ID -> File -> Html Msg
+view_eval theme attr errors id_1 id_2 file =
     let
         headless =
             file.name == ""
@@ -81,7 +100,7 @@ view_eval theme attr id_1 id_2 file =
                     ]
                 ]
                 [ Html.text file.name ]
-        , evaluate theme attr id_1 id_2 file.lang file.code file.visible headless
+        , evaluate theme attr id_1 id_2 file.lang file.code file.visible headless (errors id_2)
         ]
 
 
@@ -144,8 +163,8 @@ highlight theme attr lang code headless =
         []
 
 
-evaluate : String -> Annotation -> ID -> ID -> String -> String -> Bool -> Bool -> Html Msg
-evaluate theme attr id_1 id_2 lang code visible headless =
+evaluate : String -> Annotation -> ID -> ID -> String -> String -> Bool -> Bool -> JE.Value -> Html Msg
+evaluate theme attr id_1 id_2 lang code visible headless errors =
     let
         total_lines =
             lines code
@@ -175,6 +194,7 @@ evaluate theme attr id_1 id_2 lang code visible headless =
             , Ace.extensions [ "language_tools" ]
             , Attr.style style_
             , Ace.maxLines 16
+            , Ace.annotations errors
             ]
             []
         ]
@@ -189,17 +209,17 @@ error info =
         [ Html.text ("Error: " ++ info) ]
 
 
-view_result : Result String String -> Html msg
+view_result : Result Rslt Rslt -> Html msg
 view_result rslt =
     case rslt of
-        Ok str ->
-            if str == "" then
+        Ok info ->
+            if info.message == "" then
                 Html.div [ Attr.style [ ( "margin-top", "8px" ) ] ] []
             else
-                Html.pre [ Attr.class "lia-code-stdout" ] [ Lia.Utils.stringToHtml str ]
+                Html.pre [ Attr.class "lia-code-stdout" ] [ Lia.Utils.stringToHtml info.message ]
 
-        Err str ->
-            error str
+        Err info ->
+            error info.message
 
 
 view_control : ID -> Int -> Bool -> Html Msg

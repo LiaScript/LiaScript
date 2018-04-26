@@ -1,7 +1,8 @@
 module Lia.Code.Update exposing (Msg(..), update)
 
 import Array exposing (Array)
-import Lia.Code.Types exposing (EvalString, File, Project, Vector)
+import Json.Decode as JD
+import Lia.Code.Types exposing (..)
 import Lia.Helper exposing (ID)
 import Lia.Utils
 
@@ -10,7 +11,17 @@ type Msg
     = Eval ID
     | Update ID ID String
     | FlipView ID ID
-    | EvalRslt (Result { id : ID, result : String } { id : ID, result : String })
+    | EvalRslt
+        (Result
+            { id : ID
+            , message : String
+            , details : JD.Value
+            }
+            { id : ID
+            , message : String
+            , details : JD.Value
+            }
+        )
     | Load ID Int
 
 
@@ -30,11 +41,27 @@ update msg model =
                 Nothing ->
                     ( model, Cmd.none )
 
-        EvalRslt (Ok { id, result }) ->
-            ( update_ id model (resulting (Ok result)), Cmd.none )
+        EvalRslt (Ok { id, message, details }) ->
+            ( details
+                |> JD.decodeValue (JD.array JD.value)
+                |> Result.withDefault Array.empty
+                |> Rslt message
+                |> Ok
+                |> resulting
+                |> update_ id model
+            , Cmd.none
+            )
 
-        EvalRslt (Err { id, result }) ->
-            ( update_ id model (resulting (Err result)), Cmd.none )
+        EvalRslt (Err { id, message, details }) ->
+            ( details
+                |> JD.decodeValue (JD.array JD.value)
+                |> Result.withDefault Array.empty
+                |> Rslt message
+                |> Err
+                |> resulting
+                |> update_ id model
+            , Cmd.none
+            )
 
         Update id_1 id_2 code_str ->
             update_file id_1 id_2 model (\f -> { f | code = code_str }) Cmd.none
@@ -80,16 +107,19 @@ update_file id_1 id_2 model f cmd =
     )
 
 
-resulting : Result String String -> Project -> Project
+resulting : Result Rslt Rslt -> Project -> Project
 resulting result elem =
     let
         ( code, _ ) =
             elem.version
                 |> Array.get elem.version_active
-                |> Maybe.withDefault ( Array.fromList [], Ok "" )
+                |> Maybe.withDefault ( Array.empty, noResult )
 
         e =
-            { elem | result = result, running = False }
+            { elem
+                | result = result
+                , running = False
+            }
 
         new_code =
             e.file |> Array.map .code
@@ -112,7 +142,7 @@ load version elem =
             ( code, result ) =
                 elem.version
                     |> Array.get version
-                    |> Maybe.withDefault ( Array.empty, Ok "" )
+                    |> Maybe.withDefault ( Array.empty, noResult )
         in
         { elem
             | version_active = version

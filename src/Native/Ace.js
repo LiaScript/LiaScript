@@ -50,7 +50,8 @@ function emptyModel() {
         showCursor: true,
         showGutter: true,
         extensions: [],
-        maxLines: Infinity
+        maxLines: Infinity,
+        annotations : []
     };
 }
 
@@ -108,6 +109,9 @@ function extractModel(factList) {
                 break;
             case "AceMaxLines":
                 model.maxLines = payload.value;
+                break;
+            case "AceAnnotations":
+                model.annotations = payload.value;
                 break;
 
         }
@@ -169,6 +173,7 @@ function render(model) {
     editor.getSession().setUseSoftTabs(model.useSoftTabs);
     editor.getSession().setUseWrapMode(model.useWrapMode);
     editor.getSession().setValue(model.value || "");
+
     var dummy = emptyModel();
     dummy.shared = shared;
     // It uses editor instance of prev and copy it to new
@@ -217,9 +222,17 @@ function diff(prev, next) {
         }
     }
 
+    if (pm.annotations != nm.annotations) {
+        if (nm.annotations == null)
+            editor.getSession().setAnnotations([]);
+        else
+            editor.getSession().setAnnotations(nm.annotations);
+    }
+
     // Keep reference to shared state
     shared.skipNext = false;
     nm.shared = shared;
+
 
     // It's not necessary to use patches, because Ace do changes itself
     // But It usesd to inform Ace about changes

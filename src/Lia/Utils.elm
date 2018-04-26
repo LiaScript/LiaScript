@@ -5,8 +5,6 @@ module Lia.Utils
         , execute
         , formula
         , get_local
-        , guess
-        , highlight
         , load_js
         , scrollIntoView
         , set_local
@@ -22,16 +20,6 @@ import Json.Encode
 import Lia.Helper exposing (ID)
 import Native.Utils
 import Task exposing (attempt)
-
-
-highlight : String -> String -> Html msg
-highlight language code =
-    stringToHtml <| Native.Utils.highlight language code
-
-
-guess : String -> String
-guess code =
-    Native.Utils.highlightAuto code
 
 
 formula : Bool -> String -> Html msg

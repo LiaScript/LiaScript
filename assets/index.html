@@ -33,6 +33,25 @@
       //var Lia = require("src/index");
       //Elm.Main.embed(document.body, {url: "", script: ""});
 
+      class LiaError extends Error {
+          constructor(message, files,...params) {
+              super(...params);
+              if (Error.captureStackTrace)
+                  Error.captureStackTrace(this, LiaError);
+              this.message = message;
+              this.details = [];
+              for(var i=0; i<files; i++)
+                  this.details.push([]);
+          }
+          add_detail(file_id, msg, type, line, column) {
+              this.details[file_id].push(
+                  { row : line,
+                    column : column,
+                    text : msg,
+                    type : type } );
+          }
+      };
+
       function readTextFile(file) {
           var rawFile = new XMLHttpRequest();
           rawFile.open("GET", file, false);

@@ -6,7 +6,6 @@ import Lia.Code.Types exposing (..)
 import Lia.Macro.Parser exposing (macro)
 import Lia.Markdown.Inline.Parser exposing (javascript, whitelines)
 import Lia.PState exposing (..)
-import Lia.Utils exposing (guess)
 
 
 parse : Parser PState Code
@@ -37,14 +36,6 @@ result ( lst, script ) =
                         |> Highlight
                         |> succeed
         )
-
-
-check_lang : ( String, String ) -> ( String, String )
-check_lang ( lang, code ) =
-    if lang == "" then
-        ( guess lang, code )
-    else
-        ( lang, code )
 
 
 border : Parser PState String
@@ -99,12 +90,12 @@ evaluate lang_title_code comment =
                                 [ ( lang_title_code
                                         |> List.map (\( _, _, code, _ ) -> code)
                                         |> Array.fromList
-                                  , Ok ""
+                                  , noResult
                                   )
                                 ]
                         , evaluation = comment
                         , version_active = 0
-                        , result = Ok ""
+                        , result = noResult
                         , running = False
                         }
                         s.code_vector

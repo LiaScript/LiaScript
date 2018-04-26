@@ -6,9 +6,11 @@ module Lia.Code.Types
         , Project
         , Rslt
         , Vector
+        , noResult
         )
 
 import Array exposing (Array)
+import Json.Decode as JD
 import Lia.Helper exposing (ID)
 
 
@@ -18,24 +20,25 @@ type alias Vector =
 
 type alias Project =
     { file : Array File
-    , version : Array ( Array String, Result String String )
+    , version : Array ( Array String, Result Rslt Rslt )
     , evaluation : String
     , version_active : Int
-    , result : Result String String
+    , result : Result Rslt Rslt
     , running : Bool
     }
 
 
+noResult : Result Rslt Rslt
+noResult =
+    Ok
+        { message = ""
+        , details = Array.empty
+        }
+
+
 type alias Rslt =
     { message : String
-    , details :
-        Maybe List
-            { idx : Int
-            , msg : String
-            , typ : String
-            , row : Int
-            , col : Int
-            }
+    , details : Array JD.Value
     }
 
 
@@ -45,18 +48,6 @@ type alias File =
     , code : String
     , visible : Bool
     }
-
-
-
---type alias Element =
---    { code : Array String
---  , version : Array ( Array String, Result String String )
---    , version_active : Int
---    , result : Result String String
---    , editing : Bool
---    , visible : Bool
---    , running : Bool
---    }
 
 
 type alias EvalString =

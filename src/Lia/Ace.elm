@@ -21,6 +21,7 @@ module Lia.Ace exposing (..)
 
 -}
 
+import Array exposing (Array)
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attributes
 import Html.Events as Events
@@ -104,6 +105,11 @@ tabSize val =
 maxLines : Int -> Attribute msg
 maxLines val =
     Attributes.property "AceMaxLines" (JE.int val)
+
+
+annotations : JE.Value -> Attribute msg
+annotations val =
+    Attributes.property "AceAnnotations" val
 
 
 {-| Attribute to set whether to use soft tabs or not.
