@@ -76,30 +76,29 @@ update msg model =
             ( set_active_section model section, Cmd.map UpdateMarkdown cmd, log )
 
         ( DesignTheme theme, _ ) ->
-            ( { model
-                | design =
-                    { light = model.design.light
-                    , theme = set_local "theme" theme
-                    , font_size = model.design.font_size
-                    , ace = model.design.ace
-                    }
-              }
+            let
+                setting =
+                    model.design
+            in
+            ( { model | design = { setting | theme = set_local "theme" theme } }
             , Cmd.none
             , Nothing
             )
 
         ( DesignLight, _ ) ->
+            let
+                setting =
+                    model.design
+            in
             ( { model
                 | design =
-                    { light =
-                        set_local "theme_light" <|
-                            if model.design.light == "light" then
-                                "dark"
-                            else
-                                "light"
-                    , theme = model.design.theme
-                    , font_size = model.design.font_size
-                    , ace = model.design.ace
+                    { setting
+                        | light =
+                            set_local "theme_light" <|
+                                if setting.light == "light" then
+                                    "dark"
+                                else
+                                    "light"
                     }
               }
             , Cmd.none
@@ -107,14 +106,11 @@ update msg model =
             )
 
         ( DesignAce theme, _ ) ->
-            ( { model
-                | design =
-                    { light = model.design.light
-                    , theme = model.design.theme
-                    , font_size = model.design.font_size
-                    , ace = set_local "ace" theme
-                    }
-              }
+            let
+                setting =
+                    model.design
+            in
+            ( { model | design = { setting | ace = set_local "ace" theme } }
             , Cmd.none
             , Nothing
             )
