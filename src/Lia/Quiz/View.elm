@@ -61,7 +61,7 @@ view_quiz : Annotation -> Maybe Element -> (Int -> State -> Bool -> Html Msg) ->
 view_quiz attr state fn_view idx hints eval_string solution =
     case state of
         Just s ->
-            Html.p (annotation attr "")
+            Html.p (annotation "" attr)
                 (fn_view idx s.state (s.solved /= Open)
                     :: view_button s.trial s.solved (Check idx solution eval_string)
                     :: view_button_solution s.solved (ShowSolution idx solution)

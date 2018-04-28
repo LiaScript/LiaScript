@@ -37,7 +37,7 @@ view attr chart =
         custom =
             Plot.defaultSeriesPlotCustomizations
     in
-    Html.div (annotation attr "lia-chart")
+    Html.div (annotation "lia-chart" attr)
         [ Plot.viewSeriesCustom
             { custom
                 | junk =

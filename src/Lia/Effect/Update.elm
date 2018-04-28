@@ -4,10 +4,10 @@ import Lia.Effect.Model exposing (Map, Model, current_comment, get_all_javascrip
 import Lia.Utils
 
 
-port speech_out : List String -> Cmd msg
+port speech2js : List String -> Cmd msg
 
 
-port speech_in : (( String, String ) -> msg) -> Sub msg
+port speech2elm : (( String, String ) -> msg) -> Sub msg
 
 
 
@@ -50,14 +50,14 @@ update msg sound model =
         Speak ->
             let
                 c =
-                    speech_out [ "cancel" ]
+                    speech2js [ "cancel" ]
 
                 d =
                     Lia.Utils.scrollIntoView "focused"
             in
             case ( sound, current_comment model ) of
                 ( True, Just ( comment, narrator ) ) ->
-                    ( { model | speaking = True }, speech_out [ "speak", narrator, comment ] )
+                    ( { model | speaking = True }, speech2js [ "speak", narrator, comment ] )
 
                 _ ->
                     ( model, Cmd.none )
@@ -78,7 +78,7 @@ update msg sound model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch [ speech_in SpeakRslt ]
+    Sub.batch [ speech2elm SpeakRslt ]
 
 
 execute : Bool -> Int -> Model -> Model

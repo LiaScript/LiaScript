@@ -52,59 +52,54 @@
           }
       };
 
-      function readTextFile(file) {
-          var rawFile = new XMLHttpRequest();
-          rawFile.open("GET", file, false);
-          rawFile.onreadystatechange = function () {
-              if(rawFile.readyState === 4) {
-                  if(rawFile.status === 200 || rawFile.status == 0) {
+      const app = Elm.Main.embed(document.body, {url: "", script: "" }); //rawFile.responseText });
 
-                      const app = Elm.Main.embed(document.body, {url: "", script: "" }); //rawFile.responseText });
+      function evalOk(id, message) {
+          app.ports.eval2elm.send([true, id, message, []]);
+      }
 
-                      app.ports.speech_out.subscribe(function(cmd) {
-                        try {
-                          switch (cmd[0]) {
-                            case "speak":
-                              responsiveVoice.speak( cmd[2], cmd[1],
-                                                     { onend: e => {
-                                                         app.ports.speech_in.send(["end", ""]);
-                                                       },
-                                                       onerror: e => {
-                                                         app.ports.speech_in.send(["error", e]);
-                                                       }
-                                                      } );
-                              break;
-                            case "cancel":
-                              responsiveVoice.cancel()
-                              break;
-                            default:
-                              console.log(cmd);
-                          }
-                        } catch (e) {
-                          app.ports.speech_in.send(["error", e]);
-                        }
-                      });
+      function evalErr(id, message, details=[]) {
+            app.ports.eval2elm.send([false, id, message, details]);
+      }
 
-                      app.ports.eval_tx.subscribe(function(cmd) {
-                          var id = cmd[0];
-                          var code = cmd[1];
-                          try {
-                              app.ports.eval_rx.send([true, id, String(eval(code))]);
-                          }
-                          catch (e) {
-                                if (e instanceof LiaError ) {
-                                    app.ports.eval_rx.send([false, id, e.message]);
-                                } else {
-                                    app.ports.eval_rx.send([false, id, e.message]);
-                                }
-                            }
-                      });
+      app.ports.speech2js.subscribe(function(cmd) {
+          try {
+              switch (cmd[0]) {
+                  case "speak":
+                      responsiveVoice.speak( cmd[2], cmd[1],
+                                             { onend: e => {
+                                                 app.ports.speech2elm.send(["end", ""]);
+                                                },
+                                              onerror: e => {
+                                                 app.ports.speech2elm.send(["error", e]);
+                                                 }
+                                              } );
+                      break;
+                  case "cancel":
+                      responsiveVoice.cancel()
+                      break;
+                  default:
+                      console.log(cmd);
                   }
+          } catch (e) {
+              app.ports.speech2elm.send(["error", e]);
+          }
+      });
+
+      app.ports.eval2js.subscribe(function(cmd) {
+          var id = cmd[0];
+          var code = cmd[1];
+          try {
+                evalOk(id, String(eval(code)));
+          }
+          catch (e) {
+              if (e instanceof LiaError ) {
+                  evalErr(id, e.message, e.details);
+              } else {
+                  evalErr(id, e.message);
               }
           }
-          rawFile.send(null);
-      }
-      readTextFile("ReadMe.md")
+      });
 
     </script>
   </body>

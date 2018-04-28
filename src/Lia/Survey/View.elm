@@ -13,7 +13,7 @@ import Lia.Survey.Update exposing (Msg(..))
 
 view : Annotation -> Survey -> Vector -> Html Msg
 view attr survey model =
-    Html.p (annotation attr "lia-card") <|
+    Html.p (annotation "lia-card" attr) <|
         case survey of
             Text lines idx ->
                 view_text (get_text_state model idx) lines idx

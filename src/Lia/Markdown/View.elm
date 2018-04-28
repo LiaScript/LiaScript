@@ -81,10 +81,10 @@ view_block : Config -> Markdown -> Html Msg
 view_block config block =
     case block of
         HLine attr ->
-            Html.hr (annotation attr "lia-horiz-line") []
+            Html.hr (annotation "lia-horiz-line" attr) []
 
         Paragraph attr elements ->
-            Html.p (annotation attr "lia-paragraph") (config.view elements)
+            Html.p (annotation "lia-paragraph" attr) (config.view elements)
 
         Effect attr ( id_in, id_out, sub_blocks ) ->
             if config.mode == Textbook || ((id_in <= config.section.effect_model.visible) && (id_out > config.section.effect_model.visible)) then
@@ -94,7 +94,7 @@ view_block config block =
                       else
                         Attr.id (toString id_in)
                      )
-                        :: annotation attr "lia-effect-inline"
+                        :: annotation "lia-effect-inline" attr
                     )
                     (Effects.view_block (view_block config) id_in sub_blocks)
             else
@@ -103,12 +103,12 @@ view_block config block =
         BulletList attr list ->
             list
                 |> view_list config
-                |> Html.ul (annotation attr "lia-list lia-unordered")
+                |> Html.ul (annotation "lia-list lia-unordered" attr)
 
         OrderedList attr list ->
             list
                 |> view_list config
-                |> Html.ol (annotation attr "lia-list lia-ordered")
+                |> Html.ol (annotation "lia-list lia-ordered" attr)
 
         Table attr header format body ->
             view_table config attr header format body
@@ -116,7 +116,7 @@ view_block config block =
         Quote attr elements ->
             elements
                 |> List.map (\e -> view_block config e)
-                |> Html.blockquote (annotation attr "lia-quote")
+                |> Html.blockquote (annotation "lia-quote" attr)
 
         Code attr code ->
             code
@@ -194,7 +194,7 @@ view_table config attr header format body =
                 |> view_row Html.th
                 |> Html.thead [ Attr.class "lia-inline lia-table-head" ]
             )
-        |> Html.table (annotation attr "lia-table")
+        |> Html.table (annotation "lia-table" attr)
 
 
 view_list : Config -> List (List Markdown) -> List (Html Msg)

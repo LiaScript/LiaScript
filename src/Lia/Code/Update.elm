@@ -4,36 +4,24 @@ import Array exposing (Array)
 import Json.Decode as JD
 import Lia.Code.Types exposing (..)
 import Lia.Helper exposing (ID)
-import Lia.Utils
 
 
-port eval_tx : ( Int, String ) -> Cmd msg
+port eval2js : ( Int, String ) -> Cmd msg
 
 
-port eval_rx : (( Bool, Int, String ) -> msg) -> Sub msg
+port eval2elm : (( Bool, Int, String, JD.Value ) -> msg) -> Sub msg
 
 
 subscriptions : Vector -> Sub Msg
 subscriptions model =
-    Sub.batch [ eval_rx EvalRslt2 ]
+    Sub.batch [ eval2elm EvalRslt ]
 
 
 type Msg
     = Eval ID
     | Update ID ID String
     | FlipView ID ID
-    | EvalRslt2 ( Bool, Int, String )
-    | EvalRslt
-        (Result
-            { id : ID
-            , message : String
-            , details : JD.Value
-            }
-            { id : ID
-            , message : String
-            , details : JD.Value
-            }
-        )
+    | EvalRslt ( Bool, Int, String, JD.Value )
     | Load ID Int
 
 
@@ -44,7 +32,7 @@ update msg model =
             case Array.get idx model of
                 Just project ->
                     ( update_ idx model (\p -> { p | running = True })
-                    , eval_tx
+                    , eval2js
                         ( idx
                         , project.file
                             |> Array.indexedMap (\i f -> ( i, f.code ))
@@ -55,28 +43,6 @@ update msg model =
                 Nothing ->
                     ( model, Cmd.none )
 
-        EvalRslt (Ok { id, message, details }) ->
-            ( details
-                |> JD.decodeValue (JD.array JD.value)
-                |> Result.withDefault Array.empty
-                |> Rslt message
-                |> Ok
-                |> resulting
-                |> update_ id model
-            , Cmd.none
-            )
-
-        EvalRslt (Err { id, message, details }) ->
-            ( details
-                |> JD.decodeValue (JD.array JD.value)
-                |> Result.withDefault Array.empty
-                |> Rslt message
-                |> Err
-                |> resulting
-                |> update_ id model
-            , Cmd.none
-            )
-
         Update id_1 id_2 code_str ->
             update_file id_1 id_2 model (\f -> { f | code = code_str }) Cmd.none
 
@@ -86,24 +52,32 @@ update msg model =
         Load idx version ->
             ( update_ idx model (load version), Cmd.none )
 
-        EvalRslt2 ( True, idx, message ) ->
+        EvalRslt ( True, idx, message, details ) ->
             if message == "[object Object]" then
                 ( model, Cmd.none )
             else
-                ( Rslt message Array.empty
+                ( decode_rslt message details
                     |> Ok
                     |> resulting
                     |> update_ idx model
                 , Cmd.none
                 )
 
-        EvalRslt2 ( False, idx, message ) ->
-            ( Rslt message Array.empty
+        EvalRslt ( False, idx, message, details ) ->
+            ( decode_rslt message details
                 |> Err
                 |> resulting
                 |> update_ idx model
             , Cmd.none
             )
+
+
+decode_rslt : String -> JD.Value -> Rslt
+decode_rslt message details =
+    details
+        |> JD.decodeValue (JD.array JD.value)
+        |> Result.withDefault Array.empty
+        |> Rslt message
 
 
 replace : ( Int, String ) -> String -> String

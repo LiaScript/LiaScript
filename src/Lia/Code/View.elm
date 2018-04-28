@@ -71,7 +71,7 @@ view_code theme attr ( lang, title, code ) =
         headless =
             title == ""
     in
-    Html.div []
+    Html.div (annotation "" attr)
         [ if headless then
             Html.text ""
           else
@@ -88,7 +88,7 @@ view_eval theme attr running errors id_1 id_2 file =
         headless =
             file.name == ""
     in
-    Html.div []
+    Html.div (annotation "" attr)
         [ if headless then
             Html.text ""
           else
@@ -100,7 +100,7 @@ view_eval theme attr running errors id_1 id_2 file =
                     ]
                 ]
                 [ Html.text file.name ]
-        , evaluate theme attr running ( id_1, id_2 ) file.lang file.code file.visible headless (errors id_2)
+        , evaluate theme running ( id_1, id_2 ) file.lang file.code file.visible headless (errors id_2)
         ]
 
 
@@ -163,8 +163,8 @@ highlight theme attr lang code headless =
         []
 
 
-evaluate : String -> Annotation -> Bool -> ( ID, ID ) -> String -> String -> Bool -> Bool -> JE.Value -> Html Msg
-evaluate theme attr running ( id_1, id_2 ) lang code visible headless errors =
+evaluate : String -> Bool -> ( ID, ID ) -> String -> String -> Bool -> Bool -> JE.Value -> Html Msg
+evaluate theme running ( id_1, id_2 ) lang code visible headless errors =
     let
         total_lines =
             lines code

@@ -8,8 +8,8 @@ import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Refe
 import Lia.Utils
 
 
-annotation : Annotation -> String -> List (Attribute msg)
-annotation attr cls =
+annotation : String -> Annotation -> List (Attribute msg)
+annotation cls attr =
     case attr of
         Just dict ->
             --Dict.update "class" (\v -> Maybe.map ()(++)(cls ++ " ")) v) dict
@@ -41,22 +41,22 @@ view visible element =
             Html.text e
 
         Bold e attr ->
-            Html.b (annotation attr "lia-bold") [ view visible e ]
+            Html.b (annotation "lia-bold" attr) [ view visible e ]
 
         Italic e attr ->
-            Html.em (annotation attr "lia-italic") [ view visible e ]
+            Html.em (annotation "lia-italic" attr) [ view visible e ]
 
         Strike e attr ->
-            Html.s (annotation attr "lia-strike") [ view visible e ]
+            Html.s (annotation "lia-strike" attr) [ view visible e ]
 
         Underline e attr ->
-            Html.u (annotation attr "lia-underline") [ view visible e ]
+            Html.u (annotation "lia-underline" attr) [ view visible e ]
 
         Superscript e attr ->
-            Html.sup (annotation attr "lia-superscript") [ view visible e ]
+            Html.sup (annotation "lia-superscript" attr) [ view visible e ]
 
         Verbatim e attr ->
-            Html.code (annotation attr "lia-code") [ Html.text e ]
+            Html.code (annotation "lia-code" attr) [ Html.text e ]
 
         Ref e attr ->
             reference e attr
@@ -70,7 +70,7 @@ view visible element =
         Container list attr ->
             list
                 |> List.map (\e -> view visible e)
-                |> Html.span (annotation attr "lia-container")
+                |> Html.span (annotation "lia-container" attr)
 
         HTML e ->
             Lia.Utils.stringToHtml e
@@ -78,7 +78,7 @@ view visible element =
         EInline id_in id_out e attr ->
             if (id_in <= visible) && (id_out > visible) then
                 Html.span
-                    (Attr.id (toString id_in) :: annotation attr "lia-effect-inline")
+                    (Attr.id (toString id_in) :: annotation "lia-effect-inline" attr)
                     (Effect.view (viewer visible) id_in e)
             else
                 Html.text ""
@@ -105,13 +105,13 @@ reference ref attr =
             view_url alt_ url_ attr
 
         Image alt_ url_ ->
-            Html.img (Attr.src url_ :: annotation attr "lia-image") [ Html.text alt_ ]
+            Html.img (Attr.src url_ :: annotation "lia-image" attr) [ Html.text alt_ ]
 
         Movie alt_ url_ ->
             if url_ |> String.toLower |> String.contains "https://www.youtube" then
-                Html.iframe (Attr.src url_ :: annotation attr "lia-movie") [ Html.text alt_ ]
+                Html.iframe (Attr.src url_ :: annotation "lia-movie" attr) [ Html.text alt_ ]
             else
-                Html.video (Attr.controls True :: annotation attr "lia-movie") [ Html.source [ Attr.src url_ ] [], Html.text alt_ ]
+                Html.video (Attr.controls True :: annotation "lia-movie" attr) [ Html.source [ Attr.src url_ ] [], Html.text alt_ ]
 
         Mail alt_ url_ ->
             view_url alt_ ("mailto:" ++ url_) attr
@@ -120,6 +120,6 @@ reference ref attr =
 view_url : String -> String -> Annotation -> Html msg
 view_url alt_ url_ attr =
     [ Attr.href url_ ]
-        |> List.append (annotation attr "lia-link")
+        |> List.append (annotation "lia-link" attr)
         |> Html.a
         |> (\a -> a [ Html.text alt_ ])
