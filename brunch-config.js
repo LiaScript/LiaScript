@@ -35,7 +35,7 @@ module.exports = {
                 mainModules: ["examples/Online.elm"],
                 outputFolder: "public/js/",
                 outputFile: 'app.js',
-                makeParameters: ['--debug'],
+                makeParameters: []//'--debug'],
             },
             sass: {
                 mode: "native",
@@ -64,7 +64,7 @@ module.exports = {
         npm: {
             styles: {
                 "normalize.css": ["normalize.css"],
-                "highlight.js": ["styles/default.css"],
+                //"highlight.js": ["styles/default.css"],
                 "animate.css": ["animate.css"],
                 "katex": ["dist/katex.css"],
             },

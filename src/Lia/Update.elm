@@ -73,10 +73,6 @@ update msg model =
             ( { model | index_model = index }, Cmd.none, Nothing )
 
         ( UpdateMarkdown idx childMsg, Just sec ) ->
-            let
-                ddd =
-                    Debug.log "Fuck" ( idx, model.section_active, childMsg )
-            in
             if idx == model.section_active then
                 let
                     ( section, cmd, log ) =

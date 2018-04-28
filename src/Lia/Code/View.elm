@@ -31,7 +31,7 @@ view theme attr model code =
                     in
                     div_
                         [ project.file
-                            |> Array.indexedMap (view_eval theme attr errors id_1)
+                            |> Array.indexedMap (view_eval theme attr project.running errors id_1)
                             |> Array.toList
                             |> Html.div []
                         , view_control id_1 project.version_active project.running
@@ -82,8 +82,8 @@ view_code theme attr ( lang, title, code ) =
         ]
 
 
-view_eval : String -> Annotation -> (ID -> JE.Value) -> ID -> ID -> File -> Html Msg
-view_eval theme attr errors id_1 id_2 file =
+view_eval : String -> Annotation -> Bool -> (ID -> JE.Value) -> ID -> ID -> File -> Html Msg
+view_eval theme attr running errors id_1 id_2 file =
     let
         headless =
             file.name == ""
@@ -100,7 +100,7 @@ view_eval theme attr errors id_1 id_2 file =
                     ]
                 ]
                 [ Html.text file.name ]
-        , evaluate theme attr id_1 id_2 file.lang file.code file.visible headless (errors id_2)
+        , evaluate theme attr running ( id_1, id_2 ) file.lang file.code file.visible headless (errors id_2)
         ]
 
 
@@ -163,8 +163,8 @@ highlight theme attr lang code headless =
         []
 
 
-evaluate : String -> Annotation -> ID -> ID -> String -> String -> Bool -> Bool -> JE.Value -> Html Msg
-evaluate theme attr id_1 id_2 lang code visible headless errors =
+evaluate : String -> Annotation -> Bool -> ( ID, ID ) -> String -> String -> Bool -> Bool -> JE.Value -> Html Msg
+evaluate theme attr running ( id_1, id_2 ) lang code visible headless errors =
     let
         total_lines =
             lines code
@@ -186,6 +186,7 @@ evaluate theme attr id_1 id_2 lang code visible headless errors =
             , Ace.value code
             , Ace.mode lang
             , Ace.theme theme
+            , Ace.readOnly running
             , Ace.enableBasicAutocompletion True
             , Ace.enableLiveAutocompletion True
             , Ace.enableSnippets True

@@ -27,7 +27,10 @@ type Msg
 
 subscriptions : Section -> Sub Msg
 subscriptions section =
-    Sub.batch [ Sub.map (UpdateEffect False) (Effect.subscriptions section.effect_model) ]
+    Sub.batch
+        [ Sub.map (UpdateEffect False) (Effect.subscriptions section.effect_model)
+        , Sub.map UpdateCode (Code.subscriptions section.code_vector)
+        ]
 
 
 update : Msg -> Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )

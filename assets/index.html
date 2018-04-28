@@ -84,6 +84,21 @@
                           app.ports.speech_in.send(["error", e]);
                         }
                       });
+
+                      app.ports.eval_tx.subscribe(function(cmd) {
+                          var id = cmd[0];
+                          var code = cmd[1];
+                          try {
+                              app.ports.eval_rx.send([true, id, String(eval(code))]);
+                          }
+                          catch (e) {
+                                if (e instanceof LiaError ) {
+                                    app.ports.eval_rx.send([false, id, e.message]);
+                                } else {
+                                    app.ports.eval_rx.send([false, id, e.message]);
+                                }
+                            }
+                      });
                   }
               }
           }

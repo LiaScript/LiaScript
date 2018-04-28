@@ -160,7 +160,7 @@ function render(model) {
     editor.setOptions({
         showPrintMargin: model.showPrintMargin,
         highlightActiveLine: model.highlightActiveLine,
-        readOnly: model.readOnly,
+        //readOnly: model.readOnly,
         showGutter: model.showGutter,
         maxLines: model.maxLines
     });
@@ -210,6 +210,11 @@ function diff(prev, next) {
     if (pm.theme != nm.theme) {
         editor.setTheme("ace/theme/" + nm.theme);
     }
+
+    if (pm.readOnly != nm.readOnly) {
+      editor.setOptions({ readOnly: nm.readOnly });
+    }
+
 
     if (pm.mode != nm.mode) {
         session.setMode("ace/mode/" + nm.mode);

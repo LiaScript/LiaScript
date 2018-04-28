@@ -1,4 +1,4 @@
-module Lia.Code.Update exposing (Msg(..), update)
+port module Lia.Code.Update exposing (Msg(..), subscriptions, update)
 
 import Array exposing (Array)
 import Json.Decode as JD
@@ -7,10 +7,22 @@ import Lia.Helper exposing (ID)
 import Lia.Utils
 
 
+port eval_tx : ( Int, String ) -> Cmd msg
+
+
+port eval_rx : (( Bool, Int, String ) -> msg) -> Sub msg
+
+
+subscriptions : Vector -> Sub Msg
+subscriptions model =
+    Sub.batch [ eval_rx EvalRslt2 ]
+
+
 type Msg
     = Eval ID
     | Update ID ID String
     | FlipView ID ID
+    | EvalRslt2 ( Bool, Int, String )
     | EvalRslt
         (Result
             { id : ID
@@ -32,10 +44,12 @@ update msg model =
             case Array.get idx model of
                 Just project ->
                     ( update_ idx model (\p -> { p | running = True })
-                    , project.file
-                        |> Array.indexedMap (\i f -> ( i, f.code ))
-                        |> Array.foldl replace project.evaluation
-                        |> Lia.Utils.evaluateJS2 EvalRslt idx
+                    , eval_tx
+                        ( idx
+                        , project.file
+                            |> Array.indexedMap (\i f -> ( i, f.code ))
+                            |> Array.foldl replace project.evaluation
+                        )
                     )
 
                 Nothing ->
@@ -71,6 +85,25 @@ update msg model =
 
         Load idx version ->
             ( update_ idx model (load version), Cmd.none )
+
+        EvalRslt2 ( True, idx, message ) ->
+            if message == "[object Object]" then
+                ( model, Cmd.none )
+            else
+                ( Rslt message Array.empty
+                    |> Ok
+                    |> resulting
+                    |> update_ idx model
+                , Cmd.none
+                )
+
+        EvalRslt2 ( False, idx, message ) ->
+            ( Rslt message Array.empty
+                |> Err
+                |> resulting
+                |> update_ idx model
+            , Cmd.none
+            )
 
 
 replace : ( Int, String ) -> String -> String
