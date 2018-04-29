@@ -305,7 +305,7 @@ view_article model =
                     |> .effect_model
                     |> state
                     |> view_nav model.section_active model.mode model.design model.url (get_translations model.definition)
-                , Html.map (UpdateMarkdown model.section_active) <| Markdown.view model.mode section model.design.ace
+                , Html.map UpdateMarkdown <| Markdown.view model.mode section model.design.ace
                 , view_footer model.sound model.mode section.effect_model
                 ]
 

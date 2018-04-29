@@ -27,7 +27,7 @@ subscriptions model =
             Sub.batch
                 [ section
                     |> Markdown.subscriptions
-                    |> Sub.map (UpdateMarkdown model.section_active)
+                    |> Sub.map UpdateMarkdown
                 ]
 
         Nothing ->
@@ -43,7 +43,7 @@ type Msg
     | DesignLight
     | DesignAce String
     | UpdateIndex Index.Msg
-    | UpdateMarkdown Int Markdown.Msg
+    | UpdateMarkdown Markdown.Msg
     | SwitchMode
     | Toggle Toggle
     | Location String
@@ -72,30 +72,15 @@ update msg model =
             in
             ( { model | index_model = index }, Cmd.none, Nothing )
 
-        ( UpdateMarkdown idx childMsg, Just sec ) ->
-            if idx == model.section_active then
-                let
-                    ( section, cmd, log ) =
-                        Markdown.update childMsg sec
-                in
-                ( set_active_section model section
-                , Cmd.map (UpdateMarkdown idx) cmd
-                , log
-                )
-            else
-                case Array.get idx model.sections of
-                    Just out_of_order_sec ->
-                        let
-                            ( section, cmd, log ) =
-                                Markdown.update childMsg out_of_order_sec
-                        in
-                        ( { model | sections = Array.set idx section model.sections }
-                        , Cmd.map (UpdateMarkdown idx) cmd
-                        , log
-                        )
-
-                    _ ->
-                        ( model, Cmd.none, Nothing )
+        ( UpdateMarkdown childMsg, Just sec ) ->
+            let
+                ( section, cmd, log ) =
+                    Markdown.update childMsg sec
+            in
+            ( set_active_section model section
+            , Cmd.map UpdateMarkdown cmd
+            , log
+            )
 
         ( DesignTheme theme, _ ) ->
             let
@@ -161,7 +146,7 @@ update msg model =
                             Markdown.initEffect False model.sound sec
             in
             ( set_active_section model sec_
-            , Cmd.map (UpdateMarkdown model.section_active) cmd_
+            , Cmd.map UpdateMarkdown cmd_
             , log_
             )
 
@@ -173,7 +158,7 @@ update msg model =
                     ( sec_, cmd_, log_ ) =
                         Markdown.nextEffect model.sound sec
                 in
-                ( set_active_section model sec_, Cmd.map (UpdateMarkdown model.section_active) cmd_, log_ )
+                ( set_active_section model sec_, Cmd.map UpdateMarkdown cmd_, log_ )
 
         ( PrevSection, Just sec ) ->
             if (model.mode == Textbook) || not (Effect.has_previous sec.effect_model) then
@@ -183,7 +168,7 @@ update msg model =
                     ( sec_, cmd_, log_ ) =
                         Markdown.previousEffect model.sound sec
                 in
-                ( set_active_section model sec_, Cmd.map (UpdateMarkdown model.section_active) cmd_, log_ )
+                ( set_active_section model sec_, Cmd.map UpdateMarkdown cmd_, log_ )
 
         ( SwitchMode, Just sec ) ->
             let
@@ -209,7 +194,7 @@ update msg model =
                             Markdown.initEffect False False sec
             in
             ( set_active_section { model | mode = mode } sec_
-            , Cmd.map (UpdateMarkdown model.section_active) cmd_
+            , Cmd.map UpdateMarkdown cmd_
             , log_
             )
 
@@ -220,7 +205,7 @@ update msg model =
                         ( sec_, cmd_, log_ ) =
                             Markdown.initEffect False (not model.sound) sec
                     in
-                    ( { model | sound = set_local "sound" (not model.sound) }, Cmd.map (UpdateMarkdown model.section_active) cmd_, log_ )
+                    ( { model | sound = set_local "sound" (not model.sound) }, Cmd.map UpdateMarkdown cmd_, log_ )
 
                 _ ->
                     let
