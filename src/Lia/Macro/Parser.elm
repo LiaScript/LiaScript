@@ -30,10 +30,25 @@ macro : Parser PState ()
 macro =
     skip
         (maybe
-            ((simple_macro >>= inject_macro)
+            ((uid_macro >>= inject_macro)
+                <|> (simple_macro >>= inject_macro)
                 <|> macro_listing
             )
         )
+
+
+uid_macro : Parser PState ( String, List String )
+uid_macro =
+    string "@uid" *> modifyState uid_update $> ( "@uid", [] )
+
+
+uid_update : PState -> PState
+uid_update state =
+    let
+        def =
+            state.defines
+    in
+    { state | defines = { def | uid = def.uid + 1 } }
 
 
 simple_macro : Parser PState ( String, List String )
@@ -116,6 +131,12 @@ get name def =
 
         "@version" ->
             Just def.version
+
+        "@section" ->
+            Just (toString def.section)
+
+        "@uid" ->
+            Just (toString def.section ++ "." ++ toString def.uid)
 
         _ ->
             Dict.get name def.macro

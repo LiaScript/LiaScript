@@ -21,6 +21,8 @@ type alias Definition =
     , base : String
     , translation : Dict String String
     , macro : Dict String String
+    , section : Int
+    , uid : Int
     }
 
 
@@ -37,6 +39,8 @@ default base =
     , base = base
     , translation = Dict.empty
     , macro = Dict.empty
+    , section = -1
+    , uid = -1
     }
 
 
