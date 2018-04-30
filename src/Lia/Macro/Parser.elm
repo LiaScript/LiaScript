@@ -28,13 +28,12 @@ param_list =
 
 macro : Parser PState ()
 macro =
-    skip
-        (maybe
-            ((uid_macro >>= inject_macro)
-                <|> (simple_macro >>= inject_macro)
-                <|> macro_listing
-            )
-        )
+    ((uid_macro >>= inject_macro)
+        <|> (simple_macro >>= inject_macro)
+        <|> macro_listing
+    )
+        |> maybe
+        |> skip
 
 
 uid_macro : Parser PState ( String, List String )
@@ -58,9 +57,11 @@ simple_macro =
 
 code_block : Parser PState (List String)
 code_block =
-    manyTill
-        (maybe identation *> regex "(.(?!```))*\\n?")
-        (maybe identation *> string "```")
+    String.concat
+        >> List.singleton
+        <$> manyTill
+                (maybe identation *> regex "(.(?!```))*\\n?")
+                (maybe identation *> string "```")
 
 
 macro_listing : Parser PState ()
@@ -69,9 +70,7 @@ macro_listing =
         >>= (\name ->
                 (param_list <* regex "[ \\t]*\\n")
                     >>= (\params ->
-                            ((\code -> List.append params [ String.concat code ])
-                                <$> code_block
-                            )
+                            (List.append params <$> code_block)
                                 >>= (\p -> inject_macro ( name, p ))
                         )
             )
