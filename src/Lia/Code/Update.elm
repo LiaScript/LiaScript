@@ -4,6 +4,7 @@ import Array exposing (Array)
 import Json.Decode as JD
 import Lia.Code.Types exposing (..)
 import Lia.Helper exposing (ID)
+import Lia.Utils exposing (toJSstring)
 
 
 port eval2js : ( Int, String ) -> Cmd msg
@@ -37,6 +38,7 @@ update msg model =
                         , project.file
                             |> Array.indexedMap (\i f -> ( i, f.code ))
                             |> Array.foldl replace project.evaluation
+                            |> toJSstring
                         )
                     )
 

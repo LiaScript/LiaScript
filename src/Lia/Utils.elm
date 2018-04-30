@@ -10,6 +10,7 @@ module Lia.Utils
         , set_title
         , stringToHtml
         , string_replace
+        , toJSstring
         , toUnixNewline
         )
 
@@ -72,8 +73,8 @@ set_title title =
     Native.Utils.set_title title
 
 
-string_replace : String -> String -> String -> String
-string_replace search replace string =
+string_replace : ( String, String ) -> String -> String
+string_replace ( search, replace ) string =
     Native.Utils.string_replace search replace string
 
 
