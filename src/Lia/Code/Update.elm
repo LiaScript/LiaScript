@@ -55,7 +55,7 @@ update msg model =
             ( update_ idx model (load version), Cmd.none )
 
         EvalRslt ( True, idx, message, details ) ->
-            if message == "[object Object]" then
+            if message == "LIA wait!" then
                 ( model, Cmd.none )
             else
                 ( decode_rslt message details

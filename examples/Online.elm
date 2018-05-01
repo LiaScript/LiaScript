@@ -181,11 +181,7 @@ view model =
     case model.state of
         Loading ->
             Html.div [ style ]
-                [ Html.h2 [] [ Html.text "Loading ..." ]
-                , Html.img [ Attr.src "/images/load.gif", Attr.width 350 ] []
-
-                --, Html.a [ Attr.href model.url, Attr.align "center" ] [ Html.text model.url ]
-                ]
+                [ Html.h2 [] [ Html.text "Loading ..." ] ]
 
         LoadOk ->
             Html.map LIA <| Lia.view model.lia
