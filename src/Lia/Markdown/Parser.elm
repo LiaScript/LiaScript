@@ -6,6 +6,7 @@ import Lia.Chart.Parser as Chart
 import Lia.Code.Parser as Code
 import Lia.Effect.Model exposing (set_annotation)
 import Lia.Effect.Parser as Effect
+import Lia.Helper exposing (..)
 import Lia.Macro.Parser exposing (macro)
 import Lia.Markdown.Inline.Parser exposing (..)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
@@ -44,7 +45,7 @@ blocks =
                         , Paragraph <$> md_annotations <*> paragraph
                         ]
             in
-            identation *> macro *> b <* maybe (whitelines *> Effect.hidden_comment)
+            identation *> macro *> b <* maybe (whitespace *> Effect.hidden_comment)
 
 
 to_comment attr ( id1, id2 ) =
@@ -74,7 +75,7 @@ solution =
                     *> regex "[\\t ]*\\*{3,}[\\t ]*[\\n]+"
                     *> withState (\s -> succeed s.effect_model.effects)
                 )
-            <*> manyTill (blocks <* regex "\\n*") (identation *> regex "[ \\t]*\\*{3,}[\\t ]*")
+            <*> manyTill (blocks <* newlines) (identation *> regex "[ \\t]*\\*{3,}[\\t ]*")
             <*> withState (\s -> succeed s.effect_model.effects)
         )
 
@@ -97,7 +98,7 @@ ordered_list =
     OrderedList
         <$> md_annotations
         <*> many1
-                (regex "[0-9]+\\. "
+                (regex "\\d+\\. "
                     *> (identation_append "   "
                             *> many1 (blocks <* regex "\\n?")
                             <* identation_pop
@@ -159,7 +160,7 @@ quote =
 md_annotations : Parser PState Annotation
 md_annotations =
     maybe
-        (regex "[ \\t]*"
+        (spaces
             *> macro
             *> (Dict.fromList <$> comment attribute)
             <* maybe (regex "[ \\t]*\\n" <* identation)

@@ -6,6 +6,7 @@ import Combine.Char exposing (anyChar)
 import Combine.Num exposing (int)
 import Dict
 import Lia.Effect.Model exposing (Element)
+import Lia.Helper exposing (..)
 import Lia.Macro.Parser exposing (macro)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines)
@@ -17,7 +18,10 @@ markdown : Parser PState Markdown -> Parser PState ( Int, Int, List Markdown )
 markdown blocks =
     (,,)
         <$> (regex "[\\t ]*{{" *> effect_number)
-        <*> (optional 99999 (regex "[\t ]*-[\t ]*" *> int) <* regex "}}[\\t ]*" <* maybe (string "\n" <* ident_skip))
+        <*> (optional 99999 (regex "[\t ]*-[\t ]*" *> int)
+                <* regex "}}[\\t ]*"
+                <* maybe (newline <* ident_skip)
+            )
         <*> (multi blocks <|> single blocks)
         <* reset_effect_number
 
@@ -29,7 +33,9 @@ single blocks =
 
 multi : Parser PState Markdown -> Parser PState (List Markdown)
 multi blocks =
-    identation *> regex "[\\t ]*\\*{3,}[\\n]+" *> manyTill (blocks <* regex "[ \\n\\t]*") (regex "[\\t ]*\\*{3,}")
+    identation
+        *> regex "[\\t ]*\\*{3,}[\\n]+"
+        *> manyTill (blocks <* newlines) (regex "[\\t ]*\\*{3,}")
 
 
 inline : Parser PState Inline -> Parser PState (Annotation -> Inline)
@@ -79,9 +85,9 @@ comment : Parser PState Inlines -> Parser PState ( Int, Int )
 comment paragraph =
     ((,,)
         <$> (regex "[ \\t]*--{{" *> effect_number)
-        <*> maybe (regex "[ \\t]+" *> macro *> regex "[A-Za-z0-9 ]+")
+        <*> maybe (spaces1 *> macro *> regex "[A-Za-z0-9 ]+")
         <* regex "}}--[ \\t]*"
-        <* maybe (regex "\\n+" <* ident_skip)
+        <* maybe (newlines1 *> ident_skip)
         <*> (identation *> paragraph)
         <* reset_effect_number
     )
@@ -95,7 +101,11 @@ hidden_comment =
             ( i, voice, [ Chars (text |> String.fromList |> String.trim) Nothing ] )
           )
             <$> (regex "<!--[ \\t]*--{{" *> effect_number)
-            <*> maybe (regex "[ \\t]+" *> macro *> regex "[A-Za-z0-9 ]+")
+            <*> maybe
+                    (spaces1
+                        *> macro
+                        *> regex "[A-Za-z0-9 ]+"
+                    )
             <* regex "}}--[ \\t]*"
             <*> manyTill anyChar (string "-->")
             <* reset_effect_number

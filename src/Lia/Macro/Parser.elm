@@ -3,6 +3,7 @@ module Lia.Macro.Parser exposing (add, get, macro, pattern)
 import Combine exposing (..)
 import Dict exposing (Dict)
 import Lia.Definition.Types exposing (Definition)
+import Lia.Helper exposing (..)
 import Lia.PState exposing (PState, identation)
 import Lia.Utils exposing (string_replace)
 
@@ -15,7 +16,7 @@ pattern =
 param : Parser PState String
 param =
     choice
-        [ string "```" *> regex "([^`]+|\\n)+" <* string "```"
+        [ c_frame *> regex "([^`]+|\\n)+" <* c_frame
         , string "`" *> regex "[^`\\n]+" <* string "`"
         , regex "[^),]+"
         ]
@@ -61,12 +62,12 @@ code_block =
         >> List.singleton
         <$> manyTill
                 (maybe identation *> regex "(.(?!```))*\\n?")
-                (maybe identation *> string "```")
+                (maybe identation *> c_frame)
 
 
 macro_listing : Parser PState ()
 macro_listing =
-    (string "```" *> regex ".*\\n" *> identation *> pattern)
+    (c_frame *> regex ".*\\n" *> identation *> pattern)
         >>= (\name ->
                 (param_list <* regex "[ \\t]*\\n")
                     >>= (\params ->

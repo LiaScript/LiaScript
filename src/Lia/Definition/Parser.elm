@@ -2,8 +2,9 @@ module Lia.Definition.Parser exposing (parse)
 
 import Combine exposing (..)
 import Lia.Definition.Types exposing (Definition, add_translation)
+import Lia.Helper exposing (..)
 import Lia.Macro.Parser as Macro
-import Lia.Markdown.Inline.Parser exposing (comment, comments, stringTill, whitelines)
+import Lia.Markdown.Inline.Parser exposing (comment, comments)
 import Lia.PState exposing (PState, ident_skip, identation, identation_append, identation_pop)
 
 
@@ -12,7 +13,7 @@ parse =
     lazy <|
         \() ->
             maybe (definition *> modifyState (\s -> { s | defines_updated = True }))
-                *> whitelines
+                *> whitespace
                 |> skip
 
 
@@ -58,7 +59,7 @@ definition =
                             *> (ending >>= (\x -> set (\def -> { def | version = x })))
                         , ((,)
                             <$> (Macro.pattern <* regex "[ \\t]*:[ \\t]*")
-                            <*> (regex ".+" <* string "\n")
+                            <*> (regex ".+" <* newline)
                           )
                             >>= (\x -> set (Macro.add x))
                         , ((,)
@@ -68,7 +69,7 @@ definition =
                             >>= (\x -> set (Macro.add x))
                         ]
             in
-            (many1 (whitelines *> list) <* whitelines)
+            (many1 (whitespace *> list) <* whitespace)
                 |> comment
                 |> skip
 

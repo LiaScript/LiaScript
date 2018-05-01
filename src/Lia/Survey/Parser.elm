@@ -3,6 +3,7 @@ module Lia.Survey.Parser exposing (parse)
 import Array
 import Combine exposing (..)
 import Dict
+import Lia.Helper exposing (..)
 import Lia.Markdown.Inline.Parser exposing (..)
 import Lia.Markdown.Inline.Types exposing (..)
 import Lia.PState exposing (PState)
@@ -42,7 +43,7 @@ pattern p =
 
 id_int : Parser s String
 id_int =
-    regex "\\-?[0-9]+"
+    regex "\\-?\\d+"
 
 
 id_str : Parser s String

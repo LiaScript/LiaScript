@@ -9,10 +9,6 @@ module Lia.Markdown.Inline.Parser
         , inlines
         , javascript
         , line
-        , newline
-        , newlines
-        , stringTill
-        , whitelines
         )
 
 import Combine exposing (..)
@@ -20,6 +16,7 @@ import Combine.Char exposing (..)
 import Dict exposing (Dict)
 import Lia.Effect.Model exposing (add_javascript)
 import Lia.Effect.Parser as Effect
+import Lia.Helper exposing (..)
 import Lia.Macro.Parser as Macro
 import Lia.Markdown.Inline.Types exposing (..)
 import Lia.PState exposing (PState)
@@ -47,13 +44,13 @@ comments =
 attribute : Parser s ( String, String )
 attribute =
     (\k v -> ( String.toLower k, String.fromList v ))
-        <$> (whitelines *> regex "\\w+" <* regex "[ \\t\\n]*=[ \\t\\n]*\"")
+        <$> (whitespace *> regex "\\w+" <* regex "[ \\t\\n]*=[ \\t\\n]*\"")
         <*> manyTill anyChar (regex "\"[ \\t\\n]*")
 
 
 annotations : Parser PState Annotation
 annotations =
-    maybe (Dict.fromList >> attr_ <$> (regex "[ \\t]*" *> comment attribute)) <* comments
+    maybe (Dict.fromList >> attr_ <$> (spaces *> comment attribute)) <* comments
 
 
 attr_ : Dict String String -> Dict String String
@@ -132,7 +129,7 @@ html_block =
             )
                 <$> stringTill (string "</" *> string tag <* string ">")
     in
-    HTML <$> (string "<" *> regex "[a-zA-Z0-9]+" >>= p)
+    HTML <$> (string "<" *> regex "\\w+" >>= p)
 
 
 combine : Inlines -> Inlines
@@ -158,21 +155,6 @@ line =
     (List.append [ Chars " " Nothing ] >> combine) <$> many1 inlines
 
 
-newline : Parser s ()
-newline =
-    (char '\n' <|> eol) |> skip
-
-
-newlines : Parser s ()
-newlines =
-    many newline |> skip
-
-
-whitelines : Parser s ()
-whitelines =
-    regex "[ \\t\\n]*" |> skip
-
-
 inlines : Parser PState Inline
 inlines =
     lazy <|
@@ -193,11 +175,6 @@ inlines =
 
 
 --          <* (maybe comments *> succeed (Chars "" Nothing))
-
-
-stringTill : Parser s p -> Parser s String
-stringTill p =
-    String.fromList <$> manyTill anyChar p
 
 
 formula : Parser s (Annotation -> Inline)

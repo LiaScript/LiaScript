@@ -3,7 +3,7 @@ module Lia.Quiz.Parser exposing (parse)
 import Array
 import Combine exposing (..)
 import Lia.Code.Types exposing (EvalString)
-import Lia.Helper exposing (ID)
+import Lia.Helper exposing (..)
 import Lia.Macro.Parser exposing (macro)
 import Lia.Markdown.Inline.Parser exposing (..)
 import Lia.Markdown.Inline.Types exposing (..)
@@ -22,7 +22,7 @@ quiz =
         <*> get_counter
         <*> hints
         <*> (macro
-                *> maybe (String.split "{{0}}" <$> (regex "[ \\t]*" *> javascript <* newline))
+                *> maybe (String.split "{{0}}" <$> (spaces *> javascript <* newline))
             )
 
 
@@ -43,7 +43,7 @@ quest p =
 
 empty : Parser PState (ID -> Hints -> Maybe EvalString -> Quiz)
 empty =
-    (regex "[ \\t]*" *> string "[[!]]" *> newline) $> Empty
+    (spaces *> string "[[!]]" *> newline) $> Empty
 
 
 text : Parser PState (ID -> Hints -> Maybe EvalString -> Quiz)

@@ -1,7 +1,8 @@
 module Lia.Preprocessor exposing (run)
 
 import Combine exposing (..)
-import Lia.Markdown.Inline.Parser exposing (line, stringTill)
+import Lia.Helper exposing (..)
+import Lia.Markdown.Inline.Parser exposing (line)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.PState exposing (PState)
 
@@ -13,7 +14,7 @@ title_tag =
 
 title_str : Parser PState Inlines
 title_str =
-    regex "[ \\t]*" *> line <* regex "[\x0D\n]+"
+    spaces *> line <* newlines1
 
 
 comment : Parser PState String
@@ -58,29 +59,27 @@ html_block =
             )
                 <$> stringTill (string "</" *> string tag <* string ">")
     in
-    whitespace *> string "<" *> regex "[a-zA-Z0-9]+" >>= p
+    whitespace *> string "<" *> regex "\\w+" >>= p
 
 
 body : Parser PState String
 body =
-    lazy <|
-        \() ->
-            [ misc
-            , link
-            , comment
-            , html_block
-            , code_block
-            , code_inline
-            , misc2
-            ]
-                |> choice
-                |> many
-                |> map String.concat
+    [ misc
+    , link
+    , comment
+    , code_block
+    , code_inline
+    , html_block
+    , misc2
+    ]
+        |> choice
+        |> many
+        |> map String.concat
 
 
 section : Parser PState ( Int, Inlines, String )
 section =
-    (\i s b -> ( i, s, b )) <$> title_tag <*> title_str <*> body
+    (,,) <$> title_tag <*> title_str <*> body
 
 
 run : Parser PState (List ( Int, Inlines, String ))
