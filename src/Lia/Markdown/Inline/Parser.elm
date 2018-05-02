@@ -141,11 +141,13 @@ combine list =
         [ xs ] ->
             [ xs ]
 
-        (Chars str1 Nothing) :: (Chars str2 Nothing) :: xs ->
-            combine (Chars (str1 ++ str2) Nothing :: xs)
-
         x1 :: x2 :: xs ->
-            x1 :: combine (x2 :: xs)
+            case ( x1, x2 ) of
+                ( Chars str1 Nothing, Chars str2 Nothing ) ->
+                    combine (Chars (str1 ++ str2) Nothing :: xs)
+
+                _ ->
+                    x1 :: combine (x2 :: xs)
 
 
 line : Parser PState Inlines

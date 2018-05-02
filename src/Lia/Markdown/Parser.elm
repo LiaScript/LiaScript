@@ -31,7 +31,7 @@ blocks =
                 b =
                     choice
                         [ Effect <$> md_annotations <*> Effect.markdown blocks
-                        , to_comment <$> md_annotations <*> Effect.comment paragraph
+                        , ((,) <$> md_annotations <*> Effect.comment paragraph) >>= to_comment
                         , Chart <$> md_annotations <*> Chart.parse
                         , formated_table
                         , simple_table
@@ -48,8 +48,23 @@ blocks =
             identation *> macro *> b <* maybe (whitespace *> Effect.hidden_comment)
 
 
-to_comment attr ( id1, id2 ) =
-    Comment ( id1, id2 )
+to_comment : ( Annotation, ( ID, ID ) ) -> Parser PState Markdown
+to_comment ( attr, ( id1, id2 ) ) =
+    (case attr of
+        Just a ->
+            modifyState
+                (\s ->
+                    let
+                        e =
+                            s.effect_model
+                    in
+                    { s | effect_model = { e | comments = set_annotation id1 id2 e.comments attr } }
+                )
+
+        Nothing ->
+            succeed ()
+    )
+        $> Comment ( id1, id2 )
 
 
 
