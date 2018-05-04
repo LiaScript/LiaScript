@@ -35,7 +35,7 @@ module.exports = {
                 mainModules: ["examples/Online.elm"],
                 outputFolder: "public/js/",
                 outputFile: 'app.js',
-                makeParameters: ['--debug'],
+                makeParameters: []//'--debug'],
             },
             sass: {
                 mode: "native",
@@ -66,10 +66,10 @@ module.exports = {
                 "normalize.css": ["normalize.css"],
                 //"highlight.js": ["styles/default.css"],
                 "animate.css": ["animate.css"],
-                "katex": ["dist/katex.css"],
+                "katex": ["dist/katex.css"]
             },
             static: [
-                "node_modules/katex/dist/katex.js",
+                "node_modules/katex/dist/katex.js"
                 //"lib/responsivevoice.js",
             ],
         },

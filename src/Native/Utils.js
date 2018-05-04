@@ -1,7 +1,6 @@
-
-
 // katex is an umd module that only support CommonJS, AMD and globals but not brunch modules
 //  -> we have to use globals by setting katex as a static ressource in brunch...
+
 
 var _user$project$Native_Utils = (function () {
 
