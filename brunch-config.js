@@ -49,7 +49,7 @@ module.exports = {
                 "fonts": [
                     "node_modules/katex/dist/fonts/",
                 ],
-                verbose: true,
+                verbose: false,
                 onlyChanged: true,
             },
             uglify: {
