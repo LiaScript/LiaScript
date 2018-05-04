@@ -30,6 +30,7 @@ type alias Section =
     , visited : Bool
     , indentation : Int
     , body : List Markdown
+    , parsed : Bool
     , error : Maybe String
     , code_vector : Code.Vector
     , quiz_vector : Quiz.Vector

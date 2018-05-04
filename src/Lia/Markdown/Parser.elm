@@ -18,9 +18,7 @@ import Lia.Survey.Parser as Survey
 
 run : Parser PState (List Markdown)
 run =
-    lazy <|
-        \() ->
-            many (blocks <* newlines)
+    many (blocks <* newlines)
 
 
 blocks : Parser PState Markdown
@@ -128,7 +126,7 @@ horizontal_line =
 
 paragraph : Parser PState Inlines
 paragraph =
-    ident_skip *> ((\l -> combine <| List.concat l) <$> many1 (identation *> line <* newline))
+    ident_skip *> ((List.concat >> combine) <$> many1 (identation *> line <* newline))
 
 
 table_row : Parser PState MultInlines
@@ -138,7 +136,12 @@ table_row =
 
 simple_table : Parser PState Markdown
 simple_table =
-    ident_skip *> ((\a b -> Table a [] [] b) <$> md_annotations <*> many1 table_row) <* newline
+    ident_skip
+        *> ((\a b -> Table a [] [] b)
+                <$> md_annotations
+                <*> many1 table_row
+           )
+        <* newline
 
 
 formated_table : Parser PState Markdown
@@ -157,7 +160,14 @@ formated_table =
                     )
                 <* regex "[ \\t]*\\n"
     in
-    ident_skip *> (Table <$> md_annotations <*> table_row <*> format <*> many table_row) <* newline
+    ident_skip
+        *> (Table
+                <$> md_annotations
+                <*> table_row
+                <*> format
+                <*> many table_row
+           )
+        <* newline
 
 
 quote : Parser PState Markdown
@@ -166,7 +176,7 @@ quote =
         <$> md_annotations
         <*> (string "> "
                 *> (identation_append ">( )?"
-                        *> many1 (blocks <* maybe identation <* regex "[\\n]?")
+                        *> many1 (blocks <* maybe identation <* regex "\\n?")
                         <* identation_pop
                    )
             )

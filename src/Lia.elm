@@ -77,6 +77,7 @@ init_section ( tags, title, code ) =
     , title = title
     , visited = True
     , indentation = tags
+    , parsed = False
     , body = []
     , error = Nothing
     , code_vector = Array.empty

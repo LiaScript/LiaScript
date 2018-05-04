@@ -9,7 +9,12 @@ import Lia.Utils exposing (get_local, load_js, set_local)
 
 
 type alias Toogler =
-    { loc : Bool, settings : Bool, informations : Bool, translations : Bool, share : Bool }
+    { loc : Bool
+    , settings : Bool
+    , informations : Bool
+    , translations : Bool
+    , share : Bool
+    }
 
 
 type alias Model =
