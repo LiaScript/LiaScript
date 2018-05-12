@@ -277,11 +277,15 @@ generate : Model -> Model
 generate model =
     case get_active_section model of
         Just sec ->
-            if sec.parsed then
-                model
-            else
-                let
-                    section =
+            let
+                section =
+                    if sec.parsed then
+                        let
+                            effects =
+                                sec.effect_model
+                        in
+                        { sec | effect_model = { effects | visible = 0 } }
+                    else
                         case Lia.Parser.parse_section model.definition sec.code model.section_active of
                             Ok ( blocks, codes, quizzes, surveys, effects, defines ) ->
                                 { sec
@@ -301,16 +305,16 @@ generate model =
                                     | body = []
                                     , error = Just msg
                                 }
-                in
-                set_active_section
-                    { model
-                        | javascript =
-                            section.definition
-                                |> Maybe.map .scripts
-                                |> Maybe.map (load_javascript model.javascript)
-                                |> Maybe.withDefault model.javascript
-                    }
-                    section
+            in
+            set_active_section
+                { model
+                    | javascript =
+                        section.definition
+                            |> Maybe.map .scripts
+                            |> Maybe.map (load_javascript model.javascript)
+                            |> Maybe.withDefault model.javascript
+                }
+                section
 
         Nothing ->
             model

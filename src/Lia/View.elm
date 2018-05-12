@@ -7,6 +7,7 @@ import Char
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
+import Html.Lazy as Lazy
 import Lia.Definition.Types exposing (Definition, get_translations)
 import Lia.Effect.Model exposing (current_paragraphs)
 import Lia.Effect.View exposing (responsive, state)
@@ -16,7 +17,7 @@ import Lia.Index.View
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.View as Markdown
-import Lia.Model exposing (Model)
+import Lia.Model exposing (Model, Toogler)
 import Lia.Types exposing (..)
 import Lia.Update exposing (Msg(..), Toggle(..), get_active_section)
 
@@ -55,30 +56,9 @@ view_aside model =
               )
             ]
         ]
-        [ model.index_model
-            |> Lia.Index.View.view
-            |> Html.map UpdateIndex
+        [ index_selector model.index_model
         , model.sections
-            |> Array.map
-                (\sec ->
-                    ( sec.title
-                    , sec.indentation
-                    , sec.visited
-                    , case sec.error of
-                        Nothing ->
-                            False
-
-                        _ ->
-                            True
-                    )
-                )
-            |> Array.toIndexedList
-            |> (\titles ->
-                    if [] == model.index_model.index then
-                        titles
-                    else
-                        List.filter (\( idx, _ ) -> List.member idx model.index_model.index) titles
-               )
+            |> index_list model.index_model.index
             |> view_loc model.section_active
         , settings model.show
             model.design
@@ -92,47 +72,46 @@ view_aside model =
         ]
 
 
-settings show design defines url origin =
-    Html.div
-        [ Attr.style
-            [ ( "border-top", "4px solid black" )
-            ]
-        ]
-        [ Html.div
-            [ Attr.style
-                [ ( "max-height"
-                  , if show.settings then
-                        "250px"
-                    else
-                        "0px"
-                  )
-                , ( "margin-left", "4px" )
-                , ( "padding-left", "5px" )
-                , ( "margin-right", "4px" )
-                , ( "padding-right", "5px" )
-                , ( "overflow-y", "auto" )
-                , ( "transition", "max-height 0.5s ease-out" )
-                ]
-            ]
-            [ Html.p []
-                [ Html.text "Color"
-                , view_design_light design.light
-                , design_theme design
-                , Html.hr [] []
-                , inc_font_size design.font_size
-                , view_ace design.ace
-                ]
-            ]
-        , view_information show.informations defines
-        , view_translations show.translations (origin ++ "?") (Lia.Definition.Types.get_translations defines)
-        , qrCodeView show.share url
-        , Html.div
-            [ Attr.style
-                [ ( "overflow-x", "auto" )
+index_selector : Lia.Index.Model.Model -> Html Msg
+index_selector index_model =
+    index_model
+        |> Lia.Index.View.view
+        |> Html.map UpdateIndex
 
-                --, ( "border-top", "4px solid black" )
-                ]
-            ]
+
+index_list index sections =
+    sections
+        |> Array.map
+            (\sec ->
+                ( sec.title
+                , sec.indentation
+                , sec.visited
+                , case sec.error of
+                    Nothing ->
+                        False
+
+                    _ ->
+                        True
+                )
+            )
+        |> Array.toIndexedList
+        |> (\titles ->
+                if [] == index then
+                    titles
+                else
+                    List.filter (\( idx, _ ) -> List.member idx index) titles
+           )
+
+
+settings : Toogler -> Design -> Definition -> String -> String -> Html Msg
+settings show design defines url origin =
+    Html.div [ Attr.style [ ( "border-top", "4px solid black" ) ] ]
+        [ Lazy.lazy2 view_settings show.settings design
+        , Lazy.lazy2 view_information show.informations defines
+        , view_translations show.translations (origin ++ "?") (Lia.Definition.Types.get_translations defines)
+        , Lazy.lazy2 qrCodeView show.share url
+        , Html.div
+            [ Attr.style [ ( "overflow-x", "auto" ) ] ]
             [ dropdown "settings" (Toggle Settings)
             , dropdown "info" (Toggle Informations)
             , dropdown "translate" (Toggle Translations)
@@ -141,6 +120,7 @@ settings show design defines url origin =
         ]
 
 
+dropdown : String -> Msg -> Html Msg
 dropdown name msg =
     Html.button
         [ onClick msg
@@ -148,6 +128,20 @@ dropdown name msg =
         , Attr.style [ ( "width", "40px" ), ( "padding", "0px" ) ]
         ]
         [ Html.text name ]
+
+
+view_settings : Bool -> Design -> Html Msg
+view_settings visible design =
+    Html.div [ menu_style visible ]
+        [ Html.p []
+            [ Html.text "Color"
+            , view_design_light design.light
+            , design_theme design
+            , Html.hr [] []
+            , inc_font_size design.font_size
+            , view_ace design.ace
+            ]
+        ]
 
 
 inc_font_size : Int -> Html Msg
@@ -175,22 +169,7 @@ design_theme design =
 
 view_information : Bool -> Definition -> Html Msg
 view_information visible definition =
-    Html.div
-        [ Attr.style
-            [ ( "max-height"
-              , if visible then
-                    "250px"
-                else
-                    "0px"
-              )
-            , ( "margin-left", "4px" )
-            , ( "padding-left", "5px" )
-            , ( "margin-right", "4px" )
-            , ( "padding-right", "5px" )
-            , ( "overflow-y", "auto" )
-            , ( "transition", "max-height 0.5s ease-out" )
-            ]
-        ]
+    Html.div [ menu_style visible ]
         [ Html.p [] [ Html.text ("Author: " ++ definition.author) ]
         , Html.p [] [ Html.text "Email: ", Html.a [ Attr.href definition.email ] [ Html.text definition.email ] ]
         , Html.p [] [ Html.text ("Version: " ++ definition.version) ]
@@ -200,23 +179,7 @@ view_information visible definition =
 
 view_translations : Bool -> String -> List ( String, String ) -> Html Msg
 view_translations visible base list =
-    Html.div
-        [ Attr.style
-            [ ( "max-height"
-              , if visible then
-                    "250px"
-                else
-                    "0px"
-              )
-            , ( "margin-left", "4px" )
-            , ( "padding-left", "5px" )
-            , ( "margin-right", "4px" )
-            , ( "padding-right", "5px" )
-            , ( "overflow-y", "auto" )
-            , ( "transition", "max-height 0.5s ease-out" )
-            ]
-        ]
-    <|
+    Html.div [ menu_style visible ] <|
         if List.isEmpty list then
             [ Html.text "no translations yet" ]
         else
@@ -233,31 +196,40 @@ check_list : Bool -> String -> String -> Html Msg
 check_list checked label dir =
     Html.label
         [ Attr.class label, Attr.style [ ( "float", dir ) ] ]
-        [ Html.input [ Attr.type_ "radio", Attr.name "toggle", Attr.checked checked, onClick (DesignTheme label) ] []
+        [ Html.input
+            [ Attr.type_ "radio"
+            , Attr.name "toggle"
+            , Attr.checked checked
+            , onClick (DesignTheme label)
+            ]
+            []
         , Html.span
             []
             [ Html.text (capitalize label) ]
         ]
 
 
+menu_style : Bool -> Html.Attribute msg
+menu_style visible =
+    Attr.style
+        [ ( "max-height"
+          , if visible then
+                "250px"
+            else
+                "0px"
+          )
+        , ( "margin-left", "4px" )
+        , ( "padding-left", "5px" )
+        , ( "margin-right", "4px" )
+        , ( "padding-right", "5px" )
+        , ( "overflow-y", "auto" )
+        , ( "transition", "max-height 0.5s ease-out" )
+        ]
+
+
 qrCodeView : Bool -> String -> Html msg
 qrCodeView visible url =
-    Html.div
-        [ Attr.style
-            [ ( "max-height"
-              , if visible then
-                    "250px"
-                else
-                    "0px"
-              )
-            , ( "margin-left", "4px" )
-            , ( "padding-left", "5px" )
-            , ( "margin-right", "4px" )
-            , ( "padding-right", "5px" )
-            , ( "overflow-y", "auto" )
-            , ( "transition", "max-height 0.5s ease-out" )
-            ]
-        ]
+    Html.div [ menu_style visible ]
         [ Html.p []
             [ Html.img
                 [ Attr.src ("https://api.qrserver.com/v1/create-qr-code/?size=222x222&data=" ++ url)
@@ -271,29 +243,34 @@ qrCodeView visible url =
 view_loc : ID -> List ( ID, ( Inlines, Int, Bool, Bool ) ) -> Html Msg
 view_loc active titles =
     let
-        loc ( idx, ( title, indent, visited, error ) ) =
-            Html.a
-                [ onClick (Load idx)
-                , Attr.class
-                    ("lia-toc-l"
-                        ++ toString indent
-                        ++ (if error then
-                                " lia-error"
-                            else if active == idx then
-                                " lia-active"
-                            else if visited then
-                                ""
-                            else
-                                " lia-not-visited"
-                           )
-                    )
-                , Attr.href ("#" ++ toString (idx + 1))
-                ]
-                (viewer 9999 title)
+        loc_ =
+            loc active
     in
     titles
-        |> List.map loc
+        |> List.map loc_
         |> Html.div [ Attr.class "lia-content" ]
+
+
+loc : ID -> ( ID, ( Inlines, Int, Bool, Bool ) ) -> Html Msg
+loc active ( idx, ( title, indent, visited, error ) ) =
+    Html.a
+        [ onClick (Load idx)
+        , Attr.class
+            ("lia-toc-l"
+                ++ toString indent
+                ++ (if error then
+                        " lia-error"
+                    else if active == idx then
+                        " lia-active"
+                    else if visited then
+                        ""
+                    else
+                        " lia-not-visited"
+                   )
+            )
+        , Attr.href ("#" ++ toString (idx + 1))
+        ]
+        (viewer 9999 title)
 
 
 view_article : Model -> Html Msg
