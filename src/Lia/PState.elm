@@ -2,9 +2,11 @@ module Lia.PState exposing (..)
 
 import Array exposing (Array)
 import Combine exposing (..)
+import Dict exposing (Dict)
 import Lia.Code.Types as Code
 import Lia.Definition.Types exposing (Definition)
 import Lia.Effect.Model as Effect
+import Lia.Markdown.Types exposing (Markdown)
 import Lia.Quiz.Types as Quiz
 import Lia.Survey.Types as Survey
 
@@ -18,6 +20,7 @@ type alias PState =
     , effect_model : Effect.Model
     , effect_number : List Int
     , defines : Definition
+    , footnote_list : Dict String (List Markdown)
     , defines_updated : Bool
     }
 
@@ -32,6 +35,7 @@ init global =
     , effect_model = Effect.init
     , effect_number = [ 0 ]
     , defines = global
+    , footnote_list = Dict.empty
     , defines_updated = False
     }
 
@@ -83,3 +87,8 @@ identation_pop =
 ident_skip : Parser PState ()
 ident_skip =
     modifyState (\state -> { state | identation_skip = True })
+
+
+add_footnote : String -> List Markdown -> Parser PState ()
+add_footnote key val =
+    modifyState (\s -> { s | footnote_list = Dict.insert key val s.footnote_list })

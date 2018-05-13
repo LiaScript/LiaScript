@@ -67,6 +67,9 @@ view visible element =
         Symbol e Nothing ->
             Lia.Utils.stringToHtml e
 
+        Footnote e attr ->
+            Html.sup (annotation "lia-superscript" attr) [ Html.text e ]
+
         Container list attr ->
             list
                 |> List.map (\e -> view visible e)

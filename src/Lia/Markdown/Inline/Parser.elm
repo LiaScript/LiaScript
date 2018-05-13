@@ -19,7 +19,8 @@ import Lia.Effect.Parser as Effect
 import Lia.Helper exposing (..)
 import Lia.Macro.Parser as Macro
 import Lia.Markdown.Inline.Types exposing (..)
-import Lia.PState exposing (PState)
+import Lia.Markdown.Types exposing (Markdown(..))
+import Lia.PState exposing (PState, add_footnote)
 
 
 comment : Parser s a -> Parser s (List a)
@@ -166,6 +167,7 @@ inlines =
                                 , reference
                                 , formula
                                 , Effect.inline inlines
+                                , footnote
                                 , strings
                                 ]
                                 <*> (Macro.macro *> annotations)
@@ -187,6 +189,25 @@ formula =
             Formula True <$> (string "$$" *> stringTill (string "$$"))
     in
     choice [ p2, p1 ]
+
+
+footnote : Parser PState (Annotation -> Inline)
+footnote =
+    ((,)
+        <$> (string "[^" *> stringTill (string "]"))
+        <*> maybe (parens line)
+    )
+        >>= footnote_store
+
+
+footnote_store : ( String, Maybe Inlines ) -> Parser PState (Annotation -> Inline)
+footnote_store ( key, val ) =
+    case val of
+        Just v ->
+            add_footnote key [ Paragraph Nothing v ] *> succeed (Footnote key)
+
+        _ ->
+            succeed (Footnote key)
 
 
 url : Parser s String

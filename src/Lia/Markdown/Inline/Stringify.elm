@@ -16,9 +16,6 @@ inline2string inline =
         Chars str _ ->
             str
 
-        Symbol str _ ->
-            ""
-
         Bold x _ ->
             inline2string x
 
@@ -43,14 +40,14 @@ inline2string inline =
         Ref ref _ ->
             ref2string ref
 
-        HTML str ->
-            ""
-
         EInline _ _ inlines _ ->
             stringify inlines
 
         Container inlines _ ->
             stringify inlines
+
+        _ ->
+            ""
 
 
 ref2string : Reference -> String
