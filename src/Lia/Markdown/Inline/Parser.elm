@@ -18,9 +18,10 @@ import Lia.Effect.Model exposing (add_javascript)
 import Lia.Effect.Parser as Effect
 import Lia.Helper exposing (..)
 import Lia.Macro.Parser as Macro
+import Lia.Markdown.Footnote.Parser as Footnote
 import Lia.Markdown.Inline.Types exposing (..)
 import Lia.Markdown.Types exposing (Markdown(..))
-import Lia.PState exposing (PState, add_footnote)
+import Lia.PState exposing (PState)
 
 
 comment : Parser s a -> Parser s (List a)
@@ -164,7 +165,7 @@ inlines =
                 *> (html
                         <|> (choice
                                 [ code
-                                , footnote
+                                , Footnote.inline
                                 , reference
                                 , formula
                                 , Effect.inline inlines
@@ -189,26 +190,6 @@ formula =
             Formula True <$> (string "$$" *> stringTill (string "$$"))
     in
     choice [ p2, p1 ]
-
-
-footnote : Parser PState (Annotation -> Inline)
-footnote =
-    ((,)
-        <$> (string "[^" *> stringTill (string "]"))
-        <*> maybe (string "(" *> stringTill (string ")"))
-    )
-        >>= footnote_store
-
-
-footnote_store : ( String, Maybe String ) -> Parser PState (Annotation -> Inline)
-footnote_store ( key, val ) =
-    case val of
-        Just v ->
-            add_footnote key [ Paragraph Nothing [ Chars v Nothing ] ]
-                *> succeed (Footnote key)
-
-        _ ->
-            succeed (Footnote key)
 
 
 url : Parser s String

@@ -8,6 +8,7 @@ import Lia.Effect.Model exposing (set_annotation)
 import Lia.Effect.Parser as Effect
 import Lia.Helper exposing (..)
 import Lia.Macro.Parser exposing (macro)
+import Lia.Markdown.Footnote.Parser as Footnote
 import Lia.Markdown.Inline.Parser exposing (..)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
 import Lia.Markdown.Types exposing (..)
@@ -18,7 +19,11 @@ import Lia.Survey.Parser as Survey
 
 run : Parser PState (List Markdown)
 run =
-    many (blocks <* newlines)
+    many (footnotes *> blocks <* newlines) <* footnotes
+
+
+footnotes =
+    many (Footnote.block ident_blocks <* newlines)
 
 
 blocks : Parser PState Markdown
@@ -93,16 +98,18 @@ solution =
         )
 
 
+ident_blocks : Parser PState MarkdownS
+ident_blocks =
+    many1 (blocks <* regex "\\n?") <* identation_pop
+
+
 unordered_list : Parser PState Markdown
 unordered_list =
     BulletList
         <$> md_annotations
         <*> many1
                 (regex "[*+-]( )"
-                    *> (identation_append "  "
-                            *> many1 (blocks <* regex "\\n?")
-                            <* identation_pop
-                       )
+                    *> (identation_append "  " *> ident_blocks)
                 )
 
 
@@ -112,10 +119,7 @@ ordered_list =
         <$> md_annotations
         <*> many1
                 (regex "\\d+\\. "
-                    *> (identation_append "   "
-                            *> many1 (blocks <* regex "\\n?")
-                            <* identation_pop
-                       )
+                    *> (identation_append "   " *> ident_blocks)
                 )
 
 

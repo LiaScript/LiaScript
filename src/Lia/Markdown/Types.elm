@@ -1,4 +1,4 @@
-module Lia.Markdown.Types exposing (Markdown(..))
+module Lia.Markdown.Types exposing (Markdown(..), MarkdownS)
 
 import Lia.Chart.Types exposing (Chart)
 import Lia.Code.Types exposing (Code)
@@ -10,14 +10,18 @@ import Lia.Survey.Types exposing (Survey)
 
 type Markdown
     = HLine Annotation
-    | Quote Annotation (List Markdown)
+    | Quote Annotation MarkdownS
     | Paragraph Annotation Inlines
-    | BulletList Annotation (List (List Markdown))
-    | OrderedList Annotation (List (List Markdown))
+    | BulletList Annotation (List MarkdownS)
+    | OrderedList Annotation (List MarkdownS)
     | Table Annotation MultInlines (List String) (List MultInlines)
-    | Quiz Annotation Quiz (Maybe ( List Markdown, Int ))
-    | Effect Annotation ( ID, ID, List Markdown )
+    | Quiz Annotation Quiz (Maybe ( MarkdownS, Int ))
+    | Effect Annotation ( ID, ID, MarkdownS )
     | Comment ( ID, ID )
     | Survey Annotation Survey
     | Chart Annotation Chart
     | Code Annotation Code
+
+
+type alias MarkdownS =
+    List Markdown

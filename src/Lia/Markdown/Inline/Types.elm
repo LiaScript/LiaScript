@@ -33,7 +33,7 @@ type Inline
     | Verbatim String Annotation
     | Formula Bool String Annotation
     | Ref Reference Annotation
-    | Footnote String Annotation
+    | FootnoteMark String Annotation
     | HTML String
     | EInline Int Int Inlines Annotation
     | Container Inlines Annotation

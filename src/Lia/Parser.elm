@@ -50,7 +50,7 @@ parse_section global code sec_id =
                 , state.quiz_vector
                 , state.survey_vector
                 , state.effect_model
-                , state.footnote_list
+                , state.footnotes
                 , if state.defines_updated then
                     Just state.defines
                   else
