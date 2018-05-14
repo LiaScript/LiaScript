@@ -3,12 +3,10 @@ module Lia exposing (..)
 import Array
 import Html exposing (Html)
 import Json.Encode as JE
-import Lia.Effect.Model as Effect
 import Lia.Markdown.Inline.Stringify exposing (stringify)
-import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Model
 import Lia.Parser
-import Lia.Types exposing (Section, Sections)
+import Lia.Types exposing (Section, Sections, init_section)
 import Lia.Update exposing (Msg(..))
 import Lia.Utils exposing (set_title, toUnixNewline)
 import Lia.View
@@ -69,23 +67,6 @@ set_script model script =
 
         Err msg ->
             { model | error = Just msg }
-
-
-init_section : ( Int, Inlines, String ) -> Section
-init_section ( tags, title, code ) =
-    { code = code
-    , title = title
-    , visited = True
-    , indentation = tags
-    , parsed = False
-    , body = []
-    , error = Nothing
-    , code_vector = Array.empty
-    , quiz_vector = Array.empty
-    , survey_vector = Array.empty
-    , effect_model = Effect.init
-    , definition = Nothing
-    }
 
 
 init_textbook : String -> String -> String -> Model

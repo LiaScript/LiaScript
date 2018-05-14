@@ -1,6 +1,7 @@
-module Lia.Types exposing (Design, Mode(..), Section, Sections)
+module Lia.Types exposing (Design, Mode(..), Section, Sections, init_section)
 
 import Array exposing (Array)
+import Dict exposing (Dict)
 import Lia.Code.Types as Code
 import Lia.Definition.Types exposing (Definition)
 import Lia.Effect.Model as Effect
@@ -37,8 +38,27 @@ type alias Section =
     , survey_vector : Survey.Vector
     , effect_model : Effect.Model
     , definition : Maybe Definition
+    , footnotes : Dict String (List Markdown)
     }
 
 
 type alias Sections =
     Array Section
+
+
+init_section : ( Int, Inlines, String ) -> Section
+init_section ( tags, title, code ) =
+    { code = code
+    , title = title
+    , visited = True
+    , indentation = tags
+    , parsed = False
+    , body = []
+    , error = Nothing
+    , code_vector = Array.empty
+    , quiz_vector = Array.empty
+    , survey_vector = Array.empty
+    , effect_model = Effect.init
+    , definition = Nothing
+    , footnotes = Dict.empty
+    }

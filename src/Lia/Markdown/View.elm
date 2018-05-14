@@ -1,5 +1,6 @@
 module Lia.Markdown.View exposing (view)
 
+import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Lia.Chart.View as Charts
@@ -48,6 +49,7 @@ view mode section ace_theme =
             section.body
                 |> List.map (view_block config)
                 |> (::) (view_header config)
+                |> (\s -> List.append s [ section.footnotes |> Dict.toList |> toString |> Html.text ])
                 |> Html.section [ Attr.class "lia-content" ]
 
 

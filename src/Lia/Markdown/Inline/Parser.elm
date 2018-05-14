@@ -164,10 +164,10 @@ inlines =
                 *> (html
                         <|> (choice
                                 [ code
+                                , footnote
                                 , reference
                                 , formula
                                 , Effect.inline inlines
-                                , footnote
                                 , strings
                                 ]
                                 <*> (Macro.macro *> annotations)
@@ -195,16 +195,17 @@ footnote : Parser PState (Annotation -> Inline)
 footnote =
     ((,)
         <$> (string "[^" *> stringTill (string "]"))
-        <*> maybe (parens line)
+        <*> maybe (string "(" *> stringTill (string ")"))
     )
         >>= footnote_store
 
 
-footnote_store : ( String, Maybe Inlines ) -> Parser PState (Annotation -> Inline)
+footnote_store : ( String, Maybe String ) -> Parser PState (Annotation -> Inline)
 footnote_store ( key, val ) =
     case val of
         Just v ->
-            add_footnote key [ Paragraph Nothing v ] *> succeed (Footnote key)
+            add_footnote key [ Paragraph Nothing [ Chars v Nothing ] ]
+                *> succeed (Footnote key)
 
         _ ->
             succeed (Footnote key)
