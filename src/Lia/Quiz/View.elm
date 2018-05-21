@@ -11,10 +11,11 @@ import Lia.Markdown.Inline.View exposing (annotation, view_inf)
 import Lia.Quiz.Model exposing (..)
 import Lia.Quiz.Types exposing (..)
 import Lia.Quiz.Update exposing (Msg(..))
+import Translations exposing (..)
 
 
-view : Annotation -> Quiz -> Vector -> Html Msg
-view attr quiz vector =
+view : Lang -> Annotation -> Quiz -> Vector -> Html Msg
+view lang attr quiz vector =
     let
         state =
             get_state vector
@@ -25,12 +26,12 @@ view attr quiz vector =
                 Just s ->
                     (case eval_string of
                         Just code ->
-                            view_button s.trial s.solved (Check idx s.state eval_string)
+                            view_button lang s.trial s.solved (Check idx s.state eval_string)
 
                         Nothing ->
                             Html.text ""
                     )
-                        :: view_button_solution s.solved (ShowSolution idx EmptyState)
+                        :: view_button_solution lang s.solved (ShowSolution idx EmptyState)
                         :: (if s.error_msg == "" then
                                 Html.text ""
                             else
@@ -48,23 +49,23 @@ view attr quiz vector =
                     Html.text ""
 
         Text solution idx hints eval_string ->
-            view_quiz attr (state idx) view_text idx hints eval_string (TextState solution)
+            view_quiz lang attr (state idx) view_text idx hints eval_string (TextState solution)
 
         SingleChoice solution questions idx hints eval_string ->
-            view_quiz attr (state idx) (view_single_choice questions) idx hints eval_string (SingleChoiceState solution)
+            view_quiz lang attr (state idx) (view_single_choice questions) idx hints eval_string (SingleChoiceState solution)
 
         MultipleChoice solution questions idx hints eval_string ->
-            view_quiz attr (state idx) (view_multiple_choice questions) idx hints eval_string (MultipleChoiceState solution)
+            view_quiz lang attr (state idx) (view_multiple_choice questions) idx hints eval_string (MultipleChoiceState solution)
 
 
-view_quiz : Annotation -> Maybe Element -> (Int -> State -> Bool -> Html Msg) -> Int -> MultInlines -> Maybe EvalString -> State -> Html Msg
-view_quiz attr state fn_view idx hints eval_string solution =
+view_quiz : Lang -> Annotation -> Maybe Element -> (Int -> State -> Bool -> Html Msg) -> Int -> MultInlines -> Maybe EvalString -> State -> Html Msg
+view_quiz lang attr state fn_view idx hints eval_string solution =
     case state of
         Just s ->
             Html.p (annotation "" attr)
                 (fn_view idx s.state (s.solved /= Open)
-                    :: view_button s.trial s.solved (Check idx solution eval_string)
-                    :: view_button_solution s.solved (ShowSolution idx solution)
+                    :: view_button lang s.trial s.solved (Check idx solution eval_string)
+                    :: view_button_solution lang s.solved (ShowSolution idx solution)
                     :: (if s.error_msg == "" then
                             Html.text ""
                         else
@@ -82,40 +83,40 @@ view_quiz attr state fn_view idx hints eval_string solution =
             Html.text ""
 
 
-view_button_solution : Solution -> Msg -> Html Msg
-view_button_solution solution msg =
+view_button_solution : Lang -> Solution -> Msg -> Html Msg
+view_button_solution lang solution msg =
     if solution == Open then
         Html.a
             [ Attr.class "lia-hint-btn"
             , Attr.href "#"
             , onClick msg
-            , Attr.title "show solution"
+            , Attr.title (quizSolution lang)
             ]
             [ Html.text "info" ]
     else
         Html.text ""
 
 
-view_button : Int -> Solution -> Msg -> Html Msg
-view_button trials solved msg =
+view_button : Lang -> Int -> Solution -> Msg -> Html Msg
+view_button lang trials solved msg =
     case solved of
         Open ->
             if trials == 0 then
-                Html.button [ Attr.class "lia-btn", onClick msg ] [ Html.text "Check" ]
+                Html.button [ Attr.class "lia-btn", onClick msg ] [ Html.text (quizCheck lang) ]
             else
                 Html.button
                     [ Attr.class "lia-btn", Attr.class "lia-failure", onClick msg ]
-                    [ Html.text ("Check " ++ toString trials) ]
+                    [ Html.text (quizCheck lang ++ toString trials) ]
 
         Solved ->
             Html.button
                 [ Attr.class "lia-btn", Attr.class "lia-success" ]
-                [ Html.text ("Check " ++ toString trials) ]
+                [ Html.text (quizChecked lang ++ toString trials) ]
 
         ReSolved ->
             Html.button
                 [ Attr.class "lia-btn", Attr.class "lia-failure" ]
-                [ Html.text "Resolved" ]
+                [ Html.text (quizResolved lang) ]
 
 
 view_text : Int -> State -> Bool -> Html Msg

@@ -12,10 +12,11 @@ import Lia.Helper exposing (ID)
 import Lia.Markdown.Inline.Types exposing (Annotation)
 import Lia.Markdown.Inline.View exposing (annotation)
 import Lia.Utils
+import Translations exposing (..)
 
 
-view : String -> Annotation -> Vector -> Code -> Html Msg
-view theme attr model code =
+view : Lang -> String -> Annotation -> Vector -> Code -> Html Msg
+view lang theme attr model code =
     case code of
         Highlight lang_title_code ->
             lang_title_code
@@ -34,7 +35,7 @@ view theme attr model code =
                             |> Array.indexedMap (view_eval theme attr project.running errors id_1)
                             |> Array.toList
                             |> Html.div []
-                        , view_control id_1 project.version_active project.running
+                        , view_control lang id_1 project.version_active project.running
                         , view_result project.result
                         ]
 
@@ -223,13 +224,14 @@ view_result rslt =
             error info.message
 
 
-view_control : ID -> Int -> Bool -> Html Msg
-view_control idx version_active running =
+view_control : Lang -> ID -> Int -> Bool -> Html Msg
+view_control lang idx version_active running =
     Html.div [ Attr.style [ ( "padding", "0px" ), ( "width", "100%" ) ] ]
         [ if running then
             Html.button
                 [ Attr.class "lia-btn lia-icon"
                 , Attr.style [ ( "margin-left", "0px" ) ]
+                , Attr.title (codeRunning lang)
                 ]
                 [ Html.text "sync" ]
           else
@@ -237,12 +239,14 @@ view_control idx version_active running =
                 [ Attr.class "lia-btn lia-icon"
                 , onClick (Eval idx)
                 , Attr.style [ ( "margin-left", "0px" ) ]
+                , Attr.title (codeExecute lang)
                 ]
                 [ Html.text "play_circle_filled" ]
         , Html.button
             [ (version_active + 1) |> Load idx |> onClick
             , Attr.class "lia-btn lia-icon"
             , Attr.style [ ( "float", "right" ), ( "margin-right", "0px" ) ]
+            , Attr.title (codePrev lang)
             ]
             [ Html.text "navigate_next" ]
         , Html.span
@@ -254,6 +258,7 @@ view_control idx version_active running =
             [ (version_active - 1) |> Load idx |> onClick
             , Attr.class "lia-btn lia-icon"
             , Attr.style [ ( "float", "right" ) ]
+            , Attr.title (codeNext lang)
             ]
             [ Html.text "navigate_before" ]
         ]

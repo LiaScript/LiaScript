@@ -10,6 +10,7 @@ import Lia.Types exposing (Section, Sections, init_section)
 import Lia.Update exposing (Msg(..))
 import Lia.Utils exposing (set_title, toUnixNewline)
 import Lia.View
+import Translations
 
 
 type alias Model =
@@ -60,6 +61,7 @@ set_script model script =
                                 0
                         , javascript =
                             Lia.Model.load_javascript model.javascript definition.scripts
+                        , translation = Translations.getLnFromCode definition.language
                     }
 
                 Err msg ->

@@ -20,6 +20,7 @@ import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model, Toogler)
 import Lia.Types exposing (..)
 import Lia.Update exposing (Msg(..), Toggle(..), get_active_section)
+import Translations exposing (..)
 
 
 view : Model -> Html Msg
@@ -69,6 +70,7 @@ view_aside model =
             )
             (model.origin ++ "?" ++ model.readme)
             model.origin
+            model.translation
         ]
 
 
@@ -103,54 +105,55 @@ index_list index sections =
            )
 
 
-settings : Toogler -> Design -> Definition -> String -> String -> Html Msg
-settings show design defines url origin =
+settings : Toogler -> Design -> Definition -> String -> String -> Lang -> Html Msg
+settings show design defines url origin lang =
     Html.div [ Attr.style [ ( "border-top", "4px solid black" ) ] ]
-        [ Lazy.lazy2 view_settings show.settings design
-        , Lazy.lazy2 view_information show.informations defines
-        , view_translations show.translations (origin ++ "?") (Lia.Definition.Types.get_translations defines)
+        [ Lazy.lazy3 view_settings lang show.settings design
+        , Lazy.lazy3 view_information lang show.informations defines
+        , view_translations lang show.translations (origin ++ "?") (Lia.Definition.Types.get_translations defines)
         , Lazy.lazy2 qrCodeView show.share url
         , Html.div
             [ Attr.style [ ( "overflow-x", "auto" ) ] ]
-            [ dropdown "settings" (Toggle Settings)
-            , dropdown "info" (Toggle Informations)
-            , dropdown "translate" (Toggle Translations)
-            , dropdown "share" (Toggle Share)
+            [ dropdown "settings" (confSettings lang) (Toggle Settings)
+            , dropdown "info" (confInformations lang) (Toggle Informations)
+            , dropdown "translate" (confTranslations lang) (Toggle Translations)
+            , dropdown "share" (confShare lang) (Toggle Share)
             ]
         ]
 
 
-dropdown : String -> Msg -> Html Msg
-dropdown name msg =
+dropdown : String -> String -> Msg -> Html Msg
+dropdown name alt msg =
     Html.button
         [ onClick msg
         , Attr.class "lia-btn lia-icon"
+        , Attr.title alt
         , Attr.style [ ( "width", "40px" ), ( "padding", "0px" ) ]
         ]
         [ Html.text name ]
 
 
-view_settings : Bool -> Design -> Html Msg
-view_settings visible design =
+view_settings : Lang -> Bool -> Design -> Html Msg
+view_settings lang visible design =
     Html.div [ menu_style visible ]
         [ Html.p []
-            [ Html.text "Color"
+            [ Html.text <| color lang
             , view_design_light design.light
             , design_theme design
             , Html.hr [] []
-            , inc_font_size design.font_size
+            , inc_font_size lang design.font_size
             , view_ace design.ace
             ]
         ]
 
 
-inc_font_size : Int -> Html Msg
-inc_font_size int =
+inc_font_size : Lang -> Int -> Html Msg
+inc_font_size lang int =
     Html.div []
-        [ Html.text "Font:"
-        , navButton "-" (IncreaseFontSize False)
+        [ Html.text <| font lang ++ ":"
+        , navButton "-" (decrease lang) (IncreaseFontSize False)
         , Html.text (toString int ++ "%")
-        , navButton "+" (IncreaseFontSize True)
+        , navButton "+" (increase lang) (IncreaseFontSize True)
         ]
 
 
@@ -167,21 +170,33 @@ design_theme design =
         |> Html.div [ Attr.class "lia-color" ]
 
 
-view_information : Bool -> Definition -> Html Msg
-view_information visible definition =
+view_information : Lang -> Bool -> Definition -> Html Msg
+view_information lang visible definition =
     Html.div [ menu_style visible ]
-        [ Html.p [] [ Html.text ("Author: " ++ definition.author) ]
-        , Html.p [] [ Html.text "Email: ", Html.a [ Attr.href definition.email ] [ Html.text definition.email ] ]
-        , Html.p [] [ Html.text ("Version: " ++ definition.version) ]
-        , Html.p [] [ Html.text ("Date: " ++ definition.date) ]
+        [ Html.p []
+            [ Html.text <| author lang
+            , Html.text definition.author
+            ]
+        , Html.p []
+            [ Html.text <| email lang
+            , Html.a [ Attr.href definition.email ] [ Html.text definition.email ]
+            ]
+        , Html.p []
+            [ Html.text <| version lang
+            , Html.text definition.version
+            ]
+        , Html.p []
+            [ Html.text <| date lang
+            , Html.text definition.date
+            ]
         ]
 
 
-view_translations : Bool -> String -> List ( String, String ) -> Html Msg
-view_translations visible base list =
+view_translations : Lang -> Bool -> String -> List ( String, String ) -> Html Msg
+view_translations lang visible base list =
     Html.div [ menu_style visible ] <|
         if List.isEmpty list then
-            [ Html.text "no translations yet" ]
+            [ Html.text (no_translation lang) ]
         else
             list
                 |> List.map
@@ -281,8 +296,8 @@ view_article model =
                 [ section
                     |> .effect_model
                     |> state
-                    |> view_nav model.section_active model.mode model.design model.url (get_translations model.definition)
-                , Html.map UpdateMarkdown <| Markdown.view model.mode section model.design.ace
+                    |> view_nav model.section_active model.mode model.translation model.design model.url (get_translations model.definition)
+                , Html.map UpdateMarkdown <| Markdown.view model.translation model.mode section model.design.ace
                 , view_footer model.sound model.mode section.effect_model
                 ]
 
@@ -307,22 +322,27 @@ view_footer sound mode effects =
             Html.text ""
 
 
-navButton : String -> msg -> Html msg
-navButton str msg =
-    Html.button [ onClick msg, Attr.class "lia-btn lia-slide-control lia-left" ]
+navButton : String -> String -> msg -> Html msg
+navButton str title msg =
+    Html.button
+        [ onClick msg
+        , Attr.title title
+        , Attr.class "lia-btn lia-slide-control lia-left"
+        ]
         [ Html.text str ]
 
 
-view_nav : ID -> Mode -> Design -> String -> List ( String, String ) -> ( Bool, String ) -> Html Msg
-view_nav section_active mode design base translations ( speaking, state ) =
+view_nav : ID -> Mode -> Lang -> Design -> String -> List ( String, String ) -> ( Bool, String ) -> Html Msg
+view_nav section_active mode lang design base translations ( speaking, state ) =
     Html.nav [ Attr.class "lia-toolbar" ]
         [ Html.button
             [ onClick (Toggle LOC)
+            , Attr.title (toc lang)
             , Attr.class "lia-btn lia-toc-control lia-left"
             ]
             [ Html.text "toc" ]
         , Html.span [ Attr.class "lia-spacer" ] []
-        , navButton "navigate_before" PrevSection
+        , navButton "navigate_before" (previous lang) PrevSection
         , Html.span [ Attr.class "lia-labeled lia-left" ]
             [ Html.span
                 [ Attr.class "lia-label"
@@ -342,7 +362,7 @@ view_nav section_active mode design base translations ( speaking, state ) =
                             " " ++ state
                 ]
             ]
-        , navButton "navigate_next" NextSection
+        , navButton "navigate_next" (next lang) NextSection
         , Html.span [ Attr.class "lia-spacer" ] []
         , Html.button
             [ Attr.class "lia-btn lia-right"

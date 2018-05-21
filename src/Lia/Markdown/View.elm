@@ -14,6 +14,7 @@ import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Quiz.View as Quizzes
 import Lia.Survey.View as Surveys
 import Lia.Types exposing (Mode(..), Section)
+import Translations exposing (..)
 
 
 type alias Config =
@@ -21,11 +22,12 @@ type alias Config =
     , view : Inlines -> List (Html Msg)
     , section : Section
     , ace_theme : String
+    , lang : Lang
     }
 
 
-view : Mode -> Section -> String -> Html Msg
-view mode section ace_theme =
+view : Lang -> Mode -> Section -> String -> Html Msg
+view lang mode section ace_theme =
     let
         config =
             Config mode
@@ -37,6 +39,7 @@ view mode section ace_theme =
                 )
                 section
                 ace_theme
+                lang
     in
     case section.error of
         Just msg ->
@@ -122,12 +125,12 @@ view_block config block =
 
         Code attr code ->
             code
-                |> Codes.view config.ace_theme attr config.section.code_vector
+                |> Codes.view config.lang config.ace_theme attr config.section.code_vector
                 |> Html.map UpdateCode
 
         Quiz attr quiz Nothing ->
             Html.div [ Attr.class "lia-quiz" ]
-                [ Quizzes.view attr quiz config.section.quiz_vector
+                [ Quizzes.view config.lang attr quiz config.section.quiz_vector
                     |> Html.map UpdateQuiz
                 ]
 
@@ -136,7 +139,7 @@ view_block config block =
                 case Quizzes.view_solution config.section.quiz_vector quiz of
                     ( empty, True ) ->
                         List.append
-                            [ Html.map UpdateQuiz <| Quizzes.view attr quiz config.section.quiz_vector ]
+                            [ Html.map UpdateQuiz <| Quizzes.view config.lang attr quiz config.section.quiz_vector ]
                             ((if empty then
                                 Html.text ""
                               else
@@ -146,7 +149,7 @@ view_block config block =
                             )
 
                     _ ->
-                        [ Quizzes.view attr quiz config.section.quiz_vector
+                        [ Quizzes.view config.lang attr quiz config.section.quiz_vector
                             |> Html.map UpdateQuiz
                         ]
 

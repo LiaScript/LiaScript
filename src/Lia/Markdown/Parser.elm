@@ -112,7 +112,7 @@ unordered_list =
         <$> md_annotations
         <*> many1
                 (regex "[*+-]( )"
-                    *> (identation_append "  " *> ident_blocks)
+                    *> (identation_append "  " *> many1 (blocks <* regex "\\n?") <* identation_pop)
                 )
 
 
@@ -122,7 +122,7 @@ ordered_list =
         <$> md_annotations
         <*> many1
                 (regex "\\d+\\. "
-                    *> (identation_append "   " *> ident_blocks)
+                    *> (identation_append "   " *> many1 (blocks <* regex "\\n?") <* identation_pop)
                 )
 
 

@@ -1,0 +1,43 @@
+{
+  "next": "weiter",
+  "previous": "zurück",
+
+  "decrease": "verkleinern",
+  "increase": "vergrößern",
+
+  "font": "Schrift",
+  "color": "Farbe",
+
+  "author": "Autor: ",
+  "version": "Version: ",
+  "email": "e-Mail: ",
+  "date": "Datum: ",
+
+  "no_translation": "keine Übersetzungen vorhanden",
+
+  "conf": {
+    "informations": "Informationen",
+    "settings": "Einstellungen",
+    "share": "Teilen",
+    "translations": "Übersetzungen"
+  },
+
+  "toc": "Inhaltsverzeichnis (zeigen/verbergen)",
+
+  "code": {
+    "execute": "Ausführen",
+    "running": "wird ausgeführt",
+    "prev": "eine Version zurück",
+    "next": "eine Version vor"
+  },
+
+  "quiz": {
+    "check": "Prüfen",
+    "checked": "Gelöst",
+    "solution": "zeige Lösung",
+    "resolved": "Aufgelöst",
+    "hint": "zeige Hinweis"
+  }
+
+
+}

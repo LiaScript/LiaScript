@@ -6,6 +6,7 @@ import Lia.Helper exposing (ID)
 import Lia.Index.Model as Index
 import Lia.Types exposing (Design, Mode, Sections)
 import Lia.Utils exposing (get_local, load_js, set_local)
+import Translations
 
 
 type alias Toogler =
@@ -31,6 +32,7 @@ type alias Model =
     , sound : Bool
     , show : Toogler
     , javascript : List String
+    , translation : Translations.Lang
     }
 
 
@@ -75,6 +77,7 @@ init mode url readme origin slide_number =
     , sound = init_sound
     , show = Toogler True False False False False
     , javascript = []
+    , translation = Translations.En
     }
 
 
