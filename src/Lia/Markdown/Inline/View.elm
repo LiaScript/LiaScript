@@ -1,9 +1,13 @@
 module Lia.Markdown.Inline.View exposing (annotation, reference, view, view_inf, viewer)
 
+--import Lia.Markdown.Update exposing (Msg(..))
+--import Lia.Markdown.Update exposing (Msg(..))
+
 import Dict
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Lia.Effect.View as Effect
+import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..))
 import Lia.Utils
 
@@ -68,7 +72,7 @@ view visible element =
             Lia.Utils.stringToHtml e
 
         FootnoteMark e attr ->
-            Html.sup (annotation "lia-superscript" attr) [ Html.text e ]
+            Footnote.inline e
 
         Container list attr ->
             list

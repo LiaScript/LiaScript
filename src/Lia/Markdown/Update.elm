@@ -8,7 +8,7 @@ module Lia.Markdown.Update
         , update
         )
 
---import Lia.Helper exposing (get_slide)
+--import Lia.Markdown.Footnote.Update as Footnote
 
 import Json.Encode as JE
 import Lia.Code.Update as Code
@@ -23,6 +23,10 @@ type Msg
     | UpdateCode Code.Msg
     | UpdateQuiz Quiz.Msg
     | UpdateSurvey Survey.Msg
+
+
+
+--    | UpdateFootnote Footnote.Msg
 
 
 subscriptions : Section -> Sub Msg
@@ -63,6 +67,11 @@ update msg section =
                     Survey.update childMsg section.survey_vector
             in
             ( { section | survey_vector = survey_vector }, Cmd.none, Nothing )
+
+
+
+--        UpdateFootnote childMsg ->
+--            ( { section | footnotes = Footnote.update childMsg section.footnotes }, Cmd.none, Nothing )
 
 
 nextEffect : Bool -> Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )

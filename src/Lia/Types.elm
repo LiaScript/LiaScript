@@ -1,10 +1,10 @@
 module Lia.Types exposing (Design, Mode(..), Section, Sections, init_section)
 
 import Array exposing (Array)
-import Dict exposing (Dict)
 import Lia.Code.Types as Code
 import Lia.Definition.Types exposing (Definition)
 import Lia.Effect.Model as Effect
+import Lia.Markdown.Footnote.Model as Footnote
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Types exposing (Markdown)
 import Lia.Quiz.Types as Quiz
@@ -38,7 +38,7 @@ type alias Section =
     , survey_vector : Survey.Vector
     , effect_model : Effect.Model
     , definition : Maybe Definition
-    , footnotes : Dict String (List Markdown)
+    , footnotes : Footnote.Model
     }
 
 
@@ -60,5 +60,5 @@ init_section ( tags, title, code ) =
     , survey_vector = Array.empty
     , effect_model = Effect.init
     , definition = Nothing
-    , footnotes = Dict.empty
+    , footnotes = Footnote.init
     }

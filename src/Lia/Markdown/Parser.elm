@@ -22,8 +22,11 @@ run =
     many (footnotes *> blocks <* newlines) <* footnotes
 
 
+footnotes : Parser PState ()
 footnotes =
-    many (Footnote.block ident_blocks <* newlines)
+    (Footnote.block ident_blocks <* newlines)
+        |> many
+        |> skip
 
 
 blocks : Parser PState Markdown

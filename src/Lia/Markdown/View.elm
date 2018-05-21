@@ -1,12 +1,12 @@
 module Lia.Markdown.View exposing (view)
 
-import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Lia.Chart.View as Charts
 import Lia.Code.View as Codes
 import Lia.Effect.Model as Comments
 import Lia.Effect.View as Effects
+import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
 import Lia.Markdown.Inline.View exposing (annotation, viewer)
 import Lia.Markdown.Types exposing (..)
@@ -49,7 +49,7 @@ view mode section ace_theme =
             section.body
                 |> List.map (view_block config)
                 |> (::) (view_header config)
-                |> (\s -> List.append s [ section.footnotes |> Dict.toList |> toString |> Html.text ])
+                |> (\s -> List.append s [ Footnote.block (view_block config) section.footnotes ])
                 |> Html.section [ Attr.class "lia-content" ]
 
 

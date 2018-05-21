@@ -1,11 +1,11 @@
 module Lia.Parser exposing (..)
 
 import Combine exposing (..)
-import Dict
 import Lia.Code.Types as Code
 import Lia.Definition.Parser
 import Lia.Definition.Types exposing (Definition)
 import Lia.Effect.Model as Effect
+import Lia.Markdown.Footnote.Model as Footnote
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Parser as Markdown
 import Lia.Markdown.Types exposing (..)
@@ -35,7 +35,7 @@ parse_titles defines code =
             Err (formatError ms stream)
 
 
-parse_section : Definition -> String -> Int -> Result String ( List Markdown, Code.Vector, Quiz.Vector, Survey.Vector, Effect.Model, Dict.Dict String (List Markdown), Maybe Definition )
+parse_section : Definition -> String -> Int -> Result String ( List Markdown, Code.Vector, Quiz.Vector, Survey.Vector, Effect.Model, Footnote.Model, Maybe Definition )
 parse_section global code sec_id =
     case
         Combine.runParser
