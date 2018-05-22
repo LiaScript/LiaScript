@@ -9,57 +9,58 @@ import Lia.Markdown.Inline.View exposing (annotation, view_inf)
 import Lia.Survey.Model exposing (..)
 import Lia.Survey.Types exposing (..)
 import Lia.Survey.Update exposing (Msg(..))
+import Translations exposing (..)
 
 
-view : Annotation -> Survey -> Vector -> Html Msg
-view attr survey model =
+view : Lang -> Annotation -> Survey -> Vector -> Html Msg
+view lang attr survey model =
     Html.p (annotation "lia-card" attr) <|
         case survey of
             Text lines idx ->
-                view_text (get_text_state model idx) lines idx
-                    |> view_survey model idx
+                view_text lang (get_text_state model idx) lines idx
+                    |> view_survey lang model idx
 
             Vector button questions idx ->
                 vector button (VectorUpdate idx) (get_vector_state model idx)
                     |> view_vector questions
-                    |> view_survey model idx
+                    |> view_survey lang model idx
 
             Matrix button vars questions idx ->
                 matrix button (MatrixUpdate idx) (get_matrix_state model idx) vars
                     |> view_matrix vars questions
-                    |> view_survey model idx
+                    |> view_survey lang model idx
 
 
-view_survey : Vector -> ID -> (Bool -> Html Msg) -> List (Html Msg)
-view_survey model idx fn =
+view_survey : Lang -> Vector -> ID -> (Bool -> Html Msg) -> List (Html Msg)
+view_survey lang model idx fn =
     let
         submitted =
             get_submission_state model idx
     in
-    [ fn submitted, submit_button submitted idx ]
+    [ fn submitted, submit_button lang submitted idx ]
 
 
-submit_button : Bool -> ID -> Html Msg
-submit_button submitted idx =
+submit_button : Lang -> Bool -> ID -> Html Msg
+submit_button lang submitted idx =
     Html.div []
         [ if submitted then
             Html.button
                 [ Attr.class "lia-btn", Attr.disabled True ]
-                [ Html.text "Thanks" ]
+                [ Html.text (surveySubmitted lang) ]
           else
             Html.button
                 [ Attr.class "lia-btn", onClick <| Submit idx ]
-                [ Html.text "Submit" ]
+                [ Html.text (surveySubmit lang) ]
         ]
 
 
-view_text : String -> Int -> ID -> Bool -> Html Msg
-view_text str lines idx submitted =
+view_text : Lang -> String -> Int -> ID -> Bool -> Html Msg
+view_text lang str lines idx submitted =
     let
         attr =
             [ onInput <| TextUpdate idx
             , Attr.class "lia-input"
-            , Attr.placeholder "Enter text..."
+            , Attr.placeholder (surveyText lang)
             , Attr.value str
             , Attr.disabled submitted
             ]

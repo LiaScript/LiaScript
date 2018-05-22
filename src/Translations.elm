@@ -47,6 +47,42 @@ color lang  =
       De -> "Farbe"
       En -> "Color"
 
+search: Lang -> String
+search lang  =
+  case lang of 
+      De -> "Suche"
+      En -> "Search"
+
+modeTextbook: Lang -> String
+modeTextbook lang  =
+  case lang of 
+      De -> "Modus: Lehrbuch"
+      En -> "Mode: Textbook"
+
+modePresentation: Lang -> String
+modePresentation lang  =
+  case lang of 
+      De -> "Modus: Präsentation"
+      En -> "Mode: Presentation"
+
+modeSlides: Lang -> String
+modeSlides lang  =
+  case lang of 
+      De -> "Modus: Folien"
+      En -> "Mode: Slides"
+
+soundOn: Lang -> String
+soundOn lang  =
+  case lang of 
+      De -> "Sprecher an"
+      En -> "Sound on"
+
+soundOff: Lang -> String
+soundOff lang  =
+  case lang of 
+      De -> "Sprecher aus"
+      En -> "Sound off"
+
 author: Lang -> String
 author lang  =
   case lang of 
@@ -160,3 +196,21 @@ quizHint lang  =
   case lang of 
       De -> "zeige Hinweis"
       En -> "show hint"
+
+surveySubmit: Lang -> String
+surveySubmit lang  =
+  case lang of 
+      De -> "Abschicken"
+      En -> "Submit"
+
+surveySubmitted: Lang -> String
+surveySubmitted lang  =
+  case lang of 
+      De -> "Dankeshön"
+      En -> "Thanks"
+
+surveyText: Lang -> String
+surveyText lang  =
+  case lang of 
+      De -> "Texteingabe ..."
+      En -> "Enter some text..."

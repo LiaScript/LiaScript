@@ -4,6 +4,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Lia.Effect.Model exposing (Model, current_paragraphs)
+import Translations exposing (Lang, soundOff, soundOn)
 
 
 view : (List inline -> List (Html msg)) -> Int -> List inline -> List (Html msg)
@@ -24,8 +25,8 @@ view_block viewer idx blocks =
         :: List.map viewer blocks
 
 
-comment : String -> Bool -> Bool -> msg -> Model -> (inline -> Html msg) -> Int -> List inline -> Html msg
-comment class show_inline silent msg model viewer idx elements =
+comment : Lang -> String -> Bool -> Bool -> msg -> Model -> (inline -> Html msg) -> Int -> List inline -> Html msg
+comment lang class show_inline silent msg model viewer idx elements =
     if show_inline then
         elements
             |> List.map viewer
@@ -36,7 +37,7 @@ comment class show_inline silent msg model viewer idx elements =
             ]
             (List.append
                 (List.map viewer elements)
-                [ responsive silent msg ]
+                [ responsive lang silent msg ]
             )
     else
         Html.div
@@ -45,10 +46,18 @@ comment class show_inline silent msg model viewer idx elements =
             []
 
 
-responsive : Bool -> msg -> Html msg
-responsive sound msg =
+responsive : Lang -> Bool -> msg -> Html msg
+responsive lang sound msg =
     Html.span []
-        [ Html.button [ Attr.class "lia-btn lia-icon", onClick msg ]
+        [ Html.button
+            [ Attr.class "lia-btn lia-icon"
+            , onClick msg
+            , Attr.title <|
+                if sound then
+                    soundOn lang
+                else
+                    soundOff lang
+            ]
             [ if sound then
                 Html.text "volume_up"
               else

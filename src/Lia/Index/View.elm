@@ -5,16 +5,17 @@ import Html.Attributes as Attr
 import Html.Events exposing (onInput)
 import Lia.Index.Model exposing (Model)
 import Lia.Index.Update exposing (Msg(..))
+import Translations exposing (..)
 
 
-view : Model -> Html Msg
-view model =
+view : Lang -> Model -> Html Msg
+view lang model =
     Html.div [ Attr.class "lia-toolbar" ]
         [ Html.input
             [ Attr.type_ "input"
             , Attr.value model.search
             , Attr.class "lia-search lia-input"
-            , Attr.placeholder "Search"
+            , Attr.placeholder (search lang)
             , onInput ScanIndex
             ]
             []

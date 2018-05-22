@@ -8,6 +8,20 @@
   "font": "Schrift",
   "color": "Farbe",
 
+  "search": "Suche",
+
+  "mode": {
+    "textbook":     "Modus: Lehrbuch",
+    "presentation": "Modus: Präsentation",
+    "slides":       "Modus: Folien"
+  },
+
+  "sound": {
+    "on":  "Sprecher an",
+    "off": "Sprecher aus"
+  },
+
+
   "author": "Autor: ",
   "version": "Version: ",
   "email": "e-Mail: ",
@@ -37,7 +51,11 @@
     "solution": "zeige Lösung",
     "resolved": "Aufgelöst",
     "hint": "zeige Hinweis"
+  },
+
+  "survey": {
+    "submit":    "Abschicken",
+    "submitted": "Dankeshön",
+    "text":      "Texteingabe ..."
   }
-
-
 }

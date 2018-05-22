@@ -246,7 +246,7 @@ view_control lang idx version_active running =
             [ (version_active + 1) |> Load idx |> onClick
             , Attr.class "lia-btn lia-icon"
             , Attr.style [ ( "float", "right" ), ( "margin-right", "0px" ) ]
-            , Attr.title (codePrev lang)
+            , Attr.title (codeNext lang)
             ]
             [ Html.text "navigate_next" ]
         , Html.span
@@ -258,7 +258,7 @@ view_control lang idx version_active running =
             [ (version_active - 1) |> Load idx |> onClick
             , Attr.class "lia-btn lia-icon"
             , Attr.style [ ( "float", "right" ) ]
-            , Attr.title (codeNext lang)
+            , Attr.title (codePrev lang)
             ]
             [ Html.text "navigate_before" ]
         ]

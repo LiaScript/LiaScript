@@ -155,7 +155,7 @@ view_block config block =
 
         Survey attr survey ->
             config.section.survey_vector
-                |> Surveys.view attr survey
+                |> Surveys.view config.lang attr survey
                 |> Html.map UpdateSurvey
 
         Comment ( id1, id2 ) ->

@@ -57,7 +57,7 @@ view_aside model =
               )
             ]
         ]
-        [ index_selector model.index_model
+        [ index_selector model.translation model.index_model
         , model.sections
             |> index_list model.index_model.index
             |> view_loc model.section_active
@@ -74,10 +74,10 @@ view_aside model =
         ]
 
 
-index_selector : Lia.Index.Model.Model -> Html Msg
-index_selector index_model =
+index_selector : Lang -> Lia.Index.Model.Model -> Html Msg
+index_selector lang index_model =
     index_model
-        |> Lia.Index.View.view
+        |> Lia.Index.View.view lang
         |> Html.map UpdateIndex
 
 
@@ -298,25 +298,25 @@ view_article model =
                     |> state
                     |> view_nav model.section_active model.mode model.translation model.design model.url (get_translations model.definition)
                 , Html.map UpdateMarkdown <| Markdown.view model.translation model.mode section model.design.ace
-                , view_footer model.sound model.mode section.effect_model
+                , view_footer model.translation model.sound model.mode section.effect_model
                 ]
 
             Nothing ->
                 [ Html.text "" ]
 
 
-view_footer : Bool -> Mode -> Lia.Effect.Model.Model -> Html Msg
-view_footer sound mode effects =
+view_footer : Lang -> Bool -> Mode -> Lia.Effect.Model.Model -> Html Msg
+view_footer lang sound mode effects =
     case mode of
         Slides ->
             effects
                 |> current_paragraphs
                 |> List.map (\( a, par ) -> Html.p [] (viewer 9999 par))
-                |> (\l -> List.append l [ responsive sound (Toggle Sound) ])
+                |> (\l -> List.append l [ responsive lang sound (Toggle Sound) ])
                 |> Html.footer [ Attr.class "lia-footer" ]
 
         Presentation ->
-            Html.footer [ Attr.class "lia-footer" ] [ responsive sound (Toggle Sound) ]
+            Html.footer [ Attr.class "lia-footer" ] [ responsive lang sound (Toggle Sound) ]
 
         Textbook ->
             Html.text ""
@@ -367,16 +367,27 @@ view_nav section_active mode lang design base translations ( speaking, state ) =
         , Html.button
             [ Attr.class "lia-btn lia-right"
             , onClick SwitchMode
+            , Attr.title <|
+                case mode of
+                    Slides ->
+                        modeSlides lang
+
+                    Presentation ->
+                        modePresentation lang
+
+                    Textbook ->
+                        modeTextbook lang
             ]
-            [ case mode of
-                Slides ->
-                    Html.text "visibility"
+            [ Html.text <|
+                case mode of
+                    Slides ->
+                        "visibility"
 
-                Presentation ->
-                    Html.text "hearing"
+                    Presentation ->
+                        "hearing"
 
-                Textbook ->
-                    Html.text "book"
+                    Textbook ->
+                        "book"
             ]
         ]
 

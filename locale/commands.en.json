@@ -1,24 +1,37 @@
 {
-  "next": "next",
+  "next":     "next",
   "previous": "previous",
 
   "decrease": "decrease",
   "increase": "increase",
 
-  "font": "Font",
-  "color": "Color",
+  "font":     "Font",
+  "color":    "Color",
 
-  "author": "Author: ",
+  "search":   "Search",
+
+  "mode": {
+    "textbook":     "Mode: Textbook",
+    "presentation": "Mode: Presentation",
+    "slides":       "Mode: Slides"
+  },
+
+  "sound": {
+    "on":  "Sound on",
+    "off": "Sound off"
+  },
+
+  "author":  "Author: ",
   "version": "Version: ",
-  "email": "eMail: ",
-  "date": "Date: ",
+  "email":   "eMail: ",
+  "date":    "Date: ",
 
   "no_translation": "no translation yet",
 
   "conf": {
     "informations": "Informations",
-    "settings": "Settings",
-    "share": "Share",
+    "settings":     "Settings",
+    "share":        "Share",
     "translations": "Translations"
   },
 
@@ -27,15 +40,21 @@
   "code": {
     "execute": "Execute",
     "running": "is running",
-    "prev": "previous version",
-    "next": "next version"
+    "prev":    "previous version",
+    "next":    "next version"
   },
 
   "quiz": {
-    "check": "Check",
-    "checked": "Checked",
+    "check":    "Check",
+    "checked":  "Checked",
     "solution": "show solution",
     "resolved": "Resolved",
-    "hint": "show hint"
+    "hint":     "show hint"
+  },
+
+  "survey": {
+    "submit":    "Submit",
+    "submitted": "Thanks",
+    "text":      "Enter some text..."
   }
 }

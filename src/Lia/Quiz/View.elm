@@ -106,12 +106,12 @@ view_button lang trials solved msg =
             else
                 Html.button
                     [ Attr.class "lia-btn", Attr.class "lia-failure", onClick msg ]
-                    [ Html.text (quizCheck lang ++ toString trials) ]
+                    [ Html.text (quizCheck lang ++ " " ++ toString trials) ]
 
         Solved ->
             Html.button
                 [ Attr.class "lia-btn", Attr.class "lia-success" ]
-                [ Html.text (quizChecked lang ++ toString trials) ]
+                [ Html.text (quizChecked lang ++ " " ++ toString trials) ]
 
         ReSolved ->
             Html.button
