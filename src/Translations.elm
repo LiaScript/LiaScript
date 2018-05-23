@@ -11,47 +11,107 @@ getLnFromCode code =
       "en" -> En
       _ -> En
 
-next: Lang -> String
-next lang  =
+baseNext: Lang -> String
+baseNext lang  =
   case lang of 
       De -> "weiter"
       En -> "next"
 
-previous: Lang -> String
-previous lang  =
+basePrev: Lang -> String
+basePrev lang  =
   case lang of 
       De -> "zurück"
       En -> "previous"
 
-decrease: Lang -> String
-decrease lang  =
-  case lang of 
-      De -> "verkleinern"
-      En -> "decrease"
-
-increase: Lang -> String
-increase lang  =
-  case lang of 
-      De -> "vergrößern"
-      En -> "increase"
-
-font: Lang -> String
-font lang  =
+baseFont: Lang -> String
+baseFont lang  =
   case lang of 
       De -> "Schrift"
       En -> "Font"
 
-color: Lang -> String
-color lang  =
+baseDec: Lang -> String
+baseDec lang  =
+  case lang of 
+      De -> "verkleinern"
+      En -> "decrease"
+
+baseInc: Lang -> String
+baseInc lang  =
+  case lang of 
+      De -> "vergrößern"
+      En -> "increase"
+
+baseSearch: Lang -> String
+baseSearch lang  =
+  case lang of 
+      De -> "Suche"
+      En -> "Search"
+
+baseToc: Lang -> String
+baseToc lang  =
+  case lang of 
+      De -> "Inhaltsverzeichnis (zeigen/verbergen)"
+      En -> "Table of Contents (show/hide)"
+
+no_translation: Lang -> String
+no_translation lang  =
+  case lang of 
+      De -> "noch keine Übersetzungen vorhanden"
+      En -> "no translation yet"
+
+cColor: Lang -> String
+cColor lang  =
   case lang of 
       De -> "Farbe"
       En -> "Color"
 
-search: Lang -> String
-search lang  =
+cDark: Lang -> String
+cDark lang  =
   case lang of 
-      De -> "Suche"
-      En -> "Search"
+      De -> "Dunkel"
+      En -> "Dark"
+
+cBright: Lang -> String
+cBright lang  =
+  case lang of 
+      De -> "Hell"
+      En -> "Bright"
+
+cDefault: Lang -> String
+cDefault lang  =
+  case lang of 
+      De -> "Standard"
+      En -> "Default"
+
+cAmber: Lang -> String
+cAmber lang  =
+  case lang of 
+      De -> "Bernstein"
+      En -> "Amber"
+
+cBlue: Lang -> String
+cBlue lang  =
+  case lang of 
+      De -> "Blau"
+      En -> "Blue"
+
+cGray: Lang -> String
+cGray lang  =
+  case lang of 
+      De -> "Grau"
+      En -> "Gray"
+
+cGreen: Lang -> String
+cGreen lang  =
+  case lang of 
+      De -> "Grün"
+      En -> "Green"
+
+cPurple: Lang -> String
+cPurple lang  =
+  case lang of 
+      De -> "Violett"
+      En -> "Purple"
 
 modeTextbook: Lang -> String
 modeTextbook lang  =
@@ -83,35 +143,29 @@ soundOff lang  =
       De -> "Sprecher aus"
       En -> "Sound off"
 
-author: Lang -> String
-author lang  =
+infoAuthor: Lang -> String
+infoAuthor lang  =
   case lang of 
       De -> "Autor: "
       En -> "Author: "
 
-version: Lang -> String
-version lang  =
-  case lang of 
-      De -> "Version: "
-      En -> "Version: "
-
-email: Lang -> String
-email lang  =
-  case lang of 
-      De -> "e-Mail: "
-      En -> "eMail: "
-
-date: Lang -> String
-date lang  =
+infoDate: Lang -> String
+infoDate lang  =
   case lang of 
       De -> "Datum: "
       En -> "Date: "
 
-no_translation: Lang -> String
-no_translation lang  =
+infoEmail: Lang -> String
+infoEmail lang  =
   case lang of 
-      De -> "keine Übersetzungen vorhanden"
-      En -> "no translation yet"
+      De -> "e-Mail: "
+      En -> "eMail: "
+
+infoVersion: Lang -> String
+infoVersion lang  =
+  case lang of 
+      De -> "Version: "
+      En -> "Version: "
 
 confInformations: Lang -> String
 confInformations lang  =
@@ -136,12 +190,6 @@ confTranslations lang  =
   case lang of 
       De -> "Übersetzungen"
       En -> "Translations"
-
-toc: Lang -> String
-toc lang  =
-  case lang of 
-      De -> "Inhaltsverzeichnis (zeigen/verbergen)"
-      En -> "Table of Contents (show/hide)"
 
 codeExecute: Lang -> String
 codeExecute lang  =

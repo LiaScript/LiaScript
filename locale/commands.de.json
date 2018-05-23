@@ -1,14 +1,31 @@
 {
-  "next": "weiter",
-  "previous": "zurück",
+  "base": {
+    "next": "weiter",
+    "prev": "zurück",
 
-  "decrease": "verkleinern",
-  "increase": "vergrößern",
+    "font": "Schrift",
+    "dec":  "verkleinern",
+    "inc":  "vergrößern",
 
-  "font": "Schrift",
-  "color": "Farbe",
+    "search":   "Suche",
 
-  "search": "Suche",
+    "toc": "Inhaltsverzeichnis (zeigen/verbergen)"
+  },
+
+  "no_translation": "noch keine Übersetzungen vorhanden",
+
+  "c": {
+    "color":    "Farbe",
+    "dark":     "Dunkel",
+    "bright":   "Hell",
+
+    "default":  "Standard",
+    "amber":    "Bernstein",
+    "blue":     "Blau",
+    "gray":     "Grau",
+    "green":    "Grün",
+    "purple":   "Violett"
+  },
 
   "mode": {
     "textbook":     "Modus: Lehrbuch",
@@ -17,45 +34,42 @@
   },
 
   "sound": {
-    "on":  "Sprecher an",
-    "off": "Sprecher aus"
+    "on":           "Sprecher an",
+    "off":          "Sprecher aus"
   },
 
-
-  "author": "Autor: ",
-  "version": "Version: ",
-  "email": "e-Mail: ",
-  "date": "Datum: ",
-
-  "no_translation": "keine Übersetzungen vorhanden",
+  "info": {
+    "author":       "Autor: ",
+    "date":         "Datum: ",
+    "email":        "e-Mail: ",
+    "version":      "Version: "
+  },
 
   "conf": {
     "informations": "Informationen",
-    "settings": "Einstellungen",
-    "share": "Teilen",
+    "settings":     "Einstellungen",
+    "share":        "Teilen",
     "translations": "Übersetzungen"
   },
 
-  "toc": "Inhaltsverzeichnis (zeigen/verbergen)",
-
   "code": {
-    "execute": "Ausführen",
-    "running": "wird ausgeführt",
-    "prev": "eine Version zurück",
-    "next": "eine Version vor"
+    "execute":      "Ausführen",
+    "running":      "wird ausgeführt",
+    "prev":         "eine Version zurück",
+    "next":         "eine Version vor"
   },
 
   "quiz": {
-    "check": "Prüfen",
-    "checked": "Gelöst",
-    "solution": "zeige Lösung",
-    "resolved": "Aufgelöst",
-    "hint": "zeige Hinweis"
+    "check":        "Prüfen",
+    "checked":      "Gelöst",
+    "solution":     "zeige Lösung",
+    "resolved":     "Aufgelöst",
+    "hint":         "zeige Hinweis"
   },
 
   "survey": {
-    "submit":    "Abschicken",
-    "submitted": "Dankeshön",
-    "text":      "Texteingabe ..."
+    "submit":       "Abschicken",
+    "submitted":    "Dankeshön",
+    "text":         "Texteingabe ..."
   }
 }

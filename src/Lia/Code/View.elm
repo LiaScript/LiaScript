@@ -12,7 +12,7 @@ import Lia.Helper exposing (ID)
 import Lia.Markdown.Inline.Types exposing (Annotation)
 import Lia.Markdown.Inline.View exposing (annotation)
 import Lia.Utils
-import Translations exposing (..)
+import Translations exposing (Lang, codeExecute, codeNext, codePrev, codeRunning)
 
 
 view : Lang -> String -> Annotation -> Vector -> Code -> Html Msg

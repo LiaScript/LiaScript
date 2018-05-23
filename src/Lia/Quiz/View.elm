@@ -11,7 +11,7 @@ import Lia.Markdown.Inline.View exposing (annotation, view_inf)
 import Lia.Quiz.Model exposing (..)
 import Lia.Quiz.Types exposing (..)
 import Lia.Quiz.Update exposing (Msg(..))
-import Translations exposing (..)
+import Translations exposing (Lang, quizCheck, quizChecked, quizResolved, quizSolution)
 
 
 view : Lang -> Annotation -> Quiz -> Vector -> Html Msg

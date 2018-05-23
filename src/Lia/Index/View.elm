@@ -5,7 +5,7 @@ import Html.Attributes as Attr
 import Html.Events exposing (onInput)
 import Lia.Index.Model exposing (Model)
 import Lia.Index.Update exposing (Msg(..))
-import Translations exposing (..)
+import Translations exposing (Lang, baseSearch)
 
 
 view : Lang -> Model -> Html Msg
@@ -15,7 +15,7 @@ view lang model =
             [ Attr.type_ "input"
             , Attr.value model.search
             , Attr.class "lia-search lia-input"
-            , Attr.placeholder (search lang)
+            , Attr.placeholder (baseSearch lang)
             , onInput ScanIndex
             ]
             []

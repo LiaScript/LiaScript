@@ -1,14 +1,31 @@
 {
-  "next":     "next",
-  "previous": "previous",
+  "base": {
+    "next": "next",
+    "prev": "previous",
 
-  "decrease": "decrease",
-  "increase": "increase",
+    "font": "Font",
+    "dec":  "decrease",
+    "inc":  "increase",
 
-  "font":     "Font",
-  "color":    "Color",
+    "search":   "Search",
 
-  "search":   "Search",
+    "toc": "Table of Contents (show/hide)"
+  },
+
+  "no_translation": "no translation yet",
+
+  "c": {
+    "color":    "Color",
+    "dark":     "Dark",
+    "bright":   "Bright",
+
+    "default":  "Default",
+    "amber":    "Amber",
+    "blue":     "Blue",
+    "gray":     "Gray",
+    "green":    "Green",
+    "purple":   "Purple"
+  },
 
   "mode": {
     "textbook":     "Mode: Textbook",
@@ -21,12 +38,12 @@
     "off": "Sound off"
   },
 
-  "author":  "Author: ",
-  "version": "Version: ",
-  "email":   "eMail: ",
-  "date":    "Date: ",
-
-  "no_translation": "no translation yet",
+  "info": {
+    "author":  "Author: ",
+    "date":    "Date: ",
+    "email":   "eMail: ",
+    "version": "Version: "
+  },
 
   "conf": {
     "informations": "Informations",
@@ -34,8 +51,6 @@
     "share":        "Share",
     "translations": "Translations"
   },
-
-  "toc": "Table of Contents (show/hide)",
 
   "code": {
     "execute": "Execute",

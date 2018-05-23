@@ -128,7 +128,10 @@ dropdown name alt msg =
         [ onClick msg
         , Attr.class "lia-btn lia-icon"
         , Attr.title alt
-        , Attr.style [ ( "width", "40px" ), ( "padding", "0px" ) ]
+        , Attr.style
+            [ ( "width", "40px" )
+            , ( "padding", "0px" )
+            ]
         ]
         [ Html.text name ]
 
@@ -137,12 +140,12 @@ view_settings : Lang -> Bool -> Design -> Html Msg
 view_settings lang visible design =
     Html.div [ menu_style visible ]
         [ Html.p []
-            [ Html.text <| color lang
+            [ Html.text <| cColor lang
             , view_design_light design.light
-            , design_theme design
+            , design_theme lang design
             , Html.hr [] []
             , inc_font_size lang design.font_size
-            , view_ace design.ace
+            , view_ace lang design.ace
             ]
         ]
 
@@ -150,23 +153,23 @@ view_settings lang visible design =
 inc_font_size : Lang -> Int -> Html Msg
 inc_font_size lang int =
     Html.div []
-        [ Html.text <| font lang ++ ":"
-        , navButton "-" (decrease lang) (IncreaseFontSize False)
+        [ Html.text <| baseFont lang ++ ":"
+        , navButton "-" (baseDec lang) (IncreaseFontSize False)
         , Html.text (toString int ++ "%")
-        , navButton "+" (increase lang) (IncreaseFontSize True)
+        , navButton "+" (baseInc lang) (IncreaseFontSize True)
         ]
 
 
-design_theme : Design -> Html Msg
-design_theme design =
-    [ ( "default", "left" )
-    , ( "amber", "right" )
-    , ( "blue", "left" )
-    , ( "green", "right" )
-    , ( "grey", "left" )
-    , ( "purple", "right" )
+design_theme : Lang -> Design -> Html Msg
+design_theme lang design =
+    [ ( "default", "left", cDefault lang )
+    , ( "amber", "right", cAmber lang )
+    , ( "blue", "left", cBlue lang )
+    , ( "green", "right", cGreen lang )
+    , ( "grey", "left", cGray lang )
+    , ( "purple", "right", cPurple lang )
     ]
-        |> List.map (\( c, b ) -> check_list (c == design.theme) c b)
+        |> List.map (\( c, b, text ) -> check_list (c == design.theme) c text b)
         |> Html.div [ Attr.class "lia-color" ]
 
 
@@ -174,19 +177,19 @@ view_information : Lang -> Bool -> Definition -> Html Msg
 view_information lang visible definition =
     Html.div [ menu_style visible ]
         [ Html.p []
-            [ Html.text <| author lang
+            [ Html.text <| infoAuthor lang
             , Html.text definition.author
             ]
         , Html.p []
-            [ Html.text <| email lang
+            [ Html.text <| infoEmail lang
             , Html.a [ Attr.href definition.email ] [ Html.text definition.email ]
             ]
         , Html.p []
-            [ Html.text <| version lang
+            [ Html.text <| infoVersion lang
             , Html.text definition.version
             ]
         , Html.p []
-            [ Html.text <| date lang
+            [ Html.text <| infoDate lang
             , Html.text definition.date
             ]
         ]
@@ -207,8 +210,8 @@ view_translations lang visible base list =
                     )
 
 
-check_list : Bool -> String -> String -> Html Msg
-check_list checked label dir =
+check_list : Bool -> String -> String -> String -> Html Msg
+check_list checked label text dir =
     Html.label
         [ Attr.class label, Attr.style [ ( "float", dir ) ] ]
         [ Html.input
@@ -220,7 +223,7 @@ check_list checked label dir =
             []
         , Html.span
             []
-            [ Html.text (capitalize label) ]
+            [ Html.text text ]
         ]
 
 
@@ -337,12 +340,12 @@ view_nav section_active mode lang design base translations ( speaking, state ) =
     Html.nav [ Attr.class "lia-toolbar" ]
         [ Html.button
             [ onClick (Toggle LOC)
-            , Attr.title (toc lang)
+            , Attr.title (baseToc lang)
             , Attr.class "lia-btn lia-toc-control lia-left"
             ]
             [ Html.text "toc" ]
         , Html.span [ Attr.class "lia-spacer" ] []
-        , navButton "navigate_before" (previous lang) PrevSection
+        , navButton "navigate_before" (basePrev lang) PrevSection
         , Html.span [ Attr.class "lia-labeled lia-left" ]
             [ Html.span
                 [ Attr.class "lia-label"
@@ -362,7 +365,7 @@ view_nav section_active mode lang design base translations ( speaking, state ) =
                             " " ++ state
                 ]
             ]
-        , navButton "navigate_next" (next lang) NextSection
+        , navButton "navigate_next" (baseNext lang) NextSection
         , Html.span [ Attr.class "lia-spacer" ] []
         , Html.button
             [ Attr.class "lia-btn lia-right"
@@ -417,8 +420,8 @@ option current ( val, text ) =
     Html.option [ Attr.value val, Attr.selected (val == current) ] [ Html.text text ]
 
 
-view_ace : String -> Html Msg
-view_ace theme =
+view_ace : Lang -> String -> Html Msg
+view_ace lang theme =
     let
         op =
             option theme
@@ -441,7 +444,7 @@ view_ace theme =
           , ( "sqlserver", "SQL Server" )
           ]
             |> List.map op
-            |> Html.optgroup [ Attr.attribute "label" "Bright" ]
+            |> Html.optgroup [ Attr.attribute "label" (cBright lang) ]
         , [ ( "ambiance", "Ambiance" )
           , ( "chaos", "Chaos" )
           , ( "clouds_midnight", "Clouds Midnight" )
@@ -466,7 +469,7 @@ view_ace theme =
           , ( "vibrant_ink", "Vibrant Ink" )
           ]
             |> List.map op
-            |> Html.optgroup [ Attr.attribute "label" "Dark" ]
+            |> Html.optgroup [ Attr.attribute "label" (cDark lang) ]
         ]
 
 

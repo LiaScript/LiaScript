@@ -9,7 +9,7 @@ import Lia.Markdown.Inline.View exposing (annotation, view_inf)
 import Lia.Survey.Model exposing (..)
 import Lia.Survey.Types exposing (..)
 import Lia.Survey.Update exposing (Msg(..))
-import Translations exposing (..)
+import Translations exposing (Lang, surveySubmit, surveySubmitted, surveyText)
 
 
 view : Lang -> Annotation -> Survey -> Vector -> Html Msg
