@@ -11,7 +11,12 @@ import Lia.Markdown.Types exposing (Markdown)
 
 inline : String -> Html msg
 inline key =
-    Html.sup [] [ braces key ]
+    Html.sup
+        [ Attr.attribute
+            "onclick"
+            ("app.ports.footnote.send(\"" ++ key ++ "\");")
+        ]
+        [ braces key ]
 
 
 block : (Markdown -> Html msg) -> Model -> Html msg

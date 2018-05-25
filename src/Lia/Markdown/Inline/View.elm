@@ -1,8 +1,5 @@
 module Lia.Markdown.Inline.View exposing (annotation, reference, view, view_inf, viewer)
 
---import Lia.Markdown.Update exposing (Msg(..))
---import Lia.Markdown.Update exposing (Msg(..))
-
 import Dict
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
