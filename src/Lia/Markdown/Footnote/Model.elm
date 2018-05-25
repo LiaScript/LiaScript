@@ -5,31 +5,29 @@ import Lia.Markdown.Types exposing (MarkdownS)
 
 
 type alias Model =
-    { notes : Dict String MarkdownS
-    , to_show : Maybe String
-    }
+    Dict String MarkdownS
 
 
 init : Model
 init =
-    Model Dict.empty Nothing
+    Dict.empty
 
 
 insert : String -> MarkdownS -> Model -> Model
 insert key val model =
-    { model | notes = Dict.insert key val model.notes }
+    Dict.insert key val model
 
 
 toList : Model -> List ( String, MarkdownS )
 toList =
-    .notes >> Dict.toList
+    Dict.toList
 
 
 empty : Model -> Bool
 empty =
-    .notes >> Dict.isEmpty
+    Dict.isEmpty
 
 
 getNote : String -> Model -> Maybe MarkdownS
 getNote key model =
-    Dict.get key model.notes
+    Dict.get key model
