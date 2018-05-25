@@ -31,7 +31,7 @@ script:   https://curiosity-driven.github.io/prolog-interpreter/interpreter.js
 
 # Lia-Script
 
-                                    --{{0}}--
+              --{{0}}--
 With Lia, we try to implement an extended Markdown format that should enable
 everyone to create, share, adapt, translate or correct and extend online courses
 without the need of being a web-developer.
