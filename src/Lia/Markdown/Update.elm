@@ -1,4 +1,4 @@
-module Lia.Markdown.Update
+port module Lia.Markdown.Update
     exposing
         ( Msg(..)
         , initEffect
@@ -8,8 +8,6 @@ module Lia.Markdown.Update
         , update
         )
 
---import Lia.Markdown.Footnote.Update as Footnote
-
 import Json.Encode as JE
 import Lia.Code.Update as Code
 import Lia.Effect.Update as Effect
@@ -18,15 +16,15 @@ import Lia.Survey.Update as Survey
 import Lia.Types exposing (Section)
 
 
+port footnote : (String -> msg) -> Sub msg
+
+
 type Msg
     = UpdateEffect Bool Effect.Msg
     | UpdateCode Code.Msg
     | UpdateQuiz Quiz.Msg
     | UpdateSurvey Survey.Msg
-
-
-
---    | UpdateFootnote Footnote.Msg
+    | ShowFootnote String
 
 
 subscriptions : Section -> Sub Msg
@@ -34,6 +32,7 @@ subscriptions section =
     Sub.batch
         [ Sub.map (UpdateEffect False) (Effect.subscriptions section.effect_model)
         , Sub.map UpdateCode (Code.subscriptions section.code_vector)
+        , footnote ShowFootnote
         ]
 
 
@@ -68,10 +67,12 @@ update msg section =
             in
             ( { section | survey_vector = survey_vector }, Cmd.none, Nothing )
 
-
-
---        UpdateFootnote childMsg ->
---            ( { section | footnotes = Footnote.update childMsg section.footnotes }, Cmd.none, Nothing )
+        ShowFootnote key ->
+            let
+                x =
+                    Debug.log "FFFFFFFFFFFFF" key
+            in
+            ( section, Cmd.none, Nothing )
 
 
 nextEffect : Bool -> Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
