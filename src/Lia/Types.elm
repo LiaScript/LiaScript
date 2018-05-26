@@ -39,6 +39,7 @@ type alias Section =
     , effect_model : Effect.Model
     , definition : Maybe Definition
     , footnotes : Footnote.Model
+    , footnote2show : Maybe String
     }
 
 
@@ -61,4 +62,5 @@ init_section ( tags, title, code ) =
     , effect_model = Effect.init
     , definition = Nothing
     , footnotes = Footnote.init
+    , footnote2show = Nothing
     }

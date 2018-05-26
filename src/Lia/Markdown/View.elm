@@ -2,10 +2,12 @@ module Lia.Markdown.View exposing (view)
 
 import Html exposing (Html)
 import Html.Attributes as Attr
+import Html.Events exposing (onClick)
 import Lia.Chart.View as Charts
 import Lia.Code.View as Codes
 import Lia.Effect.Model as Comments
 import Lia.Effect.View as Effects
+import Lia.Markdown.Footnote.Model as Footnotes
 import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
 import Lia.Markdown.Inline.View exposing (annotation, viewer)
@@ -51,9 +53,56 @@ view lang mode section ace_theme =
         Nothing ->
             section.body
                 |> List.map (view_block config)
+                |> (::) (view_footnote (view_block config) section.footnote2show section.footnotes)
                 |> (::) (view_header config)
-                |> (\s -> List.append s [ Footnote.block (view_block config) section.footnotes ])
+                |> (\s ->
+                        if mode == Textbook then
+                            List.append s [ Footnote.block (view_block config) section.footnotes ]
+                        else
+                            s
+                   )
                 |> Html.section [ Attr.class "lia-content" ]
+
+
+
+--view_footnote : Config -> Maybe String -> Footnotes.Model -> Html Msg
+
+
+view_footnote viewer key footnotes =
+    case Maybe.andThen (\k -> Footnotes.getNote k footnotes) key of
+        Just notes ->
+            Html.div
+                [ onClick FootnoteHide
+                , Attr.style
+                    [ ( "position", "fixed" )
+                    , ( "display", "block" )
+                    , ( "width", "100%" )
+                    , ( "height", "100%" )
+                    , ( "top", "0" )
+                    , ( "left", "0" )
+                    , ( "right", "0" )
+                    , ( "bottom", "0" )
+                    , ( "background-color", "rgba(0,0,0,0.6)" )
+                    , ( "z-index", "2" )
+                    , ( "cursor", "pointer" )
+                    ]
+                ]
+                [ Html.div
+                    [ Attr.style
+                        [ ( "position", "absolute" )
+                        , ( "top", "50%" )
+                        , ( "left", "50%" )
+                        , ( "font-size", "20px" )
+                        , ( "color", "white" )
+                        , ( "transform", "translate(-50%,-50%)" )
+                        , ( "-ms-transform", "translate(-50%,-50%)" )
+                        ]
+                    ]
+                    (List.map viewer notes)
+                ]
+
+        Nothing ->
+            Html.text ""
 
 
 view_header : Config -> Html Msg

@@ -15,6 +15,7 @@ inline key =
         [ Attr.attribute
             "onclick"
             ("app.ports.footnote.send(\"" ++ key ++ "\");")
+        , Attr.style [ ( "cursor", "pointer" ) ]
         ]
         [ braces key ]
 
@@ -35,7 +36,7 @@ block fn model =
                 [ Attr.style
                     [ --( "width", "100%" )
                       ( "padding", "-10px" )
-                    , ( "border-top", "1px solid black" )
+                    , ( "border-top", "2px solid black" )
                     , ( "-ms-transform", "scale(0.8, 0.8)" )
                     , ( "-ms-transform-origin", "0 50%" )
                     , ( "-webkit-transform", "scale(0.8, 0.8)" )

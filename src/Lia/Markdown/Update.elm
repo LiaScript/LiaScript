@@ -24,7 +24,8 @@ type Msg
     | UpdateCode Code.Msg
     | UpdateQuiz Quiz.Msg
     | UpdateSurvey Survey.Msg
-    | ShowFootnote String
+    | FootnoteHide
+    | FootnoteShow String
 
 
 subscriptions : Section -> Sub Msg
@@ -32,7 +33,7 @@ subscriptions section =
     Sub.batch
         [ Sub.map (UpdateEffect False) (Effect.subscriptions section.effect_model)
         , Sub.map UpdateCode (Code.subscriptions section.code_vector)
-        , footnote ShowFootnote
+        , footnote FootnoteShow
         ]
 
 
@@ -67,12 +68,11 @@ update msg section =
             in
             ( { section | survey_vector = survey_vector }, Cmd.none, Nothing )
 
-        ShowFootnote key ->
-            let
-                x =
-                    Debug.log "FFFFFFFFFFFFF" key
-            in
-            ( section, Cmd.none, Nothing )
+        FootnoteShow key ->
+            ( { section | footnote2show = Just key }, Cmd.none, Nothing )
+
+        FootnoteHide ->
+            ( { section | footnote2show = Nothing }, Cmd.none, Nothing )
 
 
 nextEffect : Bool -> Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
