@@ -64,12 +64,9 @@ view lang mode section ace_theme =
                 |> Html.section [ Attr.class "lia-content" ]
 
 
-
---view_footnote : Config -> Maybe String -> Footnotes.Model -> Html Msg
-
-
+view_footnote : (Markdown -> Html Msg) -> Maybe String -> Footnotes.Model -> Html Msg
 view_footnote viewer key footnotes =
-    case Maybe.andThen (\k -> Footnotes.getNote k footnotes) key of
+    case Maybe.andThen (Footnotes.getNote footnotes) key of
         Just notes ->
             Html.div
                 [ onClick FootnoteHide

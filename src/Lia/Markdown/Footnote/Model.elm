@@ -28,6 +28,6 @@ empty =
     Dict.isEmpty
 
 
-getNote : String -> Model -> Maybe MarkdownS
-getNote key model =
+getNote : Model -> String -> Maybe MarkdownS
+getNote model key =
     Dict.get key model
