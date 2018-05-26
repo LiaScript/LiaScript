@@ -85,6 +85,7 @@ view_footnote viewer key footnotes =
                     , ( "background-color", "rgba(0,0,0,0.6)" )
                     , ( "z-index", "2" )
                     , ( "cursor", "pointer" )
+                    , ( "overflow", "auto" )
                     ]
                 ]
                 [ Html.div
