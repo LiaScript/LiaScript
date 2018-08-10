@@ -2,6 +2,7 @@ module Lia.Code.Parser exposing (parse)
 
 import Array
 import Combine exposing (..)
+import Lia.Code.Highlight2Ace exposing (highlight2ace)
 import Lia.Code.Types exposing (..)
 import Lia.Helper exposing (..)
 import Lia.Macro.Parser exposing (macro)
@@ -43,7 +44,7 @@ result ( lst, script ) =
 
 header : Parser PState String
 header =
-    spaces *> regex "\\w*" <?> "language definition"
+    spaces *> (highlight2ace <$> regex "\\w*") <?> "language definition"
 
 
 title : Parser PState ( Bool, String )
