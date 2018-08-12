@@ -1,50 +1,38 @@
 <!--
 
 author:   Andre Dietrich
-
 email:    dietrich@ivs.cs.uni-magdeburg.de
-
 version:  1.0.0
-
 language: en_US
-
 narrator: US English Female
 
+comment:  This is a very simple comment.
+          Multiline is also okay.
 
 script:   https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.js
+          https://felixhao28.github.io/JSCPP/dist/JSCPP.es5.min.js
 
-script:   https://cdn.rawgit.com/davidedc/Algebrite/master/dist/algebrite.bundle-for-browser.js
-
-script:   https://felixhao28.github.io/JSCPP/dist/JSCPP.es5.min.js
-
-
-script:   https://interactivepython.org/runestone/static/thinkcspy/_static/skulpt.min.js
-
-script:   https://interactivepython.org/runestone/static/thinkcspy/_static/skulpt-stdlib.js
-
-
-script:   https://curiosity-driven.github.io/prolog-interpreter/parser.js
-
-script:   https://curiosity-driven.github.io/prolog-interpreter/interpreter.js
+translation: French   translation/French.md
+translation: Russian  translation/Russian.md
 
 -->
 
 # Lia-Script
 
-              --{{0}}--
+                                    --{{0}}--
 With Lia, we try to implement an extended Markdown format that should enable
 everyone to create, share, adapt, translate or correct and extend online courses
 without the need of being a web-developer.
 
 See the online rendered version at: https://liascript.github.io
 
-
                                     --{{0}}--
 Click on the (ear) button at the navigation bar to switch between spoken and
 plain text mode format. And use the arrows-buttons at the top for navigating.
 
 
-*Lia-Script* <!-- class = "animated infinite bounce" style = "color: red;" --> is an extended Markdown format for writing interactive online
+*Lia-Script* <!-- class = "animated infinite bounce" style = "color: red;" onclick = "alert('It started with a click!');" -->
+is an extended Markdown format for writing interactive online
 courses. Imagine all schoolbooks, technical or scientific literature could
 become open-source projects and more interactive ... with collaborating teachers
 and students ...
@@ -140,7 +128,7 @@ through or the application of superscript. If you, for example, superscript
 superscript you can get even smaller.
 
                                        {{1}}
-================================================================================
+********************************************************************************
 
 \~\~underline\~\~ -> ~~underline~~
 
@@ -148,7 +136,7 @@ superscript you can get even smaller.
 
 \^superscript\^ -> ^superscript^ ^^superscript^^ ^^^superscript^^^
 
-================================================================================
+********************************************************************************
 
 
 #### Combinations
@@ -165,12 +153,12 @@ As you can see from the examples, you can combine all elements freely.
 
 #### Escape Characters
 
-\*, \~, \_, \#, \{, \}, \[, \], \|, \`, \$
+\*, \~, \_, \{, \}, \[, \], \|, \`, \$
 
                                      --{{0}}--
-If you want to use multiple stars, hash-tags, or other syntax elements within
-your script without applying their functionality, then you can escape them with
-a starting backslash.
+If you want to use multiple stars, braces, or other syntax elements within your
+script without applying their functionality, then you can escape them with a
+starting backslash.
 
 ### Symbols
 
@@ -221,7 +209,7 @@ defined by two exclamation marks.
 
 * Image-notation: `![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)`
 
-  ![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)
+  ![image](images/load.gif)
 
 * Movie-notation: `!![movie](https://www.youtube.com/embed/XsNk5aOpqUc?&autoplay=1)`
 
@@ -285,7 +273,7 @@ The same technique can also be applied to style and format movies and other inli
 elements, such as links, words, symbols, or code...
 
                                        {{1}}
-================================================================================
+********************************************************************************
 
 !![movie](https://www.youtube.com/embed/XsNk5aOpqUc)<!--
 style = "width: 100px; height: 60px;"
@@ -313,7 +301,7 @@ style = "width: 100px;
 
 `[google](www.google.de) <!-- style = "color: red;" -->` --> [google](www.google.de) <!-- style = "color: red;" -->
 
-================================================================================
+********************************************************************************
 
 #### Block-Styling
 
@@ -459,7 +447,7 @@ Next to simple paragraphs also any other block element can be included ...
 
 
                                      {{1}}
-================================================================================
+********************************************************************************
 
 ``` markdown
 > <!-- style="font-size: 18px; font-style: italic; width: 500px; margin: 5.25em 0;" -->
@@ -479,7 +467,7 @@ Result:
 > | ** col 2 is **    | centered      |   $12 |
 > | * zebra stripes * | are neat      |    $1 |
 
-================================================================================
+********************************************************************************
 
 ### HTML
 
@@ -550,7 +538,7 @@ new Chartist.Line('#chart2', {
 });
 </script>
 
-                                --{{1}}--
+                                --{{2}}--
 Note, you have to include all required JavaScirpt-resourses in the initial
 comment after the script definition. And by combining this feature with
 LiaScript effects, you can build even more sophisticated courses.
@@ -558,9 +546,9 @@ LiaScript effects, you can build even more sophisticated courses.
 
 ## Math-Mode
 
-{{0}}{{ via KaTex http://katex.org }}
+{{0}} via KaTex http://katex.org
 
-{{1}}{{ Inline math-mode `$ \frac{a}{\sum{b+i}} $` -> $ \frac{a}{\sum{b+i}} $ }}
+{{1}} Inline math-mode `$ \frac{a}{\sum{b+i}} $` -> $ \frac{a}{\sum{b+i}} $
 
                                         {{2}}
 Multi-line math-mode can be applied by double dollars `$$ formula $$`
@@ -631,7 +619,7 @@ required resources to the initial comment with keyword `script`.
 
 1. Add resource to main-comment: `script: url.js`
 
-2. Add a trailing script-tag to your code: `<script> {X} </script>`
+2. Add a trailing script-tag to your code: `<script> {{0}} </script>`
 
 
                                      --{{1}}--
@@ -642,6 +630,11 @@ executed. We provide some basic examples within the following section.
 
 
 #### JavaScript
+<!--
+@eval
+<script>@file(0)</script>
+@end
+-->
 
                                     --{{0}}--
 Click on the run-button to execute the script or double-click on the code to
@@ -649,7 +642,7 @@ edit it and to change the output ...
 
 Double-click on the code to switch to edit mode and double-click to get out:
 
-```
+```javascript
 var i=0;
 var j=0;
 var result = 0;
@@ -662,7 +655,7 @@ for(i = 0; i<1000; i++) {
 // the last statement defines the return statement
 result;
 ```
-<script> {X} </script>
+@eval
 
 
 
@@ -686,20 +679,24 @@ new Chartist.Bar('#chart2', {
   series: [[5, 2, 8, 3]]
 });
 ```
-<script> {X} </script>
+<script>@file(0)</script>
 
 <div class="ct-chart ct-golden-section" id="chart1"></div>
 <div class="ct-chart ct-golden-section" id="chart2"></div>
 
 
 #### Computer-Algebra
+<!--
+script:   https://cdn.rawgit.com/davidedc/Algebrite/master/dist/algebrite.bundle-for-browser.js
+-->
+
 
 An example of a Computer-Algebra-System (Algebrit), see xxx for more examples:
 
 ```javascript
 x + x
 ```
-<script> Algebrite.run(`{X}`) </script>
+<script> Algebrite.run(`@file(0)`) </script>
 
 
 
@@ -710,7 +707,7 @@ f=circexp(f)
 
 defint(f,t,0,2*pi)
 ```
-<script> Algebrite.run(`{X}`) </script>
+<script> Algebrite.run(`@file(0)`) </script>
 
 
 
@@ -750,7 +747,10 @@ update msg model =
 
 
 #### C++
-
+<!--
+script:   https://interactivepython.org/runestone/static/thinkcspy/_static/skulpt.min.js
+          https://interactivepython.org/runestone/static/thinkcspy/_static/skulpt-stdlib.js
+-->
 Teaching other language-basics is also possible, for this example we applied xxx
 to run simple C++ programs:
 
@@ -771,7 +771,7 @@ int main() {
 ```
 <script>
   var output = "";
-  JSCPP.run(`{X}`, "", {stdio: {write: s => { output += s.replace(/\n/g, "<br>");}}});
+  JSCPP.run(`@file(0)`, "", {stdio: {write: s => { output += s.replace(/\n/g, "<br>");}}});
   output;
 </script>
 
@@ -799,7 +799,7 @@ Sk.pre = "output";
 Sk.configure({output: e => {output += e;}, read: builtinRead});
 
 var myPromise = Sk.misceval.asyncToPromise(function() {
-   return Sk.importMainWithBody("<stdin>", false, `{X}`, true);
+   return Sk.importMainWithBody("<stdin>", false, `@file(0)`, true);
 });
 myPromise.then(function(mod) {
    console.log('success');
@@ -813,6 +813,11 @@ output;
 
 
 #### Prolog
+<!--
+script:   https://curiosity-driven.github.io/prolog-interpreter/parser.js
+          https://curiosity-driven.github.io/prolog-interpreter/interpreter.js
+-->
+
 
 See the implementation details at: https://curiosity-driven.org/prolog-interpreter
 
@@ -868,7 +873,7 @@ solution(WaterDrinker, ZebraOwner) :-
     exists(house(_, ZebraOwner, _, _, zebra), Houses).
 ```
 <script>
-var rules = parser(lexer(`{X}`)).parseRules();
+var rules = parser(lexer(`@file(0)`)).parseRules();
 window['prolog_db'] = new Database(rules);
 
 "database loaded";
@@ -882,7 +887,7 @@ solution(WaterDrinker, ZebraOwner)
 <script>
 var rslt = "";
 
-var goal = parser(lexer(`{X}`)).parseTerm();
+var goal = parser(lexer(`@file(0)`)).parseTerm();
 
 for (var item of window.prolog_db.query(goal)) {
     rslt += "Yes: " + item + "<br>";
@@ -956,6 +961,7 @@ Multiple of them can be selected, or all, or none of them ...
     [[X]] Select this one ...
     [[X]] ... and this one too!
     [[ ]] also not correct ...
+    <script> console.log("{{0}}"); </script>
 
 ### Hints
 
@@ -997,18 +1003,18 @@ Markdown-format:
     [[super]]
     [[?]] hint 1
     [[?]] hint 2
-    [[[
+    *********************************************************************
 
                                 {{1}}
 You are right, super was the correct answer again
 
-* {{2}}{{super}} as an effect
+* {2}{super} as an effect
 * $\sum x + 3$
 * terra
 
 ![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)
 
-]]]
+    *********************************************************************
 ```
 
 A quiz with hints and a revealed result.
@@ -1016,18 +1022,18 @@ A quiz with hints and a revealed result.
     [[super]]
     [[?]] hint 1
     [[?]] hint 2
-    [[[
+    *********************************************************************
 
                                     {{1}}
 You are right, super was the correct answer again
 
-* {{2}}{{super}} as an effect
+* {2}{super} as an effect
 * $\sum x + 3$
 * terra
 
 ![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)
 
-]]]
+    *********************************************************************
 
 ## Effects
 
@@ -1054,15 +1060,15 @@ effects can be combined, due to the usage of equal numbers):
 
 ``` markdown
 * no effect here
-* but in this line {{1}}{{show *** first ***}}
-* as well as this one {{1-2}}{{show *** first ***}}, which contains two effects
-  {{2}}{{![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)}}
+* but in this line {1}{show *** first ***}
+* as well as this one {1-2}{show *** first ***}, which contains two effects
+  {2}{![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)}
 ```
 
 * no effect here
-* but in this line {{1}}{{show *** first ***}}
-* as well as this one {{1-2}}{{show *** first ***}}, which contains two effects
-  {{2}}{{![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)}}
+* but in this line {1}{show *** first ***}
+* as well as this one {1-2}{show *** first ***}, which contains two effects
+  {2}{![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)}
 
 
 ### Animations
@@ -1076,16 +1082,16 @@ as it is done within the examples.
 See https://daneden.github.io/animate.css for more animation effects.
 
 ``` markdown
-* {{0}}{{ *bounce* }} <!-- class = "animated infinite bounce" style = "animation-delay: 5s;" -->
-* {{1-2}}{{zoomIn}} <!-- class = "animated zoomIn" -->
-* {{2-3}}{{zoomOut}} <!-- class = "animated zoomOut" -->
-* {{3}}{{![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)}} <!-- class = "animated rubberBand" -->
+* {0}{ *bounce* } <!-- class = "animated infinite bounce" style = "animation-delay: 5s;" -->
+* {1-2}{zoomIn} <!-- class = "animated zoomIn" -->
+* {2-3}{zoomOut} <!-- class = "animated zoomOut" -->
+* {3}{![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)} <!-- class = "animated rubberBand" -->
 ```
 
-* {{0}}{{ *bounce* }} <!-- class = "animated infinite bounce" style = "animation-delay: 5s;" -->
-* {{1-2}}{{zoomIn}} <!-- class = "animated zoomIn" -->
-* {{2-3}}{{zoomOut}} <!-- class = "animated zoomOut" -->
-* {{3}}{{![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)}} <!-- class = "animated rubberBand" -->
+* {0}{ *bounce* } <!-- class = "animated infinite bounce" style = "animation-delay: 5s;" -->
+* {1-2}{zoomIn} <!-- class = "animated zoomIn" -->
+* {2-3}{zoomOut} <!-- class = "animated zoomOut" -->
+* {3}{![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)} <!-- class = "animated rubberBand" -->
 
 ### Block Effects
 
@@ -1104,32 +1110,32 @@ you can see from the examples below, an effect can also contain further effects.
 This is an example for a *single* block effect.
 
                                {{2-4}}
-================================================================================
+********************************************************************************
 
-This is an example for a ... wait a second {{3 rubberBand}}{{**multi**}} ...
+This is an example for a ... wait a second {3}{**multi**} ...
 block effect.
 
 * alpha
 * beta
 * gamma
 
-================================================================================
+********************************************************************************
 ```
 
-                                  {{1-3}}
-This is an example for a *single* block effect.
+{{1-3}} This is an example for
+a *single* block effect.
 
                                   {{2-4}}
-================================================================================
+********************************************************************************
 
-This is an example for a ... wait a second {{3}}{{**multi**}} ...
+This is an example for a ... wait a second {3}{**multi**} ...
 block effect.
 
 * alpha
 * beta
 * gamma
 
-================================================================================
+********************************************************************************
 
                                 --{{4}}--
 You can put spaces before the definition of a block effect, to prevent github
@@ -1141,6 +1147,14 @@ render the script properly.
 language: en_UK
 
 narrator: UK English Male
+
+@Tom
+UK English Male
+@end
+
+@Tanja
+Russian Female
+@end
 -->
 
 
@@ -1155,11 +1169,11 @@ minus notation is sent to responsivevoice to speak the text out loud. If you
 click on the ear button at the navigation panel, then this paragraph gets
 rendered at the place where it is defined.
 
-                               --{{3 <!-- Deutsch Female-->}}--
+                               --{{3 Deutsch Female}}--
 Markdown ist eine vereinfachte Auszeichnungssprache, die von John Gruber und
 Aaron Swartz entworfen und im Dezember 2004 mit Version 1.0.1 spezifiziert ...
 
-                               --{{4 <!-- Russian Female-->}}--
+                               --{{4 @Tanja}}--
 Первоначально создан в 2004 году Джоном Грубером (англ. John Gruber) и Аароном
 Шварцем. Многие идеи языка были позаимствованы из существующих соглашений ...
 ```
@@ -1173,16 +1187,16 @@ rendered at the place where it is defined.
                                 --{{2}}--
 The narrator voice is defined within the initial comment, but you can reset this
 for the entire section, by adding such a definition directly after the title
-tag, or you can add a comment directly after the comment identifier to let your
-script talk in different languages. Proceed and listen ;-)
+tag, or you can add a voice directly after the comment number to let your script
+talk in different languages. Proceed and listen ;-)
 
-                                --{{3 <!-- Deutsch Female -->}}--
+                                --{{3 Deutsch Female}}--
 Markdown ist eine vereinfachte Auszeichnungssprache, die von John Gruber und
 Aaron Swartz entworfen und im Dezember 2004 mit Version 1.0.1 spezifiziert
 wurde. Ein Ziel von Markdown ist, dass schon die Ausgangsform ohne weitere
 Konvertierung leicht lesbar ist.
 
-                               --{{4 <!-- Russian Female -->}}--
+                               --{{4 @Tanja}}--
 Первоначально создан в 2004 году Джоном Грубером (англ. John Gruber) и Аароном
 Шварцем. Многие идеи языка были позаимствованы из существующих соглашений по
 разметке текста в электронных письмах. Реализации языка Markdown преобразуют
@@ -1451,39 +1465,40 @@ Result:
 ## Contributors and Credit
 
 
-{{1}}{{<h1> André Dietrich  </h1>}} <!-- class = "animated fadeInUpBig" -->
+<!-- class = "animated fadeInUpBig" -->
+{{1}} <h1> André Dietrich  </h1>
 
 --{{1}}--
 Programming paradigm experimenter and creator of liaScript and SelectScript...
 
 
-
-{{2}}{{<h1> Sebastian Zug   </h1>}} <!-- class = "animated fadeInUpBig" -->
+<!-- class = "animated fadeInUpBig" -->
+{{2}} <h1> Sebastian Zug   </h1>
 
 --{{2}}--
 The mind in the dark and the man behind the eLab-project ...
 
 
-
-{{3}}{{<h1> Fin Christensen </h1>}} <!-- class = "animated fadeInUpBig" -->
+<!-- class = "animated fadeInUpBig" -->
+{{3}}<h1> Fin Christensen </h1>
 
 --{{3}}--
 CSS and Web development enthusiast, outstanding git user ...
 
-
-{{4}}{{<h1> Martin Koppehel </h1>}} <!-- class = "animated fadeInUpBig" -->
+<!-- class = "animated fadeInUpBig" -->
+{{4}} <h1> Martin Koppehel </h1>
 
 --{{4}}--
 Hardware-architect and fully Fullstack developer ...
 
-
-{{5}}{{<h1> Leon Wehmeier   </h1>}}<!-- class = "animated fadeInUpBig" -->
+<!-- class = "animated fadeInUpBig" -->
+{{5}} <h1> Leon Wehmeier   </h1>
 
 --{{5}}--
 Coordinator and embedded development guru ...
 
-
-{{6}}{{<h1> Karl Fessel     </h1>}} <!-- class = "animated fadeInUpBig" -->
+<!-- class = "animated fadeInUpBig" -->
+{{6}} <h1> Karl Fessel     </h1>
 
 --{{6}}--
-Embedded systems developer, creator or arduinoview, and Markdown evangelist ...
+Embedded systems developer, creator of arduinoview, and Markdown evangelist ...
