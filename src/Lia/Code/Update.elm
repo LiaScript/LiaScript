@@ -85,7 +85,7 @@ decode_rslt message details =
 replace : ( Int, String ) -> String -> String
 replace ( int, insert ) into =
     into
-        |> String.split ("{{" ++ toString int ++ "}}")
+        |> String.split ("@file(" ++ toString int ++ ")")
         |> String.join insert
 
 

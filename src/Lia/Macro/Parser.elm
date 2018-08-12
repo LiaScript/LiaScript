@@ -138,6 +138,9 @@ get name def =
         "@uid" ->
             Just (toString def.section ++ "." ++ toString def.uid)
 
+        "@file" ->
+            Nothing
+
         _ ->
             Dict.get name def.macro
 
