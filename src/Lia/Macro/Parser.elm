@@ -138,7 +138,7 @@ get name def =
         "@uid" ->
             Just (toString def.section ++ "." ++ toString def.uid)
 
-        "@file" ->
+        "@code" ->
             Nothing
 
         _ ->

@@ -32,13 +32,26 @@ update msg model =
         Eval idx ->
             case Array.get idx model of
                 Just project ->
+                    let
+                        code_0 =
+                            project.file
+                                |> Array.get 0
+                                |> Maybe.map .code
+                                |> Maybe.withDefault ""
+                    in
                     ( update_ idx model (\p -> { p | running = True })
                     , eval2js
                         ( idx
-                        , project.file
-                            |> Array.indexedMap (\i f -> ( i, f.code ))
-                            |> Array.foldl replace project.evaluation
-                            |> toJSstring
+                        , if Array.length project.file == 1 then
+                            project.evaluation
+                                |> replace ( 0, code_0 )
+                                |> default_replace code_0
+                          else
+                            project.file
+                                |> Array.indexedMap (\i f -> ( i, f.code ))
+                                |> Array.foldl replace project.evaluation
+                                |> default_replace code_0
+                                |> toJSstring
                         )
                     )
 
@@ -85,7 +98,14 @@ decode_rslt message details =
 replace : ( Int, String ) -> String -> String
 replace ( int, insert ) into =
     into
-        |> String.split ("@file(" ++ toString int ++ ")")
+        |> String.split ("@code(" ++ toString int ++ ")")
+        |> String.join insert
+
+
+default_replace : String -> String -> String
+default_replace insert into =
+    into
+        |> String.split "@code"
         |> String.join insert
 
 

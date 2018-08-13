@@ -632,7 +632,7 @@ executed. We provide some basic examples within the following section.
 #### JavaScript
 <!--
 @eval
-<script>@file(0)</script>
+<script>@code</script>
 @end
 -->
 
@@ -679,7 +679,7 @@ new Chartist.Bar('#chart2', {
   series: [[5, 2, 8, 3]]
 });
 ```
-<script>@file(0)</script>
+<script>@code</script>
 
 <div class="ct-chart ct-golden-section" id="chart1"></div>
 <div class="ct-chart ct-golden-section" id="chart2"></div>
@@ -696,7 +696,7 @@ An example of a Computer-Algebra-System (Algebrit), see xxx for more examples:
 ```javascript
 x + x
 ```
-<script> Algebrite.run(`@file(0)`) </script>
+<script> Algebrite.run(`@code`) </script>
 
 
 
@@ -707,7 +707,7 @@ f=circexp(f)
 
 defint(f,t,0,2*pi)
 ```
-<script> Algebrite.run(`@file(0)`) </script>
+<script> Algebrite.run(`@code`) </script>
 
 
 
@@ -771,7 +771,7 @@ int main() {
 ```
 <script>
   var output = "";
-  JSCPP.run(`@file(0)`, "", {stdio: {write: s => { output += s.replace(/\n/g, "<br>");}}});
+  JSCPP.run(`@code`, "", {stdio: {write: s => { output += s.replace(/\n/g, "<br>");}}});
   output;
 </script>
 
@@ -799,7 +799,7 @@ Sk.pre = "output";
 Sk.configure({output: e => {output += e;}, read: builtinRead});
 
 var myPromise = Sk.misceval.asyncToPromise(function() {
-   return Sk.importMainWithBody("<stdin>", false, `@file(0)`, true);
+   return Sk.importMainWithBody("<stdin>", false, `@code`, true);
 });
 myPromise.then(function(mod) {
    console.log('success');
@@ -873,7 +873,7 @@ solution(WaterDrinker, ZebraOwner) :-
     exists(house(_, ZebraOwner, _, _, zebra), Houses).
 ```
 <script>
-var rules = parser(lexer(`@file(0)`)).parseRules();
+var rules = parser(lexer(`@code`)).parseRules();
 window['prolog_db'] = new Database(rules);
 
 "database loaded";
@@ -887,7 +887,7 @@ solution(WaterDrinker, ZebraOwner)
 <script>
 var rslt = "";
 
-var goal = parser(lexer(`@file(0)`)).parseTerm();
+var goal = parser(lexer(`@code`)).parseTerm();
 
 for (var item of window.prolog_db.query(goal)) {
     rslt += "Yes: " + item + "<br>";
