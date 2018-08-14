@@ -133,9 +133,12 @@
         padding: map-get($config, spacing-normal);
         margin-top: 0px;
         font-size: map-get($config, code-size);
-        overflow-x: auto;
+        overflow-y: auto;
         max-height: 250px;
         border-radius: map-get($config, spacing-small);
+        word-wrap: normal;
+        word-break: keep-all;
+        white-space: pre-wrap;
     }
 
     .lia-color {

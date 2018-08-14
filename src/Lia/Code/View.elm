@@ -208,7 +208,7 @@ error info =
         [ Attr.class "lia-code-stdout"
         , Attr.style [ ( "color", "red" ) ]
         ]
-        [ Html.text ("Error: " ++ info) ]
+        [ Html.text info ]
 
 
 view_result : Result Rslt Rslt -> Html msg
