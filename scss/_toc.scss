@@ -72,14 +72,16 @@
 
             a {
                 width: 100%;
-                white-space: nowrap;
-                margin-bottom: map-get($config, spacing-normal);
+                //white-space: nowrap;
+                //overflow: hidden;
+                //text-overflow: ellipsis;
+                margin-top: map-get($config, spacing-small);
+                margin-bottom: map-get($config, spacing-small);
                 text-decoration: none;
                 padding: map-get($config, spacing-small) map-get($config, spacing-normal);
-                word-wrap: normal;
-                word-break: keep-all;
-                white-space: pre-wrap;
-                border-bottom: 1px solid $fg;
+                //word-wrap: normal;
+                //word-break: keep-all;
+
 
                 &:link {
                     $col: mix($fg, $bg, 80%);
