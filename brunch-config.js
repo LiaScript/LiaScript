@@ -64,7 +64,6 @@ module.exports = {
         npm: {
             styles: {
                 "normalize.css": ["normalize.css"],
-                //"highlight.js": ["styles/default.css"],
                 "animate.css": ["animate.css"],
                 "katex": ["dist/katex.css"]
             },

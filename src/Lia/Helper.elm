@@ -1,4 +1,4 @@
-module Lia.Helper exposing (..)
+module Lia.Helper exposing (ID, c_frame, newline, newlines, newlines1, spaces, spaces1, stringTill)
 
 import Combine exposing (..)
 import Combine.Char exposing (..)
@@ -6,10 +6,6 @@ import Combine.Char exposing (..)
 
 type alias ID =
     Int
-
-
-
---newline : Parser s ()
 
 
 c_frame : Parser s String

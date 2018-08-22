@@ -20,7 +20,6 @@ import Lia.Helper exposing (..)
 import Lia.Macro.Parser as Macro
 import Lia.Markdown.Footnote.Parser as Footnote
 import Lia.Markdown.Inline.Types exposing (..)
-import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.PState exposing (PState)
 
 
@@ -154,7 +153,12 @@ combine list =
 
 line : Parser PState Inlines
 line =
-    (List.append [ Chars " " Nothing ] >> combine) <$> many1 inlines
+    append_space >> combine <$> many1 inlines
+
+
+append_space : Inlines -> Inlines
+append_space list =
+    List.append list [ Chars " " Nothing ]
 
 
 inlines : Parser PState Inline

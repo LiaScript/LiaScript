@@ -76,6 +76,13 @@
                 margin-bottom: map-get($config, spacing-normal);
                 text-decoration: none;
                 padding: map-get($config, spacing-small) map-get($config, spacing-normal);
+                text-overflow: ellipsis;
+                overflow: hidden;
+                //word-wrap: normal;
+                //word-break: keep-all;
+                //white-space: pre-wrap;
+                //border-bottom: 1px solid $fg;
+                //box-shadow: 0 4px 2px -2px gray;
 
                 &:link {
                     $col: mix($fg, $bg, 80%);
