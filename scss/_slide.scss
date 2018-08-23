@@ -28,6 +28,7 @@
             padding-left: $horiz;
             padding-right: $horiz;
             max-height: 400px;
+            min-height: 52px;
             overflow: auto;
             border-top: map-get($config, spacing-small) solid mix($fg, $bg, 20%);
         }
