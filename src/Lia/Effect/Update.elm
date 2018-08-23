@@ -24,7 +24,6 @@ update msg sound model =
         Init run_all_javascript ->
             model
                 |> execute run_all_javascript 1300
-                |> Debug.log "Fuck"
                 |> update Speak sound
 
         Next ->
