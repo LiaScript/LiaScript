@@ -5,6 +5,7 @@ module.exports = {
             watched: [
                 "assets",
                 "src",
+                "lib",
                 "examples",
                 "scss",
             ],
@@ -13,7 +14,7 @@ module.exports = {
             // vendor is for 3rb party lib, app is for custom lib
             javascripts: {
                 joinTo: {
-                    "js/vendor.js": /^(node_modules|lib|src\/index.js)/,
+                    "js/vendor.js": /^(node_modules|src\/index.js)/,
                 },
             },
             stylesheets: {
@@ -49,6 +50,9 @@ module.exports = {
                 "fonts": [
                     "node_modules/katex/dist/fonts/",
                 ],
+                "js": [
+                    "lib/liascript.js"
+                ],
                 verbose: false,
                 onlyChanged: true,
             },
@@ -68,8 +72,8 @@ module.exports = {
                 "katex": ["dist/katex.css"]
             },
             static: [
-                "node_modules/katex/dist/katex.js"
-                //"lib/responsivevoice.js",
+                "node_modules/katex/dist/katex.js",
+                "lib/liascript.js",
             ],
         },
     }

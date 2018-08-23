@@ -24,6 +24,10 @@
             background: mix($bg, $fg, 80%);
         }
 
+        .lia-settings {
+            border-top: map-get($config, spacing-small) solid mix($fg, $bg, 20%);
+        }
+
         .lia-toolbar {
             $bg: map-get($theme, primary);
             $fg: color-contrast($bg);

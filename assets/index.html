@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <script src='https://code.responsivevoice.org/responsivevoice.js'></script>
+    <!--script src='https://code.responsivevoice.org/responsivevoice.js'></script-->
 
     <script type="text/javascript" src="js/vendor.js"></script>
     <script type="text/javascript" src="js/app.js"></script>
@@ -13,7 +13,6 @@
 
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ace.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ext-language_tools.js"></script>
-
 
 
     <link rel="stylesheet" href="css/vendor.css">
@@ -33,6 +32,8 @@
   <body>
 
     <script>
+      var lia = new LiaScript(document.body, "", "");
+      
       // class LiaError extends Error {
       //     constructor(message, files,...params) {
       //         super(...params);
@@ -53,8 +54,6 @@
       // };
 
       // const app = Elm.Main.embed(document.body, {url: "", script: "" }); //rawFile.responseText });
-      var lia = new LiaScript(document.body, "", "");
-
 
       // function evalOk(id, message) {
       //     app.ports.eval2elm.send([true, id, message, []]);

@@ -52,6 +52,7 @@ view_aside model =
             [ ( "max-width"
               , if model.show.loc then
                     "250px"
+
                 else
                     "0px"
               )
@@ -100,6 +101,7 @@ index_list index sections =
         |> (\titles ->
                 if [] == index then
                     titles
+
                 else
                     List.filter (\( idx, _ ) -> List.member idx index) titles
            )
@@ -107,7 +109,7 @@ index_list index sections =
 
 settings : Toogler -> Design -> Definition -> String -> String -> Lang -> Html Msg
 settings show design defines url origin lang =
-    Html.div [ Attr.style [ ( "border-top", "4px solid black" ) ] ]
+    Html.div [ Attr.class "lia-settings" ]
         [ Lazy.lazy3 view_settings lang show.settings design
         , Lazy.lazy3 view_information lang show.informations defines
         , view_translations lang show.translations (origin ++ "?") (Lia.Definition.Types.get_translations defines)
@@ -200,6 +202,7 @@ view_translations lang visible base list =
     Html.div [ menu_style visible ] <|
         if List.isEmpty list then
             [ Html.text (no_translation lang) ]
+
         else
             list
                 |> List.map
@@ -233,6 +236,7 @@ menu_style visible =
         [ ( "max-height"
           , if visible then
                 "250px"
+
             else
                 "0px"
           )
@@ -278,10 +282,13 @@ loc active ( idx, ( title, indent, visited, error ) ) =
                 ++ toString indent
                 ++ (if error then
                         " lia-error"
+
                     else if active == idx then
                         " lia-active"
+
                     else if visited then
                         ""
+
                     else
                         " lia-not-visited"
                    )
@@ -352,6 +359,7 @@ view_nav section_active mode lang design base translations ( speaking, state ) =
                 , Attr.style <|
                     if speaking then
                         [ ( "text-decoration", "underline" ) ]
+
                     else
                         []
                 ]
@@ -410,6 +418,7 @@ view_design_light light =
     Html.button [ Attr.class "lia-btn lia-right", onClick DesignLight ]
         [ if light == "light" then
             Html.text "star"
+
           else
             Html.text "star_border"
         ]
