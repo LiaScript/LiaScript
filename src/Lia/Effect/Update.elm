@@ -10,16 +10,11 @@ port speech2js : List String -> Cmd msg
 port speech2elm : (( String, String ) -> msg) -> Sub msg
 
 
-
---port suggestions : (List String -> msg) -> Sub msg
-
-
 type Msg
     = Init Bool
     | Next
     | Previous
     | Speak
-    | NoOp
     | SpeakRslt ( String, String )
 
 
@@ -29,6 +24,7 @@ update msg sound model =
         Init run_all_javascript ->
             model
                 |> execute run_all_javascript 1300
+                |> Debug.log "Fuck"
                 |> update Speak sound
 
         Next ->
@@ -36,6 +32,7 @@ update msg sound model =
                 { model | visible = model.visible + 1 }
                     |> execute False 100
                     |> update Speak sound
+
             else
                 ( model, Cmd.none )
 
@@ -44,20 +41,28 @@ update msg sound model =
                 { model | visible = model.visible - 1 }
                     |> execute False 100
                     |> update Speak sound
+
             else
                 ( model, Cmd.none )
 
         Speak ->
             let
-                c =
-                    speech2js [ "cancel" ]
-
                 d =
                     Lia.Utils.scrollIntoView "focused"
             in
             case ( sound, current_comment model ) of
                 ( True, Just ( comment, narrator ) ) ->
                     ( { model | speaking = True }, speech2js [ "speak", narrator, comment ] )
+
+                ( True, Nothing ) ->
+                    ( model, speech2js [ "cancel" ] )
+
+                ( False, Just ( comment, narrator ) ) ->
+                    if model.speaking then
+                        ( { model | speaking = False }, speech2js [ "cancel" ] )
+
+                    else
+                        ( model, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
@@ -87,6 +92,7 @@ execute run_all delay model =
         javascript =
             if run_all then
                 get_all_javascript model
+
             else
                 get_javascript model
 

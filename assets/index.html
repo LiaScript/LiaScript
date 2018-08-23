@@ -9,9 +9,12 @@
 
     <script type="text/javascript" src="js/vendor.js"></script>
     <script type="text/javascript" src="js/app.js"></script>
+    <script type='text/javascript' src="js/lia.js"></script>
 
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ace.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ext-language_tools.js"></script>
+
+
 
     <link rel="stylesheet" href="css/vendor.css">
     <link rel="stylesheet" href="css/app.css">
@@ -30,76 +33,75 @@
   <body>
 
     <script>
-      //var Lia = require("src/index");
-      //Elm.Main.embed(document.body, {url: "", script: ""});
+      // class LiaError extends Error {
+      //     constructor(message, files,...params) {
+      //         super(...params);
+      //         if (Error.captureStackTrace)
+      //             Error.captureStackTrace(this, LiaError);
+      //         this.message = message;
+      //         this.details = [];
+      //         for(var i=0; i<files; i++)
+      //             this.details.push([]);
+      //     }
+      //     add_detail(file_id, msg, type, line, column) {
+      //         this.details[file_id].push(
+      //             { row : line,
+      //               column : column,
+      //               text : msg,
+      //               type : type } );
+      //     }
+      // };
 
-      class LiaError extends Error {
-          constructor(message, files,...params) {
-              super(...params);
-              if (Error.captureStackTrace)
-                  Error.captureStackTrace(this, LiaError);
-              this.message = message;
-              this.details = [];
-              for(var i=0; i<files; i++)
-                  this.details.push([]);
-          }
-          add_detail(file_id, msg, type, line, column) {
-              this.details[file_id].push(
-                  { row : line,
-                    column : column,
-                    text : msg,
-                    type : type } );
-          }
-      };
+      // const app = Elm.Main.embed(document.body, {url: "", script: "" }); //rawFile.responseText });
+      var lia = new Lia(document.body, "", "");
 
-      const app = Elm.Main.embed(document.body, {url: "", script: "" }); //rawFile.responseText });
 
-      function evalOk(id, message) {
-          app.ports.eval2elm.send([true, id, message, []]);
-      }
-
-      function evalErr(id, message, details=[]) {
-            app.ports.eval2elm.send([false, id, message, details]);
-      }
-
-      app.ports.speech2js.subscribe(function(cmd) {
-          try {
-              switch (cmd[0]) {
-                  case "speak":
-                      responsiveVoice.speak( cmd[2], cmd[1],
-                                             { onend: e => {
-                                                 app.ports.speech2elm.send(["end", ""]);
-                                                },
-                                              onerror: e => {
-                                                 app.ports.speech2elm.send(["error", e]);
-                                                 }
-                                              } );
-                      break;
-                  case "cancel":
-                      responsiveVoice.cancel()
-                      break;
-                  default:
-                      console.log(cmd);
-                  }
-          } catch (e) {
-              app.ports.speech2elm.send(["error", e]);
-          }
-      });
-
-      app.ports.eval2js.subscribe(function(cmd) {
-          var id = cmd[0];
-          var code = cmd[1];
-          try {
-                evalOk(id, String(eval(code)));
-          }
-          catch (e) {
-              if (e instanceof LiaError ) {
-                  evalErr(id, e.message, e.details);
-              } else {
-                  evalErr(id, e.message);
-              }
-          }
-      });
+      // function evalOk(id, message) {
+      //     app.ports.eval2elm.send([true, id, message, []]);
+      // }
+      //
+      // function evalErr(id, message, details=[]) {
+      //       app.ports.eval2elm.send([false, id, message, details]);
+      // }
+      //
+      // app.ports.speech2js.subscribe(function(cmd) {
+      //     try {
+      //         switch (cmd[0]) {
+      //             case "speak":
+      //                 responsiveVoice.speak( cmd[2], cmd[1],
+      //                                        { onend: e => {
+      //                                            app.ports.speech2elm.send(["end", ""]);
+      //                                           },
+      //                                         onerror: e => {
+      //                                            app.ports.speech2elm.send(["error", e]);
+      //                                            }
+      //                                         } );
+      //                 break;
+      //             case "cancel":
+      //                 responsiveVoice.cancel()
+      //                 break;
+      //             default:
+      //                 console.log(cmd);
+      //             }
+      //     } catch (e) {
+      //         app.ports.speech2elm.send(["error", e]);
+      //     }
+      // });
+      //
+      // app.ports.eval2js.subscribe(function(cmd) {
+      //     var id = cmd[0];
+      //     var code = cmd[1];
+      //     try {
+      //           evalOk(id, String(eval(code)));
+      //     }
+      //     catch (e) {
+      //         if (e instanceof LiaError ) {
+      //             evalErr(id, e.message, e.details);
+      //         } else {
+      //             evalErr(id, e.message);
+      //         }
+      //     }
+      // });
 
     </script>
   </body>
