@@ -1,4 +1,4 @@
-port module Main exposing (..)
+port module Main exposing (Model, Msg(..), State(..), getCourse, get_base, get_hash, init, main, rx_log, script_update, style, subscriptions, tx_log, update, view)
 
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -14,6 +14,9 @@ port tx_log : ( String, JE.Value ) -> Cmd msg
 
 
 port rx_log : (( String, JD.Value ) -> msg) -> Sub msg
+
+
+port script_update : (String -> msg) -> Sub msg
 
 
 main : Program { url : String, script : String } Model Msg
@@ -66,6 +69,7 @@ init flags location =
                     |> Lia.init
         in
         ( Model "" "" lia LoadOk "", Cmd.map LIA cmd )
+
     else if url == "" then
         ( Model "https://raw.githubusercontent.com/liaScript/docs/master/README.md"
             origin
@@ -74,6 +78,7 @@ init flags location =
             ""
         , Cmd.none
         )
+
     else
         ( Model url origin (Lia.init_presentation (get_base url) url origin slide) Loading "", getCourse url )
 
@@ -102,6 +107,7 @@ type Msg
     | Update String
     | Load
     | UrlChange Navigation.Location
+    | Script String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -171,6 +177,9 @@ update msg model =
                 Nothing ->
                     ( model, Cmd.none )
 
+        Script script ->
+            update (GET (Result.Ok script)) model
+
 
 
 -- VIEW
@@ -233,4 +242,8 @@ getCourse url =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch [ rx_log RxLog, Sub.map LIA (Lia.subscriptions model.lia) ]
+    Sub.batch
+        [ rx_log RxLog
+        , script_update Script
+        , Sub.map LIA (Lia.subscriptions model.lia)
+        ]

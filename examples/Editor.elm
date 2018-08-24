@@ -1,4 +1,4 @@
-module Main exposing (..)
+module Main exposing (Flags, Model, Msg(..), init, innerViewConfig, leftView, list_get, main, outerViewConfig, rightView, subscriptions, update, view)
 
 import Bound exposing (createBound)
 import Html exposing (Html)
@@ -39,8 +39,7 @@ type alias Model =
 
 
 type alias Flags =
-    {
-    }
+    {}
 
 
 
@@ -50,7 +49,8 @@ type alias Flags =
 init : Flags -> ( Model, Cmd Msg )
 init flags =
     let
-        script = "TODO: Load ReadMe.md"
+        script =
+            "TODO: Load ReadMe.md"
     in
     update (Update script)
         { outer =
