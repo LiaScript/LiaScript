@@ -1,6 +1,6 @@
 {
   "name": "lia-script",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "An extended Markdown parser for the creation of online courses.",
   "main": "brunch-config.js",
   "scripts": {
