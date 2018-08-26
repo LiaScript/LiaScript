@@ -7,7 +7,8 @@ module.exports = {
                 "src",
                 "lib",
                 "examples",
-                "scss"
+                "scss",
+                "vendor"
             ],
         },
         files: {
@@ -52,8 +53,6 @@ module.exports = {
                 ],
                 "js": [
                     "lib/liascript.js",
-                    //"vendor/ace.js",
-                    //"vendor/ext-language_tools.js",
                     "vendor/responsivevoice.js"
                 ],
                 verbose: false,
@@ -75,8 +74,7 @@ module.exports = {
                 "katex": ["dist/katex.css"]
             },
             static: [
-                "node_modules/katex/dist/katex.js",
-                //"node_modules/ace-builds/src-noconflict/*"
+                "node_modules/katex/dist/katex.js"
             ],
         },
     }
