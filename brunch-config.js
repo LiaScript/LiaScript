@@ -7,7 +7,7 @@ module.exports = {
                 "src",
                 "lib",
                 "examples",
-                "scss",
+                "scss"
             ],
         },
         files: {
@@ -15,7 +15,7 @@ module.exports = {
             javascripts: {
                 joinTo: {
                     "js/vendor.js": /^(node_modules|src\/index.js)/,
-                },
+                }
             },
             stylesheets: {
                 joinTo: {
@@ -51,7 +51,10 @@ module.exports = {
                     "node_modules/katex/dist/fonts/",
                 ],
                 "js": [
-                    "lib/liascript.js"
+                    "lib/liascript.js",
+                    //"vendor/ace.js",
+                    //"vendor/ext-language_tools.js",
+                    "vendor/responsivevoice.js"
                 ],
                 verbose: false,
                 onlyChanged: true,
@@ -73,7 +76,7 @@ module.exports = {
             },
             static: [
                 "node_modules/katex/dist/katex.js",
-                "lib/liascript.js",
+                //"node_modules/ace-builds/src-noconflict/*"
             ],
         },
     }

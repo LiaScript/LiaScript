@@ -20,6 +20,7 @@
     "uglify-js-brunch": "^2.10.0"
   },
   "dependencies": {
+    "ace-builds": "^1.4.1",
     "animate.css": "^3.5.2",
     "auto-reload-brunch": "^2.7.1",
     "brunch": "^2.8.2",

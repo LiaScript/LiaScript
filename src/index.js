@@ -1,5 +1,10 @@
 //var $ = require("jquery");
 
+//var ace = require('ace-builds');
+//var ace_ext = require('../node_modules/ace-builds/src-noconflict/ext-language_tools');
+
+//console.log('Loading ace!', ace);
+
 // var Lia = {
 //     init (elment, url, script) {
 //         Elm.Main.embed(elment, {url: url, script: script});
