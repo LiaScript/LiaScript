@@ -1,4 +1,4 @@
-module Lia.PState exposing (..)
+module Lia.PState exposing (PState, ident_skip, identation, identation_append, identation_pop, init)
 
 import Array exposing (Array)
 import Combine exposing (..)
@@ -22,6 +22,7 @@ type alias PState =
     , defines : Definition
     , footnotes : Footnote.Model
     , defines_updated : Bool
+    , max_recursion : Int
     }
 
 
@@ -37,6 +38,7 @@ init global =
     , defines = global
     , footnotes = Footnote.init
     , defines_updated = False
+    , max_recursion = 10
     }
 
 
@@ -48,8 +50,10 @@ identation =
                 par s =
                     if s.identation == [] then
                         succeed ()
+
                     else if s.identation_skip then
                         skip (succeed ())
+
                     else
                         String.concat s.identation
                             |> regex

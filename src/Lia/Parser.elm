@@ -1,4 +1,4 @@
-module Lia.Parser exposing (..)
+module Lia.Parser exposing (formatError, parse_defintion, parse_section, parse_titles)
 
 import Combine exposing (..)
 import Lia.Code.Types as Code
@@ -53,6 +53,7 @@ parse_section global code sec_id =
                 , state.footnotes
                 , if state.defines_updated then
                     Just state.defines
+
                   else
                     Nothing
                 )

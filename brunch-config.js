@@ -7,8 +7,7 @@ module.exports = {
                 "src",
                 "lib",
                 "examples",
-                "scss",
-                "vendor"
+                "scss"
             ],
         },
         files: {
