@@ -1,15 +1,14 @@
-module Lia.Markdown.Inline.Parser
-    exposing
-        ( annotations
-        , attribute
-        , combine
-        , comment
-        , comment_string
-        , comments
-        , inlines
-        , javascript
-        , line
-        )
+module Lia.Markdown.Inline.Parser exposing
+    ( annotations
+    , attribute
+    , combine
+    , comment
+    , comment_string
+    , comments
+    , inlines
+    , javascript
+    , line
+    )
 
 import Combine exposing (..)
 import Combine.Char exposing (..)

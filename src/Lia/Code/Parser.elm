@@ -68,7 +68,7 @@ code_body =
     String.concat
         >> String.dropRight 1
         <$> manyTill
-                (maybe identation *> regex "(.(?!```))*\\n?")
+                (maybe identation *> regex "(.(?!```))*\\n")
                 (identation *> c_frame)
 
 

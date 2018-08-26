@@ -1,4 +1,11 @@
-module Lia.PState exposing (PState, ident_skip, identation, identation_append, identation_pop, init)
+module Lia.PState exposing
+    ( PState
+    , ident_skip
+    , identation
+    , identation_append
+    , identation_pop
+    , init
+    )
 
 import Array exposing (Array)
 import Combine exposing (..)
@@ -6,7 +13,6 @@ import Lia.Code.Types as Code
 import Lia.Definition.Types exposing (Definition)
 import Lia.Effect.Model as Effect
 import Lia.Markdown.Footnote.Model as Footnote
-import Lia.Markdown.Types exposing (Markdown)
 import Lia.Quiz.Types as Quiz
 import Lia.Survey.Types as Survey
 
@@ -22,7 +28,6 @@ type alias PState =
     , defines : Definition
     , footnotes : Footnote.Model
     , defines_updated : Bool
-    , max_recursion : Int
     }
 
 
@@ -38,7 +43,6 @@ init global =
     , defines = global
     , footnotes = Footnote.init
     , defines_updated = False
-    , max_recursion = 10
     }
 
 
