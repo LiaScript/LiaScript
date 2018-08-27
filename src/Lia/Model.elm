@@ -1,4 +1,4 @@
-module Lia.Model exposing (..)
+module Lia.Model exposing (Model, Toogler, init, init_font_size, init_section, init_sound, init_string, load_javascript)
 
 import Array exposing (Array)
 import Lia.Definition.Types as Definition exposing (Definition)
@@ -47,6 +47,9 @@ init mode url readme origin slide_number =
                 Just "Presentation" ->
                     Lia.Types.Presentation
 
+                Just "Textbook" ->
+                    Lia.Types.Textbook
+
                 _ ->
                     mode
     in
@@ -61,6 +64,7 @@ init mode url readme origin slide_number =
             Just idx ->
                 if (idx - 1) > 0 then
                     idx - 1
+
                 else
                     0
 
@@ -93,6 +97,7 @@ init_section : String -> Int
 init_section url =
     if url == "" then
         0
+
     else
         url
             |> get_local
