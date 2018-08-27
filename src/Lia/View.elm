@@ -245,7 +245,7 @@ menu_style visible =
         , ( "margin-right", "4px" )
         , ( "padding-right", "5px" )
         , ( "overflow-y", "auto" )
-        , ( "transition", "max-height 0.5s ease-out" )
+        , ( "transition", "max-height 0.2s ease-out" )
         ]
 
 
