@@ -1,4 +1,19 @@
-port module Main exposing (Model, Msg(..), State(..), getCourse, get_base, get_hash, init, main, rx_log, script_update, style, subscriptions, tx_log, update, view)
+port module Main exposing
+    ( Model
+    , Msg(..)
+    , State(..)
+    , getCourse
+    , get_base
+    , get_hash
+    , init
+    , main
+    , rx_log
+    , style
+    , subscriptions
+    , tx_log
+    , update
+    , view
+    )
 
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -16,9 +31,6 @@ port tx_log : ( String, JE.Value ) -> Cmd msg
 port rx_log : (( String, JD.Value ) -> msg) -> Sub msg
 
 
-port script_update : (String -> msg) -> Sub msg
-
-
 main : Program { url : String, script : String } Model Msg
 main =
     Navigation.programWithFlags UrlChange
@@ -27,10 +39,6 @@ main =
         , update = update
         , subscriptions = subscriptions
         }
-
-
-
--- MODEL
 
 
 type State
@@ -244,6 +252,5 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ rx_log RxLog
-        , script_update Script
         , Sub.map LIA (Lia.subscriptions model.lia)
         ]
