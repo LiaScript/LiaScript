@@ -42,6 +42,7 @@ update msg vector =
                                         , solved =
                                             if e.state == solution then
                                                 Solved
+
                                             else
                                                 Open
                                     }
@@ -51,7 +52,7 @@ update msg vector =
                                         state =
                                             case e.state of
                                                 TextState str ->
-                                                    str
+                                                    "\"" ++ str ++ "\""
 
                                                 SingleChoiceState i ->
                                                     toString i
@@ -62,6 +63,7 @@ update msg vector =
                                                             (\s ->
                                                                 if s then
                                                                     1
+
                                                                 else
                                                                     0
                                                             )
@@ -109,6 +111,7 @@ get idx vector =
         Just elem ->
             if (elem.solved == Solved) || (elem.solved == ReSolved) then
                 Nothing
+
             else
                 Just elem
 

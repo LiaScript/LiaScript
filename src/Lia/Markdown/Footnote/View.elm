@@ -14,7 +14,7 @@ inline key =
     Html.sup
         [ Attr.attribute
             "onclick"
-            ("app.ports.footnote.send(\"" ++ key ++ "\");")
+            ("lia.app.ports.footnote.send(\"" ++ key ++ "\");")
         , Attr.style [ ( "cursor", "pointer" ) ]
         ]
         [ braces key ]
@@ -24,6 +24,7 @@ block : (Markdown -> Html msg) -> Model -> Html msg
 block fn model =
     if empty model then
         Html.text ""
+
     else
         let
             def =
