@@ -1,4 +1,4 @@
-module Lia exposing (..)
+module Lia exposing (Mode, Model, Msg, init, init_presentation, init_slides, init_textbook, load_slide, plain_mode, restore, set_script, slide_mode, subscriptions, switch_mode, update, view)
 
 import Array
 import Html exposing (Html)
@@ -8,7 +8,7 @@ import Lia.Model
 import Lia.Parser
 import Lia.Types exposing (Section, Sections, init_section)
 import Lia.Update exposing (Msg(..))
-import Lia.Utils exposing (set_title, toUnixNewline)
+import Lia.Utils exposing (load, set_title, toUnixNewline)
 import Lia.View
 import Translations
 
@@ -37,6 +37,9 @@ set_script model script =
             case Lia.Parser.parse_titles definition code of
                 Ok title_sections ->
                     let
+                        ignore =
+                            List.map (load "link") definition.links
+
                         sections =
                             title_sections
                                 |> List.map init_section
@@ -57,6 +60,7 @@ set_script model script =
                         , section_active =
                             if Array.length sections > model.section_active then
                                 model.section_active
+
                             else
                                 0
                         , javascript =

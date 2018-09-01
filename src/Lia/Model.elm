@@ -5,7 +5,7 @@ import Lia.Definition.Types as Definition exposing (Definition)
 import Lia.Helper exposing (ID)
 import Lia.Index.Model as Index
 import Lia.Types exposing (Design, Mode, Sections)
-import Lia.Utils exposing (get_local, load_js, set_local)
+import Lia.Utils exposing (get_local, load, set_local)
 import Translations
 
 
@@ -133,6 +133,6 @@ load_javascript old new =
             List.filter member new
 
         x =
-            List.map load_js to_load
+            List.map (load "script") to_load
     in
     List.append old to_load

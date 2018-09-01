@@ -1,18 +1,17 @@
-module Lia.Utils
-    exposing
-        ( evaluateJS
-        , execute
-        , formula
-        , get_local
-        , load_js
-        , scrollIntoView
-        , set_local
-        , set_title
-        , stringToHtml
-        , string_replace
-        , toJSstring
-        , toUnixNewline
-        )
+module Lia.Utils exposing
+    ( evaluateJS
+    , execute
+    , formula
+    , get_local
+    , load
+    , scrollIntoView
+    , set_local
+    , set_title
+    , stringToHtml
+    , string_replace
+    , toJSstring
+    , toUnixNewline
+    )
 
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -39,9 +38,9 @@ execute delay code =
         |> Native.Utils.execute delay
 
 
-load_js : String -> Result String String
-load_js url =
-    Native.Utils.load_js url
+load : String -> String -> Result String String
+load elem url =
+    Native.Utils.load elem url
 
 
 stringToHtml : String -> Html msg

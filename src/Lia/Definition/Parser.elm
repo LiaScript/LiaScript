@@ -53,6 +53,21 @@ definition =
                                                 )
                                         )
                                )
+                        , string "link:"
+                            *> (ending
+                                    >>= (\x ->
+                                            set
+                                                (\def ->
+                                                    { def
+                                                        | links =
+                                                            x
+                                                                |> String.split "\n"
+                                                                |> List.map (toURL def.base)
+                                                                |> List.append def.links
+                                                    }
+                                                )
+                                        )
+                               )
                         , string "translation:"
                             *> (ending >>= (\x -> set (add_translation x)))
                         , string "version:"
@@ -96,6 +111,7 @@ toURL : String -> String -> String
 toURL base url =
     if String.startsWith "http" url then
         url
+
     else
         base ++ url
 

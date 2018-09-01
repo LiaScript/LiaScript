@@ -56,18 +56,16 @@ var _user$project$Native_Utils = (function () {
         }
     }
 */
-    var lib_js_counter = -1;
 
-    function load_js(url)
+
+    function load(elem, url)
     {
-        lib_js_counter += 1;
-
-        console.log("url: ", lib_js_counter, url);
+        console.log(elem, ":", url);
 
         try {
-            var scriptTag = document.createElement('script');
-            scriptTag.src = url;
-            document.head.appendChild(scriptTag);
+            var tag = document.createElement(elem);
+            tag.src = url;
+            document.head.appendChild(tag);
 
         } catch (e) {
             console.log(e.message);
@@ -149,7 +147,7 @@ var _user$project$Native_Utils = (function () {
         evaluate: evaluate,
         evaluate2: F2(evaluate2),
         execute: F2(execute),
-        load_js: load_js,
+        load: F2(load),
         get_local: get_local,
         set_local: F2(set_local),
         toUnixNewline: toUnixNewline,

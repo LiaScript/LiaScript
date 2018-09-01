@@ -1,10 +1,9 @@
-module Lia.Definition.Types
-    exposing
-        ( Definition
-        , add_translation
-        , default
-        , get_translations
-        )
+module Lia.Definition.Types exposing
+    ( Definition
+    , add_translation
+    , default
+    , get_translations
+    )
 
 import Dict exposing (Dict)
 
@@ -18,6 +17,7 @@ type alias Definition =
     , version : String
     , comment : String
     , scripts : List String
+    , links : List String
     , base : String
     , translation : Dict String String
     , macro : Dict String String
@@ -31,11 +31,12 @@ default base =
     { author = "Unknown"
     , date = ""
     , email = ""
-    , language = "en_US"
+    , language = "en"
     , narrator = "US English Male"
     , version = ""
     , comment = ""
     , scripts = []
+    , links = []
     , base = base
     , translation = Dict.empty
     , macro = Dict.empty
@@ -53,6 +54,7 @@ add_translation str def =
                     Dict.insert lang
                         (if url |> String.toLower |> String.startsWith "http" then
                             url
+
                          else
                             def.base ++ url
                         )
