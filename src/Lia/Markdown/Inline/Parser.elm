@@ -237,7 +237,7 @@ reference =
 
                 movie =
                     Movie
-                        <$> (string "!!" *> info)
+                        <$> (string "!?" *> info)
                         <*> url_2
             in
             Ref <$> choice [ movie, image, mail_, link ]
