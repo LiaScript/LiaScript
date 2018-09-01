@@ -1,11 +1,10 @@
-module Lia.Markdown.Inline.Types
-    exposing
-        ( Annotation
-        , Inline(..)
-        , Inlines
-        , MultInlines
-        , Reference(..)
-        )
+module Lia.Markdown.Inline.Types exposing
+    ( Annotation
+    , Inline(..)
+    , Inlines
+    , MultInlines
+    , Reference(..)
+    )
 
 import Dict exposing (Dict)
 
@@ -42,5 +41,6 @@ type Inline
 type Reference
     = Link String String
     | Image String String
+    | Audio String String
     | Movie String String
     | Mail String String

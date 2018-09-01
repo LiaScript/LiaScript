@@ -59,6 +59,9 @@ ref2string ref =
         Image alt _ ->
             alt
 
+        Audio alt _ ->
+            alt
+
         Link alt _ ->
             alt
 

@@ -84,6 +84,7 @@ view visible element =
                 Html.span
                     (Attr.id (toString id_in) :: annotation "lia-effect-inline" attr)
                     (Effect.view (viewer visible) id_in e)
+
             else
                 Html.text ""
 
@@ -111,9 +112,13 @@ reference ref attr =
         Image alt_ url_ ->
             Html.img (Attr.src url_ :: annotation "lia-image" attr) [ Html.text alt_ ]
 
+        Audio alt_ url_ ->
+            Html.audio (Attr.controls True :: annotation "lia-audio" attr) [ Html.source [ Attr.src url_ ] [], Html.text alt_ ]
+
         Movie alt_ url_ ->
             if url_ |> String.toLower |> String.contains "https://www.youtube" then
                 Html.iframe (Attr.src url_ :: annotation "lia-movie" attr) [ Html.text alt_ ]
+
             else
                 Html.video (Attr.controls True :: annotation "lia-movie" attr) [ Html.source [ Attr.src url_ ] [], Html.text alt_ ]
 

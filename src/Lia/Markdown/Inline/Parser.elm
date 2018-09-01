@@ -235,12 +235,17 @@ reference =
                         <$> (string "!" *> info)
                         <*> url_2
 
+                audio =
+                    Audio
+                        <$> (string "?" *> info)
+                        <*> url_2
+
                 movie =
                     Movie
                         <$> (string "!?" *> info)
                         <*> url_2
             in
-            Ref <$> choice [ movie, image, mail_, link ]
+            Ref <$> choice [ movie, audio, image, mail_, link ]
 
 
 arrows : Parser s (Annotation -> Inline)
