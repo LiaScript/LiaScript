@@ -64,7 +64,12 @@ var _user$project$Native_Utils = (function () {
 
         try {
             var tag = document.createElement(elem);
-            tag.src = url;
+            if(elem == "link") {
+              tag.href = url;
+              tag.rel  = "stylesheet";
+            }
+            else
+              tag.src = url;
             document.head.appendChild(tag);
 
         } catch (e) {
