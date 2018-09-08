@@ -36,6 +36,7 @@ view lang mode section ace_theme =
                 (viewer <|
                     if mode == Textbook then
                         9999
+
                     else
                         section.effect_model.visible
                 )
@@ -58,6 +59,7 @@ view lang mode section ace_theme =
                 |> (\s ->
                         if mode == Textbook then
                             List.append s [ Footnote.block (view_block config) section.footnotes ]
+
                         else
                             s
                    )
@@ -143,12 +145,14 @@ view_block config block =
                 Html.div
                     ((if id_in == config.section.effect_model.visible then
                         Attr.id "focused"
+
                       else
                         Attr.id (toString id_in)
                      )
                         :: annotation "lia-effect-inline" attr
                     )
                     (Effects.view_block (view_block config) id_in sub_blocks)
+
             else
                 Html.text ""
 
@@ -189,6 +193,7 @@ view_block config block =
                             [ Html.map UpdateQuiz <| Quizzes.view config.lang attr quiz config.section.quiz_vector ]
                             ((if empty then
                                 Html.text ""
+
                               else
                                 Html.hr [] []
                              )
@@ -233,20 +238,40 @@ view_table config attr header format body =
                 (\r f -> r |> config.view |> fct [ Attr.align f ])
                 row
                 format
-    in
-    body
-        |> List.map
-            (\row ->
+
+        view_row2 fct row =
+            List.map
+                (\r -> r |> config.view |> fct [ Attr.align "left" ])
                 row
-                    |> view_row Html.td
-                    |> Html.tr [ Attr.class "lia-inline lia-table-row" ]
-            )
-        |> (::)
-            (header
-                |> view_row Html.th
-                |> Html.thead [ Attr.class "lia-inline lia-table-head" ]
-            )
-        |> Html.table (annotation "lia-table" attr)
+    in
+    Html.table (annotation "lia-table" attr) <|
+        case header of
+            [] ->
+                let
+                    fuck =
+                        Debug.log "fuck" body
+                in
+                body
+                    |> List.map
+                        (\row ->
+                            row
+                                |> view_row2 Html.td
+                                |> Html.tr [ Attr.class "lia-inline lia-table-row" ]
+                        )
+
+            _ ->
+                body
+                    |> List.map
+                        (\row ->
+                            row
+                                |> view_row Html.td
+                                |> Html.tr [ Attr.class "lia-inline lia-table-row" ]
+                        )
+                    |> (::)
+                        (header
+                            |> view_row Html.th
+                            |> Html.thead [ Attr.class "lia-inline lia-table-head" ]
+                        )
 
 
 view_list : Config -> List (List Markdown) -> List (Html Msg)

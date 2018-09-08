@@ -47,17 +47,6 @@ var _user$project$Native_Utils = (function () {
         return string.replace(new RegExp(s, 'g'), r);
     }
 
-/*
-    function wait(ms) {
-        var start = new Date().getTime();
-        var end = start;
-        while(end < start + ms) {
-            end = new Date().getTime();
-        }
-    }
-*/
-
-
     function load(elem, url)
     {
         console.log(elem, ":", url);

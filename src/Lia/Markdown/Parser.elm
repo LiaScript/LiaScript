@@ -148,7 +148,6 @@ simple_table =
                 <$> md_annotations
                 <*> many1 table_row
            )
-        <* newline
 
 
 formated_table : Parser PState Markdown
@@ -174,7 +173,6 @@ formated_table =
                 <*> format
                 <*> many table_row
            )
-        <* newline
 
 
 quote : Parser PState Markdown
