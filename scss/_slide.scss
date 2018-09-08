@@ -106,6 +106,8 @@
             }
 
             .lia-quiz {
+              margin-top: map-get($config, spacing-large);
+              margin-bottom: map-get($config, spacing-large);
               border: 3px solid map-get($theme, primary);
               padding: 10px;
               border-radius: 10px;
