@@ -234,44 +234,30 @@ view_table : Config -> Annotation -> MultInlines -> List String -> List MultInli
 view_table config attr header format body =
     let
         view_row fct row =
-            List.map2
-                (\r f -> r |> config.view |> fct [ Attr.align f ])
-                row
-                format
+            row
+                |> (if header == [] then
+                        List.map
+                            (\r -> r |> config.view |> fct [ Attr.align "left" ])
 
-        view_row2 fct row =
-            List.map
-                (\r -> r |> config.view |> fct [ Attr.align "left" ])
-                row
+                    else
+                        List.map2
+                            (\f r -> r |> config.view |> fct [ Attr.align f ])
+                            format
+                   )
     in
-    Html.table (annotation "lia-table" attr) <|
-        case header of
-            [] ->
-                let
-                    fuck =
-                        Debug.log "fuck" body
-                in
-                body
-                    |> List.map
-                        (\row ->
-                            row
-                                |> view_row2 Html.td
-                                |> Html.tr [ Attr.class "lia-inline lia-table-row" ]
-                        )
-
-            _ ->
-                body
-                    |> List.map
-                        (\row ->
-                            row
-                                |> view_row Html.td
-                                |> Html.tr [ Attr.class "lia-inline lia-table-row" ]
-                        )
-                    |> (::)
-                        (header
-                            |> view_row Html.th
-                            |> Html.thead [ Attr.class "lia-inline lia-table-head" ]
-                        )
+    body
+        |> List.map
+            (\row ->
+                row
+                    |> view_row Html.td
+                    |> Html.tr [ Attr.class "lia-inline lia-table-row" ]
+            )
+        |> (::)
+            (header
+                |> view_row Html.th
+                |> Html.thead [ Attr.class "lia-inline lia-table-head" ]
+            )
+        |> Html.table (annotation "lia-table" attr)
 
 
 view_list : Config -> List (List Markdown) -> List (Html Msg)

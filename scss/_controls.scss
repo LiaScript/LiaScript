@@ -467,6 +467,8 @@
     }
 
     .lia-table {
+        margin-top: map-get($config, spacing-large);
+        margin-bottom: map-get($config, spacing-large);
         $bg: map-get($theme, background);
         $fg: color-contrast($bg);
         $head-bg: mix($bg, $fg, 100%);
@@ -476,6 +478,7 @@
         $row-even-fg: color-contrast($row-even-bg);
         $row-odd-fg: color-contrast($row-odd-bg);
         $border-color: mix($bg, $fg, 75%);
+
 
         border-collapse: collapse;
 
