@@ -179,19 +179,21 @@ view_multiple_choice : MultInlines -> Int -> State -> Bool -> Html Msg
 view_multiple_choice questions idx state solved =
     let
         fn b ( i, line ) =
-            Html.p [ Attr.class "lia-check-item" ]
-                [ Html.input
-                    [ Attr.type_ "checkbox"
-                    , Attr.checked b
-                    , if solved then
-                        Attr.disabled True
+            Html.tr [ Attr.class "lia-check-item" ]
+                [ Html.td [ Attr.attribute "valign" "top", Attr.class "lia-label" ]
+                    [ Html.input
+                        [ Attr.type_ "checkbox"
+                        , Attr.checked b
+                        , if solved then
+                            Attr.disabled True
 
-                      else
-                        onClick (RadioButton idx i)
+                          else
+                            onClick (RadioButton idx i)
+                        ]
+                        []
+                    , Html.span [ Attr.class "lia-check-btn" ] [ Html.text "check" ]
                     ]
-                    []
-                , Html.span [ Attr.class "lia-check-btn" ] [ Html.text "check" ]
-                , Html.span [ Attr.class "lia-label" ] (List.map view_inf line)
+                , Html.td [ Attr.class "lia-label" ] (List.map view_inf line)
                 ]
     in
     case state of
@@ -199,7 +201,7 @@ view_multiple_choice questions idx state solved =
             questions
                 |> List.indexedMap (,)
                 |> List.map2 fn (Array.toList x)
-                |> Html.div []
+                |> Html.table [ Attr.attribute "cellspacing" "8" ]
 
         _ ->
             Html.text ""
