@@ -33,7 +33,7 @@ get_counter =
 
 pattern : Parser s a -> Parser s a
 pattern p =
-    regex "[ \\t]*\\[" *> p <* string "]"
+    regex "[ \\t]*\\[" *> p <* regex "\\][ \\t]*"
 
 
 quest : Parser PState a -> Parser PState Inlines

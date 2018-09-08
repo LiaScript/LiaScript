@@ -34,11 +34,13 @@ view lang attr quiz vector =
                         :: view_button_solution lang s.solved (ShowSolution idx EmptyState)
                         :: (if s.error_msg == "" then
                                 Html.text ""
+
                             else
                                 Html.br [] []
                            )
                         :: (if s.error_msg == "" then
                                 Html.text ""
+
                             else
                                 error s.error_msg
                            )
@@ -68,11 +70,13 @@ view_quiz lang attr state fn_view idx hints eval_string solution =
                     :: view_button_solution lang s.solved (ShowSolution idx solution)
                     :: (if s.error_msg == "" then
                             Html.text ""
+
                         else
                             Html.br [] []
                        )
                     :: (if s.error_msg == "" then
                             Html.text ""
+
                         else
                             error s.error_msg
                        )
@@ -93,6 +97,7 @@ view_button_solution lang solution msg =
             , Attr.title (quizSolution lang)
             ]
             [ Html.text "info" ]
+
     else
         Html.text ""
 
@@ -103,6 +108,7 @@ view_button lang trials solved msg =
         Open ->
             if trials == 0 then
                 Html.button [ Attr.class "lia-btn", onClick msg ] [ Html.text (quizCheck lang) ]
+
             else
                 Html.button
                     [ Attr.class "lia-btn", Attr.class "lia-failure", onClick msg ]
@@ -144,21 +150,26 @@ view_single_choice questions idx state solved =
                 |> List.indexedMap (,)
                 |> List.map
                     (\( i, elements ) ->
-                        Html.p [ Attr.class "lia-radio-item" ]
-                            [ Html.input
-                                [ Attr.type_ "radio"
-                                , Attr.checked (i == x)
-                                , if solved then
-                                    Attr.disabled True
-                                  else
-                                    onClick (RadioButton idx i)
+                        Html.tr [ Attr.class "lia-radio-item" ]
+                            [ Html.td [ Attr.attribute "valign" "top", Attr.class "lia-label" ]
+                                [ Html.input
+                                    [ Attr.type_ "radio"
+                                    , Attr.checked (i == x)
+                                    , if solved then
+                                        Attr.disabled True
+
+                                      else
+                                        onClick (RadioButton idx i)
+                                    ]
+                                    []
+                                , Html.span [ Attr.class "lia-radio-btn" ] []
                                 ]
-                                []
-                            , Html.span [ Attr.class "lia-radio-btn" ] []
-                            , Html.span [ Attr.class "lia-label" ] (List.map view_inf elements)
+                            , Html.td
+                                [ Attr.class "lia-label" ]
+                                (List.map view_inf elements)
                             ]
                     )
-                |> Html.div []
+                |> Html.table [ Attr.attribute "cellspacing" "8" ]
 
         _ ->
             Html.text ""
@@ -174,6 +185,7 @@ view_multiple_choice questions idx state solved =
                     , Attr.checked b
                     , if solved then
                         Attr.disabled True
+
                       else
                         onClick (RadioButton idx i)
                     ]
@@ -225,6 +237,7 @@ view_hints idx counter hints =
             ]
             (v_hints hints counter)
         ]
+
     else
         [ Html.div
             [ Attr.class "lia-hints"
