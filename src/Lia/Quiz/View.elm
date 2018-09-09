@@ -121,7 +121,7 @@ view_button lang trials solved msg =
 
         ReSolved ->
             Html.button
-                [ Attr.class "lia-btn", Attr.class "lia-failure" ]
+                [ Attr.class "lia-btn", Attr.disabled True ]
                 [ Html.text (quizResolved lang) ]
 
 
