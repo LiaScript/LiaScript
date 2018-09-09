@@ -9,7 +9,16 @@ import Lia.PState exposing (PState)
 
 title_tag : Parser PState Int
 title_tag =
-    String.length <$> regex "^#+" <?> "title tags"
+    String.length <$> regex "#+" <?> "title tags"
+
+
+check : Int -> Parser s ()
+check c =
+    if c /= 0 then
+        succeed ()
+
+    else
+        fail "Not the beginning"
 
 
 title_str : Parser PState Inlines
@@ -19,12 +28,12 @@ title_str =
 
 comment : Parser PState String
 comment =
-    regex "<!--(.|[\x0D\n])*?-->" <?> "comment"
+    regex "<!--(.|[\\x0D\\n])*?-->" <?> "comment"
 
 
 misc : Parser PState String
 misc =
-    regex "([^\\\\#`<\\[]|[\x0D\n])+"
+    regex "([^\\\\#`<\\[]|[\\x0D\\n])+" <|> (withColumn check *> string "#")
 
 
 misc2 : Parser PState String
@@ -39,7 +48,7 @@ link =
 
 code_block : Parser PState String
 code_block =
-    regex "```(.|[\x0D\n])*?```" <?> "code block"
+    regex "```(.|[\\x0D\\n])*?```" <?> "code block"
 
 
 code_inline : Parser PState String
