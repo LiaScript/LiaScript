@@ -108,9 +108,12 @@ mat_attr =
 
 vector : Bool -> (Var -> Msg) -> (Var -> Bool) -> Bool -> ( Var, Inlines ) -> Html Msg
 vector button msg fn submitted ( var, elements ) =
-    Html.p
-        []
-        [ input button (msg var) (fn var) submitted, inline elements ]
+    Html.table [ Attr.attribute "cellspacing" "8" ]
+        [ Html.td [ Attr.attribute "valign" "top", Attr.class "lia-label" ]
+            [ input button (msg var) (fn var) submitted ]
+        , Html.td [ Attr.class "lia-label" ]
+            [ inline elements ]
+        ]
 
 
 matrix : Bool -> (ID -> Var -> Msg) -> (ID -> Var -> Bool) -> List Var -> Bool -> ( ID, Inlines ) -> Html Msg

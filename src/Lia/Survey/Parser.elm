@@ -38,7 +38,7 @@ text_lines =
 
 pattern : Parser s a -> Parser s a
 pattern p =
-    regex "[ \\t]*\\[" *> p <* string "]"
+    regex "[ \\t]*\\[" *> p <* regex "][ \\t]*"
 
 
 id_int : Parser s String
