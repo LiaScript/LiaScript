@@ -207,7 +207,7 @@ email =
 
 inline_url : Parser s Reference
 inline_url =
-    (\u -> Link u u) <$> url
+    (\u -> Link u ( u, "" )) <$> url
 
 
 reference : Parser PState (Annotation -> Inline)
@@ -218,32 +218,35 @@ reference =
                 info =
                     brackets (regex "[^\\]\n]*")
 
+                title =
+                    optional "" (spaces *> string "\"" *> stringTill (string "\"")) <* spaces
+
                 url_1 =
-                    parens (url <|> regex "[^\\)\n]*")
+                    url <|> regex "[^\\)\n \"]*"
 
                 url_2 =
-                    parens (url <|> ((++) <$> withState (\s -> succeed s.defines.base) <*> regex "[^\\)\n]*"))
+                    url <|> ((++) <$> withState (\s -> succeed s.defines.base) <*> regex "[^\\)\n \"]*")
 
                 mail_ =
-                    Mail <$> info <*> parens email
+                    Mail <$> info <*> parens ((,) <$> email <*> title)
 
                 link =
-                    Link <$> info <*> url_1
+                    Link <$> info <*> parens ((,) <$> url_1 <*> title)
 
                 image =
                     Image
                         <$> (string "!" *> info)
-                        <*> url_2
+                        <*> parens ((,) <$> url_2 <*> title)
 
                 audio =
                     Audio
                         <$> (string "?" *> info)
-                        <*> url_2
+                        <*> parens ((,) <$> url_2 <*> title)
 
                 movie =
                     Movie
                         <$> (string "!?" *> info)
-                        <*> url_2
+                        <*> parens ((,) <$> url_2 <*> title)
             in
             Ref <$> choice [ movie, audio, image, mail_, link ]
 
