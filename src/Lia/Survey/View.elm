@@ -47,6 +47,7 @@ submit_button lang submitted idx =
             Html.button
                 [ Attr.class "lia-btn", Attr.disabled True ]
                 [ Html.text (surveySubmitted lang) ]
+
           else
             Html.button
                 [ Attr.class "lia-btn", onClick <| Submit idx ]
@@ -59,20 +60,18 @@ view_text lang str lines idx submitted =
     let
         attr =
             [ onInput <| TextUpdate idx
-            , Attr.class "lia-input"
+            , Attr.class "lia-textarea"
             , Attr.placeholder (surveyText lang)
             , Attr.value str
             , Attr.disabled submitted
             ]
     in
-    Html.div []
-        [ case lines of
-            1 ->
-                Html.input attr []
+    case lines of
+        1 ->
+            Html.input attr []
 
-            _ ->
-                Html.textarea (Attr.rows lines :: attr) []
-        ]
+        _ ->
+            Html.textarea (Attr.rows lines :: attr) []
 
 
 view_vector : List ( Var, Inlines ) -> (Bool -> ( Var, Inlines ) -> Html Msg) -> Bool -> Html Msg
@@ -143,6 +142,7 @@ input button msg checked submitted =
         [ Attr.class <|
             if button then
                 "lia-check-item"
+
             else
                 "lia-radio-item"
         ]
@@ -150,11 +150,13 @@ input button msg checked submitted =
             [ Attr.type_ <|
                 if button then
                     "checkbox"
+
                 else
                     "radio"
             , Attr.checked checked
             , if submitted then
                 Attr.disabled True
+
               else
                 onClick msg
             ]
@@ -163,12 +165,14 @@ input button msg checked submitted =
             [ Attr.class <|
                 if button then
                     "lia-check-btn"
+
                 else
                     "lia-radio-btn"
             ]
             [ Html.text <|
                 if button then
                     "check"
+
                 else
                     ""
             ]

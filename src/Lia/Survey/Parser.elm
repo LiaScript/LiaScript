@@ -33,7 +33,7 @@ survey =
 
 text_lines : Parser s Int
 text_lines =
-    List.length <$> pattern (string "[" *> many1 (regex "(__(_)+)" <* whitespace) <* string "]")
+    List.length <$> pattern (string "[" *> many1 (regex "_{3,}[ \\t]*") <* string "]")
 
 
 pattern : Parser s a -> Parser s a

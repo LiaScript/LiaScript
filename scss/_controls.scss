@@ -238,6 +238,10 @@
       white-space: pre-wrap;
     }
 
+    .lia-textarea {
+        width: 100%;
+    }
+
     .lia-btn,
     .lia-input,
     .lia-label,
@@ -339,6 +343,7 @@
     }
 
     .lia-input,
+    .lia-textarea,
     .lia-select {
         $bg: map-get($theme, background);
         $fg: color-contrast($bg);
