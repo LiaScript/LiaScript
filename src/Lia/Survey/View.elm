@@ -14,7 +14,7 @@ import Translations exposing (Lang, surveySubmit, surveySubmitted, surveyText)
 
 view : Lang -> Annotation -> Survey -> Vector -> Html Msg
 view lang attr survey model =
-    Html.p (annotation "lia-card" attr) <|
+    Html.p (annotation "lia-quiz lia-card" attr) <|
         case survey of
             Text lines idx ->
                 view_text lang (get_text_state model idx) lines idx

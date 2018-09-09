@@ -180,13 +180,13 @@ view_block config block =
                 |> Html.map UpdateCode
 
         Quiz attr quiz Nothing ->
-            Html.div [ Attr.class "lia-quiz" ]
+            Html.div [ Attr.class "lia-quiz lia-card" ]
                 [ Quizzes.view config.lang attr quiz config.section.quiz_vector
                     |> Html.map UpdateQuiz
                 ]
 
         Quiz attr quiz (Just ( answer, hidden_effects )) ->
-            Html.div [ Attr.class "lia-quiz" ] <|
+            Html.div [ Attr.class "lia-quiz lia-card" ] <|
                 case Quizzes.view_solution config.section.quiz_vector quiz of
                     ( empty, True ) ->
                         List.append
