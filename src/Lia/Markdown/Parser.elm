@@ -111,7 +111,7 @@ unordered_list =
     BulletList
         <$> md_annotations
         <*> many1
-                (regex "[*+-]( )"
+                (regex "[*+-] "
                     *> (identation_append "  " *> many1 (blocks <* regex "\\n?") <* identation_pop)
                 )
 
@@ -128,7 +128,7 @@ ordered_list =
 
 horizontal_line : Parser PState Markdown
 horizontal_line =
-    HLine <$> md_annotations <* regex "--[\\-]+"
+    HLine <$> md_annotations <* regex "-{3,}"
 
 
 paragraph : Parser PState Inlines
