@@ -145,9 +145,8 @@ view_settings lang visible design =
             [ Html.text <| cColor lang
             , view_design_light design.light
             , design_theme lang design
-            , Html.hr [] []
-            , inc_font_size lang design.font_size
             , view_ace lang design.ace
+            , inc_font_size lang design.font_size
             ]
         ]
 
@@ -411,12 +410,16 @@ capitalize s =
 
 view_design_light : String -> Html Msg
 view_design_light light =
-    Html.button [ Attr.class "lia-btn lia-right", onClick DesignLight ]
+    Html.span
+        [ Attr.class "lia-btn"
+        , onClick DesignLight
+        , Attr.style [ ( "text-align", "right" ) ]
+        ]
         [ if light == "light" then
-            Html.text "star"
+            Html.text "🌞"
 
           else
-            Html.text "star_border"
+            Html.text "🌝"
         ]
 
 
