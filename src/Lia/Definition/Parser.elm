@@ -36,6 +36,8 @@ definition =
                             *> (ending >>= (\x -> set (\def -> { def | email = x })))
                         , string "language:"
                             *> (ending >>= (\x -> set (\def -> { def | language = x })))
+                        , string "logo:"
+                            *> (ending >>= (\x -> set (\def -> { def | logo = x })))
                         , string "narrator:"
                             *> (ending >>= (\x -> set (\def -> { def | narrator = x })))
                         , string "script:"

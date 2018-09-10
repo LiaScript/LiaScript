@@ -13,6 +13,7 @@ type alias Definition =
     , date : String
     , email : String
     , language : String
+    , logo : String
     , narrator : String
     , version : String
     , comment : String
@@ -32,6 +33,7 @@ default base =
     , date = ""
     , email = ""
     , language = "en"
+    , logo = ""
     , narrator = "US English Male"
     , version = ""
     , comment = ""
