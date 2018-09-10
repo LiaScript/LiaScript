@@ -176,6 +176,10 @@
             background: #404040;
             color: #F7F7F7;
         }
+
+        &:active {
+            box-shadow: -1px -1px 1px #fff;
+        }
       }
       input:checked + span {
         background-color: #404040;
