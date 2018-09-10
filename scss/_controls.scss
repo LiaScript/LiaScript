@@ -285,6 +285,10 @@
             color: rgba($fg, .38);
         }
 
+        &:active {
+            box-shadow: -1px -1px 1px #fff;
+        }
+
         .lia-ripple {
             position: absolute;
             display: block;
@@ -302,6 +306,22 @@
 
         &.lia-success {
             $bg: map-get($theme, success);
+            $fg: color-contrast($bg);
+
+            background: $bg;
+            color: $fg;
+
+            &:hover {
+                background: mix($bg, $fg, 80%);
+            }
+
+            .lia-ripple {
+                background: $fg;
+            }
+        }
+
+        &.lia-warning {
+            $bg: map-get($theme, warning);
             $fg: color-contrast($bg);
 
             background: $bg;
