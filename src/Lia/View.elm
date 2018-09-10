@@ -140,7 +140,7 @@ dropdown name alt msg =
 
 view_settings : Lang -> Bool -> Design -> Html Msg
 view_settings lang visible design =
-    Html.div [ menu_style visible ]
+    Html.div (menu_style visible)
         [ Html.p []
             [ Html.text <| cColor lang
             , view_design_light design.light
@@ -177,7 +177,7 @@ design_theme lang design =
 
 view_information : Lang -> Bool -> Definition -> Html Msg
 view_information lang visible definition =
-    Html.div [ menu_style visible ]
+    Html.div (menu_style visible)
         [ Html.p []
             [ Html.text <| infoAuthor lang
             , Html.text definition.author
@@ -199,7 +199,7 @@ view_information lang visible definition =
 
 view_translations : Lang -> Bool -> String -> List ( String, String ) -> Html Msg
 view_translations lang visible base list =
-    Html.div [ menu_style visible ] <|
+    Html.div (menu_style visible) <|
         if List.isEmpty list then
             [ Html.text (no_translation lang) ]
 
@@ -230,9 +230,10 @@ check_list checked label text dir =
         ]
 
 
-menu_style : Bool -> Html.Attribute msg
+menu_style : Bool -> List (Html.Attribute msg)
 menu_style visible =
-    Attr.style
+    [ Attr.class "lia-slide-animation"
+    , Attr.style
         [ ( "max-height"
           , if visible then
                 "250px"
@@ -240,18 +241,13 @@ menu_style visible =
             else
                 "0px"
           )
-        , ( "margin-left", "4px" )
-        , ( "padding-left", "5px" )
-        , ( "margin-right", "4px" )
-        , ( "padding-right", "5px" )
-        , ( "overflow-y", "auto" )
-        , ( "transition", "max-height 0.2s ease-out" )
         ]
+    ]
 
 
 qrCodeView : Bool -> String -> Html msg
 qrCodeView visible url =
-    Html.div [ menu_style visible ]
+    Html.div (menu_style visible)
         [ Html.p []
             [ Html.img
                 [ Attr.src ("https://api.qrserver.com/v1/create-qr-code/?size=222x222&data=" ++ url)
