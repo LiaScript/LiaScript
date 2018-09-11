@@ -156,7 +156,7 @@ function render(model) {
     var editor = ace.edit(div);
     shared.editor = editor;
 
-    editor.getEditor().$blockScrolling = Infinity; // won't use deprecated
+    editor.$blockScrolling = Infinity; // won't use deprecated
     editor.setOptions({
         showPrintMargin: model.showPrintMargin,
         highlightActiveLine: model.highlightActiveLine,
@@ -164,6 +164,7 @@ function render(model) {
         maxLines: model.maxLines,
         autoScrollEditorIntoView: true
     });
+    //editor.setAutoScrollEditorIntoView(true);
 
     editor.renderer.setScrollMargin(8, 8, 8, 8);
 

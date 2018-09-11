@@ -219,7 +219,6 @@ evaluate theme running ( id_1, id_2 ) file headless errors =
             , Ace.useSoftTabs False
             , Ace.extensions [ "language_tools" ]
             , Ace.annotations errors
-            , Ace.maxLines 1000
             ]
             []
         ]
