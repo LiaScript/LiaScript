@@ -1,13 +1,12 @@
-module Lia.Code.Types
-    exposing
-        ( Code(..)
-        , EvalString
-        , File
-        , Project
-        , Rslt
-        , Vector
-        , noResult
-        )
+module Lia.Code.Types exposing
+    ( Code(..)
+    , EvalString
+    , File
+    , Project
+    , Rslt
+    , Vector
+    , noResult
+    )
 
 import Array exposing (Array)
 import Json.Decode as JD
@@ -47,6 +46,7 @@ type alias File =
     , name : String
     , code : String
     , visible : Bool
+    , fullscreen : Bool
     }
 
 

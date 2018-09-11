@@ -82,7 +82,7 @@ listing =
 
 toFile : ( String, String, String, Bool ) -> File
 toFile ( lang, name, code, visible ) =
-    File lang name code visible
+    File lang name code visible False
 
 
 extract_code : ( String, String, String, Bool ) -> String

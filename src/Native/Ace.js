@@ -162,7 +162,8 @@ function render(model) {
         highlightActiveLine: model.highlightActiveLine,
         //readOnly: model.readOnly,
         showGutter: model.showGutter,
-        maxLines: model.maxLines
+        maxLines: model.maxLines,
+        autoScrollEditorIntoView: true
     });
 
     editor.renderer.setScrollMargin(8, 8, 8, 8);

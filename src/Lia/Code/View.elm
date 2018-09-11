@@ -75,10 +75,12 @@ view_code theme attr ( lang, title, code ) =
     Html.div (annotation "" attr)
         [ if headless then
             Html.text ""
+
           else
             Html.button
                 [ Attr.class "lia-accordion active" ]
-                [ Html.text title ]
+                [ Html.text title
+                ]
         , highlight theme attr lang code headless
         ]
 
@@ -92,16 +94,30 @@ view_eval theme attr running errors id_1 id_2 file =
     Html.div (annotation "" attr)
         [ if headless then
             Html.text ""
+
           else
-            Html.button
-                [ onClick <| FlipView id_1 id_2
-                , Attr.classList
+            Html.div
+                [ Attr.classList
                     [ ( "lia-accordion", True )
                     , ( "active", file.visible )
                     ]
                 ]
-                [ Html.text file.name ]
-        , evaluate theme running ( id_1, id_2 ) file.lang file.code file.visible headless (errors id_2)
+                [ Html.span
+                    [ onClick <| FlipView id_1 id_2
+                    , Attr.style [ ( "width", "calc(100% - 36px)" ), ( "display", "inline-block" ) ]
+                    ]
+                    [ Html.text file.name ]
+                , if file.visible then
+                    Html.span
+                        [ Attr.class "lia-accordion-min-max"
+                        , onClick <| FlipFullscreen id_1 id_2
+                        ]
+                        [ Html.text "⤡" ]
+
+                  else
+                    Html.text ""
+                ]
+        , evaluate theme running ( id_1, id_2 ) file headless (errors id_2)
         ]
 
 
@@ -114,23 +130,26 @@ style visible headless height_ =
         top_border =
             if headless then
                 "4px"
+
             else
                 "0px"
     in
-    [ ( "height", height_str )
-    , ( "font-size", "13px" )
+    [ ( "font-size", "13px" )
+    , ( "overflow", "auto" )
     , ( "max-height"
       , if visible then
             height_str
+
         else
             "0px"
       )
     , ( "font-family", "monospace" )
-    , ( "transition", "max-height 0.5s ease-out" )
+    , ( "transition", "max-height 0.25s ease-out" )
     , ( "border-bottom-left-radius", "4px" )
     , ( "border-bottom-right-radius", "4px" )
     , ( "border-top-left-radius", top_border )
     , ( "border-top-right-radius", top_border )
+    , ( "border", "1px solid gray" )
     ]
 
 
@@ -143,49 +162,54 @@ lines code =
 
 pixel : Int -> Int
 pixel lines =
-    lines * 16 + 16
+    lines * 13 + 17
 
 
 highlight : String -> Annotation -> String -> String -> Bool -> Html Msg
 highlight theme attr lang code headless =
-    Ace.toHtml
-        [ Ace.value code
-        , Ace.mode lang
-        , Ace.theme theme
-        , Ace.tabSize 2
-        , Ace.useSoftTabs False
-        , Ace.readOnly True
-        , Ace.showCursor False
-        , Ace.highlightActiveLine False
-        , Ace.showGutter False
-        , Ace.showPrintMargin False
-        , code |> lines |> pixel |> style True headless |> Attr.style
+    Html.div [ code |> lines |> pixel |> style True headless |> Attr.style ]
+        [ Ace.toHtml
+            [ Ace.value code
+            , Ace.mode lang
+            , Ace.theme theme
+            , Ace.tabSize 2
+            , Ace.useSoftTabs False
+            , Ace.readOnly True
+            , Ace.showCursor False
+            , Ace.highlightActiveLine False
+            , Ace.showGutter False
+            , Ace.showPrintMargin False
+            ]
+            []
         ]
-        []
 
 
-evaluate : String -> Bool -> ( ID, ID ) -> String -> String -> Bool -> Bool -> JE.Value -> Html Msg
-evaluate theme running ( id_1, id_2 ) lang code visible headless errors =
+evaluate : String -> Bool -> ( ID, ID ) -> File -> Bool -> JE.Value -> Html Msg
+evaluate theme running ( id_1, id_2 ) file headless errors =
     let
         total_lines =
-            lines code
+            lines file.code
 
         max_lines =
-            if total_lines > 16 then
+            if file.fullscreen then
+                total_lines
+
+            else if total_lines > 16 then
                 16
+
             else
                 total_lines
 
         style_ =
             max_lines
                 |> pixel
-                |> style visible headless
+                |> style file.visible headless
     in
-    Html.div []
+    Html.div [ Attr.style style_ ]
         [ Ace.toHtml
             [ Ace.onSourceChange <| Update id_1 id_2
-            , Ace.value code
-            , Ace.mode lang
+            , Ace.value file.code
+            , Ace.mode file.lang
             , Ace.theme theme
             , Ace.readOnly running
             , Ace.enableBasicAutocompletion True
@@ -194,8 +218,6 @@ evaluate theme running ( id_1, id_2 ) lang code visible headless errors =
             , Ace.tabSize 2
             , Ace.useSoftTabs False
             , Ace.extensions [ "language_tools" ]
-            , Attr.style style_
-            , Ace.maxLines 16
             , Ace.annotations errors
             ]
             []
@@ -217,6 +239,7 @@ view_result rslt =
         Ok info ->
             if info.message == "" then
                 Html.div [ Attr.style [ ( "margin-top", "8px" ) ] ] []
+
             else
                 Html.pre [ Attr.class "lia-code-stdout" ] [ Lia.Utils.stringToHtml info.message ]
 
@@ -228,14 +251,15 @@ view_control : Lang -> ID -> Int -> Bool -> Html Msg
 view_control lang idx version_active running =
     Html.div [ Attr.style [ ( "padding", "0px" ), ( "width", "100%" ) ] ]
         [ if running then
-            Html.button
+            Html.span
                 [ Attr.class "lia-btn lia-icon"
                 , Attr.style [ ( "margin-left", "0px" ) ]
                 , Attr.title (codeRunning lang)
                 ]
                 [ Html.text "sync" ]
+
           else
-            Html.button
+            Html.span
                 [ Attr.class "lia-btn lia-icon"
                 , onClick (Eval idx)
                 , Attr.style [ ( "margin-left", "0px" ) ]

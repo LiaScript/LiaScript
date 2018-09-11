@@ -22,6 +22,7 @@ type Msg
     = Eval ID
     | Update ID ID String
     | FlipView ID ID
+    | FlipFullscreen ID ID
     | EvalRslt ( Bool, Int, String, JD.Value )
     | Load ID Int
 
@@ -46,6 +47,7 @@ update msg model =
                             project.evaluation
                                 |> replace ( 0, code_0 )
                                 |> default_replace code_0
+
                           else
                             project.file
                                 |> Array.indexedMap (\i f -> ( i, f.code ))
@@ -64,12 +66,16 @@ update msg model =
         FlipView id_1 id_2 ->
             update_file id_1 id_2 model (\f -> { f | visible = not f.visible }) Cmd.none
 
+        FlipFullscreen id_1 id_2 ->
+            update_file id_1 id_2 model (\f -> { f | fullscreen = not f.fullscreen }) Cmd.none
+
         Load idx version ->
             ( update_ idx model (load version), Cmd.none )
 
         EvalRslt ( True, idx, message, details ) ->
             if message == "LIA wait!" then
                 ( model, Cmd.none )
+
             else
                 ( decode_rslt message details
                     |> Ok
@@ -157,6 +163,7 @@ resulting result elem =
         { e
             | version = Array.set e.version_active ( code, result ) e.version
         }
+
     else
         { e
             | version = Array.push ( new_code, result ) e.version
@@ -178,5 +185,6 @@ load version elem =
             , file = Array.indexedMap (\i a -> { a | code = Array.get i code |> Maybe.withDefault a.code }) elem.file
             , result = result
         }
+
     else
         elem
