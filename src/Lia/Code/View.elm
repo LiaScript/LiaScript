@@ -307,7 +307,10 @@ view_control lang idx version_active running =
             [ Html.text "navigate_next" ]
         , Html.span
             [ Attr.class "lia-label"
-            , Attr.style [ ( "float", "right" ) ]
+            , Attr.style
+                [ ( "float", "right" )
+                , ( "margin-top", "11px" )
+                ]
             ]
             [ Html.text (toString version_active) ]
         , Html.button
