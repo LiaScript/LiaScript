@@ -53,10 +53,14 @@
   },
 
   "code": {
-    "execute": "Execute",
-    "running": "is running",
-    "prev":    "previous version",
-    "next":    "next version"
+    "execute":  "Execute",
+    "running":  "is running",
+    "prev":     "previous version",
+    "next":     "next version",
+    "first":    "first version",
+    "last":     "last version",
+    "minimize": "minimize view",
+    "maximize": "maximize view"
   },
 
   "quiz": {

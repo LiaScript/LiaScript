@@ -56,7 +56,11 @@
     "execute":      "Ausführen",
     "running":      "wird ausgeführt",
     "prev":         "eine Version zurück",
-    "next":         "eine Version vor"
+    "next":         "eine Version vor",
+    "first":        "erste Version",
+    "last":         "letzte Version",
+    "minimize":     "Darstellung minimieren",
+    "maximize":     "Darstellung maximieren"
   },
 
   "quiz": {

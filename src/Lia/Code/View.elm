@@ -12,7 +12,7 @@ import Lia.Helper exposing (ID)
 import Lia.Markdown.Inline.Types exposing (Annotation)
 import Lia.Markdown.Inline.View exposing (annotation)
 import Lia.Utils
-import Translations exposing (Lang, codeExecute, codeNext, codePrev, codeRunning)
+import Translations exposing (Lang, codeExecute, codeFirst, codeLast, codeMaximize, codeMinimize, codeNext, codePrev, codeRunning)
 
 
 view : Lang -> String -> Annotation -> Vector -> Code -> Html Msg
@@ -32,7 +32,7 @@ view lang theme attr model code =
                     in
                     div_
                         [ project.file
-                            |> Array.indexedMap (view_eval theme attr project.running errors id_1)
+                            |> Array.indexedMap (view_eval lang theme attr project.running errors id_1)
                             |> Array.toList
                             |> Html.div []
                         , view_control lang id_1 project.version_active project.running
@@ -85,8 +85,8 @@ view_code theme attr ( lang, title, code ) =
         ]
 
 
-view_eval : String -> Annotation -> Bool -> (ID -> JE.Value) -> ID -> ID -> File -> Html Msg
-view_eval theme attr running errors id_1 id_2 file =
+view_eval : Lang -> String -> Annotation -> Bool -> (ID -> JE.Value) -> ID -> ID -> File -> Html Msg
+view_eval lang theme attr running errors id_1 id_2 file =
     let
         headless =
             file.name == ""
@@ -111,6 +111,12 @@ view_eval theme attr running errors id_1 id_2 file =
                     Html.span
                         [ Attr.class "lia-accordion-min-max"
                         , onClick <| FlipFullscreen id_1 id_2
+                        , Attr.title <|
+                            if file.fullscreen then
+                                codeMinimize lang
+
+                            else
+                                codeMaximize lang
                         ]
                         [ Html.text <|
                             if file.fullscreen then
@@ -286,7 +292,7 @@ view_control lang idx version_active running =
             [ Last idx |> onClick
             , Attr.class "lia-btn lia-icon"
             , control_style
-            , Attr.title (codePrev lang)
+            , Attr.title (codeLast lang)
             ]
             [ Html.text "last_page" ]
         , Html.button
@@ -314,7 +320,7 @@ view_control lang idx version_active running =
             [ First idx |> onClick
             , Attr.class "lia-btn lia-icon"
             , control_style
-            , Attr.title (codePrev lang)
+            , Attr.title (codeFirst lang)
             ]
             [ Html.text "first_page" ]
         ]

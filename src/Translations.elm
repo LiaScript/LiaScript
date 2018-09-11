@@ -251,6 +251,34 @@ codeNext lang  =
       En -> "next version"
       Ua -> "наступна версія"
 
+codeFirst: Lang -> String
+codeFirst lang  =
+  case lang of 
+      De -> "erste Version"
+      En -> "first version"
+      Ua -> "перша версія"
+
+codeLast: Lang -> String
+codeLast lang  =
+  case lang of 
+      De -> "letzte Version"
+      En -> "last version"
+      Ua -> "остання версія"
+
+codeMinimize: Lang -> String
+codeMinimize lang  =
+  case lang of 
+      De -> "Darstellung minimieren"
+      En -> "minimize view"
+      Ua -> "зображення зменшити"
+
+codeMaximize: Lang -> String
+codeMaximize lang  =
+  case lang of 
+      De -> "Darstellung maximieren"
+      En -> "maximize view"
+      Ua -> "зображення збільшити"
+
 quizCheck: Lang -> String
 quizCheck lang  =
   case lang of 
