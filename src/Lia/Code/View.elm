@@ -259,6 +259,7 @@ view_result rslt =
             error info.message
 
 
+control_style : Html.Attribute msg
 control_style =
     Attr.style
         [ ( "padding-left", "5px" )
