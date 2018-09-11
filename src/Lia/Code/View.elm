@@ -78,7 +78,7 @@ view_code theme attr ( lang, title, code ) =
 
           else
             Html.button
-                [ Attr.class "lia-accordion active" ]
+                [ Attr.class "lia-accordion-dummy" ]
                 [ Html.text title
                 ]
         , highlight theme attr lang code headless
@@ -112,7 +112,13 @@ view_eval theme attr running errors id_1 id_2 file =
                         [ Attr.class "lia-accordion-min-max"
                         , onClick <| FlipFullscreen id_1 id_2
                         ]
-                        [ Html.text "⤡" ]
+                        [ Html.text <|
+                            if file.fullscreen then
+                                "↥"
+
+                            else
+                                "↧"
+                        ]
 
                   else
                     Html.text ""
@@ -247,6 +253,16 @@ view_result rslt =
             error info.message
 
 
+control_style =
+    Attr.style
+        [ ( "padding-left", "5px" )
+        , ( "padding-right", "5px" )
+        , ( "float", "right" )
+        , ( "margin-right", "2px" )
+        , ( "margin-left", "2px" )
+        ]
+
+
 view_control : Lang -> ID -> Int -> Bool -> Html Msg
 view_control lang idx version_active running =
     Html.div [ Attr.style [ ( "padding", "0px" ), ( "width", "100%" ) ] ]
@@ -267,9 +283,18 @@ view_control lang idx version_active running =
                 ]
                 [ Html.text "play_circle_filled" ]
         , Html.button
+            [ Last idx |> onClick
+            , Attr.class "lia-btn lia-icon"
+            , control_style
+            , Attr.title (codePrev lang)
+            ]
+            [ Html.text "last_page" ]
+        , Html.button
             [ (version_active + 1) |> Load idx |> onClick
             , Attr.class "lia-btn lia-icon"
-            , Attr.style [ ( "float", "right" ), ( "margin-right", "0px" ) ]
+
+            --, Attr.style [ ( "float", "right" ), ( "margin-right", "0px" ) ]
+            , control_style
             , Attr.title (codeNext lang)
             ]
             [ Html.text "navigate_next" ]
@@ -281,8 +306,15 @@ view_control lang idx version_active running =
         , Html.button
             [ (version_active - 1) |> Load idx |> onClick
             , Attr.class "lia-btn lia-icon"
-            , Attr.style [ ( "float", "right" ) ]
+            , control_style
             , Attr.title (codePrev lang)
             ]
             [ Html.text "navigate_before" ]
+        , Html.button
+            [ First idx |> onClick
+            , Attr.class "lia-btn lia-icon"
+            , control_style
+            , Attr.title (codePrev lang)
+            ]
+            [ Html.text "first_page" ]
         ]

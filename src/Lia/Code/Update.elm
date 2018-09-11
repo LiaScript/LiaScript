@@ -25,6 +25,8 @@ type Msg
     | FlipFullscreen ID ID
     | EvalRslt ( Bool, Int, String, JD.Value )
     | Load ID Int
+    | First ID
+    | Last ID
 
 
 update : Msg -> Vector -> ( Vector, Cmd Msg )
@@ -71,6 +73,12 @@ update msg model =
 
         Load idx version ->
             ( update_ idx model (load version), Cmd.none )
+
+        First idx ->
+            ( update_ idx model (load 0), Cmd.none )
+
+        Last idx ->
+            ( update_ idx model (model |> Array.get idx |> Maybe.map (.version >> Array.length >> (+) -1) |> Maybe.withDefault 0 |> load), Cmd.none )
 
         EvalRslt ( True, idx, message, details ) ->
             if message == "LIA wait!" then
