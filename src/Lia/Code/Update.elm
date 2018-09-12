@@ -59,8 +59,7 @@ update msg model =
                                 |> default_replace code_0
                                 |> toJSstring
                         )
-                    , Nothing
-                      -- Just (project2json project)
+                    , Just (project2json project)
                     )
 
                 Nothing ->

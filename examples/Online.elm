@@ -129,10 +129,17 @@ update msg model =
             in
             case info of
                 Just m ->
-                    ( { model | lia = lia }, tx_log ( model.url, m ) )
+                    ( { model | lia = lia }
+                    , Cmd.batch
+                        [ Cmd.map LIA cmd
+                        , tx_log ( model.url, m )
+                        ]
+                    )
 
                 _ ->
-                    ( { model | lia = lia }, Cmd.map LIA cmd )
+                    ( { model | lia = lia }
+                    , Cmd.map LIA cmd
+                    )
 
         GET (Ok script) ->
             let
