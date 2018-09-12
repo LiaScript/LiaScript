@@ -1,9 +1,10 @@
 module Lia.Code.Types exposing
     ( Code(..)
     , File
+    , Log
     , Project
-    , Rslt
     , Vector
+    , Version
     , noResult
     )
 
@@ -16,17 +17,21 @@ type alias Vector =
     Array Project
 
 
+type alias Version =
+    ( Array String, Result Log Log )
+
+
 type alias Project =
     { file : Array File
-    , version : Array ( Array String, Result Rslt Rslt )
+    , version : Array Version
     , evaluation : String
     , version_active : Int
-    , result : Result Rslt Rslt
+    , result : Result Log Log
     , running : Bool
     }
 
 
-noResult : Result Rslt Rslt
+noResult : Result Log Log
 noResult =
     Ok
         { message = ""
@@ -34,7 +39,7 @@ noResult =
         }
 
 
-type alias Rslt =
+type alias Log =
     { message : String
     , details : Array JD.Value
     }

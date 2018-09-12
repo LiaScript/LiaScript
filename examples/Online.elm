@@ -15,6 +15,7 @@ port module Main exposing
     , view
     )
 
+import Array
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
@@ -25,10 +26,10 @@ import Lia
 import Navigation
 
 
-port tx_log : ( String, JE.Value ) -> Cmd msg
+port tx_log : ( String, ( String, Int, JE.Value ) ) -> Cmd msg
 
 
-port rx_log : (( String, JD.Value ) -> msg) -> Sub msg
+port rx_log : (( String, Int, JD.Value ) -> msg) -> Sub msg
 
 
 main : Program { url : String, script : String } Model Msg
@@ -111,7 +112,7 @@ get_hash location =
 type Msg
     = GET (Result Http.Error String)
     | LIA Lia.Msg
-    | RxLog ( String, JE.Value )
+    | RxLog ( String, Int, JE.Value )
     | Update String
     | Load
     | UrlChange Navigation.Location
@@ -128,7 +129,7 @@ update msg model =
             in
             case info of
                 Just m ->
-                    ( { model | lia = lia }, tx_log m )
+                    ( { model | lia = lia }, tx_log ( model.url, m ) )
 
                 _ ->
                     ( { model | lia = lia }, Cmd.map LIA cmd )
@@ -153,6 +154,7 @@ update msg model =
                         ++ "#"
                         ++ toString (lia.section_active + 1)
                     )
+                , tx_log ( model.url, ( "init", Array.length lia.sections, JE.null ) )
                 , Cmd.map LIA cmd
                 ]
             )

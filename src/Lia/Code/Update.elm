@@ -2,6 +2,8 @@ port module Lia.Code.Update exposing (Msg(..), default_replace, subscriptions, u
 
 import Array exposing (Array)
 import Json.Decode as JD
+import Json.Encode as JE
+import Lia.Code.Json exposing (decoder_result, project2json)
 import Lia.Code.Types exposing (..)
 import Lia.Helper exposing (ID)
 import Lia.Utils exposing (toJSstring)
@@ -29,7 +31,7 @@ type Msg
     | Last ID
 
 
-update : Msg -> Vector -> ( Vector, Cmd Msg )
+update : Msg -> Vector -> ( Vector, Cmd Msg, Maybe JE.Value )
 update msg model =
     case msg of
         Eval idx ->
@@ -57,10 +59,12 @@ update msg model =
                                 |> default_replace code_0
                                 |> toJSstring
                         )
+                    , Nothing
+                      -- Just (project2json project)
                     )
 
                 Nothing ->
-                    ( model, Cmd.none )
+                    ( model, Cmd.none, Nothing )
 
         Update id_1 id_2 code_str ->
             update_file id_1 id_2 model (\f -> { f | code = code_str }) Cmd.none
@@ -72,41 +76,33 @@ update msg model =
             update_file id_1 id_2 model (\f -> { f | fullscreen = not f.fullscreen }) Cmd.none
 
         Load idx version ->
-            ( update_ idx model (load version), Cmd.none )
+            ( update_ idx model (load version), Cmd.none, Nothing )
 
         First idx ->
-            ( update_ idx model (load 0), Cmd.none )
+            ( update_ idx model (load 0), Cmd.none, Nothing )
 
         Last idx ->
-            ( update_ idx model (model |> Array.get idx |> Maybe.map (.version >> Array.length >> (+) -1) |> Maybe.withDefault 0 |> load), Cmd.none )
+            ( update_ idx model (model |> Array.get idx |> Maybe.map (.version >> Array.length >> (+) -1) |> Maybe.withDefault 0 |> load), Cmd.none, Nothing )
 
         EvalRslt ( True, idx, message, details ) ->
             if message == "LIA wait!" then
-                ( model, Cmd.none )
+                ( model, Cmd.none, Nothing )
 
             else
-                ( decode_rslt message details
-                    |> Ok
+                ( decoder_result True message details
                     |> resulting
                     |> update_ idx model
                 , Cmd.none
+                , Nothing
                 )
 
         EvalRslt ( False, idx, message, details ) ->
-            ( decode_rslt message details
-                |> Err
+            ( decoder_result False message details
                 |> resulting
                 |> update_ idx model
             , Cmd.none
+            , Nothing
             )
-
-
-decode_rslt : String -> JD.Value -> Rslt
-decode_rslt message details =
-    details
-        |> JD.decodeValue (JD.array JD.value)
-        |> Result.withDefault Array.empty
-        |> Rslt message
 
 
 replace : ( Int, String ) -> String -> String
@@ -133,7 +129,7 @@ update_ idx model f =
             model
 
 
-update_file : ID -> ID -> Vector -> (File -> File) -> Cmd msg -> ( Vector, Cmd msg )
+update_file : ID -> ID -> Vector -> (File -> File) -> Cmd msg -> ( Vector, Cmd msg, Maybe JE.Value )
 update_file id_1 id_2 model f cmd =
     ( case Array.get id_1 model of
         Just project ->
@@ -147,10 +143,11 @@ update_file id_1 id_2 model f cmd =
         Nothing ->
             model
     , cmd
+    , Nothing
     )
 
 
-resulting : Result Rslt Rslt -> Project -> Project
+resulting : Result Log Log -> Project -> Project
 resulting result elem =
     let
         ( code, _ ) =

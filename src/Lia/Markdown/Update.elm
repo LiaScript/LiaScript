@@ -1,12 +1,11 @@
-port module Lia.Markdown.Update
-    exposing
-        ( Msg(..)
-        , initEffect
-        , nextEffect
-        , previousEffect
-        , subscriptions
-        , update
-        )
+port module Lia.Markdown.Update exposing
+    ( Msg(..)
+    , initEffect
+    , nextEffect
+    , previousEffect
+    , subscriptions
+    , update
+    )
 
 import Json.Encode as JE
 import Lia.Code.Update as Code
@@ -37,6 +36,16 @@ subscriptions section =
         ]
 
 
+maybeLog : String -> Maybe JE.Value -> Maybe ( String, JE.Value )
+maybeLog name value =
+    case value of
+        Nothing ->
+            Nothing
+
+        Just json ->
+            Just ( name, json )
+
+
 update : Msg -> Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
 update msg section =
     case msg of
@@ -49,24 +58,27 @@ update msg section =
 
         UpdateCode childMsg ->
             let
-                ( code_vector, cmd ) =
+                ( code_vector, cmd, log ) =
                     Code.update childMsg section.code_vector
             in
-            ( { section | code_vector = code_vector }, Cmd.map UpdateCode cmd, Nothing )
+            ( { section | code_vector = code_vector }, Cmd.map UpdateCode cmd, maybeLog "code" log )
 
         UpdateQuiz childMsg ->
             let
                 ( quiz_vector, log ) =
                     Quiz.update childMsg section.quiz_vector
             in
-            ( { section | quiz_vector = quiz_vector }, Cmd.none, Nothing )
+            ( { section | quiz_vector = quiz_vector }
+            , Cmd.none
+            , maybeLog "quiz" log
+            )
 
         UpdateSurvey childMsg ->
             let
                 ( survey_vector, log ) =
                     Survey.update childMsg section.survey_vector
             in
-            ( { section | survey_vector = survey_vector }, Cmd.none, Nothing )
+            ( { section | survey_vector = survey_vector }, Cmd.none, maybeLog "survey" log )
 
         FootnoteShow key ->
             ( { section | footnote2show = Just key }, Cmd.none, Nothing )

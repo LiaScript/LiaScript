@@ -1,11 +1,10 @@
-module Lia.Update
-    exposing
-        ( Msg(..)
-        , Toggle(..)
-        , get_active_section
-        , subscriptions
-        , update
-        )
+module Lia.Update exposing
+    ( Msg(..)
+    , Toggle(..)
+    , get_active_section
+    , subscriptions
+    , update
+    )
 
 import Array exposing (Array)
 import Json.Encode as JE
@@ -59,7 +58,17 @@ type Toggle
     | Sound
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, Maybe ( String, JE.Value ) )
+maybe_log : ID -> Maybe ( String, JE.Value ) -> Maybe ( String, ID, JE.Value )
+maybe_log idx log =
+    case log of
+        Nothing ->
+            Nothing
+
+        Just ( name, json ) ->
+            Just ( name, idx, json )
+
+
+update : Msg -> Model -> ( Model, Cmd Msg, Maybe ( String, ID, JE.Value ) )
 update msg model =
     case ( msg, get_active_section model ) of
         ( UpdateIndex childMsg, _ ) ->
@@ -79,7 +88,7 @@ update msg model =
             in
             ( set_active_section model section
             , Cmd.map UpdateMarkdown cmd
-            , log
+            , maybe_log model.section_active log
             )
 
         ( DesignTheme theme, _ ) ->
@@ -104,6 +113,7 @@ update msg model =
                             set_local "theme_light" <|
                                 if setting.light == "light" then
                                     "dark"
+
                                 else
                                     "light"
                     }
@@ -128,10 +138,12 @@ update msg model =
                     unused =
                         if model.url == "" then
                             0
+
                         else
                             set_local model.url idx
                 in
                 update InitSection (generate { model | section_active = idx })
+
             else
                 ( model, Cmd.none, Nothing )
 
@@ -147,28 +159,36 @@ update msg model =
             in
             ( set_active_section model sec_
             , Cmd.map UpdateMarkdown cmd_
-            , log_
+            , maybe_log model.section_active log_
             )
 
         ( NextSection, Just sec ) ->
             if (model.mode == Textbook) || not (Effect.has_next sec.effect_model) then
                 update (Load <| model.section_active + 1) model
+
             else
                 let
                     ( sec_, cmd_, log_ ) =
                         Markdown.nextEffect model.sound sec
                 in
-                ( set_active_section model sec_, Cmd.map UpdateMarkdown cmd_, log_ )
+                ( set_active_section model sec_
+                , Cmd.map UpdateMarkdown cmd_
+                , maybe_log model.section_active log_
+                )
 
         ( PrevSection, Just sec ) ->
             if (model.mode == Textbook) || not (Effect.has_previous sec.effect_model) then
                 update (Load <| model.section_active - 1) model
+
             else
                 let
                     ( sec_, cmd_, log_ ) =
                         Markdown.previousEffect model.sound sec
                 in
-                ( set_active_section model sec_, Cmd.map UpdateMarkdown cmd_, log_ )
+                ( set_active_section model sec_
+                , Cmd.map UpdateMarkdown cmd_
+                , maybe_log model.section_active log_
+                )
 
         ( SwitchMode, Just sec ) ->
             let
@@ -195,7 +215,7 @@ update msg model =
             in
             ( set_active_section { model | mode = mode } sec_
             , Cmd.map UpdateMarkdown cmd_
-            , log_
+            , maybe_log model.section_active log_
             )
 
         ( Toggle what, Just sec ) ->
@@ -205,7 +225,10 @@ update msg model =
                         ( sec_, cmd_, log_ ) =
                             Markdown.initEffect False (not model.sound) sec
                     in
-                    ( { model | sound = set_local "sound" (not model.sound) }, Cmd.map UpdateMarkdown cmd_, log_ )
+                    ( { model | sound = set_local "sound" (not model.sound) }
+                    , Cmd.map UpdateMarkdown cmd_
+                    , maybe_log model.section_active log_
+                    )
 
                 _ ->
                     let
@@ -249,8 +272,10 @@ update msg model =
                             set_local "font_size" <|
                                 if positive then
                                     design.font_size + 10
+
                                 else if design.font_size <= 10 then
                                     design.font_size
+
                                 else
                                     design.font_size - 10
                     }
@@ -285,6 +310,7 @@ generate model =
                                 sec.effect_model
                         in
                         { sec | effect_model = { effects | visible = 0 } }
+
                     else
                         case Lia.Parser.parse_section model.definition sec.code model.section_active of
                             Ok ( blocks, codes, quizzes, surveys, effects, footnotes, defines ) ->
@@ -325,6 +351,7 @@ if_update : Array a -> Array a -> Array a
 if_update orig new =
     if Array.isEmpty orig then
         new
+
     else
         orig
 

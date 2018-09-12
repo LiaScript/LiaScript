@@ -25,7 +25,7 @@ type alias Mode =
     Lia.Types.Mode
 
 
-load_slide : Model -> Int -> ( Model, Cmd Msg, Maybe ( String, JE.Value ) )
+load_slide : Model -> Int -> ( Model, Cmd Msg, Maybe ( String, Int, JE.Value ) )
 load_slide model idx =
     Lia.Update.update (Load idx) model
 
@@ -100,12 +100,12 @@ subscriptions model =
     Lia.Update.subscriptions model
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, Maybe ( String, JE.Value ) )
+update : Msg -> Model -> ( Model, Cmd Msg, Maybe ( String, Int, JE.Value ) )
 update =
     Lia.Update.update
 
 
-init : Model -> ( Model, Cmd Msg, Maybe ( String, JE.Value ) )
+init : Model -> ( Model, Cmd Msg, Maybe ( String, Int, JE.Value ) )
 init model =
     Lia.Update.update (Load model.section_active) model
 
@@ -125,8 +125,8 @@ slide_mode =
     switch_mode Lia.Types.Slides
 
 
-restore : Model -> ( String, JE.Value ) -> Model
-restore model ( what, json ) =
+restore : Model -> ( String, Int, JE.Value ) -> Model
+restore model ( what, idx, json ) =
     model
 
 

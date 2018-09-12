@@ -43,7 +43,7 @@ view lang theme attr model code =
                     Html.text ""
 
 
-get_annotations : Result Rslt Rslt -> ID -> JE.Value
+get_annotations : Result Log Log -> ID -> JE.Value
 get_annotations rslt file_id =
     (case rslt of
         Ok info ->
@@ -245,7 +245,7 @@ error info =
         [ Html.text info ]
 
 
-view_result : Result Rslt Rslt -> Html msg
+view_result : Result Log Log -> Html msg
 view_result rslt =
     case rslt of
         Ok info ->

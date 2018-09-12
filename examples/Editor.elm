@@ -1,4 +1,18 @@
-module Main exposing (Flags, Model, Msg(..), init, innerViewConfig, leftView, list_get, main, outerViewConfig, rightView, subscriptions, update, view)
+module Main exposing
+    ( Flags
+    , Model
+    , Msg(..)
+    , init
+    , innerViewConfig
+    , leftView
+    , list_get
+    , main
+    , outerViewConfig
+    , rightView
+    , subscriptions
+    , update
+    , view
+    )
 
 import Bound exposing (createBound)
 import Html exposing (Html)
