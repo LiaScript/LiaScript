@@ -127,6 +127,10 @@ slide_mode =
 
 restore : Model -> ( String, Int, JE.Value ) -> Model
 restore model ( what, idx, json ) =
+    let
+        duck =
+            Debug.log "fuck" ( what, idx, json )
+    in
     model
 
 
