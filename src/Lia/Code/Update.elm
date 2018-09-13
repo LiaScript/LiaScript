@@ -112,14 +112,14 @@ decode_rslt message details =
 replace : ( Int, String ) -> String -> String
 replace ( int, insert ) into =
     into
-        |> String.split ("@code(" ++ toString int ++ ")")
+        |> String.split ("@input(" ++ toString int ++ ")")
         |> String.join insert
 
 
 default_replace : String -> String -> String
 default_replace insert into =
     into
-        |> String.split "@code"
+        |> String.split "@input"
         |> String.join insert
 
 
