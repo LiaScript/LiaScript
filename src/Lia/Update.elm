@@ -47,6 +47,7 @@ type Msg
     | Toggle Toggle
     | Location String
     | IncreaseFontSize Bool
+    | ResetAll
 
 
 type Toggle
