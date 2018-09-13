@@ -2,7 +2,6 @@ module Lia.Quiz.Parser exposing (parse)
 
 import Array
 import Combine exposing (..)
-import Lia.Code.Types exposing (EvalString)
 import Lia.Helper exposing (..)
 import Lia.Macro.Parser exposing (macro)
 import Lia.Markdown.Inline.Parser exposing (..)
@@ -22,7 +21,7 @@ quiz =
         <*> get_counter
         <*> hints
         <*> (macro
-                *> maybe (String.split "@input" <$> (spaces *> javascript <* newline))
+                *> maybe (spaces *> javascript <* newline)
             )
 
 
@@ -41,17 +40,17 @@ quest p =
     pattern p *> line <* newline
 
 
-empty : Parser PState (ID -> Hints -> Maybe EvalString -> Quiz)
+empty : Parser PState (ID -> Hints -> Maybe String -> Quiz)
 empty =
     (spaces *> string "[[!]]" *> newline) $> Empty
 
 
-text : Parser PState (ID -> Hints -> Maybe EvalString -> Quiz)
+text : Parser PState (ID -> Hints -> Maybe String -> Quiz)
 text =
     Text <$> pattern (string "[" *> regex "[^\n\\]]+" <* regex "\\][ \\t]*") <* newline
 
 
-multi_choice : Parser PState (ID -> Hints -> Maybe EvalString -> Quiz)
+multi_choice : Parser PState (ID -> Hints -> Maybe String -> Quiz)
 multi_choice =
     let
         checked b p =
@@ -73,7 +72,7 @@ multi_choice =
                 )
 
 
-single_choice : Parser PState (ID -> Hints -> Maybe EvalString -> Quiz)
+single_choice : Parser PState (ID -> Hints -> Maybe String -> Quiz)
 single_choice =
     let
         wrong =

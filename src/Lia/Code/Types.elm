@@ -1,6 +1,5 @@
 module Lia.Code.Types exposing
     ( Code(..)
-    , EvalString
     , File
     , Project
     , Rslt
@@ -48,10 +47,6 @@ type alias File =
     , visible : Bool
     , fullscreen : Bool
     }
-
-
-type alias EvalString =
-    List String
 
 
 type Code

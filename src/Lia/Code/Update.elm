@@ -1,4 +1,4 @@
-port module Lia.Code.Update exposing (Msg(..), subscriptions, update)
+port module Lia.Code.Update exposing (Msg(..), default_replace, subscriptions, update)
 
 import Array exposing (Array)
 import Json.Decode as JD

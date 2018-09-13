@@ -2,7 +2,7 @@ module Lia.Quiz.Update exposing (Msg(..), update)
 
 import Array
 import Json.Encode as JE
-import Lia.Code.Types exposing (EvalString)
+import Lia.Code.Update exposing (default_replace)
 import Lia.Quiz.Model exposing (vector2json)
 import Lia.Quiz.Types exposing (..)
 import Lia.Utils
@@ -12,7 +12,7 @@ type Msg
     = CheckBox Int Int
     | RadioButton Int Int
     | Input Int String
-    | Check Int State (Maybe EvalString)
+    | Check Int State (Maybe String)
     | ShowHint Int
     | ShowSolution Int State
 
@@ -52,7 +52,7 @@ update msg vector =
                                         state =
                                             case e.state of
                                                 TextState str ->
-                                                    "\"" ++ str ++ "\""
+                                                    str
 
                                                 SingleChoiceState i ->
                                                     toString i
@@ -73,7 +73,7 @@ update msg vector =
                                                 _ ->
                                                     toString e.state
                                     in
-                                    case String.join state code |> Lia.Utils.evaluateJS of
+                                    case default_replace state code |> Lia.Utils.evaluateJS of
                                         Ok "true" ->
                                             { e
                                                 | trial = e.trial + 1

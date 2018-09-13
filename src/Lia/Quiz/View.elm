@@ -4,7 +4,6 @@ import Array exposing (Array)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
-import Lia.Code.Types exposing (EvalString)
 import Lia.Code.View exposing (error)
 import Lia.Markdown.Inline.Types exposing (Annotation, MultInlines)
 import Lia.Markdown.Inline.View exposing (annotation, view_inf)
@@ -60,7 +59,7 @@ view lang attr quiz vector =
             view_quiz lang attr (state idx) (view_multiple_choice questions) idx hints eval_string (MultipleChoiceState solution)
 
 
-view_quiz : Lang -> Annotation -> Maybe Element -> (Int -> State -> Bool -> Html Msg) -> Int -> MultInlines -> Maybe EvalString -> State -> Html Msg
+view_quiz : Lang -> Annotation -> Maybe Element -> (Int -> State -> Bool -> Html Msg) -> Int -> MultInlines -> Maybe String -> State -> Html Msg
 view_quiz lang attr state fn_view idx hints eval_string solution =
     case state of
         Just s ->

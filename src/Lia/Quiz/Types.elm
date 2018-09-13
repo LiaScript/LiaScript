@@ -1,15 +1,13 @@
-module Lia.Quiz.Types
-    exposing
-        ( Element
-        , Hints
-        , Quiz(..)
-        , Solution(..)
-        , State(..)
-        , Vector
-        )
+module Lia.Quiz.Types exposing
+    ( Element
+    , Hints
+    , Quiz(..)
+    , Solution(..)
+    , State(..)
+    , Vector
+    )
 
 import Array exposing (Array)
-import Lia.Code.Types exposing (EvalString)
 import Lia.Helper exposing (ID)
 import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
 
@@ -45,7 +43,7 @@ type State
 
 
 type Quiz
-    = Empty ID Hints (Maybe EvalString)
-    | Text String ID Hints (Maybe EvalString)
-    | SingleChoice Int MultInlines ID Hints (Maybe EvalString)
-    | MultipleChoice (Array Bool) MultInlines ID Hints (Maybe EvalString)
+    = Empty ID Hints (Maybe String)
+    | Text String ID Hints (Maybe String)
+    | SingleChoice Int MultInlines ID Hints (Maybe String)
+    | MultipleChoice (Array Bool) MultInlines ID Hints (Maybe String)
