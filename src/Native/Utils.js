@@ -101,29 +101,6 @@ var _user$project$Native_Utils = (function () {
         });
     };
 
-    function get_local (key) {
-        try {
-            var value = localStorage.getItem(key);
-
-            if (typeof(value) === "string") {
-                return { ctor : "Just", _0:  value };
-            }
-        } catch (e) {
-
-        }
-
-        return { ctor: "Nothing" };
-    };
-
-    function set_local (key, value) {
-        try {
-            localStorage.setItem(key, value);
-            return value;
-        } catch (e) {
-            return value;
-        }
-    };
-
     function set_title (title) {
         document.title = title;
     };
@@ -142,8 +119,6 @@ var _user$project$Native_Utils = (function () {
         evaluate2: F2(evaluate2),
         execute: F2(execute),
         load: F2(load),
-        get_local: get_local,
-        set_local: F2(set_local),
         toUnixNewline: toUnixNewline,
         set_title: set_title,
         string_replace: F3(string_replace),

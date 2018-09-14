@@ -6,11 +6,11 @@ port module Main exposing
     , get_base
     , get_hash
     , init
+    , log2elm
+    , log2js
     , main
-    , rx_log
     , style
     , subscriptions
-    , tx_log
     , update
     , view
     )
@@ -26,10 +26,10 @@ import Lia
 import Navigation
 
 
-port tx_log : ( String, ( String, Int, JE.Value ) ) -> Cmd msg
+port log2js : ( String, ( String, Int, JE.Value ) ) -> Cmd msg
 
 
-port rx_log : (( String, Int, JD.Value ) -> msg) -> Sub msg
+port log2elm : (( String, Int, JD.Value ) -> msg) -> Sub msg
 
 
 main : Program { url : String, script : String } Model Msg
@@ -112,7 +112,7 @@ get_hash location =
 type Msg
     = GET (Result Http.Error String)
     | LIA Lia.Msg
-    | RxLog ( String, Int, JE.Value )
+    | ElmLog ( String, Int, JE.Value )
     | Update String
     | Load
     | UrlChange Navigation.Location
@@ -128,17 +128,17 @@ update msg model =
                     Lia.update liaMsg model.lia
             in
             case info of
-                Just m ->
-                    ( { model | lia = lia }
-                    , Cmd.batch
-                        [ Cmd.map LIA cmd
-                        , tx_log ( model.url, m )
-                        ]
-                    )
-
-                _ ->
+                [] ->
                     ( { model | lia = lia }
                     , Cmd.map LIA cmd
+                    )
+
+                logs ->
+                    ( { model | lia = lia }
+                    , logs
+                        |> List.map (\m -> log2js ( model.url, m ))
+                        |> (::) (Cmd.map LIA cmd)
+                        |> Cmd.batch
                     )
 
         GET (Ok script) ->
@@ -161,7 +161,7 @@ update msg model =
                         ++ "#"
                         ++ toString (lia.section_active + 1)
                     )
-                , tx_log ( model.url, ( "init", Array.length lia.sections, JE.null ) )
+                , log2js ( model.url, ( "init", Array.length lia.sections, JE.null ) )
                 , Cmd.map LIA cmd
                 ]
             )
@@ -169,7 +169,7 @@ update msg model =
         GET (Err msg) ->
             ( { model | error = toString msg, state = LoadFail }, Cmd.none )
 
-        RxLog m ->
+        ElmLog m ->
             ( { model | lia = Lia.restore model.lia m }, Cmd.none )
 
         Update url ->
@@ -260,6 +260,6 @@ getCourse url =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ rx_log RxLog
+        [ log2elm ElmLog
         , Sub.map LIA (Lia.subscriptions model.lia)
         ]

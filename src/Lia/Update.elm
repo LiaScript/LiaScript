@@ -15,7 +15,6 @@ import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (..)
 import Lia.Parser exposing (parse_section)
 import Lia.Types exposing (Mode(..), Section, Sections)
-import Lia.Utils exposing (set_local)
 import Navigation
 
 
@@ -43,6 +42,7 @@ type Msg
     | DesignAce String
     | UpdateIndex Index.Msg
     | UpdateMarkdown Markdown.Msg
+    | UpdateSettings
     | SwitchMode
     | Toggle Toggle
     | Location String
@@ -59,17 +59,22 @@ type Toggle
     | Sound
 
 
-maybe_log : ID -> Maybe ( String, JE.Value ) -> Maybe ( String, ID, JE.Value )
-maybe_log idx log =
+log_maybe : ID -> Maybe ( String, JE.Value ) -> List ( String, ID, JE.Value )
+log_maybe idx log =
     case log of
         Nothing ->
-            Nothing
+            []
 
         Just ( name, json ) ->
-            Just ( name, idx, json )
+            [ ( name, idx, json ) ]
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, Maybe ( String, ID, JE.Value ) )
+log_settings : Model -> ( String, ID, JE.Value )
+log_settings model =
+    ( "update_settings", -1, model |> model2settings |> settings2json )
+
+
+update : Msg -> Model -> ( Model, Cmd Msg, List ( String, ID, JE.Value ) )
 update msg model =
     case ( msg, get_active_section model ) of
         ( UpdateIndex childMsg, _ ) ->
@@ -80,7 +85,7 @@ update msg model =
                         |> Array.toIndexedList
                         |> Index.update childMsg model.index_model
             in
-            ( { model | index_model = index }, Cmd.none, Nothing )
+            ( { model | index_model = index }, Cmd.none, [] )
 
         ( UpdateMarkdown childMsg, Just sec ) ->
             let
@@ -89,64 +94,50 @@ update msg model =
             in
             ( set_active_section model section
             , Cmd.map UpdateMarkdown cmd
-            , maybe_log model.section_active log
+            , log_maybe model.section_active log
             )
+
+        ( UpdateSettings, _ ) ->
+            ( model, Cmd.none, [ log_settings model ] )
 
         ( DesignTheme theme, _ ) ->
             let
                 setting =
                     model.design
             in
-            ( { model | design = { setting | theme = set_local "theme" theme } }
-            , Cmd.none
-            , Nothing
-            )
+            update UpdateSettings { model | design = { setting | theme = theme } }
 
         ( DesignLight, _ ) ->
             let
                 setting =
                     model.design
             in
-            ( { model
-                | design =
-                    { setting
-                        | light =
-                            set_local "theme_light" <|
+            update UpdateSettings
+                { model
+                    | design =
+                        { setting
+                            | light =
                                 if setting.light == "light" then
                                     "dark"
 
                                 else
                                     "light"
-                    }
-              }
-            , Cmd.none
-            , Nothing
-            )
+                        }
+                }
 
         ( DesignAce theme, _ ) ->
             let
                 setting =
                     model.design
             in
-            ( { model | design = { setting | ace = set_local "ace" theme } }
-            , Cmd.none
-            , Nothing
-            )
+            update UpdateSettings { model | design = { setting | ace = theme } }
 
         ( Load idx, Just _ ) ->
             if (-1 < idx) && (idx < Array.length model.sections) then
-                let
-                    unused =
-                        if model.url == "" then
-                            0
-
-                        else
-                            set_local model.url idx
-                in
                 update InitSection (generate { model | section_active = idx })
 
             else
-                ( model, Cmd.none, Nothing )
+                ( model, Cmd.none, [] )
 
         ( InitSection, Just sec ) ->
             let
@@ -160,7 +151,7 @@ update msg model =
             in
             ( set_active_section model sec_
             , Cmd.map UpdateMarkdown cmd_
-            , maybe_log model.section_active log_
+            , log_maybe model.section_active log_
             )
 
         ( NextSection, Just sec ) ->
@@ -174,7 +165,7 @@ update msg model =
                 in
                 ( set_active_section model sec_
                 , Cmd.map UpdateMarkdown cmd_
-                , maybe_log model.section_active log_
+                , log_maybe model.section_active log_
                 )
 
         ( PrevSection, Just sec ) ->
@@ -188,23 +179,21 @@ update msg model =
                 in
                 ( set_active_section model sec_
                 , Cmd.map UpdateMarkdown cmd_
-                , maybe_log model.section_active log_
+                , log_maybe model.section_active log_
                 )
 
         ( SwitchMode, Just sec ) ->
             let
                 mode =
-                    set_local "mode"
-                        (case model.mode of
-                            Presentation ->
-                                Slides
+                    case model.mode of
+                        Presentation ->
+                            Slides
 
-                            Slides ->
-                                Textbook
+                        Slides ->
+                            Textbook
 
-                            Textbook ->
-                                Presentation
-                        )
+                        Textbook ->
+                            Presentation
 
                 ( sec_, cmd_, log_ ) =
                     case mode of
@@ -213,10 +202,13 @@ update msg model =
 
                         _ ->
                             Markdown.initEffect False False sec
+
+                model_ =
+                    { model | mode = mode }
             in
-            ( set_active_section { model | mode = mode } sec_
+            ( set_active_section model_ sec_
             , Cmd.map UpdateMarkdown cmd_
-            , maybe_log model.section_active log_
+            , (::) (log_settings model_) (log_maybe model.section_active log_)
             )
 
         ( Toggle what, Just sec ) ->
@@ -225,10 +217,13 @@ update msg model =
                     let
                         ( sec_, cmd_, log_ ) =
                             Markdown.initEffect False (not model.sound) sec
+
+                        model_ =
+                            { model | sound = not model.sound }
                     in
-                    ( { model | sound = set_local "sound" (not model.sound) }
+                    ( model_
                     , Cmd.map UpdateMarkdown cmd_
-                    , maybe_log model.section_active log_
+                    , (::) (log_settings model_) (log_maybe model.section_active log_)
                     )
 
                 _ ->
@@ -236,41 +231,39 @@ update msg model =
                         show =
                             Toogler model.show.loc False False False False
                     in
-                    ( { model
-                        | show =
-                            case what of
-                                LOC ->
-                                    { show | loc = not show.loc }
+                    update UpdateSettings
+                        { model
+                            | show =
+                                case what of
+                                    LOC ->
+                                        { show | loc = not show.loc }
 
-                                Settings ->
-                                    { show | settings = not model.show.settings }
+                                    Settings ->
+                                        { show | settings = not model.show.settings }
 
-                                Informations ->
-                                    { show | informations = not model.show.informations }
+                                    Informations ->
+                                        { show | informations = not model.show.informations }
 
-                                Translations ->
-                                    { show | translations = not model.show.translations }
+                                    Translations ->
+                                        { show | translations = not model.show.translations }
 
-                                _ ->
-                                    { show | share = not model.show.share }
-                      }
-                    , Cmd.none
-                    , Nothing
-                    )
+                                    _ ->
+                                        { show | share = not model.show.share }
+                        }
 
         ( Location url, _ ) ->
-            ( model, Navigation.load url, Nothing )
+            ( model, Navigation.load url, [] )
 
         ( IncreaseFontSize positive, _ ) ->
             let
                 design =
                     model.design
             in
-            ( { model
-                | design =
-                    { design
-                        | font_size =
-                            set_local "font_size" <|
+            update UpdateSettings
+                { model
+                    | design =
+                        { design
+                            | font_size =
                                 if positive then
                                     design.font_size + 10
 
@@ -279,14 +272,11 @@ update msg model =
 
                                 else
                                     design.font_size - 10
-                    }
-              }
-            , Cmd.none
-            , Nothing
-            )
+                        }
+                }
 
         _ ->
-            ( model, Cmd.none, Nothing )
+            ( model, Cmd.none, [] )
 
 
 get_active_section : Model -> Maybe Section

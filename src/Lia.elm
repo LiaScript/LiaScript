@@ -1,10 +1,28 @@
-module Lia exposing (Mode, Model, Msg, init, init_presentation, init_slides, init_textbook, load_slide, plain_mode, restore, set_script, slide_mode, subscriptions, switch_mode, update, view)
+module Lia exposing
+    ( Mode
+    , Model
+    , Msg
+    , init
+    , init_presentation
+    , init_slides
+    , init_textbook
+    , load_slide
+    , plain_mode
+    , restore
+    , set_script
+    , slide_mode
+    , subscriptions
+    , switch_mode
+    , update
+    , view
+    )
 
 import Array
 import Html exposing (Html)
+import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Inline.Stringify exposing (stringify)
-import Lia.Model
+import Lia.Model exposing (json2settings, settings2model)
 import Lia.Parser
 import Lia.Types exposing (Section, Sections, init_section)
 import Lia.Update exposing (Msg(..))
@@ -25,7 +43,7 @@ type alias Mode =
     Lia.Types.Mode
 
 
-load_slide : Model -> Int -> ( Model, Cmd Msg, Maybe ( String, Int, JE.Value ) )
+load_slide : Model -> Int -> ( Model, Cmd Msg, List ( String, Int, JE.Value ) )
 load_slide model idx =
     Lia.Update.update (Load idx) model
 
@@ -100,12 +118,12 @@ subscriptions model =
     Lia.Update.subscriptions model
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, Maybe ( String, Int, JE.Value ) )
+update : Msg -> Model -> ( Model, Cmd Msg, List ( String, Int, JE.Value ) )
 update =
     Lia.Update.update
 
 
-init : Model -> ( Model, Cmd Msg, Maybe ( String, Int, JE.Value ) )
+init : Model -> ( Model, Cmd Msg, List ( String, Int, JE.Value ) )
 init model =
     Lia.Update.update (Load model.section_active) model
 
@@ -125,13 +143,20 @@ slide_mode =
     switch_mode Lia.Types.Slides
 
 
-restore : Model -> ( String, Int, JE.Value ) -> Model
+restore : Model -> ( String, Int, JD.Value ) -> Model
 restore model ( what, idx, json ) =
-    let
-        duck =
-            Debug.log "fuck" ( what, idx, json )
-    in
-    model
+    case what of
+        "settings" ->
+            json
+                |> json2settings
+                |> settings2model model
+
+        _ ->
+            let
+                msg =
+                    Debug.log "RESTORE" ( what, idx, json )
+            in
+            model
 
 
 

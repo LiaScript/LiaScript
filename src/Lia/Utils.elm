@@ -2,10 +2,8 @@ module Lia.Utils exposing
     ( evaluateJS
     , execute
     , formula
-    , get_local
     , load
     , scrollIntoView
-    , set_local
     , set_title
     , stringToHtml
     , string_replace
@@ -46,20 +44,6 @@ load elem url =
 stringToHtml : String -> Html msg
 stringToHtml str =
     Html.span [ Attr.property "innerHTML" (Json.Encode.string str) ] []
-
-
-get_local : String -> Maybe String
-get_local key =
-    Native.Utils.get_local key
-
-
-set_local : String -> a -> a
-set_local key value =
-    let
-        unused =
-            Native.Utils.set_local key (toString value)
-    in
-    value
 
 
 toUnixNewline : String -> String

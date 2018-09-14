@@ -1,11 +1,22 @@
-module Lia.Model exposing (Model, Toogler, init, init_font_size, init_section, init_sound, init_string, load_javascript)
+module Lia.Model exposing
+    ( Model
+    , Toogler
+    , init
+    , json2settings
+    , load_javascript
+    , model2settings
+    , settings2json
+    , settings2model
+    )
 
 import Array exposing (Array)
+import Json.Decode as JD
+import Json.Encode as JE
 import Lia.Definition.Types as Definition exposing (Definition)
 import Lia.Helper exposing (ID)
 import Lia.Index.Model as Index
-import Lia.Types exposing (Design, Mode, Sections)
-import Lia.Utils exposing (get_local, load, set_local)
+import Lia.Types exposing (Design, Mode(..), Sections)
+import Lia.Utils exposing (load)
 import Translations
 
 
@@ -36,91 +47,127 @@ type alias Model =
     }
 
 
+type alias Settings =
+    { loc : Bool
+    , mode : String
+    , theme : String
+    , light : String
+    , ace : String
+    , font_size : Int
+    , sound : Bool
+    }
+
+
+model2settings : Model -> Settings
+model2settings model =
+    { loc = model.show.loc
+    , mode =
+        case model.mode of
+            Slides ->
+                "Slides"
+
+            Presentation ->
+                "Presentation"
+
+            Textbook ->
+                "Textbook"
+    , theme = model.design.theme
+    , light = model.design.light
+    , ace = model.design.ace
+    , font_size = model.design.font_size
+    , sound = model.sound
+    }
+
+
+settings2json : Settings -> JE.Value
+settings2json v =
+    JE.object
+        [ ( "loc", JE.bool v.loc )
+        , ( "mode", JE.string v.mode )
+        , ( "theme", JE.string v.theme )
+        , ( "light", JE.string v.light )
+        , ( "ace", JE.string v.ace )
+        , ( "font_size", JE.int v.font_size )
+        , ( "sound", JE.bool v.sound )
+        ]
+
+
+json2settings : JD.Value -> Result String Settings
+json2settings json =
+    JD.decodeValue
+        (JD.map7 Settings
+            (JD.field "loc" JD.bool)
+            (JD.field "mode" JD.string)
+            (JD.field "theme" JD.string)
+            (JD.field "light" JD.string)
+            (JD.field "ace" JD.string)
+            (JD.field "font_size" JD.int)
+            (JD.field "sound" JD.bool)
+        )
+        json
+
+
+settings2model : Model -> Result String Settings -> Model
+settings2model model settings =
+    case settings of
+        Ok s ->
+            { model
+                | show = Toogler s.loc False False False False
+                , design =
+                    { theme = s.theme
+                    , light = s.light
+                    , font_size = s.font_size
+                    , ace = s.ace
+                    }
+                , mode =
+                    case s.mode of
+                        "Textbook" ->
+                            Textbook
+
+                        "Presentation" ->
+                            Presentation
+
+                        _ ->
+                            Slides
+                , sound = s.sound
+            }
+
+        Err msg ->
+            model
+
+
 init : Mode -> String -> String -> String -> Maybe Int -> Model
 init mode url readme origin slide_number =
-    let
-        local_mode =
-            case get_local "mode" of
-                Just "Slides" ->
-                    Lia.Types.Slides
-
-                Just "Presentation" ->
-                    Lia.Types.Presentation
-
-                Just "Textbook" ->
-                    Lia.Types.Textbook
-
-                _ ->
-                    mode
-    in
     { url = url
     , readme = readme
     , origin = origin
-    , mode = local_mode
+    , mode = mode
     , error = Nothing
     , sections = Array.empty
     , section_active =
         case slide_number of
+            Nothing ->
+                0
+
             Just idx ->
                 if (idx - 1) > 0 then
                     idx - 1
 
                 else
                     0
-
-            Nothing ->
-                init_section url
     , definition = Definition.default url
     , design =
-        { theme = init_string "theme" "default"
-        , light = init_string "theme_light" "light"
-        , font_size = init_font_size
-        , ace = init_string "ace" "dreamweaver"
+        { theme = "default"
+        , light = "light"
+        , font_size = 100
+        , ace = "dreamweaver"
         }
     , index_model = Index.init
-    , sound = init_sound
+    , sound = True
     , show = Toogler True False False False False
     , javascript = []
     , translation = Translations.En
     }
-
-
-init_string : String -> String -> String
-init_string id_ default =
-    id_
-        |> get_local
-        |> Maybe.map (String.dropLeft 1 >> String.dropRight 1)
-        |> Maybe.withDefault default
-
-
-init_section : String -> Int
-init_section url =
-    if url == "" then
-        0
-
-    else
-        url
-            |> get_local
-            |> Maybe.map String.toInt
-            |> Maybe.andThen Result.toMaybe
-            |> Maybe.withDefault 0
-
-
-init_sound : Bool
-init_sound =
-    "sound"
-        |> get_local
-        |> Maybe.andThen (\b -> b /= "false" |> Just)
-        |> Maybe.withDefault True
-
-
-init_font_size : Int
-init_font_size =
-    "font_size"
-        |> get_local
-        |> Maybe.map String.toInt
-        |> Maybe.andThen Result.toMaybe
-        |> Maybe.withDefault 100
 
 
 load_javascript : List String -> List String -> List String
