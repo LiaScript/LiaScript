@@ -47,7 +47,7 @@ type Msg
     | Toggle Toggle
     | Location String
     | IncreaseFontSize Bool
-    | ResetAll
+    | Reset
 
 
 type Toggle
@@ -76,38 +76,21 @@ log_settings model =
 
 update : Msg -> Model -> ( Model, Cmd Msg, List ( String, ID, JE.Value ) )
 update msg model =
-    case ( msg, get_active_section model ) of
-        ( UpdateIndex childMsg, _ ) ->
-            let
-                index =
-                    model.sections
-                        |> Array.map .code
-                        |> Array.toIndexedList
-                        |> Index.update childMsg model.index_model
-            in
-            ( { model | index_model = index }, Cmd.none, [] )
-
-        ( UpdateMarkdown childMsg, Just sec ) ->
-            let
-                ( section, cmd, log ) =
-                    Markdown.update childMsg sec
-            in
-            ( set_active_section model section
-            , Cmd.map UpdateMarkdown cmd
-            , log_maybe model.section_active log
-            )
-
-        ( UpdateSettings, _ ) ->
+    case msg of
+        UpdateSettings ->
             ( model, Cmd.none, [ log_settings model ] )
 
-        ( DesignTheme theme, _ ) ->
+        Reset ->
+            ( model, Cmd.none, [ ( "reset", -1, JE.null ) ] )
+
+        DesignTheme theme ->
             let
                 setting =
                     model.design
             in
             update UpdateSettings { model | design = { setting | theme = theme } }
 
-        ( DesignLight, _ ) ->
+        DesignLight ->
             let
                 setting =
                     model.design
@@ -125,95 +108,139 @@ update msg model =
                         }
                 }
 
-        ( DesignAce theme, _ ) ->
+        DesignAce theme ->
             let
                 setting =
                     model.design
             in
             update UpdateSettings { model | design = { setting | ace = theme } }
 
-        ( Load idx, Just _ ) ->
-            if (-1 < idx) && (idx < Array.length model.sections) then
-                update InitSection (generate { model | section_active = idx })
+        Location url ->
+            ( model, Navigation.load url, [] )
 
-            else
-                ( model, Cmd.none, [] )
-
-        ( InitSection, Just sec ) ->
+        IncreaseFontSize positive ->
             let
-                ( sec_, cmd_, log_ ) =
-                    case model.mode of
-                        Textbook ->
-                            Markdown.initEffect True False sec
-
-                        _ ->
-                            Markdown.initEffect False model.sound sec
+                design =
+                    model.design
             in
-            ( set_active_section model sec_
-            , Cmd.map UpdateMarkdown cmd_
-            , log_maybe model.section_active log_
-            )
+            update UpdateSettings
+                { model
+                    | design =
+                        { design
+                            | font_size =
+                                if positive then
+                                    design.font_size + 10
 
-        ( NextSection, Just sec ) ->
-            if (model.mode == Textbook) || not (Effect.has_next sec.effect_model) then
-                update (Load <| model.section_active + 1) model
+                                else if design.font_size <= 10 then
+                                    design.font_size
 
-            else
-                let
-                    ( sec_, cmd_, log_ ) =
-                        Markdown.nextEffect model.sound sec
-                in
-                ( set_active_section model sec_
-                , Cmd.map UpdateMarkdown cmd_
-                , log_maybe model.section_active log_
-                )
+                                else
+                                    design.font_size - 10
+                        }
+                }
 
-        ( PrevSection, Just sec ) ->
-            if (model.mode == Textbook) || not (Effect.has_previous sec.effect_model) then
-                update (Load <| model.section_active - 1) model
-
-            else
-                let
-                    ( sec_, cmd_, log_ ) =
-                        Markdown.previousEffect model.sound sec
-                in
-                ( set_active_section model sec_
-                , Cmd.map UpdateMarkdown cmd_
-                , log_maybe model.section_active log_
-                )
-
-        ( SwitchMode, Just sec ) ->
+        UpdateIndex childMsg ->
             let
-                mode =
-                    case model.mode of
-                        Presentation ->
-                            Slides
-
-                        Slides ->
-                            Textbook
-
-                        Textbook ->
-                            Presentation
-
-                ( sec_, cmd_, log_ ) =
-                    case mode of
-                        Textbook ->
-                            Markdown.initEffect True False sec
-
-                        _ ->
-                            Markdown.initEffect False False sec
-
-                model_ =
-                    { model | mode = mode }
+                index =
+                    model.sections
+                        |> Array.map .code
+                        |> Array.toIndexedList
+                        |> Index.update childMsg model.index_model
             in
-            ( set_active_section model_ sec_
-            , Cmd.map UpdateMarkdown cmd_
-            , (::) (log_settings model_) (log_maybe model.section_active log_)
-            )
+            ( { model | index_model = index }, Cmd.none, [] )
 
-        ( Toggle what, Just sec ) ->
-            case what of
-                Sound ->
+        _ ->
+            case ( msg, get_active_section model ) of
+                ( UpdateMarkdown childMsg, Just sec ) ->
+                    let
+                        ( section, cmd, log ) =
+                            Markdown.update childMsg sec
+                    in
+                    ( set_active_section model section
+                    , Cmd.map UpdateMarkdown cmd
+                    , log_maybe model.section_active log
+                    )
+
+                ( Load idx, Just _ ) ->
+                    if (-1 < idx) && (idx < Array.length model.sections) then
+                        update InitSection (generate { model | section_active = idx })
+
+                    else
+                        ( model, Cmd.none, [] )
+
+                ( InitSection, Just sec ) ->
+                    let
+                        ( sec_, cmd_, log_ ) =
+                            case model.mode of
+                                Textbook ->
+                                    Markdown.initEffect True False sec
+
+                                _ ->
+                                    Markdown.initEffect False model.sound sec
+                    in
+                    ( set_active_section model sec_
+                    , Cmd.map UpdateMarkdown cmd_
+                    , log_maybe model.section_active log_
+                    )
+
+                ( NextSection, Just sec ) ->
+                    if (model.mode == Textbook) || not (Effect.has_next sec.effect_model) then
+                        update (Load <| model.section_active + 1) model
+
+                    else
+                        let
+                            ( sec_, cmd_, log_ ) =
+                                Markdown.nextEffect model.sound sec
+                        in
+                        ( set_active_section model sec_
+                        , Cmd.map UpdateMarkdown cmd_
+                        , log_maybe model.section_active log_
+                        )
+
+                ( PrevSection, Just sec ) ->
+                    if (model.mode == Textbook) || not (Effect.has_previous sec.effect_model) then
+                        update (Load <| model.section_active - 1) model
+
+                    else
+                        let
+                            ( sec_, cmd_, log_ ) =
+                                Markdown.previousEffect model.sound sec
+                        in
+                        ( set_active_section model sec_
+                        , Cmd.map UpdateMarkdown cmd_
+                        , log_maybe model.section_active log_
+                        )
+
+                ( SwitchMode, Just sec ) ->
+                    let
+                        mode =
+                            case model.mode of
+                                Presentation ->
+                                    Slides
+
+                                Slides ->
+                                    Textbook
+
+                                Textbook ->
+                                    Presentation
+
+                        ( sec_, cmd_, log_ ) =
+                            case mode of
+                                Textbook ->
+                                    Markdown.initEffect True False sec
+
+                                _ ->
+                                    Markdown.initEffect False False sec
+
+                        model_ =
+                            { model | mode = mode }
+                    in
+                    ( set_active_section model_ sec_
+                    , Cmd.map UpdateMarkdown cmd_
+                    , (::) (log_settings model_) (log_maybe model.section_active log_)
+                    )
+
+                ( Toggle Sound, Just sec ) ->
                     let
                         ( sec_, cmd_, log_ ) =
                             Markdown.initEffect False (not model.sound) sec
@@ -226,7 +253,7 @@ update msg model =
                     , (::) (log_settings model_) (log_maybe model.section_active log_)
                     )
 
-                _ ->
+                ( Toggle what, _ ) ->
                     let
                         show =
                             Toogler model.show.loc False False False False
@@ -251,32 +278,8 @@ update msg model =
                                         { show | share = not model.show.share }
                         }
 
-        ( Location url, _ ) ->
-            ( model, Navigation.load url, [] )
-
-        ( IncreaseFontSize positive, _ ) ->
-            let
-                design =
-                    model.design
-            in
-            update UpdateSettings
-                { model
-                    | design =
-                        { design
-                            | font_size =
-                                if positive then
-                                    design.font_size + 10
-
-                                else if design.font_size <= 10 then
-                                    design.font_size
-
-                                else
-                                    design.font_size - 10
-                        }
-                }
-
-        _ ->
-            ( model, Cmd.none, [] )
+                _ ->
+                    ( model, Cmd.none, [] )
 
 
 get_active_section : Model -> Maybe Section
