@@ -104,9 +104,15 @@ view_eval lang theme attr running errors id_1 id_2 file =
                 ]
                 [ Html.span
                     [ onClick <| FlipView id_1 id_2
-                    , Attr.style [ ( "width", "calc(100% - 36px)" ), ( "display", "inline-block" ) ]
+                    , Attr.style [ ( "width", "calc(100% - 18px)" ), ( "display", "inline-block" ) ]
                     ]
-                    [ Html.text file.name ]
+                    [ if file.visible then
+                        Html.b [] [ Html.text " + " ]
+
+                      else
+                        Html.b [] [ Html.text " - " ]
+                    , Html.text file.name
+                    ]
                 , if file.visible then
                     Html.span
                         [ Attr.class "lia-accordion-min-max"
@@ -118,12 +124,13 @@ view_eval lang theme attr running errors id_1 id_2 file =
                             else
                                 codeMaximize lang
                         ]
-                        [ Html.text <|
-                            if file.fullscreen then
-                                "↥"
+                        [ Html.b []
+                            [ if file.fullscreen then
+                                Html.text "↥"
 
-                            else
-                                "↧"
+                              else
+                                Html.text "↧"
+                            ]
                         ]
 
                   else

@@ -117,22 +117,6 @@
         .active, &:hover {
             background-color: mix($bg, $fg, 80%);
         }
-
-        &:after {
-          content: '\2212';
-          color: $fg;
-          font-weight: bold;
-          float: left;
-          //margin-left: 5px;
-          margin-right: 5px;
-        }
-
-        &.active:after {
-            content: '\002B';
-            border-bottom-left-radius: $rd;
-            border-bottom-right-radius: $rd;
-        }
-
     }
 
     .lia-accordion-dummy {
