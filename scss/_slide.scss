@@ -33,6 +33,15 @@
             border-top: map-get($config, spacing-small) solid mix($fg, $bg, 20%);
         }
 
+        .lia-svg {
+            $horiz: map-get($config, spacing-normal);
+
+            //background-color: $bg;
+            padding-left: $horiz;
+            padding-right: $horiz;
+            overflow: auto;
+        }
+
         .lia-content {
             $horiz: map-get($config, spacing-huge);
             $vert: map-get($config, spacing-large);

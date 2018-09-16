@@ -16,6 +16,7 @@ import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Quiz.View as Quizzes
 import Lia.Survey.View as Surveys
 import Lia.Types exposing (Mode(..), Section)
+import SvgBob
 import Translations exposing (..)
 
 
@@ -228,6 +229,9 @@ view_block config block =
 
         Chart attr chart ->
             Charts.view attr chart
+
+        ASCII attr txt ->
+            Html.div (annotation "lia-svg" attr) [ SvgBob.getSvg txt ]
 
 
 view_table : Config -> Annotation -> MultInlines -> List String -> List MultInlines -> Html Msg

@@ -10,7 +10,8 @@ type alias ID =
 
 c_frame : Parser s String
 c_frame =
-    regex "`{3,}"
+    --regex "`{3,}"
+    string "```"
 
 
 newline : Parser s Char

@@ -6,6 +6,7 @@ import Lia.Helper exposing (ID)
 import Lia.Markdown.Inline.Types exposing (..)
 import Lia.Quiz.Types exposing (Quiz)
 import Lia.Survey.Types exposing (Survey)
+import SvgBob
 
 
 type Markdown
@@ -21,6 +22,7 @@ type Markdown
     | Survey Annotation Survey
     | Chart Annotation Chart
     | Code Annotation Code
+    | ASCII Annotation SvgBob.Model
 
 
 type alias MarkdownS =

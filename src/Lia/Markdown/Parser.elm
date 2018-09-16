@@ -15,6 +15,7 @@ import Lia.Markdown.Types exposing (..)
 import Lia.PState exposing (..)
 import Lia.Quiz.Parser as Quiz
 import Lia.Survey.Parser as Survey
+import SvgBob
 
 
 run : Parser PState (List Markdown)
@@ -41,6 +42,7 @@ blocks =
                         , Chart <$> md_annotations <*> Chart.parse
                         , formated_table
                         , simple_table
+                        , svgbob
                         , Code <$> md_annotations <*> Code.parse
                         , quote
                         , horizontal_line
@@ -82,6 +84,20 @@ to_comment ( attr, ( id1, id2 ) ) =
 --            { s | comment_map = set_annotation id1 id2 s.comment_map attr }
 --        )
 --        >>= (\x -> Comment ( id1, id2 ))
+
+
+svgbob : Parser PState Markdown
+svgbob =
+    (\attr txt -> ASCII attr (txt |> List.intersperse "\n" |> String.concat |> SvgBob.init))
+        <$> md_annotations
+        <*> (regex "`{4,}\\n"
+                *> manyTill
+                    (maybe identation
+                        *> regex "(.(?!`{4,}))*"
+                        <* string "\n"
+                    )
+                    (maybe identation *> regex "`{4,}")
+            )
 
 
 solution : Parser PState (Maybe ( List Markdown, Int ))

@@ -36,10 +36,10 @@ var _user$project$Native_Utils = (function () {
     {
         var pos = code.search("\n");
 
-        if (code[pos+1] != "\r")
-            return code
-        else
-            return code.replace(/\r/g, "");
+        if (code[pos+1] == "\r")
+            code = code.replace(/\r/g, "");
+
+        return code.replace(/\\\n/g, "\\ \n")
     }
 
     function string_replace(s, r, string)

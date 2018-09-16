@@ -11,11 +11,13 @@
     "dependencies": {
         "elm-lang/navigation": "2.0.0 <= v < 3.0.0",
         "andre-dietrich/parser-combinators": "1.0.0 <= v < 2.0.0",
+        "andre-dietrich/elm-svgbob": "1.0.0 <= v < 2.0.0",
         "elm-lang/core": "5.1.1 <= v < 6.0.0",
         "elm-lang/html": "2.0.0 <= v < 3.0.0",
         "elm-lang/http": "1.0.0 <= v < 2.0.0",
         "elm-lang/svg": "2.0.0 <= v < 3.0.0",
-        "terezka/elm-plot": "5.1.0 <= v < 6.0.0"
+        "mariohuizar/elm-plot": "1.0.0 <= v < 2.0.0"
+
     },
     "elm-version": "0.18.0 <= v < 0.19.0"
 }

@@ -5,3 +5,4 @@ build
 *.tgz
 *~
 src/Lia/Helper.elm.bak
+bak/*
