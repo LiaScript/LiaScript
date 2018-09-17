@@ -95,7 +95,11 @@ update msg vector =
             ( new_vector, Just <| vector2json new_vector )
 
         ShowHint idx ->
-            ( update_ idx vector (\e -> { e | hint = e.hint + 1 }), Nothing )
+            let
+                new_vector =
+                    update_ idx vector (\e -> { e | hint = e.hint + 1 })
+            in
+            ( new_vector, Just <| vector2json new_vector )
 
         ShowSolution idx solution ->
             let

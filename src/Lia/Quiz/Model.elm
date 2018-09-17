@@ -1,9 +1,8 @@
-module Lia.Quiz.Model
-    exposing
-        ( get_state
-        , json2vector
-        , vector2json
-        )
+module Lia.Quiz.Model exposing
+    ( get_state
+    , json2vector
+    , vector2json
+    )
 
 import Array exposing (Array)
 import Json.Decode as JD
@@ -41,6 +40,7 @@ element2json element =
         , ( "state", state2json element.state )
         , ( "trial", JE.int element.trial )
         , ( "hint", JE.int element.hint )
+        , ( "error_msg", JE.string element.error_msg )
         ]
 
 
@@ -89,8 +89,8 @@ json2element =
     JD.map5 Element
         (JD.field "solved" JD.int |> JD.andThen solved_decoder)
         (JD.field "state" json2state)
-        (JD.field "hints" JD.int)
         (JD.field "trial" JD.int)
+        (JD.field "hint" JD.int)
         (JD.field "error_msg" JD.string)
 
 
