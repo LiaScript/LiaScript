@@ -169,6 +169,9 @@ update msg model =
         GET (Err msg) ->
             ( { model | error = toString msg, state = LoadFail }, Cmd.none )
 
+        ElmLog ( "reset", i, val ) ->
+            ( model, log2js ( model.url, ( "reset", i, val ) ) )
+
         ElmLog m ->
             ( { model | lia = Lia.restore model.lia m }, Cmd.none )
 

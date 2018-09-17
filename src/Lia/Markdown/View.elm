@@ -231,7 +231,7 @@ view_block config block =
             Charts.view attr chart
 
         ASCII attr txt ->
-            Html.div (annotation "lia-svg" attr) [ SvgBob.getSvg txt ]
+            SvgBob.getSvg (annotation "lia-svg" attr) txt
 
 
 view_table : Config -> Annotation -> MultInlines -> List String -> List MultInlines -> Html Msg
