@@ -161,7 +161,7 @@ update msg model =
                     , log_maybe model.section_active log
                     )
 
-                ( Load idx, Just _ ) ->
+                ( Load idx, _ ) ->
                     if (-1 < idx) && (idx < Array.length model.sections) then
                         update InitSection (generate { model | section_active = idx })
 
@@ -313,9 +313,9 @@ generate model =
                                     , error = Nothing
                                     , visited = True
                                     , parsed = True
-                                    , code_vector = if_update sec.code_vector codes
-                                    , quiz_vector = if_update sec.quiz_vector quizzes
-                                    , survey_vector = if_update sec.survey_vector surveys
+                                    , code_vector = codes
+                                    , quiz_vector = quizzes
+                                    , survey_vector = surveys
                                     , effect_model = effects
                                     , footnotes = footnotes
                                     , definition = defines
@@ -339,15 +339,6 @@ generate model =
 
         Nothing ->
             model
-
-
-if_update : Array a -> Array a -> Array a
-if_update orig new =
-    if Array.isEmpty orig then
-        new
-
-    else
-        orig
 
 
 log : String -> Maybe JE.Value -> Maybe ( String, JE.Value )

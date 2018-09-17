@@ -104,7 +104,7 @@ view_eval lang theme attr running errors id_1 id_2 file =
                 ]
                 [ Html.span
                     [ onClick <| FlipView id_1 id_2
-                    , Attr.style [ ( "width", "calc(100% - 18px)" ), ( "display", "inline-block" ) ]
+                    , Attr.style [ ( "width", "calc(100% - 20px)" ), ( "display", "inline-block" ) ]
                     ]
                     [ if file.visible then
                         Html.b [] [ Html.text " + " ]
