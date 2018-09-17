@@ -178,9 +178,16 @@ update msg model =
                                 _ ->
                                     Markdown.initEffect False model.sound sec
                     in
-                    ( set_active_section model sec_
+                    ( set_active_section model { sec_ | parsed = True }
                     , Cmd.map UpdateMarkdown cmd_
-                    , log_maybe model.section_active log_
+                    , if sec.parsed then
+                        log_maybe model.section_active log_
+
+                      else
+                        log_maybe model.section_active log_
+                            |> add_load (Array.length sec_.quiz_vector) model.section_active "quiz"
+                            |> add_load (Array.length sec_.code_vector) model.section_active "code"
+                            |> add_load (Array.length sec_.survey_vector) model.section_active "survey"
                     )
 
                 ( NextSection, Just sec ) ->
@@ -282,6 +289,15 @@ update msg model =
                     ( model, Cmd.none, [] )
 
 
+add_load : Int -> Int -> String -> List ( String, Int, JE.Value ) -> List ( String, Int, JE.Value )
+add_load length idx vector logs =
+    if length == 0 then
+        logs
+
+    else
+        List.append logs [ ( "load", idx, JE.string vector ) ]
+
+
 get_active_section : Model -> Maybe Section
 get_active_section model =
     Array.get model.section_active model.sections
@@ -312,7 +328,6 @@ generate model =
                                     | body = blocks
                                     , error = Nothing
                                     , visited = True
-                                    , parsed = True
                                     , code_vector = codes
                                     , quiz_vector = quizzes
                                     , survey_vector = surveys

@@ -1,9 +1,19 @@
-module Lia.Code.Json exposing (decoder_result, json2project, project2json)
+module Lia.Code.Json exposing (decoder_result, json2project, json2vector, vector2json)
 
 import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Code.Types exposing (File, Log, Project, Vector, Version, noResult)
+
+
+vector2json : Vector -> JE.Value
+vector2json vector =
+    JE.array <| Array.map project2json vector
+
+
+json2vector : JD.Value -> Result String Vector
+json2vector json =
+    JD.decodeValue (JD.array json2project) json
 
 
 project2json : Project -> JE.Value
@@ -17,18 +27,15 @@ project2json project =
         ]
 
 
-json2project : JD.Value -> Result String Project
-json2project json =
-    JD.decodeValue
-        (JD.map6 Project
-            (JD.field "file" (JD.array json2file))
-            (JD.field "version" (JD.array json2version))
-            (JD.field "evaluation" JD.string)
-            (JD.field "version_active" JD.int)
-            (JD.field "result" json2result)
-            (JD.succeed False)
-        )
-        json
+json2project : JD.Decoder Project
+json2project =
+    JD.map6 Project
+        (JD.field "file" (JD.array json2file))
+        (JD.field "version" (JD.array json2version))
+        (JD.field "evaluation" JD.string)
+        (JD.field "version_active" JD.int)
+        (JD.field "result" json2result)
+        (JD.succeed False)
 
 
 file2json : File -> JE.Value
@@ -71,7 +78,7 @@ result2json : Result Log Log -> JE.Value
 result2json result =
     case result of
         Ok msg ->
-            log2json False msg
+            log2json True msg
 
         Err msg ->
             log2json False msg

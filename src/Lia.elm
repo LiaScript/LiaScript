@@ -17,13 +17,18 @@ module Lia exposing
     , view
     )
 
+--import Lia.Preprocessor exposing (sections)
+
 import Array
 import Html exposing (Html)
 import Json.Decode as JD
 import Json.Encode as JE
+import Lia.Code.Json as Code
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Model exposing (json2settings, settings2model)
 import Lia.Parser
+import Lia.Quiz.Model as Quiz
+import Lia.Survey.Model as Survey
 import Lia.Types exposing (Section, Sections, init_section)
 import Lia.Update exposing (Msg(..))
 import Lia.Utils exposing (load, set_title, toUnixNewline)
@@ -145,17 +150,46 @@ slide_mode =
 
 restore : Model -> ( String, Int, JD.Value ) -> Model
 restore model ( what, idx, json ) =
-    case what of
-        "settings" ->
-            json
-                |> json2settings
-                |> settings2model model
+    if what == "settings" then
+        json
+            |> json2settings
+            |> settings2model model
 
-        _ ->
-            let
-                msg =
-                    Debug.log "RESTORE" ( what, idx, json )
-            in
+    else
+        let
+            fn =
+                restore_ model idx json
+        in
+        case what of
+            "code" ->
+                fn Code.json2vector (\sec v -> { sec | code_vector = v })
+
+            "quiz" ->
+                fn Quiz.json2vector (\sec v -> { sec | quiz_vector = v })
+
+            "survey" ->
+                fn Survey.json2vector (\sec v -> { sec | survey_vector = v })
+
+            _ ->
+                let
+                    x =
+                        Debug.log "RESTORE" ( what, idx, json )
+                in
+                model
+
+
+restore_ : Model -> Int -> JD.Value -> (JD.Value -> Result String a) -> (Section -> a -> Section) -> Model
+restore_ model idx json json2vec update_ =
+    case json2vec json of
+        Ok vec ->
+            case Array.get idx model.sections of
+                Just s ->
+                    { model | sections = Array.set idx (update_ s vec) model.sections }
+
+                Nothing ->
+                    model
+
+        Err msg ->
             model
 
 

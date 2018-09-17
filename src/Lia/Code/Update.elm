@@ -3,7 +3,7 @@ port module Lia.Code.Update exposing (Msg(..), default_replace, subscriptions, u
 import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Code.Json exposing (decoder_result, project2json)
+import Lia.Code.Json exposing (decoder_result, vector2json)
 import Lia.Code.Types exposing (..)
 import Lia.Helper exposing (ID)
 import Lia.Utils exposing (toJSstring)
@@ -59,7 +59,7 @@ update msg model =
                                 |> default_replace code_0
                                 |> toJSstring
                         )
-                    , Just (project2json project)
+                    , Just (vector2json model)
                     )
 
                 Nothing ->
@@ -83,25 +83,21 @@ update msg model =
         Last idx ->
             ( update_ idx model (model |> Array.get idx |> Maybe.map (.version >> Array.length >> (+) -1) |> Maybe.withDefault 0 |> load), Cmd.none, Nothing )
 
-        EvalRslt ( True, idx, message, details ) ->
+        EvalRslt ( ok, idx, message, details ) ->
             if message == "LIA wait!" then
                 ( model, Cmd.none, Nothing )
 
             else
-                ( decoder_result True message details
-                    |> resulting
-                    |> update_ idx model
+                let
+                    new_model =
+                        decoder_result ok message details
+                            |> resulting
+                            |> update_ idx model
+                in
+                ( new_model
                 , Cmd.none
-                , Nothing
+                , Just (vector2json new_model)
                 )
-
-        EvalRslt ( False, idx, message, details ) ->
-            ( decoder_result False message details
-                |> resulting
-                |> update_ idx model
-            , Cmd.none
-            , Nothing
-            )
 
 
 replace : ( Int, String ) -> String -> String
