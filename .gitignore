@@ -6,3 +6,6 @@ build
 *~
 src/Lia/Helper.elm.bak
 bak/*
+assets/img/*
+assets/ccourse.md
+assets/tau.md
