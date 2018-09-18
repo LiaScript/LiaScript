@@ -101,10 +101,6 @@ var _user$project$Native_Utils = (function () {
         });
     };
 
-    function set_title (title) {
-        document.title = title;
-    };
-
     function scrollIntoView (id) {
         setTimeout(function(e){
             try {
@@ -120,7 +116,6 @@ var _user$project$Native_Utils = (function () {
         execute: F2(execute),
         load: F2(load),
         toUnixNewline: toUnixNewline,
-        set_title: set_title,
         string_replace: F3(string_replace),
         scrollIntoView: scrollIntoView
     };

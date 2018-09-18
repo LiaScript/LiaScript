@@ -31,7 +31,7 @@ import Lia.Quiz.Model as Quiz
 import Lia.Survey.Model as Survey
 import Lia.Types exposing (Section, Sections, init_section)
 import Lia.Update exposing (Msg(..))
-import Lia.Utils exposing (load, set_title, toUnixNewline)
+import Lia.Utils exposing (load, toUnixNewline)
 import Lia.View
 import Translations
 
@@ -67,15 +67,6 @@ set_script model script =
                             title_sections
                                 |> List.map init_section
                                 |> Array.fromList
-
-                        title =
-                            sections
-                                |> Array.get 0
-                                |> Maybe.map (\s -> stringify s.title)
-                                |> Maybe.withDefault "Lia Script"
-                                |> String.trim
-                                |> (++) "Lia: "
-                                |> set_title
                     in
                     { model
                         | definition = { definition | scripts = [] }
@@ -130,7 +121,24 @@ update =
 
 init : Model -> ( Model, Cmd Msg, List ( String, Int, JE.Value ) )
 init model =
-    Lia.Update.update (Load model.section_active) model
+    let
+        ( model_, cmd_, log_ ) =
+            Lia.Update.update (Load model.section_active) model
+    in
+    ( model_
+    , cmd_
+    , ( "title"
+      , 0
+      , model_.sections
+            |> Array.get 0
+            |> Maybe.map (\s -> stringify s.title)
+            |> Maybe.withDefault "Lia Script"
+            |> String.trim
+            |> (++) "Lia: "
+            |> JE.string
+      )
+        :: log_
+    )
 
 
 switch_mode : Mode -> Model -> Model

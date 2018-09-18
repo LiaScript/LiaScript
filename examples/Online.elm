@@ -152,17 +152,20 @@ update msg model =
                 , error = ""
                 , state = LoadOk
               }
-            , Cmd.batch
-                [ Navigation.newUrl
-                    (model.origin
-                        ++ "?"
-                        ++ model.url
-                        ++ "#"
-                        ++ toString (lia.section_active + 1)
-                    )
-                , log2js ( model.url, ( "init", lia.section_active, JE.null ) )
-                , Cmd.map LIA cmd
-                ]
+            , log
+                |> List.map (\l -> log2js ( model.url, l ))
+                |> List.append
+                    [ Navigation.newUrl
+                        (model.origin
+                            ++ "?"
+                            ++ model.url
+                            ++ "#"
+                            ++ toString (lia.section_active + 1)
+                        )
+                    , log2js ( model.url, ( "init", lia.section_active, JE.null ) )
+                    , Cmd.map LIA cmd
+                    ]
+                |> Cmd.batch
             )
 
         GET (Err msg) ->

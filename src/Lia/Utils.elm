@@ -4,7 +4,6 @@ module Lia.Utils exposing
     , formula
     , load
     , scrollIntoView
-    , set_title
     , stringToHtml
     , string_replace
     , toJSstring
@@ -49,11 +48,6 @@ stringToHtml str =
 toUnixNewline : String -> String
 toUnixNewline code =
     Native.Utils.toUnixNewline code
-
-
-set_title : String -> ()
-set_title title =
-    Native.Utils.set_title title
 
 
 string_replace : ( String, String ) -> String -> String
