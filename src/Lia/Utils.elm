@@ -2,7 +2,6 @@ module Lia.Utils exposing
     ( evaluateJS
     , execute
     , formula
-    , load
     , scrollIntoView
     , stringToHtml
     , string_replace
@@ -33,11 +32,6 @@ execute delay code =
     code
         |> toJSstring
         |> Native.Utils.execute delay
-
-
-load : String -> String -> Result String String
-load elem url =
-    Native.Utils.load elem url
 
 
 stringToHtml : String -> Html msg

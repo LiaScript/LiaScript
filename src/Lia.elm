@@ -25,13 +25,13 @@ import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Code.Json as Code
 import Lia.Markdown.Inline.Stringify exposing (stringify)
-import Lia.Model exposing (json2settings, settings2model)
+import Lia.Model exposing (json2settings, load_src, settings2model)
 import Lia.Parser
 import Lia.Quiz.Model as Quiz
 import Lia.Survey.Model as Survey
 import Lia.Types exposing (Section, Sections, init_section)
 import Lia.Update exposing (Msg(..))
-import Lia.Utils exposing (load, toUnixNewline)
+import Lia.Utils exposing (toUnixNewline)
 import Lia.View
 import Translations
 
@@ -60,8 +60,11 @@ set_script model script =
             case Lia.Parser.parse_titles definition code of
                 Ok title_sections ->
                     let
-                        ignore =
-                            List.map (load "link") definition.links
+                        ( _, link_logs ) =
+                            load_src "link" [] definition.links
+
+                        ( javascript, js_logs ) =
+                            load_src "script" [] definition.scripts
 
                         sections =
                             title_sections
@@ -77,9 +80,9 @@ set_script model script =
 
                             else
                                 0
-                        , javascript =
-                            Lia.Model.load_javascript model.javascript definition.scripts
+                        , javascript = javascript
                         , translation = Translations.getLnFromCode definition.language
+                        , to_do = List.append js_logs link_logs
                     }
 
                 Err msg ->

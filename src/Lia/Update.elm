@@ -77,6 +77,13 @@ log_settings model =
 update : Msg -> Model -> ( Model, Cmd Msg, List ( String, ID, JE.Value ) )
 update msg model =
     case msg of
+        Load idx ->
+            if (-1 < idx) && (idx < Array.length model.sections) then
+                update InitSection (generate { model | section_active = idx })
+
+            else
+                ( model, Cmd.none, [] )
+
         UpdateSettings ->
             ( model, Cmd.none, [ log_settings model ] )
 
@@ -161,35 +168,6 @@ update msg model =
                     , log_maybe model.section_active log
                     )
 
-                ( Load idx, _ ) ->
-                    if (-1 < idx) && (idx < Array.length model.sections) then
-                        update InitSection (generate { model | section_active = idx })
-
-                    else
-                        ( model, Cmd.none, [] )
-
-                ( InitSection, Just sec ) ->
-                    let
-                        ( sec_, cmd_, log_ ) =
-                            case model.mode of
-                                Textbook ->
-                                    Markdown.initEffect True False sec
-
-                                _ ->
-                                    Markdown.initEffect False model.sound sec
-                    in
-                    ( set_active_section model { sec_ | parsed = True }
-                    , Cmd.map UpdateMarkdown cmd_
-                    , if sec.parsed then
-                        log_maybe model.section_active log_
-
-                      else
-                        log_maybe model.section_active log_
-                            |> add_load (Array.length sec_.quiz_vector) model.section_active "quiz"
-                            |> add_load (Array.length sec_.code_vector) model.section_active "code"
-                            |> add_load (Array.length sec_.survey_vector) model.section_active "survey"
-                    )
-
                 ( NextSection, Just sec ) ->
                     if (model.mode == Textbook) || not (Effect.has_next sec.effect_model) then
                         update (Load <| model.section_active + 1) model
@@ -217,6 +195,21 @@ update msg model =
                         , Cmd.map UpdateMarkdown cmd_
                         , log_maybe model.section_active log_
                         )
+
+                ( InitSection, Just sec ) ->
+                    let
+                        ( sec_, cmd_, log_ ) =
+                            case model.mode of
+                                Textbook ->
+                                    Markdown.initEffect True False sec
+
+                                _ ->
+                                    Markdown.initEffect False model.sound sec
+                    in
+                    ( set_active_section { model | to_do = [] } sec_
+                    , Cmd.map UpdateMarkdown cmd_
+                    , List.append model.to_do (log_maybe model.section_active log_)
+                    )
 
                 ( SwitchMode, Just sec ) ->
                     let
@@ -334,6 +327,7 @@ generate model =
                                     , effect_model = effects
                                     , footnotes = footnotes
                                     , definition = defines
+                                    , parsed = True
                                 }
 
                             Err msg ->
@@ -341,14 +335,24 @@ generate model =
                                     | body = []
                                     , error = Just msg
                                 }
+
+                ( javascript, logs ) =
+                    section
+                        |> .definition
+                        |> Maybe.map .scripts
+                        |> Maybe.withDefault []
+                        |> load_src "script" model.javascript
             in
             set_active_section
                 { model
                     | javascript =
-                        section.definition
-                            |> Maybe.map .scripts
-                            |> Maybe.map (load_javascript model.javascript)
-                            |> Maybe.withDefault model.javascript
+                        javascript
+                    , to_do =
+                        logs
+                            |> List.append model.to_do
+                            |> add_load (Array.length section.quiz_vector) model.section_active "quiz"
+                            |> add_load (Array.length section.code_vector) model.section_active "code"
+                            |> add_load (Array.length section.survey_vector) model.section_active "survey"
                 }
                 section
 

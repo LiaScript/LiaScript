@@ -47,31 +47,6 @@ var _user$project$Native_Utils = (function () {
         return string.replace(new RegExp(s, 'g'), r);
     }
 
-    function load(elem, url)
-    {
-        console.log(elem, ":", url);
-
-        try {
-            var tag = document.createElement(elem);
-            if(elem == "link") {
-              tag.href = url;
-              tag.rel  = "stylesheet";
-            }
-            else
-              tag.src = url;
-            document.head.appendChild(tag);
-
-        } catch (e) {
-            console.log(e.message);
-        }
-
-        return {
-            ctor: "Ok",
-            _0: ""
-        };
-    };
-
-
     function evaluate2 (id, code) {
         return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback){
             setTimeout(function() {
@@ -114,7 +89,6 @@ var _user$project$Native_Utils = (function () {
         evaluate: evaluate,
         evaluate2: F2(evaluate2),
         execute: F2(execute),
-        load: F2(load),
         toUnixNewline: toUnixNewline,
         string_replace: F3(string_replace),
         scrollIntoView: scrollIntoView

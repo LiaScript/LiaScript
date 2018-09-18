@@ -3,7 +3,7 @@ module Lia.Model exposing
     , Toogler
     , init
     , json2settings
-    , load_javascript
+    , load_src
     , model2settings
     , settings2json
     , settings2model
@@ -16,7 +16,6 @@ import Lia.Definition.Types as Definition exposing (Definition)
 import Lia.Helper exposing (ID)
 import Lia.Index.Model as Index
 import Lia.Types exposing (Design, Mode(..), Sections)
-import Lia.Utils exposing (load)
 import Translations
 
 
@@ -43,6 +42,7 @@ type alias Model =
     , sound : Bool
     , show : Toogler
     , javascript : List String
+    , to_do : List ( String, Int, JE.Value )
     , translation : Translations.Lang
     }
 
@@ -166,20 +166,20 @@ init mode url readme origin slide_number =
     , sound = True
     , show = Toogler True False False False False
     , javascript = []
+    , to_do = []
     , translation = Translations.En
     }
 
 
-load_javascript : List String -> List String -> List String
-load_javascript old new =
+load_src : String -> List String -> List String -> ( List String, List ( String, Int, JE.Value ) )
+load_src tag old new =
     let
         member x =
             not (List.member x old)
 
         to_load =
             List.filter member new
-
-        x =
-            List.map (load "script") to_load
     in
-    List.append old to_load
+    ( List.append old to_load
+    , List.map (\url -> ( "ressource", 0, JE.list [ JE.string tag, JE.string url ] )) to_load
+    )
