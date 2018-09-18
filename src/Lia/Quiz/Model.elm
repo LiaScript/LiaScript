@@ -99,6 +99,9 @@ json2state =
     let
         state_decoder type_ =
             case type_ of
+                "Empty" ->
+                    JD.succeed EmptyState
+
                 "Text" ->
                     JD.map TextState (JD.field "value" JD.string)
 

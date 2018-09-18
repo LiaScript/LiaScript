@@ -201,6 +201,10 @@ restore_ model idx json json2vec update_ =
                     model
 
         Err msg ->
+            let
+                x =
+                    Debug.log "Error restore_" ( msg, json )
+            in
             model
 
 
