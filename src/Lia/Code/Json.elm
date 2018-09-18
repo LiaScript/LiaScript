@@ -42,7 +42,7 @@ file2json : File -> JE.Value
 file2json file =
     JE.object
         [ ( "lang", JE.string file.lang )
-        , ( "name", JE.string file.lang )
+        , ( "name", JE.string file.name )
         , ( "code", JE.string file.code )
         , ( "visible", JE.bool file.visible )
         , ( "fullscreen", JE.bool file.fullscreen )
