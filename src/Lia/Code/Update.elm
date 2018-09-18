@@ -44,60 +44,64 @@ update msg model =
                                 |> Maybe.map .code
                                 |> Maybe.withDefault ""
                     in
-                    ( update_ idx model (\p -> { p | running = True })
-                    , eval2js
-                        ( idx
-                        , if Array.length project.file == 1 then
-                            project.evaluation
-                                |> replace ( 0, code_0 )
-                                |> default_replace code_0
+                    update_
+                        idx
+                        model
+                        (eval2js
+                            ( idx
+                            , if Array.length project.file == 1 then
+                                project.evaluation
+                                    |> replace ( 0, code_0 )
+                                    |> default_replace code_0
 
-                          else
-                            project.file
-                                |> Array.indexedMap (\i f -> ( i, f.code ))
-                                |> Array.foldl replace project.evaluation
-                                |> default_replace code_0
-                                |> toJSstring
+                              else
+                                project.file
+                                    |> Array.indexedMap (\i f -> ( i, f.code ))
+                                    |> Array.foldl replace project.evaluation
+                                    |> default_replace code_0
+                                    |> toJSstring
+                            )
                         )
-                    , Just (vector2json model)
-                    )
+                        (\p -> { p | running = True })
 
                 Nothing ->
                     ( model, Cmd.none, Nothing )
 
         Update id_1 id_2 code_str ->
-            update_file id_1 id_2 model (\f -> { f | code = code_str }) Cmd.none
+            update_file id_1 id_2 model (\f -> { f | code = code_str })
 
         FlipView id_1 id_2 ->
-            update_file id_1 id_2 model (\f -> { f | visible = not f.visible }) Cmd.none
+            update_file id_1 id_2 model (\f -> { f | visible = not f.visible })
 
         FlipFullscreen id_1 id_2 ->
-            update_file id_1 id_2 model (\f -> { f | fullscreen = not f.fullscreen }) Cmd.none
+            update_file id_1 id_2 model (\f -> { f | fullscreen = not f.fullscreen })
 
         Load idx version ->
-            ( update_ idx model (load version), Cmd.none, Nothing )
+            update_ idx model Cmd.none (load version)
 
         First idx ->
-            ( update_ idx model (load 0), Cmd.none, Nothing )
+            update_ idx model Cmd.none (load 0)
 
         Last idx ->
-            ( update_ idx model (model |> Array.get idx |> Maybe.map (.version >> Array.length >> (+) -1) |> Maybe.withDefault 0 |> load), Cmd.none, Nothing )
+            update_
+                idx
+                model
+                Cmd.none
+                (model
+                    |> Array.get idx
+                    |> Maybe.map (.version >> Array.length >> (+) -1)
+                    |> Maybe.withDefault 0
+                    |> load
+                )
 
         EvalRslt ( ok, idx, message, details ) ->
             if message == "LIA wait!" then
                 ( model, Cmd.none, Nothing )
 
             else
-                let
-                    new_model =
-                        decoder_result ok message details
-                            |> resulting
-                            |> update_ idx model
-                in
-                ( new_model
-                , Cmd.none
-                , Just (vector2json new_model)
-                )
+                decoder_result ok message details
+                    |> resulting
+                    |> update_ idx model Cmd.none
 
 
 replace : ( Int, String ) -> String -> String
@@ -114,18 +118,22 @@ default_replace insert into =
         |> String.join insert
 
 
-update_ : ID -> Vector -> (Project -> Project) -> Vector
-update_ idx model f =
+update_ : ID -> Vector -> Cmd msg -> (Project -> Project) -> ( Vector, Cmd msg, Maybe JE.Value )
+update_ idx model cmd f =
     case Array.get idx model of
         Just elem ->
-            Array.set idx (f elem) model
+            let
+                new_model =
+                    Array.set idx (f elem) model
+            in
+            ( new_model, cmd, Just (vector2json new_model) )
 
         Nothing ->
-            model
+            ( model, Cmd.none, Nothing )
 
 
-update_file : ID -> ID -> Vector -> (File -> File) -> Cmd msg -> ( Vector, Cmd msg, Maybe JE.Value )
-update_file id_1 id_2 model f cmd =
+update_file : ID -> ID -> Vector -> (File -> File) -> ( Vector, Cmd msg, Maybe JE.Value )
+update_file id_1 id_2 model f =
     ( case Array.get id_1 model of
         Just project ->
             case Array.get id_2 project.file of
@@ -137,7 +145,7 @@ update_file id_1 id_2 model f cmd =
 
         Nothing ->
             model
-    , cmd
+    , Cmd.none
     , Nothing
     )
 
