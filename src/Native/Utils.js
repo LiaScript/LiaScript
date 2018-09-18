@@ -47,35 +47,6 @@ var _user$project$Native_Utils = (function () {
         return string.replace(new RegExp(s, 'g'), r);
     }
 
-    function evaluate2 (id, code) {
-        return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback){
-            setTimeout(function() {
-                var evalJS = new Promise (
-                    function (resolve, reject) {
-                        try {
-                            resolve({id: id, message: String(eval(code)), details: []});
-                        }
-                        catch (e) {
-                            if (e instanceof LiaError ) {
-                                reject({id: id, message: e.message, details: e.details});
-                            } else {
-                                reject({id: id, message: e.message, details: []});
-                            }
-                        }
-                    }
-                );
-
-                evalJS
-                    .then(function(rslt) {
-                        callback(_elm_lang$core$Native_Scheduler.succeed(rslt));
-                    })
-                    .catch(function(rslt) {
-                        callback(_elm_lang$core$Native_Scheduler.fail(rslt));
-                    });
-            }, 10);
-        });
-    };
-
     function scrollIntoView (id) {
         setTimeout(function(e){
             try {
@@ -87,7 +58,6 @@ var _user$project$Native_Utils = (function () {
     return {
         formula: F2(formula),
         evaluate: evaluate,
-        evaluate2: F2(evaluate2),
         execute: F2(execute),
         toUnixNewline: toUnixNewline,
         string_replace: F3(string_replace),
