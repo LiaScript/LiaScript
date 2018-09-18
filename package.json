@@ -21,14 +21,14 @@
   },
   "dependencies": {
     "ace-builds": "^1.4.1",
-    "animate.css": "^3.5.2",
+    "animate.css": "^3.7.0",
     "auto-reload-brunch": "^2.7.1",
-    "brunch": "^2.8.2",
+    "brunch": "^2.10.17",
     "copycat-brunch": "^1.1.0",
     "elm-brunch": "^0.11.1",
     "hmr-brunch": "^0.1.1",
     "katex": "^0.9.0",
-    "node-sass": "^4.5.3",
+    "node-sass": "^4.9.3",
     "normalize.css": "^8.0.0",
     "sass-brunch": "^2.10.4",
     "sass-material-colors": "0.0.5"
