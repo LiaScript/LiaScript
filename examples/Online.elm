@@ -15,7 +15,6 @@ port module Main exposing
     , view
     )
 
-import Array
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
@@ -143,7 +142,7 @@ update msg model =
 
         GET (Ok script) ->
             let
-                ( lia, cmd, _ ) =
+                ( lia, cmd, log ) =
                     script
                         |> Lia.set_script model.lia
                         |> Lia.init
@@ -161,7 +160,7 @@ update msg model =
                         ++ "#"
                         ++ toString (lia.section_active + 1)
                     )
-                , log2js ( model.url, ( "init", Array.length lia.sections, JE.null ) )
+                , log2js ( model.url, ( "init", lia.section_active, JE.null ) )
                 , Cmd.map LIA cmd
                 ]
             )
