@@ -196,7 +196,7 @@ highlight theme attr lang code headless =
             , Ace.readOnly True
             , Ace.showCursor False
             , Ace.highlightActiveLine False
-            , Ace.showGutter True
+            , Ace.showGutter False
             , Ace.showPrintMargin False
             ]
             []
