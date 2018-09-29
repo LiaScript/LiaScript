@@ -208,7 +208,10 @@ update msg model =
                     in
                     ( set_active_section { model | to_do = [] } sec_
                     , Cmd.map UpdateMarkdown cmd_
-                    , List.append model.to_do (log_maybe model.section_active log_)
+                    , log_
+                        |> log_maybe model.section_active
+                        |> List.append model.to_do
+                        |> (::) ( "slide", model.section_active, JE.null )
                     )
 
                 ( SwitchMode, Just sec ) ->

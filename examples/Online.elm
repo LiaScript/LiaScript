@@ -31,7 +31,7 @@ port log2js : ( String, ( String, Int, JE.Value ) ) -> Cmd msg
 port log2elm : (( String, Int, JD.Value ) -> msg) -> Sub msg
 
 
-main : Program { url : String, script : String } Model Msg
+main : Program { url : String, script : String, slide : Int } Model Msg
 main =
     Navigation.programWithFlags UrlChange
         { init = init
@@ -57,14 +57,18 @@ type alias Model =
     }
 
 
-init : { url : String, script : String } -> Navigation.Location -> ( Model, Cmd Msg )
+init : { url : String, script : String, slide : Int } -> Navigation.Location -> ( Model, Cmd Msg )
 init flags location =
     let
         url =
             String.dropLeft 1 location.search
 
         slide =
-            get_hash location
+            if flags.slide <= 0 then
+                get_hash location
+
+            else
+                Just flags.slide
 
         origin =
             location.origin ++ location.pathname
@@ -73,15 +77,24 @@ init flags location =
         let
             ( lia, cmd, _ ) =
                 flags.script
-                    |> Lia.set_script (Lia.init_presentation (get_base url) "" origin Nothing)
+                    |> Lia.set_script (Lia.init_presentation (get_base url) "" origin slide)
                     |> Lia.init
         in
         ( Model "" "" lia LoadOk "", Cmd.map LIA cmd )
 
+    else if flags.url /= "" then
+        ( Model flags.url
+            origin
+            (Lia.init_presentation (get_base url) flags.url origin slide)
+            Loading
+            ""
+        , getCourse flags.url
+        )
+
     else if url == "" then
         ( Model "https://raw.githubusercontent.com/liaScript/docs/master/README.md"
             origin
-            (Lia.init_presentation "" "" origin Nothing)
+            (Lia.init_presentation "" "" origin slide)
             Waiting
             ""
         , Cmd.none
