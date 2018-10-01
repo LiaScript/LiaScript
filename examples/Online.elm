@@ -136,7 +136,6 @@ update msg model =
                     script
                         |> Lia.set_script model.lia
                         |> Lia.init
-                        |> Debug.log "IIIIIIIIIIIIIIIIIIIIIIIIIIIII"
             in
             ( { model
                 | lia = { lia | readme = model.url }
