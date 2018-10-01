@@ -2,7 +2,7 @@ module Lia exposing
     ( Mode
     , Model
     , Msg
-    , init
+    , get_title
     , init_presentation
     , init_slides
     , init_textbook
@@ -20,8 +20,7 @@ module Lia exposing
 
 import Array
 import Html exposing (Html)
-import Json.Decode as JD
-import Json.Encode as JE
+import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Model exposing (json2settings, load_src, settings2model)
 import Lia.Parser
 import Lia.Types exposing (Section, Sections, init_section)
@@ -87,6 +86,17 @@ set_script model script =
             { model | error = Just msg }
 
 
+get_title : Model -> String
+get_title model =
+    model.sections
+        |> Array.get 0
+        |> Maybe.map .title
+        |> Maybe.map stringify
+        |> Maybe.withDefault "Lia Script"
+        |> String.trim
+        |> (++) "Lia: "
+
+
 init_textbook : String -> String -> String -> Model
 init_textbook url readme origin =
     Lia.Model.init Lia.Types.Textbook url readme origin Nothing
@@ -115,11 +125,6 @@ subscriptions model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update =
     Lia.Update.update
-
-
-init : Model -> ( Model, Cmd Msg )
-init model =
-    update Init model
 
 
 switch_mode : Mode -> Model -> Model

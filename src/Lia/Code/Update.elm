@@ -136,13 +136,47 @@ update_and_eval idx model project code_0 =
                     |> default_replace code_0
                     |> toJSstring
     in
-    ( Array.set idx { project | running = True } model
-    , Just <|
-        JE.list
-            [ JE.list [ JE.string "store", vector2json model ]
-            , JE.list [ JE.string "eval", JE.int idx, JE.string eval_str ]
-            ]
-    )
+    case update_ idx model (\p -> { p | running = True }) of
+        ( model_, Just event_log ) ->
+            ( model_
+            , Just <|
+                JE.list
+                    [ event_log
+                    , JE.list [ JE.string "eval", JE.int idx, JE.string eval_str ]
+                    ]
+            )
+
+        log_nothing ->
+            log_nothing
+
+
+
+-- let
+--     code_0 =
+--         project.file
+--             |> Array.get 0
+--             |> Maybe.map .code
+--             |> Maybe.withDefault ""
+-- in
+-- update_
+--     idx
+--     model
+--     (eval2js
+--         ( idx
+--         , if Array.length project.file == 1 then
+--             project.evaluation
+--                 |> replace ( 0, code_0 )
+--                 |> default_replace code_0
+--
+--           else
+--             project.file
+--                 |> Array.indexedMap (\i f -> ( i, f.code ))
+--                 |> Array.foldl replace project.evaluation
+--                 |> default_replace code_0
+--                 |> toJSstring
+--         )
+--     )
+--     (\p -> { p | running = True })
 
 
 update_ : ID -> Vector -> (Project -> Project) -> ( Vector, Maybe JE.Value )

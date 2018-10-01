@@ -13,7 +13,6 @@ import Json.Encode as JE
 import Lia.Effect.Update as Effect
 import Lia.Helper exposing (ID)
 import Lia.Index.Update as Index
-import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (..)
 import Lia.Parser exposing (parse_section)
@@ -43,8 +42,7 @@ subscriptions model =
 
 
 type Msg
-    = Init
-    | Load ID
+    = Load ID
     | InitSection
     | PrevSection
     | NextSection
@@ -98,35 +96,6 @@ log_settings model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Init ->
-            let
-                ( model_, cmd_ ) =
-                    update InitSection (generate model)
-
-                title =
-                    model_.sections
-                        |> Array.get 0
-                        |> Maybe.map .title
-                        |> Maybe.map stringify
-                        |> Maybe.withDefault "Lia Script"
-                        |> String.trim
-                        |> (++) "Lia: "
-                        |> JE.string
-            in
-            ( model_
-            , Cmd.batch
-                [ event2js
-                    ( "init"
-                    , model.section_active
-                    , JE.list
-                        [ title
-                        , JE.string model.readme
-                        ]
-                    )
-                , cmd_
-                ]
-            )
-
         Load idx ->
             if (-1 < idx) && (idx < Array.length model.sections) then
                 update InitSection (generate { model | section_active = idx })

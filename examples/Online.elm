@@ -1,4 +1,4 @@
-module Main exposing
+port module Main exposing
     ( Model
     , Msg(..)
     , State(..)
@@ -19,6 +19,9 @@ import Html.Events exposing (onClick, onInput)
 import Http
 import Lia
 import Navigation
+
+
+port initialize : ( String, String ) -> Cmd msg
 
 
 main : Program { url : String, script : String, slide : Int } Model Msg
@@ -65,12 +68,11 @@ init flags location =
     in
     if flags.script /= "" then
         let
-            ( lia, cmd ) =
+            lia =
                 flags.script
                     |> Lia.set_script (Lia.init_presentation (get_base url) "" origin slide)
-                    |> Lia.init
         in
-        ( Model "" "" lia LoadOk "", Cmd.map LIA cmd )
+        ( Model "" "" lia LoadOk "", initialize ( Lia.get_title lia, origin ) )
 
     else if flags.url /= "" then
         ( Model flags.url
@@ -132,10 +134,8 @@ update msg model =
 
         GET (Ok script) ->
             let
-                ( lia, cmd ) =
-                    script
-                        |> Lia.set_script model.lia
-                        |> Lia.init
+                lia =
+                    Lia.set_script model.lia script
             in
             ( { model
                 | lia = { lia | readme = model.url }
@@ -143,14 +143,14 @@ update msg model =
                 , state = LoadOk
               }
             , Cmd.batch
-                [ Cmd.map LIA cmd
-                , Navigation.newUrl
+                [ Navigation.newUrl
                     (model.origin
                         ++ "?"
                         ++ model.url
                         ++ "#"
                         ++ toString (lia.section_active + 1)
                     )
+                , initialize ( Lia.get_title lia, model.url )
                 ]
             )
 
