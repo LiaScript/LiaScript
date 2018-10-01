@@ -17,7 +17,7 @@ port eval2elm : (( Bool, Int, String, JD.Value ) -> msg) -> Sub msg
 
 subscriptions : Vector -> Sub Msg
 subscriptions model =
-    Sub.batch [ eval2elm EvalRslt ]
+    Sub.batch [ eval2elm Event ]
 
 
 type Msg
@@ -25,7 +25,7 @@ type Msg
     | Update ID ID String
     | FlipView ID ID
     | FlipFullscreen ID ID
-    | EvalRslt ( Bool, Int, String, JD.Value )
+    | Event ( Bool, Int, String, JD.Value )
     | Load ID Int
     | First ID
     | Last ID
@@ -94,14 +94,13 @@ update msg model =
                     |> load
                 )
 
-        EvalRslt ( ok, idx, message, details ) ->
-            if message == "LIA wait!" then
-                ( model, Cmd.none, Nothing )
+        Event ( _, _, "LIA: wait", _ ) ->
+            ( model, Cmd.none, Nothing )
 
-            else
-                decoder_result ok message details
-                    |> resulting
-                    |> update_ idx model Cmd.none
+        Event ( ok, idx, message, details ) ->
+            decoder_result ok message details
+                |> resulting
+                |> update_ idx model Cmd.none
 
 
 replace : ( Int, String ) -> String -> String

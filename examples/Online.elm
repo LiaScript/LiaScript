@@ -1,4 +1,4 @@
-port module Main exposing
+module Main exposing
     ( Model
     , Msg(..)
     , State(..)
@@ -6,8 +6,6 @@ port module Main exposing
     , get_base
     , get_hash
     , init
-    , log2elm
-    , log2js
     , main
     , style
     , subscriptions
@@ -19,16 +17,8 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import Http
-import Json.Decode as JD
-import Json.Encode as JE
 import Lia
 import Navigation
-
-
-port log2js : ( String, ( String, Int, JE.Value ) ) -> Cmd msg
-
-
-port log2elm : (( String, Int, JD.Value ) -> msg) -> Sub msg
 
 
 main : Program { url : String, script : String, slide : Int } Model Msg
@@ -75,7 +65,7 @@ init flags location =
     in
     if flags.script /= "" then
         let
-            ( lia, cmd, _ ) =
+            ( lia, cmd ) =
                 flags.script
                     |> Lia.set_script (Lia.init_presentation (get_base url) "" origin slide)
                     |> Lia.init
@@ -124,7 +114,6 @@ get_hash location =
 type Msg
     = GET (Result Http.Error String)
     | LIA Lia.Msg
-    | ElmLog ( String, Int, JE.Value )
     | Update String
     | Load
     | UrlChange Navigation.Location
@@ -136,26 +125,14 @@ update msg model =
     case msg of
         LIA liaMsg ->
             let
-                ( lia, cmd, info ) =
+                ( lia, cmd ) =
                     Lia.update liaMsg model.lia
             in
-            case info of
-                [] ->
-                    ( { model | lia = lia }
-                    , Cmd.map LIA cmd
-                    )
-
-                logs ->
-                    ( { model | lia = lia }
-                    , logs
-                        |> List.map (\m -> log2js ( model.url, m ))
-                        |> (::) (Cmd.map LIA cmd)
-                        |> Cmd.batch
-                    )
+            ( { model | lia = lia }, Cmd.map LIA cmd )
 
         GET (Ok script) ->
             let
-                ( lia, cmd, log ) =
+                ( lia, cmd ) =
                     script
                         |> Lia.set_script model.lia
                         |> Lia.init
@@ -165,30 +142,20 @@ update msg model =
                 , error = ""
                 , state = LoadOk
               }
-            , log
-                |> List.map (\l -> log2js ( model.url, l ))
-                |> List.append
-                    [ Navigation.newUrl
-                        (model.origin
-                            ++ "?"
-                            ++ model.url
-                            ++ "#"
-                            ++ toString (lia.section_active + 1)
-                        )
-                    , log2js ( model.url, ( "init", lia.section_active, JE.null ) )
-                    , Cmd.map LIA cmd
-                    ]
-                |> Cmd.batch
+            , Cmd.batch
+                [ Navigation.newUrl
+                    (model.origin
+                        ++ "?"
+                        ++ model.url
+                        ++ "#"
+                        ++ toString (lia.section_active + 1)
+                    )
+                , Cmd.map LIA cmd
+                ]
             )
 
         GET (Err msg) ->
             ( { model | error = toString msg, state = LoadFail }, Cmd.none )
-
-        ElmLog ( "reset", i, val ) ->
-            ( model, log2js ( model.url, ( "reset", i, val ) ) )
-
-        ElmLog m ->
-            ( { model | lia = Lia.restore model.lia m }, Cmd.none )
 
         Update url ->
             ( { model | url = url }, Cmd.none )
@@ -204,7 +171,7 @@ update msg model =
             case get_hash location of
                 Just idx ->
                     let
-                        ( lia, cmd, _ ) =
+                        ( lia, cmd ) =
                             Lia.load_slide model.lia (idx - 1)
                     in
                     ( { model | lia = lia }, Cmd.map LIA cmd )
@@ -277,7 +244,4 @@ getCourse url =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch
-        [ log2elm ElmLog
-        , Sub.map LIA (Lia.subscriptions model.lia)
-        ]
+    Sub.map LIA (Lia.subscriptions model.lia)

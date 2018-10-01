@@ -1,21 +1,33 @@
-module Lia.Update exposing
+port module Lia.Update exposing
     ( Msg(..)
     , Toggle(..)
     , get_active_section
+    , maybe_event
     , subscriptions
     , update
     )
 
 import Array exposing (Array)
+import Json.Decode as JD
 import Json.Encode as JE
+import Lia.Code.Json as Code
 import Lia.Effect.Update as Effect
 import Lia.Helper exposing (ID)
 import Lia.Index.Update as Index
+import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (..)
 import Lia.Parser exposing (parse_section)
+import Lia.Quiz.Model as Quiz
+import Lia.Survey.Model as Survey
 import Lia.Types exposing (Mode(..), Section, Sections)
 import Navigation
+
+
+port event2js : ( String, Int, JE.Value ) -> Cmd msg
+
+
+port event2elm : (( String, Int, JD.Value ) -> msg) -> Sub msg
 
 
 subscriptions : Model -> Sub Msg
@@ -23,7 +35,8 @@ subscriptions model =
     case get_active_section model of
         Just section ->
             Sub.batch
-                [ section
+                [ event2elm Event
+                , section
                     |> Markdown.subscriptions
                     |> Sub.map UpdateMarkdown
                 ]
@@ -33,7 +46,8 @@ subscriptions model =
 
 
 type Msg
-    = Load ID
+    = Init
+    | Load ID
     | InitSection
     | PrevSection
     | NextSection
@@ -47,7 +61,7 @@ type Msg
     | Toggle Toggle
     | Location String
     | IncreaseFontSize Bool
-    | Reset
+    | Event ( String, Int, JE.Value )
 
 
 type Toggle
@@ -69,26 +83,52 @@ log_maybe idx log =
             [ ( name, idx, json ) ]
 
 
-log_settings : Model -> ( String, ID, JE.Value )
+maybe_event : ID -> Maybe ( String, JE.Value ) -> Cmd Markdown.Msg -> Cmd Msg
+maybe_event idx log cmd =
+    case log of
+        Nothing ->
+            Cmd.map UpdateMarkdown cmd
+
+        Just ( name, json ) ->
+            Cmd.batch [ event2js ( name, idx, json ), Cmd.map UpdateMarkdown cmd ]
+
+
+log_settings : Model -> Cmd Msg
 log_settings model =
-    ( "update_settings", -1, model |> model2settings |> settings2json )
+    event2js ( "settings", -1, model |> model2settings |> settings2json )
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, List ( String, ID, JE.Value ) )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        Init ->
+            let
+                ( model_, cmd_ ) =
+                    update InitSection (generate model)
+
+                title =
+                    model_.sections
+                        |> Array.get 0
+                        |> Maybe.map .title
+                        |> Maybe.map stringify
+                        |> Maybe.withDefault "Lia Script"
+                        |> String.trim
+                        |> (++) "Lia: "
+                        |> JE.string
+            in
+            ( model
+            , Cmd.batch [ event2js ( "init", model.section_active, title ), cmd_ ]
+            )
+
         Load idx ->
             if (-1 < idx) && (idx < Array.length model.sections) then
                 update InitSection (generate { model | section_active = idx })
 
             else
-                ( model, Cmd.none, [] )
+                ( model, Cmd.none )
 
         UpdateSettings ->
-            ( model, Cmd.none, [ log_settings model ] )
-
-        Reset ->
-            ( model, Cmd.none, [ ( "reset", -1, JE.null ) ] )
+            ( model, model |> log_settings )
 
         DesignTheme theme ->
             let
@@ -123,7 +163,7 @@ update msg model =
             update UpdateSettings { model | design = { setting | ace = theme } }
 
         Location url ->
-            ( model, Navigation.load url, [] )
+            ( model, Navigation.load url )
 
         IncreaseFontSize positive ->
             let
@@ -154,7 +194,26 @@ update msg model =
                         |> Array.toIndexedList
                         |> Index.update childMsg model.index_model
             in
-            ( { model | index_model = index }, Cmd.none, [] )
+            ( { model | index_model = index }, Cmd.none )
+
+        Event ( "reset", i, val ) ->
+            ( model, event2js ( "reset", -1, JE.null ) )
+
+        Event ( "setting", _, json ) ->
+            ( json
+                |> json2settings
+                |> settings2model model
+            , Cmd.none
+            )
+
+        Event ( "code", idx, json ) ->
+            ( restore_ model idx json Code.json2vector (\sec v -> { sec | code_vector = v }), Cmd.none )
+
+        Event ( "quiz", idx, json ) ->
+            ( restore_ model idx json Quiz.json2vector (\sec v -> { sec | quiz_vector = v }), Cmd.none )
+
+        Event ( "survey", idx, json ) ->
+            ( restore_ model idx json Survey.json2vector (\sec v -> { sec | survey_vector = v }), Cmd.none )
 
         _ ->
             case ( msg, get_active_section model ) of
@@ -164,8 +223,7 @@ update msg model =
                             Markdown.update childMsg sec
                     in
                     ( set_active_section model section
-                    , Cmd.map UpdateMarkdown cmd
-                    , log_maybe model.section_active log
+                    , maybe_event model.section_active log cmd
                     )
 
                 ( NextSection, Just sec ) ->
@@ -178,8 +236,7 @@ update msg model =
                                 Markdown.nextEffect model.sound sec
                         in
                         ( set_active_section model sec_
-                        , Cmd.map UpdateMarkdown cmd_
-                        , log_maybe model.section_active log_
+                        , maybe_event model.section_active log_ cmd_
                         )
 
                 ( PrevSection, Just sec ) ->
@@ -192,8 +249,7 @@ update msg model =
                                 Markdown.previousEffect model.sound sec
                         in
                         ( set_active_section model sec_
-                        , Cmd.map UpdateMarkdown cmd_
-                        , log_maybe model.section_active log_
+                        , maybe_event model.section_active log_ cmd_
                         )
 
                 ( InitSection, Just sec ) ->
@@ -207,11 +263,11 @@ update msg model =
                                     Markdown.initEffect False model.sound sec
                     in
                     ( set_active_section { model | to_do = [] } sec_
-                    , Cmd.map UpdateMarkdown cmd_
-                    , log_
-                        |> log_maybe model.section_active
-                        |> List.append model.to_do
-                        |> (::) ( "slide", model.section_active, JE.null )
+                    , model.to_do
+                        |> List.map event2js
+                        |> (::) (maybe_event model.section_active log_ cmd_)
+                        |> (::) (event2js ( "slide", model.section_active, JE.null ))
+                        |> Cmd.batch
                     )
 
                 ( SwitchMode, Just sec ) ->
@@ -239,8 +295,10 @@ update msg model =
                             { model | mode = mode }
                     in
                     ( set_active_section model_ sec_
-                    , Cmd.map UpdateMarkdown cmd_
-                    , (::) (log_settings model_) (log_maybe model.section_active log_)
+                    , Cmd.batch
+                        [ maybe_event model.section_active log_ cmd_
+                        , log_settings model_
+                        ]
                     )
 
                 ( Toggle Sound, Just sec ) ->
@@ -252,8 +310,10 @@ update msg model =
                             { model | sound = not model.sound }
                     in
                     ( model_
-                    , Cmd.map UpdateMarkdown cmd_
-                    , (::) (log_settings model_) (log_maybe model.section_active log_)
+                    , Cmd.batch
+                        [ maybe_event model.section_active log_ cmd_
+                        , log_settings model_
+                        ]
                     )
 
                 ( Toggle what, _ ) ->
@@ -282,7 +342,26 @@ update msg model =
                         }
 
                 _ ->
-                    ( model, Cmd.none, [] )
+                    ( model, Cmd.none )
+
+
+restore_ : Model -> Int -> JD.Value -> (JD.Value -> Result String a) -> (Section -> a -> Section) -> Model
+restore_ model idx json json2vec update_ =
+    case json2vec json of
+        Ok vec ->
+            case Array.get idx model.sections of
+                Just s ->
+                    { model | sections = Array.set idx (update_ s vec) model.sections }
+
+                Nothing ->
+                    model
+
+        Err msg ->
+            let
+                x =
+                    Debug.log "Error restore_" ( msg, json )
+            in
+            model
 
 
 add_load : Int -> Int -> String -> List ( String, Int, JE.Value ) -> List ( String, Int, JE.Value )
