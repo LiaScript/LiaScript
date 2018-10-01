@@ -36,7 +36,6 @@ subscriptions : Section -> Sub Msg
 subscriptions section =
     Sub.batch
         [ Sub.map (UpdateEffect False) (Effect.subscriptions section.effect_model)
-        , Sub.map UpdateCode (Code.subscriptions section.code_vector)
         , footnote FootnoteShow
         ]
 
@@ -63,10 +62,10 @@ update msg section =
 
         UpdateCode childMsg ->
             let
-                ( code_vector, cmd, log ) =
+                ( code_vector, log ) =
                     Code.update childMsg section.code_vector
             in
-            ( { section | code_vector = code_vector }, Cmd.map UpdateCode cmd, maybeLog "code" log )
+            ( { section | code_vector = code_vector }, Cmd.none, maybeLog "code" log )
 
         UpdateQuiz childMsg ->
             let
@@ -126,11 +125,11 @@ update msg section =
 
         Event "code" msg json ->
             let
-                ( code_vector, cmd, log ) =
+                ( code_vector, log ) =
                     Code.jsEventHandler msg json section.code_vector
             in
             ( { section | code_vector = code_vector }
-            , Cmd.map UpdateCode cmd
+            , Cmd.none
             , maybeLog "code" log
             )
 

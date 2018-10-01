@@ -1,23 +1,17 @@
-port module Lia.Code.Update exposing (Msg(..), default_replace, jsEventHandler, subscriptions, update)
+module Lia.Code.Update exposing
+    ( Msg(..)
+    , default_replace
+    , jsEventHandler
+    , update
+    )
 
 import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Code.Json exposing (decoder_result, vector2json)
+import Lia.Code.Json exposing (decoder_result, json2event, vector2json)
 import Lia.Code.Types exposing (..)
 import Lia.Helper exposing (ID)
 import Lia.Utils exposing (toJSstring)
-
-
-port eval2js : ( Int, String ) -> Cmd msg
-
-
-port eval2elm : (( Bool, Int, String, JD.Value ) -> msg) -> Sub msg
-
-
-subscriptions : Vector -> Sub Msg
-subscriptions model =
-    Sub.batch [ eval2elm Event ]
 
 
 type Msg
@@ -25,52 +19,40 @@ type Msg
     | Update ID ID String
     | FlipView ID ID
     | FlipFullscreen ID ID
-    | Event ( Bool, Int, String, JD.Value )
+    | Event String ( Bool, Int, String, JD.Value )
     | Load ID Int
     | First ID
     | Last ID
 
 
-jsEventHandler : String -> JE.Value -> Vector -> ( Vector, Cmd Msg, Maybe JE.Value )
-jsEventHandler topic json model =
-    update (Eval 1) model
+jsEventHandler : String -> JE.Value -> Vector -> ( Vector, Maybe JE.Value )
+jsEventHandler topic json =
+    case json |> json2event of
+        Ok event ->
+            update (Event topic event)
+
+        Err msg ->
+            let
+                debug =
+                    Debug.log "error: " msg
+            in
+            update (Event "" ( False, -1, "", JE.null ))
 
 
-update : Msg -> Vector -> ( Vector, Cmd Msg, Maybe JE.Value )
+update : Msg -> Vector -> ( Vector, Maybe JE.Value )
 update msg model =
     case msg of
         Eval idx ->
             case Array.get idx model of
                 Just project ->
-                    let
-                        code_0 =
-                            project.file
-                                |> Array.get 0
-                                |> Maybe.map .code
-                                |> Maybe.withDefault ""
-                    in
-                    update_
-                        idx
-                        model
-                        (eval2js
-                            ( idx
-                            , if Array.length project.file == 1 then
-                                project.evaluation
-                                    |> replace ( 0, code_0 )
-                                    |> default_replace code_0
-
-                              else
-                                project.file
-                                    |> Array.indexedMap (\i f -> ( i, f.code ))
-                                    |> Array.foldl replace project.evaluation
-                                    |> default_replace code_0
-                                    |> toJSstring
-                            )
-                        )
-                        (\p -> { p | running = True })
+                    project.file
+                        |> Array.get 0
+                        |> Maybe.map .code
+                        |> Maybe.withDefault ""
+                        |> update_and_eval idx model project
 
                 Nothing ->
-                    ( model, Cmd.none, Nothing )
+                    ( model, Nothing )
 
         Update id_1 id_2 code_str ->
             update_file id_1 id_2 model (\f -> { f | code = code_str })
@@ -82,16 +64,15 @@ update msg model =
             update_file id_1 id_2 model (\f -> { f | fullscreen = not f.fullscreen })
 
         Load idx version ->
-            update_ idx model Cmd.none (load version)
+            update_ idx model (load version)
 
         First idx ->
-            update_ idx model Cmd.none (load 0)
+            update_ idx model (load 0)
 
         Last idx ->
             update_
                 idx
                 model
-                Cmd.none
                 (model
                     |> Array.get idx
                     |> Maybe.map (.version >> Array.length >> (+) -1)
@@ -99,13 +80,30 @@ update msg model =
                     |> load
                 )
 
-        Event ( _, _, "LIA: wait", _ ) ->
-            ( model, Cmd.none, Nothing )
+        Event "eval" ( _, _, "LIA: wait", _ ) ->
+            ( model, Nothing )
 
-        Event ( ok, idx, message, details ) ->
+        Event "eval" ( ok, idx, message, details ) ->
             decoder_result ok message details
                 |> resulting
-                |> update_ idx model Cmd.none
+                |> Debug.log "fucking1"
+                |> update_ idx model
+                |> Debug.log "fucking2"
+
+        Event "stdin" ( _, idx, message, _ ) ->
+            let
+                f project =
+                    case project.result of
+                        Ok log ->
+                            { project | result = Ok (Log (log.message ++ message) log.details) }
+
+                        Err log ->
+                            { project | result = Err (Log (log.message ++ message) log.details) }
+            in
+            update_ idx model f
+
+        Event _ _ ->
+            ( model, Nothing )
 
 
 replace : ( Int, String ) -> String -> String
@@ -122,21 +120,46 @@ default_replace insert into =
         |> String.join insert
 
 
-update_ : ID -> Vector -> Cmd msg -> (Project -> Project) -> ( Vector, Cmd msg, Maybe JE.Value )
-update_ idx model cmd f =
+update_and_eval : ID -> Vector -> Project -> String -> ( Vector, Maybe JE.Value )
+update_and_eval idx model project code_0 =
+    let
+        eval_str =
+            if Array.length project.file == 1 then
+                project.evaluation
+                    |> replace ( 0, code_0 )
+                    |> default_replace code_0
+
+            else
+                project.file
+                    |> Array.indexedMap (\i f -> ( i, f.code ))
+                    |> Array.foldl replace project.evaluation
+                    |> default_replace code_0
+                    |> toJSstring
+    in
+    ( Array.set idx { project | running = True } model
+    , Just <|
+        JE.list
+            [ JE.list [ JE.string "store", vector2json model ]
+            , JE.list [ JE.string "eval", JE.int idx, JE.string eval_str ]
+            ]
+    )
+
+
+update_ : ID -> Vector -> (Project -> Project) -> ( Vector, Maybe JE.Value )
+update_ idx model f =
     case Array.get idx model of
         Just elem ->
             let
                 new_model =
                     Array.set idx (f elem) model
             in
-            ( new_model, cmd, Just (vector2json new_model) )
+            ( new_model, Just (JE.list [ JE.string "store", vector2json new_model ]) )
 
         Nothing ->
-            ( model, Cmd.none, Nothing )
+            ( model, Nothing )
 
 
-update_file : ID -> ID -> Vector -> (File -> File) -> ( Vector, Cmd msg, Maybe JE.Value )
+update_file : ID -> ID -> Vector -> (File -> File) -> ( Vector, Maybe JE.Value )
 update_file id_1 id_2 model f =
     ( case Array.get id_1 model of
         Just project ->
@@ -149,7 +172,6 @@ update_file id_1 id_2 model f =
 
         Nothing ->
             model
-    , Cmd.none
     , Nothing
     )
 

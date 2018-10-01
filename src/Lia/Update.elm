@@ -92,7 +92,7 @@ maybe_event idx log cmd =
 
 log_settings : Model -> Cmd Msg
 log_settings model =
-    event2js ( "settings", -1, model |> model2settings |> settings2json )
+    event2js ( "preferences", -1, model |> model2settings |> settings2json )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -113,12 +113,15 @@ update msg model =
                         |> (++) "Lia: "
                         |> JE.string
             in
-            ( model
+            ( model_
             , Cmd.batch
                 [ event2js
                     ( "init"
                     , model.section_active
-                    , JE.list [ title, JE.string model.url ]
+                    , JE.list
+                        [ title
+                        , JE.string model.readme
+                        ]
                     )
                 , cmd_
                 ]
@@ -203,7 +206,7 @@ update msg model =
         Event ( "reset", i, _, val ) ->
             ( model, event2js ( "reset", -1, JE.null ) )
 
-        Event ( "setting", _, _, json ) ->
+        Event ( "preferences", x, y, json ) ->
             ( json
                 |> json2settings
                 |> settings2model model
@@ -224,14 +227,6 @@ update msg model =
                 Nothing ->
                     ( model, Cmd.none )
 
-        --        Event ( "code", idx, json ) ->
-        --            ( restore_ model idx json Code.json2vector (\sec v -> { sec | code_vector = v }), Cmd.none )
-        --
-        --        Event ( "quiz", idx, json ) ->
-        --            ( restore_ model idx json Quiz.json2vector (\sec v -> { sec | quiz_vector = v }), Cmd.none )
-        --
-        --        Event ( "survey", idx, json ) ->
-        --            ( restore_ model idx json Survey.json2vector (\sec v -> { sec | survey_vector = v }), Cmd.none )
         _ ->
             case ( msg, get_active_section model ) of
                 ( UpdateMarkdown childMsg, Just sec ) ->

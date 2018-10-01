@@ -1,9 +1,21 @@
-module Lia.Code.Json exposing (decoder_result, json2project, json2vector, vector2json)
+module Lia.Code.Json exposing (decoder_result, json2event, json2project, json2vector, vector2json)
 
 import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Code.Types exposing (File, Log, Project, Vector, Version, noResult)
+
+
+json2event : JD.Value -> Result String ( Bool, Int, String, JD.Value )
+json2event json =
+    JD.decodeValue
+        (JD.map4 (,,,)
+            (JD.index 0 JD.bool)
+            (JD.index 1 JD.int)
+            (JD.index 2 JD.string)
+            (JD.index 3 JD.value)
+        )
+        json
 
 
 vector2json : Vector -> JE.Value

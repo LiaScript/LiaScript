@@ -136,6 +136,7 @@ update msg model =
                     script
                         |> Lia.set_script model.lia
                         |> Lia.init
+                        |> Debug.log "IIIIIIIIIIIIIIIIIIIIIIIIIIIII"
             in
             ( { model
                 | lia = { lia | readme = model.url }
@@ -143,14 +144,14 @@ update msg model =
                 , state = LoadOk
               }
             , Cmd.batch
-                [ Navigation.newUrl
+                [ Cmd.map LIA cmd
+                , Navigation.newUrl
                     (model.origin
                         ++ "?"
                         ++ model.url
                         ++ "#"
                         ++ toString (lia.section_active + 1)
                     )
-                , Cmd.map LIA cmd
                 ]
             )
 
