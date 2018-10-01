@@ -3,7 +3,7 @@ module Lia.Quiz.Update exposing (Msg(..), update)
 import Array
 import Json.Encode as JE
 import Lia.Code.Update exposing (default_replace)
-import Lia.Quiz.Model exposing (vector2json)
+import Lia.Quiz.Model exposing (json2vector, vector2json)
 import Lia.Quiz.Types exposing (..)
 import Lia.Utils
 

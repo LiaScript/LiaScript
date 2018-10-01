@@ -10,7 +10,6 @@ port module Lia.Update exposing
 import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Code.Json as Code
 import Lia.Effect.Update as Effect
 import Lia.Helper exposing (ID)
 import Lia.Index.Update as Index
@@ -18,8 +17,6 @@ import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (..)
 import Lia.Parser exposing (parse_section)
-import Lia.Quiz.Model as Quiz
-import Lia.Survey.Model as Survey
 import Lia.Types exposing (Mode(..), Section, Sections)
 import Navigation
 
@@ -27,7 +24,7 @@ import Navigation
 port event2js : ( String, Int, JE.Value ) -> Cmd msg
 
 
-port event2elm : (( String, Int, JD.Value ) -> msg) -> Sub msg
+port event2elm : (( String, Int, String, JD.Value ) -> msg) -> Sub msg
 
 
 subscriptions : Model -> Sub Msg
@@ -61,7 +58,7 @@ type Msg
     | Toggle Toggle
     | Location String
     | IncreaseFontSize Bool
-    | Event ( String, Int, JE.Value )
+    | Event ( String, Int, String, JE.Value )
 
 
 type Toggle
@@ -117,7 +114,14 @@ update msg model =
                         |> JE.string
             in
             ( model
-            , Cmd.batch [ event2js ( "init", model.section_active, title ), cmd_ ]
+            , Cmd.batch
+                [ event2js
+                    ( "init"
+                    , model.section_active
+                    , JE.list [ title, JE.string model.url ]
+                    )
+                , cmd_
+                ]
             )
 
         Load idx ->
@@ -196,25 +200,38 @@ update msg model =
             in
             ( { model | index_model = index }, Cmd.none )
 
-        Event ( "reset", i, val ) ->
+        Event ( "reset", i, _, val ) ->
             ( model, event2js ( "reset", -1, JE.null ) )
 
-        Event ( "setting", _, json ) ->
+        Event ( "setting", _, _, json ) ->
             ( json
                 |> json2settings
                 |> settings2model model
             , Cmd.none
             )
 
-        Event ( "code", idx, json ) ->
-            ( restore_ model idx json Code.json2vector (\sec v -> { sec | code_vector = v }), Cmd.none )
+        Event ( topic, idx, msg, json ) ->
+            case Array.get idx model.sections of
+                Just sec ->
+                    let
+                        ( sec_, cmd_, log_ ) =
+                            Markdown.jsEventHandler topic msg json sec
+                    in
+                    ( { model | sections = Array.set idx sec_ model.sections }
+                    , maybe_event idx log_ cmd_
+                    )
 
-        Event ( "quiz", idx, json ) ->
-            ( restore_ model idx json Quiz.json2vector (\sec v -> { sec | quiz_vector = v }), Cmd.none )
+                Nothing ->
+                    ( model, Cmd.none )
 
-        Event ( "survey", idx, json ) ->
-            ( restore_ model idx json Survey.json2vector (\sec v -> { sec | survey_vector = v }), Cmd.none )
-
+        --        Event ( "code", idx, json ) ->
+        --            ( restore_ model idx json Code.json2vector (\sec v -> { sec | code_vector = v }), Cmd.none )
+        --
+        --        Event ( "quiz", idx, json ) ->
+        --            ( restore_ model idx json Quiz.json2vector (\sec v -> { sec | quiz_vector = v }), Cmd.none )
+        --
+        --        Event ( "survey", idx, json ) ->
+        --            ( restore_ model idx json Survey.json2vector (\sec v -> { sec | survey_vector = v }), Cmd.none )
         _ ->
             case ( msg, get_active_section model ) of
                 ( UpdateMarkdown childMsg, Just sec ) ->

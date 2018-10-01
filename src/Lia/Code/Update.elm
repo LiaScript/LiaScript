@@ -1,4 +1,4 @@
-port module Lia.Code.Update exposing (Msg(..), default_replace, subscriptions, update)
+port module Lia.Code.Update exposing (Msg(..), default_replace, jsEventHandler, subscriptions, update)
 
 import Array exposing (Array)
 import Json.Decode as JD
@@ -29,6 +29,11 @@ type Msg
     | Load ID Int
     | First ID
     | Last ID
+
+
+jsEventHandler : String -> JE.Value -> Vector -> ( Vector, Cmd Msg, Maybe JE.Value )
+jsEventHandler topic json model =
+    update (Eval 1) model
 
 
 update : Msg -> Vector -> ( Vector, Cmd Msg, Maybe JE.Value )
