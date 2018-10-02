@@ -64,15 +64,16 @@ update msg model =
             update_file id_1 id_2 model (\f -> { f | fullscreen = not f.fullscreen })
 
         Load idx version ->
-            update_ idx model (load version)
+            update_ idx model [] (load version)
 
         First idx ->
-            update_ idx model (load 0)
+            update_ idx model [] (load 0)
 
         Last idx ->
             update_
                 idx
                 model
+                []
                 (model
                     |> Array.get idx
                     |> Maybe.map (.version >> Array.length >> (+) -1)
@@ -84,17 +85,21 @@ update msg model =
             ( model, Nothing )
 
         Event "eval" ( ok, idx, message, details ) ->
-            let
-                ( model_, event ) =
-                    decoder_result ok message details
-                        |> resulting
-                        |> update_ idx model
+            decoder_result ok message details
+                |> resulting
+                |> update_ idx model []
 
-                debug =
-                    Debug.log "FUCCCCCCCCC" <| Maybe.map .version <| Array.get 0 model_
-            in
-            ( model_, event )
+        {- let
+               ( model_, event ) =
+                   decoder_result ok message details
+                       |> resulting
+                       |> update_ idx model
 
+               debug =
+                   Debug.log "FUCCCCCCCCC" <| Maybe.map .version <| Array.get 0 model_
+           in
+           ( model_, event )
+        -}
         Event "stdin" ( _, idx, message, _ ) ->
             let
                 f project =
@@ -105,7 +110,7 @@ update msg model =
                         Err log ->
                             { project | result = Err (Log (log.message ++ message) log.details) }
             in
-            update_ idx model f
+            update_ idx model [] f
 
         Event _ _ ->
             ( model, Nothing )
@@ -141,58 +146,27 @@ update_and_eval idx model project code_0 =
                     |> default_replace code_0
                     |> toJSstring
     in
-    case update_ idx model (\p -> { p | running = True }) of
-        ( model_, Just event_log ) ->
-            ( model_
-            , Just <|
-                JE.list
-                    [ event_log
-                    , JE.list [ JE.string "eval", JE.int idx, JE.string eval_str ]
-                    ]
-            )
-
-        log_nothing ->
-            log_nothing
+    update_
+        idx
+        model
+        [ JE.list [ JE.string "eval", JE.int idx, JE.string eval_str ] ]
+        (\p -> { p | running = True })
 
 
-
--- let
---     code_0 =
---         project.file
---             |> Array.get 0
---             |> Maybe.map .code
---             |> Maybe.withDefault ""
--- in
--- update_
---     idx
---     model
---     (eval2js
---         ( idx
---         , if Array.length project.file == 1 then
---             project.evaluation
---                 |> replace ( 0, code_0 )
---                 |> default_replace code_0
---
---           else
---             project.file
---                 |> Array.indexedMap (\i f -> ( i, f.code ))
---                 |> Array.foldl replace project.evaluation
---                 |> default_replace code_0
---                 |> toJSstring
---         )
---     )
---     (\p -> { p | running = True })
-
-
-update_ : ID -> Vector -> (Project -> Project) -> ( Vector, Maybe JE.Value )
-update_ idx model f =
+update_ : ID -> Vector -> List JE.Value -> (Project -> Project) -> ( Vector, Maybe JE.Value )
+update_ idx model event_logs f =
     case Array.get idx model of
         Just elem ->
             let
                 new_model =
                     Array.set idx (f elem) model
             in
-            ( new_model, Just (JE.list [ JE.string "store", vector2json new_model ]) )
+            ( new_model
+            , event_logs
+                |> (::) (JE.list [ JE.string "store", vector2json new_model ])
+                |> JE.list
+                |> Just
+            )
 
         Nothing ->
             ( model, Nothing )
