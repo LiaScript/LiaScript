@@ -131,7 +131,18 @@ update msg model =
                                 ( new_terminal, stdin ) =
                                     Terminal.update childMsg terminal
                             in
-                            ( Array.set idx { project | terminal = Just new_terminal } model
+                            ( Array.set idx
+                                { project
+                                    | terminal = Just new_terminal
+                                    , result =
+                                        case project.result of
+                                            Ok log ->
+                                                Ok <| Log new_terminal.output log.details
+
+                                            Err log ->
+                                                Err <| Log new_terminal.output log.details
+                                }
+                                model
                             , case stdin of
                                 Nothing ->
                                     Nothing
