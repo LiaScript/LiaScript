@@ -6,6 +6,7 @@ import Html.Attributes as Attr
 import Html.Events exposing (onClick, onDoubleClick, onInput)
 import Json.Encode as JE
 import Lia.Ace as Ace
+import Lia.Code.Terminal as Terminal
 import Lia.Code.Types exposing (..)
 import Lia.Code.Update exposing (Msg(..))
 import Lia.Helper exposing (ID)
@@ -36,7 +37,14 @@ view lang theme attr model code =
                             |> Array.toList
                             |> Html.div []
                         , view_control lang id_1 project.version_active project.running
-                        , view_result project.result
+                        , case project.terminal of
+                            Nothing ->
+                                view_result project.result
+
+                            Just term ->
+                                term
+                                    |> Terminal.view
+                                    |> Html.map (UpdateTerminal id_1)
                         ]
 
                 Nothing ->

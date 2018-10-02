@@ -1,4 +1,4 @@
-module Lia.Code.Terminal exposing (Model, init, update, view)
+module Lia.Code.Terminal exposing (Msg(..), Terminal, init, update, view)
 
 import Array exposing (Array)
 import Html exposing (Html)
@@ -8,7 +8,7 @@ import Json.Decode as JD
 import Json.Encode as JE
 
 
-type alias Model =
+type alias Terminal =
     { input : String
     , output : String
     , history : Array String
@@ -17,9 +17,9 @@ type alias Model =
     }
 
 
-init : Model
+init : Terminal
 init =
-    Model "" "" Array.empty 0 15
+    Terminal "" "" Array.empty 0 250
 
 
 
@@ -33,41 +33,41 @@ type Msg
     | Stderr String
 
 
-update : Msg -> Model -> ( Model, Maybe String )
-update msg model =
+update : Msg -> Terminal -> ( Terminal, Maybe String )
+update msg terminal =
     case msg of
         KeyDown key ->
             if key == 13 then
-                ( print2terminal model, Just model.input )
+                ( print_to terminal, Just terminal.input )
 
             else if key == 38 then
-                ( restore_input True model, Nothing )
+                ( restore_input True terminal, Nothing )
 
             else if key == 40 then
-                ( restore_input False model, Nothing )
+                ( restore_input False terminal, Nothing )
 
             else
-                ( model, Nothing )
+                ( terminal, Nothing )
 
         Stdin str ->
-            ( { model | input = str }, Nothing )
+            ( { terminal | input = str }, Nothing )
 
         Stdout str ->
-            ( { model | output = add2output model.max_length model.output str }, Nothing )
+            ( { terminal | output = add2output terminal.max_length terminal.output str }, Nothing )
 
         Stderr str ->
-            ( { model | output = add2output model.max_length model.output str }, Nothing )
+            ( { terminal | output = add2output terminal.max_length terminal.output str }, Nothing )
 
 
 
 -- VIEW
 
 
-view : Model -> Html Msg
-view model =
+view : Terminal -> Html Msg
+view terminal =
     let
         px =
-            model.output
+            terminal.output
                 |> String.lines
                 |> List.length
                 |> (*) 16
@@ -76,9 +76,10 @@ view model =
                 |> JE.string
     in
     Html.div
-        [ styling
+        [ Attr.class "lia-code-stdout"
+        , styling
         ]
-        [ if model.output == "" then
+        [ if terminal.output == "" then
             Html.text ""
 
           else
@@ -94,21 +95,21 @@ view model =
                     ]
                 , Attr.property "scrollTop" px
                 ]
-                [ --List.indexedMap (,) model.output
+                [ --List.indexedMap (,) terminal.output
                   --  |> List.map (\( i, s ) -> toString i ++ ": " ++ s)
                   --  |> String.concat
-                  Html.text model.output
+                  Html.text terminal.output
                 ]
         , Html.code [] [ Html.text ">> " ]
         , Html.input
             [ onInput Stdin
             , onKeyDown KeyDown
-            , Attr.value model.input
+            , Attr.value terminal.input
             , Attr.style
                 [ ( "background-color", "black" )
                 , ( "color", "white" )
                 , ( "border", "0" )
-                , ( "width", "calc(100% - 28px)" )
+                , ( "width", "calc(100% - 30px)" )
                 ]
             ]
             []
@@ -126,47 +127,47 @@ styling =
         ]
 
 
-print2terminal : Model -> Model
-print2terminal model =
+print_to : Terminal -> Terminal
+print_to terminal =
     if
-        (model.history
-            |> Array.get model.history_value
-            |> Maybe.map (\h -> h /= model.input)
+        (terminal.history
+            |> Array.get terminal.history_value
+            |> Maybe.map (\h -> h /= terminal.input)
             |> Maybe.withDefault True
         )
-            && (model.input /= "")
+            && (terminal.input /= "")
     then
-        { model
+        { terminal
             | input = ""
-            , output = add2output model.max_length model.output (model.input ++ "\n")
-            , history = Array.push model.input model.history
-            , history_value = Array.length model.history + 1
+            , output = add2output terminal.max_length terminal.output (terminal.input ++ "\n")
+            , history = Array.push terminal.input terminal.history
+            , history_value = Array.length terminal.history + 1
         }
 
     else
-        { model
+        { terminal
             | input = ""
-            , output = add2output model.max_length model.output (model.input ++ "\n")
-            , history_value = model.history_value + 1
+            , output = add2output terminal.max_length terminal.output (terminal.input ++ "\n")
+            , history_value = terminal.history_value + 1
         }
 
 
-restore_input : Bool -> Model -> Model
-restore_input up model =
+restore_input : Bool -> Terminal -> Terminal
+restore_input up terminal =
     let
         new_hist =
             if up then
-                model.history_value - 1
+                terminal.history_value - 1
 
             else
-                model.history_value + 1
+                terminal.history_value + 1
     in
-    case Array.get new_hist model.history of
+    case Array.get new_hist terminal.history of
         Just str ->
-            { model | input = str, history_value = new_hist }
+            { terminal | input = str, history_value = new_hist }
 
         Nothing ->
-            model
+            terminal
 
 
 add2output : Int -> String -> String -> String

@@ -10,6 +10,7 @@ module Lia.Code.Types exposing
 
 import Array exposing (Array)
 import Json.Decode as JD
+import Lia.Code.Terminal exposing (Terminal)
 import Lia.Helper exposing (ID)
 
 
@@ -28,6 +29,7 @@ type alias Project =
     , version_active : Int
     , result : Result Log Log
     , running : Bool
+    , terminal : Maybe Terminal
     }
 
 

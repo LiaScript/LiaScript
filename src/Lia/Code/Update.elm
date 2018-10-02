@@ -9,6 +9,7 @@ import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Code.Json exposing (decoder_result, json2event, vector2json)
+import Lia.Code.Terminal as Terminal
 import Lia.Code.Types exposing (..)
 import Lia.Helper exposing (ID)
 import Lia.Utils exposing (toJSstring)
@@ -23,6 +24,7 @@ type Msg
     | Load ID Int
     | First ID
     | Last ID
+    | UpdateTerminal ID Terminal.Msg
 
 
 jsEventHandler : String -> JE.Value -> Vector -> ( Vector, Maybe JE.Value )
@@ -84,18 +86,55 @@ update msg model =
         Event "eval" ( _, _, "LIA: wait", _ ) ->
             ( model, Nothing )
 
+        Event "eval" ( _, idx, "LIA: terminal", _ ) ->
+            ( case Array.get idx model of
+                Just project ->
+                    Array.set idx { project | terminal = Just <| Terminal.init } model
+
+                Nothing ->
+                    model
+            , Nothing
+            )
+
+        Event "eval" ( _, idx, "LIA: stop", _ ) ->
+            ( case Array.get idx model of
+                Just project ->
+                    Array.set idx { project | terminal = Nothing, running = False } model
+
+                Nothing ->
+                    model
+            , Nothing
+            )
+
         Event "eval" ( ok, idx, message, details ) ->
             decoder_result ok message details
                 |> resulting
                 |> update_ idx model []
 
-        Event "stdin" ( _, idx, message, _ ) ->
+        Event "stdout" ( _, idx, message, _ ) ->
             message
                 |> append_to_result
                 |> update_ idx model []
 
         Event _ _ ->
             ( model, Nothing )
+
+        UpdateTerminal idx childMsg ->
+            case Array.get idx model of
+                Just project ->
+                    case project.terminal of
+                        Nothing ->
+                            ( model, Nothing )
+
+                        Just terminal ->
+                            let
+                                ( new_terminal, stdin ) =
+                                    Terminal.update childMsg terminal
+                            in
+                            ( Array.set idx { project | terminal = Just new_terminal } model, Nothing )
+
+                Nothing ->
+                    ( model, Nothing )
 
 
 replace : ( Int, String ) -> String -> String

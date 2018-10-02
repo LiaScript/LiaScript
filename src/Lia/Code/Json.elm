@@ -41,13 +41,14 @@ project2json project =
 
 json2project : JD.Decoder Project
 json2project =
-    JD.map6 Project
+    JD.map7 Project
         (JD.field "file" (JD.array json2file))
         (JD.field "version" (JD.array json2version))
         (JD.field "evaluation" JD.string)
         (JD.field "version_active" JD.int)
         (JD.field "result" json2result)
         (JD.succeed False)
+        (JD.succeed Nothing)
 
 
 file2json : File -> JE.Value

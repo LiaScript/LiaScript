@@ -108,6 +108,7 @@ evaluate lang_title_code comment =
                         , version_active = 0
                         , result = noResult
                         , running = False
+                        , terminal = Nothing
                         }
                         s.code_vector
             }
