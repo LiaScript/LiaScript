@@ -131,7 +131,14 @@ update msg model =
                                 ( new_terminal, stdin ) =
                                     Terminal.update childMsg terminal
                             in
-                            ( Array.set idx { project | terminal = Just new_terminal } model, Nothing )
+                            ( Array.set idx { project | terminal = Just new_terminal } model
+                            , case stdin of
+                                Nothing ->
+                                    Nothing
+
+                                Just str ->
+                                    Just <| JE.list [ JE.list [ JE.string "stdin", JE.int idx, JE.string str ] ]
+                            )
 
                 Nothing ->
                     ( model, Nothing )
