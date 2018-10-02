@@ -89,28 +89,10 @@ update msg model =
                 |> resulting
                 |> update_ idx model []
 
-        {- let
-               ( model_, event ) =
-                   decoder_result ok message details
-                       |> resulting
-                       |> update_ idx model
-
-               debug =
-                   Debug.log "FUCCCCCCCCC" <| Maybe.map .version <| Array.get 0 model_
-           in
-           ( model_, event )
-        -}
         Event "stdin" ( _, idx, message, _ ) ->
-            let
-                f project =
-                    case project.result of
-                        Ok log ->
-                            { project | result = Ok (Log (log.message ++ message) log.details) }
-
-                        Err log ->
-                            { project | result = Err (Log (log.message ++ message) log.details) }
-            in
-            update_ idx model [] f
+            message
+                |> append_to_result
+                |> update_ idx model []
 
         Event _ _ ->
             ( model, Nothing )
@@ -235,3 +217,13 @@ load version elem =
 
     else
         elem
+
+
+append_to_result : String -> Project -> Project
+append_to_result str project =
+    case project.result of
+        Ok log ->
+            { project | result = Ok (Log (log.message ++ str) log.details) }
+
+        Err log ->
+            { project | result = Err (Log (log.message ++ str) log.details) }
