@@ -84,11 +84,16 @@ update msg model =
             ( model, Nothing )
 
         Event "eval" ( ok, idx, message, details ) ->
-            decoder_result ok message details
-                |> resulting
-                |> Debug.log "fucking1"
-                |> update_ idx model
-                |> Debug.log "fucking2"
+            let
+                ( model_, event ) =
+                    decoder_result ok message details
+                        |> resulting
+                        |> update_ idx model
+
+                debug =
+                    Debug.log "FUCCCCCCCCC" <| Maybe.map .version <| Array.get 0 model_
+            in
+            ( model_, event )
 
         Event "stdin" ( _, idx, message, _ ) ->
             let

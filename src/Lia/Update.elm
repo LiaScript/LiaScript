@@ -38,7 +38,7 @@ subscriptions model =
                 ]
 
         Nothing ->
-            Sub.none
+            event2elm Event
 
 
 type Msg
