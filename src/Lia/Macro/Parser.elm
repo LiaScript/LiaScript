@@ -5,7 +5,7 @@ import Dict exposing (Dict)
 import Lia.Definition.Types exposing (Definition)
 import Lia.Helper exposing (..)
 import Lia.PState exposing (PState, identation)
-import Lia.Utils exposing (string_replace)
+import Lia.Utils exposing (string_replace, toJSstring)
 
 
 pattern : Parser s String
@@ -15,11 +15,12 @@ pattern =
 
 param : Parser PState String
 param =
-    choice
-        [ c_frame *> regex "([^`]+|\\n)+" <* c_frame
-        , string "`" *> regex "[^`\\n]+" <* string "`"
-        , regex "[^),]+"
-        ]
+    toJSstring
+        <$> choice
+                [ c_frame *> regex "(([^`]+|(`[^`]+)|(``[^`]+))|\\n)+" <* c_frame
+                , string "`" *> regex "[^`\\n]+" <* string "`"
+                , regex "[^),]+"
+                ]
 
 
 param_list : Parser PState (List String)

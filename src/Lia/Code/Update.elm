@@ -83,10 +83,25 @@ update msg model =
                     |> load
                 )
 
-        Event "eval" ( _, _, "LIA: wait", _ ) ->
-            ( model, Nothing )
+        Event "eval" ( _, idx, "LIA: wait", _ ) ->
+            let
+                debug =
+                    Debug.log "LIA: wait" idx
+            in
+            ( case Array.get idx model of
+                Just project ->
+                    Array.set idx (resulting True noResult project) model
+
+                Nothing ->
+                    model
+            , Nothing
+            )
 
         Event "eval" ( _, idx, "LIA: terminal", _ ) ->
+            let
+                debug =
+                    Debug.log "LIA: terminal" idx
+            in
             ( case Array.get idx model of
                 Just project ->
                     Array.set idx { project | terminal = Just <| Terminal.init } model
@@ -97,6 +112,10 @@ update msg model =
             )
 
         Event "eval" ( _, idx, "LIA: stop", _ ) ->
+            let
+                debug =
+                    Debug.log "LIA: stop" idx
+            in
             ( case Array.get idx model of
                 Just project ->
                     Array.set idx { project | terminal = Nothing, running = False } model
@@ -107,14 +126,28 @@ update msg model =
             )
 
         Event "eval" ( ok, idx, message, details ) ->
+            let
+                debug =
+                    Debug.log "eval" ( ok, idx, message, details )
+            in
             decoder_result ok message details
-                |> resulting
+                |> resulting False
+                |> update_ idx model []
+
+        Event "info" ( ok, idx, message, details ) ->
+            let
+                debug =
+                    Debug.log "info" ( ok, idx, message, details )
+            in
+            decoder_result ok message details
+                |> resulting True
                 |> update_ idx model []
 
         Event "stdout" ( _, idx, message, _ ) ->
-            message
-                |> append_to_result
-                |> update_ idx model []
+            append_to_result model idx message
+
+        Event "stderr" ( _, idx, message, _ ) ->
+            append_to_result model idx message
 
         Event _ _ ->
             ( model, Nothing )
@@ -228,8 +261,8 @@ update_file id_1 id_2 model f =
     )
 
 
-resulting : Result Log Log -> Project -> Project
-resulting result elem =
+resulting : Bool -> Result Log Log -> Project -> Project
+resulting still_running result elem =
     let
         ( code, _ ) =
             elem.version
@@ -239,7 +272,7 @@ resulting result elem =
         e =
             { elem
                 | result = result
-                , running = False
+                , running = still_running
             }
 
         new_code =
@@ -276,11 +309,20 @@ load version elem =
         elem
 
 
-append_to_result : String -> Project -> Project
-append_to_result str project =
-    case project.result of
-        Ok log ->
-            { project | result = Ok (Log (log.message ++ str) log.details) }
+append_to_result : Vector -> Int -> String -> ( Vector, Maybe JE.Value )
+append_to_result model idx str =
+    case Array.get idx model of
+        Just project ->
+            let
+                new_project =
+                    case project.result of
+                        Ok log ->
+                            { project | result = Ok (Log (log.message ++ str) log.details) }
 
-        Err log ->
-            { project | result = Err (Log (log.message ++ str) log.details) }
+                        Err log ->
+                            { project | result = Err (Log (log.message ++ str) log.details) }
+            in
+            ( Array.set idx new_project model, Nothing )
+
+        Nothing ->
+            ( model, Nothing )
