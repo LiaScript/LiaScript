@@ -8,6 +8,7 @@ module Lia.Code.Update exposing
 import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
+import Lia.Code.Event as Event
 import Lia.Code.Json exposing (decoder_result, json2event, vector2json)
 import Lia.Code.Terminal as Terminal
 import Lia.Code.Types exposing (..)
@@ -57,31 +58,49 @@ update msg model =
                     ( model, Nothing )
 
         Update id_1 id_2 code_str ->
-            update_file id_1 id_2 model (\f -> { f | code = code_str })
+            update_file id_1 id_2 model (\f -> { f | code = code_str }) (\_ -> Nothing)
 
         FlipView id_1 id_2 ->
-            update_file id_1 id_2 model (\f -> { f | visible = not f.visible })
+            update_file
+                id_1
+                id_2
+                model
+                (\f -> { f | visible = not f.visible })
+                (.visible >> Event.flip_view id_1 id_2 >> Just)
 
         FlipFullscreen id_1 id_2 ->
-            update_file id_1 id_2 model (\f -> { f | fullscreen = not f.fullscreen })
+            update_file
+                id_1
+                id_2
+                model
+                (\f -> { f | fullscreen = not f.fullscreen })
+                (.fullscreen >> Event.fullscreen id_1 id_2 >> Just)
 
         Load idx version ->
-            update_ idx model [] (load version)
+            --  update_ idx model [] (load version)
+            model
+                |> maybe_project idx (load version)
+                |> maybe_log (Event.load idx)
+                |> maybe_update idx model []
 
         First idx ->
-            update_ idx model [] (load 0)
+            --update_ idx model [] (load 0)
+            model
+                |> maybe_project idx (load 0)
+                |> maybe_log (Event.load idx)
+                |> maybe_update idx model []
 
         Last idx ->
-            update_
-                idx
-                model
-                []
-                (model
-                    |> Array.get idx
-                    |> Maybe.map (.version >> Array.length >> (+) -1)
-                    |> Maybe.withDefault 0
-                    |> load
-                )
+            let
+                version =
+                    model
+                        |> maybe_project idx (.version >> Array.length >> (+) -1)
+                        |> Maybe.withDefault 0
+            in
+            model
+                |> maybe_project idx (load version)
+                |> maybe_log (Event.load idx)
+                |> maybe_update idx model []
 
         Event "eval" ( _, idx, "LIA: wait", _ ) ->
             let
@@ -221,7 +240,7 @@ update_and_eval idx model project code_0 =
     update_
         idx
         model
-        [ JE.list [ JE.string "eval", JE.int idx, JE.string eval_str ] ]
+        [ Event.eval idx eval_str ]
         (\p -> { p | running = True })
 
 
@@ -235,7 +254,7 @@ update_ idx model event_logs f =
             in
             ( new_model
             , event_logs
-                |> (::) (JE.list [ JE.string "store", vector2json new_model ])
+                |> (::) (Event.store new_model)
                 |> JE.list
                 |> Just
             )
@@ -244,21 +263,62 @@ update_ idx model event_logs f =
             ( model, Nothing )
 
 
-update_file : ID -> ID -> Vector -> (File -> File) -> ( Vector, Maybe JE.Value )
-update_file id_1 id_2 model f =
-    ( case Array.get id_1 model of
+
+--model |> update_ idx f |> log ( ... ) |> Model.set
+
+
+maybe_project idx f model =
+    model
+        |> Array.get idx
+        |> Maybe.map f
+
+
+
+--maybe_log : (Project -> ( Project, List JE.Value )) -> Maybe Project -> ( Maybe Project, List JE.Value )
+
+
+maybe_log fn project =
+    Maybe.map fn project
+
+
+maybe_update idx model logs project =
+    case project of
+        Just ( p, log ) ->
+            let
+                event_logs =
+                    List.append logs log
+            in
+            ( Array.set idx p model
+            , if event_logs == [] then
+                Nothing
+
+              else
+                Just <| JE.list event_logs
+            )
+
+        _ ->
+            ( model, Nothing )
+
+
+update_file : ID -> ID -> Vector -> (File -> File) -> (File -> Maybe JE.Value) -> ( Vector, Maybe JE.Value )
+update_file id_1 id_2 model f f_log =
+    case Array.get id_1 model of
         Just project ->
-            case Array.get id_2 project.file of
+            case project.file |> Array.get id_2 |> Maybe.map f of
                 Just file ->
-                    Array.set id_1 { project | file = Array.set id_2 (f file) project.file } model
+                    ( Array.set id_1
+                        { project
+                            | file = Array.set id_2 file project.file
+                        }
+                        model
+                    , f_log file
+                    )
 
                 Nothing ->
-                    model
+                    ( model, Nothing )
 
         Nothing ->
-            model
-    , Nothing
-    )
+            ( model, Nothing )
 
 
 resulting : Bool -> Result Log Log -> Project -> Project
@@ -291,22 +351,20 @@ resulting still_running result elem =
 
 
 load : Int -> Project -> Project
-load version elem =
-    if (version >= 0) && (version < Array.length elem.version) then
-        let
-            ( code, result ) =
-                elem.version
-                    |> Array.get version
-                    |> Maybe.withDefault ( Array.empty, noResult )
-        in
-        { elem
-            | version_active = version
-            , file = Array.indexedMap (\i a -> { a | code = Array.get i code |> Maybe.withDefault a.code }) elem.file
-            , result = result
-        }
+load idx project =
+    case Array.get idx project.version of
+        Just ( code, result ) ->
+            { project
+                | version_active = idx
+                , file =
+                    Array.indexedMap
+                        (\i a -> { a | code = Array.get i code |> Maybe.withDefault a.code })
+                        project.file
+                , result = result
+            }
 
-    else
-        elem
+        _ ->
+            project
 
 
 append_to_result : Vector -> Int -> String -> ( Vector, Maybe JE.Value )

@@ -101,6 +101,7 @@ update msg section =
                             | code_vector =
                                 json
                                     |> Lia.Code.Json.json2vector
+                                    |> Result.map (Lia.Code.Json.merge section.code_vector)
                                     |> Result.withDefault section.code_vector
                         }
 

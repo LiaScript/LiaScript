@@ -1,5 +1,6 @@
 module Lia.Code.Types exposing
     ( Code(..)
+    , EventMsg
     , File
     , Log
     , Project
@@ -10,12 +11,17 @@ module Lia.Code.Types exposing
 
 import Array exposing (Array)
 import Json.Decode as JD
+import Json.Encode as JE
 import Lia.Code.Terminal exposing (Terminal)
 import Lia.Helper exposing (ID)
 
 
 type alias Vector =
     Array Project
+
+
+type alias EventMsg =
+    List JE.Value
 
 
 type alias Version =

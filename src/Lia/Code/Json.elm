@@ -1,9 +1,22 @@
-module Lia.Code.Json exposing (decoder_result, json2event, json2project, json2vector, vector2json)
+module Lia.Code.Json exposing (decoder_result, file2json, json2event, json2project, json2vector, merge, result2json, vector2json)
 
 import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Code.Types exposing (File, Log, Project, Vector, Version, noResult)
+
+
+merge : Vector -> Vector -> Vector
+merge old new =
+    new
+        |> Array.toList
+        |> List.map2 copy_evaluation (Array.toList old)
+        |> Array.fromList
+
+
+copy_evaluation : Project -> Project -> Project
+copy_evaluation old new =
+    { new | evaluation = old.evaluation }
 
 
 json2event : JD.Value -> Result String ( Bool, Int, String, JD.Value )
@@ -33,7 +46,8 @@ project2json project =
     JE.object
         [ ( "file", JE.array <| Array.map file2json project.file )
         , ( "version", JE.array <| Array.map version2json project.version )
-        , ( "evaluation", JE.string project.evaluation )
+
+        --, ( "evaluation", JE.string project.evaluation )
         , ( "version_active", JE.int project.version_active )
         , ( "result", result2json project.result )
         ]
@@ -44,7 +58,8 @@ json2project =
     JD.map7 Project
         (JD.field "file" (JD.array json2file))
         (JD.field "version" (JD.array json2version))
-        (JD.field "evaluation" JD.string)
+        --(JD.field "evaluation" JD.string)
+        (JD.succeed "")
         (JD.field "version_active" JD.int)
         (JD.field "result" json2result)
         (JD.succeed False)
