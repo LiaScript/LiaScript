@@ -6,6 +6,10 @@ module Lia.Code.Types exposing
     , Project
     , Vector
     , Version
+    , details_
+    , log_
+    , message_
+    , message_update
     , noResult
     )
 
@@ -45,6 +49,58 @@ noResult =
         { message = ""
         , details = Array.empty
         }
+
+
+message_update : String -> Result Log Log -> Result Log Log
+message_update str rslt =
+    case rslt of
+        Ok log ->
+            Ok (Log (append log.message str) log.details)
+
+        Err log ->
+            Err (Log (append log.message str) log.details)
+
+
+append : String -> String -> String
+append str1 str2 =
+    let
+        str =
+            str1 ++ str2
+
+        lines =
+            String.lines str
+
+        len =
+            List.length lines
+    in
+    if len < 500 then
+        str
+
+    else
+        lines
+            |> List.drop (len - 500)
+            |> List.intersperse "\n"
+            |> String.concat
+
+
+message_ : Result Log Log -> String
+message_ =
+    log_ >> .message
+
+
+details_ : Result Log Log -> Array JD.Value
+details_ =
+    log_ >> .details
+
+
+log_ : Result Log Log -> Log
+log_ rslt =
+    case rslt of
+        Ok log ->
+            log
+
+        Err log ->
+            log
 
 
 type alias Log =

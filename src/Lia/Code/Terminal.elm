@@ -10,16 +10,18 @@ import Json.Encode as JE
 
 type alias Terminal =
     { input : String
-    , output : String
+
+    --, output : String
     , history : Array String
     , history_value : Int
-    , max_length : Int
+
+    --, max_length : Int
     }
 
 
 init : Terminal
 init =
-    Terminal "" "" Array.empty 0 250
+    Terminal "" Array.empty 0
 
 
 
@@ -29,8 +31,6 @@ init =
 type Msg
     = KeyDown Int
     | Stdin String
-    | Stdout String
-    | Stderr String
 
 
 update : Msg -> Terminal -> ( Terminal, Maybe String )
@@ -38,7 +38,7 @@ update msg terminal =
     case msg of
         KeyDown key ->
             if key == 13 then
-                ( print_to terminal, Just terminal.input )
+                ( print_to terminal, Just <| terminal.input ++ "\n" )
 
             else if key == 38 then
                 ( restore_input True terminal, Nothing )
@@ -52,12 +52,6 @@ update msg terminal =
         Stdin str ->
             ( { terminal | input = str }, Nothing )
 
-        Stdout str ->
-            ( { terminal | output = add2output terminal.max_length terminal.output str }, Nothing )
-
-        Stderr str ->
-            ( { terminal | output = add2output terminal.max_length terminal.output str }, Nothing )
-
 
 
 -- VIEW
@@ -65,42 +59,11 @@ update msg terminal =
 
 view : Terminal -> Html Msg
 view terminal =
-    let
-        px =
-            terminal.output
-                |> String.lines
-                |> List.length
-                |> (*) 16
-                |> (+) 16
-                |> toString
-                |> JE.string
-    in
     Html.div
         [ Attr.class "lia-code-stdout"
-        , styling
+        , Attr.style [ ( "margin-top", "-10px" ) ]
         ]
-        [ if terminal.output == "" then
-            Html.text ""
-
-          else
-            Html.pre
-                [ Attr.style
-                    [ ( "margin", "0px" )
-                    , ( "overflow-y", "auto" )
-                    , ( "max-height", "250px" )
-                    , ( "word-wrap", "normal" )
-                    , ( "word-break", "keep-all" )
-                    , ( "white-space", "pre-wrap" )
-                    , ( "border-bottom", "1px solid white" )
-                    ]
-                , Attr.property "scrollTop" px
-                ]
-                [ --List.indexedMap (,) terminal.output
-                  --  |> List.map (\( i, s ) -> toString i ++ ": " ++ s)
-                  --  |> String.concat
-                  Html.text terminal.output
-                ]
-        , Html.code [] [ Html.text ">> " ]
+        [ Html.code [] [ Html.text ">> " ]
         , Html.input
             [ onInput Stdin
             , onKeyDown KeyDown
@@ -116,17 +79,6 @@ view terminal =
         ]
 
 
-styling : Html.Attribute msg
-styling =
-    Attr.style
-        [ ( "width", "100%" )
-        , ( "min-height", "20px" )
-        , ( "max-height", "280px" )
-        , ( "background-color", "black" )
-        , ( "color", "white" )
-        ]
-
-
 print_to : Terminal -> Terminal
 print_to terminal =
     if
@@ -139,7 +91,8 @@ print_to terminal =
     then
         { terminal
             | input = ""
-            , output = add2output terminal.max_length terminal.output (terminal.input ++ "\n")
+
+            --, output = add2output terminal.max_length terminal.output (terminal.input ++ "\n")
             , history = Array.push terminal.input terminal.history
             , history_value = Array.length terminal.history + 1
         }
@@ -147,7 +100,8 @@ print_to terminal =
     else
         { terminal
             | input = ""
-            , output = add2output terminal.max_length terminal.output (terminal.input ++ "\n")
+
+            --, output = add2output terminal.max_length terminal.output (terminal.input ++ "\n")
             , history_value = terminal.history_value + 1
         }
 
@@ -168,27 +122,6 @@ restore_input up terminal =
 
         Nothing ->
             terminal
-
-
-add2output : Int -> String -> String -> String
-add2output max_length output input =
-    let
-        new_output =
-            output
-                ++ input
-                |> String.lines
-
-        len =
-            List.length new_output
-    in
-    if len < max_length then
-        output ++ input
-
-    else
-        new_output
-            |> List.drop (len - max_length)
-            |> List.intersperse "\n"
-            |> String.concat
 
 
 onKeyDown : (Int -> msg) -> Html.Attribute msg

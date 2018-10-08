@@ -1,4 +1,4 @@
-module Lia.Code.Json exposing (decoder_result, file2json, json2event, json2project, json2vector, merge, result2json, vector2json)
+module Lia.Code.Json exposing (decoder_result, file2json, json2event, json2project, json2vector, merge, result2json, vector2json, version2json)
 
 import Array exposing (Array)
 import Json.Decode as JD

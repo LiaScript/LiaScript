@@ -12,7 +12,6 @@ import Lia.Code.Update exposing (Msg(..))
 import Lia.Helper exposing (ID)
 import Lia.Markdown.Inline.Types exposing (Annotation)
 import Lia.Markdown.Inline.View exposing (annotation)
-import Lia.Utils
 import Translations exposing (Lang, codeExecute, codeFirst, codeLast, codeMaximize, codeMinimize, codeNext, codePrev, codeRunning)
 
 
@@ -36,10 +35,11 @@ view lang theme attr model code =
                             |> Array.indexedMap (view_eval lang theme attr project.running errors id_1)
                             |> Array.toList
                             |> Html.div []
-                        , view_control lang id_1 project.version_active project.running
+                        , view_control lang id_1 project.version_active (Array.length project.version) project.running
+                        , view_result project.result
                         , case project.terminal of
                             Nothing ->
-                                view_result project.result
+                                Html.text ""
 
                             Just term ->
                                 term
@@ -256,6 +256,7 @@ error info =
     Html.pre
         [ Attr.class "lia-code-stdout"
         , Attr.style [ ( "color", "red" ) ]
+        , scroll_to_end info
         ]
         [ Html.text info ]
 
@@ -268,10 +269,26 @@ view_result rslt =
                 Html.div [ Attr.style [ ( "margin-top", "8px" ) ] ] []
 
             else
-                Html.pre [ Attr.class "lia-code-stdout" ] [ Lia.Utils.stringToHtml info.message ]
+                Html.pre
+                    [ Attr.class "lia-code-stdout"
+                    , scroll_to_end info.message
+                    ]
+                    [ Html.text info.message ]
 
         Err info ->
             error info.message
+
+
+scroll_to_end : String -> Html.Attribute msg
+scroll_to_end output =
+    output
+        |> String.lines
+        |> List.length
+        |> (*) 14
+        |> (+) 14
+        |> toString
+        |> JE.string
+        |> Attr.property "scrollTop"
 
 
 control_style : Html.Attribute msg
@@ -285,8 +302,15 @@ control_style =
         ]
 
 
-view_control : Lang -> ID -> Int -> Bool -> Html Msg
-view_control lang idx version_active running =
+view_control : Lang -> ID -> Int -> Int -> Bool -> Html Msg
+view_control lang idx version_active version_count running =
+    let
+        forward =
+            running || (version_active == 0)
+
+        backward =
+            running || (version_active == (version_count - 1))
+    in
     Html.div [ Attr.style [ ( "padding", "0px" ), ( "width", "100%" ) ] ]
         [ if running then
             Html.span
@@ -309,6 +333,7 @@ view_control lang idx version_active running =
             , Attr.class "lia-btn lia-icon"
             , control_style
             , Attr.title (codeLast lang)
+            , Attr.disabled backward
             ]
             [ Html.text "last_page" ]
         , Html.button
@@ -318,6 +343,7 @@ view_control lang idx version_active running =
             --, Attr.style [ ( "float", "right" ), ( "margin-right", "0px" ) ]
             , control_style
             , Attr.title (codeNext lang)
+            , Attr.disabled backward
             ]
             [ Html.text "navigate_next" ]
         , Html.span
@@ -333,6 +359,7 @@ view_control lang idx version_active running =
             , Attr.class "lia-btn lia-icon"
             , control_style
             , Attr.title (codePrev lang)
+            , Attr.disabled forward
             ]
             [ Html.text "navigate_before" ]
         , Html.button
@@ -340,6 +367,7 @@ view_control lang idx version_active running =
             , Attr.class "lia-btn lia-icon"
             , control_style
             , Attr.title (codeFirst lang)
+            , Attr.disabled forward
             ]
             [ Html.text "first_page" ]
         ]
