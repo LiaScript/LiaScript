@@ -48,7 +48,7 @@ update msg model =
     case msg of
         Eval idx ->
             model
-                |> maybe_project idx (eval_ idx)
+                |> maybe_project idx (eval idx)
                 |> Maybe.map (is_version_new model)
                 |> maybe_update idx model
 
@@ -189,8 +189,8 @@ update_terminal f msg project =
             ( project, [] )
 
 
-eval_ : Int -> Project -> ( Project, List JE.Value )
-eval_ idx project =
+eval : Int -> Project -> ( Project, List JE.Value )
+eval idx project =
     let
         code_0 =
             project.file

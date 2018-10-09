@@ -5,17 +5,12 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (keyCode, on, onClick, onInput)
 import Json.Decode as JD
-import Json.Encode as JE
 
 
 type alias Terminal =
     { input : String
-
-    --, output : String
     , history : Array String
     , history_value : Int
-
-    --, max_length : Int
     }
 
 
@@ -30,7 +25,7 @@ init =
 
 type Msg
     = KeyDown Int
-    | Stdin String
+    | Input String
 
 
 update : Msg -> Terminal -> ( Terminal, Maybe String )
@@ -49,7 +44,7 @@ update msg terminal =
             else
                 ( terminal, Nothing )
 
-        Stdin str ->
+        Input str ->
             ( { terminal | input = str }, Nothing )
 
 
@@ -65,7 +60,7 @@ view terminal =
         ]
         [ Html.code [] [ Html.text ">> " ]
         , Html.input
-            [ onInput Stdin
+            [ onInput Input
             , onKeyDown KeyDown
             , Attr.value terminal.input
             , Attr.style
@@ -91,8 +86,6 @@ print_to terminal =
     then
         { terminal
             | input = ""
-
-            --, output = add2output terminal.max_length terminal.output (terminal.input ++ "\n")
             , history = Array.push terminal.input terminal.history
             , history_value = Array.length terminal.history + 1
         }
@@ -100,8 +93,6 @@ print_to terminal =
     else
         { terminal
             | input = ""
-
-            --, output = add2output terminal.max_length terminal.output (terminal.input ++ "\n")
             , history_value = terminal.history_value + 1
         }
 
