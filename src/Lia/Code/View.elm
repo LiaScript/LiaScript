@@ -28,15 +28,25 @@ view lang theme attr model code =
                 Just project ->
                     let
                         errors =
-                            get_annotations project.result
+                            get_annotations project.log
                     in
                     div_
                         [ project.file
                             |> Array.indexedMap (view_eval lang theme attr project.running errors id_1)
                             |> Array.toList
                             |> Html.div []
-                        , view_control lang id_1 project.version_active (Array.length project.version) project.running
-                        , view_result project.result
+                        , view_control lang
+                            id_1
+                            project.version_active
+                            (Array.length project.version)
+                            project.running
+                            (if project.terminal == Nothing then
+                                False
+
+                             else
+                                True
+                            )
+                        , view_result project.log
                         , case project.terminal of
                             Nothing ->
                                 Html.text ""
@@ -51,15 +61,9 @@ view lang theme attr model code =
                     Html.text ""
 
 
-get_annotations : Result Log Log -> ID -> JE.Value
-get_annotations rslt file_id =
-    (case rslt of
-        Ok info ->
-            info.details
-
-        Err info ->
-            info.details
-    )
+get_annotations : Log -> ID -> JE.Value
+get_annotations log file_id =
+    log.details
         |> Array.get file_id
         |> Maybe.withDefault JE.null
 
@@ -261,22 +265,21 @@ error info =
         [ Html.text info ]
 
 
-view_result : Result Log Log -> Html msg
-view_result rslt =
-    case rslt of
-        Ok info ->
-            if info.message == "" then
-                Html.div [ Attr.style [ ( "margin-top", "8px" ) ] ] []
+view_result : Log -> Html msg
+view_result log =
+    if log.ok then
+        if log.message == "" then
+            Html.div [ Attr.style [ ( "margin-top", "8px" ) ] ] []
 
-            else
-                Html.pre
-                    [ Attr.class "lia-code-stdout"
-                    , scroll_to_end info.message
-                    ]
-                    [ Html.text info.message ]
+        else
+            Html.pre
+                [ Attr.class "lia-code-stdout"
+                , scroll_to_end log.message
+                ]
+                [ Html.text log.message ]
 
-        Err info ->
-            error info.message
+    else
+        error log.message
 
 
 scroll_to_end : String -> Html.Attribute msg
@@ -302,8 +305,8 @@ control_style =
         ]
 
 
-view_control : Lang -> ID -> Int -> Int -> Bool -> Html Msg
-view_control lang idx version_active version_count running =
+view_control : Lang -> ID -> Int -> Int -> Bool -> Bool -> Html Msg
+view_control lang idx version_active version_count running terminal =
     let
         forward =
             running || (version_active == 0)
@@ -312,22 +315,33 @@ view_control lang idx version_active version_count running =
             running || (version_active == (version_count - 1))
     in
     Html.div [ Attr.style [ ( "padding", "0px" ), ( "width", "100%" ) ] ]
-        [ if running then
-            Html.span
-                [ Attr.class "lia-btn lia-icon"
-                , Attr.style [ ( "margin-left", "0px" ) ]
-                , Attr.title (codeRunning lang)
-                ]
-                [ Html.text "sync" ]
+        [ case ( running, terminal ) of
+            ( True, False ) ->
+                Html.span
+                    [ Attr.class "lia-btn lia-icon"
+                    , Attr.style [ ( "margin-left", "0px" ) ]
+                    , Attr.title (codeRunning lang)
+                    , Attr.disabled True
+                    ]
+                    [ Html.text "stop" ]
 
-          else
-            Html.span
-                [ Attr.class "lia-btn lia-icon"
-                , onClick (Eval idx)
-                , Attr.style [ ( "margin-left", "0px" ) ]
-                , Attr.title (codeExecute lang)
-                ]
-                [ Html.text "play_circle_filled" ]
+            ( True, True ) ->
+                Html.span
+                    [ Attr.class "lia-btn lia-icon"
+                    , Attr.style [ ( "margin-left", "0px" ) ]
+                    , Attr.title (codeRunning lang)
+                    , onClick (Stop idx)
+                    ]
+                    [ Html.text "sync" ]
+
+            _ ->
+                Html.span
+                    [ Attr.class "lia-btn lia-icon"
+                    , onClick (Eval idx)
+                    , Attr.style [ ( "margin-left", "0px" ) ]
+                    , Attr.title (codeExecute lang)
+                    ]
+                    [ Html.text "play_circle_filled" ]
         , Html.button
             [ Last idx |> onClick
             , Attr.class "lia-btn lia-icon"

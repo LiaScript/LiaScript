@@ -103,10 +103,10 @@ evaluate lang_title_code comment =
                         { file = Array.map toFile array
                         , version =
                             Array.fromList
-                                [ ( Array.map extract_code array, noResult ) ]
+                                [ ( Array.map extract_code array, noLog ) ]
                         , evaluation = comment
                         , version_active = 0
-                        , result = noResult
+                        , log = noLog
                         , running = False
                         , terminal = Nothing
                         }

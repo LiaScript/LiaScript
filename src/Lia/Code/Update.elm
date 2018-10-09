@@ -9,7 +9,7 @@ import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Code.Event as Event
-import Lia.Code.Json exposing (decoder_result, json2event, vector2json)
+import Lia.Code.Json exposing (json2details, json2event, vector2json)
 import Lia.Code.Terminal as Terminal
 import Lia.Code.Types exposing (..)
 import Lia.Helper exposing (ID)
@@ -18,6 +18,7 @@ import Lia.Utils exposing (toJSstring)
 
 type Msg
     = Eval ID
+    | Stop ID
     | Update ID ID String
     | FlipView ID ID
     | FlipFullscreen ID ID
@@ -49,7 +50,7 @@ update msg model =
             model
                 |> maybe_project idx (eval_ idx)
                 |> Maybe.map (is_version_new model)
-                |> maybe_update idx model []
+                |> maybe_update idx model
 
         Update id_1 id_2 code_str ->
             update_file
@@ -79,13 +80,13 @@ update msg model =
             model
                 |> maybe_project idx (load version)
                 |> Maybe.map (Event.load idx)
-                |> maybe_update idx model []
+                |> maybe_update idx model
 
         First idx ->
             model
                 |> maybe_project idx (load 0)
                 |> Maybe.map (Event.load idx)
-                |> maybe_update idx model []
+                |> maybe_update idx model
 
         Last idx ->
             let
@@ -97,95 +98,64 @@ update msg model =
             model
                 |> maybe_project idx (load version)
                 |> Maybe.map (Event.load idx)
-                |> maybe_update idx model []
+                |> maybe_update idx model
 
         Event "eval" ( _, idx, "LIA: wait", _ ) ->
             model
-                |> maybe_project idx (\p -> { p | result = noResult })
+                |> maybe_project idx (\p -> { p | log = noLog })
                 |> Maybe.map (\p -> ( p, [] ))
-                |> maybe_update idx model []
+                |> maybe_update idx model
 
         Event "eval" ( _, idx, "LIA: terminal", _ ) ->
             model
-                |> maybe_project idx (\p -> { p | result = noResult, terminal = Just <| Terminal.init })
+                |> maybe_project idx (\p -> { p | log = noLog, terminal = Just <| Terminal.init })
                 |> Maybe.map (\p -> ( p, [] ))
-                |> maybe_update idx model []
+                |> maybe_update idx model
 
         Event "eval" ( _, idx, "LIA: stop", _ ) ->
             model
                 |> maybe_project idx (\p -> { p | running = False, terminal = Nothing })
                 |> Maybe.map (\p -> ( p, [] ))
-                |> maybe_update idx model []
+                |> maybe_update idx model
 
         Event "eval" ( ok, idx, message, details ) ->
             model
-                |> maybe_project idx (set_result False (decoder_result ok message details))
+                |> maybe_project idx (set_result False (toLog ok message details))
                 |> Maybe.map (Event.version_update idx)
-                |> maybe_update idx model []
-
-        Event "info" ( ok, idx, message, details ) ->
-            model
-                |> maybe_project idx (set_result True (decoder_result ok message details))
-                |> Maybe.map (\p -> ( p, [] ))
-                |> maybe_update idx model []
+                |> maybe_update idx model
 
         Event "log" ( ok, idx, message, details ) ->
             model
-                |> maybe_project idx (set_result True (decoder_result ok message details))
+                |> maybe_project idx (set_result True (toLog ok message details))
                 |> Maybe.map (\p -> ( p, [] ))
-                |> maybe_update idx model []
+                |> maybe_update idx model
 
-        Event "stdout" ( _, idx, message, _ ) ->
+        Event "output" ( _, idx, message, _ ) ->
             model
-                |> maybe_project idx (append2result message)
+                |> maybe_project idx (append2log message)
                 |> Maybe.map (\p -> ( p, [] ))
-                |> maybe_update idx model []
-
-        Event "stderr" ( _, idx, message, _ ) ->
-            model
-                |> maybe_project idx (append2result message)
-                |> Maybe.map (\p -> ( p, [] ))
-                |> maybe_update idx model []
+                |> maybe_update idx model
 
         Event _ _ ->
             ( model, Nothing )
 
+        Stop idx ->
+            model
+                |> maybe_project idx (\p -> { p | running = False, terminal = Nothing })
+                |> Maybe.map (\p -> ( p, [ Event.stop idx ] ))
+                |> maybe_update idx model
+
         UpdateTerminal idx childMsg ->
             model
-                |> maybe_project idx (update_terminal (Event.stdin idx) childMsg)
-                |> maybe_update idx model []
+                |> maybe_project idx (update_terminal (Event.input idx) childMsg)
+                |> maybe_update idx model
 
 
-
-{- case Array.get idx model of
-   Just project ->
-       case project.terminal of
-           Nothing ->
-               ( model, Nothing )
-
-           Just terminal ->
-               let
-                   ( new_terminal, stdin ) =
-                       Terminal.update childMsg terminal
-               in
-               ( Array.set idx
-                   { project
-                       | terminal = Just new_terminal
-                       , result =
-                           case stdin of
-                               Just str ->
-                                   append2result str project.result
-
-                               Nothing ->
-                                   project.result
-                   }
-                   model
-               , Event.stdin idx stdin
-               )
-
-   Nothing ->
-       ( model, Nothing )
--}
+toLog : Bool -> String -> JD.Value -> Log
+toLog ok message details =
+    details
+        |> json2details
+        |> Log ok message
 
 
 replace : ( Int, String ) -> String -> String
@@ -202,6 +172,7 @@ default_replace insert into =
         |> String.join insert
 
 
+update_terminal : (String -> JE.Value) -> Terminal.Msg -> Project -> ( Project, List JE.Value )
 update_terminal f msg project =
     case project.terminal |> Maybe.map (Terminal.update msg) of
         Just ( terminal, Nothing ) ->
@@ -210,7 +181,7 @@ update_terminal f msg project =
             )
 
         Just ( terminal, Just str ) ->
-            ( append2result str { project | terminal = Just terminal }
+            ( append2log str { project | terminal = Just terminal }
             , [ f str ]
             )
 
@@ -218,6 +189,7 @@ update_terminal f msg project =
             ( project, [] )
 
 
+eval_ : Int -> Project -> ( Project, List JE.Value )
 eval_ idx project =
     let
         code_0 =
@@ -241,52 +213,7 @@ eval_ idx project =
     ( { project | running = True }, [ Event.eval idx eval_str ] )
 
 
-update_and_eval : ID -> Vector -> Project -> String -> ( Vector, Maybe JE.Value )
-update_and_eval idx model project code_0 =
-    let
-        eval_str =
-            if Array.length project.file == 1 then
-                project.evaluation
-                    |> replace ( 0, code_0 )
-                    |> default_replace code_0
-
-            else
-                project.file
-                    |> Array.indexedMap (\i f -> ( i, f.code ))
-                    |> Array.foldl replace project.evaluation
-                    |> default_replace code_0
-                    |> toJSstring
-    in
-    update_
-        idx
-        model
-        [ Event.eval idx eval_str ]
-        (\p -> { p | running = True })
-
-
-update_ : ID -> Vector -> List JE.Value -> (Project -> Project) -> ( Vector, Maybe JE.Value )
-update_ idx model event_logs f =
-    case Array.get idx model of
-        Just elem ->
-            let
-                new_model =
-                    Array.set idx (f elem) model
-            in
-            ( new_model
-            , event_logs
-                |> (::) (Event.store new_model)
-                |> JE.list
-                |> Just
-            )
-
-        Nothing ->
-            ( model, Nothing )
-
-
-
---model |> update_ idx f |> log ( ... ) |> Model.set
-
-
+maybe_project : Int -> (a -> b) -> Array a -> Maybe b
 maybe_project idx f model =
     model
         |> Array.get idx
@@ -295,21 +222,19 @@ maybe_project idx f model =
 
 
 --maybe_log : (Project -> ( Project, List JE.Value )) -> Maybe Project -> ( Maybe Project, List JE.Value )
+--maybe_update : Int -> Array a -> List b -> a -> ( Array a, Maybe b )
 
 
-maybe_update idx model logs project =
+maybe_update : Int -> Vector -> Maybe ( Project, List JE.Value ) -> ( Vector, Maybe JE.Value )
+maybe_update idx model project =
     case project of
-        Just ( p, log ) ->
-            let
-                event_logs =
-                    List.append logs log
-            in
+        Just ( p, logs ) ->
             ( Array.set idx p model
-            , if event_logs == [] then
+            , if logs == [] then
                 Nothing
 
               else
-                Just <| JE.list event_logs
+                Just <| JE.list logs
             )
 
         _ ->
@@ -343,9 +268,9 @@ is_version_new model ( project, events ) =
         ( Just ( code, _ ), new_code ) ->
             if code /= new_code then
                 ( { project
-                    | version = Array.push ( new_code, noResult ) project.version
+                    | version = Array.push ( new_code, noLog ) project.version
                     , version_active = Array.length project.version
-                    , result = noResult
+                    , log = noLog
                   }
                 , Event.store model :: events
                 )
@@ -357,17 +282,17 @@ is_version_new model ( project, events ) =
             ( project, events )
 
 
-resulting : Bool -> Result Log Log -> Project -> Project
-resulting still_running result elem =
+resulting : Bool -> Log -> Project -> Project
+resulting still_running log elem =
     let
         ( code, _ ) =
             elem.version
                 |> Array.get elem.version_active
-                |> Maybe.withDefault ( Array.empty, noResult )
+                |> Maybe.withDefault ( Array.empty, noLog )
 
         e =
             { elem
-                | result = result
+                | log = log
                 , running = still_running
             }
 
@@ -376,28 +301,28 @@ resulting still_running result elem =
     in
     if code == new_code then
         { e
-            | version = Array.set e.version_active ( code, result ) e.version
+            | version = Array.set e.version_active ( code, log ) e.version
         }
 
     else
         { e
-            | version = Array.push ( new_code, result ) e.version
+            | version = Array.push ( new_code, log ) e.version
             , version_active = Array.length e.version
         }
 
 
-set_result : Bool -> Result Log Log -> Project -> Project
-set_result continue result project =
+set_result : Bool -> Log -> Project -> Project
+set_result continue log project =
     case project.version |> Array.get project.version_active of
         Just ( code, _ ) ->
             { project
                 | version =
                     Array.set
                         project.version_active
-                        ( code, result )
+                        ( code, log )
                         project.version
                 , running = continue
-                , result = result
+                , log = log
             }
 
         Nothing ->
@@ -407,20 +332,20 @@ set_result continue result project =
 load : Int -> Project -> Project
 load idx project =
     case Array.get idx project.version of
-        Just ( code, result ) ->
+        Just ( code, log ) ->
             { project
                 | version_active = idx
                 , file =
                     Array.indexedMap
                         (\i a -> { a | code = Array.get i code |> Maybe.withDefault a.code })
                         project.file
-                , result = result
+                , log = log
             }
 
         _ ->
             project
 
 
-append2result : String -> Project -> Project
-append2result str project =
-    { project | result = message_update str project.result }
+append2log : String -> Project -> Project
+append2log str project =
+    { project | log = message_append str project.log }

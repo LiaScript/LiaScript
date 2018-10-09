@@ -6,11 +6,8 @@ module Lia.Code.Types exposing
     , Project
     , Vector
     , Version
-    , details_
-    , log_
-    , message_
-    , message_update
-    , noResult
+    , message_append
+    , noLog
     )
 
 import Array exposing (Array)
@@ -29,7 +26,7 @@ type alias EventMsg =
 
 
 type alias Version =
-    ( Array String, Result Log Log )
+    ( Array String, Log )
 
 
 type alias Project =
@@ -37,28 +34,41 @@ type alias Project =
     , version : Array Version
     , evaluation : String
     , version_active : Int
-    , result : Result Log Log
+    , log : Log
     , running : Bool
     , terminal : Maybe Terminal
     }
 
 
-noResult : Result Log Log
-noResult =
-    Ok
-        { message = ""
-        , details = Array.empty
-        }
+noLog : Log
+noLog =
+    Log True "" Array.empty
 
 
-message_update : String -> Result Log Log -> Result Log Log
-message_update str rslt =
-    case rslt of
-        Ok log ->
-            Ok (Log (append log.message str) log.details)
+type alias Log =
+    { ok : Bool
+    , message : String
+    , details : Array JD.Value
+    }
 
-        Err log ->
-            Err (Log (append log.message str) log.details)
+
+type alias File =
+    { lang : String
+    , name : String
+    , code : String
+    , visible : Bool
+    , fullscreen : Bool
+    }
+
+
+type Code
+    = Highlight (List ( String, String, String )) -- Lang Title Code
+    | Evaluate ID --EvalString -- Lang Title ID EvalString
+
+
+message_append : String -> Log -> Log
+message_append str log =
+    { log | message = append log.message str }
 
 
 append : String -> String -> String
@@ -81,43 +91,3 @@ append str1 str2 =
             |> List.drop (len - 500)
             |> List.intersperse "\n"
             |> String.concat
-
-
-message_ : Result Log Log -> String
-message_ =
-    log_ >> .message
-
-
-details_ : Result Log Log -> Array JD.Value
-details_ =
-    log_ >> .details
-
-
-log_ : Result Log Log -> Log
-log_ rslt =
-    case rslt of
-        Ok log ->
-            log
-
-        Err log ->
-            log
-
-
-type alias Log =
-    { message : String
-    , details : Array JD.Value
-    }
-
-
-type alias File =
-    { lang : String
-    , name : String
-    , code : String
-    , visible : Bool
-    , fullscreen : Bool
-    }
-
-
-type Code
-    = Highlight (List ( String, String, String )) -- Lang Title Code
-    | Evaluate ID --EvalString -- Lang Title ID EvalString

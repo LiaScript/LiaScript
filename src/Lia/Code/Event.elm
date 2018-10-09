@@ -1,9 +1,9 @@
-module Lia.Code.Event exposing (eval, flip_view, fullscreen, load, stdin, store, version_update)
+module Lia.Code.Event exposing (eval, flip_view, fullscreen, input, load, stop, store, version_update)
 
 import Array exposing (Array)
 import Json.Encode as JE
-import Lia.Code.Json exposing (file2json, result2json, vector2json, version2json)
-import Lia.Code.Types exposing (File, Log, Project, Vector, Version, noResult)
+import Lia.Code.Json exposing (file2json, log2json, vector2json, version2json)
+import Lia.Code.Types exposing (File, Log, Project, Vector, Version, noLog)
 
 
 eval : Int -> String -> JE.Value
@@ -16,9 +16,14 @@ store model =
     JE.list [ JE.string "store", vector2json model ]
 
 
-stdin : Int -> String -> JE.Value
-stdin idx string =
-    JE.list [ JE.string "stdin", JE.int idx, JE.string string ]
+stop : Int -> JE.Value
+stop idx =
+    JE.list [ JE.string "stop", JE.int idx, JE.null ]
+
+
+input : Int -> String -> JE.Value
+input idx string =
+    JE.list [ JE.string "input", JE.int idx, JE.string string ]
 
 
 version_update : Int -> Project -> ( Project, List JE.Value )
@@ -29,7 +34,7 @@ version_update idx project =
             , JE.int idx
             , JE.object
                 [ ( "version_active", JE.int project.version_active )
-                , ( "result", result2json project.result )
+                , ( "log", log2json project.log )
                 ]
             ]
       ]
@@ -45,7 +50,7 @@ load idx project =
             , JE.object
                 [ ( "file", JE.array <| Array.map file2json project.file )
                 , ( "version_active", JE.int project.version_active )
-                , ( "result", result2json project.result )
+                , ( "log", log2json project.log )
                 ]
             ]
       ]

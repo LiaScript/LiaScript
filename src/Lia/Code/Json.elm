@@ -1,9 +1,19 @@
-module Lia.Code.Json exposing (decoder_result, file2json, json2event, json2project, json2vector, merge, result2json, vector2json, version2json)
+module Lia.Code.Json exposing
+    ( file2json
+    , json2details
+    , json2event
+    , json2project
+    , json2vector
+    , log2json
+    , merge
+    , vector2json
+    , version2json
+    )
 
 import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Code.Types exposing (File, Log, Project, Vector, Version, noResult)
+import Lia.Code.Types exposing (File, Log, Project, Vector, Version, noLog)
 
 
 merge : Vector -> Vector -> Vector
@@ -49,7 +59,7 @@ project2json project =
 
         --, ( "evaluation", JE.string project.evaluation )
         , ( "version_active", JE.int project.version_active )
-        , ( "result", result2json project.result )
+        , ( "log", log2json project.log )
         ]
 
 
@@ -61,7 +71,7 @@ json2project =
         --(JD.field "evaluation" JD.string)
         (JD.succeed "")
         (JD.field "version_active" JD.int)
-        (JD.field "result" json2result)
+        (JD.field "log" json2log)
         (JD.succeed False)
         (JD.succeed Nothing)
 
@@ -88,10 +98,10 @@ json2file =
 
 
 version2json : Version -> JE.Value
-version2json ( files, result ) =
+version2json ( files, log ) =
     JE.object
         [ ( "files", JE.array <| Array.map JE.string files )
-        , ( "results", result2json result )
+        , ( "log", log2json log )
         ]
 
 
@@ -99,52 +109,24 @@ json2version : JD.Decoder Version
 json2version =
     JD.map2 (,)
         (JD.field "files" (JD.array JD.string))
-        (JD.field "results" json2result)
+        (JD.field "log" json2log)
 
 
-result2json : Result Log Log -> JE.Value
-result2json result =
-    case result of
-        Ok msg ->
-            log2json True msg
-
-        Err msg ->
-            log2json False msg
-
-
-json2result : JD.Decoder (Result Log Log)
-json2result =
-    JD.map3 decoder_result
+json2log : JD.Decoder Log
+json2log =
+    JD.map3 Log
         (JD.field "ok" JD.bool)
         (JD.field "message" JD.string)
-        (JD.field "details" JD.value)
+        (JD.field "details" (JD.array JD.value))
 
 
-log2json : Bool -> Log -> JE.Value
-log2json ok log =
+log2json : Log -> JE.Value
+log2json log =
     JE.object
-        [ ( "ok", JE.bool ok )
+        [ ( "ok", JE.bool log.ok )
         , ( "message", JE.string log.message )
         , ( "details", JE.array log.details )
         ]
-
-
-decoder_result : Bool -> String -> JD.Value -> Result Log Log
-decoder_result ok message details =
-    (if ok then
-        Ok
-
-     else
-        Err
-    )
-        (json2log message details)
-
-
-json2log : String -> JD.Value -> Log
-json2log message details =
-    details
-        |> json2details
-        |> Log message
 
 
 json2details : JD.Value -> Array JD.Value
