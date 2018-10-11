@@ -323,7 +323,7 @@ view_control lang idx version_active version_count running terminal =
                     , Attr.title (codeRunning lang)
                     , Attr.disabled True
                     ]
-                    [ Html.text "stop" ]
+                    [ Html.text "sync" ]
 
             ( True, True ) ->
                 Html.span
@@ -332,7 +332,7 @@ view_control lang idx version_active version_count running terminal =
                     , Attr.title (codeRunning lang)
                     , onClick (Stop idx)
                     ]
-                    [ Html.text "sync" ]
+                    [ Html.text "stop" ]
 
             _ ->
                 Html.span

@@ -1,9 +1,10 @@
-module Lia.Code.Update exposing
-    ( Msg(..)
-    , default_replace
-    , jsEventHandler
-    , update
-    )
+module Lia.Code.Update
+    exposing
+        ( Msg(..)
+        , default_replace
+        , jsEventHandler
+        , update
+        )
 
 import Array exposing (Array)
 import Json.Decode as JD
@@ -106,15 +107,20 @@ update msg model =
                 |> Maybe.map (\p -> ( p, [] ))
                 |> maybe_update idx model
 
-        Event "eval" ( _, idx, "LIA: terminal", _ ) ->
-            model
-                |> maybe_project idx (\p -> { p | log = noLog, terminal = Just <| Terminal.init })
-                |> Maybe.map (\p -> ( p, [] ))
-                |> maybe_update idx model
-
         Event "eval" ( _, idx, "LIA: stop", _ ) ->
             model
                 |> maybe_project idx (\p -> { p | running = False, terminal = Nothing })
+                |> Maybe.map (\p -> ( p, [] ))
+                |> maybe_update idx model
+
+        -- preserve previous logging by setting ok to false
+        Event "eval" ( ok, idx, "LIA: terminal", _ ) ->
+            model
+                |> maybe_project idx (\p -> { p | terminal = Just <| Terminal.init
+                                                , log = if ok then
+                                                           noLog
+                                                        else
+                                                            p.log})
                 |> Maybe.map (\p -> ( p, [] ))
                 |> maybe_update idx model
 
@@ -204,7 +210,6 @@ eval idx project =
                     if Array.length project.file == 1 then
                         project.evaluation
                             |> replace ( 0, code_0 )
-
                     else
                         project.file
                             |> Array.indexedMap (\i f -> ( i, f.code ))
@@ -232,7 +237,6 @@ maybe_update idx model project =
             ( Array.set idx p model
             , if logs == [] then
                 Nothing
-
               else
                 Just <| JE.list logs
             )
@@ -274,7 +278,6 @@ is_version_new model ( project, events ) =
                   }
                 , Event.store model :: events
                 )
-
             else
                 ( project, events )
 
@@ -303,7 +306,6 @@ resulting still_running log elem =
         { e
             | version = Array.set e.version_active ( code, log ) e.version
         }
-
     else
         { e
             | version = Array.push ( new_code, log ) e.version
@@ -322,7 +324,11 @@ set_result continue log project =
                         ( code, log )
                         project.version
                 , running = continue
-                , log = log
+                , log =
+                    if continue then
+                       log_append project.log log
+                    else
+                        log
             }
 
         Nothing ->

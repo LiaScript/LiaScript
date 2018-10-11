@@ -20,6 +20,7 @@ import Lia.Macro.Parser as Macro
 import Lia.Markdown.Footnote.Parser as Footnote
 import Lia.Markdown.Inline.Types exposing (..)
 import Lia.PState exposing (PState)
+import Lia.Utils exposing (toJSstring)
 
 
 comment : Parser s a -> Parser s (List a)
