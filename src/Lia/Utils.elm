@@ -30,7 +30,7 @@ evaluateJS code =
 execute : Int -> String -> ()
 execute delay code =
     code
-        |> toJSstring
+        --|> toJSstring
         |> Native.Utils.execute delay
 
 
