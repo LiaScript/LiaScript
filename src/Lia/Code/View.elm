@@ -165,8 +165,7 @@ style visible headless height_ =
             else
                 "0px"
     in
-    [ ( "font-size", "13px" )
-    , ( "overflow", "auto" )
+    [ ( "overflow", "auto" )
     , ( "max-height"
       , if visible then
             height_str
@@ -174,7 +173,6 @@ style visible headless height_ =
         else
             "0px"
       )
-    , ( "font-family", "monospace" )
     , ( "transition", "max-height 0.25s ease-out" )
     , ( "border-bottom-left-radius", "4px" )
     , ( "border-bottom-right-radius", "4px" )
@@ -193,7 +191,7 @@ lines code =
 
 pixel : Int -> Int
 pixel lines =
-    lines * 13 + 17
+    lines * 16 + 17
 
 
 highlight : String -> Annotation -> String -> String -> Bool -> Html Msg

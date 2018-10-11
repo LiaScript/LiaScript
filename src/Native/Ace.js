@@ -162,7 +162,8 @@ function render(model) {
         highlightActiveLine: model.highlightActiveLine,
         showGutter: model.showGutter,
         maxLines: model.maxLines,
-        autoScrollEditorIntoView: true
+        autoScrollEditorIntoView: true,
+        fontSize: "12pt"
     });
     //editor.setAutoScrollEditorIntoView(true);
 
