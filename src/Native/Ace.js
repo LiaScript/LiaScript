@@ -108,7 +108,11 @@ function extractModel(factList) {
                 model.extensions = payload.value;
                 break;
             case "AceMaxLines":
-                model.maxLines = payload.value;
+                if (payload.value > 0) {
+                    model.maxLines = payload.value;
+                } else {
+                    model.maxLines = Infinity;
+                }
                 break;
             case "AceAnnotations":
                 model.annotations = payload.value;
@@ -217,6 +221,9 @@ function diff(prev, next) {
       editor.setOptions({ readOnly: nm.readOnly });
     }
 
+    if (pm.maxLines != nm.maxLines) {
+        editor.setOptions({ maxLines: nm.maxLines });
+    }
 
     if (pm.mode != nm.mode) {
         session.setMode("ace/mode/" + nm.mode);

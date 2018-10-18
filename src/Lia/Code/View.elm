@@ -165,8 +165,7 @@ style visible headless height_ =
             else
                 "0px"
     in
-    [ ( "overflow", "auto" )
-    , ( "max-height"
+    [ ( "max-height"
       , if visible then
             height_str
 
@@ -196,21 +195,20 @@ pixel lines =
 
 highlight : String -> Annotation -> String -> String -> Bool -> Html Msg
 highlight theme attr lang code headless =
-    Html.div [ code |> lines |> pixel |> style True headless |> Attr.style ]
-        [ Ace.toHtml
-            [ Ace.value code
-            , Ace.mode lang
-            , Ace.theme theme
-            , Ace.tabSize 2
-            , Ace.useSoftTabs False
-            , Ace.readOnly True
-            , Ace.showCursor False
-            , Ace.highlightActiveLine False
-            , Ace.showGutter False
-            , Ace.showPrintMargin False
-            ]
-            []
+    Ace.toHtml
+        [ code |> lines |> pixel |> style True headless |> Attr.style
+        , Ace.value code
+        , Ace.mode lang
+        , Ace.theme theme
+        , Ace.tabSize 2
+        , Ace.useSoftTabs False
+        , Ace.readOnly True
+        , Ace.showCursor False
+        , Ace.highlightActiveLine False
+        , Ace.showGutter False
+        , Ace.showPrintMargin False
         ]
+        []
 
 
 evaluate : String -> Bool -> ( ID, ID ) -> File -> Bool -> JE.Value -> Html Msg
@@ -234,23 +232,29 @@ evaluate theme running ( id_1, id_2 ) file headless errors =
                 |> pixel
                 |> style file.visible headless
     in
-    Html.div [ Attr.style style_ ]
-        [ Ace.toHtml
-            [ Ace.onSourceChange <| Update id_1 id_2
-            , Ace.value file.code
-            , Ace.mode file.lang
-            , Ace.theme theme
-            , Ace.readOnly running
-            , Ace.enableBasicAutocompletion True
-            , Ace.enableLiveAutocompletion True
-            , Ace.enableSnippets True
-            , Ace.tabSize 2
-            , Ace.useSoftTabs False
-            , Ace.extensions [ "language_tools" ]
-            , Ace.annotations errors
-            ]
-            []
+    Ace.toHtml
+        [ Attr.style style_
+        , Ace.onSourceChange <| Update id_1 id_2
+        , Ace.value file.code
+        , Ace.mode file.lang
+        , Ace.theme theme
+        , Ace.maxLines
+            (if max_lines > 16 then
+                -1
+
+             else
+                max_lines
+            )
+        , Ace.readOnly running
+        , Ace.enableBasicAutocompletion True
+        , Ace.enableLiveAutocompletion True
+        , Ace.enableSnippets True
+        , Ace.tabSize 2
+        , Ace.useSoftTabs False
+        , Ace.extensions [ "language_tools" ]
+        , Ace.annotations errors
         ]
+        []
 
 
 error : String -> Html msg
