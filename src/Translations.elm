@@ -1,7 +1,8 @@
 module Translations exposing (..)
 
 type Lang
-  =  De
+  =  Bg
+  |  De
   |  En
   |  Fa
   |  Hy
@@ -10,6 +11,7 @@ type Lang
 getLnFromCode: String -> Lang
 getLnFromCode code =
    case code of 
+      "bg" -> Bg
       "de" -> De
       "en" -> En
       "fa" -> Fa
@@ -20,6 +22,7 @@ getLnFromCode code =
 baseNext: Lang -> String
 baseNext lang  =
   case lang of 
+      Bg -> "Следващ"
       De -> "weiter"
       En -> "next"
       Fa -> "بعدی"
@@ -29,6 +32,7 @@ baseNext lang  =
 basePrev: Lang -> String
 basePrev lang  =
   case lang of 
+      Bg -> "Предишен"
       De -> "zurück"
       En -> "previous"
       Fa -> "قبلی"
@@ -38,6 +42,7 @@ basePrev lang  =
 baseFont: Lang -> String
 baseFont lang  =
   case lang of 
+      Bg -> "Шрифт"
       De -> "Schrift"
       En -> "Font"
       Fa -> "فونت"
@@ -47,6 +52,7 @@ baseFont lang  =
 baseDec: Lang -> String
 baseDec lang  =
   case lang of 
+      Bg -> "Увеличаване"
       De -> "verkleinern"
       En -> "decrease"
       Fa -> "افزودن"
@@ -56,6 +62,7 @@ baseDec lang  =
 baseInc: Lang -> String
 baseInc lang  =
   case lang of 
+      Bg -> "Намаляване"
       De -> "vergrößern"
       En -> "increase"
       Fa -> "کاستن"
@@ -65,6 +72,7 @@ baseInc lang  =
 baseSearch: Lang -> String
 baseSearch lang  =
   case lang of 
+      Bg -> "Търсене"
       De -> "Suche"
       En -> "Search"
       Fa -> "جستجو"
@@ -74,6 +82,7 @@ baseSearch lang  =
 baseToc: Lang -> String
 baseToc lang  =
   case lang of 
+      Bg -> "Съдържание (показване/скриване)"
       De -> "Inhaltsverzeichnis (zeigen/verbergen)"
       En -> "Table of Contents (show/hide)"
       Fa -> "فهرست مطالب) نمایش/عدم نمایش)"
@@ -83,6 +92,7 @@ baseToc lang  =
 no_translation: Lang -> String
 no_translation lang  =
   case lang of 
+      Bg -> "Без превод"
       De -> "noch keine Übersetzungen vorhanden"
       En -> "no translation yet"
       Fa -> "در دست ترجمه"
@@ -92,6 +102,7 @@ no_translation lang  =
 cColor: Lang -> String
 cColor lang  =
   case lang of 
+      Bg -> "Цвят"
       De -> "Farbe"
       En -> "Color"
       Fa -> "رنگ"
@@ -101,6 +112,7 @@ cColor lang  =
 cDark: Lang -> String
 cDark lang  =
   case lang of 
+      Bg -> "Тъмно"
       De -> "Dunkel"
       En -> "Dark"
       Fa -> "تیره"
@@ -110,6 +122,7 @@ cDark lang  =
 cBright: Lang -> String
 cBright lang  =
   case lang of 
+      Bg -> "Светло"
       De -> "Hell"
       En -> "Bright"
       Fa -> "روشن"
@@ -119,6 +132,7 @@ cBright lang  =
 cDefault: Lang -> String
 cDefault lang  =
   case lang of 
+      Bg -> "Подразбиране"
       De -> "Standard"
       En -> "Default"
       Fa -> "پیشفرض"
@@ -128,6 +142,7 @@ cDefault lang  =
 cAmber: Lang -> String
 cAmber lang  =
   case lang of 
+      Bg -> "Кехлибар"
       De -> "Bernstein"
       En -> "Amber"
       Fa -> "کهربایی"
@@ -137,6 +152,7 @@ cAmber lang  =
 cBlue: Lang -> String
 cBlue lang  =
   case lang of 
+      Bg -> "Синьо"
       De -> "Blau"
       En -> "Blue"
       Fa -> "آبی"
@@ -146,6 +162,7 @@ cBlue lang  =
 cGray: Lang -> String
 cGray lang  =
   case lang of 
+      Bg -> "Сиво"
       De -> "Grau"
       En -> "Gray"
       Fa -> "خاکستری"
@@ -155,6 +172,7 @@ cGray lang  =
 cGreen: Lang -> String
 cGreen lang  =
   case lang of 
+      Bg -> "Зелено"
       De -> "Grün"
       En -> "Green"
       Fa -> "سبز"
@@ -164,6 +182,7 @@ cGreen lang  =
 cPurple: Lang -> String
 cPurple lang  =
   case lang of 
+      Bg -> "Лилаво"
       De -> "Violett"
       En -> "Purple"
       Fa -> "بنفش"
@@ -173,6 +192,7 @@ cPurple lang  =
 modeTextbook: Lang -> String
 modeTextbook lang  =
   case lang of 
+      Bg -> "Режим: Текст"
       De -> "Modus: Lehrbuch"
       En -> "Mode: Textbook"
       Fa -> "سبک: کتاب"
@@ -182,6 +202,7 @@ modeTextbook lang  =
 modePresentation: Lang -> String
 modePresentation lang  =
   case lang of 
+      Bg -> "Режим: Презентация"
       De -> "Modus: Präsentation"
       En -> "Mode: Presentation"
       Fa -> "سبک: ارائه"
@@ -191,6 +212,7 @@ modePresentation lang  =
 modeSlides: Lang -> String
 modeSlides lang  =
   case lang of 
+      Bg -> "Режим: Слайдове"
       De -> "Modus: Folien"
       En -> "Mode: Slides"
       Fa -> "سبک: اسلایدها"
@@ -200,6 +222,7 @@ modeSlides lang  =
 soundOn: Lang -> String
 soundOn lang  =
   case lang of 
+      Bg -> "Звук изкл."
       De -> "Sprecher an"
       En -> "Sound on"
       Fa -> "صدا روشن"
@@ -209,6 +232,7 @@ soundOn lang  =
 soundOff: Lang -> String
 soundOff lang  =
   case lang of 
+      Bg -> "Звук вкл."
       De -> "Sprecher aus"
       En -> "Sound off"
       Fa -> "صدا خاموش"
@@ -218,6 +242,7 @@ soundOff lang  =
 infoAuthor: Lang -> String
 infoAuthor lang  =
   case lang of 
+      Bg -> "Автор: "
       De -> "Autor: "
       En -> "Author: "
       Fa -> "نویسنده: "
@@ -227,6 +252,7 @@ infoAuthor lang  =
 infoDate: Lang -> String
 infoDate lang  =
   case lang of 
+      Bg -> "Дата: "
       De -> "Datum: "
       En -> "Date: "
       Fa -> "تاریخ: "
@@ -236,6 +262,7 @@ infoDate lang  =
 infoEmail: Lang -> String
 infoEmail lang  =
   case lang of 
+      Bg -> "eMail: "
       De -> "e-Mail: "
       En -> "eMail: "
       Fa -> "ایمیل: "
@@ -245,6 +272,7 @@ infoEmail lang  =
 infoVersion: Lang -> String
 infoVersion lang  =
   case lang of 
+      Bg -> "Версия: "
       De -> "Version: "
       En -> "Version: "
       Fa -> "نسخه: "
@@ -254,6 +282,7 @@ infoVersion lang  =
 confInformations: Lang -> String
 confInformations lang  =
   case lang of 
+      Bg -> "Информация"
       De -> "Informationen"
       En -> "Informations"
       Fa -> "اطلاعات"
@@ -263,6 +292,7 @@ confInformations lang  =
 confSettings: Lang -> String
 confSettings lang  =
   case lang of 
+      Bg -> "Настройки"
       De -> "Einstellungen"
       En -> "Settings"
       Fa -> "تنظیمات"
@@ -272,6 +302,7 @@ confSettings lang  =
 confShare: Lang -> String
 confShare lang  =
   case lang of 
+      Bg -> "Споделяне"
       De -> "Teilen"
       En -> "Share"
       Fa -> "اشتراک"
@@ -281,6 +312,7 @@ confShare lang  =
 confTranslations: Lang -> String
 confTranslations lang  =
   case lang of 
+      Bg -> "Транслации"
       De -> "Übersetzungen"
       En -> "Translations"
       Fa -> "ترجمه ها"
@@ -290,6 +322,7 @@ confTranslations lang  =
 codeExecute: Lang -> String
 codeExecute lang  =
   case lang of 
+      Bg -> "Изпълни"
       De -> "Ausführen"
       En -> "Execute"
       Fa -> "اجرا"
@@ -299,6 +332,7 @@ codeExecute lang  =
 codeRunning: Lang -> String
 codeRunning lang  =
   case lang of 
+      Bg -> "Работещ"
       De -> "wird ausgeführt"
       En -> "is running"
       Fa -> "در حال اجرا"
@@ -308,6 +342,7 @@ codeRunning lang  =
 codePrev: Lang -> String
 codePrev lang  =
   case lang of 
+      Bg -> "Предишна версия"
       De -> "eine Version zurück"
       En -> "previous version"
       Fa -> "نسخه قبلی"
@@ -317,6 +352,7 @@ codePrev lang  =
 codeNext: Lang -> String
 codeNext lang  =
   case lang of 
+      Bg -> "следваща версия"
       De -> "eine Version vor"
       En -> "next version"
       Fa -> "نسخه بعدی"
@@ -326,6 +362,7 @@ codeNext lang  =
 codeFirst: Lang -> String
 codeFirst lang  =
   case lang of 
+      Bg -> "Първа версия"
       De -> "erste Version"
       En -> "first version"
       Fa -> "نسخه اولیه"
@@ -335,6 +372,7 @@ codeFirst lang  =
 codeLast: Lang -> String
 codeLast lang  =
   case lang of 
+      Bg -> "Последна версия"
       De -> "letzte Version"
       En -> "last version"
       Fa -> "آخرین نسخه"
@@ -344,6 +382,7 @@ codeLast lang  =
 codeMinimize: Lang -> String
 codeMinimize lang  =
   case lang of 
+      Bg -> "Минимизиране"
       De -> "Darstellung minimieren"
       En -> "minimize view"
       Fa -> "کوچک کردن پنجره"
@@ -353,6 +392,7 @@ codeMinimize lang  =
 codeMaximize: Lang -> String
 codeMaximize lang  =
   case lang of 
+      Bg -> "Максимизиране"
       De -> "Darstellung maximieren"
       En -> "maximize view"
       Fa -> "بزرگ کردن پنجره"
@@ -362,6 +402,7 @@ codeMaximize lang  =
 quizCheck: Lang -> String
 quizCheck lang  =
   case lang of 
+      Bg -> "Проверка"
       De -> "Prüfen"
       En -> "Check"
       Fa -> "بررسی"
@@ -371,6 +412,7 @@ quizCheck lang  =
 quizChecked: Lang -> String
 quizChecked lang  =
   case lang of 
+      Bg -> "Проверено"
       De -> "Gelöst"
       En -> "Checked"
       Fa -> "بررسی شده"
@@ -380,6 +422,7 @@ quizChecked lang  =
 quizSolution: Lang -> String
 quizSolution lang  =
   case lang of 
+      Bg -> "Отговор"
       De -> "zeige Lösung"
       En -> "show solution"
       Fa -> "نمایش راهکار"
@@ -389,6 +432,7 @@ quizSolution lang  =
 quizResolved: Lang -> String
 quizResolved lang  =
   case lang of 
+      Bg -> "Решено"
       De -> "Aufgelöst"
       En -> "Resolved"
       Fa -> "حل شده"
@@ -398,6 +442,7 @@ quizResolved lang  =
 quizHint: Lang -> String
 quizHint lang  =
   case lang of 
+      Bg -> "Подсказване"
       De -> "zeige Hinweis"
       En -> "show hint"
       Fa -> "نمایش یادآوری"
@@ -407,6 +452,7 @@ quizHint lang  =
 surveySubmit: Lang -> String
 surveySubmit lang  =
   case lang of 
+      Bg -> "Изпрати"
       De -> "Abschicken"
       En -> "Submit"
       Fa -> "ارسال"
@@ -416,6 +462,7 @@ surveySubmit lang  =
 surveySubmitted: Lang -> String
 surveySubmitted lang  =
   case lang of 
+      Bg -> "Благодаря"
       De -> "Dankeshön"
       En -> "Thanks"
       Fa -> "تشکر"
@@ -425,6 +472,7 @@ surveySubmitted lang  =
 surveyText: Lang -> String
 surveyText lang  =
   case lang of 
+      Bg -> "Въведете текст..."
       De -> "Texteingabe ..."
       En -> "Enter some text..."
       Fa -> "لطفا متن وارد کنید"
