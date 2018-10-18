@@ -1,7 +1,9 @@
 port module Lia.Effect.Update exposing (Msg(..), has_next, has_previous, init, next, previous, subscriptions, update)
 
+import Date exposing (Date)
 import Lia.Effect.Model exposing (Map, Model, current_comment, get_all_javascript, get_javascript)
 import Lia.Utils
+import Task
 
 
 port speech2js : List String -> Cmd msg
@@ -16,15 +18,14 @@ type Msg
     | Previous
     | Speak
     | SpeakRslt ( String, String )
+    | Rendered Bool (Maybe Date)
 
 
 update : Msg -> Bool -> Model -> ( Model, Cmd Msg )
 update msg sound model =
     case msg of
         Init run_all_javascript ->
-            model
-                |> execute run_all_javascript 1300
-                |> update Speak sound
+            ( model, Task.perform (Just >> Rendered run_all_javascript) Date.now )
 
         Next ->
             if has_next model then
@@ -75,6 +76,11 @@ update msg sound model =
                     Debug.log "TTS error: " msg
             in
             ( { model | speaking = False }, Cmd.none )
+
+        Rendered run_all_javascript _ ->
+            model
+                |> execute run_all_javascript 0
+                |> update Speak sound
 
         _ ->
             ( model, Cmd.none )

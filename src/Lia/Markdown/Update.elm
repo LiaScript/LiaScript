@@ -9,7 +9,6 @@ port module Lia.Markdown.Update exposing
     )
 
 import Json.Encode as JE
-import Lia.Code.Json
 import Lia.Code.Update as Code
 import Lia.Effect.Update as Effect
 import Lia.Quiz.Model
@@ -93,18 +92,21 @@ update msg section =
         FootnoteHide ->
             ( { section | footnote2show = Nothing }, Cmd.none, Nothing )
 
+        Event "code" msg json ->
+            let
+                ( vector, log ) =
+                    case msg of
+                        "restore" ->
+                            Code.restore json section.code_vector
+
+                        _ ->
+                            Code.jsEventHandler msg json section.code_vector
+            in
+            ( { section | code_vector = vector }, Cmd.none, maybeLog "code" log )
+
         Event topic "restore" json ->
             restore <|
                 case topic of
-                    "code" ->
-                        { section
-                            | code_vector =
-                                json
-                                    |> Lia.Code.Json.json2vector
-                                    |> Result.map (Lia.Code.Json.merge section.code_vector)
-                                    |> Result.withDefault section.code_vector
-                        }
-
                     "quiz" ->
                         { section
                             | quiz_vector =
@@ -123,16 +125,6 @@ update msg section =
 
                     _ ->
                         section
-
-        Event "code" msg json ->
-            let
-                ( code_vector, log ) =
-                    Code.jsEventHandler msg json section.code_vector
-            in
-            ( { section | code_vector = code_vector }
-            , Cmd.none
-            , maybeLog "code" log
-            )
 
         _ ->
             ( section, Cmd.none, Nothing )

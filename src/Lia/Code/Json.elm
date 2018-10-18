@@ -46,9 +46,9 @@ vector2json vector =
     JE.array <| Array.map project2json vector
 
 
-json2vector : JD.Value -> Result String Vector
+json2vector : JD.Value -> Result String (Maybe Vector)
 json2vector json =
-    JD.decodeValue (JD.array json2project) json
+    JD.decodeValue (JD.nullable (JD.array json2project)) json
 
 
 project2json : Project -> JE.Value

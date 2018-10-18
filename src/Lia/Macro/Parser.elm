@@ -152,7 +152,7 @@ add ( name, code ) def =
 macro_parse : String -> PState -> String
 macro_parse str defines =
     case runParser (String.concat <$> many1 (regex "@input[^@]+" <|> macro *> regex "[^@]+")) defines str of
-        Ok ( _, _, s ) ->
+        Ok ( state, _, s ) ->
             s
 
         _ ->

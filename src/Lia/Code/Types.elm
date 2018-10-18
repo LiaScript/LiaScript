@@ -6,8 +6,8 @@ module Lia.Code.Types exposing
     , Project
     , Vector
     , Version
-    , message_append
     , log_append
+    , message_append
     , noLog
     )
 
@@ -66,12 +66,14 @@ type Code
     = Highlight (List ( String, String, String )) -- Lang Title Code
     | Evaluate ID --EvalString -- Lang Title ID EvalString
 
+
 log_append : Log -> Log -> Log
 log_append old new =
-  { new
-    | message = append old.message new.message
-    , details = Array.append old.details new.details
+    { new
+        | message = append old.message new.message
+        , details = Array.append old.details new.details
     }
+
 
 message_append : String -> Log -> Log
 message_append str log =

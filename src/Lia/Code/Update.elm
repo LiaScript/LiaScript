@@ -2,6 +2,7 @@ module Lia.Code.Update exposing
     ( Msg(..)
     , default_replace
     , jsEventHandler
+    , restore
     , update
     )
 
@@ -9,7 +10,7 @@ import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Code.Event as Event
-import Lia.Code.Json exposing (json2details, json2event, vector2json)
+import Lia.Code.Json exposing (json2details, json2event, json2vector, merge, vector2json)
 import Lia.Code.Terminal as Terminal
 import Lia.Code.Types exposing (..)
 import Lia.Helper exposing (ID)
@@ -43,13 +44,36 @@ jsEventHandler topic json =
             update (Event "" ( False, -1, "", JE.null ))
 
 
+restore : JE.Value -> Vector -> ( Vector, Maybe JE.Value )
+restore json model =
+    case json2vector json of
+        Ok (Just model_) ->
+            ( merge model model_, Nothing )
+
+        Ok Nothing ->
+            ( model
+            , if Array.length model == 0 then
+                Nothing
+
+              else
+                Just <| Event.store model
+            )
+
+        Err msg ->
+            let
+                debug =
+                    Debug.log "Error: restoring code-vector" msg
+            in
+            ( model, Nothing )
+
+
 update : Msg -> Vector -> ( Vector, Maybe JE.Value )
 update msg model =
     case msg of
         Eval idx ->
             model
                 |> maybe_project idx (eval idx)
-                |> Maybe.map (is_version_new model)
+                |> Maybe.map (is_version_new idx)
                 |> maybe_update idx model
 
         Update id_1 id_2 code_str ->
@@ -108,8 +132,8 @@ update msg model =
 
         Event "eval" ( _, idx, "LIA: stop", _ ) ->
             model
-                |> maybe_project idx (\p -> { p | running = False, terminal = Nothing })
-                |> Maybe.map (\p -> ( p, [] ))
+                |> maybe_project idx stop
+                |> Maybe.map (Event.version_update idx)
                 |> maybe_update idx model
 
         -- preserve previous logging by setting ok to false
@@ -145,6 +169,12 @@ update msg model =
         Event "output" ( _, idx, message, _ ) ->
             model
                 |> maybe_project idx (append2log message)
+                |> Maybe.map (\p -> ( p, [] ))
+                |> maybe_update idx model
+
+        Event "clr" ( _, idx, _, _ ) ->
+            model
+                |> maybe_project idx clr
                 |> Maybe.map (\p -> ( p, [] ))
                 |> maybe_update idx model
 
@@ -232,11 +262,6 @@ maybe_project idx f model =
         |> Maybe.map f
 
 
-
---maybe_log : (Project -> ( Project, List JE.Value )) -> Maybe Project -> ( Maybe Project, List JE.Value )
---maybe_update : Int -> Array a -> List b -> a -> ( Array a, Maybe b )
-
-
 maybe_update : Int -> Vector -> Maybe ( Project, List JE.Value ) -> ( Vector, Maybe JE.Value )
 maybe_update idx model project =
     case project of
@@ -274,53 +299,46 @@ update_file id_1 id_2 model f f_log =
             ( model, Nothing )
 
 
-is_version_new : Vector -> ( Project, List JE.Value ) -> ( Project, List JE.Value )
-is_version_new model ( project, events ) =
+is_version_new : Int -> ( Project, List JE.Value ) -> ( Project, List JE.Value )
+is_version_new idx ( project, events ) =
     case ( project.version |> Array.get project.version_active, project.file |> Array.map .code ) of
         ( Just ( code, _ ), new_code ) ->
             if code /= new_code then
-                ( { project
-                    | version = Array.push ( new_code, noLog ) project.version
-                    , version_active = Array.length project.version
-                    , log = noLog
-                  }
-                , Event.store model :: events
+                let
+                    new_project =
+                        { project
+                            | version = Array.push ( new_code, noLog ) project.version
+                            , version_active = Array.length project.version
+                            , log = noLog
+                        }
+                in
+                ( new_project
+                , Event.version_append idx new_project :: events
                 )
 
             else
                 ( project, events )
 
-        _ ->
+        ( Nothing, _ ) ->
             ( project, events )
 
 
-resulting : Bool -> Log -> Project -> Project
-resulting still_running log elem =
-    let
-        ( code, _ ) =
-            elem.version
-                |> Array.get elem.version_active
-                |> Maybe.withDefault ( Array.empty, noLog )
-
-        e =
-            { elem
-                | log = log
-                , running = still_running
+stop : Project -> Project
+stop project =
+    case project.version |> Array.get project.version_active of
+        Just ( code, _ ) ->
+            { project
+                | version =
+                    Array.set
+                        project.version_active
+                        ( code, project.log )
+                        project.version
+                , running = False
+                , terminal = Nothing
             }
 
-        new_code =
-            e.file |> Array.map .code
-    in
-    if code == new_code then
-        { e
-            | version = Array.set e.version_active ( code, log ) e.version
-        }
-
-    else
-        { e
-            | version = Array.push ( new_code, log ) e.version
-            , version_active = Array.length e.version
-        }
+        Nothing ->
+            project
 
 
 set_result : Bool -> Log -> Project -> Project
@@ -340,6 +358,23 @@ set_result continue log project =
 
                     else
                         log
+            }
+
+        Nothing ->
+            project
+
+
+clr : Project -> Project
+clr project =
+    case project.version |> Array.get project.version_active of
+        Just ( code, log ) ->
+            { project
+                | version =
+                    Array.set
+                        project.version_active
+                        ( code, { log | message = "" } )
+                        project.version
+                , log = { log | message = "" }
             }
 
         Nothing ->
