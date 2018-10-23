@@ -54,10 +54,13 @@ update msg section =
     case msg of
         UpdateEffect sound childMsg ->
             let
-                ( effect_model, cmd ) =
-                    Effect.update childMsg sound section.effect_model
+                ( effect_model, cmd, log ) =
+                    Effect.update sound childMsg section.effect_model
             in
-            ( { section | effect_model = effect_model }, Cmd.map (UpdateEffect sound) cmd, Nothing )
+            ( { section | effect_model = effect_model }
+            , Cmd.map (UpdateEffect sound) cmd
+            , maybeLog "effect" log
+            )
 
         UpdateCode childMsg ->
             let
