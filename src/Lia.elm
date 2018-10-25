@@ -20,6 +20,7 @@ module Lia exposing
 
 import Array
 import Html exposing (Html)
+import Json.Encode as JE
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Model exposing (json2settings, load_src, settings2model)
 import Lia.Parser
@@ -64,19 +65,25 @@ set_script model script =
                             title_sections
                                 |> List.map init_section
                                 |> Array.fromList
-                    in
-                    { model
-                        | definition = { definition | scripts = [] }
-                        , sections = sections
-                        , section_active =
+
+                        section_active =
                             if Array.length sections > model.section_active then
                                 model.section_active
 
                             else
                                 0
+                    in
+                    { model
+                        | definition = { definition | scripts = [] }
+                        , sections = sections
+                        , section_active = section_active
                         , javascript = javascript
                         , translation = Translations.getLnFromCode definition.language
-                        , to_do = List.append js_logs link_logs
+                        , to_do =
+                            js_logs
+                                |> List.append link_logs
+                                |> (::) ( "init", section_active, JE.list [ JE.string <| get_title sections, JE.string model.readme ] )
+                                |> List.reverse
                     }
 
                 Err msg ->
@@ -86,9 +93,9 @@ set_script model script =
             { model | error = Just msg }
 
 
-get_title : Model -> String
-get_title model =
-    model.sections
+get_title : Sections -> String
+get_title sections =
+    sections
         |> Array.get 0
         |> Maybe.map .title
         |> Maybe.map stringify

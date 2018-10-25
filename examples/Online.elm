@@ -21,9 +21,6 @@ import Lia
 import Navigation
 
 
-port initialize : ( String, String ) -> Cmd msg
-
-
 main : Program { url : String, script : String, slide : Int } Model Msg
 main =
     Navigation.programWithFlags UrlChange
@@ -72,7 +69,7 @@ init flags location =
                 flags.script
                     |> Lia.set_script (Lia.init_presentation (get_base url) "" origin slide)
         in
-        ( Model "" "" lia LoadOk "", initialize ( Lia.get_title lia, origin ) )
+        ( Model "" "" lia LoadOk "", Cmd.none )
 
     else if flags.url /= "" then
         ( Model flags.url
@@ -142,16 +139,13 @@ update msg model =
                 , error = ""
                 , state = LoadOk
               }
-            , Cmd.batch
-                [ Navigation.newUrl
-                    (model.origin
-                        ++ "?"
-                        ++ model.url
-                        ++ "#"
-                        ++ toString (lia.section_active + 1)
-                    )
-                , initialize ( Lia.get_title lia, model.url )
-                ]
+            , Navigation.newUrl
+                (model.origin
+                    ++ "?"
+                    ++ model.url
+                    ++ "#"
+                    ++ toString (lia.section_active + 1)
+                )
             )
 
         GET (Err msg) ->

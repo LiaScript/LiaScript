@@ -246,8 +246,10 @@ update msg model =
                     ( set_active_section { model | to_do = [] } sec_
                     , model.to_do
                         |> List.map event2js
-                        |> (::) (maybe_event model.section_active log_ cmd_)
-                        |> (::) (event2js ( "slide", model.section_active, JE.null ))
+                        |> List.append
+                            [ event2js ( "slide", model.section_active, JE.null )
+                            , maybe_event model.section_active log_ cmd_
+                            ]
                         |> Cmd.batch
                     )
 
@@ -351,7 +353,7 @@ add_load length idx vector logs =
         logs
 
     else
-        List.append logs [ ( "load", idx, JE.string vector ) ]
+        ( "load", idx, JE.string vector ) :: logs
 
 
 get_active_section : Model -> Maybe Section
@@ -411,8 +413,8 @@ generate model =
                     | javascript =
                         javascript
                     , to_do =
-                        logs
-                            |> List.append model.to_do
+                        model.to_do
+                            |> List.append logs
                             |> add_load (Array.length section.quiz_vector) model.section_active "quiz"
                             |> add_load (Array.length section.code_vector) model.section_active "code"
                             |> add_load (Array.length section.survey_vector) model.section_active "survey"
