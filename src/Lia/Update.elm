@@ -176,11 +176,10 @@ update msg model =
             ( model, event2js ( "reset", -1, JE.null ) )
 
         Event ( "preferences", x, y, json ) ->
-            ( json
+            json
                 |> json2settings
                 |> settings2model model
-            , Cmd.none
-            )
+                |> update InitSection
 
         Event ( topic, idx, msg, json ) ->
             case Array.get idx model.sections of
