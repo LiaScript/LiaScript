@@ -45,6 +45,10 @@ update sound msg model =
                 ( model, Cmd.none, Nothing )
 
         Speak log ->
+            let
+                d =
+                    Lia.Utils.scrollIntoView "focused"
+            in
             case ( sound, current_comment model ) of
                 ( True, Just ( comment, narrator ) ) ->
                     ( { model | speaking = True }, speech2js [ "speak", narrator, comment ], log )
@@ -73,10 +77,6 @@ update sound msg model =
             ( { model | speaking = False }, Cmd.none, Nothing )
 
         Rendered run_all_javascript _ ->
-            let
-                d =
-                    Lia.Utils.scrollIntoView "focused"
-            in
             execute sound run_all_javascript 0 model
 
         _ ->
