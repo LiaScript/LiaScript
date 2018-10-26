@@ -195,10 +195,24 @@ pixel lines =
 
 highlight : String -> Annotation -> String -> String -> Bool -> Html Msg
 highlight theme attr lang code headless =
+    let
+        top_border =
+            if headless then
+                "4px"
+
+            else
+                "0px"
+    in
     attr
         |> attributes
         |> List.append
-            [ code |> lines |> pixel |> style True headless |> Attr.style
+            [ Attr.style
+                [ ( "border-bottom-left-radius", "4px" )
+                , ( "border-bottom-right-radius", "4px" )
+                , ( "border-top-left-radius", top_border )
+                , ( "border-top-right-radius", top_border )
+                , ( "border", "1px solid gray" )
+                ]
             , Ace.value code
             , Ace.mode lang
             , Ace.theme theme
