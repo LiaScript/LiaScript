@@ -24,6 +24,10 @@ type Msg
 
 update : Bool -> Msg -> Model -> ( Model, Cmd Msg, Maybe JE.Value )
 update sound msg model =
+    let
+        x =
+            Debug.log "sound" ( sound, msg )
+    in
     case msg of
         Init run_all_javascript ->
             ( model, Task.perform (Just >> Rendered run_all_javascript) Date.now, Nothing )
@@ -57,10 +61,10 @@ update sound msg model =
                         ( { model | speaking = False }, speech2js [ "cancel" ], log )
 
                     else
-                        ( model, Cmd.none, log )
+                        ( model, speech2js [ "cancel" ], log )
 
                 _ ->
-                    ( model, Cmd.none, log )
+                    ( model, speech2js [ "cancel" ], log )
 
         SpeakRslt ( "end", msg ) ->
             ( { model | speaking = False }, Cmd.none, Nothing )
