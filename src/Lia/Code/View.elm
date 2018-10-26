@@ -2,7 +2,7 @@ module Lia.Code.View exposing (error, view)
 
 import Array
 import Html exposing (Html)
-import Html.Attributes as Attr
+import Html.Attributes as Attr exposing (attribute)
 import Html.Events exposing (onClick, onDoubleClick, onInput)
 import Json.Encode as JE
 import Lia.Ace as Ace
@@ -11,7 +11,7 @@ import Lia.Code.Types exposing (..)
 import Lia.Code.Update exposing (Msg(..))
 import Lia.Helper exposing (ID)
 import Lia.Markdown.Inline.Types exposing (Annotation)
-import Lia.Markdown.Inline.View exposing (annotation)
+import Lia.Markdown.Inline.View exposing (annotation, attributes)
 import Translations exposing (Lang, codeExecute, codeFirst, codeLast, codeMaximize, codeMinimize, codeNext, codePrev, codeRunning)
 
 
@@ -84,7 +84,7 @@ view_code theme attr ( lang, title, code ) =
         headless =
             title == ""
     in
-    Html.div (annotation "" attr)
+    Html.div []
         [ if headless then
             Html.text ""
 
@@ -148,7 +148,7 @@ view_eval lang theme attr running errors id_1 id_2 file =
                   else
                     Html.text ""
                 ]
-        , evaluate theme running ( id_1, id_2 ) file headless (errors id_2)
+        , evaluate theme attr running ( id_1, id_2 ) file headless (errors id_2)
         ]
 
 
@@ -195,24 +195,27 @@ pixel lines =
 
 highlight : String -> Annotation -> String -> String -> Bool -> Html Msg
 highlight theme attr lang code headless =
-    Ace.toHtml
-        [ code |> lines |> pixel |> style True headless |> Attr.style
-        , Ace.value code
-        , Ace.mode lang
-        , Ace.theme theme
-        , Ace.tabSize 2
-        , Ace.useSoftTabs False
-        , Ace.readOnly True
-        , Ace.showCursor False
-        , Ace.highlightActiveLine False
-        , Ace.showGutter False
-        , Ace.showPrintMargin False
-        ]
-        []
+    attr
+        |> attributes
+        |> List.append
+            [ code |> lines |> pixel |> style True headless |> Attr.style
+            , Ace.value code
+            , Ace.mode lang
+            , Ace.theme theme
+            , Ace.tabSize 2
+            , Ace.useSoftTabs False
+            , Ace.readOnly True
+            , Ace.showCursor False
+            , Ace.highlightActiveLine False
+            , Ace.showGutter False
+            , Ace.showPrintMargin False
+            ]
+        |> Ace.toHtml
+        |> (\a -> a [])
 
 
-evaluate : String -> Bool -> ( ID, ID ) -> File -> Bool -> JE.Value -> Html Msg
-evaluate theme running ( id_1, id_2 ) file headless errors =
+evaluate : String -> Annotation -> Bool -> ( ID, ID ) -> File -> Bool -> JE.Value -> Html Msg
+evaluate theme attr running ( id_1, id_2 ) file headless errors =
     let
         total_lines =
             lines file.code
@@ -232,29 +235,32 @@ evaluate theme running ( id_1, id_2 ) file headless errors =
                 |> pixel
                 |> style file.visible headless
     in
-    Ace.toHtml
-        [ Attr.style style_
-        , Ace.onSourceChange <| Update id_1 id_2
-        , Ace.value file.code
-        , Ace.mode file.lang
-        , Ace.theme theme
-        , Ace.maxLines
-            (if max_lines > 16 then
-                -1
+    attr
+        |> attributes
+        |> List.append
+            [ Attr.style style_
+            , Ace.onSourceChange <| Update id_1 id_2
+            , Ace.value file.code
+            , Ace.mode file.lang
+            , Ace.theme theme
+            , Ace.maxLines
+                (if max_lines > 16 then
+                    -1
 
-             else
-                max_lines
-            )
-        , Ace.readOnly running
-        , Ace.enableBasicAutocompletion True
-        , Ace.enableLiveAutocompletion True
-        , Ace.enableSnippets True
-        , Ace.tabSize 2
-        , Ace.useSoftTabs False
-        , Ace.extensions [ "language_tools" ]
-        , Ace.annotations errors
-        ]
-        []
+                 else
+                    max_lines
+                )
+            , Ace.readOnly running
+            , Ace.enableBasicAutocompletion True
+            , Ace.enableLiveAutocompletion True
+            , Ace.enableSnippets True
+            , Ace.tabSize 2
+            , Ace.useSoftTabs False
+            , Ace.extensions [ "language_tools" ]
+            , Ace.annotations errors
+            ]
+        |> Ace.toHtml
+        |> (\a -> a [])
 
 
 error : String -> Html msg

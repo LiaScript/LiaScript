@@ -48,7 +48,7 @@ link =
 
 code_block : Parser PState String
 code_block =
-    regex "```(.|[\\x0D\\n])*?```" <?> "code block"
+    regex "```[`]*(.|[\\x0D\\n])*?```[`]*" <?> "code block"
 
 
 code_inline : Parser PState String

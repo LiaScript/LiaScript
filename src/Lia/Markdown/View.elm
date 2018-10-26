@@ -10,7 +10,7 @@ import Lia.Effect.View as Effects
 import Lia.Markdown.Footnote.Model as Footnotes
 import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
-import Lia.Markdown.Inline.View exposing (annotation, viewer)
+import Lia.Markdown.Inline.View exposing (annotation, attributes, viewer)
 import Lia.Markdown.Types exposing (..)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Quiz.View as Quizzes
@@ -231,7 +231,7 @@ view_block config block =
             Charts.view attr chart
 
         ASCII attr txt ->
-            SvgBob.getSvg (annotation "lia-svg" attr) txt
+            SvgBob.getSvg (attributes attr) txt
 
 
 view_table : Config -> Annotation -> MultInlines -> List String -> List MultInlines -> Html Msg

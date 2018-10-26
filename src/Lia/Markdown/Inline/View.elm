@@ -1,4 +1,4 @@
-module Lia.Markdown.Inline.View exposing (annotation, reference, view, view_inf, viewer)
+module Lia.Markdown.Inline.View exposing (annotation, attributes, reference, view, view_inf, viewer)
 
 import Dict
 import Html exposing (Attribute, Html)
@@ -28,6 +28,18 @@ annotation cls attr =
 
         Nothing ->
             [ Attr.class ("lia-inline " ++ cls) ]
+
+
+attributes : Annotation -> List (Attribute msg)
+attributes attr =
+    case attr of
+        Just dict ->
+            dict
+                |> Dict.toList
+                |> List.map (\( key, value ) -> Attr.attribute key value)
+
+        Nothing ->
+            []
 
 
 viewer : Int -> Inlines -> List (Html msg)

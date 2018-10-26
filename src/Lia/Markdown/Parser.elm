@@ -88,15 +88,14 @@ to_comment ( attr, ( id1, id2 ) ) =
 
 svgbob : Parser PState Markdown
 svgbob =
-    (\attr txt -> ASCII attr (txt |> List.intersperse "\n" |> String.concat |> SvgBob.init))
+    (\attr txt -> ASCII attr (txt |> String.concat |> SvgBob.init |> Debug.log "FUCKINK"))
         <$> md_annotations
-        <*> (regex "`{4,}\\n"
+        <*> (regex "```[`]+\\n"
                 *> manyTill
                     (maybe identation
-                        *> regex "(.(?!`{4,}))*"
-                        <* string "\n"
+                        *> regex "(.(?!````))*\\n"
                     )
-                    (maybe identation *> regex "`{4,}")
+                    (identation *> regex "```[`]+")
             )
 
 
