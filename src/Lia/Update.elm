@@ -78,6 +78,15 @@ log_maybe idx log =
             [ ( name, idx, json ) ]
 
 
+speak : Model -> Bool
+speak model =
+    if model.ready then
+        model.sound
+
+    else
+        False
+
+
 maybe_event : ID -> Maybe ( String, JE.Value ) -> Cmd Markdown.Msg -> Cmd Msg
 maybe_event idx log cmd =
     case log of
@@ -213,7 +222,7 @@ update msg model =
                     else
                         let
                             ( sec_, cmd_, log_ ) =
-                                Markdown.nextEffect model.sound sec
+                                Markdown.nextEffect (speak model) sec
                         in
                         ( set_active_section model sec_
                         , maybe_event model.section_active log_ cmd_
@@ -226,7 +235,7 @@ update msg model =
                     else
                         let
                             ( sec_, cmd_, log_ ) =
-                                Markdown.previousEffect model.sound sec
+                                Markdown.previousEffect (speak model) sec
                         in
                         ( set_active_section model sec_
                         , maybe_event model.section_active log_ cmd_
@@ -240,7 +249,7 @@ update msg model =
                                     Markdown.initEffect True False sec
 
                                 _ ->
-                                    Markdown.initEffect False model.sound sec
+                                    Markdown.initEffect False (speak model) sec
                     in
                     ( set_active_section { model | to_do = [] } sec_
                     , model.to_do

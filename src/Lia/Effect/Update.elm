@@ -24,10 +24,6 @@ type Msg
 
 update : Bool -> Msg -> Model -> ( Model, Cmd Msg, Maybe JE.Value )
 update sound msg model =
-    let
-        x =
-            Debug.log "sound" ( sound, msg )
-    in
     case msg of
         Init run_all_javascript ->
             ( model, Task.perform (Just >> Rendered run_all_javascript) Date.now, Nothing )

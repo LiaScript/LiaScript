@@ -50,7 +50,9 @@ var _user$project$Native_Utils = (function () {
     function scrollIntoView (id) {
         setTimeout(function(e){
             try {
-                document.getElementById(id).scrollIntoView({behavior: "smooth"});
+                let elem = document.getElementById(id);
+                if (elem)
+                    elem.scrollIntoView({behavior: "smooth"});
             } catch (e) {}
         }, 500);
     };

@@ -44,6 +44,7 @@ type alias Model =
     , javascript : List String
     , to_do : List ( String, Int, JE.Value )
     , translation : Translations.Lang
+    , ready : Bool
     }
 
 
@@ -130,6 +131,7 @@ settings2model model settings =
                         _ ->
                             Slides
                 , sound = s.sound
+                , ready = True
             }
 
         Err msg ->
@@ -168,6 +170,7 @@ init mode url readme origin slide_number =
     , javascript = []
     , to_do = []
     , translation = Translations.En
+    , ready = False
     }
 
 
