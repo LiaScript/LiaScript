@@ -19,8 +19,7 @@ markdown blocks =
     (,,)
         <$> (regex "[\\t ]*{{" *> effect_number)
         <*> (optional 99999 (regex "[\t ]*-[\t ]*" *> int)
-                <* regex "}}[\\t ]*"
-                <* maybe (newline <* ident_skip)
+                <* regex "}}[\\t ]*\\n?"
             )
         <*> (multi blocks <|> single blocks)
         <* reset_effect_number
@@ -61,6 +60,7 @@ effect_number =
                                         s.effect_model
                                 in
                                 { e | effects = n }
+
                             else
                                 s.effect_model
                         , effect_number = n :: s.effect_number
@@ -140,6 +140,7 @@ add_comment visible ( idx, temp_narrator, par ) =
                                                 | comment = cmt.comment ++ "\n" ++ stringify par
                                                 , paragraphs = Array.push ( Nothing, par ) cmt.paragraphs
                                             }
+
                                          else
                                             { cmt | comment = cmt.comment ++ "\n" ++ stringify par }
                                         )
@@ -153,6 +154,7 @@ add_comment visible ( idx, temp_narrator, par ) =
                                             (Array.fromList <|
                                                 if visible then
                                                     [ ( Nothing, par ) ]
+
                                                 else
                                                     []
                                             )
