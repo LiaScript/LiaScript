@@ -18,8 +18,9 @@ markdown : Parser PState Markdown -> Parser PState ( Int, Int, List Markdown )
 markdown blocks =
     (,,)
         <$> (regex "[\\t ]*{{" *> effect_number)
-        <*> (optional 99999 (regex "[\t ]*-[\t ]*" *> int)
-                <* regex "}}[\\t ]*\\n?"
+        <*> (optional 99999 (regex "[\\t ]*-[\\t ]*" *> int)
+                <* regex "}}[\\t ]*"
+                <* choice [ skip (string "\n"), ident_skip ]
             )
         <*> (multi blocks <|> single blocks)
         <* reset_effect_number
