@@ -190,7 +190,7 @@ lines code =
 
 pixel : Int -> Int
 pixel lines =
-    lines * 17 + 17
+    lines * 17 + 50
 
 
 highlight : String -> Annotation -> String -> String -> Bool -> Html Msg
