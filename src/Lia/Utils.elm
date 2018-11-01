@@ -1,6 +1,5 @@
 module Lia.Utils exposing
     ( evaluateJS
-    , execute
     , formula
     , scrollIntoView
     , stringToHtml
@@ -25,13 +24,6 @@ evaluateJS code =
     code
         |> toJSstring
         |> Native.Utils.evaluate
-
-
-execute : Int -> String -> ()
-execute delay code =
-    code
-        --|> toJSstring
-        |> Native.Utils.execute delay
 
 
 stringToHtml : String -> Html msg

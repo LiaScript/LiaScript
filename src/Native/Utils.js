@@ -27,11 +27,6 @@ var _user$project$Native_Utils = (function () {
         }
     };
 
-    function execute(delay, code)
-    {
-        setTimeout(() => {eval(code)}, delay);
-    };
-
     function toUnixNewline(code)
     {
         var pos = code.search("\n");
@@ -58,7 +53,6 @@ var _user$project$Native_Utils = (function () {
     return {
         formula: F2(formula),
         evaluate: evaluate,
-        execute: F2(execute),
         toUnixNewline: toUnixNewline,
         string_replace: F3(string_replace),
         scrollIntoView: scrollIntoView
