@@ -37,11 +37,6 @@ var _user$project$Native_Utils = (function () {
         return code.replace(/\\\n/g, "\\ \n")
     }
 
-    function string_replace(s, r, string)
-    {
-        return string.replace(new RegExp(s, 'g'), r);
-    }
-
     function scrollIntoView (id) {
         setTimeout(function(e){
             let elem = document.getElementById(id);
@@ -54,7 +49,6 @@ var _user$project$Native_Utils = (function () {
         formula: F2(formula),
         evaluate: evaluate,
         toUnixNewline: toUnixNewline,
-        string_replace: F3(string_replace),
         scrollIntoView: scrollIntoView
     };
 })();

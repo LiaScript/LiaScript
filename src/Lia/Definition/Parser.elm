@@ -6,6 +6,7 @@ import Lia.Helper exposing (..)
 import Lia.Macro.Parser as Macro
 import Lia.Markdown.Inline.Parser exposing (comment, comments)
 import Lia.PState exposing (PState, ident_skip, identation, identation_append, identation_pop)
+import Lia.Utils exposing (string_replace)
 
 
 parse : Parser PState ()
@@ -29,7 +30,7 @@ definition =
                         , string "base:"
                             *> (ending >>= (\x -> set (\def -> { def | base = x })))
                         , string "comment:"
-                            *> (ending >>= (\x -> set (\def -> { def | comment = x |> String.split "\n" |> String.join " " })))
+                            *> (ending >>= (\x -> set (\def -> { def | comment = string_replace ( "\n", " " ) x })))
                         , string "date:"
                             *> (ending >>= (\x -> set (\def -> { def | date = x })))
                         , string "email:"
@@ -41,35 +42,9 @@ definition =
                         , string "narrator:"
                             *> (ending >>= (\x -> set (\def -> { def | narrator = x })))
                         , string "script:"
-                            *> (ending
-                                    >>= (\x ->
-                                            set
-                                                (\def ->
-                                                    { def
-                                                        | scripts =
-                                                            x
-                                                                |> String.split "\n"
-                                                                |> List.map (toURL def.base)
-                                                                |> List.append def.scripts
-                                                    }
-                                                )
-                                        )
-                               )
+                            *> (ending >>= (\x -> set (\def -> { def | links = append_to x def.base def.scripts })))
                         , string "link:"
-                            *> (ending
-                                    >>= (\x ->
-                                            set
-                                                (\def ->
-                                                    { def
-                                                        | links =
-                                                            x
-                                                                |> String.split "\n"
-                                                                |> List.map (toURL def.base)
-                                                                |> List.append def.links
-                                                    }
-                                                )
-                                        )
-                               )
+                            *> (ending >>= (\x -> set (\def -> { def | links = append_to x def.base def.links })))
                         , string "translation:"
                             *> (ending >>= (\x -> set (add_translation x)))
                         , string "version:"
@@ -121,3 +96,11 @@ toURL base url =
 set : (Definition -> Definition) -> Parser PState ()
 set fct =
     modifyState (\s -> { s | defines = fct s.defines })
+
+
+append_to : String -> String -> List String -> List String
+append_to x base list =
+    x
+        |> String.split "\n"
+        |> List.map (toURL base)
+        |> List.append list

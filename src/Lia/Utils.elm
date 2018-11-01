@@ -38,7 +38,9 @@ toUnixNewline code =
 
 string_replace : ( String, String ) -> String -> String
 string_replace ( search, replace ) string =
-    Native.Utils.string_replace search replace string
+    string
+        |> String.split search
+        |> String.join replace
 
 
 scrollIntoView : String -> ()
@@ -47,5 +49,5 @@ scrollIntoView idx =
 
 
 toJSstring : String -> String
-toJSstring str =
-    str |> String.split "\\" |> String.join "\\\\"
+toJSstring =
+    String.split "\\" >> String.join "\\\\"

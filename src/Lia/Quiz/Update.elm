@@ -2,10 +2,9 @@ module Lia.Quiz.Update exposing (Msg(..), update)
 
 import Array
 import Json.Encode as JE
-import Lia.Code.Update exposing (default_replace)
 import Lia.Quiz.Model exposing (json2vector, vector2json)
 import Lia.Quiz.Types exposing (..)
-import Lia.Utils
+import Lia.Utils exposing (evaluateJS, string_replace)
 
 
 type Msg
@@ -73,7 +72,7 @@ update msg vector =
                                                 _ ->
                                                     toString e.state
                                     in
-                                    case default_replace state code |> Lia.Utils.evaluateJS of
+                                    case code |> string_replace ( "@input", state ) |> evaluateJS of
                                         Ok "true" ->
                                             { e
                                                 | trial = e.trial + 1

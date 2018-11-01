@@ -1,6 +1,5 @@
 module Lia.Code.Update exposing
     ( Msg(..)
-    , default_replace
     , jsEventHandler
     , restore
     , update
@@ -14,7 +13,7 @@ import Lia.Code.Json exposing (json2details, json2event, json2vector, merge, vec
 import Lia.Code.Terminal as Terminal
 import Lia.Code.Types exposing (..)
 import Lia.Helper exposing (ID)
-import Lia.Utils exposing (toJSstring)
+import Lia.Utils exposing (string_replace, toJSstring)
 
 
 type Msg
@@ -202,16 +201,7 @@ toLog ok message details =
 
 replace : ( Int, String ) -> String -> String
 replace ( int, insert ) into =
-    into
-        |> String.split ("@input(" ++ toString int ++ ")")
-        |> String.join insert
-
-
-default_replace : String -> String -> String
-default_replace insert into =
-    into
-        |> String.split "@input"
-        |> String.join insert
+    string_replace ( "@input(" ++ toString int ++ ")", insert ) into
 
 
 update_terminal : (String -> JE.Value) -> Terminal.Msg -> Project -> ( Project, List JE.Value )
@@ -242,7 +232,7 @@ eval idx project =
 
         eval_str =
             toJSstring <|
-                default_replace code_0 <|
+                string_replace ( "@input", code_0 ) <|
                     if Array.length project.file == 1 then
                         project.evaluation
                             |> replace ( 0, code_0 )
