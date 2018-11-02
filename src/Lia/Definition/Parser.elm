@@ -42,7 +42,7 @@ definition =
                         , string "narrator:"
                             *> (ending >>= (\x -> set (\def -> { def | narrator = x })))
                         , string "script:"
-                            *> (ending >>= (\x -> set (\def -> { def | links = append_to x def.base def.scripts })))
+                            *> (ending >>= (\x -> set (\def -> { def | scripts = append_to x def.base def.scripts })))
                         , string "link:"
                             *> (ending >>= (\x -> set (\def -> { def | links = append_to x def.base def.links })))
                         , string "translation:"
