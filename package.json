@@ -28,7 +28,7 @@
   "dependencies": {
     "animate.css": "^3.7.0",
     "katex": "^0.9.0",
-    "node-sass": "^4.9.3",
+    "node-sass": "^4.9.4",
     "normalize.css": "^8.0.0",
     "sass-material-colors": "0.0.5"
   }
