@@ -207,7 +207,7 @@ email =
 
 inline_url : Parser s Reference
 inline_url =
-    (\u -> Link u ( u, "" )) <$> url
+    (\u -> Link [ Chars u Nothing ] ( u, "" )) <$> url
 
 
 reference : Parser PState (Annotation -> Inline)
@@ -217,6 +217,9 @@ reference =
             let
                 info =
                     brackets (regex "[^\\]\n]*")
+
+                info2 =
+                    string "[" *> manyTill inlines (string "]")
 
                 title =
                     optional "" (spaces *> string "\"" *> stringTill (string "\"")) <* spaces
@@ -228,10 +231,10 @@ reference =
                     url <|> ((++) <$> withState (\s -> succeed s.defines.base) <*> regex "[^\\)\n \"]*")
 
                 mail_ =
-                    Mail <$> info <*> parens ((,) <$> email <*> title)
+                    Mail <$> info2 <*> parens ((,) <$> email <*> title)
 
                 link =
-                    Link <$> info <*> parens ((,) <$> url_1 <*> title)
+                    Link <$> info2 <*> parens ((,) <$> url_1 <*> title)
 
                 image =
                     Image
@@ -315,7 +318,7 @@ strings =
         \() ->
             let
                 base =
-                    Chars <$> regex "[^*_~:;`!\\^\\[|{}\\\\\\n\\-<>=$ ]+" <?> "base string"
+                    Chars <$> regex "[^*_~:;`!\\^\\[\\]|{}\\\\\\n\\-<>=$]+" <?> "base string"
 
                 escape =
                     Chars <$> (string "\\" *> regex "[\\^*_~`\\\\${}\\[\\]|]") <?> "escape string"
@@ -339,7 +342,7 @@ strings =
                     Chars <$> regex "[~:_;\\-<>=${} ]"
 
                 base2 =
-                    Chars <$> regex "[^\\n|*]+" <?> "base string"
+                    Chars <$> regex "[^\\n|*\\]]+" <?> "base string"
             in
             choice
                 [ Ref <$> inline_url

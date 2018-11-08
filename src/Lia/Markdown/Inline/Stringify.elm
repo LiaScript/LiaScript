@@ -63,7 +63,7 @@ ref2string ref =
             alt
 
         Link alt _ ->
-            alt
+            stringify alt
 
         Mail alt _ ->
-            alt
+            stringify alt

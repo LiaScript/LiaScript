@@ -72,7 +72,7 @@ view visible element =
             Html.code (annotation "lia-code" attr) [ Html.text e ]
 
         Ref e attr ->
-            reference e attr
+            reference visible e attr
 
         Formula mode e Nothing ->
             Lia.Utils.formula mode e
@@ -115,11 +115,14 @@ view_inf =
     view 99999
 
 
-reference : Reference -> Annotation -> Html msg
-reference ref attr =
+reference : Int -> Reference -> Annotation -> Html msg
+reference visible ref attr =
     case ref of
         Link alt_ url_ ->
-            view_url alt_ url_ attr
+            view_url visible alt_ url_ attr
+
+        Mail alt_ ( url_, title_ ) ->
+            view_url visible alt_ ( "mailto:" ++ url_, title_ ) attr
 
         Image alt_ ( url_, title_ ) ->
             Html.img (Attr.src url_ :: Attr.title title_ :: annotation "lia-image" attr) [ Html.text alt_ ]
@@ -134,13 +137,10 @@ reference ref attr =
             else
                 Html.video (Attr.controls True :: Attr.title title_ :: annotation "lia-movie" attr) [ Html.source [ Attr.src url_ ] [], Html.text alt_ ]
 
-        Mail alt_ ( url_, title_ ) ->
-            view_url alt_ ( "mailto:" ++ url_, title_ ) attr
 
-
-view_url : String -> ( String, String ) -> Annotation -> Html msg
-view_url alt_ ( url_, title_ ) attr =
+view_url : Int -> Inlines -> ( String, String ) -> Annotation -> Html msg
+view_url visible alt_ ( url_, title_ ) attr =
     [ Attr.href url_, Attr.title title_ ]
         |> List.append (annotation "lia-link" attr)
         |> Html.a
-        |> (\a -> a [ Html.text alt_ ])
+        |> (\a -> a (viewer visible alt_))

@@ -39,8 +39,8 @@ type Inline
 
 
 type Reference
-    = Link String ( String, String )
+    = Link Inlines ( String, String )
+    | Mail Inlines ( String, String )
     | Image String ( String, String )
     | Audio String ( String, String )
     | Movie String ( String, String )
-    | Mail String ( String, String )
