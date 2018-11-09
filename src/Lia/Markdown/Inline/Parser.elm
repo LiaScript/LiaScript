@@ -318,7 +318,7 @@ strings =
         \() ->
             let
                 base =
-                    Chars <$> regex "[^*_~:;`!\\^\\[\\]|{}\\\\\\n\\-<>=$]+" <?> "base string"
+                    Chars <$> regex "[^*_~:;`!\\^\\[\\]|{}\\\\\\n\\-<>=$ ]+" <?> "base string"
 
                 escape =
                     Chars <$> (string "\\" *> regex "[\\^*_~`\\\\${}\\[\\]|]") <?> "escape string"
