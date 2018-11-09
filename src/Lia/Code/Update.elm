@@ -229,18 +229,18 @@ eval idx project =
                 |> Array.get 0
                 |> Maybe.map .code
                 |> Maybe.withDefault ""
+                |> toJSstring
 
         eval_str =
-            toJSstring <|
-                string_replace ( "@input", code_0 ) <|
-                    if Array.length project.file == 1 then
-                        project.evaluation
-                            |> replace ( 0, code_0 )
+            string_replace ( "@input", code_0 ) <|
+                if Array.length project.file == 1 then
+                    project.evaluation
+                        |> replace ( 0, code_0 )
 
-                    else
-                        project.file
-                            |> Array.indexedMap (\i f -> ( i, f.code ))
-                            |> Array.foldl replace project.evaluation
+                else
+                    project.file
+                        |> Array.indexedMap (\i f -> ( i, toJSstring f.code ))
+                        |> Array.foldl replace project.evaluation
     in
     ( { project | running = True }, [ Event.eval idx eval_str ] )
 
