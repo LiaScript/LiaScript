@@ -342,7 +342,7 @@ strings =
                     Chars <$> regex "[~:_;\\-<>=${} ]"
 
                 base2 =
-                    Chars <$> regex "[^\\n|*\\]]+" <?> "base string"
+                    Chars <$> regex "[^\\n|*\\[\\]]+" <?> "base string"
             in
             choice
                 [ Ref <$> inline_url
