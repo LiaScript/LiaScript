@@ -10,7 +10,7 @@ import Lia.Utils exposing (string_replace, toJSstring)
 
 pattern : Parser s String
 pattern =
-    spaces *> regex "@\\w+"
+    spaces *> regex "@[\\w.]+"
 
 
 param : Parser PState String

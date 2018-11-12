@@ -2,7 +2,7 @@ module Lia.Code.View exposing (error, view)
 
 import Array
 import Html exposing (Html)
-import Html.Attributes as Attr exposing (attribute)
+import Html.Attributes as Attr exposing (attribute, lang)
 import Html.Events exposing (onClick, onDoubleClick, onInput)
 import Json.Encode as JE
 import Lia.Ace as Ace
@@ -10,6 +10,7 @@ import Lia.Code.Terminal as Terminal
 import Lia.Code.Types exposing (..)
 import Lia.Code.Update exposing (Msg(..))
 import Lia.Helper exposing (ID)
+import Lia.Markdown.Inline.Parser exposing (javascript)
 import Lia.Markdown.Inline.Types exposing (Annotation)
 import Lia.Markdown.Inline.View exposing (annotation, attributes)
 import Translations exposing (Lang, codeExecute, codeFirst, codeLast, codeMaximize, codeMinimize, codeNext, codePrev, codeRunning)
@@ -265,14 +266,21 @@ evaluate theme attr running ( id_1, id_2 ) file headless errors =
                     max_lines
                 )
             , Ace.readOnly running
-            , Ace.enableBasicAutocompletion True
-            , Ace.enableLiveAutocompletion True
-            , Ace.enableSnippets True
             , Ace.tabSize 2
             , Ace.useSoftTabs False
-            , Ace.extensions [ "language_tools" ]
             , Ace.annotations errors
             ]
+        |> List.append
+            (if file.lang /= "javascript" then
+                []
+
+             else
+                [ Ace.enableBasicAutocompletion True
+                , Ace.enableLiveAutocompletion True
+                , Ace.enableSnippets True
+                , Ace.extensions [ "language_tools" ]
+                ]
+            )
         |> Ace.toHtml
         |> (\a -> a [])
 
