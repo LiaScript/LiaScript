@@ -3,8 +3,6 @@ module Lia.Markdown.Inline.View exposing (annotation, attributes, reference, vie
 import Dict
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
-import Html.Keyed
-import Html.Lazy exposing (lazy)
 import Lia.Effect.View as Effect
 import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..))
@@ -91,7 +89,7 @@ view visible element =
                 |> Html.span (annotation "lia-container" attr)
 
         HTML e ->
-            Html.Keyed.keyedNodeNS "span" [ Attr.class "keyed" ] [ view_html e ]
+            Lia.Utils.stringToHtml e
 
         EInline id_in id_out e attr ->
             if (id_in <= visible) && (id_out > visible) then
@@ -110,10 +108,6 @@ view visible element =
 
         Formula mode e attr ->
             view visible (Container [ Formula mode e Nothing ] attr)
-
-
-view_html string =
-    ( string, lazy Lia.Utils.stringToHtml string )
 
 
 view_inf : Inline -> Html msg

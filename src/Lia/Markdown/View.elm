@@ -3,6 +3,7 @@ module Lia.Markdown.View exposing (view)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
+import Html.Lazy exposing (..)
 import Lia.Chart.View as Charts
 import Lia.Code.View as Codes
 import Lia.Effect.Model as Comments
@@ -53,18 +54,22 @@ view lang mode section ace_theme =
                 ]
 
         Nothing ->
-            section.body
-                |> List.map (view_block config)
-                |> (::) (view_footnote (view_block config) section.footnote2show section.footnotes)
-                |> (::) (view_header config)
-                |> (\s ->
-                        if mode == Textbook then
-                            List.append s [ Footnote.block (view_block config) section.footnotes ]
+            lazy2 view_body ( config, section.footnote2show, section.footnotes ) section.body
 
-                        else
-                            s
-                   )
-                |> Html.section [ Attr.class "lia-content" ]
+
+view_body ( config, footnote2show, footnotes ) body =
+    body
+        |> List.map (view_block config)
+        |> (::) (view_footnote (view_block config) footnote2show footnotes)
+        |> (::) (view_header config)
+        |> (\s ->
+                if config.mode == Textbook then
+                    List.append s [ Footnote.block (view_block config) footnotes ]
+
+                else
+                    s
+           )
+        |> Html.section [ Attr.class "lia-content" ]
 
 
 view_footnote : (Markdown -> Html Msg) -> Maybe String -> Footnotes.Model -> Html Msg
