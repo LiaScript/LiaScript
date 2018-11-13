@@ -49,6 +49,12 @@ module.exports = {
             copycat: {
                 "fonts": [
                     "node_modules/katex/dist/fonts/",
+                    "vendor/material_icons/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2",
+                    "vendor/roboto/fonts"
+                ],
+                "css": [
+                    "vendor/material_icons/material.css",
+                    "vendor/roboto/roboto.css"
                 ],
                 "js": [
                     "lib/liascript.js",
