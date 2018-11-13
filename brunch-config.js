@@ -54,6 +54,9 @@ module.exports = {
                     "lib/liascript.js",
                     "vendor/responsivevoice.js"
                 ],
+                "js/ace": [
+                    "vendor/ace"
+                ],
                 verbose: false,
                 onlyChanged: true,
             },

@@ -148,6 +148,10 @@ update msg model =
             update UpdateSettings { model | design = { setting | ace = theme } }
 
         Location url ->
+            let
+                x =
+                    Debug.log "UUUUUUURRRRRRRLLLLLLLLL" url
+            in
             ( model, Navigation.load url )
 
         IncreaseFontSize positive ->
