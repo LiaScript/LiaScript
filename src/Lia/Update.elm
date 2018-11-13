@@ -17,7 +17,10 @@ import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (..)
 import Lia.Parser exposing (parse_section)
 import Lia.Types exposing (Mode(..), Section, Sections)
-import Navigation
+
+
+
+--import Navigation
 
 
 port event2js : ( String, Int, JE.Value ) -> Cmd msg
@@ -54,7 +57,7 @@ type Msg
     | UpdateSettings
     | SwitchMode
     | Toggle Toggle
-    | Location String
+      --    | Location String
     | IncreaseFontSize Bool
     | Event ( String, Int, String, JE.Value )
 
@@ -147,13 +150,8 @@ update msg model =
             in
             update UpdateSettings { model | design = { setting | ace = theme } }
 
-        Location url ->
-            let
-                x =
-                    Debug.log "UUUUUUURRRRRRRLLLLLLLLL" url
-            in
-            ( model, Navigation.load url )
-
+        --        Location url ->
+        --            ( model, Navigation.load url )
         IncreaseFontSize positive ->
             let
                 design =

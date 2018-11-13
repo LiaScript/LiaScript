@@ -47,7 +47,7 @@ module.exports = {
                 },
             },
             copycat: {
-                "fonts": [
+                "css/fonts": [
                     "node_modules/katex/dist/fonts/",
                     "vendor/material_icons/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2",
                     "vendor/roboto/fonts"
