@@ -17,6 +17,7 @@ import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (..)
 import Lia.Parser exposing (parse_section)
 import Lia.Types exposing (Mode(..), Section, Sections)
+import Navigation
 
 
 
@@ -45,7 +46,7 @@ subscriptions model =
 
 
 type Msg
-    = Load ID
+    = Load ID Bool
     | InitSection
     | PrevSection
     | NextSection
@@ -108,9 +109,21 @@ log_settings model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Load idx ->
-            if (-1 < idx) && (idx < Array.length model.sections) then
-                ( model, event2js ( "persistent", idx, JE.string "store" ) )
+        Load idx history ->
+            if (idx /= model.section_active || not model.ready) && (-1 < idx) && (idx < Array.length model.sections) then
+                ( model
+                , if history then
+                    Cmd.batch
+                        [ event2js ( "persistent", idx, JE.string "store" )
+                        , (idx + 1)
+                            |> toString
+                            |> (++) "#"
+                            |> Navigation.newUrl
+                        ]
+
+                  else
+                    event2js ( "persistent", idx, JE.string "store" )
+                )
 
             else
                 ( model, Cmd.none )
@@ -150,8 +163,6 @@ update msg model =
             in
             update UpdateSettings { model | design = { setting | ace = theme } }
 
-        --        Location url ->
-        --            ( model, Navigation.load url )
         IncreaseFontSize positive ->
             let
                 design =
@@ -222,7 +233,7 @@ update msg model =
 
                 ( NextSection, Just sec ) ->
                     if (model.mode == Textbook) || not (Effect.has_next sec.effect_model) then
-                        update (Load <| model.section_active + 1) model
+                        update (Load (model.section_active + 1) True) model
 
                     else
                         let
@@ -235,7 +246,7 @@ update msg model =
 
                 ( PrevSection, Just sec ) ->
                     if (model.mode == Textbook) || not (Effect.has_previous sec.effect_model) then
-                        update (Load <| model.section_active - 1) model
+                        update (Load (model.section_active - 1) True) model
 
                     else
                         let

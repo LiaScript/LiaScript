@@ -45,7 +45,7 @@ type alias Mode =
 
 load_slide : Model -> Int -> ( Model, Cmd Msg )
 load_slide model idx =
-    Lia.Update.update (Load idx) model
+    Lia.Update.update (Load idx False) model
 
 
 set_script : Model -> String -> Model

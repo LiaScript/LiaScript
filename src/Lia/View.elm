@@ -271,8 +271,8 @@ view_loc active titles =
 loc : ID -> ( ID, ( Inlines, Int, Bool, Bool ) ) -> Html Msg
 loc active ( idx, ( title, indent, visited, error ) ) =
     Html.a
-        [ onClick (Load idx)
-        , Attr.class
+        [ --onClick (Load idx)
+          Attr.class
             ("lia-toc-l"
                 ++ toString indent
                 ++ (if error then
