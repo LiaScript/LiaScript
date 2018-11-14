@@ -24,6 +24,7 @@ type alias Definition =
     , macro : Dict String String
     , section : Int
     , uid : Int
+    , debug : Bool
     }
 
 
@@ -44,6 +45,7 @@ default base =
     , macro = Dict.empty
     , section = -1
     , uid = -1
+    , debug = False
     }
 
 

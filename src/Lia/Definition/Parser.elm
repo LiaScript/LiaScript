@@ -49,6 +49,22 @@ definition =
                             *> (ending >>= (\x -> set (add_translation x)))
                         , string "version:"
                             *> (ending >>= (\x -> set (\def -> { def | version = x })))
+                        , string "debug:"
+                            *> (ending
+                                    >>= (\x ->
+                                            set
+                                                (\def ->
+                                                    { def
+                                                        | debug =
+                                                            if x == "true" then
+                                                                True
+
+                                                            else
+                                                                False
+                                                    }
+                                                )
+                                        )
+                               )
                         , ((,)
                             <$> (Macro.pattern <* regex "[ \\t]*:[ \\t]*")
                             <*> (regex ".+" <* newline)
