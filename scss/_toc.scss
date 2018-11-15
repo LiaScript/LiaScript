@@ -37,22 +37,25 @@
             input.lia-search {
                 $placeholder: mix($bg, $fg, 40%);
                 flex: 1 1 auto;
-                padding-left: 1.75em;
 
-                &::-webkit-input-placeholder { /* WebKit, Blink, Edge */
+//                padding-left: 1.75em;
+/*
+                &::-webkit-input-placeholder { // WebKit, Blink, Edge
                     color: $placeholder;
                 }
 
-                &::-moz-placeholder { /* Mozilla Firefox 19+ */
+                &::-moz-placeholder { // Mozilla Firefox 19+
                     color: $placeholder;
                     opacity: 1;
                 }
 
-                &::-ms-input-placeholder { /* Microsoft Edge */
+                &::-ms-input-placeholder { // Microsoft Edge
                     color: $placeholder;
                 }
+*/
             }
 
+/*
             &::after {
                 @include material-icon(search, 16px);
                 line-height: 2em;
@@ -61,6 +64,7 @@
                 color: rgba($fg, 0.75);
                 padding-left: map-get($config, spacing-icon);
             }
+*/
         }
 
         .lia-content {
