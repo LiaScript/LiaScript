@@ -184,18 +184,27 @@ update msg model =
 view : Model -> Html Msg
 view model =
     case model.state of
-        Loading ->
-            Html.div [ style ]
-                [ Html.h2 [] [ Html.text "Loading ..." ] ]
-
         LoadOk ->
             Html.map LIA <| Lia.view model.lia
 
+        Loading ->
+            Html.div [ style ]
+                [ Html.h1 [] [ Html.text "Loading" ]
+                , Html.br [] []
+                , Html.div [ Attr.class "lds-dual-ring" ] []
+                ]
+
         LoadFail ->
             Html.div [ style ]
-                [ Html.h2 [] [ Html.text "Load failed" ]
+                [ Html.h1 [] [ Html.text "Load failed" ]
                 , Html.h6 [] [ Html.text model.url ]
-                , Html.text model.error
+                , Html.p
+                    [ Attr.style
+                        [ ( "margin-left", "20%" )
+                        , ( "margin-right", "20%" )
+                        ]
+                    ]
+                    [ Html.text model.error ]
                 ]
 
         Waiting ->
@@ -208,21 +217,30 @@ view model =
                 , Html.br [] []
                 , Html.br [] []
                 , Html.br [] []
-                , Html.a [ Attr.href "https://gitlab.com/OvGU-ESS/eLab_v2/lia_script" ] [ Html.text "https://gitlab.com/OvGU-ESS/eLab_v2/lia_script" ]
+                , Html.a
+                    [ Attr.href "https://gitlab.com/OvGU-ESS/eLab_v2/lia_script" ]
+                    [ Html.text "https://gitlab.com/OvGU-ESS/eLab_v2/lia_script" ]
                 ]
 
 
 style : Html.Attribute msg
 style =
     Attr.style
-        [ ( "width", "350px" )
-        , ( "height", "300px" )
+        [ ( "width", "100%" )
+        , ( "text-align", "center" )
+
+        --  , ( "height", "100%" )
+        , ( "top", "25%" )
+
+        --, ( "max-height", "300px" )
+        --, ( "vertical-align", "middle" )
         , ( "position", "absolute" )
-        , ( "top", "0" )
-        , ( "bottom", "0" )
-        , ( "left", "0" )
-        , ( "right", "0" )
-        , ( "margin", "auto" )
+
+        --, ( "transform", "translate(0, -50%)" )
+        --, ( "top", "0" )
+        --, ( "bottom", "0" )
+        --, ( "left", "0" )
+        --, ( "right", "0" )
         ]
 
 
