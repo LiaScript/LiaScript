@@ -51,7 +51,7 @@ view_aside model =
         , Attr.style
             [ ( "max-width"
               , if model.show.loc then
-                    "250px"
+                    "256px"
 
                 else
                     "0px"
@@ -82,29 +82,35 @@ index_selector lang index_model =
         |> Html.map UpdateIndex
 
 
+to_secList sec =
+    ( sec.title
+    , sec.indentation
+    , sec.visited
+    , case sec.error of
+        Nothing ->
+            False
+
+        _ ->
+            True
+    )
+
+
 index_list index sections =
-    sections
-        |> Array.map
-            (\sec ->
-                ( sec.title
-                , sec.indentation
-                , sec.visited
-                , case sec.error of
-                    Nothing ->
-                        False
+    let
+        titles =
+            sections
+                |> Array.map to_secList
+                |> Array.toIndexedList
 
-                    _ ->
-                        True
-                )
-            )
-        |> Array.toIndexedList
-        |> (\titles ->
-                if [] == index then
-                    titles
+        fn ( idx, _ ) =
+            List.member idx index
+    in
+    case index of
+        [] ->
+            titles
 
-                else
-                    List.filter (\( idx, _ ) -> List.member idx index) titles
-           )
+        _ ->
+            List.filter fn titles
 
 
 settings : Toogler -> Design -> Definition -> String -> String -> Lang -> Html Msg
@@ -235,7 +241,7 @@ menu_style visible =
     , Attr.style
         [ ( "max-height"
           , if visible then
-                "250px"
+                "256px"
 
             else
                 "0px"
@@ -316,8 +322,8 @@ view_footer lang sound mode effects =
         Slides ->
             effects
                 |> current_paragraphs
-                |> List.map (\( a, par ) -> Html.p [] (viewer 9999 par))
-                |> (\l -> List.append l [ responsive lang sound (Toggle Sound) ])
+                |> List.map (\( _, par ) -> Html.p [] (viewer 9999 par))
+                |> flip List.append [ responsive lang sound (Toggle Sound) ]
                 |> Html.footer [ Attr.class "lia-footer" ]
 
         Presentation ->

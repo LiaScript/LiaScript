@@ -197,7 +197,7 @@ formula =
 
 url : Parser s String
 url =
-    regex "[a-zA-Z]+://(/)?[a-zA-Z0-9\\.\\-\\_]+\\.([a-z\\.]{2,6})[^ \\)\\t\\n]*"
+    regex "[a-zA-Z]+://(/)?[a-zA-Z0-9\\.\\-\\_]+\\.([a-z\\.]{2,6})[^ \\]\\)\\t\\n]*"
 
 
 email : Parser s String
@@ -321,7 +321,7 @@ strings =
                     Chars <$> regex "[^*_~:;`!\\^\\[\\]|{}\\\\\\n\\-<>=$ ]+" <?> "base string"
 
                 escape =
-                    Chars <$> (string "\\" *> regex "[\\^*_~`\\\\${}\\[\\]|]") <?> "escape string"
+                    Chars <$> (string "\\" *> regex "[\\^*_~`\\\\${}\\[\\]|#]") <?> "escape string"
 
                 italic =
                     Italic <$> (between_ "*" <|> between_ "_") <?> "italic string"
