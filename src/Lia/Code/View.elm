@@ -153,12 +153,9 @@ view_eval lang theme attr running errors id_1 id_2 file =
         ]
 
 
-style : Bool -> Bool -> Int -> List ( String, String )
-style visible headless height_ =
+style : Bool -> Bool -> List ( String, String )
+style visible headless =
     let
-        height_str =
-            toString height_ ++ "px"
-
         top_border =
             if headless then
                 "4px"
@@ -168,7 +165,7 @@ style visible headless height_ =
     in
     [ ( "max-height"
       , if visible then
-            height_str
+            "100000px"
 
         else
             "0px"
@@ -189,9 +186,10 @@ lines code =
         |> List.length
 
 
-pixel : Int -> Int
-pixel lines =
-    lines * 19 + 54
+
+-- pixel : Int -> Int
+-- pixel lines =
+--     lines * 21 + 16
 
 
 highlight : String -> Annotation -> String -> String -> Bool -> Html Msg
@@ -244,16 +242,11 @@ evaluate theme attr running ( id_1, id_2 ) file headless errors =
 
             else
                 total_lines
-
-        style_ =
-            max_lines
-                |> pixel
-                |> style file.visible headless
     in
     attr
         |> attributes
         |> List.append
-            [ Attr.style style_
+            [ Attr.style (style file.visible headless)
             , Ace.onSourceChange <| Update id_1 id_2
             , Ace.value file.code
             , Ace.mode file.lang
@@ -269,18 +262,11 @@ evaluate theme attr running ( id_1, id_2 ) file headless errors =
             , Ace.tabSize 2
             , Ace.useSoftTabs False
             , Ace.annotations errors
+            , Ace.enableBasicAutocompletion True
+            , Ace.enableLiveAutocompletion True
+            , Ace.enableSnippets True
+            , Ace.extensions [ "language_tools" ]
             ]
-        |> List.append
-            (if file.lang /= "javascript" then
-                []
-
-             else
-                [ Ace.enableBasicAutocompletion True
-                , Ace.enableLiveAutocompletion True
-                , Ace.enableSnippets True
-                , Ace.extensions [ "language_tools" ]
-                ]
-            )
         |> Ace.toHtml
         |> (\a -> a [])
 

@@ -65,6 +65,10 @@ definition =
                                                 )
                                         )
                                )
+                        , regex "@onload[ \\t]*\n"
+                            *> (stringTill (string "\n@end")
+                                    >>= (\x -> set (\def -> { def | onload = String.trim x }))
+                               )
                         , ((,)
                             <$> (Macro.pattern <* regex "[ \\t]*:[ \\t]*")
                             <*> (regex ".+" <* newline)

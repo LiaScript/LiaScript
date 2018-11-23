@@ -74,7 +74,7 @@ set_script model script =
                                 0
                     in
                     { model
-                        | definition = { definition | scripts = [] }
+                        | definition = { definition | scripts = [], onload = "" }
                         , sections = sections
                         , section_active = section_active
                         , javascript = javascript
@@ -82,7 +82,15 @@ set_script model script =
                         , to_do =
                             js_logs
                                 |> List.append link_logs
-                                |> (::) ( "init", section_active, JE.list [ JE.string <| get_title sections, JE.string model.readme ] )
+                                |> (::)
+                                    ( "init"
+                                    , section_active
+                                    , JE.list
+                                        [ JE.string <| get_title sections
+                                        , JE.string model.readme
+                                        , JE.string definition.onload
+                                        ]
+                                    )
                                 |> List.reverse
                     }
 

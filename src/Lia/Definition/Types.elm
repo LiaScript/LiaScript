@@ -25,6 +25,7 @@ type alias Definition =
     , section : Int
     , uid : Int
     , debug : Bool
+    , onload : String
     }
 
 
@@ -46,6 +47,7 @@ default base =
     , section = -1
     , uid = -1
     , debug = False
+    , onload = ""
     }
 
 
