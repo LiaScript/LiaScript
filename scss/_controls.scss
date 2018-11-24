@@ -322,6 +322,10 @@
             transition-delay: 0s;
         }
 
+        &.lia-selected {
+          box-shadow: -1px -1px 1px #000;
+        }
+
         &.lia-success {
             $bg: map-get($theme, success);
             $fg: color-contrast($bg);

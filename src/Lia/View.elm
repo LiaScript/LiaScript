@@ -115,31 +115,35 @@ index_list index sections =
 
 settings : Toogler -> Design -> Definition -> String -> String -> Lang -> Html Msg
 settings show design defines url origin lang =
-    Html.div [ Attr.class "lia-settings" ]
+    Html.div []
         [ Lazy.lazy3 view_settings lang show.settings design
         , Lazy.lazy3 view_information lang show.informations defines
         , view_translations lang show.translations (origin ++ "?") (Lia.Definition.Types.get_translations defines)
         , Lazy.lazy2 qrCodeView show.share url
         , Html.div
-            [ Attr.style [ ( "overflow-x", "auto" ) ] ]
-            [ dropdown "settings" (confSettings lang) (Toggle Settings)
-            , dropdown "info" (confInformations lang) (Toggle Informations)
-            , dropdown "translate" (confTranslations lang) (Toggle Translations)
-            , dropdown "share" (confShare lang) (Toggle Share)
+            [ Attr.class "lia-settings", Attr.style [ ( "display", "inline-flex" ), ( "width", "99%" ) ] ]
+            [ dropdown show.settings "settings" (confSettings lang) (Toggle Settings)
+            , dropdown show.informations "info" (confInformations lang) (Toggle Informations)
+            , dropdown show.translations "translate" (confTranslations lang) (Toggle Translations)
+            , dropdown show.share "share" (confShare lang) (Toggle Share)
             ]
         ]
 
 
-dropdown : String -> String -> Msg -> Html Msg
-dropdown name alt msg =
+dropdown : Bool -> String -> String -> Msg -> Html Msg
+dropdown active name alt msg =
     Html.button
         [ onClick msg
-        , Attr.class "lia-btn lia-icon"
+        , Attr.class <|
+            "lia-btn lia-icon"
+                ++ (if active then
+                        " lia-selected"
+
+                    else
+                        ""
+                   )
         , Attr.title alt
-        , Attr.style
-            [ ( "width", "40px" )
-            , ( "padding", "0px" )
-            ]
+        , Attr.style [ ( "width", "42px" ), ( "padding", "0px" ) ]
         ]
         [ Html.text name ]
 
@@ -237,7 +241,14 @@ check_list checked label text dir =
 
 menu_style : Bool -> List (Html.Attribute msg)
 menu_style visible =
-    [ Attr.class "lia-slide-animation"
+    [ Attr.class <|
+        "lia-slide-animation"
+            ++ (if visible then
+                    " lia-settings"
+
+                else
+                    ""
+               )
     , Attr.style
         [ ( "max-height"
           , if visible then
@@ -440,50 +451,52 @@ view_ace lang theme =
         op =
             option theme
     in
-    Html.select [ onInput DesignAce ]
-        [ [ ( "chrome", "Chrome" )
-          , ( "clouds", "Clouds" )
-          , ( "crimson_editor", "Crimson Editor" )
-          , ( "dawn", "Dawn" )
-          , ( "dreamweaver", "Dreamweaver" )
-          , ( "eclipse", "Eclipse" )
-          , ( "github", "Github" )
-          , ( "iplastic", "IPlastic" )
-          , ( "solarized_light", "Solarized Light" )
-          , ( "textmate", "TextMate" )
-          , ( "tomorrow", "Tomorrow" )
-          , ( "xcode", "XCode" )
-          , ( "kuroir", "Kuroir" )
-          , ( "katzenmilch", "KatzenMilch" )
-          , ( "sqlserver", "SQL Server" )
-          ]
-            |> List.map op
-            |> Html.optgroup [ Attr.attribute "label" (cBright lang) ]
-        , [ ( "ambiance", "Ambiance" )
-          , ( "chaos", "Chaos" )
-          , ( "clouds_midnight", "Clouds Midnight" )
-          , ( "dracula", "Dracula" )
-          , ( "cobalt", "Cobalt" )
-          , ( "gruvbox", "Gruvbox" )
-          , ( "gob", "Green on Black" )
-          , ( "idle_fingers", "idle Fingers" )
-          , ( "kr_theme", "krTheme" )
-          , ( "merbivore", "Merbivore" )
-          , ( "merbivore_soft", "Merbivore Soft" )
-          , ( "mono_industrial", "Mono Industrial" )
-          , ( "monokai", "Monokai" )
-          , ( "pastel_on_dark", "Pastel on dark" )
-          , ( "solarized_dark", "Solarized Dark" )
-          , ( "terminal", "Terminal" )
-          , ( "tomorrow_night", "Tomorrow Night" )
-          , ( "tomorrow_night_blue", "Tomorrow Night Blue" )
-          , ( "tomorrow_night_bright", "Tomorrow Night Bright" )
-          , ( "tomorrow_night_eighties", "Tomorrow Night 80s" )
-          , ( "twilight", "Twilight" )
-          , ( "vibrant_ink", "Vibrant Ink" )
-          ]
-            |> List.map op
-            |> Html.optgroup [ Attr.attribute "label" (cDark lang) ]
+    Html.div [ Attr.style [ ( "display", "inline-flex" ), ( "width", "99%" ) ] ]
+        [ Html.select [ onInput DesignAce ]
+            [ [ ( "chrome", "Chrome" )
+              , ( "clouds", "Clouds" )
+              , ( "crimson_editor", "Crimson Editor" )
+              , ( "dawn", "Dawn" )
+              , ( "dreamweaver", "Dreamweaver" )
+              , ( "eclipse", "Eclipse" )
+              , ( "github", "Github" )
+              , ( "iplastic", "IPlastic" )
+              , ( "solarized_light", "Solarized Light" )
+              , ( "textmate", "TextMate" )
+              , ( "tomorrow", "Tomorrow" )
+              , ( "xcode", "XCode" )
+              , ( "kuroir", "Kuroir" )
+              , ( "katzenmilch", "KatzenMilch" )
+              , ( "sqlserver", "SQL Server" )
+              ]
+                |> List.map op
+                |> Html.optgroup [ Attr.attribute "label" (cBright lang) ]
+            , [ ( "ambiance", "Ambiance" )
+              , ( "chaos", "Chaos" )
+              , ( "clouds_midnight", "Clouds Midnight" )
+              , ( "dracula", "Dracula" )
+              , ( "cobalt", "Cobalt" )
+              , ( "gruvbox", "Gruvbox" )
+              , ( "gob", "Green on Black" )
+              , ( "idle_fingers", "idle Fingers" )
+              , ( "kr_theme", "krTheme" )
+              , ( "merbivore", "Merbivore" )
+              , ( "merbivore_soft", "Merbivore Soft" )
+              , ( "mono_industrial", "Mono Industrial" )
+              , ( "monokai", "Monokai" )
+              , ( "pastel_on_dark", "Pastel on dark" )
+              , ( "solarized_dark", "Solarized Dark" )
+              , ( "terminal", "Terminal" )
+              , ( "tomorrow_night", "Tomorrow Night" )
+              , ( "tomorrow_night_blue", "Tomorrow Night Blue" )
+              , ( "tomorrow_night_bright", "Tomorrow Night Bright" )
+              , ( "tomorrow_night_eighties", "Tomorrow Night 80s" )
+              , ( "twilight", "Twilight" )
+              , ( "vibrant_ink", "Vibrant Ink" )
+              ]
+                |> List.map op
+                |> Html.optgroup [ Attr.attribute "label" (cDark lang) ]
+            ]
         ]
 
 
