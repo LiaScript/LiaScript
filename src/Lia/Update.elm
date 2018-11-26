@@ -110,7 +110,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Load idx history ->
-            if (idx /= model.section_active || not model.ready) && (-1 < idx) && (idx < Array.length model.sections) then
+            if (-1 < idx) && (idx < Array.length model.sections) then
                 ( model
                 , if history then
                     Cmd.batch
@@ -201,10 +201,11 @@ update msg model =
             ( model, event2js ( "reset", -1, JE.null ) )
 
         Event ( "preferences", x, y, json ) ->
-            json
+            ( json
                 |> json2settings
                 |> settings2model model
-                |> update InitSection
+            , Cmd.none
+            )
 
         Event ( topic, idx, msg, json ) ->
             case Array.get idx model.sections of
