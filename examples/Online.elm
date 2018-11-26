@@ -140,12 +140,7 @@ update msg model =
                 , state = LoadOk
               }
             , Navigation.newUrl
-                (model.origin
-                    ++ "?"
-                    ++ model.url
-                    ++ "#"
-                    ++ toString (lia.section_active + 1)
-                )
+                (model.origin ++ "?" ++ model.url ++ "#" ++ toString (lia.section_active + 1))
             )
 
         GET (Err msg) ->
@@ -228,19 +223,8 @@ style =
     Attr.style
         [ ( "width", "100%" )
         , ( "text-align", "center" )
-
-        --  , ( "height", "100%" )
         , ( "top", "25%" )
-
-        --, ( "max-height", "300px" )
-        --, ( "vertical-align", "middle" )
         , ( "position", "absolute" )
-
-        --, ( "transform", "translate(0, -50%)" )
-        --, ( "top", "0" )
-        --, ( "bottom", "0" )
-        --, ( "left", "0" )
-        --, ( "right", "0" )
         ]
 
 
