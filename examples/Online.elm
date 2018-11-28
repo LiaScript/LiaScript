@@ -144,7 +144,17 @@ update msg model =
             )
 
         GET (Err msg) ->
-            ( { model | error = toString msg, state = LoadFail }, Cmd.none )
+            case msg of
+                -- This makes it possible to deal with file:// also
+                Http.BadStatus m ->
+                    if m.status == { code = 0, message = "" } then
+                        update (GET (Ok m.body)) model
+
+                    else
+                        ( { model | error = toString msg, state = LoadFail }, Cmd.none )
+
+                _ ->
+                    ( { model | error = toString msg, state = LoadFail }, Cmd.none )
 
         Update url ->
             ( { model | url = url }, Cmd.none )
@@ -235,7 +245,31 @@ style =
 
 getCourse : String -> Cmd Msg
 getCourse url =
-    Http.send GET <| Http.getString url
+    url
+        |> Http.getString
+        |> Http.send GET
+
+
+
+{-
+   getCourse2 : String -> Cmd Msg
+   getCourse2 url =
+       let
+           request =
+               { method = "GET"
+               , headers =
+                   []
+               , url = url
+               , body = Http.emptyBody
+               , expect = Http.expectString
+               , timeout = Nothing
+               , withCredentials = False
+               }
+       in
+       request
+           |> Http.request
+           |> Http.send GET
+-}
 
 
 subscriptions : Model -> Sub Msg
