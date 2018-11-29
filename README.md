@@ -1,9 +1,9 @@
 <!--
 
 author:   Andre Dietrich
-email:    dietrich@ivs.cs.uni-magdeburg.de
+email:    andre.dietrich@ovgu.de
 version:  1.0.0
-language: en_US
+language: en
 narrator: US English Female
 
 comment:  This is a very simple comment.
@@ -12,8 +12,12 @@ comment:  This is a very simple comment.
 script:   https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.js
           https://felixhao28.github.io/JSCPP/dist/JSCPP.es5.min.js
 
-translation: French   translation/French.md
-translation: Russian  translation/Russian.md
+link: https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.css
+
+translation: Deutsch  translations/German.md
+translation: Français translations/French.md
+translation: Русский  translations/Russian.md
+
 
 -->
 
@@ -24,7 +28,7 @@ With Lia, we try to implement an extended Markdown format that should enable
 everyone to create, share, adapt, translate or correct and extend online courses
 without the need of being a web-developer.
 
-See the online rendered version at: https://liascript.github.io
+See the online rendered version at: https://liascript.github.io/course/?https://raw.githubusercontent.com/liaScript/docs/master/README.md
 
                                     --{{0}}--
 Click on the (ear) button at the navigation bar to switch between spoken and
@@ -50,6 +54,21 @@ transformation of Lia-Markdown to any other format is done within the browser at
 client-side.
 
 
+## Tools
+
+                                     --{{0}}--
+There are currently 2 Plugins for the [Atom Editor](https://atom.io/) available,
+which are intended to ease and simplify the development of online course with
+LiaScript.
+
+[liascript-preview](https://atom.io/packages/liascript-preview): Is a tiny
+previewer that, if it was toggled, updates the view on your course each time you
+save your document.
+
+[liascript-snippets](https://atom.io/packages/liascript-snippets): If you start
+typing "lia" in your document you switch on a fuzzy search, that contains a lot
+of LiaScript help, examples, and snippets.
+
 ## *Markdown*-Syntax
 
 
@@ -70,13 +89,16 @@ email:    dietrich[at]ivs.cs.uni-magdeburg.de
 
 version:  1.0.0
 
-language: en_US
+language: en
 
 narrator: US English Female
 
 script:   javascript resourse url
 
 script:   another javascript resourse url
+
+link:     some css stuff
+          and some more css
 
 -->
 ```
@@ -153,12 +175,12 @@ As you can see from the examples, you can combine all elements freely.
 
 #### Escape Characters
 
-\*, \~, \_, \{, \}, \[, \], \|, \`, \$
+\*, \~, \_, \#, \{, \}, \[, \], \|, \`, \$
 
                                      --{{0}}--
-If you want to use multiple stars, braces, or other syntax elements within your
-script without applying their functionality, then you can escape them with a
-starting backslash.
+If you want to use multiple stars, hash-tags, or other syntax elements within
+your script without applying their functionality, then you can escape them with
+a starting backslash.
 
 ### Symbols
 
@@ -180,7 +202,7 @@ support in the future.
 
                                        {{1}}
 `:-)` :-), `;-)` ;-), `:-D` :-D, `:-O` :-O, `:-(` :-(, `:-|` :-|,
-`:-/` :-/, `:-P` :-P, `:-*` :-*, `:')` :'), `:'(` :'(
+`:-/` :-/, `:-P` :-P, `:-*` :-, `:')` :'), `:'(` :'(
 
 ### References
 
@@ -191,7 +213,8 @@ The next section shows how external resources can be integrated.
                                      --{{0}}--
 There are two ways of adding links to a Markdown document, either by inlining
 the url directly or you can name it, as shown in listing 2, by applying the
-typical brackets and parenthesis notation.
+typical brackets and parenthesis notation, the optional info is put in double
+quotes at the end of the url.
 
 
 1. example of an url-link -> http://goo.gl/fGXNvu
@@ -199,25 +222,42 @@ typical brackets and parenthesis notation.
    text-formatting can be applied also (`*** http://goo.gl/fGXNvu ***`) ->
    *** http://goo.gl/fGXNvu ***
 
-2. naming the link (`[title](http://goo.gl/fGXNvu)`) -> [title](http://goo.gl/fGXNvu)
+2. naming the link (`[title](http://goo.gl/fGXNvu "optional info")`) -> [title](http://goo.gl/fGXNvu "click Me")
 
 #### Images and Movies
 
                                     --{{0}}--
-Images are marked with a starting exclamation mark before the link, movies are
-defined by two exclamation marks.
+Images are marked with a starting exclamation mark before the link, audio by a
+starting question mark and movies are made of images and sound, that is why you
+combine both marks `!?`. Defining ressources this way shows at least the links
+correctly in other Markdown parsers or on github.
 
-* Image-notation: `![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)`
 
-  ![image](images/load.gif)
+**Image-notation: `![alt-text](image-url "some info")`**
 
-* Movie-notation: `!?[movie](https://www.youtube.com/embed/XsNk5aOpqUc?&autoplay=1)`
+- url: `![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg "a picture of a lion")`
+- ![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg "a picture of a lion")
+- relative path: `![image](img/lenna.jpg)`
+- ![image](img/lenna.jpg "beautiful Lenna")
 
-  !?[movie](https://www.youtube.com/embed/XsNk5aOpqUc?&autoplay=1)
+---
 
-  See also http://www.google.com/support/youtube/bin/answer.py?hl=en&answer=56107
-  to get an overview on how a YouTube link has to be formatted to add a starting
-  and/or end point, autoplay, subtitles, and other options.
+**Audio-notation: `?[alt-text](audio-url "some info")`**
+
+- `?[a horse](https://www.w3schools.com/html/horse.mp3 "hear a horse")``
+- ?[a horse](https://www.w3schools.com/html/horse.mp3 "hear a horse")
+
+---
+
+**Movie-notation: `!?[alt-text](movie-url)`**
+
+- YouTube: `!?[movie](https://www.youtube.com/embed/XsNk5aOpqUc?&autoplay=1)`
+- !?[movie](https://www.youtube.com/embed/XsNk5aOpqUc?&autoplay=1)
+- See also http://www.google.com/support/youtube/bin/answer.py?hl=en&answer=56107
+    to get an overview on how a YouTube link has to be formatted to add a starting
+    and/or end point, autoplay, subtitles, and other options.
+- relative path: `!?[movie](vid/math.mp4)`
+- !?[movie](vid/math.mp4) <!-- width="60%" -->
 
 ### Styling
 
@@ -297,11 +337,12 @@ style = "width: 100px;
          filter: blur(5px);"
 -->
 
-`:-) <!-- class = "animated infinite bounce" -->` --> :-) <!-- class = "animated infinite bounce" -->
+`:-) <!-- class = "animated infinite bounce" -->` ==> :-) <!-- class = "animated infinite bounce" -->
 
-`[google](www.google.de) <!-- style = "color: red;" -->` --> [google](www.google.de) <!-- style = "color: red;" -->
+`[google](www.google.de) <!-- style = "color: red;" -->` ==> [google](www.google.de) <!-- style = "color: red;" -->
 
 ********************************************************************************
+
 
 #### Block-Styling
 
@@ -502,8 +543,7 @@ In contrast to common Markdown-Parsers it is also possible to include and
 execute javascript code. If you combine it with your HTML elements, you are free
 to integrate whatever you want.
 
-``` markdown
-<link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
+``` html
 <div class="ct-chart ct-golden-section" id="chart"></div>
 <script>
     // Initialize a Line chart in the container with the ID chart
@@ -513,8 +553,6 @@ to integrate whatever you want.
     });
 </script>
 ```
-
-<link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
 
 
                                    {{0-1}}
@@ -570,7 +608,9 @@ on the marker.
 
                                         {{2}}
 Multi-line math-mode can be applied by double dollars `$$ formula $$`
-
+$$
+  \frac{a}{\sum{b+i}}
+$$
 
                                     --{{0}}--
 We apply KaTeX for math-formatting, see the documentation at www.katex.org.
@@ -635,20 +675,26 @@ required resources to the initial comment with keyword `script`.
 
 1. Add resource to main-comment: `script: url.js`
 
-2. Add a trailing script-tag to your code: `<script> {{0}} </script>`
+2. Add a trailing script-tag to your code: `<script>@input</script>`
+
+3. A project with multiple files can be realized with `@input(0)`, `@input(1)`, ...,`@input(n)`.
 
 
                                      --{{1}}--
 And add an additional script tag to the end of your language definition with an
-big X in braces. This element is afterwards substituted with your code and
+`@input` macro. This element is afterwards substituted with your code and
 executed. We provide some basic examples within the following section.
+
+                                    --{{2}}--
+Use the `@input` macro as a parameterized function in projects. The number
+defines the the file, starting from 0.
 
 
 
 #### JavaScript
 <!--
 @eval
-<script>@code</script>
+<script>@input</script>
 @end
 -->
 
@@ -658,7 +704,7 @@ edit it and to change the output ...
 
 Double-click on the code to switch to edit mode and double-click to get out:
 
-```javascript
+``` javascript
 var i=0;
 var j=0;
 var result = 0;
@@ -673,6 +719,37 @@ result;
 ```
 @eval
 
+#### Projects
+
+                --{{0}}--
+Mutliple different code snippets can be combined to form a larger project. It
+requires to wo write them in a row. You can give them names, if you add a second
+parameter after the highlighting definition. Add a `+` or `-` to the front of
+your filename, in order to indicate, if it should be visible by default or not.
+
+``` js     -EvalScript.js
+let who = data.first_name + " " + data.last_name;
+
+if(data.online) {
+  who + " is online"; }
+else {
+  who + " is NOT online"; }
+```
+``` json    +Data.json
+{
+  "first_name" :  "Sammy",
+  "last_name"  :  "Shark",
+  "online"     :  true
+}
+```
+<script>
+  // insert the JSON dataset into the local variable data
+  let data = @input(1);
+
+  // eval the script that uses this dataset
+  eval(`@input(0)`);
+</script>
+
 
 
 #### JavaScript Chartist
@@ -682,7 +759,7 @@ also for drawing.
 
 <link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
 
-```javascript
+``` javascript
 // Initialize a Line chart in the container with the ID chart1
 new Chartist.Line('#chart1', {
   labels: [1, 2, 3, 4],
@@ -695,7 +772,7 @@ new Chartist.Bar('#chart2', {
   series: [[5, 2, 8, 3]]
 });
 ```
-<script>@code</script>
+<script>@input</script>
 
 <div class="ct-chart ct-golden-section" id="chart1"></div>
 <div class="ct-chart ct-golden-section" id="chart2"></div>
@@ -707,12 +784,12 @@ script:   https://cdn.rawgit.com/davidedc/Algebrite/master/dist/algebrite.bundle
 -->
 
 
-An example of a Computer-Algebra-System (Algebrit), see xxx for more examples:
+An example of a Computer-Algebra-System (Algebrit), see http://algebrite.org for more examples:
 
-```javascript
+``` javascript
 x + x
 ```
-<script> Algebrite.run(`@code`) </script>
+<script> Algebrite.run(`@input`) </script>
 
 
 
@@ -723,7 +800,7 @@ f=circexp(f)
 
 defint(f,t,0,2*pi)
 ```
-<script> Algebrite.run(`@code`) </script>
+<script> Algebrite.run(`@input`) </script>
 
 
 
@@ -763,11 +840,8 @@ update msg model =
 
 
 #### C++
-<!--
-script:   https://interactivepython.org/runestone/static/thinkcspy/_static/skulpt.min.js
-          https://interactivepython.org/runestone/static/thinkcspy/_static/skulpt-stdlib.js
--->
-Teaching other language-basics is also possible, for this example we applied xxx
+
+Teaching other language-basics is also possible, for this example we applied [JSCPP](https://github.com/felixhao28/JSCPP)
 to run simple C++ programs:
 
 ```cpp
@@ -787,46 +861,9 @@ int main() {
 ```
 <script>
   var output = "";
-  JSCPP.run(`@code`, "", {stdio: {write: s => { output += s.replace(/\n/g, "<br>");}}});
+  JSCPP.run(`@input`, "", {stdio: {write: s => { output += s }}});
   output;
 </script>
-
-#### Python
-
-Running a Python-program with xxx:
-
-```python
-def hello(i):
-  for _ in range(i):
-    print "Hello World"
-
-hello(12)
-```
-<script>
-var output = "";
-
-function builtinRead(x) {
-    if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
-            throw "File not found: '" + x + "'";
-    return Sk.builtinFiles["files"][x];
-}
-
-Sk.pre = "output";
-Sk.configure({output: e => {output += e;}, read: builtinRead});
-
-var myPromise = Sk.misceval.asyncToPromise(function() {
-   return Sk.importMainWithBody("<stdin>", false, `@code`, true);
-});
-myPromise.then(function(mod) {
-   console.log('success');
-},
-   function(err) {
-   console.log(err.toString());
-});
-output;
-</script>
-
-
 
 #### Prolog
 <!--
@@ -889,7 +926,7 @@ solution(WaterDrinker, ZebraOwner) :-
     exists(house(_, ZebraOwner, _, _, zebra), Houses).
 ```
 <script>
-var rules = parser(lexer(`@code`)).parseRules();
+var rules = parser(lexer(`@input`)).parseRules();
 window['prolog_db'] = new Database(rules);
 
 "database loaded";
@@ -903,10 +940,10 @@ solution(WaterDrinker, ZebraOwner)
 <script>
 var rslt = "";
 
-var goal = parser(lexer(`@code`)).parseTerm();
+var goal = parser(lexer(`@input`)).parseTerm();
 
 for (var item of window.prolog_db.query(goal)) {
-    rslt += "Yes: " + item + "<br>";
+    rslt += "Yes: " + item + "\n";
 }
 
 if (rslt === "") {
@@ -915,6 +952,12 @@ if (rslt === "") {
    rslt;
 }
 </script>
+
+### More Examples
+
+We provide a list of templates with more examples that can be used to start developing your own courses. See:
+
+https://liascript.github.io/course/?https://raw.githubusercontent.com/liaScript/templates/master/README.md
 
 ## Quizzes
 
@@ -977,7 +1020,6 @@ Multiple of them can be selected, or all, or none of them ...
     [[X]] Select this one ...
     [[X]] ... and this one too!
     [[ ]] also not correct ...
-    <script> console.log("{{0}}"); </script>
 
 ### Hints
 
@@ -1019,7 +1061,7 @@ Markdown-format:
     [[super]]
     [[?]] hint 1
     [[?]] hint 2
-    *********************************************************************
+    ***********************************************************************
 
                                 {{1}}
 You are right, super was the correct answer again
@@ -1030,7 +1072,7 @@ You are right, super was the correct answer again
 
 ![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)
 
-    *********************************************************************
+    ***********************************************************************
 ```
 
 A quiz with hints and a revealed result.
@@ -1038,7 +1080,7 @@ A quiz with hints and a revealed result.
     [[super]]
     [[?]] hint 1
     [[?]] hint 2
-    *********************************************************************
+    ***********************************************************************
 
                                     {{1}}
 You are right, super was the correct answer again
@@ -1049,7 +1091,7 @@ You are right, super was the correct answer again
 
 ![image](https://upload.wikimedia.org/wikipedia/commons/d/d0/Creative-Tail-Animal-lion.svg)
 
-    *********************************************************************
+    ***********************************************************************
 
 ## Effects
 
@@ -1128,7 +1170,7 @@ This is an example for a *single* block effect.
                                {{2-4}}
 ********************************************************************************
 
-This is an example for a ... wait a second {3}{**multi**} ...
+This is an example for a ... wait a second {3 rubberBand}{**multi**} ...
 block effect.
 
 * alpha
@@ -1138,8 +1180,8 @@ block effect.
 ********************************************************************************
 ```
 
-{{1-3}} This is an example for
-a *single* block effect.
+                                  {{1-3}}
+This is an example for a *single* block effect.
 
                                   {{2-4}}
 ********************************************************************************
@@ -1367,7 +1409,6 @@ Markdown-format:
        +-----------------------------
          0                           2
 
-
 ## Surveys
 
                              --{{0}}--
@@ -1383,7 +1424,7 @@ the number of underlines defines the presented line numbers:
 
 What is your opinion on ... :
 
-    [[___ ___ ___ ___]]
+    [[____ ____ ____ ____]]
 
 ### Single Choice Vector
 
@@ -1470,51 +1511,418 @@ Result:
     [                     ] question 3 ?
 
 
+
+## ASCII-Art #2
+
+Well, thanks to the great project [SvgBob](https://github.com/ivanceras/svgbob)
+the newest version of LiaScript also has support for some basic ASCII art
+drawings (not everything is supported yet). Simply use 4 or more backtics to
+enclose your artwork and draw whatever you want. And as with any other element,
+you can add some styling within HTML comments at the head of this element.
+
+The following examples are taken from the examples on the SvgBob project site.
+
+
+If you want to use a drawing tool for this, visit the online editor at:
+
+https://ivanceras.github.io/svgbob-editor/
+
+### Graphs
+
+<!-- style="display: block; margin-left: auto; margin-right: auto; max-width: 315px;" -->
+```````````````````````````````````````````````````````````````````````
+                           .--->  F
+  A       B     C   D     /
+  *-------*-----*---*----*----->  E
+           \            ^ \
+            v          /   '--->  G
+             B --> C -'
+```````````````````````````````````````````````````````````````````````
+
+<!-- style="display: block; margin-left: auto; margin-right: auto; max-width: 315px;" -->
+``````````````````````````````````````````````````````````````````````
+  +------+   +-----+   +-----+   +-----+
+  |      |   |     |   |     |   |     |
+  | Foo  +-->| Bar +---+ Baz |<--+ Moo |
+  |      |   |     |   |     |   |     |
+  +------+   +-----+   +--+--+   +-----+
+                ^         |
+                |         V
+  .-------------+-----------------------.
+  | Hello here and there and everywhere |
+  '-------------------------------------'
+```````````````````````````````````````````````````````````````````````
+
+### Diagrams
+
+
+```````````````````````````````````````````````````````````````````````
+  E +-------------------------*--+     E |                         o
+  D |-------------------*--*--|--*     D |                   o  o  |  o
+  C |-------------*--*  |  |  |  |     C |             o  o  |  |  |  |
+  B |-------*--*  |  |  |  |  |  |     B |       o  o  |  |  |  |  |  |
+  A +-*--*--+--+--+--+--+--+--+--+     A +-o--o--|--|--|--|--|--|--|--|
+      5 10 15 20 25 30 35 40 45 50         5 10 15 20 25 30 35 40 45 50
+
+
+  85.67 ┤                                       ╭╮
+  78.20 ┤                                       ││                  ╭╮
+  70.73 ┤                                       ││  ╭╮ ╭╮ ╭╮   ╭╮  ╭╯╰─╮
+  63.27 ┤                        ╭╮         ╭─╮ ││ ╭╯╰╮│╰─╯╰╮╭╮│╰──╯   │╭
+  55.80 ┤   ╭╮                 ╭╮││╭╮ ╭╮╭╮  │ ╰─╯╰─╯  ││    ││││       ╰╯
+  48.33 ┤   │╰╮      ╭──╮      │││││╰╮│╰╯│  │         ╰╯    ╰╯╰╯
+  40.87 ┤╭╮ │ ╰╮╭╮  ╭╯  ╰─╮╭╮╭─╯╰╯╰╯ ╰╯  ╰──╯
+  33.40 ┤││ │  ╰╯╰╮╭╯     ││╰╯
+  25.93 ┤││╭╯     ╰╯      ╰╯
+  18.47 ┼╯││
+  11.00 ┤ ╰╯
+        └───────────┴───────────┴───────────┴───────────┴───────────┴────
+      2011        2012        2013        2014        2015        2016
+```````````````````````````````````````````````````````````````````````
+
+### UML
+
+
+``````````````````````````````
+   ____[]
+  | ___ |
+  ||   ||  device
+  ||___||  loads
+  | ooo |----------------------------------------------------------.
+  | ooo |    |                          |                          |
+  | ooo |    |                          |                          |
+  '_____'    |                          |                          |
+             |                          |                          |
+             v                          v                          v
+   .-------------------.  .---------------------------.  .-------------------.
+   | Loadable module C |  |     Loadable module A     |  | Loadable module B |
+   '-------------------'  |---------------------------|  |   (instrumented)  |
+             |            |         .-----.           |  '-------------------'
+             '------------+-------->| A.o |           |             |
+                 calls    |         '-----'           |             |
+                          |    .------------------.   |             |
+                          |   / A.instrumented.o /<---+-------------'
+                          |  '------------------'     |    calls
+                          '---------------------------'
+``````````````````````````````
+
+`````````````````````````````
+                                          .--> Base::Class::Derived_A
+                                         /
+                                        .----> Base::Class::Derived_B
+        Something -------.             /         \\
+                         \\           /           \\---> Base::Class::Derived
+       Something::else    \\         /             \\
+            \\             \\       /               '--> Base::Class::Derived
+             \\             \\     /
+              \\             \\   .-----------> Base::Class::Derived_C
+               \\             \\ /
+                '------ Base::Class
+                        /  \\ \\ \\
+                       '    \\ \\ \\
+                       |     \\ \\ \\
+                       .      \\ \\ '--- The::Latest
+                      /|       \\ \\      \\
+  With::Some::fantasy  '        \\ \\      '---- The::Latest::Greatest
+                      /|         \\ \\
+          More::Stuff  '          \\ '- I::Am::Running::Out::Of::Ideas
+                      /|           \\
+          More::Stuff  '            \\
+                      /              '--- Last::One
+          More::Stuff
+`````````````````````````````
+
+
+### Chemical Structures
+
+``````````````````````````````
+   ----- O
+          \
+           \________
+           /        \
+          /        \ \
+         /            \____________ N
+         \            /
+          \        / /
+           \________/
+``````````````````````````````
+
+``````````````````````````````
+       HO
+        \       
+         \      
+          \____________
+          /------------ O     
+         /
+   _____/        
+ H2N
+``````````````````````````````
+
+
+### Geometrical Shapes
+
+
+````````````````````````````
+  +------+.      +------+       +------+       +------+      .+------+
+  |`.    | `.    |\     |\      |      |      /|     /|    .' |    .'|
+  |  `+--+---+   | +----+-+     +------+     +-+----+ |   +---+--+'  |
+  |   |  |   |   | |    | |     |      |     | |    | |   |   |  |   |
+  +---+--+.  |   +-+----+ |     +------+     | +----+-+   |  .+--+---+
+   `. |    `.|    \|     \|     |      |     |/     |/    |.'    | .'
+     `+------+     +------+     +------+     +------+     +------+'
+````````````````````````````
+
+
+``````````````
+  ____  ____  ____  ____                      ______________________
+ /\   \/\   \/\   \/\   \                    /\                     \
+/  \___\ \___\ \___\ \___\                  /  \    _________________\
+\  / __/_/   / /   / /   /                  \   \   \                /
+ \/_/\   \__/\/___/\/___/                    \   \   \__________    /
+   /  \___\    /  \___\                       \   \   \    /   /   /
+   \  / __/_  _\  /   /                        \   \   \  /   /   /
+    \/_/\   \/\ \/___/                          \   \   \/   /   /
+      /  \__/  \___\                             \   \  /   /   /
+      \  / _\  /   /                              \   \/   /   /
+       \/_/\ \/___/                                \      /   /
+         /  \___\                                   \    /   /
+         \  /   /                                    \  /   /
+          \/___/                                      \/___/
+``````````````````
+
+
+````````````````````````````
+                   _______
+                  / _____ \
+            _____/ /     \ \_____
+           / _____/  311  \_____ \
+     _____/ /     \       /     \ \_____
+    / _____/  221  \_____/  412  \_____ \
+   / /     \       /     \       /     \ \
+  / /  131  \_____/  322  \_____/  513  \ \
+  \ \       /     \       /     \       / /
+   \ \_____/  232  \_____/  423  \_____/ /
+   / /     \       /     \       /     \ \
+  / /  142  \_____/  333  \_____/  524  \ \
+  \ \       /     \       /     \       / /
+   \ \_____/  243  \_____/  434  \_____/ /
+   / /     \       /     \       /     \ \
+  / /  153  \_____/  344  \_____/  535  \ \
+  \ \       /     \       /     \       / /
+   \ \_____/  254  \_____/  445  \_____/ /
+    \_____ \       /     \       / _____/
+          \ \_____/  355  \_____/ /
+           \_____ \       / _____/
+                 \ \_____/ /
+                  \_______/
+````````````````````````````
+
+
+````````````````````````````
+  .----------------------------------------------------------------------.
+  |_.-._.-._.-._.-._.-._.-.    _.-._.-._.-.    _.-._.-._.-._.-._.-._.-._.|
+  |_.-._.-._.-._.-._.-._. .::db .-._.-._. .::db .-._.-._.-._.-._.-._.-._.|
+  |_.-._.-._.-._.-._.-._ .::d88b -._.-._ .::d88b -._.-._.-._.-._.-._.-._.|
+  |_.-._.-._.-._.-._.-. .::d8888b       .::d8888b ._.-._.-._.-._.-._.-._.|
+  |_.-._.-._.-._.-._.- .::d88!::::::::::::d888888b _.-._.-._.-._.-._.-._.|
+  |_.-._.-._.-._.-._.- \  Y88\_________\  Y888888P _.-._.-._.-._.-._.-._.|
+  |_.-._.-._.-._.-._.-. \  Y8888P ._.-. \  Y8888P ._.-._.-._.-._.-._.-._.|
+  |_.-._.-._.-._.-._.-._ /dbY88Pdb _.-._ /dbY88Pdb _.-._.-._.-._.-._.-._.|
+  |_.-._.-._.-._.-._.-. /d8P_YP Y8b .-. /d8P_YP Y8b .-._.-._.-._.-._.-._.|
+  |_.-._.-._.-._.-     /d8P .-.\ Y8b   /d8P .- \ Y8b -._.-._.-._.-._.-._.|
+  |_.-._.-._.-._ .::db/d8P _.-. \.::db/d8P _.-. \ Y8b ._.-._.-._.-._.-._.|
+  |_.-._.-._.-. .::d88bYP ._.-. .::d88LSP ._.-._ \ Y8b    ._.-._.-._.-._.|
+  |_.-._.-._.- .::d8888b       .::d8888b`b _.-._. \ Y8b:db _.-._.-._.-._.|
+  |_.-._.-._. .::d88!::::::::::::d888888b`b .-._.- \ YPd88b .-._.-._.-._.|
+  |_.-._.-._. \  Y88\_________\  Y888888Pd8b       .::d8888b -._.-._.-._.|
+  |_.-._.-._.- \  Y8888P -._.- \  Y8888P!::::::::::::d888888b ._.-._.-._.|
+  |_.-._.-._.-. \  Y88Pdb ._.-. \  Y88Pdb_________\  Y888888P ._.-._.-._.|
+  |_.-._.-._.-._ \__YP Y8b _.-._ \__YP Y8b`P -._.- \  Y8888P -._.-._.-._.|
+  |_.-._.-._.-._.-._. \ Y8b .-._.-. /d\ Y8b .-._.-. /dbY88P .-._.-._.-._.|
+  |_.-._.-._.-._.-._.- \ Y8b -._.- /d8P\ Y8b -._.- /d8P_YP _.-._.-._.-._.|
+  |_.-._.-._.-._.-._.-. \ Y8b     /d8P _\ Y8b     /d8P _.-._.-._.-._.-._.|
+  |_.-._.-._.-._.-._.-._ \ Y8b:db/d8P ._ \ Y8b:db/d8P ._.-._.-._.-._.-._.|
+  |_.-._.-._.-._.-._.-._. \ YPd88bYP -._. \ YPd88bYP -._.-._.-._.-._.-._.|
+  |_.-._.-._.-._.-._.-._. .::d8888b       .::d8888b .-._.-._.-._.-._.-._.|
+  |_.-._.-._.-._.-._.-._ .::d88!::::::::::::d888888b -._.-._.-._.-._.-._.|
+  |_.-._.-._.-._.-._.-._ \  Y88\_________\  Y888888P -._.-._.-._.-._.-._.|
+  |_.-._.-._.-._.-._.-._. \  Y8888P .-._. \  Y8888P .-._.-._.-._.-._.-._.|
+  |_.-._.-._.-._.-._.-._.- \  Y88P _.-._.- \  Y88P _.-._.-._.-._.-._.-._.|
+  |_.-._.-._.-._.-._.-._.-. \__YP ._.-._.-. \__YP ._.-._.-._.-._.-._.-._.|
+  `----------------------------------------------------------------------'
+````````````````````````````
+
+
+
+### Fun
+
+````````````````````````````
+                      |
+  ____________    __ -+-  ____________
+  \_____     /   /_ \ |   \     _____/
+   \_____    \____/  \____/    _____/
+    \_____                    _____/
+       \___________  ___________/
+                 /____\
+
+        .---.        .-----------
+       /     \  __  /    ------
+      / /     \(  )/    -----
+     //////   ' \/ `   ---
+    //// / // :    : ---
+   // /   /  /`    '--
+  //          //..\\
+         ====UU====UU====
+             '//||\\`
+               ''``
+          Daron Brewood
+````````````````````````````
+
+### Unicode
+
+And of course, if your ASCII table does not give you enough pleasure, you can
+also use any kind of Unicode symbol (also within the text).
+
+````````````````````````````````
+  ┌─┬┐  ╔═╦╗  ╓─╥╖  ╒═╤╕
+  │ ││  ║ ║║  ║ ║║  │ ││
+  ├─┼┤  ╠═╬╣  ╟─╫╢  ╞═╪╡
+  └─┴┘  ╚═╩╝  ╙─╨╜  ╘═╧╛
+  ┌───────────────────┐
+  │  ╔═══╗ Some Text  │▒
+  │  ╚═╦═╝ in the box │▒
+  ╞═╤══╩══╤═══════════╡▒
+  │ ├──┬──┤           │▒
+  │ └──┴──┘           │▒
+  └───────────────────┘▒
+   ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
+````````````````````````````````
+
+### Unicode Art
+
+````````````````````````````
+  4 ◇ Sep @tw1tt3rart
+ ▀▄─▀▄─▀▄─▀▄─▀▄─▀▄─▀▄─▀
+ ▄▀─▄▀─▄▀─▄▀─▄▀─▄▀─▄▀─▄
+ ▀─▄▀─▄▀─▄▀─▄▀─▄▀─▄▀─▄▀
+ ▄─▀▄─▀▄─▀▄─▀▄─▀▄─▀▄─▀▄
+ ▀▄─▀▄─▀▄─▀▄─▀▄─▀▄─▀▄─▀
+ ▄▀─▄▀─▄▀─▄▀─▄▀
+
+ 23 ◇ Apr @tw1tt3rart
+ ║█║█║║█║█║█║║█║█║║█║█║█
+ ║█║█║║█║█║█║║█║█║║█║█║█
+ ║║║║║║║║║║║║║║║║║║║║║║║
+ ╚╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩╩
+
+ 19 ◇ Jan @tw1tt3rart
+ ─────█─▄▀█──█▀▄─█─────
+ ────▐▌──────────▐▌────
+ ────█▌▀▄──▄▄──▄▀▐█────
+ ───▐██──▀▀──▀▀──██▌───
+ ──▄████▄──▐▌──▄████▄──
+ RT
+ @140artist
+````````````````````````````
+
+### Unicode Converter
+
+Image generated with:
+
+
+http://www.underware.nl/fonts/zeitung_mono/features/ASCII+/#feature_info
+
+
+`````````
+........................................................................................................................
+........................................................................................................................
+........................................................................................................................
+........................................................................................................................
+........................................................................................................................
+.........................................................=...=..........................................................
+......................................................=.====.===.=.=....................................................
+....................................................========.==========.................................................
+...............................................===========I================.............................................
+.........................................=...=========I===II=III=III=I======............................................
+.........................................=.========I==III=II=III=II==I======............................................
+.......................................=.=========III=IIIIII=I=IIII=I=====I=.===........................................
+.....................................=..========I==IIIIIIIII=IIIIII=I=I==II======.==....................................
+.....................................==========I=I=II=IIIIIIIAIIIAI=I====II========.==..................................
+....................................=====I=I===I=.=III=IIIIAAIIIIAI=I==IIII============.................................
+.....................................=====II==III==IIAIIIIIAII=AIAIIIIIIII===II=======..................................
+...................................==.======II=III==IAIIIIIAII=AAIII=II==I===II=I=====.==.=.............................
+....................................========IIIIIII=IIAIIIAAIIIAAIII==I==I==IIIII==I=======.............................
+.............................=....=========IIIIIIIIIIIAIIAAAIIIIAIII=IAIII=IIIIIIII=========..==........................
+.............................====.======I===IIAAAIIIIAAAIAAAAIAIAIIIIIAIIIAIIAAI======.=======.==.......................
+............................===I===========IIIIAAAIIIIAAAAAAAIAIAIAI=IIIIAAIII=I=I==============........................
+..............................==II=====III==IIIIIIAAI=AAIAAXAAAAIAAIIAAIAAIIIIII=I===IIII======....=....................
+............................=..=IAI===IIIIIIIIIIIAAAAAIAIXIXAAXAIAXAAIIAAAIIAII=IIIIIII========.====....................
+...........................====..IAII=IIIII=IIIIAIAIAAAAAXAXAAXAIAAAIAAAAIIIAIIIIIIIIII=====.=.===......................
+..................=.......========IIIIIIIIIAIIIIIIIAAXAAAXAAXXXAIXAIAXIAAAIAIIA==I=II=====I=====........................
+..................==......=========IIAIIIAIIIIAAAIIIAAAAAXAXXXXAAXAAAAAAAIAIIIII=III=======.=========...................
+...................=I==..=====I======IIIIIAAIAIIIAAAAAXXAXXXXAXAAXAXXIAAIAIIIIIIAII==.==IIII==IIII==....................
+....................=II===II===IIIIIIIAAAAIAAAAAIIIAXXXXXXXXXXXAAAAAAAXAAAAAAAAAIIIAAAAAIIIIII====......................
+....................==IIIIIIIIIIIIAAAAAAXAAAAIIIAIIIAXXXMXXXMXAAXXIAXXAXAAAAIII=IIII======IIII=I=====...................
+................==..====IIIAAAAIIIIAIAAAAAXAAXAIIIAAAIXAAMXMMMXXAAXXXXXXAAIIIIIAIIIIIIIIIIIIIII========.................
+...............=====II===IIAAAAAIII=====IIAXXAXXAAIAAAAXIAMMMMXAAAXMMXAIIAAAI=====IAIIIIIAII========....................
+...................=====IIIIIIAAAAAAAIIIIIIAAAIAAXMMXXXXXXMMMMMXXMMXAIAAAAAIII====IIAAAAIIII=======........=............
+...................========IIIIIAXXAAAAIAIIIIIAAAIAXAAAXXXXMMMXXMMMAAAAAAAAAIAIIIIAAAIAIII===========.=====.............
+................=======II=========IAXAAXXXXAAAAAXXAAXAAIMMMMMXXMMMAIAAAAIAAXXAAAAAAI==II=========..=======..............
+..........========.======IIIIIIIIIIIAAAXXXXXXXXAAXXXMXXXAMMMMMMMXXAAAXAAAAAXAAAAAIIIIIIIIIIIIIIIIIII===.................
+............===IIIAIIIIIIIIAAAAAAXXXXXXXXXXXXXAXXAXAXXMXXMMMMMMXMXXXXAAAAAAAIIAIIAAAAAAAAAAIIIIII=====..................
+................======IIIIIIIIAAAAAAAAAXAXAAAAXMMMXXAAMXIAMMMMMMMXMXXXXXXXXXXXAAAIIIIIIIIIIAIAII========................
+.................====II==I=IIIAIIIIAIAAXAAAAXXXXXXXMXXXMMAMMMMXIAMXAXXXXXXXXXXXAAAAAAAAAIAAIIIIII=I===..................
+...............====================IIAAAAXXXXXXXAXXMMMMMXMMWWMMMXXXXXAAAAAAAAAXXXAAAAAII=================...............
+....................===...======IIIAAAXXXXAAAXAXIAAIAXMMAAMWWMXAXXAXXXAXAAXXAXAXXXAIIIIIII====I==I====.=................
+..................=====IIIIIIAAAAAAAAAAAI=IAIAAA=IIAXXAXMXMWMMIAAAAXXXXXAXAIAAAXAAAAAAAAIIIIII==========................
+.................=====IIIIIIAAAIIIII=IIIIIIAXAAIAAAAXXXAIMMMMXIAIXAXXXAAXXXXXAIIIAAAIAAIAIIIII====II====................
+.................=======III=I======IIIIIIIAXAAAAIIAAIIIAAAMMMAAAAAIIIAXXXMXXXXAIII==IIIII==IIIII========................
+................=================II==IIIAAAAAAAIIAI===IIIMMMMXAIIAIIIIIAAXXXXXXXAAII==IIII========.====.................
+.................=====..=============IIAAAAAIIIIIII===IIIXMMMAIIAIIAIII=IAAAAAXXAAAIAII==============...................
+........................============IAAAIAAI===I======I==AMMMAIII=IAI====IIIAAAAAAAAIIIIIII===========..................
+=....................=======..=====IIII===II============IIMMMIIIIIII=====I===IAAAAAAAI=I=========.......................
+====================...====...==============I=============MMMI=================IIAAIIIIIIII========.....................
+===========================....===========================MMMI===================IIIIII====I==.==.......................
+===============================================..=========MMMI==.=....=================I===I====........................
+==========================================================MMMA=============......===..===.===.==........................
+==========================================================MMMA===========================..=====...===========.=........
+==========================================================MMMX==========================================================
+=========================================================IMMMX==========================================================
+========II==IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIAAAIIAIIXMMMMAIIIIAAAIIIIIIIIIIIIIII=IIIII=IIIIIIIIIIII================
+XXXXXXXXXXXXXXXXXXXXXXXXXXMXXMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMXXXXMXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMXMMM
+MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMMMWMMMMMMMWMWWWWMMWMMWWWWMMWWWWWWWWWWWWMWWWMMWMWWMMMMWWMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+`````````
+
+## Macros
+
+Todo, description of the currently applied macro-syntax.
+
 ## Future Work
 
 * Better integration with github/gitlab and the versioning of courses
-* Free Integration of JavaScript and Elm resources
 * Automagically analyzed surveys
 * Integration of WebGl and a 3D navigation
-* Inline function-plotter
+* Better Inline function-plotter
 
 ## Contributors and Credit
 
 
-<!-- class = "animated fadeInUpBig" -->
-{{1}} <h1> André Dietrich  </h1>
+{1}{<h1> André Dietrich </h1>} <!-- class = "animated fadeInUpBig" -->
 
 --{{1}}--
 Programming paradigm experimenter and creator of liaScript and SelectScript...
 
 
-<!-- class = "animated fadeInUpBig" -->
-{{2}} <h1> Sebastian Zug   </h1>
+
+{2}{<h1> Sebastian Zug  </h1>} <!-- class = "animated fadeInUpBig" -->
 
 --{{2}}--
 The mind in the dark and the man behind the eLab-project ...
 
 
-<!-- class = "animated fadeInUpBig" -->
-{{3}}<h1> Fin Christensen </h1>
+{3}{<h1> Karl Fessel    </h1>} <!-- class = "animated fadeInUpBig" -->
 
 --{{3}}--
-CSS and Web development enthusiast, outstanding git user ...
-
-<!-- class = "animated fadeInUpBig" -->
-{{4}} <h1> Martin Koppehel </h1>
-
---{{4}}--
-Hardware-architect and fully Fullstack developer ...
-
-<!-- class = "animated fadeInUpBig" -->
-{{5}} <h1> Leon Wehmeier   </h1>
-
---{{5}}--
-Coordinator and embedded development guru ...
-
-<!-- class = "animated fadeInUpBig" -->
-{{6}} <h1> Karl Fessel     </h1>
-
---{{6}}--
-Embedded systems developer, creator of arduinoview, and Markdown evangelist ...
+Embedded systems developer, creator or arduinoview, and Markdown evangelist ...

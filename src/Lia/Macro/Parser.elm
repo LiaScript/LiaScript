@@ -30,10 +30,11 @@ param_list =
 
 macro : Parser PState ()
 macro =
-    ((uid_macro >>= inject_macro)
-        <|> (simple_macro >>= inject_macro)
-        <|> macro_listing
-    )
+    many1
+        ((uid_macro >>= inject_macro)
+            <|> (simple_macro >>= inject_macro)
+            <|> macro_listing
+        )
         |> maybe
         |> skip
 
@@ -109,7 +110,7 @@ inject_macro ( name, params ) =
                     modifyStream ((++) new_code) *> succeed ()
 
                 Nothing ->
-                    succeed ()
+                    fail "macro definition not found"
     in
     withState inject
 
