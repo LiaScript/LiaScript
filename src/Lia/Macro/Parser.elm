@@ -68,7 +68,7 @@ code_block =
 
 macro_listing : Parser PState ()
 macro_listing =
-    (c_frame *> regex ".*\\n" *> identation *> pattern)
+    (c_frame *> regex "[ \\t]*[a-zA-Z0-9_]*[ \\t]*" *> pattern)
         >>= (\name ->
                 (param_list <* regex "[ \\t]*\\n")
                     >>= (\params ->
