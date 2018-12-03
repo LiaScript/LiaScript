@@ -339,7 +339,11 @@ view_control lang idx version_active version_count running terminal =
                     , Attr.title (codeRunning lang)
                     , Attr.disabled True
                     ]
-                    [ Html.text "sync" ]
+                    [ Html.span
+                        [ Attr.class "lia-icon rotating"
+                        ]
+                        [ Html.text "sync" ]
+                    ]
 
             ( True, True ) ->
                 Html.span
