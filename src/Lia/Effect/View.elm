@@ -31,6 +31,7 @@ comment lang class show_inline silent msg model viewer idx elements =
         elements
             |> List.map viewer
             |> Html.div []
+
     else if idx == model.visible then
         Html.div
             [ Attr.class class
@@ -39,6 +40,7 @@ comment lang class show_inline silent msg model viewer idx elements =
                 (List.map viewer elements)
                 [ responsive lang silent msg ]
             )
+
     else
         Html.div
             [ Attr.class "lia-effect-comment lia-hidden"
@@ -55,16 +57,17 @@ responsive lang sound msg =
             , Attr.title <|
                 if sound then
                     soundOn lang
+
                 else
                     soundOff lang
             ]
             [ if sound then
                 Html.text "volume_up"
+
               else
                 Html.text "volume_off"
             ]
-        , Html.a [ Attr.href "https://responsivevoice.org" ]
-            [ Html.text "ResponsiveVoice-NonCommercial" ]
+        , Html.a [ Attr.href "https://responsivevoice.org" ] [ Html.text "ResponsiveVoice-NonCommercial" ]
         , Html.text " licensed under "
         , Html.a
             [ Attr.href "https://creativecommons.org/licenses/by-nc-nd/4.0/" ]
@@ -84,5 +87,6 @@ state : Model -> ( Bool, String )
 state model =
     if model.effects == 0 then
         ( False, "" )
+
     else
         ( model.speaking, "(" ++ toString (model.visible + 1) ++ "/" ++ toString (model.effects + 1) ++ ")" )
