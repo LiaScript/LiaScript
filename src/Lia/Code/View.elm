@@ -10,7 +10,6 @@ import Lia.Code.Terminal as Terminal
 import Lia.Code.Types exposing (..)
 import Lia.Code.Update exposing (Msg(..))
 import Lia.Helper exposing (ID)
-import Lia.Markdown.Inline.Parser exposing (javascript)
 import Lia.Markdown.Inline.Types exposing (Annotation)
 import Lia.Markdown.Inline.View exposing (annotation, attributes)
 import Translations exposing (Lang, codeExecute, codeFirst, codeLast, codeMaximize, codeMinimize, codeNext, codePrev, codeRunning)
@@ -119,11 +118,13 @@ view_eval lang theme attr running errors id_1 id_2 file =
                     [ onClick <| FlipView id_1 id_2
                     , Attr.style [ ( "width", "calc(100% - 20px)" ), ( "display", "inline-block" ) ]
                     ]
-                    [ if file.visible then
-                        Html.b [] [ Html.text " + " ]
+                    [ Html.b []
+                        [ if file.visible then
+                            Html.text " + "
 
-                      else
-                        Html.b [] [ Html.text " - " ]
+                          else
+                            Html.text " - "
+                        ]
                     , Html.text file.name
                     ]
                 , if file.visible then
@@ -153,8 +154,8 @@ view_eval lang theme attr running errors id_1 id_2 file =
         ]
 
 
-style : Bool -> Bool -> List ( String, String )
-style visible headless =
+style : Bool -> Bool -> Int -> List ( String, String )
+style visible headless pix =
     let
         top_border =
             if headless then
@@ -165,7 +166,7 @@ style visible headless =
     in
     [ ( "max-height"
       , if visible then
-            "100000px"
+            toString pix ++ "px"
 
         else
             "0px"
@@ -186,10 +187,9 @@ lines code =
         |> List.length
 
 
-
--- pixel : Int -> Int
--- pixel lines =
---     lines * 21 + 16
+pixel : Int -> Int
+pixel lines =
+    lines * 21 + 16
 
 
 highlight : String -> Annotation -> String -> String -> Bool -> Html Msg
@@ -246,7 +246,10 @@ evaluate theme attr running ( id_1, id_2 ) file headless errors =
     attr
         |> attributes
         |> List.append
-            [ Attr.style (style file.visible headless)
+            [ max_lines
+                |> pixel
+                |> style file.visible headless
+                |> Attr.style
             , Ace.onSourceChange <| Update id_1 id_2
             , Ace.value file.code
             , Ace.mode file.lang
@@ -373,8 +376,6 @@ view_control lang idx version_active version_count running terminal =
         , Html.button
             [ (version_active + 1) |> Load idx |> onClick
             , Attr.class "lia-btn lia-icon"
-
-            --, Attr.style [ ( "float", "right" ), ( "margin-right", "0px" ) ]
             , control_style
             , Attr.title (codeNext lang)
             , Attr.disabled backward

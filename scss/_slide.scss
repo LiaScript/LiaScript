@@ -18,6 +18,13 @@
             }
         }
 
+        .lia-paragraph {
+            text-align: justify;
+            @media (max-width: 360px) {
+                text-align: left;
+            }
+        }
+
         .lia-footer {
             $bg: map-get($theme, background);
             $fg: color-contrast($bg);
