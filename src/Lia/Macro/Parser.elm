@@ -99,13 +99,11 @@ inject_macro ( name, params ) =
                                             |> (++) "\n"
                                         )
 
-                        ( new_state, new_params ) =
-                            List.foldl eval_param ( state, [] ) params
-
-                        new_code =
-                            new_params
-                                |> List.indexedMap (\i s -> ( "@" ++ toString i, s ))
-                                |> List.foldl string_replace code_
+                        ( new_state, _, new_code ) =
+                            List.foldl
+                                eval_param
+                                ( state, 0, code_ )
+                                params
                     in
                     modifyStream ((++) new_code) *> putState new_state *> succeed ()
 
@@ -115,13 +113,13 @@ inject_macro ( name, params ) =
     withState inject
 
 
-eval_param : String -> ( PState, List String ) -> ( PState, List String )
-eval_param value ( state, olds ) =
+eval_param : String -> ( PState, Int, String ) -> ( PState, Int, String )
+eval_param param ( state, i, code ) =
     let
-        ( new_state, new_value ) =
-            macro_parse state value
+        ( new_state, new_param ) =
+            macro_parse state param
     in
-    ( new_state, List.append olds [ new_value ] )
+    ( new_state, i + 1, string_replace ( "@" ++ toString i, new_param ) code )
 
 
 get : String -> Definition -> Maybe String
