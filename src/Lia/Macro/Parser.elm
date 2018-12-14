@@ -99,12 +99,12 @@ inject_macro ( name, params ) =
                                             |> (++) "\n"
                                         )
 
-                        (new_state, new_params) =
-                            List.foldl eval_param (state, []) params
-                            
+                        ( new_state, new_params ) =
+                            List.foldl eval_param ( state, [] ) params
+
                         new_code =
                             new_params
-                                |> List.indexedMap (\i s -> ("@"++toString i, s))
+                                |> List.indexedMap (\i s -> ( "@" ++ toString i, s ))
                                 |> List.foldl string_replace code_
                     in
                     modifyStream ((++) new_code) *> putState new_state *> succeed ()
@@ -115,13 +115,13 @@ inject_macro ( name, params ) =
     withState inject
 
 
-eval_param : String -> (PState, List String) -> ( PState, List String )
-eval_param value (state, olds)  =
+eval_param : String -> ( PState, List String ) -> ( PState, List String )
+eval_param value ( state, olds ) =
     let
-        (new_state, new_value) = macro_parse state value
+        ( new_state, new_value ) =
+            macro_parse state value
     in
-
-    ( new_state, List.append olds [new_value])
+    ( new_state, List.append olds [ new_value ] )
 
 
 get : String -> Definition -> Maybe String
@@ -154,11 +154,11 @@ add ( name, code ) def =
     { def | macro = Dict.insert name code def.macro }
 
 
-macro_parse : PState -> String -> (PState, String)
+macro_parse : PState -> String -> ( PState, String )
 macro_parse defines str =
     case runParser (String.concat <$> many1 (regex "@input[^@]+" <|> macro *> regex "[^@]+")) defines str of
         Ok ( state, _, s ) ->
-            (state, s)
+            ( state, s )
 
         _ ->
-            (defines, str)
+            ( defines, str )
