@@ -93,7 +93,7 @@ svgbob =
         <*> (regex "```[`]+\\n"
                 *> manyTill
                     (maybe identation
-                        *> regex "(.(?!````))*\\n"
+                        *> regex "(?:.(?!````))*\\n"
                     )
                     (identation *> regex "```[`]+")
             )

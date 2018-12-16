@@ -41,6 +41,7 @@ parse =
                     (\_ v ->
                         if v |> List.map .x |> unique Nothing then
                             Line v
+
                         else
                             Dots v
                     )
@@ -50,10 +51,10 @@ parse =
                     x_label
     in
     chart
-        <$> optional "" (regex "( )*[a-zA-Z0-9 .\\\\()\\-]+\\n")
-        <*> optional 1.0 (regex "( )*" *> number)
+        <$> optional "" (regex "[ \\t]*[a-zA-Z0-9 .\\\\()\\-]+\\n")
+        <*> optional 1.0 (regex "[ \\t]*" *> number)
         <*> many1 row
-        <*> optional 0.0 (regex "( )*" *> number)
+        <*> optional 0.0 (regex "[ \\t]*" *> number)
         <*> x_axis
 
 
@@ -66,6 +67,7 @@ unique start list =
         ( x :: xs, Just s ) ->
             if x == s then
                 False
+
             else
                 unique (Just x) xs
 
@@ -87,6 +89,7 @@ row =
                 |> (\w ->
                         if w == "" then
                             " "
+
                         else
                             w
                    )
@@ -99,7 +102,7 @@ row =
                 |> Dict.fromList
             )
     in
-    indexes <$> (regex "[^\\n|]*" <* string "|") <*> (regex "[ \\*a-zA-Z\\+#]*" <* regex "( )*\\n")
+    indexes <$> (regex "[^\\n|]*" <* string "|") <*> (regex "[ \\*a-zA-Z\\+#]*" <* regex "[ \\t]*\\n")
 
 
 segmentation : Int -> Float -> Float -> ( Float, Float )
@@ -110,10 +113,10 @@ segmentation elements i0 i1 =
 x_axis : Parser PState ( String, ( Float, Float ) )
 x_axis =
     (\e x0 x_label x1 -> ( String.trim x_label, segmentation (String.length e) x0 x1 ))
-        <$> (regex "( )*\\+" *> regex "\\-+" <* regex "( )*\\n( )*")
+        <$> (regex "[ \\t]*\\+" *> regex "\\-+" <* regex "[ \\t]*\\n[ \\t]*")
         <*> optional 0.0 number
         <*> optional "" (regex "[a-zA-Z_ .\\\\()\\-]+")
-        <*> optional 1.0 (regex "( )*" *> number <* regex "( )*\\n")
+        <*> optional 1.0 (regex "[ \\t]*" *> number <* regex "[ \\t]*\\n")
 
 
 number : Parser PState Float
