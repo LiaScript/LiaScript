@@ -9,7 +9,7 @@ import Lia.PState exposing (PState)
 
 title_tag : Parser PState Int
 title_tag =
-    String.length <$> regex "#+" <?> "title tags"
+    String.length <$> regex "#+"
 
 
 check : Int -> Parser s ()
@@ -18,7 +18,7 @@ check c =
         succeed ()
 
     else
-        fail "Not the beginning"
+        fail ""
 
 
 title_str : Parser PState Inlines
@@ -26,60 +26,62 @@ title_str =
     spaces *> line <* newlines1
 
 
-comment : Parser PState String
-comment =
-    regex "<!--(.|[\\x0D\\n])*?-->" <?> "comment"
 
-
-misc : Parser PState String
-misc =
-    regex "([^\\\\#`<\\[]|[\\x0D\\n])+" <|> (withColumn check *> string "#")
-
-
-misc2 : Parser PState String
-misc2 =
-    regex "((\\\\.)|[<`\\[])"
-
-
-link : Parser PState String
-link =
-    regex "\\[[^\\]]*\\]\\([^\\)]*\\)"
-
-
-code_block : Parser PState String
-code_block =
-    regex "```[`]*(.|[\\x0D\\n])*?```[`]*" <?> "code block"
-
-
-code_inline : Parser PState String
-code_inline =
-    regex "`.*?`" <?> "inline code"
-
-
-html_block : Parser PState String
-html_block =
-    let
-        p tag =
-            (\c ->
-                String.append ("<" ++ tag) c
-                    ++ "</"
-                    ++ tag
-                    ++ ">"
-            )
-                <$> stringTill (string "</" *> string tag <* string ">")
-    in
-    whitespace *> string "<" *> regex "\\w+" >>= p
+-- comment : Parser a String
+-- comment =
+--     regex "<!--(.|[\\x0D\\n])*?-->"
+--
+--
+-- misc : Parser a String
+-- misc =
+--     regex "([^`<#]+|[\\x0D\\n]+)"
+--         <|> (withColumn check *> string "#")
+--
+--
+-- misc2 : Parser a String
+-- misc2 =
+--     regex "[<`]"
+--
+--
+-- code_block : Parser a String
+-- code_block =
+--     regex "`{3,}([^`]*(`[^`])*(``[^`])*[\\x0D\\n])*`{3,}"
+--
+--
+--
+-- --regex "```[`]*((.|\\n)(?!```[`]*))*"
+--
+--
+-- code_inline : Parser a String
+-- code_inline =
+--     regex "`.*?`"
+--
+--
+-- html_block : Parser a String
+-- html_block =
+--     string "<" *> regex "\\w+" >>= html_
+--
+--
+-- html_ tag =
+--     (\c ->
+--         String.append ("<" ++ tag) c
+--             ++ "</"
+--             ++ tag
+--             ++ ">"
+--     )
+--         <$> stringTill (string "</" *> string tag <* string ">")
 
 
 body : Parser PState String
 body =
-    [ misc
-    , link
-    , comment
-    , code_block
-    , code_inline
-    , html_block
-    , misc2
+    [ regex "(?:[^`<#]+|[\\x0D\\n]+)" -- misc
+    , regex "<!--[\\s\\S]*?-->"
+    , regex "`{3,}[\\s\\S]*?`{3,}"
+    , regex "`.+?`"
+    , regex "<(\\w+)[\\s\\S]*?</\\1>"
+    , string "`"
+    , string "<"
+    , withColumn check *> string "#"
     ]
         |> choice
         |> many
@@ -88,7 +90,10 @@ body =
 
 section : Parser PState ( Int, Inlines, String )
 section =
-    (,,) <$> title_tag <*> title_str <*> body
+    (,,)
+        <$> title_tag
+        <*> title_str
+        <*> body
 
 
 run : Parser PState (List ( Int, Inlines, String ))
