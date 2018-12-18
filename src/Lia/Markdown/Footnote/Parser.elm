@@ -10,20 +10,21 @@ import Lia.PState exposing (PState, identation_append)
 
 inline : Parser PState (Annotation -> Inline)
 inline =
-    ((,)
-        <$> (string "[^" *> stringTill (string "]"))
-        <*> maybe (string "(" *> stringTill (string ")"))
-    )
-        >>= store
+    string "[^"
+        |> keep (stringTill (string "]"))
+        |> map (,)
+        |> andMap (maybe (string "(" |> keep (stringTill (string ")"))))
+        |> andThen store
 
 
 block : Parser PState (List Markdown) -> Parser PState ()
 block p =
-    ((,)
-        <$> (string "[^" *> stringTill (string "]:"))
-        <*> (identation_append "   " *> p)
-    )
-        >>= add_footnote
+    string "[^"
+        |> keep (stringTill (string "]:"))
+        |> map (,)
+        |> ignore (identation_append "   ")
+        |> andMap p
+        |> andThen add_footnote
 
 
 store : ( String, Maybe String ) -> Parser PState (Annotation -> Inline)
@@ -31,7 +32,7 @@ store ( key, val ) =
     case val of
         Just v ->
             add_footnote ( key, [ Paragraph Nothing [ Chars v Nothing ] ] )
-                *> succeed (FootnoteMark key)
+                |> keep (succeed (FootnoteMark key))
 
         _ ->
             succeed (FootnoteMark key)
