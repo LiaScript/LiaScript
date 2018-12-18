@@ -53,17 +53,17 @@ inline2string inline =
 ref2string : Reference -> String
 ref2string ref =
     case ref of
-        Movie alt _ ->
+        Movie alt _ _ ->
             alt
 
-        Image alt _ ->
+        Image alt _ _ ->
             alt
 
-        Audio alt _ ->
+        Audio alt _ _ ->
             alt
 
-        Link alt _ ->
+        Link alt _ _ ->
             stringify alt
 
-        Mail alt _ ->
+        Mail alt _ _ ->
             stringify alt

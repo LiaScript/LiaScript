@@ -170,19 +170,19 @@ inlines : Parser PState Inline
 inlines =
     lazy <|
         \() ->
-            Macro.macro
-                |> keep
-                    ([ code
-                     , Footnote.inline
-                     , reference
-                     , formula
-                     , Effect.inline inlines
-                     , strings
-                     ]
-                        |> choice
-                        |> andMap (Macro.macro |> keep annotations)
-                        |> or html
-                    )
+            ignore1_
+                Macro.macro
+                ([ code
+                 , Footnote.inline
+                 , reference
+                 , formula
+                 , Effect.inline inlines
+                 , strings
+                 ]
+                    |> choice
+                    |> andMap (Macro.macro |> keep annotations)
+                    |> or html
+                )
 
 
 formula : Parser s (Annotation -> Inline)
@@ -215,11 +215,53 @@ email =
     string "mailto:"
         |> maybe
         |> keep (regex "[a-zA-Z0-9_.\\-]+@[a-zA-Z0-9_.\\-]+")
+        |> map ((++) "mailto:")
 
 
 inline_url : Parser s Reference
 inline_url =
-    map (\u -> Link [ Chars u Nothing ] ( u, "" )) url
+    map (\u -> Link [ Chars u Nothing ] u "") url
+
+
+ref_info : Parser s String
+ref_info =
+    brackets (regex "[^\\]\n]*")
+
+
+ref_info2 : Parser PState Inlines
+ref_info2 =
+    string "["
+        |> keep (manyTill inlines (string "]"))
+
+
+ref_title : Parser s String
+ref_title =
+    spaces
+        |> ignore (string "\"")
+        |> keep (stringTill (string "\""))
+        |> ignore spaces
+        |> optional ""
+
+
+ref_url_1 : Parser s String
+ref_url_1 =
+    or url (regex "[^\\)\n \"]*")
+
+
+ref_url_2 : Parser PState String
+ref_url_2 =
+    withState (\s -> succeed s.defines.base)
+        |> map (++)
+        |> andMap (regex "[^\\)\n \"]*")
+        |> or url
+
+
+ref_pattern ref_type info_type url_type =
+    map ref_type info_type
+        |> ignore (string "(")
+        |> andMap url_type
+        |> andMap ref_title
+        |> ignore (string ")")
 
 
 reference : Parser PState (Annotation -> Inline)
@@ -227,42 +269,23 @@ reference =
     lazy <|
         \() ->
             let
-                info =
-                    brackets (regex "[^\\]\n]*")
-
-                info2 =
-                    string "["
-                        |> keep (manyTill inlines (string "]"))
-
-                title =
-                    optional "" (spaces *> string "\"" *> stringTill (string "\"")) <* spaces
-
-                url_1 =
-                    or url (regex "[^\\)\n \"]*")
-
-                url_2 =
-                    url <|> ((++) <$> withState (\s -> succeed s.defines.base) <*> regex "[^\\)\n \"]*")
-
                 mail_ =
-                    Mail <$> info2 <*> parens ((,) <$> email <*> title)
+                    ref_pattern Mail ref_info2 email
 
                 link =
-                    Link <$> info2 <*> parens ((,) <$> url_1 <*> title)
+                    ref_pattern Link ref_info2 ref_url_1
 
                 image =
-                    Image
-                        <$> (string "!" *> info)
-                        <*> parens ((,) <$> url_2 <*> title)
+                    string "!"
+                        |> keep (ref_pattern Image ref_info ref_url_2)
 
                 audio =
-                    Audio
-                        <$> (string "?" *> info)
-                        <*> parens ((,) <$> url_2 <*> title)
+                    string "?"
+                        |> keep (ref_pattern Audio ref_info ref_url_2)
 
                 movie =
-                    Movie
-                        <$> (string "!?" *> info)
-                        <*> parens ((,) <$> url_2 <*> title)
+                    string "!?"
+                        |> keep (ref_pattern Movie ref_info ref_url_2)
             in
             [ movie, audio, image, mail_, link ]
                 |> choice

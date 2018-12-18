@@ -118,28 +118,36 @@ view_inf =
 reference : Int -> Reference -> Annotation -> Html msg
 reference visible ref attr =
     case ref of
-        Link alt_ url_ ->
-            view_url visible alt_ url_ attr
+        Link alt_ url_ title_ ->
+            view_url visible alt_ url_ title_ attr
 
-        Mail alt_ ( url_, title_ ) ->
-            view_url visible alt_ ( "mailto:" ++ url_, title_ ) attr
+        Mail alt_ url_ title_ ->
+            view_url visible alt_ url_ title_ attr
 
-        Image alt_ ( url_, title_ ) ->
-            Html.img (Attr.src url_ :: Attr.title title_ :: annotation "lia-image" attr) [ Html.text alt_ ]
+        Image alt_ url_ title_ ->
+            Html.img
+                (Attr.src url_ :: Attr.title title_ :: annotation "lia-image" attr)
+                [ Html.text alt_ ]
 
-        Audio alt_ ( url_, title_ ) ->
-            Html.audio (Attr.controls True :: Attr.title title_ :: annotation "lia-audio" attr) [ Html.source [ Attr.src url_ ] [], Html.text alt_ ]
+        Audio alt_ url_ title_ ->
+            Html.audio
+                (Attr.controls True :: Attr.title title_ :: annotation "lia-audio" attr)
+                [ Html.source [ Attr.src url_ ] [], Html.text alt_ ]
 
-        Movie alt_ ( url_, title_ ) ->
+        Movie alt_ url_ title_ ->
             if url_ |> String.toLower |> String.contains "https://www.youtube" then
-                Html.iframe (Attr.src url_ :: Attr.title title_ :: annotation "lia-movie" attr) [ Html.text alt_ ]
+                Html.iframe
+                    (Attr.src url_ :: Attr.title title_ :: annotation "lia-movie" attr)
+                    [ Html.text alt_ ]
 
             else
-                Html.video (Attr.controls True :: Attr.title title_ :: annotation "lia-movie" attr) [ Html.source [ Attr.src url_ ] [], Html.text alt_ ]
+                Html.video
+                    (Attr.controls True :: Attr.title title_ :: annotation "lia-movie" attr)
+                    [ Html.source [ Attr.src url_ ] [], Html.text alt_ ]
 
 
-view_url : Int -> Inlines -> ( String, String ) -> Annotation -> Html msg
-view_url visible alt_ ( url_, title_ ) attr =
+view_url : Int -> Inlines -> String -> String -> Annotation -> Html msg
+view_url visible alt_ url_ title_ attr =
     [ Attr.href url_, Attr.title title_ ]
         |> List.append (annotation "lia-link" attr)
         |> Html.a
