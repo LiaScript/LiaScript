@@ -17,14 +17,12 @@ param : Parser PState String
 param =
     toJSstring
         <$> choice
-                [ ignore1_3
-                    c_frame
-                    (regex "(([^`]+|(`[^`]+)|(``[^`]+))|\\n)+")
-                    c_frame
-                , ignore1_3
-                    (string "`")
-                    (regex "[^`\\n]+")
-                    (string "`")
+                [ c_frame
+                    |> keep (regex "(([^`]+|(`[^`]+)|(``[^`]+))|\\n)+")
+                    |> ignore c_frame
+                , string "`"
+                    |> keep (regex "[^`\\n]+")
+                    |> ignore (string "`")
                 , regex "[^),]+"
                 ]
 
@@ -49,15 +47,9 @@ macro =
 
 uid_macro : Parser PState ( String, List String )
 uid_macro =
-    ignore1_
-        (string "@uid")
-        (modifyState uid_update)
+    string "@uid"
+        |> keep (modifyState uid_update)
         |> onsuccess ( "@uid", [] )
-
-
-onsuccess : a -> Parser s x -> Parser s a
-onsuccess res =
-    map (always res)
 
 
 uid_update : PState -> PState
@@ -79,14 +71,21 @@ simple_macro =
 code_block : Parser PState (List String)
 code_block =
     manyTill
-        (ignore1_ (maybe identation) (regex "(.(?!```))*\\n?"))
-        (ignore1_ (maybe identation) c_frame)
+        (maybe identation
+            |> keep (regex "(.(?!```))*\\n?")
+        )
+        (maybe identation
+            |> keep c_frame
+        )
         |> map (String.concat >> List.singleton)
 
 
 macro_listing : Parser PState ()
 macro_listing =
-    (ignore1_ c_frame (regex "[ \\t]*[a-zA-Z0-9_]*[ \\t]*") *> pattern)
+    (c_frame
+        |> keep (regex "[ \\t]*[a-zA-Z0-9_]*[ \\t]*")
+        |> keep pattern
+    )
         >>= (\name ->
                 (param_list <* regex "[ \\t]*\\n")
                     >>= (\params ->

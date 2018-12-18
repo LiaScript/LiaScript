@@ -45,9 +45,11 @@ comments =
 
 attribute : Parser s ( String, String )
 attribute =
-    (\k v -> ( String.toLower k, String.fromList v ))
-        <$> (whitespace *> regex "\\w+" <* regex "[ \\t\\n]*=[ \\t\\n]*\"")
-        <*> manyTill anyChar (regex "\"[ \\t\\n]*")
+    whitespace
+        |> keep (regex "\\w+")
+        |> ignore (regex "[ \\t\\n]*=[ \\t\\n]*\"")
+        |> map (\k v -> ( String.toLower k, v ))
+        |> andMap (stringTill (regex "\"[ \\t\\n]*"))
 
 
 annotations : Parser PState Annotation
@@ -96,7 +98,13 @@ html =
                     }
                 )
     in
-    ((javascript >>= state) *> succeed (Chars "" Nothing)) <|> html_void <|> html_block
+    choice
+        [ javascript
+            |> andThen state
+            |> keep (succeed (Chars "" Nothing))
+        , html_void
+        , html_block
+        ]
 
 
 html_void : Parser s Inline
@@ -124,7 +132,8 @@ html_void =
 
 html_block : Parser s Inline
 html_block =
-    HTML <$> regex "<(\\w+)[\\s\\S]*?</\\1>"
+    regex "<(\\w+)[\\s\\S]*?</\\1>"
+        |> map HTML
 
 
 combine : Inlines -> Inlines
@@ -162,18 +171,18 @@ inlines =
     lazy <|
         \() ->
             Macro.macro
-                *> (html
-                        <|> (choice
-                                [ code
-                                , Footnote.inline
-                                , reference
-                                , formula
-                                , Effect.inline inlines
-                                , strings
-                                ]
-                                <*> (Macro.macro *> annotations)
-                            )
-                   )
+                |> keep
+                    ([ code
+                     , Footnote.inline
+                     , reference
+                     , formula
+                     , Effect.inline inlines
+                     , strings
+                     ]
+                        |> choice
+                        |> andMap (Macro.macro |> keep annotations)
+                        |> or html
+                    )
 
 
 formula : Parser s (Annotation -> Inline)
@@ -203,12 +212,14 @@ url =
 
 email : Parser s String
 email =
-    maybe (string "mailto:") *> regex "[a-zA-Z0-9_.\\-]+@[a-zA-Z0-9_.\\-]+"
+    string "mailto:"
+        |> maybe
+        |> keep (regex "[a-zA-Z0-9_.\\-]+@[a-zA-Z0-9_.\\-]+")
 
 
 inline_url : Parser s Reference
 inline_url =
-    (\u -> Link [ Chars u Nothing ] ( u, "" )) <$> url
+    map (\u -> Link [ Chars u Nothing ] ( u, "" )) url
 
 
 reference : Parser PState (Annotation -> Inline)
@@ -220,13 +231,14 @@ reference =
                     brackets (regex "[^\\]\n]*")
 
                 info2 =
-                    string "[" *> manyTill inlines (string "]")
+                    string "["
+                        |> keep (manyTill inlines (string "]"))
 
                 title =
                     optional "" (spaces *> string "\"" *> stringTill (string "\"")) <* spaces
 
                 url_1 =
-                    url <|> regex "[^\\)\n \"]*"
+                    or url (regex "[^\\)\n \"]*")
 
                 url_2 =
                     url <|> ((++) <$> withState (\s -> succeed s.defines.base) <*> regex "[^\\)\n \"]*")
@@ -252,7 +264,9 @@ reference =
                         <$> (string "!?" *> info)
                         <*> parens ((,) <$> url_2 <*> title)
             in
-            Ref <$> choice [ movie, audio, image, mail_, link ]
+            [ movie, audio, image, mail_, link ]
+                |> choice
+                |> map Ref
 
 
 arrows : Parser s (Annotation -> Inline)
@@ -301,11 +315,14 @@ between_ : String -> Parser PState Inline
 between_ str =
     lazy <|
         \() ->
-            choice
-                [ string str *> inlines <* string str
-                , (\list -> Container (combine list) Nothing)
-                    <$> (string str *> manyTill inlines (string str))
-                ]
+            [ string str
+                |> keep inlines
+                |> ignore (string str)
+            , string str
+                |> keep (manyTill inlines (string str))
+                |> map (\list -> Container (combine list) Nothing)
+            ]
+                |> choice
 
 
 strings : Parser PState (Annotation -> Inline)
@@ -314,34 +331,44 @@ strings =
         \() ->
             let
                 base =
-                    Chars <$> regex "[^*_~:;`!\\^\\[\\]|{}\\\\\\n\\-<>=$ ]+" <?> "base string"
+                    regex "[^*_~:;`!\\^\\[\\]|{}\\\\\\n\\-<>=$ ]+"
+                        |> map Chars
 
                 escape =
-                    Chars <$> (string "\\" *> regex "[\\^*_+-~`\\\\${}\\[\\]|#]") <?> "escape string"
+                    string "\\"
+                        |> keep (regex "[\\^*_+-~`\\\\${}\\[\\]|#]")
+                        |> map Chars
 
                 italic =
-                    Italic <$> (between_ "*" <|> between_ "_") <?> "italic string"
+                    or (between_ "*") (between_ "_")
+                        |> map Italic
 
                 bold =
-                    Bold <$> (between_ "**" <|> between_ "__") <?> "bold string"
+                    or (between_ "**") (between_ "__")
+                        |> map Bold
 
                 strike =
-                    Strike <$> between_ "~" <?> "striked out string"
+                    between_ "~"
+                        |> map Strike
 
                 underline =
-                    Underline <$> between_ "~~" <?> "underlined string"
+                    between_ "~~"
+                        |> map Underline
 
                 superscript =
-                    Superscript <$> between_ "^" <?> "superscript string"
+                    between_ "^"
+                        |> map Superscript
 
                 characters =
-                    Chars <$> regex "[~:_;\\-<>=${} ]"
+                    regex "[~:_;\\-<>=${} ]"
+                        |> map Chars
 
                 base2 =
-                    Chars <$> regex "[^\\n|*\\[\\]]+" <?> "base string"
+                    regex "[^\\n|*\\[\\]]+"
+                        |> map Chars
             in
             choice
-                [ Ref <$> inline_url
+                [ map Ref inline_url
                 , base
                 , arrows
                 , smileys
@@ -358,4 +385,7 @@ strings =
 
 code : Parser s (Annotation -> Inline)
 code =
-    Verbatim <$> (string "`" *> regex "[^`\\n]+" <* string "`") <?> "inline code"
+    string "`"
+        |> keep (regex "[^`\\n]+")
+        |> ignore (string "`")
+        |> map Verbatim
