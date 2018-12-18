@@ -9,7 +9,7 @@ import Lia.PState exposing (PState)
 
 title_tag : Parser PState Int
 title_tag =
-    String.length <$> regex "#+"
+    regex "#+" |> map String.length
 
 
 check : Int -> Parser s ()
@@ -23,10 +23,14 @@ check c =
 
 title_str : Parser PState Inlines
 title_str =
-    spaces *> line <* newlines1
+    ignore1_3 spaces line newlines1
 
 
 
+--line
+--|> second spaces
+--|> second newlines
+--spaces *> line <* newlines1
 -- comment : Parser a String
 -- comment =
 --     regex "<!--(.|[\\x0D\\n])*?-->"
@@ -77,12 +81,10 @@ body =
     [ regex "(?:[^`<#]+|[\\x0D\\n]+)" -- misc
     , regex "<!--[\\s\\S]*?-->" -- comment
     , regex "`{3,}[\\s\\S]*?`{3,}" -- code_block or ascii art
-
-    --, regex "`.+?`"
     , regex "<(\\w+)[\\s\\S]*?</\\1>" -- html block
     , string "`"
     , string "<"
-    , withColumn check *> string "#"
+    , ignore1_ (withColumn check) (string "#")
     ]
         |> choice
         |> many
@@ -91,10 +93,10 @@ body =
 
 section : Parser PState ( Int, Inlines, String )
 section =
-    (,,)
-        <$> title_tag
-        <*> title_str
-        <*> body
+    title_tag
+        |> map (,,)
+        |> andMap title_str
+        |> andMap body
 
 
 run : Parser PState (List ( Int, Inlines, String ))

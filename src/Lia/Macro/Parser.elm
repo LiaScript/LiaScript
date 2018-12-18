@@ -10,15 +10,21 @@ import Lia.Utils exposing (string_replace, toJSstring)
 
 pattern : Parser s String
 pattern =
-    spaces *> regex "@[\\w.]+"
+    ignore1_ spaces (regex "@[\\w.]+")
 
 
 param : Parser PState String
 param =
     toJSstring
         <$> choice
-                [ c_frame *> regex "(([^`]+|(`[^`]+)|(``[^`]+))|\\n)+" <* c_frame
-                , string "`" *> regex "[^`\\n]+" <* string "`"
+                [ ignore1_3
+                    c_frame
+                    (regex "(([^`]+|(`[^`]+)|(``[^`]+))|\\n)+")
+                    c_frame
+                , ignore1_3
+                    (string "`")
+                    (regex "[^`\\n]+")
+                    (string "`")
                 , regex "[^),]+"
                 ]
 
@@ -31,9 +37,11 @@ param_list =
 macro : Parser PState ()
 macro =
     many1
-        ((uid_macro >>= inject_macro)
-            <|> (simple_macro >>= inject_macro)
-            <|> macro_listing
+        (choice
+            [ uid_macro |> andThen inject_macro
+            , simple_macro |> andThen inject_macro
+            , macro_listing
+            ]
         )
         |> maybe
         |> skip
@@ -41,7 +49,15 @@ macro =
 
 uid_macro : Parser PState ( String, List String )
 uid_macro =
-    string "@uid" *> modifyState uid_update $> ( "@uid", [] )
+    ignore1_
+        (string "@uid")
+        (modifyState uid_update)
+        |> onsuccess ( "@uid", [] )
+
+
+onsuccess : a -> Parser s x -> Parser s a
+onsuccess res =
+    map (always res)
 
 
 uid_update : PState -> PState
@@ -55,21 +71,22 @@ uid_update state =
 
 simple_macro : Parser PState ( String, List String )
 simple_macro =
-    (,) <$> pattern <*> param_list
+    pattern
+        |> map (,)
+        |> andMap param_list
 
 
 code_block : Parser PState (List String)
 code_block =
-    String.concat
-        >> List.singleton
-        <$> manyTill
-                (maybe identation *> regex "(.(?!```))*\\n?")
-                (maybe identation *> c_frame)
+    manyTill
+        (ignore1_ (maybe identation) (regex "(.(?!```))*\\n?"))
+        (ignore1_ (maybe identation) c_frame)
+        |> map (String.concat >> List.singleton)
 
 
 macro_listing : Parser PState ()
 macro_listing =
-    (c_frame *> regex "[ \\t]*[a-zA-Z0-9_]*[ \\t]*" *> pattern)
+    (ignore1_ c_frame (regex "[ \\t]*[a-zA-Z0-9_]*[ \\t]*") *> pattern)
         >>= (\name ->
                 (param_list <* regex "[ \\t]*\\n")
                     >>= (\params ->
