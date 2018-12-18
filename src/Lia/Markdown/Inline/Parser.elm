@@ -24,9 +24,8 @@ import Lia.PState exposing (PState)
 
 comment : Parser s a -> Parser s (List a)
 comment p =
-    lazy <|
-        \() ->
-            (string "<!--" *> manyTill p (string "-->")) <?> "HTML comment"
+    string "<!--"
+        |> keep (manyTill p (string "-->"))
 
 
 comment_string : Parser s String
@@ -38,7 +37,10 @@ comment_string =
 
 comments : Parser PState ()
 comments =
-    skip (many (Effect.hidden_comment <|> skip (comment anyChar)))
+    Effect.hidden_comment
+        |> or (skip (comment anyChar))
+        |> many
+        |> skip
 
 
 attribute : Parser s ( String, String )
@@ -50,7 +52,11 @@ attribute =
 
 annotations : Parser PState Annotation
 annotations =
-    maybe (Dict.fromList >> attr_ <$> (spaces *> comment attribute)) <* comments
+    spaces
+        |> keep (comment attribute)
+        |> map (Dict.fromList >> attr_)
+        |> maybe
+        |> ignore comments
 
 
 attr_ : Dict String String -> Dict String String
@@ -68,7 +74,8 @@ attr_ dict =
 
 javascript : Parser s String
 javascript =
-    string "<script>" *> stringTill (string "</script>")
+    string "<script>"
+        |> keep (stringTill (string "</script>"))
 
 
 html : Parser PState Inline
@@ -94,42 +101,30 @@ html =
 
 html_void : Parser s Inline
 html_void =
-    lazy <|
-        \() ->
-            HTML
-                <$> choice
-                        [ regex "<area[^>\\n]*>"
-                        , regex "<base[^>\\n]*>"
-                        , regex "<br[^>\\n]*>"
-                        , regex "<col[^>\\n]*>"
-                        , regex "<embed[^>\\n]*>"
-                        , regex "<hr[^>\\n]*>"
-                        , regex "<img[^>\\n]*>"
-                        , regex "<input[^>\\n]*>"
-                        , regex "<keygen[^>\\n]*>"
-                        , regex "<link[^>\\n]*>"
-                        , regex "<menuitem[^>\\n]*>"
-                        , regex "<meta[^>\\n]*>"
-                        , regex "<param[^>\\n]*>"
-                        , regex "<source[^>\\n]*>"
-                        , regex "<track[^>\\n]*>"
-                        , regex "<wbr[^>\\n]*>"
-                        ]
+    [ regex "<area[^>\\n]*>"
+    , regex "<base[^>\\n]*>"
+    , regex "<br[^>\\n]*>"
+    , regex "<col[^>\\n]*>"
+    , regex "<embed[^>\\n]*>"
+    , regex "<hr[^>\\n]*>"
+    , regex "<img[^>\\n]*>"
+    , regex "<input[^>\\n]*>"
+    , regex "<keygen[^>\\n]*>"
+    , regex "<link[^>\\n]*>"
+    , regex "<menuitem[^>\\n]*>"
+    , regex "<meta[^>\\n]*>"
+    , regex "<param[^>\\n]*>"
+    , regex "<source[^>\\n]*>"
+    , regex "<track[^>\\n]*>"
+    , regex "<wbr[^>\\n]*>"
+    ]
+        |> choice
+        |> map HTML
 
 
 html_block : Parser s Inline
 html_block =
-    let
-        p tag =
-            (\c ->
-                String.append ("<" ++ tag) c
-                    ++ "</"
-                    ++ tag
-                    ++ ">"
-            )
-                <$> stringTill (string "</" *> string tag <* string ">")
-    in
-    HTML <$> (string "<" *> regex "\\w+" >>= p)
+    HTML <$> regex "<(\\w+)[\\s\\S]*?</\\1>"
 
 
 combine : Inlines -> Inlines
@@ -152,7 +147,9 @@ combine list =
 
 line : Parser PState Inlines
 line =
-    append_space >> combine <$> many1 inlines
+    inlines
+        |> many1
+        |> map (append_space >> combine)
 
 
 append_space : Inlines -> Inlines
