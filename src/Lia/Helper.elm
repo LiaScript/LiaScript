@@ -1,4 +1,4 @@
-module Lia.Helper exposing (ID, c_frame, ignore, ignore1_, ignore1_3, ignore_2, keep, newline, newlines, newlines1, spaces, spaces1, stringTill)
+module Lia.Helper exposing (ID, c_frame, ignore, ignore1_, ignore1_3, ignore_2, keep, newline, newlines, newlines1, onsuccess, spaces, spaces1, stringTill)
 
 import Combine exposing (..)
 import Combine.Char exposing (..)
@@ -56,16 +56,16 @@ ignore1_ p1 p2 =
 
 ignore : Parser s x -> Parser s a -> Parser s a
 ignore p1 p2 =
-    p1
-        |> map (flip always)
-        |> andMap p2
+    p2
+        |> map always
+        |> andMap p1
 
 
 keep : Parser s a -> Parser s x -> Parser s a
 keep p1 p2 =
-    p1
-        |> map always
-        |> andMap p2
+    p2
+        |> map (flip always)
+        |> andMap p1
 
 
 ignore_2 : Parser s a -> Parser s x -> Parser s a
@@ -82,6 +82,11 @@ ignore1_3 p1 p2 p3 =
         |> andMap p2
         |> map always
         |> andMap p3
+
+
+onsuccess : a -> Parser s x -> Parser s a
+onsuccess res =
+    map (always res)
 
 
 

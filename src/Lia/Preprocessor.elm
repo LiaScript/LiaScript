@@ -23,7 +23,10 @@ check c =
 
 title_str : Parser PState Inlines
 title_str =
-    ignore1_3 spaces line newlines1
+    --ignore1_3 spaces line newlines1
+    spaces
+        |> keep line
+        |> ignore newline
 
 
 
