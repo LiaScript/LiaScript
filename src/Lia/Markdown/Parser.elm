@@ -98,17 +98,6 @@ to_comment ( attr, ( id1, id2 ) ) =
         |> onsuccess (Comment ( id1, id2 ))
 
 
-
---identation_append : String -> Parser PState ()
---to_comment : Annotation -> ( Int, Int ) -> Parser PState Markdown
---to_comment attr ( id1, id2 ) =
---    modifyState
---        (\s ->
---            { s | comment_map = set_annotation id1 id2 s.comment_map attr }
---        )
---        >>= (\x -> Comment ( id1, id2 ))
-
-
 svgbob : Parser PState Markdown
 svgbob =
     md_annotations
@@ -127,15 +116,13 @@ solution =
         rslt e1 blocks_ e2 =
             ( blocks_, e2 - e1 )
     in
-    maybe
-        (rslt
-            <$> (identation
-                    *> regex "[\\t ]*\\*{3,}[\\t ]*[\\n]+"
-                    *> withState (\s -> succeed s.effect_model.effects)
-                )
-            <*> manyTill (blocks <* newlines) (identation *> regex "[ \\t]*\\*{3,}[\\t ]*")
-            <*> withState (\s -> succeed s.effect_model.effects)
-        )
+    identation
+        |> ignore (regex "[\\t ]*\\*{3,}[\\t ]*[\\n]+")
+        |> keep (withState (\s -> succeed s.effect_model.effects))
+        |> map rslt
+        |> andMap (manyTill (blocks |> ignore newlines) (identation |> ignore (regex "[ \\t]*\\*{3,}[\\t ]*")))
+        |> andMap (withState (\s -> succeed s.effect_model.effects))
+        |> maybe
 
 
 ident_blocks : Parser PState MarkdownS
@@ -144,10 +131,6 @@ ident_blocks =
         |> ignore (regex "\\n?")
         |> many1
         |> ignore identation_pop
-
-
-
---    many1 (blocks <* regex "\\n?") <* identation_pop
 
 
 unordered_list : Parser PState Markdown
@@ -166,19 +149,6 @@ unordered_list =
             )
 
 
-
-{-
-   BulletList
-       <$> md_annotations
-       <*> many1
-               (regex "[*+-] "
-                   *> (identation_append "  "
-                   *> many1 (blocks <* regex "\\n?")
-                   <* identation_pop)
-               )
--}
-
-
 ordered_list : Parser PState Markdown
 ordered_list =
     map OrderedList md_annotations
@@ -193,16 +163,6 @@ ordered_list =
                 |> ignore identation_pop
                 |> many1
             )
-
-
-
-{- OrderedList
-   <$> md_annotations
-   <*> many1
-           (regex "\\d+\\. "
-               *> (identation_append "   " *> many1 (blocks <* regex "\\n?") <* identation_pop)
-           )
--}
 
 
 horizontal_line : Parser PState Markdown
@@ -279,19 +239,6 @@ quote =
             )
 
 
-
-{-
-   Quote
-       <$> md_annotations
-       <*> (string "> "
-               *> (identation_append ">( )?"
-                       *> many1 (blocks <* maybe identation <* regex "\\n?")
-                       <* identation_pop
-                  )
-           )
--}
-
-
 md_annotations : Parser PState Annotation
 md_annotations =
     spaces
@@ -304,14 +251,3 @@ md_annotations =
                 |> maybe
             )
         |> maybe
-
-
-
-{-
-   maybe
-       (spaces
-           *> macro
-           *> (Dict.fromList <$> comment attribute)
-           <* maybe (regex "[ \\t]*\\n" <* identation)
-       )
--}
