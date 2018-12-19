@@ -47,6 +47,14 @@ stringTill p =
     String.fromList <$> manyTill anyChar p
 
 
+
+--stringTill : String -> Parser s String
+--stringTill str =
+--    (".*?" ++ str)
+--        |> regex
+--        |> map (\s -> String.dropRight (String.length str) s)
+
+
 ignore1_ : Parser s x -> Parser s a -> Parser s a
 ignore1_ p1 p2 =
     p1

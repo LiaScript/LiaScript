@@ -120,22 +120,44 @@ comment paragraph =
 
 hidden_comment : Parser PState ()
 hidden_comment =
-    skip
-        (((\i voice text ->
-            ( i, voice, [ Chars (text |> String.fromList |> String.trim) Nothing ] )
-          )
-            <$> (regex "<!--[ \\t]*--{{" *> effect_number)
-            <*> maybe
-                    (spaces1
-                        *> macro
-                        *> regex "[A-Za-z0-9 ]+"
-                    )
-            <* regex "}}--[ \\t]*"
-            <*> manyTill anyChar (string "-->")
-            <* reset_effect_number
+    regex "<!--[ \\t]*--{{"
+        |> keep effect_number
+        |> map
+            (\i voice text ->
+                ( i, voice, [ Chars (text |> String.fromList |> String.trim) Nothing ] )
+            )
+        |> andMap
+            (spaces1
+                |> keep macro
+                |> keep (regex "[A-Za-z0-9 ]+")
+                |> maybe
+            )
+        |> ignore (regex "}}--[ \\t]*")
+        |> andMap (manyTill anyChar (string "-->"))
+        |> ignore reset_effect_number
+        |> andThen (add_comment False)
+        |> skip
+
+
+
+{-
+   skip
+       (((\i voice text ->
+           ( i, voice, [ Chars (text |> String.fromList |> String.trim) Nothing ] )
          )
-            >>= add_comment False
+           <$> (regex "<!--[ \\t]*--{{" *> effect_number)
+           <*> maybe
+                   (spaces1
+                       *> macro
+                       *> regex "[A-Za-z0-9 ]+"
+                   )
+           <* regex "}}--[ \\t]*"
+           <*> manyTill anyChar (string "-->")
+           <* reset_effect_number
         )
+           >>= add_comment False
+       )
+-}
 
 
 add_comment : Bool -> ( Int, Maybe String, Inlines ) -> Parser PState ( Int, Int )
