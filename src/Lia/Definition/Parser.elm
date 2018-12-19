@@ -13,8 +13,10 @@ parse : Parser PState ()
 parse =
     lazy <|
         \() ->
-            maybe (definition *> modifyState (\s -> { s | defines_updated = True }))
-                *> whitespace
+            definition
+                |> keep (modifyState (\s -> { s | defines_updated = True }))
+                |> maybe
+                |> ignore whitespace
                 |> skip
 
 
@@ -26,32 +28,34 @@ definition =
                 list =
                     choice
                         [ string "author:"
-                            *> (ending >>= (\x -> set (\def -> { def | author = x })))
+                            |> keep (ending |> andThen (\x -> set (\def -> { def | author = x })))
                         , string "base:"
-                            *> (ending >>= (\x -> set (\def -> { def | base = x })))
+                            |> keep (ending |> andThen (\x -> set (\def -> { def | base = x })))
                         , string "comment:"
-                            *> (ending >>= (\x -> set (\def -> { def | comment = string_replace ( "\n", " " ) x })))
+                            |> keep (ending |> andThen (\x -> set (\def -> { def | comment = string_replace ( "\n", " " ) x })))
                         , string "date:"
-                            *> (ending >>= (\x -> set (\def -> { def | date = x })))
+                            |> keep (ending |> andThen (\x -> set (\def -> { def | date = x })))
                         , string "email:"
-                            *> (ending >>= (\x -> set (\def -> { def | email = x })))
+                            |> keep (ending |> andThen (\x -> set (\def -> { def | email = x })))
                         , string "language:"
-                            *> (ending >>= (\x -> set (\def -> { def | language = x })))
+                            |> keep (ending |> andThen (\x -> set (\def -> { def | language = x })))
                         , string "logo:"
-                            *> (ending >>= (\x -> set (\def -> { def | logo = x })))
+                            |> keep (ending |> andThen (\x -> set (\def -> { def | logo = x })))
                         , string "narrator:"
-                            *> (ending >>= (\x -> set (\def -> { def | narrator = x })))
+                            |> keep (ending |> andThen (\x -> set (\def -> { def | narrator = x })))
                         , string "script:"
-                            *> (ending >>= (\x -> set (\def -> { def | scripts = append_to x def.base def.scripts })))
+                            |> keep (ending |> andThen (\x -> set (\def -> { def | scripts = append_to x def.base def.scripts })))
                         , string "link:"
-                            *> (ending >>= (\x -> set (\def -> { def | links = append_to x def.base def.links })))
+                            |> keep (ending |> andThen (\x -> set (\def -> { def | links = append_to x def.base def.links })))
                         , string "translation:"
-                            *> (ending >>= (\x -> set (add_translation x)))
+                            |> keep (ending |> andThen (\x -> set (add_translation x)))
                         , string "version:"
-                            *> (ending >>= (\x -> set (\def -> { def | version = x })))
+                            |> keep (ending |> andThen (\x -> set (\def -> { def | version = x })))
                         , string "debug:"
-                            *> (ending
-                                    >>= (\x ->
+                            |> keep
+                                (ending
+                                    |> andThen
+                                        (\x ->
                                             set
                                                 (\def ->
                                                     { def
@@ -64,36 +68,37 @@ definition =
                                                     }
                                                 )
                                         )
-                               )
+                                )
                         , regex "@onload[ \\t]*\n"
-                            *> (stringTill (string "\n@end")
-                                    >>= (\x -> set (\def -> { def | onload = String.trim x }))
-                               )
-                        , ((,)
-                            <$> (Macro.pattern <* regex "[ \\t]*:[ \\t]*")
-                            <*> (regex ".+" <* newline)
-                          )
-                            >>= (\x -> set (Macro.add x))
-                        , ((,)
-                            <$> (Macro.pattern <* regex "[ \\t]*\\n")
-                            <*> stringTill (string "\n@end")
-                          )
-                            >>= (\x -> set (Macro.add x))
+                            |> keep (stringTill (string "\n@end"))
+                            |> andThen (\x -> set (\def -> { def | onload = String.trim x }))
+                        , Macro.pattern
+                            |> ignore (regex "[ \\t]*:[ \\t]*")
+                            |> map (,)
+                            |> andMap (regex ".+")
+                            |> ignore newline
+                            |> andThen (\x -> set (Macro.add x))
+                        , Macro.pattern
+                            |> ignore (regex "[ \\t]*\\n")
+                            |> map (,)
+                            |> andMap (stringTill (string "\n@end"))
+                            |> andThen (\x -> set (Macro.add x))
                         ]
             in
-            (many1 (whitespace *> list) <* whitespace)
+            (whitespace |> keep list)
+                |> many1
+                |> ignore whitespace
                 |> comment
                 |> skip
 
 
 ending : Parser PState String
 ending =
-    (\list -> list |> List.map String.trimLeft |> String.concat |> String.trimRight)
-        <$> (identation_append "  "
-                *> ident_skip
-                *> many1 (identation *> regex ".+\\n")
-                <* identation_pop
-            )
+    identation_append "  "
+        |> ignore ident_skip
+        |> keep (many1 (identation *> regex ".+\\n"))
+        |> ignore identation_pop
+        |> map (\list -> list |> List.map String.trimLeft |> String.concat |> String.trimRight)
 
 
 base : String -> Parser PState ()
