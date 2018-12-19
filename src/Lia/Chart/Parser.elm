@@ -4,6 +4,7 @@ import Combine exposing (..)
 import Combine.Num exposing (float, int)
 import Dict exposing (Dict)
 import Lia.Chart.Types exposing (..)
+import Lia.Helper exposing (..)
 import Lia.PState exposing (PState)
 import Set
 
@@ -50,12 +51,12 @@ parse =
                     (y_label |> String.concat |> String.trim)
                     x_label
     in
-    chart
-        <$> optional "" (regex "[ \\t]*[a-zA-Z0-9 .\\\\()\\-]+\\n")
-        <*> optional 1.0 (regex "[ \\t]*" *> number)
-        <*> many1 row
-        <*> optional 0.0 (regex "[ \\t]*" *> number)
-        <*> x_axis
+    optional "" (regex "[ \\t]*[a-zA-Z0-9 .\\\\()\\-]+\\n")
+        |> map chart
+        |> andMap (regex "[ \\t]*" |> keep number |> optional 1.0)
+        |> andMap (many1 row)
+        |> andMap (regex "[ \\t]*" |> keep number |> optional 0.0)
+        |> andMap x_axis
 
 
 unique : Maybe a -> List a -> Bool
@@ -102,7 +103,11 @@ row =
                 |> Dict.fromList
             )
     in
-    indexes <$> (regex "[^\\n|]*" <* string "|") <*> (regex "[ \\*a-zA-Z\\+#]*" <* regex "[ \\t]*\\n")
+    regex "[^\\n|]*"
+        |> ignore (string "|")
+        |> map indexes
+        |> andMap
+            (regex "[ \\*a-zA-Z\\+#]*" |> ignore (regex "[ \\t]*\\n"))
 
 
 segmentation : Int -> Float -> Float -> ( Float, Float )
@@ -112,13 +117,18 @@ segmentation elements i0 i1 =
 
 x_axis : Parser PState ( String, ( Float, Float ) )
 x_axis =
-    (\e x0 x_label x1 -> ( String.trim x_label, segmentation (String.length e) x0 x1 ))
-        <$> (regex "[ \\t]*\\+" *> regex "\\-+" <* regex "[ \\t]*\\n[ \\t]*")
-        <*> optional 0.0 number
-        <*> optional "" (regex "[a-zA-Z_ .\\\\()\\-]+")
-        <*> optional 1.0 (regex "[ \\t]*" *> number <* regex "[ \\t]*\\n")
+    regex "[ \\t]*\\+"
+        |> keep (regex "\\-+")
+        |> ignore (regex "[ \\t]*\\n[ \\t]*")
+        |> map (\e x0 x_label x1 -> ( String.trim x_label, segmentation (String.length e) x0 x1 ))
+        |> andMap (optional 0.0 number)
+        |> andMap (optional "" (regex "[a-zA-Z_ .\\\\()\\-]+"))
+        |> andMap (optional 1.0 (regex "[ \\t]*" |> keep number |> ignore (regex "[ \\t]*\\n")))
 
 
 number : Parser PState Float
 number =
-    float <|> (toFloat <$> (int <* optional "." (string ".")))
+    int
+        |> ignore (string "." |> optional ".")
+        |> map toFloat
+        |> or float
