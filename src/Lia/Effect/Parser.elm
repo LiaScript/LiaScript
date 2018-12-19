@@ -16,35 +16,52 @@ import Lia.PState exposing (PState, ident_skip, identation)
 
 markdown : Parser PState Markdown -> Parser PState ( Int, Int, List Markdown )
 markdown blocks =
-    (,,)
-        <$> (regex "[ \\t]*{{" *> effect_number)
-        <*> (optional 99999 (regex "[ \\t]*-[ \\t]*" *> int)
-                <* regex "}}[ \\t]*"
-                <* choice [ skip (string "\n"), ident_skip ]
+    regex "[ \\t]*{{"
+        |> keep effect_number
+        |> map (,,)
+        |> andMap
+            (regex "[ \\t]*-[ \\t]*"
+                |> keep int
+                |> optional 99999
             )
-        <*> (multi blocks <|> single blocks)
-        <* reset_effect_number
+        |> ignore (regex "}}[ \\t]*")
+        |> ignore (or (skip (string "\n")) ident_skip)
+        |> andMap (or (multi blocks) (single blocks))
+        |> ignore reset_effect_number
 
 
 single : Parser PState Markdown -> Parser PState (List Markdown)
 single blocks =
-    List.singleton <$> blocks
+    blocks
+        |> map List.singleton
 
 
 multi : Parser PState Markdown -> Parser PState (List Markdown)
 multi blocks =
     identation
-        *> regex "[\\t ]*\\*{3,}[\\n]+"
-        *> manyTill (blocks <* newlines) (regex "[\\t ]*\\*{3,}")
+        |> ignore (regex "[\\t ]*\\*{3,}[\\n]+")
+        |> keep
+            (manyTill
+                (blocks
+                    |> ignore newlines
+                )
+                (regex "[\\t ]*\\*{3,}")
+            )
 
 
 inline : Parser PState Inline -> Parser PState (Annotation -> Inline)
 inline inlines =
-    EInline
-        <$> (string "{" *> effect_number)
-        <*> (optional 99999 (regex "[\t ]*-[\t ]*" *> int) <* string "}")
-        <*> (string "{" *> manyTill inlines (string "}"))
-        <* reset_effect_number
+    string "{"
+        |> keep effect_number
+        |> map EInline
+        |> andMap
+            (regex "[\t ]*-[\t ]*"
+                |> keep int
+                |> optional 99999
+            )
+        |> ignore (string "}{")
+        |> andMap (manyTill inlines (string "}"))
+        |> ignore reset_effect_number
 
 
 effect_number : Parser PState Int
@@ -67,9 +84,9 @@ effect_number =
                         , effect_number = n :: s.effect_number
                     }
                 )
-                *> succeed n
+                |> keep (succeed n)
     in
-    int >>= state
+    int |> andThen state
 
 
 reset_effect_number : Parser PState ()
@@ -84,6 +101,15 @@ reset_effect_number =
 
 comment : Parser PState Inlines -> Parser PState ( Int, Int )
 comment paragraph =
+    {- regex "[ \\t]*--{{"
+       |> keep effect_number
+       |> map (,,)
+       |> andMap (maybe (spaces1 |> keep macro |> keep (regex "[A-Za-z0-9 ]+")))
+       |> ignore (regex "}}--[ \\t]*")
+       |> andMap (identation |> keep paragraph)
+       |> andThen (add_comment True)
+       |> ignore reset_effect_number
+    -}
     ((,,)
         <$> (regex "[ \\t]*--{{" *> effect_number)
         <*> maybe (spaces1 *> macro *> regex "[A-Za-z0-9 ]+")
