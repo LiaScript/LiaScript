@@ -12,16 +12,16 @@ import Lia.PState exposing (..)
 
 parse : Parser PState Code
 parse =
-    ((,)
-        <$> sepBy1 newline listing
-        <*> maybe
-                (regex "[ \\n]?"
-                    *> maybe identation
-                    *> macro
-                    *> javascript
-                )
-    )
-        >>= result
+    sepBy1 newline listing
+        |> map (,)
+        |> andMap
+            (regex "[ \\n]?"
+                |> ignore (maybe identation)
+                |> keep macro
+                |> keep javascript
+                |> maybe
+            )
+        |> andThen result
 
 
 result_to_highlight : ( String, String, String, Bool ) -> ( String, String, String )
@@ -44,40 +44,41 @@ result ( lst, script ) =
 
 header : Parser PState String
 header =
-    spaces *> (highlight2ace <$> regex "\\w*") <?> "language definition"
+    spaces
+        |> keep (regex "\\w*")
+        |> map highlight2ace
 
 
 title : Parser PState ( Bool, String )
 title =
-    (,)
-        <$> (spaces
-                *> optional True
-                    (choice
-                        [ True <$ string "+"
-                        , False <$ string "-"
-                        ]
-                    )
+    spaces
+        |> keep
+            (choice
+                [ string "+" |> onsuccess True
+                , string "-" |> onsuccess False
+                ]
             )
-        <*> regex ".*"
-        <* newline
-        <?> "code title"
+        |> optional True
+        |> map (,)
+        |> andMap (regex ".*")
+        |> ignore newline
 
 
 code_body : Parser PState String
 code_body =
-    String.concat
-        >> String.dropRight 1
-        <$> manyTill
-                (maybe identation *> regex "(?:.(?!```))*\\n")
-                (identation *> c_frame)
+    manyTill
+        (maybe identation |> keep (regex "(?:.(?!```))*\\n"))
+        (identation |> keep c_frame)
+        |> map (String.concat >> String.dropRight 1)
 
 
 listing : Parser PState ( String, String, String, Bool )
 listing =
-    (\h ( v, t ) c -> ( h, t, c, v ))
-        <$> (c_frame *> header)
-        <*> title
-        <*> code_body
+    c_frame
+        |> keep header
+        |> map (\h ( v, t ) c -> ( h, t, c, v ))
+        |> andMap title
+        |> andMap code_body
 
 
 toFile : ( String, String, String, Bool ) -> File
@@ -113,11 +114,11 @@ evaluate lang_title_code comment =
                         s.code_vector
             }
     in
-    withState
-        (\s ->
-            s.code_vector
-                |> Array.length
-                |> Evaluate
-                |> succeed
-        )
-        <* modifyState add_state
+    (\s ->
+        s.code_vector
+            |> Array.length
+            |> Evaluate
+            |> succeed
+    )
+        |> withState
+        |> ignore (modifyState add_state)
