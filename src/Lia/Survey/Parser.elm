@@ -12,7 +12,7 @@ import Lia.Survey.Types exposing (..)
 
 parse : Parser PState Survey
 parse =
-    survey >>= modify_PState
+    survey |> andThen modify_PState
 
 
 survey : Parser PState Survey
@@ -22,23 +22,29 @@ survey =
             succeed (Array.length par.survey_vector)
     in
     choice
-        [ Text <$> text_lines
-        , Vector False <$> vector parens
-        , Vector True <$> vector brackets
-        , Matrix False <$> header parens <*> questions
-        , Matrix True <$> header brackets <*> questions
+        [ text_lines |> map Text
+        , vector parens |> map (Vector False)
+        , vector brackets |> map (Vector True)
+        , header parens |> map (Matrix False) |> andMap questions
+        , header brackets |> map (Matrix True) |> andMap questions
         ]
-        <*> withState get_id
+        |> andMap (withState get_id)
 
 
 text_lines : Parser s Int
 text_lines =
-    List.length <$> pattern (string "[" *> many1 (regex "_{3,}[ \\t]*") <* string "]")
+    string "["
+        |> keep (many1 (regex "_{3,}[ \\t]*"))
+        |> ignore (string "]")
+        |> pattern
+        |> map List.length
 
 
 pattern : Parser s a -> Parser s a
 pattern p =
-    regex "[ \\t]*\\[" *> p <* regex "][ \\t]*"
+    regex "[ \\t]*\\["
+        |> keep p
+        |> ignore (regex "][ \\t]*")
 
 
 id_int : Parser s String
@@ -48,7 +54,8 @@ id_int =
 
 id_str : Parser s String
 id_str =
-    string ":" *> regex "[0-9a-zA-Z_ ]+"
+    string ":"
+        |> keep (regex "[0-9a-zA-Z_ ]+")
 
 
 vector : (Parser s String -> Parser PState a) -> Parser PState (List ( a, List Inline ))
@@ -57,24 +64,29 @@ vector p =
         vec x =
             many1 (question (pattern (p x)))
     in
-    vec id_int <|> vec id_str
+    or (vec id_int) (vec id_str)
 
 
 header : (Parser s String -> Parser s1 Var) -> Parser s1 (List Var)
 header p =
-    pattern
-        (choice [ many1 (p id_int), many1 (p id_str) ])
-        <* newline
+    or (many1 (p id_int)) (many1 (p id_str))
+        |> pattern
+        |> ignore newline
 
 
 questions : Parser PState MultInlines
 questions =
-    many1 (regex "[ \\t]*\\[[ \\t]+\\]" *> line <* newline)
+    regex "[ \\t]*\\[[ \\t]+\\]"
+        |> keep line
+        |> ignore newline
+        |> many1
 
 
 question : Parser PState a -> Parser PState ( a, List Inline )
 question p =
-    (,) <$> p <*> (line <* newline)
+    map (,) p
+        |> andMap line
+        |> ignore newline
 
 
 modify_PState : Survey -> Parser PState Survey
@@ -105,4 +117,4 @@ modify_PState survey_ =
                         |> Array.repeat (List.length qs)
                         |> MatrixState bool
     in
-    modifyState (add_state state) *> succeed survey_
+    modifyState (add_state state) |> keep (succeed survey_)
