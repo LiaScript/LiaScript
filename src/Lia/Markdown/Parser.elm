@@ -92,14 +92,13 @@ to_comment ( attr, ( id1, id2 ) ) =
 
 svgbob : Parser PState Markdown
 svgbob =
-    (\attr txt -> ASCII attr (txt |> String.concat |> SvgBob.init))
-        <$> md_annotations
-        <*> (regex "```[`]+\\n"
-                *> manyTill
-                    (maybe identation
-                        *> regex "(?:.(?!````))*\\n"
-                    )
-                    (identation *> regex "```[`]+")
+    md_annotations
+        |> map (\attr txt -> ASCII attr (txt |> String.concat |> SvgBob.init))
+        |> ignore (regex "```[`]+\\n")
+        |> andMap
+            (manyTill
+                (maybe identation |> keep (regex "(?:.(?!````))*\\n"))
+                (identation |> ignore (regex "```[`]+"))
             )
 
 
@@ -247,21 +246,53 @@ formated_table =
 
 quote : Parser PState Markdown
 quote =
-    Quote
-        <$> md_annotations
-        <*> (string "> "
-                *> (identation_append ">( )?"
-                        *> many1 (blocks <* maybe identation <* regex "\\n?")
-                        <* identation_pop
-                   )
+    map Quote md_annotations
+        |> andMap
+            (string "> "
+                |> ignore (identation_append "> ?")
+                |> keep
+                    (blocks
+                        |> ignore (maybe identation)
+                        |> ignore (regex "\\n?")
+                        |> many1
+                    )
+                |> ignore identation_pop
             )
+
+
+
+{-
+   Quote
+       <$> md_annotations
+       <*> (string "> "
+               *> (identation_append ">( )?"
+                       *> many1 (blocks <* maybe identation <* regex "\\n?")
+                       <* identation_pop
+                  )
+           )
+-}
 
 
 md_annotations : Parser PState Annotation
 md_annotations =
-    maybe
-        (spaces
-            *> macro
-            *> (Dict.fromList <$> comment attribute)
-            <* maybe (regex "[ \\t]*\\n" <* identation)
-        )
+    spaces
+        |> keep macro
+        |> keep (comment attribute)
+        |> map Dict.fromList
+        |> ignore
+            (regex "[ \\t]*\\n"
+                |> ignore identation
+                |> maybe
+            )
+        |> maybe
+
+
+
+{-
+   maybe
+       (spaces
+           *> macro
+           *> (Dict.fromList <$> comment attribute)
+           <* maybe (regex "[ \\t]*\\n" <* identation)
+       )
+-}
