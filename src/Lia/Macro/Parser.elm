@@ -15,16 +15,16 @@ pattern =
 
 param : Parser PState String
 param =
-    toJSstring
-        <$> choice
-                [ c_frame
-                    |> keep (regex "(([^`]+|(`[^`]+)|(``[^`]+))|\\n)+")
-                    |> ignore c_frame
-                , string "`"
-                    |> keep (regex "[^`\\n]+")
-                    |> ignore (string "`")
-                , regex "[^),]+"
-                ]
+    [ c_frame
+        |> keep (regex "(([^`]+|(`[^`]+)|(``[^`]+))|\\n)+")
+        |> ignore c_frame
+    , string "`"
+        |> keep (regex "[^`\\n]+")
+        |> ignore (string "`")
+    , regex "[^),]+"
+    ]
+        |> choice
+        |> map toJSstring
 
 
 param_list : Parser PState (List String)
@@ -86,11 +86,13 @@ macro_listing =
         |> keep (regex "[ \\t]*[a-zA-Z0-9_]*[ \\t]*")
         |> keep pattern
     )
-        >>= (\name ->
-                (param_list <* regex "[ \\t]*\\n")
-                    >>= (\params ->
-                            (List.append params <$> code_block)
-                                >>= (\p -> inject_macro ( name, p ))
+        |> andThen
+            (\name ->
+                (param_list |> ignore (regex "[ \\t]*\\n"))
+                    |> andThen
+                        (\params ->
+                            map (List.append params) code_block
+                                |> andThen (\p -> inject_macro ( name, p ))
                         )
             )
 
@@ -121,7 +123,10 @@ inject_macro ( name, params ) =
                                 ( state, 0, code_ )
                                 params
                     in
-                    modifyStream ((++) new_code) *> putState new_state *> succeed ()
+                    (++) new_code
+                        |> modifyStream
+                        |> keep (putState new_state)
+                        |> keep (succeed ())
 
                 Nothing ->
                     fail "macro definition not found"
@@ -170,7 +175,17 @@ add ( name, code ) def =
 
 macro_parse : PState -> String -> ( PState, String )
 macro_parse defines str =
-    case runParser (String.concat <$> many1 (regex "@input[^@]+" <|> macro *> regex "[^@]+")) defines str of
+    case
+        runParser
+            (macro
+                |> keep (regex "[^@]+")
+                |> or (regex "@input[^@]+")
+                |> many1
+                |> map String.concat
+            )
+            defines
+            str
+    of
         Ok ( state, _, s ) ->
             ( state, s )
 
