@@ -41,23 +41,42 @@ blocks =
             let
                 b =
                     choice
-                        [ Effect <$> md_annotations <*> Effect.markdown blocks
-                        , ((,) <$> md_annotations <*> Effect.comment paragraph) >>= to_comment
-                        , Chart <$> md_annotations <*> Chart.parse
+                        [ md_annotations
+                            |> map Effect
+                            |> andMap (Effect.markdown blocks)
+                        , md_annotations
+                            |> map (,)
+                            |> andMap (Effect.comment paragraph)
+                            |> andThen to_comment
+                        , md_annotations
+                            |> map Chart
+                            |> andMap Chart.parse
                         , formated_table
                         , simple_table
                         , svgbob
-                        , Code <$> md_annotations <*> Code.parse
+                        , md_annotations
+                            |> map Code
+                            |> andMap Code.parse
                         , quote
                         , horizontal_line
-                        , Survey <$> md_annotations <*> Survey.parse
-                        , Quiz <$> md_annotations <*> Quiz.parse <*> solution
+                        , md_annotations
+                            |> map Survey
+                            |> andMap Survey.parse
+                        , md_annotations
+                            |> map Quiz
+                            |> andMap Quiz.parse
+                            |> andMap solution
                         , ordered_list
                         , unordered_list
-                        , Paragraph <$> md_annotations <*> paragraph
+                        , md_annotations
+                            |> map Paragraph
+                            |> andMap paragraph
                         ]
             in
-            identation *> macro *> b <* maybe (whitespace *> Effect.hidden_comment)
+            identation
+                |> keep macro
+                |> keep b
+                |> ignore (maybe (whitespace |> keep Effect.hidden_comment))
 
 
 to_comment : ( Annotation, ( ID, ID ) ) -> Parser PState Markdown
@@ -76,7 +95,7 @@ to_comment ( attr, ( id1, id2 ) ) =
         Nothing ->
             succeed ()
     )
-        $> Comment ( id1, id2 )
+        |> onsuccess (Comment ( id1, id2 ))
 
 
 
