@@ -96,7 +96,7 @@ ending : Parser PState String
 ending =
     identation_append "  "
         |> ignore ident_skip
-        |> keep (many1 (identation *> regex ".+\\n"))
+        |> keep (many1 (identation |> keep (regex ".+\\n")))
         |> ignore identation_pop
         |> map (\list -> list |> List.map String.trimLeft |> String.concat |> String.trimRight)
 
