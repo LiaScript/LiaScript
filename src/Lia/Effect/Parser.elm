@@ -101,24 +101,21 @@ reset_effect_number =
 
 comment : Parser PState Inlines -> Parser PState ( Int, Int )
 comment paragraph =
-    {- regex "[ \\t]*--{{"
-       |> keep effect_number
-       |> map (,,)
-       |> andMap (maybe (spaces1 |> keep macro |> keep (regex "[A-Za-z0-9 ]+")))
-       |> ignore (regex "}}--[ \\t]*")
-       |> andMap (identation |> keep paragraph)
-       |> andThen (add_comment True)
-       |> ignore reset_effect_number
-    -}
-    ((,,)
-        <$> (regex "[ \\t]*--{{" *> effect_number)
-        <*> maybe (spaces1 *> macro *> regex "[A-Za-z0-9 ]+")
-        <* regex "}}--[ \\t]*"
-        <* maybe (newlines1 *> ident_skip)
-        <*> (identation *> paragraph)
-        <* reset_effect_number
-    )
-        >>= add_comment True
+    regex "[ \\t]*--{{"
+        |> keep effect_number
+        |> map (,,)
+        |> andMap
+            (maybe
+                (spaces1
+                    |> keep macro
+                    |> keep (regex "[A-Za-z0-9 ]+")
+                )
+            )
+        |> ignore (regex "}}--[ \\t]*")
+        |> ignore (maybe (newlines1 |> ignore ident_skip))
+        |> andMap (identation |> keep paragraph)
+        |> andThen (add_comment True)
+        |> ignore reset_effect_number
 
 
 hidden_comment : Parser PState ()
@@ -193,7 +190,9 @@ add_comment visible ( idx, temp_narrator, par ) =
         rslt id2 =
             succeed ( idx, id2 )
     in
-    (modifyState mod *> get_counter idx) >>= rslt
+    modifyState mod
+        |> keep (get_counter idx)
+        |> andThen rslt
 
 
 get_counter : Int -> Parser PState Int
