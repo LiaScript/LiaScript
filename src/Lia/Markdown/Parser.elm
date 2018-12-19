@@ -196,21 +196,27 @@ horizontal_line =
 
 paragraph : Parser PState Inlines
 paragraph =
-    ident_skip *> ((List.concat >> combine) <$> many1 (identation *> line <* newline))
+    ident_skip
+        |> keep (many1 (identation |> keep line |> ignore newline))
+        |> map (List.concat >> combine)
 
 
 table_row : Parser PState MultInlines
 table_row =
-    identation *> manyTill (string "|" *> line) (regex "\\|[ \\t]*\\n")
+    identation
+        |> keep
+            (manyTill
+                (string "|" |> keep line)
+                (regex "\\|[ \\t]*\\n")
+            )
 
 
 simple_table : Parser PState Markdown
 simple_table =
     ident_skip
-        *> ((\a b -> Table a [] [] b)
-                <$> md_annotations
-                <*> many1 table_row
-           )
+        |> keep md_annotations
+        |> map (\a b -> Table a [] [] b)
+        |> andMap (many1 table_row)
 
 
 formated_table : Parser PState Markdown
@@ -218,24 +224,25 @@ formated_table =
     let
         format =
             identation
-                *> string "|"
-                *> sepEndBy (string "|")
-                    (choice
-                        [ regex "[ \\t]*:--[\\-]+:[ \\t]*" $> "center"
-                        , regex "[ \\t]*:--[\\-]+[ \\t]*" $> "left"
-                        , regex "[ \\t]*--[\\-]+:[ \\t]*" $> "right"
-                        , regex "[ \\t]*--[\\-]+[ \\t]*" $> "left"
-                        ]
+                |> ignore (string "|")
+                |> keep
+                    (sepEndBy (string "|")
+                        (choice
+                            [ regex "[ \\t]*:-{3,}:[ \\t]*" |> onsuccess "center"
+                            , regex "[ \\t]*:-{3,}[ \\t]*" |> onsuccess "left"
+                            , regex "[ \\t]*-{3,}:[ \\t]*" |> onsuccess "right"
+                            , regex "[ \\t]*-{3,}[ \\t]*" |> onsuccess "left"
+                            ]
+                        )
                     )
-                <* regex "[ \\t]*\\n"
+                |> ignore (regex "[ \\t]*\\n")
     in
     ident_skip
-        *> (Table
-                <$> md_annotations
-                <*> table_row
-                <*> format
-                <*> many table_row
-           )
+        |> keep md_annotations
+        |> map Table
+        |> andMap table_row
+        |> andMap format
+        |> andMap (many table_row)
 
 
 quote : Parser PState Markdown
