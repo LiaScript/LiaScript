@@ -20,12 +20,16 @@ import SvgBob
 
 run : Parser PState (List Markdown)
 run =
-    many (footnotes *> blocks <* newlines) <* footnotes
+    footnotes
+        |> keep blocks
+        |> ignore newlines
+        |> many
+        |> ignore footnotes
 
 
 footnotes : Parser PState ()
 footnotes =
-    (Footnote.block ident_blocks <* newlines)
+    (Footnote.block ident_blocks |> ignore newlines)
         |> many
         |> skip
 
@@ -118,32 +122,76 @@ solution =
 
 ident_blocks : Parser PState MarkdownS
 ident_blocks =
-    many1 (blocks <* regex "\\n?") <* identation_pop
+    blocks
+        |> ignore (regex "\\n?")
+        |> many1
+        |> ignore identation_pop
+
+
+
+--    many1 (blocks <* regex "\\n?") <* identation_pop
 
 
 unordered_list : Parser PState Markdown
 unordered_list =
-    BulletList
-        <$> md_annotations
-        <*> many1
-                (regex "[*+-] "
-                    *> (identation_append "  " *> many1 (blocks <* regex "\\n?") <* identation_pop)
-                )
+    map BulletList md_annotations
+        |> andMap
+            (regex "[*+-] "
+                |> ignore (identation_append "  ")
+                |> keep
+                    (blocks
+                        |> ignore (regex "\\n?")
+                        |> many1
+                    )
+                |> ignore identation_pop
+                |> many1
+            )
+
+
+
+{-
+   BulletList
+       <$> md_annotations
+       <*> many1
+               (regex "[*+-] "
+                   *> (identation_append "  "
+                   *> many1 (blocks <* regex "\\n?")
+                   <* identation_pop)
+               )
+-}
 
 
 ordered_list : Parser PState Markdown
 ordered_list =
-    OrderedList
-        <$> md_annotations
-        <*> many1
-                (regex "\\d+\\. "
-                    *> (identation_append "   " *> many1 (blocks <* regex "\\n?") <* identation_pop)
-                )
+    map OrderedList md_annotations
+        |> andMap
+            (regex "\\d+\\. "
+                |> ignore (identation_append "   ")
+                |> keep
+                    (blocks
+                        |> ignore (regex "\\n?")
+                        |> many1
+                    )
+                |> ignore identation_pop
+                |> many1
+            )
+
+
+
+{- OrderedList
+   <$> md_annotations
+   <*> many1
+           (regex "\\d+\\. "
+               *> (identation_append "   " *> many1 (blocks <* regex "\\n?") <* identation_pop)
+           )
+-}
 
 
 horizontal_line : Parser PState Markdown
 horizontal_line =
-    HLine <$> md_annotations <* regex "-{3,}"
+    md_annotations
+        |> ignore (regex "-{3,}")
+        |> map HLine
 
 
 paragraph : Parser PState Inlines
