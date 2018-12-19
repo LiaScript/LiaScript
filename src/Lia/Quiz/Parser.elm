@@ -12,16 +12,24 @@ import Lia.Quiz.Types exposing (Hints, Quiz(..), Solution(..), State(..), Vector
 
 parse : Parser PState Quiz
 parse =
-    quiz >>= modify_PState
+    quiz |> andThen modify_PState
 
 
 quiz : Parser PState Quiz
 quiz =
-    choice [ single_choice, multi_choice, empty, text ]
-        <*> get_counter
-        <*> hints
-        <*> (macro
-                *> maybe (spaces *> javascript <* newline)
+    [ single_choice, multi_choice, empty, text ]
+        |> choice
+        |> andMap get_counter
+        |> andMap hints
+        |> andMap
+            (macro
+                |> keep
+                    (maybe
+                        (spaces
+                            |> keep javascript
+                            |> ignore newline
+                        )
+                    )
             )
 
 
@@ -32,29 +40,42 @@ get_counter =
 
 pattern : Parser s a -> Parser s a
 pattern p =
-    regex "[ \\t]*\\[" *> p <* regex "\\][ \\t]*"
+    regex "[ \\t]*\\["
+        |> keep p
+        |> ignore (regex "\\][ \\t]*")
 
 
 quest : Parser PState a -> Parser PState Inlines
 quest p =
-    pattern p *> line <* newline
+    pattern p
+        |> keep line
+        |> ignore newline
 
 
 empty : Parser PState (ID -> Hints -> Maybe String -> Quiz)
 empty =
-    (spaces *> string "[[!]]" *> newline) $> Empty
+    spaces
+        |> ignore (string "[[!]]")
+        |> ignore newline
+        |> onsuccess Empty
 
 
 text : Parser PState (ID -> Hints -> Maybe String -> Quiz)
 text =
-    Text <$> pattern (string "[" *> regex "[^\n\\]]+" <* regex "\\][ \\t]*") <* newline
+    string "["
+        |> keep (regex "[^\n\\]]+")
+        |> ignore (regex "\\][ \\t]*")
+        |> pattern
+        |> ignore newline
+        |> map Text
 
 
 multi_choice : Parser PState (ID -> Hints -> Maybe String -> Quiz)
 multi_choice =
     let
         checked b p =
-            (\l -> ( b, l )) <$> quest p
+            quest p
+                |> map (\l -> ( b, l ))
 
         gen m =
             let
@@ -63,13 +84,12 @@ multi_choice =
             in
             MultipleChoice (Array.fromList list) questions
     in
-    gen
-        <$> many1
-                (choice
-                    [ checked True (string "[X]")
-                    , checked False (string "[ ]")
-                    ]
-                )
+    [ checked True (string "[X]")
+    , checked False (string "[ ]")
+    ]
+        |> choice
+        |> many1
+        |> map gen
 
 
 single_choice : Parser PState (ID -> Hints -> Maybe String -> Quiz)
@@ -86,7 +106,9 @@ single_choice =
                 (List.length wrong1)
                 (c :: wrong2 |> List.append wrong1)
     in
-    par <$> wrong <*> correct <*> wrong
+    map par wrong
+        |> andMap correct
+        |> andMap wrong
 
 
 hints : Parser PState MultInlines
@@ -119,4 +141,5 @@ modify_PState quiz_ =
                 MultipleChoice x _ _ _ _ ->
                     MultipleChoiceState (Array.repeat (Array.length x) False)
     in
-    modifyState (add_state state) *> succeed quiz_
+    modifyState (add_state state)
+        |> keep (succeed quiz_)
