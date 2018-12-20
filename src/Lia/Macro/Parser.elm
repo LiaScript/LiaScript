@@ -19,7 +19,7 @@ param =
         |> keep (regex "(([^`]+|(`[^`]+)|(``[^`]+))|\\n)+")
         |> ignore c_frame
     , string "`"
-        |> keep (regex "[^`\\n]+")
+        |> keep (regex "[^`\n]+")
         |> ignore (string "`")
     , regex "[^),]+"
     ]
@@ -83,12 +83,12 @@ code_block =
 macro_listing : Parser PState ()
 macro_listing =
     (c_frame
-        |> keep (regex "[ \\t]*[a-zA-Z0-9_]*[ \\t]*")
+        |> keep (regex "[ \t]*[a-zA-Z0-9_]*[ \t]*")
         |> keep pattern
     )
         |> andThen
             (\name ->
-                (param_list |> ignore (regex "[ \\t]*\\n"))
+                (param_list |> ignore (regex "[ \t]*\\n"))
                     |> andThen
                         (\params ->
                             map (List.append params) code_block

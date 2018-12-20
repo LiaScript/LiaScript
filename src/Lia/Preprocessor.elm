@@ -81,7 +81,7 @@ title_str =
 
 body : Parser PState String
 body =
-    [ regex "(?:[^`<#]+|[\\x0D\\n]+)" -- misc
+    [ regex "(?:[^`<#]+|[\\x0D\n]+)" -- misc
     , regex "<!--[\\s\\S]*?-->" -- comment
     , regex "`{3,}[\\s\\S]*?`{3,}" -- code_block or ascii art
     , regex "<(\\w+)[\\s\\S]*?</\\1>" -- html block

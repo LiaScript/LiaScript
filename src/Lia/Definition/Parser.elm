@@ -69,17 +69,17 @@ definition =
                                                 )
                                         )
                                 )
-                        , regex "@onload[ \\t]*\n"
+                        , regex "@onload[ \t]*\\n"
                             |> keep (stringTill (string "\n@end"))
                             |> andThen (\x -> set (\def -> { def | onload = String.trim x }))
                         , Macro.pattern
-                            |> ignore (regex "[ \\t]*:[ \\t]*")
+                            |> ignore (regex "[ \t]*:[ \t]*")
                             |> map (,)
                             |> andMap (regex ".+")
                             |> ignore newline
                             |> andThen (\x -> set (Macro.add x))
                         , Macro.pattern
-                            |> ignore (regex "[ \\t]*\\n")
+                            |> ignore (regex "[ \t]*\\n")
                             |> map (,)
                             |> andMap (stringTill (string "\n@end"))
                             |> andThen (\x -> set (Macro.add x))

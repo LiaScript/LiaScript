@@ -16,15 +16,15 @@ import Lia.PState exposing (PState, ident_skip, identation)
 
 markdown : Parser PState Markdown -> Parser PState ( Int, Int, List Markdown )
 markdown blocks =
-    regex "[ \\t]*{{"
+    regex "[ \t]*{{"
         |> keep effect_number
         |> map (,,)
         |> andMap
-            (regex "[ \\t]*-[ \\t]*"
+            (regex "[ \t]*-[ \t]*"
                 |> keep int
                 |> optional 99999
             )
-        |> ignore (regex "}}[ \\t]*")
+        |> ignore (regex "}}[ \t]*")
         |> ignore (or (skip (string "\n")) ident_skip)
         |> andMap (or (multi blocks) (single blocks))
         |> ignore reset_effect_number
@@ -39,13 +39,13 @@ single blocks =
 multi : Parser PState Markdown -> Parser PState (List Markdown)
 multi blocks =
     identation
-        |> ignore (regex "[\\t ]*\\*{3,}[\\n]+")
+        |> ignore (regex "[ \t]*\\*{3,}\\n+")
         |> keep
             (manyTill
                 (blocks
                     |> ignore newlines
                 )
-                (regex "[\\t ]*\\*{3,}")
+                (regex "[ \t]*\\*{3,}")
             )
 
 
@@ -55,7 +55,7 @@ inline inlines =
         |> keep effect_number
         |> map EInline
         |> andMap
-            (regex "[\t ]*-[\t ]*"
+            (regex "[ \t]*-[ \t]*"
                 |> keep int
                 |> optional 99999
             )
@@ -101,7 +101,7 @@ reset_effect_number =
 
 comment : Parser PState Inlines -> Parser PState ( Int, Int )
 comment paragraph =
-    regex "[ \\t]*--{{"
+    regex "[ \t]*--{{"
         |> keep effect_number
         |> map (,,)
         |> andMap
@@ -111,7 +111,7 @@ comment paragraph =
                     |> keep (regex "[A-Za-z0-9 ]+")
                 )
             )
-        |> ignore (regex "}}--[ \\t]*")
+        |> ignore (regex "}}--[ \t]*")
         |> ignore (maybe (newlines1 |> ignore ident_skip))
         |> andMap (identation |> keep paragraph)
         |> andThen (add_comment True)
@@ -120,7 +120,7 @@ comment paragraph =
 
 hidden_comment : Parser PState ()
 hidden_comment =
-    regex "<!--[ \\t]*--{{"
+    regex "<!--[ \t]*--{{"
         |> keep effect_number
         |> map
             (\i voice text ->
@@ -132,32 +132,11 @@ hidden_comment =
                 |> keep (regex "[A-Za-z0-9 ]+")
                 |> maybe
             )
-        |> ignore (regex "}}--[ \\t]*")
+        |> ignore (regex "}}--[ \t]*")
         |> andMap (manyTill anyChar (string "-->"))
         |> ignore reset_effect_number
         |> andThen (add_comment False)
         |> skip
-
-
-
-{-
-   skip
-       (((\i voice text ->
-           ( i, voice, [ Chars (text |> String.fromList |> String.trim) Nothing ] )
-         )
-           <$> (regex "<!--[ \\t]*--{{" *> effect_number)
-           <*> maybe
-                   (spaces1
-                       *> macro
-                       *> regex "[A-Za-z0-9 ]+"
-                   )
-           <* regex "}}--[ \\t]*"
-           <*> manyTill anyChar (string "-->")
-           <* reset_effect_number
-        )
-           >>= add_comment False
-       )
--}
 
 
 add_comment : Bool -> ( Int, Maybe String, Inlines ) -> Parser PState ( Int, Int )

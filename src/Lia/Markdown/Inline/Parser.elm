@@ -47,9 +47,9 @@ attribute : Parser s ( String, String )
 attribute =
     whitespace
         |> keep (regex "\\w+")
-        |> ignore (regex "[ \\t\\n]*=[ \\t\\n]*\"")
+        |> ignore (regex "[ \t\n]*=[ \t\n]*\"")
         |> map (\k v -> ( String.toLower k, v ))
-        |> andMap (stringTill (regex "\"[ \\t\\n]*"))
+        |> andMap (stringTill (regex "\"[ \t\n]*"))
 
 
 annotations : Parser PState Annotation
@@ -207,7 +207,7 @@ formula_block =
 
 url : Parser s String
 url =
-    regex "[a-zA-Z]+://(/)?[a-zA-Z0-9\\.\\-\\_]+\\.([a-z\\.]{2,6})[^ \\]\\)\\t\\n]*"
+    regex "[a-zA-Z]+://(/)?[a-zA-Z0-9\\.\\-\\_]+\\.([a-z\\.]{2,6})[^ \\]\\)\t\n]*"
 
 
 email : Parser s String

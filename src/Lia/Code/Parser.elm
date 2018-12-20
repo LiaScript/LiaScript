@@ -15,7 +15,7 @@ parse =
     sepBy1 newline listing
         |> map (,)
         |> andMap
-            (regex "[ \\n]?"
+            (regex "[ \n]?"
                 |> ignore (maybe identation)
                 |> keep macro
                 |> keep javascript

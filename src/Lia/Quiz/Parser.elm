@@ -40,9 +40,9 @@ get_counter =
 
 pattern : Parser s a -> Parser s a
 pattern p =
-    regex "[ \\t]*\\["
+    regex "[ \t]*\\["
         |> keep p
-        |> ignore (regex "\\][ \\t]*")
+        |> ignore (regex "\\][ \t]*")
 
 
 quest : Parser PState a -> Parser PState Inlines
@@ -64,7 +64,7 @@ text : Parser PState (ID -> Hints -> Maybe String -> Quiz)
 text =
     string "["
         |> keep (regex "[^\n\\]]+")
-        |> ignore (regex "\\][ \\t]*")
+        |> ignore (regex "\\][ \t]*")
         |> pattern
         |> ignore newline
         |> map Text

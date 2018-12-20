@@ -117,10 +117,10 @@ solution =
             ( blocks_, e2 - e1 )
     in
     identation
-        |> ignore (regex "[\\t ]*\\*{3,}[\\t ]*[\\n]+")
+        |> ignore (regex "[ \t]*\\*{3,}[ \t]*\\n+")
         |> keep (withState (\s -> succeed s.effect_model.effects))
         |> map rslt
-        |> andMap (manyTill (blocks |> ignore newlines) (identation |> ignore (regex "[ \\t]*\\*{3,}[\\t ]*")))
+        |> andMap (manyTill (blocks |> ignore newlines) (identation |> ignore (regex "[ \t]*\\*{3,}[ \t]*")))
         |> andMap (withState (\s -> succeed s.effect_model.effects))
         |> maybe
 
@@ -185,7 +185,7 @@ table_row =
         |> keep
             (manyTill
                 (string "|" |> keep line)
-                (regex "\\|[ \\t]*\\n")
+                (regex "\\|[ \t]*\\n")
             )
 
 
@@ -206,14 +206,14 @@ formated_table =
                 |> keep
                     (sepEndBy (string "|")
                         (choice
-                            [ regex "[ \\t]*:-{3,}:[ \\t]*" |> onsuccess "center"
-                            , regex "[ \\t]*:-{3,}[ \\t]*" |> onsuccess "left"
-                            , regex "[ \\t]*-{3,}:[ \\t]*" |> onsuccess "right"
-                            , regex "[ \\t]*-{3,}[ \\t]*" |> onsuccess "left"
+                            [ regex "[ \t]*:-{3,}:[ \t]*" |> onsuccess "center"
+                            , regex "[ \t]*:-{3,}[ \t]*" |> onsuccess "left"
+                            , regex "[ \t]*-{3,}:[ \t]*" |> onsuccess "right"
+                            , regex "[ \t]*-{3,}[ \t]*" |> onsuccess "left"
                             ]
                         )
                     )
-                |> ignore (regex "[ \\t]*\\n")
+                |> ignore (regex "[ \t]*\\n")
     in
     ident_skip
         |> keep md_annotations
@@ -246,7 +246,7 @@ md_annotations =
         |> keep (comment attribute)
         |> map Dict.fromList
         |> ignore
-            (regex "[ \\t]*\\n"
+            (regex "[ \t]*\\n"
                 |> ignore identation
                 |> maybe
             )
