@@ -170,19 +170,19 @@ inlines : Parser PState Inline
 inlines =
     lazy <|
         \() ->
-            ignore1_
-                Macro.macro
-                ([ code
-                 , Footnote.inline
-                 , reference
-                 , formula
-                 , Effect.inline inlines
-                 , strings
-                 ]
-                    |> choice
-                    |> andMap (Macro.macro |> keep annotations)
-                    |> or html
-                )
+            Macro.macro
+                |> keep
+                    ([ code
+                     , Footnote.inline
+                     , reference
+                     , formula
+                     , Effect.inline inlines
+                     , strings
+                     ]
+                        |> choice
+                        |> andMap (Macro.macro |> keep annotations)
+                        |> or html
+                    )
 
 
 formula : Parser s (Annotation -> Inline)

@@ -39,7 +39,7 @@ parse_section : Definition -> String -> Int -> Result String ( List Markdown, Co
 parse_section global code sec_id =
     case
         Combine.runParser
-            (Lia.Definition.Parser.parse *> Markdown.run)
+            (Lia.Definition.Parser.parse |> keep Markdown.run)
             (Lia.PState.init { global | section = sec_id })
             code
     of

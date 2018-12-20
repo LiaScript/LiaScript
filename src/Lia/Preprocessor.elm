@@ -87,7 +87,7 @@ body =
     , regex "<(\\w+)[\\s\\S]*?</\\1>" -- html block
     , string "`"
     , string "<"
-    , ignore1_ (withColumn check) (string "#")
+    , withColumn check |> keep (string "#")
     ]
         |> choice
         |> many

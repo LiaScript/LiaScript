@@ -63,7 +63,8 @@ identation =
                             |> regex
                             |> skip
             in
-            withState par <* modifyState (\s -> { s | identation_skip = False })
+            withState par
+                |> ignore (modifyState (\s -> { s | identation_skip = False }))
 
 
 identation_append : String -> Parser PState ()
