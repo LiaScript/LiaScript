@@ -51,11 +51,11 @@ parse =
                     (y_label |> String.concat |> String.trim)
                     x_label
     in
-    optional "" (regex "[ \t]*[a-zA-Z0-9 .\\\\()\\-]+\\n")
+    optional "" (regex "[\t ]*[a-zA-Z0-9 .\\\\()\\-]+\\n")
         |> map chart
-        |> andMap (regex "[ \t]*" |> keep number |> optional 1.0)
+        |> andMap (regex "[\t ]*" |> keep number |> optional 1.0)
         |> andMap (many1 row)
-        |> andMap (regex "[ \t]*" |> keep number |> optional 0.0)
+        |> andMap (regex "[\t ]*" |> keep number |> optional 0.0)
         |> andMap x_axis
 
 
@@ -103,11 +103,11 @@ row =
                 |> Dict.fromList
             )
     in
-    regex "[^\\n|]*"
+    regex "[^\n|]*"
         |> ignore (string "|")
         |> map indexes
         |> andMap
-            (regex "[ \\*a-zA-Z\\+#]*" |> ignore (regex "[ \t]*\\n"))
+            (regex "[ \\*a-zA-Z\\+#]*" |> ignore (regex "[\t ]*\\n"))
 
 
 segmentation : Int -> Float -> Float -> ( Float, Float )
@@ -117,13 +117,13 @@ segmentation elements i0 i1 =
 
 x_axis : Parser PState ( String, ( Float, Float ) )
 x_axis =
-    regex "[ \t]*\\+"
+    regex "[\t ]*\\+"
         |> keep (regex "\\-+")
-        |> ignore (regex "[ \t]*\\n[ \t]*")
+        |> ignore (regex "[\t ]*\\n[\t ]*")
         |> map (\e x0 x_label x1 -> ( String.trim x_label, segmentation (String.length e) x0 x1 ))
         |> andMap (optional 0.0 number)
         |> andMap (optional "" (regex "[a-zA-Z_ .\\\\()\\-]+"))
-        |> andMap (optional 1.0 (regex "[ \t]*" |> keep number |> ignore (regex "[ \t]*\\n")))
+        |> andMap (optional 1.0 (regex "[\t ]*" |> keep number |> ignore (regex "[\t ]*\\n")))
 
 
 number : Parser PState Float

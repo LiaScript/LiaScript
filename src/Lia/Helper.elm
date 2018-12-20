@@ -34,12 +34,12 @@ newlines1 =
 
 spaces : Parser s String
 spaces =
-    regex "[ \\t]*"
+    regex "[ \t]*"
 
 
 spaces1 : Parser s String
 spaces1 =
-    regex "[ \\t]+"
+    regex "[ \t]+"
 
 
 stringTill : Parser s p -> Parser s String

@@ -1,15 +1,14 @@
-module Main exposing (..)
+module Main exposing (input, main, suite)
 
 import Benchmark exposing (Benchmark)
 import Benchmark.Runner exposing (BenchmarkProgram, program)
 import Combine exposing (..)
-import Lia.Inline.Parser exposing (..)
-import Readme
+import Combine.Char exposing (..)
 import Time
 
 
 input =
-    """
+    """          asdfasdf            asdadsfa
 
 # tester hh123
 
@@ -17,50 +16,23 @@ input =
 """
 
 
-title_tag : Parser s Int
-title_tag =
-    String.length <$> (newlines *> regex "#+" <* whitespace)
-
-
-title_str1 : Parser s String
-title_str1 =
-    String.trim <$> regex ".+[\\n]+"
-
-
-title_str2 : Parser s String
-title_str2 =
-    String.trim <$> regex ".+" <* many1 newline
-
-
-pp1 : Parser s String
-pp1 =
-    let
-        p1 =
-            String.length <$> (newlines *> regex "#+" <* whitespace)
-
-        p2 =
-            String.trim <$> regex ".+[\\n]+"
-    in
-    p1 *> p2
-
-
 suite : Benchmark
 suite =
     let
+        spaces =
+            regex "[ \t]*"
+
         p1 =
-            parse (title_tag *> title_str1)
+            parse (regex "[\t ]*\\w+[\t ]*" |> map String.trim)
 
         p2 =
-            parse (title_tag *> title_str2)
-
-        p11 =
-            parse pp1
+            parse (regex "[ \t]*\\w+[ \t]*" |> map String.trim)
     in
-    Benchmark.compare "regex"
-        (Benchmark.benchmark1 "regex" p1 input)
+    Benchmark.compare "character parse"
+        (Benchmark.benchmark1 "char" p1 input)
         --(Benchmark.benchmark1 "many1" p2 input)
-        (Benchmark.benchmark1 "regex let" p11 input)
-        |> Benchmark.withRuntime (200 * Time.second)
+        (Benchmark.benchmark1 "string" p2 input)
+        |> Benchmark.withRuntime (60 * Time.second)
 
 
 main : BenchmarkProgram

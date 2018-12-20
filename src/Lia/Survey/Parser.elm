@@ -34,7 +34,7 @@ survey =
 text_lines : Parser s Int
 text_lines =
     string "["
-        |> keep (many1 (regex "_{3,}[ \t]*"))
+        |> keep (many1 (regex "_{3,}[\t ]*"))
         |> ignore (string "]")
         |> pattern
         |> map List.length
@@ -42,9 +42,9 @@ text_lines =
 
 pattern : Parser s a -> Parser s a
 pattern p =
-    regex "[ \t]*\\["
+    regex "[\t ]*\\["
         |> keep p
-        |> ignore (regex "][ \t]*")
+        |> ignore (regex "][\t ]*")
 
 
 id_int : Parser s String
@@ -76,7 +76,7 @@ header p =
 
 questions : Parser PState MultInlines
 questions =
-    regex "[ \t]*\\[[ \t]+\\]"
+    regex "[\t ]*\\[[\t ]+\\]"
         |> keep line
         |> ignore newline
         |> many1

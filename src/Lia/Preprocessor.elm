@@ -23,60 +23,7 @@ check c =
 
 title_str : Parser PState Inlines
 title_str =
-    --ignore1_3 spaces line newlines1
-    spaces
-        |> keep line
-        |> ignore newline
-
-
-
---line
---|> second spaces
---|> second newlines
---spaces *> line <* newlines1
--- comment : Parser a String
--- comment =
---     regex "<!--(.|[\\x0D\\n])*?-->"
---
---
--- misc : Parser a String
--- misc =
---     regex "([^`<#]+|[\\x0D\\n]+)"
---         <|> (withColumn check *> string "#")
---
---
--- misc2 : Parser a String
--- misc2 =
---     regex "[<`]"
---
---
--- code_block : Parser a String
--- code_block =
---     regex "`{3,}([^`]*(`[^`])*(``[^`])*[\\x0D\\n])*`{3,}"
---
---
---
--- --regex "```[`]*((.|\\n)(?!```[`]*))*"
---
---
--- code_inline : Parser a String
--- code_inline =
---     regex "`.*?`"
---
---
--- html_block : Parser a String
--- html_block =
---     string "<" *> regex "\\w+" >>= html_
---
---
--- html_ tag =
---     (\c ->
---         String.append ("<" ++ tag) c
---             ++ "</"
---             ++ tag
---             ++ ">"
---     )
---         <$> stringTill (string "</" *> string tag <* string ">")
+    line |> ignore newline
 
 
 body : Parser PState String
