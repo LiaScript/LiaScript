@@ -10,36 +10,32 @@ type alias ID =
 
 c_frame : Parser s String
 c_frame =
-    --regex "`{3,}"
     string "```"
 
 
-newline : Parser s Char
+newline : Parser s String
 newline =
-    --(char '\n' <|> eol) |> skip
-    char '\n'
+    string "\n"
 
 
 newlines : Parser s String
 newlines =
-    --many newline |> skip
     regex "\\n*"
 
 
 newlines1 : Parser s String
 newlines1 =
-    --many newline |> skip
     regex "\\n+"
 
 
 spaces : Parser s String
 spaces =
-    regex "[ \t]*"
+    regex "[\t ]*"
 
 
 spaces1 : Parser s String
 spaces1 =
-    regex "[ \t]+"
+    regex "[\t ]+"
 
 
 stringTill : Parser s p -> Parser s String
