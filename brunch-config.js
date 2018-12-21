@@ -7,7 +7,8 @@ module.exports = {
                 "src",
                 "lib",
                 "examples",
-                "scss"
+                "scss",
+                "webcomponents"
             ],
         },
         files: {
@@ -48,7 +49,7 @@ module.exports = {
             },
             copycat: {
                 "css/fonts": [
-                    "node_modules/katex/dist/fonts/",
+                    //"node_modules/katex/dist/fonts/",
                     "vendor/material_icons/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2",
                     "vendor/roboto/fonts"
                 ],
@@ -62,6 +63,9 @@ module.exports = {
                 ],
                 "js/ace": [
                     "vendor/ace"
+                ],
+                "webcomponents" : [
+                    "webcomponents"
                 ],
                 verbose: false,
                 onlyChanged: true,
@@ -79,10 +83,10 @@ module.exports = {
             styles: {
                 "normalize.css": ["normalize.css"],
                 "animate.css": ["animate.css"],
-                "katex": ["dist/katex.css"]
+                //"katex": ["dist/katex.css"]
             },
             static: [
-                "node_modules/katex/dist/katex.js"
+                //"node_modules/katex/dist/katex.js"
             ],
         },
     }

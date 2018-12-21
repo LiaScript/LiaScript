@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <script type="text/javascript" src='js/responsivevoice.js'></script>
+    <!--script type="text/javascript" src='js/responsivevoice.js'></script>
 
     <script type="text/javascript" src="js/vendor.js"></script>
     <script type="text/javascript" src="js/app.js"></script>
@@ -17,8 +17,11 @@
     <link rel="stylesheet" href="css/vendor.css">
     <link rel="stylesheet" href="css/app.css">
     <link rel="stylesheet" href="css/material.css">
-    <link rel="stylesheet" href="css/roboto.css">
+    <link rel="stylesheet" href="css/roboto.css"-->
 
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/1.0.14/webcomponents-hi.js"></script>
+    <link rel="import" href="webcomponents/KatexFormula/KatexFormula.html">
 
     <!-- Favicons -->
     <link rel="apple-touch-icon" href="logo.png">
@@ -55,8 +58,15 @@
     <title>Lia Script</title>
   </head>
   <body>
-    <script>
+  <!--script>
       var lia = new LiaScript(document.body, "");
-    </script>
+    </script-->
+
+
+
+    <katex-formula>
+      \sum_{i=1}^\infty\frac{1}{n^2} =\frac{\pi^2}{6}
+    </katex-formula>
+
   </body>
 </html>
