@@ -1,4 +1,4 @@
-const currentDocument = document.currentScript.ownerDocument;
+//const currentDocument = document.currentScript.ownerDocument;
 
 
 class KatexFormula extends HTMLElement {
@@ -6,9 +6,9 @@ class KatexFormula extends HTMLElement {
     // If you define a constructor, always call super() first as it is required by the CE spec.
     super();
 
-    this.formula = this.childNodes[0].data;
+    //console.log(this.innerHTML);
 
-    //this.innerHTML = '';
+    this.formula = this.innerText;
   }
 
   render(formula, displayMode) {
@@ -26,8 +26,9 @@ class KatexFormula extends HTMLElement {
 
     // Select the template and clone it. Finally attach the cloned node to the shadowDOM's root.
     // Current document needs to be defined to get DOM access to imported HTML
-    const template = currentDocument.querySelector('#katex-formula-template');
+    const template = this.createNameTagTemplate("asdfads");
     const instance = template.content.cloneNode(true);
+
     shadowRoot.appendChild(instance);
 
     let displayMode = this.getAttribute('displayMode');
@@ -36,6 +37,14 @@ class KatexFormula extends HTMLElement {
     }
 
     this.render(this.formula, displayMode);
+  }
+
+  createNameTagTemplate(name)
+  {
+     var templateNode = document.createElement("template");
+     templateNode.innerHTML = `<!--link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css"-->
+       <span class="formula__katex-formula-container"></span>`;
+      return templateNode;
   }
 }
 
