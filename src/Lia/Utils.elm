@@ -1,6 +1,5 @@
 module Lia.Utils exposing
     ( evaluateJS
-    , formula
     , scrollIntoView
     , stringToHtml
     , string_replace
@@ -12,11 +11,6 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Encode
 import Native.Utils
-
-
-formula : Bool -> String -> Html msg
-formula displayMode string =
-    stringToHtml <| Native.Utils.formula displayMode string
 
 
 evaluateJS : String -> Result String String

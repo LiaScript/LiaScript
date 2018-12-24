@@ -195,14 +195,14 @@ formula_inline =
     string "$"
         |> keep (regex "[^\\n$]+")
         |> ignore (string "$")
-        |> map (Formula False)
+        |> map (Formula "false")
 
 
 formula_block : Parser s (Annotation -> Inline)
 formula_block =
     string "$$"
         |> keep (stringTill (string "$$"))
-        |> map (Formula True)
+        |> map (Formula "true")
 
 
 url : Parser s String

@@ -1,18 +1,16 @@
-//const currentDocument = document.currentScript.ownerDocument;
+const currentDocument = document.currentScript.ownerDocument;
 
 
 class KatexFormula extends HTMLElement {
   constructor() {
     // If you define a constructor, always call super() first as it is required by the CE spec.
     super();
-
-    //console.log(this.innerHTML);
-
-    this.formula = this.innerText;
   }
 
-  render(formula, displayMode) {
-    let element = this.shadowRoot.querySelector('.formula__katex-formula-container');
+  render(element, formula, displayMode) {
+    //let element = this.shadowRoot.get;
+
+    console.log(formula)
 
     katex.render(formula, element, {
     throwOnError: false,
@@ -24,27 +22,28 @@ class KatexFormula extends HTMLElement {
   connectedCallback() {
     const shadowRoot = this.attachShadow({mode: 'open'});
 
-    // Select the template and clone it. Finally attach the cloned node to the shadowDOM's root.
-    // Current document needs to be defined to get DOM access to imported HTML
-    const template = this.createNameTagTemplate("asdfads");
-    const instance = template.content.cloneNode(true);
+    let formula = this.innerHTML;
 
-    shadowRoot.appendChild(instance);
+    let span = currentDocument.createElement('span');
+    let link = currentDocument.createElement('link');
+    link.href = "https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css";
+    link.rel = "stylesheet";
+
+    shadowRoot.appendChild(link);
+    shadowRoot.appendChild(span);
 
     let displayMode = this.getAttribute('displayMode');
+
     if(!displayMode) {
         displayMode = false;
+    } else {
+        displayMode = JSON.parse(displayMode);
     }
 
-    this.render(this.formula, displayMode);
-  }
-
-  createNameTagTemplate(name)
-  {
-     var templateNode = document.createElement("template");
-     templateNode.innerHTML = `<!--link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css"-->
-       <span class="formula__katex-formula-container"></span>`;
-      return templateNode;
+    katex.render(formula, span, {
+        throwOnError: false,
+        displayMode: displayMode
+    });
   }
 }
 

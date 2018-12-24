@@ -4,14 +4,6 @@
 
 var _user$project$Native_Utils = (function () {
 
-    function formula(dMode, str) {
-        try{
-            return katex.renderToString(str, {displayMode: dMode});
-        } catch(e) {
-            return "<b><font color=\"red\">"+e.message+"</font></b><br>";
-        }
-    }
-
     function evaluate(code)
     {
         try { var rslt = String(eval(code));
