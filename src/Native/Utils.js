@@ -38,7 +38,6 @@ var _user$project$Native_Utils = (function () {
     };
 
     return {
-        formula: F2(formula),
         evaluate: evaluate,
         toUnixNewline: toUnixNewline,
         scrollIntoView: scrollIntoView

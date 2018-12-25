@@ -7,17 +7,6 @@ class KatexFormula extends HTMLElement {
     super();
   }
 
-  render(element, formula, displayMode) {
-    //let element = this.shadowRoot.get;
-
-    console.log(formula)
-
-    katex.render(formula, element, {
-    throwOnError: false,
-    displayMode: displayMode
-    });
-  }
-
   // Called when element is inserted in DOM
   connectedCallback() {
     const shadowRoot = this.attachShadow({mode: 'open'});
@@ -26,7 +15,7 @@ class KatexFormula extends HTMLElement {
 
     let span = currentDocument.createElement('span');
     let link = currentDocument.createElement('link');
-    link.href = "https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css";
+    link.href = "/webcomponents/KatexFormula/katex.css";
     link.rel = "stylesheet";
 
     shadowRoot.appendChild(link);

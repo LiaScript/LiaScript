@@ -49,7 +49,7 @@ module.exports = {
             },
             copycat: {
                 "css/fonts": [
-                    //"node_modules/katex/dist/fonts/",
+                    "node_modules/katex/dist/fonts/",
                     "vendor/material_icons/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2",
                     "vendor/roboto/fonts"
                 ],
@@ -67,6 +67,9 @@ module.exports = {
                 "webcomponents" : [
                     "webcomponents"
                 ],
+                "webcomponents/KatexFormula": [
+                    "node_modules/katex/dist/katex.css"
+                ],
                 verbose: false,
                 onlyChanged: true,
             },
@@ -82,11 +85,12 @@ module.exports = {
         npm: {
             styles: {
                 "normalize.css": ["normalize.css"],
-                "animate.css": ["animate.css"],
+                "animate.css": ["animate.css"]
                 //"katex": ["dist/katex.css"]
             },
             static: [
-                //"node_modules/katex/dist/katex.js"
+                "node_modules/katex/dist/katex.js",
+                //"webcomponents/KatexFormula/KatexFormula.js"
             ],
         },
     }
