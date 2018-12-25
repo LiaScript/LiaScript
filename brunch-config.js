@@ -54,22 +54,20 @@ module.exports = {
                     "vendor/roboto/fonts"
                 ],
                 "css": [
+                    "node_modules/katex/dist/katex.min.css",
                     "vendor/material_icons/material.css",
                     "vendor/roboto/roboto.css"
                 ],
                 "js": [
                     "lib/liascript.js",
-                    "vendor/responsivevoice.js"
+                    "vendor/responsivevoice.js",
+                    "node_modules/katex/dist/katex.min.js",
                 ],
                 "js/ace": [
                     "vendor/ace"
                 ],
                 "webcomponents" : [
                     "webcomponents"
-                ],
-                "webcomponents/KatexFormula": [
-                    "node_modules/katex/dist/katex.css",
-                    "node_modules/katex/dist/katex.js",
                 ],
                 verbose: false,
                 onlyChanged: true,

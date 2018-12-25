@@ -15,7 +15,7 @@ class KatexFormula extends HTMLElement {
 
     let span = currentDocument.createElement('span');
     let link = currentDocument.createElement('link');
-    link.href = "/webcomponents/KatexFormula/katex.css";
+    link.href = "css/katex.min.css";
     link.rel = "stylesheet";
 
     shadowRoot.appendChild(link);
