@@ -68,7 +68,8 @@ module.exports = {
                     "webcomponents"
                 ],
                 "webcomponents/KatexFormula": [
-                    "node_modules/katex/dist/katex.css"
+                    "node_modules/katex/dist/katex.css",
+                    "node_modules/katex/dist/katex.js",
                 ],
                 verbose: false,
                 onlyChanged: true,
@@ -89,7 +90,7 @@ module.exports = {
                 //"katex": ["dist/katex.css"]
             },
             static: [
-                "node_modules/katex/dist/katex.js",
+                //"node_modules/katex/dist/katex.js",
                 //"webcomponents/KatexFormula/KatexFormula.js"
             ],
         },
