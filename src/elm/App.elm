@@ -172,32 +172,39 @@ update msg model =
 
 
 get_course url =
-    Http.request
-        { method = "GET"
-        , headers = []
-        , url = url
-        , body = Http.emptyBody
+    Http.get
+        { url = url
         , expect = Http.expectString DownloadResult
-        , timeout = Nothing
-        , tracker = Just "download"
         }
 
 
 
+--    Http.request
+--        { method = "GET"
+--        , headers = []
+--        , url = url
+--        , body = Http.emptyBody
+--        , expect = Http.expectString DownloadResult
+--        , timeout = Nothing
+--        , tracker = Nothing --Just "download"
+--        }
 -- SUBSCRIPTIONS
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    case model.state of
-        Loading _ ->
-            Http.track "download" Tracking
-
-        _ ->
-            Sub.none
+    Sub.none
 
 
 
+{-
+   case model.state of
+       Loading _ ->
+           Http.track "download" Tracking
+
+       _ ->
+           Sub.none
+-}
 -- VIEW
 
 

@@ -6,9 +6,9 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   entry: {
-    'codemirror/index': './src/javascript/codemirror.js',
-    'katex/index': './src/javascript/katex.js',
-    'lia/index': './src/index.js',
+    'editor/index':  './src/javascript/editor/codemirror.js',
+    'formula/index': './src/javascript/formula/katex.js',
+    'lia/index':     './src/index.js',
   },
   output: {
     filename: '[name].js',
