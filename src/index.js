@@ -1,3 +1,5 @@
-import Elm from './elm/Main.elm'
+import { Elm } from "./elm/Main.elm";
 
-Elm.Main.fullscreen()
+var app = Elm.Main.init({
+  node: document.body
+});

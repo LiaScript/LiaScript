@@ -1,4 +1,4 @@
-module Main exposing (Model, Msg(..), init, main, subscriptions, update, view, viewLink)
+module App exposing (Model, Msg(..), init, main, subscriptions, update, view, viewLink)
 
 --import Lia
 --import Lia.Model
