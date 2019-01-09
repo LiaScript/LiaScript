@@ -19,6 +19,7 @@ module.exports = {
     new CleanWebpackPlugin(['dist']),
     new CopyWebpackPlugin([
       { from: 'node_modules/katex/dist/katex.min.css', to: 'katex' },
+      { from: 'src/assets/logo.png', to: '.'}
     ], { debug: "info"} ),
     new HtmlWebpackPlugin({
       filename: 'index.html',
