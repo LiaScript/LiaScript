@@ -9,7 +9,7 @@
     "watch": "webpack --watch",
     "start": "node server.js",
     "build": "webpack --config webpack.prod.js",
-    "translate": "elm-i18n-gen src/locale src/elm/Translations.elm"
+    "translate": "elm-i18n-gen locale src/elm/Translations.elm"
   },
   "keywords": [
     "elm",
