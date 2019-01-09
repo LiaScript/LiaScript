@@ -1,4 +1,13 @@
-module Lia.Helper exposing (ID, c_frame, newline, newlines, newlines1, spaces, spaces1, stringTill)
+module Lia.Helper exposing
+    ( ID
+    , c_frame
+    , newline
+    , newlines
+    , newlines1
+    , spaces
+    , spaces1
+    , stringTill
+    )
 
 import Combine exposing (..)
 import Combine.Char exposing (..)

@@ -1,4 +1,13 @@
-module App exposing (Model, Msg(..), init, main, subscriptions, update, view, viewLink)
+module App exposing
+    ( Model
+    , Msg(..)
+    , init
+    , main
+    , subscriptions
+    , update
+    , view
+    , viewLink
+    )
 
 --import Lia
 --import Lia.Model
@@ -53,7 +62,7 @@ type alias Lia =
 
 type State
     = Waiting -- Wait for user Input
-    | Loading Int -- Start to download the course if course url is defined
+    | Loading -- Start to download the course if course url is defined
     | Parsing -- Running the PreParser
     | Running -- Pass all action to Lia
     | Error String -- What has happend
@@ -71,12 +80,12 @@ init : Flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
     case ( url.query, flags.course, flags.script ) of
         ( Just query, _, _ ) ->
-            ( Model key url (Loading 0) (Lia query "")
+            ( Model key url Loading (Lia query "")
             , Cmd.none
             )
 
         ( _, Just query, _ ) ->
-            ( Model key { url | query = Just query } (Loading 0) (Lia query "")
+            ( Model key { url | query = Just query } Loading (Lia query "")
             , Cmd.none
             )
 
@@ -99,7 +108,6 @@ type Msg
     | Input String
     | Download
     | DownloadResult (Result Http.Error String)
-    | Tracking Http.Progress
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -127,16 +135,8 @@ update msg model =
             , Cmd.none
             )
 
-        Tracking progress ->
-            case progress of
-                Http.Receiving data ->
-                    ( { model | state = Loading data.received }, Cmd.none )
-
-                _ ->
-                    ( model, Cmd.none )
-
         Download ->
-            ( { model | state = Loading 0 }
+            ( { model | state = Loading }
             , get_course model.lia.readme
             )
 
@@ -216,9 +216,17 @@ view model =
             Waiting ->
                 [ view_waiting model.lia.readme ]
 
-            Loading percent ->
+            Loading ->
                 [ base_div
-                    [ Html.h1 [] [ Html.text ("Loading " ++ String.fromInt percent) ]
+                    [ Html.h1 [] [ Html.text "Loading" ]
+                    , Html.br [] []
+                    , Html.div [ Attr.class "lds-dual-ring" ] []
+                    ]
+                ]
+
+            Parsing ->
+                [ base_div
+                    [ Html.h1 [] [ Html.text "Parsing" ]
                     , Html.br [] []
                     , Html.div [ Attr.class "lds-dual-ring" ] []
                     ]
