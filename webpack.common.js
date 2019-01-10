@@ -1,7 +1,8 @@
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+const HtmlWebpackPlugin    = require('html-webpack-plugin');
+const CleanWebpackPlugin   = require('clean-webpack-plugin');
+const CopyWebpackPlugin    = require('copy-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
   entry: {
@@ -15,6 +16,7 @@ module.exports = {
     publicPath: '/'
   },
   plugins: [
+    new MiniCssExtractPlugin(),
     new CleanWebpackPlugin(['dist']),
     new CopyWebpackPlugin([
       { from: 'node_modules/katex/dist/katex.min.css', to: 'katex' },
@@ -35,19 +37,12 @@ module.exports = {
         }
       },
       {
-        test: /\.scss$/,
+        test: /\.(css|scss)$/,
         use: [
-          "style-loader",
-          "css-loader",
-          "sass-loader"
-        ]
-      },
-      {
-        test: /\.css$/,
-        use: [
-          'style-loader',
-          'css-loader'
-        ]
+          MiniCssExtractPlugin.loader,
+          'css-loader?sourceMap=false',
+          'sass-loader?sourceMap=false',
+        ],
       },
       {
         test: /\.(png|svg|jpg|gif)$/,
@@ -64,7 +59,7 @@ module.exports = {
       {
         test: /.elm$/,
         use: {
-          loader: 'elm-webpack-loader',
+          loader: 'elm-webpack-loader?verbose=true',
           options: {
             debug: true,
           },
