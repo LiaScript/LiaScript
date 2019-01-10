@@ -26,7 +26,7 @@ import Lia.Types exposing (Mode(..), Section, Sections)
 port event2js : ( String, Int, JE.Value ) -> Cmd msg
 
 
-port event2elm : (( String, Int, String, JD.Value ) -> msg) -> Sub msg
+port event2elm : (( String, Int, ( String, JD.Value ) ) -> msg) -> Sub msg
 
 
 subscriptions : Model -> Sub Msg
@@ -59,7 +59,7 @@ type Msg
     | Toggle Toggle
       --    | Location String
     | IncreaseFontSize Bool
-    | Event ( String, Int, String, JE.Value )
+    | Event ( String, Int, ( String, JE.Value ) )
 
 
 type Toggle
@@ -72,8 +72,8 @@ type Toggle
 
 
 log_maybe : ID -> Maybe ( String, JE.Value ) -> List ( String, ID, JE.Value )
-log_maybe idx log =
-    case log of
+log_maybe idx log_ =
+    case log_ of
         Nothing ->
             []
 
@@ -91,8 +91,8 @@ speak model =
 
 
 maybe_event : ID -> Maybe ( String, JE.Value ) -> Cmd Markdown.Msg -> Cmd Msg
-maybe_event idx log cmd =
-    case log of
+maybe_event idx log_ cmd =
+    case log_ of
         Nothing ->
             Cmd.map UpdateMarkdown cmd
 
@@ -114,10 +114,11 @@ update msg model =
                 , if history then
                     Cmd.batch
                         [ event2js ( "persistent", idx, JE.string "store" )
-                        , (idx + 1)
-                            |> toString
-                            |> (++) "#"
-                            |> Navigation.newUrl
+
+                        --    , (idx + 1)
+                        --        |> String.fromInt
+                        --        |> (++) "#"
+                        --        |> Navigation.newUrl
                         ]
 
                   else
@@ -193,25 +194,25 @@ update msg model =
             in
             ( { model | index_model = index }, Cmd.none )
 
-        Event ( "load", idx, _, _ ) ->
+        Event ( "load", idx, ( _, _ ) ) ->
             update InitSection (generate { model | section_active = idx })
 
-        Event ( "reset", i, _, val ) ->
+        Event ( "reset", i, ( _, val ) ) ->
             ( model, event2js ( "reset", -1, JE.null ) )
 
-        Event ( "preferences", x, y, json ) ->
+        Event ( "preferences", x, ( y, json ) ) ->
             ( json
                 |> json2settings
                 |> settings2model model
             , Cmd.none
             )
 
-        Event ( topic, idx, msg, json ) ->
+        Event ( topic, idx, ( msg_, json ) ) ->
             case Array.get idx model.sections of
                 Just sec ->
                     let
                         ( sec_, cmd_, log_ ) =
-                            Markdown.jsEventHandler topic msg json sec
+                            Markdown.jsEventHandler topic msg_ json sec
                     in
                     ( { model | sections = Array.set idx sec_ model.sections }
                     , maybe_event idx log_ cmd_
@@ -224,11 +225,11 @@ update msg model =
             case ( msg, get_active_section model ) of
                 ( UpdateMarkdown childMsg, Just sec ) ->
                     let
-                        ( section, cmd, log ) =
+                        ( section, cmd, log_ ) =
                             Markdown.update childMsg sec
                     in
                     ( set_active_section model section
-                    , maybe_event model.section_active log cmd
+                    , maybe_event model.section_active log_ cmd
                     )
 
                 ( NextSection, Just sec ) ->
@@ -406,19 +407,8 @@ generate model =
 
                     else
                         case Lia.Parser.parse_section model.definition sec model.section_active of
-                            Ok new_sec ( blocks, codes, quizzes, surveys, effects, footnotes, defines ) ->
-                                { sec
-                                    | body = blocks
-                                    , error = Nothing
-                                    , visited = True
-                                    , code_vector = codes
-                                    , quiz_vector = quizzes
-                                    , survey_vector = surveys
-                                    , effect_model = effects
-                                    , footnotes = footnotes
-                                    , definition = defines
-                                    , parsed = True
-                                }
+                            Ok new_sec ->
+                                new_sec
 
                             Err msg ->
                                 { sec

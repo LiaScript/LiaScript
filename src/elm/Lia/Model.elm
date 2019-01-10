@@ -109,7 +109,7 @@ json2settings json =
         json
 
 
-settings2model : Model -> Result String Settings -> Model
+settings2model : Model -> Result JD.Error Settings -> Model
 settings2model model settings =
     case settings of
         Ok s ->
