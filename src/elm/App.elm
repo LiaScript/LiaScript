@@ -50,7 +50,7 @@ type alias Model =
     { key : Nav.Key
     , url : Url.Url
     , state : State
-    , lia : Lia.Model.Model
+    , lia : Lia.Script.Model
     }
 
 
@@ -74,22 +74,22 @@ init : Flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
     case ( url.query, flags.course, flags.script ) of
         ( Just query, _, _ ) ->
-            ( Model key url Loading (Lia query "")
+            ( Model key url Loading (Lia.Script.init_textbook query "" "")
             , Cmd.none
             )
 
         ( _, Just query, _ ) ->
-            ( Model key { url | query = Just query } Loading (Lia query "")
+            ( Model key { url | query = Just query } Loading (Lia.Script.init_textbook query "" "")
             , Cmd.none
             )
 
         ( _, _, Just script ) ->
-            ( Model key url Parsing (Lia "" script)
+            ( Model key url Parsing (Lia.Script.init_textbook "" script "")
             , Cmd.none
             )
 
         _ ->
-            ( Model key url Waiting (Lia "" ""), Cmd.none )
+            ( Model key url Waiting (Lia.Script.init_textbook "" "" ""), Cmd.none )
 
 
 
@@ -97,7 +97,8 @@ init flags url key =
 
 
 type Msg
-    = LinkClicked Browser.UrlRequest
+    = LiaScript Lia.Script.Msg
+    | LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
     | Input String
     | Download
@@ -107,6 +108,14 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        LiaScript childMsg ->
+            --            let
+            --                ( lia, cmd ) =
+            --                    Lia.Script.update childMsg model.lia
+            --            in
+            ( model, Cmd.none )
+
+        -- LiaScript cmd )
         LinkClicked urlRequest ->
             case urlRequest of
                 Browser.Internal url ->
@@ -134,42 +143,41 @@ update msg model =
             , get_course model.lia.readme
             )
 
-        DownloadResult result ->
+        DownloadResult (Ok readme) ->
             let
                 lia =
-                    model.lia
+                    Lia.Script.set_script model.lia readme
             in
-            case result of
-                Ok readme ->
-                    ( { model
-                        | state = Parsing
-                        , lia = { lia | readme = readme }
-                      }
-                    , Cmd.none
-                    )
+            ( { model
+                | state = Running
+                , lia = lia
+              }
+            , Cmd.none
+            )
 
-                Err error ->
-                    let
-                        info =
-                            case error of
-                                Http.BadUrl url ->
-                                    "Bad Url " ++ url
+        DownloadResult (Err error) ->
+            let
+                info =
+                    case error of
+                        Http.BadUrl url ->
+                            "Bad Url " ++ url
 
-                                Http.Timeout ->
-                                    "Network timeout"
+                        Http.Timeout ->
+                            "Network timeout"
 
-                                Http.BadStatus int ->
-                                    "Bad status " ++ String.fromInt int
+                        Http.BadStatus int ->
+                            "Bad status " ++ String.fromInt int
 
-                                Http.NetworkError ->
-                                    "Network error"
+                        Http.NetworkError ->
+                            "Network error"
 
-                                Http.BadBody body ->
-                                    "Bad body " ++ body
-                    in
-                    ( { model | state = Error info }, Cmd.none )
+                        Http.BadBody body ->
+                            "Bad body " ++ body
+            in
+            ( { model | state = Error info }, Cmd.none )
 
 
+get_course : String -> Cmd Msg
 get_course url =
     Http.get
         { url = url
@@ -212,6 +220,9 @@ view model =
     { title = "Lia"
     , body =
         case model.state of
+            Running ->
+                [ Html.map LiaScript <| Lia.Script.view model.lia ]
+
             Waiting ->
                 [ view_waiting model.lia.readme ]
 
@@ -240,18 +251,6 @@ view model =
                         , Attr.style "margin-right" "20%"
                         ]
                         [ text info ]
-                    ]
-                ]
-
-            _ ->
-                [ text "The current URL is: "
-                , b [] [ text (Url.toString model.url) ]
-                , ul []
-                    [ viewLink "/home"
-                    , viewLink "/profile"
-                    , viewLink "/reviews/the-century-of-the-self"
-                    , viewLink "/reviews/public-opinion"
-                    , viewLink "/reviews/shah-of-shahs"
                     ]
                 ]
     }

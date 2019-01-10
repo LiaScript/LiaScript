@@ -3,12 +3,11 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
-
 module.exports = {
   entry: {
     'editor/index':  './src/javascript/editor/codemirror.js',
     'formula/index': './src/javascript/formula/katex.js',
-    'lia/index':     './src/index.js',
+    'lia/index':     './src/index.js'
   },
   output: {
     filename: '[name].js',
@@ -28,6 +27,21 @@ module.exports = {
   ],
   module: {
     rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: {
+          loader: "babel-loader"
+        }
+      },
+      {
+        test: /\.scss$/,
+        use: [
+          "style-loader",
+          "css-loader",
+          "sass-loader"
+        ]
+      },
       {
         test: /\.css$/,
         use: [
@@ -55,7 +69,7 @@ module.exports = {
             debug: true,
           },
         },
-      },
+      }
     ]
   }
 };

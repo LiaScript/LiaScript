@@ -1,3 +1,5 @@
+import './scss/main.scss';
+
 import { Elm } from "./elm/App.elm";
 
 
