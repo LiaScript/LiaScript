@@ -19,8 +19,17 @@ module.exports = {
     new MiniCssExtractPlugin(),
     new CleanWebpackPlugin(['dist']),
     new CopyWebpackPlugin([
+      { from: 'src/assets/logo.png', to: '.'},
+      { from: 'vendor/responsivevoice.js', to: '.'},
+
+      { from: "vendor/material_icons/material.css", to: 'css'},
+      { from: "vendor/roboto/roboto.css", to: 'css'},
+
+      { from: 'vendor/material_icons', to: 'fonts'},
+      { from: "vendor/material_icons/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2", to: 'fonts'},
+      { from: "vendor/roboto/fonts", to: 'fonts'},
+
       { from: 'node_modules/katex/dist/katex.min.css', to: 'katex' },
-      { from: 'src/assets/logo.png', to: '.'}
     ], { debug: "info"} ),
     new HtmlWebpackPlugin({
       filename: 'index.html',
