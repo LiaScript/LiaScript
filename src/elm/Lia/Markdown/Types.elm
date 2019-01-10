@@ -19,15 +19,15 @@ type Markdown
     | BulletList Annotation (List MarkdownS)
     | OrderedList Annotation (List MarkdownS)
     | Table Annotation MultInlines (List String) (List MultInlines)
-    | Quiz Annotation Quiz (Maybe ( MarkdownS, Int ))
+      --    | Quiz Annotation Quiz (Maybe ( MarkdownS, Int ))
     | Effect Annotation ( ID, ID, MarkdownS )
     | Comment ( ID, ID )
-    | Survey Annotation Survey
-    | Chart Annotation Chart
-    | Code Annotation Code
 
 
 
+--    | Survey Annotation Survey
+--    | Chart Annotation Chart
+--    | Code Annotation Code
 --    | ASCII Annotation SvgBob.Model
 
 

@@ -2,10 +2,6 @@ module Lia.Markdown.View exposing (view)
 
 --import Lia.Chart.View as Charts
 --import Lia.Code.View as Codes
---import Lia.Effect.Model as Comments
---import Lia.Effect.View as Effects
---import Lia.Markdown.Footnote.Model as Footnotes
---import Lia.Markdown.Footnote.View as Footnote
 --import Lia.Quiz.View as Quizzes
 --import Lia.Survey.View as Surveys
 --import SvgBob
@@ -14,6 +10,10 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Html.Lazy exposing (..)
+import Lia.Effect.Model as Comments
+import Lia.Effect.View as Effects
+import Lia.Markdown.Footnote.Model as Footnotes
+import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
 import Lia.Markdown.Inline.View exposing (annotation, attributes, viewer)
 import Lia.Markdown.Types exposing (..)
@@ -58,6 +58,7 @@ view lang mode section ace_theme =
             lazy2 view_body ( config, section.footnote2show, section.footnotes ) section.body
 
 
+view_body : ( Config, Maybe String, Footnotes.Model ) -> List Markdown -> Html Msg
 view_body ( config, footnote2show, footnotes ) body =
     body
         |> List.map (view_block config)
@@ -79,31 +80,27 @@ view_footnote viewer key footnotes =
         Just notes ->
             Html.div
                 [ onClick FootnoteHide
-                , Attr.style
-                    [ ( "position", "fixed" )
-                    , ( "display", "block" )
-                    , ( "width", "100%" )
-                    , ( "height", "100%" )
-                    , ( "top", "0" )
-                    , ( "left", "0" )
-                    , ( "right", "0" )
-                    , ( "bottom", "0" )
-                    , ( "background-color", "rgba(0,0,0,0.6)" )
-                    , ( "z-index", "2" )
-                    , ( "cursor", "pointer" )
-                    , ( "overflow", "auto" )
-                    ]
+                , Attr.style "position" "fixed"
+                , Attr.style "display" "block"
+                , Attr.style "width" "100%"
+                , Attr.style "height" "100%"
+                , Attr.style "top" "0"
+                , Attr.style "left" "0"
+                , Attr.style "right" "0"
+                , Attr.style "bottom" "0"
+                , Attr.style "background-color" "rgba(0,0,0,0.6)"
+                , Attr.style "z-index" "2"
+                , Attr.style "cursor" "pointer"
+                , Attr.style "overflow" "auto"
                 ]
                 [ Html.div
-                    [ Attr.style
-                        [ ( "position", "absolute" )
-                        , ( "top", "50%" )
-                        , ( "left", "50%" )
-                        , ( "font-size", "20px" )
-                        , ( "color", "white" )
-                        , ( "transform", "translate(-50%,-50%)" )
-                        , ( "-ms-transform", "translate(-50%,-50%)" )
-                        ]
+                    [ Attr.style "position" "absolute"
+                    , Attr.style "top" "50%"
+                    , Attr.style "left" "50%"
+                    , Attr.style "font-size" "20px"
+                    , Attr.style "color" "white"
+                    , Attr.style "transform" "translate(-50%,-50%)"
+                    , Attr.style "-ms-transform" "translate(-50%,-50%)"
                     ]
                     (List.map viewer notes)
                 ]
@@ -154,7 +151,7 @@ view_block config block =
                         Attr.id "focused"
 
                       else
-                        Attr.id (toString id_in)
+                        Attr.id (String.fromInt id_in)
                      )
                         :: annotation "lia-effect-inline" attr
                     )
@@ -181,42 +178,43 @@ view_block config block =
                 |> List.map (\e -> view_block config e)
                 |> Html.blockquote (annotation "lia-quote" attr)
 
-        Code attr code ->
-            code
-                |> Codes.view config.lang config.ace_theme attr config.section.code_vector
-                |> Html.map UpdateCode
+        {-
+           Code attr code ->
+               code
+                   |> Codes.view config.lang config.ace_theme attr config.section.code_vector
+                   |> Html.map UpdateCode
 
-        Quiz attr quiz Nothing ->
-            Html.div [ Attr.class "lia-quiz lia-card" ]
-                [ Quizzes.view config.lang attr quiz config.section.quiz_vector
-                    |> Html.map UpdateQuiz
-                ]
+           Quiz attr quiz Nothing ->
+               Html.div [ Attr.class "lia-quiz lia-card" ]
+                   [ Quizzes.view config.lang attr quiz config.section.quiz_vector
+                       |> Html.map UpdateQuiz
+                   ]
 
-        Quiz attr quiz (Just ( answer, hidden_effects )) ->
-            Html.div [ Attr.class "lia-quiz lia-card" ] <|
-                case Quizzes.view_solution config.section.quiz_vector quiz of
-                    ( empty, True ) ->
-                        List.append
-                            [ Html.map UpdateQuiz <| Quizzes.view config.lang attr quiz config.section.quiz_vector ]
-                            ((if empty then
-                                Html.text ""
+           Quiz attr quiz (Just ( answer, hidden_effects )) ->
+               Html.div [ Attr.class "lia-quiz lia-card" ] <|
+                   case Quizzes.view_solution config.section.quiz_vector quiz of
+                       ( empty, True ) ->
+                           List.append
+                               [ Html.map UpdateQuiz <| Quizzes.view config.lang attr quiz config.section.quiz_vector ]
+                               ((if empty then
+                                   Html.text ""
 
-                              else
-                                Html.hr [] []
-                             )
-                                :: List.map (view_block config) answer
-                            )
+                                 else
+                                   Html.hr [] []
+                                )
+                                   :: List.map (view_block config) answer
+                               )
 
-                    _ ->
-                        [ Quizzes.view config.lang attr quiz config.section.quiz_vector
-                            |> Html.map UpdateQuiz
-                        ]
+                       _ ->
+                           [ Quizzes.view config.lang attr quiz config.section.quiz_vector
+                               |> Html.map UpdateQuiz
+                           ]
 
-        Survey attr survey ->
-            config.section.survey_vector
-                |> Surveys.view config.lang attr survey
-                |> Html.map UpdateSurvey
-
+           Survey attr survey ->
+               config.section.survey_vector
+                   |> Surveys.view config.lang attr survey
+                   |> Html.map UpdateSurvey
+        -}
         Comment ( id1, id2 ) ->
             case
                 ( config.mode
@@ -233,11 +231,12 @@ view_block config block =
                 _ ->
                     Html.text ""
 
-        Chart attr chart ->
-            Charts.view attr chart
 
-        ASCII attr txt ->
-            SvgBob.getSvg (attributes attr) txt
+
+--        Chart attr chart ->
+--            Charts.view attr chart
+--        ASCII attr txt ->
+--            SvgBob.getSvg (attributes attr) txt
 
 
 view_table : Config -> Annotation -> MultInlines -> List String -> List MultInlines -> Html Msg
