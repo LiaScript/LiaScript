@@ -22,10 +22,8 @@ import Json.Encode as JE
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Model exposing (json2settings, load_src, settings2model)
 import Lia.Parser
-import Lia.Preprocessor exposing (sections)
 import Lia.Types exposing (Section, Sections, init_section)
 import Lia.Update exposing (Msg(..), maybe_event)
-import Lia.Utils exposing (toUnixNewline)
 import Lia.View
 import Translations
 
@@ -49,7 +47,7 @@ load_slide model idx =
 
 set_script : Model -> String -> Model
 set_script model script =
-    case script |> toUnixNewline |> Lia.Parser.parse_defintion model.url of
+    case script |> Lia.Parser.parse_defintion model.url of
         Ok ( definition, code ) ->
             case Lia.Parser.parse_titles definition code of
                 Ok title_sections ->
@@ -84,10 +82,10 @@ set_script model script =
                                 |> (::)
                                     ( "init"
                                     , section_active
-                                    , JE.list
-                                        [ JE.string <| get_title sections
-                                        , JE.string model.readme
-                                        , JE.string definition.onload
+                                    , JE.list JE.string
+                                        [ get_title sections
+                                        , model.readme
+                                        , definition.onload
                                         ]
                                     )
                                 |> List.reverse
