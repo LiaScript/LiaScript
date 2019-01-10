@@ -9,7 +9,6 @@ module App exposing
     , viewLink
     )
 
---import Lia
 --import Lia.Model
 
 import Browser
@@ -18,6 +17,7 @@ import Html exposing (..)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import Http
+import Lia.Script
 import Url
 
 
@@ -50,13 +50,7 @@ type alias Model =
     { key : Nav.Key
     , url : Url.Url
     , state : State
-    , lia : Lia
-    }
-
-
-type alias Lia =
-    { readme : String
-    , script : String
+    , lia : Lia.Model.Model
     }
 
 
@@ -147,7 +141,12 @@ update msg model =
             in
             case result of
                 Ok readme ->
-                    ( { model | state = Parsing, lia = { lia | readme = readme } }, Cmd.none )
+                    ( { model
+                        | state = Parsing
+                        , lia = { lia | readme = readme }
+                      }
+                    , Cmd.none
+                    )
 
                 Err error ->
                     let

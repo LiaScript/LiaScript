@@ -18,7 +18,7 @@ markdown : Parser PState Markdown -> Parser PState ( Int, Int, List Markdown )
 markdown blocks =
     regex "[\t ]*{{"
         |> keep effect_number
-        |> map (,,)
+        |> map (\a b c -> ( a, b, c ))
         |> andMap
             (regex "[\t ]*-[\t ]*"
                 |> keep int
@@ -103,7 +103,7 @@ comment : Parser PState Inlines -> Parser PState ( Int, Int )
 comment paragraph =
     regex "[\t ]*--{{"
         |> keep effect_number
-        |> map (,,)
+        |> map (\a b c -> ( a, b, c ))
         |> andMap
             (maybe
                 (spaces1

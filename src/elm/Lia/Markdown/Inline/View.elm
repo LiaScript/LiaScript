@@ -94,7 +94,7 @@ view visible element =
         EInline id_in id_out e attr ->
             if (id_in <= visible) && (id_out > visible) then
                 Html.span
-                    (Attr.id (toString id_in) :: annotation "lia-effect-inline" attr)
+                    (Attr.id (String.fromInt id_in) :: annotation "lia-effect-inline" attr)
                     (Effect.view (viewer visible) id_in e)
 
             else

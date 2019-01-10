@@ -1,23 +1,24 @@
 module Lia.Markdown.View exposing (view)
 
+--import Lia.Chart.View as Charts
+--import Lia.Code.View as Codes
+--import Lia.Effect.Model as Comments
+--import Lia.Effect.View as Effects
+--import Lia.Markdown.Footnote.Model as Footnotes
+--import Lia.Markdown.Footnote.View as Footnote
+--import Lia.Quiz.View as Quizzes
+--import Lia.Survey.View as Surveys
+--import SvgBob
+
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Html.Lazy exposing (..)
-import Lia.Chart.View as Charts
-import Lia.Code.View as Codes
-import Lia.Effect.Model as Comments
-import Lia.Effect.View as Effects
-import Lia.Markdown.Footnote.Model as Footnotes
-import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
 import Lia.Markdown.Inline.View exposing (annotation, attributes, viewer)
 import Lia.Markdown.Types exposing (..)
 import Lia.Markdown.Update exposing (Msg(..))
-import Lia.Quiz.View as Quizzes
-import Lia.Survey.View as Surveys
 import Lia.Types exposing (Mode(..), Section)
-import SvgBob
 import Translations exposing (..)
 
 

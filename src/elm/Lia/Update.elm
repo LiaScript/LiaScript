@@ -17,7 +17,6 @@ import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (..)
 import Lia.Parser exposing (parse_section)
 import Lia.Types exposing (Mode(..), Section, Sections)
-import Navigation
 
 
 
@@ -406,8 +405,8 @@ generate model =
                         { sec | effect_model = { effects | visible = 0 } }
 
                     else
-                        case Lia.Parser.parse_section model.definition sec.code model.section_active of
-                            Ok ( blocks, codes, quizzes, surveys, effects, footnotes, defines ) ->
+                        case Lia.Parser.parse_section model.definition sec model.section_active of
+                            Ok new_sec ( blocks, codes, quizzes, surveys, effects, footnotes, defines ) ->
                                 { sec
                                     | body = blocks
                                     , error = Nothing

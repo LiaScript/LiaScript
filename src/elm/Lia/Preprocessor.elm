@@ -44,7 +44,7 @@ body =
 section : Parser PState ( Int, Inlines, String )
 section =
     title_tag
-        |> map (,,)
+        |> map (\a b c -> ( a, b, c ))
         |> andMap title_str
         |> andMap body
 

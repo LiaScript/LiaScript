@@ -18,7 +18,7 @@ view lang model =
             , Attr.value model.search
             , Attr.class "lia-input"
             , Attr.placeholder (baseSearch lang)
-            , Attr.style [ ( "max-width", "100%" ) ]
+            , Attr.style "max-width" "100%"
             , onInput ScanIndex
             ]
             []

@@ -32,6 +32,7 @@ type alias Model =
     { url : String
     , readme : String
     , origin : String
+    , title : String
     , mode : Mode
     , error : Maybe String
     , sections : Sections
@@ -93,7 +94,7 @@ settings2json v =
         ]
 
 
-json2settings : JD.Value -> Result String Settings
+json2settings : JD.Value -> Result JD.Error Settings
 json2settings json =
     JD.decodeValue
         (JD.map7 Settings
@@ -143,6 +144,7 @@ init mode url readme origin slide_number =
     { url = url
     , readme = readme
     , origin = origin
+    , title = ""
     , mode = mode
     , error = Nothing
     , sections = Array.empty
@@ -184,5 +186,5 @@ load_src tag old new =
             List.filter member new
     in
     ( List.append old to_load
-    , List.map (\url -> ( "ressource", 0, JE.list [ JE.string tag, JE.string url ] )) to_load
+    , List.map (\url -> ( "ressource", 0, JE.list JE.string [ tag, url ] )) to_load
     )

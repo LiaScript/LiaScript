@@ -1,12 +1,11 @@
-module Lia.Survey.Model
-    exposing
-        ( get_matrix_state
-        , get_submission_state
-        , get_text_state
-        , get_vector_state
-        , json2vector
-        , vector2json
-        )
+module Lia.Survey.Model exposing
+    ( get_matrix_state
+    , get_submission_state
+    , get_text_state
+    , get_vector_state
+    , json2vector
+    , vector2json
+    )
 
 import Array
 import Dict
@@ -62,9 +61,7 @@ get_matrix_state vector idx row var =
 
 vector2json : Vector -> JE.Value
 vector2json vector =
-    vector
-        |> Array.map element2json
-        |> JE.array
+    JE.array element2json vector
 
 
 element2json : Element -> JE.Value
@@ -100,23 +97,23 @@ state2json state =
 
             MatrixState True matrix ->
                 [ ( "type", JE.string "SingleChoiceBlock" )
-                , ( "value", matrix |> Array.map dict2json |> JE.array )
+                , ( "value", JE.array dict2json matrix )
                 ]
 
             MatrixState False matrix ->
                 [ ( "type", JE.string "MultipleChoiceBlock" )
-                , ( "value", matrix |> Array.map dict2json |> JE.array )
+                , ( "value", JE.array dict2json matrix )
                 ]
 
 
-json2vector : JD.Value -> Result String Vector
+json2vector : JD.Value -> Result JD.Error Vector
 json2vector json =
     JD.decodeValue (JD.array json2element) json
 
 
 json2element : JD.Decoder Element
 json2element =
-    JD.map2 (,)
+    JD.map2 Tuple.pair
         (JD.field "submitted" JD.bool)
         (JD.field "state" json2state)
 

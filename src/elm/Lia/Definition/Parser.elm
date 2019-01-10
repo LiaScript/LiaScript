@@ -74,13 +74,13 @@ definition =
                             |> andThen (\x -> set (\def -> { def | onload = String.trim x }))
                         , Macro.pattern
                             |> ignore (regex "[\t ]*:[\t ]*")
-                            |> map (,)
+                            |> map Tuple.pair
                             |> andMap (regex ".+")
                             |> ignore newline
                             |> andThen (\x -> set (Macro.add x))
                         , Macro.pattern
                             |> ignore (regex "[\t ]*\\n")
-                            |> map (,)
+                            |> map Tuple.pair
                             |> andMap (stringTill (string "\n@end"))
                             |> andThen (\x -> set (Macro.add x))
                         ]
@@ -110,12 +110,12 @@ base x =
 
 
 toURL : String -> String -> String
-toURL base url =
+toURL basis url =
     if String.startsWith "http" url then
         url
 
     else
-        base ++ url
+        basis ++ url
 
 
 set : (Definition -> Definition) -> Parser PState ()
@@ -124,8 +124,8 @@ set fct =
 
 
 append_to : String -> String -> List String -> List String
-append_to x base list =
+append_to x basis list =
     x
         |> String.split "\n"
-        |> List.map (toURL base)
+        |> List.map (toURL basis)
         |> List.append list

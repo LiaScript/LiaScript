@@ -1,6 +1,7 @@
 port module Lia.Effect.Update exposing (Msg(..), has_next, has_previous, init, next, previous, subscriptions, update)
 
-import Date exposing (Date)
+--import Date exposing (Date)
+
 import Json.Encode as JE
 import Lia.Effect.Model exposing (Map, Model, current_comment, get_all_javascript, get_javascript)
 import Lia.Utils
@@ -19,14 +20,18 @@ type Msg
     | Previous
     | Speak (Maybe JE.Value)
     | SpeakRslt ( String, String )
-    | Rendered Bool (Maybe Date)
+
+
+
+--    | Rendered Bool (Maybe Date)
 
 
 update : Bool -> Msg -> Model -> ( Model, Cmd Msg, Maybe JE.Value )
 update sound msg model =
     case msg of
         Init run_all_javascript ->
-            ( model, Task.perform (Just >> Rendered run_all_javascript) Date.now, Nothing )
+            --( model, Task.perform (Just >> Rendered run_all_javascript) Date.now, Nothing )
+            execute sound run_all_javascript 0 model
 
         Next ->
             if has_next model then
@@ -44,41 +49,40 @@ update sound msg model =
             else
                 ( model, Cmd.none, Nothing )
 
-        Speak log ->
-            let
-                d =
-                    Lia.Utils.scrollIntoView "focused"
-            in
+        Speak info ->
+            --            let
+            --                d =
+            --                    Lia.Utils.scrollIntoView "focused"
+            --            in
             case ( sound, current_comment model ) of
                 ( True, Just ( comment, narrator ) ) ->
-                    ( { model | speaking = True }, speech2js [ "speak", narrator, comment ], log )
+                    ( { model | speaking = True }, speech2js [ "speak", narrator, comment ], info )
 
                 ( True, Nothing ) ->
-                    ( model, speech2js [ "cancel" ], log )
+                    ( model, speech2js [ "cancel" ], info )
 
                 ( False, Just ( comment, narrator ) ) ->
                     if model.speaking then
-                        ( { model | speaking = False }, speech2js [ "cancel" ], log )
+                        ( { model | speaking = False }, speech2js [ "cancel" ], info )
 
                     else
-                        ( model, speech2js [ "cancel" ], log )
+                        ( model, speech2js [ "cancel" ], info )
 
                 _ ->
-                    ( model, speech2js [ "cancel" ], log )
+                    ( model, speech2js [ "cancel" ], info )
 
-        SpeakRslt ( "end", msg ) ->
+        SpeakRslt ( "end", _ ) ->
             ( { model | speaking = False }, Cmd.none, Nothing )
 
-        SpeakRslt ( "error", msg ) ->
+        SpeakRslt ( "error", info ) ->
             let
                 error =
-                    Debug.log "TTS error: " msg
+                    Debug.log "TTS error: " info
             in
             ( { model | speaking = False }, Cmd.none, Nothing )
 
-        Rendered run_all_javascript _ ->
-            execute sound run_all_javascript 0 model
-
+        --        Rendered run_all_javascript _ ->
+        --            execute sound run_all_javascript 0 model
         _ ->
             ( model, Cmd.none, Nothing )
 
@@ -88,33 +92,41 @@ subscriptions model =
     Sub.batch [ speech2elm SpeakRslt ]
 
 
-log : Int -> String -> JE.Value
-log delay code =
-    JE.list [ JE.string "execute", JE.int delay, JE.string code ]
+
+{-
+   log : Int -> String -> JE.Value
+   log delay code =
+       JE.list [ JE.string "execute", JE.int delay, JE.string code ]
+
+
+   execute : Bool -> Bool -> Int -> Model -> ( Model, Cmd Msg, Maybe JE.Value )
+   execute sound run_all delay model =
+       let
+           javascript =
+               if run_all then
+                   get_all_javascript model
+
+               else
+                   get_javascript model
+       in
+       update sound
+           (Speak <|
+               if List.length javascript == 0 then
+                   Nothing
+
+               else
+                   javascript
+                       |> List.map (log delay)
+                       |> JE.list
+                       |> Just
+           )
+           model
+-}
 
 
 execute : Bool -> Bool -> Int -> Model -> ( Model, Cmd Msg, Maybe JE.Value )
 execute sound run_all delay model =
-    let
-        javascript =
-            if run_all then
-                get_all_javascript model
-
-            else
-                get_javascript model
-    in
-    update sound
-        (Speak <|
-            if List.length javascript == 0 then
-                Nothing
-
-            else
-                javascript
-                    |> List.map (log delay)
-                    |> JE.list
-                    |> Just
-        )
-        model
+    update sound (Speak Nothing) model
 
 
 has_next : Model -> Bool

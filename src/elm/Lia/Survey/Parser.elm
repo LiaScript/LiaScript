@@ -84,7 +84,7 @@ questions =
 
 question : Parser PState a -> Parser PState ( a, List Inline )
 question p =
-    map (,) p
+    map Tuple.pair p
         |> andMap line
         |> ignore newline
 

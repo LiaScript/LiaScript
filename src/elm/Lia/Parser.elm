@@ -13,13 +13,14 @@ import Lia.PState exposing (PState)
 import Lia.Preprocessor as Preprocessor
 import Lia.Quiz.Types as Quiz
 import Lia.Survey.Types as Survey
+import Lia.Types exposing (Section)
 
 
-parse_defintion : String -> String -> Result String ( String, Definition )
+parse_defintion : String -> String -> Result String ( Definition, String )
 parse_defintion base code =
     case Combine.runParser Lia.Definition.Parser.parse (Lia.PState.init <| Lia.Definition.Types.default base) code of
         Ok ( state, data, _ ) ->
-            Ok ( data.input, state.defines )
+            Ok ( state.defines, data.input )
 
         Err ( _, stream, ms ) ->
             Err (formatError ms stream)
@@ -35,28 +36,37 @@ parse_titles defines code =
             Err (formatError ms stream)
 
 
-parse_section : Definition -> String -> Int -> Result String ( List Markdown, Code.Vector, Quiz.Vector, Survey.Vector, Effect.Model, Footnote.Model, Maybe Definition )
-parse_section global code sec_id =
+parse_section :
+    Definition
+    -> Section
+    -> Int
+    -> Result String Section --( List Markdown, Code.Vector, Quiz.Vector, Survey.Vector, Effect.Model, Footnote.Model, Maybe Definition )
+parse_section global section sec_id =
     case
         Combine.runParser
             (Lia.Definition.Parser.parse |> keep Markdown.run)
             (Lia.PState.init { global | section = sec_id })
-            code
+            section.code
     of
         Ok ( state, _, es ) ->
             Ok
-                ( es
-                , state.code_vector
-                , state.quiz_vector
-                , state.survey_vector
-                , state.effect_model
-                , state.footnotes
-                , if state.defines_updated then
-                    Just state.defines
+                { section
+                    | body = es
+                    , error = Nothing
+                    , visited = True
+                    , code_vector = state.code_vector
+                    , quiz_vector = state.quiz_vector
+                    , survey_vector = state.survey_vector
+                    , effect_model = state.effect_model
+                    , footnotes = state.footnotes
+                    , definition =
+                        if state.defines_updated then
+                            Just state.defines
 
-                  else
-                    Nothing
-                )
+                        else
+                            Nothing
+                    , parsed = True
+                }
 
         Err ( _, stream, ms ) ->
             formatError ms stream |> Err
@@ -85,7 +95,7 @@ formatError ms stream =
     in
     Debug.log "ERROR: "
         ("Parse error around line:\\n\\n"
-            ++ toString location.line
+            ++ String.fromInt location.line
             ++ separator
             ++ location.source
             ++ "\\n"

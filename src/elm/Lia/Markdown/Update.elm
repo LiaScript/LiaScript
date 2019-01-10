@@ -8,13 +8,14 @@ port module Lia.Markdown.Update exposing
     , update
     )
 
+--import Lia.Code.Update as Code
+--import Lia.Quiz.Update as Quiz
+--import Lia.Survey.Update as Survey
+--import Lia.Effect.Update as Effect
+
 import Json.Encode as JE
-import Lia.Code.Update as Code
-import Lia.Effect.Update as Effect
 import Lia.Quiz.Model
-import Lia.Quiz.Update as Quiz
 import Lia.Survey.Model
-import Lia.Survey.Update as Survey
 import Lia.Types exposing (Section)
 
 
@@ -23,10 +24,10 @@ port footnote : (String -> msg) -> Sub msg
 
 type Msg
     = Event String String JE.Value
-    | UpdateEffect Bool Effect.Msg
-    | UpdateCode Code.Msg
-    | UpdateQuiz Quiz.Msg
-    | UpdateSurvey Survey.Msg
+      --    | UpdateEffect Bool Effect.Msg
+      --    | UpdateCode Code.Msg
+      --    | UpdateQuiz Quiz.Msg
+      --    | UpdateSurvey Survey.Msg
     | FootnoteHide
     | FootnoteShow String
 
@@ -52,43 +53,45 @@ maybeLog name value =
 update : Msg -> Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
 update msg section =
     case msg of
-        UpdateEffect sound childMsg ->
-            let
-                ( effect_model, cmd, log ) =
-                    Effect.update sound childMsg section.effect_model
-            in
-            ( { section | effect_model = effect_model }
-            , Cmd.map (UpdateEffect sound) cmd
-            , maybeLog "effect" log
-            )
+        {-
+           UpdateEffect sound childMsg ->
+               let
+                   ( effect_model, cmd, log ) =
+                       Effect.update sound childMsg section.effect_model
+               in
+               ( { section | effect_model = effect_model }
+               , Cmd.map (UpdateEffect sound) cmd
+               , maybeLog "effect" log
+               )
 
-        UpdateCode childMsg ->
-            let
-                ( code_vector, log ) =
-                    Code.update childMsg section.code_vector
-            in
-            ( { section | code_vector = code_vector }, Cmd.none, maybeLog "code" log )
 
-        UpdateQuiz childMsg ->
-            let
-                ( quiz_vector, log ) =
-                    Quiz.update childMsg section.quiz_vector
-            in
-            ( { section | quiz_vector = quiz_vector }
-            , Cmd.none
-            , maybeLog "quiz" log
-            )
+              UpdateCode childMsg ->
+                  let
+                      ( code_vector, log ) =
+                          Code.update childMsg section.code_vector
+                  in
+                  ( { section | code_vector = code_vector }, Cmd.none, maybeLog "code" log )
 
-        UpdateSurvey childMsg ->
-            let
-                ( survey_vector, log ) =
-                    Survey.update childMsg section.survey_vector
-            in
-            ( { section | survey_vector = survey_vector }
-            , Cmd.none
-            , maybeLog "survey" log
-            )
+           UpdateQuiz childMsg ->
+               let
+                   ( quiz_vector, log ) =
+                       Quiz.update childMsg section.quiz_vector
+               in
+               ( { section | quiz_vector = quiz_vector }
+               , Cmd.none
+               , maybeLog "quiz" log
+               )
 
+           UpdateSurvey childMsg ->
+               let
+                   ( survey_vector, log ) =
+                       Survey.update childMsg section.survey_vector
+               in
+               ( { section | survey_vector = survey_vector }
+               , Cmd.none
+               , maybeLog "survey" log
+               )
+        -}
         FootnoteShow key ->
             ( { section | footnote2show = Just key }, Cmd.none, Nothing )
 

@@ -15,7 +15,7 @@ inline key =
         [ Attr.attribute
             "onclick"
             ("lia.app.ports.footnote.send(\"" ++ key ++ "\");")
-        , Attr.style [ ( "cursor", "pointer" ) ]
+        , Attr.style "cursor" "pointer"
         ]
         [ braces key ]
 
@@ -34,17 +34,14 @@ block fn model =
             |> toList
             |> List.map def
             |> Html.table
-                [ Attr.style
-                    [ --( "width", "100%" )
-                      ( "padding", "-10px" )
-                    , ( "border-top", "2px solid black" )
-                    , ( "-ms-transform", "scale(0.8, 0.8)" )
-                    , ( "-ms-transform-origin", "0 50%" )
-                    , ( "-webkit-transform", "scale(0.8, 0.8)" )
-                    , ( "-webkit-transform-origin-x", "0" )
-                    , ( "transform", "scale(0.8, 0.8)" )
-                    , ( "transform-origin", "0 50%" )
-                    ]
+                [ Attr.style "padding" "-10px"
+                , Attr.style "border-top" "2px solid black"
+                , Attr.style "-ms-transform" "scale(0.8, 0.8)"
+                , Attr.style "-ms-transform-origin" "0 50%"
+                , Attr.style "-webkit-transform" "scale(0.8, 0.8)"
+                , Attr.style "-webkit-transform-origin-x" "0"
+                , Attr.style "transform" "scale(0.8, 0.8)"
+                , Attr.style "transform-origin" "0 50%"
                 , Attr.align "left"
                 ]
 
@@ -54,7 +51,7 @@ definition fn ( key, val ) =
     Html.tr []
         [ Html.td
             [ Attr.attribute "valign" "top"
-            , Attr.style [ ( "padding-right", "10px" ) ]
+            , Attr.style "padding-right" "10px"
             ]
             [ Html.p [] [ braces key ] ]
         , Html.td

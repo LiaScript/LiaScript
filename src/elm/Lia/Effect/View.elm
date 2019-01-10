@@ -10,7 +10,7 @@ import Translations exposing (Lang, soundOff, soundOn)
 view : (List inline -> List (Html msg)) -> Int -> List inline -> List (Html msg)
 view viewer idx elements =
     (idx
-        |> toString
+        |> String.fromInt
         |> Html.text
         |> List.singleton
         |> Html.span [ Attr.class "lia-effect-circle" ]
@@ -21,7 +21,7 @@ view viewer idx elements =
 
 view_block : (block -> Html msg) -> Int -> List block -> List (Html msg)
 view_block viewer idx blocks =
-    Html.span [ Attr.class "lia-effect-circle" ] [ Html.text (toString idx) ]
+    Html.span [ Attr.class "lia-effect-circle" ] [ Html.text (String.fromInt idx) ]
         :: List.map viewer blocks
 
 
@@ -89,4 +89,4 @@ state model =
         ( False, "" )
 
     else
-        ( model.speaking, "(" ++ toString (model.visible + 1) ++ "/" ++ toString (model.effects + 1) ++ ")" )
+        ( model.speaking, "(" ++ String.fromInt (model.visible + 1) ++ "/" ++ String.fromInt (model.effects + 1) ++ ")" )

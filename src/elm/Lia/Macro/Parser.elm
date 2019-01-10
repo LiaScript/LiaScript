@@ -13,8 +13,8 @@ pattern =
     spaces |> keep (regex "@[\\w.]+")
 
 
-param : Parser PState String
-param =
+parameter : Parser PState String
+parameter =
     [ c_frame
         |> keep (regex "(([^`]+|(`[^`]+)|(``[^`]+))|\\n)+")
         |> ignore c_frame
@@ -27,9 +27,9 @@ param =
         |> map toJSstring
 
 
-param_list : Parser PState (List String)
-param_list =
-    optional [] (parens (sepBy (string ",") param))
+parameter_list : Parser PState (List String)
+parameter_list =
+    optional [] (parens (sepBy (string ",") parameter))
 
 
 macro : Parser PState ()
@@ -64,8 +64,8 @@ uid_update state =
 simple_macro : Parser PState ( String, List String )
 simple_macro =
     pattern
-        |> map (,)
-        |> andMap param_list
+        |> map Tuple.pair
+        |> andMap parameter_list
 
 
 code_block : Parser PState (List String)
@@ -88,7 +88,7 @@ macro_listing =
     )
         |> andThen
             (\name ->
-                (param_list |> ignore (regex "[\t ]*\\n"))
+                (parameter_list |> ignore (regex "[\t ]*\\n"))
                     |> andThen
                         (\params ->
                             map (List.append params) code_block
@@ -119,7 +119,7 @@ inject_macro ( name, params ) =
 
                         ( new_state, _, new_code ) =
                             List.foldl
-                                eval_param
+                                eval_parameter
                                 ( state, 0, code_ )
                                 params
                     in
@@ -134,13 +134,13 @@ inject_macro ( name, params ) =
     withState inject
 
 
-eval_param : String -> ( PState, Int, String ) -> ( PState, Int, String )
-eval_param param ( state, i, code ) =
+eval_parameter : String -> ( PState, Int, String ) -> ( PState, Int, String )
+eval_parameter param ( state, i, code ) =
     let
         ( new_state, new_param ) =
             macro_parse state param
     in
-    ( new_state, i + 1, string_replace ( "@" ++ toString i, new_param ) code )
+    ( new_state, i + 1, string_replace ( "@" ++ String.fromInt i, new_param ) code )
 
 
 get : String -> Definition -> Maybe String
@@ -159,10 +159,10 @@ get name def =
             Just def.version
 
         "@section" ->
-            Just (toString def.section)
+            Just (String.fromInt def.section)
 
         "@uid" ->
-            Just (toString def.section ++ "." ++ toString def.uid)
+            Just (String.fromInt def.section ++ "." ++ String.fromInt def.uid)
 
         _ ->
             Dict.get name def.macro

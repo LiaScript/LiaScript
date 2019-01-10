@@ -22,7 +22,7 @@ parse =
             in
             data
                 |> List.reverse
-                |> List.indexedMap (,)
+                |> List.indexedMap Tuple.pair
                 |> List.map
                     (\( y, l ) ->
                         l

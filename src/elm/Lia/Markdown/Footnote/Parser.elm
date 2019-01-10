@@ -12,7 +12,7 @@ inline : Parser PState (Annotation -> Inline)
 inline =
     string "[^"
         |> keep (stringTill (string "]"))
-        |> map (,)
+        |> map Tuple.pair
         |> andMap (maybe (string "(" |> keep (stringTill (string ")"))))
         |> andThen store
 
@@ -21,7 +21,7 @@ block : Parser PState (List Markdown) -> Parser PState ()
 block p =
     string "[^"
         |> keep (stringTill (string "]:"))
-        |> map (,)
+        |> map Tuple.pair
         |> ignore (identation_append "   ")
         |> andMap p
         |> andThen add_footnote

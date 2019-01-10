@@ -18,7 +18,7 @@ get_state vector idx =
 
 vector2json : Vector -> JE.Value
 vector2json vector =
-    JE.array <| Array.map element2json vector
+    JE.array element2json vector
 
 
 element2json : Element -> JE.Value
@@ -63,11 +63,11 @@ state2json state =
 
             MultipleChoiceState m ->
                 [ ( "type", JE.string "MultipleChoice" )
-                , ( "value", m |> Array.map JE.bool |> JE.array )
+                , ( "value", JE.array JE.bool m )
                 ]
 
 
-json2vector : JD.Value -> Result String Vector
+json2vector : JD.Value -> Result JD.Error Vector
 json2vector json =
     JD.decodeValue (JD.array json2element) json
 

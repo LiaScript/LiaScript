@@ -1,9 +1,10 @@
 module Lia.Markdown.Parser exposing (run)
 
+--import Lia.Chart.Parser as Chart
+--import Lia.Code.Parser as Code
+
 import Combine exposing (..)
 import Dict
-import Lia.Chart.Parser as Chart
-import Lia.Code.Parser as Code
 import Lia.Effect.Model exposing (set_annotation)
 import Lia.Effect.Parser as Effect
 import Lia.Helper exposing (..)
@@ -15,7 +16,10 @@ import Lia.Markdown.Types exposing (..)
 import Lia.PState exposing (..)
 import Lia.Quiz.Parser as Quiz
 import Lia.Survey.Parser as Survey
-import SvgBob
+
+
+
+--import SvgBob
 
 
 run : Parser PState (List Markdown)
@@ -45,18 +49,20 @@ blocks =
                             |> map Effect
                             |> andMap (Effect.markdown blocks)
                         , md_annotations
-                            |> map (,)
+                            |> map Tuple.pair
                             |> andMap (Effect.comment paragraph)
                             |> andThen to_comment
-                        , md_annotations
-                            |> map Chart
-                            |> andMap Chart.parse
+
+                        --    , md_annotations
+                        --        |> map Chart
+                        --        |> andMap Chart.parse
                         , formated_table
                         , simple_table
-                        , svgbob
-                        , md_annotations
-                            |> map Code
-                            |> andMap Code.parse
+
+                        --, svgbob
+                        --, md_annotations
+                        --    |> map Code
+                        --    |> andMap Code.parse
                         , quote
                         , horizontal_line
                         , md_annotations
@@ -98,16 +104,19 @@ to_comment ( attr, ( id1, id2 ) ) =
         |> onsuccess (Comment ( id1, id2 ))
 
 
-svgbob : Parser PState Markdown
-svgbob =
-    md_annotations
-        |> map (\attr txt -> ASCII attr (txt |> String.concat |> SvgBob.init))
-        |> ignore (regex "```[`]+\\n")
-        |> andMap
-            (manyTill
-                (maybe identation |> keep (regex "(?:.(?!````))*\\n"))
-                (identation |> ignore (regex "```[`]+"))
-            )
+
+{-
+   svgbob : Parser PState Markdown
+   svgbob =
+       md_annotations
+           |> map (\attr txt -> ASCII attr (txt |> String.concat |> SvgBob.init))
+           |> ignore (regex "```[`]+\\n")
+           |> andMap
+               (manyTill
+                   (maybe identation |> keep (regex "(?:.(?!````))*\\n"))
+                   (identation |> ignore (regex "```[`]+"))
+               )
+-}
 
 
 solution : Parser PState (Maybe ( List Markdown, Int ))

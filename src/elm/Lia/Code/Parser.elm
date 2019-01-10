@@ -13,7 +13,7 @@ import Lia.PState exposing (..)
 parse : Parser PState Code
 parse =
     sepBy1 newline listing
-        |> map (,)
+        |> map Tuple.pair
         |> andMap
             (regex "[ \n]?"
                 |> ignore (maybe identation)
@@ -59,7 +59,7 @@ title =
                 ]
             )
         |> optional True
-        |> map (,)
+        |> map Tuple.pair
         |> andMap (regex ".*")
         |> ignore newline
 
