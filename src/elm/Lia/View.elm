@@ -4,6 +4,7 @@ module Lia.View exposing (view)
 
 import Array exposing (Array)
 import Char
+import Flip exposing (flip)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
@@ -27,8 +28,8 @@ view : Model -> Html Msg
 view model =
     Html.div
         (design model.design)
-        [ view_aside model
-        , view_article model
+        [ -- view_aside model
+          view_article model
         ]
 
 
@@ -40,88 +41,91 @@ design s =
             ++ " lia-variant-"
             ++ s.light
         )
-    , Attr.style [ ( "font-size", toString s.font_size ++ "%" ) ]
+    , Attr.style "font-size" <| String.fromInt s.font_size ++ "%"
     ]
 
 
-view_aside : Model -> Html Msg
-view_aside model =
-    Html.aside
-        [ Attr.class "lia-toc"
-        , Attr.style
-            [ ( "max-width"
-              , if model.show.loc then
-                    "256px"
 
-                else
-                    "0px"
-              )
-            ]
-        ]
-        [ index_selector model.translation model.index_model
-        , model.sections
-            |> index_list model.index_model.index
-            |> view_loc model.section_active
-        , settings model.show
-            model.design
-            (model
-                |> get_active_section
-                |> Maybe.andThen .definition
-                |> Maybe.withDefault model.definition
-            )
-            (model.origin ++ "?" ++ model.readme)
-            model.origin
-            model.translation
-        ]
+{-
+   view_aside : Model -> Html Msg
+   view_aside model =
+       Html.aside
+           [ Attr.class "lia-toc"
+           , Attr.style
+               [ ( "max-width"
+                 , if model.show.loc then
+                       "256px"
 
-
-index_selector : Lang -> Lia.Index.Model.Model -> Html Msg
-index_selector lang index_model =
-    index_model
-        |> Lia.Index.View.view lang
-        |> Html.map UpdateIndex
+                   else
+                       "0px"
+                 )
+               ]
+           ]
+           [ index_selector model.translation model.index_model
+           , model.sections
+               |> index_list model.index_model.index
+               |> view_loc model.section_active
+           , settings model.show
+               model.design
+               (model
+                   |> get_active_section
+                   |> Maybe.andThen .definition
+                   |> Maybe.withDefault model.definition
+               )
+               (model.origin ++ "?" ++ model.readme)
+               model.origin
+               model.translation
+           ]
 
 
-to_secList sec =
-    ( sec.title
-    , sec.indentation
-    , sec.visited
-    , case sec.error of
-        Nothing ->
-            False
-
-        _ ->
-            True
-    )
+   index_selector : Lang -> Lia.Index.Model.Model -> Html Msg
+   index_selector lang index_model =
+       index_model
+           |> Lia.Index.View.view lang
+           |> Html.map UpdateIndex
 
 
-index_list index sections =
-    let
-        titles =
-            sections
-                |> Array.map to_secList
-                |> Array.toIndexedList
+   to_secList sec =
+       ( sec.title
+       , sec.indentation
+       , sec.visited
+       , case sec.error of
+           Nothing ->
+               False
 
-        fn ( idx, _ ) =
-            List.member idx index
-    in
-    case index of
-        [] ->
-            titles
+           _ ->
+               True
+       )
 
-        _ ->
-            List.filter fn titles
+
+   index_list index sections =
+       let
+           titles =
+               sections
+                   |> Array.map to_secList
+                   |> Array.toIndexedList
+
+           fn ( idx, _ ) =
+               List.member idx index
+       in
+       case index of
+           [] ->
+               titles
+
+           _ ->
+               List.filter fn titles
+-}
 
 
 settings : Toogler -> Design -> Definition -> String -> String -> Lang -> Html Msg
-settings show design defines url origin lang =
+settings show design_ defines url origin lang =
     Html.div []
-        [ Lazy.lazy3 view_settings lang show.settings design
+        [ Lazy.lazy3 view_settings lang show.settings design_
         , Lazy.lazy3 view_information lang show.informations defines
         , view_translations lang show.translations (origin ++ "?") (Lia.Definition.Types.get_translations defines)
         , Lazy.lazy2 qrCodeView show.share url
         , Html.div
-            [ Attr.class "lia-settings", Attr.style [ ( "display", "inline-flex" ), ( "width", "99%" ) ] ]
+            [ Attr.class "lia-settings", Attr.style "display" "inline-flex", Attr.style "width" "99%" ]
             [ dropdown show.settings "settings" (confSettings lang) (Toggle Settings)
             , dropdown show.informations "info" (confInformations lang) (Toggle Informations)
             , dropdown show.translations "translate" (confTranslations lang) (Toggle Translations)
@@ -143,20 +147,21 @@ dropdown active name alt msg =
                         ""
                    )
         , Attr.title alt
-        , Attr.style [ ( "width", "42px" ), ( "padding", "0px" ) ]
+        , Attr.style "width" "42px"
+        , Attr.style "padding" "0px"
         ]
         [ Html.text name ]
 
 
 view_settings : Lang -> Bool -> Design -> Html Msg
-view_settings lang visible design =
+view_settings lang visible design_ =
     Html.div (menu_style visible)
         [ Html.p []
             [ Html.text <| cColor lang
-            , view_design_light design.light
-            , design_theme lang design
-            , view_ace lang design.ace
-            , inc_font_size lang design.font_size
+            , view_design_light design_.light
+            , design_theme lang design_
+            , view_ace lang design_.ace
+            , inc_font_size lang design_.font_size
             ]
         ]
 
@@ -166,13 +171,13 @@ inc_font_size lang int =
     Html.div []
         [ Html.text <| baseFont lang ++ ":"
         , navButton "-" (baseDec lang) (IncreaseFontSize False)
-        , Html.text (toString int ++ "%")
+        , Html.text (String.fromInt int ++ "%")
         , navButton "+" (baseInc lang) (IncreaseFontSize True)
         ]
 
 
 design_theme : Lang -> Design -> Html Msg
-design_theme lang design =
+design_theme lang design_ =
     [ ( "default", "left", cDefault lang )
     , ( "amber", "right", cAmber lang )
     , ( "blue", "left", cBlue lang )
@@ -180,7 +185,7 @@ design_theme lang design =
     , ( "grey", "left", cGray lang )
     , ( "purple", "right", cPurple lang )
     ]
-        |> List.map (\( c, b, text ) -> check_list (c == design.theme) c text b)
+        |> List.map (\( c, b, text ) -> check_list (c == design_.theme) c text b)
         |> Html.div [ Attr.class "lia-color" ]
 
 
@@ -215,17 +220,17 @@ view_translations lang visible base list =
         else
             list
                 |> List.map
-                    (\( lang, url ) ->
+                    (\( lang_, url ) ->
                         Html.a
                             [ Attr.href (base ++ url) ]
-                            [ Html.text lang ]
+                            [ Html.text lang_ ]
                     )
 
 
 check_list : Bool -> String -> String -> String -> Html Msg
 check_list checked label text dir =
     Html.label
-        [ Attr.class label, Attr.style [ ( "float", dir ) ] ]
+        [ Attr.class label, Attr.style "float" dir ]
         [ Html.input
             [ Attr.type_ "radio"
             , Attr.name "toggle"
@@ -249,15 +254,12 @@ menu_style visible =
                 else
                     ""
                )
-    , Attr.style
-        [ ( "max-height"
-          , if visible then
-                "256px"
+    , Attr.style "max-height" <|
+        if visible then
+            "256px"
 
-            else
-                "0px"
-          )
-        ]
+        else
+            "0px"
     ]
 
 
@@ -267,47 +269,50 @@ qrCodeView visible url =
         [ Html.p []
             [ Html.img
                 [ Attr.src ("https://api.qrserver.com/v1/create-qr-code/?size=222x222&data=" ++ url)
-                , Attr.style [ ( "width", "99%" ) ]
+                , Attr.style "width" "99%"
                 ]
                 []
             ]
         ]
 
 
-view_loc : ID -> List ( ID, ( Inlines, Int, Bool, Bool ) ) -> Html Msg
-view_loc active titles =
-    let
-        loc_ =
-            loc active
-    in
-    titles
-        |> List.map loc_
-        |> Html.div [ Attr.class "lia-content" ]
+
+{-
+   view_loc : ID -> List ( ID, ( Inlines, Int, Bool, Bool ) ) -> Html Msg
+   view_loc active titles =
+       let
+           loc_ =
+               loc active
+       in
+       titles
+           |> List.map loc_
+           |> Html.div [ Attr.class "lia-content" ]
 
 
-loc : ID -> ( ID, ( Inlines, Int, Bool, Bool ) ) -> Html Msg
-loc active ( idx, ( title, indent, visited, error ) ) =
-    Html.a
-        [ --onClick (Load idx)
-          Attr.class
-            ("lia-toc-l"
-                ++ toString indent
-                ++ (if error then
-                        " lia-error"
+   loc : ID -> ( ID, ( Inlines, Int, Bool, Bool ) ) -> Html Msg
+   loc active ( idx, ( title, indent, visited, error ) ) =
+       Html.a
+           [ --onClick (Load idx)
+             Attr.class
+               ("lia-toc-l"
+                   ++ toString indent
+                   ++ (if error then
+                           " lia-error"
 
-                    else if active == idx then
-                        " lia-active"
+                       else if active == idx then
+                           " lia-active"
 
-                    else if visited then
-                        ""
+                       else if visited then
+                           ""
 
-                    else
-                        " lia-not-visited"
-                   )
-            )
-        , Attr.href ("#" ++ toString (idx + 1))
-        ]
-        (viewer 9999 title)
+                       else
+                           " lia-not-visited"
+                      )
+               )
+           , Attr.href ("#" ++ toString (idx + 1))
+           ]
+           (viewer 9999 title)
+-}
 
 
 view_article : Model -> Html Msg
@@ -355,7 +360,7 @@ navButton str title msg =
 
 
 view_nav : ID -> Mode -> Lang -> Design -> String -> List ( String, String ) -> ( Bool, String ) -> Html Msg
-view_nav section_active mode lang design base translations ( speaking, state ) =
+view_nav section_active mode lang design_ base translations ( speaking, state ) =
     Html.nav [ Attr.class "lia-toolbar" ]
         [ Html.button
             [ onClick (Toggle LOC)
@@ -368,14 +373,13 @@ view_nav section_active mode lang design base translations ( speaking, state ) =
         , Html.span [ Attr.class "lia-labeled lia-left" ]
             [ Html.span
                 [ Attr.class "lia-label"
-                , Attr.style <|
-                    if speaking then
-                        [ ( "text-decoration", "underline" ) ]
+                , if speaking then
+                    Attr.style "text-decoration" "underline"
 
-                    else
-                        []
+                  else
+                    Attr.style "" ""
                 ]
-                [ Html.text (toString (section_active + 1))
+                [ Html.text (String.fromInt (section_active + 1))
                 , Html.text <|
                     case mode of
                         Textbook ->
@@ -430,7 +434,7 @@ view_design_light light =
     Html.span
         [ Attr.class "lia-btn"
         , onClick DesignLight
-        , Attr.style [ ( "text-align", "right" ) ]
+        , Attr.style "text-align" "right"
         ]
         [ if light == "light" then
             Html.text "🌞"
@@ -451,7 +455,7 @@ view_ace lang theme =
         op =
             option theme
     in
-    Html.div [ Attr.style [ ( "display", "inline-flex" ), ( "width", "99%" ) ] ]
+    Html.div [ Attr.style "display" "inline-flex", Attr.style "width" "99%" ]
         [ Html.select [ onInput DesignAce ]
             [ [ ( "chrome", "Chrome" )
               , ( "clouds", "Clouds" )
