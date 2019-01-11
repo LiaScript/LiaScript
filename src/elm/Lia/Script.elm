@@ -109,9 +109,9 @@ get_title sections =
         |> (++) "Lia: "
 
 
-init_textbook : String -> String -> String -> Model
-init_textbook url readme origin =
-    Lia.Model.init Lia.Types.Textbook url readme origin Nothing
+init_textbook : String -> String -> String -> Maybe Int -> Model
+init_textbook url readme origin slide_number =
+    Lia.Model.init Lia.Types.Textbook url readme origin slide_number
 
 
 init_slides : String -> String -> String -> Maybe Int -> Model

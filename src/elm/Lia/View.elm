@@ -28,8 +28,8 @@ view : Model -> Html Msg
 view model =
     Html.div
         (design model.design)
-        [ -- view_aside model
-          view_article model
+        [ view_aside model
+        , view_article model
         ]
 
 
@@ -43,6 +43,42 @@ design s =
         )
     , Attr.style "font-size" <| String.fromInt s.font_size ++ "%"
     ]
+
+
+view_aside : Model -> Html Msg
+view_aside model =
+    Html.aside
+        [ Attr.class "lia-toc"
+        , Attr.style "max-width" <|
+            if model.show.loc then
+                "256px"
+
+            else
+                "0px"
+        ]
+        [ index_selector model.translation model.index_model
+
+        --,model.sections
+        --  |> index_list model.index_model.index
+        --  |> view_loc model.section_active
+        , settings model.show
+            model.design
+            (model
+                |> get_active_section
+                |> Maybe.andThen .definition
+                |> Maybe.withDefault model.definition
+            )
+            (model.origin ++ "?" ++ model.readme)
+            model.origin
+            model.translation
+        ]
+
+
+index_selector : Lang -> Lia.Index.Model.Model -> Html Msg
+index_selector lang index_model =
+    index_model
+        |> Lia.Index.View.view lang
+        |> Html.map UpdateIndex
 
 
 
@@ -78,11 +114,6 @@ design s =
            ]
 
 
-   index_selector : Lang -> Lia.Index.Model.Model -> Html Msg
-   index_selector lang index_model =
-       index_model
-           |> Lia.Index.View.view lang
-           |> Html.map UpdateIndex
 
 
    to_secList sec =

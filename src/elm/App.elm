@@ -72,24 +72,39 @@ type alias Flags =
 
 init : Flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
+    let
+        slide =
+            url.fragment |> Maybe.andThen String.toInt
+    in
     case ( url.query, flags.course, flags.script ) of
         ( Just query, _, _ ) ->
-            ( Model key url Loading (Lia.Script.init_textbook query "" "")
-            , Cmd.none
+            ( Model key url Loading (Lia.Script.init_textbook (get_base query) query "" slide)
+            , get_course query
             )
 
         ( _, Just query, _ ) ->
-            ( Model key { url | query = Just query } Loading (Lia.Script.init_textbook query "" "")
-            , Cmd.none
+            ( Model key { url | query = Just query } Loading (Lia.Script.init_textbook (get_base query) query "" slide)
+            , get_course query
             )
 
         ( _, _, Just script ) ->
-            ( Model key url Parsing (Lia.Script.init_textbook "" script "")
+            ( Model key url Parsing (Lia.Script.init_textbook "" script "" slide)
             , Cmd.none
             )
 
         _ ->
-            ( Model key url Waiting (Lia.Script.init_textbook "" "" ""), Cmd.none )
+            ( Model key url Waiting (Lia.Script.init_textbook "" "" "" slide), Cmd.none )
+
+
+get_base : String -> String
+get_base url =
+    url
+        |> String.split "/"
+        |> List.reverse
+        |> List.drop 1
+        |> (::) ""
+        |> List.reverse
+        |> String.join "/"
 
 
 
@@ -216,7 +231,7 @@ subscriptions model =
 
 view : Model -> Browser.Document Msg
 view model =
-    { title = "Lia"
+    { title = model.lia.title
     , body =
         case model.state of
             Running ->
