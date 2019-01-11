@@ -109,13 +109,12 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         LiaScript childMsg ->
-            --            let
-            --                ( lia, cmd ) =
-            --                    Lia.Script.update childMsg model.lia
-            --            in
-            ( model, Cmd.none )
+            let
+                ( lia, cmd ) =
+                    Lia.Script.update childMsg model.lia
+            in
+            ( { model | lia = lia }, Cmd.map LiaScript cmd )
 
-        -- LiaScript cmd )
         LinkClicked urlRequest ->
             case urlRequest of
                 Browser.Internal url ->
@@ -200,7 +199,7 @@ get_course url =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Sub.map LiaScript (Lia.Script.subscriptions model.lia)
 
 
 

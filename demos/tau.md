@@ -131,28 +131,9 @@ script:  https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.1/snippets/prolog.js
 -->
 
 # Arbeitsbuch PROLOG
-<!--
-@bash
-<pre class="lia-code-stdout">@0</pre>
-@end
--->
 
 Template for integrating the Tau-Prolog interpreter into LiaScript
 
-
-
-```javascript @cbash
-  fuck
-
-  int 222
-```
-
-
-```````````````````
-  ________________________
- |________________________|
-
-`````````````````
 
 
 
