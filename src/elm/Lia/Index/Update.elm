@@ -16,6 +16,7 @@ update msg model sections =
                 , index =
                     if pattern == "" then
                         []
+
                     else
                         scan sections pattern
             }
@@ -36,5 +37,6 @@ checker : String -> ( Int, String ) -> Maybe Int
 checker pattern ( idx, string ) =
     if String.contains pattern string then
         Just idx
+
     else
         Nothing

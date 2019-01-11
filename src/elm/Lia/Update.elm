@@ -63,7 +63,7 @@ type Msg
 
 
 type Toggle
-    = LOC
+    = TOC
     | Settings
     | Translations
     | Informations
@@ -328,14 +328,14 @@ update msg model =
                 ( Toggle what, _ ) ->
                     let
                         show =
-                            Toogler model.show.loc False False False False
+                            Toogler model.show.toc False False False False
                     in
                     update UpdateSettings
                         { model
                             | show =
                                 case what of
-                                    LOC ->
-                                        { show | loc = not show.loc }
+                                    TOC ->
+                                        { show | toc = not show.toc }
 
                                     Settings ->
                                         { show | settings = not model.show.settings }

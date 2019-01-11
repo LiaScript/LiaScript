@@ -13,7 +13,7 @@ import Lia.Definition.Types exposing (Definition, get_translations)
 import Lia.Effect.Model exposing (current_paragraphs)
 import Lia.Effect.View exposing (responsive, state)
 import Lia.Helper exposing (ID)
-import Lia.Index.Model
+import Lia.Index.Model as Index
 import Lia.Index.View
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
@@ -50,17 +50,14 @@ view_aside model =
     Html.aside
         [ Attr.class "lia-toc"
         , Attr.style "max-width" <|
-            if model.show.loc then
+            if model.show.toc then
                 "256px"
 
             else
                 "0px"
         ]
         [ index_selector model.translation model.index_model
-
-        --,model.sections
-        --  |> index_list model.index_model.index
-        --  |> view_loc model.section_active
+        , view_toc model.section_active model.index_model model.sections
         , settings model.show
             model.design
             (model
@@ -74,7 +71,7 @@ view_aside model =
         ]
 
 
-index_selector : Lang -> Lia.Index.Model.Model -> Html Msg
+index_selector : Lang -> Index.Model -> Html Msg
 index_selector lang index_model =
     index_model
         |> Lia.Index.View.view lang
@@ -89,7 +86,7 @@ index_selector lang index_model =
            [ Attr.class "lia-toc"
            , Attr.style
                [ ( "max-width"
-                 , if model.show.loc then
+                 , if model.show.toc then
                        "256px"
 
                    else
@@ -100,7 +97,7 @@ index_selector lang index_model =
            [ index_selector model.translation model.index_model
            , model.sections
                |> index_list model.index_model.index
-               |> view_loc model.section_active
+               |> view_toc model.section_active
            , settings model.show
                model.design
                (model
@@ -116,6 +113,10 @@ index_selector lang index_model =
 
 
 
+
+
+-}
+{-
    to_secList sec =
        ( sec.title
        , sec.indentation
@@ -127,8 +128,8 @@ index_selector lang index_model =
            _ ->
                True
        )
-
-
+-}
+{-
    index_list index sections =
        let
            titles =
@@ -139,13 +140,12 @@ index_selector lang index_model =
            fn ( idx, _ ) =
                List.member idx index
        in
-       case index of
-           [] ->
-               titles
-
-           _ ->
-               List.filter fn titles
+       --    case index of
+       --        [] ->
+       titles
 -}
+--        _ ->
+--            List.filter fn titles
 
 
 settings : Toogler -> Design -> Definition -> String -> String -> Lang -> Html Msg
@@ -307,43 +307,42 @@ qrCodeView visible url =
         ]
 
 
+view_toc : ID -> Index.Model -> Sections -> Html Msg
+view_toc active index sections =
+    let
+        toc_ =
+            toc active
+    in
+    sections
+        |> Array.toIndexedList
+        |> Index.filter index
+        |> List.map toc_
+        |> Html.div [ Attr.class "lia-content" ]
 
-{-
-   view_loc : ID -> List ( ID, ( Inlines, Int, Bool, Bool ) ) -> Html Msg
-   view_loc active titles =
-       let
-           loc_ =
-               loc active
-       in
-       titles
-           |> List.map loc_
-           |> Html.div [ Attr.class "lia-content" ]
 
+toc : ID -> ( ID, Section ) -> Html Msg
+toc active ( idx, section ) =
+    Html.a
+        [ --onClick (Load idx)
+          Attr.class
+            ("lia-toc-l"
+                ++ String.fromInt section.indentation
+                ++ (if section.error /= Nothing then
+                        " lia-error"
 
-   loc : ID -> ( ID, ( Inlines, Int, Bool, Bool ) ) -> Html Msg
-   loc active ( idx, ( title, indent, visited, error ) ) =
-       Html.a
-           [ --onClick (Load idx)
-             Attr.class
-               ("lia-toc-l"
-                   ++ toString indent
-                   ++ (if error then
-                           " lia-error"
+                    else if active == idx then
+                        " lia-active"
 
-                       else if active == idx then
-                           " lia-active"
+                    else if section.visited then
+                        ""
 
-                       else if visited then
-                           ""
-
-                       else
-                           " lia-not-visited"
-                      )
-               )
-           , Attr.href ("#" ++ toString (idx + 1))
-           ]
-           (viewer 9999 title)
--}
+                    else
+                        " lia-not-visited"
+                   )
+            )
+        , Attr.href ("#" ++ String.fromInt (idx + 1))
+        ]
+        (viewer 9999 section.title)
 
 
 view_article : Model -> Html Msg
@@ -394,7 +393,7 @@ view_nav : ID -> Mode -> Lang -> Design -> String -> List ( String, String ) -> 
 view_nav section_active mode lang design_ base translations ( speaking, state ) =
     Html.nav [ Attr.class "lia-toolbar" ]
         [ Html.button
-            [ onClick (Toggle LOC)
+            [ onClick (Toggle TOC)
             , Attr.title (baseToc lang)
             , Attr.class "lia-btn lia-toc-control lia-left"
             ]

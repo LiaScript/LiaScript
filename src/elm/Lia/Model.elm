@@ -20,7 +20,7 @@ import Translations
 
 
 type alias Toogler =
-    { loc : Bool
+    { toc : Bool
     , settings : Bool
     , informations : Bool
     , translations : Bool
@@ -50,7 +50,7 @@ type alias Model =
 
 
 type alias Settings =
-    { loc : Bool
+    { toc : Bool
     , mode : String
     , theme : String
     , light : String
@@ -62,7 +62,7 @@ type alias Settings =
 
 model2settings : Model -> Settings
 model2settings model =
-    { loc = model.show.loc
+    { toc = model.show.toc
     , mode =
         case model.mode of
             Slides ->
@@ -84,7 +84,7 @@ model2settings model =
 settings2json : Settings -> JE.Value
 settings2json v =
     JE.object
-        [ ( "loc", JE.bool v.loc )
+        [ ( "toc", JE.bool v.toc )
         , ( "mode", JE.string v.mode )
         , ( "theme", JE.string v.theme )
         , ( "light", JE.string v.light )
@@ -98,7 +98,7 @@ json2settings : JD.Value -> Result JD.Error Settings
 json2settings json =
     JD.decodeValue
         (JD.map7 Settings
-            (JD.field "loc" JD.bool)
+            (JD.field "toc" JD.bool)
             (JD.field "mode" JD.string)
             (JD.field "theme" JD.string)
             (JD.field "light" JD.string)
@@ -114,7 +114,7 @@ settings2model model settings =
     case settings of
         Ok s ->
             { model
-                | show = Toogler s.loc False False False False
+                | show = Toogler s.toc False False False False
                 , design =
                     { theme = s.theme
                     , light = s.light
