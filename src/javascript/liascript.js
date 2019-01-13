@@ -1,4 +1,9 @@
+'use strict';
+
 //import Elm from './app';
+
+import { Elm } from "../elm/App.elm";
+
 
 function liaLog (string) {
     //if(window.debug__)
@@ -68,7 +73,7 @@ class LiaStorage {
           .receive("error", (e) => { console.log("error: ", e); });
     }
 
-    getItems (keys = []) {
+    getItems (key = []) {
         if(typeof key == "string")
             key = [key];
 
@@ -491,13 +496,22 @@ var events = undefined;
 var liaStorage = undefined;
 
 class LiaScript {
-    constructor(elem, script, url="", slide=0, channel=null) {
+    constructor(elem, course = null, script = null, url="", slide=0, spa = true, debug = false, channel=null) {
+
         events     = new LiaEvents();
 
-        this.app = Elm.Main.embed(elem, {url: url, script: script, slide: slide });
+        this.app = Elm.App.init({
+            node: elem,
+            flags: {
+                course: course,
+                script: script,
+                debug: debug,
+                spa: spa
+            }
+        });
 
-        //let prefs = localStorage.getItem(PREFERENCES);
-        //initPreferences(this.app.ports.event2elm.send, prefs ? JSON.parse(prefs) : prefs, true);
+        let prefs = localStorage.getItem(PREFERENCES);
+        initPreferences(this.app.ports.event2elm.send, prefs ? JSON.parse(prefs) : prefs, true);
 
         this.initSpeech2JS(this.app.ports.speech2js.subscribe, this.app.ports.speech2elm.send);
         this.initChannel(channel, this.app.ports.event2elm.send);
@@ -712,9 +726,4 @@ class LiaScript {
     }
 };
 
-/*
-module.exports = {
-    LiaError,
-    LiaScript
-};
-*/
+export { LiaScript };

@@ -139,9 +139,16 @@ update msg model =
                     ( model, Nav.load href )
 
         UrlChanged url ->
-            ( { model | url = url }
-            , Cmd.none
-            )
+            case url.fragment |> Maybe.andThen String.toInt of
+                Just idx ->
+                    let
+                        ( lia, cmd ) =
+                            Lia.Script.load_slide model.lia (idx - 1)
+                    in
+                    ( { model | lia = lia }, Cmd.map LiaScript cmd )
+
+                Nothing ->
+                    ( model, Cmd.none )
 
         Input url ->
             let

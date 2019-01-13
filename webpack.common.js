@@ -64,6 +64,10 @@ module.exports = {
           'file-loader'
         ]
       },
+  /*    {
+        test: /\.js$/,
+        loader: 'babel-loader'
+      },*/
       {
         test: /.elm$/,
         use: {
