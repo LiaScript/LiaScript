@@ -1,15 +1,18 @@
-module Lia.Index.View exposing (view)
+module Lia.Index.View exposing (view, view_search)
 
+import Array
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onInput)
 import Lia.Index.Model exposing (Model)
 import Lia.Index.Update exposing (Msg(..))
+import Lia.Markdown.Inline.View exposing (viewer)
+import Lia.Types exposing (Section, Sections)
 import Translations exposing (Lang, baseSearch)
 
 
-view : Lang -> Model -> Html Msg
-view lang model =
+view_search : Lang -> Model -> Html Msg
+view_search lang model =
     Html.span [ Attr.class "lia-toolbar" ]
         -- [ Html.span [ Attr.class "lia-icon", Attr.style [ ( "float", "left" ), ( "font-size", "16px" ) ] ] [ Html.text "search" ]
         --, Html.span [ Attr.style [ ( "float", "right" ), ( "max-width", "100px" ), ( "position", "relative" ) ] ]
@@ -25,3 +28,44 @@ view lang model =
 
         --  ]
         ]
+
+
+view : Int -> Sections -> Html msg
+view active sections =
+    let
+        toc_ =
+            toc active
+    in
+    sections
+        |> Array.toList
+        |> List.map toc_
+        |> Html.div [ Attr.class "lia-content" ]
+
+
+toc : Int -> Section -> Html msg
+toc active section =
+    if section.visible then
+        Html.a
+            [ --onClick (Load idx)
+              Attr.class
+                ("lia-toc-l"
+                    ++ String.fromInt section.indentation
+                    ++ (if section.error /= Nothing then
+                            " lia-error"
+
+                        else if active == section.idx then
+                            " lia-active"
+
+                        else if section.visited then
+                            ""
+
+                        else
+                            " lia-not-visited"
+                       )
+                )
+            , Attr.href ("#" ++ String.fromInt (section.idx + 1))
+            ]
+            (viewer 9999 section.title)
+
+    else
+        Html.text ""

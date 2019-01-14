@@ -16,6 +16,8 @@ type alias Section =
     , title : Inlines
     , visited : Bool
     , indentation : Int
+    , visible : Bool
+    , idx : Int
     , body : List Markdown
     , parsed : Bool
     , error : Maybe String
@@ -33,12 +35,14 @@ type alias Sections =
     Array Section
 
 
-init_section : ( Int, Inlines, String ) -> Section
-init_section ( tags, title, code ) =
+init_section : Int -> ( Int, Inlines, String ) -> Section
+init_section idx ( identation, title, code ) =
     { code = code
     , title = title
     , visited = True
-    , indentation = tags
+    , indentation = identation
+    , visible = True
+    , idx = idx
     , parsed = False
     , body = []
     , error = Nothing

@@ -124,13 +124,15 @@ update msg model =
 
         UpdateIndex childMsg ->
             let
-                index =
-                    model.sections
-                        |> Array.map .code
-                        |> Array.toIndexedList
-                        |> Index.update childMsg model.index_model
+                ( index, sections ) =
+                    Index.update childMsg model.index_model model.sections
             in
-            ( { model | index_model = index }, Cmd.none )
+            ( { model
+                | index_model = index
+                , sections = sections
+              }
+            , Cmd.none
+            )
 
         Event ( "load", idx, ( _, _ ) ) ->
             update InitSection (generate { model | section_active = idx })
@@ -274,7 +276,7 @@ generate model =
                         { sec | effect_model = { effects | visible = 0 } }
 
                     else
-                        case Lia.Parser.parse_section model.definition sec model.section_active of
+                        case Lia.Parser.parse_section model.definition sec of
                             Ok new_sec ->
                                 new_sec
 

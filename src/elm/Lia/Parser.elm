@@ -39,13 +39,12 @@ parse_titles defines code =
 parse_section :
     Definition
     -> Section
-    -> Int
-    -> Result String Section --( List Markdown, Code.Vector, Quiz.Vector, Survey.Vector, Effect.Model, Footnote.Model, Maybe Definition )
-parse_section global section sec_id =
+    -> Result String Section
+parse_section global section =
     case
         Combine.runParser
             (Lia.Definition.Parser.parse |> keep Markdown.run)
-            (Lia.PState.init { global | section = sec_id })
+            (Lia.PState.init { global | section = section.idx })
             section.code
     of
         Ok ( state, _, es ) ->

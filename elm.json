@@ -13,14 +13,19 @@
             "elm/http": "2.0.0",
             "elm/json": "1.1.2",
             "elm/url": "1.0.0",
-            "pilatch/flip": "1.0.0"
+            "pilatch/flip": "1.0.0",
+            "rluiten/elm-text-search": "5.0.0"
         },
         "indirect": {
+            "NoRedInk/elm-json-decode-pipeline": "1.0.0",
             "elm/bytes": "1.0.7",
             "elm/file": "1.0.1",
             "elm/regex": "1.0.0",
             "elm/time": "1.0.0",
-            "elm/virtual-dom": "1.0.2"
+            "elm/virtual-dom": "1.0.2",
+            "rluiten/sparsevector": "1.0.3",
+            "rluiten/stemmer": "1.0.4",
+            "rluiten/trie": "2.0.3"
         }
     },
     "test-dependencies": {

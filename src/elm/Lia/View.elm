@@ -1,6 +1,7 @@
 module Lia.View exposing (view)
 
 --import Html.Lazy exposing (lazy2)
+--import Lia.Index.Model as Index
 
 import Array exposing (Array)
 import Char
@@ -13,8 +14,7 @@ import Lia.Definition.Types exposing (Definition, get_translations)
 import Lia.Effect.Model exposing (current_paragraphs)
 import Lia.Effect.View exposing (responsive, state)
 import Lia.Helper exposing (ID)
-import Lia.Index.Model as Index
-import Lia.Index.View
+import Lia.Index.View as Index
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.View as Markdown
@@ -47,8 +47,8 @@ view_aside model =
             else
                 "0px"
         ]
-        [ index_selector model.translation model.index_model
-        , view_toc model.section_active model.index_model model.sections
+        [ Html.map UpdateIndex <| Index.view_search model.translation model.index_model
+        , Index.view model.section_active model.sections
         , Html.map UpdateSettings <|
             Settings.view model.settings
                 (model
@@ -60,13 +60,6 @@ view_aside model =
                 model.origin
                 model.translation
         ]
-
-
-index_selector : Lang -> Index.Model -> Html Msg
-index_selector lang index_model =
-    index_model
-        |> Lia.Index.View.view lang
-        |> Html.map UpdateIndex
 
 
 
@@ -104,44 +97,6 @@ index_selector lang index_model =
                ]
            ]
 -}
-
-
-view_toc : ID -> Index.Model -> Sections -> Html Msg
-view_toc active index sections =
-    let
-        toc_ =
-            toc active
-    in
-    sections
-        |> Array.toIndexedList
-        |> Index.filter index
-        |> List.map toc_
-        |> Html.div [ Attr.class "lia-content" ]
-
-
-toc : ID -> ( ID, Section ) -> Html Msg
-toc active ( idx, section ) =
-    Html.a
-        [ --onClick (Load idx)
-          Attr.class
-            ("lia-toc-l"
-                ++ String.fromInt section.indentation
-                ++ (if section.error /= Nothing then
-                        " lia-error"
-
-                    else if active == idx then
-                        " lia-active"
-
-                    else if section.visited then
-                        ""
-
-                    else
-                        " lia-not-visited"
-                   )
-            )
-        , Attr.href ("#" ++ String.fromInt (idx + 1))
-        ]
-        (viewer 9999 section.title)
 
 
 view_article : Model -> Html Msg

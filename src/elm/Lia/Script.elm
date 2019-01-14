@@ -56,8 +56,8 @@ set_script model script =
 
                         sections =
                             title_sections
-                                |> List.map init_section
                                 |> Array.fromList
+                                |> Array.indexedMap init_section
 
                         section_active =
                             if Array.length sections > model.section_active then

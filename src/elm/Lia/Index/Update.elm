@@ -1,42 +1,45 @@
 module Lia.Index.Update exposing (Msg(..), update)
 
+import Array
 import Lia.Index.Model exposing (Model)
+import Lia.Types exposing (Section, Sections)
 
 
 type Msg
     = ScanIndex String
 
 
-update : Msg -> Model -> List ( Int, String ) -> Model
+update : Msg -> Model -> Sections -> ( Model, Sections )
 update msg model sections =
     case msg of
         ScanIndex pattern ->
-            { model
-                | search = pattern
-                , index =
-                    if pattern == "" then
-                        []
-
-                    else
-                        scan sections pattern
-            }
+            ( { model | search = pattern }
+            , scan sections pattern
+            )
 
 
-scan : List ( Int, String ) -> String -> List Int
-scan index pattern =
+scan : Sections -> String -> Sections
+scan sections pattern =
     let
         check =
-            pattern
-                |> String.toLower
-                |> checker
+            if pattern == "" then
+                make_visible
+
+            else
+                pattern
+                    |> String.toLower
+                    |> search
     in
-    List.filterMap check index
+    Array.map check sections
 
 
-checker : String -> ( Int, String ) -> Maybe Int
-checker pattern ( idx, string ) =
-    if String.contains pattern string then
-        Just idx
+search : String -> Section -> Section
+search pattern section =
+    { section
+        | visible = String.contains pattern section.code
+    }
 
-    else
-        Nothing
+
+make_visible : Section -> Section
+make_visible section =
+    { section | visible = True }
