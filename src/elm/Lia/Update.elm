@@ -1,6 +1,5 @@
 port module Lia.Update exposing
     ( Msg(..)
-    , Toggle(..)
     , get_active_section
     , maybe_event
     , subscriptions
@@ -16,7 +15,9 @@ import Lia.Index.Update as Index
 import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (..)
 import Lia.Parser exposing (parse_section)
-import Lia.Types exposing (Mode(..), Section, Sections)
+import Lia.Settings.Model exposing (Mode(..))
+import Lia.Settings.Update as Settings
+import Lia.Types exposing (Section, Sections)
 
 
 
@@ -49,26 +50,10 @@ type Msg
     | InitSection
     | PrevSection
     | NextSection
-    | DesignTheme String
-    | DesignLight
-    | DesignAce String
     | UpdateIndex Index.Msg
+    | UpdateSettings Settings.Msg
     | UpdateMarkdown Markdown.Msg
-    | UpdateSettings
-    | SwitchMode
-    | Toggle Toggle
-      --    | Location String
-    | IncreaseFontSize Bool
     | Event ( String, Int, ( String, JE.Value ) )
-
-
-type Toggle
-    = TOC
-    | Settings
-    | Translations
-    | Informations
-    | Share
-    | Sound
 
 
 log_maybe : ID -> Maybe ( String, JE.Value ) -> List ( String, ID, JE.Value )
@@ -84,7 +69,7 @@ log_maybe idx log_ =
 speak : Model -> Bool
 speak model =
     if model.ready then
-        model.sound
+        model.settings.sound
 
     else
         False
@@ -98,11 +83,6 @@ maybe_event idx log_ cmd =
 
         Just ( name, json ) ->
             Cmd.batch [ event2js ( name, idx, json ), Cmd.map UpdateMarkdown cmd ]
-
-
-log_settings : Model -> Cmd Msg
-log_settings model =
-    event2js ( "preferences", -1, model |> model2settings |> settings2json )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -128,61 +108,19 @@ update msg model =
             else
                 ( model, Cmd.none )
 
-        UpdateSettings ->
-            ( model, model |> log_settings )
-
-        DesignTheme theme ->
+        UpdateSettings childMsg ->
             let
-                setting =
-                    model.design
+                ( new_settings, port_msg ) =
+                    Settings.update childMsg model.settings
             in
-            update UpdateSettings { model | design = { setting | theme = theme } }
+            ( { model | settings = new_settings }
+            , case port_msg of
+                Nothing ->
+                    Cmd.none
 
-        DesignLight ->
-            let
-                setting =
-                    model.design
-            in
-            update UpdateSettings
-                { model
-                    | design =
-                        { setting
-                            | light =
-                                if setting.light == "light" then
-                                    "dark"
-
-                                else
-                                    "light"
-                        }
-                }
-
-        DesignAce theme ->
-            let
-                setting =
-                    model.design
-            in
-            update UpdateSettings { model | design = { setting | ace = theme } }
-
-        IncreaseFontSize positive ->
-            let
-                design =
-                    model.design
-            in
-            update UpdateSettings
-                { model
-                    | design =
-                        { design
-                            | font_size =
-                                if positive then
-                                    design.font_size + 10
-
-                                else if design.font_size <= 10 then
-                                    design.font_size
-
-                                else
-                                    design.font_size - 10
-                        }
-                }
+                Just event ->
+                    event2js ( "preferences", -1, event )
+            )
 
         UpdateIndex childMsg ->
             let
@@ -200,13 +138,14 @@ update msg model =
         Event ( "reset", i, ( _, val ) ) ->
             ( model, event2js ( "reset", -1, JE.null ) )
 
-        Event ( "preferences", x, ( y, json ) ) ->
-            ( json
-                |> json2settings
-                |> settings2model model
-            , Cmd.none
-            )
-
+        {-
+           Event ( "preferences", x, ( y, json ) ) ->
+               ( json
+                   |> json2settings
+                   |> settings2model model
+               , Cmd.none
+               )
+        -}
         Event ( topic, idx, ( msg_, json ) ) ->
             case Array.get idx model.sections of
                 Just sec ->
@@ -233,7 +172,7 @@ update msg model =
                     )
 
                 ( NextSection, Just sec ) ->
-                    if (model.mode == Textbook) || not (Effect.has_next sec.effect_model) then
+                    if (model.settings.mode == Textbook) || not (Effect.has_next sec.effect_model) then
                         update (Load (model.section_active + 1) True) model
 
                     else
@@ -246,7 +185,7 @@ update msg model =
                         )
 
                 ( PrevSection, Just sec ) ->
-                    if (model.mode == Textbook) || not (Effect.has_previous sec.effect_model) then
+                    if (model.settings.mode == Textbook) || not (Effect.has_previous sec.effect_model) then
                         update (Load (model.section_active - 1) True) model
 
                     else
@@ -261,7 +200,7 @@ update msg model =
                 ( InitSection, Just sec ) ->
                     let
                         ( sec_, cmd_, log_ ) =
-                            case model.mode of
+                            case model.settings.mode of
                                 Textbook ->
                                     Markdown.initEffect True False sec
 
@@ -278,77 +217,6 @@ update msg model =
                             ]
                         |> Cmd.batch
                     )
-
-                ( SwitchMode, Just sec ) ->
-                    let
-                        mode =
-                            case model.mode of
-                                Presentation ->
-                                    Slides
-
-                                Slides ->
-                                    Textbook
-
-                                Textbook ->
-                                    Presentation
-
-                        ( sec_, cmd_, log_ ) =
-                            case mode of
-                                Textbook ->
-                                    Markdown.initEffect True False sec
-
-                                _ ->
-                                    Markdown.initEffect False False sec
-
-                        model_ =
-                            { model | mode = mode }
-                    in
-                    ( set_active_section model_ sec_
-                    , Cmd.batch
-                        [ maybe_event model.section_active log_ cmd_
-                        , log_settings model_
-                        ]
-                    )
-
-                ( Toggle Sound, Just sec ) ->
-                    let
-                        ( sec_, cmd_, log_ ) =
-                            Markdown.initEffect False (not model.sound) sec
-
-                        model_ =
-                            { model | sound = not model.sound }
-                    in
-                    ( model_
-                    , Cmd.batch
-                        [ maybe_event model.section_active log_ cmd_
-                        , log_settings model_
-                        ]
-                    )
-
-                ( Toggle what, _ ) ->
-                    let
-                        show =
-                            Toogler model.show.toc False False False False
-                    in
-                    update UpdateSettings
-                        { model
-                            | show =
-                                case what of
-                                    TOC ->
-                                        { show | toc = not show.toc }
-
-                                    Settings ->
-                                        { show | settings = not model.show.settings }
-
-                                    Informations ->
-                                        { show | informations = not model.show.informations }
-
-                                    Translations ->
-                                        { show | translations = not model.show.translations }
-
-                                    _ ->
-                                        { show | share = not model.show.share }
-                        }
 
                 _ ->
                     ( model, Cmd.none )

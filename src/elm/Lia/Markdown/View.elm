@@ -18,7 +18,8 @@ import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
 import Lia.Markdown.Inline.View exposing (annotation, attributes, viewer)
 import Lia.Markdown.Types exposing (..)
 import Lia.Markdown.Update exposing (Msg(..))
-import Lia.Types exposing (Mode(..), Section)
+import Lia.Settings.Model exposing (Mode(..))
+import Lia.Types exposing (Section)
 import Translations exposing (..)
 
 

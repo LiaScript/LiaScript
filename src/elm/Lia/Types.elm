@@ -1,4 +1,4 @@
-module Lia.Types exposing (Design, Mode(..), Section, Sections, init_section)
+module Lia.Types exposing (Section, Sections, init_section)
 
 import Array exposing (Array)
 import Lia.Code.Types as Code
@@ -9,20 +9,6 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Types exposing (Markdown)
 import Lia.Quiz.Types as Quiz
 import Lia.Survey.Types as Survey
-
-
-type Mode
-    = Slides -- Underline Comments and Effects
-    | Presentation -- Only effects
-    | Textbook -- Render Comments and Effects at ones
-
-
-type alias Design =
-    { theme : String
-    , light : String
-    , font_size : Int
-    , ace : String
-    }
 
 
 type alias Section =

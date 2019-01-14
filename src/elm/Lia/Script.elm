@@ -1,6 +1,5 @@
 module Lia.Script exposing
-    ( Mode
-    , Model
+    ( Model
     , Msg
     , get_title
     , init_presentation
@@ -20,8 +19,9 @@ import Array
 import Html exposing (Html)
 import Json.Encode as JE
 import Lia.Markdown.Inline.Stringify exposing (stringify)
-import Lia.Model exposing (json2settings, load_src, settings2model)
+import Lia.Model exposing (load_src, settings2model)
 import Lia.Parser
+import Lia.Settings.Model exposing (Mode(..))
 import Lia.Types exposing (Section, Sections, init_section)
 import Lia.Update exposing (Msg(..), maybe_event)
 import Lia.View
@@ -34,10 +34,6 @@ type alias Model =
 
 type alias Msg =
     Lia.Update.Msg
-
-
-type alias Mode =
-    Lia.Types.Mode
 
 
 load_slide : Model -> Int -> ( Model, Cmd Msg )
@@ -111,17 +107,17 @@ get_title sections =
 
 init_textbook : String -> String -> String -> Maybe Int -> Model
 init_textbook url readme origin slide_number =
-    Lia.Model.init Lia.Types.Textbook url readme origin slide_number
+    Lia.Model.init Textbook url readme origin slide_number
 
 
 init_slides : String -> String -> String -> Maybe Int -> Model
 init_slides url readme origin slide_number =
-    Lia.Model.init Lia.Types.Slides url readme origin slide_number
+    Lia.Model.init Slides url readme origin slide_number
 
 
 init_presentation : String -> String -> String -> Maybe Int -> Model
 init_presentation url readme origin slide_number =
-    Lia.Model.init Lia.Types.Presentation url readme origin slide_number
+    Lia.Model.init Presentation url readme origin slide_number
 
 
 view : Model -> Html Msg
@@ -141,14 +137,18 @@ update =
 
 switch_mode : Mode -> Model -> Model
 switch_mode mode model =
-    { model | mode = mode }
+    let
+        settings =
+            model.settings
+    in
+    { model | settings = { settings | mode = mode } }
 
 
 plain_mode : Model -> Model
 plain_mode =
-    switch_mode Lia.Types.Textbook
+    switch_mode Textbook
 
 
 slide_mode : Model -> Model
 slide_mode =
-    switch_mode Lia.Types.Slides
+    switch_mode Slides

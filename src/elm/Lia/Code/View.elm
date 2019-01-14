@@ -1,11 +1,12 @@
 module Lia.Code.View exposing (error, view)
 
+--import Lia.Ace as Ace
+
 import Array
 import Html exposing (Html)
 import Html.Attributes as Attr exposing (attribute, lang)
 import Html.Events exposing (onClick, onDoubleClick, onInput)
 import Json.Encode as JE
-import Lia.Ace as Ace
 import Lia.Code.Terminal as Terminal
 import Lia.Code.Types exposing (..)
 import Lia.Code.Update exposing (Msg(..))
