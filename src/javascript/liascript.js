@@ -514,7 +514,7 @@ class LiaScript {
         let settings = localStorage.getItem(SETTINGS);
         initSettings(this.app.ports.event2elm.send, settings ? JSON.parse(settings) : settings, true);
 
-        this.initSpeech2JS(this.app.ports.speech2js.subscribe, this.app.ports.speech2elm.send);
+        //this.initSpeech2JS(this.app.ports.speech2js.subscribe, this.app.ports.speech2elm.send);
         this.initChannel(channel, this.app.ports.event2elm.send);
 
         this.initEventSystem(this.app.ports.event2js.subscribe, this.app.ports.event2elm.send);
@@ -661,7 +661,7 @@ class LiaScript {
                 case "persistent": {
                     if(event.message == "store") {
                         storePersitent();
-                        elmSend(["load", event.section, "", null]);
+                        elmSend(["load", event.section, ["", null]]);
                     }
                     else {
                         setTimeout( (e) => { loadPersistent() }, 150 );

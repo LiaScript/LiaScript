@@ -120,22 +120,16 @@ update msg model =
                 ( model, Cmd.none )
 
         UpdateSettings childMsg ->
-            let
-                ( new_settings, port_msg ) =
-                    Settings.update childMsg model.settings
-            in
-            ( { model | settings = new_settings }
-            , case port_msg of
-                Nothing ->
-                    Cmd.none
+            case Settings.update childMsg model.settings of
+                ( settings, Nothing ) ->
+                    ( { model | settings = settings }
+                    , Cmd.none
+                    )
 
-                Just event ->
-                    event2js
-                        { command = "preferences"
-                        , section = -1
-                        , message = event
-                        }
-            )
+                ( settings, Just message ) ->
+                    ( { model | settings = settings }
+                    , event2js <| Event "settings" -1 message
+                    )
 
         UpdateIndex childMsg ->
             let
