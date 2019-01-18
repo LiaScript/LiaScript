@@ -22,7 +22,7 @@ import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Model exposing (load_src, settings2model)
 import Lia.Parser
 import Lia.Settings.Model exposing (Mode(..))
-import Lia.Types exposing (Section, Sections, init_section)
+import Lia.Types exposing (Event, Section, Sections, init_section)
 import Lia.Update exposing (Msg(..), maybe_event)
 import Lia.View
 import Translations
@@ -76,13 +76,14 @@ set_script model script =
                             js_logs
                                 |> List.append link_logs
                                 |> (::)
-                                    ( "init"
-                                    , section_active
-                                    , JE.list JE.string
-                                        [ get_title sections
-                                        , model.readme
-                                        , definition.onload
-                                        ]
+                                    (Event "init"
+                                        section_active
+                                     <|
+                                        JE.list JE.string
+                                            [ get_title sections
+                                            , model.readme
+                                            , definition.onload
+                                            ]
                                     )
                                 |> List.reverse
                     }

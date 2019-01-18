@@ -12,7 +12,7 @@ import Lia.Definition.Types as Definition exposing (Definition)
 import Lia.Helper exposing (ID)
 import Lia.Index.Model as Index
 import Lia.Settings.Model as Settings
-import Lia.Types exposing (Event2JS, Sections)
+import Lia.Types exposing (Event, Sections)
 import Translations
 
 
@@ -28,7 +28,7 @@ type alias Model =
     , definition : Definition
     , index_model : Index.Model
     , javascript : List String
-    , to_do : List Event2JS
+    , to_do : List Event
     , translation : Translations.Lang
     , ready : Bool
     }
@@ -73,7 +73,7 @@ init mode url readme origin slide_number =
     }
 
 
-load_src : String -> List String -> List String -> ( List String, List Event2JS )
+load_src : String -> List String -> List String -> ( List String, List Event )
 load_src tag old new =
     let
         member x =
@@ -83,5 +83,5 @@ load_src tag old new =
             List.filter member new
     in
     ( List.append old to_load
-    , List.map (\url -> Event2JS "ressource" 0 <| JE.list JE.string [ tag, url ]) to_load
+    , List.map (\url -> Event "ressource" 0 <| JE.list JE.string [ tag, url ]) to_load
     )

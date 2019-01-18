@@ -17,10 +17,10 @@ import Lia.Model exposing (..)
 import Lia.Parser exposing (parse_section)
 import Lia.Settings.Model exposing (Mode(..))
 import Lia.Settings.Update as Settings
-import Lia.Types exposing (Event2JS, Section, Sections)
+import Lia.Types exposing (Event, Section, Sections)
 
 
-port event2js : Event2JS -> Cmd msg
+port event2js : Event -> Cmd msg
 
 
 port event2elm : (( String, Int, ( String, JD.Value ) ) -> msg) -> Sub msg
@@ -31,14 +31,14 @@ subscriptions model =
     case get_active_section model of
         Just section ->
             Sub.batch
-                [ event2elm Event
+                [ event2elm EventIn
                 , section
                     |> Markdown.subscriptions
                     |> Sub.map UpdateMarkdown
                 ]
 
         Nothing ->
-            event2elm Event
+            event2elm EventIn
 
 
 type Msg
@@ -49,7 +49,7 @@ type Msg
     | UpdateIndex Index.Msg
     | UpdateSettings Settings.Msg
     | UpdateMarkdown Markdown.Msg
-    | Event ( String, Int, ( String, JE.Value ) )
+    | EventIn ( String, Int, ( String, JE.Value ) )
 
 
 log_maybe : ID -> Maybe ( String, JE.Value ) -> List ( String, ID, JE.Value )
@@ -149,10 +149,10 @@ update msg model =
             , Cmd.none
             )
 
-        Event ( "load", idx, ( _, _ ) ) ->
+        EventIn ( "load", idx, ( _, _ ) ) ->
             update InitSection (generate { model | section_active = idx })
 
-        Event ( "reset", _, ( _, val ) ) ->
+        EventIn ( "reset", _, ( _, val ) ) ->
             ( model
             , event2js
                 { command = "reset"
@@ -161,12 +161,12 @@ update msg model =
                 }
             )
 
-        Event ( "settings", _, ( _, json ) ) ->
+        EventIn ( "settings", _, ( _, json ) ) ->
             ( { model | settings = Settings.load model.settings json }
             , Cmd.none
             )
 
-        Event ( topic, idx, ( msg_, json ) ) ->
+        EventIn ( topic, idx, ( msg_, json ) ) ->
             case Array.get idx model.sections of
                 Just sec ->
                     let
@@ -232,13 +232,13 @@ update msg model =
                         |> List.map event2js
                         |> List.append
                             [ event2js
-                                { eventID = "slide"
+                                { command = "slide"
                                 , section = model.section_active
                                 , message = JE.null
                                 }
                             , maybe_event model.section_active log_ cmd_
                             , event2js
-                                { eventID = "persistent"
+                                { command = "persistent"
                                 , section = model.section_active
                                 , message = JE.string "load"
                                 }
@@ -269,13 +269,13 @@ restore_ model idx json json2vec update_ =
             model
 
 
-add_load : Int -> Int -> String -> List Event2JS -> List Event2JS
+add_load : Int -> Int -> String -> List Event -> List Event
 add_load length idx vector logs =
     if length == 0 then
         logs
 
     else
-        (Event2JS "load" idx <| JE.string vector) :: logs
+        (Event "load" idx <| JE.string vector) :: logs
 
 
 get_active_section : Model -> Maybe Section
