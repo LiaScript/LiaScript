@@ -18,7 +18,6 @@ module Lia.Script exposing
 import Array
 import Html exposing (Html)
 import Json.Encode as JE
-import Lia.Index.Model as Index
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Model exposing (load_src, settings2model)
 import Lia.Parser
@@ -70,7 +69,6 @@ set_script model script =
                     { model
                         | definition = { definition | scripts = [], onload = "" }
                         , sections = sections
-                        , index_model = Index.init sections
                         , section_active = section_active
                         , javascript = javascript
                         , translation = Translations.getLnFromCode definition.language
