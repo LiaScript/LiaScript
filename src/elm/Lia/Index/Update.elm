@@ -1,6 +1,7 @@
 module Lia.Index.Update exposing (Msg(..), update)
 
 import Array
+import ElmTextSearch
 import Lia.Index.Model exposing (Model)
 import Lia.Types exposing (Section, Sections)
 
@@ -14,7 +15,12 @@ update msg model sections =
     case msg of
         ScanIndex pattern ->
             ( { model | search = pattern }
-            , scan sections pattern
+            , --scan sections pattern
+              let
+                x =
+                    Debug.log "Fuck" <| Result.map Tuple.first <| ElmTextSearch.search pattern model.index
+              in
+              sections
             )
 
 

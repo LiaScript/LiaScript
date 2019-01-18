@@ -65,7 +65,7 @@ init mode url readme origin slide_number =
                 else
                     0
     , definition = Definition.default url
-    , index_model = Index.init
+    , index_model = Index.init Array.empty
     , javascript = []
     , to_do = []
     , translation = Translations.En
