@@ -1,6 +1,7 @@
-module Lia.Types exposing (Section, Sections, init_section)
+module Lia.Types exposing (Event2JS, Section, Sections, init_section)
 
 import Array exposing (Array)
+import Json.Encode as JE
 import Lia.Code.Types as Code
 import Lia.Definition.Types exposing (Definition)
 import Lia.Effect.Model as Effect
@@ -9,6 +10,13 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Types exposing (Markdown)
 import Lia.Quiz.Types as Quiz
 import Lia.Survey.Types as Survey
+
+
+type alias Event2JS =
+    { command : String
+    , section : Int
+    , message : JE.Value
+    }
 
 
 type alias Section =

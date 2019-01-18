@@ -467,26 +467,27 @@ function loadPersistent() {
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-const PREFERENCES = "preferences";
+const SETTINGS = "settings";
 
-function initPreferences(send, data, local=false) {
+function initSettings(send, data, local=false) {
 
     if (data == null) {
-        data = { loc:         true,
-                 mode:        "Slides",
-                 theme:       "default",
-                 theme_light: "light",
-                 ace:         "dreamweaver",
-                 font_size:   100,
-                 sound:       true
+        data = { table_of_contents: true,
+                 mode:              "Slides",
+                 theme:             "default",
+                 light:             true,
+                 editor:            "dreamweaver",
+                 font_size:         100,
+                 sound:             true,
+                 land:              "en"
                 };
     }
 
     if (local) {
-        localStorage.setItem(PREFERENCES, JSON.stringify(data));
+        localStorage.setItem(SETTINGS, JSON.stringify(data));
     }
 
-    send([PREFERENCES, -1, "", data]);
+    send([SETTINGS, -1, ["", data]]);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -510,8 +511,8 @@ class LiaScript {
             }
         });
 
-        let prefs = localStorage.getItem(PREFERENCES);
-        initPreferences(this.app.ports.event2elm.send, prefs ? JSON.parse(prefs) : prefs, true);
+        let settings = localStorage.getItem(SETTINGS);
+        initSettings(this.app.ports.event2elm.send, settings ? JSON.parse(settings) : settings, true);
 
         this.initSpeech2JS(this.app.ports.speech2js.subscribe, this.app.ports.speech2elm.send);
         this.initChannel(channel, this.app.ports.event2elm.send);
@@ -529,7 +530,7 @@ class LiaScript {
         channel.on("service", e => { events.dispatch(e.event_id, e.message); });
 
         channel.join()
-        .receive("ok", (e) => { initPreferences(send, e); })
+        .receive("ok", (e) => { initSettings(send, e); })
         .receive("error", e => { console.log("Error channel join: ", e); });
     }
 
@@ -542,13 +543,13 @@ class LiaScript {
 
         let self = this;
 
-        jsSubscribe(function(cmd) {
-            //console.log("elm2js", cmd);
+        jsSubscribe(function(event) {
+            console.log("elm2js", event);
 
-            switch (cmd[0]) {
+            switch (event.command) {
                 case "slide": {
                     if(self.channel)
-                        self.channel.push("party", { slide: cmd[1] + 1 });
+                        self.channel.push("party", { slide: event.section + 1 });
 
                     let sec = document.getElementsByTagName("section")[0];
                     if(sec) {
@@ -557,32 +558,32 @@ class LiaScript {
                     break;
                 }
                 case "load": {
-                    self.db.load(cmd[2], cmd[1]);
+                    self.db.load(event.message, event.section);
                     break;
                 }
                 case "code" : {
-                    cmd[2].forEach(function(e) {
+                    event.message.forEach(function(e) {
                         switch(e[0]) {
                             case "store": {
-                                self.db.store("code", cmd[1], e[1]);
+                                self.db.store("code", event.section, e[1]);
                                 break;
                             }
                             case "eval": {
                                 lia_eval(
                                   e[2],
-                                  { lia: lia_eval_event(elmSend, cmd[1], e[1], "code"),
+                                  { lia: lia_eval_event(elmSend, event.section, e[1], "code"),
                                     service: websocket(self.channel),
-                                    handle: (name, fn) => { events.register_input(cmd[1], e[1], name, fn) }
+                                    handle: (name, fn) => { events.register_input(event.section, e[1], name, fn) }
                                   }
                                 );
                                 break;
                             }
                             case "input": {
-                                events.dispatch_input(cmd[1], e[1], "input", e[2]);
+                                events.dispatch_input(event.section, e[1], "input", e[2]);
                                 break;
                             }
                             case "stop": {
-                                events.dispatch_input(cmd[1], e[1], "stop", e[2]);
+                                events.dispatch_input(event.section, e[1], "stop", e[2]);
                                 break;
                             }
                             default: {
@@ -590,7 +591,7 @@ class LiaScript {
                                 //    events.dispatch_input(cmd[1], e[1], "load_version", null);
                                 //}
                                 //console.log("handling Event: ", e, cmd[1]);
-                                self.db.update(e, cmd[1]);
+                                self.db.update(e, event.section);
 
                             }
                         }});
@@ -598,19 +599,19 @@ class LiaScript {
                     break;
                 }
                 case "quiz" : {
-                    self.db.store("quiz", cmd[1], cmd[2]);
+                    self.db.store("quiz", event.section, event.message);
                     break;
                 }
                 case "survey" : {
-                    self.db.store("survey", cmd[1], cmd[2]);
+                    self.db.store("survey", event.section, event.message);
                     break;
                 }
                 case "effect" : {
-                    cmd[2].forEach(function(e) {
+                    event.message.forEach(function(e) {
                       switch(e[0]) {
                           case "execute": {
                               lia_execute( e[2], e[1],
-                                         { lia: lia_eval_event(elmSend, cmd[1], e[1], "effect"),
+                                         { lia: lia_eval_event(elmSend, event.section, e[1], "effect"),
                                            service: websocket(self.channel),
                                          });
                               break;
@@ -620,23 +621,23 @@ class LiaScript {
                               break;
                           }
                           default: {
-                              console.log("effect missed", cmd, e);
+                              console.log("effect missed", event, e);
                           }
                       }});
 
                     break;
                 }
-                case PREFERENCES: {
+                case SETTINGS: {
                     if (self.channel) {
-                        self.channel.push("party", {preferences: cmd[2]});
+                        self.channel.push("party", {settings: event.message});
                     } else {
-                        localStorage.setItem(PREFERENCES, JSON.stringify(cmd[2]));
+                        localStorage.setItem(SETTINGS, JSON.stringify(event.message));
                     }
                     break;
                 }
                 case "ressource" : {
-                    let elem = cmd[2][0];
-                    let url  = cmd[2][1];
+                    let elem = event.message[0];
+                    let url  = event.message[1];
 
                     console.log(elem, ":", url);
 
@@ -658,9 +659,9 @@ class LiaScript {
                     break;
                 }
                 case "persistent": {
-                    if(cmd[2] == "store") {
+                    if(event.message == "store") {
                         storePersitent();
-                        elmSend(["load", cmd[1], "", null]);
+                        elmSend(["load", event.section, "", null]);
                     }
                     else {
                         setTimeout( (e) => { loadPersistent() }, 150 );
@@ -669,21 +670,19 @@ class LiaScript {
                     break;
                 }
                 case "init": {
-                    self.db = new LiaDB(cmd[2][1],
+                    self.db = new LiaDB(event.message[0],
                                         1,
                                         elmSend,
                                         self.channel,
-                                        { table: "code", id: cmd[1] });
+                                        { table: "code", id: event.section });
 
-                    document.title = cmd[2][0];
-
-                    if(cmd[2][2] != "") {
-                        lia_execute( cmd[2][2], 350, {});
+                    if(event.message[1] != "") {
+                        lia_execute( event.message[1], 350, {});
                     }
 
                     if (!self.channel) {
-                        let prefs = localStorage.getItem(PREFERENCES);
-                        initPreferences(elmSend, prefs ? JSON.parse(prefs) : prefs, true);
+                        let settings = localStorage.getItem(SETTINGS);
+                        initSettings(elmSend, settings ? JSON.parse(settings) : settings, true);
                     }
 
                     break;
@@ -691,12 +690,12 @@ class LiaScript {
                 case "reset": {
                     self.db.del();
                     if(!self.channel) {
-                        initPreferences(elmSend, null, true);
+                        initSettings(elmSend, null, true);
                     }
                     break;
                 }
                 default:
-                    console.log("Command not found: ", cmd);
+                    console.log("Command not found: ", event);
               }
         });
     }

@@ -50,7 +50,7 @@ parse_section global section =
         Ok ( state, _, es ) ->
             Ok
                 { section
-                    | body = Debug.log "Body: " es
+                    | body = es
                     , error = Nothing
                     , visited = True
                     , code_vector = state.code_vector

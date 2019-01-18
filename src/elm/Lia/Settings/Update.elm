@@ -1,4 +1,4 @@
-module Lia.Settings.Update exposing (Button(..), Msg(..), toggle_sound, toggle_table_of_contents, update)
+module Lia.Settings.Update exposing (Button(..), Msg(..), load, toggle_sound, toggle_table_of_contents, update)
 
 import Json.Decode as JD
 import Json.Encode as JE
@@ -84,6 +84,13 @@ update msg model =
 
         ChangeLang lang ->
             log { model | lang = lang }
+
+
+load : Model -> JE.Value -> Model
+load model json =
+    json
+        |> json2model model
+        |> Result.withDefault model
 
 
 toggle_sound : Msg

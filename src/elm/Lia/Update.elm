@@ -17,14 +17,10 @@ import Lia.Model exposing (..)
 import Lia.Parser exposing (parse_section)
 import Lia.Settings.Model exposing (Mode(..))
 import Lia.Settings.Update as Settings
-import Lia.Types exposing (Section, Sections)
+import Lia.Types exposing (Event2JS, Section, Sections)
 
 
-
---import Navigation
-
-
-port event2js : ( String, Int, JE.Value ) -> Cmd msg
+port event2js : Event2JS -> Cmd msg
 
 
 port event2elm : (( String, Int, ( String, JD.Value ) ) -> msg) -> Sub msg
@@ -82,7 +78,14 @@ maybe_event idx log_ cmd =
             Cmd.map UpdateMarkdown cmd
 
         Just ( name, json ) ->
-            Cmd.batch [ event2js ( name, idx, json ), Cmd.map UpdateMarkdown cmd ]
+            Cmd.batch
+                [ event2js
+                    { command = name
+                    , section = idx
+                    , message = json
+                    }
+                , Cmd.map UpdateMarkdown cmd
+                ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -93,7 +96,11 @@ update msg model =
                 ( model
                 , if history then
                     Cmd.batch
-                        [ event2js ( "persistent", idx, JE.string "store" )
+                        [ event2js
+                            { command = "persistent"
+                            , section = idx
+                            , message = JE.string "store"
+                            }
 
                         --    , (idx + 1)
                         --        |> String.fromInt
@@ -102,7 +109,11 @@ update msg model =
                         ]
 
                   else
-                    event2js ( "persistent", idx, JE.string "store" )
+                    event2js
+                        { command = "persistent"
+                        , section = idx
+                        , message = JE.string "store"
+                        }
                 )
 
             else
@@ -119,7 +130,11 @@ update msg model =
                     Cmd.none
 
                 Just event ->
-                    event2js ( "preferences", -1, event )
+                    event2js
+                        { command = "preferences"
+                        , section = -1
+                        , message = event
+                        }
             )
 
         UpdateIndex childMsg ->
@@ -137,17 +152,20 @@ update msg model =
         Event ( "load", idx, ( _, _ ) ) ->
             update InitSection (generate { model | section_active = idx })
 
-        Event ( "reset", i, ( _, val ) ) ->
-            ( model, event2js ( "reset", -1, JE.null ) )
+        Event ( "reset", _, ( _, val ) ) ->
+            ( model
+            , event2js
+                { command = "reset"
+                , section = -1
+                , message = JE.null
+                }
+            )
 
-        {-
-           Event ( "preferences", x, ( y, json ) ) ->
-               ( json
-                   |> json2settings
-                   |> settings2model model
-               , Cmd.none
-               )
-        -}
+        Event ( "settings", _, ( _, json ) ) ->
+            ( { model | settings = Settings.load model.settings json }
+            , Cmd.none
+            )
+
         Event ( topic, idx, ( msg_, json ) ) ->
             case Array.get idx model.sections of
                 Just sec ->
@@ -213,9 +231,17 @@ update msg model =
                     , model.to_do
                         |> List.map event2js
                         |> List.append
-                            [ event2js ( "slide", model.section_active, JE.null )
+                            [ event2js
+                                { eventID = "slide"
+                                , section = model.section_active
+                                , message = JE.null
+                                }
                             , maybe_event model.section_active log_ cmd_
-                            , event2js ( "persistent", model.section_active, JE.string "load" )
+                            , event2js
+                                { eventID = "persistent"
+                                , section = model.section_active
+                                , message = JE.string "load"
+                                }
                             ]
                         |> Cmd.batch
                     )
@@ -243,13 +269,13 @@ restore_ model idx json json2vec update_ =
             model
 
 
-add_load : Int -> Int -> String -> List ( String, Int, JE.Value ) -> List ( String, Int, JE.Value )
+add_load : Int -> Int -> String -> List Event2JS -> List Event2JS
 add_load length idx vector logs =
     if length == 0 then
         logs
 
     else
-        ( "load", idx, JE.string vector ) :: logs
+        (Event2JS "load" idx <| JE.string vector) :: logs
 
 
 get_active_section : Model -> Maybe Section
