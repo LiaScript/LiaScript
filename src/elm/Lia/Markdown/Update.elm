@@ -23,7 +23,7 @@ port footnote : (String -> msg) -> Sub msg
 
 
 type Msg
-    = Event String String JE.Value
+    = Receive String JE.Value
     | UpdateEffect Bool Effect.Msg
       --    | UpdateCode Code.Msg
       --    | UpdateQuiz Quiz.Msg
@@ -111,28 +111,29 @@ update msg section =
                in
                ( { section | code_vector = vector }, Cmd.none, maybeLog "code" log_ )
         -}
-        Event topic "restore" json ->
-            restore <|
-                case topic of
-                    "quiz" ->
-                        { section
-                            | quiz_vector =
-                                json
-                                    |> Lia.Quiz.Model.json2vector
-                                    |> Result.withDefault section.quiz_vector
-                        }
+        {-
+           Receive topic "restore" json ->
+               restore <|
+                   case topic of
+                       "quiz" ->
+                           { section
+                               | quiz_vector =
+                                   json
+                                       |> Lia.Quiz.Model.json2vector
+                                       |> Result.withDefault section.quiz_vector
+                           }
 
-                    "survey" ->
-                        { section
-                            | survey_vector =
-                                json
-                                    |> Lia.Survey.Model.json2vector
-                                    |> Result.withDefault section.survey_vector
-                        }
+                       "survey" ->
+                           { section
+                               | survey_vector =
+                                   json
+                                       |> Lia.Survey.Model.json2vector
+                                       |> Result.withDefault section.survey_vector
+                           }
 
-                    _ ->
-                        section
-
+                       _ ->
+                           section
+        -}
         _ ->
             ( section, Cmd.none, Nothing )
 
@@ -162,9 +163,9 @@ log topic msg =
             Nothing
 
 
-jsEventHandler : String -> String -> JE.Value -> Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
-jsEventHandler topic msg json =
-    update (Event topic msg json)
+jsEventHandler : String -> JE.Value -> Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
+jsEventHandler topic json =
+    update (Receive topic json)
 
 
 restore : Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )

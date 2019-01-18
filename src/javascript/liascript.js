@@ -252,7 +252,7 @@ class LiaDB {
             db.createObjectStore("survey", settings);
 
             if(init)
-                send([init.table, init.id, "restore", null]);
+                send( {topic: init.table, section: init.id, message: "restore"} );
         };
         request.onsuccess = function(e) {
             if(init) {
@@ -487,7 +487,7 @@ function initSettings(send, data, local=false) {
         localStorage.setItem(SETTINGS, JSON.stringify(data));
     }
 
-    send([SETTINGS, -1, ["", data]]);
+    send( {topic: SETTINGS, section: -1, message: data} );
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -535,7 +535,7 @@ class LiaScript {
     }
 
     reset() {
-        this.app.ports.event2elm.send(["reset", -1, "", null]);
+        this.app.ports.event2elm.send({ topic: "reset", section: -1, message: null});
     }
 
     initEventSystem(jsSubscribe, elmSend) {
@@ -546,7 +546,7 @@ class LiaScript {
         jsSubscribe(function(event) {
             console.log("elm2js", event);
 
-            switch (event.command) {
+            switch (event.topic) {
                 case "slide": {
                     if(self.channel)
                         self.channel.push("party", { slide: event.section + 1 });
@@ -654,14 +654,14 @@ class LiaScript {
                         document.head.appendChild(tag);
 
                     } catch (e) {
-                        console.log(e.message);
+                        console.log(e.msg);
                     }
                     break;
                 }
                 case "persistent": {
                     if(event.message == "store") {
                         storePersitent();
-                        elmSend(["load", event.section, ["", null]]);
+                        elmSend({topic: "load", section: event.section, message: null});
                     }
                     else {
                         setTimeout( (e) => { loadPersistent() }, 150 );

@@ -23,7 +23,7 @@ import Lia.Types exposing (Event, Section, Sections)
 port event2js : Event -> Cmd msg
 
 
-port event2elm : (( String, Int, ( String, JD.Value ) ) -> msg) -> Sub msg
+port event2elm : (Event -> msg) -> Sub msg
 
 
 subscriptions : Model -> Sub Msg
@@ -31,14 +31,14 @@ subscriptions model =
     case get_active_section model of
         Just section ->
             Sub.batch
-                [ event2elm EventIn
+                [ event2elm Handle
                 , section
                     |> Markdown.subscriptions
                     |> Sub.map UpdateMarkdown
                 ]
 
         Nothing ->
-            event2elm EventIn
+            event2elm Handle
 
 
 type Msg
@@ -49,7 +49,7 @@ type Msg
     | UpdateIndex Index.Msg
     | UpdateSettings Settings.Msg
     | UpdateMarkdown Markdown.Msg
-    | EventIn ( String, Int, ( String, JE.Value ) )
+    | Handle Event
 
 
 log_maybe : ID -> Maybe ( String, JE.Value ) -> List ( String, ID, JE.Value )
@@ -79,11 +79,7 @@ maybe_event idx log_ cmd =
 
         Just ( name, json ) ->
             Cmd.batch
-                [ event2js
-                    { command = name
-                    , section = idx
-                    , message = json
-                    }
+                [ event2js <| Event name idx json
                 , Cmd.map UpdateMarkdown cmd
                 ]
 
@@ -96,11 +92,7 @@ update msg model =
                 ( model
                 , if history then
                     Cmd.batch
-                        [ event2js
-                            { command = "persistent"
-                            , section = idx
-                            , message = JE.string "store"
-                            }
+                        [ event2js <| Event "persistent" idx <| JE.string "store"
 
                         --    , (idx + 1)
                         --        |> String.fromInt
@@ -109,11 +101,7 @@ update msg model =
                         ]
 
                   else
-                    event2js
-                        { command = "persistent"
-                        , section = idx
-                        , message = JE.string "store"
-                        }
+                    event2js <| Event "persistent" idx <| JE.string "store"
                 )
 
             else
@@ -143,36 +131,32 @@ update msg model =
             , Cmd.none
             )
 
-        EventIn ( "load", idx, ( _, _ ) ) ->
-            update InitSection (generate { model | section_active = idx })
-
-        EventIn ( "reset", _, ( _, val ) ) ->
-            ( model
-            , event2js
-                { command = "reset"
-                , section = -1
-                , message = JE.null
-                }
-            )
-
-        EventIn ( "settings", _, ( _, json ) ) ->
-            ( { model | settings = Settings.load model.settings json }
-            , Cmd.none
-            )
-
-        EventIn ( topic, idx, ( msg_, json ) ) ->
-            case Array.get idx model.sections of
-                Just sec ->
-                    let
-                        ( sec_, cmd_, log_ ) =
-                            Markdown.jsEventHandler topic msg_ json sec
-                    in
-                    ( { model | sections = Array.set idx sec_ model.sections }
-                    , maybe_event idx log_ cmd_
+        Handle event ->
+            case event.topic of
+                "settings" ->
+                    ( { model | settings = Settings.load model.settings event.message }
+                    , Cmd.none
                     )
 
-                Nothing ->
-                    ( model, Cmd.none )
+                "load" ->
+                    update InitSection (generate { model | section_active = event.section })
+
+                "reset" ->
+                    ( model, event2js <| Event "reset" -1 JE.null )
+
+                _ ->
+                    case Array.get event.section model.sections of
+                        Just sec ->
+                            let
+                                ( sec_, cmd_, log_ ) =
+                                    Markdown.jsEventHandler event.topic event.message sec
+                            in
+                            ( { model | sections = Array.set event.section sec_ model.sections }
+                            , maybe_event event.section log_ cmd_
+                            )
+
+                        Nothing ->
+                            ( model, Cmd.none )
 
         _ ->
             case ( msg, get_active_section model ) of

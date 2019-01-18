@@ -13,7 +13,7 @@ import Lia.Survey.Types as Survey
 
 
 type alias Event =
-    { command : String
+    { topic : String
     , section : Int
     , message : JE.Value
     }
