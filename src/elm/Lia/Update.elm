@@ -10,6 +10,7 @@ import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Effect.Update as Effect
+import Lia.Event exposing (Event)
 import Lia.Helper exposing (ID)
 import Lia.Index.Update as Index
 import Lia.Markdown.Update as Markdown
@@ -17,7 +18,7 @@ import Lia.Model exposing (..)
 import Lia.Parser exposing (parse_section)
 import Lia.Settings.Model exposing (Mode(..))
 import Lia.Settings.Update as Settings
-import Lia.Types exposing (Event, Section, Sections)
+import Lia.Types exposing (Section, Sections)
 
 
 port event2js : Event -> Cmd msg

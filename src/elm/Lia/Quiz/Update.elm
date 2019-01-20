@@ -4,7 +4,7 @@ import Array
 import Json.Encode as JE
 import Lia.Quiz.Model exposing (json2vector, vector2json)
 import Lia.Quiz.Types exposing (..)
-import Lia.Utils exposing (evaluateJS, string_replace)
+import Lia.Utils exposing (string_replace)
 
 
 type Msg
@@ -29,69 +29,73 @@ update msg vector =
             ( update_ idx vector (input string), Nothing )
 
         Check idx solution eval_string ->
-            let
-                new_vector =
-                    update_ idx
-                        vector
-                        (\e ->
-                            case eval_string of
-                                Nothing ->
-                                    { e
-                                        | trial = e.trial + 1
-                                        , solved =
-                                            if e.state == solution then
-                                                Solved
+            {- let
+                   new_vector =
+                       update_ idx
+                           vector
+                           (\e ->
+                               case eval_string of
+                                   Nothing ->
+                                       { e
+                                           | trial = e.trial + 1
+                                           , solved =
+                                               if e.state == solution then
+                                                   Solved
 
-                                            else
-                                                Open
-                                    }
+                                               else
+                                                   Open
+                                       }
 
-                                Just code ->
-                                    let
-                                        state =
-                                            case e.state of
-                                                TextState str ->
-                                                    str
+                                   Just code ->
+                                       let
+                                           state =
+                                               case e.state of
+                                                   TextState str ->
+                                                       str
 
-                                                SingleChoiceState i ->
-                                                    toString i
+                                                   SingleChoiceState i ->
+                                                       String.fromInt i
 
-                                                MultipleChoiceState array ->
-                                                    array
-                                                        |> Array.map
-                                                            (\s ->
-                                                                if s then
-                                                                    1
+                                                   MultipleChoiceState array ->
+                                                       array
+                                                           |> Array.map
+                                                               (\s ->
+                                                                   if s then
+                                                                       "1"
 
-                                                                else
-                                                                    0
-                                                            )
-                                                        |> Array.toList
-                                                        |> toString
+                                                                   else
+                                                                       "0"
+                                                               )
+                                                           |> Array.toList
+                                                           |> List.intersperse ","
+                                                           |> List.concat
+                                                           |> (\str -> "[" ++ str ++ "]")
 
-                                                _ ->
-                                                    toString e.state
-                                    in
-                                    case code |> string_replace ( "@input", state ) |> evaluateJS of
-                                        Ok "true" ->
-                                            { e
-                                                | trial = e.trial + 1
-                                                , solved = Solved
-                                                , error_msg = ""
-                                            }
+                                                   _ ->
+                                                       e.state
+                                       in
+                                       case code |> string_replace ( "@input", state ) |> evaluateJS of
+                                           Ok "true" ->
+                                               { e
+                                                   | trial = e.trial + 1
+                                                   , solved = Solved
+                                                   , error_msg = ""
+                                               }
 
-                                        Ok _ ->
-                                            { e
-                                                | trial = e.trial + 1
-                                                , solved = Open
-                                                , error_msg = ""
-                                            }
+                                           Ok _ ->
+                                               { e
+                                                   | trial = e.trial + 1
+                                                   , solved = Open
+                                                   , error_msg = ""
+                                               }
 
-                                        Err msg ->
-                                            { e | error_msg = msg }
-                        )
-            in
-            ( new_vector, Just <| vector2json new_vector )
+                                           Err msg ->
+                                               { e | error_msg = msg }
+                           )
+               in
+               ( new_vector, Just <| vector2json new_vector )
+            -}
+            ( vector, Nothing )
 
         ShowHint idx ->
             let

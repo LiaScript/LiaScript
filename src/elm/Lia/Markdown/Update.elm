@@ -9,13 +9,13 @@ port module Lia.Markdown.Update exposing
     )
 
 --import Lia.Code.Update as Code
---import Lia.Quiz.Update as Quiz
---import Lia.Survey.Update as Survey
 
 import Json.Encode as JE
 import Lia.Effect.Update as Effect
 import Lia.Quiz.Model
+import Lia.Quiz.Update as Quiz
 import Lia.Survey.Model
+import Lia.Survey.Update as Survey
 import Lia.Types exposing (Section)
 
 
@@ -26,8 +26,8 @@ type Msg
     = Receive String JE.Value
     | UpdateEffect Bool Effect.Msg
       --    | UpdateCode Code.Msg
-      --    | UpdateQuiz Quiz.Msg
-      --    | UpdateSurvey Survey.Msg
+    | UpdateQuiz Quiz.Msg
+    | UpdateSurvey Survey.Msg
     | FootnoteHide
     | FootnoteShow String
 
@@ -35,8 +35,10 @@ type Msg
 subscriptions : Section -> Sub Msg
 subscriptions section =
     Sub.batch
-        [ --Sub.map (UpdateEffect False) (Effect.subscriptions section.effect_model)
-          footnote FootnoteShow
+        [ Sub.map (UpdateEffect False)
+            (Effect.subscriptions section.effect_model)
+            footnote
+            FootnoteShow
         ]
 
 
@@ -65,33 +67,33 @@ update msg section =
 
         {-
 
-              UpdateCode childMsg ->
-                  let
-                      ( code_vector, log ) =
-                          Code.update childMsg section.code_vector
-                  in
-                  ( { section | code_vector = code_vector }, Cmd.none, maybeLog "code" log )
-
-           UpdateQuiz childMsg ->
+           UpdateCode childMsg ->
                let
-                   ( quiz_vector, log ) =
-                       Quiz.update childMsg section.quiz_vector
+                   ( code_vector, log ) =
+                       Code.update childMsg section.code_vector
                in
-               ( { section | quiz_vector = quiz_vector }
-               , Cmd.none
-               , maybeLog "quiz" log
-               )
-
-           UpdateSurvey childMsg ->
-               let
-                   ( survey_vector, log ) =
-                       Survey.update childMsg section.survey_vector
-               in
-               ( { section | survey_vector = survey_vector }
-               , Cmd.none
-               , maybeLog "survey" log
-               )
+               ( { section | code_vector = code_vector }, Cmd.none, maybeLog "code" log )
         -}
+        UpdateQuiz childMsg ->
+            let
+                ( quiz_vector, event ) =
+                    Quiz.update childMsg section.quiz_vector
+            in
+            ( { section | quiz_vector = quiz_vector }
+            , Cmd.none
+            , maybeLog "quiz" event
+            )
+
+        UpdateSurvey childMsg ->
+            let
+                ( survey_vector, event ) =
+                    Survey.update childMsg section.survey_vector
+            in
+            ( { section | survey_vector = survey_vector }
+            , Cmd.none
+            , maybeLog "survey" event
+            )
+
         FootnoteShow key ->
             ( { section | footnote2show = Just key }, Cmd.none, Nothing )
 

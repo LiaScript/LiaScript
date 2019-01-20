@@ -9,10 +9,11 @@ import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Definition.Types as Definition exposing (Definition)
+import Lia.Event exposing (Event)
 import Lia.Helper exposing (ID)
 import Lia.Index.Model as Index
 import Lia.Settings.Model as Settings
-import Lia.Types exposing (Event, Sections)
+import Lia.Types exposing (Sections)
 import Translations
 
 

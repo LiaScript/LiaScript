@@ -18,11 +18,12 @@ module Lia.Script exposing
 import Array
 import Html exposing (Html)
 import Json.Encode as JE
+import Lia.Event exposing (Event)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Model exposing (load_src, settings2model)
 import Lia.Parser
 import Lia.Settings.Model exposing (Mode(..))
-import Lia.Types exposing (Event, Section, Sections, init_section)
+import Lia.Types exposing (Section, Sections, init_section)
 import Lia.Update exposing (Msg(..), maybe_event)
 import Lia.View
 import Translations

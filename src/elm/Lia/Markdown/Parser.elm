@@ -65,14 +65,13 @@ blocks =
                         --    |> andMap Code.parse
                         , quote
                         , horizontal_line
-
-                        --                        , md_annotations
-                        --                            |> map Survey
-                        --                            |> andMap Survey.parse
-                        --                        , md_annotations
-                        --                            |> map Quiz
-                        --                            |> andMap Quiz.parse
-                        --                            |> andMap solution
+                        , md_annotations
+                            |> map Survey
+                            |> andMap Survey.parse
+                        , md_annotations
+                            |> map Quiz
+                            |> andMap Quiz.parse
+                            |> andMap solution
                         , ordered_list
                         , unordered_list
                         , md_annotations

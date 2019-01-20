@@ -1,22 +1,16 @@
-module Lia.Types exposing (Event, Section, Sections, init_section)
+module Lia.Types exposing (Section, Sections, init_section)
 
 import Array exposing (Array)
 import Json.Encode as JE
 import Lia.Code.Types as Code
 import Lia.Definition.Types exposing (Definition)
 import Lia.Effect.Model as Effect
+import Lia.Event exposing (Event)
 import Lia.Markdown.Footnote.Model as Footnote
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Types exposing (Markdown)
 import Lia.Quiz.Types as Quiz
 import Lia.Survey.Types as Survey
-
-
-type alias Event =
-    { topic : String
-    , section : Int
-    , message : JE.Value
-    }
 
 
 type alias Section =
