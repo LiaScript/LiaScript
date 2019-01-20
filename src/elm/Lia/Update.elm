@@ -209,17 +209,9 @@ update msg model =
                     , model.to_do
                         |> List.map event2js
                         |> List.append
-                            [ event2js
-                                { command = "slide"
-                                , section = model.section_active
-                                , message = JE.null
-                                }
+                            [ event2js <| Event "slide" model.section_active JE.null
                             , maybe_event model.section_active log_ cmd_
-                            , event2js
-                                { command = "persistent"
-                                , section = model.section_active
-                                , message = JE.string "load"
-                                }
+                            , event2js <| Event "persistent" model.section_active (JE.string "load")
                             ]
                         |> Cmd.batch
                     )
