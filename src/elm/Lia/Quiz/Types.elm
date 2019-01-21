@@ -38,11 +38,15 @@ type State
     = EmptyState
     | TextState String
     | SingleChoiceState Int
-    | MultipleChoiceState (Array Bool)
+    | MultipleChoiceState (List Bool)
 
 
 type Quiz
     = Empty Int Hints (Maybe String)
     | Text String Int Hints (Maybe String)
     | SingleChoice Int MultInlines Int Hints (Maybe String)
-    | MultipleChoice (Array Bool) MultInlines Int Hints (Maybe String)
+    | MultipleChoice (List Bool) MultInlines Int Hints (Maybe String)
+
+
+type alias QuizAdd =
+    { idx : Int, hints : Hints, eval_string : Maybe String }

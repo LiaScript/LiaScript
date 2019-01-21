@@ -59,7 +59,7 @@ stateToJson state =
 
             MultipleChoiceState m ->
                 [ ( "type", JE.string "MultipleChoice" )
-                , ( "value", JE.array JE.bool m )
+                , ( "value", JE.list JE.bool m )
                 ]
 
 
@@ -106,7 +106,7 @@ jsonToState =
                     JD.map SingleChoiceState (JD.field "value" JD.int)
 
                 "MultipleChoice" ->
-                    JD.map MultipleChoiceState (JD.field "value" (JD.array JD.bool))
+                    JD.map MultipleChoiceState (JD.field "value" (JD.list JD.bool))
 
                 _ ->
                     JD.fail <|

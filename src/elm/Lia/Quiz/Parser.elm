@@ -82,7 +82,7 @@ multi_choice =
                 ( list, questions ) =
                     List.unzip m
             in
-            MultipleChoice (Array.fromList list) questions
+            MultipleChoice list questions
     in
     [ checked True (string "[X]")
     , checked False (string "[ ]")
@@ -139,7 +139,7 @@ modify_PState quiz_ =
                     SingleChoiceState -1
 
                 MultipleChoice x _ _ _ _ ->
-                    MultipleChoiceState (Array.repeat (Array.length x) False)
+                    MultipleChoiceState (List.map (\_ -> False) x)
     in
     modifyState (add_state state_)
         |> keep (succeed quiz_)

@@ -1,6 +1,6 @@
 module Lia.Quiz.Update exposing (Msg(..), update)
 
-import Array
+import Array exposing (Array)
 import Json.Encode as JE
 import Lia.Quiz.Json exposing (..)
 import Lia.Quiz.Types exposing (..)
@@ -153,11 +153,16 @@ flip question_id e =
             { e | state = SingleChoiceState question_id }
 
         MultipleChoiceState quiz ->
-            case Array.get question_id quiz of
+            let
+                array =
+                    Array.fromList quiz
+            in
+            case Array.get question_id array of
                 Just question ->
                     question
                         |> (\c -> not c)
-                        |> (\q -> Array.set question_id q quiz)
+                        |> (\q -> Array.set question_id q array)
+                        |> Array.toList
                         |> (\q -> { e | state = MultipleChoiceState q })
 
                 Nothing ->

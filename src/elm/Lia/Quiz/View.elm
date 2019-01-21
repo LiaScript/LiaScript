@@ -202,7 +202,7 @@ view_multiple_choice questions idx state solved =
         MultipleChoiceState x ->
             questions
                 |> List.indexedMap Tuple.pair
-                |> List.map2 fn (Array.toList x)
+                |> List.map2 fn x
                 |> Html.table [ Attr.attribute "cellspacing" "8" ]
 
         _ ->
