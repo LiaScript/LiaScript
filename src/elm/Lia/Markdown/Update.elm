@@ -1,7 +1,7 @@
 port module Lia.Markdown.Update exposing
     ( Msg(..)
+    , handle
     , initEffect
-    , jsEventHandler
     , nextEffect
     , previousEffect
     , subscriptions
@@ -12,6 +12,7 @@ port module Lia.Markdown.Update exposing
 
 import Json.Encode as JE
 import Lia.Effect.Update as Effect
+import Lia.Event exposing (Event)
 import Lia.Quiz.Model
 import Lia.Quiz.Update as Quiz
 import Lia.Survey.Model
@@ -23,8 +24,7 @@ port footnote : (String -> msg) -> Sub msg
 
 
 type Msg
-    = Receive String JE.Value
-    | UpdateEffect Bool Effect.Msg
+    = UpdateEffect Bool Effect.Msg
       -- | UpdateCode Code.Msg
       -- | UpdateQuiz Quiz.Msg
     | UpdateSurvey Survey.Msg
@@ -98,44 +98,44 @@ update msg section =
         FootnoteHide ->
             ( { section | footnote2show = Nothing }, Cmd.none, Nothing )
 
-        {-
-           Event "code" msg_ json ->
-               let
-                   ( vector, log_ ) =
-                       case msg_ of
-                           "restore" ->
-                               Code.restore json section.code_vector
 
-                           _ ->
-                               Code.jsEventHandler msg json section.code_vector
-               in
-               ( { section | code_vector = vector }, Cmd.none, maybeLog "code" log_ )
-        -}
-        {-
-           Receive topic "restore" json ->
-               restore <|
-                   case topic of
-                       "quiz" ->
-                           { section
-                               | quiz_vector =
-                                   json
-                                       |> Lia.Quiz.Model.json2vector
-                                       |> Result.withDefault section.quiz_vector
-                           }
 
-                       "survey" ->
-                           { section
-                               | survey_vector =
-                                   json
-                                       |> Lia.Survey.Model.json2vector
-                                       |> Result.withDefault section.survey_vector
-                           }
+{-
+   Event "code" msg_ json ->
+       let
+           ( vector, log_ ) =
+               case msg_ of
+                   "restore" ->
+                       Code.restore json section.code_vector
 
-                       _ ->
-                           section
-        -}
-        _ ->
-            ( section, Cmd.none, Nothing )
+                   _ ->
+                       Code.jsEventHandler msg json section.code_vector
+       in
+       ( { section | code_vector = vector }, Cmd.none, maybeLog "code" log_ )
+-}
+{-
+   Receive topic "restore" json ->
+       restore <|
+           case topic of
+               "quiz" ->
+                   { section
+                       | quiz_vector =
+                           json
+                               |> Lia.Quiz.Model.json2vector
+                               |> Result.withDefault section.quiz_vector
+                   }
+
+               "survey" ->
+                   { section
+                       | survey_vector =
+                           json
+                               |> Lia.Survey.Model.json2vector
+                               |> Result.withDefault section.survey_vector
+                   }
+
+               _ ->
+                   section
+-}
 
 
 nextEffect : Bool -> Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
@@ -163,9 +163,14 @@ log topic msg =
             Nothing
 
 
-jsEventHandler : String -> JE.Value -> Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
-jsEventHandler topic json =
-    update (Receive topic json)
+handle : String -> Event -> Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
+handle topic event section =
+    case topic of
+        "survey" ->
+            update (UpdateSurvey (Survey.handle event)) section
+
+        _ ->
+            ( section, Cmd.none, Nothing )
 
 
 restore : Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )

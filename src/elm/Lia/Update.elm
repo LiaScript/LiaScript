@@ -10,7 +10,7 @@ import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Effect.Update as Effect
-import Lia.Event exposing (Event)
+import Lia.Event exposing (Event, jsonToEvent)
 import Lia.Helper exposing (ID)
 import Lia.Index.Update as Index
 import Lia.Markdown.Update as Markdown
@@ -146,17 +146,17 @@ update msg model =
                     ( model, event2js <| Event "reset" -1 JE.null )
 
                 _ ->
-                    case Array.get event.section model.sections of
-                        Just sec ->
+                    case ( Array.get event.section model.sections, jsonToEvent event.message ) of
+                        ( Just sec, Ok e ) ->
                             let
                                 ( sec_, cmd_, log_ ) =
-                                    Markdown.jsEventHandler event.topic event.message sec
+                                    Markdown.handle event.topic e sec
                             in
                             ( { model | sections = Array.set event.section sec_ model.sections }
                             , maybe_event event.section log_ cmd_
                             )
 
-                        Nothing ->
+                        _ ->
                             ( model, Cmd.none )
 
         _ ->

@@ -3,8 +3,6 @@ module Lia.Survey.Model exposing
     , get_submission_state
     , get_text_state
     , get_vector_state
-    , json2vector
-    , vector2json
     )
 
 import Array
@@ -57,97 +55,3 @@ get_matrix_state vector idx row var =
 
         _ ->
             False
-
-
-vector2json : Vector -> JE.Value
-vector2json vector =
-    JE.array element2json vector
-
-
-element2json : Element -> JE.Value
-element2json ( b, state ) =
-    JE.object
-        [ ( "submitted", JE.bool b )
-        , ( "state", state2json state )
-        ]
-
-
-state2json : State -> JE.Value
-state2json state =
-    let
-        dict2json dict =
-            dict |> Dict.toList |> List.map (\( s, b ) -> ( s, JE.bool b )) |> JE.object
-    in
-    JE.object <|
-        case state of
-            TextState str ->
-                [ ( "type", JE.string "Text" )
-                , ( "value", JE.string str )
-                ]
-
-            VectorState True vector ->
-                [ ( "type", JE.string "SingleChoice" )
-                , ( "value", dict2json vector )
-                ]
-
-            VectorState False vector ->
-                [ ( "type", JE.string "MultipleChoice" )
-                , ( "value", dict2json vector )
-                ]
-
-            MatrixState True matrix ->
-                [ ( "type", JE.string "SingleChoiceBlock" )
-                , ( "value", JE.array dict2json matrix )
-                ]
-
-            MatrixState False matrix ->
-                [ ( "type", JE.string "MultipleChoiceBlock" )
-                , ( "value", JE.array dict2json matrix )
-                ]
-
-
-json2vector : JD.Value -> Result JD.Error Vector
-json2vector json =
-    JD.decodeValue (JD.array json2element) json
-
-
-json2element : JD.Decoder Element
-json2element =
-    JD.map2 Tuple.pair
-        (JD.field "submitted" JD.bool)
-        (JD.field "state" json2state)
-
-
-json2state : JD.Decoder State
-json2state =
-    let
-        value =
-            JD.field "value"
-
-        dict =
-            JD.dict JD.bool
-
-        state_decoder type_ =
-            case type_ of
-                "Text" ->
-                    JD.map TextState (value JD.string)
-
-                "SingleChoice" ->
-                    JD.map (VectorState True) (value dict)
-
-                "MultipleChoice" ->
-                    JD.map (VectorState False) (value dict)
-
-                "SingleChoiceBlock" ->
-                    JD.map (MatrixState True) (value (JD.array dict))
-
-                "MultipleChoiceBlock" ->
-                    JD.map (MatrixState False) (value (JD.array dict))
-
-                _ ->
-                    JD.fail <|
-                        "not supported type: "
-                            ++ type_
-    in
-    JD.field "type" JD.string
-        |> JD.andThen state_decoder

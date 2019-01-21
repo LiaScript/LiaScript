@@ -252,35 +252,37 @@ class LiaDB {
             db.createObjectStore("survey", settings);
 
             if(init)
-                send( {topic: init.table, section: init.id, message: "restore"} );
+                send(init);
+
         };
         request.onsuccess = function(e) {
             if(init) {
                 let db = request.result;
-                let tx = db.transaction(init.table, 'readonly');
-                let store = tx.objectStore(init.table);
+                let tx = db.transaction(init.topic, 'readonly');
+                let store = tx.objectStore(init.topic);
 
-                let item = store.get(init.id);
+                let item = store.get(init.section);
 
                 item.onsuccess = function() {
                     //console.log("table", init.table, item.result);
-                    if (item.result) {
-                        send([init.table, init.id, "restore", item.result.data]);
-                    }
-                    else {
-                        send([init.table, init.id, "restore", null]);
-                    }
+                    if (item.result)
+                        init.message.message = item.result.data;
+
+                    send(init);
                 };
                 item.onerror = function() {
-                    send([init.table, init.id, "restore", null]);
+                    send(init);
                 };
             }
         };
     }
 
-    store(table, id, data) {
+    store(event) {
         if(this.channel) {
-            this.channel.push("party", {store: table, slide: id, data: data})
+            this.channel.push("party", {
+              store: event.topic,
+              slide: event.section,
+              data: event.message })
             .receive("ok",    e => { console.log("ok", e); })
             .receive("error", e => { console.log("error", e); });
 
@@ -288,18 +290,18 @@ class LiaDB {
         }
 
 
-        liaLog(`liaDB: event(store), table(${table}), id(${id}), data(${data})`)
+        liaLog(`liaDB: event(store), table(${event.topic}), id(${event.section}), data(${event.message})`)
         if (!this.indexedDB) return;
 
         let request = this.indexedDB.open(this.uidDB, this.versionDB);
         request.onsuccess = function(e) {
             let db = request.result;
-            let tx = db.transaction(table, 'readwrite');
-            let store = tx.objectStore(table);
+            let tx = db.transaction(event.topic, 'readwrite');
+            let store = tx.objectStore(event.topic);
 
             let item = {
-                id:      id,
-                data:    data,
+                id:      event.section,
+                data:    event.message,
                 created: new Date().getTime()
             };
 
@@ -312,13 +314,14 @@ class LiaDB {
         };
     }
 
-    load(table, id) {
+    load(event) {
         let send = this.send;
 
         if (this.channel) {
-            this.channel.push("party", {load: table, slide: id})
+            this.channel.push("party", {load: event.topic, slide: event.section})
             .receive("ok",    e => {
-                send([e.table, e.slide, "restore", e.data]);
+                event.message = {topic: "restore", section: -1, message: e.date}
+                send(event);
             })
             .receive("error", e => { console.log("error", e); });
 
@@ -333,21 +336,31 @@ class LiaDB {
         request.onsuccess = function(e) {
             try {
                 let db = request.result;
-                let tx = db.transaction(table, 'readonly');
-                let store = tx.objectStore(table);
+                let tx = db.transaction(event.topic, 'readonly');
+                let store = tx.objectStore(event.topic);
 
-                let item = store.get(id);
+                let item = store.get(event.section);
 
                 item.onsuccess = function() {
-                    //console.log("table", table, item.result);
+                    console.log("restore table", event.topic, item.result);
                     if (item.result) {
-                        send([table, id, "restore", item.result.data]);
+                        event.message = {
+                          topic:"restore",
+                          section: -1,
+                          message: item.result.data };
+
+                        send(event);
                     }
                 };
                 item.onerror = function() {
                     console.log("data not found ...");
-                    if (table == "code")
-                        send([table, id, "restore", null]);
+                    if (event.topic == "code") {
+                        event.message = {
+                          topic:"restore",
+                          section: -1,
+                          message: null };
+                        send(event);
+                    }
                 };
             }
             catch (e) { console.log("Error: ", e); }
@@ -511,13 +524,20 @@ class LiaScript {
             }
         });
 
+        let send_to = this.app.ports.event2elm.send;
+
+        let sender = function(msg) {
+          console.log("event2elm :- ", msg);
+          send_to(msg);
+        };
+
         let settings = localStorage.getItem(SETTINGS);
         initSettings(this.app.ports.event2elm.send, settings ? JSON.parse(settings) : settings, true);
 
         //this.initSpeech2JS(this.app.ports.speech2js.subscribe, this.app.ports.speech2elm.send);
-        this.initChannel(channel, this.app.ports.event2elm.send);
+        this.initChannel(channel, sender);
 
-        this.initEventSystem(this.app.ports.event2js.subscribe, this.app.ports.event2elm.send);
+        this.initEventSystem(this.app.ports.event2js.subscribe, sender);
 
         liaStorage = new LiaStorage(channel);
     }
@@ -558,14 +578,17 @@ class LiaScript {
                     break;
                 }
                 case "load": {
-                    self.db.load(event.message, event.section);
+                    self.db.load({
+                      topic: event.message,
+                      section: event.section,
+                      message: null });
                     break;
                 }
                 case "code" : {
                     event.message.forEach(function(e) {
                         switch(e[0]) {
                             case "store": {
-                                self.db.store("code", event.section, e[1]);
+                                self.db.store({topic: "code", section: event.section, message: e[1]});
                                 break;
                             }
                             case "eval": {
@@ -599,11 +622,11 @@ class LiaScript {
                     break;
                 }
                 case "quiz" : {
-                    self.db.store("quiz", event.section, event.message);
+                    self.db.store(event);
                     break;
                 }
                 case "survey" : {
-                    self.db.store("survey", event.section, event.message);
+                    self.db.store(event);
                     break;
                 }
                 case "effect" : {
@@ -670,11 +693,16 @@ class LiaScript {
                     break;
                 }
                 case "init": {
-                    self.db = new LiaDB(event.message[0],
-                                        1,
-                                        elmSend,
-                                        self.channel,
-                                        { table: "code", id: event.section });
+                    self.db = new LiaDB (
+                      event.message[0], 1, elmSend, self.channel,
+                      {
+                        topic: "code",
+                        section: event.section,
+                        message: {
+                          topic:"restore",
+                          section: -1,
+                          message: null }
+                      });
 
                     if(event.message[1] != "") {
                         lia_execute( event.message[1], 350, {});

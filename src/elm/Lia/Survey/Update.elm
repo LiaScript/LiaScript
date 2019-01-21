@@ -1,9 +1,11 @@
-module Lia.Survey.Update exposing (Msg(..), update)
+module Lia.Survey.Update exposing (Msg(..), handle, update)
 
 import Array
 import Dict
 import Json.Encode as JE
-import Lia.Survey.Model exposing (vector2json)
+import Lia.Event exposing (Event)
+import Lia.Survey.Json exposing (..)
+import Lia.Survey.Model exposing (..)
 import Lia.Survey.Types exposing (..)
 
 
@@ -12,6 +14,7 @@ type Msg
     | VectorUpdate Int String
     | MatrixUpdate Int Int String
     | Submit Int
+    | Handle Event
 
 
 update : Msg -> Vector -> ( Vector, Maybe JE.Value )
@@ -32,10 +35,22 @@ update msg vector =
                     new_vector =
                         submit vector idx
                 in
-                ( new_vector, Just <| vector2json new_vector )
+                ( new_vector, Just <| vectorToJson new_vector )
 
             else
                 ( vector, Nothing )
+
+        Handle event ->
+            case event.topic of
+                "restore" ->
+                    ( event.message
+                        |> jsonToVector
+                        |> Result.withDefault vector
+                    , Nothing
+                    )
+
+                _ ->
+                    ( vector, Nothing )
 
 
 update_text : Vector -> Int -> String -> Vector
@@ -137,3 +152,8 @@ submitable vector idx =
 
         _ ->
             False
+
+
+handle : Event -> Msg
+handle =
+    Handle
