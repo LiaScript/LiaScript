@@ -166,6 +166,9 @@ log topic msg =
 handle : String -> Event -> Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
 handle topic event section =
     case topic of
+        "quiz" ->
+            update (UpdateQuiz (Quiz.handle event)) section
+
         "survey" ->
             update (UpdateSurvey (Survey.handle event)) section
 

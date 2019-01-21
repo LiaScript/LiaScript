@@ -1,7 +1,8 @@
-module Lia.Quiz.Update exposing (Msg(..), update)
+module Lia.Quiz.Update exposing (Msg(..), handle, update)
 
 import Array exposing (Array)
 import Json.Encode as JE
+import Lia.Event exposing (..)
 import Lia.Quiz.Json exposing (..)
 import Lia.Quiz.Types exposing (..)
 import Lia.Utils exposing (string_replace)
@@ -14,6 +15,7 @@ type Msg
     | Check Int State (Maybe String)
     | ShowHint Int
     | ShowSolution Int State
+    | Handle Event
 
 
 update : Msg -> Vector -> ( Vector, Maybe JE.Value )
@@ -28,8 +30,60 @@ update msg vector =
         Input idx string ->
             ( update_ idx vector (input string), Nothing )
 
-        Check idx solution eval_string ->
-            {- let
+        Check idx solution Nothing ->
+            let
+                new_vector =
+                    update_ idx
+                        vector
+                        (\e ->
+                            { e
+                                | trial = e.trial + 1
+                                , solved =
+                                    if e.state == solution then
+                                        Solved
+
+                                    else
+                                        Open
+                            }
+                        )
+            in
+            ( new_vector, Just <| vectorToJson new_vector )
+
+        Check idx solution (Just code) ->
+            let
+                state =
+                    case vector |> Array.get idx |> Maybe.map .state of
+                        Just (TextState str) ->
+                            str
+
+                        Just (SingleChoiceState i) ->
+                            String.fromInt i
+
+                        Just (MultipleChoiceState list) ->
+                            list
+                                |> List.map
+                                    (\s ->
+                                        if s then
+                                            "1"
+
+                                        else
+                                            "0"
+                                    )
+                                |> List.intersperse ","
+                                |> String.concat
+                                |> (\str -> "[" ++ str ++ "]")
+
+                        Just EmptyState ->
+                            ""
+
+                        _ ->
+                            ""
+            in
+            ( vector, Nothing )
+
+        {-
+           Check idx solution eval_string ->
+               let
                    new_vector =
                        update_ idx
                            vector
@@ -93,10 +147,8 @@ update msg vector =
                                                { e | error_msg = msg }
                            )
                in
-               ( new_vector, Just <| vector2json new_vector )
-            -}
-            ( vector, Nothing )
-
+               ( new_vector, Just <| vectorToJson new_vector )
+        -}
         ShowHint idx ->
             let
                 new_vector =
@@ -110,6 +162,18 @@ update msg vector =
                     update_ idx vector (\e -> { e | state = solution, solved = ReSolved, error_msg = "" })
             in
             ( new_vector, Just <| vectorToJson new_vector )
+
+        Handle event ->
+            case event.topic of
+                "restore" ->
+                    ( event.message
+                        |> jsonToVector
+                        |> Result.withDefault vector
+                    , Nothing
+                    )
+
+                _ ->
+                    ( vector, Nothing )
 
 
 get : Int -> Vector -> Maybe Element
@@ -170,3 +234,8 @@ flip question_id e =
 
         _ ->
             e
+
+
+handle : Event -> Msg
+handle =
+    Handle
