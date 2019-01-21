@@ -2,6 +2,7 @@ module Lia.Markdown.Parser exposing (run)
 
 --import Lia.Chart.Parser as Chart
 --import Lia.Code.Parser as Code
+--import Lia.Quiz.Parser as Quiz
 
 import Combine exposing (..)
 import Dict
@@ -14,7 +15,6 @@ import Lia.Markdown.Inline.Parser exposing (..)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
 import Lia.Markdown.Types exposing (..)
 import Lia.PState exposing (..)
-import Lia.Quiz.Parser as Quiz
 import Lia.Survey.Parser as Survey
 
 
@@ -68,10 +68,11 @@ blocks =
                         , md_annotations
                             |> map Survey
                             |> andMap Survey.parse
-                        , md_annotations
-                            |> map Quiz
-                            |> andMap Quiz.parse
-                            |> andMap solution
+
+                        --  , md_annotations
+                        --      |> map Quiz
+                        --      |> andMap Quiz.parse
+                        --      |> andMap solution
                         , ordered_list
                         , unordered_list
                         , md_annotations

@@ -3,16 +3,15 @@ module Lia.Survey.Update exposing (Msg(..), update)
 import Array
 import Dict
 import Json.Encode as JE
-import Lia.Helper exposing (ID)
 import Lia.Survey.Model exposing (vector2json)
 import Lia.Survey.Types exposing (..)
 
 
 type Msg
-    = TextUpdate ID String
-    | VectorUpdate ID String
-    | MatrixUpdate ID ID String
-    | Submit ID
+    = TextUpdate Int String
+    | VectorUpdate Int String
+    | MatrixUpdate Int Int String
+    | Submit Int
 
 
 update : Msg -> Vector -> ( Vector, Maybe JE.Value )
@@ -34,11 +33,12 @@ update msg vector =
                         submit vector idx
                 in
                 ( new_vector, Just <| vector2json new_vector )
+
             else
                 ( vector, Nothing )
 
 
-update_text : Vector -> ID -> String -> Vector
+update_text : Vector -> Int -> String -> Vector
 update_text vector idx str =
     case Array.get idx vector of
         Just ( False, TextState _ ) ->
@@ -48,7 +48,7 @@ update_text vector idx str =
             vector
 
 
-update_vector : Vector -> ID -> String -> Vector
+update_vector : Vector -> Int -> String -> Vector
 update_vector vector idx var =
     case Array.get idx vector of
         Just ( False, VectorState False element ) ->
@@ -68,7 +68,7 @@ update_vector vector idx var =
             vector
 
 
-update_matrix : Vector -> ID -> ID -> String -> Vector
+update_matrix : Vector -> Int -> Int -> String -> Vector
 update_matrix vector col_id row_id var =
     case Array.get col_id vector of
         Just ( False, MatrixState False matrix ) ->
@@ -100,12 +100,12 @@ update_matrix vector col_id row_id var =
             vector
 
 
-set_state : Vector -> ID -> State -> Vector
+set_state : Vector -> Int -> State -> Vector
 set_state vector idx state =
     Array.set idx ( False, state ) vector
 
 
-submit : Vector -> ID -> Vector
+submit : Vector -> Int -> Vector
 submit vector idx =
     case Array.get idx vector of
         Just ( False, state ) ->
@@ -115,7 +115,7 @@ submit vector idx =
             vector
 
 
-submitable : Vector -> ID -> Bool
+submitable : Vector -> Int -> Bool
 submitable vector idx =
     case Array.get idx vector of
         Just ( False, TextState state ) ->

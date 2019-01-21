@@ -95,7 +95,7 @@ view_matrix vars questions fn submitted =
             fn submitted
     in
     questions
-        |> List.indexedMap (,)
+        |> List.indexedMap Tuple.pair
         |> List.map fnX
         |> List.append [ th ]
         |> Html.table [ Attr.class "lia-survey-matrix" ]

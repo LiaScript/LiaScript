@@ -1,10 +1,11 @@
 module Lia.Quiz.View exposing (view, view_solution)
 
+--import Lia.Code.View exposing (error)
+
 import Array exposing (Array)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
-import Lia.Code.View exposing (error)
 import Lia.Markdown.Inline.Types exposing (Annotation, MultInlines)
 import Lia.Markdown.Inline.View exposing (annotation, view_inf)
 import Lia.Quiz.Model exposing (..)
@@ -41,7 +42,8 @@ view lang attr quiz vector =
                                 Html.text ""
 
                             else
-                                error s.error_msg
+                                --todo: error s.error_msg
+                                Html.text s.error_msg
                            )
                         :: view_hints idx s.hint hints
                         |> Html.div []
@@ -77,7 +79,8 @@ view_quiz lang attr state fn_view idx hints eval_string solution =
                             Html.text ""
 
                         else
-                            error s.error_msg
+                            --todo error s.error_msg
+                            Html.text s.error_msg
                        )
                     :: view_hints idx s.hint hints
                 )
@@ -111,12 +114,12 @@ view_button lang trials solved msg =
             else
                 Html.button
                     [ Attr.class "lia-btn", Attr.class "lia-failure", onClick msg ]
-                    [ Html.text (quizCheck lang ++ " " ++ toString trials) ]
+                    [ Html.text (quizCheck lang ++ " " ++ String.fromInt trials) ]
 
         Solved ->
             Html.button
                 [ Attr.class "lia-btn", Attr.class "lia-success", Attr.disabled True ]
-                [ Html.text (quizChecked lang ++ " " ++ toString trials) ]
+                [ Html.text (quizChecked lang ++ " " ++ String.fromInt trials) ]
 
         ReSolved ->
             Html.button
@@ -146,7 +149,7 @@ view_single_choice questions idx state solved =
     case state of
         SingleChoiceState x ->
             questions
-                |> List.indexedMap (,)
+                |> List.indexedMap Tuple.pair
                 |> List.map
                     (\( i, elements ) ->
                         Html.tr [ Attr.class "lia-radio-item" ]
@@ -198,7 +201,7 @@ view_multiple_choice questions idx state solved =
     case state of
         MultipleChoiceState x ->
             questions
-                |> List.indexedMap (,)
+                |> List.indexedMap Tuple.pair
                 |> List.map2 fn (Array.toList x)
                 |> Html.table [ Attr.attribute "cellspacing" "8" ]
 
@@ -250,7 +253,7 @@ view_hints idx counter hints =
 view_solution : Vector -> Quiz -> ( Bool, Bool )
 view_solution vector quiz =
     let
-        ( idx, empty ) =
+        ( idx_, empty ) =
             case quiz of
                 Empty idx _ _ ->
                     ( idx, True )
@@ -264,9 +267,9 @@ view_solution vector quiz =
                 MultipleChoice _ _ idx _ _ ->
                     ( idx, False )
     in
-    idx
+    idx_
         |> get_state vector
         |> Maybe.map .solved
         |> Maybe.map (\s -> s /= Open)
         |> Maybe.withDefault False
-        |> (,) empty
+        |> Tuple.pair empty

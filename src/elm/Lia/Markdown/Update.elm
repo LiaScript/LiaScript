@@ -25,8 +25,8 @@ port footnote : (String -> msg) -> Sub msg
 type Msg
     = Receive String JE.Value
     | UpdateEffect Bool Effect.Msg
-      --    | UpdateCode Code.Msg
-    | UpdateQuiz Quiz.Msg
+      -- | UpdateCode Code.Msg
+      -- | UpdateQuiz Quiz.Msg
     | UpdateSurvey Survey.Msg
     | FootnoteHide
     | FootnoteShow String
@@ -35,10 +35,8 @@ type Msg
 subscriptions : Section -> Sub Msg
 subscriptions section =
     Sub.batch
-        [ Sub.map (UpdateEffect False)
-            (Effect.subscriptions section.effect_model)
-            footnote
-            FootnoteShow
+        [ Sub.map (UpdateEffect False) (Effect.subscriptions section.effect_model)
+        , footnote FootnoteShow
         ]
 
 
@@ -67,23 +65,23 @@ update msg section =
 
         {-
 
-           UpdateCode childMsg ->
-               let
-                   ( code_vector, log ) =
-                       Code.update childMsg section.code_vector
-               in
-               ( { section | code_vector = code_vector }, Cmd.none, maybeLog "code" log )
-        -}
-        UpdateQuiz childMsg ->
-            let
-                ( quiz_vector, event ) =
-                    Quiz.update childMsg section.quiz_vector
-            in
-            ( { section | quiz_vector = quiz_vector }
-            , Cmd.none
-            , maybeLog "quiz" event
-            )
+              UpdateCode childMsg ->
+                  let
+                      ( code_vector, log ) =
+                          Code.update childMsg section.code_vector
+                  in
+                  ( { section | code_vector = code_vector }, Cmd.none, maybeLog "code" log )
 
+           UpdateQuiz childMsg ->
+               let
+                   ( quiz_vector, event ) =
+                       Quiz.update childMsg section.quiz_vector
+               in
+               ( { section | quiz_vector = quiz_vector }
+               , Cmd.none
+               , maybeLog "quiz" event
+               )
+        -}
         UpdateSurvey childMsg ->
             let
                 ( survey_vector, event ) =

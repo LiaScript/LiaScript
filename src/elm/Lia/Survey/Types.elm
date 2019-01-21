@@ -1,8 +1,7 @@
-module Lia.Survey.Types exposing (..)
+module Lia.Survey.Types exposing (Element, State(..), Survey(..), Var, Vector)
 
 import Array exposing (Array)
 import Dict exposing (Dict)
-import Lia.Helper exposing (ID)
 import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
 
 
@@ -25,6 +24,6 @@ type State
 
 
 type Survey
-    = Text Int ID
-    | Vector Bool (List ( Var, Inlines )) ID
-    | Matrix Bool (List Var) MultInlines ID
+    = Text Int Int
+    | Vector Bool (List ( Var, Inlines )) Int
+    | Matrix Bool (List Var) MultInlines Int

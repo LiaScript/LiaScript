@@ -8,7 +8,6 @@ module Lia.Quiz.Types exposing
     )
 
 import Array exposing (Array)
-import Lia.Helper exposing (ID)
 import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
 
 
@@ -43,7 +42,7 @@ type State
 
 
 type Quiz
-    = Empty ID Hints (Maybe String)
-    | Text String ID Hints (Maybe String)
-    | SingleChoice Int MultInlines ID Hints (Maybe String)
-    | MultipleChoice (Array Bool) MultInlines ID Hints (Maybe String)
+    = Empty Int Hints (Maybe String)
+    | Text String Int Hints (Maybe String)
+    | SingleChoice Int MultInlines Int Hints (Maybe String)
+    | MultipleChoice (Array Bool) MultInlines Int Hints (Maybe String)
