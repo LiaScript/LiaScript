@@ -1,7 +1,8 @@
 module Lia.Parser exposing (formatError, parse_defintion, parse_section, parse_titles)
 
+--import Lia.Code.Types as Code
+
 import Combine exposing (..)
-import Lia.Code.Types as Code
 import Lia.Definition.Parser
 import Lia.Definition.Types exposing (Definition)
 import Lia.Effect.Model as Effect
@@ -53,7 +54,8 @@ parse_section global section =
                     | body = es
                     , error = Nothing
                     , visited = True
-                    , code_vector = state.code_vector
+
+                    --  , code_vector = state.code_vector
                     , quiz_vector = state.quiz_vector
                     , survey_vector = state.survey_vector
                     , effect_model = state.effect_model

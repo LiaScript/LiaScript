@@ -15,7 +15,6 @@ import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Code.Terminal exposing (Terminal)
-import Lia.Helper exposing (ID)
 
 
 type alias Vector =
@@ -64,7 +63,7 @@ type alias File =
 
 type Code
     = Highlight (List ( String, String, String )) -- Lang Title Code
-    | Evaluate ID --EvalString -- Lang Title ID EvalString
+    | Evaluate Int --EvalString -- Lang Title ID EvalString
 
 
 log_append : Log -> Log -> Log

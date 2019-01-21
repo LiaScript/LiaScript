@@ -2,7 +2,7 @@ module Lia.Quiz.Update exposing (Msg(..), update)
 
 import Array
 import Json.Encode as JE
-import Lia.Quiz.Model exposing (json2vector, vector2json)
+import Lia.Quiz.Json exposing (..)
 import Lia.Quiz.Types exposing (..)
 import Lia.Utils exposing (string_replace)
 
@@ -102,14 +102,14 @@ update msg vector =
                 new_vector =
                     update_ idx vector (\e -> { e | hint = e.hint + 1 })
             in
-            ( new_vector, Just <| vector2json new_vector )
+            ( new_vector, Just <| vectorToJson new_vector )
 
         ShowSolution idx solution ->
             let
                 new_vector =
                     update_ idx vector (\e -> { e | state = solution, solved = ReSolved, error_msg = "" })
             in
-            ( new_vector, Just <| vector2json new_vector )
+            ( new_vector, Just <| vectorToJson new_vector )
 
 
 get : Int -> Vector -> Maybe Element

@@ -11,7 +11,6 @@ import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Effect.Update as Effect
 import Lia.Event exposing (Event, jsonToEvent)
-import Lia.Helper exposing (ID)
 import Lia.Index.Update as Index
 import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (..)
@@ -43,7 +42,7 @@ subscriptions model =
 
 
 type Msg
-    = Load ID Bool
+    = Load Int Bool
     | InitSection
     | PrevSection
     | NextSection
@@ -53,7 +52,7 @@ type Msg
     | Handle Event
 
 
-log_maybe : ID -> Maybe ( String, JE.Value ) -> List ( String, ID, JE.Value )
+log_maybe : Int -> Maybe ( String, JE.Value ) -> List ( String, Int, JE.Value )
 log_maybe idx log_ =
     case log_ of
         Nothing ->
@@ -72,7 +71,7 @@ speak model =
         False
 
 
-maybe_event : ID -> Maybe ( String, JE.Value ) -> Cmd Markdown.Msg -> Cmd Msg
+maybe_event : Int -> Maybe ( String, JE.Value ) -> Cmd Markdown.Msg -> Cmd Msg
 maybe_event idx log_ cmd =
     case log_ of
         Nothing ->
@@ -298,7 +297,7 @@ generate model =
                         model.to_do
                             |> List.append logs
                             |> add_load (Array.length section.quiz_vector) model.section_active "quiz"
-                            |> add_load (Array.length section.code_vector) model.section_active "code"
+                            -- todo  |> add_load (Array.length section.code_vector) model.section_active "code"
                             |> add_load (Array.length section.survey_vector) model.section_active "survey"
                 }
                 section

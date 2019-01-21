@@ -1,8 +1,8 @@
 module Lia.Markdown.Types exposing (Markdown(..), MarkdownS)
 
+--import Lia.Code.Types exposing (Code)
+
 import Lia.Chart.Types exposing (Chart)
-import Lia.Code.Types exposing (Code)
-import Lia.Helper exposing (ID)
 import Lia.Markdown.Inline.Types exposing (..)
 import Lia.Quiz.Types exposing (Quiz)
 import Lia.Survey.Types exposing (Survey)
@@ -19,9 +19,9 @@ type Markdown
     | BulletList Annotation (List MarkdownS)
     | OrderedList Annotation (List MarkdownS)
     | Table Annotation MultInlines (List String) (List MultInlines)
-      --    | Quiz Annotation Quiz (Maybe ( MarkdownS, Int ))
-    | Effect Annotation ( ID, ID, MarkdownS )
-    | Comment ( ID, ID )
+    | Quiz Annotation Quiz (Maybe ( MarkdownS, Int ))
+    | Effect Annotation ( Int, Int, MarkdownS )
+    | Comment ( Int, Int )
     | Survey Annotation Survey
 
 

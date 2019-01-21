@@ -3,7 +3,6 @@ module Lia.Markdown.View exposing (view)
 --import Lia.Chart.View as Charts
 --import Lia.Code.View as Codes
 --import SvgBob
---import Lia.Quiz.View as Quizzes
 
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -17,6 +16,7 @@ import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
 import Lia.Markdown.Inline.View exposing (annotation, attributes, viewer)
 import Lia.Markdown.Types exposing (..)
 import Lia.Markdown.Update exposing (Msg(..))
+import Lia.Quiz.View as Quizzes
 import Lia.Settings.Model exposing (Mode(..))
 import Lia.Survey.View as Surveys
 import Lia.Types exposing (Section)
@@ -180,37 +180,37 @@ view_block config block =
                 |> Html.blockquote (annotation "lia-quote" attr)
 
         {-
-              Code attr code ->
-                  code
-                      |> Codes.view config.lang config.ace_theme attr config.section.code_vector
-                      |> Html.map UpdateCode
-
-           Quiz attr quiz Nothing ->
-               Html.div [ Attr.class "lia-quiz lia-card" ]
-                   [ Quizzes.view config.lang attr quiz config.section.quiz_vector
-                       |> Html.map UpdateQuiz
-                   ]
-
-           Quiz attr quiz (Just ( answer, hidden_effects )) ->
-               Html.div [ Attr.class "lia-quiz lia-card" ] <|
-                   case Quizzes.view_solution config.section.quiz_vector quiz of
-                       ( empty, True ) ->
-                           List.append
-                               [ Html.map UpdateQuiz <| Quizzes.view config.lang attr quiz config.section.quiz_vector ]
-                               ((if empty then
-                                   Html.text ""
-
-                                 else
-                                   Html.hr [] []
-                                )
-                                   :: List.map (view_block config) answer
-                               )
-
-                       _ ->
-                           [ Quizzes.view config.lang attr quiz config.section.quiz_vector
-                               |> Html.map UpdateQuiz
-                           ]
+           Code attr code ->
+               code
+                   |> Codes.view config.lang config.ace_theme attr config.section.code_vector
+                   |> Html.map UpdateCode
         -}
+        Quiz attr quiz Nothing ->
+            Html.div [ Attr.class "lia-quiz lia-card" ]
+                [ Quizzes.view config.lang attr quiz config.section.quiz_vector
+                    |> Html.map UpdateQuiz
+                ]
+
+        Quiz attr quiz (Just ( answer, hidden_effects )) ->
+            Html.div [ Attr.class "lia-quiz lia-card" ] <|
+                case Quizzes.view_solution config.section.quiz_vector quiz of
+                    ( empty, True ) ->
+                        List.append
+                            [ Html.map UpdateQuiz <| Quizzes.view config.lang attr quiz config.section.quiz_vector ]
+                            ((if empty then
+                                Html.text ""
+
+                              else
+                                Html.hr [] []
+                             )
+                                :: List.map (view_block config) answer
+                            )
+
+                    _ ->
+                        [ Quizzes.view config.lang attr quiz config.section.quiz_vector
+                            |> Html.map UpdateQuiz
+                        ]
+
         Survey attr survey ->
             config.section.survey_vector
                 |> Surveys.view config.lang attr survey

@@ -13,7 +13,6 @@ import Html.Lazy as Lazy
 import Lia.Definition.Types exposing (Definition, get_translations)
 import Lia.Effect.Model exposing (current_paragraphs)
 import Lia.Effect.View exposing (responsive, state)
-import Lia.Helper exposing (ID)
 import Lia.Index.View as Index
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
@@ -143,7 +142,7 @@ navButton str title msg =
         [ Html.text str ]
 
 
-view_nav : ID -> Mode -> Lang -> String -> List ( String, String ) -> ( Bool, String ) -> Html Msg
+view_nav : Int -> Mode -> Lang -> String -> List ( String, String ) -> ( Bool, String ) -> Html Msg
 view_nav section_active mode lang base translations ( speaking, state ) =
     Html.nav [ Attr.class "lia-toolbar" ]
         [ Html.map UpdateSettings <| Settings.toggle_button_toc lang

@@ -7,7 +7,7 @@ import Lia.Macro.Parser exposing (macro)
 import Lia.Markdown.Inline.Parser exposing (..)
 import Lia.Markdown.Inline.Types exposing (..)
 import Lia.PState exposing (PState)
-import Lia.Quiz.Types exposing (Hints, Quiz(..), Solution(..), State(..), Vector)
+import Lia.Quiz.Types exposing (Element, Hints, Quiz(..), Solution(..), State(..), Vector)
 
 
 parse : Parser PState Quiz
@@ -52,7 +52,7 @@ quest p =
         |> ignore newline
 
 
-empty : Parser PState (ID -> Hints -> Maybe String -> Quiz)
+empty : Parser PState (Int -> Hints -> Maybe String -> Quiz)
 empty =
     spaces
         |> ignore (string "[[!]]")
@@ -60,7 +60,7 @@ empty =
         |> onsuccess Empty
 
 
-text : Parser PState (ID -> Hints -> Maybe String -> Quiz)
+text : Parser PState (Int -> Hints -> Maybe String -> Quiz)
 text =
     string "["
         |> keep (regex "[^\n\\]]+")
@@ -70,7 +70,7 @@ text =
         |> map Text
 
 
-multi_choice : Parser PState (ID -> Hints -> Maybe String -> Quiz)
+multi_choice : Parser PState (Int -> Hints -> Maybe String -> Quiz)
 multi_choice =
     let
         checked b p =
@@ -92,7 +92,7 @@ multi_choice =
         |> map gen
 
 
-single_choice : Parser PState (ID -> Hints -> Maybe String -> Quiz)
+single_choice : Parser PState (Int -> Hints -> Maybe String -> Quiz)
 single_choice =
     let
         wrong =
@@ -123,11 +123,11 @@ modify_PState quiz_ =
             { s
                 | quiz_vector =
                     Array.push
-                        { solved = Open, state = e, trial = 0, hint = 0, error_msg = "" }
+                        (Element Open e 0 0 "")
                         s.quiz_vector
             }
 
-        state =
+        state_ =
             case quiz_ of
                 Empty _ _ _ ->
                     EmptyState
@@ -141,5 +141,5 @@ modify_PState quiz_ =
                 MultipleChoice x _ _ _ _ ->
                     MultipleChoiceState (Array.repeat (Array.length x) False)
     in
-    modifyState (add_state state)
+    modifyState (add_state state_)
         |> keep (succeed quiz_)

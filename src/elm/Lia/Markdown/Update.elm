@@ -13,9 +13,7 @@ port module Lia.Markdown.Update exposing
 import Json.Encode as JE
 import Lia.Effect.Update as Effect
 import Lia.Event exposing (Event)
-import Lia.Quiz.Model
 import Lia.Quiz.Update as Quiz
-import Lia.Survey.Model
 import Lia.Survey.Update as Survey
 import Lia.Types exposing (Section)
 
@@ -26,7 +24,7 @@ port footnote : (String -> msg) -> Sub msg
 type Msg
     = UpdateEffect Bool Effect.Msg
       -- | UpdateCode Code.Msg
-      -- | UpdateQuiz Quiz.Msg
+    | UpdateQuiz Quiz.Msg
     | UpdateSurvey Survey.Msg
     | FootnoteHide
     | FootnoteShow String
@@ -40,8 +38,8 @@ subscriptions section =
         ]
 
 
-maybeLog : String -> Maybe JE.Value -> Maybe ( String, JE.Value )
-maybeLog name value =
+send : String -> Maybe JE.Value -> Maybe ( String, JE.Value )
+send name value =
     case value of
         Nothing ->
             Nothing
@@ -55,33 +53,33 @@ update msg section =
     case msg of
         UpdateEffect sound childMsg ->
             let
-                ( effect_model, cmd, log_ ) =
+                ( effect_model, cmd, event ) =
                     Effect.update sound childMsg section.effect_model
             in
             ( { section | effect_model = effect_model }
             , Cmd.map (UpdateEffect sound) cmd
-            , maybeLog "effect" log_
+            , send "effect" event
             )
 
         {-
 
-              UpdateCode childMsg ->
-                  let
-                      ( code_vector, log ) =
-                          Code.update childMsg section.code_vector
-                  in
-                  ( { section | code_vector = code_vector }, Cmd.none, maybeLog "code" log )
-
-           UpdateQuiz childMsg ->
+           UpdateCode childMsg ->
                let
-                   ( quiz_vector, event ) =
-                       Quiz.update childMsg section.quiz_vector
+                   ( code_vector, log ) =
+                       Code.update childMsg section.code_vector
                in
-               ( { section | quiz_vector = quiz_vector }
-               , Cmd.none
-               , maybeLog "quiz" event
-               )
+               ( { section | code_vector = code_vector }, Cmd.none, maybeLog "code" log )
         -}
+        UpdateQuiz childMsg ->
+            let
+                ( quiz_vector, event ) =
+                    Quiz.update childMsg section.quiz_vector
+            in
+            ( { section | quiz_vector = quiz_vector }
+            , Cmd.none
+            , send "quiz" event
+            )
+
         UpdateSurvey childMsg ->
             let
                 ( survey_vector, event ) =
@@ -89,7 +87,7 @@ update msg section =
             in
             ( { section | survey_vector = survey_vector }
             , Cmd.none
-            , maybeLog "survey" event
+            , send "survey" event
             )
 
         FootnoteShow key ->
@@ -136,6 +134,8 @@ update msg section =
                _ ->
                    section
 -}
+--        _ ->
+--            ( section, Cmd.none, Nothing )
 
 
 nextEffect : Bool -> Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )

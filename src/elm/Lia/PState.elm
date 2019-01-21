@@ -7,9 +7,10 @@ module Lia.PState exposing
     , init
     )
 
+--import Lia.Code.Types as Code
+
 import Array exposing (Array)
 import Combine exposing (..)
-import Lia.Code.Types as Code
 import Lia.Definition.Types exposing (Definition)
 import Lia.Effect.Model as Effect
 import Lia.Markdown.Footnote.Model as Footnote
@@ -20,7 +21,8 @@ import Lia.Survey.Types as Survey
 type alias PState =
     { identation : List String
     , identation_skip : Bool
-    , code_vector : Code.Vector
+
+    --        , code_vector : Code.Vector
     , quiz_vector : Quiz.Vector
     , survey_vector : Survey.Vector
     , effect_model : Effect.Model
@@ -35,7 +37,8 @@ init : Definition -> PState
 init global =
     { identation = []
     , identation_skip = False
-    , code_vector = Array.empty
+
+    --    , code_vector = Array.empty
     , quiz_vector = Array.empty
     , survey_vector = Array.empty
     , effect_model = Effect.init

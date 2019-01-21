@@ -3,7 +3,6 @@ module Lia.Survey.View exposing (view)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
-import Lia.Helper exposing (ID)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline, Inlines)
 import Lia.Markdown.Inline.View exposing (annotation, view_inf)
 import Lia.Survey.Model exposing (..)
@@ -31,7 +30,7 @@ view lang attr survey model =
                     |> view_survey lang model idx
 
 
-view_survey : Lang -> Vector -> ID -> (Bool -> Html Msg) -> List (Html Msg)
+view_survey : Lang -> Vector -> Int -> (Bool -> Html Msg) -> List (Html Msg)
 view_survey lang model idx fn =
     let
         submitted =
@@ -40,7 +39,7 @@ view_survey lang model idx fn =
     [ fn submitted, submit_button lang submitted idx ]
 
 
-submit_button : Lang -> Bool -> ID -> Html Msg
+submit_button : Lang -> Bool -> Int -> Html Msg
 submit_button lang submitted idx =
     Html.div []
         [ if submitted then
@@ -55,7 +54,7 @@ submit_button lang submitted idx =
         ]
 
 
-view_text : Lang -> String -> Int -> ID -> Bool -> Html Msg
+view_text : Lang -> String -> Int -> Int -> Bool -> Html Msg
 view_text lang str lines idx submitted =
     let
         attr =
@@ -116,7 +115,7 @@ vector button msg fn submitted ( var, elements ) =
         ]
 
 
-matrix : Bool -> (ID -> Var -> Msg) -> (ID -> Var -> Bool) -> List Var -> Bool -> ( ID, Inlines ) -> Html Msg
+matrix : Bool -> (Int -> Var -> Msg) -> (Int -> Var -> Bool) -> List Var -> Bool -> ( Int, Inlines ) -> Html Msg
 matrix button msg fn vars submitted ( row, elements ) =
     let
         msgX =
