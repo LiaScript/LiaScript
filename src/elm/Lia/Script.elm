@@ -24,7 +24,7 @@ import Lia.Model exposing (load_src, settings2model)
 import Lia.Parser
 import Lia.Settings.Model exposing (Mode(..))
 import Lia.Types exposing (Section, Sections, init_section)
-import Lia.Update exposing (Msg(..), maybe_event)
+import Lia.Update exposing (Msg(..))
 import Lia.View
 import Translations
 

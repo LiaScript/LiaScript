@@ -4,6 +4,7 @@ port module Lia.Effect.Update exposing (Msg(..), has_next, has_previous, init, n
 
 import Json.Encode as JE
 import Lia.Effect.Model exposing (Map, Model, current_comment, get_all_javascript, get_javascript)
+import Lia.Event exposing (..)
 import Lia.Utils
 import Task
 
@@ -18,7 +19,7 @@ type Msg
     = Init Bool
     | Next
     | Previous
-    | Speak (Maybe JE.Value)
+    | Speak (Maybe Event)
     | SpeakRslt ( String, String )
 
 
@@ -26,7 +27,7 @@ type Msg
 --    | Rendered Bool (Maybe Date)
 
 
-update : Bool -> Msg -> Model -> ( Model, Cmd Msg, Maybe JE.Value )
+update : Bool -> Msg -> Model -> ( Model, Cmd Msg, Maybe Event )
 update sound msg model =
     case msg of
         Init run_all_javascript ->
@@ -124,7 +125,7 @@ subscriptions model =
 -}
 
 
-execute : Bool -> Bool -> Int -> Model -> ( Model, Cmd Msg, Maybe JE.Value )
+execute : Bool -> Bool -> Int -> Model -> ( Model, Cmd Msg, Maybe Event )
 execute sound run_all delay model =
     update sound (Speak Nothing) model
 

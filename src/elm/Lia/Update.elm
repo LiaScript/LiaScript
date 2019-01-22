@@ -1,7 +1,7 @@
 port module Lia.Update exposing
     ( Msg(..)
     , get_active_section
-    , maybe_event
+    , send
     , subscriptions
     , update
     )
@@ -52,16 +52,6 @@ type Msg
     | Handle Event
 
 
-log_maybe : Int -> Maybe ( String, JE.Value ) -> List ( String, Int, JE.Value )
-log_maybe idx log_ =
-    case log_ of
-        Nothing ->
-            []
-
-        Just ( name, json ) ->
-            [ ( name, idx, json ) ]
-
-
 speak : Model -> Bool
 speak model =
     if model.ready then
@@ -71,9 +61,9 @@ speak model =
         False
 
 
-maybe_event : Int -> Maybe ( String, JE.Value ) -> Cmd Markdown.Msg -> Cmd Msg
-maybe_event idx log_ cmd =
-    case log_ of
+send : Int -> Maybe ( String, JE.Value ) -> Cmd Markdown.Msg -> Cmd Msg
+send idx event cmd =
+    case event of
         Nothing ->
             Cmd.map UpdateMarkdown cmd
 
@@ -152,7 +142,7 @@ update msg model =
                                     Markdown.handle event.topic e sec
                             in
                             ( { model | sections = Array.set event.section sec_ model.sections }
-                            , maybe_event event.section log_ cmd_
+                            , send event.section log_ cmd_
                             )
 
                         _ ->
@@ -166,7 +156,7 @@ update msg model =
                             Markdown.update childMsg sec
                     in
                     ( set_active_section model section
-                    , maybe_event model.section_active log_ cmd
+                    , send model.section_active log_ cmd
                     )
 
                 ( NextSection, Just sec ) ->
@@ -179,7 +169,7 @@ update msg model =
                                 Markdown.nextEffect (speak model) sec
                         in
                         ( set_active_section model sec_
-                        , maybe_event model.section_active log_ cmd_
+                        , send model.section_active log_ cmd_
                         )
 
                 ( PrevSection, Just sec ) ->
@@ -192,7 +182,7 @@ update msg model =
                                 Markdown.previousEffect (speak model) sec
                         in
                         ( set_active_section model sec_
-                        , maybe_event model.section_active log_ cmd_
+                        , send model.section_active log_ cmd_
                         )
 
                 ( InitSection, Just sec ) ->
@@ -210,7 +200,7 @@ update msg model =
                         |> List.map event2js
                         |> List.append
                             [ event2js <| Event "slide" model.section_active JE.null
-                            , maybe_event model.section_active log_ cmd_
+                            , send model.section_active log_ cmd_
                             , event2js <| Event "persistent" model.section_active (JE.string "load")
                             ]
                         |> Cmd.batch

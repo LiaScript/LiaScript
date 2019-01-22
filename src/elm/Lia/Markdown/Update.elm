@@ -57,7 +57,9 @@ update msg section =
             in
             ( { section | effect_model = effect_model }
             , Cmd.map (UpdateEffect sound) cmd
-            , send "effect" event
+            , event
+                |> Maybe.map eventToJson
+                |> send "effect"
             )
 
         UpdateCode childMsg ->
