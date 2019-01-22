@@ -24,12 +24,7 @@ parse =
         |> andThen result
 
 
-result_to_highlight : ( String, String, String, Bool ) -> ( String, String, String )
-result_to_highlight ( lang, title, code, _ ) =
-    ( lang, title, code )
-
-
-result : ( List ( String, String, String, Bool ), Maybe String ) -> Parser PState Code
+result : ( List ( Snippet, Bool ), Maybe String ) -> Parser PState Code
 result ( lst, script ) =
     case script of
         Just str ->
@@ -37,7 +32,7 @@ result ( lst, script ) =
 
         Nothing ->
             lst
-                |> List.map result_to_highlight
+                |> List.map Tuple.first
                 |> Highlight
                 |> succeed
 
@@ -72,26 +67,21 @@ code_body =
         |> map (String.concat >> String.dropRight 1)
 
 
-listing : Parser PState ( String, String, String, Bool )
+listing : Parser PState ( Snippet, Bool )
 listing =
     c_frame
         |> keep header
-        |> map (\h ( v, t ) c -> ( h, t, c, v ))
+        |> map (\h ( v, t ) c -> ( Snippet h t c, v ))
         |> andMap title
         |> andMap code_body
 
 
-toFile : ( String, String, String, Bool ) -> File
-toFile ( lang, name, code, visible ) =
+toFile : ( Snippet, Bool ) -> File
+toFile ( { lang, name, code }, visible ) =
     File lang name code visible False
 
 
-extract_code : ( String, String, String, Bool ) -> String
-extract_code ( _, _, code, _ ) =
-    code
-
-
-evaluate : List ( String, String, String, Bool ) -> String -> Parser PState Code
+evaluate : List ( Snippet, Bool ) -> String -> Parser PState Code
 evaluate lang_title_code comment =
     let
         array =
@@ -104,7 +94,7 @@ evaluate lang_title_code comment =
                         { file = Array.map toFile array
                         , version =
                             Array.fromList
-                                [ ( Array.map extract_code array, noLog ) ]
+                                [ ( Array.map (Tuple.first >> .code) array, noLog ) ]
                         , evaluation = comment
                         , version_active = 0
                         , log = noLog

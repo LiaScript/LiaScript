@@ -1,10 +1,9 @@
 module Lia.Markdown.Parser exposing (run)
 
---import Lia.Code.Parser as Code
-
 import Combine exposing (..)
 import Dict
 import Lia.Chart.Parser as Chart
+import Lia.Code.Parser as Code
 import Lia.Effect.Model exposing (set_annotation)
 import Lia.Effect.Parser as Effect
 import Lia.Helper exposing (..)
@@ -59,9 +58,9 @@ blocks =
                         , simple_table
 
                         --, svgbob
-                        --, md_annotations
-                        --    |> map Code
-                        --    |> andMap Code.parse
+                        , md_annotations
+                            |> map Code
+                            |> andMap Code.parse
                         , quote
                         , horizontal_line
                         , md_annotations

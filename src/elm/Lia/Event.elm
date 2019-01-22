@@ -1,4 +1,12 @@
-module Lia.Event exposing (Eval(..), Event, decodeEval, evalEvent, eventToJson, jsonToEvent)
+module Lia.Event exposing
+    ( Eval(..)
+    , Event
+    , decodeEval
+    , evalEvent
+    , eventToJson
+    , jsonToEvent
+    , storeEvent
+    )
 
 import Json.Decode as JD
 import Json.Encode as JE
@@ -34,6 +42,11 @@ jsonToEvent json =
             (JD.field "message" JD.value)
         )
         json
+
+
+storeEvent : JE.Value -> Event
+storeEvent message =
+    Event "store" -1 message
 
 
 evalEvent : Int -> String -> String -> Event

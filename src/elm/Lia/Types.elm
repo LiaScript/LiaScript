@@ -1,9 +1,8 @@
 module Lia.Types exposing (Section, Sections, init_section)
 
---import Lia.Code.Types as Code
-
 import Array exposing (Array)
 import Json.Encode as JE
+import Lia.Code.Types as Code
 import Lia.Definition.Types exposing (Definition)
 import Lia.Effect.Model as Effect
 import Lia.Event exposing (Event)
@@ -24,8 +23,7 @@ type alias Section =
     , body : List Markdown
     , parsed : Bool
     , error : Maybe String
-
-    --    , code_vector : Code.Vector
+    , code_vector : Code.Vector
     , quiz_vector : Quiz.Vector
     , survey_vector : Survey.Vector
     , effect_model : Effect.Model
@@ -50,8 +48,7 @@ init_section idx ( identation, title, code ) =
     , parsed = False
     , body = []
     , error = Nothing
-
-    --    , code_vector = Array.empty
+    , code_vector = Array.empty
     , quiz_vector = Array.empty
     , survey_vector = Array.empty
     , effect_model = Effect.init

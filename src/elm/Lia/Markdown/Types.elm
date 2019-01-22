@@ -1,8 +1,7 @@
 module Lia.Markdown.Types exposing (Markdown(..), MarkdownS)
 
---import Lia.Code.Types exposing (Code)
-
 import Lia.Chart.Types exposing (Chart)
+import Lia.Code.Types exposing (Code)
 import Lia.Markdown.Inline.Types exposing (..)
 import Lia.Quiz.Types exposing (Quiz)
 import Lia.Survey.Types exposing (Survey)
@@ -24,10 +23,10 @@ type Markdown
     | Comment ( Int, Int )
     | Survey Annotation Survey
     | Chart Annotation Chart
+    | Code Annotation Code
 
 
 
---    | Code Annotation Code
 --    | ASCII Annotation SvgBob.Model
 
 

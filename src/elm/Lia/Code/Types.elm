@@ -4,6 +4,7 @@ module Lia.Code.Types exposing
     , File
     , Log
     , Project
+    , Snippet
     , Vector
     , Version
     , log_append
@@ -61,9 +62,16 @@ type alias File =
     }
 
 
+type alias Snippet =
+    { lang : String
+    , name : String
+    , code : String
+    }
+
+
 type Code
-    = Highlight (List ( String, String, String )) -- Lang Title Code
-    | Evaluate Int --EvalString -- Lang Title ID EvalString
+    = Highlight (List Snippet)
+    | Evaluate Int
 
 
 log_append : Log -> Log -> Log

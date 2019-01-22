@@ -1,6 +1,5 @@
 module Lia.Markdown.View exposing (view)
 
---import Lia.Code.View as Codes
 --import SvgBob
 
 import Html exposing (Html)
@@ -8,6 +7,7 @@ import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Html.Lazy exposing (..)
 import Lia.Chart.View as Charts
+import Lia.Code.View as Codes
 import Lia.Effect.Model as Comments
 import Lia.Effect.View as Effects
 import Lia.Markdown.Footnote.Model as Footnotes
@@ -179,12 +179,11 @@ view_block config block =
                 |> List.map (\e -> view_block config e)
                 |> Html.blockquote (annotation "lia-quote" attr)
 
-        {-
-           Code attr code ->
-               code
-                   |> Codes.view config.lang config.ace_theme attr config.section.code_vector
-                   |> Html.map UpdateCode
-        -}
+        Code attr code ->
+            code
+                |> Codes.view config.lang config.ace_theme attr config.section.code_vector
+                |> Html.map UpdateCode
+
         Quiz attr quiz Nothing ->
             Html.div [ Attr.class "lia-quiz lia-card" ]
                 [ Quizzes.view config.lang attr quiz config.section.quiz_vector

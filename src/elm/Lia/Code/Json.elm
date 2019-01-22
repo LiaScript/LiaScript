@@ -1,7 +1,8 @@
 module Lia.Code.Json exposing
     ( file2json
-    , json2details
-    , json2event
+    ,  json2details
+       --  , json2event
+
     , json2project
     , json2vector
     , log2json
@@ -29,24 +30,28 @@ copy_evaluation old new =
     { new | evaluation = old.evaluation }
 
 
-json2event : JD.Value -> Result String ( Bool, Int, String, JD.Value )
-json2event json =
-    JD.decodeValue
-        (JD.map4 (,,,)
-            (JD.index 0 JD.bool)
-            (JD.index 1 JD.int)
-            (JD.index 2 JD.string)
-            (JD.index 3 JD.value)
-        )
-        json
+
+{- todo
+
+   json2event : JD.Value -> Result String ( Bool, Int, String, JD.Value )
+   json2event json =
+       JD.decodeValue
+           (JD.map4 (,,,)
+               (JD.index 0 JD.bool)
+               (JD.index 1 JD.int)
+               (JD.index 2 JD.string)
+               (JD.index 3 JD.value)
+           )
+           json
+-}
 
 
 vector2json : Vector -> JE.Value
 vector2json vector =
-    JE.array <| Array.map project2json vector
+    JE.array project2json vector
 
 
-json2vector : JD.Value -> Result String (Maybe Vector)
+json2vector : JD.Value -> Result JD.Error (Maybe Vector)
 json2vector json =
     JD.decodeValue (JD.nullable (JD.array json2project)) json
 
@@ -54,8 +59,8 @@ json2vector json =
 project2json : Project -> JE.Value
 project2json project =
     JE.object
-        [ ( "file", JE.array <| Array.map file2json project.file )
-        , ( "version", JE.array <| Array.map version2json project.version )
+        [ ( "file", JE.array file2json project.file )
+        , ( "version", JE.array version2json project.version )
 
         --, ( "evaluation", JE.string project.evaluation )
         , ( "version_active", JE.int project.version_active )
@@ -100,14 +105,14 @@ json2file =
 version2json : Version -> JE.Value
 version2json ( files, log ) =
     JE.object
-        [ ( "files", JE.array <| Array.map JE.string files )
+        [ ( "files", JE.array JE.string files )
         , ( "log", log2json log )
         ]
 
 
 json2version : JD.Decoder Version
 json2version =
-    JD.map2 (,)
+    JD.map2 Tuple.pair
         (JD.field "files" (JD.array JD.string))
         (JD.field "log" json2log)
 
@@ -122,10 +127,16 @@ json2log =
 
 log2json : Log -> JE.Value
 log2json log =
+    {- JE.object
+       [ ( "ok", JE.bool log.ok )
+       , ( "message", JE.string log.message )
+       , ( "details", JE.array JD.value log.details )
+       ]
+    -}
     JE.object
         [ ( "ok", JE.bool log.ok )
         , ( "message", JE.string log.message )
-        , ( "details", JE.array log.details )
+        , ( "details", JE.null )
         ]
 
 
