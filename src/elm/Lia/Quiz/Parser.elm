@@ -7,7 +7,7 @@ import Lia.Macro.Parser exposing (macro)
 import Lia.Markdown.Inline.Parser exposing (..)
 import Lia.Markdown.Inline.Types exposing (..)
 import Lia.PState exposing (PState)
-import Lia.Quiz.Types exposing (Element, Hints, Quiz(..), Solution(..), State(..), Vector)
+import Lia.Quiz.Types exposing (Element, Hints, Quiz(..), QuizAdds(..), Solution(..), State(..), Vector)
 
 
 parse : Parser PState Quiz
@@ -19,7 +19,12 @@ quiz : Parser PState Quiz
 quiz =
     [ single_choice, multi_choice, empty, text ]
         |> choice
-        |> andMap get_counter
+        |> andMap quizAdds
+
+
+quizAdds : Parser PState QuizAdds
+quizAdds =
+    map QuizAdds get_counter
         |> andMap hints
         |> andMap
             (macro
@@ -52,7 +57,7 @@ quest p =
         |> ignore newline
 
 
-empty : Parser PState (Int -> Hints -> Maybe String -> Quiz)
+empty : Parser PState (QuizAdds -> Quiz)
 empty =
     spaces
         |> ignore (string "[[!]]")
@@ -60,7 +65,7 @@ empty =
         |> onsuccess Empty
 
 
-text : Parser PState (Int -> Hints -> Maybe String -> Quiz)
+text : Parser PState (QuizAdds -> Quiz)
 text =
     string "["
         |> keep (regex "[^\n\\]]+")
@@ -70,7 +75,7 @@ text =
         |> map Text
 
 
-multi_choice : Parser PState (Int -> Hints -> Maybe String -> Quiz)
+multi_choice : Parser PState (QuizAdds -> Quiz)
 multi_choice =
     let
         checked b p =
@@ -92,7 +97,7 @@ multi_choice =
         |> map gen
 
 
-single_choice : Parser PState (Int -> Hints -> Maybe String -> Quiz)
+single_choice : Parser PState (QuizAdds -> Quiz)
 single_choice =
     let
         wrong =
@@ -129,16 +134,16 @@ modify_PState quiz_ =
 
         state_ =
             case quiz_ of
-                Empty _ _ _ ->
+                Empty _ ->
                     EmptyState
 
-                Text _ _ _ _ ->
+                Text _ _ ->
                     TextState ""
 
-                SingleChoice _ _ _ _ _ ->
+                SingleChoice _ _ _ ->
                     SingleChoiceState -1
 
-                MultipleChoice x _ _ _ _ ->
+                MultipleChoice x _ _ ->
                     MultipleChoiceState (List.map (\_ -> False) x)
     in
     modifyState (add_state state_)

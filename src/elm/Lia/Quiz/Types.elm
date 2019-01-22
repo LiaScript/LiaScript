@@ -2,6 +2,7 @@ module Lia.Quiz.Types exposing
     ( Element
     , Hints
     , Quiz(..)
+    , QuizAdds(..)
     , Solution(..)
     , State(..)
     , Vector
@@ -42,11 +43,11 @@ type State
 
 
 type Quiz
-    = Empty Int Hints (Maybe String)
-    | Text String Int Hints (Maybe String)
-    | SingleChoice Int MultInlines Int Hints (Maybe String)
-    | MultipleChoice (List Bool) MultInlines Int Hints (Maybe String)
+    = Empty QuizAdds
+    | Text String QuizAdds
+    | SingleChoice Int MultInlines QuizAdds
+    | MultipleChoice (List Bool) MultInlines QuizAdds
 
 
-type alias QuizAdd =
-    { idx : Int, hints : Hints, eval_string : Maybe String }
+type QuizAdds
+    = QuizAdds Int Hints (Maybe String)

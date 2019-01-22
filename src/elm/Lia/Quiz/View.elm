@@ -21,7 +21,7 @@ view lang attr quiz vector =
             get_state vector
     in
     case quiz of
-        Empty idx hints eval_string ->
+        Empty (QuizAdds idx hints eval_string) ->
             case state idx of
                 Just s ->
                     (case eval_string of
@@ -51,13 +51,13 @@ view lang attr quiz vector =
                 Nothing ->
                     Html.text ""
 
-        Text solution idx hints eval_string ->
+        Text solution (QuizAdds idx hints eval_string) ->
             view_quiz lang attr (state idx) view_text idx hints eval_string (TextState solution)
 
-        SingleChoice solution questions idx hints eval_string ->
+        SingleChoice solution questions (QuizAdds idx hints eval_string) ->
             view_quiz lang attr (state idx) (view_single_choice questions) idx hints eval_string (SingleChoiceState solution)
 
-        MultipleChoice solution questions idx hints eval_string ->
+        MultipleChoice solution questions (QuizAdds idx hints eval_string) ->
             view_quiz lang attr (state idx) (view_multiple_choice questions) idx hints eval_string (MultipleChoiceState solution)
 
 
@@ -255,16 +255,16 @@ view_solution vector quiz =
     let
         ( idx_, empty ) =
             case quiz of
-                Empty idx _ _ ->
+                Empty (QuizAdds idx _ _) ->
                     ( idx, True )
 
-                Text _ idx _ _ ->
+                Text _ (QuizAdds idx _ _) ->
                     ( idx, False )
 
-                SingleChoice _ _ idx _ _ ->
+                SingleChoice _ _ (QuizAdds idx _ _) ->
                     ( idx, False )
 
-                MultipleChoice _ _ idx _ _ ->
+                MultipleChoice _ _ (QuizAdds idx _ _) ->
                     ( idx, False )
     in
     idx_
