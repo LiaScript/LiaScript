@@ -23,10 +23,10 @@ type Markdown
     | Effect Annotation ( Int, Int, MarkdownS )
     | Comment ( Int, Int )
     | Survey Annotation Survey
+    | Chart Annotation Chart
 
 
 
---    | Chart Annotation Chart
 --    | Code Annotation Code
 --    | ASCII Annotation SvgBob.Model
 

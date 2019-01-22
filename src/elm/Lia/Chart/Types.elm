@@ -1,4 +1,4 @@
-module Lia.Chart.Types exposing (..)
+module Lia.Chart.Types exposing (Chart, Diagram(..), Point)
 
 import Dict exposing (Dict)
 

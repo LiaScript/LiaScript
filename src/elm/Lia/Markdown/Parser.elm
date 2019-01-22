@@ -1,10 +1,10 @@
 module Lia.Markdown.Parser exposing (run)
 
---import Lia.Chart.Parser as Chart
 --import Lia.Code.Parser as Code
 
 import Combine exposing (..)
 import Dict
+import Lia.Chart.Parser as Chart
 import Lia.Effect.Model exposing (set_annotation)
 import Lia.Effect.Parser as Effect
 import Lia.Helper exposing (..)
@@ -52,10 +52,9 @@ blocks =
                             |> map Tuple.pair
                             |> andMap (Effect.comment paragraph)
                             |> andThen to_comment
-
-                        --    , md_annotations
-                        --        |> map Chart
-                        --        |> andMap Chart.parse
+                        , md_annotations
+                            |> map Chart
+                            |> andMap Chart.parse
                         , formated_table
                         , simple_table
 

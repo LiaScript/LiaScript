@@ -1,6 +1,5 @@
 module Lia.Markdown.View exposing (view)
 
---import Lia.Chart.View as Charts
 --import Lia.Code.View as Codes
 --import SvgBob
 
@@ -8,6 +7,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Html.Lazy exposing (..)
+import Lia.Chart.View as Charts
 import Lia.Effect.Model as Comments
 import Lia.Effect.View as Effects
 import Lia.Markdown.Footnote.Model as Footnotes
@@ -232,10 +232,11 @@ view_block config block =
                 _ ->
                     Html.text ""
 
+        Chart attr chart ->
+            Charts.view attr chart
 
 
---        Chart attr chart ->
---            Charts.view attr chart
+
 --        ASCII attr txt ->
 --            SvgBob.getSvg (attributes attr) txt
 

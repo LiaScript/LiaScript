@@ -156,3 +156,31 @@ console.log("fin")
 document.getElementById("hallo_id").innerHTML = "TEST";
 ```
 @HTML_JavaScript(example2)
+
+
+
+## Charts
+
+
+                                Multiline
+1.9 |
+    |    DOTs         ***
+  y |               *     *
+  - | r r r r r r r*r r r r*r r r r r r r
+  a |             *         *
+  x |            *           *
+  i | B B B B B * B B B B B B * B B B B B
+  s |         *                 *
+    | *  * *                       * *  *
+ -1 +------------------------------------
+    0              x-axis               1
+
+
+               Title - dots
+6 | A a B b C c
+  | D d E e F f G g H h I i
+  | J j K k L l M m N n o O
+  | P p Q q R r S s T t U u
+  | V v W w X x Y y Z Z   *
+1 +------------------------
+  0                      24
