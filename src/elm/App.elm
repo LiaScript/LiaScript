@@ -143,7 +143,7 @@ update msg model =
                 Just idx ->
                     let
                         ( lia, cmd ) =
-                            Lia.Script.load_slide model.lia (idx - 1)
+                            Lia.Script.load_slide (idx - 1) model.lia
                     in
                     ( { model | lia = lia }, Cmd.map LiaScript cmd )
 
@@ -166,14 +166,16 @@ update msg model =
 
         DownloadResult (Ok readme) ->
             let
-                lia =
-                    Lia.Script.set_script model.lia readme
+                ( lia, cmd ) =
+                    readme
+                        |> Lia.Script.set_script model.lia
+                        |> Lia.Script.load_slide model.lia.section_active
             in
             ( { model
                 | state = Running
                 , lia = lia
               }
-            , Cmd.none
+            , Cmd.map LiaScript cmd
             )
 
         DownloadResult (Err error) ->

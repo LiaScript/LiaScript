@@ -42,7 +42,7 @@ subscriptions model =
 
 
 type Msg
-    = Load Int Bool
+    = Load Int
     | InitSection
     | PrevSection
     | NextSection
@@ -77,21 +77,10 @@ send idx event cmd =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Load idx history ->
+        Load idx ->
             if (-1 < idx) && (idx < Array.length model.sections) then
                 ( model
-                , if history then
-                    Cmd.batch
-                        [ event2js <| Event "persistent" idx <| JE.string "store"
-
-                        --    , (idx + 1)
-                        --        |> String.fromInt
-                        --        |> (++) "#"
-                        --        |> Navigation.newUrl
-                        ]
-
-                  else
-                    event2js <| Event "persistent" idx <| JE.string "store"
+                , event2js <| Event "persistent" idx <| JE.string "store"
                 )
 
             else
@@ -161,7 +150,7 @@ update msg model =
 
                 ( NextSection, Just sec ) ->
                     if (model.settings.mode == Textbook) || not (Effect.has_next sec.effect_model) then
-                        update (Load (model.section_active + 1) True) model
+                        update (Load (model.section_active + 1)) model
 
                     else
                         let
@@ -174,7 +163,7 @@ update msg model =
 
                 ( PrevSection, Just sec ) ->
                     if (model.settings.mode == Textbook) || not (Effect.has_previous sec.effect_model) then
-                        update (Load (model.section_active - 1) True) model
+                        update (Load (model.section_active - 1)) model
 
                     else
                         let

@@ -37,9 +37,9 @@ type alias Msg =
     Lia.Update.Msg
 
 
-load_slide : Model -> Int -> ( Model, Cmd Msg )
-load_slide model idx =
-    Lia.Update.update (Load idx False) model
+load_slide : Int -> Model -> ( Model, Cmd Msg )
+load_slide idx model =
+    Lia.Update.update (Load idx) model
 
 
 set_script : Model -> String -> Model
