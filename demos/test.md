@@ -60,7 +60,13 @@ console.log = log;
 
 # WebDev Template
 
-
+[[solution]]
+<script>
+  // @input will be replace by the user input
+  let input_string = "@input";
+  console.log("dddddddddd", input_string.trim().toLowerCase());
+  false;
+</script>
 
 ## HTML
 

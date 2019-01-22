@@ -31,28 +31,19 @@ update msg vector =
             ( update_ idx vector (input string), Nothing )
 
         Check idx solution Nothing ->
-            let
-                new_vector =
-                    update_ idx
-                        vector
-                        (\e ->
-                            { e
-                                | trial = e.trial + 1
-                                , solved =
-                                    if e.state == solution then
-                                        Solved
+            (\e ->
+                { e
+                    | trial = e.trial + 1
+                    , solved =
+                        if e.state == solution then
+                            Solved
 
-                                    else
-                                        Open
-                            }
-                        )
-            in
-            ( new_vector
-            , new_vector
-                |> vectorToJson
-                |> Event "store" -1
-                |> Just
+                        else
+                            Open
+                }
             )
+                |> update_ idx vector
+                |> store
 
         Check idx solution (Just code) ->
             let
@@ -78,116 +69,28 @@ update msg vector =
                                 |> String.concat
                                 |> (\str -> "[" ++ str ++ "]")
 
-                        Just EmptyState ->
-                            ""
-
                         _ ->
                             ""
             in
-            ( vector
-            , code
-                |> string_replace ( "@input", state )
-                |> JE.string
-                |> Event "eval" idx
-                |> Just
-            )
+            ( vector, Just <| evalEvent idx code state )
 
-        {-
-           Check idx solution eval_string ->
-               let
-                   new_vector =
-                       update_ idx
-                           vector
-                           (\e ->
-                               case eval_string of
-                                   Nothing ->
-                                       { e
-                                           | trial = e.trial + 1
-                                           , solved =
-                                               if e.state == solution then
-                                                   Solved
-
-                                               else
-                                                   Open
-                                       }
-
-                                   Just code ->
-                                       let
-                                           state =
-                                               case e.state of
-                                                   TextState str ->
-                                                       str
-
-                                                   SingleChoiceState i ->
-                                                       String.fromInt i
-
-                                                   MultipleChoiceState array ->
-                                                       array
-                                                           |> Array.map
-                                                               (\s ->
-                                                                   if s then
-                                                                       "1"
-
-                                                                   else
-                                                                       "0"
-                                                               )
-                                                           |> Array.toList
-                                                           |> List.intersperse ","
-                                                           |> List.concat
-                                                           |> (\str -> "[" ++ str ++ "]")
-
-                                                   _ ->
-                                                       e.state
-                                       in
-                                       case code |> string_replace ( "@input", state ) |> evaluateJS of
-                                           Ok "true" ->
-                                               { e
-                                                   | trial = e.trial + 1
-                                                   , solved = Solved
-                                                   , error_msg = ""
-                                               }
-
-                                           Ok _ ->
-                                               { e
-                                                   | trial = e.trial + 1
-                                                   , solved = Open
-                                                   , error_msg = ""
-                                               }
-
-                                           Err msg ->
-                                               { e | error_msg = msg }
-                           )
-               in
-               ( new_vector, Just <| vectorToJson new_vector )
-        -}
         ShowHint idx ->
-            let
-                new_vector =
-                    update_ idx vector (\e -> { e | hint = e.hint + 1 })
-            in
-            ( new_vector
-            , new_vector
-                |> vectorToJson
-                |> Event "store" -1
-                |> Just
-            )
+            (\e -> { e | hint = e.hint + 1 })
+                |> update_ idx vector
+                |> store
 
         ShowSolution idx solution ->
-            let
-                new_vector =
-                    update_ idx vector (\e -> { e | state = solution, solved = ReSolved, error_msg = "" })
-            in
-            ( new_vector
-            , new_vector
-                |> vectorToJson
-                |> Event "store" -1
-                |> Just
-            )
+            (\e -> { e | state = solution, solved = ReSolved, error_msg = "" })
+                |> update_ idx vector
+                |> store
 
         Handle event ->
             case event.topic of
                 "eval" ->
-                    ( vector, Nothing )
+                    event.message
+                        |> evalEventDecoder
+                        |> update_ event.section vector
+                        |> store
 
                 "restore" ->
                     ( event.message
@@ -263,3 +166,36 @@ flip question_id e =
 handle : Event -> Msg
 handle =
     Handle
+
+
+evalEventDecoder : JE.Value -> (Element -> Element)
+evalEventDecoder message =
+    case decodeEval message of
+        Ok (Eval "true" _) ->
+            \e ->
+                { e
+                    | trial = e.trial + 1
+                    , solved = Solved
+                    , error_msg = ""
+                }
+
+        Ok (Eval _ _) ->
+            \e ->
+                { e
+                    | trial = e.trial + 1
+                    , solved = Open
+                    , error_msg = ""
+                }
+
+        Err (Eval result _) ->
+            \e -> { e | error_msg = result }
+
+
+store : Vector -> ( Vector, Maybe Event )
+store vector =
+    ( vector
+    , vector
+        |> vectorToJson
+        |> Event "store" -1
+        |> Just
+    )

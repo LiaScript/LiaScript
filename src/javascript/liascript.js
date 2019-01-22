@@ -184,16 +184,34 @@ function getLineNumber(error) {
 
 function lia_eval(code, send) {
     try {
-      send.lia("eval", String(eval(code+"\n", send)));
+      send.lia(String(eval(code+"\n", send)));
     } catch (e) {
         if (e instanceof LiaError )
-            send.lia("eval", e.message, e.details, false);
+            send.lia(e.message, e.details, false);
         else
-            send.lia("eval", e.message, [], false);
+            send.lia(e.message, [], false);
     }
 };
 
 function lia_eval_event(send, id1, id2, source) {
+    return function(event_, message, details=[], ok=true) {
+        send([source, id1, event_, [ok, id2, message, details]]);
+    };
+};
+
+function lia_eval_eventX(send, channel, event) {
+  lia_eval(
+    event.message.message,
+    { lia: (result, details=[], ok=true) => {
+        event.message.message = { result: result, details: details, ok: ok};
+        send(event);
+      },
+      service: websocket(channel),
+      handle: (name, fn) => { events.register_input(event.section, e[1], name, fn) }
+    }
+  );
+
+
     return function(event_, message, details=[], ok=true) {
         send([source, id1, event_, [ok, id2, message, details]]);
     };
@@ -625,6 +643,8 @@ class LiaScript {
                     if (event.message.topic == "store") {
                         event.message = event.message.message;
                         self.db.store(event);
+                    } else if (event.message.topic == "eval") {
+                        lia_eval_eventX(elmSend, self.channel, event);
                     }
 
                     break;
