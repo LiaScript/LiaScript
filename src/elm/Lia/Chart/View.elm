@@ -62,7 +62,7 @@ view attr chart =
         { y = Axis.default 450 chart.y_label (Tuple.first >> .y)
         , x = Axis.default 600 chart.x_label (Tuple.first >> .x)
         , container =
-            Container.styled "line-chart-1"
+            Container.styled "lia-diagram"
                 [ ( "width", "100%" )
                 , ( "display", "inline" )
                 , ( "font-family", "monospace" )
