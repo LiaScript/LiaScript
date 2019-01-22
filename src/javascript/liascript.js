@@ -622,11 +622,18 @@ class LiaScript {
                     break;
                 }
                 case "quiz" : {
-                    self.db.store(event);
+                    if (event.message.topic == "store") {
+                        event.message = event.message.message;
+                        self.db.store(event);
+                    }
+
                     break;
                 }
                 case "survey" : {
-                    self.db.store(event);
+                    if (event.message.topic == "store") {
+                        event.message = event.message.message;
+                        self.db.store(event);
+                    }
                     break;
                 }
                 case "effect" : {

@@ -18,7 +18,7 @@ type Msg
     | Handle Event
 
 
-update : Msg -> Vector -> ( Vector, Maybe JE.Value )
+update : Msg -> Vector -> ( Vector, Maybe Event )
 update msg vector =
     case msg of
         CheckBox idx question_id ->
@@ -47,7 +47,12 @@ update msg vector =
                             }
                         )
             in
-            ( new_vector, Just <| vectorToJson new_vector )
+            ( new_vector
+            , new_vector
+                |> vectorToJson
+                |> Event "store" -1
+                |> Just
+            )
 
         Check idx solution (Just code) ->
             let
@@ -79,7 +84,13 @@ update msg vector =
                         _ ->
                             ""
             in
-            ( vector, Nothing )
+            ( vector
+            , code
+                |> string_replace ( "@input", state )
+                |> JE.string
+                |> Event "eval" idx
+                |> Just
+            )
 
         {-
            Check idx solution eval_string ->
@@ -154,17 +165,30 @@ update msg vector =
                 new_vector =
                     update_ idx vector (\e -> { e | hint = e.hint + 1 })
             in
-            ( new_vector, Just <| vectorToJson new_vector )
+            ( new_vector
+            , new_vector
+                |> vectorToJson
+                |> Event "store" -1
+                |> Just
+            )
 
         ShowSolution idx solution ->
             let
                 new_vector =
                     update_ idx vector (\e -> { e | state = solution, solved = ReSolved, error_msg = "" })
             in
-            ( new_vector, Just <| vectorToJson new_vector )
+            ( new_vector
+            , new_vector
+                |> vectorToJson
+                |> Event "store" -1
+                |> Just
+            )
 
         Handle event ->
             case event.topic of
+                "eval" ->
+                    ( vector, Nothing )
+
                 "restore" ->
                     ( event.message
                         |> jsonToVector

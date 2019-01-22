@@ -17,7 +17,7 @@ type Msg
     | Handle Event
 
 
-update : Msg -> Vector -> ( Vector, Maybe JE.Value )
+update : Msg -> Vector -> ( Vector, Maybe Event )
 update msg vector =
     case msg of
         TextUpdate idx str ->
@@ -35,7 +35,12 @@ update msg vector =
                     new_vector =
                         submit vector idx
                 in
-                ( new_vector, Just <| vectorToJson new_vector )
+                ( new_vector
+                , new_vector
+                    |> vectorToJson
+                    |> Event "store" -1
+                    |> Just
+                )
 
             else
                 ( vector, Nothing )

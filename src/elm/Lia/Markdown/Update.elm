@@ -12,7 +12,7 @@ port module Lia.Markdown.Update exposing
 
 import Json.Encode as JE
 import Lia.Effect.Update as Effect
-import Lia.Event exposing (Event)
+import Lia.Event exposing (Event, eventToJson)
 import Lia.Quiz.Update as Quiz
 import Lia.Survey.Update as Survey
 import Lia.Types exposing (Section)
@@ -77,7 +77,9 @@ update msg section =
             in
             ( { section | quiz_vector = quiz_vector }
             , Cmd.none
-            , send "quiz" event
+            , event
+                |> Maybe.map eventToJson
+                |> send "quiz"
             )
 
         UpdateSurvey childMsg ->
@@ -87,7 +89,9 @@ update msg section =
             in
             ( { section | survey_vector = survey_vector }
             , Cmd.none
-            , send "survey" event
+            , event
+                |> Maybe.map eventToJson
+                |> send "survey"
             )
 
         FootnoteShow key ->
