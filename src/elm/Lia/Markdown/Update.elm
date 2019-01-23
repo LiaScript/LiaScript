@@ -37,17 +37,12 @@ subscriptions section =
         ]
 
 
-send : String -> Maybe JE.Value -> Maybe ( String, JE.Value )
-send name value =
-    case value of
-        Nothing ->
-            Nothing
-
-        Just json ->
-            Just ( name, json )
+send : String -> List JE.Value -> List ( String, JE.Value )
+send name values =
+    List.map (Tuple.pair name) values
 
 
-update : Msg -> Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
+update : Msg -> Section -> ( Section, Cmd Msg, List ( String, JE.Value ) )
 update msg section =
     case msg of
         UpdateEffect sound childMsg ->
@@ -58,21 +53,20 @@ update msg section =
             ( { section | effect_model = effect_model }
             , Cmd.map (UpdateEffect sound) cmd
             , event
-                |> Maybe.map eventToJson
+                |> List.map eventToJson
                 |> send "effect"
             )
 
         UpdateCode childMsg ->
             case Code.update childMsg section.code_vector of
                 ( vector, [] ) ->
-                    ( { section | code_vector = vector }, Cmd.none, Nothing )
+                    ( { section | code_vector = vector }, Cmd.none, [] )
 
                 ( vector, events ) ->
                     ( { section | code_vector = vector }
                     , Cmd.none
                     , events
-                        |> JE.list eventToJson
-                        |> Just
+                        |> List.map eventToJson
                         |> send "code"
                     )
 
@@ -84,7 +78,7 @@ update msg section =
             ( { section | quiz_vector = vector }
             , Cmd.none
             , event
-                |> Maybe.map eventToJson
+                |> List.map eventToJson
                 |> send "quiz"
             )
 
@@ -96,28 +90,28 @@ update msg section =
             ( { section | survey_vector = vector }
             , Cmd.none
             , event
-                |> Maybe.map eventToJson
+                |> List.map eventToJson
                 |> send "survey"
             )
 
         FootnoteShow key ->
-            ( { section | footnote2show = Just key }, Cmd.none, Nothing )
+            ( { section | footnote2show = Just key }, Cmd.none, [] )
 
         FootnoteHide ->
-            ( { section | footnote2show = Nothing }, Cmd.none, Nothing )
+            ( { section | footnote2show = Nothing }, Cmd.none, [] )
 
 
-nextEffect : Bool -> Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
+nextEffect : Bool -> Section -> ( Section, Cmd Msg, List ( String, JE.Value ) )
 nextEffect sound =
     update (UpdateEffect sound Effect.next)
 
 
-previousEffect : Bool -> Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
+previousEffect : Bool -> Section -> ( Section, Cmd Msg, List ( String, JE.Value ) )
 previousEffect sound =
     update (UpdateEffect sound Effect.previous)
 
 
-initEffect : Bool -> Bool -> Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
+initEffect : Bool -> Bool -> Section -> ( Section, Cmd Msg, List ( String, JE.Value ) )
 initEffect run_all_javascript sound =
     update (UpdateEffect sound (Effect.init run_all_javascript))
 
@@ -132,7 +126,7 @@ log topic msg =
             Nothing
 
 
-handle : String -> Event -> Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
+handle : String -> Event -> Section -> ( Section, Cmd Msg, List ( String, JE.Value ) )
 handle topic event section =
     case topic of
         "code" ->
@@ -145,7 +139,7 @@ handle topic event section =
             update (UpdateSurvey (Survey.handle event)) section
 
         _ ->
-            ( section, Cmd.none, Nothing )
+            ( section, Cmd.none, [] )
 
 
 restore : Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )

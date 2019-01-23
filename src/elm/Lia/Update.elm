@@ -61,17 +61,17 @@ speak model =
         False
 
 
-send : Int -> Maybe ( String, JE.Value ) -> Cmd Markdown.Msg -> Cmd Msg
-send idx event cmd =
-    case event of
-        Nothing ->
+send : Int -> List ( String, JE.Value ) -> Cmd Markdown.Msg -> Cmd Msg
+send idx events cmd =
+    case events of
+        [] ->
             Cmd.map UpdateMarkdown cmd
 
-        Just ( name, json ) ->
-            Cmd.batch
-                [ event2js <| Event name idx json
-                , Cmd.map UpdateMarkdown cmd
-                ]
+        list ->
+            list
+                |> List.map (\( name, json ) -> event2js <| Event name idx json)
+                |> (::) (Cmd.map UpdateMarkdown cmd)
+                |> Cmd.batch
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -127,11 +127,11 @@ update msg model =
                     case ( Array.get event.section model.sections, jsonToEvent event.message ) of
                         ( Just sec, Ok e ) ->
                             let
-                                ( sec_, cmd_, log_ ) =
+                                ( sec_, cmd_, events ) =
                                     Markdown.handle event.topic e sec
                             in
                             ( { model | sections = Array.set event.section sec_ model.sections }
-                            , send event.section log_ cmd_
+                            , send event.section events cmd_
                             )
 
                         _ ->

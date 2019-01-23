@@ -3,7 +3,7 @@ module Lia.Survey.Update exposing (Msg(..), handle, update)
 import Array
 import Dict
 import Json.Encode as JE
-import Lia.Event exposing (Event)
+import Lia.Event exposing (Event, storeEvent)
 import Lia.Survey.Json exposing (..)
 import Lia.Survey.Model exposing (..)
 import Lia.Survey.Types exposing (..)
@@ -17,17 +17,17 @@ type Msg
     | Handle Event
 
 
-update : Msg -> Vector -> ( Vector, Maybe Event )
+update : Msg -> Vector -> ( Vector, List Event )
 update msg vector =
     case msg of
         TextUpdate idx str ->
-            ( update_text vector idx str, Nothing )
+            ( update_text vector idx str, [] )
 
         VectorUpdate idx var ->
-            ( update_vector vector idx var, Nothing )
+            ( update_vector vector idx var, [] )
 
         MatrixUpdate idx row var ->
-            ( update_matrix vector idx row var, Nothing )
+            ( update_matrix vector idx row var, [] )
 
         Submit idx ->
             if submitable vector idx then
@@ -38,12 +38,12 @@ update msg vector =
                 ( new_vector
                 , new_vector
                     |> vectorToJson
-                    |> Event "store" -1
-                    |> Just
+                    |> storeEvent
+                    |> List.singleton
                 )
 
             else
-                ( vector, Nothing )
+                ( vector, [] )
 
         Handle event ->
             case event.topic of
@@ -51,11 +51,11 @@ update msg vector =
                     ( event.message
                         |> jsonToVector
                         |> Result.withDefault vector
-                    , Nothing
+                    , []
                     )
 
                 _ ->
-                    ( vector, Nothing )
+                    ( vector, [] )
 
 
 update_text : Vector -> Int -> String -> Vector

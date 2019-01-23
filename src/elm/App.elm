@@ -171,10 +171,7 @@ update msg model =
                         |> Lia.Script.set_script model.lia
                         |> Lia.Script.load_slide model.lia.section_active
             in
-            ( { model
-                | state = Running
-                , lia = lia
-              }
+            ( { model | state = Running, lia = lia }
             , Cmd.map LiaScript cmd
             )
 

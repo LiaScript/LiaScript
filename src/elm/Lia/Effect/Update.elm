@@ -19,7 +19,7 @@ type Msg
     = Init Bool
     | Next
     | Previous
-    | Speak (Maybe Event)
+    | Speak (List Event)
     | SpeakRslt ( String, String )
 
 
@@ -27,7 +27,7 @@ type Msg
 --    | Rendered Bool (Maybe Date)
 
 
-update : Bool -> Msg -> Model -> ( Model, Cmd Msg, Maybe Event )
+update : Bool -> Msg -> Model -> ( Model, Cmd Msg, List Event )
 update sound msg model =
     case msg of
         Init run_all_javascript ->
@@ -40,7 +40,7 @@ update sound msg model =
                     |> execute sound False 0
 
             else
-                ( model, Cmd.none, Nothing )
+                ( model, Cmd.none, [] )
 
         Previous ->
             if has_previous model then
@@ -48,7 +48,7 @@ update sound msg model =
                     |> execute sound False 0
 
             else
-                ( model, Cmd.none, Nothing )
+                ( model, Cmd.none, [] )
 
         Speak info ->
             --            let
@@ -73,19 +73,19 @@ update sound msg model =
                     ( model, speech2js [ "cancel" ], info )
 
         SpeakRslt ( "end", _ ) ->
-            ( { model | speaking = False }, Cmd.none, Nothing )
+            ( { model | speaking = False }, Cmd.none, [] )
 
         SpeakRslt ( "error", info ) ->
             let
                 error =
                     Debug.log "TTS error: " info
             in
-            ( { model | speaking = False }, Cmd.none, Nothing )
+            ( { model | speaking = False }, Cmd.none, [] )
 
         --        Rendered run_all_javascript _ ->
         --            execute sound run_all_javascript 0 model
         _ ->
-            ( model, Cmd.none, Nothing )
+            ( model, Cmd.none, [] )
 
 
 subscriptions : Model -> Sub Msg
@@ -125,9 +125,9 @@ subscriptions model =
 -}
 
 
-execute : Bool -> Bool -> Int -> Model -> ( Model, Cmd Msg, Maybe Event )
+execute : Bool -> Bool -> Int -> Model -> ( Model, Cmd Msg, List Event )
 execute sound run_all delay model =
-    update sound (Speak Nothing) model
+    update sound (Speak []) model
 
 
 has_next : Model -> Bool

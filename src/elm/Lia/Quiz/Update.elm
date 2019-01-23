@@ -18,17 +18,17 @@ type Msg
     | Handle Event
 
 
-update : Msg -> Vector -> ( Vector, Maybe Event )
+update : Msg -> Vector -> ( Vector, List Event )
 update msg vector =
     case msg of
         CheckBox idx question_id ->
-            ( update_ idx vector (flip question_id), Nothing )
+            ( update_ idx vector (flip question_id), [] )
 
         RadioButton idx answer ->
-            ( update_ idx vector (flip answer), Nothing )
+            ( update_ idx vector (flip answer), [] )
 
         Input idx string ->
-            ( update_ idx vector (input string), Nothing )
+            ( update_ idx vector (input string), [] )
 
         Check idx solution Nothing ->
             (\e ->
@@ -72,7 +72,7 @@ update msg vector =
                         _ ->
                             ""
             in
-            ( vector, Just <| evalEvent idx code state )
+            ( vector, [ evalEvent idx code state ] )
 
         ShowHint idx ->
             (\e -> { e | hint = e.hint + 1 })
@@ -96,11 +96,11 @@ update msg vector =
                     ( event.message
                         |> jsonToVector
                         |> Result.withDefault vector
-                    , Nothing
+                    , []
                     )
 
                 _ ->
-                    ( vector, Nothing )
+                    ( vector, [] )
 
 
 get : Int -> Vector -> Maybe Element
@@ -191,11 +191,11 @@ evalEventDecoder message =
             \e -> { e | error_msg = result }
 
 
-store : Vector -> ( Vector, Maybe Event )
+store : Vector -> ( Vector, List Event )
 store vector =
     ( vector
     , vector
         |> vectorToJson
-        |> Event "store" -1
-        |> Just
+        |> storeEvent
+        |> List.singleton
     )
