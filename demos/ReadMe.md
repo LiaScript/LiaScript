@@ -514,8 +514,7 @@ Result:
 > | ** col 2 is **    | centered      |   $12 |
 > | * zebra stripes * | are neat      |    $1 |
 >
-> asdfasfda
-> afdafsa 
+
 
 ********************************************************************************
 
@@ -765,8 +764,6 @@ else {
 
 A drawing example, for demonstrating that any javascript library can be used,
 also for drawing.
-
-<link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
 
 ``` javascript
 // Initialize a Line chart in the container with the ID chart1

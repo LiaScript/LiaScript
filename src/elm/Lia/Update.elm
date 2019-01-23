@@ -54,11 +54,7 @@ type Msg
 
 speak : Model -> Bool
 speak model =
-    if model.ready then
-        model.settings.sound
-
-    else
-        False
+    model.ready && model.settings.sound
 
 
 send : Int -> List ( String, JE.Value ) -> Cmd Markdown.Msg -> Cmd Msg

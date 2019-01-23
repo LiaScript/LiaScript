@@ -692,7 +692,7 @@ class LiaScript {
                         event.message = event.message.message;
                         self.db.store(event);
                     } else if (event.message.topic == "eval") {
-                        lia_eval_eventX(elmSend, self.channel, event);
+                        lia_eval_event(elmSend, self.channel, event);
                     }
 
                     break;
