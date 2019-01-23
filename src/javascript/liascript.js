@@ -193,33 +193,30 @@ function lia_eval(code, send) {
     }
 };
 
+/*
 function lia_eval_event(send, id1, id2, source) {
     return function(event_, message, details=[], ok=true) {
         send([source, id1, event_, [ok, id2, message, details]]);
     };
 };
+*/
 
-function lia_eval_eventX(send, channel, event) {
-  lia_eval(
-    event.message.message,
-    { lia: (result, details=[], ok=true) => {
-        event.message.message = { result: result, details: details, ok: ok};
-        send(event);
-      },
-      service: websocket(channel),
-      handle: (name, fn) => { events.register_input(event.section, e[1], name, fn) }
-    }
-  );
-
-
-    return function(event_, message, details=[], ok=true) {
-        send([source, id1, event_, [ok, id2, message, details]]);
-    };
+function lia_eval_event(send, channel, event) {
+    lia_eval(
+        event.message.message,
+        { lia: (result, details=[], ok=true) => {
+            event.message.message = { result: result, details: details, ok: ok};
+            send(event);
+          },
+          service: websocket(channel),
+          handle: (name, fn) => { events.register_input(event.section, e[1], name, fn) }
+        }
+    )
 };
 
-function lia_execute(code, delay, send) {
+function lia_execute_event(event) {
     try {
-        setTimeout(() => { eval(code) }, delay);
+        setTimeout(() => { eval(event.code) }, event.delay);
     } catch (e) {
         console.log("exec - error: ", e);
     }
@@ -502,23 +499,76 @@ const SETTINGS = "settings";
 
 function initSettings(send, data, local=false) {
 
-    if (data == null) {
-        data = { table_of_contents: true,
-                 mode:              "Slides",
-                 theme:             "default",
-                 light:             true,
-                 editor:            "dreamweaver",
-                 font_size:         100,
-                 sound:             true,
-                 land:              "en"
-                };
-    }
+  if (data == null) {
+    data = {
+      table_of_contents: true,
+      mode:              "Slides",
+      theme:             "default",
+      light:             true,
+      editor:            "dreamweaver",
+      font_size:         100,
+      sound:             true,
+      land:              "en"
+    };
+  }
 
-    if (local) {
-        localStorage.setItem(SETTINGS, JSON.stringify(data));
-    }
+  if (local) {
+    localStorage.setItem(SETTINGS, JSON.stringify(data));
+  }
 
-    send( {topic: SETTINGS, section: -1, message: data} );
+  send( {topic: SETTINGS, section: -1, message: data} );
+};
+
+
+function handleEffects(event, elmSend) {
+  switch (event.topic) {
+    case "scrollTo":
+      scrollIntoView( event.message, 350 );
+      break;
+    case "execute":
+      lia_execute_event( event.message );
+      break;
+    case "speak" : {
+      let msg = {
+        topic: "effect",
+        section: -1,
+        message: {
+          topic: "speak_end",
+          section: -1,
+          message: ""
+        }
+      };
+
+      try {
+        if ( event.message == "cancel" ) {
+          responsiveVoice.cancel();
+          elmSend( msg );
+        }
+        else if (event.message == "repeat") {
+          msg.message = event;
+          elmSend( msg );
+        }
+        else {
+          responsiveVoice.speak(
+            event.message[1],
+            event.message[0],
+            { onend: e => {
+                elmSend( msg );
+              },
+              onerror: e => {
+                msg.message.message = e.toString();
+                elmSend(msg);
+              }});
+        }
+      } catch (e) {
+        msg.message.message = e.toString();
+        elmSend(msg);
+      }
+      break;
+    }
+    default:
+      console.log("effect missed", event);
+  }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -552,9 +602,7 @@ class LiaScript {
         let settings = localStorage.getItem(SETTINGS);
         initSettings(this.app.ports.event2elm.send, settings ? JSON.parse(settings) : settings, true);
 
-        this.initSpeech2JS(this.app.ports.speech2js.subscribe, this.app.ports.speech2elm.send);
         this.initChannel(channel, sender);
-
         this.initEventSystem(this.app.ports.event2js.subscribe, sender);
 
         liaStorage = new LiaStorage(channel);
@@ -656,34 +704,16 @@ class LiaScript {
                     }
                     break;
                 }
-                case "effect" : {
-                    event.message.forEach(function(e) {
-                      switch(e[0]) {
-                          case "execute": {
-                              lia_execute( e[2], e[1],
-                                         { lia: lia_eval_event(elmSend, event.section, e[1], "effect"),
-                                           service: websocket(self.channel),
-                                         });
-                              break;
-                          }
-                          case "focus": {
-                              scrollIntoView(e[2], e[1]);
-                              break;
-                          }
-                          default: {
-                              console.log("effect missed", event, e);
-                          }
-                      }});
-
-                    break;
-                }
+                case "effect" :
+                  handleEffects(event.message, elmSend);
+                  break;
                 case SETTINGS: {
-                    if (self.channel) {
-                        self.channel.push("party", {settings: event.message});
-                    } else {
-                        localStorage.setItem(SETTINGS, JSON.stringify(event.message));
-                    }
-                    break;
+                  if (self.channel) {
+                    self.channel.push("party", {settings: event.message});
+                  } else {
+                    localStorage.setItem(SETTINGS, JSON.stringify(event.message));
+                  }
+                  break;
                 }
                 case "ressource" : {
                     let elem = event.message[0];
@@ -732,7 +762,7 @@ class LiaScript {
                       });
 
                     if(event.message[1] != "") {
-                        lia_execute( event.message[1], 350, {});
+                        lia_execute_event( event.message[1], 350, {});
                     }
 
                     if (!self.channel) {

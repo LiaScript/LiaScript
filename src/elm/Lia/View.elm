@@ -1,8 +1,5 @@
 module Lia.View exposing (view)
 
---import Html.Lazy exposing (lazy2)
---import Lia.Index.Model as Index
-
 import Array exposing (Array)
 import Char
 import Flip exposing (flip)

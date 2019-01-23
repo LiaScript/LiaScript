@@ -1,7 +1,17 @@
-port module Lia.Effect.Update exposing (Msg(..), has_next, has_previous, init, next, previous, subscriptions, update)
+module Lia.Effect.Update exposing
+    ( Msg(..)
+    , handle
+    , has_next
+    , has_previous
+    , init
+    , next
+    , previous
+    , soundEvent
+    , update
+    )
 
---import Date exposing (Date)
-
+import Browser.Dom as Dom
+import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Effect.Model exposing (Map, Model, current_comment, get_all_javascript, get_javascript)
 import Lia.Event exposing (..)
@@ -9,30 +19,25 @@ import Lia.Utils
 import Task
 
 
-port speech2js : List String -> Cmd msg
-
-
-port speech2elm : (( String, String ) -> msg) -> Sub msg
-
-
 type Msg
     = Init Bool
     | Next
     | Previous
-    | Speak (List Event)
-    | SpeakRslt ( String, String )
+    | Send (List Event)
+    | Handle Event
+    | Rendered Bool Dom.Viewport
 
 
-
---    | Rendered Bool (Maybe Date)
+handle : Event -> Msg
+handle =
+    Handle
 
 
 update : Bool -> Msg -> Model -> ( Model, Cmd Msg, List Event )
 update sound msg model =
     case msg of
         Init run_all_javascript ->
-            --( model, Task.perform (Just >> Rendered run_all_javascript) Date.now, Nothing )
-            execute sound run_all_javascript 0 model
+            ( model, Task.perform (Rendered run_all_javascript) Dom.getViewport, [] )
 
         Next ->
             if has_next model then
@@ -50,84 +55,87 @@ update sound msg model =
             else
                 ( model, Cmd.none, [] )
 
-        Speak info ->
-            --            let
-            --                d =
-            --                    Lia.Utils.scrollIntoView "focused"
-            --            in
+        Send event ->
+            let
+                events =
+                    ("focused"
+                        |> JE.string
+                        |> Event "scrollTo" -1
+                    )
+                        :: event
+            in
             case ( sound, current_comment model ) of
                 ( True, Just ( comment, narrator ) ) ->
-                    ( { model | speaking = True }, speech2js [ "speak", narrator, comment ], info )
+                    ( { model | speaking = True }
+                    , Cmd.none
+                    , (Event "speak" -1 <| JE.list JE.string [ narrator, comment ]) :: events
+                    )
 
                 ( True, Nothing ) ->
-                    ( model, speech2js [ "cancel" ], info )
+                    speak_stop events model
 
                 ( False, Just ( comment, narrator ) ) ->
                     if model.speaking then
-                        ( { model | speaking = False }, speech2js [ "cancel" ], info )
+                        { model | speaking = False }
+                            |> speak_stop events
 
                     else
-                        ( model, speech2js [ "cancel" ], info )
+                        speak_stop events model
 
                 _ ->
-                    ( model, speech2js [ "cancel" ], info )
+                    speak_stop events model
 
-        SpeakRslt ( "end", _ ) ->
-            ( { model | speaking = False }, Cmd.none, [] )
+        Rendered run_all_javascript _ ->
+            execute sound run_all_javascript 0 model
 
-        SpeakRslt ( "error", info ) ->
-            let
-                error =
-                    Debug.log "TTS error: " info
-            in
-            ( { model | speaking = False }, Cmd.none, [] )
+        Handle event ->
+            case ( event.topic, JD.decodeValue JD.string event.message |> Result.withDefault "" ) of
+                ( "speak_end", "" ) ->
+                    ( { model | speaking = False }, Cmd.none, [] )
 
-        --        Rendered run_all_javascript _ ->
-        --            execute sound run_all_javascript 0 model
-        _ ->
-            ( model, Cmd.none, [] )
+                ( "speak_end", error ) ->
+                    ( { model | speaking = False }, Cmd.none, [] )
 
+                ( "speak", "repeat" ) ->
+                    update True (Send []) model
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.batch [ speech2elm SpeakRslt ]
+                _ ->
+                    ( model, Cmd.none, [] )
 
 
+speak_stop : List Event -> Model -> ( Model, Cmd Msg, List Event )
+speak_stop events model =
+    ( model
+    , Cmd.none
+    , (Event "speak" -1 <| JE.string "cancel") :: events
+    )
 
-{-
-   log : Int -> String -> JE.Value
-   log delay code =
-       JE.list [ JE.string "execute", JE.int delay, JE.string code ]
 
-
-   execute : Bool -> Bool -> Int -> Model -> ( Model, Cmd Msg, Maybe JE.Value )
-   execute sound run_all delay model =
-       let
-           javascript =
-               if run_all then
-                   get_all_javascript model
-
-               else
-                   get_javascript model
-       in
-       update sound
-           (Speak <|
-               if List.length javascript == 0 then
-                   Nothing
-
-               else
-                   javascript
-                       |> List.map (log delay)
-                       |> JE.list
-                       |> Just
-           )
-           model
--}
+executeEvent : Int -> String -> Event
+executeEvent delay code =
+    Event "execute" -1 <|
+        JE.object
+            [ ( "delay", JE.int delay )
+            , ( "code", JE.string code )
+            ]
 
 
 execute : Bool -> Bool -> Int -> Model -> ( Model, Cmd Msg, List Event )
 execute sound run_all delay model =
-    update sound (Speak []) model
+    let
+        javascript =
+            if run_all then
+                get_all_javascript model
+
+            else
+                get_javascript model
+    in
+    update sound
+        (javascript
+            |> List.map (executeEvent delay)
+            |> Send
+        )
+        model
 
 
 has_next : Model -> Bool
@@ -153,3 +161,17 @@ next =
 previous : Msg
 previous =
     Previous
+
+
+soundEvent : Bool -> Event
+soundEvent on =
+    (if on then
+        "repeat"
+
+     else
+        "cancel"
+    )
+        |> JE.string
+        |> Event "speak" -1
+        |> eventToJson
+        |> Event "effect" -1

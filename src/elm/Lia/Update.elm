@@ -88,14 +88,16 @@ update msg model =
 
         UpdateSettings childMsg ->
             case Settings.update childMsg model.settings of
-                ( settings, Nothing ) ->
+                ( settings, [] ) ->
                     ( { model | settings = settings }
                     , Cmd.none
                     )
 
-                ( settings, Just message ) ->
+                ( settings, events ) ->
                     ( { model | settings = settings }
-                    , event2js <| Event "settings" -1 message
+                    , events
+                        |> List.map event2js
+                        |> Cmd.batch
                     )
 
         UpdateIndex childMsg ->
@@ -113,7 +115,7 @@ update msg model =
         Handle event ->
             case event.topic of
                 "settings" ->
-                    ( { model | settings = Settings.load model.settings event.message }
+                    ( { model | settings = Settings.load model.settings event.message, ready = True }
                     , Cmd.none
                     )
 
@@ -124,7 +126,18 @@ update msg model =
                     ( model, event2js <| Event "reset" -1 JE.null )
 
                 _ ->
-                    case ( Array.get event.section model.sections, jsonToEvent event.message ) of
+                    case
+                        ( Array.get
+                            (if event.section == -1 then
+                                model.section_active
+
+                             else
+                                event.section
+                            )
+                            model.sections
+                        , jsonToEvent event.message
+                        )
+                    of
                         ( Just sec, Ok e ) ->
                             let
                                 ( sec_, cmd_, events ) =

@@ -31,10 +31,7 @@ type Msg
 
 subscriptions : Section -> Sub Msg
 subscriptions section =
-    Sub.batch
-        [ Sub.map (UpdateEffect False) (Effect.subscriptions section.effect_model)
-        , footnote FootnoteShow
-        ]
+    footnote FootnoteShow
 
 
 send : String -> List JE.Value -> List ( String, JE.Value )
@@ -131,6 +128,9 @@ handle topic event section =
     case topic of
         "code" ->
             update (UpdateCode (Code.handle event)) section
+
+        "effect" ->
+            update (UpdateEffect False (Effect.handle event)) section
 
         "quiz" ->
             update (UpdateQuiz (Quiz.handle event)) section
