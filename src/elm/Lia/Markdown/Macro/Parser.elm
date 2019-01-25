@@ -4,7 +4,7 @@ import Combine exposing (..)
 import Dict exposing (Dict)
 import Lia.Definition.Types exposing (Definition)
 import Lia.Helper exposing (..)
-import Lia.PState exposing (PState, identation)
+import Lia.Parser.State exposing (State, identation)
 import Lia.Utils exposing (string_replace, toJSstring)
 
 
@@ -13,7 +13,7 @@ pattern =
     spaces |> keep (regex "@[\\w.]+")
 
 
-parameter : Parser PState String
+parameter : Parser State String
 parameter =
     [ c_frame
         |> keep (regex "(([^`]+|(`[^`]+)|(``[^`]+))|\\n)+")
@@ -27,12 +27,12 @@ parameter =
         |> map toJSstring
 
 
-parameter_list : Parser PState (List String)
+parameter_list : Parser State (List String)
 parameter_list =
     optional [] (parens (sepBy (string ",") parameter))
 
 
-macro : Parser PState ()
+macro : Parser State ()
 macro =
     many1
         (choice
@@ -45,14 +45,14 @@ macro =
         |> skip
 
 
-uid_macro : Parser PState ( String, List String )
+uid_macro : Parser State ( String, List String )
 uid_macro =
     string "@uid"
         |> keep (modifyState uid_update)
         |> onsuccess ( "@uid", [] )
 
 
-uid_update : PState -> PState
+uid_update : State -> State
 uid_update state =
     let
         def =
@@ -61,14 +61,14 @@ uid_update state =
     { state | defines = { def | uid = def.uid + 1 } }
 
 
-simple_macro : Parser PState ( String, List String )
+simple_macro : Parser State ( String, List String )
 simple_macro =
     pattern
         |> map Tuple.pair
         |> andMap parameter_list
 
 
-code_block : Parser PState (List String)
+code_block : Parser State (List String)
 code_block =
     manyTill
         (maybe identation
@@ -80,7 +80,7 @@ code_block =
         |> map (String.concat >> List.singleton)
 
 
-macro_listing : Parser PState ()
+macro_listing : Parser State ()
 macro_listing =
     (c_frame
         |> keep (regex "[\t ]*[a-zA-Z0-9_]*[\t ]*")
@@ -97,7 +97,7 @@ macro_listing =
             )
 
 
-inject_macro : ( String, List String ) -> Parser PState ()
+inject_macro : ( String, List String ) -> Parser State ()
 inject_macro ( name, params ) =
     let
         inject state =
@@ -134,7 +134,7 @@ inject_macro ( name, params ) =
     withState inject
 
 
-eval_parameter : String -> ( PState, Int, String ) -> ( PState, Int, String )
+eval_parameter : String -> ( State, Int, String ) -> ( State, Int, String )
 eval_parameter param ( state, i, code ) =
     let
         ( new_state, new_param ) =
@@ -173,7 +173,7 @@ add ( name, code ) def =
     { def | macro = Dict.insert name code def.macro }
 
 
-macro_parse : PState -> String -> ( PState, String )
+macro_parse : State -> String -> ( State, String )
 macro_parse defines str =
     case
         runParser

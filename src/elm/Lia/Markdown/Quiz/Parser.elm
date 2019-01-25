@@ -7,22 +7,22 @@ import Lia.Markdown.Inline.Parser exposing (..)
 import Lia.Markdown.Inline.Types exposing (..)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Types exposing (Element, Hints, Quiz(..), QuizAdds(..), Solution(..), State(..), Vector)
-import Lia.PState exposing (PState)
+import Lia.Parser.State exposing (State)
 
 
-parse : Parser PState Quiz
+parse : Parser State Quiz
 parse =
-    quiz |> andThen modify_PState
+    quiz |> andThen modify_State
 
 
-quiz : Parser PState Quiz
+quiz : Parser State Quiz
 quiz =
     [ single_choice, multi_choice, empty, text ]
         |> choice
         |> andMap quizAdds
 
 
-quizAdds : Parser PState QuizAdds
+quizAdds : Parser State QuizAdds
 quizAdds =
     map QuizAdds get_counter
         |> andMap hints
@@ -38,7 +38,7 @@ quizAdds =
             )
 
 
-get_counter : Parser PState Int
+get_counter : Parser State Int
 get_counter =
     withState (\s -> succeed (Array.length s.quiz_vector))
 
@@ -50,14 +50,14 @@ pattern p =
         |> ignore (regex "\\][\t ]*")
 
 
-quest : Parser PState a -> Parser PState Inlines
+quest : Parser State a -> Parser State Inlines
 quest p =
     pattern p
         |> keep line
         |> ignore newline
 
 
-empty : Parser PState (QuizAdds -> Quiz)
+empty : Parser State (QuizAdds -> Quiz)
 empty =
     spaces
         |> ignore (string "[[!]]")
@@ -65,7 +65,7 @@ empty =
         |> onsuccess Empty
 
 
-text : Parser PState (QuizAdds -> Quiz)
+text : Parser State (QuizAdds -> Quiz)
 text =
     string "["
         |> keep (regex "[^\n\\]]+")
@@ -75,7 +75,7 @@ text =
         |> map Text
 
 
-multi_choice : Parser PState (QuizAdds -> Quiz)
+multi_choice : Parser State (QuizAdds -> Quiz)
 multi_choice =
     let
         checked b p =
@@ -97,7 +97,7 @@ multi_choice =
         |> map gen
 
 
-single_choice : Parser PState (QuizAdds -> Quiz)
+single_choice : Parser State (QuizAdds -> Quiz)
 single_choice =
     let
         wrong =
@@ -116,13 +116,13 @@ single_choice =
         |> andMap wrong
 
 
-hints : Parser PState MultInlines
+hints : Parser State MultInlines
 hints =
     many (quest (string "[?]"))
 
 
-modify_PState : Quiz -> Parser PState Quiz
-modify_PState quiz_ =
+modify_State : Quiz -> Parser State Quiz
+modify_State quiz_ =
     let
         add_state e s =
             { s

@@ -7,15 +7,15 @@ import Lia.Helper exposing (..)
 import Lia.Markdown.Inline.Parser exposing (..)
 import Lia.Markdown.Inline.Types exposing (..)
 import Lia.Markdown.Survey.Types exposing (..)
-import Lia.PState exposing (PState)
+import Lia.Parser.State exposing (State)
 
 
-parse : Parser PState Survey
+parse : Parser State Survey
 parse =
-    survey |> andThen modify_PState
+    survey |> andThen modify_State
 
 
-survey : Parser PState Survey
+survey : Parser State Survey
 survey =
     let
         get_id par =
@@ -58,7 +58,7 @@ id_str =
         |> keep (regex "[0-9a-zA-Z_ ]+")
 
 
-vector : (Parser s String -> Parser PState a) -> Parser PState (List ( a, List Inline ))
+vector : (Parser s String -> Parser State a) -> Parser State (List ( a, List Inline ))
 vector p =
     let
         vec x =
@@ -74,7 +74,7 @@ header p =
         |> ignore newline
 
 
-questions : Parser PState MultInlines
+questions : Parser State MultInlines
 questions =
     regex "[\t ]*\\[[\t ]+\\]"
         |> keep line
@@ -82,15 +82,15 @@ questions =
         |> many1
 
 
-question : Parser PState a -> Parser PState ( a, List Inline )
+question : Parser State a -> Parser State ( a, List Inline )
 question p =
     map Tuple.pair p
         |> andMap line
         |> ignore newline
 
 
-modify_PState : Survey -> Parser PState Survey
-modify_PState survey_ =
+modify_State : Survey -> Parser State Survey
+modify_State survey_ =
     let
         add_state e s =
             { s | survey_vector = Array.push ( False, e ) s.survey_vector }

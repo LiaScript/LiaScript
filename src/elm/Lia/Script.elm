@@ -21,7 +21,7 @@ import Json.Encode as JE
 import Lia.Event exposing (Event)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Model exposing (load_src, settings2model)
-import Lia.Parser
+import Lia.Parser.Parser as Parser
 import Lia.Settings.Model exposing (Mode(..))
 import Lia.Types exposing (Section, Sections, init_section)
 import Lia.Update exposing (Msg(..))
@@ -44,9 +44,9 @@ load_slide idx model =
 
 set_script : Model -> String -> Model
 set_script model script =
-    case script |> Lia.Parser.parse_defintion model.url of
+    case script |> Parser.parse_defintion model.url of
         Ok ( definition, code ) ->
-            case Lia.Parser.parse_titles definition code of
+            case Parser.parse_titles definition code of
                 Ok title_sections ->
                     let
                         ( _, link_logs ) =

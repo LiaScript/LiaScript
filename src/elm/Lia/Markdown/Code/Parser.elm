@@ -7,10 +7,10 @@ import Lia.Markdown.Code.Highlight2Ace exposing (highlight2ace)
 import Lia.Markdown.Code.Types exposing (..)
 import Lia.Markdown.Inline.Parser exposing (javascript)
 import Lia.Markdown.Macro.Parser exposing (macro)
-import Lia.PState exposing (..)
+import Lia.Parser.State exposing (..)
 
 
-parse : Parser PState Code
+parse : Parser State Code
 parse =
     sepBy1 newline listing
         |> map Tuple.pair
@@ -24,7 +24,7 @@ parse =
         |> andThen result
 
 
-result : ( List ( Snippet, Bool ), Maybe String ) -> Parser PState Code
+result : ( List ( Snippet, Bool ), Maybe String ) -> Parser State Code
 result ( lst, script ) =
     case script of
         Just str ->
@@ -37,14 +37,14 @@ result ( lst, script ) =
                 |> succeed
 
 
-header : Parser PState String
+header : Parser State String
 header =
     spaces
         |> keep (regex "\\w*")
         |> map highlight2ace
 
 
-title : Parser PState ( Bool, String )
+title : Parser State ( Bool, String )
 title =
     spaces
         |> keep
@@ -59,7 +59,7 @@ title =
         |> ignore newline
 
 
-code_body : Parser PState String
+code_body : Parser State String
 code_body =
     manyTill
         (maybe identation |> keep (regex "(?:.(?!```))*\\n"))
@@ -67,7 +67,7 @@ code_body =
         |> map (String.concat >> String.dropRight 1)
 
 
-listing : Parser PState ( Snippet, Bool )
+listing : Parser State ( Snippet, Bool )
 listing =
     c_frame
         |> keep header
@@ -81,7 +81,7 @@ toFile ( { lang, name, code }, visible ) =
     File lang name code visible False
 
 
-evaluate : List ( Snippet, Bool ) -> String -> Parser PState Code
+evaluate : List ( Snippet, Bool ) -> String -> Parser State Code
 evaluate lang_title_code comment =
     let
         array =

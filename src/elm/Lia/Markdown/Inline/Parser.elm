@@ -19,7 +19,7 @@ import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Footnote.Parser as Footnote
 import Lia.Markdown.Inline.Types exposing (..)
 import Lia.Markdown.Macro.Parser as Macro
-import Lia.PState exposing (PState)
+import Lia.Parser.State exposing (State)
 
 
 comment : Parser s a -> Parser s (List a)
@@ -35,7 +35,7 @@ comment_string =
         |> map (String.fromList >> String.trim)
 
 
-comments : Parser PState ()
+comments : Parser State ()
 comments =
     Effect.hidden_comment
         |> or (skip (comment anyChar))
@@ -52,7 +52,7 @@ attribute =
         |> andMap (stringTill (regex "\"[ \t\n]*"))
 
 
-annotations : Parser PState Annotation
+annotations : Parser State Annotation
 annotations =
     spaces
         |> keep (comment attribute)
@@ -80,7 +80,7 @@ javascript =
         |> keep (stringTill (string "</script>"))
 
 
-html : Parser PState Inline
+html : Parser State Inline
 html =
     let
         state script =
@@ -154,7 +154,7 @@ combine list =
                     x1 :: combine (x2 :: xs)
 
 
-line : Parser PState Inlines
+line : Parser State Inlines
 line =
     inlines
         |> many1
@@ -166,7 +166,7 @@ append_space list =
     List.append list [ Chars " " Nothing ]
 
 
-inlines : Parser PState Inline
+inlines : Parser State Inline
 inlines =
     lazy <|
         \() ->
@@ -228,7 +228,7 @@ ref_info =
     brackets (regex "[^\\]\n]*")
 
 
-ref_info2 : Parser PState Inlines
+ref_info2 : Parser State Inlines
 ref_info2 =
     string "["
         |> keep (manyTill inlines (string "]"))
@@ -248,7 +248,7 @@ ref_url_1 =
     or url (regex "[^\\)\n \"]*")
 
 
-ref_url_2 : Parser PState String
+ref_url_2 : Parser State String
 ref_url_2 =
     withState (\s -> succeed s.defines.base)
         |> map (++)
@@ -264,7 +264,7 @@ ref_pattern ref_type info_type url_type =
         |> ignore (string ")")
 
 
-reference : Parser PState (Annotation -> Inline)
+reference : Parser State (Annotation -> Inline)
 reference =
     lazy <|
         \() ->
@@ -334,7 +334,7 @@ smileys =
         ]
 
 
-between_ : String -> Parser PState Inline
+between_ : String -> Parser State Inline
 between_ str =
     lazy <|
         \() ->
@@ -348,7 +348,7 @@ between_ str =
                 |> choice
 
 
-strings : Parser PState (Annotation -> Inline)
+strings : Parser State (Annotation -> Inline)
 strings =
     lazy <|
         \() ->

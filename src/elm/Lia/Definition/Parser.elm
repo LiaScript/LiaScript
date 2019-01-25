@@ -5,11 +5,11 @@ import Lia.Definition.Types exposing (Definition, add_translation)
 import Lia.Helper exposing (..)
 import Lia.Markdown.Inline.Parser exposing (comment, comments)
 import Lia.Markdown.Macro.Parser as Macro
-import Lia.PState exposing (PState, ident_skip, identation, identation_append, identation_pop)
+import Lia.Parser.State exposing (State, ident_skip, identation, identation_append, identation_pop)
 import Lia.Utils exposing (string_replace)
 
 
-parse : Parser PState ()
+parse : Parser State ()
 parse =
     lazy <|
         \() ->
@@ -20,7 +20,7 @@ parse =
                 |> skip
 
 
-definition : Parser PState ()
+definition : Parser State ()
 definition =
     lazy <|
         \() ->
@@ -92,7 +92,7 @@ definition =
                 |> skip
 
 
-ending : Parser PState String
+ending : Parser State String
 ending =
     identation_append "  "
         |> ignore ident_skip
@@ -101,7 +101,7 @@ ending =
         |> map (\list -> list |> List.map String.trimLeft |> String.concat |> String.trimRight)
 
 
-base : String -> Parser PState ()
+base : String -> Parser State ()
 base x =
     set
         (\def ->
@@ -118,7 +118,7 @@ toURL basis url =
         basis ++ url
 
 
-set : (Definition -> Definition) -> Parser PState ()
+set : (Definition -> Definition) -> Parser State ()
 set fct =
     modifyState (\s -> { s | defines = fct s.defines })
 

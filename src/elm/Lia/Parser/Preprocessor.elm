@@ -1,13 +1,13 @@
-module Lia.Preprocessor exposing (run)
+module Lia.Parser.Preprocessor exposing (run)
 
 import Combine exposing (..)
 import Lia.Helper exposing (..)
 import Lia.Markdown.Inline.Parser exposing (line)
 import Lia.Markdown.Inline.Types exposing (Inlines)
-import Lia.PState exposing (PState)
+import Lia.Parser.State exposing (State)
 
 
-title_tag : Parser PState Int
+title_tag : Parser State Int
 title_tag =
     regex "#+" |> map String.length
 
@@ -21,12 +21,12 @@ check c =
         fail ""
 
 
-title_str : Parser PState Inlines
+title_str : Parser State Inlines
 title_str =
     line |> ignore newline
 
 
-body : Parser PState String
+body : Parser State String
 body =
     [ regex "(?:[^`<#]+|[\\x0D\n]+)" -- misc
     , regex "<!--[\\s\\S]*?-->" -- comment
@@ -41,7 +41,7 @@ body =
         |> map String.concat
 
 
-section : Parser PState ( Int, Inlines, String )
+section : Parser State ( Int, Inlines, String )
 section =
     title_tag
         |> map (\a b c -> ( a, b, c ))
@@ -49,6 +49,6 @@ section =
         |> andMap body
 
 
-run : Parser PState (List ( Int, Inlines, String ))
+run : Parser State (List ( Int, Inlines, String ))
 run =
     many section

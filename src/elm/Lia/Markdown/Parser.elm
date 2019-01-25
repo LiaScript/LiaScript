@@ -14,14 +14,14 @@ import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Parser as Quiz
 import Lia.Markdown.Survey.Parser as Survey
 import Lia.Markdown.Types exposing (..)
-import Lia.PState exposing (..)
+import Lia.Parser.State exposing (..)
 
 
 
 --import SvgBob
 
 
-run : Parser PState (List Markdown)
+run : Parser State (List Markdown)
 run =
     footnotes
         |> keep blocks
@@ -30,14 +30,14 @@ run =
         |> ignore footnotes
 
 
-footnotes : Parser PState ()
+footnotes : Parser State ()
 footnotes =
     (Footnote.block ident_blocks |> ignore newlines)
         |> many
         |> skip
 
 
-blocks : Parser PState Markdown
+blocks : Parser State Markdown
 blocks =
     lazy <|
         \() ->
@@ -83,7 +83,7 @@ blocks =
                 |> ignore (maybe (whitespace |> keep Effect.hidden_comment))
 
 
-to_comment : ( Annotation, ( Int, Int ) ) -> Parser PState Markdown
+to_comment : ( Annotation, ( Int, Int ) ) -> Parser State Markdown
 to_comment ( attr, ( id1, id2 ) ) =
     (case attr of
         Just a ->
@@ -104,7 +104,7 @@ to_comment ( attr, ( id1, id2 ) ) =
 
 
 {-
-   svgbob : Parser PState Markdown
+   svgbob : Parser State Markdown
    svgbob =
        md_annotations
            |> map (\attr txt -> ASCII attr (txt |> String.concat |> SvgBob.init))
@@ -117,7 +117,7 @@ to_comment ( attr, ( id1, id2 ) ) =
 -}
 
 
-solution : Parser PState (Maybe ( List Markdown, Int ))
+solution : Parser State (Maybe ( List Markdown, Int ))
 solution =
     let
         rslt e1 blocks_ e2 =
@@ -132,7 +132,7 @@ solution =
         |> maybe
 
 
-ident_blocks : Parser PState MarkdownS
+ident_blocks : Parser State MarkdownS
 ident_blocks =
     blocks
         |> ignore (regex "\\n?")
@@ -140,7 +140,7 @@ ident_blocks =
         |> ignore identation_pop
 
 
-unordered_list : Parser PState Markdown
+unordered_list : Parser State Markdown
 unordered_list =
     map BulletList md_annotations
         |> andMap
@@ -156,7 +156,7 @@ unordered_list =
             )
 
 
-ordered_list : Parser PState Markdown
+ordered_list : Parser State Markdown
 ordered_list =
     map OrderedList md_annotations
         |> andMap
@@ -172,21 +172,21 @@ ordered_list =
             )
 
 
-horizontal_line : Parser PState Markdown
+horizontal_line : Parser State Markdown
 horizontal_line =
     md_annotations
         |> ignore (regex "-{3,}")
         |> map HLine
 
 
-paragraph : Parser PState Inlines
+paragraph : Parser State Inlines
 paragraph =
     ident_skip
         |> keep (many1 (identation |> keep line |> ignore newline))
         |> map (List.concat >> combine)
 
 
-table_row : Parser PState MultInlines
+table_row : Parser State MultInlines
 table_row =
     identation
         |> keep
@@ -196,7 +196,7 @@ table_row =
             )
 
 
-simple_table : Parser PState Markdown
+simple_table : Parser State Markdown
 simple_table =
     ident_skip
         |> keep md_annotations
@@ -204,7 +204,7 @@ simple_table =
         |> andMap (many1 table_row)
 
 
-formated_table : Parser PState Markdown
+formated_table : Parser State Markdown
 formated_table =
     let
         format =
@@ -230,7 +230,7 @@ formated_table =
         |> andMap (many table_row)
 
 
-quote : Parser PState Markdown
+quote : Parser State Markdown
 quote =
     map Quote md_annotations
         |> andMap
@@ -246,7 +246,7 @@ quote =
             )
 
 
-md_annotations : Parser PState Annotation
+md_annotations : Parser State Annotation
 md_annotations =
     spaces
         |> keep macro

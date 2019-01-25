@@ -1,4 +1,4 @@
-module Lia.Parser exposing (formatError, parse_defintion, parse_section, parse_titles)
+module Lia.Parser.Parser exposing (formatError, parse_defintion, parse_section, parse_titles)
 
 import Combine exposing (..)
 import Lia.Definition.Parser
@@ -11,14 +11,14 @@ import Lia.Markdown.Parser as Markdown
 import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Markdown.Survey.Types as Survey
 import Lia.Markdown.Types exposing (..)
-import Lia.PState exposing (PState)
-import Lia.Preprocessor as Preprocessor
+import Lia.Parser.Preprocessor as Preprocessor
+import Lia.Parser.State exposing (State, init)
 import Lia.Types exposing (Section)
 
 
 parse_defintion : String -> String -> Result String ( Definition, String )
 parse_defintion base code =
-    case Combine.runParser Lia.Definition.Parser.parse (Lia.PState.init <| Lia.Definition.Types.default base) code of
+    case Combine.runParser Lia.Definition.Parser.parse (init <| Lia.Definition.Types.default base) code of
         Ok ( state, data, _ ) ->
             Ok ( state.defines, data.input )
 
@@ -28,7 +28,7 @@ parse_defintion base code =
 
 parse_titles : Definition -> String -> Result String (List ( Int, Inlines, String ))
 parse_titles defines code =
-    case Combine.runParser Preprocessor.run (Lia.PState.init defines) code of
+    case Combine.runParser Preprocessor.run (init defines) code of
         Ok ( _, _, rslt ) ->
             Ok rslt
 
@@ -44,7 +44,7 @@ parse_section global section =
     case
         Combine.runParser
             (Lia.Definition.Parser.parse |> keep Markdown.run)
-            (Lia.PState.init { global | section = section.idx })
+            (init { global | section = section.idx })
             section.code
     of
         Ok ( state, _, es ) ->

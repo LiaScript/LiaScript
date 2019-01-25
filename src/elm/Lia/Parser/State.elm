@@ -1,5 +1,5 @@
-module Lia.PState exposing
-    ( PState
+module Lia.Parser.State exposing
+    ( State
     , ident_skip
     , identation
     , identation_append
@@ -17,7 +17,7 @@ import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Markdown.Survey.Types as Survey
 
 
-type alias PState =
+type alias State =
     { identation : List String
     , identation_skip : Bool
     , code_vector : Code.Vector
@@ -31,7 +31,7 @@ type alias PState =
     }
 
 
-init : Definition -> PState
+init : Definition -> State
 init global =
     { identation = []
     , identation_skip = False
@@ -46,7 +46,7 @@ init global =
     }
 
 
-identation : Parser PState ()
+identation : Parser State ()
 identation =
     lazy <|
         \() ->
@@ -67,7 +67,7 @@ identation =
                 |> ignore (modifyState (\s -> { s | identation_skip = False }))
 
 
-identation_append : String -> Parser PState ()
+identation_append : String -> Parser State ()
 identation_append str =
     modifyState
         (\state ->
@@ -78,7 +78,7 @@ identation_append str =
         )
 
 
-identation_pop : Parser PState ()
+identation_pop : Parser State ()
 identation_pop =
     modifyState
         (\state ->
@@ -93,6 +93,6 @@ identation_pop =
         )
 
 
-ident_skip : Parser PState ()
+ident_skip : Parser State ()
 ident_skip =
     modifyState (\state -> { state | identation_skip = True })

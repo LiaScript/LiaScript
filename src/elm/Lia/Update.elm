@@ -14,7 +14,7 @@ import Lia.Index.Update as Index
 import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (..)
-import Lia.Parser exposing (parse_section)
+import Lia.Parser.Parser exposing (parse_section)
 import Lia.Settings.Model exposing (Mode(..))
 import Lia.Settings.Update as Settings
 import Lia.Types exposing (Section, Sections)
@@ -260,7 +260,7 @@ generate model =
                         { sec | effect_model = { effects | visible = 0 } }
 
                     else
-                        case Lia.Parser.parse_section model.definition sec of
+                        case parse_section model.definition sec of
                             Ok new_sec ->
                                 new_sec
 
