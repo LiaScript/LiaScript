@@ -5,8 +5,8 @@ import Combine exposing (..)
 import Lia.Code.Highlight2Ace exposing (highlight2ace)
 import Lia.Code.Types exposing (..)
 import Lia.Helper exposing (..)
-import Lia.Macro.Parser exposing (macro)
 import Lia.Markdown.Inline.Parser exposing (javascript)
+import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.PState exposing (..)
 
 

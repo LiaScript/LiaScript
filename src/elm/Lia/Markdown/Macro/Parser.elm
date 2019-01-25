@@ -1,4 +1,4 @@
-module Lia.Macro.Parser exposing (add, get, macro, pattern)
+module Lia.Markdown.Macro.Parser exposing (add, get, macro, pattern)
 
 import Combine exposing (..)
 import Dict exposing (Dict)
