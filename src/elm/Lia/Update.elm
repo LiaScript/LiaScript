@@ -9,9 +9,9 @@ port module Lia.Update exposing
 import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Effect.Update as Effect
 import Lia.Event exposing (Event, jsonToEvent)
 import Lia.Index.Update as Index
+import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (..)
 import Lia.Parser exposing (parse_section)

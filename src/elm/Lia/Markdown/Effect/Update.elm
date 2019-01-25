@@ -1,4 +1,4 @@
-module Lia.Effect.Update exposing
+module Lia.Markdown.Effect.Update exposing
     ( Msg(..)
     , handle
     , has_next
@@ -13,8 +13,8 @@ module Lia.Effect.Update exposing
 import Browser.Dom as Dom
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Effect.Model exposing (Map, Model, current_comment, get_all_javascript, get_javascript)
 import Lia.Event exposing (..)
+import Lia.Markdown.Effect.Model exposing (Map, Model, current_comment, get_all_javascript, get_javascript)
 import Lia.Utils
 import Task
 

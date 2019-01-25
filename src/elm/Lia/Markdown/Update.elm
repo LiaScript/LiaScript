@@ -10,8 +10,8 @@ port module Lia.Markdown.Update exposing
 
 import Json.Encode as JE
 import Lia.Code.Update as Code
-import Lia.Effect.Update as Effect
 import Lia.Event exposing (Event, eventToJson)
+import Lia.Markdown.Effect.Update as Effect
 import Lia.Quiz.Update as Quiz
 import Lia.Survey.Update as Survey
 import Lia.Types exposing (Section)

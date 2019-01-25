@@ -1,13 +1,13 @@
-module Lia.Effect.Parser exposing (comment, hidden_comment, inline, markdown)
+module Lia.Markdown.Effect.Parser exposing (comment, hidden_comment, inline, markdown)
 
 import Array
 import Combine exposing (..)
 import Combine.Char exposing (anyChar)
 import Combine.Num exposing (int)
 import Dict
-import Lia.Effect.Model exposing (Element)
 import Lia.Helper exposing (..)
 import Lia.Macro.Parser exposing (macro)
+import Lia.Markdown.Effect.Model exposing (Element)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines)
 import Lia.Markdown.Types exposing (Markdown(..))

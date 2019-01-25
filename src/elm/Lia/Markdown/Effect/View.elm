@@ -1,9 +1,9 @@
-module Lia.Effect.View exposing (comment, responsive, state, view, view_block)
+module Lia.Markdown.Effect.View exposing (comment, responsive, state, view, view_block)
 
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
-import Lia.Effect.Model exposing (Model, current_paragraphs)
+import Lia.Markdown.Effect.Model exposing (Model, current_paragraphs)
 import Translations exposing (Lang, soundOff, soundOn)
 
 

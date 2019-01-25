@@ -1,17 +1,16 @@
-module Lia.Effect.Model
-    exposing
-        ( Element
-        , Map
-        , Model
-        , add_javascript
-        , current_comment
-        , current_paragraphs
-        , get_all_javascript
-        , get_javascript
-        , get_paragraph
-        , init
-        , set_annotation
-        )
+module Lia.Markdown.Effect.Model exposing
+    ( Element
+    , Map
+    , Model
+    , add_javascript
+    , current_comment
+    , current_paragraphs
+    , get_all_javascript
+    , get_javascript
+    , get_paragraph
+    , init
+    , set_annotation
+    )
 
 import Array exposing (Array)
 import Dict exposing (Dict)

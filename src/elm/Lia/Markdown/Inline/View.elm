@@ -3,7 +3,7 @@ module Lia.Markdown.Inline.View exposing (annotation, attributes, reference, vie
 import Dict
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
-import Lia.Effect.View as Effect
+import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..))
 import Lia.Utils

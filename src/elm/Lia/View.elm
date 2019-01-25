@@ -8,9 +8,9 @@ import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import Html.Lazy as Lazy
 import Lia.Definition.Types exposing (Definition, get_translations)
-import Lia.Effect.Model exposing (current_paragraphs)
-import Lia.Effect.View exposing (responsive, state)
 import Lia.Index.View as Index
+import Lia.Markdown.Effect.Model exposing (current_paragraphs)
+import Lia.Markdown.Effect.View exposing (responsive, state)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.View as Markdown
@@ -112,7 +112,7 @@ view_article model =
                 [ Html.text "" ]
 
 
-view_footer : Lang -> Bool -> Mode -> Lia.Effect.Model.Model -> Html Msg
+view_footer : Lang -> Bool -> Mode -> Lia.Markdown.Effect.Model.Model -> Html Msg
 view_footer lang sound mode effects =
     case mode of
         Slides ->
