@@ -1,10 +1,10 @@
-module Lia.Chart.Parser exposing (parse)
+module Lia.Markdown.Chart.Parser exposing (parse)
 
 import Combine exposing (..)
 import Combine.Num exposing (float, int)
 import Dict exposing (Dict)
-import Lia.Chart.Types exposing (..)
 import Lia.Helper exposing (..)
+import Lia.Markdown.Chart.Types exposing (..)
 import Lia.PState exposing (PState)
 import Set
 

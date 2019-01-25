@@ -6,10 +6,10 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Html.Lazy exposing (..)
-import Lia.Chart.View as Charts
 import Lia.Code.View as Codes
 import Lia.Effect.Model as Comments
 import Lia.Effect.View as Effects
+import Lia.Markdown.Chart.View as Charts
 import Lia.Markdown.Footnote.Model as Footnotes
 import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)

@@ -1,11 +1,11 @@
-module Lia.Chart.View exposing (view)
+module Lia.Markdown.Chart.View exposing (view)
 
 import Char exposing (isLower, toLower)
 import Color
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Lia.Chart.Types exposing (..)
+import Lia.Markdown.Chart.Types exposing (..)
 import Lia.Markdown.Inline.Types exposing (Annotation)
 import Lia.Markdown.Inline.View exposing (annotation)
 import LineChart

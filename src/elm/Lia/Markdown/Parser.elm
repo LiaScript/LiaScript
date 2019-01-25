@@ -2,12 +2,12 @@ module Lia.Markdown.Parser exposing (run)
 
 import Combine exposing (..)
 import Dict
-import Lia.Chart.Parser as Chart
 import Lia.Code.Parser as Code
 import Lia.Effect.Model exposing (set_annotation)
 import Lia.Effect.Parser as Effect
 import Lia.Helper exposing (..)
 import Lia.Macro.Parser exposing (macro)
+import Lia.Markdown.Chart.Parser as Chart
 import Lia.Markdown.Footnote.Parser as Footnote
 import Lia.Markdown.Inline.Parser exposing (..)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
