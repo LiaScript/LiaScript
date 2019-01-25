@@ -2,7 +2,6 @@ module Lia.Markdown.Parser exposing (run)
 
 import Combine exposing (..)
 import Dict
-import Lia.Helper exposing (..)
 import Lia.Markdown.Chart.Parser as Chart
 import Lia.Markdown.Code.Parser as Code
 import Lia.Markdown.Effect.Model exposing (set_annotation)
@@ -14,6 +13,7 @@ import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Parser as Quiz
 import Lia.Markdown.Survey.Parser as Survey
 import Lia.Markdown.Types exposing (..)
+import Lia.Parser.Helper exposing (..)
 import Lia.Parser.State exposing (..)
 
 

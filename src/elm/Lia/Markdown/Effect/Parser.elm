@@ -5,12 +5,12 @@ import Combine exposing (..)
 import Combine.Char exposing (anyChar)
 import Combine.Num exposing (int)
 import Dict
-import Lia.Helper exposing (..)
 import Lia.Markdown.Effect.Model exposing (Element)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Types exposing (Markdown(..))
+import Lia.Parser.Helper exposing (..)
 import Lia.Parser.State exposing (State, ident_skip, identation)
 
 

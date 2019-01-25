@@ -3,10 +3,10 @@ module Lia.Markdown.Survey.Parser exposing (parse)
 import Array
 import Combine exposing (..)
 import Dict
-import Lia.Helper exposing (..)
 import Lia.Markdown.Inline.Parser exposing (..)
 import Lia.Markdown.Inline.Types exposing (..)
 import Lia.Markdown.Survey.Types exposing (..)
+import Lia.Parser.Helper exposing (..)
 import Lia.Parser.State exposing (State)
 
 

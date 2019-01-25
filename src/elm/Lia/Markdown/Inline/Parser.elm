@@ -13,12 +13,12 @@ module Lia.Markdown.Inline.Parser exposing
 import Combine exposing (..)
 import Combine.Char exposing (..)
 import Dict exposing (Dict)
-import Lia.Helper exposing (..)
 import Lia.Markdown.Effect.Model exposing (add_javascript)
 import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Footnote.Parser as Footnote
 import Lia.Markdown.Inline.Types exposing (..)
 import Lia.Markdown.Macro.Parser as Macro
+import Lia.Parser.Helper exposing (..)
 import Lia.Parser.State exposing (State)
 
 

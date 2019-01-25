@@ -2,9 +2,9 @@ module Lia.Definition.Parser exposing (parse)
 
 import Combine exposing (..)
 import Lia.Definition.Types exposing (Definition, add_translation)
-import Lia.Helper exposing (..)
 import Lia.Markdown.Inline.Parser exposing (comment, comments)
 import Lia.Markdown.Macro.Parser as Macro
+import Lia.Parser.Helper exposing (..)
 import Lia.Parser.State exposing (State, ident_skip, identation, identation_append, identation_pop)
 import Lia.Utils exposing (string_replace)
 

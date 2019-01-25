@@ -1,10 +1,10 @@
 module Lia.Markdown.Footnote.Parser exposing (block, inline)
 
 import Combine exposing (..)
-import Lia.Helper exposing (..)
 import Lia.Markdown.Footnote.Model as Model
 import Lia.Markdown.Inline.Types exposing (..)
 import Lia.Markdown.Types exposing (Markdown(..))
+import Lia.Parser.Helper exposing (..)
 import Lia.Parser.State exposing (State, identation_append)
 
 

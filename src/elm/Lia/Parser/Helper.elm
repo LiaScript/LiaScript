@@ -1,4 +1,4 @@
-module Lia.Helper exposing
+module Lia.Parser.Helper exposing
     ( c_frame
     , newline
     , newlines

@@ -3,7 +3,7 @@ module Lia.Markdown.Macro.Parser exposing (add, get, macro, pattern)
 import Combine exposing (..)
 import Dict exposing (Dict)
 import Lia.Definition.Types exposing (Definition)
-import Lia.Helper exposing (..)
+import Lia.Parser.Helper exposing (..)
 import Lia.Parser.State exposing (State, identation)
 import Lia.Utils exposing (string_replace, toJSstring)
 
