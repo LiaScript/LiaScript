@@ -1,4 +1,4 @@
-module Lia.Code.Json exposing
+module Lia.Markdown.Code.Json exposing
     ( file2json
     ,  json2details
        --  , json2event
@@ -14,7 +14,7 @@ module Lia.Code.Json exposing
 import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Code.Types exposing (File, Log, Project, Vector, Version, noLog)
+import Lia.Markdown.Code.Types exposing (File, Log, Project, Vector, Version, noLog)
 
 
 merge : Vector -> Vector -> Vector

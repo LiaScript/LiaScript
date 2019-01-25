@@ -2,9 +2,9 @@ module Lia.Markdown.Parser exposing (run)
 
 import Combine exposing (..)
 import Dict
-import Lia.Code.Parser as Code
 import Lia.Helper exposing (..)
 import Lia.Markdown.Chart.Parser as Chart
+import Lia.Markdown.Code.Parser as Code
 import Lia.Markdown.Effect.Model exposing (set_annotation)
 import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Footnote.Parser as Footnote

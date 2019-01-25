@@ -1,4 +1,4 @@
-module Lia.Code.Terminal exposing (Msg(..), Terminal, init, update, view)
+module Lia.Markdown.Code.Terminal exposing (Msg(..), Terminal, init, update, view)
 
 import Array exposing (Array)
 import Html exposing (Html)

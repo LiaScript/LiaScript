@@ -1,4 +1,4 @@
-module Lia.Code.Update exposing
+module Lia.Markdown.Code.Update exposing
     ( Msg(..)
     , handle
     , update
@@ -9,10 +9,10 @@ module Lia.Code.Update exposing
 import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Code.Json exposing (json2details, json2vector, merge, vector2json)
-import Lia.Code.Terminal as Terminal
-import Lia.Code.Types exposing (..)
 import Lia.Event exposing (..)
+import Lia.Markdown.Code.Json exposing (json2details, json2vector, merge, vector2json)
+import Lia.Markdown.Code.Terminal as Terminal
+import Lia.Markdown.Code.Types exposing (..)
 import Lia.Utils exposing (string_replace, toJSstring)
 
 

@@ -1,4 +1,4 @@
-module Lia.Code.Types exposing
+module Lia.Markdown.Code.Types exposing
     ( Code(..)
     , EventMsg
     , File
@@ -15,7 +15,7 @@ module Lia.Code.Types exposing
 import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Code.Terminal exposing (Terminal)
+import Lia.Markdown.Code.Terminal exposing (Terminal)
 
 
 type alias Vector =

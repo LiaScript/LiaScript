@@ -1,4 +1,4 @@
-module Lia.Code.View exposing (view)
+module Lia.Markdown.Code.View exposing (view)
 
 --import Lia.Ace as Ace
 
@@ -7,9 +7,9 @@ import Html exposing (Html)
 import Html.Attributes as Attr exposing (attribute, lang)
 import Html.Events exposing (onClick, onDoubleClick, onInput)
 import Json.Encode as JE
-import Lia.Code.Terminal as Terminal
-import Lia.Code.Types exposing (..)
-import Lia.Code.Update exposing (Msg(..))
+import Lia.Markdown.Code.Terminal as Terminal
+import Lia.Markdown.Code.Types exposing (..)
+import Lia.Markdown.Code.Update exposing (Msg(..))
 import Lia.Markdown.Inline.Types exposing (Annotation)
 import Lia.Markdown.Inline.View exposing (annotation, attributes)
 import Translations exposing (Lang, codeExecute, codeFirst, codeLast, codeMaximize, codeMinimize, codeNext, codePrev, codeRunning)

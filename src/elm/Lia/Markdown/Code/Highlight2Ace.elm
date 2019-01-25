@@ -1,4 +1,4 @@
-module Lia.Code.Highlight2Ace exposing (highlight2ace)
+module Lia.Markdown.Code.Highlight2Ace exposing (highlight2ace)
 
 
 highlight2ace : String -> String
@@ -17,6 +17,7 @@ check t lang =
         ( ace, highlightjs ) :: ts ->
             if List.member lang highlightjs then
                 ace
+
             else
                 check ts lang
 

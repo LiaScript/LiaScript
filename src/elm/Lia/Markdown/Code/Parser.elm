@@ -1,10 +1,10 @@
-module Lia.Code.Parser exposing (parse)
+module Lia.Markdown.Code.Parser exposing (parse)
 
 import Array
 import Combine exposing (..)
-import Lia.Code.Highlight2Ace exposing (highlight2ace)
-import Lia.Code.Types exposing (..)
 import Lia.Helper exposing (..)
+import Lia.Markdown.Code.Highlight2Ace exposing (highlight2ace)
+import Lia.Markdown.Code.Types exposing (..)
 import Lia.Markdown.Inline.Parser exposing (javascript)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.PState exposing (..)

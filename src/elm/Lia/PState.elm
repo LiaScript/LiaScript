@@ -9,8 +9,8 @@ module Lia.PState exposing
 
 import Array exposing (Array)
 import Combine exposing (..)
-import Lia.Code.Types as Code
 import Lia.Definition.Types exposing (Definition)
+import Lia.Markdown.Code.Types as Code
 import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Footnote.Model as Footnote
 import Lia.Markdown.Quiz.Types as Quiz
