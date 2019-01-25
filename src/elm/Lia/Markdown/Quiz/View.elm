@@ -1,4 +1,4 @@
-module Lia.Quiz.View exposing (view, view_solution)
+module Lia.Markdown.Quiz.View exposing (view, view_solution)
 
 --import Lia.Code.View exposing (error)
 
@@ -8,9 +8,9 @@ import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import Lia.Markdown.Inline.Types exposing (Annotation, MultInlines)
 import Lia.Markdown.Inline.View exposing (annotation, view_inf)
-import Lia.Quiz.Model exposing (..)
-import Lia.Quiz.Types exposing (..)
-import Lia.Quiz.Update exposing (Msg(..))
+import Lia.Markdown.Quiz.Model exposing (..)
+import Lia.Markdown.Quiz.Types exposing (..)
+import Lia.Markdown.Quiz.Update exposing (Msg(..))
 import Translations exposing (Lang, quizCheck, quizChecked, quizResolved, quizSolution)
 
 

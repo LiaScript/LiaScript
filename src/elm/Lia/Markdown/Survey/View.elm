@@ -1,13 +1,13 @@
-module Lia.Survey.View exposing (view)
+module Lia.Markdown.Survey.View exposing (view)
 
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline, Inlines)
 import Lia.Markdown.Inline.View exposing (annotation, view_inf)
-import Lia.Survey.Model exposing (..)
-import Lia.Survey.Types exposing (..)
-import Lia.Survey.Update exposing (Msg(..))
+import Lia.Markdown.Survey.Model exposing (..)
+import Lia.Markdown.Survey.Types exposing (..)
+import Lia.Markdown.Survey.Update exposing (Msg(..))
 import Translations exposing (Lang, surveySubmit, surveySubmitted, surveyText)
 
 

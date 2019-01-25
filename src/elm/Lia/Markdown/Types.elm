@@ -3,8 +3,8 @@ module Lia.Markdown.Types exposing (Markdown(..), MarkdownS)
 import Lia.Code.Types exposing (Code)
 import Lia.Markdown.Chart.Types exposing (Chart)
 import Lia.Markdown.Inline.Types exposing (..)
-import Lia.Quiz.Types exposing (Quiz)
-import Lia.Survey.Types exposing (Survey)
+import Lia.Markdown.Quiz.Types exposing (Quiz)
+import Lia.Markdown.Survey.Types exposing (Survey)
 
 
 

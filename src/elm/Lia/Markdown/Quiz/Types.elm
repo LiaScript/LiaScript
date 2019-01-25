@@ -1,4 +1,4 @@
-module Lia.Quiz.Types exposing
+module Lia.Markdown.Quiz.Types exposing
     ( Element
     , Hints
     , Quiz(..)

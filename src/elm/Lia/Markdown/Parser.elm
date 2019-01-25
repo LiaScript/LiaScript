@@ -11,10 +11,10 @@ import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Footnote.Parser as Footnote
 import Lia.Markdown.Inline.Parser exposing (..)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
+import Lia.Markdown.Quiz.Parser as Quiz
+import Lia.Markdown.Survey.Parser as Survey
 import Lia.Markdown.Types exposing (..)
 import Lia.PState exposing (..)
-import Lia.Quiz.Parser as Quiz
-import Lia.Survey.Parser as Survey
 
 
 

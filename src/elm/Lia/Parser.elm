@@ -8,11 +8,11 @@ import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Footnote.Model as Footnote
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Parser as Markdown
+import Lia.Markdown.Quiz.Types as Quiz
+import Lia.Markdown.Survey.Types as Survey
 import Lia.Markdown.Types exposing (..)
 import Lia.PState exposing (PState)
 import Lia.Preprocessor as Preprocessor
-import Lia.Quiz.Types as Quiz
-import Lia.Survey.Types as Survey
 import Lia.Types exposing (Section)
 
 

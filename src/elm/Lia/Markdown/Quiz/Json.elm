@@ -1,4 +1,4 @@
-module Lia.Quiz.Json exposing
+module Lia.Markdown.Quiz.Json exposing
     ( jsonToVector
     , vectorToJson
     )
@@ -7,7 +7,7 @@ module Lia.Quiz.Json exposing
 
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Quiz.Types exposing (..)
+import Lia.Markdown.Quiz.Types exposing (..)
 
 
 vectorToJson : Vector -> JE.Value

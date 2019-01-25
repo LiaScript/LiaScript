@@ -13,8 +13,8 @@ import Lia.Code.Types as Code
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Footnote.Model as Footnote
-import Lia.Quiz.Types as Quiz
-import Lia.Survey.Types as Survey
+import Lia.Markdown.Quiz.Types as Quiz
+import Lia.Markdown.Survey.Types as Survey
 
 
 type alias PState =

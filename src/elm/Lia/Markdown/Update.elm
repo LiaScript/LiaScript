@@ -12,8 +12,8 @@ import Json.Encode as JE
 import Lia.Code.Update as Code
 import Lia.Event exposing (Event, eventToJson)
 import Lia.Markdown.Effect.Update as Effect
-import Lia.Quiz.Update as Quiz
-import Lia.Survey.Update as Survey
+import Lia.Markdown.Quiz.Update as Quiz
+import Lia.Markdown.Survey.Update as Survey
 import Lia.Types exposing (Section)
 
 

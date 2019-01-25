@@ -1,10 +1,10 @@
-module Lia.Quiz.Update exposing (Msg(..), handle, update)
+module Lia.Markdown.Quiz.Update exposing (Msg(..), handle, update)
 
 import Array exposing (Array)
 import Json.Encode as JE
 import Lia.Event exposing (..)
-import Lia.Quiz.Json exposing (..)
-import Lia.Quiz.Types exposing (..)
+import Lia.Markdown.Quiz.Json exposing (..)
+import Lia.Markdown.Quiz.Types exposing (..)
 import Lia.Utils exposing (string_replace)
 
 

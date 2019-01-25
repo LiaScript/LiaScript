@@ -1,4 +1,4 @@
-module Lia.Survey.Parser exposing (parse)
+module Lia.Markdown.Survey.Parser exposing (parse)
 
 import Array
 import Combine exposing (..)
@@ -6,8 +6,8 @@ import Dict
 import Lia.Helper exposing (..)
 import Lia.Markdown.Inline.Parser exposing (..)
 import Lia.Markdown.Inline.Types exposing (..)
+import Lia.Markdown.Survey.Types exposing (..)
 import Lia.PState exposing (PState)
-import Lia.Survey.Types exposing (..)
 
 
 parse : Parser PState Survey

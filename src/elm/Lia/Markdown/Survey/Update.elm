@@ -1,12 +1,12 @@
-module Lia.Survey.Update exposing (Msg(..), handle, update)
+module Lia.Markdown.Survey.Update exposing (Msg(..), handle, update)
 
 import Array
 import Dict
 import Json.Encode as JE
 import Lia.Event exposing (Event, storeEvent)
-import Lia.Survey.Json exposing (..)
-import Lia.Survey.Model exposing (..)
-import Lia.Survey.Types exposing (..)
+import Lia.Markdown.Survey.Json exposing (..)
+import Lia.Markdown.Survey.Model exposing (..)
+import Lia.Markdown.Survey.Types exposing (..)
 
 
 type Msg

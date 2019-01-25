@@ -1,4 +1,4 @@
-module Lia.Survey.Types exposing (Element, State(..), Survey(..), Var, Vector)
+module Lia.Markdown.Survey.Types exposing (Element, State(..), Survey(..), Var, Vector)
 
 import Array exposing (Array)
 import Dict exposing (Dict)

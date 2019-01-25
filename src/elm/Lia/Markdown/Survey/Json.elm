@@ -1,4 +1,4 @@
-module Lia.Survey.Json exposing
+module Lia.Markdown.Survey.Json exposing
     ( jsonToVector
     , vectorToJson
     )
@@ -7,7 +7,7 @@ import Array
 import Dict
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Survey.Types exposing (..)
+import Lia.Markdown.Survey.Types exposing (..)
 
 
 vectorToJson : Vector -> JE.Value

@@ -1,4 +1,4 @@
-module Lia.Survey.Model exposing
+module Lia.Markdown.Survey.Model exposing
     ( get_matrix_state
     , get_submission_state
     , get_text_state
@@ -9,7 +9,7 @@ import Array
 import Dict
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Survey.Types exposing (..)
+import Lia.Markdown.Survey.Types exposing (..)
 
 
 get_submission_state : Vector -> Int -> Bool

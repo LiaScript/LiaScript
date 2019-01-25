@@ -1,4 +1,4 @@
-module Lia.Quiz.Parser exposing (parse)
+module Lia.Markdown.Quiz.Parser exposing (parse)
 
 import Array
 import Combine exposing (..)
@@ -6,8 +6,8 @@ import Lia.Helper exposing (..)
 import Lia.Macro.Parser exposing (macro)
 import Lia.Markdown.Inline.Parser exposing (..)
 import Lia.Markdown.Inline.Types exposing (..)
+import Lia.Markdown.Quiz.Types exposing (Element, Hints, Quiz(..), QuizAdds(..), Solution(..), State(..), Vector)
 import Lia.PState exposing (PState)
-import Lia.Quiz.Types exposing (Element, Hints, Quiz(..), QuizAdds(..), Solution(..), State(..), Vector)
 
 
 parse : Parser PState Quiz

@@ -14,11 +14,11 @@ import Lia.Markdown.Footnote.Model as Footnotes
 import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
 import Lia.Markdown.Inline.View exposing (annotation, attributes, viewer)
+import Lia.Markdown.Quiz.View as Quizzes
+import Lia.Markdown.Survey.View as Surveys
 import Lia.Markdown.Types exposing (..)
 import Lia.Markdown.Update exposing (Msg(..))
-import Lia.Quiz.View as Quizzes
 import Lia.Settings.Model exposing (Mode(..))
-import Lia.Survey.View as Surveys
 import Lia.Types exposing (Section)
 import Translations exposing (..)
 
