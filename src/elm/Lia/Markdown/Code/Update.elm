@@ -7,8 +7,8 @@ module Lia.Markdown.Code.Update exposing
 import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Event as Event exposing (Event)
-import Lia.Markdown.Code.Events as Eve
+import Lia.Event exposing (Eval, Event)
+import Lia.Markdown.Code.Events as Event
 import Lia.Markdown.Code.Json as Json
 import Lia.Markdown.Code.Terminal as Terminal
 import Lia.Markdown.Code.Types exposing (..)
@@ -44,7 +44,7 @@ restore json model =
                 []
 
               else
-                [ Event.store <| Json.fromVector model ]
+                [ Event.store model ]
             )
 
         Err msg ->
@@ -78,7 +78,7 @@ update msg model =
                 id_2
                 model
                 (\f -> { f | visible = not f.visible })
-                (.visible >> Eve.flip_view id_1 id_2 >> List.singleton)
+                (Event.flip_view id_1 id_2)
 
         FlipFullscreen id_1 id_2 ->
             update_file
@@ -86,18 +86,18 @@ update msg model =
                 id_2
                 model
                 (\f -> { f | fullscreen = not f.fullscreen })
-                (.fullscreen >> Eve.fullscreen id_1 id_2 >> List.singleton)
+                (Event.fullscreen id_1 id_2)
 
         Load idx version ->
             model
                 |> maybe_project idx (load version)
-                |> Maybe.map (Eve.load idx)
+                |> Maybe.map (Event.load idx)
                 |> maybe_update idx model
 
         First idx ->
             model
                 |> maybe_project idx (load 0)
-                |> Maybe.map (Eve.load idx)
+                |> Maybe.map (Event.load idx)
                 |> maybe_update idx model
 
         Last idx ->
@@ -109,7 +109,7 @@ update msg model =
             in
             model
                 |> maybe_project idx (load version)
-                |> Maybe.map (Eve.load idx)
+                |> Maybe.map (Event.load idx)
                 |> maybe_update idx model
 
         Handle event ->
@@ -117,7 +117,7 @@ update msg model =
                 "eval" ->
                     let
                         e =
-                            Event.evalDecode event.message
+                            Event.evalDecode event
                     in
                     case e.result of
                         "LIA: wait" ->
@@ -129,7 +129,7 @@ update msg model =
                         "LIA: stop" ->
                             model
                                 |> maybe_project event.section stop
-                                |> Maybe.map (Eve.version_update event.section)
+                                |> Maybe.map (Event.version_update event.section)
                                 |> maybe_update event.section model
 
                         -- preserve previous logging by setting ok to false
@@ -153,7 +153,7 @@ update msg model =
                         _ ->
                             model
                                 |> maybe_project event.section (set_result False e)
-                                |> Maybe.map (Eve.version_update event.section)
+                                |> Maybe.map (Event.version_update event.section)
                                 |> maybe_update event.section model
 
                 "restore" ->
@@ -161,13 +161,13 @@ update msg model =
 
                 "log" ->
                     model
-                        |> maybe_project event.section (set_result True (Event.evalDecode event.message))
+                        |> maybe_project event.section (set_result True (Event.evalDecode event))
                         |> Maybe.map (\p -> ( p, [] ))
                         |> maybe_update event.section model
 
                 "output" ->
                     model
-                        |> maybe_project event.section (append2log <| .result <| Event.evalDecode event.message)
+                        |> maybe_project event.section (append2log <| .result <| Event.evalDecode event)
                         |> Maybe.map (\p -> ( p, [] ))
                         |> maybe_update event.section model
 
@@ -183,12 +183,12 @@ update msg model =
         Stop idx ->
             model
                 |> maybe_project idx (\p -> { p | running = False, terminal = Nothing })
-                |> Maybe.map (\p -> ( p, [ Eve.stop idx ] ))
+                |> Maybe.map (\p -> ( p, Event.stop idx ))
                 |> maybe_update idx model
 
         UpdateTerminal idx childMsg ->
             model
-                |> maybe_project idx (update_terminal (Eve.input idx) childMsg)
+                |> maybe_project idx (update_terminal (Event.input idx) childMsg)
                 |> maybe_update idx model
 
 
@@ -211,13 +211,7 @@ update_terminal f msg project =
 
 eval : Int -> Project -> ( Project, List Event )
 eval idx project =
-    ( { project | running = True }
-    , [ project.file
-            |> Array.map .code
-            |> Array.toList
-            |> Event.eval idx project.evaluation
-      ]
-    )
+    ( { project | running = True }, Event.eval idx project )
 
 
 maybe_project : Int -> (a -> b) -> Array a -> Maybe b
@@ -278,7 +272,7 @@ is_version_new idx ( project, events ) =
                         }
                 in
                 ( new_project
-                , Eve.version_append idx new_project :: events
+                , Event.version_append idx new_project :: events
                 )
 
             else
@@ -306,7 +300,7 @@ stop project =
             project
 
 
-set_result : Bool -> Event.Eval -> Project -> Project
+set_result : Bool -> Eval -> Project -> Project
 set_result continue log project =
     case project.version |> Array.get project.version_active of
         Just ( code, _ ) ->

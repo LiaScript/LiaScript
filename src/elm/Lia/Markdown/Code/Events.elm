@@ -1,4 +1,4 @@
-module Lia.Markdown.Code.Events exposing (flip_view, fullscreen, input, load, stop, version_append, version_update)
+module Lia.Markdown.Code.Events exposing (eval, evalDecode, flip_view, fullscreen, input, load, stop, store, version_append, version_update)
 
 import Array exposing (Array)
 import Json.Encode as JE
@@ -7,14 +7,35 @@ import Lia.Markdown.Code.Json as Json
 import Lia.Markdown.Code.Types exposing (File, Project, Vector, Version)
 
 
-stop : Int -> Event
+stop : Int -> List Event
 stop idx =
-    Event "stop" idx JE.null
+    [ Event "stop" idx JE.null ]
 
 
 input : Int -> String -> Event
 input idx string =
     Event "input" idx <| JE.string string
+
+
+eval : Int -> Project -> List Event
+eval idx project =
+    [ project.file
+        |> Array.map .code
+        |> Array.toList
+        |> Event.eval idx project.evaluation
+    ]
+
+
+store : Vector -> Event
+store model =
+    model
+        |> Json.fromVector
+        |> Event.store
+
+
+evalDecode : Event -> Event.Eval
+evalDecode event =
+    Event.evalDecode event.message
 
 
 version_update : Int -> Project -> ( Project, List Event )
@@ -68,17 +89,21 @@ load idx project =
     )
 
 
-flip_view : Int -> Int -> Bool -> Event
-flip_view id1 id2 b =
-    JE.bool b
+flip_view : Int -> Int -> File -> List Event
+flip_view id1 id2 file =
+    [ file.visible
+        |> JE.bool
         |> Event "view" id2
         |> Event.toJson
         |> Event "flip" id1
+    ]
 
 
-fullscreen : Int -> Int -> Bool -> Event
-fullscreen id1 id2 b =
-    JE.bool b
+fullscreen : Int -> Int -> File -> List Event
+fullscreen id1 id2 file =
+    [ file.fullscreen
+        |> JE.bool
         |> Event "fullscreen" id2
         |> Event.toJson
         |> Event "flip" id1
+    ]
