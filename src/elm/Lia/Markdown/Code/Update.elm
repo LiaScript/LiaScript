@@ -12,7 +12,6 @@ import Lia.Markdown.Code.Events as Eve
 import Lia.Markdown.Code.Json as Json
 import Lia.Markdown.Code.Terminal as Terminal
 import Lia.Markdown.Code.Types exposing (..)
-import Lia.Utils exposing (string_replace, toJSstring)
 
 
 type Msg
@@ -193,11 +192,6 @@ update msg model =
                 |> maybe_update idx model
 
 
-replace : ( Int, String ) -> String -> String
-replace ( int, insert ) into =
-    string_replace ( "@input(" ++ String.fromInt int ++ ")", insert ) into
-
-
 update_terminal : (String -> Event) -> Terminal.Msg -> Project -> ( Project, List Event )
 update_terminal f msg project =
     case project.terminal |> Maybe.map (Terminal.update msg) of
@@ -217,27 +211,13 @@ update_terminal f msg project =
 
 eval : Int -> Project -> ( Project, List Event )
 eval idx project =
-    let
-        code_0 =
-            project.file
-                |> Array.get 0
-                |> Maybe.map .code
-                |> Maybe.withDefault ""
-                |> toJSstring
-
-        eval_str =
-            string_replace ( "@input", code_0 ) <|
-                string_replace ( "@input.version", String.fromInt project.version_active ) <|
-                    if Array.length project.file == 1 then
-                        project.evaluation
-                            |> replace ( 0, code_0 )
-
-                    else
-                        project.file
-                            |> Array.indexedMap (\i f -> ( i, toJSstring f.code ))
-                            |> Array.foldl replace project.evaluation
-    in
-    ( { project | running = True }, [ Event "eval" idx <| JE.string eval_str ] )
+    ( { project | running = True }
+    , [ project.file
+            |> Array.map .code
+            |> Array.toList
+            |> Event.eval idx project.evaluation
+      ]
+    )
 
 
 maybe_project : Int -> (a -> b) -> Array a -> Maybe b

@@ -72,7 +72,7 @@ update msg vector =
                         _ ->
                             ""
             in
-            ( vector, [ Event.eval idx code state ] )
+            ( vector, [ Event.eval idx code [ state ] ] )
 
         ShowHint idx ->
             (\e -> { e | hint = e.hint + 1 })

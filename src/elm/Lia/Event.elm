@@ -12,7 +12,7 @@ module Lia.Event exposing
 
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Utils exposing (string_replace)
+import Lia.Utils exposing (string_replace, toJSstring)
 
 
 type alias Event =
@@ -54,12 +54,26 @@ store message =
     Event "store" -1 message
 
 
-eval : Int -> String -> String -> Event
+eval : Int -> String -> List String -> Event
 eval idx code replacement =
-    code
-        |> string_replace ( "@input", replacement )
+    let
+        replacement_0 =
+            replacement
+                |> List.head
+                |> Maybe.withDefault ""
+                |> toJSstring
+    in
+    replacement
+        |> List.indexedMap (\i r -> ( i, toJSstring r ))
+        |> List.foldl replace_input code
+        |> string_replace ( "@input", replacement_0 )
         |> JE.string
         |> Event "eval" idx
+
+
+replace_input : ( Int, String ) -> String -> String
+replace_input ( int, insert ) into =
+    string_replace ( "@input(" ++ String.fromInt int ++ ")", insert ) into
 
 
 evalDecoder : JD.Decoder Eval
