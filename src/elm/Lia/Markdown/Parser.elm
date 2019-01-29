@@ -15,10 +15,7 @@ import Lia.Markdown.Survey.Parser as Survey
 import Lia.Markdown.Types exposing (..)
 import Lia.Parser.Helper exposing (..)
 import Lia.Parser.State exposing (..)
-
-
-
---import SvgBob
+import SvgBob
 
 
 run : Parser State (List Markdown)
@@ -56,8 +53,7 @@ blocks =
                             |> andMap Chart.parse
                         , formated_table
                         , simple_table
-
-                        --, svgbob
+                        , svgbob
                         , md_annotations
                             |> map Code
                             |> andMap Code.parse
@@ -102,19 +98,16 @@ to_comment ( attr, ( id1, id2 ) ) =
         |> onsuccess (Comment ( id1, id2 ))
 
 
-
-{-
-   svgbob : Parser State Markdown
-   svgbob =
-       md_annotations
-           |> map (\attr txt -> ASCII attr (txt |> String.concat |> SvgBob.init))
-           |> ignore (regex "```[`]+\\n")
-           |> andMap
-               (manyTill
-                   (maybe identation |> keep (regex "(?:.(?!````))*\\n"))
-                   (identation |> ignore (regex "```[`]+"))
-               )
--}
+svgbob : Parser State Markdown
+svgbob =
+    md_annotations
+        |> map (\attr txt -> ASCII attr (txt |> String.concat |> SvgBob.init))
+        |> ignore (regex "```[`]+\\n")
+        |> andMap
+            (manyTill
+                (maybe identation |> keep (regex "(?:.(?!````))*\\n"))
+                (identation |> ignore (regex "```[`]+"))
+            )
 
 
 solution : Parser State (Maybe ( List Markdown, Int ))

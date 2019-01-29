@@ -1,7 +1,5 @@
 module Lia.Markdown.View exposing (view)
 
---import SvgBob
-
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
@@ -20,6 +18,7 @@ import Lia.Markdown.Types exposing (..)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Settings.Model exposing (Mode(..))
 import Lia.Types exposing (Section)
+import SvgBob
 import Translations exposing (..)
 
 
@@ -234,10 +233,8 @@ view_block config block =
         Chart attr chart ->
             Charts.view attr chart
 
-
-
---        ASCII attr txt ->
---            SvgBob.getSvg (attributes attr) txt
+        ASCII attr txt ->
+            SvgBob.getSvg (attributes attr) txt
 
 
 view_table : Config -> Annotation -> MultInlines -> List String -> List MultInlines -> Html Msg

@@ -123,14 +123,7 @@ update msg model =
 
                 _ ->
                     case
-                        ( Array.get
-                            (if event.section == -1 then
-                                model.section_active
-
-                             else
-                                event.section
-                            )
-                            model.sections
+                        ( Array.get event.section model.sections
                         , Event.fromJson event.message
                         )
                     of

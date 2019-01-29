@@ -6,6 +6,7 @@
     "elm-version": "0.19.0",
     "dependencies": {
         "direct": {
+            "andre-dietrich/elm-svgbob": "1.0.0",
             "andre-dietrich/parser-combinators": "3.0.2",
             "avh4/elm-color": "1.0.0",
             "elm/browser": "1.0.1",
