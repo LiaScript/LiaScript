@@ -12,7 +12,7 @@ import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Event as Event
-import Lia.Markdown.Code.Types exposing (File, Project, Vector, Version, noLog)
+import Lia.Markdown.Code.Types exposing (File, Project, Vector, Version)
 
 
 merge : Vector -> Vector -> Vector
@@ -26,22 +26,6 @@ merge old new =
 copy_evaluation : Project -> Project -> Project
 copy_evaluation old new =
     { new | evaluation = old.evaluation }
-
-
-
-{- todo
-
-   json2event : JD.Value -> Result String ( Bool, Int, String, JD.Value )
-   json2event json =
-       JD.decodeValue
-           (JD.map4 (,,,)
-               (JD.index 0 JD.bool)
-               (JD.index 1 JD.int)
-               (JD.index 2 JD.string)
-               (JD.index 3 JD.value)
-           )
-           json
--}
 
 
 fromVector : Vector -> JE.Value
@@ -59,8 +43,6 @@ fromProject project =
     JE.object
         [ ( "file", JE.array fromFile project.file )
         , ( "version", JE.array fromVersion project.version )
-
-        --, ( "evaluation", JE.string project.evaluation )
         , ( "version_active", JE.int project.version_active )
         , ( "log", Event.evalEncode project.log )
         ]
@@ -71,7 +53,6 @@ toProject =
     JD.map7 Project
         (JD.field "file" (JD.array toFile))
         (JD.field "version" (JD.array toVersion))
-        --(JD.field "evaluation" JD.string)
         (JD.succeed "")
         (JD.field "version_active" JD.int)
         (JD.field "log" Event.evalDecoder)

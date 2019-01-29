@@ -28,23 +28,6 @@ type Msg
     | Handle Event
 
 
-
-{-
-   jsEventHandler : String -> JE.Value -> Vector -> ( Vector, Maybe JE.Value )
-   jsEventHandler topic json =
-       case json |> json2event of
-           Ok event ->
-               update (Event topic event)
-
-           Err msg ->
-               let
-                   debug =
-                       Debug.log "error: " msg
-               in
-               update (Event "" ( False, -1, "", JE.null ))
--}
-
-
 handle : Event -> Msg
 handle =
     Handle
@@ -198,45 +181,6 @@ update msg model =
                 _ ->
                     ( model, [] )
 
-        {-
-           Event "eval" ( _, idx, "LIA: wait", _ ) ->
-               model
-                   |> maybe_project idx (\p -> { p | log = noLog })
-                   |> Maybe.map (\p -> ( p, [] ))
-                   |> maybe_update idx model
-
-           Event "eval" ( _, idx, "LIA: stop", _ ) ->
-               model
-                   |> maybe_project idx stop
-                   |> Maybe.map (Event.version_update idx)
-                   |> maybe_update idx model
-
-           -- preserve previous logging by setting ok to false
-           Event "eval" ( ok, idx, "LIA: terminal", _ ) ->
-               model
-                   |> maybe_project idx
-                       (\p ->
-                           { p
-                               | terminal = Just <| Terminal.init
-                               , log =
-                                   if ok then
-                                       noLog
-
-                                   else
-                                       p.log
-                           }
-                       )
-                   |> Maybe.map (\p -> ( p, [] ))
-                   |> maybe_update idx model
-
-           Event "eval" ( ok, idx, message, details ) ->
-               model
-                   |> maybe_project idx (set_result False (toLog ok message details))
-                   |> Maybe.map (Event.version_update idx)
-                   |> maybe_update idx model
-
-
-        -}
         Stop idx ->
             model
                 |> maybe_project idx (\p -> { p | running = False, terminal = Nothing })
@@ -294,10 +238,6 @@ eval idx project =
                             |> Array.foldl replace project.evaluation
     in
     ( { project | running = True }, [ Event "eval" idx <| JE.string eval_str ] )
-
-
-
--- todo [ Event.eval idx eval_str ] )
 
 
 maybe_project : Int -> (a -> b) -> Array a -> Maybe b

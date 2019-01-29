@@ -1,12 +1,10 @@
 module Lia.Markdown.Code.Event exposing (flip_view, fullscreen, input, load, stop, version_append, version_update)
 
---eval, flip_view, fullscreen, input, load, stop, store, version_append, version_update)
-
 import Array exposing (Array)
 import Json.Encode as JE
 import Lia.Event as Event exposing (Event)
 import Lia.Markdown.Code.Json as Json
-import Lia.Markdown.Code.Types exposing (File, Project, Vector, Version, noLog)
+import Lia.Markdown.Code.Types exposing (File, Project, Vector, Version)
 
 
 stop : Int -> Event
