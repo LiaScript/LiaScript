@@ -75,7 +75,7 @@ flip_view id1 id2 b =
     JE.bool b
         |> Event "view" id2
         |> Event.toJson
-        |> Event "flip" id2
+        |> Event "flip" id1
 
 
 fullscreen : Int -> Int -> Bool -> Event
@@ -83,4 +83,4 @@ fullscreen id1 id2 b =
     JE.bool b
         |> Event "fullscreen" id2
         |> Event.toJson
-        |> Event "flip" id2
+        |> Event "flip" id1

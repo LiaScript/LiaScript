@@ -128,9 +128,9 @@ class LiaEvents {
         this.input[id1][id2][name] = fn;
     }
 
-    dispatch_input (id1, id2, name, msg) {
+    dispatch_input (event) {//id1, id2, name, msg) {
         try {
-            this.input[id1][id2][name](msg);
+            this.input[event.section][event.message.section][event.message.topic](event.message.message);
         } catch(e) {
             console.log("unable to dispatch message", msg);
         }
@@ -409,32 +409,31 @@ class LiaDB {
                     let vector = item.result
 
                     if (vector) {
-                        let project = vector.data[event[1]];
-                        switch (event[0]) {
-                            case "flip_view": {
-                                project.file[event[2]].visible = event[3];
-                                break;
-                            }
-                            case "fullscreen": {
-                                project.file[event[2]].fullscreen = event[3];
+                        let project = vector.data[event.section];
+                        switch (event.topic) {
+                            case "flip": {
+                                if(event.message.topic == "view")
+                                    project.file[event.message.section].visible = event.message.message;
+                                else if(event.message.topic == "fullscreen")
+                                    project.file[event.message.section].fullscreen = event.message.message;
                                 break;
                             }
                             case "load": {
-                                let e_ = event[2];
+                                let e_ = event.message;
                                 project.version_active = e_.version_active;
                                 project.log = e_.log;
                                 project.file = e_.file;
                                 break;
                             }
                             case "version_update": {
-                                let e_ = event[2];
+                                let e_ = event.message;
                                 project.version_active = e_.version_active;
                                 project.log = e_.log;
                                 project.version[e_.version_active] = e_.version;
                                 break;
                             }
                             case "version_append": {
-                                let e_ = event[2];
+                                let e_ = event.message;
                                 project.version_active = e_.version_active;
                                 project.log = e_.log;
                                 project.file = e_.file;
@@ -644,52 +643,21 @@ class LiaScript {
                 }
                 case "code" : {
                     switch (event.message.topic) {
+                      case "eval":
+                          lia_eval_event(elmSend, self.channel, event);
+                          break;
                       case "store":
                           event.message = event.message.message;
                           self.db.store(event);
                           break;
-                      case "eval":
-                          lia_eval_event(elmSend, self.channel, event);
+                      case "input":
+                      case "stop":
+                          events.dispatch_input(event);
                           break;
                       default: {
-                          console.log("unknown code: ", event.message);
+                          self.db.update(event.message, event.section);
                       }
-
                     }
-                /*    event.message.forEach(function(e) {
-                        switch(e[0]) {
-                            case "store": {
-                                self.db.store({topic: "code", section: event.section, message: e[1]});
-                                break;
-                            }
-                            case "eval": {
-                                lia_eval(
-                                  e[2],
-                                  { lia: lia_eval_event(elmSend, event.section, e[1], "code"),
-                                    service: websocket(self.channel),
-                                    handle: (name, fn) => { events.register_input(event.section, e[1], name, fn) }
-                                  }
-                                );
-                                break;
-                            }
-                            case "input": {
-                                events.dispatch_input(event.section, e[1], "input", e[2]);
-                                break;
-                            }
-                            case "stop": {
-                                events.dispatch_input(event.section, e[1], "stop", e[2]);
-                                break;
-                            }
-                            default: {
-                                //if (e[0] == "load") {
-                                //    events.dispatch_input(cmd[1], e[1], "load_version", null);
-                                //}
-                                //console.log("handling Event: ", e, cmd[1]);
-                                self.db.update(e, event.section);
-
-                            }
-                        }});
-*/
                     break;
                 }
                 case "quiz" : {
