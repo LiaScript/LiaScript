@@ -18,7 +18,7 @@ view_search lang model =
         --, Html.span [ Attr.style [ ( "float", "right" ), ( "max-width", "100px" ), ( "position", "relative" ) ] ]
         [ Html.input
             [ Attr.type_ "input"
-            , Attr.value model.search
+            , Attr.value model
             , Attr.class "lia-input"
             , Attr.placeholder (baseSearch lang)
             , Attr.style "max-width" "100%"

@@ -226,7 +226,6 @@ view_block config block =
                         |> Paragraph attr
                         |> view_block config
 
-                --(Presentation, True) ->
                 _ ->
                     Html.text ""
 

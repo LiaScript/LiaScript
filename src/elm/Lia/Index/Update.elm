@@ -13,7 +13,7 @@ update : Msg -> Model -> Sections -> ( Model, Sections )
 update msg model sections =
     case msg of
         ScanIndex pattern ->
-            ( { model | search = pattern }
+            ( pattern
             , scan sections pattern
             )
 
