@@ -193,14 +193,6 @@ function lia_eval(code, send) {
     }
 };
 
-/*
-function lia_eval_event(send, id1, id2, source) {
-    return function(event_, message, details=[], ok=true) {
-        send([source, id1, event_, [ok, id2, message, details]]);
-    };
-};
-*/
-
 function lia_eval_event(send, channel, event) {
     lia_eval(
         event.message.message,
@@ -655,6 +647,9 @@ class LiaScript {
                       case "store":
                           event.message = event.message.message;
                           self.db.store(event);
+                          break;
+                      case "eval":
+                          lia_eval_event(elmSend, self.channel, event);
                           break;
                       default: {
                           console.log("unknown code: ", event.message);

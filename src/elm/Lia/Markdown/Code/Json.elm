@@ -1,6 +1,5 @@
 module Lia.Markdown.Code.Json exposing
     ( fromFile
-    , fromLog
     , fromVector
     , fromVersion
     , merge
@@ -12,7 +11,8 @@ module Lia.Markdown.Code.Json exposing
 import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Markdown.Code.Types exposing (File, Log, Project, Vector, Version, noLog)
+import Lia.Event as Event
+import Lia.Markdown.Code.Types exposing (File, Project, Vector, Version, noLog)
 
 
 merge : Vector -> Vector -> Vector
@@ -62,7 +62,7 @@ fromProject project =
 
         --, ( "evaluation", JE.string project.evaluation )
         , ( "version_active", JE.int project.version_active )
-        , ( "log", fromLog project.log )
+        , ( "log", Event.evalEncode project.log )
         ]
 
 
@@ -74,7 +74,7 @@ toProject =
         --(JD.field "evaluation" JD.string)
         (JD.succeed "")
         (JD.field "version_active" JD.int)
-        (JD.field "log" toLog)
+        (JD.field "log" Event.evalDecoder)
         (JD.succeed False)
         (JD.succeed Nothing)
 
@@ -104,7 +104,7 @@ fromVersion : Version -> JE.Value
 fromVersion ( files, log ) =
     JE.object
         [ ( "files", JE.array JE.string files )
-        , ( "log", fromLog log )
+        , ( "log", Event.evalEncode log )
         ]
 
 
@@ -112,30 +112,7 @@ toVersion : JD.Decoder Version
 toVersion =
     JD.map2 Tuple.pair
         (JD.field "files" (JD.array JD.string))
-        (JD.field "log" toLog)
-
-
-toLog : JD.Decoder Log
-toLog =
-    JD.map3 Log
-        (JD.field "ok" JD.bool)
-        (JD.field "message" JD.string)
-        (JD.field "details" (JD.array JD.value))
-
-
-fromLog : Log -> JE.Value
-fromLog log =
-    {- JE.object
-       [ ( "ok", JE.bool log.ok )
-       , ( "message", JE.string log.message )
-       , ( "details", JE.array JD.value log.details )
-       ]
-    -}
-    JE.object
-        [ ( "ok", JE.bool log.ok )
-        , ( "message", JE.string log.message )
-        , ( "details", JE.null )
-        ]
+        (JD.field "log" Event.evalDecoder)
 
 
 toDetails : JD.Value -> Array JD.Value

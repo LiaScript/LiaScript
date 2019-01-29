@@ -4,8 +4,6 @@ module Lia.Markdown.Code.Update exposing
     , update
     )
 
---import Lia.Code.Event as Event
-
 import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
@@ -134,8 +132,28 @@ update msg model =
 
         Handle event ->
             case event.topic of
+                --  "eval" ->
+                --                    |> maybe_project event.section handleEvalmodel
                 "restore" ->
                     restore event.message model
+
+                "log" ->
+                    model
+                        |> maybe_project event.section (set_result True (Event.evalDecode event.message))
+                        |> Maybe.map (\p -> ( p, [] ))
+                        |> maybe_update event.section model
+
+                "output" ->
+                    model
+                        |> maybe_project event.section (append2log <| .result <| Event.evalDecode event.message)
+                        |> Maybe.map (\p -> ( p, [] ))
+                        |> maybe_update event.section model
+
+                "clr" ->
+                    model
+                        |> maybe_project event.section clr
+                        |> Maybe.map (\p -> ( p, [] ))
+                        |> maybe_update event.section model
 
                 _ ->
                     ( model, [] )
@@ -208,13 +226,6 @@ update msg model =
             model
                 |> maybe_project idx (update_terminal (Eve.input idx) childMsg)
                 |> maybe_update idx model
-
-
-toLog : Bool -> String -> JD.Value -> Log
-toLog ok message details =
-    details
-        |> Json.toDetails
-        |> Log ok message
 
 
 replace : ( Int, String ) -> String -> String
@@ -355,7 +366,7 @@ stop project =
             project
 
 
-set_result : Bool -> Log -> Project -> Project
+set_result : Bool -> Event.Eval -> Project -> Project
 set_result continue log project =
     case project.version |> Array.get project.version_active of
         Just ( code, _ ) ->
@@ -386,9 +397,9 @@ clr project =
                 | version =
                     Array.set
                         project.version_active
-                        ( code, { log | message = "" } )
+                        ( code, { log | result = "" } )
                         project.version
-                , log = { log | message = "" }
+                , log = { log | result = "" }
             }
 
         Nothing ->

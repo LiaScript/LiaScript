@@ -1,8 +1,10 @@
 module Lia.Event exposing
-    ( Eval(..)
+    ( Eval
     , Event
-    , decodeEval
     , eval
+    , evalDecode
+    , evalDecoder
+    , evalEncode
     , fromJson
     , store
     , toJson
@@ -20,8 +22,11 @@ type alias Event =
     }
 
 
-type Eval
-    = Eval String (List JE.Value)
+type alias Eval =
+    { ok : Bool
+    , result : String
+    , details : List JE.Value
+    }
 
 
 toJson : Event -> JE.Value
@@ -57,28 +62,28 @@ eval idx code replacement =
         |> Event "eval" idx
 
 
-decodeEval : JD.Value -> Result Eval Eval
-decodeEval message =
-    case
-        JD.decodeValue
-            (JD.map3 toEval
-                (JD.field "ok" JD.bool)
-                (JD.field "result" JD.string)
-                (JD.field "details" (JD.list JD.value))
-            )
-            message
-    of
+evalDecoder : JD.Decoder Eval
+evalDecoder =
+    JD.map3 Eval
+        (JD.field "ok" JD.bool)
+        (JD.field "result" JD.string)
+        (JD.field "details" (JD.list JD.value))
+
+
+evalDecode : JD.Value -> Eval
+evalDecode json =
+    case JD.decodeValue evalDecoder json of
         Ok result ->
             result
 
         Err info ->
-            Err (Eval (JD.errorToString info) [])
+            Eval False (JD.errorToString info) []
 
 
-toEval : Bool -> String -> List JD.Value -> Result Eval Eval
-toEval ok result details =
-    if ok then
-        Ok (Eval result details)
-
-    else
-        Err (Eval result details)
+evalEncode : Eval -> JE.Value
+evalEncode { ok, result, details } =
+    JE.object
+        [ ( "ok", JE.bool ok )
+        , ( "result", JE.string result )
+        , ( "details", JE.list identity details )
+        ]

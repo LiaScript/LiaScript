@@ -7,6 +7,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr exposing (attribute, lang)
 import Html.Events exposing (onClick, onDoubleClick, onInput)
 import Json.Encode as JE
+import Lia.Event as Event
 import Lia.Markdown.Code.Terminal as Terminal
 import Lia.Markdown.Code.Types exposing (..)
 import Lia.Markdown.Code.Update exposing (Msg(..))
@@ -61,11 +62,25 @@ view lang theme attr model code =
                     Html.text ""
 
 
-get_annotations : Log -> Int -> JE.Value
+get_annotations : Event.Eval -> Int -> JE.Value
 get_annotations log file_id =
     log.details
-        |> Array.get file_id
+        |> list_get file_id
         |> Maybe.withDefault JE.null
+
+
+list_get : Int -> List a -> Maybe a
+list_get idx list =
+    case list of
+        [] ->
+            Nothing
+
+        x :: xs ->
+            if idx == 0 then
+                Just x
+
+            else
+                list_get (idx - 1) xs
 
 
 div_ : List (Html msg) -> Html msg
@@ -291,21 +306,21 @@ error info =
         [ Html.text info ]
 
 
-view_result : Log -> Html msg
+view_result : Event.Eval -> Html msg
 view_result log =
     if log.ok then
-        if log.message == "" then
+        if log.result == "" then
             Html.div [ Attr.style "margin-top" "8px" ] []
 
         else
             Html.pre
                 [ Attr.class "lia-code-stdout"
-                , scroll_to_end log.message
+                , scroll_to_end log.result
                 ]
-                [ Html.text log.message ]
+                [ Html.text log.result ]
 
     else
-        error log.message
+        error log.result
 
 
 scroll_to_end : String -> Html.Attribute msg

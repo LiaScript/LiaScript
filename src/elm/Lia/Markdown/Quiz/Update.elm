@@ -169,9 +169,13 @@ handle =
 
 
 evalEventDecoder : JE.Value -> (Element -> Element)
-evalEventDecoder message =
-    case Event.decodeEval message of
-        Ok (Event.Eval "true" _) ->
+evalEventDecoder json =
+    let
+        eval =
+            Event.evalDecode json
+    in
+    if eval.ok then
+        if eval.result == "true" then
             \e ->
                 { e
                     | trial = e.trial + 1
@@ -179,7 +183,7 @@ evalEventDecoder message =
                     , error_msg = ""
                 }
 
-        Ok (Event.Eval _ _) ->
+        else
             \e ->
                 { e
                     | trial = e.trial + 1
@@ -187,8 +191,8 @@ evalEventDecoder message =
                     , error_msg = ""
                 }
 
-        Err (Event.Eval result _) ->
-            \e -> { e | error_msg = result }
+    else
+        \e -> { e | error_msg = eval.result }
 
 
 store : Vector -> ( Vector, List Event )

@@ -2,7 +2,6 @@ module Lia.Markdown.Code.Types exposing
     ( Code(..)
     , EventMsg
     , File
-    , Log
     , Project
     , Snippet
     , Vector
@@ -15,6 +14,7 @@ module Lia.Markdown.Code.Types exposing
 import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
+import Lia.Event as Event
 import Lia.Markdown.Code.Terminal exposing (Terminal)
 
 
@@ -27,7 +27,7 @@ type alias EventMsg =
 
 
 type alias Version =
-    ( Array String, Log )
+    ( Array String, Event.Eval )
 
 
 type alias Project =
@@ -35,22 +35,15 @@ type alias Project =
     , version : Array Version
     , evaluation : String
     , version_active : Int
-    , log : Log
+    , log : Event.Eval
     , running : Bool
     , terminal : Maybe Terminal
     }
 
 
-noLog : Log
+noLog : Event.Eval
 noLog =
-    Log True "" Array.empty
-
-
-type alias Log =
-    { ok : Bool
-    , message : String
-    , details : Array JD.Value
-    }
+    Event.Eval True "" []
 
 
 type alias File =
@@ -74,17 +67,17 @@ type Code
     | Evaluate Int
 
 
-log_append : Log -> Log -> Log
+log_append : Event.Eval -> Event.Eval -> Event.Eval
 log_append old new =
     { new
-        | message = append old.message new.message
-        , details = Array.append old.details new.details
+        | result = append old.result new.result
+        , details = List.append old.details new.details
     }
 
 
-message_append : String -> Log -> Log
+message_append : String -> Event.Eval -> Event.Eval
 message_append str log =
-    { log | message = append log.message str }
+    { log | result = append log.result str }
 
 
 append : String -> String -> String
