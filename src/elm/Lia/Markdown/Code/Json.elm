@@ -1,14 +1,12 @@
 module Lia.Markdown.Code.Json exposing
-    ( file2json
-    ,  json2details
-       --  , json2event
-
-    , json2project
-    , json2vector
-    , log2json
+    ( fromFile
+    , fromLog
+    , fromVector
+    , fromVersion
     , merge
-    , vector2json
-    , version2json
+    , toDetails
+    , toProject
+    , toVector
     )
 
 import Array exposing (Array)
@@ -46,43 +44,43 @@ copy_evaluation old new =
 -}
 
 
-vector2json : Vector -> JE.Value
-vector2json vector =
-    JE.array project2json vector
+fromVector : Vector -> JE.Value
+fromVector vector =
+    JE.array fromProject vector
 
 
-json2vector : JD.Value -> Result JD.Error (Maybe Vector)
-json2vector json =
-    JD.decodeValue (JD.nullable (JD.array json2project)) json
+toVector : JD.Value -> Result JD.Error (Maybe Vector)
+toVector json =
+    JD.decodeValue (JD.nullable (JD.array toProject)) json
 
 
-project2json : Project -> JE.Value
-project2json project =
+fromProject : Project -> JE.Value
+fromProject project =
     JE.object
-        [ ( "file", JE.array file2json project.file )
-        , ( "version", JE.array version2json project.version )
+        [ ( "file", JE.array fromFile project.file )
+        , ( "version", JE.array fromVersion project.version )
 
         --, ( "evaluation", JE.string project.evaluation )
         , ( "version_active", JE.int project.version_active )
-        , ( "log", log2json project.log )
+        , ( "log", fromLog project.log )
         ]
 
 
-json2project : JD.Decoder Project
-json2project =
+toProject : JD.Decoder Project
+toProject =
     JD.map7 Project
-        (JD.field "file" (JD.array json2file))
-        (JD.field "version" (JD.array json2version))
+        (JD.field "file" (JD.array toFile))
+        (JD.field "version" (JD.array toVersion))
         --(JD.field "evaluation" JD.string)
         (JD.succeed "")
         (JD.field "version_active" JD.int)
-        (JD.field "log" json2log)
+        (JD.field "log" toLog)
         (JD.succeed False)
         (JD.succeed Nothing)
 
 
-file2json : File -> JE.Value
-file2json file =
+fromFile : File -> JE.Value
+fromFile file =
     JE.object
         [ ( "lang", JE.string file.lang )
         , ( "name", JE.string file.name )
@@ -92,8 +90,8 @@ file2json file =
         ]
 
 
-json2file : JD.Decoder File
-json2file =
+toFile : JD.Decoder File
+toFile =
     JD.map5 File
         (JD.field "lang" JD.string)
         (JD.field "name" JD.string)
@@ -102,31 +100,31 @@ json2file =
         (JD.field "fullscreen" JD.bool)
 
 
-version2json : Version -> JE.Value
-version2json ( files, log ) =
+fromVersion : Version -> JE.Value
+fromVersion ( files, log ) =
     JE.object
         [ ( "files", JE.array JE.string files )
-        , ( "log", log2json log )
+        , ( "log", fromLog log )
         ]
 
 
-json2version : JD.Decoder Version
-json2version =
+toVersion : JD.Decoder Version
+toVersion =
     JD.map2 Tuple.pair
         (JD.field "files" (JD.array JD.string))
-        (JD.field "log" json2log)
+        (JD.field "log" toLog)
 
 
-json2log : JD.Decoder Log
-json2log =
+toLog : JD.Decoder Log
+toLog =
     JD.map3 Log
         (JD.field "ok" JD.bool)
         (JD.field "message" JD.string)
         (JD.field "details" (JD.array JD.value))
 
 
-log2json : Log -> JE.Value
-log2json log =
+fromLog : Log -> JE.Value
+fromLog log =
     {- JE.object
        [ ( "ok", JE.bool log.ok )
        , ( "message", JE.string log.message )
@@ -140,8 +138,8 @@ log2json log =
         ]
 
 
-json2details : JD.Value -> Array JD.Value
-json2details json =
+toDetails : JD.Value -> Array JD.Value
+toDetails json =
     json
         |> JD.decodeValue (JD.array JD.value)
         |> Result.withDefault Array.empty
