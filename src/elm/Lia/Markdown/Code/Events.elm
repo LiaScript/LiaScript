@@ -1,4 +1,4 @@
-module Lia.Markdown.Code.Event exposing (flip_view, fullscreen, input, load, stop, version_append, version_update)
+module Lia.Markdown.Code.Events exposing (flip_view, fullscreen, input, load, stop, version_append, version_update)
 
 import Array exposing (Array)
 import Json.Encode as JE

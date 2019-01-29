@@ -8,7 +8,7 @@ import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Event as Event exposing (Event)
-import Lia.Markdown.Code.Event as Eve
+import Lia.Markdown.Code.Events as Eve
 import Lia.Markdown.Code.Json as Json
 import Lia.Markdown.Code.Terminal as Terminal
 import Lia.Markdown.Code.Types exposing (..)
@@ -298,8 +298,7 @@ is_version_new idx ( project, events ) =
                         }
                 in
                 ( new_project
-                , events
-                  -- todo Event.version_append idx new_project :: events
+                , Eve.version_append idx new_project :: events
                 )
 
             else
