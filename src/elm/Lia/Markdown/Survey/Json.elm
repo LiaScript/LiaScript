@@ -1,6 +1,6 @@
 module Lia.Markdown.Survey.Json exposing
-    ( jsonToVector
-    , vectorToJson
+    ( fromVector
+    , toVector
     )
 
 import Array
@@ -10,21 +10,21 @@ import Json.Encode as JE
 import Lia.Markdown.Survey.Types exposing (..)
 
 
-vectorToJson : Vector -> JE.Value
-vectorToJson vector =
-    JE.array elementToJson vector
+fromVector : Vector -> JE.Value
+fromVector vector =
+    JE.array fromElement vector
 
 
-elementToJson : Element -> JE.Value
-elementToJson ( b, state ) =
+fromElement : Element -> JE.Value
+fromElement ( b, state ) =
     JE.object
         [ ( "submitted", JE.bool b )
-        , ( "state", stateToJson state )
+        , ( "state", fromState state )
         ]
 
 
-stateToJson : State -> JE.Value
-stateToJson state =
+fromState : State -> JE.Value
+fromState state =
     let
         dict2json dict =
             dict |> Dict.toList |> List.map (\( s, b ) -> ( s, JE.bool b )) |> JE.object
@@ -57,20 +57,20 @@ stateToJson state =
                 ]
 
 
-jsonToVector : JD.Value -> Result JD.Error Vector
-jsonToVector json =
-    JD.decodeValue (JD.array jsonToElement) json
+toVector : JD.Value -> Result JD.Error Vector
+toVector json =
+    JD.decodeValue (JD.array toElement) json
 
 
-jsonToElement : JD.Decoder Element
-jsonToElement =
+toElement : JD.Decoder Element
+toElement =
     JD.map2 Tuple.pair
         (JD.field "submitted" JD.bool)
-        (JD.field "state" jsonToState)
+        (JD.field "state" toState)
 
 
-jsonToState : JD.Decoder State
-jsonToState =
+toState : JD.Decoder State
+toState =
     let
         value =
             JD.field "value"

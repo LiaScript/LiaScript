@@ -2,9 +2,8 @@ module Lia.Markdown.Survey.Update exposing (Msg(..), handle, update)
 
 import Array
 import Dict
-import Json.Encode as JE
 import Lia.Event exposing (Event, storeEvent)
-import Lia.Markdown.Survey.Json exposing (..)
+import Lia.Markdown.Survey.Json as Json
 import Lia.Markdown.Survey.Model exposing (..)
 import Lia.Markdown.Survey.Types exposing (..)
 
@@ -37,7 +36,7 @@ update msg vector =
                 in
                 ( new_vector
                 , new_vector
-                    |> vectorToJson
+                    |> Json.fromVector
                     |> storeEvent
                     |> List.singleton
                 )
@@ -49,7 +48,7 @@ update msg vector =
             case event.topic of
                 "restore" ->
                     ( event.message
-                        |> jsonToVector
+                        |> Json.toVector
                         |> Result.withDefault vector
                     , []
                     )
