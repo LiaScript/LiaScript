@@ -24,6 +24,7 @@ type alias Annotation =
 
 type Inline
     = Chars String Annotation
+    | Symbol String Annotation
     | Bold Inline Annotation
     | Italic Inline Annotation
     | Strike Inline Annotation

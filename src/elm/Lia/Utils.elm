@@ -1,11 +1,4 @@
-module Lia.Utils exposing
-    ( string_replace
-    , toJSstring
-    )
-
-import Html exposing (Html)
-import Html.Attributes as Attr
-import Json.Encode
+module Lia.Utils exposing (string_replace, toJSstring)
 
 
 string_replace : ( String, String ) -> String -> String

@@ -77,6 +77,9 @@ view visible element =
         Formula mode e Nothing ->
             Html.node "katex-formula" [ Attr.attribute "displayMode" mode ] [ Html.text e ]
 
+        Symbol e Nothing ->
+            Html.text e
+
         FootnoteMark e attr ->
             Footnote.inline e
 
@@ -98,6 +101,9 @@ view visible element =
 
             else
                 Html.text ""
+
+        Symbol e attr ->
+            view visible (Container [ Symbol e Nothing ] attr)
 
         Chars e attr ->
             view visible (Container [ Chars e Nothing ] attr)
