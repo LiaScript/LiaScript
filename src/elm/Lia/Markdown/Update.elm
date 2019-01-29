@@ -9,7 +9,7 @@ port module Lia.Markdown.Update exposing
     )
 
 import Json.Encode as JE
-import Lia.Event exposing (Event, eventToJson)
+import Lia.Event as Event exposing (Event)
 import Lia.Markdown.Code.Update as Code
 import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Quiz.Update as Quiz
@@ -50,7 +50,7 @@ update msg section =
             ( { section | effect_model = effect_model }
             , Cmd.map (UpdateEffect sound) cmd
             , event
-                |> List.map eventToJson
+                |> List.map Event.toJson
                 |> send "effect"
             )
 
@@ -63,7 +63,7 @@ update msg section =
                     ( { section | code_vector = vector }
                     , Cmd.none
                     , events
-                        |> List.map eventToJson
+                        |> List.map Event.toJson
                         |> send "code"
                     )
 
@@ -75,7 +75,7 @@ update msg section =
             ( { section | quiz_vector = vector }
             , Cmd.none
             , event
-                |> List.map eventToJson
+                |> List.map Event.toJson
                 |> send "quiz"
             )
 
@@ -87,7 +87,7 @@ update msg section =
             ( { section | survey_vector = vector }
             , Cmd.none
             , event
-                |> List.map eventToJson
+                |> List.map Event.toJson
                 |> send "survey"
             )
 

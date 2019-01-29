@@ -2,7 +2,7 @@ module Lia.Markdown.Survey.Update exposing (Msg(..), handle, update)
 
 import Array
 import Dict
-import Lia.Event exposing (Event, storeEvent)
+import Lia.Event as Event exposing (Event)
 import Lia.Markdown.Survey.Json as Json
 import Lia.Markdown.Survey.Model exposing (..)
 import Lia.Markdown.Survey.Types exposing (..)
@@ -37,7 +37,7 @@ update msg vector =
                 ( new_vector
                 , new_vector
                     |> Json.fromVector
-                    |> storeEvent
+                    |> Event.store
                     |> List.singleton
                 )
 

@@ -9,7 +9,7 @@ module Lia.Markdown.Code.Update exposing
 import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Event exposing (..)
+import Lia.Event as Event exposing (Event)
 import Lia.Markdown.Code.Event as Eve
 import Lia.Markdown.Code.Json as Json
 import Lia.Markdown.Code.Terminal as Terminal
@@ -64,7 +64,7 @@ restore json model =
                 []
 
               else
-                [ storeEvent <| Json.fromVector model ]
+                [ Event.store <| Json.fromVector model ]
             )
 
         Err msg ->
@@ -98,8 +98,7 @@ update msg model =
                 id_2
                 model
                 (\f -> { f | visible = not f.visible })
-                --(.visible >> Event.flip_view id_1 id_2 >> Just)
-                (\_ -> [])
+                (.visible >> Eve.flip_view id_1 id_2 >> List.singleton)
 
         FlipFullscreen id_1 id_2 ->
             update_file
@@ -107,8 +106,7 @@ update msg model =
                 id_2
                 model
                 (\f -> { f | fullscreen = not f.fullscreen })
-                --(.fullscreen >> Event.fullscreen id_1 id_2 >> Just)
-                (\_ -> [])
+                (.fullscreen >> Eve.fullscreen id_1 id_2 >> List.singleton)
 
         Load idx version ->
             model
@@ -263,7 +261,7 @@ eval idx project =
                             |> Array.indexedMap (\i f -> ( i, toJSstring f.code ))
                             |> Array.foldl replace project.evaluation
     in
-    ( { project | running = True }, [] )
+    ( { project | running = True }, [ Event "eval" idx <| JE.string eval_str ] )
 
 
 

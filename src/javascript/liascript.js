@@ -651,7 +651,17 @@ class LiaScript {
                     break;
                 }
                 case "code" : {
-                    event.message.forEach(function(e) {
+                    switch (event.message.topic) {
+                      case "store":
+                          event.message = event.message.message;
+                          self.db.store(event);
+                          break;
+                      default: {
+                          console.log("unknown code: ", event.message);
+                      }
+
+                    }
+                /*    event.message.forEach(function(e) {
                         switch(e[0]) {
                             case "store": {
                                 self.db.store({topic: "code", section: event.section, message: e[1]});
@@ -684,7 +694,7 @@ class LiaScript {
 
                             }
                         }});
-
+*/
                     break;
                 }
                 case "quiz" : {

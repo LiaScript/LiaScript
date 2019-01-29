@@ -2,7 +2,7 @@ module Lia.Markdown.Quiz.Update exposing (Msg(..), handle, update)
 
 import Array exposing (Array)
 import Json.Encode as JE
-import Lia.Event exposing (..)
+import Lia.Event as Event exposing (Event)
 import Lia.Markdown.Quiz.Json as Json
 import Lia.Markdown.Quiz.Types exposing (..)
 import Lia.Utils exposing (string_replace)
@@ -72,7 +72,7 @@ update msg vector =
                         _ ->
                             ""
             in
-            ( vector, [ evalEvent idx code state ] )
+            ( vector, [ Event.eval idx code state ] )
 
         ShowHint idx ->
             (\e -> { e | hint = e.hint + 1 })
@@ -170,8 +170,8 @@ handle =
 
 evalEventDecoder : JE.Value -> (Element -> Element)
 evalEventDecoder message =
-    case decodeEval message of
-        Ok (Eval "true" _) ->
+    case Event.decodeEval message of
+        Ok (Event.Eval "true" _) ->
             \e ->
                 { e
                     | trial = e.trial + 1
@@ -179,7 +179,7 @@ evalEventDecoder message =
                     , error_msg = ""
                 }
 
-        Ok (Eval _ _) ->
+        Ok (Event.Eval _ _) ->
             \e ->
                 { e
                     | trial = e.trial + 1
@@ -187,7 +187,7 @@ evalEventDecoder message =
                     , error_msg = ""
                 }
 
-        Err (Eval result _) ->
+        Err (Event.Eval result _) ->
             \e -> { e | error_msg = result }
 
 
@@ -196,6 +196,6 @@ store vector =
     ( vector
     , vector
         |> Json.fromVector
-        |> storeEvent
+        |> Event.store
         |> List.singleton
     )

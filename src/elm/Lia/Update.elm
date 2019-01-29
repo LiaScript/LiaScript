@@ -9,7 +9,7 @@ port module Lia.Update exposing
 import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Event exposing (Event, jsonToEvent)
+import Lia.Event as Event exposing (Event)
 import Lia.Index.Update as Index
 import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Update as Markdown
@@ -131,7 +131,7 @@ update msg model =
                                 event.section
                             )
                             model.sections
-                        , jsonToEvent event.message
+                        , Event.fromJson event.message
                         )
                     of
                         ( Just sec, Ok e ) ->

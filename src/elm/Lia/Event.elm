@@ -2,10 +2,10 @@ module Lia.Event exposing
     ( Eval(..)
     , Event
     , decodeEval
-    , evalEvent
-    , eventToJson
-    , jsonToEvent
-    , storeEvent
+    , eval
+    , fromJson
+    , store
+    , toJson
     )
 
 import Json.Decode as JD
@@ -24,8 +24,8 @@ type Eval
     = Eval String (List JE.Value)
 
 
-eventToJson : Event -> JE.Value
-eventToJson { topic, section, message } =
+toJson : Event -> JE.Value
+toJson { topic, section, message } =
     JE.object
         [ ( "topic", JE.string topic )
         , ( "section", JE.int section )
@@ -33,8 +33,8 @@ eventToJson { topic, section, message } =
         ]
 
 
-jsonToEvent : JD.Value -> Result JD.Error Event
-jsonToEvent json =
+fromJson : JD.Value -> Result JD.Error Event
+fromJson json =
     JD.decodeValue
         (JD.map3 Event
             (JD.field "topic" JD.string)
@@ -44,13 +44,13 @@ jsonToEvent json =
         json
 
 
-storeEvent : JE.Value -> Event
-storeEvent message =
+store : JE.Value -> Event
+store message =
     Event "store" -1 message
 
 
-evalEvent : Int -> String -> String -> Event
-evalEvent idx code replacement =
+eval : Int -> String -> String -> Event
+eval idx code replacement =
     code
         |> string_replace ( "@input", replacement )
         |> JE.string
@@ -68,8 +68,8 @@ decodeEval message =
             )
             message
     of
-        Ok eval ->
-            eval
+        Ok result ->
+            result
 
         Err info ->
             Err (Eval (JD.errorToString info) [])

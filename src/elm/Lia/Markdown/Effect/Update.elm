@@ -13,7 +13,7 @@ module Lia.Markdown.Effect.Update exposing
 import Browser.Dom as Dom
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Event exposing (..)
+import Lia.Event as Event exposing (Event)
 import Lia.Markdown.Effect.Model exposing (Map, Model, current_comment, get_all_javascript, get_javascript)
 import Lia.Utils
 import Task
@@ -173,5 +173,5 @@ soundEvent on =
     )
         |> JE.string
         |> Event "speak" -1
-        |> eventToJson
+        |> Event.toJson
         |> Event "effect" -1
