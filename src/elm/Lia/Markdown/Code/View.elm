@@ -6,6 +6,7 @@ import Array
 import Html exposing (Html)
 import Html.Attributes as Attr exposing (attribute, lang)
 import Html.Events exposing (onClick, onDoubleClick, onInput)
+import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Event as Event
 import Lia.Markdown.Code.Terminal as Terminal
@@ -262,7 +263,7 @@ evaluate theme attr running ( id_1, id_2 ) file headless errors =
             else
                 total_lines
     in
-    Html.textarea
+    Html.node "code-editor"
         (attr
             |> attributes
             |> List.append
@@ -270,8 +271,15 @@ evaluate theme attr running ( id_1, id_2 ) file headless errors =
                     |> pixel
                     |> toStyle file.visible headless
                 )
-            |> (::) (onInput <| Update id_1 id_2)
-            |> (::) (Attr.value file.code)
+            |> List.append
+                [ Attr.property "value" <|
+                    JE.string file.code
+                , Attr.property "mode" <| JE.string file.lang
+                , Html.Events.on "editorChanged" <|
+                    JD.map (Update id_1 id_2) <|
+                        JD.at [ "target", "value" ] <|
+                            JD.string
+                ]
          --            , Ace.onSourceChange <| Update id_1 id_2
          --            , Ace.value file.code
          --            , Ace.mode file.lang
