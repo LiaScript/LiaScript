@@ -1,7 +1,6 @@
 module Lia.Types exposing (Section, Sections, init_section)
 
 import Array exposing (Array)
-import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition)
 import Lia.Event exposing (Event)
 import Lia.Markdown.Code.Types as Code

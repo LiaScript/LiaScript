@@ -3,7 +3,7 @@ module Lia.Markdown.Code.Terminal exposing (Msg(..), Terminal, init, update, vie
 import Array exposing (Array)
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Html.Events exposing (keyCode, on, onClick, onInput)
+import Html.Events exposing (keyCode, on, onInput)
 import Json.Decode as JD
 
 

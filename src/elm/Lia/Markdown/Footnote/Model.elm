@@ -1,4 +1,4 @@
-module Lia.Markdown.Footnote.Model exposing (..)
+module Lia.Markdown.Footnote.Model exposing (Model, empty, getNote, init, insert, toList)
 
 import Dict exposing (Dict)
 import Lia.Markdown.Types exposing (MarkdownS)

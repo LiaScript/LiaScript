@@ -12,7 +12,6 @@ module Lia.Markdown.Code.Types exposing
     )
 
 import Array exposing (Array)
-import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Event as Event
 import Lia.Markdown.Code.Terminal exposing (Terminal)

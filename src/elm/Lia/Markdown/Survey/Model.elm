@@ -7,8 +7,6 @@ module Lia.Markdown.Survey.Model exposing
 
 import Array
 import Dict
-import Json.Decode as JD
-import Json.Encode as JE
 import Lia.Markdown.Survey.Types exposing (..)
 
 

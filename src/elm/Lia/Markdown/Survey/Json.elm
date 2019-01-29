@@ -3,7 +3,6 @@ module Lia.Markdown.Survey.Json exposing
     , toVector
     )
 
-import Array
 import Dict
 import Json.Decode as JD
 import Json.Encode as JE

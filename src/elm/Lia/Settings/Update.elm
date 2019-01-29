@@ -1,6 +1,5 @@
 module Lia.Settings.Update exposing (Button(..), Msg(..), load, toggle_sound, toggle_table_of_contents, update)
 
-import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Event exposing (..)
 import Lia.Markdown.Effect.Update exposing (soundEvent)

@@ -99,7 +99,7 @@ update msg model =
         UpdateIndex childMsg ->
             let
                 ( index, sections ) =
-                    Index.update childMsg model.index_model model.sections
+                    Index.update childMsg model.sections
             in
             ( { model
                 | index_model = index

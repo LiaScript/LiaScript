@@ -1,12 +1,10 @@
 module Lia.View exposing (view)
 
 import Array exposing (Array)
-import Char
 import Flip exposing (flip)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
-import Html.Lazy as Lazy
 import Lia.Definition.Types exposing (Definition, get_translations)
 import Lia.Index.View as Index
 import Lia.Markdown.Effect.Model exposing (current_paragraphs)
@@ -56,43 +54,6 @@ view_aside model =
                 model.origin
                 model.translation
         ]
-
-
-
-{-
-   index_list index sections =
-       let
-           titles =
-               sections
-                   |> Array.map to_secList
-                   |> Array.toIndexedList
-
-           fn ( idx, _ ) =
-               List.member idx index
-       in
-       --    case index of
-       --        [] ->
-       titles
--}
---        _ ->
---            List.filter fn titles
-{-
-   settings : Settings.Model -> Definition -> String -> String -> Lang -> Html Msg
-   settings settings_ defines url origin lang =
-       Html.div []
-           [ Lazy.lazy3 view_settings lang settings_.buttons.settings design_
-           , Lazy.lazy3 view_information lang show.informations defines
-           , view_translations lang show.translations (origin ++ "?") (Lia.Definition.Types.get_translations defines)
-           , Lazy.lazy2 qrCodeView show.share url
-           , Html.div
-               [ Attr.class "lia-settings", Attr.style "display" "inline-flex", Attr.style "width" "99%" ]
-               [ dropdown show.settings "settings" (confSettings lang) (Toggle Settings)
-               , dropdown show.informations "info" (confInformations lang) (Toggle Informations)
-               , dropdown show.translations "translate" (confTranslations lang) (Toggle Translations)
-               , dropdown show.share "share" (confShare lang) (Toggle Share)
-               ]
-           ]
--}
 
 
 view_article : Model -> Html Msg
@@ -168,12 +129,3 @@ view_nav section_active mode lang base translations ( speaking, state ) =
         , Html.span [ Attr.class "lia-spacer" ] []
         , Html.map UpdateSettings <| Settings.switch_button_mode lang mode
         ]
-
-
-
-{- "Bright">
-
-
-   <optgroup label="Dark">
-
--}

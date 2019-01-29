@@ -4,7 +4,6 @@ import Char exposing (isLower, toLower)
 import Color
 import Dict exposing (Dict)
 import Html exposing (Html)
-import Html.Attributes as Attr
 import Lia.Markdown.Chart.Types exposing (..)
 import Lia.Markdown.Inline.Types exposing (Annotation)
 import Lia.Markdown.Inline.View exposing (annotation)
@@ -12,12 +11,6 @@ import LineChart
 import LineChart.Area as Area
 import LineChart.Axis as Axis
 import LineChart.Axis.Intersection as Intersection
-import LineChart.Axis.Line as AxisLine
-import LineChart.Axis.Range as Range
-import LineChart.Axis.Tick as Tick
-import LineChart.Axis.Ticks as Ticks
-import LineChart.Axis.Title as Title
-import LineChart.Axis.Values as Values
 import LineChart.Colors as Colors
 import LineChart.Container as Container
 import LineChart.Coordinate as Coordinate
@@ -28,7 +21,6 @@ import LineChart.Interpolation as Interpolation
 import LineChart.Junk as Junk
 import LineChart.Legends as Legends
 import LineChart.Line as Line
-import Svg exposing (Svg)
 
 
 title : String -> Coordinate.System -> Junk.Layers msg

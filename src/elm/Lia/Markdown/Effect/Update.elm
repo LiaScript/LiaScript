@@ -14,8 +14,7 @@ import Browser.Dom as Dom
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Event as Event exposing (Event)
-import Lia.Markdown.Effect.Model exposing (Map, Model, current_comment, get_all_javascript, get_javascript)
-import Lia.Utils
+import Lia.Markdown.Effect.Model exposing (Model, current_comment, get_all_javascript, get_javascript)
 import Task
 
 
@@ -74,7 +73,7 @@ update sound msg model =
                 ( True, Nothing ) ->
                     speak_stop events model
 
-                ( False, Just ( comment, narrator ) ) ->
+                ( False, Just _ ) ->
                     if model.speaking then
                         { model | speaking = False }
                             |> speak_stop events
@@ -93,9 +92,8 @@ update sound msg model =
                 ( "speak_end", "" ) ->
                     ( { model | speaking = False }, Cmd.none, [] )
 
-                ( "speak_end", error ) ->
-                    ( { model | speaking = False }, Cmd.none, [] )
-
+                --( "speak_end", error ) ->
+                --    ( { model | speaking = False }, Cmd.none, [] )
                 ( "speak", "repeat" ) ->
                     update True (Send []) model
 

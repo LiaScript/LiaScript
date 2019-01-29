@@ -9,8 +9,8 @@ type Msg
     = ScanIndex String
 
 
-update : Msg -> Model -> Sections -> ( Model, Sections )
-update msg model sections =
+update : Msg -> Sections -> ( Model, Sections )
+update msg sections =
     case msg of
         ScanIndex pattern ->
             ( pattern
