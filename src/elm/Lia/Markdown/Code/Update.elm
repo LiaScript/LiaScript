@@ -132,8 +132,48 @@ update msg model =
 
         Handle event ->
             case event.topic of
-                --  "eval" ->
-                --                    |> maybe_project event.section handleEvalmodel
+                "eval" ->
+                    let
+                        e =
+                            Event.evalDecode event.message
+                    in
+                    case e.result of
+                        "LIA: wait" ->
+                            model
+                                |> maybe_project event.section (\p -> { p | log = noLog })
+                                |> Maybe.map (\p -> ( p, [] ))
+                                |> maybe_update event.section model
+
+                        "LIA: stop" ->
+                            model
+                                |> maybe_project event.section stop
+                                |> Maybe.map (Eve.version_update event.section)
+                                |> maybe_update event.section model
+
+                        -- preserve previous logging by setting ok to false
+                        "LIA: terminal" ->
+                            model
+                                |> maybe_project event.section
+                                    (\p ->
+                                        { p
+                                            | terminal = Just <| Terminal.init
+                                            , log =
+                                                if e.ok then
+                                                    noLog
+
+                                                else
+                                                    p.log
+                                        }
+                                    )
+                                |> Maybe.map (\p -> ( p, [] ))
+                                |> maybe_update event.section model
+
+                        _ ->
+                            model
+                                |> maybe_project event.section (set_result False e)
+                                |> Maybe.map (Eve.version_update event.section)
+                                |> maybe_update event.section model
+
                 "restore" ->
                     restore event.message model
 
@@ -195,26 +235,7 @@ update msg model =
                    |> Maybe.map (Event.version_update idx)
                    |> maybe_update idx model
 
-           Event "log" ( ok, idx, message, details ) ->
-               model
-                   |> maybe_project idx (set_result True (toLog ok message details))
-                   |> Maybe.map (\p -> ( p, [] ))
-                   |> maybe_update idx model
 
-           Event "output" ( _, idx, message, _ ) ->
-               model
-                   |> maybe_project idx (append2log message)
-                   |> Maybe.map (\p -> ( p, [] ))
-                   |> maybe_update idx model
-
-           Event "clr" ( _, idx, _, _ ) ->
-               model
-                   |> maybe_project idx clr
-                   |> Maybe.map (\p -> ( p, [] ))
-                   |> maybe_update idx model
-
-           Event _ _ ->
-               ( model, Nothing )
         -}
         Stop idx ->
             model
