@@ -15,6 +15,7 @@
             "elm/json": "1.1.2",
             "elm/svg": "1.0.1",
             "elm/url": "1.0.0",
+            "hecrj/html-parser": "2.0.0",
             "pilatch/flip": "1.0.0",
             "rluiten/elm-text-search": "5.0.0",
             "terezka/line-charts": "2.0.0"
@@ -34,6 +35,7 @@
             "rluiten/sparsevector": "1.0.3",
             "rluiten/stemmer": "1.0.4",
             "rluiten/trie": "2.0.3",
+            "rtfeldman/elm-hex": "1.0.0",
             "ryannhg/date-format": "2.3.0"
         }
     },
