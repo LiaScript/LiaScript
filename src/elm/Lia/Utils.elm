@@ -1,17 +1,11 @@
 module Lia.Utils exposing
-    ( stringToHtml
-    , string_replace
+    ( string_replace
     , toJSstring
     )
 
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Encode
-
-
-stringToHtml : String -> Html msg
-stringToHtml str =
-    Html.span [ Attr.property "innerHTML" (Json.Encode.string str) ] []
 
 
 string_replace : ( String, String ) -> String -> String

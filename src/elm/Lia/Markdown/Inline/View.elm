@@ -7,7 +7,6 @@ import Html.Parser.Util as Util
 import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..))
-import Lia.Utils
 
 
 annotation : String -> Annotation -> List (Attribute msg)
@@ -78,9 +77,6 @@ view visible element =
         Formula mode e Nothing ->
             Html.node "katex-formula" [ Attr.attribute "displayMode" mode ] [ Html.text e ]
 
-        Symbol e Nothing ->
-            Lia.Utils.stringToHtml e
-
         FootnoteMark e attr ->
             Footnote.inline e
 
@@ -102,9 +98,6 @@ view visible element =
 
             else
                 Html.text ""
-
-        Symbol e attr ->
-            view visible (Container [ Symbol e Nothing ] attr)
 
         Chars e attr ->
             view visible (Container [ Chars e Nothing ] attr)

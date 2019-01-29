@@ -308,42 +308,42 @@ reference =
 arrows : Parser s (Annotation -> Inline)
 arrows =
     choice
-        [ string "<-->" |> onsuccess (Symbol "&#10231;") --"⟷"
-        , string "<--" |> onsuccess (Symbol "&#10229;") --"⟵"
-        , string "-->" |> onsuccess (Symbol "&#10230;") --"⟶"
-        , string "<<-" |> onsuccess (Symbol "&#8606;") --"↞"
-        , string "->>" |> onsuccess (Symbol "&#8608;") --"↠"
-        , string "<->" |> onsuccess (Symbol "&#8596;") --"↔"
-        , string ">->" |> onsuccess (Symbol "&#8611;") --"↣"
-        , string "<-<" |> onsuccess (Symbol "&#8610;") --"↢"
-        , string "->" |> onsuccess (Symbol "&#8594;") --"→"
-        , string "<-" |> onsuccess (Symbol "&#8592;") --"←"
-        , string "<~" |> onsuccess (Symbol "&#8604;") --"↜"
-        , string "~>" |> onsuccess (Symbol "&#8605;") --"↝"
-        , string "<==>" |> onsuccess (Symbol "&#10234;") --"⟺"
-        , string "==>" |> onsuccess (Symbol "&#10233;") --"⟹"
-        , string "<==" |> onsuccess (Symbol "&#10232;") --"⟸"
-        , string "<=>" |> onsuccess (Symbol "&#8660;") --"⇔"
-        , string "=>" |> onsuccess (Symbol "&#8658;") --"⇒"
-        , string "<=" |> onsuccess (Symbol "&#8656;") --"⇐"
+        [ string "<-->" |> onsuccess (Chars "⟷")
+        , string "<--" |> onsuccess (Chars "⟵")
+        , string "-->" |> onsuccess (Chars "⟶")
+        , string "<<-" |> onsuccess (Chars "↞")
+        , string "->>" |> onsuccess (Chars "↠")
+        , string "<->" |> onsuccess (Chars "↔")
+        , string ">->" |> onsuccess (Chars "↣")
+        , string "<-<" |> onsuccess (Chars "↢")
+        , string "->" |> onsuccess (Chars "→")
+        , string "<-" |> onsuccess (Chars "←")
+        , string "<~" |> onsuccess (Chars "↜")
+        , string "~>" |> onsuccess (Chars "↝")
+        , string "<==>" |> onsuccess (Chars "⟺")
+        , string "==>" |> onsuccess (Chars "⟹")
+        , string "<==" |> onsuccess (Chars "⟸")
+        , string "<=>" |> onsuccess (Chars "⇔")
+        , string "=>" |> onsuccess (Chars "⇒")
+        , string "<=" |> onsuccess (Chars "⇐")
         ]
 
 
 smileys : Parser s (Annotation -> Inline)
 smileys =
     choice
-        [ string ":-)" |> onsuccess (Symbol "&#x1f600;") --"🙂"
-        , string ";-)" |> onsuccess (Symbol "&#x1f609;") --"😉"
-        , string ":-D" |> onsuccess (Symbol "&#x1f600;") --"😀"
-        , string ":-O" |> onsuccess (Symbol "&#128558;") --"😮"
-        , string ":-(" |> onsuccess (Symbol "&#128542;") --"🙁"
-        , string ":-|" |> onsuccess (Symbol "&#128528;") --"😐"
-        , string ":-/" |> onsuccess (Symbol "&#128533;") --"😕"
-        , string ":-P" |> onsuccess (Symbol "&#128539;") --"😛"
-        , string ";-P" |> onsuccess (Symbol "&#128540;") --"😜"
-        , string ":-*" |> onsuccess (Symbol "&#128535;") --"😗"
-        , string ":')" |> onsuccess (Symbol "&#128514;") --"😂"
-        , string ":'(" |> onsuccess (Symbol "&#128554;") --"😢"😪
+        [ string ":-)" |> onsuccess (Chars "🙂")
+        , string ";-)" |> onsuccess (Chars "😉")
+        , string ":-D" |> onsuccess (Chars "😀")
+        , string ":-O" |> onsuccess (Chars "😮")
+        , string ":-(" |> onsuccess (Chars "🙁")
+        , string ":-|" |> onsuccess (Chars "😐")
+        , string ":-/" |> onsuccess (Chars "😕")
+        , string ":-P" |> onsuccess (Chars "😛")
+        , string ";-P" |> onsuccess (Chars "😜")
+        , string ":-*" |> onsuccess (Chars "😗")
+        , string ":')" |> onsuccess (Chars "😂")
+        , string ":'(" |> onsuccess (Chars "😢")
         ]
 
 
