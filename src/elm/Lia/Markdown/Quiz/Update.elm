@@ -3,7 +3,7 @@ module Lia.Markdown.Quiz.Update exposing (Msg(..), handle, update)
 import Array exposing (Array)
 import Json.Encode as JE
 import Lia.Event exposing (..)
-import Lia.Markdown.Quiz.Json exposing (..)
+import Lia.Markdown.Quiz.Json as Json
 import Lia.Markdown.Quiz.Types exposing (..)
 import Lia.Utils exposing (string_replace)
 
@@ -94,7 +94,7 @@ update msg vector =
 
                 "restore" ->
                     ( event.message
-                        |> jsonToVector
+                        |> Json.toVector
                         |> Result.withDefault vector
                     , []
                     )
@@ -195,7 +195,7 @@ store : Vector -> ( Vector, List Event )
 store vector =
     ( vector
     , vector
-        |> vectorToJson
+        |> Json.fromVector
         |> storeEvent
         |> List.singleton
     )

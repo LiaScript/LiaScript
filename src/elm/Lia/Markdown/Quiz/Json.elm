@@ -1,22 +1,20 @@
 module Lia.Markdown.Quiz.Json exposing
-    ( jsonToVector
-    , vectorToJson
+    ( fromVector
+    , toVector
     )
-
---import Array exposing (Array)
 
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Quiz.Types exposing (..)
 
 
-vectorToJson : Vector -> JE.Value
-vectorToJson vector =
-    JE.array elementToJson vector
+fromVector : Vector -> JE.Value
+fromVector vector =
+    JE.array fromElement vector
 
 
-elementToJson : Element -> JE.Value
-elementToJson element =
+fromElement : Element -> JE.Value
+fromElement element =
     JE.object
         [ ( "solved"
           , JE.int
@@ -33,15 +31,15 @@ elementToJson element =
           )
 
         --, ( "solution", stateToJson element.solution )
-        , ( "state", stateToJson element.state )
+        , ( "state", fromState element.state )
         , ( "trial", JE.int element.trial )
         , ( "hint", JE.int element.hint )
         , ( "error_msg", JE.string element.error_msg )
         ]
 
 
-stateToJson : State -> JE.Value
-stateToJson state =
+fromState : State -> JE.Value
+fromState state =
     JE.object <|
         case state of
             EmptyState ->
@@ -63,13 +61,13 @@ stateToJson state =
                 ]
 
 
-jsonToVector : JD.Value -> Result JD.Error Vector
-jsonToVector json =
-    JD.decodeValue (JD.array jsonToElement) json
+toVector : JD.Value -> Result JD.Error Vector
+toVector json =
+    JD.decodeValue (JD.array toElement) json
 
 
-jsonToElement : JD.Decoder Element
-jsonToElement =
+toElement : JD.Decoder Element
+toElement =
     let
         solved_decoder i =
             case i of
@@ -85,14 +83,14 @@ jsonToElement =
     JD.map5 Element
         (JD.field "solved" JD.int |> JD.andThen solved_decoder)
         --(JD.field "solution" jsonToState)
-        (JD.field "state" jsonToState)
+        (JD.field "state" toState)
         (JD.field "trial" JD.int)
         (JD.field "hint" JD.int)
         (JD.field "error_msg" JD.string)
 
 
-jsonToState : JD.Decoder State
-jsonToState =
+toState : JD.Decoder State
+toState =
     let
         state_decoder type_ =
             case type_ of
