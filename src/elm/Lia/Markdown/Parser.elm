@@ -7,14 +7,14 @@ import Lia.Markdown.Code.Parser as Code
 import Lia.Markdown.Effect.Model exposing (set_annotation)
 import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Footnote.Parser as Footnote
-import Lia.Markdown.Inline.Parser exposing (..)
+import Lia.Markdown.Inline.Parser exposing (attribute, combine, comment, line)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Parser as Quiz
 import Lia.Markdown.Survey.Parser as Survey
-import Lia.Markdown.Types exposing (..)
-import Lia.Parser.Helper exposing (..)
-import Lia.Parser.State exposing (..)
+import Lia.Markdown.Types exposing (Markdown(..), MarkdownS)
+import Lia.Parser.Helper exposing (newline, newlines, spaces)
+import Lia.Parser.State exposing (State, ident_skip, identation, identation_append, identation_pop)
 import SvgBob
 
 

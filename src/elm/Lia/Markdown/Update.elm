@@ -113,16 +113,6 @@ initEffect run_all_javascript sound =
     update (UpdateEffect sound (Effect.init run_all_javascript))
 
 
-log : String -> Maybe JE.Value -> Maybe ( String, JE.Value )
-log topic msg =
-    case msg of
-        Just m ->
-            Just ( topic, m )
-
-        _ ->
-            Nothing
-
-
 handle : String -> Event -> Section -> ( Section, Cmd Msg, List ( String, JE.Value ) )
 handle topic event section =
     case topic of
