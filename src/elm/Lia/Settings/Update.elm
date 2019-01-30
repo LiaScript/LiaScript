@@ -4,7 +4,7 @@ import Json.Encode as JE
 import Lia.Event exposing (Event)
 import Lia.Markdown.Effect.Update exposing (soundEvent)
 import Lia.Settings.Json as Json
-import Lia.Settings.Model exposing (..)
+import Lia.Settings.Model exposing (Buttons, Mode(..), Model, init_buttons)
 
 
 type Msg

@@ -251,16 +251,6 @@ view_ace lang theme =
         ]
 
 
-capitalize : String -> String
-capitalize s =
-    case String.uncons s of
-        Just ( c, ss ) ->
-            String.cons (Char.toUpper c) ss
-
-        Nothing ->
-            s
-
-
 view_light : Bool -> Html Msg
 view_light light =
     Html.span
