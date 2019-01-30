@@ -275,6 +275,7 @@ evaluate theme attr running ( id_1, id_2 ) file headless errors =
                 [ Attr.property "value" <|
                     JE.string file.code
                 , Attr.property "mode" <| JE.string file.lang
+                , Attr.property "theme" <| JE.string theme
                 , Html.Events.on "editorChanged" <|
                     JD.map (Update id_1 id_2) <|
                         JD.at [ "target", "value" ] <|

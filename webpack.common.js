@@ -28,9 +28,9 @@ module.exports = {
       { from: "vendor/material_icons/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2", to: 'css/fonts'},
       { from: "vendor/roboto/fonts", to: 'css/fonts'},
 
-      { from: 'node_modules/katex/dist/katex.min.css', to: 'katex' },
+      { from: 'node_modules/katex/dist/katex.min.css', to: 'formula' },
 
-      { from: 'node_modules/ace-builds/src-noconflict/', to: 'ace' },
+      { from: 'node_modules/ace-builds/src-noconflict/', to: 'editor' },
     ], { debug: "info"} ),
     new HtmlWebpackPlugin({
       filename: 'index.html',
