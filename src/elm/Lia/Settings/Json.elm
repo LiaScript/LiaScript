@@ -1,15 +1,15 @@
-module Lia.Settings.JSON exposing (json2model, model2json)
+module Lia.Settings.Json exposing (fromModel, toModel)
 
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Settings.Model exposing (Mode(..), Model)
 
 
-model2json : Model -> JE.Value
-model2json model =
+fromModel : Model -> JE.Value
+fromModel model =
     JE.object
         [ ( "table_of_contents", JE.bool model.table_of_contents )
-        , ( "mode", mode2json model.mode )
+        , ( "mode", fromMode model.mode )
         , ( "theme", JE.string model.theme )
         , ( "light", JE.bool model.light )
         , ( "editor", JE.string model.editor )
@@ -19,8 +19,8 @@ model2json model =
         ]
 
 
-mode2json : Mode -> JE.Value
-mode2json mode =
+fromMode : Mode -> JE.Value
+fromMode mode =
     JE.string <|
         case mode of
             Textbook ->
@@ -47,12 +47,12 @@ settings model toc mode theme light editor font_size sound lang =
     }
 
 
-json2model : Model -> JD.Value -> Result JD.Error Model
-json2model model json =
+toModel : Model -> JD.Value -> Result JD.Error Model
+toModel model json =
     JD.decodeValue
         (JD.map8 (settings model)
             (JD.field "table_of_contents" JD.bool)
-            (JD.field "mode" JD.string |> JD.andThen string2mode)
+            (JD.field "mode" JD.string |> JD.andThen toMode)
             (JD.field "theme" JD.string)
             (JD.field "light" JD.bool)
             (JD.field "editor" JD.string)
@@ -63,8 +63,8 @@ json2model model json =
         json
 
 
-string2mode : String -> JD.Decoder Mode
-string2mode str =
+toMode : String -> JD.Decoder Mode
+toMode str =
     case str of
         "Textbook" ->
             JD.succeed Textbook

@@ -3,7 +3,7 @@ module Lia.Settings.Update exposing (Button(..), Msg(..), load, toggle_sound, to
 import Json.Encode as JE
 import Lia.Event exposing (Event)
 import Lia.Markdown.Effect.Update exposing (soundEvent)
-import Lia.Settings.JSON exposing (..)
+import Lia.Settings.Json as Json
 import Lia.Settings.Model exposing (..)
 
 
@@ -94,7 +94,7 @@ update msg model =
 load : Model -> JE.Value -> Model
 load model json =
     json
-        |> json2model model
+        |> Json.toModel model
         |> Result.withDefault model
 
 
@@ -130,7 +130,7 @@ toggle toggle_button buttons =
 
 log : Model -> ( Model, List Event )
 log model =
-    ( model, [ Event "settings" -1 <| model2json model ] )
+    ( model, [ Event "settings" -1 <| Json.fromModel model ] )
 
 
 no_log : Model -> ( Model, List Event )
