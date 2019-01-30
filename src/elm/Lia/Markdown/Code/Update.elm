@@ -11,7 +11,7 @@ import Lia.Event exposing (Eval, Event)
 import Lia.Markdown.Code.Events as Event
 import Lia.Markdown.Code.Json as Json
 import Lia.Markdown.Code.Terminal as Terminal
-import Lia.Markdown.Code.Types exposing (..)
+import Lia.Markdown.Code.Types exposing (Code(..), File, Project, Vector, log_append, message_append, noLog)
 
 
 type Msg

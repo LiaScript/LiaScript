@@ -4,7 +4,7 @@ import Char exposing (isLower, toLower)
 import Color
 import Dict exposing (Dict)
 import Html exposing (Html)
-import Lia.Markdown.Chart.Types exposing (..)
+import Lia.Markdown.Chart.Types exposing (Chart, Diagram(..), Point)
 import Lia.Markdown.Inline.Types exposing (Annotation)
 import Lia.Markdown.Inline.View exposing (annotation)
 import LineChart
