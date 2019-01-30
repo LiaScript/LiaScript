@@ -5,7 +5,7 @@ module Lia.Markdown.Quiz.Json exposing
 
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Markdown.Quiz.Types exposing (..)
+import Lia.Markdown.Quiz.Types exposing (Element, Solution(..), State(..), Vector)
 
 
 fromVector : Vector -> JE.Value

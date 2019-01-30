@@ -1,7 +1,7 @@
 module Lia.Markdown.Quiz.Model exposing (get_state)
 
-import Array exposing (Array)
-import Lia.Markdown.Quiz.Types exposing (..)
+import Array
+import Lia.Markdown.Quiz.Types exposing (Element, Vector)
 
 
 get_state : Vector -> Int -> Maybe Element

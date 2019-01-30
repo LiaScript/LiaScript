@@ -1,11 +1,10 @@
 module Lia.Markdown.Quiz.Update exposing (Msg(..), handle, update)
 
-import Array exposing (Array)
+import Array
 import Json.Encode as JE
 import Lia.Event as Event exposing (Event)
 import Lia.Markdown.Quiz.Json as Json
-import Lia.Markdown.Quiz.Types exposing (..)
-import Lia.Utils exposing (string_replace)
+import Lia.Markdown.Quiz.Types exposing (Element, Solution(..), State(..), Vector)
 
 
 type Msg
@@ -45,7 +44,7 @@ update msg vector =
                 |> update_ idx vector
                 |> store
 
-        Check idx solution (Just code) ->
+        Check idx _ (Just code) ->
             let
                 state =
                     case vector |> Array.get idx |> Maybe.map .state of

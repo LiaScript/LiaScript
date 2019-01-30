@@ -9,7 +9,7 @@ module Lia.Markdown.Quiz.Types exposing
     )
 
 import Array exposing (Array)
-import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
+import Lia.Markdown.Inline.Types exposing (MultInlines)
 
 
 type alias Vector =

@@ -7,7 +7,7 @@ module Lia.Markdown.Survey.Model exposing
 
 import Array
 import Dict
-import Lia.Markdown.Survey.Types exposing (..)
+import Lia.Markdown.Survey.Types exposing (State(..), Vector)
 
 
 get_submission_state : Vector -> Int -> Bool

@@ -2,14 +2,13 @@ module Lia.Markdown.Quiz.View exposing (view, view_solution)
 
 --import Lia.Code.View exposing (error)
 
-import Array exposing (Array)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import Lia.Markdown.Inline.Types exposing (Annotation, MultInlines)
 import Lia.Markdown.Inline.View exposing (annotation, view_inf)
-import Lia.Markdown.Quiz.Model exposing (..)
-import Lia.Markdown.Quiz.Types exposing (..)
+import Lia.Markdown.Quiz.Model exposing (get_state)
+import Lia.Markdown.Quiz.Types exposing (Element, Quiz(..), QuizAdds(..), Solution(..), State(..), Vector)
 import Lia.Markdown.Quiz.Update exposing (Msg(..))
 import Translations exposing (Lang, quizCheck, quizChecked, quizResolved, quizSolution)
 
@@ -25,7 +24,7 @@ view lang attr quiz vector =
             case state idx of
                 Just s ->
                     (case eval_string of
-                        Just code ->
+                        Just _ ->
                             view_button lang s.trial s.solved (Check idx s.state eval_string)
 
                         Nothing ->

@@ -2,11 +2,11 @@ module Lia.Markdown.Quiz.Parser exposing (parse)
 
 import Array
 import Combine exposing (..)
-import Lia.Markdown.Inline.Parser exposing (..)
-import Lia.Markdown.Inline.Types exposing (..)
+import Lia.Markdown.Inline.Parser exposing (javascript, line)
+import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
-import Lia.Markdown.Quiz.Types exposing (Element, Hints, Quiz(..), QuizAdds(..), Solution(..), State(..), Vector)
-import Lia.Parser.Helper exposing (..)
+import Lia.Markdown.Quiz.Types exposing (Element, Quiz(..), QuizAdds(..), Solution(..), State(..))
+import Lia.Parser.Helper exposing (newline, spaces)
 import Lia.Parser.State exposing (State)
 
 

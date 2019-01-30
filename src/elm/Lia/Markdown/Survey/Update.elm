@@ -4,8 +4,7 @@ import Array
 import Dict
 import Lia.Event as Event exposing (Event)
 import Lia.Markdown.Survey.Json as Json
-import Lia.Markdown.Survey.Model exposing (..)
-import Lia.Markdown.Survey.Types exposing (..)
+import Lia.Markdown.Survey.Types exposing (State(..), Vector)
 
 
 type Msg

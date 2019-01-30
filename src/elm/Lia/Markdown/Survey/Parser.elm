@@ -3,10 +3,10 @@ module Lia.Markdown.Survey.Parser exposing (parse)
 import Array
 import Combine exposing (..)
 import Dict
-import Lia.Markdown.Inline.Parser exposing (..)
-import Lia.Markdown.Inline.Types exposing (..)
-import Lia.Markdown.Survey.Types exposing (..)
-import Lia.Parser.Helper exposing (..)
+import Lia.Markdown.Inline.Parser exposing (line)
+import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
+import Lia.Markdown.Survey.Types exposing (State(..), Survey(..), Var)
+import Lia.Parser.Helper exposing (newline)
 import Lia.Parser.State exposing (State)
 
 
@@ -58,7 +58,7 @@ id_str =
         |> keep (regex "[0-9a-zA-Z_ ]+")
 
 
-vector : (Parser s String -> Parser State a) -> Parser State (List ( a, List Inline ))
+vector : (Parser s String -> Parser State a) -> Parser State (List ( a, Inlines ))
 vector p =
     let
         vec x =
@@ -82,7 +82,7 @@ questions =
         |> many1
 
 
-question : Parser State a -> Parser State ( a, List Inline )
+question : Parser State a -> Parser State ( a, Inlines )
 question p =
     map Tuple.pair p
         |> andMap line

@@ -3,7 +3,6 @@ module Lia.Markdown.Footnote.View exposing (block, inline)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Lia.Markdown.Footnote.Model exposing (Model, empty, toList)
-import Lia.Markdown.Inline.Types exposing (Annotation)
 import Lia.Markdown.Types exposing (Markdown)
 
 

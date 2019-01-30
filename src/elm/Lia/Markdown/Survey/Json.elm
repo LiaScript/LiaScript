@@ -6,7 +6,7 @@ module Lia.Markdown.Survey.Json exposing
 import Dict
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Markdown.Survey.Types exposing (..)
+import Lia.Markdown.Survey.Types exposing (Element, State(..), Vector)
 
 
 fromVector : Vector -> JE.Value
