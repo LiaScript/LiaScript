@@ -3,7 +3,7 @@ module Lia.Markdown.View exposing (view)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
-import Html.Lazy exposing (..)
+import Html.Lazy exposing (lazy2)
 import Lia.Markdown.Chart.View as Charts
 import Lia.Markdown.Code.View as Codes
 import Lia.Markdown.Effect.Model as Comments
@@ -14,12 +14,12 @@ import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
 import Lia.Markdown.Inline.View exposing (annotation, attributes, viewer)
 import Lia.Markdown.Quiz.View as Quizzes
 import Lia.Markdown.Survey.View as Surveys
-import Lia.Markdown.Types exposing (..)
+import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Settings.Model exposing (Mode(..))
 import Lia.Types exposing (Section)
 import SvgBob
-import Translations exposing (..)
+import Translations exposing (Lang)
 
 
 type alias Config =
