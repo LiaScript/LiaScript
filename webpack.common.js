@@ -6,8 +6,8 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
   entry: {
-    'editor/index':  './src/javascript/editor/codemirror.js',
-    'formula/index': './src/javascript/formula/katex.js',
+    'editor/index':  './src/javascript/webcomponents/ace.js',
+    'formula/index': './src/javascript/webcomponents/katex.js',
     'lia/index':     './src/index.js'
   },
   output: {
@@ -29,6 +29,8 @@ module.exports = {
       { from: "vendor/roboto/fonts", to: 'css/fonts'},
 
       { from: 'node_modules/katex/dist/katex.min.css', to: 'katex' },
+
+      { from: 'node_modules/ace-builds/src-noconflict/', to: 'ace' },
     ], { debug: "info"} ),
     new HtmlWebpackPlugin({
       filename: 'index.html',

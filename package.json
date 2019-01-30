@@ -19,8 +19,6 @@
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
   "devDependencies": {
-    "@babel/core": "^7.2.2",
-    "babel-loader": "^8.0.5",
     "clean-webpack-plugin": "^1.0.0",
     "copy-webpack-plugin": "^4.6.0",
     "css-loader": "^2.1.0",
@@ -40,8 +38,8 @@
     "webpack-merge": "^4.2.1"
   },
   "dependencies": {
+    "ace-builds": "^1.4.2",
     "animate.css": "^3.7.0",
-    "codemirror": "^5.42.2",
     "katex": "^0.10.0",
     "normalize.css": "^8.0.1",
     "sass-material-colors": "0.0.5"
