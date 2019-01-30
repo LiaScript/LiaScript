@@ -5,7 +5,7 @@ module Lia.Markdown.Code.View exposing (view)
 import Array
 import Html exposing (Html)
 import Html.Attributes as Attr exposing (attribute, lang)
-import Html.Events exposing (onClick, onDoubleClick, onInput)
+import Html.Events exposing (onClick, onInput)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Event as Event

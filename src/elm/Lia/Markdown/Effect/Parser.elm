@@ -10,7 +10,7 @@ import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Types exposing (Markdown(..))
-import Lia.Parser.Helper exposing (..)
+import Lia.Parser.Helper exposing (newlines, newlines1, spaces1)
 import Lia.Parser.State exposing (State, ident_skip, identation)
 
 

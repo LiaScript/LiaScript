@@ -81,7 +81,9 @@ view visible element =
             Html.text e
 
         FootnoteMark e attr ->
-            Footnote.inline e
+            attr
+                |> attributes
+                |> Footnote.inline e
 
         Container list attr ->
             list

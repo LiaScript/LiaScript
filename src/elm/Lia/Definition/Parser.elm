@@ -4,7 +4,7 @@ import Combine exposing (..)
 import Lia.Definition.Types exposing (Definition, add_translation)
 import Lia.Markdown.Inline.Parser exposing (comment)
 import Lia.Markdown.Macro.Parser as Macro
-import Lia.Parser.Helper exposing (..)
+import Lia.Parser.Helper exposing (newline, stringTill)
 import Lia.Parser.State exposing (State, ident_skip, identation, identation_append, identation_pop)
 import Lia.Utils exposing (string_replace)
 
@@ -99,14 +99,6 @@ ending =
         |> keep (many1 (identation |> keep (regex ".+\\n")))
         |> ignore identation_pop
         |> map (\list -> list |> List.map String.trimLeft |> String.concat |> String.trimRight)
-
-
-base : String -> Parser State ()
-base x =
-    set
-        (\def ->
-            { def | base = toURL def.base x }
-        )
 
 
 toURL : String -> String -> String

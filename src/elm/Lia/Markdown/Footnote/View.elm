@@ -1,22 +1,19 @@
 module Lia.Markdown.Footnote.View exposing (block, inline)
 
---import Html.Events exposing (onClick)
---import Lia.Markdown.Footnote.Update exposing (Msg(..))
-
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Lia.Markdown.Footnote.Model exposing (..)
+import Lia.Markdown.Footnote.Model exposing (Model, empty, toList)
+import Lia.Markdown.Inline.Types exposing (Annotation)
 import Lia.Markdown.Types exposing (Markdown)
 
 
-inline : String -> Html msg
-inline key =
+inline : String -> List (Html.Attribute msg) -> Html msg
+inline key attr =
     Html.sup
-        [ Attr.attribute
-            "onclick"
-            ("lia.app.ports.footnote.send(\"" ++ key ++ "\");")
-        , Attr.style "cursor" "pointer"
-        ]
+        (attr
+            |> (::) (Attr.style "cursor" "pointer")
+            |> (::) (Attr.attribute "onclick" ("lia.app.ports.footnote.send(\"" ++ key ++ "\");"))
+        )
         [ braces key ]
 
 

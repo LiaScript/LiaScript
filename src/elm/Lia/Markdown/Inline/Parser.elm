@@ -11,15 +11,15 @@ module Lia.Markdown.Inline.Parser exposing
     )
 
 import Combine exposing (..)
-import Combine.Char exposing (..)
+import Combine.Char exposing (anyChar)
 import Dict exposing (Dict)
 import Html.Parser
 import Lia.Markdown.Effect.Model exposing (add_javascript)
 import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Footnote.Parser as Footnote
-import Lia.Markdown.Inline.Types exposing (..)
+import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..))
 import Lia.Markdown.Macro.Parser as Macro
-import Lia.Parser.Helper exposing (..)
+import Lia.Parser.Helper exposing (spaces, stringTill)
 import Lia.Parser.State exposing (State)
 
 
@@ -110,24 +110,7 @@ html =
 
 html_void : Parser s Inline
 html_void =
-    [ regex "<area[^>\\n]*>"
-    , regex "<base[^>\\n]*>"
-    , regex "<br[^>\\n]*>"
-    , regex "<col[^>\\n]*>"
-    , regex "<embed[^>\\n]*>"
-    , regex "<hr[^>\\n]*>"
-    , regex "<img[^>\\n]*>"
-    , regex "<input[^>\\n]*>"
-    , regex "<keygen[^>\\n]*>"
-    , regex "<link[^>\\n]*>"
-    , regex "<menuitem[^>\\n]*>"
-    , regex "<meta[^>\\n]*>"
-    , regex "<param[^>\\n]*>"
-    , regex "<source[^>\\n]*>"
-    , regex "<track[^>\\n]*>"
-    , regex "<wbr[^>\\n]*>"
-    ]
-        |> choice
+    regex "<[^>\\n]*>"
         |> andThen html_parse
         |> map HTML
 
@@ -138,7 +121,7 @@ html_parse str =
         Ok rslt ->
             succeed rslt
 
-        Err info ->
+        Err _ ->
             fail "html parser failed"
 
 
@@ -269,6 +252,7 @@ ref_url_2 =
         |> or url
 
 
+ref_pattern : (a -> b -> String -> c) -> Parser s a -> Parser s b -> Parser s c
 ref_pattern ref_type info_type url_type =
     map ref_type info_type
         |> ignore (string "(")
