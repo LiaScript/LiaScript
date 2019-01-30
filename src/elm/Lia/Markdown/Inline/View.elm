@@ -75,7 +75,9 @@ view visible element =
             reference visible e attr
 
         Formula mode e Nothing ->
-            Html.node "katex-formula" [ Attr.attribute "displayMode" mode ] [ Html.text e ]
+            Html.node "katex-formula"
+                [ Attr.attribute "displayMode" mode ]
+                [ Html.text e ]
 
         Symbol e Nothing ->
             Html.text e
