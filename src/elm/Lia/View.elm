@@ -1,20 +1,18 @@
 module Lia.View exposing (view)
 
-import Array exposing (Array)
 import Flip exposing (flip)
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Html.Events exposing (onClick, onInput)
-import Lia.Definition.Types exposing (Definition, get_translations)
+import Html.Events exposing (onClick)
+import Lia.Definition.Types exposing (get_translations)
 import Lia.Index.View as Index
 import Lia.Markdown.Effect.Model exposing (current_paragraphs)
 import Lia.Markdown.Effect.View exposing (responsive, state)
-import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model)
 import Lia.Settings.Model exposing (Mode(..))
-import Lia.Settings.Update exposing (toggle_sound, toggle_table_of_contents)
+import Lia.Settings.Update exposing (toggle_sound)
 import Lia.Settings.View as Settings
 import Lia.Types exposing (..)
 import Lia.Update exposing (Msg(..), get_active_section)

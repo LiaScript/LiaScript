@@ -5,7 +5,7 @@ module Main exposing (Model, Msg(..), init, main, subscriptions, update, view, v
 
 import Browser
 import Browser.Navigation as Nav
-import Html exposing (..)
+import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import Http
@@ -171,6 +171,7 @@ update msg model =
                     ( { model | state = Error info }, Cmd.none )
 
 
+get_course : String -> Cmd Msg
 get_course url =
     Http.request
         { method = "GET"
@@ -225,14 +226,14 @@ view model =
                         [ Attr.style "margin-left" "20%"
                         , Attr.style "margin-right" "20%"
                         ]
-                        [ text info ]
+                        [ Html.text info ]
                     ]
                 ]
 
             _ ->
-                [ text "The current URL is: "
-                , b [] [ text (Url.toString model.url) ]
-                , ul []
+                [ Html.text "The current URL is: "
+                , Html.b [] [ Html.text (Url.toString model.url) ]
+                , Html.ul []
                     [ viewLink "/home"
                     , viewLink "/profile"
                     , viewLink "/reviews/the-century-of-the-self"
@@ -246,21 +247,21 @@ view model =
 view_waiting : String -> Html Msg
 view_waiting url =
     base_div
-        [ h1 [] [ text "Lia" ]
-        , br [] []
-        , br [] []
-        , input [ Attr.placeholder "enter course URL", Attr.value url, onInput Input ] []
-        , button [ Attr.class "lia-btn", onClick Download ] [ text "load URL" ]
-        , br [] []
-        , br [] []
-        , br [] []
-        , a [ Attr.href project_url ] [ text project_url ]
+        [ Html.h1 [] [ Html.text "Lia" ]
+        , Html.br [] []
+        , Html.br [] []
+        , Html.input [ Attr.placeholder "enter course URL", Attr.value url, onInput Input ] []
+        , Html.button [ Attr.class "lia-btn", onClick Download ] [ Html.text "load URL" ]
+        , Html.br [] []
+        , Html.br [] []
+        , Html.br [] []
+        , Html.a [ Attr.href project_url ] [ Html.text project_url ]
         ]
 
 
 viewLink : String -> Html msg
 viewLink path =
-    li [] [ a [ Attr.href path ] [ text path ] ]
+    Html.li [] [ Html.a [ Attr.href path ] [ Html.text path ] ]
 
 
 base_div : List (Html msg) -> Html msg
