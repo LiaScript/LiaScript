@@ -6,18 +6,17 @@ port module Lia.Update exposing
     , update
     )
 
-import Array exposing (Array)
-import Json.Decode as JD
+import Array
 import Json.Encode as JE
 import Lia.Event as Event exposing (Event)
 import Lia.Index.Update as Index
 import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Update as Markdown
-import Lia.Model exposing (..)
+import Lia.Model exposing (Model, load_src)
 import Lia.Parser.Parser exposing (parse_section)
 import Lia.Settings.Model exposing (Mode(..))
 import Lia.Settings.Update as Settings
-import Lia.Types exposing (Section, Sections)
+import Lia.Types exposing (Section)
 
 
 port event2js : Event -> Cmd msg
@@ -201,25 +200,6 @@ update msg model =
                     ( model, Cmd.none )
 
 
-restore_ : Model -> Int -> JD.Value -> (JD.Value -> Result String a) -> (Section -> a -> Section) -> Model
-restore_ model idx json json2vec update_ =
-    case json2vec json of
-        Ok vec ->
-            case Array.get idx model.sections of
-                Just s ->
-                    { model | sections = Array.set idx (update_ s vec) model.sections }
-
-                Nothing ->
-                    model
-
-        Err msg ->
-            let
-                x =
-                    Debug.log "Error restore_" ( msg, json )
-            in
-            model
-
-
 add_load : Int -> Int -> String -> List Event -> List Event
 add_load length idx vector logs =
     if length == 0 then
@@ -278,20 +258,10 @@ generate model =
                         model.to_do
                             |> List.append logs
                             |> add_load (Array.length section.quiz_vector) model.section_active "quiz"
-                            -- todo  |> add_load (Array.length section.code_vector) model.section_active "code"
+                            |> add_load (Array.length section.code_vector) model.section_active "code"
                             |> add_load (Array.length section.survey_vector) model.section_active "survey"
                 }
                 section
 
         Nothing ->
             model
-
-
-log : String -> Maybe JE.Value -> Maybe ( String, JE.Value )
-log topic msg =
-    case msg of
-        Just m ->
-            Just ( topic, m )
-
-        _ ->
-            Nothing
