@@ -5,9 +5,8 @@ import Lia.Definition.Parser
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Parser as Markdown
-import Lia.Markdown.Types exposing (..)
 import Lia.Parser.Preprocessor as Preprocessor
-import Lia.Parser.State exposing (State, init)
+import Lia.Parser.State exposing (init)
 import Lia.Types exposing (Section)
 
 
@@ -78,9 +77,8 @@ formatError ms stream =
         expectationSeparator =
             "\n  * "
 
-        lineNumberOffset =
-            floor (logBase 10 (toFloat location.line)) + 1
-
+        --        lineNumberOffset =
+        --            floor (logBase 10 (toFloat location.line)) + 1
         separatorOffset =
             String.length separator
 

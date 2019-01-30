@@ -8,8 +8,8 @@ module Lia.Parser.Helper exposing
     , stringTill
     )
 
-import Combine exposing (..)
-import Combine.Char exposing (..)
+import Combine exposing (Parser, manyTill, map, regex, string)
+import Combine.Char exposing (anyChar)
 
 
 c_frame : Parser s String

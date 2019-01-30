@@ -28,10 +28,10 @@ type Mode
     | Textbook -- Render Comments and Effects at ones
 
 
-init : Model
-init =
+init : Mode -> Model
+init mode =
     { table_of_contents = True
-    , mode = Slides
+    , mode = mode
     , theme = "default"
     , light = True
     , editor = "dreamweaver"

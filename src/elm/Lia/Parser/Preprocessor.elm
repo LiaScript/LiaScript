@@ -1,9 +1,23 @@
 module Lia.Parser.Preprocessor exposing (run)
 
-import Combine exposing (..)
+import Combine
+    exposing
+        ( Parser
+        , andMap
+        , choice
+        , fail
+        , ignore
+        , keep
+        , many
+        , map
+        , regex
+        , string
+        , succeed
+        , withColumn
+        )
 import Lia.Markdown.Inline.Parser exposing (line)
 import Lia.Markdown.Inline.Types exposing (Inlines)
-import Lia.Parser.Helper exposing (..)
+import Lia.Parser.Helper exposing (newline)
 import Lia.Parser.State exposing (State)
 
 

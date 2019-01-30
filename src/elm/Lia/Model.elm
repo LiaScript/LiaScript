@@ -5,7 +5,7 @@ module Lia.Model exposing
     , settings2model
     )
 
-import Array exposing (Array)
+import Array
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Definition.Types as Definition exposing (Definition)
@@ -40,7 +40,7 @@ settings2model model settings =
         Ok new_settings ->
             { model | settings = new_settings }
 
-        Err msg ->
+        Err _ ->
             model
 
 
@@ -50,7 +50,7 @@ init mode url readme origin slide_number =
     , readme = readme
     , origin = origin
     , title = "Lia"
-    , settings = Settings.init
+    , settings = Settings.init mode
     , error = Nothing
     , sections = Array.empty
     , section_active =

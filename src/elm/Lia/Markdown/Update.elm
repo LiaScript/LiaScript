@@ -130,8 +130,3 @@ handle topic event section =
 
         _ ->
             ( section, Cmd.none, [] )
-
-
-restore : Section -> ( Section, Cmd Msg, Maybe ( String, JE.Value ) )
-restore section =
-    ( section, Cmd.none, Nothing )
