@@ -1,7 +1,7 @@
 module Lia.Markdown.Macro.Parser exposing (add, get, macro, pattern)
 
 import Combine exposing (..)
-import Dict exposing (Dict)
+import Dict
 import Lia.Definition.Types exposing (Definition)
 import Lia.Parser.Helper exposing (..)
 import Lia.Parser.State exposing (State, identation)

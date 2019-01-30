@@ -1,6 +1,6 @@
 module Lia.Markdown.Inline.Stringify exposing (stringify)
 
-import Lia.Markdown.Inline.Types exposing (..)
+import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 
 
 stringify : Inlines -> String

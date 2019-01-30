@@ -3,8 +3,7 @@ module Lia.Markdown.Chart.Parser exposing (parse)
 import Combine exposing (..)
 import Combine.Num exposing (float, int)
 import Dict exposing (Dict)
-import Lia.Markdown.Chart.Types exposing (..)
-import Lia.Parser.Helper exposing (..)
+import Lia.Markdown.Chart.Types exposing (Chart, Diagram(..), Point)
 import Lia.Parser.State exposing (State)
 import Set
 
@@ -72,7 +71,7 @@ unique start list =
             else
                 unique (Just x) xs
 
-        ( x, _ ) ->
+        _ ->
             True
 
 

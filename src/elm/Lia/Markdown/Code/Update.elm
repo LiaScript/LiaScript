@@ -5,6 +5,7 @@ module Lia.Markdown.Code.Update exposing
     )
 
 import Array exposing (Array)
+import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Event exposing (Eval, Event)
 import Lia.Markdown.Code.Events as Event
@@ -47,11 +48,7 @@ restore json model =
             )
 
         Err msg ->
-            let
-                debug =
-                    Debug.log "Error: restoring code-vector" msg
-            in
-            ( model, [] )
+            ( model, Debug.log ("Error: restoring code-vector \n" ++ JD.errorToString msg) [] )
 
 
 update : Msg -> Vector -> ( Vector, List Event )
