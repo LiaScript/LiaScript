@@ -61,8 +61,14 @@ customElements.define('code-editor', class extends HTMLElement {
   get highlightActiveLine()      { return this._highlightActiveLine;    }
   set highlightActiveLine(value) { this.set_option("highlightActiveLine", value); }
 
+  get readOnly()      { return this._readOnly;    }
+  set readOnly(value) { this.set_option("readOnly", value); }
 
+  get showCursor()      { return this._showCursor;    }
+  set showCursor(value) { this.set_option("showCursor", value); }
 
+  get showGutter()      { return this._showGutter;    }
+  set showGutter(value) { this.set_option("showGutter", value); }
 
 
   get mode()       { return this._mode;               }
@@ -109,7 +115,7 @@ customElements.define('code-editor', class extends HTMLElement {
       useSoftTabs:         this._useSoftTabs,
 //      useWrapMode:         this._useWrapMode,
       readOnly:            this._readOnly,
-//      showCursor:          this._showCursor,
+      showCursor:          this._showCursor,
       showGutter:          this._showGutter,
 //      extensions:          this._extensions,
       minLines:            this._minLines,
