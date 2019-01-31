@@ -52,27 +52,88 @@ customElements.define('code-editor', class extends HTMLElement {
     this._editor.setOption(option, value);
   }
 
-  get value()                { return this._value;              }
-  set value(value)           { this.set_option("value", value); }
+  get value() {
+    return this._value; }
+  set value(value) {
+    this.set_option("value", value); }
 
-  get showPrintMargin()      { return this._showPrintMargin;    }
-  set showPrintMargin(value) { this.set_option("showPrintMargin", value); }
+  get showPrintMargin() {
+    return this._showPrintMargin; }
+  set showPrintMargin(value) {
+    this.set_option("showPrintMargin", value);
+  }
 
-  get highlightActiveLine()      { return this._highlightActiveLine;    }
-  set highlightActiveLine(value) { this.set_option("highlightActiveLine", value); }
+  get highlightActiveLine() {
+    return this._highlightActiveLine; }
+  set highlightActiveLine(value) {
+    this.set_option("highlightActiveLine", value); }
 
-  get readOnly()      { return this._readOnly;    }
-  set readOnly(value) { this.set_option("readOnly", value); }
+  get readOnly() {
+    return this._readOnly; }
+  set readOnly(value) {
+    this.set_option("readOnly", value); }
 
-  get showCursor()      { return this._showCursor;    }
-  set showCursor(value) { this.set_option("showCursor", value); }
+  get showCursor() {
+    return this._showCursor; }
+  set showCursor(value) {
+    this.set_option("showCursor", value); }
 
-  get showGutter()      { return this._showGutter;    }
-  set showGutter(value) { this.set_option("showGutter", value); }
+  get showGutter() {
+    return this._showGutter; }
+  set showGutter(value) {
+    this.set_option("showGutter", value); }
+
+  get maxLines() {
+    return this._maxLines; }
+  set maxLines(value) {
+    this.set_option("maxLines", value < 0 ? Infinity : value ); }
+
+  get minLines() {
+    return this._minLines; }
+  set minLines(value) {
+    this.set_option("minLines", value < 0 ? 1 : value ); }
+
+  get useSoftTabs() {
+    return this._useSoftTabs; }
+  set useSoftTabs(value) {
+    this.set_option("useSoftTabs", value); }
+
+  get tabSize() {
+    return this._tabSize; }
+  set tabSize(value) {
+    this.set_option("tabSize", value); }
+
+  get annotations() {
+    return this._annotations; }
+  set annotations(value) {
+    this.set_option("annotations", value); }
+
+  get extensions() {
+    return this._extensions;
+  }
+  set extensions(values) {
+    if(this._extensions === values)
+      return;
+
+    this._extensions = values;
+
+    if(!this._editor)
+      return;
+
+    for (let ext in this._extensions) {
+      ace.require("ace/ext/" + ext);
+    }
+  }
+
+  get useWrapMode() {
+    return this._useWrapMode; }
+  set useWrapMode(value) {
+    this.set_option("useWrapMode", value); }
 
 
-  get mode()       { return this._mode;               }
-  set mode(mode)   {
+  get mode() {
+    return this._mode; }
+  set mode(mode) {
     if(this._mode === mode)
       return;
 
@@ -85,8 +146,7 @@ customElements.define('code-editor', class extends HTMLElement {
   }
 
   get theme() {
-    return this._theme;
-  }
+    return this._theme; }
   set theme(theme) {
     if(this._theme === theme)
       return;
@@ -104,6 +164,10 @@ customElements.define('code-editor', class extends HTMLElement {
 
     this.appendChild(div);
 
+    for (let ext in this._extensions) {
+      ace.require("ace/ext/" + ext);
+    }
+
     this._editor = ace.edit(div, {
       value:               this._value,
       theme:               "ace/theme/" + this._theme,
@@ -113,15 +177,17 @@ customElements.define('code-editor', class extends HTMLElement {
       highlightActiveLine: this._highlightActiveLine,
       tabSize:             this._tabSize,
       useSoftTabs:         this._useSoftTabs,
-//      useWrapMode:         this._useWrapMode,
+      useWrapMode:         this._useWrapMode,
       readOnly:            this._readOnly,
       showCursor:          this._showCursor,
       showGutter:          this._showGutter,
 //      extensions:          this._extensions,
       minLines:            this._minLines,
       maxLines:            this._maxLines,
-//      annotations:         this._annotations,
+      annotations:         this._annotations,
     });
+
+
 
     const runDispatch = debounce(() => {
       this._value = this._editor.getValue();
