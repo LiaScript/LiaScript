@@ -38,6 +38,7 @@ customElements.define('code-editor', class extends HTMLElement {
     this._maxLines = Infinity;
     this._minLines = 1;
     this._annotations = [];
+    this._fontSize = "12pt";
   }
 
   set_option(option, value) {
@@ -160,19 +161,14 @@ customElements.define('code-editor', class extends HTMLElement {
   }
 
   connectedCallback() {
-    let div = document.createElement('div');
-
-    this.appendChild(div);
-
     for (let ext in this._extensions) {
       ace.require("ace/ext/" + ext);
     }
 
-    this._editor = ace.edit(div, {
+    this._editor = ace.edit(this, {
       value:               this._value,
       theme:               "ace/theme/" + this._theme,
       mode:                "ace/mode/" + this._mode,
-//      shared:              this._shared,
       showPrintMargin:     this._showPrintMargin,
       highlightActiveLine: this._highlightActiveLine,
       tabSize:             this._tabSize,
@@ -181,11 +177,13 @@ customElements.define('code-editor', class extends HTMLElement {
       readOnly:            this._readOnly,
       showCursor:          this._showCursor,
       showGutter:          this._showGutter,
-//      extensions:          this._extensions,
       minLines:            this._minLines,
       maxLines:            this._maxLines,
       annotations:         this._annotations,
+      fontSize:            this._fontSize,
     });
+
+    this._editor.setAutoScrollEditorIntoView(true);
 
 
 
