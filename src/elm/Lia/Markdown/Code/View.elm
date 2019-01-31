@@ -9,6 +9,7 @@ import Html.Events exposing (onClick, onInput)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Event as Event
+import Lia.Markdown.Code.Editor as Editor
 import Lia.Markdown.Code.Terminal as Terminal
 import Lia.Markdown.Code.Types exposing (..)
 import Lia.Markdown.Code.Update exposing (Msg(..))
@@ -217,7 +218,7 @@ highlight theme attr lang code headless =
             else
                 "0px"
     in
-    Html.textarea
+    Editor.editor
         (attr
             |> attributes
             |> List.append
@@ -226,25 +227,19 @@ highlight theme attr lang code headless =
                 , Attr.style "border-top-left-radius" top_border
                 , Attr.style "border-top-right-radius" top_border
                 , Attr.style "border" "1px solid gray"
-
-                --            , Ace.value code
-                --            , Ace.mode lang
-                --            , Ace.theme theme
-                --            , Ace.tabSize 2
-                --            , Ace.useSoftTabs False
-                --            , Ace.readOnly True
-                --            , Ace.showCursor False
-                --            , Ace.highlightActiveLine False
-                --            , Ace.showGutter False
-                --            , Ace.showPrintMargin False
+                , Editor.value code
+                , Editor.mode lang
+                , Editor.theme theme
+                , Editor.tabSize 2
+                , Editor.useSoftTabs False
+                , Editor.readOnly True
+                , Editor.showCursor False
+                , Editor.highlightActiveLine False
+                , Editor.showGutter False
+                , Editor.showPrintMargin False
                 ]
         )
-        [ Html.text code ]
-
-
-
---        |> Ace.toHtml
---(\a -> a [])
+        []
 
 
 evaluate : String -> Annotation -> Bool -> ( Int, Int ) -> File -> Bool -> JE.Value -> Html Msg
@@ -263,7 +258,7 @@ evaluate theme attr running ( id_1, id_2 ) file headless errors =
             else
                 total_lines
     in
-    Html.node "code-editor"
+    Editor.editor
         (attr
             |> attributes
             |> List.append
@@ -272,36 +267,27 @@ evaluate theme attr running ( id_1, id_2 ) file headless errors =
                     |> toStyle file.visible headless
                 )
             |> List.append
-                [ Attr.property "value" <|
-                    JE.string file.code
-                , Attr.property "mode" <| JE.string file.lang
-                , Attr.property "theme" <| JE.string theme
-                , Html.Events.on "editorChanged" <|
-                    JD.map (Update id_1 id_2) <|
-                        JD.at [ "target", "value" ] <|
-                            JD.string
+                [ Editor.onChange <| Update id_1 id_2
+                , Editor.value file.code
+                , Editor.mode file.lang
+                , Editor.theme theme
+                , Editor.maxLines
+                    (if max_lines > 16 then
+                        -1
+
+                     else
+                        max_lines
+                    )
+                , Editor.readOnly running
+                , Editor.tabSize 2
+                , Editor.useSoftTabs False
+                , Editor.annotations errors
+                , Editor.enableBasicAutocompletion True
+                , Editor.enableLiveAutocompletion True
+                , Editor.enableSnippets True
+                , Editor.extensions [ "language_tools" ]
                 ]
-         --            , Ace.onSourceChange <| Update id_1 id_2
-         --            , Ace.value file.code
-         --            , Ace.mode file.lang
-         --            , Ace.theme theme
-         --            , Ace.maxLines
-         --                    (if max_lines > 16 then
-         --                        -1
-         --
-         --                     else
-         --                        max_lines
-         --                    )
-         --            , Ace.readOnly running
-         --            , Ace.tabSize 2
-         --            , Ace.useSoftTabs False
-         --            , Ace.annotations errors
-         --            , Ace.enableBasicAutocompletion True
-         --            , Ace.enableLiveAutocompletion True
-         --            , Ace.enableSnippets True
-         --            , Ace.extensions [ "language_tools" ]
         )
-        --        |> Ace.toHtml
         []
 
 

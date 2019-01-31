@@ -24,7 +24,7 @@ customElements.define('code-editor', class extends HTMLElement {
 
     this._value = null;
     this._theme = null;
-    this._mode = "ace/mode/javascript";
+    this._mode = null;
     this._shared = null;
     this._showPrintMargin = true;
     this._highlightActiveLine = true;
@@ -40,25 +40,33 @@ customElements.define('code-editor', class extends HTMLElement {
     this._annotations = [];
   }
 
-  get value() {
-    return this._value;
-  }
-  set value(value) {
-    if(this._value === value)
+  set_option(option, value) {
+    if(this["_"+option] === value)
       return;
 
-    this._value = value;
+    this["_"+option] = value;
 
     if(!this._editor)
       return;
 
-    this._editor.setValue(value);
+    this._editor.setOption(option, value);
   }
 
-  get mode() {
-    return this._mode;
-  }
-  set mode(mode) {
+  get value()                { return this._value;              }
+  set value(value)           { this.set_option("value", value); }
+
+  get showPrintMargin()      { return this._showPrintMargin;    }
+  set showPrintMargin(value) { this.set_option("showPrintMargin", value); }
+
+  get highlightActiveLine()      { return this._highlightActiveLine;    }
+  set highlightActiveLine(value) { this.set_option("highlightActiveLine", value); }
+
+
+
+
+
+  get mode()       { return this._mode;               }
+  set mode(mode)   {
     if(this._mode === mode)
       return;
 
@@ -67,15 +75,13 @@ customElements.define('code-editor', class extends HTMLElement {
     if(!this._editor)
       return;
 
-    this._editor.setMode("editor/mode/" + mode);
+    this._editor.setOption("mode", "ace/mode/" + mode);
   }
 
   get theme() {
     return this._theme;
   }
   set theme(theme) {
-    console.log("fucking theme ", theme);
-
     if(this._theme === theme)
       return;
 
@@ -84,7 +90,7 @@ customElements.define('code-editor', class extends HTMLElement {
     if(!this._editor)
       return;
 
-//    this._editor.setTheme("editor/theme/" + theme);
+    this._editor.setTheme("ace/theme/" + theme);
   }
 
   connectedCallback() {
@@ -94,8 +100,8 @@ customElements.define('code-editor', class extends HTMLElement {
 
     this._editor = ace.edit(div, {
       value:               this._value,
-//      theme:               this._theme,
-      mode:                this._mode,
+      theme:               "ace/theme/" + this._theme,
+      mode:                "ace/mode/" + this._mode,
 //      shared:              this._shared,
       showPrintMargin:     this._showPrintMargin,
       highlightActiveLine: this._highlightActiveLine,
