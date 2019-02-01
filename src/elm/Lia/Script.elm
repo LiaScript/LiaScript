@@ -77,9 +77,9 @@ add_todos definition model =
             }
         , ressource = res2
         , to_do =
-            model.to_do
-                |> List.append links
-                |> List.append scripts
+            List.reverse links
+                |> List.append (List.reverse scripts)
+                |> List.append model.to_do
     }
 
 
