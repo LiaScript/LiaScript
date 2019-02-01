@@ -1,7 +1,7 @@
 "use strict";
 
 import ace from 'ace-builds/src-noconflict/ace';
-import get_theme from './ace-themes';
+import get_mode from './ace-themes';
 
 const debounce = (func) => {
   let token
@@ -142,7 +142,7 @@ customElements.define('code-editor', class extends HTMLElement {
     this.model.mode = mode;
     if(!this._editor)
       return;
-    this._editor.setOption("mode", "ace/mode/" + mode);
+    this._editor.setMode(get_mode(mode));
   }
 
   get theme() {
@@ -153,7 +153,7 @@ customElements.define('code-editor', class extends HTMLElement {
     this.model.theme = theme;
     if(!this._editor)
       return;
-    this._editor.setTheme(get_theme(theme));
+    this._editor.setTheme("ace/theme/" + theme);
   }
 
   connectedCallback() {
@@ -163,21 +163,23 @@ customElements.define('code-editor', class extends HTMLElement {
 
     this._editor = ace.edit(this, {
       value:               this.model.value,
-      theme:               get_theme(this.model.theme),
-      mode:                "ace/mode/" + this.model.mode,
+      theme:               "ace/theme/" + this.model.theme,
+      mode:                get_mode(this.model.mode),
       showPrintMargin:     this.model.showPrintMargin,
       highlightActiveLine: this.model.highlightActiveLine,
       tabSize:             this.model.tabSize,
       useSoftTabs:         this.model.useSoftTabs,
       useWrapMode:         this.model.useWrapMode,
       readOnly:            this.model.readOnly,
-      showCursor:          this.model.showCursor,
       showGutter:          this.model.showGutter,
       minLines:            this.model.minLines,
       maxLines:            this.model.maxLines,
       annotations:         this.model.annotations,
       fontSize:            this.model.fontSize,
     });
+
+    if (!this.model.showCursor)
+      this._editor.renderer.$cursorLayer.element.style.display = "none";
 
     this._editor.setAutoScrollEditorIntoView(true);
 

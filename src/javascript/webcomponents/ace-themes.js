@@ -1,12 +1,12 @@
 "use strict";
 
-function get_theme(name) {
-  let theme_name = theme[name];
+function get_mode(name) {
+  let mode_name = modes[name];
 
-  return "ace/theme/" + theme_name ? theme_name : name;
-}
+  return "ace/mode/" + (mode_name ? mode_name : name);
+};
 
-const theme = {
+const modes = {
 //"actionscript":     "actionscript",
   "as":               "actionscript",
 
@@ -189,4 +189,6 @@ const theme = {
   "xq":               "xquery",
 };
 
-export default get_theme;
+
+
+export default get_mode;
