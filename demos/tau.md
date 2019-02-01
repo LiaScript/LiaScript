@@ -8,8 +8,6 @@ narrator: Deutsch Female
 
 script: https://rawgit.com/andre-dietrich/tau-prolog_template/master/js/tau-prolog.min.js
 
-script:  https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.1/snippets/prolog.js
-
 
 @tau_prolog_program
 <script>

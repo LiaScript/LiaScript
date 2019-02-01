@@ -111,8 +111,19 @@ customElements.define('code-editor', class extends HTMLElement {
 
   get annotations() {
     return this.model.annotations; }
-  set annotations(value) {
-    this.set_option("annotations", value); }
+  set annotations(list) {
+    if(this.model.annotations === list)
+      return;
+    if(list == null)
+      this.model.annotations = [];
+    else
+      this.model.annotations = list;
+
+    if(!this._editor)
+      return;
+
+    this._editor.getSession().setAnnotations(this.model.annotations);
+  }
 
   get extensions() {
     return this.model.extensions;
@@ -169,21 +180,19 @@ customElements.define('code-editor', class extends HTMLElement {
       highlightActiveLine: this.model.highlightActiveLine,
       tabSize:             this.model.tabSize,
       useSoftTabs:         this.model.useSoftTabs,
-      useWrapMode:         this.model.useWrapMode,
       readOnly:            this.model.readOnly,
       showGutter:          this.model.showGutter,
       minLines:            this.model.minLines,
       maxLines:            this.model.maxLines,
-      annotations:         this.model.annotations,
       fontSize:            this.model.fontSize,
     });
 
     if (!this.model.showCursor)
       this._editor.renderer.$cursorLayer.element.style.display = "none";
 
+    this._editor.getSession().setUseWrapMode(this.model.useWrapMode);
+
     this._editor.setAutoScrollEditorIntoView(true);
-
-
 
     const runDispatch = debounce(() => {
       this.model.value = this._editor.getValue();
