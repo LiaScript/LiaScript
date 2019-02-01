@@ -6,11 +6,7 @@ import { LiaStorage } from "./storage";
 import { LiaEvents, lia_execute_event, lia_eval_event } from "./events";
 import { SETTINGS, initSettings } from "./settings";
 import { storePersitent, loadPersistent } from "./persistent";
-
-function liaLog (string) {
-    //if(window.debug__)
-        console.log(string);
-};
+import { lia } from "./logger";
 
 
 function scrollIntoView (id, delay) {
@@ -69,7 +65,7 @@ function handleEffects(event, elmSend) {
       break;
     }
     default:
-      console.log("effect missed", event);
+      lia.warn("effect missed", event);
   }
 };
 
@@ -80,7 +76,10 @@ var events = undefined;
 var liaStorage = undefined;
 
 class LiaScript {
-    constructor(elem, course = null, script = null, url="", slide=0, spa = true, debug = false, channel=null) {
+    constructor(elem, debug = false, course = null, script = null, url="", slide=0, spa = true, channel=null) {
+
+        if(debug)
+            window.debug__ = true;
 
         events     = new LiaEvents();
 
@@ -97,7 +96,7 @@ class LiaScript {
         let send_to = this.app.ports.event2elm.send;
 
         let sender = function(msg) {
-          console.log("event2elm :- ", msg);
+          lia.log("event2elm => ", msg);
           send_to(msg);
         };
 
@@ -119,7 +118,7 @@ class LiaScript {
 
         channel.join()
         .receive("ok", (e) => { initSettings(send, e); })
-        .receive("error", e => { console.log("Error channel join: ", e); });
+        .receive("error", e => { lia.error("channel join => ", e); });
     }
 
     reset() {
@@ -127,12 +126,12 @@ class LiaScript {
     }
 
     initEventSystem(jsSubscribe, elmSend) {
-        //console.log("initEventSystem");
+        lia.log("initEventSystem");
 
         let self = this;
 
         jsSubscribe(function(event) {
-            console.log("elm2js", event);
+            lia.log("elm2js => ", event);
 
             switch (event.topic) {
                 case "slide": {
@@ -203,7 +202,7 @@ class LiaScript {
                     let elem = event.message[0];
                     let url  = event.message[1];
 
-                    console.log(elem, ":", url);
+                    lia.log("loading ressource => ", elem, ":", url);
 
                     try {
                         var tag = document.createElement(elem);
@@ -218,7 +217,7 @@ class LiaScript {
                         document.head.appendChild(tag);
 
                     } catch (e) {
-                        console.log(e.msg);
+                        lia.error("loading ressource => ", e.msg);
                     }
                     break;
                 }
@@ -264,7 +263,7 @@ class LiaScript {
                     break;
                 }
                 default:
-                    console.log("Command not found: ", event);
+                    lia.error("Command not found => ", event);
               }
         });
     }

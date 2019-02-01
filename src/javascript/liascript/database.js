@@ -1,5 +1,7 @@
 "use strict";
 
+import { lia } from "./logger";
+
 class LiaDB {
     constructor (uidDB, versionDB, send=null, channel=null, init=null) {
         this.channel = channel;
@@ -10,7 +12,7 @@ class LiaDB {
         this.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB || window.shimIndexedDB;
 
         if (!this.indexedDB) {
-            console.log("your browser does not support indexedDB");
+            lia.warn("your browser does not support indexedDB");
             return;
         }
 
@@ -20,7 +22,7 @@ class LiaDB {
 
         let request = this.indexedDB.open(this.uidDB, this.versionDB);
         request.onupgradeneeded = function(event) {
-            console.log("creating tables");
+            lia.log("creating tables");
 
             // The database did not previously exist, so create object stores and indexes.
             let settings = {keyPath: "id", autoIncrement: false};
@@ -43,7 +45,7 @@ class LiaDB {
                 let item = store.get(init.section);
 
                 item.onsuccess = function() {
-                    //console.log("table", init.table, item.result);
+                    lia.log("table", init.table, item.result);
                     if (item.result)
                         init.message.message = item.result.data;
 
@@ -62,8 +64,8 @@ class LiaDB {
               store: event.topic,
               slide: event.section,
               data: event.message })
-            .receive("ok",    e => { console.log("ok", e); })
-            .receive("error", e => { console.log("error", e); });
+            .receive("ok",    e => { lia.log("ok", e); })
+            .receive("error", e => { lia.log("error", e); });
 
             return;
         }
@@ -88,7 +90,7 @@ class LiaDB {
 
             tx.oncomplete = function() {
                 // All requests have succeeded and the transaction has committed.
-                console.log("stored data ...");
+                lia.log("stored data ...");
             };
         };
     }
@@ -102,14 +104,14 @@ class LiaDB {
                 event.message = {topic: "restore", section: -1, message: e.date}
                 send(event);
             })
-            .receive("error", e => { console.log("error", e); });
+            .receive("error", e => { lia.error(e); });
 
             return;
         }
 
         if (!this.indexedDB) return;
 
-        //console.log("loading", table, id);
+        lia.log("loading => ", event.topic, event.section);
 
         let request = this.indexedDB.open(this.uidDB, this.versionDB);
         request.onsuccess = function(e) {
@@ -121,7 +123,7 @@ class LiaDB {
                 let item = store.get(event.section);
 
                 item.onsuccess = function() {
-                    console.log("restore table", event.topic, item.result);
+                    lia.log("restore table", event.topic, item.result);
                     if (item.result) {
                         event.message = {
                           topic:"restore",
@@ -132,7 +134,7 @@ class LiaDB {
                     }
                 };
                 item.onerror = function() {
-                    console.log("data not found ...");
+                    lia.warn("data not found ...");
                     if (event.topic == "code") {
                         event.message = {
                           topic:"restore",
@@ -142,7 +144,7 @@ class LiaDB {
                     }
                 };
             }
-            catch (e) { console.log("Error: ", e); }
+            catch (e) { lia.error(e); }
         };
     }
 
@@ -153,11 +155,11 @@ class LiaDB {
 
         let request = this.indexedDB.deleteDatabase(this.uidDB);
         request.onerror = function(e) {
-            console.log("error deleting database:", this.uidDB);
+            lia.error("error deleting database:", this.uidDB);
         };
         request.onsuccess = function(e) {
-            console.log("database deleted: ", this.uidDB);
-            console.log(e.result); // should be undefined
+            lia.log("database deleted: ", this.uidDB);
+            lia.log(e.result); // should be undefined
         };
     }
 
@@ -213,7 +215,7 @@ class LiaDB {
                                 break;
                             }
                             default: {
-                                console.log("unknown update cmd: ", event);
+                                lia.warn("unknown update cmd: ", event);
                             }
                         }
                         vector.data[event[1]] = project;
@@ -221,10 +223,10 @@ class LiaDB {
                     }
                 };
                 item.onerror = function() {
-                    console.log("data not found ...");
+                    lia.error("data not found ...");
                 };
             }
-            catch (e) { console.log("Error: ", e); }
+            catch (e) { lia.error(e); }
         };
     }
 };

@@ -1,5 +1,7 @@
 "use strict";
 
+import { lia } from "./logger";
+
 class LiaStorage {
     constructor (channel = null) {
         if (!channel)
@@ -17,7 +19,7 @@ class LiaStorage {
 
         this.channel.push("party", {get_local_storage: []})
           .receive("ok",    (e) => { store(e); })
-          .receive("error", (e) => { console.log("error: ", e); });
+          .receive("error", (e) => { lia.error("storing => ", e); });
     }
 
     getItems (key = []) {

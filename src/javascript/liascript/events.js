@@ -1,6 +1,8 @@
 "use strict";
 
 import { LiaError } from "./error";
+import { lia } from "./logger";
+
 
 class LiaEvents {
 
@@ -28,7 +30,7 @@ class LiaEvents {
         try {
             this.input[event.section][event.message.section][event.message.topic](event.message.message);
         } catch(e) {
-            console.log("unable to dispatch message", msg);
+            lia.error("unable to dispatch message", msg);
         }
     }
 
@@ -95,7 +97,7 @@ function lia_execute_event(event) {
     try {
         setTimeout(() => { eval(event.code) }, event.delay);
     } catch (e) {
-        console.log("exec - error: ", e);
+        lia.error("exec => ", e);
     }
 };
 
