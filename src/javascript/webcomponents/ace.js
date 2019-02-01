@@ -22,30 +22,32 @@ customElements.define('code-editor', class extends HTMLElement {
 
     ace.config.set('basePath', '/editor/')
 
-    this._value = null;
-    this._theme = null;
-    this._mode = null;
-    this._shared = null;
-    this._showPrintMargin = true;
-    this._highlightActiveLine = true;
-    this._tabSize = 4;
-    this._useSoftTabs = true;
-    this._useWrapMode = false;
-    this._readOnly = false;
-    this._showCursor = true;
-    this._showGutter = true;
-    this._extensions = [];
-    this._maxLines = Infinity;
-    this._minLines = 1;
-    this._annotations = [];
-    this._fontSize = "12pt";
+    this.model = {
+      value: null,
+      theme: null,
+      mode: null,
+      shared: null,
+      showPrintMargin: true,
+      highlightActiveLine: true,
+      tabSize: 4,
+      useSoftTabs: true,
+      useWrapMode: false,
+      readOnly: false,
+      showCursor: true,
+      showGutter: true,
+      extensions: [],
+      maxLines: Infinity,
+      minLines: 1,
+      annotations: [],
+      fontSize: "12pt",
+    };
   }
 
   set_option(option, value) {
-    if(this["_"+option] === value)
+    if(this.model[option] === value)
       return;
 
-    this["_"+option] = value;
+    this.model[option] = value;
 
     if(!this._editor)
       return;
@@ -54,91 +56,97 @@ customElements.define('code-editor', class extends HTMLElement {
   }
 
   get value() {
-    return this._value; }
+    return this.model.value; }
   set value(value) {
     this.set_option("value", value); }
 
   get showPrintMargin() {
-    return this._showPrintMargin; }
+    return this.model.showPrintMargin; }
   set showPrintMargin(value) {
     this.set_option("showPrintMargin", value);
   }
 
   get highlightActiveLine() {
-    return this._highlightActiveLine; }
+    return this.model.highlightActiveLine; }
   set highlightActiveLine(value) {
     this.set_option("highlightActiveLine", value); }
 
   get readOnly() {
-    return this._readOnly; }
+    return this.model.readOnly; }
   set readOnly(value) {
     this.set_option("readOnly", value); }
 
   get showCursor() {
-    return this._showCursor; }
+    return this.model.showCursor; }
   set showCursor(value) {
     this.set_option("showCursor", value); }
 
   get showGutter() {
-    return this._showGutter; }
+    return this.model.showGutter; }
   set showGutter(value) {
     this.set_option("showGutter", value); }
 
+  get fontSize() {
+    return this.model.fontSize; }
+  set maxLines(value) {
+    this.set_option("fontSize", value + "pt" ); }
+
+
   get maxLines() {
-    return this._maxLines; }
+    return this.model.maxLines; }
   set maxLines(value) {
     this.set_option("maxLines", value < 0 ? Infinity : value ); }
 
   get minLines() {
-    return this._minLines; }
+    return this.model.minLines; }
   set minLines(value) {
     this.set_option("minLines", value < 0 ? 1 : value ); }
 
   get useSoftTabs() {
-    return this._useSoftTabs; }
+    return this.model.useSoftTabs; }
   set useSoftTabs(value) {
     this.set_option("useSoftTabs", value); }
 
   get tabSize() {
-    return this._tabSize; }
+    return this.model.tabSize; }
   set tabSize(value) {
     this.set_option("tabSize", value); }
 
   get annotations() {
-    return this._annotations; }
+    return this.model.annotations; }
   set annotations(value) {
     this.set_option("annotations", value); }
 
   get extensions() {
-    return this._extensions;
+    return this.model.extensions;
   }
   set extensions(values) {
-    if(this._extensions === values)
+    if(this.model.extensions === values)
       return;
 
-    this._extensions = values;
+    this.model.extensions = values;
 
     if(!this._editor)
       return;
 
-    for (let ext in this._extensions) {
+    for (let ext in this.model.extensions) {
       ace.require("ace/ext/" + ext);
     }
   }
 
   get useWrapMode() {
-    return this._useWrapMode; }
+    return this.model.useWrapMode; }
   set useWrapMode(value) {
     this.set_option("useWrapMode", value); }
 
 
   get mode() {
-    return this._mode; }
+    return this.model.mode; }
   set mode(mode) {
-    if(this._mode === mode)
+    if(this.model.mode === mode)
       return;
 
-    this._mode = mode;
+    this.model.mode = mode;
 
     if(!this._editor)
       return;
@@ -147,12 +155,12 @@ customElements.define('code-editor', class extends HTMLElement {
   }
 
   get theme() {
-    return this._theme; }
+    return this.model.theme; }
   set theme(theme) {
-    if(this._theme === theme)
+    if(this.model.theme === theme)
       return;
 
-    this._theme = theme;
+    this.model.theme = theme;
 
     if(!this._editor)
       return;
@@ -161,26 +169,26 @@ customElements.define('code-editor', class extends HTMLElement {
   }
 
   connectedCallback() {
-    for (let ext in this._extensions) {
+    for (let ext in this.model.extensions) {
       ace.require("ace/ext/" + ext);
     }
 
     this._editor = ace.edit(this, {
-      value:               this._value,
-      theme:               "ace/theme/" + this._theme,
-      mode:                "ace/mode/" + this._mode,
-      showPrintMargin:     this._showPrintMargin,
-      highlightActiveLine: this._highlightActiveLine,
-      tabSize:             this._tabSize,
-      useSoftTabs:         this._useSoftTabs,
-      useWrapMode:         this._useWrapMode,
-      readOnly:            this._readOnly,
-      showCursor:          this._showCursor,
-      showGutter:          this._showGutter,
-      minLines:            this._minLines,
-      maxLines:            this._maxLines,
-      annotations:         this._annotations,
-      fontSize:            this._fontSize,
+      value:               this.model.value,
+      theme:               "ace/theme/" + this.model.theme,
+      mode:                "ace/mode/" + this.model.mode,
+      showPrintMargin:     this.model.showPrintMargin,
+      highlightActiveLine: this.model.highlightActiveLine,
+      tabSize:             this.model.tabSize,
+      useSoftTabs:         this.model.useSoftTabs,
+      useWrapMode:         this.model.useWrapMode,
+      readOnly:            this.model.readOnly,
+      showCursor:          this.model.showCursor,
+      showGutter:          this.model.showGutter,
+      minLines:            this.model.minLines,
+      maxLines:            this.model.maxLines,
+      annotations:         this.model.annotations,
+      fontSize:            this.model.fontSize,
     });
 
     this._editor.setAutoScrollEditorIntoView(true);
@@ -188,7 +196,7 @@ customElements.define('code-editor', class extends HTMLElement {
 
 
     const runDispatch = debounce(() => {
-      this._value = this._editor.getValue();
+      this.model.value = this._editor.getValue();
       this.dispatchEvent(new CustomEvent('editorChanged'));
     })
 

@@ -267,8 +267,7 @@ evaluate theme attr running ( id_1, id_2 ) file headless errors =
                     |> toStyle file.visible headless
                 )
             |> List.append
-                [ Attr.style "display" "block"
-                , Editor.onChange <| Update id_1 id_2
+                [ Editor.onChange <| Update id_1 id_2
                 , Editor.value file.code
                 , Editor.mode file.lang
                 , Editor.theme theme

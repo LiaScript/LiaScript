@@ -29,8 +29,10 @@ import Lia.Markdown.Code.Highlight2Ace exposing (highlight2ace)
 
 
 editor : List (Html.Attribute msg) -> List (Html msg) -> Html msg
-editor =
-    Html.node "code-editor"
+editor attr =
+    Attr.style "display" "block"
+        :: attr
+        |> Html.node "code-editor"
 
 
 onChange : (String -> msg) -> Html.Attribute msg
