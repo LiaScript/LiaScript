@@ -4,7 +4,6 @@
   "description": "An extended Markdown parser for the creation of online courses.",
   "main": "index.js",
   "scripts": {
-    "postinstall": "elm package install -y",
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch": "webpack --watch",
     "start": "node server.js",

@@ -25,7 +25,6 @@ import Html.Attributes as Attr
 import Html.Events
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Markdown.Code.Highlight2Ace exposing (highlight2ace)
 
 
 editor : List (Html.Attribute msg) -> List (Html msg) -> Html msg
@@ -50,7 +49,7 @@ value =
 
 mode : String -> Html.Attribute msg
 mode =
-    highlight2ace >> JE.string >> Attr.property "mode"
+    JE.string >> Attr.property "mode"
 
 
 theme : String -> Html.Attribute msg

@@ -1,7 +1,7 @@
 "use strict";
 
 import ace from 'ace-builds/src-noconflict/ace';
-
+import get_theme from './ace-themes';
 
 const debounce = (func) => {
   let token
@@ -46,12 +46,9 @@ customElements.define('code-editor', class extends HTMLElement {
   set_option(option, value) {
     if(this.model[option] === value)
       return;
-
     this.model[option] = value;
-
     if(!this._editor)
       return;
-
     this._editor.setOption(option, value);
   }
 
@@ -123,12 +120,9 @@ customElements.define('code-editor', class extends HTMLElement {
   set extensions(values) {
     if(this.model.extensions === values)
       return;
-
     this.model.extensions = values;
-
     if(!this._editor)
       return;
-
     for (let ext in this.model.extensions) {
       ace.require("ace/ext/" + ext);
     }
@@ -145,12 +139,9 @@ customElements.define('code-editor', class extends HTMLElement {
   set mode(mode) {
     if(this.model.mode === mode)
       return;
-
     this.model.mode = mode;
-
     if(!this._editor)
       return;
-
     this._editor.setOption("mode", "ace/mode/" + mode);
   }
 
@@ -159,13 +150,10 @@ customElements.define('code-editor', class extends HTMLElement {
   set theme(theme) {
     if(this.model.theme === theme)
       return;
-
     this.model.theme = theme;
-
     if(!this._editor)
       return;
-
-    this._editor.setTheme("ace/theme/" + theme);
+    this._editor.setTheme(get_theme(theme));
   }
 
   connectedCallback() {
@@ -175,7 +163,7 @@ customElements.define('code-editor', class extends HTMLElement {
 
     this._editor = ace.edit(this, {
       value:               this.model.value,
-      theme:               "ace/theme/" + this.model.theme,
+      theme:               get_theme(this.model.theme),
       mode:                "ace/mode/" + this.model.mode,
       showPrintMargin:     this.model.showPrintMargin,
       highlightActiveLine: this.model.highlightActiveLine,

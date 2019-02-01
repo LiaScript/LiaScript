@@ -2,7 +2,6 @@ module Lia.Markdown.Code.Parser exposing (parse)
 
 import Array
 import Combine exposing (..)
-import Lia.Markdown.Code.Highlight2Ace exposing (highlight2ace)
 import Lia.Markdown.Code.Types exposing (Code(..), File, Snippet, noLog)
 import Lia.Markdown.Inline.Parser exposing (javascript)
 import Lia.Markdown.Macro.Parser exposing (macro)
@@ -41,7 +40,7 @@ header : Parser State String
 header =
     spaces
         |> keep (regex "\\w*")
-        |> map highlight2ace
+        |> map String.toLower
 
 
 title : Parser State ( Bool, String )
