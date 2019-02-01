@@ -1,11 +1,11 @@
 'use strict';
 
-import { Elm } from "../elm/App.elm";
-import { LiaDB } from "./liascript/database";
-import { LiaStorage } from "./liascript/storage";
-import { LiaEvents, lia_execute_event, lia_eval_event } from "./liascript/events";
-import { SETTINGS, initSettings } from "./liascript/settings";
-import { storePersitent, loadPersistent } from "./liascript/persistent";
+import { Elm } from "../../elm/App.elm";
+import { LiaDB } from "./database";
+import { LiaStorage } from "./storage";
+import { LiaEvents, lia_execute_event, lia_eval_event } from "./events";
+import { SETTINGS, initSettings } from "./settings";
+import { storePersitent, loadPersistent } from "./persistent";
 
 function liaLog (string) {
     //if(window.debug__)
