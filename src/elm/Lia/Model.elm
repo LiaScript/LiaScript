@@ -27,7 +27,7 @@ type alias Model =
     , section_active : Int
     , definition : Definition
     , index_model : Index.Model
-    , javascript : List String
+    , ressource : List String
     , to_do : List Event
     , translation : Translations.Lang
     , ready : Bool
@@ -66,7 +66,7 @@ init mode url readme origin slide_number =
                     0
     , definition = Definition.default url
     , index_model = Index.init
-    , javascript = []
+    , ressource = []
     , to_do = []
     , translation = Translations.En
     , ready = False

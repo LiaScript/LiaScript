@@ -19,6 +19,7 @@ type alias Definition =
     , comment : String
     , scripts : List String
     , links : List String
+    , templates : List String
     , base : String
     , translation : Dict String String
     , macro : Dict String String
@@ -41,6 +42,7 @@ default base =
     , comment = ""
     , scripts = []
     , links = []
+    , templates = []
     , base = base
     , translation = Dict.empty
     , macro = Dict.empty

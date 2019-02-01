@@ -27,48 +27,31 @@ definition =
             let
                 list =
                     choice
-                        [ string "author:"
-                            |> keep (ending |> andThen (\x -> set (\def -> { def | author = x })))
-                        , string "base:"
-                            |> keep (ending |> andThen (\x -> set (\def -> { def | base = x })))
-                        , string "comment:"
-                            |> keep (ending |> andThen (\x -> set (\def -> { def | comment = string_replace ( "\n", " " ) x })))
-                        , string "date:"
-                            |> keep (ending |> andThen (\x -> set (\def -> { def | date = x })))
-                        , string "email:"
-                            |> keep (ending |> andThen (\x -> set (\def -> { def | email = x })))
-                        , string "language:"
-                            |> keep (ending |> andThen (\x -> set (\def -> { def | language = x })))
-                        , string "logo:"
-                            |> keep (ending |> andThen (\x -> set (\def -> { def | logo = x })))
-                        , string "narrator:"
-                            |> keep (ending |> andThen (\x -> set (\def -> { def | narrator = x })))
-                        , string "script:"
-                            |> keep (ending |> andThen (\x -> set (\def -> { def | scripts = append_to x def.base def.scripts })))
-                        , string "link:"
-                            |> keep (ending |> andThen (\x -> set (\def -> { def | links = append_to x def.base def.links })))
+                        [ store "author:" (\x d -> { d | author = x })
+                        , store "base:" (\x d -> { d | base = x })
+                        , store "comment:" (\x d -> { d | comment = string_replace ( "\n", " " ) x })
+                        , store "date:" (\x d -> { d | date = x })
+                        , store "email:" (\x d -> { d | email = x })
+                        , store "language:" (\x d -> { d | language = x })
+                        , store "logo:" (\x d -> { d | logo = x })
+                        , store "narrator:" (\x d -> { d | narrator = x })
+                        , store "script:" (\x d -> { d | scripts = append_to x d.base d.scripts })
+                        , store "template:" (\x d -> { d | templates = append_to x d.base d.templates })
+                        , store "link:" (\x d -> { d | links = append_to x d.base d.links })
                         , string "translation:"
                             |> keep (ending |> andThen (\x -> set (add_translation x)))
-                        , string "version:"
-                            |> keep (ending |> andThen (\x -> set (\def -> { def | version = x })))
-                        , string "debug:"
-                            |> keep
-                                (ending
-                                    |> andThen
-                                        (\x ->
-                                            set
-                                                (\def ->
-                                                    { def
-                                                        | debug =
-                                                            if x == "true" then
-                                                                True
+                        , store "version:" (\x d -> { d | version = x })
+                        , store "debug:"
+                            (\x d ->
+                                { d
+                                    | debug =
+                                        if x == "true" then
+                                            True
 
-                                                            else
-                                                                False
-                                                    }
-                                                )
-                                        )
-                                )
+                                        else
+                                            False
+                                }
+                            )
                         , regex "@onload[\t ]*\\n"
                             |> keep (stringTill (string "\n@end"))
                             |> andThen (\x -> set (\def -> { def | onload = String.trim x }))
@@ -90,6 +73,11 @@ definition =
                 |> ignore whitespace
                 |> comment
                 |> skip
+
+
+store : String -> (String -> Definition -> Definition) -> Parser State ()
+store str fn =
+    string str |> keep (ending |> andThen (fn >> set))
 
 
 ending : Parser State String

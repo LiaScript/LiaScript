@@ -1,6 +1,7 @@
 module Lia.Script exposing
     ( Model
     , Msg
+    , add_template
     , get_title
     , init_presentation
     , init_slides
@@ -16,8 +17,10 @@ module Lia.Script exposing
     )
 
 import Array
+import Dict
 import Html exposing (Html)
 import Json.Encode as JE
+import Lia.Definition.Types exposing (Definition)
 import Lia.Event exposing (Event)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Model exposing (load_src)
@@ -42,19 +45,51 @@ load_slide idx model =
     Lia.Update.update (Load idx) model
 
 
-set_script : Model -> String -> Model
+add_template : Model -> String -> Model
+add_template model template =
+    case Parser.parse_defintion model.url template of
+        Ok ( definition, _ ) ->
+            add_todos definition model
+
+        Err info ->
+            Debug.log info model
+
+
+add_todos : Definition -> Model -> Model
+add_todos definition model =
+    let
+        def =
+            model.definition
+
+        ( res1, links ) =
+            load_src "link" model.ressource definition.links
+
+        ( res2, scripts ) =
+            load_src "script" res1 definition.scripts
+    in
+    { model
+        | definition =
+            { def
+                | macro =
+                    Dict.toList definition.macro
+                        |> List.append (Dict.toList def.macro)
+                        |> Dict.fromList
+            }
+        , ressource = res2
+        , to_do =
+            model.to_do
+                |> List.append links
+                |> List.append scripts
+    }
+
+
+set_script : Model -> String -> ( Model, List String )
 set_script model script =
-    case script |> Parser.parse_defintion model.url of
+    case Parser.parse_defintion model.url script of
         Ok ( definition, code ) ->
             case Parser.parse_titles definition code of
                 Ok title_sections ->
                     let
-                        ( _, link_logs ) =
-                            load_src "link" [] definition.links
-
-                        ( javascript, js_logs ) =
-                            load_src "script" [] definition.scripts
-
                         sections =
                             title_sections
                                 |> Array.fromList
@@ -67,33 +102,34 @@ set_script model script =
                             else
                                 0
                     in
-                    { model
-                        | definition = { definition | scripts = [], onload = "" }
+                    ( { model
+                        | definition =
+                            { definition
+                                | scripts = []
+                                , links = []
+                                , templates = []
+                            }
                         , sections = sections
                         , section_active = section_active
-                        , javascript = javascript
                         , translation = Translations.getLnFromCode definition.language
                         , to_do =
-                            js_logs
-                                |> List.append link_logs
-                                |> (::)
-                                    (Event "init"
-                                        section_active
-                                     <|
-                                        JE.list JE.string
-                                            [ get_title sections
-                                            , model.readme
-                                            , definition.onload
-                                            ]
-                                    )
-                                |> List.reverse
-                    }
+                            [ [ get_title sections
+                              , model.readme
+                              , definition.onload
+                              ]
+                                |> JE.list JE.string
+                                |> Event "init" section_active
+                            ]
+                      }
+                        |> add_todos { definition | onload = "" }
+                    , definition.templates
+                    )
 
                 Err msg ->
-                    { model | error = Just msg }
+                    ( { model | error = Just msg }, [] )
 
         Err msg ->
-            { model | error = Just msg }
+            ( { model | error = Just msg }, [] )
 
 
 get_title : Sections -> String

@@ -51,6 +51,7 @@ type alias Model =
     , url : Url.Url
     , state : State
     , lia : Lia.Script.Model
+    , templates : Int
     }
 
 
@@ -78,22 +79,24 @@ init flags url key =
     in
     case ( url.query, flags.course, flags.script ) of
         ( Just query, _, _ ) ->
-            ( Model key url Loading (Lia.Script.init_textbook (get_base query) query "" slide)
-            , get_course query
+            ( Model key url Loading (Lia.Script.init_textbook (get_base query) query "" slide) 0
+            , download Load_ReadMe_Result query
             )
 
         ( _, Just query, _ ) ->
-            ( Model key { url | query = Just query } Loading (Lia.Script.init_textbook (get_base query) query "" slide)
-            , get_course query
+            ( Model key { url | query = Just query } Loading (Lia.Script.init_textbook (get_base query) query "" slide) 0
+            , download Load_ReadMe_Result query
             )
 
         ( _, _, Just script ) ->
-            ( Model key url Parsing (Lia.Script.init_textbook "" script "" slide)
+            ( Model key url Parsing (Lia.Script.init_textbook "" script "" slide) 0
             , Cmd.none
             )
 
         _ ->
-            ( Model key url Waiting (Lia.Script.init_textbook "" "" "" slide), Cmd.none )
+            ( Model key url Waiting (Lia.Script.init_textbook "" "" "" slide) 0
+            , Cmd.none
+            )
 
 
 get_base : String -> String
@@ -113,11 +116,13 @@ get_base url =
 
 type Msg
     = LiaScript Lia.Script.Msg
+    | LiaStart
     | LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
     | Input String
-    | Download
-    | DownloadResult (Result Http.Error String)
+    | Load
+    | Load_ReadMe_Result (Result Http.Error String)
+    | Load_Template_Result (Result Http.Error String)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -129,6 +134,15 @@ update msg model =
                     Lia.Script.update childMsg model.lia
             in
             ( { model | lia = lia }, Cmd.map LiaScript cmd )
+
+        LiaStart ->
+            let
+                ( parsed, cmd ) =
+                    Lia.Script.load_slide model.lia.section_active model.lia
+            in
+            ( { model | state = Running, lia = parsed }
+            , Cmd.map LiaScript cmd
+            )
 
         LinkClicked urlRequest ->
             case urlRequest of
@@ -159,49 +173,73 @@ update msg model =
             , Cmd.none
             )
 
-        Download ->
+        Load ->
             ( { model | state = Loading }
-            , get_course model.lia.readme
+            , download Load_ReadMe_Result model.lia.readme
             )
 
-        DownloadResult (Ok readme) ->
+        Load_ReadMe_Result (Ok readme) ->
+            case readme |> Lia.Script.set_script model.lia of
+                ( lia, [] ) ->
+                    update LiaStart { model | lia = lia }
+
+                ( lia, templates ) ->
+                    ( { model
+                        | state = Loading
+                        , lia = lia
+                        , templates = List.length templates
+                      }
+                    , templates
+                        |> List.map (download Load_Template_Result)
+                        |> Cmd.batch
+                    )
+
+        Load_ReadMe_Result (Err info) ->
+            ( { model | state = Error <| parse_error info }, Cmd.none )
+
+        Load_Template_Result (Ok template) ->
             let
-                ( lia, cmd ) =
-                    readme
-                        |> Lia.Script.set_script model.lia
-                        |> Lia.Script.load_slide model.lia.section_active
+                lia =
+                    Lia.Script.add_template model.lia template
             in
-            ( { model | state = Running, lia = lia }
-            , Cmd.map LiaScript cmd
-            )
+            if model.templates == 1 then
+                update LiaStart { model | lia = lia, templates = 0 }
 
-        DownloadResult (Err error) ->
-            let
-                info =
-                    case error of
-                        Http.BadUrl url ->
-                            "Bad Url " ++ url
+            else
+                ( { model | templates = model.templates - 1 }, Cmd.none )
 
-                        Http.Timeout ->
-                            "Network timeout"
-
-                        Http.BadStatus int ->
-                            "Bad status " ++ String.fromInt int
-
-                        Http.NetworkError ->
-                            "Network error"
-
-                        Http.BadBody body ->
-                            "Bad body " ++ body
-            in
-            ( { model | state = Error info }, Cmd.none )
+        Load_Template_Result (Err info) ->
+            ( { model | state = Error <| parse_error info }, Cmd.none )
 
 
-get_course : String -> Cmd Msg
-get_course url =
+parse_error : Http.Error -> String
+parse_error msg =
+    case msg of
+        Http.BadUrl url ->
+            "Bad Url " ++ url
+
+        Http.Timeout ->
+            "Network timeout"
+
+        Http.BadStatus int ->
+            "Bad status " ++ String.fromInt int
+
+        Http.NetworkError ->
+            "Network error"
+
+        Http.BadBody body ->
+            "Bad body " ++ body
+
+
+
+--download : Msg -> String -> Cmd Msg
+
+
+download : (Result Http.Error String -> Msg) -> String -> Cmd Msg
+download msg url =
     Http.get
         { url = url
-        , expect = Http.expectString DownloadResult
+        , expect = Http.expectString msg
         }
 
 
@@ -283,7 +321,7 @@ view_waiting url =
         , Html.br [] []
         , Html.br [] []
         , Html.input [ Attr.placeholder "enter course URL", Attr.value url, onInput Input ] []
-        , Html.button [ Attr.class "lia-btn", onClick Download ] [ Html.text "load URL" ]
+        , Html.button [ Attr.class "lia-btn", onClick Load ] [ Html.text "load URL" ]
         , Html.br [] []
         , Html.br [] []
         , Html.br [] []

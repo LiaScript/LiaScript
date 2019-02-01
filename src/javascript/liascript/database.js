@@ -71,7 +71,7 @@ class LiaDB {
         }
 
 
-        liaLog(`liaDB: event(store), table(${event.topic}), id(${event.section}), data(${event.message})`)
+        lia.log(`liaDB: event(store), table(${event.topic}), id(${event.section}), data(${event.message})`)
         if (!this.indexedDB) return;
 
         let request = this.indexedDB.open(this.uidDB, this.versionDB);
