@@ -1,7 +1,7 @@
 "use strict";
 
 import ace from 'ace-builds/src-noconflict/ace';
-import get_mode from './ace-themes';
+import get_mode from './ace-modes';
 
 const debounce = (func) => {
   let token
