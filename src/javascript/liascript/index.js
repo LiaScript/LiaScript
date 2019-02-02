@@ -8,7 +8,6 @@ import { SETTINGS, initSettings } from "./settings";
 import { storePersitent, loadPersistent } from "./persistent";
 import { lia } from "./logger";
 
-
 function scrollIntoView (id, delay) {
     setTimeout( function (e) {
         try {

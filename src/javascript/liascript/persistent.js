@@ -1,6 +1,5 @@
 "use strict";
 
-
 var bag = document.createElement("div");
 
 function storePersitent() {
