@@ -6,7 +6,6 @@ import Lia.Markdown.Inline.Parser exposing (comment)
 import Lia.Markdown.Macro.Parser as Macro
 import Lia.Parser.Helper exposing (newline, stringTill)
 import Lia.Parser.State exposing (State, ident_skip, identation, identation_append, identation_pop)
-import Lia.Utils exposing (string_replace)
 
 
 parse : Parser State ()
@@ -29,7 +28,7 @@ definition =
                     choice
                         [ store "author:" (\x d -> { d | author = x })
                         , store "base:" (\x d -> { d | base = x })
-                        , store "comment:" (\x d -> { d | comment = string_replace ( "\n", " " ) x })
+                        , store "comment:" (\x d -> { d | comment = String.replace "\n" " " x })
                         , store "date:" (\x d -> { d | date = x })
                         , store "email:" (\x d -> { d | email = x })
                         , store "language:" (\x d -> { d | language = x })

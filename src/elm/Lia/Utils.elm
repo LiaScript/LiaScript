@@ -1,11 +1,12 @@
-module Lia.Utils exposing (string_replace, toJSstring)
+module Lia.Utils exposing (toJSstring)
 
-
-string_replace : ( String, String ) -> String -> String
-string_replace ( search, replace ) string =
-    string
-        |> String.split search
-        |> String.join replace
+{-
+   string_replace : ( String, String ) -> String -> String
+   string_replace ( search, replace ) string =
+       string
+           |> String.split search
+           |> String.join replace
+-}
 
 
 toJSstring : String -> String

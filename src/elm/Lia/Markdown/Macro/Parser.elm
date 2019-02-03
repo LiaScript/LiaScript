@@ -5,7 +5,7 @@ import Dict
 import Lia.Definition.Types exposing (Definition)
 import Lia.Parser.Helper exposing (c_frame, spaces)
 import Lia.Parser.State exposing (State, identation)
-import Lia.Utils exposing (string_replace, toJSstring)
+import Lia.Utils exposing (toJSstring)
 
 
 pattern : Parser s String
@@ -140,7 +140,7 @@ eval_parameter param ( state, i, code ) =
         ( new_state, new_param ) =
             macro_parse state param
     in
-    ( new_state, i + 1, string_replace ( "@" ++ String.fromInt i, new_param ) code )
+    ( new_state, i + 1, String.replace ("@" ++ String.fromInt i) new_param code )
 
 
 get : String -> Definition -> Maybe String
