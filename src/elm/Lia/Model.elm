@@ -27,7 +27,7 @@ type alias Model =
     , section_active : Int
     , definition : Definition
     , index_model : Index.Model
-    , ressource : List String
+    , resource : List String
     , to_do : List Event
     , translation : Translations.Lang
     , ready : Bool
@@ -66,7 +66,7 @@ init mode url readme origin slide_number =
                     0
     , definition = Definition.default url
     , index_model = Index.init
-    , ressource = []
+    , resource = []
     , to_do = []
     , translation = Translations.En
     , ready = False
@@ -83,5 +83,5 @@ load_src tag old new =
             List.filter member new
     in
     ( List.append old to_load
-    , List.map (\url -> Event "ressource" 0 <| JE.list JE.string [ tag, url ]) to_load
+    , List.map (\url -> Event "resource" 0 <| JE.list JE.string [ tag, url ]) to_load
     )

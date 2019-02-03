@@ -243,16 +243,16 @@ generate model =
                                     , error = Just msg
                                 }
 
-                ( ressource, logs ) =
+                ( resource, logs ) =
                     section
                         |> .definition
                         |> Maybe.map .scripts
                         |> Maybe.withDefault []
-                        |> load_src "script" model.ressource
+                        |> load_src "script" model.resource
             in
             set_active_section
                 { model
-                    | ressource = ressource
+                    | resource = resource
                     , to_do =
                         model.to_do
                             |> List.append logs

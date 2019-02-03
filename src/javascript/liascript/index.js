@@ -197,11 +197,11 @@ class LiaScript {
                   }
                   break;
                 }
-                case "ressource" : {
+                case "resource" : {
                     let elem = event.message[0];
                     let url  = event.message[1];
 
-                    lia.log("loading ressource => ", elem, ":", url);
+                    lia.log("loading resource => ", elem, ":", url);
 
                     try {
                         var tag = document.createElement(elem);
@@ -216,7 +216,7 @@ class LiaScript {
                         document.head.appendChild(tag);
 
                     } catch (e) {
-                        lia.error("loading ressource => ", e.msg);
+                        lia.error("loading resource => ", e.msg);
                     }
                     break;
                 }

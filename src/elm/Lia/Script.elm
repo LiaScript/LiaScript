@@ -62,7 +62,7 @@ add_todos definition model =
             model.definition
 
         ( res1, links ) =
-            load_src "link" model.ressource definition.links
+            load_src "link" model.resource definition.links
 
         ( res2, scripts ) =
             load_src "script" res1 definition.scripts
@@ -75,7 +75,7 @@ add_todos definition model =
                         |> List.append (Dict.toList def.macro)
                         |> Dict.fromList
             }
-        , ressource = res2
+        , resource = res2
         , to_do =
             List.reverse links
                 |> List.append (List.reverse scripts)
