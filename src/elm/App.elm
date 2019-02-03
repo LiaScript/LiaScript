@@ -179,7 +179,11 @@ update msg model =
             )
 
         Load_ReadMe_Result (Ok readme) ->
-            case readme |> Lia.Script.set_script model.lia of
+            case
+                readme
+                    |> String.replace "\u{000D}" ""
+                    |> Lia.Script.set_script model.lia
+            of
                 ( lia, [] ) ->
                     update LiaStart { model | lia = lia }
 
@@ -200,7 +204,9 @@ update msg model =
         Load_Template_Result (Ok template) ->
             let
                 lia =
-                    Lia.Script.add_template model.lia template
+                    template
+                        |> String.replace "\u{000D}" ""
+                        |> Lia.Script.add_template model.lia
             in
             if model.templates == 1 then
                 update LiaStart { model | lia = lia, templates = 0 }
