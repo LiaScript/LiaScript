@@ -162,7 +162,7 @@ get name def =
             Just (String.fromInt def.section)
 
         "@uid" ->
-            Just (String.fromInt def.section ++ "." ++ String.fromInt def.uid)
+            Just (String.fromInt def.section ++ "_" ++ String.fromInt def.uid)
 
         _ ->
             Dict.get name def.macro

@@ -1,7 +1,7 @@
 module Lia.Definition.Parser exposing (parse)
 
 import Combine exposing (..)
-import Lia.Definition.Types exposing (Definition, add_translation)
+import Lia.Definition.Types exposing (Definition, Resource(..), add_translation)
 import Lia.Markdown.Inline.Parser exposing (comment)
 import Lia.Markdown.Macro.Parser as Macro
 import Lia.Parser.Helper exposing (newline, stringTill)
@@ -35,9 +35,9 @@ definition =
                         , store "language:" (\x d -> { d | language = x })
                         , store "logo:" (\x d -> { d | logo = x })
                         , store "narrator:" (\x d -> { d | narrator = x })
-                        , store "script:" (\x d -> { d | scripts = append_to x d.base d.scripts })
-                        , store "template:" (\x d -> { d | templates = append_to x d.base d.templates })
-                        , store "link:" (\x d -> { d | links = append_to x d.base d.links })
+                        , store "script:" (addToResources Script)
+                        , store "template:" (\x d -> { d | borrowed = append identity x d.base d.borrowed })
+                        , store "link:" (addToResources Link)
                         , string "translation:"
                             |> keep (ending |> andThen (\x -> set (add_translation x)))
                         , store "version:" (\x d -> { d | version = x })
@@ -103,9 +103,14 @@ set fct =
     modifyState (\s -> { s | defines = fct s.defines })
 
 
-append_to : String -> String -> List String -> List String
-append_to x basis list =
-    x
+append : (String -> a) -> String -> String -> List a -> List a
+append to base urls list =
+    urls
         |> String.split "\n"
-        |> List.map (toURL basis)
+        |> List.map (toURL base >> to)
         |> List.append list
+
+
+addToResources : (String -> Resource) -> String -> Definition -> Definition
+addToResources to urls def =
+    { def | resources = append to def.base urls def.resources }

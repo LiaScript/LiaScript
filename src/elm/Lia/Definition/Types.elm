@@ -1,11 +1,17 @@
 module Lia.Definition.Types exposing
     ( Definition
+    , Resource(..)
     , add_translation
     , default
     , get_translations
     )
 
 import Dict exposing (Dict)
+
+
+type Resource
+    = Link String
+    | Script String
 
 
 type alias Definition =
@@ -17,12 +23,11 @@ type alias Definition =
     , narrator : String
     , version : String
     , comment : String
-    , scripts : List String
-    , links : List String
-    , templates : List String
+    , resources : List Resource
     , base : String
     , translation : Dict String String
     , macro : Dict String String
+    , borrowed : List String
     , section : Int
     , uid : Int
     , debug : Bool
@@ -40,12 +45,11 @@ default base =
     , narrator = "US English Male"
     , version = ""
     , comment = ""
-    , scripts = []
-    , links = []
-    , templates = []
+    , resources = []
     , base = base
     , translation = Dict.empty
     , macro = Dict.empty
+    , borrowed = []
     , section = -1
     , uid = -1
     , debug = False

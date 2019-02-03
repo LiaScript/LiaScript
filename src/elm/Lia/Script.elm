@@ -61,11 +61,8 @@ add_todos definition model =
         def =
             model.definition
 
-        ( res1, links ) =
-            load_src "link" model.resource definition.links
-
-        ( res2, scripts ) =
-            load_src "script" res1 definition.scripts
+        ( res, events ) =
+            load_src model.resource definition.resources
     in
     { model
         | definition =
@@ -75,10 +72,10 @@ add_todos definition model =
                         |> List.append (Dict.toList def.macro)
                         |> Dict.fromList
             }
-        , resource = res2
+        , resource = res
         , to_do =
-            List.reverse links
-                |> List.append (List.reverse scripts)
+            events
+                |> List.reverse
                 |> List.append model.to_do
     }
 
@@ -103,12 +100,7 @@ set_script model script =
                                 0
                     in
                     ( { model
-                        | definition =
-                            { definition
-                                | scripts = []
-                                , links = []
-                                , templates = []
-                            }
+                        | definition = { definition | resources = [], borrowed = [] }
                         , sections = sections
                         , section_active = section_active
                         , translation = Translations.getLnFromCode definition.language
@@ -122,7 +114,7 @@ set_script model script =
                             ]
                       }
                         |> add_todos { definition | onload = "" }
-                    , definition.templates
+                    , definition.borrowed
                     )
 
                 Err msg ->

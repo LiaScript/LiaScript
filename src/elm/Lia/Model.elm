@@ -8,7 +8,7 @@ module Lia.Model exposing
 import Array
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Definition.Types as Definition exposing (Definition)
+import Lia.Definition.Types as Definition exposing (Definition, Resource(..))
 import Lia.Event exposing (Event)
 import Lia.Index.Model as Index
 import Lia.Settings.Model as Settings
@@ -27,7 +27,7 @@ type alias Model =
     , section_active : Int
     , definition : Definition
     , index_model : Index.Model
-    , resource : List String
+    , resource : List Resource
     , to_do : List Event
     , translation : Translations.Lang
     , ready : Bool
@@ -73,8 +73,8 @@ init mode url readme origin slide_number =
     }
 
 
-load_src : String -> List String -> List String -> ( List String, List Event )
-load_src tag old new =
+load_src : List Resource -> List Resource -> ( List Resource, List Event )
+load_src old new =
     let
         member x =
             not (List.member x old)
@@ -83,5 +83,16 @@ load_src tag old new =
             List.filter member new
     in
     ( List.append old to_load
-    , List.map (\url -> Event "resource" 0 <| JE.list JE.string [ tag, url ]) to_load
+    , List.map
+        (\res ->
+            Event "resource" 0 <|
+                JE.list JE.string <|
+                    case res of
+                        Script url ->
+                            [ "script", url ]
+
+                        Link url ->
+                            [ "link", url ]
+        )
+        to_load
     )

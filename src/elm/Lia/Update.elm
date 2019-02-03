@@ -246,9 +246,9 @@ generate model =
                 ( resource, logs ) =
                     section
                         |> .definition
-                        |> Maybe.map .scripts
+                        |> Maybe.map .resources
                         |> Maybe.withDefault []
-                        |> load_src "script" model.resource
+                        |> load_src model.resource
             in
             set_active_section
                 { model

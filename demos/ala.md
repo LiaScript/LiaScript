@@ -12,49 +12,7 @@ narrator: US English Female
 comment:  Try to write a short comment about
           your course, multiline is also okay.
 
-script:   https://cdnjs.cloudflare.com/ajax/libs/alasql/0.4.11/alasql-worker.min.js
-          https://cdnjs.cloudflare.com/ajax/libs/alasql/0.4.11/alasql.min.js
-
-
-script:  https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.6.1/papaparse.min.js
-
-@eval
-<script>
-try {
-  JSON.stringify(alasql(`@input`), null, 3);
-} catch(e) {
-  let error = new LiaError(e.message, 1);
-  try {
-    let log = e.message.match(/.*line (\d):.*\n.*\n.*\n(.*)/);
-    error.add_detail(0, e.name+": "+log[2], "error", log[1] -1 , 0);
-  } catch(e) {}
-  throw error ;
-}
-</script>
-@end
-
-
-@eval_with_csv
-<script>
-let data = Papa.parse(`@input(1)`, {header: true});
-
-let error = "";
-if(data.errors.length != 0) {
-    error = JSON.stringify(data.errors, null, 3)+"\n";
-}
-
-try {
-  error += JSON.stringify(alasql(`@input`, [data.data]), null, 3);
-} catch(e) {
-  let error = new LiaError(e.message, 1);
-  try {
-    let log = e.message.match(/.*line (\d):.*\n.*\n.*\n(.*)/);
-    error.add_detail(0, e.name+": "+log[2], "error", log[1] -1 , 0);
-  } catch(e) {}
-  throw error ;
-}
-</script>
-@end
+template: ala.lia
 
 -->
 
