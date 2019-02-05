@@ -1,11 +1,35 @@
 module Lia.Definition.Parser exposing (parse)
 
-import Combine exposing (..)
+import Combine
+    exposing
+        ( Parser
+        , andMap
+        , andThen
+        , choice
+        , ignore
+        , keep
+        , lazy
+        , many1
+        , map
+        , maybe
+        , modifyState
+        , regex
+        , skip
+        , string
+        , whitespace
+        )
 import Lia.Definition.Types exposing (Definition, Resource(..), add_translation)
 import Lia.Markdown.Inline.Parser exposing (comment)
 import Lia.Markdown.Macro.Parser as Macro
 import Lia.Parser.Helper exposing (newline, stringTill)
-import Lia.Parser.State exposing (State, ident_skip, identation, identation_append, identation_pop)
+import Lia.Parser.State
+    exposing
+        ( State
+        , ident_skip
+        , identation
+        , identation_append
+        , identation_pop
+        )
 
 
 parse : Parser State ()
@@ -37,8 +61,7 @@ definition =
                         , store "script:" (addToResources Script)
                         , store "template:" (\x d -> { d | borrowed = append identity x d.base d.borrowed })
                         , store "link:" (addToResources Link)
-                        , string "translation:"
-                            |> keep (ending |> andThen (\x -> set (add_translation x)))
+                        , string "translation:" |> keep (ending |> andThen (\x -> set (add_translation x)))
                         , store "version:" (\x d -> { d | version = x })
                         , store "debug:"
                             (\x d ->

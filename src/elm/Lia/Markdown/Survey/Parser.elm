@@ -1,7 +1,25 @@
 module Lia.Markdown.Survey.Parser exposing (parse)
 
 import Array
-import Combine exposing (..)
+import Combine
+    exposing
+        ( Parser
+        , andMap
+        , andThen
+        , brackets
+        , choice
+        , ignore
+        , keep
+        , many1
+        , map
+        , modifyState
+        , or
+        , parens
+        , regex
+        , string
+        , succeed
+        , withState
+        )
 import Dict
 import Lia.Markdown.Inline.Parser exposing (line)
 import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)

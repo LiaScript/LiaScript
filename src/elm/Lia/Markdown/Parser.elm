@@ -1,6 +1,29 @@
 module Lia.Markdown.Parser exposing (run)
 
-import Combine exposing (..)
+import Combine
+    exposing
+        ( Parser
+        , andMap
+        , andThen
+        , choice
+        , ignore
+        , keep
+        , lazy
+        , many
+        , many1
+        , manyTill
+        , map
+        , maybe
+        , modifyState
+        , onsuccess
+        , regex
+        , sepEndBy
+        , skip
+        , string
+        , succeed
+        , whitespace
+        , withState
+        )
 import Dict
 import Lia.Markdown.Chart.Parser as Chart
 import Lia.Markdown.Code.Parser as Code
@@ -82,7 +105,7 @@ blocks =
 to_comment : ( Annotation, ( Int, Int ) ) -> Parser State Markdown
 to_comment ( attr, ( id1, id2 ) ) =
     (case attr of
-        Just a ->
+        Just _ ->
             modifyState
                 (\s ->
                     let

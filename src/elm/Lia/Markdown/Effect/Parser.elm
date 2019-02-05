@@ -1,7 +1,25 @@
 module Lia.Markdown.Effect.Parser exposing (comment, hidden_comment, inline, markdown)
 
 import Array
-import Combine exposing (..)
+import Combine
+    exposing
+        ( Parser
+        , andMap
+        , andThen
+        , ignore
+        , keep
+        , manyTill
+        , map
+        , maybe
+        , modifyState
+        , optional
+        , or
+        , regex
+        , skip
+        , string
+        , succeed
+        , withState
+        )
 import Combine.Char exposing (anyChar)
 import Combine.Num exposing (int)
 import Dict

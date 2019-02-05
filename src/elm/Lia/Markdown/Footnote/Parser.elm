@@ -1,6 +1,18 @@
 module Lia.Markdown.Footnote.Parser exposing (block, inline)
 
-import Combine exposing (..)
+import Combine
+    exposing
+        ( Parser
+        , andMap
+        , andThen
+        , ignore
+        , keep
+        , map
+        , maybe
+        , modifyState
+        , string
+        , succeed
+        )
 import Lia.Markdown.Footnote.Model as Model
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..))
 import Lia.Markdown.Types exposing (Markdown(..))

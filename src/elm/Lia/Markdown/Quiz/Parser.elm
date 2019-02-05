@@ -1,7 +1,25 @@
 module Lia.Markdown.Quiz.Parser exposing (parse)
 
 import Array
-import Combine exposing (..)
+import Combine
+    exposing
+        ( Parser
+        , andMap
+        , andThen
+        , choice
+        , ignore
+        , keep
+        , many
+        , many1
+        , map
+        , maybe
+        , modifyState
+        , onsuccess
+        , regex
+        , string
+        , succeed
+        , withState
+        )
 import Lia.Markdown.Inline.Parser exposing (javascript, line)
 import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
 import Lia.Markdown.Macro.Parser exposing (macro)

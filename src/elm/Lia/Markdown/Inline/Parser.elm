@@ -10,7 +10,33 @@ module Lia.Markdown.Inline.Parser exposing
     , line
     )
 
-import Combine exposing (..)
+import Combine
+    exposing
+        ( Parser
+        , andMap
+        , andThen
+        , brackets
+        , choice
+        , fail
+        , ignore
+        , keep
+        , lazy
+        , many
+        , many1
+        , manyTill
+        , map
+        , maybe
+        , modifyState
+        , onsuccess
+        , optional
+        , or
+        , regex
+        , skip
+        , string
+        , succeed
+        , whitespace
+        , withState
+        )
 import Combine.Char exposing (anyChar)
 import Dict exposing (Dict)
 import Html.Parser

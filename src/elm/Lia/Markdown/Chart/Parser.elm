@@ -1,6 +1,18 @@
 module Lia.Markdown.Chart.Parser exposing (parse)
 
-import Combine exposing (..)
+import Combine
+    exposing
+        ( Parser
+        , andMap
+        , ignore
+        , keep
+        , many1
+        , map
+        , optional
+        , or
+        , regex
+        , string
+        )
 import Combine.Num exposing (float, int)
 import Dict exposing (Dict)
 import Lia.Markdown.Chart.Types exposing (Chart, Diagram(..), Point)

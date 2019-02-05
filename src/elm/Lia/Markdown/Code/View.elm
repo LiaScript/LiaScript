@@ -4,14 +4,13 @@ module Lia.Markdown.Code.View exposing (view)
 
 import Array
 import Html exposing (Html)
-import Html.Attributes as Attr exposing (attribute, lang)
-import Html.Events exposing (onClick, onInput)
-import Json.Decode as JD
+import Html.Attributes as Attr exposing (attribute)
+import Html.Events exposing (onClick)
 import Json.Encode as JE
 import Lia.Event as Event
 import Lia.Markdown.Code.Editor as Editor
 import Lia.Markdown.Code.Terminal as Terminal
-import Lia.Markdown.Code.Types exposing (..)
+import Lia.Markdown.Code.Types exposing (Code(..), File, Snippet, Vector)
 import Lia.Markdown.Code.Update exposing (Msg(..))
 import Lia.Markdown.Inline.Types exposing (Annotation)
 import Lia.Markdown.Inline.View exposing (annotation, attributes)

@@ -1,6 +1,33 @@
 module Lia.Markdown.Macro.Parser exposing (add, get, macro, pattern)
 
-import Combine exposing (..)
+import Combine
+    exposing
+        ( Parser
+        , andMap
+        , andThen
+        , choice
+        , fail
+        , ignore
+        , keep
+        , many1
+        , manyTill
+        , map
+        , maybe
+        , modifyState
+        , modifyStream
+        , onsuccess
+        , optional
+        , or
+        , parens
+        , putState
+        , regex
+        , runParser
+        , sepBy
+        , skip
+        , string
+        , succeed
+        , withState
+        )
 import Dict
 import Lia.Definition.Types exposing (Definition)
 import Lia.Parser.Helper exposing (c_frame, spaces)

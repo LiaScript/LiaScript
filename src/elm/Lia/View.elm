@@ -14,7 +14,6 @@ import Lia.Model exposing (Model)
 import Lia.Settings.Model exposing (Mode(..))
 import Lia.Settings.Update exposing (toggle_sound)
 import Lia.Settings.View as Settings
-import Lia.Types exposing (..)
 import Lia.Update exposing (Msg(..), get_active_section)
 import Translations exposing (..)
 

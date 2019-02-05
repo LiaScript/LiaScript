@@ -1,7 +1,26 @@
 module Lia.Markdown.Code.Parser exposing (parse)
 
 import Array
-import Combine exposing (..)
+import Combine
+    exposing
+        ( Parser
+        , andMap
+        , andThen
+        , choice
+        , ignore
+        , keep
+        , manyTill
+        , map
+        , maybe
+        , modifyState
+        , onsuccess
+        , optional
+        , regex
+        , sepBy1
+        , string
+        , succeed
+        , withState
+        )
 import Lia.Markdown.Code.Types exposing (Code(..), File, Snippet, noLog)
 import Lia.Markdown.Inline.Parser exposing (javascript)
 import Lia.Markdown.Macro.Parser exposing (macro)
