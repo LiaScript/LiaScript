@@ -50,8 +50,8 @@ add_imports model course_url =
         Ok ( definition, _ ) ->
             add_todos definition model
 
-        Err info ->
-            Debug.log info model
+        Err _ ->
+            model
 
 
 add_todos : Definition -> Model -> Model

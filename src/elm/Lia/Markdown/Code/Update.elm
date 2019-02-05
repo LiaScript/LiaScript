@@ -48,7 +48,7 @@ restore json model =
             )
 
         Err msg ->
-            ( model, Debug.log ("Error: restoring code-vector \n" ++ JD.errorToString msg) [] )
+            ( model, [] )
 
 
 update : Msg -> Vector -> ( Vector, List Event )

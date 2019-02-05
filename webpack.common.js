@@ -1,8 +1,12 @@
 const path = require('path');
+
+const elmMinify = require("elm-minify");
+
 const HtmlWebpackPlugin    = require('html-webpack-plugin');
 const CleanWebpackPlugin   = require('clean-webpack-plugin');
 const CopyWebpackPlugin    = require('copy-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+
 
 module.exports = {
   entry: {
@@ -16,6 +20,7 @@ module.exports = {
     publicPath: '/'
   },
   plugins: [
+    new elmMinify.WebpackPlugin(),
     new MiniCssExtractPlugin(),
     new CleanWebpackPlugin(['dist']),
     new CopyWebpackPlugin([
@@ -66,16 +71,14 @@ module.exports = {
           'file-loader'
         ]
       },
-  /*    {
-        test: /\.js$/,
-        loader: 'babel-loader'
-      },*/
       {
         test: /.elm$/,
+        exclude: [/elm-stuff/, /node_modules/],
         use: {
           loader: 'elm-webpack-loader?verbose=true',
           options: {
-            debug: true,
+            //debug: true,
+            optimize: true,
           },
         },
       }

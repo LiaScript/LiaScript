@@ -85,14 +85,12 @@ formatError ms stream =
         padding =
             location.column + separatorOffset + 2
     in
-    Debug.log "ERROR: "
-        ("Parse error around line:\\n\\n"
-            ++ String.fromInt location.line
-            ++ separator
-            ++ location.source
-            ++ "\\n"
-            ++ String.padLeft padding ' ' "^"
-            ++ "\\nI expected one of the following:\\n"
-            ++ expectationSeparator
-            ++ String.join expectationSeparator ms
-        )
+    "Parse error around line:\\n\\n"
+        ++ String.fromInt location.line
+        ++ separator
+        ++ location.source
+        ++ "\\n"
+        ++ String.padLeft padding ' ' "^"
+        ++ "\\nI expected one of the following:\\n"
+        ++ expectationSeparator
+        ++ String.join expectationSeparator ms
