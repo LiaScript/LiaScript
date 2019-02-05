@@ -1,6 +1,7 @@
 module Lia.Definition.Types exposing
     ( Definition
     , Resource(..)
+    , add_macros
     , add_translation
     , default
     , get_translations
@@ -27,7 +28,7 @@ type alias Definition =
     , base : String
     , translation : Dict String String
     , macro : Dict String String
-    , borrowed : List String
+    , imports : List String
     , section : Int
     , uid : Int
     , debug : Bool
@@ -49,7 +50,7 @@ default base =
     , base = base
     , translation = Dict.empty
     , macro = Dict.empty
-    , borrowed = []
+    , imports = []
     , section = -1
     , uid = -1
     , debug = False
@@ -80,3 +81,13 @@ add_translation str def =
 get_translations : Definition -> List ( String, String )
 get_translations def =
     Dict.toList def.translation
+
+
+add_macros : Definition -> Definition -> Definition
+add_macros orig temp =
+    { orig
+        | macro =
+            Dict.toList temp.macro
+                |> List.append (Dict.toList orig.macro)
+                |> Dict.fromList
+    }

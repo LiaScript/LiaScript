@@ -206,7 +206,7 @@ update msg model =
                 lia =
                     template
                         |> String.replace "\u{000D}" ""
-                        |> Lia.Script.add_template model.lia
+                        |> Lia.Script.add_imports model.lia
             in
             if model.templates == 1 then
                 update LiaStart { model | lia = lia, templates = 0 }

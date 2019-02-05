@@ -59,7 +59,7 @@ definition =
                         , store "logo:" (\x d -> { d | logo = x })
                         , store "narrator:" (\x d -> { d | narrator = x })
                         , store "script:" (addToResources Script)
-                        , store "template:" (\x d -> { d | borrowed = append identity x d.base d.borrowed })
+                        , store "import:" (\x d -> { d | imports = append identity x d.base d.imports })
                         , store "link:" (addToResources Link)
                         , string "translation:" |> keep (ending |> andThen (\x -> set (add_translation x)))
                         , store "version:" (\x d -> { d | version = x })

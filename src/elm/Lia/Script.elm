@@ -1,7 +1,7 @@
 module Lia.Script exposing
     ( Model
     , Msg
-    , add_template
+    , add_imports
     , get_title
     , init_presentation
     , init_slides
@@ -17,10 +17,9 @@ module Lia.Script exposing
     )
 
 import Array
-import Dict
 import Html exposing (Html)
 import Json.Encode as JE
-import Lia.Definition.Types exposing (Definition)
+import Lia.Definition.Types exposing (Definition, add_macros)
 import Lia.Event exposing (Event)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Model exposing (load_src)
@@ -45,9 +44,9 @@ load_slide idx model =
     Lia.Update.update (Load idx) model
 
 
-add_template : Model -> String -> Model
-add_template model template =
-    case Parser.parse_defintion model.url template of
+add_imports : Model -> String -> Model
+add_imports model course_url =
+    case Parser.parse_defintion model.url course_url of
         Ok ( definition, _ ) ->
             add_todos definition model
 
@@ -65,13 +64,7 @@ add_todos definition model =
             load_src model.resource definition.resources
     in
     { model
-        | definition =
-            { def
-                | macro =
-                    Dict.toList definition.macro
-                        |> List.append (Dict.toList def.macro)
-                        |> Dict.fromList
-            }
+        | definition = add_macros model.definition definition
         , resource = res
         , to_do =
             events
@@ -100,7 +93,7 @@ set_script model script =
                                 0
                     in
                     ( { model
-                        | definition = { definition | resources = [], borrowed = [] }
+                        | definition = { definition | resources = [], imports = [] }
                         , sections = sections
                         , section_active = section_active
                         , translation = Translations.getLnFromCode definition.language
@@ -114,7 +107,7 @@ set_script model script =
                             ]
                       }
                         |> add_todos { definition | onload = "" }
-                    , definition.borrowed
+                    , definition.imports
                     )
 
                 Err msg ->
