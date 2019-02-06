@@ -599,14 +599,14 @@
       //$bg: map-get($theme, theme);
       $fg: color-contrast($bg);
 
-      border-left: map-get($config, spacing-small) solid $info;
+      border-left: map-get($config, spacing-normal) solid $info;
       background: $bg;
       color: $fg;
       margin: map-get($config, spacing-huge) map-get($config, spacing-normal);
       padding: map-get($config, spacing-large);
 
       //todo add shadow with changeing colors according to dark and light...
-      //border-radius: 5px;
+      border-radius: 5px;
       //box-shadow: 8px 7px 0px #eee;
     }
 
