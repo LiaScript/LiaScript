@@ -20,7 +20,7 @@ customElements.define('code-editor', class extends HTMLElement {
   constructor() {
     super();
 
-    ace.config.set('basePath', '/editor/')
+    ace.config.set('basePath', 'editor/')
 
     this.model = {
       value: null,

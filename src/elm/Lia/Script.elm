@@ -101,6 +101,9 @@ set_script model script =
                             [ [ get_title sections
                               , model.readme
                               , definition.onload
+                              , definition.author
+                              , definition.comment
+                              , definition.logo
                               ]
                                 |> JE.list JE.string
                                 |> Event "init" section_active

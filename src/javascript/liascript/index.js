@@ -68,6 +68,14 @@ function handleEffects(event, elmSend) {
   }
 };
 
+function meta(name, content) {
+  if(content != "") {
+    let meta = document.createElement('meta');
+    meta.name = name;
+    meta.content = content;
+    document.getElementsByTagName('head')[0].appendChild(meta);
+  }
+}
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -232,8 +240,11 @@ class LiaScript {
                     break;
                 }
                 case "init": {
+
+                  let [title, readme, onload, author, comment, logo] = event.message;
+
                     self.db = new LiaDB (
-                      event.message[0], 1, elmSend, self.channel,
+                      readme, 1, elmSend, self.channel,
                       {
                         topic: "code",
                         section: event.section,
@@ -243,9 +254,15 @@ class LiaScript {
                           message: null }
                       });
 
-                    if(event.message[1] != "") {
-                        lia_execute_event( event.message[1], 350, {});
-                    }
+                    if(onload != "")
+                        lia_execute_event( onload, 350, {});
+
+                    meta("author",         author);
+                    meta("og:description", comment);
+                    meta("og:title",       title);
+                    meta("og:type",        "website");
+                    meta("og:url",         "");
+                    meta("og:image",       logo);
 
                     if (!self.channel) {
                         let settings = localStorage.getItem(SETTINGS);
