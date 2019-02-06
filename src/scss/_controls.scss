@@ -594,8 +594,9 @@
     }
 
     .lia-quote {
-      $info: map-get($theme, info);
-      $bg: mix(map-get($theme, background), $info, 80%);
+      $info: map-get($theme, primary);
+      $bg: mix(map-get($theme, background), $info, 90%);
+      //$bg: map-get($theme, theme);
       $fg: color-contrast($bg);
 
       border-left: map-get($config, spacing-small) solid $info;
