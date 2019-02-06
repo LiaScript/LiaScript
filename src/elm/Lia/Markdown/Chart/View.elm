@@ -59,7 +59,7 @@ view attr chart =
                 , ( "display", "inline" )
                 , ( "font-family", "monospace" )
                 ]
-        , interpolation = Interpolation.default
+        , interpolation = Interpolation.monotone
         , intersection = Intersection.default
         , legends = Legends.none
         , events = Events.default
