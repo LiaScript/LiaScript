@@ -153,7 +153,7 @@ html_parse str =
 
 html_block : Parser s Inline
 html_block =
-    regex "<(\\w+)[\\s\\S]*?</\\1>"
+    regex "<((\\w+|-)+)[\\s\\S]*?</\\1>"
         |> andThen html_parse
         |> map HTML
 
