@@ -2,13 +2,25 @@ const path = require('path');
 
 const elmMinify = require("elm-minify");
 
-const HtmlWebpackPlugin    = require('html-webpack-plugin');
-const CleanWebpackPlugin   = require('clean-webpack-plugin');
-const CopyWebpackPlugin    = require('copy-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const HtmlWebpackPlugin       = require('html-webpack-plugin');
+const CleanWebpackPlugin      = require('clean-webpack-plugin');
+const CopyWebpackPlugin       = require('copy-webpack-plugin');
+const MiniCssExtractPlugin    = require('mini-css-extract-plugin');
+const TerserPlugin            = require('terser-webpack-plugin');
+const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 
 
 module.exports = {
+  optimization: {
+    minimizer: [
+      new TerserPlugin({
+        cache: true,
+        parallel: true,
+        sourceMap: false,
+      }),
+      new OptimizeCSSAssetsPlugin({})
+    ]
+  },
   entry: {
     'editor/index':  './src/javascript/webcomponents/ace.js',
     'formula/index': './src/javascript/webcomponents/katex.js',
@@ -46,6 +58,7 @@ module.exports = {
     rules: [
       {
         test: /\.scss$/,
+        exclude: [/elm-stuff/, /node_modules/],
         use: [
           MiniCssExtractPlugin.loader,
           'css-loader?sourceMap=false',
@@ -56,11 +69,13 @@ module.exports = {
         test: /\.css$/,
         use: [
           'style-loader',
+          MiniCssExtractPlugin.loader,
           'css-loader'
         ]
       },
       {
         test: /\.(png|svg|jpg|gif)$/,
+        exclude: [/elm-stuff/, /node_modules/],
         use: [
           'file-loader'
         ]
