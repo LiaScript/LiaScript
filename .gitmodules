@@ -1,0 +1,3 @@
+[submodule "demos/CCourse"]
+	path = demos/CCourse
+	url = https://github.com/liaScript/CCourse
