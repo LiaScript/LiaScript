@@ -12,9 +12,10 @@ import Combine exposing (Parser, manyTill, map, regex, string)
 import Combine.Char exposing (anyChar)
 
 
-c_frame : Parser s String
+c_frame : Parser s Int
 c_frame =
-    string "```"
+    regex "`{3,}"
+        |> map String.length
 
 
 newline : Parser s String
