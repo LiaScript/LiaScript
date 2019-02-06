@@ -1,3 +1,12 @@
 [submodule "demos/CCourse"]
 	path = demos/CCourse
 	url = https://github.com/liaScript/CCourse
+[submodule "demos/docs"]
+	path = demos/docs
+	url = https://github.com/liaScript/docs
+[submodule "demos/demo"]
+	path = demos/demo
+	url = https://github.com/liaScript/demo
+[submodule "demos/templates"]
+	path = demos/templates
+	url = https://github.com/liaScript/templates
