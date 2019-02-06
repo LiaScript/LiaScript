@@ -62,7 +62,9 @@ customElements.define('code-editor', class extends HTMLElement {
     });
 
     if (!this.model.showCursor)
-    this._editor.renderer.$cursorLayer.element.style.display = "none";
+      this._editor.renderer.$cursorLayer.element.style.display = "none";
+
+    this._editor.renderer.setScrollMargin(8, 8, 0, 0);
 
     this._editor.getSession().setUseWrapMode(this.model.useWrapMode);
 
