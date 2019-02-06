@@ -31,4 +31,10 @@ customElements.define('katex-formula', class extends HTMLElement {
         displayMode: displayMode
     });
   }
+
+  disconnectedCallback() {
+    if (super.disconnectedCallback) {
+      super.disconnectedCallback();
+    }
+  }
 })
