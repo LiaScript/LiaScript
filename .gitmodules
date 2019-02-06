@@ -10,3 +10,9 @@
 [submodule "demos/templates"]
 	path = demos/templates
 	url = https://github.com/liaScript/templates
+[submodule "demos/rextester_template"]
+	path = demos/rextester_template
+	url = https://github.com/liaScript/rextester_template
+[submodule "demos/jscpp_template"]
+	path = demos/jscpp_template
+	url = https://github.com/liaScript/jscpp_template
