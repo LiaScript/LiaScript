@@ -65,15 +65,9 @@ pattern p =
         |> ignore (regex "][\t ]*")
 
 
-id_int : Parser s String
-id_int =
-    regex "\\-?\\d+"
-
-
 id_str : Parser s String
 id_str =
-    string ":"
-        |> keep (regex "[0-9a-zA-Z_ ]+")
+    regex "\\w(\\w+| )*"
 
 
 vector : (Parser s String -> Parser State a) -> Parser State (List ( a, Inlines ))
@@ -82,12 +76,12 @@ vector p =
         vec x =
             many1 (question (pattern (p x)))
     in
-    or (vec id_int) (vec id_str)
+    vec id_str
 
 
 header : (Parser s String -> Parser s1 Var) -> Parser s1 (List Var)
 header p =
-    or (many1 (p id_int)) (many1 (p id_str))
+    many1 (p id_str)
         |> pattern
         |> ignore newline
 
