@@ -43,6 +43,7 @@ import Html.Parser
 import Lia.Markdown.Effect.Model exposing (add_javascript)
 import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Footnote.Parser as Footnote
+import Lia.Markdown.Inline.Symbols exposing (arrows, smileys)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..))
 import Lia.Markdown.Macro.Parser as Macro
 import Lia.Parser.Helper exposing (spaces, stringTill)
@@ -315,48 +316,6 @@ reference =
                 |> map Ref
 
 
-arrows : Parser s (Annotation -> Inline)
-arrows =
-    choice
-        [ string "<-->" |> onsuccess (Symbol "⟷")
-        , string "<--" |> onsuccess (Symbol "⟵")
-        , string "-->" |> onsuccess (Symbol "⟶")
-        , string "<<-" |> onsuccess (Symbol "↞")
-        , string "->>" |> onsuccess (Symbol "↠")
-        , string "<->" |> onsuccess (Symbol "↔")
-        , string ">->" |> onsuccess (Symbol "↣")
-        , string "<-<" |> onsuccess (Symbol "↢")
-        , string "->" |> onsuccess (Symbol "→")
-        , string "<-" |> onsuccess (Symbol "←")
-        , string "<~" |> onsuccess (Symbol "↜")
-        , string "~>" |> onsuccess (Symbol "↝")
-        , string "<==>" |> onsuccess (Symbol "⟺")
-        , string "==>" |> onsuccess (Symbol "⟹")
-        , string "<==" |> onsuccess (Symbol "⟸")
-        , string "<=>" |> onsuccess (Symbol "⇔")
-        , string "=>" |> onsuccess (Symbol "⇒")
-        , string "<=" |> onsuccess (Symbol "⇐")
-        ]
-
-
-smileys : Parser s (Annotation -> Inline)
-smileys =
-    choice
-        [ string ":-)" |> onsuccess (Symbol "🙂")
-        , string ";-)" |> onsuccess (Symbol "😉")
-        , string ":-D" |> onsuccess (Symbol "😀")
-        , string ":-O" |> onsuccess (Symbol "😮")
-        , string ":-(" |> onsuccess (Symbol "🙁")
-        , string ":-|" |> onsuccess (Symbol "😐")
-        , string ":-/" |> onsuccess (Symbol "😕")
-        , string ":-P" |> onsuccess (Symbol "😛")
-        , string ";-P" |> onsuccess (Symbol "😜")
-        , string ":-*" |> onsuccess (Symbol "😗")
-        , string ":')" |> onsuccess (Symbol "😂")
-        , string ":'(" |> onsuccess (Symbol "😢")
-        ]
-
-
 between_ : String -> Parser State Inline
 between_ str =
     lazy <|
@@ -406,11 +365,11 @@ strings =
                         |> map Superscript
 
                 characters =
-                    regex "[~:_;\\-<>=${} ]"
+                    regex "[~:_;\\-<>=${}\\[\\] ]"
                         |> map Chars
 
                 base2 =
-                    regex "[^\\n|*\\[\\]]+"
+                    regex "[^\n|*]+"
                         |> map Chars
             in
             choice
