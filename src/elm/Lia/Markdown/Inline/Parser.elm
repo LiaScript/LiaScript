@@ -222,9 +222,9 @@ email =
         |> map ((++) "mailto:")
 
 
-inline_url : Parser s Reference
+inline_url : Parser s (Annotation -> Inline)
 inline_url =
-    map (\u -> Link [ Chars u Nothing ] u "") url
+    map (\u -> Ref (Link [ Chars u Nothing ] u "")) url
 
 
 ref_info : Parser s String
@@ -354,7 +354,7 @@ strings =
                         |> map Chars
             in
             choice
-                [ map Ref inline_url
+                [ inline_url
                 , base
                 , arrows
                 , smileys
