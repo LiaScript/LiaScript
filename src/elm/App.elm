@@ -191,7 +191,10 @@ update msg model =
 
         Load ->
             ( { model | state = Loading }
-            , download Load_ReadMe_Result model.lia.readme
+            , Cmd.batch
+                [ Nav.replaceUrl model.key ("?" ++ model.lia.readme)
+                , download Load_ReadMe_Result model.lia.readme
+                ]
             )
 
         Load_ReadMe_Result (Ok readme) ->
