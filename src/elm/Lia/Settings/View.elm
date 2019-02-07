@@ -112,22 +112,38 @@ design_theme lang theme =
 view_information : Lang -> Bool -> Definition -> Html Msg
 view_information lang visible definition =
     Html.div (menu_style visible)
-        [ Html.p []
-            [ Html.text <| infoAuthor lang
-            , Html.text definition.author
-            ]
-        , Html.p []
-            [ Html.text <| infoEmail lang
-            , Html.a [ Attr.href definition.email ] [ Html.text definition.email ]
-            ]
-        , Html.p []
-            [ Html.text <| infoVersion lang
-            , Html.text definition.version
-            ]
-        , Html.p []
-            [ Html.text <| infoDate lang
-            , Html.text definition.date
-            ]
+        [ if String.isEmpty definition.author then
+            Html.text ""
+
+          else
+            Html.p []
+                [ Html.text <| infoAuthor lang
+                , Html.text definition.author
+                ]
+        , if String.isEmpty definition.email then
+            Html.text ""
+
+          else
+            Html.p []
+                [ Html.text <| infoEmail lang
+                , Html.a [ Attr.href definition.email ] [ Html.text definition.email ]
+                ]
+        , if String.isEmpty definition.version then
+            Html.text ""
+
+          else
+            Html.p []
+                [ Html.text <| infoVersion lang
+                , Html.text definition.version
+                ]
+        , if String.isEmpty definition.date then
+            Html.text ""
+
+          else
+            Html.p []
+                [ Html.text <| infoDate lang
+                , Html.text definition.date
+                ]
         ]
 
 
@@ -143,7 +159,7 @@ view_translations lang visible base list =
                     (\( lang_, url ) ->
                         Html.a
                             [ Attr.href (base ++ url) ]
-                            [ Html.text lang_ ]
+                            [ Html.text lang_, Html.br [] [] ]
                     )
 
 

@@ -38,7 +38,7 @@ type alias Definition =
 
 default : String -> Definition
 default base =
-    { author = "Unknown"
+    { author = ""
     , date = ""
     , email = ""
     , language = "en"

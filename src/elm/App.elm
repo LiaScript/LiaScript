@@ -161,7 +161,15 @@ update msg model =
         LinkClicked urlRequest ->
             case urlRequest of
                 Browser.Internal url ->
-                    ( model, Nav.pushUrl model.key (Url.toString url) )
+                    ( model
+                    , if url.query == model.url.query then
+                        Url.toString url
+                            |> Nav.pushUrl model.key
+
+                      else
+                        Url.toString url
+                            |> Nav.load
+                    )
 
                 Browser.External href ->
                     ( model, Nav.load href )
