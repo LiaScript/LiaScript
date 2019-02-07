@@ -130,18 +130,34 @@ update msg model =
     case msg of
         LiaScript childMsg ->
             let
-                ( lia, cmd ) =
+                ( lia, cmd, slide_number ) =
                     Lia.Script.update childMsg model.lia
             in
-            ( { model | lia = lia }, Cmd.map LiaScript cmd )
+            ( { model | lia = lia }
+            , if slide_number < 0 then
+                Cmd.map LiaScript cmd
+
+              else
+                Cmd.batch
+                    [ Nav.pushUrl model.key ("#" ++ String.fromInt slide_number)
+                    , Cmd.map LiaScript cmd
+                    ]
+            )
 
         LiaStart ->
             let
-                ( parsed, cmd ) =
+                ( parsed, cmd, slide_number ) =
                     Lia.Script.load_slide model.lia.section_active model.lia
             in
             ( { model | state = Running, lia = parsed }
-            , Cmd.map LiaScript cmd
+            , if slide_number < 0 then
+                Cmd.map LiaScript cmd
+
+              else
+                Cmd.batch
+                    [ Nav.replaceUrl model.key ("#" ++ String.fromInt slide_number)
+                    , Cmd.map LiaScript cmd
+                    ]
             )
 
         LinkClicked urlRequest ->
@@ -156,7 +172,7 @@ update msg model =
             case url.fragment |> Maybe.andThen String.toInt of
                 Just idx ->
                     let
-                        ( lia, cmd ) =
+                        ( lia, cmd, _ ) =
                             Lia.Script.load_slide (idx - 1) model.lia
                     in
                     ( { model | lia = lia }, Cmd.map LiaScript cmd )

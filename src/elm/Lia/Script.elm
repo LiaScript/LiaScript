@@ -39,7 +39,7 @@ type alias Msg =
     Lia.Update.Msg
 
 
-load_slide : Int -> Model -> ( Model, Cmd Msg )
+load_slide : Int -> Model -> ( Model, Cmd Msg, Int )
 load_slide idx model =
     Lia.Update.update (Load idx) model
 
@@ -156,7 +156,7 @@ subscriptions model =
     Lia.Update.subscriptions model
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Cmd Msg, Int )
 update =
     Lia.Update.update
 

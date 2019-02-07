@@ -69,23 +69,25 @@ send idx events cmd =
                 |> Cmd.batch
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Cmd Msg, Int )
 update msg model =
     case msg of
         Load idx ->
             if (-1 < idx) && (idx < Array.length model.sections) then
                 ( model
                 , event2js <| Event "persistent" idx <| JE.string "store"
+                , idx + 1
                 )
 
             else
-                ( model, Cmd.none )
+                ( model, Cmd.none, -1 )
 
         UpdateSettings childMsg ->
             case Settings.update childMsg model.settings of
                 ( settings, [] ) ->
                     ( { model | settings = settings }
                     , Cmd.none
+                    , -1
                     )
 
                 ( settings, events ) ->
@@ -93,6 +95,7 @@ update msg model =
                     , events
                         |> List.map event2js
                         |> Cmd.batch
+                    , -1
                     )
 
         UpdateIndex childMsg ->
@@ -105,6 +108,7 @@ update msg model =
                 , sections = sections
               }
             , Cmd.none
+            , -1
             )
 
         Handle event ->
@@ -112,13 +116,14 @@ update msg model =
                 "settings" ->
                     ( { model | settings = Settings.load model.settings event.message, ready = True }
                     , Cmd.none
+                    , -1
                     )
 
                 "load" ->
                     update InitSection (generate { model | section_active = event.section })
 
                 "reset" ->
-                    ( model, event2js <| Event "reset" -1 JE.null )
+                    ( model, event2js <| Event "reset" -1 JE.null, -1 )
 
                 _ ->
                     case
@@ -133,10 +138,11 @@ update msg model =
                             in
                             ( { model | sections = Array.set event.section sec_ model.sections }
                             , send event.section events cmd_
+                            , -1
                             )
 
                         _ ->
-                            ( model, Cmd.none )
+                            ( model, Cmd.none, -1 )
 
         _ ->
             case ( msg, get_active_section model ) of
@@ -147,6 +153,7 @@ update msg model =
                     in
                     ( set_active_section model section
                     , send model.section_active log_ cmd
+                    , -1
                     )
 
                 ( NextSection, Just sec ) ->
@@ -160,6 +167,7 @@ update msg model =
                         in
                         ( set_active_section model sec_
                         , send model.section_active log_ cmd_
+                        , -1
                         )
 
                 ( PrevSection, Just sec ) ->
@@ -173,6 +181,7 @@ update msg model =
                         in
                         ( set_active_section model sec_
                         , send model.section_active log_ cmd_
+                        , -1
                         )
 
                 ( InitSection, Just sec ) ->
@@ -194,10 +203,11 @@ update msg model =
                             , event2js <| Event "persistent" model.section_active (JE.string "load")
                             ]
                         |> Cmd.batch
+                    , -1
                     )
 
                 _ ->
-                    ( model, Cmd.none )
+                    ( model, Cmd.none, -1 )
 
 
 add_load : Int -> Int -> String -> List Event -> List Event
