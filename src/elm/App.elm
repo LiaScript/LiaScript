@@ -9,8 +9,6 @@ module App exposing
     , viewLink
     )
 
---import Lia.Model
-
 import Browser
 import Browser.Navigation as Nav
 import Html exposing (Html)

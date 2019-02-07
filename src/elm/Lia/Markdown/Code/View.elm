@@ -1,7 +1,5 @@
 module Lia.Markdown.Code.View exposing (view)
 
---import Lia.Ace as Ace
-
 import Array
 import Html exposing (Html)
 import Html.Attributes as Attr exposing (attribute)
