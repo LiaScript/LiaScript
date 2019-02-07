@@ -77,21 +77,28 @@ title =
         |> ignore newline
 
 
-code_body : Parser State String
-code_body =
+code_body : Int -> Parser State String
+code_body len =
+    let
+        control_frame =
+            "`{" ++ String.fromInt len ++ "}"
+    in
     manyTill
-        (maybe identation |> keep (regex "(?:.(?!```))*\\n"))
-        (identation |> keep c_frame)
+        (maybe identation |> keep (regex ("(?:.(?!" ++ control_frame ++ "))*\\n")))
+        (identation |> keep (regex control_frame))
         |> map (String.concat >> String.dropRight 1)
 
 
 listing : Parser State ( Snippet, Bool )
 listing =
-    c_frame
-        |> keep header
-        |> map (\h ( v, t ) c -> ( Snippet h t c, v ))
-        |> andMap title
-        |> andMap code_body
+    let
+        body len =
+            header
+                |> map (\h ( v, t ) c -> ( Snippet h t c, v ))
+                |> andMap title
+                |> andMap (code_body len)
+    in
+    c_frame |> andThen body
 
 
 toFile : ( Snippet, Bool ) -> File

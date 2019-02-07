@@ -14,8 +14,7 @@ import Combine.Char exposing (anyChar)
 
 c_frame : Parser s Int
 c_frame =
-    regex "`{3,}"
-        |> map String.length
+    regex "`{3,}" |> map String.length
 
 
 newline : Parser s String

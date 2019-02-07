@@ -36,7 +36,7 @@ import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Parser as Quiz
 import Lia.Markdown.Survey.Parser as Survey
 import Lia.Markdown.Types exposing (Markdown(..), MarkdownS)
-import Lia.Parser.Helper exposing (newline, newlines, spaces)
+import Lia.Parser.Helper exposing (c_frame, newline, newlines, spaces)
 import Lia.Parser.State exposing (State, ident_skip, identation, identation_append, identation_pop)
 import SvgBob
 
@@ -121,16 +121,44 @@ to_comment ( attr, ( id1, id2 ) ) =
         |> onsuccess (Comment ( id1, id2 ))
 
 
+svgbody : Int -> Parser State String
+svgbody len =
+    let
+        control_frame =
+            "`{"
+                ++ String.fromInt len
+                ++ (if len <= 8 then
+                        "}"
+
+                    else
+                        ",}"
+                   )
+
+        ascii =
+            if len <= 8 then
+                regex "[\t ]*(ascii|art)[\t ]*\\n"
+
+            else
+                regex "([\t ]*(ascii|art))?[\t ]*\\n"
+    in
+    ascii
+        |> keep
+            (manyTill
+                (maybe identation
+                    |> keep (regex ("(?:.(?!" ++ control_frame ++ "))*\\n"))
+                )
+                (identation
+                    |> keep (regex control_frame)
+                )
+                |> map (String.concat >> String.dropRight 1)
+            )
+
+
 svgbob : Parser State Markdown
 svgbob =
     md_annotations
-        |> map (\attr txt -> ASCII attr (txt |> String.concat |> SvgBob.init))
-        |> ignore (regex "```[`]+\\n")
-        |> andMap
-            (manyTill
-                (maybe identation |> keep (regex "(?:.(?!````))*\\n"))
-                (identation |> ignore (regex "```[`]+"))
-            )
+        |> map (\attr txt -> ASCII attr (SvgBob.init txt))
+        |> andMap (c_frame |> andThen svgbody)
 
 
 solution : Parser State (Maybe ( List Markdown, Int ))
