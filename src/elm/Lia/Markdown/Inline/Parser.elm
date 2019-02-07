@@ -43,7 +43,8 @@ import Html.Parser
 import Lia.Markdown.Effect.Model exposing (add_javascript)
 import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Footnote.Parser as Footnote
-import Lia.Markdown.Inline.Symbols exposing (arrows, smileys)
+import Lia.Markdown.Inline.Parser.Formula exposing (formula)
+import Lia.Markdown.Inline.Parser.Symbol exposing (arrows, smileys)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..))
 import Lia.Markdown.Macro.Parser as Macro
 import Lia.Parser.Helper exposing (spaces, stringTill)
@@ -206,26 +207,6 @@ inlines =
                         |> andMap (Macro.macro |> keep annotations)
                         |> or html
                     )
-
-
-formula : Parser s (Annotation -> Inline)
-formula =
-    or formula_block formula_inline
-
-
-formula_inline : Parser s (Annotation -> Inline)
-formula_inline =
-    string "$"
-        |> keep (regex "[^\\n$]+")
-        |> ignore (string "$")
-        |> map (Formula "false")
-
-
-formula_block : Parser s (Annotation -> Inline)
-formula_block =
-    string "$$"
-        |> keep (stringTill (string "$$"))
-        |> map (Formula "true")
 
 
 url : Parser s String
