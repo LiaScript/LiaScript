@@ -14,6 +14,7 @@ import Combine
         , maybe
         , modifyState
         , regex
+        , regexWith
         , skip
         , string
         , whitespace
@@ -99,7 +100,7 @@ definition =
 
 store : String -> (String -> Definition -> Definition) -> Parser State ()
 store str fn =
-    string str |> keep (ending |> andThen (fn >> set))
+    regexWith True False str |> keep (ending |> andThen (fn >> set))
 
 
 ending : Parser State String
