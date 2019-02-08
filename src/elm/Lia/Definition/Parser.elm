@@ -18,7 +18,7 @@ import Combine
         , string
         , whitespace
         )
-import Lia.Definition.Types exposing (Definition, Resource(..), add_translation)
+import Lia.Definition.Types exposing (Definition, Resource(..), add_imports, add_translation, toURL)
 import Lia.Markdown.Inline.Parser exposing (comment)
 import Lia.Markdown.Macro.Parser as Macro
 import Lia.Parser.Helper exposing (newline, stringTill)
@@ -59,9 +59,9 @@ definition =
                         , store "logo:" (\x d -> { d | logo = x })
                         , store "narrator:" (\x d -> { d | narrator = x })
                         , store "script:" (addToResources Script)
-                        , store "import:" (\x d -> { d | imports = append identity x d.base d.imports })
+                        , store "import:" add_imports
                         , store "link:" (addToResources Link)
-                        , string "translation:" |> keep (ending |> andThen (\x -> set (add_translation x)))
+                        , store "translation:" add_translation
                         , store "version:" (\x d -> { d | version = x })
                         , store "debug:"
                             (\x d ->
@@ -109,15 +109,6 @@ ending =
         |> keep (many1 (identation |> keep (regex ".+\\n")))
         |> ignore identation_pop
         |> map (\list -> list |> List.map String.trimLeft |> String.concat |> String.trimRight)
-
-
-toURL : String -> String -> String
-toURL basis url =
-    if String.startsWith "http" url then
-        url
-
-    else
-        basis ++ url
 
 
 set : (Definition -> Definition) -> Parser State ()

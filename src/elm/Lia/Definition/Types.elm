@@ -1,10 +1,12 @@
 module Lia.Definition.Types exposing
     ( Definition
     , Resource(..)
+    , add_imports
     , add_macros
     , add_translation
     , default
     , get_translations
+    , toURL
     )
 
 import Dict exposing (Dict)
@@ -64,14 +66,7 @@ add_translation str def =
         [ lang, url ] ->
             { def
                 | translation =
-                    Dict.insert lang
-                        (if url |> String.toLower |> String.startsWith "http" then
-                            url
-
-                         else
-                            def.base ++ url
-                        )
-                        def.translation
+                    Dict.insert lang (toURL def.base url) def.translation
             }
 
         _ ->
@@ -91,3 +86,20 @@ add_macros orig temp =
                 |> List.append (Dict.toList orig.macro)
                 |> Dict.fromList
     }
+
+
+add_imports : String -> Definition -> Definition
+add_imports url def =
+    { def
+        | imports =
+            toURL def.base url :: def.imports
+    }
+
+
+toURL : String -> String -> String
+toURL basis url =
+    if String.startsWith "http" url then
+        url
+
+    else
+        basis ++ url

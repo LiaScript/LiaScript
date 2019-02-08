@@ -92,8 +92,8 @@ module.exports = {
         use: {
           loader: 'elm-webpack-loader?verbose=true',
           options: {
-            //debug: true,
-            optimize: true,
+            debug: true,
+            //optimize: true,
           },
         },
       }
