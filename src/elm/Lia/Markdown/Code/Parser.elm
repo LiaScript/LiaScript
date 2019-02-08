@@ -21,6 +21,7 @@ import Combine
         , succeed
         , withState
         )
+import Lia.Event exposing (Eval)
 import Lia.Markdown.Code.Types exposing (Code(..), File, Snippet, noLog)
 import Lia.Markdown.Inline.Parser exposing (javascript)
 import Lia.Markdown.Macro.Parser exposing (macro)
@@ -94,7 +95,7 @@ listing =
     let
         body len =
             header
-                |> map (\h ( v, t ) c -> ( Snippet h t c, v ))
+                |> map (\h ( v, t ) c -> ( Snippet h (String.trim t) c, v ))
                 |> andMap title
                 |> andMap (code_body len)
     in
@@ -109,8 +110,22 @@ toFile ( { lang, name, code }, visible ) =
 evaluate : List ( Snippet, Bool ) -> String -> Parser State Code
 evaluate lang_title_code comment =
     let
-        array =
+        ar =
             Array.fromList lang_title_code
+
+        ( output, array ) =
+            case Array.get (Array.length ar - 1) ar of
+                Just ( snippet, vis ) ->
+                    if String.toLower snippet.name == "@output" then
+                        ( Eval vis snippet.code []
+                        , Array.slice 0 -1 ar
+                        )
+
+                    else
+                        ( noLog, ar )
+
+                _ ->
+                    ( noLog, ar )
 
         add_state s =
             { s
@@ -122,7 +137,7 @@ evaluate lang_title_code comment =
                                 [ ( Array.map (Tuple.first >> .code) array, noLog ) ]
                         , evaluation = comment
                         , version_active = 0
-                        , log = noLog
+                        , log = output
                         , running = False
                         , terminal = Nothing
                         }
