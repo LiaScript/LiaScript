@@ -16,3 +16,51 @@
 [submodule "demos/jscpp_template"]
 	path = demos/jscpp_template
 	url = https://github.com/liaScript/jscpp_template
+[submodule "demos/WebDev_template"]
+	path = demos/WebDev_template
+	url = https://github.com/liaScript/WebDev_template
+[submodule "demos/index"]
+	path = demos/index
+	url = https://github.com/liaScript/index
+[submodule "demos/Prolog_template"]
+	path = demos/Prolog_template
+	url = https://github.com/liaScript/Prolog_template
+[submodule "demos/mermaid_template"]
+	path = demos/mermaid_template
+	url = https://github.com/liaScript/mermaid_template
+[submodule "demos/tau-prolog_template"]
+	path = demos/tau-prolog_template
+	url = https://github.com/liaScript/tau-prolog_template
+[submodule "demos/skulpt_template"]
+	path = demos/skulpt_template
+	url = https://github.com/liaScript/skulpt_template
+[submodule "demos/pannellum_template"]
+	path = demos/pannellum_template
+	url = https://github.com/liaScript/pannellum_template
+[submodule "demos/algebrite_template"]
+	path = demos/algebrite_template
+	url = https://github.com/liaScript/algebrite_template
+[submodule "demos/alasql_template"]
+	path = demos/alasql_template
+	url = https://github.com/liaScript/alasql_template
+[submodule "demos/tensorflowjs_template"]
+	path = demos/tensorflowjs_template
+	url = https://github.com/liaScript/tensorflowjs_template
+[submodule "demos/brython_template"]
+	path = demos/brython_template
+	url = https://github.com/liaScript/brython_template
+[submodule "demos/processing_template"]
+	path = demos/processing_template
+	url = https://github.com/liaScript/processing_template
+[submodule "demos/Netzwerktreffen2018"]
+	path = demos/Netzwerktreffen2018
+	url = https://github.com/liaScript/Netzwerktreffen2018
+[submodule "demos/e-Learning-2019"]
+	path = demos/e-Learning-2019
+	url = https://github.com/andre-dietrich/e-Learning-2019
+[submodule "demos/Tutorial_Regelungstechnik"]
+	path = demos/Tutorial_Regelungstechnik
+	url = https://github.com/andre-dietrich/Tutorial_Regelungstechnik
+[submodule "demos/C-Programmierung"]
+	path = demos/C-Programmierung
+	url = https://github.com/andre-dietrich/C-Programmierung
