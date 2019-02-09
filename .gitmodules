@@ -1,5 +1,5 @@
 [submodule "demos/CCourse"]
-	path = demos/CCourse
+	path = demos/courses/CCourse
 	url = https://github.com/liaScript/CCourse
 [submodule "demos/docs"]
 	path = demos/docs
@@ -20,7 +20,7 @@
 	path = demos/WebDev_template
 	url = https://github.com/liaScript/WebDev_template
 [submodule "demos/index"]
-	path = demos/index
+	path = demos/courses/index
 	url = https://github.com/liaScript/index
 [submodule "demos/Prolog_template"]
 	path = demos/Prolog_template
@@ -56,11 +56,11 @@
 	path = demos/Netzwerktreffen2018
 	url = https://github.com/liaScript/Netzwerktreffen2018
 [submodule "demos/e-Learning-2019"]
-	path = demos/e-Learning-2019
+	path = demos/misc/e-Learning-2019
 	url = https://github.com/andre-dietrich/e-Learning-2019
 [submodule "demos/Tutorial_Regelungstechnik"]
-	path = demos/Tutorial_Regelungstechnik
+	path = demos/courses/Tutorial_Regelungstechnik
 	url = https://github.com/andre-dietrich/Tutorial_Regelungstechnik
 [submodule "demos/C-Programmierung"]
-	path = demos/C-Programmierung
+	path = demos/courses/C-Programmierung
 	url = https://github.com/andre-dietrich/C-Programmierung
