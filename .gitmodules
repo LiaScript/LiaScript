@@ -64,3 +64,12 @@
 [submodule "demos/C-Programmierung"]
 	path = demos/courses/C-Programmierung
 	url = https://github.com/andre-dietrich/C-Programmierung
+[submodule "demos/courses/TensorFlowJS_tutorial"]
+	path = demos/courses/TensorFlowJS_tutorial
+	url = https://github.com/andre-dietrich/TensorFlowJS_tutorial
+[submodule "demos/misc/MeetupDemo"]
+	path = demos/misc/MeetupDemo
+	url = https://github.com/andre-dietrich/MeetupDemo
+[submodule "demos/courses/tau-prolog_template"]
+	path = demos/courses/tau-prolog_template
+	url = https://github.com/andre-dietrich/tau-prolog_template
