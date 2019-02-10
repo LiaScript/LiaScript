@@ -86,7 +86,7 @@ empty =
 text : Parser State (QuizAdds -> Quiz)
 text =
     string "["
-        |> keep (regex "[^\n\\]]+")
+        |> keep (regex "[^\n\\]_]+")
         |> ignore (regex "\\][\t ]*")
         |> pattern
         |> ignore newline
