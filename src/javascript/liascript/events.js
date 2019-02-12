@@ -107,7 +107,10 @@ function getLineNumber(error) {
 };
 
 function lia_eval(code, send) {
-    let console = {log: send.log, clear: send.clear};
+    let console = {
+      log: (...args) => send.log(true, args),
+      error: (...args) => send.log(false, args),
+      clear: send.clear};
     try {
       send.lia(String(eval(code+"\n", send)));
     } catch (e) {
@@ -126,7 +129,7 @@ function lia_eval_event(send, channel, event) {
             event.message.message = { result: result, details: details, ok: ok};
             send(event);
           },
-          log: (...args) => {
+          log: (ok, ...args) => {
             event.message.topic = "log";
             let result = "";
             for(let i=0; i<args.length; i++) {
@@ -135,7 +138,7 @@ function lia_eval_event(send, channel, event) {
             event.message.message = {
               result: result+"\n",
               details: [],
-              ok: true
+              ok: ok
             };
             send(event);
           },
