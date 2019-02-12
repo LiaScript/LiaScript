@@ -167,7 +167,7 @@ update msg model =
                         |> Maybe.map (\p -> ( p, [] ))
                         |> maybe_update event.section model
 
-                "clr" ->
+                "clear" ->
                     model
                         |> maybe_project event.section clr
                         |> Maybe.map (\p -> ( p, [] ))
