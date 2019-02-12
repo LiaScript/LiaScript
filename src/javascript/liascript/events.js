@@ -112,6 +112,7 @@ function lia_eval(code, send) {
       error: (...args) => send.log(false, args),
       clear: send.clear};
     try {
+      send.clear();
       send.lia(String(eval(code+"\n", send)));
     } catch (e) {
         if (e instanceof LiaError )

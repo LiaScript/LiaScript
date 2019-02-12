@@ -255,7 +255,7 @@ class LiaScript {
                       });
 
                     if(onload != "")
-                        lia_execute_event( onload, 350, {});
+                        lia_execute_event( {code: onload, delay: 350});
 
                     meta("author",         author);
                     meta("og:description", comment);
