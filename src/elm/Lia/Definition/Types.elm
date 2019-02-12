@@ -85,6 +85,19 @@ add_macros orig temp =
             Dict.toList temp.macro
                 |> List.append (Dict.toList orig.macro)
                 |> Dict.fromList
+        , onload =
+            case ( orig.onload, temp.onload ) of
+                ( "", "" ) ->
+                    ""
+
+                ( str1, "" ) ->
+                    str1
+
+                ( "", str2 ) ->
+                    str2
+
+                ( str1, str2 ) ->
+                    str1 ++ "\n" ++ str2
     }
 
 
