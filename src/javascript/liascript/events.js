@@ -108,9 +108,10 @@ function getLineNumber(error) {
 
 function lia_eval(code, send) {
     let console = {
-      log: (...args) => send.log(true, args),
-      error: (...args) => send.log(false, args),
-      clear: send.clear};
+      log: (...args) => send.log(true, "\n", args),
+      error: (...args) => send.log(false, "\n",args),
+      clear: send.clear
+    };
     try {
       send.clear();
       send.lia(String(eval(code+"\n", send)));
@@ -122,7 +123,7 @@ function lia_eval(code, send) {
     }
 };
 
-function lia_eval_event(send, channel, event) {
+function lia_eval_event(send, channel, handler, event) {
     lia_eval(
         event.message.message,
         { lia: (result, details=[], ok=true) => {
@@ -130,17 +131,22 @@ function lia_eval_event(send, channel, event) {
             event.message.message = { result: result, details: details, ok: ok};
             send(event);
           },
-          log: (ok, ...args) => {
+          log: (ok, sep, ...args) => {
             event.message.topic = "log";
             let result = "";
             for(let i=0; i<args.length; i++) {
-              result += args[i].toString() + " "
+              result += args[i].toString()
             }
             event.message.message = {
-              result: result+"\n",
+              result: result + sep,
               details: [],
               ok: ok
             };
+            send(event);
+          },
+          output: (msg) => {
+            event.message.topic = "output";
+            event.message.message = { result: msg, details: [], ok: true};
             send(event);
           },
           clear: () => {
@@ -148,7 +154,10 @@ function lia_eval_event(send, channel, event) {
             send(event);
           },
           service: websocket(channel),
-          handle: (name, fn) => { events.register_input(event.section, e[1], name, fn) }
+          handle: (name, fn) => {
+            let e1 = event.section;
+            let e2 = event.message.section;
+            handler.register_input(e1, e2, name, fn) }
         }
     )
 };

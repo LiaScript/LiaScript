@@ -74,7 +74,7 @@ update msg model =
     case msg of
         Load idx ->
             if (-1 < idx) && (idx < Array.length model.sections) then
-                ( model
+                ( { model | section_active = idx }
                 , event2js <| Event "persistent" idx <| JE.string "store"
                 , idx + 1
                 )
@@ -120,7 +120,7 @@ update msg model =
                     )
 
                 "load" ->
-                    update InitSection (generate { model | section_active = event.section })
+                    update InitSection (generate model)
 
                 "reset" ->
                     ( model, event2js <| Event "reset" -1 JE.null, -1 )
@@ -200,7 +200,6 @@ update msg model =
                         |> List.append
                             [ event2js <| Event "slide" model.section_active JE.null
                             , send model.section_active log_ cmd_
-                            , event2js <| Event "persistent" model.section_active (JE.string "load")
                             ]
                         |> Cmd.batch
                     , -1

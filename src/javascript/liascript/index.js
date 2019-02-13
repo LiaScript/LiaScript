@@ -5,7 +5,7 @@ import { LiaDB } from "./database";
 import { LiaStorage } from "./storage";
 import { LiaEvents, lia_execute_event, lia_eval_event } from "./events";
 import { SETTINGS, initSettings } from "./settings";
-import { storePersitent, loadPersistent } from "./persistent";
+import { persistent } from "./persistent";
 import { lia } from "./logger";
 
 function scrollIntoView (id, delay) {
@@ -22,6 +22,8 @@ function handleEffects(event, elmSend) {
     case "scrollTo":
       scrollIntoView( event.message, 350 );
       break;
+    case "persistent":
+      setTimeout((e) => { persistent.load(event.section) }, 10);
     case "execute":
       lia_execute_event( event.message );
       break;
@@ -79,8 +81,9 @@ function meta(name, content) {
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-var events = undefined;
-var liaStorage = undefined;
+var eventHandler = undefined;
+var liaStorage   = undefined;
+
 
 class LiaScript {
     constructor(elem, debug = false, course = null, script = null, url="", slide=0, spa = true, channel=null) {
@@ -88,7 +91,7 @@ class LiaScript {
         if(debug)
             window.debug__ = true;
 
-        events     = new LiaEvents();
+        eventHandler = new LiaEvents();
 
         this.app = Elm.App.init({
             node: elem,
@@ -121,7 +124,7 @@ class LiaScript {
             return;
 
         this.channel = channel;
-        channel.on("service", e => { events.dispatch(e.event_id, e.message); });
+        channel.on("service", e => { eventHandler.dispatch(e.event_id, e.message); });
 
         channel.join()
         .receive("ok", (e) => { initSettings(send, e); })
@@ -161,15 +164,17 @@ class LiaScript {
                 case "code" : {
                     switch (event.message.topic) {
                       case "eval":
-                          lia_eval_event(elmSend, self.channel, event);
+                          lia_eval_event(elmSend, self.channel, eventHandler, event);
                           break;
                       case "store":
                           event.message = event.message.message;
                           self.db.store(event);
                           break;
                       case "input":
+                          eventHandler.dispatch_input(event);
+                          break;
                       case "stop":
-                          events.dispatch_input(event);
+                          eventHandler.dispatch(event);
                           break;
                       default: {
                           self.db.update(event.message, event.section);
@@ -182,7 +187,7 @@ class LiaScript {
                         event.message = event.message.message;
                         self.db.store(event);
                     } else if (event.message.topic == "eval") {
-                        lia_eval_event(elmSend, self.channel, event);
+                        lia_eval_event(elmSend, self.channel, eventHandler, event);
                     }
 
                     break;
@@ -230,11 +235,8 @@ class LiaScript {
                 }
                 case "persistent": {
                     if(event.message == "store") {
-                        storePersitent();
-                        elmSend({topic: "load", section: event.section, message: null});
-                    }
-                    else {
-                        setTimeout( (e) => { loadPersistent() }, 150 );
+                        persistent.store(event.section);
+                        elmSend({topic: "load", section: -1, message: null});
                     }
 
                     break;

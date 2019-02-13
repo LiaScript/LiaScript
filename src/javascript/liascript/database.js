@@ -9,7 +9,7 @@ class LiaDB {
 
         if (channel) return;
 
-        this.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB || window.shimIndexedDB;
+        //this.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB || window.shimIndexedDB;
 
         if (!this.indexedDB) {
             lia.warn("your browser does not support indexedDB");

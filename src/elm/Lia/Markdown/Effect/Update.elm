@@ -131,6 +131,7 @@ execute sound run_all delay model =
     update sound
         (javascript
             |> List.map (executeEvent delay)
+            |> (::) (Event "persistent" -1 (JE.string "load"))
             |> Send
         )
         model
