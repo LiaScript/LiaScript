@@ -100,6 +100,13 @@ set_script model script =
                         , to_do =
                             [ [ get_title sections
                               , model.readme
+                              , definition.version
+                                    |> String.split "."
+                                    |> List.head
+                                    |> Maybe.withDefault "0"
+                                    |> String.toInt
+                                    |> Maybe.withDefault 0
+                                    |> String.fromInt
                               , definition.onload
                               , definition.author
                               , definition.comment

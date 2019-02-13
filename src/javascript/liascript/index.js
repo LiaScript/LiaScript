@@ -243,10 +243,10 @@ class LiaScript {
                 }
                 case "init": {
 
-                  let [title, readme, onload, author, comment, logo] = event.message;
+                  let [title, readme, version, onload, author, comment, logo] = event.message;
 
                     self.db = new LiaDB (
-                      readme, 1, elmSend, self.channel,
+                      readme, version, elmSend, self.channel,
                       {
                         topic: "code",
                         section: event.section,

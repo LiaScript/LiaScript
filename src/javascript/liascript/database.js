@@ -6,8 +6,9 @@ class LiaDB {
     constructor (uidDB, versionDB, send=null, channel=null, init=null) {
         this.channel = channel;
         this.send = send;
+        this.versionDB = parseInt(versionDB);
 
-        if (channel) return;
+        if (!this.versionDB || channel) return;
 
         this.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB || window.shimIndexedDB;
 
@@ -59,6 +60,8 @@ class LiaDB {
     }
 
     store(event) {
+        if (!this.versionDB) return;
+
         if(this.channel) {
             this.channel.push("party", {
               store: event.topic,
@@ -69,7 +72,6 @@ class LiaDB {
 
             return;
         }
-
 
         lia.log(`liaDB: event(store), table(${event.topic}), id(${event.section}), data(${event.message})`)
         if (!this.indexedDB) return;
@@ -96,6 +98,8 @@ class LiaDB {
     }
 
     load(event) {
+        if (!this.versionDB) return;
+
         let send = this.send;
 
         if (this.channel) {
@@ -149,6 +153,8 @@ class LiaDB {
     }
 
     del() {
+        if (!this.versionDB) return;
+
         if (this.channel) return;
 
         if (!this.indexedDB) return;
@@ -164,6 +170,8 @@ class LiaDB {
     }
 
     update(event, slide) {
+        if (!this.versionDB) return;
+        
         if (this.channel) {
             this.channel.push("party", { update: event, slide: slide } );
             return;
