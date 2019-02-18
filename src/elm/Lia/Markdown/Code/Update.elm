@@ -128,6 +128,12 @@ update msg model =
                                 |> Maybe.map (Event.version_update event.section)
                                 |> maybe_update event.section model
 
+                        "LIA: clear" ->
+                            model
+                                |> maybe_project event.section clr
+                                |> Maybe.map (\p -> ( p, [] ))
+                                |> maybe_update event.section model
+
                         -- preserve previous logging by setting ok to false
                         "LIA: terminal" ->
                             model
@@ -158,18 +164,6 @@ update msg model =
                 "log" ->
                     model
                         |> maybe_project event.section (set_result True (Event.evalDecode event))
-                        |> Maybe.map (\p -> ( p, [] ))
-                        |> maybe_update event.section model
-
-                "output" ->
-                    model
-                        |> maybe_project event.section (append2log <| .result <| Event.evalDecode event)
-                        |> Maybe.map (\p -> ( p, [] ))
-                        |> maybe_update event.section model
-
-                "clear" ->
-                    model
-                        |> maybe_project event.section clr
                         |> Maybe.map (\p -> ( p, [] ))
                         |> maybe_update event.section model
 
@@ -306,7 +300,12 @@ set_result continue log project =
                         project.version_active
                         ( code, log )
                         project.version
-                , running = continue
+                , running =
+                    if continue then
+                        project.running
+
+                    else
+                        False
                 , log =
                     if continue then
                         log_append project.log log

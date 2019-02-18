@@ -107,14 +107,14 @@ function getLineNumber(error) {
 };
 
 function lia_eval(code, send) {
-    let console = {
-      log: (...args) => send.log(true, "\n", args),
-      error: (...args) => send.log(false, "\n",args),
-      clear: send.clear
-    };
     try {
-      send.clear();
-      send.lia(String(eval(code+"\n", send)));
+      let console = {
+        log: (...args) => send.log(true, "\n", args),
+        error: (...args) => send.log(false, "\n",args),
+        clear: () => send.lia("LIA: clear")
+      };
+      console.clear();
+      send.lia(String(eval(code+"\n", send, console)));
     } catch (e) {
         if (e instanceof LiaError )
             send.lia(e.message, e.details, false);
@@ -142,15 +142,6 @@ function lia_eval_event(send, channel, handler, event) {
               details: [],
               ok: ok
             };
-            send(event);
-          },
-          output: (msg) => {
-            event.message.topic = "output";
-            event.message.message = { result: msg, details: [], ok: true};
-            send(event);
-          },
-          clear: () => {
-            event.message.topic = "clear";
             send(event);
           },
           service: websocket(channel),
