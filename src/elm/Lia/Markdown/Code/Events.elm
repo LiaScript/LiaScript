@@ -91,19 +91,21 @@ load idx project =
 
 flip_view : Int -> Int -> File -> List Event
 flip_view id1 id2 file =
-    [ file.visible
-        |> JE.bool
-        |> Event "view" id2
-        |> Event.toJson
-        |> Event "flip" id1
-    ]
+    file.visible
+        |> toggle "view" id1 id2
 
 
 fullscreen : Int -> Int -> File -> List Event
 fullscreen id1 id2 file =
-    [ file.fullscreen
+    file.fullscreen
+        |> toggle "fullscreen" id1 id2
+
+
+toggle : String -> Int -> Int -> Bool -> List Event
+toggle message id1 id2 value =
+    [ value
         |> JE.bool
-        |> Event "fullscreen" id2
+        |> Event message id2
         |> Event.toJson
         |> Event "flip" id1
     ]
