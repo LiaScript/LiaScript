@@ -11,7 +11,7 @@ module Lia.Markdown.Code.Json exposing
 import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Event as Event
+import Lia.Markdown.Code.Log as Log
 import Lia.Markdown.Code.Types exposing (File, Project, Vector, Version)
 
 
@@ -44,7 +44,7 @@ fromProject project =
         [ ( "file", JE.array fromFile project.file )
         , ( "version", JE.array fromVersion project.version )
         , ( "version_active", JE.int project.version_active )
-        , ( "log", Event.evalEncode project.log )
+        , ( "log", Log.encode project.log )
         ]
 
 
@@ -55,7 +55,7 @@ toProject =
         (JD.field "version" (JD.array toVersion))
         (JD.succeed "")
         (JD.field "version_active" JD.int)
-        (JD.field "log" Event.evalDecoder)
+        (JD.field "log" Log.decoder)
         (JD.succeed False)
         (JD.succeed Nothing)
 
@@ -85,7 +85,7 @@ fromVersion : Version -> JE.Value
 fromVersion ( files, log ) =
     JE.object
         [ ( "files", JE.array JE.string files )
-        , ( "log", Event.evalEncode log )
+        , ( "log", Log.encode log )
         ]
 
 
@@ -93,7 +93,7 @@ toVersion : JD.Decoder Version
 toVersion =
     JD.map2 Tuple.pair
         (JD.field "files" (JD.array JD.string))
-        (JD.field "log" Event.evalDecoder)
+        (JD.field "log" Log.decoder)
 
 
 toDetails : JD.Value -> Array JD.Value

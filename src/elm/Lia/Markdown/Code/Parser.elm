@@ -22,7 +22,8 @@ import Combine
         , withState
         )
 import Lia.Event exposing (Eval)
-import Lia.Markdown.Code.Types exposing (Code(..), File, Snippet, noLog)
+import Lia.Markdown.Code.Log as Log
+import Lia.Markdown.Code.Types exposing (Code(..), File, Snippet)
 import Lia.Markdown.Inline.Parser exposing (javascript)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Parser.Helper exposing (c_frame, newline, spaces)
@@ -117,15 +118,15 @@ evaluate lang_title_code comment =
             case Array.get (Array.length ar - 1) ar of
                 Just ( snippet, vis ) ->
                     if String.toLower snippet.name == "@output" then
-                        ( Eval vis snippet.code []
+                        ( Log.add_Eval (Eval vis snippet.code []) Log.empty
                         , Array.slice 0 -1 ar
                         )
 
                     else
-                        ( noLog, ar )
+                        ( Log.empty, ar )
 
                 _ ->
-                    ( noLog, ar )
+                    ( Log.empty, ar )
 
         add_state s =
             { s
@@ -134,7 +135,7 @@ evaluate lang_title_code comment =
                         { file = Array.map toFile array
                         , version =
                             Array.fromList
-                                [ ( Array.map (Tuple.first >> .code) array, noLog ) ]
+                                [ ( Array.map (Tuple.first >> .code) array, Log.empty ) ]
                         , evaluation = comment
                         , version_active = 0
                         , log = output

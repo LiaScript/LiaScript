@@ -4,6 +4,7 @@ import Array
 import Json.Encode as JE
 import Lia.Event as Event exposing (Event)
 import Lia.Markdown.Code.Json as Json
+import Lia.Markdown.Code.Log as Log
 import Lia.Markdown.Code.Types exposing (File, Project, Vector, Version)
 
 
@@ -44,7 +45,7 @@ version_update idx project =
     , [ Event "version_update" idx <|
             JE.object
                 [ ( "version_active", JE.int project.version_active )
-                , ( "log", Event.evalEncode project.log )
+                , ( "log", Log.encode project.log )
                 , ( "version"
                   , case Array.get project.version_active project.version of
                         Just version ->
@@ -63,7 +64,7 @@ version_append idx project =
     Event "version_append" idx <|
         JE.object
             [ ( "version_active", JE.int project.version_active )
-            , ( "log", Event.evalEncode project.log )
+            , ( "log", Log.encode project.log )
             , ( "file", JE.array Json.fromFile project.file )
             , ( "version"
               , case Array.get (Array.length project.version - 1) project.version of
@@ -83,7 +84,7 @@ load idx project =
             JE.object
                 [ ( "file", JE.array Json.fromFile project.file )
                 , ( "version_active", JE.int project.version_active )
-                , ( "log", Event.evalEncode project.log )
+                , ( "log", Log.encode project.log )
                 ]
       ]
     )

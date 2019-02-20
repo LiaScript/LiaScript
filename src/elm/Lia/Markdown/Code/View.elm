@@ -7,6 +7,7 @@ import Html.Events exposing (onClick)
 import Json.Encode as JE
 import Lia.Event as Event
 import Lia.Markdown.Code.Editor as Editor
+import Lia.Markdown.Code.Log as Log exposing (Log)
 import Lia.Markdown.Code.Terminal as Terminal
 import Lia.Markdown.Code.Types exposing (Code(..), File, Snippet, Vector)
 import Lia.Markdown.Code.Update exposing (Msg(..))
@@ -61,7 +62,7 @@ view lang theme attr model code =
                     Html.text ""
 
 
-get_annotations : Event.Eval -> Int -> JE.Value
+get_annotations : Log -> Int -> JE.Value
 get_annotations log file_id =
     log.details
         |> list_get file_id
@@ -288,38 +289,33 @@ evaluate theme attr running ( id_1, id_2 ) file headless errors =
         []
 
 
-error : String -> Html msg
-error info =
-    Html.pre
-        [ Attr.class "lia-code-stdout"
-        , Attr.style "color" "red"
-        , scroll_to_end info
-        ]
-        [ Html.text info ]
+
+--error : String -> Html msg
+--error info =
+--    Html.pre
+--        [ Attr.class "lia-code-stdout"
+--        , Attr.style "color" "red"
+--        , scroll_to_end info
+--        ]
+--        [ Html.text info ]
 
 
-view_result : Event.Eval -> Html msg
+view_result : Log -> Html msg
 view_result log =
-    if log.ok then
-        if log.result == "" then
-            Html.div [ Attr.style "margin-top" "8px" ] []
-
-        else
-            Html.pre
-                [ Attr.class "lia-code-stdout"
-                , scroll_to_end log.result
-                ]
-                [ Html.text log.result ]
+    if log.lines == 0 then
+        Html.div [ Attr.style "margin-top" "8px" ] []
 
     else
-        error log.result
+        Log.view log
+            |> Html.pre
+                [ Attr.class "lia-code-stdout"
+                , scroll_to_end log.lines
+                ]
 
 
-scroll_to_end : String -> Html.Attribute msg
-scroll_to_end output =
-    output
-        |> String.lines
-        |> List.length
+scroll_to_end : Int -> Html.Attribute msg
+scroll_to_end lines_ =
+    lines_
         |> (*) 14
         |> (+) 14
         |> String.fromInt

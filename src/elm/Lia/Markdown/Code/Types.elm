@@ -6,14 +6,11 @@ module Lia.Markdown.Code.Types exposing
     , Snippet
     , Vector
     , Version
-    , log_append
-    , message_append
-    , noLog
     )
 
 import Array exposing (Array)
 import Json.Encode as JE
-import Lia.Event as Event
+import Lia.Markdown.Code.Log exposing (Log)
 import Lia.Markdown.Code.Terminal exposing (Terminal)
 
 
@@ -26,7 +23,7 @@ type alias EventMsg =
 
 
 type alias Version =
-    ( Array String, Event.Eval )
+    ( Array String, Log )
 
 
 type alias Project =
@@ -34,15 +31,10 @@ type alias Project =
     , version : Array Version
     , evaluation : String
     , version_active : Int
-    , log : Event.Eval
+    , log : Log
     , running : Bool
     , terminal : Maybe Terminal
     }
-
-
-noLog : Event.Eval
-noLog =
-    Event.Eval True "" []
 
 
 type alias File =
@@ -66,36 +58,33 @@ type Code
     | Evaluate Int
 
 
-log_append : Event.Eval -> Event.Eval -> Event.Eval
-log_append old new =
-    { new
-        | result = append old.result new.result
-        , details = List.append old.details new.details
-    }
 
-
-message_append : String -> Event.Eval -> Event.Eval
-message_append str log =
-    { log | result = append log.result str }
-
-
-append : String -> String -> String
-append str1 str2 =
-    let
-        str =
-            str1 ++ str2
-
-        lines =
-            String.lines str
-
-        len =
-            List.length lines
-    in
-    if len < 500 then
-        str
-
-    else
-        lines
-            |> List.drop (len - 500)
-            |> List.intersperse "\n"
-            |> String.concat
+--log_append : Event.Eval -> Event.Eval -> Event.Eval
+--log_append old new =
+--    { new
+--        | result = append old.result new.result
+--        , details = List.append old.details new.details
+--    }
+--message_append : String -> Event.Eval -> Event.Eval
+--message_append str log =
+--    { log | result = append log.result str }
+--append : String -> String -> String
+--append str1 str2 =
+--    let
+--        str =
+--            str1 ++ str2
+--
+--        lines =
+--            String.lines str
+--
+--        len =
+--            List.length lines
+--    in
+--    if len < 500 then
+--        str
+--
+--    else
+--        lines
+--            |> List.drop (len - 500)
+--            |> List.intersperse "\n"
+--            |> String.concat

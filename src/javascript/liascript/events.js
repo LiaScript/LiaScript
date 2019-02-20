@@ -109,8 +109,10 @@ function getLineNumber(error) {
 function lia_eval(code, send) {
     try {
       let console = {
-        log: (...args) => send.log(true, "\n", args),
-        error: (...args) => send.log(false, "\n",args),
+        debug: (...args) => send.log("debug", "\n", args),
+        log:   (...args) => send.log("info",  "\n", args),
+        warn:  (...args) => send.log("warn",  "\n", args),
+        error: (...args) => send.log("error", "\n", args),
         clear: () => send.lia("LIA: clear")
       };
       console.clear();
@@ -131,17 +133,9 @@ function lia_eval_event(send, channel, handler, event) {
             event.message.message = { result: result, details: details, ok: ok};
             send(event);
           },
-          log: (ok, sep, ...args) => {
-            event.message.topic = "log";
-            let result = "";
-            for(let i=0; i<args.length; i++) {
-              result += args[i].toString()
-            }
-            event.message.message = {
-              result: result + sep,
-              details: [],
-              ok: ok
-            };
+          log: (topic, sep, ...args) => {
+            event.message.topic = topic;
+            event.message.message = list_to_string(sep, args);
             send(event);
           },
           service: websocket(channel),
@@ -151,6 +145,14 @@ function lia_eval_event(send, channel, handler, event) {
             handler.register_input(e1, e2, name, fn) }
         }
     )
+};
+
+function list_to_string(sep, list) {
+  let str = "";
+  for(let i=0; i<list.length; i++) {
+    str += list[i].toString()
+  }
+  return str + sep;
 };
 
 function lia_execute_event(event) {

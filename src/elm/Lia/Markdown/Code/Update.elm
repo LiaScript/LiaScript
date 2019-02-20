@@ -10,8 +10,9 @@ import Json.Encode as JE
 import Lia.Event exposing (Eval, Event)
 import Lia.Markdown.Code.Events as Event
 import Lia.Markdown.Code.Json as Json
+import Lia.Markdown.Code.Log as Log
 import Lia.Markdown.Code.Terminal as Terminal
-import Lia.Markdown.Code.Types exposing (Code(..), File, Project, Vector, log_append, message_append, noLog)
+import Lia.Markdown.Code.Types exposing (Code(..), File, Project, Vector)
 
 
 type Msg
@@ -118,7 +119,7 @@ update msg model =
                     case e.result of
                         "LIA: wait" ->
                             model
-                                |> maybe_project event.section (\p -> { p | log = noLog })
+                                |> maybe_project event.section (\p -> { p | log = Log.empty })
                                 |> Maybe.map (\p -> ( p, [] ))
                                 |> maybe_update event.section model
 
@@ -143,7 +144,7 @@ update msg model =
                                             | terminal = Just <| Terminal.init
                                             , log =
                                                 if e.ok then
-                                                    noLog
+                                                    Log.empty
 
                                                 else
                                                     p.log
@@ -161,9 +162,27 @@ update msg model =
                 "restore" ->
                     restore event.message model
 
-                "log" ->
+                "debug" ->
                     model
-                        |> maybe_project event.section (set_result True (Event.evalDecode event))
+                        |> maybe_project event.section (logger Log.add_Debug event.message)
+                        |> Maybe.map (\p -> ( p, [] ))
+                        |> maybe_update event.section model
+
+                "info" ->
+                    model
+                        |> maybe_project event.section (logger Log.add_Info event.message)
+                        |> Maybe.map (\p -> ( p, [] ))
+                        |> maybe_update event.section model
+
+                "warn" ->
+                    model
+                        |> maybe_project event.section (logger Log.add_Warn event.message)
+                        |> Maybe.map (\p -> ( p, [] ))
+                        |> maybe_update event.section model
+
+                "error" ->
+                    model
+                        |> maybe_project event.section (logger Log.add_Error event.message)
                         |> Maybe.map (\p -> ( p, [] ))
                         |> maybe_update event.section model
 
@@ -191,7 +210,7 @@ update_terminal f msg project =
             )
 
         Just ( terminal, Just str ) ->
-            ( append2log str { project | terminal = Just terminal }
+            ( { project | terminal = Just terminal, log = Log.add_Info str project.log }
             , [ f str ]
             )
 
@@ -256,9 +275,9 @@ is_version_new idx ( project, events ) =
                 let
                     new_project =
                         { project
-                            | version = Array.push ( new_code, noLog ) project.version
+                            | version = Array.push ( new_code, Log.empty ) project.version
                             , version_active = Array.length project.version
-                            , log = noLog
+                            , log = Log.empty
                         }
                 in
                 ( new_project
@@ -291,14 +310,14 @@ stop project =
 
 
 set_result : Bool -> Eval -> Project -> Project
-set_result continue log project =
+set_result continue e project =
     case project.version |> Array.get project.version_active of
         Just ( code, _ ) ->
             { project
                 | version =
                     Array.set
                         project.version_active
-                        ( code, log )
+                        ( code, Log.add_Eval e project.log )
                         project.version
                 , running =
                     if continue then
@@ -307,11 +326,7 @@ set_result continue log project =
                     else
                         False
                 , log =
-                    if continue then
-                        log_append project.log log
-
-                    else
-                        log
+                    Log.add_Eval e project.log
             }
 
         Nothing ->
@@ -321,14 +336,14 @@ set_result continue log project =
 clr : Project -> Project
 clr project =
     case project.version |> Array.get project.version_active of
-        Just ( code, log ) ->
+        Just ( code, _ ) ->
             { project
                 | version =
                     Array.set
                         project.version_active
-                        ( code, { log | result = "" } )
+                        ( code, Log.empty )
                         project.version
-                , log = { log | result = "" }
+                , log = Log.empty
             }
 
         Nothing ->
@@ -352,6 +367,18 @@ load idx project =
             project
 
 
-append2log : String -> Project -> Project
-append2log str project =
-    { project | log = message_append str project.log }
+logger : (String -> Log.Log -> Log.Log) -> JD.Value -> Project -> Project
+logger fn event_str project =
+    case ( project.version |> Array.get project.version_active, JD.decodeValue JD.string event_str ) of
+        ( Just ( code, _ ), Ok str ) ->
+            { project
+                | version =
+                    Array.set
+                        project.version_active
+                        ( code, fn str project.log )
+                        project.version
+                , log = fn str project.log
+            }
+
+        _ ->
+            project
