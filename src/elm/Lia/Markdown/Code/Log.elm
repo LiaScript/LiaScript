@@ -5,6 +5,7 @@ module Lia.Markdown.Code.Log exposing
     , add_Eval
     , add_Info
     , add_Warn
+    , clear
     , decode
     , decoder
     , empty
@@ -29,7 +30,7 @@ type Level
 
 type alias Message =
     { level : Level
-    , message : String
+    , text : String
     }
 
 
@@ -55,8 +56,8 @@ view log =
 
 
 view_message : Message -> Html msg
-view_message { level, message } =
-    Html.span [ view_level level ] [ Html.text message ]
+view_message { level, text } =
+    Html.span [ view_level level ] [ Html.text text ]
 
 
 view_level : Level -> Html.Attribute msg
@@ -96,6 +97,11 @@ add_Error =
     add_ Error
 
 
+clear : Log -> Log
+clear log =
+    { log | lines = 0, messages = [] }
+
+
 add_ : Level -> String -> Log -> Log
 add_ level str log =
     let
@@ -104,13 +110,14 @@ add_ level str log =
                 |> String.lines
                 |> List.length
     in
+    --    shrink <|
     case log.messages of
         x :: xs ->
             { log
-                | lines = log.lines + lines
+                | lines = log.lines + lines - 1
                 , messages =
                     if x.level == level then
-                        { x | message = x.message ++ str } :: xs
+                        { x | text = x.text ++ str } :: xs
 
                     else
                         Message level str :: x :: xs
@@ -130,6 +137,59 @@ add_Eval eval log =
                 add_Error
            )
             eval.result
+
+
+
+-- max_lines : Int
+-- max_lines =
+--     1000
+--
+--
+-- shrink : Log -> Log
+-- shrink log =
+--     if log.lines <= max_lines then
+--         log
+--
+--     else
+--         { log
+--             | lines = max_lines
+--             , messages =
+--                 log.messages
+--                     |> List.reverse
+--                     |> cut_log log.lines
+--                     |> List.reverse
+--         }
+--
+--
+-- cut_log : Int -> List Message -> List Message
+-- cut_log lines list =
+--     case list of
+--         [] ->
+--             []
+--
+--         msg :: msgs ->
+--             let
+--                 msg_text =
+--                     Debug.log "Text" <| String.lines msg.text
+--
+--                 msg_lines =
+--                     Debug.log "Lines" <| List.length msg_text
+--
+--                 offset =
+--                     Debug.log "Offset" (lines - msg_lines)
+--             in
+--             if offset < max_lines then
+--                 { msg
+--                     | text =
+--                         msg_text
+--                             |> List.drop (max_lines - offset)
+--                             |> List.intersperse "\n"
+--                             |> String.concat
+--                 }
+--                     :: msgs
+--
+--             else
+--                 cut_log offset msgs
 
 
 encode : Log -> JE.Value
@@ -161,10 +221,10 @@ encLevel level =
 
 
 encMessage : Message -> JE.Value
-encMessage { level, message } =
+encMessage { level, text } =
     JE.object
         [ ( "level", encLevel level )
-        , ( "msg", JE.string message )
+        , ( "text", JE.string text )
         ]
 
 
@@ -208,4 +268,4 @@ decMessage : JD.Decoder Message
 decMessage =
     JD.map2 Message
         (JD.field "level" decLevel)
-        (JD.field "msg" JD.string)
+        (JD.field "text" JD.string)
