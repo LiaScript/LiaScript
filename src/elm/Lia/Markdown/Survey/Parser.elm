@@ -13,7 +13,6 @@ import Combine
         , many1
         , map
         , modifyState
-        , or
         , parens
         , regex
         , string

@@ -5,7 +5,6 @@ import Html exposing (Html)
 import Html.Attributes as Attr exposing (attribute)
 import Html.Events exposing (onClick)
 import Json.Encode as JE
-import Lia.Event as Event
 import Lia.Markdown.Code.Editor as Editor
 import Lia.Markdown.Code.Log as Log exposing (Log)
 import Lia.Markdown.Code.Terminal as Terminal

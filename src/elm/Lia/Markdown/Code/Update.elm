@@ -48,7 +48,7 @@ restore json model =
                 [ Event.store model ]
             )
 
-        Err msg ->
+        Err _ ->
             ( model, [] )
 
 

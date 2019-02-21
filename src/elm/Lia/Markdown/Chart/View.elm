@@ -50,26 +50,28 @@ view attr chart =
                 |> Dict.toList
                 |> List.map plot
     in
-    LineChart.viewCustom
-        { y = Axis.default 450 chart.y_label (Tuple.first >> .y)
-        , x = Axis.default 600 chart.x_label (Tuple.first >> .x)
-        , container =
-            Container.styled "lia-diagram"
-                [ ( "width", "100%" )
-                , ( "display", "inline" )
-                , ( "font-family", "monospace" )
-                ]
-        , interpolation = Interpolation.monotone
-        , intersection = Intersection.default
-        , legends = Legends.none
-        , events = Events.default
-        , junk = Junk.custom (title chart.title)
-        , grid = Grid.default
-        , area = Area.default
-        , line = Line.default
-        , dots = customDotsConfig
-        }
-        list
+    Html.div (annotation "lia-chart" attr)
+        [ LineChart.viewCustom
+            { y = Axis.default 450 chart.y_label (Tuple.first >> .y)
+            , x = Axis.default 600 chart.x_label (Tuple.first >> .x)
+            , container =
+                Container.styled "lia-diagram"
+                    [ ( "width", "100%" )
+                    , ( "display", "inline" )
+                    , ( "font-family", "monospace" )
+                    ]
+            , interpolation = Interpolation.monotone
+            , intersection = Intersection.default
+            , legends = Legends.none
+            , events = Events.default
+            , junk = Junk.custom (title chart.title)
+            , grid = Grid.default
+            , area = Area.default
+            , line = Line.default
+            , dots = customDotsConfig
+            }
+            list
+        ]
 
 
 plot : ( Char, Diagram ) -> LineChart.Series ( Point, Bool )

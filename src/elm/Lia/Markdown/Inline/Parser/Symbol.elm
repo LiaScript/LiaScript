@@ -2,7 +2,6 @@ module Lia.Markdown.Inline.Parser.Symbol exposing (arrows, smileys)
 
 import Combine exposing (Parser, choice, map, onsuccess, string)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..))
-import Lia.Parser.State exposing (State)
 
 
 arrows : Parser s (Annotation -> Inline)

@@ -5,7 +5,7 @@ import Json.Encode as JE
 import Lia.Event as Event exposing (Event)
 import Lia.Markdown.Code.Json as Json
 import Lia.Markdown.Code.Log as Log
-import Lia.Markdown.Code.Types exposing (File, Project, Vector, Version)
+import Lia.Markdown.Code.Types exposing (File, Project, Vector)
 
 
 stop : Int -> List Event

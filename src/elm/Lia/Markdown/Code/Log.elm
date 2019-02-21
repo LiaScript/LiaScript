@@ -13,7 +13,6 @@ module Lia.Markdown.Code.Log exposing
     , view
     )
 
-import Array exposing (Array)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Decode as JD
