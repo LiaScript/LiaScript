@@ -12,7 +12,7 @@ import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Code.Log as Log
-import Lia.Markdown.Code.Types exposing (File, Project, Vector, Version)
+import Lia.Markdown.Code.Types exposing (File, Project, Repo, Vector, Version)
 
 
 merge : Vector -> Vector -> Vector
@@ -39,27 +39,31 @@ toVector json =
 
 
 fromProject : Project -> JE.Value
-fromProject project =
+fromProject p =
     JE.object
-        [ ( "file", JE.array fromFile project.file )
-        , ( "version", JE.array fromVersion project.version )
-        , ( "version_active", JE.int project.version_active )
-        , ( "log", Log.encode project.log )
-        , ( "repository", JE.dict identity JE.string project.repository )
+        [ ( "file", JE.array fromFile p.file )
+        , ( "version", JE.array fromVersion p.version )
+        , ( "version_active", JE.int p.version_active )
+        , ( "log", Log.encode p.log )
+        , ( "repository", JE.dict identity JE.string p.repository )
+        , ( "compact_view", JE.bool p.compact_view )
         ]
+
+
+project : Array File -> Array Version -> Int -> Log.Log -> Repo -> Bool -> Project
+project files version active log repository compact =
+    Project files -1 version active repository "" log False Nothing compact
 
 
 toProject : JD.Decoder Project
 toProject =
-    JD.map8 Project
+    JD.map6 project
         (JD.field "file" (JD.array toFile))
         (JD.field "version" (JD.array toVersion))
-        (JD.succeed "")
         (JD.field "version_active" JD.int)
         (JD.field "log" Log.decoder)
-        (JD.succeed False)
-        (JD.succeed Nothing)
         (JD.field "repository" (JD.dict JD.string))
+        (JD.field "compact_view" JD.bool)
 
 
 fromFile : File -> JE.Value

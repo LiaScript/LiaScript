@@ -42,13 +42,15 @@ type alias EventMsg =
 
 type alias Project =
     { file : Array File
+    , focus : Int
     , version : Array Version
-    , evaluation : String
     , version_active : Int
+    , repository : Repo
+    , evaluation : String
     , log : Log
     , running : Bool
     , terminal : Maybe Terminal
-    , repository : Repo
+    , compact_view : Bool
     }
 
 
@@ -90,6 +92,7 @@ initProject array comment output =
                 |> Array.toList
     in
     { file = files
+    , focus = -1
     , version =
         Array.fromList [ ( List.map Tuple.first repository, Log.empty ) ]
     , evaluation = comment
@@ -98,6 +101,7 @@ initProject array comment output =
     , running = False
     , terminal = Nothing
     , repository = Dict.fromList repository
+    , compact_view = False
     }
 
 
