@@ -19,12 +19,12 @@ merge : Vector -> Vector -> Vector
 merge old new =
     new
         |> Array.toList
-        |> List.map2 copy_evaluation (Array.toList old)
+        |> List.map2 copy (Array.toList old)
         |> Array.fromList
 
 
-copy_evaluation : Project -> Project -> Project
-copy_evaluation old new =
+copy : Project -> Project -> Project
+copy old new =
     { new | evaluation = old.evaluation }
 
 
@@ -45,12 +45,13 @@ fromProject project =
         , ( "version", JE.array fromVersion project.version )
         , ( "version_active", JE.int project.version_active )
         , ( "log", Log.encode project.log )
+        , ( "repository", JE.dict identity JE.string project.repository )
         ]
 
 
 toProject : JD.Decoder Project
 toProject =
-    JD.map7 Project
+    JD.map8 Project
         (JD.field "file" (JD.array toFile))
         (JD.field "version" (JD.array toVersion))
         (JD.succeed "")
@@ -58,6 +59,7 @@ toProject =
         (JD.field "log" Log.decoder)
         (JD.succeed False)
         (JD.succeed Nothing)
+        (JD.field "repository" (JD.dict JD.string))
 
 
 fromFile : File -> JE.Value
@@ -82,9 +84,9 @@ toFile =
 
 
 fromVersion : Version -> JE.Value
-fromVersion ( files, log ) =
+fromVersion ( hashes, log ) =
     JE.object
-        [ ( "files", JE.array JE.string files )
+        [ ( "hashes", JE.list JE.string hashes )
         , ( "log", Log.encode log )
         ]
 
@@ -92,7 +94,7 @@ fromVersion ( files, log ) =
 toVersion : JD.Decoder Version
 toVersion =
     JD.map2 Tuple.pair
-        (JD.field "files" (JD.array JD.string))
+        (JD.field "hashes" (JD.list JD.string))
         (JD.field "log" Log.decoder)
 
 

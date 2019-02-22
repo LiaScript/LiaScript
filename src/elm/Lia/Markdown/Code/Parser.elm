@@ -23,7 +23,7 @@ import Combine
         )
 import Lia.Event exposing (Eval)
 import Lia.Markdown.Code.Log as Log
-import Lia.Markdown.Code.Types exposing (Code(..), File, Snippet)
+import Lia.Markdown.Code.Types exposing (Code(..), File, Snippet, initProject)
 import Lia.Markdown.Inline.Parser exposing (javascript)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Parser.Helper exposing (c_frame, newline, spaces)
@@ -103,11 +103,6 @@ listing =
     c_frame |> andThen body
 
 
-toFile : ( Snippet, Bool ) -> File
-toFile ( { lang, name, code }, visible ) =
-    File lang name code visible False
-
-
 evaluate : List ( Snippet, Bool ) -> String -> Parser State Code
 evaluate lang_title_code comment =
     let
@@ -131,18 +126,7 @@ evaluate lang_title_code comment =
         add_state s =
             { s
                 | code_vector =
-                    Array.push
-                        { file = Array.map toFile array
-                        , version =
-                            Array.fromList
-                                [ ( Array.map (Tuple.first >> .code) array, Log.empty ) ]
-                        , evaluation = comment
-                        , version_active = 0
-                        , log = output
-                        , running = False
-                        , terminal = Nothing
-                        }
-                        s.code_vector
+                    Array.push (initProject array comment output) s.code_vector
             }
     in
     (\s ->

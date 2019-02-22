@@ -171,7 +171,7 @@ class LiaDB {
 
     update(event, slide) {
         if (!this.versionDB) return;
-        
+
         if (this.channel) {
             this.channel.push("party", { update: event, slide: slide } );
             return;
@@ -192,6 +192,7 @@ class LiaDB {
 
                     if (vector) {
                         let project = vector.data[event.section];
+
                         switch (event.topic) {
                             case "flip": {
                                 if(event.message.topic == "view")
@@ -212,6 +213,7 @@ class LiaDB {
                                 project.version_active = e_.version_active;
                                 project.log = e_.log;
                                 project.version[e_.version_active] = e_.version;
+                                project.repository = e_.repository;
                                 break;
                             }
                             case "version_append": {
@@ -220,6 +222,7 @@ class LiaDB {
                                 project.log = e_.log;
                                 project.file = e_.file;
                                 project.version.push(e_.version);
+                                project.repository = e_.repository;
                                 break;
                             }
                             default: {

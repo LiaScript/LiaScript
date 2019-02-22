@@ -54,6 +54,7 @@ version_update idx project =
                         Nothing ->
                             JE.null
                   )
+                , ( "repository", JE.dict identity JE.string project.repository )
                 ]
       ]
     )
@@ -74,6 +75,7 @@ version_append idx project =
                     Nothing ->
                         JE.null
               )
+            , ( "repository", JE.dict identity JE.string project.repository )
             ]
 
 

@@ -12,7 +12,7 @@ import Lia.Markdown.Code.Events as Event
 import Lia.Markdown.Code.Json as Json
 import Lia.Markdown.Code.Log as Log
 import Lia.Markdown.Code.Terminal as Terminal
-import Lia.Markdown.Code.Types exposing (Code(..), File, Project, Vector)
+import Lia.Markdown.Code.Types exposing (Code(..), File, Project, Vector, loadVersion, updateVersion)
 
 
 type Msg
@@ -87,13 +87,13 @@ update msg model =
 
         Load idx version ->
             model
-                |> maybe_project idx (load version)
+                |> maybe_project idx (loadVersion version)
                 |> Maybe.map (Event.load idx)
                 |> maybe_update idx model
 
         First idx ->
             model
-                |> maybe_project idx (load 0)
+                |> maybe_project idx (loadVersion 0)
                 |> Maybe.map (Event.load idx)
                 |> maybe_update idx model
 
@@ -105,7 +105,7 @@ update msg model =
                         |> Maybe.withDefault 0
             in
             model
-                |> maybe_project idx (load version)
+                |> maybe_project idx (loadVersion version)
                 |> Maybe.map (Event.load idx)
                 |> maybe_update idx model
 
@@ -269,25 +269,13 @@ update_file id_1 id_2 model f f_log =
 
 is_version_new : Int -> ( Project, List Event ) -> ( Project, List Event )
 is_version_new idx ( project, events ) =
-    case ( project.version |> Array.get project.version_active, project.file |> Array.map .code ) of
-        ( Just ( code, _ ), new_code ) ->
-            if code /= new_code then
-                let
-                    new_project =
-                        { project
-                            | version = Array.push ( new_code, Log.empty ) project.version
-                            , version_active = Array.length project.version
-                            , log = Log.empty
-                        }
-                in
-                ( new_project
-                , Event.version_append idx new_project :: events
-                )
+    case updateVersion project of
+        Just new_project ->
+            ( new_project
+            , Event.version_append idx new_project :: events
+            )
 
-            else
-                ( project, events )
-
-        ( Nothing, _ ) ->
+        Nothing ->
             ( project, events )
 
 
@@ -347,23 +335,6 @@ clr project =
             }
 
         Nothing ->
-            project
-
-
-load : Int -> Project -> Project
-load idx project =
-    case Array.get idx project.version of
-        Just ( code, log ) ->
-            { project
-                | version_active = idx
-                , file =
-                    Array.indexedMap
-                        (\i a -> { a | code = Array.get i code |> Maybe.withDefault a.code })
-                        project.file
-                , log = log
-            }
-
-        _ ->
             project
 
 
