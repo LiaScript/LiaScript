@@ -30,19 +30,19 @@
     "mini-css-extract-plugin": "^0.5.0",
     "node-sass": "^4.11.0",
     "optimize-css-assets-webpack-plugin": "^5.0.1",
-    "sass": "^1.17.0",
+    "sass": "^1.17.1",
     "sass-loader": "^7.1.0",
     "style-loader": "^0.23.1",
     "terser-webpack-plugin": "^1.2.2",
-    "webpack": "^4.29.3",
+    "webpack": "^4.29.5",
     "webpack-cli": "^3.2.3",
-    "webpack-dev-middleware": "^3.5.2",
-    "webpack-dev-server": "^3.1.14",
+    "webpack-dev-middleware": "^3.6.0",
+    "webpack-dev-server": "^3.2.0",
     "webpack-merge": "^4.2.1"
   },
   "dependencies": {
-    "ace-builds": "^1.4.2",
-    "katex": "^0.10.0",
+    "ace-builds": "^1.4.3",
+    "katex": "^0.10.1",
     "sass-material-colors": "0.0.5"
   }
 }
