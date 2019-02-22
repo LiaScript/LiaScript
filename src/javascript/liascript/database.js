@@ -213,7 +213,6 @@ class LiaDB {
                                 project.version_active = e_.version_active;
                                 project.log = e_.log;
                                 project.version[e_.version_active] = e_.version;
-                                project.repository = e_.repository;
                                 break;
                             }
                             case "version_append": {
@@ -222,7 +221,7 @@ class LiaDB {
                                 project.log = e_.log;
                                 project.file = e_.file;
                                 project.version.push(e_.version);
-                                project.repository = e_.repository;
+                                project.repository = {...project.repository, ...e_.repository};
                                 break;
                             }
                             default: {

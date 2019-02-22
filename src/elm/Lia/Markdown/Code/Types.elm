@@ -3,6 +3,7 @@ module Lia.Markdown.Code.Types exposing
     , EventMsg
     , File
     , Project
+    , Repo
     , Snippet
     , Vector
     , Version
@@ -27,6 +28,10 @@ type alias Version =
     ( List Hash, Log )
 
 
+type alias Repo =
+    Dict Hash String
+
+
 type alias Vector =
     Array Project
 
@@ -43,7 +48,7 @@ type alias Project =
     , log : Log
     , running : Bool
     , terminal : Maybe Terminal
-    , repository : Dict Hash String
+    , repository : Repo
     }
 
 
@@ -101,7 +106,7 @@ hash file =
     ( MD5.hex file.code, file.code )
 
 
-updateVersion : Project -> Maybe Project
+updateVersion : Project -> Maybe ( Project, Repo )
 updateVersion project =
     let
         code =
@@ -118,19 +123,24 @@ updateVersion project =
             |> Maybe.map ((/=) hashes)
             |> Maybe.withDefault False
     then
+        let
+            repository =
+                List.map2
+                    Tuple.pair
+                    hashes
+                    (Array.toList code)
+                    |> Dict.fromList
+                    |> Dict.union project.repository
+        in
         Just
-            { project
+            ( { project
                 | version = Array.push ( hashes, Log.empty ) project.version
                 , version_active = Array.length project.version
                 , log = Log.empty
-                , repository =
-                    List.map2
-                        Tuple.pair
-                        hashes
-                        (Array.toList code)
-                        |> Dict.fromList
-                        |> Dict.union project.repository
-            }
+                , repository = repository
+              }
+            , Dict.diff repository project.repository
+            )
 
     else
         Nothing

@@ -270,9 +270,9 @@ update_file id_1 id_2 model f f_log =
 is_version_new : Int -> ( Project, List Event ) -> ( Project, List Event )
 is_version_new idx ( project, events ) =
     case updateVersion project of
-        Just new_project ->
+        Just ( new_project, repo_update ) ->
             ( new_project
-            , Event.version_append idx new_project :: events
+            , Event.version_append idx new_project repo_update :: events
             )
 
         Nothing ->

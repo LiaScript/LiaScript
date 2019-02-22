@@ -5,7 +5,7 @@ import Json.Encode as JE
 import Lia.Event as Event exposing (Event)
 import Lia.Markdown.Code.Json as Json
 import Lia.Markdown.Code.Log as Log
-import Lia.Markdown.Code.Types exposing (File, Project, Vector)
+import Lia.Markdown.Code.Types exposing (File, Project, Repo, Vector)
 
 
 stop : Int -> List Event
@@ -54,14 +54,13 @@ version_update idx project =
                         Nothing ->
                             JE.null
                   )
-                , ( "repository", JE.dict identity JE.string project.repository )
                 ]
       ]
     )
 
 
-version_append : Int -> Project -> Event
-version_append idx project =
+version_append : Int -> Project -> Repo -> Event
+version_append idx project repo_update =
     Event "version_append" idx <|
         JE.object
             [ ( "version_active", JE.int project.version_active )
@@ -75,7 +74,7 @@ version_append idx project =
                     Nothing ->
                         JE.null
               )
-            , ( "repository", JE.dict identity JE.string project.repository )
+            , ( "repository", JE.dict identity JE.string repo_update )
             ]
 
 
