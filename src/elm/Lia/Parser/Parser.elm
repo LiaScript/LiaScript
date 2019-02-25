@@ -14,19 +14,19 @@ import Lia.Parser.Preprocessor as Preprocessor
 import Lia.Types exposing (Section, SectionBase)
 
 
-parse_defintion : String -> String -> Result String ( Definition, String )
+parse_defintion : String -> String -> Result String ( Definition, String, Int )
 parse_defintion base code =
-    case Combine.runParser Lia.Definition.Parser.parse (init identity 0 <| Lia.Definition.Types.default base) code of
-        Ok ( state, data, _ ) ->
-            Ok ( state.defines, data.input )
+    case Combine.runParser Lia.Definition.Parser.parse (init identity 1 <| Lia.Definition.Types.default base) code of
+        Ok ( state, data, editor_lines ) ->
+            Ok ( state.defines, data.input, editor_lines )
 
         Err ( _, stream, ms ) ->
             Err (formatError ms stream)
 
 
 parse_titles : Definition -> String -> Result String ( SectionBase, String )
-parse_titles defines code =
-    case Combine.runParser Preprocessor.section (init identity 0 defines) code of
+parse_titles editor_line defines code =
+    case Combine.runParser Preprocessor.section (init identity editor_line defines) code of
         Ok ( _, data, rslt ) ->
             Ok ( rslt, data.input )
 

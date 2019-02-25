@@ -33,6 +33,7 @@ import Lia.Markdown.Macro.Parser as Macro
 import Lia.Parser.Context
     exposing
         ( Context
+        , getLine
         , indentation
         , indentation_append
         , indentation_pop
@@ -42,7 +43,7 @@ import Lia.Parser.Context
 import Lia.Parser.Helper exposing (newline, stringTill)
 
 
-parse : Parser Context ()
+parse : Parser Context Int
 parse =
     lazy <|
         \() ->
@@ -50,7 +51,7 @@ parse =
                 |> keep (modifyState (\s -> { s | defines_updated = True }))
                 |> maybe
                 |> ignore whitespace
-                |> skip
+                |> keep getLine
 
 
 inline_parser : Definition -> String -> Inlines

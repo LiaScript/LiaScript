@@ -85,9 +85,9 @@ load_first_slide model =
 
 
 add_imports : Model -> String -> Model
-add_imports model code =
-    case Parser.parse_defintion model.url code of
-        Ok ( definition, _ ) ->
+add_imports model course_url =
+    case Parser.parse_defintion model.url course_url of
+        Ok ( definition, _, _ ) ->
             add_todos definition model
 
         Err _ ->
@@ -114,35 +114,40 @@ init_script : Model -> String -> ( Model, Maybe String, List String )
 init_script model script =
     case Parser.parse_defintion model.url script of
         Ok ( definition, code ) ->
-            ( { model
-                | definition = { definition | resources = [], imports = [], attributes = [] }
-                , translation = Translations.getLnFromCode definition.language
-              }
-                |> add_todos definition
-            , Just code
-            , definition.imports
-            )
+            case Parser.parse_titles editor_line definition code of
+                Ok title_sections ->
+                    let
+                        sections =
+                            title_sections
+                                |> Array.fromList
+                                |> Array.indexedMap init_section
 
-        Err msg ->
-            ( { model | error = Just msg }, Nothing, [] )
+                        search =
+                            title_sections
+                                |> List.map (.title >> stringify >> String.trim)
+                                |> List.indexedMap generateIndex
+                                |> searchIndex
 
+                        section_active =
+                            if Array.length sections > model.section_active then
+                                model.section_active
 
-parse_section : Model -> String -> ( Model, Maybe String )
-parse_section model code =
-    case Parser.parse_titles model.definition code of
-        Ok ( sec, rest ) ->
-            ( { model
-                | sections =
-                    Array.push
-                        (init_section (pages model) sec)
-                        model.sections
-              }
-            , if String.isEmpty rest then
-                Nothing
+                            else
+                                0
+                    in
+                    ( { model
+                        | definition = { definition | resources = [], imports = [], attributes = [] }
+                        , sections = sections
+                        , section_active = section_active
+                        , translation = Translations.getLnFromCode definition.language
+                        , search_index = search
+                      }
+                        |> add_todos definition
+                    , definition.imports
+                    )
 
-              else
-                Just rest
-            )
+                Err msg ->
+                    ( { model | error = Just msg }, [] )
 
         Err msg ->
             ( { model | error = Just msg }, Nothing )
