@@ -19,6 +19,7 @@ import Lia.Markdown.Inline.Parser exposing (line)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Parser.Helper exposing (newline)
 import Lia.Parser.State exposing (State)
+import Lia.Types exposing (SectionBase)
 
 
 title_tag : Parser State Int
@@ -55,14 +56,14 @@ body =
         |> map String.concat
 
 
-section : Parser State ( Int, Inlines, String )
+section : Parser State SectionBase
 section =
     title_tag
-        |> map (\a b c -> ( a, b, c ))
+        |> map SectionBase
         |> andMap title_str
         |> andMap body
 
 
-run : Parser State (List ( Int, Inlines, String ))
+run : Parser State (List SectionBase)
 run =
     many section
