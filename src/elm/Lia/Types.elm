@@ -28,6 +28,7 @@ type alias Section =
     , definition : Maybe Definition
     , footnotes : Footnote.Model
     , footnote2show : Maybe String
+    , editor_line : Int
     }
 
 
@@ -60,4 +61,5 @@ init_section idx base =
     , definition = Nothing
     , footnotes = Footnote.init
     , footnote2show = Nothing
+    , editor_line = 0
     }
