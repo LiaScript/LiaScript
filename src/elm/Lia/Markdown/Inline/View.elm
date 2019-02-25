@@ -55,8 +55,8 @@ goto line =
 view : Int -> Inline -> Html msg
 view visible element =
     case element of
-        Chars e Nothing ->
-            Html.text e
+        Chars e l Nothing ->
+            Html.span [ Attr.attribute "ondblclick" ("alert(\"" ++ String.fromInt l ++ "\");") ] [ Html.text e ]
 
         Bold e attr ->
             Html.b (annotation "lia-bold" attr) [ view visible e ]
@@ -86,7 +86,7 @@ view visible element =
                 [ Attr.attribute "displayMode" mode ]
                 [ Html.text e ]
 
-        Symbol e Nothing ->
+        Symbol e l Nothing ->
             Html.text e
 
         FootnoteMark e attr ->
@@ -113,11 +113,11 @@ view visible element =
             else
                 Html.text ""
 
-        Symbol e attr ->
-            view visible (Container [ Symbol e Nothing ] attr)
+        Symbol e l attr ->
+            view visible (Container [ Symbol e l Nothing ] attr)
 
-        Chars e attr ->
-            view visible (Container [ Chars e Nothing ] attr)
+        Chars e l attr ->
+            view visible (Container [ Chars e l Nothing ] attr)
 
         Formula mode e attr ->
             view visible (Container [ Formula mode e Nothing ] attr)

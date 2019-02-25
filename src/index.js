@@ -11,4 +11,7 @@ if(document.getElementById("lia")) {
 }
 
 window.showFootnote = (key) => app.footnote(key);
+<<<<<<< HEAD
 window.gotoLia = (line) => app.goto(line);
+=======
+>>>>>>> new allert version

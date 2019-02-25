@@ -60,6 +60,10 @@ section : Parser Context SectionBase
 section =
     title_tag
         |> map SectionBase
+<<<<<<< HEAD
         |> andMap getLine
+=======
+        |> andMap (withLine succeed)
+>>>>>>> new allert version
         |> andMap title_str
         |> andMap body
