@@ -16,7 +16,7 @@ import Lia.Types exposing (Section, SectionBase)
 
 parse_defintion : String -> String -> Result String ( Definition, String )
 parse_defintion base code =
-    case Combine.runParser Lia.Definition.Parser.parse (init identity <| Lia.Definition.Types.default base) code of
+    case Combine.runParser Lia.Definition.Parser.parse (init identity 0 <| Lia.Definition.Types.default base) code of
         Ok ( state, data, _ ) ->
             Ok ( state.defines, data.input )
 
@@ -26,7 +26,7 @@ parse_defintion base code =
 
 parse_titles : Definition -> String -> Result String ( SectionBase, String )
 parse_titles defines code =
-    case Combine.runParser Preprocessor.section (init identity defines) code of
+    case Combine.runParser Preprocessor.section (init identity 0 defines) code of
         Ok ( _, data, rslt ) ->
             Ok ( rslt, data.input )
 
@@ -43,7 +43,7 @@ parse_section search_index global section =
     case
         Combine.runParser
             (Lia.Definition.Parser.parse |> keep Markdown.run)
-            (init search_index { global | section = section.idx })
+            (init search_index section.editor_line { global | section = section.idx })
             section.code
     of
         Ok ( state, _, es ) ->

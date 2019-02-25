@@ -48,7 +48,7 @@ import Lia.Markdown.Inline.Parser.Formula exposing (formula)
 import Lia.Markdown.Inline.Parser.Symbol exposing (arrows, smileys)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..))
 import Lia.Markdown.Macro.Parser as Macro
-import Lia.Parser.Context exposing (Context, searchIndex)
+import Lia.Parser.Context exposing (Context, getLine, searchIndex)
 import Lia.Parser.Helper exposing (spaces, stringTill)
 
 
@@ -145,7 +145,7 @@ html =
     choice
         [ javascript
             |> andThen state
-            |> keep (succeed (Chars "" Nothing))
+            |> keep (succeed (Chars "" -1 Nothing))
         , html_void
         , html_block
         ]
@@ -186,8 +186,15 @@ combine list =
 
         x1 :: x2 :: xs ->
             case ( x1, x2 ) of
-                ( Chars str1 Nothing, Chars str2 Nothing ) ->
-                    combine (Chars (str1 ++ str2) Nothing :: xs)
+                ( Chars str1 line1 Nothing, Chars str2 line2 Nothing ) ->
+                    if line1 < 0 then
+                        combine (Chars (str1 ++ str2) line2 Nothing :: xs)
+
+                    else if line1 == line2 then
+                        combine (Chars (str1 ++ str2) line1 Nothing :: xs)
+
+                    else
+                        x1 :: combine (x2 :: xs)
 
                 _ ->
                     x1 :: combine (x2 :: xs)
@@ -202,7 +209,7 @@ line =
 
 append_space : Inlines -> Inlines
 append_space list =
-    List.append list [ Chars " " Nothing ]
+    List.append list [ Chars " " -1 Nothing ]
 
 
 inlines : Parser Context Inline
@@ -237,9 +244,10 @@ email =
         |> map ((++) "mailto:")
 
 
-inline_url : Parser s (Annotation -> Inline)
+inline_url : Parser State (Annotation -> Inline)
 inline_url =
-    map (\u -> Ref (Link [ Chars u Nothing ] u "")) url
+    map (\u l -> Ref (Link [ Chars u l Nothing ] u "")) url
+        |> andMap getLine
 
 
 ref_info : Parser Context Inlines
@@ -363,11 +371,13 @@ strings =
                 base =
                     regex "[^*_~:;`!\\^\\[\\]|{}\\\\\\n\\-<>=$ ]+"
                         |> map Chars
+                        |> andMap getLine
 
                 escape =
                     string "\\"
                         |> keep (regex "[\\^*_+-~`\\\\${}\\[\\]|#]")
                         |> map Chars
+                        |> andMap getLine
 
                 italic =
                     or (between_ "*") (between_ "_")
@@ -392,10 +402,12 @@ strings =
                 characters =
                     regex "[~:_;\\-<>=${}\\[\\] ]"
                         |> map Chars
+                        |> andMap getLine
 
                 base2 =
                     regex "[^\n|*]+"
                         |> map Chars
+                        |> andMap getLine
             in
             choice
                 [ inline_url

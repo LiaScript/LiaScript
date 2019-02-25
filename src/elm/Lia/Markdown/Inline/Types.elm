@@ -23,8 +23,8 @@ type alias Annotation =
 
 
 type Inline
-    = Chars String Annotation
-    | Symbol String Annotation
+    = Chars String Int Annotation
+    | Symbol String Int Annotation
     | Bold Inline Annotation
     | Italic Inline Annotation
     | Strike Inline Annotation

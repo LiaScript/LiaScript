@@ -13,7 +13,7 @@ stringify inlines =
 inline2string : Inline -> String
 inline2string inline =
     case inline of
-        Chars str _ ->
+        Chars str _ _ ->
             str
 
         Bold x _ ->

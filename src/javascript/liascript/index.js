@@ -119,6 +119,10 @@ class LiaScript {
         liaStorage = new LiaStorage(channel);
     }
 
+    footnote(key) {
+        this.app.ports.footnote.send(key);
+    }
+
     initChannel(channel, send) {
         if(!channel)
             return;

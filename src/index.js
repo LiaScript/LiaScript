@@ -9,3 +9,5 @@ if(document.getElementById("lia")) {
     var app = new LiaScript(document.getElementById("lia"), false);
   }
 }
+
+window.showFootnote = (key) => app.footnote(key);

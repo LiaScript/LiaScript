@@ -4,6 +4,7 @@ import Combine
     exposing
         ( Parser
         , andMap
+        , andThen
         , choice
         , fail
         , ignore
@@ -14,6 +15,7 @@ import Combine
         , string
         , succeed
         , withColumn
+        , withLine
         )
 import Lia.Markdown.Inline.Parser exposing (line)
 import Lia.Markdown.Inline.Types exposing (Inlines)
@@ -58,5 +60,6 @@ section : Parser Context SectionBase
 section =
     title_tag
         |> map SectionBase
+        |> andMap (withLine succeed)
         |> andMap title_str
         |> andMap body

@@ -9,7 +9,7 @@ module Lia.Parser.Context exposing
     )
 
 import Array
-import Combine exposing (Parser, ignore, lazy, modifyState, regex, skip, succeed, withState)
+import Combine exposing (Parser, andMap, andThen, ignore, lazy, map, modifyState, regex, skip, succeed, withLine, withState)
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Code.Types as Code
 import Lia.Markdown.Effect.Model as Effect
@@ -30,11 +30,12 @@ type alias Context =
     , footnotes : Footnote.Model
     , defines_updated : Bool
     , search_index : String -> String
+    , editor_line : Int
     }
 
 
-init : (String -> String) -> Definition -> Context
-init search_index global =
+init : (String -> String) -> Int -> Definition -> Context
+init search_index editor_line global =
     { identation = []
     , identation_skip = False
     , code_vector = Array.empty
@@ -46,6 +47,7 @@ init search_index global =
     , footnotes = Footnote.init
     , defines_updated = False
     , search_index = search_index
+    , editor_line = editor_line
     }
 
 
@@ -108,3 +110,10 @@ indentation_skip =
 skip_ : Bool -> Context -> Context
 skip_ bool state =
     { state | identation_skip = bool }
+
+
+getLine : Parser Context Int
+getLine =
+    withState (.editor_line >> succeed)
+        |> map (+)
+        |> andMap (withLine succeed)

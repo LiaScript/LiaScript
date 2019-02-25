@@ -38,6 +38,7 @@ type alias Sections =
 
 type alias SectionBase =
     { identation : Int
+    , editor_line : Int
     , title : Inlines
     , code : String
     }
@@ -61,5 +62,5 @@ init_section idx base =
     , definition = Nothing
     , footnotes = Footnote.init
     , footnote2show = Nothing
-    , editor_line = 0
+    , editor_line = base.editor_line
     }
