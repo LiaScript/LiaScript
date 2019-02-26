@@ -30,7 +30,7 @@ type Inline
     | Strike Inline Annotation
     | Underline Inline Annotation
     | Superscript Inline Annotation
-    | Verbatim String Annotation
+    | Verbatim String Int Annotation
     | Formula String String Annotation
     | Ref Reference Annotation
     | FootnoteMark String Annotation

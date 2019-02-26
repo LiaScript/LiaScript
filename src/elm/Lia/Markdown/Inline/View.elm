@@ -47,11 +47,16 @@ viewer visible elements =
     List.map (view visible) elements
 
 
+goto : Int -> Attribute msg
+goto line =
+    Attr.attribute "ondblclick" ("liaGoto(" ++ String.fromInt line ++ ");")
+
+
 view : Int -> Inline -> Html msg
 view visible element =
     case element of
         Chars e l Nothing ->
-            Html.span [ Attr.attribute "ondblclick" ("liaGoto(" ++ String.fromInt l ++ ");") ] [ Html.text e ]
+            Html.span [ goto l ] [ Html.text e ]
 
         Bold e attr ->
             Html.b (annotation "lia-bold" attr) [ view visible e ]
@@ -68,8 +73,10 @@ view visible element =
         Superscript e attr ->
             Html.sup (annotation "lia-superscript" attr) [ view visible e ]
 
-        Verbatim e attr ->
-            Html.code (annotation "lia-code" attr) [ Html.text e ]
+        Verbatim e l attr ->
+            Html.code
+                (goto l :: annotation "lia-code" attr)
+                [ Html.text e ]
 
         Ref e attr ->
             reference visible e attr

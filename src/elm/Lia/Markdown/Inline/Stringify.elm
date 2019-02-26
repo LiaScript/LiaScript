@@ -31,7 +31,7 @@ inline2string inline =
         Superscript x _ ->
             inline2string x
 
-        Verbatim str _ ->
+        Verbatim str _ _ ->
             str
 
         Formula _ str _ ->

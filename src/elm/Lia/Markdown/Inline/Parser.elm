@@ -425,9 +425,10 @@ strings =
                 ]
 
 
-code : Parser s (Annotation -> Inline)
+code : Parser State (Annotation -> Inline)
 code =
     string "`"
         |> keep (regex "[^`\\n]+")
         |> ignore (string "`")
         |> map Verbatim
+        |> andMap getLine
