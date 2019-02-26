@@ -187,8 +187,8 @@ combine list =
         x1 :: x2 :: xs ->
             case ( x1, x2 ) of
                 ( Chars str1 line1 Nothing, Chars str2 line2 Nothing ) ->
-                    if line1 < 0 then
-                        combine (Chars (str1 ++ str2) line2 Nothing :: xs)
+                    if line2 < 0 then
+                        combine (Chars (str1 ++ str2) line1 Nothing :: xs)
 
                     else if line1 == line2 then
                         combine (Chars (str1 ++ str2) line1 Nothing :: xs)

@@ -61,9 +61,13 @@ section =
     title_tag
         |> map SectionBase
 <<<<<<< HEAD
+<<<<<<< HEAD
         |> andMap getLine
 =======
         |> andMap (withLine succeed)
 >>>>>>> new allert version
+=======
+        |> andMap getLine
+>>>>>>> working clickable version
         |> andMap title_str
         |> andMap body

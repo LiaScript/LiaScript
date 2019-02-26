@@ -124,12 +124,21 @@ class LiaScript {
     }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     goto(line) {
         this.app.ports.event2elm.send({topic: "goto", section: line, message: null});
     }
 
 =======
 >>>>>>> new allert version
+=======
+    goto(line) {
+        console.log("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
+        console.log(line);
+        this.app.ports.event2elm.send({topic: "goto", section: line, message: null});
+    }
+
+>>>>>>> working clickable version
     initChannel(channel, send) {
         if(!channel)
             return;
