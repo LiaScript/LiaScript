@@ -19,7 +19,7 @@ import Combine
         )
 import Lia.Markdown.Inline.Parser exposing (line)
 import Lia.Markdown.Inline.Types exposing (Inlines)
-import Lia.Parser.Context exposing (Context)
+import Lia.Parser.Context exposing (Context, getLine)
 import Lia.Parser.Helper exposing (newline)
 import Lia.Types exposing (SectionBase)
 
@@ -60,6 +60,6 @@ section : Parser Context SectionBase
 section =
     title_tag
         |> map SectionBase
-        |> andMap (withLine succeed)
+        |> andMap getLine
         |> andMap title_str
         |> andMap body

@@ -11,3 +11,4 @@ if(document.getElementById("lia")) {
 }
 
 window.showFootnote = (key) => app.footnote(key);
+window.gotoLia = (line) => app.goto(line);

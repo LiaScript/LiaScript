@@ -123,6 +123,12 @@ class LiaScript {
         this.app.ports.footnote.send(key);
     }
 
+    goto(line) {
+        console.log("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
+        console.log(line);
+        this.app.ports.event2elm.send({topic: "goto", section: line, message: null});
+    }
+
     initChannel(channel, send) {
         if(!channel)
             return;

@@ -128,6 +128,24 @@ update msg model =
                     , -1
                     )
 
+                "goto" ->
+                    update
+                        (model.sections
+                            |> Array.toIndexedList
+                            |> List.filterMap
+                                (\( i, s ) ->
+                                    if s.editor_line > event.section then
+                                        Just (i - 1)
+
+                                    else
+                                        Nothing
+                                )
+                            |> List.head
+                            |> Maybe.withDefault (Array.length model.sections - 1)
+                            |> Load
+                        )
+                        model
+
                 _ ->
                     case
                         ( Array.get event.section model.sections
