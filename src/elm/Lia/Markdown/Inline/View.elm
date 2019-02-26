@@ -87,9 +87,9 @@ view visible element =
         Ref e attr ->
             reference visible e attr
 
-        Formula mode e Nothing ->
+        Formula mode e l Nothing ->
             Html.node "katex-formula"
-                [ Attr.attribute "displayMode" mode ]
+                [ goto l, Attr.attribute "displayMode" mode ]
                 [ Html.text e ]
 
         Symbol e l Nothing ->
@@ -125,8 +125,8 @@ view visible element =
         Chars e l attr ->
             view visible (Container [ Chars e l Nothing ] attr)
 
-        Formula mode e attr ->
-            view visible (Container [ Formula mode e Nothing ] attr)
+        Formula mode e l attr ->
+            view visible (Container [ Formula mode e l Nothing ] attr)
 
         Goto e line ->
             Html.span [ goto line ] [ view visible e ]
