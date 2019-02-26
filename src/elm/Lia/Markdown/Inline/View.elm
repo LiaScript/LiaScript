@@ -55,8 +55,8 @@ goto line =
 view : Int -> Inline -> Html msg
 view visible element =
     case element of
-        Chars e l Nothing ->
-            Html.span [ goto l ] [ Html.text e ]
+        Chars e Nothing ->
+            Html.text e
 
         Bold e attr ->
             Html.b (annotation "lia-bold" attr) [ view visible e ]
@@ -73,21 +73,21 @@ view visible element =
         Superscript e attr ->
             Html.sup (annotation "lia-superscript" attr) [ view visible e ]
 
-        Verbatim e l attr ->
+        Verbatim e attr ->
             Html.code
-                (goto l :: annotation "lia-code" attr)
+                (annotation "lia-code" attr)
                 [ Html.text e ]
 
-        Ref e l attr ->
-            Html.span [ goto l ] [ reference visible e attr ]
+        Ref e attr ->
+            reference visible e attr
 
-        Formula mode e l Nothing ->
+        Formula mode e Nothing ->
             Html.node "katex-formula"
-                [ goto l, Attr.attribute "displayMode" mode ]
+                [ Attr.attribute "displayMode" mode ]
                 [ Html.text e ]
 
-        Symbol e l Nothing ->
-            Html.span [ goto l ] [ Html.text e ]
+        Symbol e Nothing ->
+            Html.text e
 
         FootnoteMark e attr ->
             attr
@@ -99,7 +99,7 @@ view visible element =
                 |> List.map (\e -> view visible e)
                 |> Html.span (annotation "lia-container" attr)
 
-        HTML list l ->
+        HTML list ->
             list
                 |> Util.toVirtualDom
                 |> Html.span []
@@ -113,14 +113,17 @@ view visible element =
             else
                 Html.text ""
 
-        Symbol e l attr ->
-            view visible (Container [ Symbol e l Nothing ] attr)
+        Symbol e attr ->
+            view visible (Container [ Symbol e Nothing ] attr)
 
-        Chars e l attr ->
-            view visible (Container [ Chars e l Nothing ] attr)
+        Chars e attr ->
+            view visible (Container [ Chars e Nothing ] attr)
 
-        Formula mode e l attr ->
-            view visible (Container [ Formula mode e l Nothing ] attr)
+        Formula mode e attr ->
+            view visible (Container [ Formula mode e Nothing ] attr)
+
+        Goto e line ->
+            Html.span [ goto line ] [ view visible e ]
 
 
 view_inf : Inline -> Html msg

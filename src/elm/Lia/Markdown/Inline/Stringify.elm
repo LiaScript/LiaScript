@@ -13,7 +13,7 @@ stringify inlines =
 inline2string : Inline -> String
 inline2string inline =
     case inline of
-        Chars str _ _ ->
+        Chars str _ ->
             str
 
         Bold x _ ->
@@ -31,13 +31,13 @@ inline2string inline =
         Superscript x _ ->
             inline2string x
 
-        Verbatim str _ _ ->
+        Verbatim str _ ->
             str
 
-        Formula _ str _ _ ->
+        Formula _ str _ ->
             str
 
-        Ref ref _ _ ->
+        Ref ref _ ->
             ref2string ref
 
         EInline _ _ inlines _ ->

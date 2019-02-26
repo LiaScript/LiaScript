@@ -145,7 +145,7 @@ html =
     choice
         [ javascript
             |> andThen state
-            |> keep (succeed (Chars "" -1 Nothing))
+            |> keep (succeed (Chars "" Nothing))
         , html_void
         , html_block
         ]
@@ -156,7 +156,6 @@ html_void =
     regex "<[^>\\n]*>"
         |> andThen html_parse
         |> map HTML
-        |> andMap getLine
 
 
 html_parse : String -> Parser s (List Html.Parser.Node)
@@ -174,7 +173,6 @@ html_block =
     regex "<((\\w+|-)+)[\\s\\S]*?</\\1>"
         |> andThen html_parse
         |> map HTML
-        |> andMap getLine
 
 
 combine : Inlines -> Inlines
@@ -188,15 +186,8 @@ combine list =
 
         x1 :: x2 :: xs ->
             case ( x1, x2 ) of
-                ( Chars str1 line1 Nothing, Chars str2 line2 Nothing ) ->
-                    if line2 < 0 then
-                        combine (Chars (str1 ++ str2) line1 Nothing :: xs)
-
-                    else if line1 == line2 then
-                        combine (Chars (str1 ++ str2) line1 Nothing :: xs)
-
-                    else
-                        x1 :: combine (x2 :: xs)
+                ( Chars str1 Nothing, Chars str2 Nothing ) ->
+                    combine (Chars (str1 ++ str2) Nothing :: xs)
 
                 _ ->
                     x1 :: combine (x2 :: xs)
@@ -205,13 +196,14 @@ combine list =
 line : Parser Context Inlines
 line =
     inlines
+        |> andThen goto
         |> many1
         |> map (append_space >> combine)
 
 
 append_space : Inlines -> Inlines
 append_space list =
-    List.append list [ Chars " " -1 Nothing ]
+    List.append list [ Chars " " Nothing ]
 
 
 inlines : Parser Context Inline
@@ -231,6 +223,12 @@ inlines =
                         |> andMap (Macro.macro |> keep annotations)
                         |> or html
                     )
+                |> andThen goto
+
+
+goto : Inline -> Parser State Inline
+goto i =
+    map (Goto i) getLine
 
 
 url : Parser s String
@@ -248,9 +246,7 @@ email =
 
 inline_url : Parser State (Annotation -> Inline)
 inline_url =
-    map (\u l -> Ref (Link [ Chars u l Nothing ] u "")) url
-        |> andMap getLine
-        |> andMap getLine
+    map (\u -> Ref (Link [ Chars u Nothing ] u "")) url
 
 
 ref_info : Parser Context Inlines
@@ -350,7 +346,6 @@ reference =
             [ movie, audio, image, mail_, link ]
                 |> choice
                 |> map Ref
-                |> andMap getLine
 
 
 between_ : String -> Parser Context Inline
@@ -375,13 +370,11 @@ strings =
                 base =
                     regex "[^*_~:;`!\\^\\[\\]|{}\\\\\\n\\-<>=$ ]+"
                         |> map Chars
-                        |> andMap getLine
 
                 escape =
                     string "\\"
                         |> keep (regex "[\\^*_+-~`\\\\${}\\[\\]|#]")
                         |> map Chars
-                        |> andMap getLine
 
                 italic =
                     or (between_ "*") (between_ "_")
@@ -406,12 +399,10 @@ strings =
                 characters =
                     regex "[~:_;\\-<>=${}\\[\\] ]"
                         |> map Chars
-                        |> andMap getLine
 
                 base2 =
                     regex "[^\n|*]+"
                         |> map Chars
-                        |> andMap getLine
             in
             choice
                 [ inline_url
@@ -435,4 +426,3 @@ code =
         |> keep (regex "[^`\\n]+")
         |> ignore (string "`")
         |> map Verbatim
-        |> andMap getLine

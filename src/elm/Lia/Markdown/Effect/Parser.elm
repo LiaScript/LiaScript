@@ -142,7 +142,7 @@ hidden_comment =
         |> keep effect_number
         |> map
             (\i voice text ->
-                ( i, voice, [ Chars (text |> String.fromList |> String.trim) -1 Nothing ] )
+                ( i, voice, [ Chars (text |> String.fromList |> String.trim) Nothing ] )
             )
         |> andMap
             (spaces1

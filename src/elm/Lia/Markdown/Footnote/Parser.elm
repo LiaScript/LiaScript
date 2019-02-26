@@ -43,7 +43,7 @@ store : ( String, Maybe String ) -> Parser Context (Annotation -> Inline)
 store ( key, val ) =
     case val of
         Just v ->
-            add_footnote ( key, [ Paragraph Nothing [ Chars v -1 Nothing ] ] )
+            add_footnote ( key, [ Paragraph Nothing [ Chars v Nothing ] ] )
                 |> keep (succeed (FootnoteMark key))
 
         _ ->
