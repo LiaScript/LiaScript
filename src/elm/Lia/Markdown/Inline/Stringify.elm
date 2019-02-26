@@ -37,7 +37,7 @@ inline2string inline =
         Formula _ str _ _ ->
             str
 
-        Ref ref _ ->
+        Ref ref _ _ ->
             ref2string ref
 
         EInline _ _ inlines _ ->

@@ -84,8 +84,8 @@ view visible element =
 >>>>>>> updated db and added verbatim to double-click
                 [ Html.text e ]
 
-        Ref e attr ->
-            reference visible e attr
+        Ref e l attr ->
+            Html.span [ goto l ] [ reference visible e attr ]
 
         Formula mode e l Nothing ->
             Html.node "katex-formula"
@@ -93,7 +93,7 @@ view visible element =
                 [ Html.text e ]
 
         Symbol e l Nothing ->
-            Html.text e
+            Html.span [ goto l ] [ Html.text e ]
 
         FootnoteMark e attr ->
             attr
@@ -105,7 +105,7 @@ view visible element =
                 |> List.map (\e -> view visible e)
                 |> Html.span (annotation "lia-container" attr)
 
-        HTML list ->
+        HTML list l ->
             list
                 |> Util.toVirtualDom
                 |> Html.span []

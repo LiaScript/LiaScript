@@ -32,12 +32,16 @@ type Inline
     | Superscript Inline Annotation
     | Verbatim String Int Annotation
     | Formula String String Int Annotation
-    | Ref Reference Annotation
+    | Ref Reference Int Annotation
     | FootnoteMark String Annotation
-    | HTML (List Html.Parser.Node)
+    | HTML (List Html.Parser.Node) Int
     | EInline Int Int Inlines Annotation
     | Container Inlines Annotation
     | Goto Inline Int
+
+
+
+--| Goto Inline Int
 
 
 
