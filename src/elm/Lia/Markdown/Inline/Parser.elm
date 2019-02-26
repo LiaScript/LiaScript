@@ -438,3 +438,4 @@ code =
         |> keep (regex "[^`\\n]+")
         |> ignore (string "`")
         |> map Verbatim
+        |> andMap getLine

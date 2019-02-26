@@ -56,7 +56,7 @@ view : Int -> Inline -> Html msg
 view visible element =
     case element of
         Chars e l Nothing ->
-            Html.span [ Attr.attribute "ondblclick" ("liaGoto(" ++ String.fromInt l ++ ");") ] [ Html.text e ]
+            Html.span [ goto l ] [ Html.text e ]
 
         Bold e attr ->
             Html.b (annotation "lia-bold" attr) [ view visible e ]
@@ -73,9 +73,15 @@ view visible element =
         Superscript e attr ->
             Html.sup (annotation "lia-superscript" attr) [ view visible e ]
 
+<<<<<<< HEAD
         Verbatim e attr ->
             Html.code
                 (annotation "lia-code" attr)
+=======
+        Verbatim e l attr ->
+            Html.code
+                (goto l :: annotation "lia-code" attr)
+>>>>>>> updated db and added verbatim to double-click
                 [ Html.text e ]
 
         Ref e attr ->

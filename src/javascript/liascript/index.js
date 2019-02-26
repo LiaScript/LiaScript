@@ -133,8 +133,6 @@ class LiaScript {
 >>>>>>> new allert version
 =======
     goto(line) {
-        console.log("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
-        console.log(line);
         this.app.ports.event2elm.send({topic: "goto", section: line, message: null});
     }
 
