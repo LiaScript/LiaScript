@@ -23,25 +23,28 @@ type alias Annotation =
 
 
 type Inline
-    = Chars String Int Annotation
-    | Symbol String Int Annotation
+    = Chars String Annotation
+    | Symbol String Annotation
     | Bold Inline Annotation
     | Italic Inline Annotation
     | Strike Inline Annotation
     | Underline Inline Annotation
     | Superscript Inline Annotation
-    | Verbatim String Int Annotation
-    | Formula String String Int Annotation
-    | Ref Reference Int Annotation
+    | Verbatim String Annotation
+    | Formula String String Annotation
+    | Ref Reference Annotation
     | FootnoteMark String Annotation
-    | HTML (List Html.Parser.Node) Int
+    | HTML (List Html.Parser.Node)
     | EInline Int Int Inlines Annotation
     | Container Inlines Annotation
     | Goto Inline Int
+<<<<<<< HEAD
 
 
 
 --| Goto Inline Int
+=======
+>>>>>>> simplified jumping via a Goto type in inlines
 
 
 
