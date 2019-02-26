@@ -11,7 +11,7 @@ inline key attr =
     Html.sup
         (attr
             |> (::) (Attr.style "cursor" "pointer")
-            |> (::) (Attr.attribute "onclick" ("lia.app.ports.footnote.send(\"" ++ key ++ "\");"))
+            |> (::) (Attr.attribute "onclick" ("showFootnote(\"" ++ key ++ "\");"))
         )
         [ braces key ]
 
