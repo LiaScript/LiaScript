@@ -34,7 +34,7 @@ inline2string inline =
         Verbatim str _ _ ->
             str
 
-        Formula _ str _ ->
+        Formula _ str _ _ ->
             str
 
         Ref ref _ ->

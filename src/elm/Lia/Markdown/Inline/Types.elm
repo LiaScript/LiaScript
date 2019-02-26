@@ -31,7 +31,7 @@ type Inline
     | Underline Inline Annotation
     | Superscript Inline Annotation
     | Verbatim String Int Annotation
-    | Formula String String Annotation
+    | Formula String String Int Annotation
     | Ref Reference Annotation
     | FootnoteMark String Annotation
     | HTML (List Html.Parser.Node)
