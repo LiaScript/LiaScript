@@ -51,7 +51,7 @@ view : Int -> Inline -> Html msg
 view visible element =
     case element of
         Chars e l Nothing ->
-            Html.span [ Attr.attribute "ondblclick" ("alert(\"" ++ String.fromInt l ++ "\");") ] [ Html.text e ]
+            Html.span [ Attr.attribute "ondblclick" ("liaGoto(" ++ String.fromInt l ++ ");") ] [ Html.text e ]
 
         Bold e attr ->
             Html.b (annotation "lia-bold" attr) [ view visible e ]
