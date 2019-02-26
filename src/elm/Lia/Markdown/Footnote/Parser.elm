@@ -16,7 +16,7 @@ import Combine
 import Lia.Markdown.Footnote.Model as Model
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..))
 import Lia.Markdown.Types exposing (Markdown(..))
-import Lia.Parser.Context exposing (Context, indentation_append)
+import Lia.Parser.Context exposing (Context, getLine, indentation_append)
 import Lia.Parser.Helper exposing (stringTill)
 
 

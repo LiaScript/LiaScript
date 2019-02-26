@@ -151,11 +151,12 @@ html =
         ]
 
 
-html_void : Parser s Inline
+html_void : Parser State Inline
 html_void =
     regex "<[^>\\n]*>"
         |> andThen html_parse
         |> map HTML
+        |> andMap getLine
 
 
 html_parse : String -> Parser s (List Html.Parser.Node)
@@ -168,11 +169,12 @@ html_parse str =
             fail "html parser failed"
 
 
-html_block : Parser s Inline
+html_block : Parser State Inline
 html_block =
     regex "<((\\w+|-)+)[\\s\\S]*?</\\1>"
         |> andThen html_parse
         |> map HTML
+        |> andMap getLine
 
 
 combine : Inlines -> Inlines
@@ -247,6 +249,7 @@ email =
 inline_url : Parser State (Annotation -> Inline)
 inline_url =
     map (\u l -> Ref (Link [ Chars u l Nothing ] u "")) url
+        |> andMap getLine
         |> andMap getLine
 
 
@@ -347,6 +350,7 @@ reference =
             [ movie, audio, image, mail_, link ]
                 |> choice
                 |> map Ref
+                |> andMap getLine
 
 
 between_ : String -> Parser Context Inline

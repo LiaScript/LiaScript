@@ -1,5 +1,6 @@
 module Lia.Parser.Context exposing
     ( Context
+    , getLine
     , indentation
     , indentation_append
     , indentation_pop
