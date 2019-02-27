@@ -62,5 +62,5 @@ init_section idx base =
     , definition = Nothing
     , footnotes = Footnote.init
     , footnote2show = Nothing
-    , editor_line = base.editor_line
+    , editor_line = base.editor_line + 1
     }
