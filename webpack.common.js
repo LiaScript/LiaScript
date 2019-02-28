@@ -70,7 +70,7 @@ module.exports = {
         use: [
           'style-loader',
           MiniCssExtractPlugin.loader,
-          'css-loader'
+          'css-loader?sourceMap=true'
         ]
       },
       {
