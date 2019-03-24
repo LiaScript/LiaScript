@@ -73,21 +73,9 @@ view visible element =
         Superscript e attr ->
             Html.sup (annotation "lia-superscript" attr) [ view visible e ]
 
-<<<<<<< HEAD
-<<<<<<< HEAD
         Verbatim e attr ->
             Html.code
                 (annotation "lia-code" attr)
-=======
-        Verbatim e l attr ->
-            Html.code
-                (goto l :: annotation "lia-code" attr)
->>>>>>> updated db and added verbatim to double-click
-=======
-        Verbatim e attr ->
-            Html.code
-                (annotation "lia-code" attr)
->>>>>>> simplified jumping via a Goto type in inlines
                 [ Html.text e ]
 
         Ref e attr ->
@@ -133,6 +121,9 @@ view visible element =
 
         Formula mode e attr ->
             view visible (Container [ Formula mode e Nothing ] attr)
+
+        Goto e line ->
+            Html.span [ goto line ] [ view visible e ]
 
         Goto e line ->
             Html.span [ goto line ] [ view visible e ]

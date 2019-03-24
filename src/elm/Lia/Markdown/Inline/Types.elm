@@ -38,13 +38,6 @@ type Inline
     | EInline Int Int Inlines Annotation
     | Container Inlines Annotation
     | Goto Inline Int
-<<<<<<< HEAD
-
-
-
---| Goto Inline Int
-=======
->>>>>>> simplified jumping via a Goto type in inlines
 
 
 

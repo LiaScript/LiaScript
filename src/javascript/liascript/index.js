@@ -123,20 +123,10 @@ class LiaScript {
         this.app.ports.footnote.send(key);
     }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
     goto(line) {
         this.app.ports.event2elm.send({topic: "goto", section: line, message: null});
     }
 
-=======
->>>>>>> new allert version
-=======
-    goto(line) {
-        this.app.ports.event2elm.send({topic: "goto", section: line, message: null});
-    }
-
->>>>>>> working clickable version
     initChannel(channel, send) {
         if(!channel)
             return;
