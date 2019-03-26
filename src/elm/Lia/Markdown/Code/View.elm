@@ -2,7 +2,7 @@ module Lia.Markdown.Code.View exposing (view)
 
 import Array
 import Html exposing (Html)
-import Html.Attributes as Attr exposing (attribute)
+import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Json.Encode as JE
 import Lia.Markdown.Code.Editor as Editor

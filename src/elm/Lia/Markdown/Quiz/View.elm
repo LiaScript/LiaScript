@@ -41,7 +41,6 @@ view lang attr quiz vector =
                                 Html.text ""
 
                             else
-                                --todo: error s.error_msg
                                 Html.text s.error_msg
                            )
                         :: view_hints idx s.hint hints
@@ -78,7 +77,6 @@ view_quiz lang attr state fn_view idx hints eval_string solution =
                             Html.text ""
 
                         else
-                            --todo error s.error_msg
                             Html.text s.error_msg
                        )
                     :: view_hints idx s.hint hints

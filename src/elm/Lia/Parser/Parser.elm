@@ -3,7 +3,6 @@ module Lia.Parser.Parser exposing (formatError, parse_defintion, parse_section, 
 import Combine exposing (InputStream, currentLocation, keep)
 import Lia.Definition.Parser
 import Lia.Definition.Types exposing (Definition)
-import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Parser as Markdown
 import Lia.Parser.Preprocessor as Preprocessor
 import Lia.Parser.State exposing (init)

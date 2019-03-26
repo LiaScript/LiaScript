@@ -149,8 +149,8 @@ function lia_eval_event(send, channel, handler, event) {
 
 function list_to_string(sep, list) {
   let str = "";
-  for(let i=0; i<list.length; i++) {
-    str += list[i].toString()
+  for(let i=0; i<list[0].length; i++) {
+    str += list[0][i].toString() + " "
   }
   return str + sep;
 };

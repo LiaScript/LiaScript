@@ -57,9 +57,6 @@ add_imports model course_url =
 add_todos : Definition -> Model -> Model
 add_todos definition model =
     let
-        def =
-            model.definition
-
         ( res, events ) =
             load_src model.resource definition.resources
     in

@@ -30,7 +30,7 @@ type Msg
 
 
 subscriptions : Section -> Sub Msg
-subscriptions section =
+subscriptions _ =
     footnote FootnoteShow
 
 

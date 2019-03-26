@@ -23,7 +23,7 @@ import Combine
         )
 import Lia.Event exposing (Eval)
 import Lia.Markdown.Code.Log as Log
-import Lia.Markdown.Code.Types exposing (Code(..), File, Snippet, initProject)
+import Lia.Markdown.Code.Types exposing (Code(..), Snippet, initProject)
 import Lia.Markdown.Inline.Parser exposing (javascript)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Parser.Helper exposing (c_frame, newline, spaces)
