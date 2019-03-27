@@ -125,12 +125,6 @@ view visible element =
         Goto e line ->
             Html.span [ goto line ] [ view visible e ]
 
-        Goto e line ->
-            Html.span [ goto line ] [ view visible e ]
-
-        Goto e line ->
-            Html.span [ goto line ] [ view visible e ]
-
 
 view_inf : Inline -> Html msg
 view_inf =
