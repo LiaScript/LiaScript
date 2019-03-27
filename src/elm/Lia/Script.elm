@@ -45,8 +45,8 @@ load_slide idx model =
 
 
 add_imports : Model -> String -> Model
-add_imports model course_url =
-    case Parser.parse_defintion model.url course_url of
+add_imports model code =
+    case Parser.parse_defintion model.url code of
         Ok ( definition, _ ) ->
             add_todos definition model
 

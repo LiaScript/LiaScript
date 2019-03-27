@@ -228,16 +228,20 @@ update msg model =
 
         Load_Template_Result (Ok template) ->
             let
-                lia =
-                    template
-                        |> String.replace "\u{000D}" ""
-                        |> Lia.Script.add_imports model.lia
+                new_model =
+                    { model
+                        | templates = model.templates - 1
+                        , lia =
+                            template
+                                |> String.replace "\u{000D}" ""
+                                |> Lia.Script.add_imports model.lia
+                    }
             in
-            if model.templates == 1 then
-                update LiaStart { model | lia = lia, templates = 0 }
+            if model.templates == 0 then
+                update LiaStart new_model
 
             else
-                ( { model | templates = model.templates - 1 }, Cmd.none )
+                ( new_model, Cmd.none )
 
         Load_Template_Result (Err info) ->
             ( { model | state = Error <| parse_error info }, Cmd.none )

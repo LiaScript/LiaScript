@@ -19,7 +19,15 @@ import Combine
         , string
         , whitespace
         )
-import Lia.Definition.Types exposing (Definition, Resource(..), add_imports, add_translation, toURL)
+import Lia.Definition.Types
+    exposing
+        ( Definition
+        , Resource(..)
+        , addToResources
+        , add_imports
+        , add_translation
+        , toURL
+        )
 import Lia.Markdown.Inline.Parser exposing (comment)
 import Lia.Markdown.Macro.Parser as Macro
 import Lia.Parser.Helper exposing (newline, stringTill)
@@ -115,16 +123,3 @@ ending =
 set : (Definition -> Definition) -> Parser State ()
 set fct =
     modifyState (\s -> { s | defines = fct s.defines })
-
-
-append : (String -> a) -> String -> String -> List a -> List a
-append to base urls list =
-    urls
-        |> String.split "\n"
-        |> List.map (toURL base >> to)
-        |> List.append list
-
-
-addToResources : (String -> Resource) -> String -> Definition -> Definition
-addToResources to urls def =
-    { def | resources = append to def.base urls def.resources }

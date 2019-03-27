@@ -1,6 +1,7 @@
 module Lia.Definition.Types exposing
     ( Definition
     , Resource(..)
+    , addToResources
     , add_imports
     , add_macros
     , add_translation
@@ -81,23 +82,8 @@ get_translations def =
 add_macros : Definition -> Definition -> Definition
 add_macros orig temp =
     { orig
-        | macro =
-            Dict.toList temp.macro
-                |> List.append (Dict.toList orig.macro)
-                |> Dict.fromList
-        , onload =
-            case ( orig.onload, temp.onload ) of
-                ( "", "" ) ->
-                    ""
-
-                ( str1, "" ) ->
-                    str1
-
-                ( "", str2 ) ->
-                    str2
-
-                ( str1, str2 ) ->
-                    str1 ++ "\n" ++ str2
+        | macro = Dict.union orig.macro temp.macro
+        , onload = String.trim (orig.onload ++ "\n" ++ temp.onload)
     }
 
 
@@ -105,7 +91,10 @@ add_imports : String -> Definition -> Definition
 add_imports url def =
     { def
         | imports =
-            toURL def.base url :: def.imports
+            url
+                |> String.split "\n"
+                |> List.map (toURL def.base)
+                |> List.append def.imports
     }
 
 
@@ -116,3 +105,16 @@ toURL basis url =
 
     else
         basis ++ url
+
+
+addToResources : (String -> Resource) -> String -> Definition -> Definition
+addToResources to urls def =
+    { def | resources = append to def.base urls def.resources }
+
+
+append : (String -> a) -> String -> String -> List a -> List a
+append to base urls list =
+    urls
+        |> String.split "\n"
+        |> List.map (toURL base >> to)
+        |> List.append list
