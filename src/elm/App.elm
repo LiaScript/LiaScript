@@ -237,7 +237,7 @@ update msg model =
                                 |> Lia.Script.add_imports model.lia
                     }
             in
-            if model.templates == 0 then
+            if model.templates == 1 then
                 update LiaStart new_model
 
             else
