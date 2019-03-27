@@ -145,7 +145,7 @@ update msg model =
         LiaStart ->
             let
                 ( parsed, cmd, slide_number ) =
-                    Lia.Script.load_slide model.lia.section_active model.lia
+                    Lia.Script.load_first_slide model.lia.section_active model.lia
             in
             ( { model | state = Running, lia = parsed }
             , if slide_number < 0 then

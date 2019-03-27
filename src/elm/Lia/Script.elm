@@ -6,6 +6,7 @@ module Lia.Script exposing
     , init_presentation
     , init_slides
     , init_textbook
+    , load_first_slide
     , load_slide
     , plain_mode
     , set_script
@@ -42,6 +43,32 @@ type alias Msg =
 load_slide : Int -> Model -> ( Model, Cmd Msg, Int )
 load_slide idx model =
     Lia.Update.update (Load idx) model
+
+
+load_first_slide : Int -> Model -> ( Model, Cmd Msg, Int )
+load_first_slide idx model =
+    load_slide idx
+        { model
+            | to_do =
+                ([ get_title model.sections
+                 , model.readme
+                 , model.definition.version
+                    |> String.split "."
+                    |> List.head
+                    |> Maybe.withDefault "0"
+                    |> String.toInt
+                    |> Maybe.withDefault 0
+                    |> String.fromInt
+                 , model.definition.onload
+                 , model.definition.author
+                 , model.definition.comment
+                 , model.definition.logo
+                 ]
+                    |> JE.list JE.string
+                    |> Event "init" model.section_active
+                )
+                    :: model.to_do
+        }
 
 
 add_imports : Model -> String -> Model
@@ -94,26 +121,8 @@ set_script model script =
                         , sections = sections
                         , section_active = section_active
                         , translation = Translations.getLnFromCode definition.language
-                        , to_do =
-                            [ [ get_title sections
-                              , model.readme
-                              , definition.version
-                                    |> String.split "."
-                                    |> List.head
-                                    |> Maybe.withDefault "0"
-                                    |> String.toInt
-                                    |> Maybe.withDefault 0
-                                    |> String.fromInt
-                              , definition.onload
-                              , definition.author
-                              , definition.comment
-                              , definition.logo
-                              ]
-                                |> JE.list JE.string
-                                |> Event "init" section_active
-                            ]
                       }
-                        |> add_todos { definition | onload = "" }
+                        |> add_todos definition
                     , definition.imports
                     )
 
