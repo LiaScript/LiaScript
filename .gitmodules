@@ -76,3 +76,6 @@
 [submodule "demos/templates/logicemu_template"]
 	path = demos/templates/logicemu_template
 	url = https://github.com/liaScript/logicemu_template
+[submodule "demos/templates/pyodide_template"]
+	path = demos/templates/pyodide_template
+	url = https://github.com/liaScript/pyodide_template
