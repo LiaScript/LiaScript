@@ -113,19 +113,19 @@ view_header : Config -> Html Msg
 view_header config =
     config.view config.section.title
         |> (case config.section.indentation of
-                0 ->
+                1 ->
                     Html.h1 [ Attr.class "lia-inline lia-h1" ]
 
-                1 ->
+                2 ->
                     Html.h2 [ Attr.class "lia-inline lia-h2" ]
 
-                2 ->
+                3 ->
                     Html.h3 [ Attr.class "lia-inline lia-h3" ]
 
-                3 ->
+                4 ->
                     Html.h4 [ Attr.class "lia-inline lia-h4" ]
 
-                4 ->
+                5 ->
                     Html.h5 [ Attr.class "lia-inline lia-h5" ]
 
                 _ ->
