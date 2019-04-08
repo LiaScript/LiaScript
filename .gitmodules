@@ -79,3 +79,6 @@
 [submodule "demos/templates/pyodide_template"]
 	path = demos/templates/pyodide_template
 	url = https://github.com/liaScript/pyodide_template
+[submodule "demos/templates/vtk_template"]
+	path = demos/templates/vtk_template
+	url = https://github.com/liaScript/vtk_template.git
