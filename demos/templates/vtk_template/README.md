@@ -333,7 +333,7 @@ reader
 @end
 ```
 
---{{1}}--
+                                   --{{1}}--
 If you want to minimize loading effort in your LiaScript project, you can also
 copy this code and paste it into your main comment header, see the code in the
 raw file of this document.
