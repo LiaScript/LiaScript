@@ -13,8 +13,8 @@ import Lia.Markdown.Quiz.Update exposing (Msg(..))
 import Translations exposing (Lang, quizCheck, quizChecked, quizResolved, quizSolution)
 
 
-view : Lang -> Annotation -> Quiz -> Vector -> Html Msg
-view lang attr quiz vector =
+view : Lang -> Quiz -> Vector -> Html Msg
+view lang quiz vector =
     let
         state =
             get_state vector
@@ -50,20 +50,20 @@ view lang attr quiz vector =
                     Html.text ""
 
         Text solution (QuizAdds idx hints eval_string) ->
-            view_quiz lang attr (state idx) view_text idx hints eval_string (TextState solution)
+            view_quiz lang (state idx) view_text idx hints eval_string (TextState solution)
 
         SingleChoice solution questions (QuizAdds idx hints eval_string) ->
-            view_quiz lang attr (state idx) (view_single_choice questions) idx hints eval_string (SingleChoiceState solution)
+            view_quiz lang (state idx) (view_single_choice questions) idx hints eval_string (SingleChoiceState solution)
 
         MultipleChoice solution questions (QuizAdds idx hints eval_string) ->
-            view_quiz lang attr (state idx) (view_multiple_choice questions) idx hints eval_string (MultipleChoiceState solution)
+            view_quiz lang (state idx) (view_multiple_choice questions) idx hints eval_string (MultipleChoiceState solution)
 
 
-view_quiz : Lang -> Annotation -> Maybe Element -> (Int -> State -> Bool -> Html Msg) -> Int -> MultInlines -> Maybe String -> State -> Html Msg
-view_quiz lang attr state fn_view idx hints eval_string solution =
+view_quiz : Lang -> Maybe Element -> (Int -> State -> Bool -> Html Msg) -> Int -> MultInlines -> Maybe String -> State -> Html Msg
+view_quiz lang state fn_view idx hints eval_string solution =
     case state of
         Just s ->
-            Html.p (annotation "" attr)
+            Html.p []
                 (fn_view idx s.state (s.solved /= Open)
                     :: view_button lang s.trial s.solved (Check idx solution eval_string)
                     :: view_button_solution lang s.solved (ShowSolution idx solution)
