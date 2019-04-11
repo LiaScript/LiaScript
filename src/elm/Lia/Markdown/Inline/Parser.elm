@@ -44,10 +44,12 @@ import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Footnote.Parser as Footnote
 import Lia.Markdown.Inline.Parser.Formula exposing (formula)
 import Lia.Markdown.Inline.Parser.Symbol exposing (arrows, smileys)
+import Lia.Markdown.Inline.Tube exposing (tube)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..))
 import Lia.Markdown.Macro.Parser as Macro
 import Lia.Parser.Helper exposing (spaces, stringTill)
 import Lia.Parser.State exposing (State)
+import Regex
 
 
 comment : Parser s a -> Parser s (List a)
@@ -289,7 +291,7 @@ reference =
 
                 movie =
                     string "!?"
-                        |> keep (ref_pattern Movie ref_info ref_url_2)
+                        |> keep (ref_pattern Movie ref_info (map tube ref_url_2))
             in
             [ movie, audio, image, mail_, link ]
                 |> choice

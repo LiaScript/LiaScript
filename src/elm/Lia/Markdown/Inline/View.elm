@@ -4,8 +4,10 @@ import Dict
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Html.Parser.Util as Util
+import Json.Encode as JE
 import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.View as Footnote
+import Lia.Markdown.Inline.Tube exposing (inTube)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..))
 
 
@@ -141,9 +143,14 @@ reference visible ref attr =
                 [ Html.source [ Attr.src url_ ] [], Html.text alt_ ]
 
         Movie alt_ url_ title_ ->
-            if url_ |> String.toLower |> String.contains "https://www.youtube" then
+            if inTube url_ then
                 Html.iframe
-                    (Attr.src url_ :: Attr.title title_ :: annotation "lia-movie" attr)
+                    (Attr.src url_
+                        :: Attr.attribute "allowfullscreen" ""
+                        :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                        :: Attr.title title_
+                        :: annotation "lia-movie" attr
+                    )
                     [ Html.text alt_ ]
 
             else
