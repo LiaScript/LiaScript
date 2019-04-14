@@ -42,6 +42,6 @@ type Inline
 type Reference
     = Link Inlines String String
     | Mail Inlines String String
-    | Image String String String
-    | Audio String String String
-    | Movie String ( Bool, String ) String
+    | Image Inlines String String
+    | Audio Inlines String String
+    | Movie Inlines ( Bool, String ) String

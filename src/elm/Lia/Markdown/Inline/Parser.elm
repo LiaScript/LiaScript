@@ -282,15 +282,15 @@ reference =
 
                 image =
                     string "!"
-                        |> keep (ref_pattern Image ref_info ref_url_2)
+                        |> keep (ref_pattern Image ref_info2 ref_url_2)
 
                 audio =
                     string "?"
-                        |> keep (ref_pattern Audio ref_info ref_url_2)
+                        |> keep (ref_pattern Audio ref_info2 ref_url_2)
 
                 movie =
                     string "!?"
-                        |> keep (ref_pattern Movie ref_info (map tube ref_url_2))
+                        |> keep (ref_pattern Movie ref_info2 (map tube ref_url_2))
             in
             [ movie, audio, image, mail_, link ]
                 |> choice

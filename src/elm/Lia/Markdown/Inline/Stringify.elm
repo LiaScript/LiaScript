@@ -54,13 +54,13 @@ ref2string : Reference -> String
 ref2string ref =
     case ref of
         Movie alt _ _ ->
-            alt
+            stringify alt
 
         Image alt _ _ ->
-            alt
+            stringify alt
 
         Audio alt _ _ ->
-            alt
+            stringify alt
 
         Link alt _ _ ->
             stringify alt

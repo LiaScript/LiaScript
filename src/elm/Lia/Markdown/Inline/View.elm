@@ -133,12 +133,15 @@ reference visible ref attr =
         Image alt_ url_ title_ ->
             Html.img
                 (Attr.src url_ :: Attr.title title_ :: annotation "lia-image" attr)
-                [ Html.text alt_ ]
+                (viewer visible alt_)
 
         Audio alt_ url_ title_ ->
             Html.audio
-                (Attr.controls True :: Attr.title title_ :: annotation "lia-audio" attr)
-                [ Html.source [ Attr.src url_ ] [], Html.text alt_ ]
+                (Attr.controls True
+                    :: Attr.title title_
+                    :: annotation "lia-audio" attr
+                )
+                [ Html.source [ Attr.src url_ ] [], Html.span [] (viewer visible alt_) ]
 
         Movie alt_ ( tube, url_ ) title_ ->
             if tube then
@@ -149,12 +152,12 @@ reference visible ref attr =
                         :: Attr.title title_
                         :: annotation "lia-movie" attr
                     )
-                    [ Html.text alt_ ]
+                    (viewer visible alt_)
 
             else
                 Html.video
                     (Attr.controls True :: Attr.title title_ :: annotation "lia-movie" attr)
-                    [ Html.source [ Attr.src url_ ] [], Html.text alt_ ]
+                    [ Html.source [ Attr.src url_ ] [], Html.span [] (viewer visible alt_) ]
 
 
 view_url : Int -> Inlines -> String -> String -> Annotation -> Html msg
