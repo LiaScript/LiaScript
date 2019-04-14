@@ -26,7 +26,6 @@ import Lia.Definition.Types
         , addToResources
         , add_imports
         , add_translation
-        , toURL
         )
 import Lia.Markdown.Inline.Parser exposing (comment)
 import Lia.Markdown.Macro.Parser as Macro

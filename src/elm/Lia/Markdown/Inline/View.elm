@@ -4,10 +4,8 @@ import Dict
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Html.Parser.Util as Util
-import Json.Encode as JE
 import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.View as Footnote
-import Lia.Markdown.Inline.Tube exposing (inTube)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..))
 
 
@@ -142,8 +140,8 @@ reference visible ref attr =
                 (Attr.controls True :: Attr.title title_ :: annotation "lia-audio" attr)
                 [ Html.source [ Attr.src url_ ] [], Html.text alt_ ]
 
-        Movie alt_ url_ title_ ->
-            if inTube url_ then
+        Movie alt_ ( tube, url_ ) title_ ->
+            if tube then
                 Html.iframe
                     (Attr.src url_
                         :: Attr.attribute "allowfullscreen" ""

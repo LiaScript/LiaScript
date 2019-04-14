@@ -49,7 +49,6 @@ import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Refe
 import Lia.Markdown.Macro.Parser as Macro
 import Lia.Parser.Helper exposing (spaces, stringTill)
 import Lia.Parser.State exposing (State)
-import Regex
 
 
 comment : Parser s a -> Parser s (List a)

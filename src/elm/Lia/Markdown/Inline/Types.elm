@@ -44,4 +44,4 @@ type Reference
     | Mail Inlines String String
     | Image String String String
     | Audio String String String
-    | Movie String String String
+    | Movie String ( Bool, String ) String
