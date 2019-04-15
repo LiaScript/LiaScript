@@ -15,7 +15,6 @@ import Combine
         ( Parser
         , andMap
         , andThen
-        , brackets
         , choice
         , fail
         , ignore
@@ -227,13 +226,8 @@ inline_url =
     map (\u -> Ref (Link [ Chars u Nothing ] u "")) url
 
 
-ref_info : Parser s String
+ref_info : Parser State Inlines
 ref_info =
-    brackets (regex "[^\\]\n]*")
-
-
-ref_info2 : Parser State Inlines
-ref_info2 =
     string "["
         |> keep (manyTill inlines (string "]"))
 
@@ -275,22 +269,22 @@ reference =
         \() ->
             let
                 mail_ =
-                    ref_pattern Mail ref_info2 email
+                    ref_pattern Mail ref_info email
 
                 link =
-                    ref_pattern Link ref_info2 ref_url_1
+                    ref_pattern Link ref_info ref_url_1
 
                 image =
                     string "!"
-                        |> keep (ref_pattern Image ref_info2 ref_url_2)
+                        |> keep (ref_pattern Image ref_info ref_url_2)
 
                 audio =
                     string "?"
-                        |> keep (ref_pattern Audio ref_info2 ref_url_2)
+                        |> keep (ref_pattern Audio ref_info ref_url_2)
 
                 movie =
                     string "!?"
-                        |> keep (ref_pattern Movie ref_info2 (map tube ref_url_2))
+                        |> keep (ref_pattern Movie ref_info (map tube ref_url_2))
             in
             [ movie, audio, image, mail_, link ]
                 |> choice
