@@ -123,7 +123,10 @@ update msg model =
                     update InitSection (generate model)
 
                 "reset" ->
-                    ( model, event2js <| Event "reset" -1 JE.null, -1 )
+                    ( model
+                    , event2js <| Event "reset" -1 JE.null
+                    , -1
+                    )
 
                 _ ->
                     case

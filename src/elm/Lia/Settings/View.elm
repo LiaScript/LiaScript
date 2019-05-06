@@ -72,8 +72,14 @@ view_settings model lang =
             , design_theme lang model.theme
             , view_ace lang model.editor
             , inc_font_size lang model.font_size
+            , reset
             ]
         ]
+
+
+reset : Html Msg
+reset =
+    Html.button [ onClick Reset ] [ Html.text "reset course" ]
 
 
 navButton : String -> String -> msg -> Html msg

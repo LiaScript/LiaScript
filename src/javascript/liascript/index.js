@@ -278,6 +278,7 @@ class LiaScript {
                     if(!self.channel) {
                         initSettings(elmSend, null, true);
                     }
+                    window.location.reload();
                     break;
                 }
                 default:

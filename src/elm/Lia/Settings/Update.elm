@@ -17,6 +17,7 @@ type Msg
     | ChangeLang String
     | ChangeFontSize Bool
     | SwitchMode
+    | Reset
 
 
 type Button
@@ -89,6 +90,9 @@ update msg model =
 
         ChangeLang lang ->
             log { model | lang = lang }
+
+        Reset ->
+            ( model, [ Event "reset" -1 JE.null ] )
 
 
 load : Model -> JE.Value -> Model
