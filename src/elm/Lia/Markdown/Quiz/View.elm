@@ -89,11 +89,11 @@ view_quiz lang state fn_view idx hints eval_string solution =
 view_button_solution : Lang -> Solution -> Msg -> Html Msg
 view_button_solution lang solution msg =
     if solution == Open then
-        Html.a
+        Html.span
             [ Attr.class "lia-hint-btn"
-            , Attr.href "#"
             , onClick msg
             , Attr.title (quizSolution lang)
+            , Attr.style "cursor" "pointer"
             ]
             [ Html.text "info" ]
 
@@ -226,11 +226,11 @@ view_hints idx counter hints =
     in
     if counter < List.length hints then
         [ Html.text " "
-        , Html.a
+        , Html.span
             [ Attr.class "lia-hint-btn"
-            , Attr.href "#"
             , onClick (ShowHint idx)
             , Attr.title "show hint"
+            , Attr.style "cursor" "pointer"
             ]
             [ Html.text "help" ]
         , Html.div
