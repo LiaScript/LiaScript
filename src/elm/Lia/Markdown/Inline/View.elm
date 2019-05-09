@@ -144,7 +144,7 @@ reference visible ref attr =
                 [ Html.source [ Attr.src url_ ] [], Html.span [] (viewer visible alt_) ]
 
         Movie alt_ ( tube, url_ ) title_ ->
-            if not tube then
+            if tube then
                 Html.iframe
                     (Attr.src url_
                         :: Attr.attribute "allowfullscreen" ""
