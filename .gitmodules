@@ -82,3 +82,6 @@
 [submodule "demos/templates/vtk_template"]
 	path = demos/templates/vtk_template
 	url = https://github.com/liaScript/vtk_template.git
+[submodule "demos/templates/plantUML"]
+	path = demos/templates/plantUML
+	url = https://github.com/liascript-templates/plantUML.git
