@@ -127,7 +127,7 @@ class LiaScript {
         channel.on("service", e => { eventHandler.dispatch(e.event_id, e.message); });
 
         channel.join()
-        .receive("ok", (e) => { initSettings(send, e); })
+        .receive("ok", (e) => { lia.log("joined to channel", e) }) //initSettings(send, e); })
         .receive("error", e => { lia.error("channel join => ", e); });
     }
 
@@ -174,7 +174,7 @@ class LiaScript {
                           eventHandler.dispatch_input(event);
                           break;
                       case "stop":
-                          eventHandler.dispatch(event);
+                          eventHandler.dispatch_input(event);
                           break;
                       default: {
                           self.db.update(event.message, event.section);
@@ -266,10 +266,10 @@ class LiaScript {
                     meta("og:url",         "");
                     meta("og:image",       logo);
 
-                    //if (!self.channel) {
+                    if (!self.channel) {
                         let settings = localStorage.getItem(SETTINGS);
                         initSettings(elmSend, settings ? JSON.parse(settings) : settings, true);
-                    //}
+                    }
 
                     break;
                 }
