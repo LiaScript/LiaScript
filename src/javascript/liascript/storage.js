@@ -17,7 +17,7 @@ class LiaStorage {
 
         let store = this._set_local;
 
-        this.channel.push("party", {get_local_storage: []})
+        this.channel.push("lia", {get_local_storage: []})
           .receive("ok",    (e) => { store(e); })
           .receive("error", (e) => { lia.error("storing => ", e); });
     }
@@ -38,7 +38,7 @@ class LiaStorage {
 
     setItems (dict) {
         if(this.channel)
-            this.channel.push("party", {set_local_storage: dict});
+            this.channel.push("lia", {set_local_storage: dict});
 
         this._set_local(dict);
     }

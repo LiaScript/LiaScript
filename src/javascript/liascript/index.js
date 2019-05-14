@@ -127,7 +127,7 @@ class LiaScript {
         channel.on("service", e => { eventHandler.dispatch(e.event_id, e.message); });
 
         channel.join()
-        .receive("ok", (e) => { initSettings(send, e); })
+        .receive("ok", (e) => { console.log("SSSSSSSSSSSSSSSSSSSSSSSSSS"); }) //initSettings(send, e); })
         .receive("error", e => { lia.error("channel join => ", e); });
     }
 
@@ -145,8 +145,8 @@ class LiaScript {
 
             switch (event.topic) {
                 case "slide": {
-                    if(self.channel)
-                        self.channel.push("party", { slide: event.section + 1 });
+                    //if(self.channel)
+                    //    self.channel.push("lia", { slide: event.section + 1 });
 
                     let sec = document.getElementsByTagName("section")[0];
                     if(sec) {
@@ -203,11 +203,11 @@ class LiaScript {
                   handleEffects(event.message, elmSend);
                   break;
                 case SETTINGS: {
-                  if (self.channel) {
-                    self.channel.push("party", {settings: event.message});
-                  } else {
+                  //if (self.channel) {
+                  //  self.channel.push("lia", {settings: event.message});
+                  //} else {
                     localStorage.setItem(SETTINGS, JSON.stringify(event.message));
-                  }
+                  //}
                   break;
                 }
                 case "resource" : {
@@ -246,7 +246,7 @@ class LiaScript {
                   let [title, readme, version, onload, author, comment, logo] = event.message;
 
                     self.db = new LiaDB (
-                      readme, version, elmSend, self.channel,
+                      readme, version, elmSend, null, //self.channel,
                       {
                         topic: "code",
                         section: event.section,
