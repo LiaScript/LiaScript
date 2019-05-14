@@ -142,7 +142,8 @@ function lia_eval_event(send, channel, handler, event) {
           handle: (name, fn) => {
             let e1 = event.section;
             let e2 = event.message.section;
-            handler.register_input(e1, e2, name, fn) }
+            handler.register_input(e1, e2, name, fn) },
+          register: (name, fn) => { handler.register(name, fn) }
         }
     )
 };
@@ -164,11 +165,11 @@ function lia_execute_event(event) {
 };
 
 function websocket(channel = null) {
-    if (channel) {
-        return function(event_id, message) {
-            return channel.push("party", {event_id: event_id, message: message});
-        };
-    }
+  if (channel) {
+    return function(event_id, message) {
+      return channel.push("lia", {event_id: event_id, message: message});
+    };
+  }
 };
 
 export { LiaEvents, lia_execute_event, lia_eval_event };

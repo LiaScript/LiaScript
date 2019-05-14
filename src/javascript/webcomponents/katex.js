@@ -1,4 +1,4 @@
-import 'katex/dist/katex.min.css';
+//import 'katex/dist/katex.min.css';
 import katex from 'katex';
 
 customElements.define('katex-formula', class extends HTMLElement {

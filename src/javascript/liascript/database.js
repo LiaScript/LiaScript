@@ -63,7 +63,7 @@ class LiaDB {
         if (!this.versionDB) return;
 
         if(this.channel) {
-            this.channel.push("party", {
+            this.channel.push("lia", {
               store: event.topic,
               slide: event.section,
               data: event.message })
@@ -103,7 +103,7 @@ class LiaDB {
         let send = this.send;
 
         if (this.channel) {
-            this.channel.push("party", {load: event.topic, slide: event.section})
+            this.channel.push("lia", {load: event.topic, slide: event.section})
             .receive("ok",    e => {
                 event.message = {topic: "restore", section: -1, message: e.date}
                 send(event);
@@ -173,7 +173,7 @@ class LiaDB {
         if (!this.versionDB) return;
 
         if (this.channel) {
-            this.channel.push("party", { update: event, slide: slide } );
+            this.channel.push("lia", { update: event, slide: slide } );
             return;
         }
         if (!this.indexedDB) return;
