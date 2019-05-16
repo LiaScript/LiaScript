@@ -67,7 +67,7 @@ class LiaEvents {
         try {
             this.input[event.section][event.message.section][event.message.topic](event.message.message);
         } catch(e) {
-            lia.error("unable to dispatch message", msg);
+            lia.error("unable to dispatch message", event.message);
         }
     }
 
