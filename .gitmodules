@@ -1,0 +1,87 @@
+[submodule "demos/CCourse"]
+	path = demos/courses/CCourse
+	url = https://github.com/liaScript/CCourse
+[submodule "demos/docs"]
+	path = demos/docs
+	url = https://github.com/liaScript/docs
+[submodule "demos/demo"]
+	path = demos/misc/demo
+	url = https://github.com/liaScript/demo
+[submodule "demos/templates"]
+	path = demos/templates/templates
+	url = https://github.com/liaScript/templates
+[submodule "demos/rextester_template"]
+	path = demos/templates/rextester_template
+	url = https://github.com/liaScript/rextester_template
+[submodule "demos/jscpp_template"]
+	path = demos/templates/jscpp_template
+	url = https://github.com/liaScript/jscpp_template
+[submodule "demos/WebDev_template"]
+	path = demos/templates/WebDev_template
+	url = https://github.com/liaScript/WebDev_template
+[submodule "demos/index"]
+	path = demos/courses/index
+	url = https://github.com/liaScript/index
+[submodule "demos/Prolog_template"]
+	path = demos/templates/Prolog_template
+	url = https://github.com/liaScript/Prolog_template
+[submodule "demos/mermaid_template"]
+	path = demos/templates/mermaid_template
+	url = https://github.com/liaScript/mermaid_template
+[submodule "demos/tau-prolog_template"]
+	path = demos/templates/tau-prolog_template
+	url = https://github.com/liaScript/tau-prolog_template
+[submodule "demos/skulpt_template"]
+	path = demos/templates/skulpt_template
+	url = https://github.com/liaScript/skulpt_template
+[submodule "demos/pannellum_template"]
+	path = demos/templates/pannellum_template
+	url = https://github.com/liaScript/pannellum_template
+[submodule "demos/algebrite_template"]
+	path = demos/templates/algebrite_template
+	url = https://github.com/liaScript/algebrite_template
+[submodule "demos/alasql_template"]
+	path = demos/templates/alasql_template
+	url = https://github.com/liaScript/alasql_template
+[submodule "demos/tensorflowjs_template"]
+	path = demos/templates/tensorflowjs_template
+	url = https://github.com/liaScript/tensorflowjs_template
+[submodule "demos/brython_template"]
+	path = demos/templates/brython_template
+	url = https://github.com/liaScript/brython_template
+[submodule "demos/processing_template"]
+	path = demos/templates/processing_template
+	url = https://github.com/liaScript/processing_template
+[submodule "demos/Netzwerktreffen2018"]
+	path = demos/misc/Netzwerktreffen2018
+	url = https://github.com/liaScript/Netzwerktreffen2018
+[submodule "demos/e-Learning-2019"]
+	path = demos/misc/e-Learning-2019
+	url = https://github.com/andre-dietrich/e-Learning-2019
+[submodule "demos/Tutorial_Regelungstechnik"]
+	path = demos/courses/Tutorial_Regelungstechnik
+	url = https://github.com/andre-dietrich/Tutorial_Regelungstechnik
+[submodule "demos/C-Programmierung"]
+	path = demos/courses/C-Programmierung
+	url = https://github.com/andre-dietrich/C-Programmierung
+[submodule "demos/courses/TensorFlowJS_tutorial"]
+	path = demos/courses/TensorFlowJS_tutorial
+	url = https://github.com/andre-dietrich/TensorFlowJS_tutorial
+[submodule "demos/misc/MeetupDemo"]
+	path = demos/misc/MeetupDemo
+	url = https://github.com/andre-dietrich/MeetupDemo
+[submodule "demos/courses/tau-prolog_template"]
+	path = demos/courses/tau-prolog_template
+	url = https://github.com/andre-dietrich/tau-prolog_template
+[submodule "demos/templates/logicemu_template"]
+	path = demos/templates/logicemu_template
+	url = https://github.com/liaScript/logicemu_template
+[submodule "demos/templates/pyodide_template"]
+	path = demos/templates/pyodide_template
+	url = https://github.com/liaScript/pyodide_template
+[submodule "demos/templates/vtk_template"]
+	path = demos/templates/vtk_template
+	url = https://github.com/liaScript/vtk_template.git
+[submodule "demos/templates/plantUML"]
+	path = demos/templates/plantUML
+	url = https://github.com/liascript-templates/plantUML.git
