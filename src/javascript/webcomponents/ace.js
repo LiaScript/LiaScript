@@ -165,7 +165,7 @@ customElements.define('code-editor', class extends HTMLElement {
     try {
       this._editor.setMode(get_mode(mode));
     } catch(e) {
-      console.log("Problem Ace: setMode => ", e.toString());
+      console.log("Problem Ace: setMode(", mode, ") => ", e.toString());
     }
   }
 

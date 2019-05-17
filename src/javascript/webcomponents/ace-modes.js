@@ -3,29 +3,36 @@
 function get_mode(name) {
   let mode_name = modes[name];
 
-  return "ace/mode/" + (mode_name ? mode_name : name);
+  return "ace/mode/" + (mode_name ? mode_name : "text");
 };
 
 const modes = {
-//"actionscript":     "actionscript",
+  "abap":             "abap",
+  "abc":              "abc",
+  "actionscript":     "actionscript",
   "as":               "actionscript",
-
+  "ada":              "ada",
   "apache":           "apache_conf",
   "apacheconf":       "apache_conf",
-
+  "apex":             "apex",
+  "applescript":      "applescript",
   "adoc":             "asciidoc",
-//"asciidoc":         "asciidoc",
-
+  "asciidoc":         "asciidoc",
+  "aql":              "aql",
+  "asl":              "asl",
   "arm":              "assembly_x86",
   "armasm":           "assembly_x86",
   "asm":              "assembly_x86",
   "avrasm":           "assembly_x86",
   "x86asm":           "assembly_x86",
+  "autohotkey":       "autohotkey",
+
 
   "bat":              "batchfile",
   "btm":              "batchfile",
   "cmd":              "batchfile",
-
+  "bro":              "bro",
+  "c9search":         "c9search",
   "c":                "c_cpp",
   "cc":               "c_cpp",
   "cpp":              "c_cpp",
@@ -33,60 +40,85 @@ const modes = {
   "h":                "c_cpp",
   "hpp":              "c_cpp",
   "h++":              "c_cpp",
-
+  "cirru":            "cirru",
   "clj":              "clojure",
-//"clojure":          "clojure",
-
-//"coffee":           "coffee",
+  "clojure":          "clojure",
+  "cobol":            "cobol",
+  "coffee":           "coffee",
   "coffeescript":     "coffee",
   "cson":             "coffee",
   "iced":             "coffee",
-
+  "coldfusion":       "coldfusion",
+  "crystal":          "crystal",
   "cs":               "csharp",
-//"csharp":           "csharp",
+  "csharp":           "csharp",
   "c#":               "csharp",
+  "csound_document":  "csound_document",
+  "csound_orchestra": "csound_orchestra",
+  "csound_score":     "csound_score",
+  "csp":              "csp",
+  "css":              "css",
+  "curly":            "curly",
 
-//"diff":             "diff",
+
+  "dart":             "dart",
+  "diff":             "diff",
   "patch":            "diff",
-
-//"django":           "django",
+  "django":           "django",
   "jinja":            "django",
-
+  "d":                "d",
   "docker":           "dockerfile",
-//"dockerfile":       "dockerfile",
+  "dockerfile":       "dockerfile",
+  "dot":              "dot",
+  "drools":           "drools",
 
+
+  "edifact":          "edifact",
+  "eiffel":           "eiffel",
+  "ejs":              "ejs",
   "ex":               "elixir",
-//"elixir":           "elixir",
+  "elixir":           "elixir",
   "exs":              "elixir",
-
+  "elm":              "elm",
   "erl":              "erlang",
-//"erlang":           "erlang",
+  "erlang":           "erlang",
 
-  "fs":               "fsharp",
-//"fsharp":           "fsharp",
-  "f#":               "fsharp",
 
-//"fortran":          "fortran",
+  "forth":            "forth",
+  "fortran":          "fortran",
   "f90":              "fortran",
   "f95":              "fortran",
+  "fs":               "fsharp",
+  "fsharp":           "fsharp",
+  "f#":               "fsharp",
+  "fsl":              "fsl",
+  "ftl":              "ftl",
 
-//"gcode":            "gcode",
+
+  "gcode":            "gcode",
   "nc":               "gcode",
-
+  "gherkin":          "gherkin",
+  "gitignore":        "gitignore",
+  "glsl":             "glsl",
+  "gobstones":        "gobstones",
   "go":               "golang",
-//"golang":           "golang",
+  "golang":           "golang",
+  "graphqlschema":    "graphqlschema",
+  "groovy":           "groovy",
 
-//"handlebars":       "handlebars",
+
+  "haml":             "haml",
+  "handlebars":       "handlebars",
   "hbs":              "handlebars",
   "html.handlebars":  "handlebars",
   "html.hbs":         "handlebars",
-
-//"haskell":          "haskell",
+  "haskell_cabal":    "haskell_cabal",
+  "haskell":          "haskell",
   "hs":               "haskell",
-
-//"haxe":             "haxe",
+  "haxe":             "haxe",
   "hx":               "haxe",
-
+  "hjson":            "hjson",
+  "html_elixir":      "html_elixir",
   "atom":             "html",
   "html":             "html",
   "plist":            "html",
@@ -95,29 +127,74 @@ const modes = {
   "xjb":              "html",
   "xsd":              "html",
   "xsl":              "html",
+  "html_ruby":        "html_ruby",
 
-//"javascript":       "javascript",
+
+  "ini":              "ini",
+  "io":               "io",
+
+
+  "jack":             "jack",
+  "jade":             "jade",
+  "java":             "java",
+
+  "javascript":       "javascript",
   "js":               "javascript",
+  "jsoniq":           "jsoniq",
+  "json":             "json",
+  "jsp":              "jsp",
+  "jssm":             "jssm",
+  "jsx":              "jsx",
+  "julia":            "julia",
 
-//"livescript":       "livescript",
+
+  "kot":              "kotlin",
+  "kotlin":           "kotlin",
+
+
+  "latex":            "latex",
+  "less":             "less",
+  "liquid":           "liquid",
+  "lisp":             "lisp",
+  "livescript":       "livescript",
   "ls":               "livescript",
+  "logiql":           "logiql",
+  "logtalk":          "logtalk",
+  "lsl":              "lsl",
+  "lua":              "lua",
+  "luapage":          "luapage",
+  "lucene":           "lucene",
+
 
   "mak":              "makefile",
-//"makefile":         "makefile",
+  "makefile":         "makefile",
   "mk":               "makefile",
-
-//"markdown":         "markdown",
+  "markdown":         "markdown",
   "md":               "markdown",
   "mkd":              "markdown",
   "mkdown":           "markdown",
+  "mask":             "mask",
+  "matlab":           "matlab",
+  "maze":             "maze",
+  "mel":              "mel",
+  "mixal":            "mixal",
+  "mushcode":         "mushcode",
+  "mysql":            "mysql",
 
-  "ml":               "ocaml",
-//"ocaml":            "ocaml",
+
+  "nginx":            "nginx",
+  "nim":              "nim",
+  "nix":              "nix",
+  "nsis":             "nsis",
+
 
   "mm":               "objectivec",
   "objc":             "objectivec",
-//"objectivec":       "objectivec",
+  "objectivec":       "objectivec",
   "obj-c":            "objectivec",
+  "ml":               "ocaml",
+  "ocaml":            "ocaml",
+
 
   "delphi":           "pascal",
   "dfm":              "pascal",
@@ -127,66 +204,106 @@ const modes = {
   "lfm":              "pascal",
   "lpr":              "pascal",
   "pas":              "pascal",
-//"pascal":           "pascal",
-
-//"php":              "php",
+  "pascal":           "pascal",
+  "perl6":            "perl6",
+  "perl":             "perl",
+  "pl":               "perl",
+  "pm":               "perl",
+  "pgsql":            "pgsql",
+  "php":              "php",
   "php3":             "php",
   "php4":             "php",
   "php5":             "php",
   "php6":             "php",
-
-//"perl":             "perl",
-  "pl":               "perl",
-  "pm":               "perl",
-
-//"powershell":       "powershell",
+  "php_laravel_blade":"php_laravel_blade",
+  "pig":              "pig",
+  "plain_text":       "plain_text",
+  "powershell":       "powershell",
   "ps":               "powershell",
-
+  "praat":            "praat",
+  "prolog":           "prolog",
+  "properties":       "properties",
+  "protobuf":         "protobuf",
   "pp":               "puppet",
-//"puppet":           "puppet",
-
+  "puppet":           "puppet",
   "gyp":              "python",
   "py":               "python",
-//"python":           "python",
+  "python":           "python",
 
+
+  "razor":            "razor",
+  "rdoc":             "rdoc",
+  "red":              "red",
+  "redshift":         "redshift",
+  "rhtml":            "rhtml",
+  "r":                "r",
+  "rst":              "rst",
   "irb":              "ruby",
   "gemspec":          "ruby",
   "podspec":          "ruby",
   "rb":               "ruby",
-//"ruby":             "ruby",
+  "ruby":             "ruby",
   "thor":             "ruby",
-
   "rs":               "rust",
-//"rust":             "rust",
+  "rust":             "rust",
 
-//"scad":             "scad",
+
+  "sass":             "sass",
+  "scad":             "scad",
   "openscad":         "scad",
-
+  "scala":            "scala",
+  "scheme":           "scheme",
+  "scss":             "scss",
   "bash":             "sh",
   "console":          "sh",
   "shell":            "sh",
   "zsh":              "sh",
-
+  "sjs":              "sjs",
+  "slim":             "slim",
+  "smarty":           "smarty",
+  "snippets":         "snippets",
+  "soy_template":     "soy_template",
+  "space":            "space",
+  "sparql":           "sparql",
+  "sql":              "sql",
+  "sqlserver":        "sqlserver",
   "styl":             "stylus",
-//"stylus":           "stylus",
+  "stylus":           "stylus",
+  "svg":              "svg",
+  "swift":            "swift",
 
-//"tcl":              "tcl",
+
+  "tcl":              "tcl",
   "tk":               "tcl",
-
+  "terraform":        "terraform",
+  "tex":              "tex",
+  "textile":          "textile",
+  "text":             "text",
+  "toml":             "toml",
+  "tsx":              "tsx",
+  "turtle":           "turtle",
   "craftcms":         "twig",
-//"twig":             "twig",
-
+  "twig":             "twig",
   "ts":               "typescript",
-//"typescript":       "typescript",
+  "typescript":       "typescript",
 
+
+  "vala":             "vala",
   "vbs":              "vbscript",
-//"vbscript":         "vbscript",
-
+  "vbscript":         "vbscript",
+  "velocity":         "velocity",
   "v":                "verilog",
-//"verilog":          "verilog",
+  "verilog":          "verilog",
+  "vhdl":             "vhdl",
+  "visualforce":      "visualforce",
 
+  "wollok":           "wollok",
+
+  "xml":              "xml",
   "xpath":            "xquery",
   "xq":               "xquery",
+
+  "yaml":             "yaml",
 };
 
 
