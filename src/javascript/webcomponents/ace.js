@@ -163,7 +163,7 @@ customElements.define('code-editor', class extends HTMLElement {
     if(!this._editor)
       return;
     try {
-      this._editor.setMode(get_mode(mode));
+      this._editor.getSession().setMode(get_mode(mode));
     } catch(e) {
       console.log("Problem Ace: setMode(", mode, ") => ", e.toString());
     }
