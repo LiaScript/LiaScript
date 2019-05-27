@@ -32,6 +32,7 @@ type alias Definition =
     , translation : Dict String String
     , macro : Dict String String
     , imports : List String
+    , attributes : List String
     , section : Int
     , uid : Int
     , debug : Bool
@@ -54,6 +55,7 @@ default base =
     , translation = Dict.empty
     , macro = Dict.empty
     , imports = []
+    , attributes = []
     , section = -1
     , uid = -1
     , debug = False

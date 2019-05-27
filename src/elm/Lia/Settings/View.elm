@@ -132,7 +132,9 @@ view_information lang visible definition =
           else
             Html.p []
                 [ Html.text <| infoEmail lang
-                , Html.a [ Attr.href definition.email ] [ Html.text definition.email ]
+                , Html.a
+                    [ Attr.href definition.email ]
+                    [ Html.text definition.email ]
                 ]
         , if String.isEmpty definition.version then
             Html.text ""
@@ -150,7 +152,22 @@ view_information lang visible definition =
                 [ Html.text <| infoDate lang
                 , Html.text definition.date
                 ]
+        , if List.isEmpty definition.attributes then
+            Html.text ""
+
+          else
+            Html.p []
+                [ Html.text "Attribute"
+                , view_attributes definition.attributes
+                ]
         ]
+
+
+view_attributes : List String -> Html Msg
+view_attributes thanks_to =
+    thanks_to
+        |> List.map (\thx -> Html.p [] [ Html.text thx ])
+        |> Html.p []
 
 
 view_translations : Lang -> Bool -> String -> List ( String, String ) -> Html Msg

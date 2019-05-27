@@ -37,6 +37,7 @@ module.exports = {
     new CleanWebpackPlugin(['dist']),
     new CopyWebpackPlugin([
       { from: 'src/assets/logo.png', to: '.'},
+      { from: 'src/assets/README.md', to: '.'},
       { from: 'vendor/responsivevoice.js', to: '.'},
 
       { from: "vendor/material_icons/material.css", to: 'css'},

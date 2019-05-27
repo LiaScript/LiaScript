@@ -61,6 +61,7 @@ definition =
                         [ store "author:" (\x d -> { d | author = x })
                         , store "base:" (\x d -> { d | base = x })
                         , store "comment:" (\x d -> { d | comment = String.replace "\n" " " x })
+                        , store "attribute:" (\x d -> { d | attributes = [ String.replace "\n" " " x ] |> List.append d.attributes })
                         , store "date:" (\x d -> { d | date = x })
                         , store "email:" (\x d -> { d | email = x })
                         , store "language:" (\x d -> { d | language = x })
