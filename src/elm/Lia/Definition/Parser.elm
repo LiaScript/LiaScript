@@ -27,8 +27,10 @@ import Lia.Definition.Types
         , add_imports
         , add_translation
         )
-import Lia.Markdown.Inline.Parser exposing (comment)
+import Lia.Markdown.Inline.Parser exposing (comment, inlines)
+import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Macro.Parser as Macro
+import Lia.Markdown.Parser exposing (run)
 import Lia.Parser.Helper exposing (newline, stringTill)
 import Lia.Parser.State
     exposing
@@ -37,6 +39,7 @@ import Lia.Parser.State
         , identation
         , identation_append
         , identation_pop
+        , init
         )
 
 
@@ -51,6 +54,20 @@ parse =
                 |> skip
 
 
+inline_parser : Definition -> String -> Inlines
+inline_parser defines str =
+    case
+        str
+            |> String.replace "\n" " "
+            |> Combine.runParser (many1 inlines) (init defines)
+    of
+        Ok ( _, _, rslt ) ->
+            rslt
+
+        Err ( _, stream, ms ) ->
+            []
+
+
 definition : Parser State ()
 definition =
     lazy <|
@@ -61,7 +78,7 @@ definition =
                         [ store "author:" (\x d -> { d | author = x })
                         , store "base:" (\x d -> { d | base = x })
                         , store "comment:" (\x d -> { d | comment = String.replace "\n" " " x })
-                        , store "attribute:" (\x d -> { d | attributes = [ String.replace "\n" " " x ] |> List.append d.attributes })
+                        , store "attribute:" (\x d -> { d | attributes = [ inline_parser d x ] |> List.append d.attributes })
                         , store "date:" (\x d -> { d | date = x })
                         , store "email:" (\x d -> { d | email = x })
                         , store "language:" (\x d -> { d | language = x })

@@ -11,6 +11,7 @@ module Lia.Definition.Types exposing
     )
 
 import Dict exposing (Dict)
+import Lia.Markdown.Inline.Types exposing (Inlines)
 
 
 type Resource
@@ -32,7 +33,7 @@ type alias Definition =
     , translation : Dict String String
     , macro : Dict String String
     , imports : List String
-    , attributes : List String
+    , attributes : List Inlines
     , section : Int
     , uid : Int
     , debug : Bool
@@ -85,6 +86,7 @@ add_macros : Definition -> Definition -> Definition
 add_macros orig temp =
     { orig
         | macro = Dict.union orig.macro temp.macro
+        , attributes = List.append orig.attributes temp.attributes
         , onload = String.trim (orig.onload ++ "\n" ++ temp.onload)
     }
 

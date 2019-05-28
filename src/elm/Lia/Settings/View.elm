@@ -5,6 +5,8 @@ import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import Html.Lazy as Lazy
 import Lia.Definition.Types exposing (Definition, get_translations)
+import Lia.Markdown.Inline.Types exposing (Inlines)
+import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Settings.Model exposing (Mode(..), Model)
 import Lia.Settings.Update exposing (Button(..), Msg(..))
 import Translations exposing (..)
@@ -115,6 +117,16 @@ design_theme lang theme =
         |> Html.div [ Attr.class "lia-color" ]
 
 
+span_block : List (Html msg) -> Html msg
+span_block =
+    Html.span [ Attr.style "display" "block" ]
+
+
+bold : String -> Html msg
+bold =
+    Html.text >> List.singleton >> Html.b []
+
+
 view_information : Lang -> Bool -> Definition -> Html Msg
 view_information lang visible definition =
     Html.div (menu_style visible)
@@ -122,16 +134,16 @@ view_information lang visible definition =
             Html.text ""
 
           else
-            Html.p []
-                [ Html.text <| infoAuthor lang
+            span_block
+                [ bold <| infoAuthor lang
                 , Html.text definition.author
                 ]
         , if String.isEmpty definition.email then
             Html.text ""
 
           else
-            Html.p []
-                [ Html.text <| infoEmail lang
+            span_block
+                [ bold <| infoEmail lang
                 , Html.a
                     [ Attr.href definition.email ]
                     [ Html.text definition.email ]
@@ -140,34 +152,35 @@ view_information lang visible definition =
             Html.text ""
 
           else
-            Html.p []
-                [ Html.text <| infoVersion lang
+            span_block
+                [ bold <| infoVersion lang
                 , Html.text definition.version
                 ]
         , if String.isEmpty definition.date then
             Html.text ""
 
           else
-            Html.p []
-                [ Html.text <| infoDate lang
+            span_block
+                [ bold <| infoDate lang
                 , Html.text definition.date
                 ]
         , if List.isEmpty definition.attributes then
             Html.text ""
 
           else
-            Html.p []
-                [ Html.text "Attribute"
+            span_block
+                [ bold "Attributes:"
+                , Html.br [] []
                 , view_attributes definition.attributes
                 ]
         ]
 
 
-view_attributes : List String -> Html Msg
+view_attributes : List Inlines -> Html Msg
 view_attributes thanks_to =
     thanks_to
-        |> List.map (\thx -> Html.p [] [ Html.text thx ])
-        |> Html.p []
+        |> List.map (List.map view_inf >> span_block)
+        |> Html.span []
 
 
 view_translations : Lang -> Bool -> String -> List ( String, String ) -> Html Msg
