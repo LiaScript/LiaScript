@@ -254,11 +254,33 @@ ref_url_2 =
         |> or url
 
 
-ref_pattern : (a -> b -> String -> c) -> Parser s a -> Parser s b -> Parser s c
+
+--ref_pattern : (a -> b -> String -> c) -> Parser s a -> Parser s b -> Parser s c
+
+
 ref_pattern ref_type info_type url_type =
-    map ref_type info_type
+    map (nicer_ref ref_type) info_type
         |> ignore (string "(")
         |> andMap url_type
+        |> andMap ref_title
+        |> ignore (string ")")
+
+
+nicer_ref ref_type info_string url_string title_string =
+    ref_type info_string
+        url_string
+        (if String.isEmpty title_string then
+            url_string
+
+         else
+            title_string
+        )
+
+
+ref_movie =
+    map Movie ref_info
+        |> ignore (string "(")
+        |> andMap (map tube ref_url_2)
         |> andMap ref_title
         |> ignore (string ")")
 
@@ -284,7 +306,7 @@ reference =
 
                 movie =
                     string "!?"
-                        |> keep (ref_pattern Movie ref_info (map tube ref_url_2))
+                        |> keep ref_movie
             in
             [ movie, audio, image, mail_, link ]
                 |> choice
