@@ -46,6 +46,7 @@ body =
     [ regex "(?:[^`<#]+|[\\x0D\n]+)" -- misc
     , regex "<!--[\\s\\S]*?-->" -- comment
     , regex "(`{3,})[\\s\\S]*?\\1" -- code_block or ascii art
+    , regex "`[^`]*`"
     , regex "<((\\w+|-)+)[\\s\\S]*?</\\1>" -- html block
     , string "`"
     , string "<"
