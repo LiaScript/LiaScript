@@ -117,7 +117,7 @@ set_script model script =
                                 0
                     in
                     ( { model
-                        | definition = { definition | resources = [], imports = [] }
+                        | definition = { definition | resources = [], imports = [], attributes = [] }
                         , sections = sections
                         , section_active = section_active
                         , translation = Translations.getLnFromCode definition.language

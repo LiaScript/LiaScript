@@ -179,8 +179,18 @@ view_information lang visible definition =
 view_attributes : List Inlines -> Html Msg
 view_attributes thanks_to =
     thanks_to
-        |> List.map (List.map view_inf >> span_block)
+        |> List.map thanks
         |> Html.span []
+
+
+thanks : Inlines -> Html msg
+thanks to =
+    Html.span []
+        [ Html.hr [] []
+        , to
+            |> List.map view_inf
+            |> span_block
+        ]
 
 
 view_translations : Lang -> Bool -> String -> List ( String, String ) -> Html Msg
