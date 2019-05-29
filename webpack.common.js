@@ -22,9 +22,10 @@ module.exports = {
     ]
   },
   entry: {
+    'lia/index':     './src/index.js',
     'editor/index':  './src/javascript/webcomponents/ace.js',
-    'formula/index': './src/javascript/webcomponents/katex.js',
-    'lia/index':     './src/index.js'
+    'formula/index': './src/javascript/webcomponents/katex.js'
+
   },
   output: {
     filename: '[name].js',
