@@ -43,13 +43,10 @@ title_str =
 
 body : Parser State String
 body =
-    [ regex "(?:[^`<#]+|[\\x0D\n]+)" -- misc
-    , regex "<!--[\\s\\S]*?-->" -- comment
-    , regex "(`{3,})[\\s\\S]*?\\1" -- code_block or ascii art
-    , regex "`[^`]+`"
-    , regex "<((\\w+|-)+)[\\s\\S]*?</\\1>" -- html block
-    , string "`"
-    , string "<"
+    [ regex "(?:[^#`<]+|[\\x0D\n]+|<!--[\\S\\s]*?-->)" -- comment
+    , regex "(`{3,})[\\S\\s]*?\\1" -- code_block or ascii art
+    , regex "`.+?`" -- code_block or ascii art
+    , regex "(?:<((\\w+|-)+)[\\S\\s]*?</\\2>|`|<)"
     , withColumn check |> keep (string "#")
     ]
         |> choice
