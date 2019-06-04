@@ -30,7 +30,6 @@ import Lia.Definition.Types
 import Lia.Markdown.Inline.Parser exposing (comment, inlines)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Macro.Parser as Macro
-import Lia.Markdown.Parser exposing (run)
 import Lia.Parser.Helper exposing (newline, stringTill)
 import Lia.Parser.State
     exposing
@@ -64,7 +63,7 @@ inline_parser defines str =
         Ok ( _, _, rslt ) ->
             rslt
 
-        Err ( _, stream, ms ) ->
+        Err _ ->
             []
 
 

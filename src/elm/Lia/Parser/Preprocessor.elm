@@ -1,4 +1,4 @@
-module Lia.Parser.Preprocessor exposing (run)
+module Lia.Parser.Preprocessor exposing (section)
 
 import Combine
     exposing
@@ -46,7 +46,7 @@ body =
     [ regex "(?:[^#`<]+|[\\x0D\n]+|<!--[\\S\\s]*?-->)" -- comment
     , regex "(`{3,})[\\S\\s]*?\\1" -- code_block or ascii art
     , regex "`.+?`" -- code_block or ascii art
-    , regex "(?:<((\\w+|-)+)[\\S\\s]*?</\\2>|`|<)"
+    , regex "(?:<([\\w+\\-]+)[\\S\\s]*?</\\2>|`|<)"
     , withColumn check |> keep (string "#")
     ]
         |> choice
@@ -60,8 +60,3 @@ section =
         |> map SectionBase
         |> andMap title_str
         |> andMap body
-
-
-run : Parser State (List SectionBase)
-run =
-    many section

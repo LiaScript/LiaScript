@@ -1,4 +1,9 @@
-module Lia.Parser.Parser exposing (formatError, parse_defintion, parse_section, parse_titles)
+module Lia.Parser.Parser exposing
+    ( formatError
+    , parse_defintion
+    , parse_section
+    , parse_titles
+    )
 
 import Combine exposing (InputStream, currentLocation, keep)
 import Lia.Definition.Parser
@@ -19,11 +24,11 @@ parse_defintion base code =
             Err (formatError ms stream)
 
 
-parse_titles : Definition -> String -> Result String (List SectionBase)
+parse_titles : Definition -> String -> Result String ( SectionBase, String )
 parse_titles defines code =
-    case Combine.runParser Preprocessor.run (init defines) code of
-        Ok ( _, _, rslt ) ->
-            Ok rslt
+    case Combine.runParser Preprocessor.section (init defines) code of
+        Ok ( _, data, rslt ) ->
+            Ok ( rslt, data.input )
 
         Err ( _, stream, ms ) ->
             Err (formatError ms stream)

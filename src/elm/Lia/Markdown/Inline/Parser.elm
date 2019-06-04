@@ -255,7 +255,7 @@ ref_url_2 =
 
 
 
---ref_pattern : (a -> b -> String -> c) -> Parser s a -> Parser s b -> Parser s c
+--ref_pattern : (a -> String -> String -> b) -> Parser s a -> Parser s String -> Parser s b
 
 
 ref_pattern ref_type info_type url_type =
@@ -277,6 +277,7 @@ nicer_ref ref_type info_string url_string title_string =
         )
 
 
+ref_movie : Parser State Reference
 ref_movie =
     map Movie ref_info
         |> ignore (string "(")
