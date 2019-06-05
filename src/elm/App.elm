@@ -242,7 +242,7 @@ update msg model =
                         update LiaStart { model | lia = lia }
 
                     else
-                        ( { model | lia = lia }, Cmd.none )
+                        ( { model | lia = lia }, message LiaParse )
 
         Input url ->
             let
@@ -338,10 +338,7 @@ parse_error msg =
 
 download : (Result Http.Error String -> Msg) -> String -> Cmd Msg
 download msg url =
-    Http.get
-        { url = url
-        , expect = Http.expectString msg
-        }
+    Http.get { url = url, expect = Http.expectString msg }
 
 
 
