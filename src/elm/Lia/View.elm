@@ -47,7 +47,7 @@ view_aside model =
                     |> Maybe.andThen .definition
                     |> Maybe.withDefault model.definition
                 )
-                (model.origin ++ "?" ++ model.readme)
+                model.url
                 model.origin
                 model.translation
         ]
