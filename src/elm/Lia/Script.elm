@@ -99,7 +99,7 @@ add_todos definition model =
 
 set_script : Model -> String -> ( Model, List String )
 set_script model script =
-    case Parser.parse_defintion model.url script of
+    case Parser.parse_defintion model.origin script of
         Ok ( definition, code ) ->
             case Parser.parse_titles definition code of
                 Ok title_sections ->
