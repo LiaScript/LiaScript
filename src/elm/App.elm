@@ -77,12 +77,12 @@ init flags url key =
     in
     case ( url.query, flags.course, flags.script ) of
         ( Just query, _, _ ) ->
-            ( Model key url Loading (Lia.Script.init_textbook (get_base url) query "" slide) 0
+            ( Model key url Loading (Lia.Script.init_textbook (get_base url) query (get_origin url.query) slide) 0
             , download Load_ReadMe_Result query
             )
 
         ( _, Just query, _ ) ->
-            ( Model key { url | query = Just query } Loading (Lia.Script.init_textbook (get_base url) query "" slide) 0
+            ( Model key { url | query = Just query } Loading (Lia.Script.init_textbook (get_base url) query (get_origin url.query) slide) 0
             , download Load_ReadMe_Result query
             )
 
@@ -95,6 +95,23 @@ init flags url key =
             ( Model key url Waiting (Lia.Script.init_textbook (get_base url) "" "" slide) 0
             , Cmd.none
             )
+
+
+get_origin : Maybe String -> String
+get_origin query =
+    case query of
+        Just url ->
+            (url
+                |> String.split "/"
+                |> List.reverse
+                |> List.drop 1
+                |> List.reverse
+                |> String.join "/"
+            )
+                ++ "/"
+
+        Nothing ->
+            ""
 
 
 get_base : Url.Url -> String
