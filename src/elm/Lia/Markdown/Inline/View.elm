@@ -135,13 +135,25 @@ reference visible ref attr =
                 (Attr.src url_ :: Attr.title title_ :: annotation "lia-image" attr)
                 (viewer visible alt_)
 
-        Audio alt_ url_ title_ ->
-            Html.audio
-                (Attr.controls True
-                    :: Attr.title title_
-                    :: annotation "lia-audio" attr
-                )
-                [ Html.source [ Attr.src url_ ] [], Html.span [] (viewer visible alt_) ]
+        Audio alt_ ( tube, url_ ) title_ ->
+            if tube then
+                Html.iframe
+                    (Attr.src url_
+                        :: Attr.attribute "allowfullscreen" ""
+                        :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                        :: Attr.title title_
+                        :: Attr.style "width" "100%"
+                        :: annotation "lia-audio" attr
+                    )
+                    (viewer visible alt_)
+
+            else
+                Html.audio
+                    (Attr.controls True
+                        :: Attr.title title_
+                        :: annotation "lia-audio" attr
+                    )
+                    [ Html.source [ Attr.src url_ ] [], Html.span [] (viewer visible alt_) ]
 
         Movie alt_ ( tube, url_ ) title_ ->
             if tube then
