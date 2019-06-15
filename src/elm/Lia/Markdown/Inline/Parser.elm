@@ -47,7 +47,7 @@ import Lia.Markdown.Inline.Parser.Symbol exposing (arrows, smileys)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..))
 import Lia.Markdown.Macro.Parser as Macro
 import Lia.Parser.Helper exposing (spaces, stringTill)
-import Lia.Parser.State exposing (State)
+import Lia.Parser.State exposing (State, searchIndex)
 
 
 comment : Parser s a -> Parser s (List a)
@@ -241,9 +241,13 @@ ref_title =
         |> optional ""
 
 
-ref_url_1 : Parser s String
+ref_url_1 : Parser State String
 ref_url_1 =
-    or url (regex "[^\\)\n \"]*")
+    choice
+        [ url
+        , string "#" |> keep (andMap (regex "[\\w-]+") searchIndex)
+        , regex "[^\\)\n \"]*"
+        ]
 
 
 ref_url_2 : Parser State String

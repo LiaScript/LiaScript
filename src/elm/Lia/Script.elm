@@ -97,6 +97,15 @@ add_todos definition model =
     }
 
 
+generateIndex : Int -> String -> ( String, String )
+generateIndex idx title =
+    ( title
+        |> String.toLower
+        |> String.replace " " "-"
+    , "#" ++ String.fromInt (idx + 1)
+    )
+
+
 set_script : Model -> String -> ( Model, List String )
 set_script model script =
     case Parser.parse_defintion model.origin script of
@@ -108,6 +117,12 @@ set_script model script =
                             title_sections
                                 |> Array.fromList
                                 |> Array.indexedMap init_section
+
+                        search =
+                            title_sections
+                                |> List.map (.title >> stringify >> String.trim)
+                                |> List.indexedMap generateIndex
+                                |> searchIndex
 
                         section_active =
                             if Array.length sections > model.section_active then
@@ -121,6 +136,7 @@ set_script model script =
                         , sections = sections
                         , section_active = section_active
                         , translation = Translations.getLnFromCode definition.language
+                        , search_index = search
                       }
                         |> add_todos definition
                     , definition.imports
@@ -142,6 +158,27 @@ get_title sections =
         |> Maybe.withDefault "Lia"
         |> String.trim
         |> (++) "Lia: "
+
+
+filterIndex : String -> ( String, String ) -> Bool
+filterIndex str ( idx, _ ) =
+    str == idx
+
+
+searchIndex : List ( String, String ) -> String -> String
+searchIndex index str =
+    let
+        fn =
+            str
+                |> String.toLower
+                |> filterIndex
+    in
+    case index |> List.filter fn |> List.head of
+        Just ( _, key ) ->
+            key
+
+        Nothing ->
+            str
 
 
 init_textbook : String -> String -> String -> Maybe Int -> Model

@@ -29,9 +29,10 @@ audio =
     [ { embed = \w -> "https://w.soundcloud.com/player/?url=https://soundcloud.com/" ++ w
       , pattern = regex "https?:\\/\\/(?:w\\.|www\\.|)(?:soundcloud\\.com\\/)(?:(?:player\\/\\?url=https\\%3A\\/\\/api.soundcloud.com\\/tracks\\/)|)(((\\w|-)[^A-z]{7})|([A-Za-z0-9]+(?:[-_][A-Za-z0-9]+)*(?!\\/sets(?:\\/|$))(?:\\/[A-Za-z0-9]+(?:[-_][A-Za-z0-9]+)*){1,2}))"
       }
-    , { embed = \w -> "http://open.spotify.com/track/" ++ w
-      , pattern = regex "https?:\\/\\/(?:embed\\.|open\\.)(?:spotify\\.com\\/)(?:track\\/|\\?uri=spotify:track:)((\\w|-){22})\n"
-      }
+
+    -- , { embed = \w -> "http://open.spotify.com/track/" ++ w
+    --   , pattern = regex "https?:\\/\\/(?:embed\\.|open\\.)(?:spotify\\.com\\/)(?:track\\/|\\?uri=spotify:track:)((\\w|-){22})\n"
+    --   }
     ]
         |> search
 

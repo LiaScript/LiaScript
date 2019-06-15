@@ -31,6 +31,7 @@ type alias Model =
     , to_do : List Event
     , translation : Translations.Lang
     , ready : Bool
+    , search_index : String -> String
     }
 
 
@@ -70,6 +71,7 @@ init mode url readme origin slide_number =
     , to_do = []
     , translation = Translations.En
     , ready = False
+    , search_index = identity
     }
 
 

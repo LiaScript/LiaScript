@@ -245,7 +245,7 @@ generate model =
                         { sec | effect_model = { effects | visible = 0 } }
 
                     else
-                        case parse_section model.definition sec of
+                        case parse_section model.search_index model.definition sec of
                             Ok new_sec ->
                                 new_sec
 

@@ -5,6 +5,7 @@ module Lia.Parser.State exposing
     , identation_append
     , identation_pop
     , init
+    , searchIndex
     )
 
 import Array
@@ -28,11 +29,12 @@ type alias State =
     , defines : Definition
     , footnotes : Footnote.Model
     , defines_updated : Bool
+    , search_index : String -> String
     }
 
 
-init : Definition -> State
-init global =
+init : (String -> String) -> Definition -> State
+init search_index global =
     { identation = []
     , identation_skip = False
     , code_vector = Array.empty
@@ -43,7 +45,13 @@ init global =
     , defines = global
     , footnotes = Footnote.init
     , defines_updated = False
+    , search_index = search_index
     }
+
+
+searchIndex : Parser State (String -> String)
+searchIndex =
+    withState (\state -> state.search_index |> succeed)
 
 
 identation : Parser State ()
