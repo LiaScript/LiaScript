@@ -102,6 +102,7 @@ generateIndex idx title =
     ( title
         |> String.toLower
         |> String.replace " " "-"
+        |> (++) "#"
     , "#" ++ String.fromInt (idx + 1)
     )
 

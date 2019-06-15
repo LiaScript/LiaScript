@@ -245,7 +245,7 @@ ref_url_1 : Parser State String
 ref_url_1 =
     choice
         [ url
-        , string "#" |> keep (andMap (regex "[\\w-]+") searchIndex)
+        , andMap (regex "#[\\w-]+") searchIndex
         , regex "[^\\)\n \"]*"
         ]
 
