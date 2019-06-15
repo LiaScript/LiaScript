@@ -251,8 +251,8 @@ correctly in other Markdown parsers or on github.
 
 **Movie-notation: `!?[alt-text](movie-url)`**
 
-- YouTube: `!?[movie](https://www.youtube.com/embed/XsNk5aOpqUc?&autoplay=1)`
-- !?[movie](https://www.youtube.com/embed/XsNk5aOpqUc?&autoplay=1)
+- YouTube: `!?[movie](https://www.youtube.com/watch?v=8pTEmbeENF4)`
+- !?[movie](https://www.youtube.com/watch?v=8pTEmbeENF4)
 - See also http://www.google.com/support/youtube/bin/answer.py?hl=en&answer=56107
     to get an overview on how a YouTube link has to be formatted to add a starting
     and/or end point, autoplay, subtitles, and other options.
