@@ -52,6 +52,9 @@ view lang quiz vector =
         Text solution (QuizAdds idx hints eval_string) ->
             view_quiz lang (state idx) view_text idx hints eval_string (TextState solution)
 
+        Selection solution options (QuizAdds idx hints eval_string) ->
+            view_quiz lang (state idx) (view_selection options) idx hints eval_string (SelectionState solution)
+
         SingleChoice solution questions (QuizAdds idx hints eval_string) ->
             view_quiz lang (state idx) (view_single_choice questions) idx hints eval_string (SingleChoiceState solution)
 
@@ -132,6 +135,23 @@ view_text idx state solved =
                 [ Attr.type_ "input"
                 , Attr.class "lia-input"
                 , Attr.value x
+                , Attr.disabled solved
+                , onInput (Input idx)
+                ]
+                []
+
+        _ ->
+            Html.text ""
+
+
+view_selection : List String -> Int -> State -> Bool -> Html Msg
+view_selection options idx state solved =
+    case state of
+        SelectionState x ->
+            Html.input
+                [ Attr.type_ "input"
+                , Attr.class "lia-input"
+                , Attr.value "DDDD"
                 , Attr.disabled solved
                 , onInput (Input idx)
                 ]
@@ -256,6 +276,9 @@ view_solution vector quiz =
                     ( idx, True )
 
                 Text _ (QuizAdds idx _ _) ->
+                    ( idx, False )
+
+                Selection _ _ (QuizAdds idx _ _) ->
                     ( idx, False )
 
                 SingleChoice _ _ (QuizAdds idx _ _) ->

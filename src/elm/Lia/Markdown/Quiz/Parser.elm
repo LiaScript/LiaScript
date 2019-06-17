@@ -16,6 +16,7 @@ import Combine
         , modifyState
         , onsuccess
         , regex
+        , sepBy
         , string
         , succeed
         , withState
@@ -24,7 +25,7 @@ import Lia.Markdown.Inline.Parser exposing (javascript, line)
 import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Types exposing (Element, Quiz(..), QuizAdds(..), Solution(..), State(..))
-import Lia.Parser.Helper exposing (newline, spaces)
+import Lia.Parser.Helper exposing (newline, spaces, stringTill)
 import Lia.Parser.State exposing (State)
 
 
@@ -35,7 +36,7 @@ parse =
 
 quiz : Parser State Quiz
 quiz =
-    [ single_choice, multi_choice, empty, text ]
+    [ single_choice, multi_choice, empty, selection ]
         |> choice
         |> andMap quizAdds
 
@@ -87,6 +88,25 @@ text : Parser State (QuizAdds -> Quiz)
 text =
     string "["
         |> keep (regex "[^\n\\]_]+")
+        |> ignore (regex "\\][\t ]*")
+        |> pattern
+        |> ignore newline
+        |> map Text
+
+
+splitter str =
+    case String.split "|" str of
+        [ one ] ->
+            Text one
+
+        list ->
+            Selection 1 list
+
+
+selection : Parser State (QuizAdds -> Quiz)
+selection =
+    string "["
+        |> keep (stringTill (string "]"))
         |> ignore (regex "\\][\t ]*")
         |> pattern
         |> ignore newline
@@ -157,6 +177,9 @@ modify_State quiz_ =
 
                 Text _ _ ->
                     TextState ""
+
+                Selection x _ _ ->
+                    SelectionState x
 
                 SingleChoice _ _ _ ->
                     SingleChoiceState -1

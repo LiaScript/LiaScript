@@ -38,6 +38,7 @@ type alias Element =
 type State
     = EmptyState
     | TextState String
+    | SelectionState Int
     | SingleChoiceState Int
     | MultipleChoiceState (List Bool)
 
@@ -45,6 +46,7 @@ type State
 type Quiz
     = Empty QuizAdds
     | Text String QuizAdds
+    | Selection Int (List String) QuizAdds
     | SingleChoice Int MultInlines QuizAdds
     | MultipleChoice (List Bool) MultInlines QuizAdds
 
