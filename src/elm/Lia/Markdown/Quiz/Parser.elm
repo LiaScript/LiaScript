@@ -25,7 +25,7 @@ import Combine
         , succeed
         , withState
         )
-import Lia.Markdown.Inline.Parser exposing (inlines, javascript, line)
+import Lia.Markdown.Inline.Parser exposing (javascript, line, parse_inlines)
 import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Types exposing (Element, Quiz(..), QuizAdds(..), Solution(..), State(..))
@@ -88,14 +88,17 @@ empty =
         |> onsuccess Empty
 
 
-
-{--
-splitter str =
+splitter : String -> State -> (QuizAdds -> Quiz)
+splitter str state =
     case String.split "|" str of
         [ one ] ->
             Text one
 
         list ->
+            let
+                inlines =
+                    parse_inlines state
+            in
             list
                 |> List.map String.trim
                 |> List.indexedMap
@@ -105,14 +108,16 @@ splitter str =
                             , s
                                 |> String.slice 1 -1
                                 |> String.trim
+                                |> inlines
                             )
 
                         else
-                            ( "", s )
+                            ( "", inlines s )
                     )
                 |> select
 
 
+select : List ( String, Inlines ) -> (QuizAdds -> Quiz)
 select list =
     Selection
         (list
@@ -126,35 +131,11 @@ select list =
 
 selection : Parser State (QuizAdds -> Quiz)
 selection =
-    string "["
-        |> keep (stringTill (string "]"))
-        |> ignore (regex "[\t ]*")
-        |> pattern
+    string "[["
+        |> keep (stringTill (string "]]"))
         |> ignore newline
         |> map splitter
---}
-
-
-split list =
-    Selection
-        (list
-            |> List.indexedMap (\i ( b, _ ) -> ( i, b ))
-            |> List.filter Tuple.second
-            |> List.head
-            |> Maybe.map (Tuple.first >> String.fromInt)
-            |> Maybe.withDefault ""
-        )
-        (list |> List.map Tuple.second)
-
-
-option =
-    or (parens (many1 inlines) |> map (Tuple.pair False))
-        (many1 inlines |> map (Tuple.pair True))
-
-
-selection : Parser State (QuizAdds -> Quiz)
-selection =
-    brackets (map split (sepBy1 (string "|") option))
+        |> andMap (withState succeed)
 
 
 multi_choice : Parser State (QuizAdds -> Quiz)
@@ -223,7 +204,7 @@ modify_State quiz_ =
                     State_Text ""
 
                 Selection x _ _ ->
-                    State_Selection ""
+                    State_Selection "-1"
 
                 SingleChoice _ _ _ ->
                     State_SingleChoice -1

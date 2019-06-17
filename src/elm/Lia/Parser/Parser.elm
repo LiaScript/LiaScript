@@ -1,4 +1,9 @@
-module Lia.Parser.Parser exposing (formatError, parse_defintion, parse_section, parse_titles)
+module Lia.Parser.Parser exposing
+    ( formatError
+    , parse_defintion
+    , parse_section
+    , parse_titles
+    )
 
 import Combine exposing (InputStream, currentLocation, keep)
 import Lia.Definition.Parser

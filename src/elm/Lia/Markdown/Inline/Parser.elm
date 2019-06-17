@@ -8,6 +8,7 @@ module Lia.Markdown.Inline.Parser exposing
     , inlines
     , javascript
     , line
+    , parse_inlines
     )
 
 import Combine
@@ -29,6 +30,7 @@ import Combine
         , optional
         , or
         , regex
+        , runParser
         , skip
         , string
         , succeed
@@ -38,6 +40,7 @@ import Combine
 import Combine.Char exposing (anyChar)
 import Dict exposing (Dict)
 import Html.Parser
+import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Effect.Model exposing (add_javascript)
 import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Footnote.Parser as Footnote
@@ -48,6 +51,20 @@ import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Refe
 import Lia.Markdown.Macro.Parser as Macro
 import Lia.Parser.Helper exposing (spaces, stringTill)
 import Lia.Parser.State exposing (State, searchIndex)
+
+
+parse_inlines : State -> String -> Inlines
+parse_inlines state str =
+    case
+        str
+            |> String.replace "\n" " "
+            |> runParser line state
+    of
+        Ok ( _, _, rslt ) ->
+            rslt
+
+        Err ( _, stream, ms ) ->
+            []
 
 
 comment : Parser s a -> Parser s (List a)
