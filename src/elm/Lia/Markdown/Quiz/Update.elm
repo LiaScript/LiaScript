@@ -52,13 +52,13 @@ update msg vector =
             let
                 state =
                     case vector |> Array.get idx |> Maybe.map .state of
-                        Just (TextState str) ->
+                        Just (State_Text str) ->
                             str
 
-                        Just (SingleChoiceState i) ->
+                        Just (State_SingleChoice i) ->
                             String.fromInt i
 
-                        Just (MultipleChoiceState list) ->
+                        Just (State_MultipleChoice list) ->
                             list
                                 |> List.map
                                     (\s ->
@@ -133,8 +133,8 @@ update_ idx vector f =
 input : String -> Element -> Element
 input text e =
     case e.state of
-        TextState _ ->
-            { e | state = TextState text }
+        State_Text _ ->
+            { e | state = State_Text text }
 
         _ ->
             e
@@ -143,8 +143,8 @@ input text e =
 select : String -> Element -> Element
 select option e =
     case e.state of
-        SelectionState _ ->
-            { e | state = SelectionState option }
+        State_Selection _ ->
+            { e | state = State_Selection option }
 
         _ ->
             e
@@ -153,10 +153,10 @@ select option e =
 flip : Int -> Element -> Element
 flip question_id e =
     case e.state of
-        SingleChoiceState _ ->
-            { e | state = SingleChoiceState question_id }
+        State_SingleChoice _ ->
+            { e | state = State_SingleChoice question_id }
 
-        MultipleChoiceState quiz ->
+        State_MultipleChoice quiz ->
             let
                 array =
                     Array.fromList quiz
@@ -167,7 +167,7 @@ flip question_id e =
                         |> (\c -> not c)
                         |> (\q -> Array.set question_id q array)
                         |> Array.toList
-                        |> (\q -> { e | state = MultipleChoiceState q })
+                        |> (\q -> { e | state = State_MultipleChoice q })
 
                 Nothing ->
                     e

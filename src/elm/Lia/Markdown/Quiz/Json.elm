@@ -42,25 +42,25 @@ fromState : State -> JE.Value
 fromState state =
     JE.object <|
         case state of
-            EmptyState ->
+            State_Empty ->
                 [ ( "type", JE.string "Empty" ) ]
 
-            TextState x ->
+            State_Text x ->
                 [ ( "type", JE.string "Text" )
                 , ( "value", JE.string x )
                 ]
 
-            SelectionState x ->
+            State_Selection x ->
                 [ ( "type", JE.string "Selection" )
                 , ( "value", JE.string x )
                 ]
 
-            SingleChoiceState x ->
+            State_SingleChoice x ->
                 [ ( "type", JE.string "SingleChoice" )
                 , ( "value", JE.int x )
                 ]
 
-            MultipleChoiceState m ->
+            State_MultipleChoice m ->
                 [ ( "type", JE.string "MultipleChoice" )
                 , ( "value", JE.list JE.bool m )
                 ]
@@ -100,19 +100,19 @@ toState =
         state_decoder type_ =
             case type_ of
                 "Empty" ->
-                    JD.succeed EmptyState
+                    JD.succeed State_Empty
 
                 "Text" ->
-                    JD.map TextState (JD.field "value" JD.string)
+                    JD.map State_Text (JD.field "value" JD.string)
 
                 "Selection" ->
-                    JD.map SelectionState (JD.field "value" JD.string)
+                    JD.map State_Selection (JD.field "value" JD.string)
 
                 "SingleChoice" ->
-                    JD.map SingleChoiceState (JD.field "value" JD.int)
+                    JD.map State_SingleChoice (JD.field "value" JD.int)
 
                 "MultipleChoice" ->
-                    JD.map MultipleChoiceState (JD.field "value" (JD.list JD.bool))
+                    JD.map State_MultipleChoice (JD.field "value" (JD.list JD.bool))
 
                 _ ->
                     JD.fail <|

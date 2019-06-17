@@ -188,19 +188,19 @@ modify_State quiz_ =
         state_ =
             case quiz_ of
                 Empty _ ->
-                    EmptyState
+                    State_Empty
 
                 Text _ _ ->
-                    TextState ""
+                    State_Text ""
 
                 Selection x _ _ ->
-                    SelectionState ""
+                    State_Selection ""
 
                 SingleChoice _ _ _ ->
-                    SingleChoiceState -1
+                    State_SingleChoice -1
 
                 MultipleChoice x _ _ ->
-                    MultipleChoiceState (List.map (\_ -> False) x)
+                    State_MultipleChoice (List.map (\_ -> False) x)
     in
     modifyState (add_state state_)
         |> keep (succeed quiz_)

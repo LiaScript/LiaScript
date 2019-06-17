@@ -36,11 +36,11 @@ type alias Element =
 
 
 type State
-    = EmptyState
-    | TextState String
-    | SelectionState String
-    | SingleChoiceState Int
-    | MultipleChoiceState (List Bool)
+    = State_Empty
+    | State_Text String
+    | State_Selection String
+    | State_SingleChoice Int
+    | State_MultipleChoice (List Bool)
 
 
 type Quiz

@@ -30,7 +30,7 @@ view lang quiz vector =
                         Nothing ->
                             Html.text ""
                     )
-                        :: view_button_solution lang s.solved (ShowSolution idx EmptyState)
+                        :: view_button_solution lang s.solved (ShowSolution idx State_Empty)
                         :: (if s.error_msg == "" then
                                 Html.text ""
 
@@ -50,16 +50,16 @@ view lang quiz vector =
                     Html.text ""
 
         Text solution (QuizAdds idx hints eval_string) ->
-            view_quiz lang (state idx) view_text idx hints eval_string (TextState solution)
+            view_quiz lang (state idx) view_text idx hints eval_string (State_Text solution)
 
         Selection solution options (QuizAdds idx hints eval_string) ->
-            view_quiz lang (state idx) (view_selection options) idx hints eval_string (SelectionState solution)
+            view_quiz lang (state idx) (view_selection options) idx hints eval_string (State_Selection solution)
 
         SingleChoice solution questions (QuizAdds idx hints eval_string) ->
-            view_quiz lang (state idx) (view_single_choice questions) idx hints eval_string (SingleChoiceState solution)
+            view_quiz lang (state idx) (view_single_choice questions) idx hints eval_string (State_SingleChoice solution)
 
         MultipleChoice solution questions (QuizAdds idx hints eval_string) ->
-            view_quiz lang (state idx) (view_multiple_choice questions) idx hints eval_string (MultipleChoiceState solution)
+            view_quiz lang (state idx) (view_multiple_choice questions) idx hints eval_string (State_MultipleChoice solution)
 
 
 view_quiz : Lang -> Maybe Element -> (Int -> State -> Bool -> Html Msg) -> Int -> MultInlines -> Maybe String -> State -> Html Msg
@@ -130,7 +130,7 @@ view_button lang trials solved msg =
 view_text : Int -> State -> Bool -> Html Msg
 view_text idx state solved =
     case state of
-        TextState x ->
+        State_Text x ->
             Html.input
                 [ Attr.type_ "input"
                 , Attr.class "lia-input"
@@ -160,7 +160,7 @@ option current val text =
 view_selection : List String -> Int -> State -> Bool -> Html Msg
 view_selection options idx state solved =
     case state of
-        SelectionState x ->
+        State_Selection x ->
             let
                 fn =
                     option x
@@ -176,7 +176,7 @@ view_selection options idx state solved =
 view_single_choice : MultInlines -> Int -> State -> Bool -> Html Msg
 view_single_choice questions idx state solved =
     case state of
-        SingleChoiceState x ->
+        State_SingleChoice x ->
             questions
                 |> List.indexedMap Tuple.pair
                 |> List.map
@@ -228,7 +228,7 @@ view_multiple_choice questions idx state solved =
                 ]
     in
     case state of
-        MultipleChoiceState x ->
+        State_MultipleChoice x ->
             questions
                 |> List.indexedMap Tuple.pair
                 |> List.map2 fn x
