@@ -84,33 +84,29 @@ empty =
         |> onsuccess Empty
 
 
-text : Parser State (QuizAdds -> Quiz)
-text =
-    string "["
-        |> keep (regex "[^\n\\]_]+")
-        |> ignore (regex "\\][\t ]*")
-        |> pattern
-        |> ignore newline
-        |> map Text
-
-
 splitter str =
     case String.split "|" str of
         [ one ] ->
             Text one
 
         list ->
-            Selection 1 list
+            list
+                |> List.map String.trim
+                |> select
+
+
+select list =
+    Selection "" list
 
 
 selection : Parser State (QuizAdds -> Quiz)
 selection =
     string "["
         |> keep (stringTill (string "]"))
-        |> ignore (regex "\\][\t ]*")
+        |> ignore (regex "[\t ]*")
         |> pattern
         |> ignore newline
-        |> map Text
+        |> map splitter
 
 
 multi_choice : Parser State (QuizAdds -> Quiz)

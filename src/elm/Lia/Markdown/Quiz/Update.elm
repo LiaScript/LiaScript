@@ -11,6 +11,7 @@ type Msg
     = CheckBox Int Int
     | RadioButton Int Int
     | Input Int String
+    | Select Int Int
     | Check Int State (Maybe String)
     | ShowHint Int
     | ShowSolution Int State
@@ -28,6 +29,9 @@ update msg vector =
 
         Input idx string ->
             ( update_ idx vector (input string), [] )
+
+        Select idx option ->
+            ( update_ idx vector (select option), [] )
 
         Check idx solution Nothing ->
             (\e ->
@@ -131,6 +135,16 @@ input text e =
     case e.state of
         TextState _ ->
             { e | state = TextState text }
+
+        _ ->
+            e
+
+
+select : Int -> Element -> Element
+select option e =
+    case e.state of
+        SelectionState _ ->
+            { e | state = SelectionState option }
 
         _ ->
             e

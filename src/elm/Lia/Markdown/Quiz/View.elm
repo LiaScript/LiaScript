@@ -148,14 +148,9 @@ view_selection : List String -> Int -> State -> Bool -> Html Msg
 view_selection options idx state solved =
     case state of
         SelectionState x ->
-            Html.input
-                [ Attr.type_ "input"
-                , Attr.class "lia-input"
-                , Attr.value "DDDD"
-                , Attr.disabled solved
-                , onInput (Input idx)
-                ]
-                []
+            options
+                |> List.map (\o -> Html.option [] [ Html.text o ])
+                |> Html.select [ onInput <| Select idx ]
 
         _ ->
             Html.text ""
