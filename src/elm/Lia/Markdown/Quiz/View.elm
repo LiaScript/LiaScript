@@ -5,7 +5,7 @@ module Lia.Markdown.Quiz.View exposing (view, view_solution)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
-import Lia.Markdown.Inline.Types exposing (Annotation, MultInlines)
+import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
 import Lia.Markdown.Inline.View exposing (annotation, view_inf)
 import Lia.Markdown.Quiz.Model exposing (get_state)
 import Lia.Markdown.Quiz.Types exposing (Element, Quiz(..), QuizAdds(..), Solution(..), State(..), Vector)
@@ -144,20 +144,21 @@ view_text idx state solved =
             Html.text ""
 
 
-option : String -> Int -> String -> Html Msg
-option current val text =
+option : String -> Int -> Inlines -> Html Msg
+option current val opt =
     let
         str_val =
             String.fromInt val
     in
-    Html.option
-        [ Attr.value str_val
-        , Attr.selected (str_val == current)
-        ]
-        [ Html.text text ]
+    opt
+        |> List.map view_inf
+        |> Html.option
+            [ Attr.value str_val
+            , Attr.selected (str_val == current)
+            ]
 
 
-view_selection : List String -> Int -> State -> Bool -> Html Msg
+view_selection : List Inlines -> Int -> State -> Bool -> Html Msg
 view_selection options idx state solved =
     case state of
         State_Selection x ->

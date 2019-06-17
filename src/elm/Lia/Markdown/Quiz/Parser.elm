@@ -6,6 +6,7 @@ import Combine
         ( Parser
         , andMap
         , andThen
+        , brackets
         , choice
         , ignore
         , keep
@@ -15,13 +16,16 @@ import Combine
         , maybe
         , modifyState
         , onsuccess
+        , or
+        , parens
         , regex
         , sepBy
+        , sepBy1
         , string
         , succeed
         , withState
         )
-import Lia.Markdown.Inline.Parser exposing (javascript, line)
+import Lia.Markdown.Inline.Parser exposing (inlines, javascript, line)
 import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Types exposing (Element, Quiz(..), QuizAdds(..), Solution(..), State(..))
@@ -84,6 +88,8 @@ empty =
         |> onsuccess Empty
 
 
+
+{--
 splitter str =
     case String.split "|" str of
         [ one ] ->
@@ -126,6 +132,29 @@ selection =
         |> pattern
         |> ignore newline
         |> map splitter
+--}
+
+
+split list =
+    Selection
+        (list
+            |> List.indexedMap (\i ( b, _ ) -> ( i, b ))
+            |> List.filter Tuple.second
+            |> List.head
+            |> Maybe.map (Tuple.first >> String.fromInt)
+            |> Maybe.withDefault ""
+        )
+        (list |> List.map Tuple.second)
+
+
+option =
+    or (parens (many1 inlines) |> map (Tuple.pair False))
+        (many1 inlines |> map (Tuple.pair True))
+
+
+selection : Parser State (QuizAdds -> Quiz)
+selection =
+    brackets (map split (sepBy1 (string "|") option))
 
 
 multi_choice : Parser State (QuizAdds -> Quiz)

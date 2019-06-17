@@ -9,7 +9,7 @@ module Lia.Markdown.Quiz.Types exposing
     )
 
 import Array exposing (Array)
-import Lia.Markdown.Inline.Types exposing (MultInlines)
+import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
 
 
 type alias Vector =
@@ -46,7 +46,7 @@ type State
 type Quiz
     = Empty QuizAdds
     | Text String QuizAdds
-    | Selection String (List String) QuizAdds
+    | Selection String (List Inlines) QuizAdds
     | SingleChoice Int MultInlines QuizAdds
     | MultipleChoice (List Bool) MultInlines QuizAdds
 
