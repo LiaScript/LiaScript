@@ -92,11 +92,30 @@ splitter str =
         list ->
             list
                 |> List.map String.trim
+                |> List.indexedMap
+                    (\i s ->
+                        if String.startsWith "(" s && String.endsWith ")" s then
+                            ( String.fromInt i
+                            , s
+                                |> String.slice 1 -1
+                                |> String.trim
+                            )
+
+                        else
+                            ( "", s )
+                    )
                 |> select
 
 
 select list =
-    Selection "" list
+    Selection
+        (list
+            |> List.filter (Tuple.first >> String.isEmpty >> not)
+            |> List.head
+            |> Maybe.map Tuple.first
+            |> Maybe.withDefault ""
+        )
+        (list |> List.map Tuple.second)
 
 
 selection : Parser State (QuizAdds -> Quiz)
@@ -175,7 +194,7 @@ modify_State quiz_ =
                     TextState ""
 
                 Selection x _ _ ->
-                    SelectionState x
+                    SelectionState ""
 
                 SingleChoice _ _ _ ->
                     SingleChoiceState -1

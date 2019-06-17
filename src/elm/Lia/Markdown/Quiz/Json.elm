@@ -52,7 +52,7 @@ fromState state =
 
             SelectionState x ->
                 [ ( "type", JE.string "Selection" )
-                , ( "value", JE.int x )
+                , ( "value", JE.string x )
                 ]
 
             SingleChoiceState x ->
@@ -106,7 +106,7 @@ toState =
                     JD.map TextState (JD.field "value" JD.string)
 
                 "Selection" ->
-                    JD.map SelectionState (JD.field "value" JD.int)
+                    JD.map SelectionState (JD.field "value" JD.string)
 
                 "SingleChoice" ->
                     JD.map SingleChoiceState (JD.field "value" JD.int)

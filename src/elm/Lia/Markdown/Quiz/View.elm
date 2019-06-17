@@ -144,12 +144,29 @@ view_text idx state solved =
             Html.text ""
 
 
+option : String -> Int -> String -> Html Msg
+option current val text =
+    let
+        str_val =
+            String.fromInt val
+    in
+    Html.option
+        [ Attr.value str_val
+        , Attr.selected (str_val == current)
+        ]
+        [ Html.text text ]
+
+
 view_selection : List String -> Int -> State -> Bool -> Html Msg
 view_selection options idx state solved =
     case state of
         SelectionState x ->
+            let
+                fn =
+                    option x
+            in
             options
-                |> List.map (\o -> Html.option [] [ Html.text o ])
+                |> List.indexedMap fn
                 |> Html.select [ onInput <| Select idx ]
 
         _ ->

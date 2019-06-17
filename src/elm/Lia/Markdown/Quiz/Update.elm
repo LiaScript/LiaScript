@@ -11,7 +11,7 @@ type Msg
     = CheckBox Int Int
     | RadioButton Int Int
     | Input Int String
-    | Select Int Int
+    | Select Int String
     | Check Int State (Maybe String)
     | ShowHint Int
     | ShowSolution Int State
@@ -140,7 +140,7 @@ input text e =
             e
 
 
-select : Int -> Element -> Element
+select : String -> Element -> Element
 select option e =
     case e.state of
         SelectionState _ ->
