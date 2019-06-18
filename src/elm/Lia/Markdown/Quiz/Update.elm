@@ -11,7 +11,8 @@ type Msg
     = CheckBox Int Int
     | RadioButton Int Int
     | Input Int String
-    | Select Int String
+    | Select Int Int
+    | SelectToggle Int
     | Check Int State (Maybe String)
     | ShowHint Int
     | ShowSolution Int State
@@ -33,18 +34,22 @@ update msg vector =
         Select idx option ->
             ( update_ idx vector (select option), [] )
 
-        Check idx solution Nothing ->
-            (\e ->
-                { e
-                    | trial = e.trial + 1
-                    , solved =
-                        if e.state == solution then
-                            Solved
+        SelectToggle id ->
+            ( update_ id vector selectToggle, [] )
 
-                        else
-                            Open
-                }
-            )
+        Check idx solution Nothing ->
+            selectClose
+                >> (\e ->
+                        { e
+                            | trial = e.trial + 1
+                            , solved =
+                                if e.state == solution then
+                                    Solved
+
+                                else
+                                    Open
+                        }
+                   )
                 |> update_ idx vector
                 |> store
 
@@ -140,11 +145,31 @@ input text e =
             e
 
 
-select : String -> Element -> Element
+select : Int -> Element -> Element
 select option e =
     case e.state of
-        State_Selection _ ->
-            { e | state = State_Selection option }
+        State_Selection _ _ ->
+            { e | state = State_Selection option False }
+
+        _ ->
+            e
+
+
+selectToggle : Element -> Element
+selectToggle e =
+    case e.state of
+        State_Selection i b ->
+            { e | state = State_Selection i <| not b }
+
+        _ ->
+            e
+
+
+selectClose : Element -> Element
+selectClose e =
+    case e.state of
+        State_Selection i _ ->
+            { e | state = State_Selection i False }
 
         _ ->
             e

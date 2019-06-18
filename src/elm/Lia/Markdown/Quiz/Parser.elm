@@ -104,7 +104,7 @@ splitter str state =
                 |> List.indexedMap
                     (\i s ->
                         if String.startsWith "(" s && String.endsWith ")" s then
-                            ( String.fromInt i
+                            ( i
                             , s
                                 |> String.slice 1 -1
                                 |> String.trim
@@ -112,19 +112,20 @@ splitter str state =
                             )
 
                         else
-                            ( "", inlines s )
+                            ( -1, inlines s )
                     )
                 |> select
 
 
-select : List ( String, Inlines ) -> (QuizAdds -> Quiz)
+select : List ( Int, Inlines ) -> (QuizAdds -> Quiz)
 select list =
     Selection
         (list
-            |> List.filter (Tuple.first >> String.isEmpty >> not)
+            |> List.filter (Tuple.first >> (<=) 0)
+            |> Debug.log "EEEEEEEEEEEEEEEE"
             |> List.head
             |> Maybe.map Tuple.first
-            |> Maybe.withDefault ""
+            |> Maybe.withDefault -999
         )
         (list |> List.map Tuple.second)
 
@@ -204,7 +205,7 @@ modify_State quiz_ =
                     State_Text ""
 
                 Selection x _ _ ->
-                    State_Selection "-1"
+                    State_Selection -1 False
 
                 SingleChoice _ _ _ ->
                     State_SingleChoice -1

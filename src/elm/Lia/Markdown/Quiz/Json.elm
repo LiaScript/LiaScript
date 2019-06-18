@@ -50,9 +50,9 @@ fromState state =
                 , ( "value", JE.string x )
                 ]
 
-            State_Selection x ->
+            State_Selection x _ ->
                 [ ( "type", JE.string "Selection" )
-                , ( "value", JE.string x )
+                , ( "value", JE.int x )
                 ]
 
             State_SingleChoice x ->
@@ -103,16 +103,21 @@ toState =
                     JD.succeed State_Empty
 
                 "Text" ->
-                    JD.map State_Text (JD.field "value" JD.string)
+                    JD.map State_Text
+                        (JD.field "value" JD.string)
 
                 "Selection" ->
-                    JD.map State_Selection (JD.field "value" JD.string)
+                    JD.map2 State_Selection
+                        (JD.field "value" JD.int)
+                        (JD.succeed False)
 
                 "SingleChoice" ->
-                    JD.map State_SingleChoice (JD.field "value" JD.int)
+                    JD.map State_SingleChoice
+                        (JD.field "value" JD.int)
 
                 "MultipleChoice" ->
-                    JD.map State_MultipleChoice (JD.field "value" (JD.list JD.bool))
+                    JD.map State_MultipleChoice
+                        (JD.field "value" (JD.list JD.bool))
 
                 _ ->
                     JD.fail <|

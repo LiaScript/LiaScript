@@ -4,7 +4,7 @@ module Lia.Markdown.Quiz.View exposing (view, view_solution)
 
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (onBlur, onClick, onInput)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
 import Lia.Markdown.Inline.View exposing (annotation, view_inf)
 import Lia.Markdown.Quiz.Model exposing (get_state)
@@ -53,7 +53,7 @@ view lang quiz vector =
             view_quiz lang (state idx) view_text idx hints eval_string (State_Text solution)
 
         Selection solution options (QuizAdds idx hints eval_string) ->
-            view_quiz lang (state idx) (view_selection options) idx hints eval_string (State_Selection solution)
+            view_quiz lang (state idx) (view_selection options) idx hints eval_string (State_Selection solution False)
 
         SingleChoice solution questions (QuizAdds idx hints eval_string) ->
             view_quiz lang (state idx) (view_single_choice questions) idx hints eval_string (State_SingleChoice solution)
@@ -144,38 +144,68 @@ view_text idx state solved =
             Html.text ""
 
 
-option : String -> Int -> Inlines -> Html Msg
-option current val opt =
+option : Int -> Int -> Inlines -> Html Msg
+option id val opt =
     let
         str_val =
             String.fromInt val
     in
     opt
         |> List.map view_inf
-        |> Html.option
-            [ Attr.value str_val
-            , Attr.selected (str_val == current)
-            ]
+        |> Html.div [ Attr.class "lia-dropdown-option", onClick <| Select id val ]
+
+
+get_option : Int -> List Inlines -> Html Msg
+get_option id list =
+    case ( id, list ) of
+        ( 0, x :: xs ) ->
+            x |> List.map view_inf |> Html.span []
+
+        ( i, x :: xs ) ->
+            get_option (i - 1) xs
+
+        ( i, [] ) ->
+            Html.text "choose"
 
 
 view_selection : List Inlines -> Int -> State -> Bool -> Html Msg
-view_selection options idx state solved =
+view_selection options id state solved =
+    let
+        fn =
+            option id
+    in
     case state of
-        State_Selection x ->
-            let
-                fn =
-                    option x
-            in
-            options
-                |> List.indexedMap fn
-                |> (::)
-                    (Html.option
-                        [ Attr.selected True
-                        , Attr.disabled True
+        State_Selection i open ->
+            Html.span
+                []
+                [ Html.span
+                    [ Attr.class "lia-dropdown"
+                    , onClick <| SelectToggle id
+                    ]
+                    [ get_option i options
+                    , Html.span
+                        [ Attr.class "lia-icon"
+                        , Attr.style "float" "right"
                         ]
-                        [ Html.text "choose ..." ]
-                    )
-                |> Html.select [ onInput <| Select idx ]
+                        [ if open then
+                            Html.text "arrow_drop_down"
+
+                          else
+                            Html.text "arrow_drop_up"
+                        ]
+                    ]
+                , options
+                    |> List.indexedMap fn
+                    |> Html.div
+                        [ Attr.class "lia-dropdown-options"
+                        , Attr.style "max-height" <|
+                            if open then
+                                "2000px"
+
+                            else
+                                "0px"
+                        ]
+                ]
 
         _ ->
             Html.text ""
