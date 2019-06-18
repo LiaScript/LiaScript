@@ -168,6 +168,13 @@ view_selection options idx state solved =
             in
             options
                 |> List.indexedMap fn
+                |> (::)
+                    (Html.option
+                        [ Attr.selected True
+                        , Attr.disabled True
+                        ]
+                        [ Html.text "choose ..." ]
+                    )
                 |> Html.select [ onInput <| Select idx ]
 
         _ ->
