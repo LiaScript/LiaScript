@@ -8,6 +8,7 @@ import Combine
         , andThen
         , brackets
         , choice
+        , fail
         , ignore
         , keep
         , many
@@ -88,11 +89,11 @@ empty =
         |> onsuccess Empty
 
 
-splitter : String -> State -> (QuizAdds -> Quiz)
+splitter : String -> State -> Parser s (QuizAdds -> Quiz)
 splitter str state =
     case String.split "|" str of
         [ one ] ->
-            Text one
+            Text one |> succeed
 
         list ->
             let
@@ -117,17 +118,22 @@ splitter str state =
                 |> select
 
 
-select : List ( Int, Inlines ) -> (QuizAdds -> Quiz)
+select : List ( Int, Inlines ) -> Parser s (QuizAdds -> Quiz)
 select list =
-    Selection
-        (list
+    case
+        list
             |> List.filter (Tuple.first >> (<=) 0)
-            |> Debug.log "EEEEEEEEEEEEEEEE"
             |> List.head
             |> Maybe.map Tuple.first
-            |> Maybe.withDefault -999
-        )
-        (list |> List.map Tuple.second)
+    of
+        Just i ->
+            list
+                |> List.map Tuple.second
+                |> Selection i
+                |> succeed
+
+        Nothing ->
+            fail "no solution provided"
 
 
 selection : Parser State (QuizAdds -> Quiz)
@@ -136,7 +142,7 @@ selection =
         |> keep (stringTill (string "]]"))
         |> ignore newline
         |> map splitter
-        |> andMap (withState succeed)
+        |> andThen withState
 
 
 multi_choice : Parser State (QuizAdds -> Quiz)
