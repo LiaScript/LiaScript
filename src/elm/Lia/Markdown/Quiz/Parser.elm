@@ -138,7 +138,7 @@ select list =
 
 selection : Parser State (QuizAdds -> Quiz)
 selection =
-    string "[["
+    regex "[\t ]*\\[\\["
         |> keep (stringTill (string "]]"))
         |> ignore newline
         |> map splitter

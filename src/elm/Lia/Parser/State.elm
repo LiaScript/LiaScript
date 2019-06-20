@@ -54,25 +54,24 @@ searchIndex =
     withState (\state -> state.search_index |> succeed)
 
 
+par_ : State -> Parser State ()
+par_ s =
+    if s.identation == [] then
+        succeed ()
+
+    else if s.identation_skip then
+        skip (succeed ())
+
+    else
+        String.concat s.identation
+            |> regex
+            |> skip
+
+
 identation : Parser State ()
 identation =
-    lazy <|
-        \() ->
-            let
-                par s =
-                    if s.identation == [] then
-                        succeed ()
-
-                    else if s.identation_skip then
-                        skip (succeed ())
-
-                    else
-                        String.concat s.identation
-                            |> regex
-                            |> skip
-            in
-            withState par
-                |> ignore (modifyState (\s -> { s | identation_skip = False }))
+    withState par_
+        |> ignore (modifyState (skip_ False))
 
 
 identation_append : String -> Parser State ()
@@ -103,4 +102,9 @@ identation_pop =
 
 ident_skip : Parser State ()
 ident_skip =
-    modifyState (\state -> { state | identation_skip = True })
+    modifyState (skip_ True)
+
+
+skip_ : Bool -> State -> State
+skip_ bool state =
+    { state | identation_skip = bool }
