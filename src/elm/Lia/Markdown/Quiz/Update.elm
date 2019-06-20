@@ -60,6 +60,9 @@ update msg vector =
                         Just (State_Text str) ->
                             str
 
+                        Just (State_Selection i _) ->
+                            String.fromInt i
+
                         Just (State_SingleChoice i) ->
                             String.fromInt i
 
