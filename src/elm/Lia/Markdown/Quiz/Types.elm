@@ -1,15 +1,21 @@
 module Lia.Markdown.Quiz.Types exposing
     ( Element
     , Hints
-    , Quiz(..)
-    , QuizAdds(..)
+    , Quiz
     , Solution(..)
     , State(..)
+    , Type(..)
     , Vector
+    , comp
+    , initState
+    , toState
     )
 
 import Array exposing (Array)
 import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
+import Lia.Markdown.Quiz.Block.Types as Block
+import Lia.Markdown.Quiz.MultipleChoice.Types as MultipleChoice
+import Lia.Markdown.Quiz.SingleChoice.Types as SingleChoice
 
 
 type alias Vector =
@@ -36,20 +42,82 @@ type alias Element =
 
 
 type State
-    = State_Empty
-    | State_Text String
-    | State_Selection Int Bool
-    | State_SingleChoice Int
-    | State_MultipleChoice (List Bool)
+    = Empty_State
+    | Block_State Block.State
+    | SingleChoice_State SingleChoice.State
+    | MultipleChoice_State MultipleChoice.State
 
 
-type Quiz
-    = Empty QuizAdds
-    | Text String QuizAdds
-    | Selection Int (List Inlines) QuizAdds
-    | SingleChoice Int MultInlines QuizAdds
-    | MultipleChoice (List Bool) MultInlines QuizAdds
+type Type
+    = Empty
+    | Block Block.Quiz
+    | SingleChoice SingleChoice.Quiz
+    | MultipleChoice MultipleChoice.Quiz
 
 
-type QuizAdds
-    = QuizAdds Int Hints (Maybe String)
+type alias Quiz =
+    { quiz : Type
+    , id : Int
+    , hints : Hints
+    , javascript : Maybe String
+    }
+
+
+initState : Type -> State
+initState quiz =
+    case quiz of
+        Empty ->
+            Empty_State
+
+        Block b ->
+            b
+                |> Block.initState
+                |> Block_State
+
+        SingleChoice s ->
+            s
+                |> SingleChoice.initState
+                |> SingleChoice_State
+
+        MultipleChoice m ->
+            m
+                |> MultipleChoice.initState
+                |> MultipleChoice_State
+
+
+toState : Type -> State
+toState quiz =
+    case quiz of
+        Empty ->
+            Empty_State
+
+        Block b ->
+            Block_State b.solution
+
+        SingleChoice s ->
+            SingleChoice_State s.solution
+
+        MultipleChoice m ->
+            MultipleChoice_State m.solution
+
+
+comp : Type -> State -> Solution
+comp quiz state =
+    if
+        case ( quiz, state ) of
+            ( Block q, Block_State s ) ->
+                Block.comp q s
+
+            ( SingleChoice q, SingleChoice_State s ) ->
+                SingleChoice.comp q s
+
+            ( MultipleChoice q, MultipleChoice_State s ) ->
+                MultipleChoice.comp q s
+
+            _ ->
+                False
+    then
+        Solved
+
+    else
+        Open

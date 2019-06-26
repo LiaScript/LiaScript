@@ -3,79 +3,56 @@ module Lia.Markdown.Quiz.Update exposing (Msg(..), handle, update)
 import Array
 import Json.Encode as JE
 import Lia.Event as Event exposing (Event)
+import Lia.Markdown.Quiz.Block.Update as Block
 import Lia.Markdown.Quiz.Json as Json
-import Lia.Markdown.Quiz.Types exposing (Element, Solution(..), State(..), Vector)
+import Lia.Markdown.Quiz.MultipleChoice.Update as MultipleChoice
+import Lia.Markdown.Quiz.SingleChoice.Update as SingleChoice
+import Lia.Markdown.Quiz.Types exposing (Element, Solution(..), State(..), Type, Vector, comp, toState)
 
 
 type Msg
-    = CheckBox Int Int
-    | RadioButton Int Int
-    | Input Int String
-    | Select Int Int
-    | SelectToggle Int
-    | Check Int State (Maybe String)
+    = Block_Update Int Block.Msg
+    | SingleChoice_Update Int SingleChoice.Msg
+    | MultipleChoice_Update Int MultipleChoice.Msg
+    | Check Int Type (Maybe String)
     | ShowHint Int
-    | ShowSolution Int State
+    | ShowSolution Int Type
     | Handle Event
 
 
 update : Msg -> Vector -> ( Vector, List Event )
 update msg vector =
     case msg of
-        CheckBox idx question_id ->
-            ( update_ idx vector (flip question_id), [] )
+        Block_Update id childMsg ->
+            ( update_ id vector (state_ msg), [] )
 
-        RadioButton idx answer ->
-            ( update_ idx vector (flip answer), [] )
+        SingleChoice_Update id childMsg ->
+            ( update_ id vector (state_ msg), [] )
 
-        Input idx string ->
-            ( update_ idx vector (input string), [] )
+        MultipleChoice_Update id childMsg ->
+            ( update_ id vector (state_ msg), [] )
 
-        Select idx option ->
-            ( update_ idx vector (select option), [] )
-
-        SelectToggle id ->
-            ( update_ id vector selectToggle, [] )
-
-        Check idx solution Nothing ->
-            selectClose
-                >> (\e ->
-                        { e
-                            | trial = e.trial + 1
-                            , solved =
-                                if e.state == solution then
-                                    Solved
-
-                                else
-                                    Open
-                        }
-                   )
-                |> update_ idx vector
+        Check id solution Nothing ->
+            check solution
+                |> update_ id vector
                 |> store
 
         Check idx _ (Just code) ->
             let
                 state =
-                    case vector |> Array.get idx |> Maybe.map .state of
-                        Just (State_Text str) ->
-                            str
+                    case
+                        vector
+                            |> Array.get idx
+                            |> Maybe.map .state
+                    of
+                        Just (Block_State b) ->
+                            Block.toString b
 
-                        Just (State_SingleChoice i) ->
-                            String.fromInt i
+                        Just (SingleChoice_State s) ->
+                            SingleChoice.toString s
 
-                        Just (State_MultipleChoice list) ->
-                            list
-                                |> List.map
-                                    (\s ->
-                                        if s then
-                                            "1"
-
-                                        else
-                                            "0"
-                                    )
-                                |> List.intersperse ","
-                                |> String.concat
-                                |> (\str -> "[" ++ str ++ "]")
+                        Just (MultipleChoice_State m) ->
+                            MultipleChoice.toString m
 
                         _ ->
                             ""
@@ -88,7 +65,7 @@ update msg vector =
                 |> store
 
         ShowSolution idx solution ->
-            (\e -> { e | state = solution, solved = ReSolved, error_msg = "" })
+            (\e -> { e | state = toState solution, solved = ReSolved, error_msg = "" })
                 |> update_ idx vector
                 |> store
 
@@ -135,70 +112,23 @@ update_ idx vector f =
             vector
 
 
-input : String -> Element -> Element
-input text e =
-    case e.state of
-        State_Text _ ->
-            { e | state = State_Text text }
+state_ : Msg -> Element -> Element
+state_ msg e =
+    { e
+        | state =
+            case ( msg, e.state ) of
+                ( Block_Update _ m, Block_State s ) ->
+                    s |> Block.update m |> Block_State
 
-        _ ->
-            e
+                ( SingleChoice_Update _ m, SingleChoice_State s ) ->
+                    s |> SingleChoice.update m |> SingleChoice_State
 
+                ( MultipleChoice_Update _ m, MultipleChoice_State s ) ->
+                    s |> MultipleChoice.update m |> MultipleChoice_State
 
-select : Int -> Element -> Element
-select option e =
-    case e.state of
-        State_Selection _ _ ->
-            { e | state = State_Selection option False }
-
-        _ ->
-            e
-
-
-selectToggle : Element -> Element
-selectToggle e =
-    case e.state of
-        State_Selection i b ->
-            { e | state = State_Selection i <| not b }
-
-        _ ->
-            e
-
-
-selectClose : Element -> Element
-selectClose e =
-    case e.state of
-        State_Selection i _ ->
-            { e | state = State_Selection i False }
-
-        _ ->
-            e
-
-
-flip : Int -> Element -> Element
-flip question_id e =
-    case e.state of
-        State_SingleChoice _ ->
-            { e | state = State_SingleChoice question_id }
-
-        State_MultipleChoice quiz ->
-            let
-                array =
-                    Array.fromList quiz
-            in
-            case Array.get question_id array of
-                Just question ->
-                    question
-                        |> (\c -> not c)
-                        |> (\q -> Array.set question_id q array)
-                        |> Array.toList
-                        |> (\q -> { e | state = State_MultipleChoice q })
-
-                Nothing ->
-                    e
-
-        _ ->
-            e
+                _ ->
+                    e.state
+    }
 
 
 handle : Event -> Msg
@@ -241,3 +171,11 @@ store vector =
         |> Event.store
         |> List.singleton
     )
+
+
+check : Type -> Element -> Element
+check solution e =
+    { e
+        | trial = e.trial + 1
+        , solved = comp solution e.state
+    }

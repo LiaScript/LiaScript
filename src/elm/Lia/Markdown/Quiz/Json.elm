@@ -5,6 +5,9 @@ module Lia.Markdown.Quiz.Json exposing
 
 import Json.Decode as JD
 import Json.Encode as JE
+import Lia.Markdown.Quiz.Block.Json as Block
+import Lia.Markdown.Quiz.MultipleChoice.Json as MultipleChoice
+import Lia.Markdown.Quiz.SingleChoice.Json as SingleChoice
 import Lia.Markdown.Quiz.Types exposing (Element, Solution(..), State(..), Vector)
 
 
@@ -29,8 +32,6 @@ fromElement element =
                         -1
                 )
           )
-
-        --, ( "solution", stateToJson element.solution )
         , ( "state", fromState element.state )
         , ( "trial", JE.int element.trial )
         , ( "hint", JE.int element.hint )
@@ -40,30 +41,18 @@ fromElement element =
 
 fromState : State -> JE.Value
 fromState state =
-    JE.object <|
-        case state of
-            State_Empty ->
-                [ ( "type", JE.string "Empty" ) ]
+    case state of
+        Empty_State ->
+            JE.object [ ( "Empty", JE.null ) ]
 
-            State_Text x ->
-                [ ( "type", JE.string "Text" )
-                , ( "value", JE.string x )
-                ]
+        Block_State b ->
+            Block.fromState b
 
-            State_Selection x _ ->
-                [ ( "type", JE.string "Selection" )
-                , ( "value", JE.int x )
-                ]
+        SingleChoice_State s ->
+            SingleChoice.fromState s
 
-            State_SingleChoice x ->
-                [ ( "type", JE.string "SingleChoice" )
-                , ( "value", JE.int x )
-                ]
-
-            State_MultipleChoice m ->
-                [ ( "type", JE.string "MultipleChoice" )
-                , ( "value", JE.list JE.bool m )
-                ]
+        MultipleChoice_State m ->
+            MultipleChoice.fromState m
 
 
 toVector : JD.Value -> Result JD.Error Vector
@@ -87,7 +76,6 @@ toElement =
     in
     JD.map5 Element
         (JD.field "solved" JD.int |> JD.andThen solved_decoder)
-        --(JD.field "solution" jsonToState)
         (JD.field "state" toState)
         (JD.field "trial" JD.int)
         (JD.field "hint" JD.int)
@@ -96,33 +84,9 @@ toElement =
 
 toState : JD.Decoder State
 toState =
-    let
-        state_decoder type_ =
-            case type_ of
-                "Empty" ->
-                    JD.succeed State_Empty
-
-                "Text" ->
-                    JD.map State_Text
-                        (JD.field "value" JD.string)
-
-                "Selection" ->
-                    JD.map2 State_Selection
-                        (JD.field "value" JD.int)
-                        (JD.succeed False)
-
-                "SingleChoice" ->
-                    JD.map State_SingleChoice
-                        (JD.field "value" JD.int)
-
-                "MultipleChoice" ->
-                    JD.map State_MultipleChoice
-                        (JD.field "value" (JD.list JD.bool))
-
-                _ ->
-                    JD.fail <|
-                        "not supported type: "
-                            ++ type_
-    in
-    JD.field "type" JD.string
-        |> JD.andThen state_decoder
+    JD.oneOf
+        [ Block.toState |> JD.map Block_State
+        , SingleChoice.toState |> JD.map SingleChoice_State
+        , MultipleChoice.toState |> JD.map MultipleChoice_State
+        , JD.field "Empty" JD.value |> JD.andThen (\_ -> JD.succeed Empty_State)
+        ]
