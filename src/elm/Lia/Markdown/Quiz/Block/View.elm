@@ -1,4 +1,4 @@
-module Lia.Markdown.Quiz.Block.View exposing (view, view_solution)
+module Lia.Markdown.Quiz.Block.View exposing (view)
 
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -9,24 +9,14 @@ import Lia.Markdown.Quiz.Block.Types exposing (Quiz, State(..))
 import Lia.Markdown.Quiz.Block.Update exposing (Msg(..))
 
 
-view : Quiz -> State -> Html Msg
-view quiz state =
+view : Bool -> Quiz -> State -> Html Msg
+view solved quiz state =
     case state of
         Text str ->
-            text False str
+            text solved str
 
         Select open i ->
-            select False open i quiz.options
-
-
-view_solution : Quiz -> Html Msg
-view_solution quiz =
-    case quiz.solution of
-        Text str ->
-            text False str
-
-        Select open i ->
-            select False open i quiz.options
+            select solved open i quiz.options
 
 
 text : Bool -> String -> Html Msg
@@ -47,7 +37,11 @@ select solved open i options =
         []
         [ Html.span
             [ Attr.class "lia-dropdown"
-            , onClick Toggle
+            , if solved then
+                Attr.disabled True
+
+              else
+                onClick Toggle
             ]
             [ get_option i options
             , Html.span

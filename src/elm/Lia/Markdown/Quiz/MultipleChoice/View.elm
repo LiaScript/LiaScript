@@ -1,4 +1,4 @@
-module Lia.Markdown.Quiz.MultipleChoice.View exposing (view, view_solution)
+module Lia.Markdown.Quiz.MultipleChoice.View exposing (view)
 
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -9,19 +9,11 @@ import Lia.Markdown.Quiz.MultipleChoice.Types exposing (Quiz, State)
 import Lia.Markdown.Quiz.MultipleChoice.Update exposing (Msg(..))
 
 
-view : Quiz -> State -> Html Msg
-view quiz state =
+view : Bool -> Quiz -> State -> Html Msg
+view solved quiz state =
     quiz.options
         |> List.indexedMap Tuple.pair
-        |> List.map2 (option False) state
-        |> Html.table [ Attr.attribute "cellspacing" "8" ]
-
-
-view_solution : Quiz -> Html Msg
-view_solution quiz =
-    quiz.options
-        |> List.indexedMap Tuple.pair
-        |> List.map2 (option True) quiz.solution
+        |> List.map2 (option solved) state
         |> Html.table [ Attr.attribute "cellspacing" "8" ]
 
 

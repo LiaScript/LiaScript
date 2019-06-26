@@ -18,6 +18,7 @@ import Lia.Markdown.Quiz.Types
         , Type(..)
         , Vector
         , initState
+        , solved
         )
 import Lia.Markdown.Quiz.Update exposing (Msg(..))
 import Translations exposing (Lang, quizCheck, quizChecked, quizResolved, quizSolution)
@@ -27,31 +28,30 @@ view : Lang -> Quiz -> Vector -> Html Msg
 view lang quiz vector =
     case get_state vector quiz.id of
         Just elem ->
-            elem.state
-                |> state_view quiz.id quiz.quiz
+            state_view (solved elem) elem.state quiz
                 |> view_quiz lang elem quiz
 
         _ ->
             Html.text ""
 
 
-state_view : Int -> Type -> State -> Html Msg
-state_view id quiz state =
-    case ( state, quiz ) of
+state_view : Bool -> State -> Quiz -> Html Msg
+state_view solved state quiz =
+    case ( state, quiz.quiz ) of
         ( Block_State s, Block q ) ->
             s
-                |> Block.view q
-                |> Html.map (Block_Update id)
+                |> Block.view solved q
+                |> Html.map (Block_Update quiz.id)
 
         ( SingleChoice_State s, SingleChoice q ) ->
             s
-                |> SingleChoice.view q
-                |> Html.map (SingleChoice_Update id)
+                |> SingleChoice.view solved q
+                |> Html.map (SingleChoice_Update quiz.id)
 
         ( MultipleChoice_State s, MultipleChoice q ) ->
             s
-                |> MultipleChoice.view q
-                |> Html.map (MultipleChoice_Update id)
+                |> MultipleChoice.view solved q
+                |> Html.map (MultipleChoice_Update quiz.id)
 
         _ ->
             Html.text ""

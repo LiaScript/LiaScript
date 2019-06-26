@@ -8,6 +8,7 @@ module Lia.Markdown.Quiz.Types exposing
     , Vector
     , comp
     , initState
+    , solved
     , toState
     )
 
@@ -121,3 +122,8 @@ comp quiz state =
 
     else
         Open
+
+
+solved : Element -> Bool
+solved e =
+    e.solved /= Open
