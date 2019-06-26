@@ -23,13 +23,13 @@ type Msg
 update : Msg -> Vector -> ( Vector, List Event )
 update msg vector =
     case msg of
-        Block_Update id childMsg ->
+        Block_Update id _ ->
             ( update_ id vector (state_ msg), [] )
 
-        SingleChoice_Update id childMsg ->
+        SingleChoice_Update id _ ->
             ( update_ id vector (state_ msg), [] )
 
-        MultipleChoice_Update id childMsg ->
+        MultipleChoice_Update id _ ->
             ( update_ id vector (state_ msg), [] )
 
         Check id solution Nothing ->

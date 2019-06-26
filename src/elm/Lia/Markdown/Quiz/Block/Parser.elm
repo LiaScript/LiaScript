@@ -7,9 +7,7 @@ import Combine
         , fail
         , ignore
         , keep
-        , many1
         , map
-        , or
         , regex
         , string
         , succeed

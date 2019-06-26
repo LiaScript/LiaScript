@@ -13,7 +13,7 @@ module Lia.Markdown.Quiz.Types exposing
     )
 
 import Array exposing (Array)
-import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
+import Lia.Markdown.Inline.Types exposing (MultInlines)
 import Lia.Markdown.Quiz.Block.Types as Block
 import Lia.Markdown.Quiz.MultipleChoice.Types as MultipleChoice
 import Lia.Markdown.Quiz.SingleChoice.Types as SingleChoice

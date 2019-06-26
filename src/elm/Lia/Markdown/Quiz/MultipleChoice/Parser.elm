@@ -9,13 +9,12 @@ import Combine
         , map
         , or
         , string
-        , succeed
         )
 import Lia.Markdown.Inline.Parser exposing (line)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.MultipleChoice.Types exposing (Quiz)
 import Lia.Parser.Helper exposing (newline, spaces)
-import Lia.Parser.State exposing (State, ident_skip, identation)
+import Lia.Parser.State exposing (State)
 
 
 parse : Parser State Quiz

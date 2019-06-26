@@ -1,6 +1,5 @@
 module Lia.Markdown.Quiz.MultipleChoice.Update exposing (Msg(..), toString, update)
 
-import Array
 import Lia.Markdown.Quiz.MultipleChoice.Types exposing (State)
 
 

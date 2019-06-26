@@ -10,19 +10,17 @@ import Combine
         , ignore
         , keep
         , many
-        , many1
         , map
         , maybe
         , modifyState
         , onsuccess
-        , regex
         , skip
         , string
         , succeed
         , withState
         )
-import Lia.Markdown.Inline.Parser exposing (javascript, line, parse_inlines)
-import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
+import Lia.Markdown.Inline.Parser exposing (javascript, line)
+import Lia.Markdown.Inline.Types exposing (MultInlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Block.Parser as Block
 import Lia.Markdown.Quiz.MultipleChoice.Parser as MultipleChoice
@@ -30,14 +28,13 @@ import Lia.Markdown.Quiz.SingleChoice.Parser as SingleChoice
 import Lia.Markdown.Quiz.Types
     exposing
         ( Element
-        , Hints
         , Quiz
         , Solution(..)
         , State(..)
         , Type(..)
         , initState
         )
-import Lia.Parser.Helper exposing (newline, spaces, stringTill)
+import Lia.Parser.Helper exposing (newline, spaces)
 import Lia.Parser.State exposing (State, identation)
 
 

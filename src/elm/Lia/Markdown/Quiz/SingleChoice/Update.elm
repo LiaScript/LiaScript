@@ -8,7 +8,7 @@ type Msg
 
 
 update : Msg -> State -> State
-update msg state =
+update msg _ =
     case msg of
         Toggle id ->
             id

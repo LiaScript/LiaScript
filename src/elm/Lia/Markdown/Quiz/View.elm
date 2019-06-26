@@ -2,9 +2,9 @@ module Lia.Markdown.Quiz.View exposing (view, view_solution)
 
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Html.Events exposing (onBlur, onClick, onInput)
-import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
-import Lia.Markdown.Inline.View exposing (annotation, view_inf)
+import Html.Events exposing (onClick)
+import Lia.Markdown.Inline.Types exposing (MultInlines)
+import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Markdown.Quiz.Block.View as Block
 import Lia.Markdown.Quiz.Model exposing (get_state)
 import Lia.Markdown.Quiz.MultipleChoice.View as MultipleChoice
@@ -17,7 +17,6 @@ import Lia.Markdown.Quiz.Types
         , State(..)
         , Type(..)
         , Vector
-        , initState
         , solved
         )
 import Lia.Markdown.Quiz.Update exposing (Msg(..))

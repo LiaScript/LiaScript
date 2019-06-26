@@ -84,11 +84,11 @@ option id opt =
 get_option : Int -> List Inlines -> Html Msg
 get_option id list =
     case ( id, list ) of
-        ( 0, x :: xs ) ->
+        ( 0, x :: _ ) ->
             x |> List.map view_inf |> Html.span []
 
-        ( i, x :: xs ) ->
+        ( i, _ :: xs ) ->
             get_option (i - 1) xs
 
-        ( i, [] ) ->
+        ( _, [] ) ->
             Html.text "choose"

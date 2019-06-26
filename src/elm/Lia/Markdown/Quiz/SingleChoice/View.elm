@@ -3,8 +3,8 @@ module Lia.Markdown.Quiz.SingleChoice.View exposing (view)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
-import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
-import Lia.Markdown.Inline.View exposing (annotation, view_inf)
+import Lia.Markdown.Inline.Types exposing (Inlines)
+import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Markdown.Quiz.SingleChoice.Types exposing (Quiz, State)
 import Lia.Markdown.Quiz.SingleChoice.Update exposing (Msg(..))
 

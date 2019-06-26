@@ -12,7 +12,7 @@ type Msg
 update : Msg -> State -> State
 update msg state =
     case ( msg, state ) of
-        ( Choose option, Select open _ ) ->
+        ( Choose option, Select _ _ ) ->
             Select False option
 
         ( Toggle, Select open id ) ->
