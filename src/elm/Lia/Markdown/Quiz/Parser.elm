@@ -38,7 +38,7 @@ import Lia.Markdown.Quiz.Types
         , initState
         )
 import Lia.Parser.Helper exposing (newline, spaces, stringTill)
-import Lia.Parser.State exposing (State)
+import Lia.Parser.State exposing (State, identation)
 
 
 parse : Parser State Quiz
@@ -84,7 +84,8 @@ empty =
 
 hints : Parser State MultInlines
 hints =
-    string "[[?]]"
+    identation
+        |> keep (string "[[?]]")
         |> keep line
         |> ignore newline
         |> many
