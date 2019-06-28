@@ -1,92 +1,83 @@
 module Lia.Markdown.Quiz.View exposing (view, view_solution)
 
---import Lia.Code.View exposing (error)
-
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Html.Events exposing (onBlur, onClick, onInput)
-import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
-import Lia.Markdown.Inline.View exposing (annotation, view_inf)
+import Html.Events exposing (onClick)
+import Lia.Markdown.Inline.Types exposing (MultInlines)
+import Lia.Markdown.Inline.View exposing (view_inf)
+import Lia.Markdown.Quiz.Block.View as Block
 import Lia.Markdown.Quiz.Model exposing (get_state)
-import Lia.Markdown.Quiz.Types exposing (Element, Quiz(..), QuizAdds(..), Solution(..), State(..), Vector)
+import Lia.Markdown.Quiz.MultipleChoice.View as MultipleChoice
+import Lia.Markdown.Quiz.SingleChoice.View as SingleChoice
+import Lia.Markdown.Quiz.Types
+    exposing
+        ( Element
+        , Quiz
+        , Solution(..)
+        , State(..)
+        , Type(..)
+        , Vector
+        , solved
+        )
 import Lia.Markdown.Quiz.Update exposing (Msg(..))
 import Translations exposing (Lang, quizCheck, quizChecked, quizResolved, quizSolution)
 
 
 view : Lang -> Quiz -> Vector -> Html Msg
 view lang quiz vector =
-    let
-        state =
-            get_state vector
-    in
-    case quiz of
-        Empty (QuizAdds idx hints eval_string) ->
-            case state idx of
-                Just s ->
-                    (case eval_string of
-                        Just _ ->
-                            view_button lang s.trial s.solved (Check idx s.state eval_string)
+    case get_state vector quiz.id of
+        Just elem ->
+            state_view (solved elem) elem.state quiz
+                |> view_quiz lang elem quiz
 
-                        Nothing ->
-                            Html.text ""
-                    )
-                        :: view_button_solution lang s.solved (ShowSolution idx State_Empty)
-                        :: (if s.error_msg == "" then
-                                Html.text ""
-
-                            else
-                                Html.br [] []
-                           )
-                        :: (if s.error_msg == "" then
-                                Html.text ""
-
-                            else
-                                Html.text s.error_msg
-                           )
-                        :: view_hints idx s.hint hints
-                        |> Html.div []
-
-                Nothing ->
-                    Html.text ""
-
-        Text solution (QuizAdds idx hints eval_string) ->
-            view_quiz lang (state idx) view_text idx hints eval_string (State_Text solution)
-
-        Selection solution options (QuizAdds idx hints eval_string) ->
-            view_quiz lang (state idx) (view_selection options) idx hints eval_string (State_Selection solution False)
-
-        SingleChoice solution questions (QuizAdds idx hints eval_string) ->
-            view_quiz lang (state idx) (view_single_choice questions) idx hints eval_string (State_SingleChoice solution)
-
-        MultipleChoice solution questions (QuizAdds idx hints eval_string) ->
-            view_quiz lang (state idx) (view_multiple_choice questions) idx hints eval_string (State_MultipleChoice solution)
-
-
-view_quiz : Lang -> Maybe Element -> (Int -> State -> Bool -> Html Msg) -> Int -> MultInlines -> Maybe String -> State -> Html Msg
-view_quiz lang state fn_view idx hints eval_string solution =
-    case state of
-        Just s ->
-            Html.p []
-                (fn_view idx s.state (s.solved /= Open)
-                    :: view_button lang s.trial s.solved (Check idx solution eval_string)
-                    :: view_button_solution lang s.solved (ShowSolution idx solution)
-                    :: (if s.error_msg == "" then
-                            Html.text ""
-
-                        else
-                            Html.br [] []
-                       )
-                    :: (if s.error_msg == "" then
-                            Html.text ""
-
-                        else
-                            Html.text s.error_msg
-                       )
-                    :: view_hints idx s.hint hints
-                )
-
-        Nothing ->
+        _ ->
             Html.text ""
+
+
+state_view : Bool -> State -> Quiz -> Html Msg
+state_view solved state quiz =
+    case ( state, quiz.quiz ) of
+        ( Block_State s, Block q ) ->
+            s
+                |> Block.view solved q
+                |> Html.map (Block_Update quiz.id)
+
+        ( SingleChoice_State s, SingleChoice q ) ->
+            s
+                |> SingleChoice.view solved q
+                |> Html.map (SingleChoice_Update quiz.id)
+
+        ( MultipleChoice_State s, MultipleChoice q ) ->
+            s
+                |> MultipleChoice.view solved q
+                |> Html.map (MultipleChoice_Update quiz.id)
+
+        _ ->
+            Html.text ""
+
+
+view_quiz : Lang -> Element -> Quiz -> Html Msg -> Html Msg
+view_quiz lang state quiz fn =
+    Html.p []
+        [ if state.error_msg == "" then
+            Html.text ""
+
+          else
+            Html.br [] []
+        , if state.error_msg == "" then
+            Html.text ""
+
+          else
+            Html.text state.error_msg
+        , fn
+        , view_button lang state.trial state.solved (Check quiz.id quiz.quiz quiz.javascript)
+        , if quiz.quiz == Empty then
+            Html.text ""
+
+          else
+            view_button_solution lang state.solved (ShowSolution quiz.id quiz.quiz)
+        , view_hints quiz.id state.hint quiz.hints
+        ]
 
 
 view_button_solution : Lang -> Solution -> Msg -> Html Msg
@@ -127,156 +118,7 @@ view_button lang trials solved msg =
                 [ Html.text (quizResolved lang) ]
 
 
-view_text : Int -> State -> Bool -> Html Msg
-view_text idx state solved =
-    case state of
-        State_Text x ->
-            Html.input
-                [ Attr.type_ "input"
-                , Attr.class "lia-input"
-                , Attr.value x
-                , Attr.disabled solved
-                , onInput (Input idx)
-                ]
-                []
-
-        _ ->
-            Html.text ""
-
-
-option : Int -> Int -> Inlines -> Html Msg
-option id val opt =
-    let
-        str_val =
-            String.fromInt val
-    in
-    opt
-        |> List.map view_inf
-        |> Html.div [ Attr.class "lia-dropdown-option", onClick <| Select id val ]
-
-
-get_option : Int -> List Inlines -> Html Msg
-get_option id list =
-    case ( id, list ) of
-        ( 0, x :: xs ) ->
-            x |> List.map view_inf |> Html.span []
-
-        ( i, x :: xs ) ->
-            get_option (i - 1) xs
-
-        ( i, [] ) ->
-            Html.text "choose"
-
-
-view_selection : List Inlines -> Int -> State -> Bool -> Html Msg
-view_selection options id state solved =
-    let
-        fn =
-            option id
-    in
-    case state of
-        State_Selection i open ->
-            Html.span
-                []
-                [ Html.span
-                    [ Attr.class "lia-dropdown"
-                    , onClick <| SelectToggle id
-                    ]
-                    [ get_option i options
-                    , Html.span
-                        [ Attr.class "lia-icon"
-                        , Attr.style "float" "right"
-                        ]
-                        [ if open then
-                            Html.text "arrow_drop_down"
-
-                          else
-                            Html.text "arrow_drop_up"
-                        ]
-                    ]
-                , options
-                    |> List.indexedMap fn
-                    |> Html.div
-                        [ Attr.class "lia-dropdown-options"
-                        , Attr.style "max-height" <|
-                            if open then
-                                "2000px"
-
-                            else
-                                "0px"
-                        ]
-                ]
-
-        _ ->
-            Html.text ""
-
-
-view_single_choice : MultInlines -> Int -> State -> Bool -> Html Msg
-view_single_choice questions idx state solved =
-    case state of
-        State_SingleChoice x ->
-            questions
-                |> List.indexedMap Tuple.pair
-                |> List.map
-                    (\( i, elements ) ->
-                        Html.tr [ Attr.class "lia-radio-item" ]
-                            [ Html.td [ Attr.attribute "valign" "top", Attr.class "lia-label" ]
-                                [ Html.input
-                                    [ Attr.type_ "radio"
-                                    , Attr.checked (i == x)
-                                    , if solved then
-                                        Attr.disabled True
-
-                                      else
-                                        onClick (RadioButton idx i)
-                                    ]
-                                    []
-                                , Html.span [ Attr.class "lia-radio-btn" ] []
-                                ]
-                            , Html.td
-                                [ Attr.class "lia-label" ]
-                                (List.map view_inf elements)
-                            ]
-                    )
-                |> Html.table [ Attr.attribute "cellspacing" "8" ]
-
-        _ ->
-            Html.text ""
-
-
-view_multiple_choice : MultInlines -> Int -> State -> Bool -> Html Msg
-view_multiple_choice questions idx state solved =
-    let
-        fn b ( i, line ) =
-            Html.tr [ Attr.class "lia-check-item" ]
-                [ Html.td [ Attr.attribute "valign" "top", Attr.class "lia-label" ]
-                    [ Html.input
-                        [ Attr.type_ "checkbox"
-                        , Attr.checked b
-                        , if solved then
-                            Attr.disabled True
-
-                          else
-                            onClick (RadioButton idx i)
-                        ]
-                        []
-                    , Html.span [ Attr.class "lia-check-btn" ] [ Html.text "check" ]
-                    ]
-                , Html.td [ Attr.class "lia-label" ] (List.map view_inf line)
-                ]
-    in
-    case state of
-        State_MultipleChoice x ->
-            questions
-                |> List.indexedMap Tuple.pair
-                |> List.map2 fn x
-                |> Html.table [ Attr.attribute "cellspacing" "8" ]
-
-        _ ->
-            Html.text ""
-
-
-view_hints : Int -> Int -> MultInlines -> List (Html Msg)
+view_hints : Int -> Int -> MultInlines -> Html Msg
 view_hints idx counter hints =
     let
         v_hints h c =
@@ -295,51 +137,33 @@ view_hints idx counter hints =
                         :: v_hints xs (c - 1)
     in
     if counter < List.length hints then
-        [ Html.text " "
-        , Html.span
-            [ Attr.class "lia-hint-btn"
-            , onClick (ShowHint idx)
-            , Attr.title "show hint"
-            , Attr.style "cursor" "pointer"
+        Html.span []
+            [ Html.text " "
+            , Html.span
+                [ Attr.class "lia-hint-btn"
+                , onClick (ShowHint idx)
+                , Attr.title "show hint"
+                , Attr.style "cursor" "pointer"
+                ]
+                [ Html.text "help" ]
+            , Html.div
+                [ Attr.class "lia-hints"
+                ]
+                (v_hints hints counter)
             ]
-            [ Html.text "help" ]
-        , Html.div
-            [ Attr.class "lia-hints"
-            ]
-            (v_hints hints counter)
-        ]
 
     else
-        [ Html.div
+        Html.div
             [ Attr.class "lia-hints"
             ]
             (v_hints hints counter)
-        ]
 
 
 view_solution : Vector -> Quiz -> ( Bool, Bool )
 view_solution vector quiz =
-    let
-        ( idx_, empty ) =
-            case quiz of
-                Empty (QuizAdds idx _ _) ->
-                    ( idx, True )
-
-                Text _ (QuizAdds idx _ _) ->
-                    ( idx, False )
-
-                Selection _ _ (QuizAdds idx _ _) ->
-                    ( idx, False )
-
-                SingleChoice _ _ (QuizAdds idx _ _) ->
-                    ( idx, False )
-
-                MultipleChoice _ _ (QuizAdds idx _ _) ->
-                    ( idx, False )
-    in
-    idx_
+    quiz.id
         |> get_state vector
         |> Maybe.map .solved
         |> Maybe.map (\s -> s /= Open)
         |> Maybe.withDefault False
-        |> Tuple.pair empty
+        |> Tuple.pair (quiz.quiz == Empty)
