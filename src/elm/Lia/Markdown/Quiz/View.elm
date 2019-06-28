@@ -37,17 +37,17 @@ view lang quiz vector =
 state_view : Bool -> State -> Quiz -> Html Msg
 state_view solved state quiz =
     case ( state, quiz.quiz ) of
-        ( Block_State s, Block q ) ->
+        ( Block_State s, Block_Type q ) ->
             s
                 |> Block.view solved q
                 |> Html.map (Block_Update quiz.id)
 
-        ( SingleChoice_State s, SingleChoice q ) ->
+        ( SingleChoice_State s, SingleChoice_Type q ) ->
             s
                 |> SingleChoice.view solved q
                 |> Html.map (SingleChoice_Update quiz.id)
 
-        ( MultipleChoice_State s, MultipleChoice q ) ->
+        ( MultipleChoice_State s, MultipleChoice_Type q ) ->
             s
                 |> MultipleChoice.view solved q
                 |> Html.map (MultipleChoice_Update quiz.id)
@@ -71,7 +71,7 @@ view_quiz lang state quiz fn =
             Html.text state.error_msg
         , fn
         , view_button lang state.trial state.solved (Check quiz.id quiz.quiz quiz.javascript)
-        , if quiz.quiz == Empty then
+        , if quiz.quiz == Empty_Type then
             Html.text ""
 
           else
@@ -163,7 +163,6 @@ view_solution : Vector -> Quiz -> ( Bool, Bool )
 view_solution vector quiz =
     quiz.id
         |> get_state vector
-        |> Maybe.map .solved
-        |> Maybe.map (\s -> s /= Open)
+        |> Maybe.map solved
         |> Maybe.withDefault False
-        |> Tuple.pair (quiz.quiz == Empty)
+        |> Tuple.pair (quiz.quiz == Empty_Type)

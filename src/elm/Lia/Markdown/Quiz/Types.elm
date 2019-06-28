@@ -50,10 +50,10 @@ type State
 
 
 type Type
-    = Empty
-    | Block Block.Quiz
-    | SingleChoice SingleChoice.Quiz
-    | MultipleChoice MultipleChoice.Quiz
+    = Empty_Type
+    | Block_Type Block.Quiz
+    | SingleChoice_Type SingleChoice.Quiz
+    | MultipleChoice_Type MultipleChoice.Quiz
 
 
 type alias Quiz =
@@ -67,20 +67,20 @@ type alias Quiz =
 initState : Type -> State
 initState quiz =
     case quiz of
-        Empty ->
+        Empty_Type ->
             Empty_State
 
-        Block b ->
+        Block_Type b ->
             b
                 |> Block.initState
                 |> Block_State
 
-        SingleChoice s ->
+        SingleChoice_Type s ->
             s
                 |> SingleChoice.initState
                 |> SingleChoice_State
 
-        MultipleChoice m ->
+        MultipleChoice_Type m ->
             m
                 |> MultipleChoice.initState
                 |> MultipleChoice_State
@@ -89,16 +89,16 @@ initState quiz =
 toState : Type -> State
 toState quiz =
     case quiz of
-        Empty ->
+        Empty_Type ->
             Empty_State
 
-        Block b ->
+        Block_Type b ->
             Block_State b.solution
 
-        SingleChoice s ->
+        SingleChoice_Type s ->
             SingleChoice_State s.solution
 
-        MultipleChoice m ->
+        MultipleChoice_Type m ->
             MultipleChoice_State m.solution
 
 
@@ -106,13 +106,13 @@ comp : Type -> State -> Solution
 comp quiz state =
     if
         case ( quiz, state ) of
-            ( Block q, Block_State s ) ->
+            ( Block_Type q, Block_State s ) ->
                 Block.comp q s
 
-            ( SingleChoice q, SingleChoice_State s ) ->
+            ( SingleChoice_Type q, SingleChoice_State s ) ->
                 SingleChoice.comp q s
 
-            ( MultipleChoice q, MultipleChoice_State s ) ->
+            ( MultipleChoice_Type q, MultipleChoice_State s ) ->
                 MultipleChoice.comp q s
 
             _ ->

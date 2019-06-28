@@ -40,10 +40,10 @@ import Lia.Parser.Helper exposing (newline, spaces)
 
 parse : Parser Context Quiz
 parse =
-    [ map SingleChoice SingleChoice.parse
-    , map MultipleChoice MultipleChoice.parse
-    , onsuccess Empty empty
-    , map Block Block.parse
+    [ map SingleChoice_Type SingleChoice.parse
+    , map MultipleChoice_Type MultipleChoice.parse
+    , onsuccess Empty_Type empty
+    , map Block_Type Block.parse
     ]
         |> choice
         |> andThen adds

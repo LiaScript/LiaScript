@@ -26,9 +26,9 @@ parse =
 
 toQuiz : List Inlines -> Inlines -> List Inlines -> Quiz
 toQuiz wrong1 right wrong2 =
-    Quiz
-        (right :: wrong2 |> List.append wrong1)
-        (List.length wrong1)
+    wrong1
+        |> List.length
+        |> Quiz (right :: wrong2 |> List.append wrong1)
 
 
 checked : Parser Context Inlines
