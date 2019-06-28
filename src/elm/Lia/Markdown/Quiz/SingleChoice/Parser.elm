@@ -8,12 +8,13 @@ import Combine
         , keep
         , many
         , map
+        , maybe
         , string
         )
 import Lia.Markdown.Inline.Parser exposing (line)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.SingleChoice.Types exposing (Quiz)
-import Lia.Parser.Context exposing (Context)
+import Lia.Parser.Context exposing (Context, indentation)
 import Lia.Parser.Helper exposing (newline, spaces)
 
 
@@ -33,16 +34,18 @@ toQuiz wrong1 right wrong2 =
 
 checked : Parser Context Inlines
 checked =
-    spaces
-        |> keep (string "[(X)]")
+    maybe indentation
+        |> ignore spaces
+        |> ignore (string "[(X)]")
         |> keep line
         |> ignore newline
 
 
 unchecked : Parser Context (List Inlines)
 unchecked =
-    spaces
-        |> keep (string "[( )]")
+    maybe indentation
+        |> ignore spaces
+        |> ignore (string "[( )]")
         |> keep line
         |> ignore newline
         |> many

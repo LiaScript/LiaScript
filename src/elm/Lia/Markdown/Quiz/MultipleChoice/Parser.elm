@@ -7,20 +7,23 @@ import Combine
         , keep
         , many1
         , map
+        , maybe
         , or
         , string
         )
 import Lia.Markdown.Inline.Parser exposing (line)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.MultipleChoice.Types exposing (Quiz)
-import Lia.Parser.Context exposing (Context)
+import Lia.Parser.Context exposing (Context, indentation)
 import Lia.Parser.Helper exposing (newline, spaces)
 
 
 parse : Parser Context Quiz
 parse =
-    spaces
+    maybe indentation
+        |> ignore spaces
         |> keep (or checked unchecked)
+        |> ignore newline
         |> many1
         |> map unzip
 
@@ -29,7 +32,6 @@ checked : Parser Context ( Bool, Inlines )
 checked =
     string "[[X]]"
         |> keep line
-        |> ignore newline
         |> map (Tuple.pair True)
 
 
@@ -37,7 +39,6 @@ unchecked : Parser Context ( Bool, Inlines )
 unchecked =
     string "[[ ]]"
         |> keep line
-        |> ignore newline
         |> map (Tuple.pair False)
 
 
