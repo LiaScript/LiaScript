@@ -28,7 +28,7 @@ import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Types exposing (Markdown(..))
-import Lia.Parser.Context exposing (Context, ident_skip, identation)
+import Lia.Parser.Context exposing (Context, indentation, indentation_skip)
 import Lia.Parser.Helper exposing (newlines, newlines1, spaces1)
 
 
@@ -43,7 +43,7 @@ markdown blocks =
                 |> optional 99999
             )
         |> ignore (regex "}}[\t ]*")
-        |> ignore (or (skip (string "\n")) ident_skip)
+        |> ignore (or (skip (string "\n")) indentation_skip)
         |> andMap (or (multi blocks) (single blocks))
         |> ignore reset_effect_number
 
@@ -56,7 +56,7 @@ single blocks =
 
 multi : Parser Context Markdown -> Parser Context (List Markdown)
 multi blocks =
-    identation
+    indentation
         |> ignore (regex "[\t ]*\\*{3,}\\n+")
         |> keep
             (manyTill
@@ -130,8 +130,8 @@ comment paragraph =
                 )
             )
         |> ignore (regex "}}--[\t ]*")
-        |> ignore (maybe (newlines1 |> ignore ident_skip))
-        |> andMap (identation |> keep paragraph)
+        |> ignore (maybe (newlines1 |> ignore indentation_skip))
+        |> andMap (indentation |> keep paragraph)
         |> andThen (add_comment True)
         |> ignore reset_effect_number
 

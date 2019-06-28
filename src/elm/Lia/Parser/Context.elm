@@ -1,9 +1,9 @@
 module Lia.Parser.Context exposing
     ( Context
-    , ident_skip
-    , identation
-    , identation_append
-    , identation_pop
+    , indentation
+    , indentation_append
+    , indentation_pop
+    , indentation_skip
     , init
     , searchIndex
     )
@@ -68,14 +68,14 @@ par_ s =
             |> skip
 
 
-identation : Parser Context ()
-identation =
+indentation : Parser Context ()
+indentation =
     withState par_
         |> ignore (modifyState (skip_ False))
 
 
-identation_append : String -> Parser Context ()
-identation_append str =
+indentation_append : String -> Parser Context ()
+indentation_append str =
     modifyState
         (\state ->
             { state
@@ -85,8 +85,8 @@ identation_append str =
         )
 
 
-identation_pop : Parser Context ()
-identation_pop =
+indentation_pop : Parser Context ()
+indentation_pop =
     modifyState
         (\state ->
             { state
@@ -100,8 +100,8 @@ identation_pop =
         )
 
 
-ident_skip : Parser Context ()
-ident_skip =
+indentation_skip : Parser Context ()
+indentation_skip =
     modifyState (skip_ True)
 
 

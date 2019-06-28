@@ -34,7 +34,7 @@ import Lia.Markdown.Quiz.Types
         , Type(..)
         , initState
         )
-import Lia.Parser.Context exposing (Context, identation)
+import Lia.Parser.Context exposing (Context, indentation)
 import Lia.Parser.Helper exposing (newline, spaces)
 
 
@@ -81,7 +81,7 @@ empty =
 
 hints : Parser Context MultInlines
 hints =
-    identation
+    indentation
         |> keep (string "[[?]]")
         |> keep line
         |> ignore newline

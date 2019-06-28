@@ -30,7 +30,7 @@ import Combine
         )
 import Dict
 import Lia.Definition.Types exposing (Definition)
-import Lia.Parser.Context exposing (Context, identation)
+import Lia.Parser.Context exposing (Context, indentation)
 import Lia.Parser.Helper exposing (c_frame, spaces)
 import Lia.Utils exposing (toJSstring)
 
@@ -98,10 +98,10 @@ simple_macro =
 code_block : Parser Context (List String)
 code_block =
     manyTill
-        (maybe identation
+        (maybe indentation
             |> keep (regex "(.(?!```))*\\n?")
         )
-        (maybe identation
+        (maybe indentation
             |> keep c_frame
         )
         |> map (String.concat >> List.singleton)

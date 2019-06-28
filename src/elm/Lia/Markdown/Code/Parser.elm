@@ -26,7 +26,7 @@ import Lia.Markdown.Code.Log as Log
 import Lia.Markdown.Code.Types exposing (Code(..), Snippet, initProject)
 import Lia.Markdown.Inline.Parser exposing (javascript)
 import Lia.Markdown.Macro.Parser exposing (macro)
-import Lia.Parser.Context exposing (Context, identation)
+import Lia.Parser.Context exposing (Context, indentation)
 import Lia.Parser.Helper exposing (c_frame, newline, spaces)
 
 
@@ -36,7 +36,7 @@ parse =
         |> map Tuple.pair
         |> andMap
             (regex "[ \n]?"
-                |> ignore (maybe identation)
+                |> ignore (maybe indentation)
                 |> keep macro
                 |> keep javascript
                 |> maybe
@@ -86,8 +86,8 @@ code_body len =
             "`{" ++ String.fromInt len ++ "}"
     in
     manyTill
-        (maybe identation |> keep (regex ("(?:.(?!" ++ control_frame ++ "))*\\n")))
-        (identation |> keep (regex control_frame))
+        (maybe indentation |> keep (regex ("(?:.(?!" ++ control_frame ++ "))*\\n")))
+        (indentation |> keep (regex control_frame))
         |> map (String.concat >> String.dropRight 1)
 
 

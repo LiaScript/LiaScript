@@ -36,7 +36,7 @@ import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Parser as Quiz
 import Lia.Markdown.Survey.Parser as Survey
 import Lia.Markdown.Types exposing (Markdown(..), MarkdownS)
-import Lia.Parser.Context exposing (Context, ident_skip, identation, identation_append, identation_pop)
+import Lia.Parser.Context exposing (Context, indentation, indentation_append, indentation_pop, indentation_skip)
 import Lia.Parser.Helper exposing (c_frame, newline, newlines, spaces)
 import SvgBob
 
@@ -96,7 +96,7 @@ blocks =
                             |> andMap paragraph
                         ]
             in
-            identation
+            indentation
                 |> keep macro
                 |> keep b
                 |> ignore (maybe (whitespace |> keep Effect.hidden_comment))
@@ -144,10 +144,10 @@ svgbody len =
     ascii
         |> keep
             (manyTill
-                (maybe identation
+                (maybe indentation
                     |> keep (regex ("(?:.(?!" ++ control_frame ++ "))*\\n"))
                 )
-                (identation
+                (indentation
                     |> keep (regex control_frame)
                 )
                 |> map (String.concat >> String.dropRight 1)
@@ -167,11 +167,11 @@ solution =
         rslt e1 blocks_ e2 =
             ( blocks_, e2 - e1 )
     in
-    identation
+    indentation
         |> ignore (regex "[\t ]*\\*{3,}[\t ]*\\n+")
         |> keep (withState (\s -> succeed s.effect_model.effects))
         |> map rslt
-        |> andMap (manyTill (blocks |> ignore newlines) (identation |> ignore (regex "[\t ]*\\*{3,}[\t ]*")))
+        |> andMap (manyTill (blocks |> ignore newlines) (indentation |> ignore (regex "[\t ]*\\*{3,}[\t ]*")))
         |> andMap (withState (\s -> succeed s.effect_model.effects))
         |> maybe
 
@@ -181,7 +181,7 @@ ident_blocks =
     blocks
         |> ignore (regex "\\n?")
         |> many1
-        |> ignore identation_pop
+        |> ignore indentation_pop
 
 
 unordered_list : Parser Context Markdown
@@ -189,13 +189,13 @@ unordered_list =
     map BulletList md_annotations
         |> andMap
             (regex "[*+-] "
-                |> ignore (identation_append "  ")
+                |> ignore (indentation_append "  ")
                 |> keep
                     (blocks
                         |> ignore (regex "\\n?")
                         |> many1
                     )
-                |> ignore identation_pop
+                |> ignore indentation_pop
                 |> many1
             )
 
@@ -205,13 +205,13 @@ ordered_list =
     map OrderedList md_annotations
         |> andMap
             (regex "\\d+\\. "
-                |> ignore (identation_append "   ")
+                |> ignore (indentation_append "   ")
                 |> keep
                     (blocks
                         |> ignore (regex "\\n?")
                         |> many1
                     )
-                |> ignore identation_pop
+                |> ignore indentation_pop
                 |> many1
             )
 
@@ -225,14 +225,14 @@ horizontal_line =
 
 paragraph : Parser Context Inlines
 paragraph =
-    ident_skip
-        |> keep (many1 (identation |> keep line |> ignore newline))
+    indentation_skip
+        |> keep (many1 (indentation |> keep line |> ignore newline))
         |> map (List.concat >> combine)
 
 
 table_row : Parser Context MultInlines
 table_row =
-    identation
+    indentation
         |> keep
             (manyTill
                 (string "|" |> keep line)
@@ -242,7 +242,7 @@ table_row =
 
 simple_table : Parser Context Markdown
 simple_table =
-    ident_skip
+    indentation_skip
         |> keep md_annotations
         |> map (\a b -> Table a [] [] b)
         |> andMap (many1 table_row)
@@ -252,7 +252,7 @@ formated_table : Parser Context Markdown
 formated_table =
     let
         format =
-            identation
+            indentation
                 |> ignore (string "|")
                 |> keep
                     (sepEndBy (string "|")
@@ -266,7 +266,7 @@ formated_table =
                     )
                 |> ignore (regex "[\t ]*\\n")
     in
-    ident_skip
+    indentation_skip
         |> keep md_annotations
         |> map Table
         |> andMap table_row
@@ -279,14 +279,14 @@ quote =
     map Quote md_annotations
         |> andMap
             (string "> "
-                |> ignore (identation_append "> ?")
+                |> ignore (indentation_append "> ?")
                 |> keep
                     (blocks
-                        |> ignore (maybe identation)
+                        |> ignore (maybe indentation)
                         |> ignore (regex "\\n?")
                         |> many1
                     )
-                |> ignore identation_pop
+                |> ignore indentation_pop
             )
 
 
@@ -298,7 +298,7 @@ md_annotations =
         |> map Dict.fromList
         |> ignore
             (regex "[\t ]*\\n"
-                |> ignore identation
+                |> ignore indentation
                 |> maybe
             )
         |> maybe

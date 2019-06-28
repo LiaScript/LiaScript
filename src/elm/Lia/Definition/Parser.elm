@@ -33,10 +33,10 @@ import Lia.Markdown.Macro.Parser as Macro
 import Lia.Parser.Context
     exposing
         ( Context
-        , ident_skip
-        , identation
-        , identation_append
-        , identation_pop
+        , indentation
+        , indentation_append
+        , indentation_pop
+        , indentation_skip
         , init
         )
 import Lia.Parser.Helper exposing (newline, stringTill)
@@ -129,10 +129,10 @@ store str fn =
 
 ending : Parser Context String
 ending =
-    identation_append "  "
-        |> ignore ident_skip
-        |> keep (many1 (identation |> keep (regex ".+\\n")))
-        |> ignore identation_pop
+    indentation_append "  "
+        |> ignore indentation_skip
+        |> keep (many1 (indentation |> keep (regex ".+\\n")))
+        |> ignore indentation_pop
         |> map (\list -> list |> List.map String.trimLeft |> String.concat |> String.trimRight)
 
 
