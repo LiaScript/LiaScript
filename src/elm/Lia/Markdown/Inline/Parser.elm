@@ -48,11 +48,11 @@ import Lia.Markdown.Inline.Parser.Formula exposing (formula)
 import Lia.Markdown.Inline.Parser.Symbol exposing (arrows, smileys)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..))
 import Lia.Markdown.Macro.Parser as Macro
+import Lia.Parser.Context exposing (Context, searchIndex)
 import Lia.Parser.Helper exposing (spaces, stringTill)
-import Lia.Parser.State exposing (State, searchIndex)
 
 
-parse_inlines : State -> String -> Inlines
+parse_inlines : Context -> String -> Inlines
 parse_inlines state str =
     case
         str
@@ -79,7 +79,7 @@ comment_string =
         |> map (String.fromList >> String.trim)
 
 
-comments : Parser State ()
+comments : Parser Context ()
 comments =
     Effect.hidden_comment
         |> or (skip (comment anyChar))
@@ -96,7 +96,7 @@ attribute =
         |> andMap (stringTill (regex "\"[ \t\n]*"))
 
 
-annotations : Parser State Annotation
+annotations : Parser Context Annotation
 annotations =
     spaces
         |> keep (comment attribute)
@@ -124,7 +124,7 @@ javascript =
         |> keep (stringTill (string "</script>"))
 
 
-html : Parser State Inline
+html : Parser Context Inline
 html =
     let
         state script =
@@ -193,7 +193,7 @@ combine list =
                     x1 :: combine (x2 :: xs)
 
 
-line : Parser State Inlines
+line : Parser Context Inlines
 line =
     inlines
         |> many1
@@ -205,7 +205,7 @@ append_space list =
     List.append list [ Chars " " Nothing ]
 
 
-inlines : Parser State Inline
+inlines : Parser Context Inline
 inlines =
     lazy <|
         \() ->
@@ -242,7 +242,7 @@ inline_url =
     map (\u -> Ref (Link [ Chars u Nothing ] u "")) url
 
 
-ref_info : Parser State Inlines
+ref_info : Parser Context Inlines
 ref_info =
     string "["
         |> keep (manyTill inlines (string "]"))
@@ -257,7 +257,7 @@ ref_title =
         |> optional ""
 
 
-ref_url_1 : Parser State String
+ref_url_1 : Parser Context String
 ref_url_1 =
     choice
         [ url
@@ -266,7 +266,7 @@ ref_url_1 =
         ]
 
 
-ref_url_2 : Parser State String
+ref_url_2 : Parser Context String
 ref_url_2 =
     withState (\s -> succeed s.defines.base)
         |> map (++)
@@ -313,7 +313,7 @@ ref_video =
         |> ignore (string ")")
 
 
-reference : Parser State (Annotation -> Inline)
+reference : Parser Context (Annotation -> Inline)
 reference =
     lazy <|
         \() ->
@@ -341,7 +341,7 @@ reference =
                 |> map Ref
 
 
-between_ : String -> Parser State Inline
+between_ : String -> Parser Context Inline
 between_ str =
     lazy <|
         \() ->
@@ -355,7 +355,7 @@ between_ str =
                 |> choice
 
 
-strings : Parser State (Annotation -> Inline)
+strings : Parser Context (Annotation -> Inline)
 strings =
     lazy <|
         \() ->

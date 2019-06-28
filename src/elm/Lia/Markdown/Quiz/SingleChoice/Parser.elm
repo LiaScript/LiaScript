@@ -13,11 +13,11 @@ import Combine
 import Lia.Markdown.Inline.Parser exposing (line)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.SingleChoice.Types exposing (Quiz)
+import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (newline, spaces)
-import Lia.Parser.State exposing (State)
 
 
-parse : Parser State Quiz
+parse : Parser Context Quiz
 parse =
     map toQuiz unchecked
         |> andMap checked
@@ -31,7 +31,7 @@ toQuiz wrong1 right wrong2 =
         (List.length wrong1)
 
 
-checked : Parser State Inlines
+checked : Parser Context Inlines
 checked =
     spaces
         |> keep (string "[(X)]")
@@ -39,7 +39,7 @@ checked =
         |> ignore newline
 
 
-unchecked : Parser State (List Inlines)
+unchecked : Parser Context (List Inlines)
 unchecked =
     spaces
         |> keep (string "[( )]")

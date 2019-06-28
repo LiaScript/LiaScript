@@ -36,12 +36,12 @@ import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Parser as Quiz
 import Lia.Markdown.Survey.Parser as Survey
 import Lia.Markdown.Types exposing (Markdown(..), MarkdownS)
+import Lia.Parser.Context exposing (Context, ident_skip, identation, identation_append, identation_pop)
 import Lia.Parser.Helper exposing (c_frame, newline, newlines, spaces)
-import Lia.Parser.State exposing (State, ident_skip, identation, identation_append, identation_pop)
 import SvgBob
 
 
-run : Parser State (List Markdown)
+run : Parser Context (List Markdown)
 run =
     footnotes
         |> keep blocks
@@ -50,14 +50,14 @@ run =
         |> ignore footnotes
 
 
-footnotes : Parser State ()
+footnotes : Parser Context ()
 footnotes =
     (Footnote.block ident_blocks |> ignore newlines)
         |> many
         |> skip
 
 
-blocks : Parser State Markdown
+blocks : Parser Context Markdown
 blocks =
     lazy <|
         \() ->
@@ -102,7 +102,7 @@ blocks =
                 |> ignore (maybe (whitespace |> keep Effect.hidden_comment))
 
 
-to_comment : ( Annotation, ( Int, Int ) ) -> Parser State Markdown
+to_comment : ( Annotation, ( Int, Int ) ) -> Parser Context Markdown
 to_comment ( attr, ( id1, id2 ) ) =
     (case attr of
         Just _ ->
@@ -121,7 +121,7 @@ to_comment ( attr, ( id1, id2 ) ) =
         |> onsuccess (Comment ( id1, id2 ))
 
 
-svgbody : Int -> Parser State String
+svgbody : Int -> Parser Context String
 svgbody len =
     let
         control_frame =
@@ -154,14 +154,14 @@ svgbody len =
             )
 
 
-svgbob : Parser State Markdown
+svgbob : Parser Context Markdown
 svgbob =
     md_annotations
         |> map (\attr txt -> ASCII attr (SvgBob.init txt))
         |> andMap (c_frame |> andThen svgbody)
 
 
-solution : Parser State (Maybe ( List Markdown, Int ))
+solution : Parser Context (Maybe ( List Markdown, Int ))
 solution =
     let
         rslt e1 blocks_ e2 =
@@ -176,7 +176,7 @@ solution =
         |> maybe
 
 
-ident_blocks : Parser State MarkdownS
+ident_blocks : Parser Context MarkdownS
 ident_blocks =
     blocks
         |> ignore (regex "\\n?")
@@ -184,7 +184,7 @@ ident_blocks =
         |> ignore identation_pop
 
 
-unordered_list : Parser State Markdown
+unordered_list : Parser Context Markdown
 unordered_list =
     map BulletList md_annotations
         |> andMap
@@ -200,7 +200,7 @@ unordered_list =
             )
 
 
-ordered_list : Parser State Markdown
+ordered_list : Parser Context Markdown
 ordered_list =
     map OrderedList md_annotations
         |> andMap
@@ -216,21 +216,21 @@ ordered_list =
             )
 
 
-horizontal_line : Parser State Markdown
+horizontal_line : Parser Context Markdown
 horizontal_line =
     md_annotations
         |> ignore (regex "-{3,}")
         |> map HLine
 
 
-paragraph : Parser State Inlines
+paragraph : Parser Context Inlines
 paragraph =
     ident_skip
         |> keep (many1 (identation |> keep line |> ignore newline))
         |> map (List.concat >> combine)
 
 
-table_row : Parser State MultInlines
+table_row : Parser Context MultInlines
 table_row =
     identation
         |> keep
@@ -240,7 +240,7 @@ table_row =
             )
 
 
-simple_table : Parser State Markdown
+simple_table : Parser Context Markdown
 simple_table =
     ident_skip
         |> keep md_annotations
@@ -248,7 +248,7 @@ simple_table =
         |> andMap (many1 table_row)
 
 
-formated_table : Parser State Markdown
+formated_table : Parser Context Markdown
 formated_table =
     let
         format =
@@ -274,7 +274,7 @@ formated_table =
         |> andMap (many table_row)
 
 
-quote : Parser State Markdown
+quote : Parser Context Markdown
 quote =
     map Quote md_annotations
         |> andMap
@@ -290,7 +290,7 @@ quote =
             )
 
 
-md_annotations : Parser State Annotation
+md_annotations : Parser Context Annotation
 md_annotations =
     spaces
         |> keep macro

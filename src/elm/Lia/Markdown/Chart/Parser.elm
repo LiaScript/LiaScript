@@ -16,11 +16,11 @@ import Combine
 import Combine.Num exposing (float, int)
 import Dict exposing (Dict)
 import Lia.Markdown.Chart.Types exposing (Chart, Diagram(..), Point)
-import Lia.Parser.State exposing (State)
+import Lia.Parser.Context exposing (Context)
 import Set
 
 
-parse : Parser State Chart
+parse : Parser Context Chart
 parse =
     let
         chart title y_max rows y_min ( x_label, ( x0, x_segment ) ) =
@@ -92,7 +92,7 @@ magicMerge left right =
     Dict.merge Dict.insert (\key l r dict -> Dict.insert key (l ++ r) dict) Dict.insert left right Dict.empty
 
 
-row : Parser State ( String, Dict Char (List Int) )
+row : Parser Context ( String, Dict Char (List Int) )
 row =
     let
         indexes y_label str =
@@ -126,7 +126,7 @@ segmentation elements i0 i1 =
     ( i0, (i1 - i0) / toFloat elements )
 
 
-x_axis : Parser State ( String, ( Float, Float ) )
+x_axis : Parser Context ( String, ( Float, Float ) )
 x_axis =
     regex "[\t ]*\\+"
         |> keep (regex "\\-+")
@@ -137,7 +137,7 @@ x_axis =
         |> andMap (optional 1.0 (regex "[\t ]*" |> keep number |> ignore (regex "[\t ]*\\n")))
 
 
-number : Parser State Float
+number : Parser Context Float
 number =
     int
         |> ignore (string "." |> optional ".")

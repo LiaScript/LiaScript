@@ -16,11 +16,11 @@ import Combine
 import Lia.Markdown.Footnote.Model as Model
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..))
 import Lia.Markdown.Types exposing (Markdown(..))
+import Lia.Parser.Context exposing (Context, identation_append)
 import Lia.Parser.Helper exposing (stringTill)
-import Lia.Parser.State exposing (State, identation_append)
 
 
-inline : Parser State (Annotation -> Inline)
+inline : Parser Context (Annotation -> Inline)
 inline =
     string "[^"
         |> keep (stringTill (string "]"))
@@ -29,7 +29,7 @@ inline =
         |> andThen store
 
 
-block : Parser State (List Markdown) -> Parser State ()
+block : Parser Context (List Markdown) -> Parser Context ()
 block p =
     string "[^"
         |> keep (stringTill (string "]:"))
@@ -39,7 +39,7 @@ block p =
         |> andThen add_footnote
 
 
-store : ( String, Maybe String ) -> Parser State (Annotation -> Inline)
+store : ( String, Maybe String ) -> Parser Context (Annotation -> Inline)
 store ( key, val ) =
     case val of
         Just v ->
@@ -50,6 +50,6 @@ store ( key, val ) =
             succeed (FootnoteMark key)
 
 
-add_footnote : ( String, List Markdown ) -> Parser State ()
+add_footnote : ( String, List Markdown ) -> Parser Context ()
 add_footnote ( key, val ) =
     modifyState (\s -> { s | footnotes = Model.insert key val s.footnotes })

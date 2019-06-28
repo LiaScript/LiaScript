@@ -16,11 +16,11 @@ import Combine
 import Lia.Markdown.Inline.Parser exposing (parse_inlines)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Block.Types exposing (Quiz, State(..))
+import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (newline, stringTill)
-import Lia.Parser.State exposing (State)
 
 
-parse : Parser State Quiz
+parse : Parser Context Quiz
 parse =
     regex "[\t ]*\\[\\["
         |> keep (stringTill (string "]]"))
@@ -29,7 +29,7 @@ parse =
         |> andThen withState
 
 
-split : String -> State -> Parser State Quiz
+split : String -> Context -> Parser Context Quiz
 split str state =
     case String.split "|" str of
         [ solution ] ->
@@ -44,7 +44,7 @@ split str state =
                 |> toSelect
 
 
-check : State -> Int -> String -> ( Int, Inlines )
+check : Context -> Int -> String -> ( Int, Inlines )
 check state id str =
     let
         inlines =
@@ -65,7 +65,7 @@ check state id str =
         ( -1, inlines option )
 
 
-toSelect : List ( Int, Inlines ) -> Parser State Quiz
+toSelect : List ( Int, Inlines ) -> Parser Context Quiz
 toSelect list =
     case
         list

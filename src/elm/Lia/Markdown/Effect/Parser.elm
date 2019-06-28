@@ -28,11 +28,11 @@ import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Types exposing (Markdown(..))
+import Lia.Parser.Context exposing (Context, ident_skip, identation)
 import Lia.Parser.Helper exposing (newlines, newlines1, spaces1)
-import Lia.Parser.State exposing (State, ident_skip, identation)
 
 
-markdown : Parser State Markdown -> Parser State ( Int, Int, List Markdown )
+markdown : Parser Context Markdown -> Parser Context ( Int, Int, List Markdown )
 markdown blocks =
     regex "[\t ]*{{"
         |> keep effect_number
@@ -48,13 +48,13 @@ markdown blocks =
         |> ignore reset_effect_number
 
 
-single : Parser State Markdown -> Parser State (List Markdown)
+single : Parser Context Markdown -> Parser Context (List Markdown)
 single blocks =
     blocks
         |> map List.singleton
 
 
-multi : Parser State Markdown -> Parser State (List Markdown)
+multi : Parser Context Markdown -> Parser Context (List Markdown)
 multi blocks =
     identation
         |> ignore (regex "[\t ]*\\*{3,}\\n+")
@@ -67,7 +67,7 @@ multi blocks =
             )
 
 
-inline : Parser State Inline -> Parser State (Annotation -> Inline)
+inline : Parser Context Inline -> Parser Context (Annotation -> Inline)
 inline inlines =
     string "{"
         |> keep effect_number
@@ -82,7 +82,7 @@ inline inlines =
         |> ignore reset_effect_number
 
 
-effect_number : Parser State Int
+effect_number : Parser Context Int
 effect_number =
     let
         state n =
@@ -107,7 +107,7 @@ effect_number =
     int |> andThen state
 
 
-reset_effect_number : Parser State ()
+reset_effect_number : Parser Context ()
 reset_effect_number =
     modifyState
         (\s ->
@@ -117,7 +117,7 @@ reset_effect_number =
         )
 
 
-comment : Parser State Inlines -> Parser State ( Int, Int )
+comment : Parser Context Inlines -> Parser Context ( Int, Int )
 comment paragraph =
     regex "[\t ]*--{{"
         |> keep effect_number
@@ -136,7 +136,7 @@ comment paragraph =
         |> ignore reset_effect_number
 
 
-hidden_comment : Parser State ()
+hidden_comment : Parser Context ()
 hidden_comment =
     regex "<!--[\t ]*--{{"
         |> keep effect_number
@@ -157,7 +157,7 @@ hidden_comment =
         |> skip
 
 
-add_comment : Bool -> ( Int, Maybe String, Inlines ) -> Parser State ( Int, Int )
+add_comment : Bool -> ( Int, Maybe String, Inlines ) -> Parser Context ( Int, Int )
 add_comment visible ( idx, temp_narrator, par ) =
     let
         mod s =
@@ -214,7 +214,7 @@ add_comment visible ( idx, temp_narrator, par ) =
         |> andThen rslt
 
 
-get_counter : Int -> Parser State Int
+get_counter : Int -> Parser Context Int
 get_counter idx =
     withState
         (\s ->

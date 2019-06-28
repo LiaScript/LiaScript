@@ -34,11 +34,11 @@ import Lia.Markdown.Quiz.Types
         , Type(..)
         , initState
         )
+import Lia.Parser.Context exposing (Context, identation)
 import Lia.Parser.Helper exposing (newline, spaces)
-import Lia.Parser.State exposing (State, identation)
 
 
-parse : Parser State Quiz
+parse : Parser Context Quiz
 parse =
     [ map SingleChoice SingleChoice.parse
     , map MultipleChoice MultipleChoice.parse
@@ -50,7 +50,7 @@ parse =
         |> andThen modify_State
 
 
-adds : Type -> Parser State Quiz
+adds : Type -> Parser Context Quiz
 adds type_ =
     map (Quiz type_) get_counter
         |> andMap hints
@@ -66,12 +66,12 @@ adds type_ =
             )
 
 
-get_counter : Parser State Int
+get_counter : Parser Context Int
 get_counter =
     withState (\s -> succeed (Array.length s.quiz_vector))
 
 
-empty : Parser State ()
+empty : Parser Context ()
 empty =
     spaces
         |> ignore (string "[[!]]")
@@ -79,7 +79,7 @@ empty =
         |> skip
 
 
-hints : Parser State MultInlines
+hints : Parser Context MultInlines
 hints =
     identation
         |> keep (string "[[?]]")
@@ -88,7 +88,7 @@ hints =
         |> many
 
 
-modify_State : Quiz -> Parser State Quiz
+modify_State : Quiz -> Parser Context Quiz
 modify_State q =
     let
         add_state e s =

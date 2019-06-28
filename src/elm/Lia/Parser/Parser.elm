@@ -9,8 +9,8 @@ import Combine exposing (InputStream, currentLocation, keep)
 import Lia.Definition.Parser
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Parser as Markdown
+import Lia.Parser.Context exposing (init)
 import Lia.Parser.Preprocessor as Preprocessor
-import Lia.Parser.State exposing (init)
 import Lia.Types exposing (Section, SectionBase)
 
 

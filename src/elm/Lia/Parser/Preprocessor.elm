@@ -17,12 +17,12 @@ import Combine
         )
 import Lia.Markdown.Inline.Parser exposing (line)
 import Lia.Markdown.Inline.Types exposing (Inlines)
+import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (newline)
-import Lia.Parser.State exposing (State)
 import Lia.Types exposing (SectionBase)
 
 
-title_tag : Parser State Int
+title_tag : Parser Context Int
 title_tag =
     regex "#+" |> map String.length
 
@@ -36,12 +36,12 @@ check c =
         fail ""
 
 
-title_str : Parser State Inlines
+title_str : Parser Context Inlines
 title_str =
     line |> ignore newline
 
 
-body : Parser State String
+body : Parser Context String
 body =
     [ regex "(?:[^#`<]+|[\\x0D\n]+|<!--[\\S\\s]*?-->)" -- comment
     , regex "(`{3,})[\\S\\s]*?\\1" -- code_block or ascii art
@@ -54,7 +54,7 @@ body =
         |> map String.concat
 
 
-section : Parser State SectionBase
+section : Parser Context SectionBase
 section =
     title_tag
         |> map SectionBase
@@ -62,6 +62,6 @@ section =
         |> andMap body
 
 
-run : Parser State (List SectionBase)
+run : Parser Context (List SectionBase)
 run =
     many section

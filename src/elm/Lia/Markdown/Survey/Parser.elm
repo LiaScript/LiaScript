@@ -23,16 +23,16 @@ import Dict
 import Lia.Markdown.Inline.Parser exposing (line)
 import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
 import Lia.Markdown.Survey.Types exposing (State(..), Survey(..), Var)
+import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (newline)
-import Lia.Parser.State exposing (State)
 
 
-parse : Parser State Survey
+parse : Parser Context Survey
 parse =
     survey |> andThen modify_State
 
 
-survey : Parser State Survey
+survey : Parser Context Survey
 survey =
     let
         get_id par =
@@ -69,7 +69,7 @@ id_str =
     regex "\\w(\\w+| )*"
 
 
-vector : (Parser s String -> Parser State a) -> Parser State (List ( a, Inlines ))
+vector : (Parser s String -> Parser Context a) -> Parser Context (List ( a, Inlines ))
 vector p =
     let
         vec x =
@@ -85,7 +85,7 @@ header p =
         |> ignore newline
 
 
-questions : Parser State MultInlines
+questions : Parser Context MultInlines
 questions =
     regex "[\t ]*\\[[\t ]+\\]"
         |> keep line
@@ -93,14 +93,14 @@ questions =
         |> many1
 
 
-question : Parser State a -> Parser State ( a, Inlines )
+question : Parser Context a -> Parser Context ( a, Inlines )
 question p =
     map Tuple.pair p
         |> andMap line
         |> ignore newline
 
 
-modify_State : Survey -> Parser State Survey
+modify_State : Survey -> Parser Context Survey
 modify_State survey_ =
     let
         add_state e s =

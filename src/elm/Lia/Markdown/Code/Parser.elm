@@ -26,11 +26,11 @@ import Lia.Markdown.Code.Log as Log
 import Lia.Markdown.Code.Types exposing (Code(..), Snippet, initProject)
 import Lia.Markdown.Inline.Parser exposing (javascript)
 import Lia.Markdown.Macro.Parser exposing (macro)
+import Lia.Parser.Context exposing (Context, identation)
 import Lia.Parser.Helper exposing (c_frame, newline, spaces)
-import Lia.Parser.State exposing (State, identation)
 
 
-parse : Parser State Code
+parse : Parser Context Code
 parse =
     sepBy1 newline listing
         |> map Tuple.pair
@@ -44,7 +44,7 @@ parse =
         |> andThen result
 
 
-result : ( List ( Snippet, Bool ), Maybe String ) -> Parser State Code
+result : ( List ( Snippet, Bool ), Maybe String ) -> Parser Context Code
 result ( lst, script ) =
     case script of
         Just str ->
@@ -57,14 +57,14 @@ result ( lst, script ) =
                 |> succeed
 
 
-header : Parser State String
+header : Parser Context String
 header =
     spaces
         |> keep (regex "\\w*")
         |> map String.toLower
 
 
-title : Parser State ( Bool, String )
+title : Parser Context ( Bool, String )
 title =
     spaces
         |> keep
@@ -79,7 +79,7 @@ title =
         |> ignore newline
 
 
-code_body : Int -> Parser State String
+code_body : Int -> Parser Context String
 code_body len =
     let
         control_frame =
@@ -91,7 +91,7 @@ code_body len =
         |> map (String.concat >> String.dropRight 1)
 
 
-listing : Parser State ( Snippet, Bool )
+listing : Parser Context ( Snippet, Bool )
 listing =
     let
         body len =
@@ -103,7 +103,7 @@ listing =
     c_frame |> andThen body
 
 
-evaluate : List ( Snippet, Bool ) -> String -> Parser State Code
+evaluate : List ( Snippet, Bool ) -> String -> Parser Context Code
 evaluate lang_title_code comment =
     let
         ar =

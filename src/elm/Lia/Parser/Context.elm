@@ -1,5 +1,5 @@
-module Lia.Parser.State exposing
-    ( State
+module Lia.Parser.Context exposing
+    ( Context
     , ident_skip
     , identation
     , identation_append
@@ -18,7 +18,7 @@ import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Markdown.Survey.Types as Survey
 
 
-type alias State =
+type alias Context =
     { identation : List String
     , identation_skip : Bool
     , code_vector : Code.Vector
@@ -33,7 +33,7 @@ type alias State =
     }
 
 
-init : (String -> String) -> Definition -> State
+init : (String -> String) -> Definition -> Context
 init search_index global =
     { identation = []
     , identation_skip = False
@@ -49,12 +49,12 @@ init search_index global =
     }
 
 
-searchIndex : Parser State (String -> String)
+searchIndex : Parser Context (String -> String)
 searchIndex =
     withState (\state -> state.search_index |> succeed)
 
 
-par_ : State -> Parser State ()
+par_ : Context -> Parser Context ()
 par_ s =
     if s.identation == [] then
         succeed ()
@@ -68,13 +68,13 @@ par_ s =
             |> skip
 
 
-identation : Parser State ()
+identation : Parser Context ()
 identation =
     withState par_
         |> ignore (modifyState (skip_ False))
 
 
-identation_append : String -> Parser State ()
+identation_append : String -> Parser Context ()
 identation_append str =
     modifyState
         (\state ->
@@ -85,7 +85,7 @@ identation_append str =
         )
 
 
-identation_pop : Parser State ()
+identation_pop : Parser Context ()
 identation_pop =
     modifyState
         (\state ->
@@ -100,11 +100,11 @@ identation_pop =
         )
 
 
-ident_skip : Parser State ()
+ident_skip : Parser Context ()
 ident_skip =
     modifyState (skip_ True)
 
 
-skip_ : Bool -> State -> State
+skip_ : Bool -> Context -> Context
 skip_ bool state =
     { state | identation_skip = bool }

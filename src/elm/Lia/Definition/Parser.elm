@@ -30,19 +30,19 @@ import Lia.Definition.Types
 import Lia.Markdown.Inline.Parser exposing (comment, inlines)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Macro.Parser as Macro
-import Lia.Parser.Helper exposing (newline, stringTill)
-import Lia.Parser.State
+import Lia.Parser.Context
     exposing
-        ( State
+        ( Context
         , ident_skip
         , identation
         , identation_append
         , identation_pop
         , init
         )
+import Lia.Parser.Helper exposing (newline, stringTill)
 
 
-parse : Parser State ()
+parse : Parser Context ()
 parse =
     lazy <|
         \() ->
@@ -67,7 +67,7 @@ inline_parser defines str =
             []
 
 
-definition : Parser State ()
+definition : Parser Context ()
 definition =
     lazy <|
         \() ->
@@ -122,12 +122,12 @@ definition =
                 |> skip
 
 
-store : String -> (String -> Definition -> Definition) -> Parser State ()
+store : String -> (String -> Definition -> Definition) -> Parser Context ()
 store str fn =
     regexWith True False str |> keep (ending |> andThen (fn >> set))
 
 
-ending : Parser State String
+ending : Parser Context String
 ending =
     identation_append "  "
         |> ignore ident_skip
@@ -136,6 +136,6 @@ ending =
         |> map (\list -> list |> List.map String.trimLeft |> String.concat |> String.trimRight)
 
 
-set : (Definition -> Definition) -> Parser State ()
+set : (Definition -> Definition) -> Parser Context ()
 set fct =
     modifyState (\s -> { s | defines = fct s.defines })
