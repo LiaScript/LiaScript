@@ -196,10 +196,10 @@ update msg model =
 
         UrlChanged url ->
             case url.fragment |> Maybe.andThen String.toInt of
-                Just idx ->
+                Just id ->
                     let
                         ( lia, cmd, _ ) =
-                            Lia.Script.load_slide (idx - 1) model.lia
+                            Lia.Script.load_slide (id - 1) model.lia
                     in
                     ( { model | lia = lia }, Cmd.map LiaScript cmd )
 
@@ -207,38 +207,10 @@ update msg model =
                     ( model, Cmd.none )
 
         LiaStart ->
-            let
-                ( parsed, cmd, slide_number ) =
-                    Lia.Script.load_first_slide model.lia
-            in
-            ( { model | state = Running, lia = parsed }
-            , if slide_number < 0 then
-                Cmd.map LiaScript cmd
-
-              else
-                Cmd.batch
-                    [ Nav.replaceUrl model.key ("#" ++ String.fromInt slide_number)
-                    , Cmd.map LiaScript cmd
-                    ]
-            )
+            start model
 
         LiaParse ->
-            case Maybe.map (Lia.Script.parse_section model.lia) model.code of
-                Just ( lia, Just code ) ->
-                    if modBy 4 (Lia.Script.pages model.lia) == 0 then
-                        ( { model | lia = lia, code = Just code }, message LiaParse )
-
-                    else
-                        update LiaParse { model | lia = lia, code = Just code }
-
-                Just ( lia, Nothing ) ->
-                    --if model.templates == Nothing then
-                    update LiaStart { model | lia = lia, templates = Nothing }
-
-                --else
-                --    ( { model | lia = lia }, message LiaParse )
-                Nothing ->
-                    update LiaStart model
+            parsing model
 
         Input url ->
             let
@@ -258,63 +230,104 @@ update msg model =
             )
 
         Load_ReadMe_Result (Ok readme) ->
-            case
-                readme
-                    |> String.replace "\u{000D}" ""
-                    |> Lia.Script.init_script model.lia
-            of
-                ( lia, Just code, [] ) ->
-                    ( { model
-                        | lia = lia
-                        , state = Parsing
-                        , code = Just code
-                        , size = String.length code |> toFloat
-                      }
-                    , message LiaParse
-                    )
-
-                ( lia, Just code, templates ) ->
-                    ( { model
-                        | state = Parsing
-                        , lia = lia
-                        , code = Just code
-                        , size = String.length code |> toFloat
-                        , templates = Just <| List.length templates
-                      }
-                    , templates
-                        |> List.map (download Load_Template_Result)
-                        |> (::) (message LiaParse)
-                        |> Cmd.batch
-                    )
-
-                ( lia, Nothing, _ ) ->
-                    ( { model
-                        | state =
-                            lia.error
-                                |> Maybe.withDefault ""
-                                |> Error
-                      }
-                    , Cmd.none
-                    )
+            load_readme model readme
 
         Load_ReadMe_Result (Err info) ->
             ( { model | state = Error <| parse_error info }, Cmd.none )
 
         Load_Template_Result (Ok template) ->
-            let
-                new_model =
-                    { model
-                        | templates = model.templates |> Maybe.map ((-) 1)
-                        , lia =
-                            template
-                                |> String.replace "\u{000D}" ""
-                                |> Lia.Script.add_imports model.lia
-                    }
-            in
-            update LiaParse new_model
+            update
+                LiaParse
+                { model
+                    | templates = Maybe.map ((-) 1) model.templates
+                    , lia =
+                        template
+                            |> String.replace "\u{000D}" ""
+                            |> Lia.Script.add_imports model.lia
+                }
 
         Load_Template_Result (Err info) ->
             ( { model | state = Error <| parse_error info }, Cmd.none )
+
+
+start : Model -> ( Model, Cmd Msg )
+start model =
+    let
+        ( parsed, cmd, slide_number ) =
+            Lia.Script.load_first_slide model.lia
+    in
+    ( { model | state = Running, lia = parsed }
+    , if slide_number < 0 then
+        Cmd.map LiaScript cmd
+
+      else
+        Cmd.batch
+            [ Nav.replaceUrl model.key ("#" ++ String.fromInt slide_number)
+            , Cmd.map LiaScript cmd
+            ]
+    )
+
+
+parsing : Model -> ( Model, Cmd Msg )
+parsing model =
+    case Maybe.map (Lia.Script.parse_section model.lia) model.code of
+        Just ( lia, Just code ) ->
+            if modBy 4 (Lia.Script.pages model.lia) == 0 then
+                ( { model | lia = lia, code = Just code }, message LiaParse )
+
+            else
+                update LiaParse { model | lia = lia, code = Just code }
+
+        Just ( lia, Nothing ) ->
+            --if model.templates == Nothing then
+            update LiaStart { model | lia = lia, templates = Nothing }
+
+        --else
+        --    ( { model | lia = lia }, message LiaParse )
+        Nothing ->
+            update LiaStart model
+
+
+load_readme : Model -> String -> ( Model, Cmd Msg )
+load_readme model readme =
+    case
+        readme
+            |> String.replace "\u{000D}" ""
+            |> Lia.Script.init_script model.lia
+    of
+        ( lia, Just code, [] ) ->
+            ( { model
+                | lia = lia
+                , state = Parsing
+                , code = Just code
+                , size = String.length code |> toFloat
+              }
+            , message LiaParse
+            )
+
+        ( lia, Just code, templates ) ->
+            ( { model
+                | state = Parsing
+                , lia = lia
+                , code = Just code
+                , size = String.length code |> toFloat
+                , templates = Just <| List.length templates
+              }
+            , templates
+                |> List.map (download Load_Template_Result)
+                |> (::) (message LiaParse)
+                |> Cmd.batch
+            )
+
+        ( lia, Nothing, _ ) ->
+            ( { model
+                | state =
+                    lia.error
+                        |> Maybe.withDefault ""
+                        |> Error
+              }
+            , Cmd.none
+            )
 
 
 parse_error : Http.Error -> String
