@@ -275,7 +275,7 @@ ref_url_2 =
 
 
 
---ref_pattern : (a -> b -> String -> c) -> Parser s a -> Parser s b -> Parser s c
+--ref_pattern : (a -> String -> String -> b) -> Parser s a -> Parser s String -> Parser s b
 
 
 ref_pattern ref_type info_type url_type =

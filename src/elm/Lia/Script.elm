@@ -4,12 +4,14 @@ module Lia.Script exposing
     , add_imports
     , get_title
     , init_presentation
+    , init_script
     , init_slides
     , init_textbook
     , load_first_slide
     , load_slide
+    , pages
+    , parse_section
     , plain_mode
-    , set_script
     , slide_mode
     , subscriptions
     , switch_mode
@@ -40,14 +42,25 @@ type alias Msg =
     Lia.Update.Msg
 
 
+pages : Model -> Int
+pages =
+    .sections >> Array.length
+
+
 load_slide : Int -> Model -> ( Model, Cmd Msg, Int )
 load_slide idx model =
     Lia.Update.update (Load idx) model
 
 
-load_first_slide : Int -> Model -> ( Model, Cmd Msg, Int )
-load_first_slide idx model =
-    load_slide idx
+load_first_slide : Model -> ( Model, Cmd Msg, Int )
+load_first_slide model =
+    load_slide
+        (if model.section_active > pages model then
+            0
+
+         else
+            model.section_active
+        )
         { model
             | to_do =
                 ([ get_title model.sections
@@ -97,57 +110,42 @@ add_todos definition model =
     }
 
 
-generateIndex : Int -> String -> ( String, String )
-generateIndex idx title =
-    ( title
-        |> String.toLower
-        |> String.replace " " "-"
-        |> (++) "#"
-    , "#" ++ String.fromInt (idx + 1)
-    )
-
-
-set_script : Model -> String -> ( Model, List String )
-set_script model script =
-    case Parser.parse_defintion model.origin script of
+init_script : Model -> String -> ( Model, Maybe String, List String )
+init_script model script =
+    case Parser.parse_defintion model.url script of
         Ok ( definition, code ) ->
-            case Parser.parse_titles definition code of
-                Ok title_sections ->
-                    let
-                        sections =
-                            title_sections
-                                |> Array.fromList
-                                |> Array.indexedMap init_section
-
-                        search =
-                            title_sections
-                                |> List.map (.title >> stringify >> String.trim)
-                                |> List.indexedMap generateIndex
-                                |> searchIndex
-
-                        section_active =
-                            if Array.length sections > model.section_active then
-                                model.section_active
-
-                            else
-                                0
-                    in
-                    ( { model
-                        | definition = { definition | resources = [], imports = [], attributes = [] }
-                        , sections = sections
-                        , section_active = section_active
-                        , translation = Translations.getLnFromCode definition.language
-                        , search_index = search
-                      }
-                        |> add_todos definition
-                    , definition.imports
-                    )
-
-                Err msg ->
-                    ( { model | error = Just msg }, [] )
+            ( { model
+                | definition = { definition | resources = [], imports = [], attributes = [] }
+                , translation = Translations.getLnFromCode definition.language
+              }
+                |> add_todos definition
+            , Just code
+            , definition.imports
+            )
 
         Err msg ->
-            ( { model | error = Just msg }, [] )
+            ( { model | error = Just msg }, Nothing, [] )
+
+
+parse_section : Model -> String -> ( Model, Maybe String )
+parse_section model code =
+    case Parser.parse_titles model.definition code of
+        Ok ( sec, rest ) ->
+            ( { model
+                | sections =
+                    Array.push
+                        (init_section (pages model) sec)
+                        model.sections
+              }
+            , if String.isEmpty rest then
+                Nothing
+
+              else
+                Just rest
+            )
+
+        Err msg ->
+            ( { model | error = Just msg }, Nothing )
 
 
 get_title : Sections -> String

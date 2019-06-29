@@ -24,11 +24,11 @@ parse_defintion base code =
             Err (formatError ms stream)
 
 
-parse_titles : Definition -> String -> Result String (List SectionBase)
+parse_titles : Definition -> String -> Result String ( SectionBase, String )
 parse_titles defines code =
-    case Combine.runParser Preprocessor.run (init identity defines) code of
-        Ok ( _, _, rslt ) ->
-            Ok rslt
+    case Combine.runParser Preprocessor.section (init identity defines) code of
+        Ok ( _, data, rslt ) ->
+            Ok ( rslt, data.input )
 
         Err ( _, stream, ms ) ->
             Err (formatError ms stream)
