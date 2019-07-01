@@ -62,10 +62,13 @@ load_first_slide model =
             model.section_active
         )
         { model
-            |
-              search_index = 
-
-              , to_do =
+            | search_index =
+                model.sections
+                    |> Array.map (.title >> stringify >> String.trim)
+                    |> Array.toList
+                    |> List.indexedMap generateIndex
+                    |> searchIndex
+            , to_do =
                 ([ get_title model.sections
                  , model.readme
                  , model.definition.version
