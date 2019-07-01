@@ -46,6 +46,9 @@ inline2string inline =
         Container inlines _ ->
             stringify inlines
 
+        Goto inlines _ ->
+            inline2string inlines
+
         _ ->
             ""
 

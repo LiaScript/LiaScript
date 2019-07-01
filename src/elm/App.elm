@@ -52,7 +52,7 @@ type alias Model =
     , state : State
     , lia : Lia.Script.Model
     , templates : Maybe Int
-    , code : Maybe String
+    , code : Maybe ( String, Int )
     , size : Float
     }
 
@@ -84,7 +84,12 @@ init flags url key =
             ( Model key
                 url
                 Loading
-                (Lia.Script.init_textbook (get_base url) query "" slide)
+                (Lia.Script.init_textbook
+                    (get_base url)
+                    query
+                    (get_origin url.query)
+                    slide
+                )
                 Nothing
                 Nothing
                 0
@@ -95,7 +100,12 @@ init flags url key =
             ( Model key
                 { url | query = Just query }
                 Loading
-                (Lia.Script.init_textbook (get_base url) query "" slide)
+                (Lia.Script.init_textbook
+                    (get_base url)
+                    query
+                    (get_origin url.query)
+                    slide
+                )
                 Nothing
                 Nothing
                 0
@@ -108,7 +118,7 @@ init flags url key =
                 Parsing
                 (Lia.Script.init_textbook "" script "" slide)
                 Nothing
-                (Just script)
+                (Just ( script, 0 ))
                 (String.length script |> toFloat)
             , Cmd.none
             )
@@ -282,12 +292,12 @@ start model =
 parsing : Model -> ( Model, Cmd Msg )
 parsing model =
     case Maybe.map (Lia.Script.parse_section model.lia) model.code of
-        Just ( lia, Just ( code, editor_line ) ) ->
+        Just ( lia, Just next ) ->
             if modBy 4 (Lia.Script.pages model.lia) == 0 then
-                ( { model | lia = lia, code = Just code }, message LiaParse )
+                ( { model | lia = lia, code = Just next }, message LiaParse )
 
             else
-                update LiaParse { model | lia = lia, code = Just code }
+                update LiaParse { model | lia = lia, code = Just next }
 
         Just ( lia, Nothing ) ->
             --if model.templates == Nothing then
@@ -306,21 +316,21 @@ load_readme model readme =
             |> String.replace "\u{000D}" ""
             |> Lia.Script.init_script model.lia
     of
-        ( lia, Just code, [] ) ->
+        ( lia, Just ( code, line ), [] ) ->
             ( { model
                 | lia = lia
                 , state = Parsing
-                , code = Just code
+                , code = Just ( code, line )
                 , size = String.length code |> toFloat
               }
             , message LiaParse
             )
 
-        ( lia, Just code, templates ) ->
+        ( lia, Just ( code, line ), templates ) ->
             ( { model
                 | state = Parsing
                 , lia = lia
-                , code = Just code
+                , code = Just ( code, line )
                 , size = String.length code |> toFloat
                 , templates = Just <| List.length templates
               }
@@ -393,6 +403,7 @@ view model =
                 let
                     percent =
                         model.code
+                            |> Maybe.map Tuple.first
                             |> Maybe.withDefault ""
                             |> String.length
                             |> toFloat

@@ -10,6 +10,7 @@ module Lia.Script exposing
     , load_first_slide
     , load_slide
     , pages
+    , parse_section
     , plain_mode
     , slide_mode
     , subscriptions
@@ -47,12 +48,17 @@ pages =
 
 
 load_slide : Int -> Model -> ( Model, Cmd Msg, Int )
-load_slide idx model =
-    Lia.Update.update (Load idx) model
+load_slide idx =
+    Lia.Update.update (Load idx)
 
 
 load_first_slide : Model -> ( Model, Cmd Msg, Int )
 load_first_slide model =
+    let
+        xxx =
+            model.sections
+                |> Array.map (.title >> Debug.log "EEEEEEEEEEEEEEE")
+    in
     load_slide
         (if model.section_active > pages model then
             0
@@ -61,7 +67,13 @@ load_first_slide model =
             model.section_active
         )
         { model
-            | to_do =
+            | search_index =
+                model.sections
+                    |> Array.map (.title >> stringify >> String.trim)
+                    |> Array.toList
+                    |> List.indexedMap generateIndex
+                    |> searchIndex
+            , to_do =
                 ([ get_title model.sections
                  , model.readme
                  , model.definition.version
@@ -86,7 +98,7 @@ load_first_slide model =
 add_imports : Model -> String -> Model
 add_imports model course_url =
     case Parser.parse_defintion model.url course_url of
-        Ok ( definition, _, _ ) ->
+        Ok ( definition, _ ) ->
             add_todos definition model
 
         Err _ ->
@@ -110,53 +122,48 @@ add_todos definition model =
 
 
 generateIndex : Int -> String -> ( String, String )
-generateIndex idx title =
+generateIndex id title =
     ( title
         |> String.toLower
         |> String.replace " " "-"
         |> (++) "#"
-    , "#" ++ String.fromInt (idx + 1)
+    , "#" ++ String.fromInt (id + 1)
     )
 
 
-init_script : Model -> String -> ( Model, Maybe String, List String )
+init_script : Model -> String -> ( Model, Maybe ( String, Int ), List String )
 init_script model script =
-    case Parser.parse_defintion model.url script of
-        Ok ( definition, code, editor_line ) ->
-            case Parser.parse_titles editor_line definition code of
-                Ok title_sections ->
-                    let
-                        sections =
-                            title_sections
-                                |> Array.fromList
-                                |> Array.indexedMap init_section
+    case Parser.parse_defintion model.origin script of
+        Ok ( definition, ( code, line ) ) ->
+            ( { model
+                | definition = { definition | resources = [], imports = [], attributes = [] }
+                , translation = Translations.getLnFromCode definition.language
+              }
+                |> add_todos definition
+            , Just ( code, line )
+            , definition.imports
+            )
 
-                        search =
-                            title_sections
-                                |> List.map (.title >> stringify >> String.trim)
-                                |> List.indexedMap generateIndex
-                                |> searchIndex
+        Err msg ->
+            ( { model | error = Just msg }, Nothing, [] )
 
-                        section_active =
-                            if Array.length sections > model.section_active then
-                                model.section_active
 
-                            else
-                                0
-                    in
-                    ( { model
-                        | definition = { definition | resources = [], imports = [], attributes = [] }
-                        , sections = sections
-                        , section_active = section_active
-                        , translation = Translations.getLnFromCode definition.language
-                        , search_index = search
-                      }
-                        |> add_todos definition
-                    , definition.imports
-                    )
+parse_section : Model -> ( String, Int ) -> ( Model, Maybe ( String, Int ) )
+parse_section model ( code, line ) =
+    case Parser.parse_titles line model.definition code of
+        Ok ( sec, rest ) ->
+            ( { model
+                | sections =
+                    Array.push
+                        (init_section (pages model) sec)
+                        model.sections
+              }
+            , if rest |> Tuple.first |> String.isEmpty then
+                Nothing
 
-                Err msg ->
-                    ( { model | error = Just msg }, [] )
+              else
+                Just rest
+            )
 
         Err msg ->
             ( { model | error = Just msg }, Nothing )
@@ -174,8 +181,8 @@ get_title sections =
 
 
 filterIndex : String -> ( String, String ) -> Bool
-filterIndex str ( idx, _ ) =
-    str == idx
+filterIndex str ( key, _ ) =
+    str == key
 
 
 searchIndex : List ( String, String ) -> String -> String
@@ -187,8 +194,8 @@ searchIndex index str =
                 |> filterIndex
     in
     case index |> List.filter fn |> List.head of
-        Just ( _, key ) ->
-            key
+        Just ( _, val ) ->
+            val
 
         Nothing ->
             str
