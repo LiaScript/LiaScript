@@ -54,11 +54,6 @@ load_slide idx =
 
 load_first_slide : Model -> ( Model, Cmd Msg, Int )
 load_first_slide model =
-    let
-        xxx =
-            model.sections
-                |> Array.map (.title >> Debug.log "EEEEEEEEEEEEEEE")
-    in
     load_slide
         (if model.section_active > pages model then
             0
