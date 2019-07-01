@@ -62,7 +62,10 @@ load_first_slide model =
             model.section_active
         )
         { model
-            | to_do =
+            |
+              search_index = 
+
+              , to_do =
                 ([ get_title model.sections
                  , model.readme
                  , model.definition.version
