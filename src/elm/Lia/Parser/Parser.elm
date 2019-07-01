@@ -24,7 +24,7 @@ parse_defintion base code =
             Err (formatError ms stream)
 
 
-parse_titles : Definition -> String -> Result String ( SectionBase, String )
+parse_titles : Int -> Definition -> String -> Result String ( ( SectionBase, Int ), String )
 parse_titles editor_line defines code =
     case Combine.runParser Preprocessor.section (init identity editor_line defines) code of
         Ok ( _, data, rslt ) ->

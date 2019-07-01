@@ -56,10 +56,12 @@ body =
         |> map String.concat
 
 
-section : Parser Context SectionBase
+section : Parser Context ( SectionBase, Int )
 section =
     title_tag
         |> map SectionBase
         |> andMap getLine
         |> andMap title_str
         |> andMap body
+        |> map Tuple.pair
+        |> andMap getLine

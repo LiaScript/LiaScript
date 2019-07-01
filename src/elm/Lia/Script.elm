@@ -10,7 +10,6 @@ module Lia.Script exposing
     , load_first_slide
     , load_slide
     , pages
-    , parse_section
     , plain_mode
     , slide_mode
     , subscriptions
@@ -123,7 +122,7 @@ generateIndex idx title =
 init_script : Model -> String -> ( Model, Maybe String, List String )
 init_script model script =
     case Parser.parse_defintion model.url script of
-        Ok ( definition, code ) ->
+        Ok ( definition, code, editor_line ) ->
             case Parser.parse_titles editor_line definition code of
                 Ok title_sections ->
                     let

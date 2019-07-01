@@ -151,7 +151,7 @@ html =
         ]
 
 
-html_void : Parser State Inline
+html_void : Parser Context Inline
 html_void =
     regex "<[^>\\n]*>"
         |> andThen html_parse
@@ -168,7 +168,7 @@ html_parse str =
             fail "html parser failed"
 
 
-html_block : Parser State Inline
+html_block : Parser Context Inline
 html_block =
     regex "<((\\w+|-)+)[\\s\\S]*?</\\1>"
         |> andThen html_parse
@@ -226,7 +226,7 @@ inlines =
                 |> andThen goto
 
 
-goto : Inline -> Parser State Inline
+goto : Inline -> Parser Context Inline
 goto i =
     map (Goto i) getLine
 
@@ -244,7 +244,7 @@ email =
         |> map ((++) "mailto:")
 
 
-inline_url : Parser State (Annotation -> Inline)
+inline_url : Parser Context (Annotation -> Inline)
 inline_url =
     map (\u -> Ref (Link [ Chars u Nothing ] u "")) url
 
@@ -420,7 +420,7 @@ strings =
                 ]
 
 
-code : Parser State (Annotation -> Inline)
+code : Parser Context (Annotation -> Inline)
 code =
     string "`"
         |> keep (regex "[^`\\n]+")

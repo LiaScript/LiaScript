@@ -2,10 +2,10 @@ module Lia.Markdown.Inline.Parser.Symbol exposing (arrows, smileys)
 
 import Combine exposing (Parser, andMap, choice, map, onsuccess, string)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..))
-import Lia.Parser.State exposing (State)
+import Lia.Parser.Context exposing (Context)
 
 
-arrows : Parser State (Annotation -> Inline)
+arrows : Parser Context (Annotation -> Inline)
 arrows =
     choice
         [ string "<-->" |> onsuccess "⟷"
@@ -30,7 +30,7 @@ arrows =
         |> map Symbol
 
 
-smileys : Parser State (Annotation -> Inline)
+smileys : Parser Context (Annotation -> Inline)
 smileys =
     choice
         [ string ":-)" |> onsuccess "🙂"
