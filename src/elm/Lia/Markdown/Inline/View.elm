@@ -132,7 +132,10 @@ reference visible ref attr =
 
         Image alt_ url_ title_ ->
             Html.img
-                (Attr.src url_ :: Attr.title title_ :: annotation "lia-image" attr)
+                (Attr.src url_
+                    :: Attr.title title_
+                    :: annotation "lia-image" attr
+                )
                 (viewer visible alt_)
 
         Audio alt_ ( tube, url_ ) title_ ->

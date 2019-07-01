@@ -84,7 +84,7 @@ init flags url key =
             ( Model key
                 url
                 Loading
-                (Lia.Script.init_textbook (get_base url) query "" slide)
+                (Lia.Script.init_textbook (get_base url) query (get_origin url.query) slide)
                 Nothing
                 Nothing
                 0
@@ -95,7 +95,7 @@ init flags url key =
             ( Model key
                 { url | query = Just query }
                 Loading
-                (Lia.Script.init_textbook (get_base url) query "" slide)
+                (Lia.Script.init_textbook (get_base url) query (get_origin url.query) slide)
                 Nothing
                 Nothing
                 0

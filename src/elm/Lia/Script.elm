@@ -116,9 +116,19 @@ add_todos definition model =
     }
 
 
+generateIndex : Int -> String -> ( String, String )
+generateIndex id title =
+    ( title
+        |> String.toLower
+        |> String.replace " " "-"
+        |> (++) "#"
+    , "#" ++ String.fromInt (id + 1)
+    )
+
+
 init_script : Model -> String -> ( Model, Maybe String, List String )
 init_script model script =
-    case Parser.parse_defintion model.url script of
+    case Parser.parse_defintion model.origin script of
         Ok ( definition, code ) ->
             ( { model
                 | definition = { definition | resources = [], imports = [], attributes = [] }
