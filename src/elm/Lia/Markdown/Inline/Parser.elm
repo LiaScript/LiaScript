@@ -343,16 +343,19 @@ reference =
 
 between_ : String -> Parser Context Inline
 between_ str =
-    lazy <|
-        \() ->
-            [ string str
-                |> keep inlines
-                |> ignore (string str)
-            , string str
-                |> keep (manyTill inlines (string str))
-                |> map (\list -> Container (combine list) Nothing)
-            ]
-                |> choice
+    string str
+        |> keep (manyTill inlines (string str))
+        |> map toContainer
+
+
+toContainer : List Inline -> Inline
+toContainer inline_list =
+    case combine inline_list of
+        [ one ] ->
+            one
+
+        moreThanOne ->
+            Container moreThanOne Nothing
 
 
 strings : Parser Context (Annotation -> Inline)
