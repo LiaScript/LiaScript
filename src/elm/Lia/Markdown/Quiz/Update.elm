@@ -6,6 +6,7 @@ import Lia.Event as Event exposing (Event)
 import Lia.Markdown.Quiz.Block.Update as Block
 import Lia.Markdown.Quiz.Json as Json
 import Lia.Markdown.Quiz.MultipleChoice.Update as MultipleChoice
+import Lia.Markdown.Quiz.MultipleChoiceMatrix.Update as MultipleChoiceMatrix
 import Lia.Markdown.Quiz.SingleChoice.Update as SingleChoice
 import Lia.Markdown.Quiz.Types exposing (Element, Solution(..), State(..), Type, Vector, comp, toState)
 
@@ -14,6 +15,7 @@ type Msg
     = Block_Update Int Block.Msg
     | SingleChoice_Update Int SingleChoice.Msg
     | MultipleChoice_Update Int MultipleChoice.Msg
+    | MultipleChoiceMatrix_Update Int MultipleChoiceMatrix.Msg
     | Check Int Type (Maybe String)
     | ShowHint Int
     | ShowSolution Int Type
@@ -30,6 +32,9 @@ update msg vector =
             ( update_ id vector (state_ msg), [] )
 
         MultipleChoice_Update id _ ->
+            ( update_ id vector (state_ msg), [] )
+
+        MultipleChoiceMatrix_Update id _ ->
             ( update_ id vector (state_ msg), [] )
 
         Check id solution Nothing ->
@@ -118,13 +123,24 @@ state_ msg e =
         | state =
             case ( msg, e.state ) of
                 ( Block_Update _ m, Block_State s ) ->
-                    s |> Block.update m |> Block_State
+                    s
+                        |> Block.update m
+                        |> Block_State
 
                 ( SingleChoice_Update _ m, SingleChoice_State s ) ->
-                    s |> SingleChoice.update m |> SingleChoice_State
+                    s
+                        |> SingleChoice.update m
+                        |> SingleChoice_State
 
                 ( MultipleChoice_Update _ m, MultipleChoice_State s ) ->
-                    s |> MultipleChoice.update m |> MultipleChoice_State
+                    s
+                        |> MultipleChoice.update m
+                        |> MultipleChoice_State
+
+                ( MultipleChoiceMatrix_Update _ m, MultipleChoiceMatrix_State s ) ->
+                    s
+                        |> MultipleChoiceMatrix.update m
+                        |> MultipleChoiceMatrix_State
 
                 _ ->
                     e.state

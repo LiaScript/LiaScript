@@ -24,6 +24,7 @@ import Lia.Markdown.Inline.Types exposing (MultInlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Block.Parser as Block
 import Lia.Markdown.Quiz.MultipleChoice.Parser as MultipleChoice
+import Lia.Markdown.Quiz.MultipleChoiceMatrix.Parser as MultipleChoiceMatrix
 import Lia.Markdown.Quiz.SingleChoice.Parser as SingleChoice
 import Lia.Markdown.Quiz.Types
     exposing
@@ -43,6 +44,7 @@ parse =
     [ map SingleChoice_Type SingleChoice.parse
     , map MultipleChoice_Type MultipleChoice.parse
     , onsuccess Empty_Type empty
+    , map MultipleChoiceMatrix_Type MultipleChoiceMatrix.parse
     , map Block_Type Block.parse
     ]
         |> choice

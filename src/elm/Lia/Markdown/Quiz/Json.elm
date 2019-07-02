@@ -7,6 +7,7 @@ import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Quiz.Block.Json as Block
 import Lia.Markdown.Quiz.MultipleChoice.Json as MultipleChoice
+import Lia.Markdown.Quiz.MultipleChoiceMatrix.Json as MultipleChoiceMatrix
 import Lia.Markdown.Quiz.SingleChoice.Json as SingleChoice
 import Lia.Markdown.Quiz.Types exposing (Element, Solution(..), State(..), Vector)
 

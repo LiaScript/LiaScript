@@ -16,6 +16,7 @@ import Array exposing (Array)
 import Lia.Markdown.Inline.Types exposing (MultInlines)
 import Lia.Markdown.Quiz.Block.Types as Block
 import Lia.Markdown.Quiz.MultipleChoice.Types as MultipleChoice
+import Lia.Markdown.Quiz.MultipleChoiceMatrix.Types as MultipleChoiceMatrix
 import Lia.Markdown.Quiz.SingleChoice.Types as SingleChoice
 
 
@@ -47,6 +48,7 @@ type State
     | Block_State Block.State
     | SingleChoice_State SingleChoice.State
     | MultipleChoice_State MultipleChoice.State
+    | MultipleChoiceMatrix_State MultipleChoiceMatrix.State
 
 
 type Type
@@ -54,6 +56,7 @@ type Type
     | Block_Type Block.Quiz
     | SingleChoice_Type SingleChoice.Quiz
     | MultipleChoice_Type MultipleChoice.Quiz
+    | MultipleChoiceMatrix_Type MultipleChoiceMatrix.Quiz
 
 
 type alias Quiz =
@@ -85,6 +88,11 @@ initState quiz =
                 |> MultipleChoice.initState
                 |> MultipleChoice_State
 
+        MultipleChoiceMatrix_Type m ->
+            m
+                |> MultipleChoiceMatrix.initState
+                |> MultipleChoiceMatrix_State
+
 
 toState : Type -> State
 toState quiz =
@@ -101,6 +109,9 @@ toState quiz =
         MultipleChoice_Type m ->
             MultipleChoice_State m.solution
 
+        MultipleChoiceMatrix_Type m ->
+            MultipleChoiceMatrix_State m.solution
+
 
 comp : Type -> State -> Solution
 comp quiz state =
@@ -114,6 +125,9 @@ comp quiz state =
 
             ( MultipleChoice_Type q, MultipleChoice_State s ) ->
                 MultipleChoice.comp q s
+
+            ( MultipleChoiceMatrix_Type q, MultipleChoiceMatrix_State s ) ->
+                MultipleChoiceMatrix.comp q s
 
             _ ->
                 False

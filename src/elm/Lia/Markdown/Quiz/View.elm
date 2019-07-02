@@ -8,6 +8,7 @@ import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Markdown.Quiz.Block.View as Block
 import Lia.Markdown.Quiz.Model exposing (get_state)
 import Lia.Markdown.Quiz.MultipleChoice.View as MultipleChoice
+import Lia.Markdown.Quiz.MultipleChoiceMatrix.View as MultipleChoiceMatrix
 import Lia.Markdown.Quiz.SingleChoice.View as SingleChoice
 import Lia.Markdown.Quiz.Types
     exposing
@@ -51,6 +52,11 @@ state_view solved state quiz =
             s
                 |> MultipleChoice.view solved q
                 |> Html.map (MultipleChoice_Update quiz.id)
+
+        ( MultipleChoiceMatrix_State s, MultipleChoiceMatrix_Type q ) ->
+            s
+                |> MultipleChoiceMatrix.view solved q
+                |> Html.map (MultipleChoiceMatrix_Update quiz.id)
 
         _ ->
             Html.text ""
