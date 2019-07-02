@@ -51,11 +51,13 @@ header =
         |> ignore newline
 
 
+options : Parser Context x -> Parser Context (List x)
 options p =
     regex "[ \\t]*\\[[ \\t]*"
         |> keep (manyTill p (regex "[ \\t]*\\][ \\t]*"))
 
 
+row : Parser Context ( List Bool, Inlines )
 row =
     maybe indentation
         |> ignore spaces
