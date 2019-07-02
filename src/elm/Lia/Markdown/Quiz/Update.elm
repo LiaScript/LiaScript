@@ -8,6 +8,7 @@ import Lia.Markdown.Quiz.Json as Json
 import Lia.Markdown.Quiz.MultipleChoice.Update as MultipleChoice
 import Lia.Markdown.Quiz.MultipleChoiceMatrix.Update as MultipleChoiceMatrix
 import Lia.Markdown.Quiz.SingleChoice.Update as SingleChoice
+import Lia.Markdown.Quiz.SingleChoiceMatrix.Update as SingleChoiceMatrix
 import Lia.Markdown.Quiz.Types exposing (Element, Solution(..), State(..), Type, Vector, comp, toState)
 
 
@@ -15,6 +16,7 @@ type Msg
     = Block_Update Int Block.Msg
     | SingleChoice_Update Int SingleChoice.Msg
     | MultipleChoice_Update Int MultipleChoice.Msg
+    | SingleChoiceMatrix_Update Int SingleChoiceMatrix.Msg
     | MultipleChoiceMatrix_Update Int MultipleChoiceMatrix.Msg
     | Check Int Type (Maybe String)
     | ShowHint Int
@@ -32,6 +34,9 @@ update msg vector =
             ( update_ id vector (state_ msg), [] )
 
         MultipleChoice_Update id _ ->
+            ( update_ id vector (state_ msg), [] )
+
+        SingleChoiceMatrix_Update id _ ->
             ( update_ id vector (state_ msg), [] )
 
         MultipleChoiceMatrix_Update id _ ->
@@ -136,6 +141,11 @@ state_ msg e =
                     s
                         |> MultipleChoice.update m
                         |> MultipleChoice_State
+
+                ( SingleChoiceMatrix_Update _ m, SingleChoiceMatrix_State s ) ->
+                    s
+                        |> SingleChoiceMatrix.update m
+                        |> SingleChoiceMatrix_State
 
                 ( MultipleChoiceMatrix_Update _ m, MultipleChoiceMatrix_State s ) ->
                     s

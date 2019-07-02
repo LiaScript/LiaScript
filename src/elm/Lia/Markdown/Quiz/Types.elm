@@ -18,6 +18,7 @@ import Lia.Markdown.Quiz.Block.Types as Block
 import Lia.Markdown.Quiz.MultipleChoice.Types as MultipleChoice
 import Lia.Markdown.Quiz.MultipleChoiceMatrix.Types as MultipleChoiceMatrix
 import Lia.Markdown.Quiz.SingleChoice.Types as SingleChoice
+import Lia.Markdown.Quiz.SingleChoiceMatrix.Types as SingleChoiceMatrix
 
 
 type alias Vector =
@@ -48,6 +49,7 @@ type State
     | Block_State Block.State
     | SingleChoice_State SingleChoice.State
     | MultipleChoice_State MultipleChoice.State
+    | SingleChoiceMatrix_State SingleChoiceMatrix.State
     | MultipleChoiceMatrix_State MultipleChoiceMatrix.State
 
 
@@ -56,6 +58,7 @@ type Type
     | Block_Type Block.Quiz
     | SingleChoice_Type SingleChoice.Quiz
     | MultipleChoice_Type MultipleChoice.Quiz
+    | SingleChoiceMatrix_Type SingleChoiceMatrix.Quiz
     | MultipleChoiceMatrix_Type MultipleChoiceMatrix.Quiz
 
 
@@ -73,23 +76,28 @@ initState quiz =
         Empty_Type ->
             Empty_State
 
-        Block_Type b ->
-            b
+        Block_Type q ->
+            q
                 |> Block.initState
                 |> Block_State
 
-        SingleChoice_Type s ->
-            s
+        SingleChoice_Type q ->
+            q
                 |> SingleChoice.initState
                 |> SingleChoice_State
 
-        MultipleChoice_Type m ->
-            m
+        MultipleChoice_Type q ->
+            q
                 |> MultipleChoice.initState
                 |> MultipleChoice_State
 
-        MultipleChoiceMatrix_Type m ->
-            m
+        SingleChoiceMatrix_Type q ->
+            q
+                |> SingleChoiceMatrix.initState
+                |> SingleChoiceMatrix_State
+
+        MultipleChoiceMatrix_Type q ->
+            q
                 |> MultipleChoiceMatrix.initState
                 |> MultipleChoiceMatrix_State
 
@@ -100,17 +108,20 @@ toState quiz =
         Empty_Type ->
             Empty_State
 
-        Block_Type b ->
-            Block_State b.solution
+        Block_Type q ->
+            Block_State q.solution
 
-        SingleChoice_Type s ->
-            SingleChoice_State s.solution
+        SingleChoice_Type q ->
+            SingleChoice_State q.solution
 
-        MultipleChoice_Type m ->
-            MultipleChoice_State m.solution
+        MultipleChoice_Type q ->
+            MultipleChoice_State q.solution
 
-        MultipleChoiceMatrix_Type m ->
-            MultipleChoiceMatrix_State m.solution
+        SingleChoiceMatrix_Type q ->
+            SingleChoiceMatrix_State q.solution
+
+        MultipleChoiceMatrix_Type q ->
+            MultipleChoiceMatrix_State q.solution
 
 
 comp : Type -> State -> Solution
@@ -125,6 +136,9 @@ comp quiz state =
 
             ( MultipleChoice_Type q, MultipleChoice_State s ) ->
                 MultipleChoice.comp q s
+
+            ( SingleChoiceMatrix_Type q, SingleChoiceMatrix_State s ) ->
+                SingleChoiceMatrix.comp q s
 
             ( MultipleChoiceMatrix_Type q, MultipleChoiceMatrix_State s ) ->
                 MultipleChoiceMatrix.comp q s

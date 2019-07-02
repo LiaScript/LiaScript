@@ -9,6 +9,7 @@ import Lia.Markdown.Quiz.Block.Json as Block
 import Lia.Markdown.Quiz.MultipleChoice.Json as MultipleChoice
 import Lia.Markdown.Quiz.MultipleChoiceMatrix.Json as MultipleChoiceMatrix
 import Lia.Markdown.Quiz.SingleChoice.Json as SingleChoice
+import Lia.Markdown.Quiz.SingleChoiceMatrix.Json as SingleChoiceMatrix
 import Lia.Markdown.Quiz.Types exposing (Element, Solution(..), State(..), Vector)
 
 
@@ -46,14 +47,20 @@ fromState state =
         Empty_State ->
             JE.object [ ( "Empty", JE.null ) ]
 
-        Block_State b ->
-            Block.fromState b
+        Block_State s ->
+            Block.fromState s
 
         SingleChoice_State s ->
             SingleChoice.fromState s
 
-        MultipleChoice_State m ->
-            MultipleChoice.fromState m
+        MultipleChoice_State s ->
+            MultipleChoice.fromState s
+
+        SingleChoiceMatrix_State s ->
+            SingleChoiceMatrix.fromState s
+
+        MultipleChoiceMatrix_State s ->
+            MultipleChoiceMatrix.fromState s
 
 
 toVector : JD.Value -> Result JD.Error Vector
@@ -89,5 +96,7 @@ toState =
         [ Block.toState |> JD.map Block_State
         , SingleChoice.toState |> JD.map SingleChoice_State
         , MultipleChoice.toState |> JD.map MultipleChoice_State
+        , SingleChoiceMatrix.toState |> JD.map SingleChoiceMatrix_State
+        , MultipleChoiceMatrix.toState |> JD.map MultipleChoiceMatrix_State
         , JD.field "Empty" JD.value |> JD.andThen (\_ -> JD.succeed Empty_State)
         ]

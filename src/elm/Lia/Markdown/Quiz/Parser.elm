@@ -26,6 +26,7 @@ import Lia.Markdown.Quiz.Block.Parser as Block
 import Lia.Markdown.Quiz.MultipleChoice.Parser as MultipleChoice
 import Lia.Markdown.Quiz.MultipleChoiceMatrix.Parser as MultipleChoiceMatrix
 import Lia.Markdown.Quiz.SingleChoice.Parser as SingleChoice
+import Lia.Markdown.Quiz.SingleChoiceMatrix.Parser as SingleChoiceMatrix
 import Lia.Markdown.Quiz.Types
     exposing
         ( Element
@@ -44,6 +45,7 @@ parse =
     [ map SingleChoice_Type SingleChoice.parse
     , map MultipleChoice_Type MultipleChoice.parse
     , onsuccess Empty_Type empty
+    , map SingleChoiceMatrix_Type SingleChoiceMatrix.parse
     , map MultipleChoiceMatrix_Type MultipleChoiceMatrix.parse
     , map Block_Type Block.parse
     ]
