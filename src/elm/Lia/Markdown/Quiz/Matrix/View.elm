@@ -1,4 +1,4 @@
-module Lia.Markdown.Quiz.MultipleChoiceMatrix.View exposing (view)
+module Lia.Markdown.Quiz.Matrix.View exposing (view)
 
 import Array exposing (Array)
 import Html exposing (Html)
@@ -6,8 +6,9 @@ import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (view_inf)
-import Lia.Markdown.Quiz.MultipleChoiceMatrix.Types exposing (Quiz, State)
-import Lia.Markdown.Quiz.MultipleChoiceMatrix.Update exposing (Msg(..))
+import Lia.Markdown.Quiz.Matrix.Types exposing (Quiz, State)
+import Lia.Markdown.Quiz.Matrix.Update exposing (Msg(..))
+import Lia.Markdown.Quiz.Vector.Types as Vector
 
 
 view : Bool -> Quiz -> State -> Html Msg
@@ -34,15 +35,45 @@ th inlines =
         |> Html.th [ Attr.align "center" ]
 
 
-tr : Bool -> Int -> Array Bool -> List (Html Msg)
-tr solved id array =
-    array
-        |> Array.toList
-        |> List.indexedMap (td solved id)
+tr : Bool -> Int -> Vector.State -> List (Html Msg)
+tr solved id state =
+    case state of
+        Vector.SingleChoice size value ->
+            size
+                |> List.range 0
+                |> List.map (radio solved id value)
+
+        Vector.MultipleChoice array ->
+            array
+                |> Array.toList
+                |> List.indexedMap (check solved id)
 
 
-td : Bool -> Int -> Int -> Bool -> Html Msg
-td solved row_id column_id value =
+radio : Bool -> Int -> Int -> Int -> Html Msg
+radio solved row_id value column_id =
+    Html.td [ Attr.align "center" ]
+        [ Html.span
+            [ Attr.class "lia-radio-item" ]
+            [ Html.input
+                [ Attr.type_ "radio"
+                , Attr.checked (value == column_id)
+                , if solved then
+                    Attr.disabled True
+
+                  else
+                    onClick <| Toggle row_id column_id
+                ]
+                []
+            , Html.span
+                [ Attr.class "lia-radio-btn" ]
+                [ Html.text ""
+                ]
+            ]
+        ]
+
+
+check : Bool -> Int -> Int -> Bool -> Html Msg
+check solved row_id column_id value =
     Html.td [ Attr.align "center" ]
         [ Html.span
             [ Attr.class "lia-check-item" ]

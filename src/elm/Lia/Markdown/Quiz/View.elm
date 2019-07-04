@@ -6,11 +6,8 @@ import Html.Events exposing (onClick)
 import Lia.Markdown.Inline.Types exposing (MultInlines)
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Markdown.Quiz.Block.View as Block
+import Lia.Markdown.Quiz.Matrix.View as Matrix
 import Lia.Markdown.Quiz.Model exposing (get_state)
-import Lia.Markdown.Quiz.MultipleChoice.View as MultipleChoice
-import Lia.Markdown.Quiz.MultipleChoiceMatrix.View as MultipleChoiceMatrix
-import Lia.Markdown.Quiz.SingleChoice.View as SingleChoice
-import Lia.Markdown.Quiz.SingleChoiceMatrix.View as SingleChoiceMatrix
 import Lia.Markdown.Quiz.Types
     exposing
         ( Element
@@ -22,6 +19,7 @@ import Lia.Markdown.Quiz.Types
         , solved
         )
 import Lia.Markdown.Quiz.Update exposing (Msg(..))
+import Lia.Markdown.Quiz.Vector.View as Vector
 import Translations exposing (Lang, quizCheck, quizChecked, quizResolved, quizSolution)
 
 
@@ -44,25 +42,15 @@ state_view solved state quiz =
                 |> Block.view solved q
                 |> Html.map (Block_Update quiz.id)
 
-        ( SingleChoice_State s, SingleChoice_Type q ) ->
+        ( Vector_State s, Vector_Type q ) ->
             s
-                |> SingleChoice.view solved q
-                |> Html.map (SingleChoice_Update quiz.id)
+                |> Vector.view solved q
+                |> Html.map (Vector_Update quiz.id)
 
-        ( MultipleChoice_State s, MultipleChoice_Type q ) ->
+        ( Matrix_State s, Matrix_Type q ) ->
             s
-                |> MultipleChoice.view solved q
-                |> Html.map (MultipleChoice_Update quiz.id)
-
-        ( SingleChoiceMatrix_State s, SingleChoiceMatrix_Type q ) ->
-            s
-                |> SingleChoiceMatrix.view solved q
-                |> Html.map (SingleChoiceMatrix_Update quiz.id)
-
-        ( MultipleChoiceMatrix_State s, MultipleChoiceMatrix_Type q ) ->
-            s
-                |> MultipleChoiceMatrix.view solved q
-                |> Html.map (MultipleChoiceMatrix_Update quiz.id)
+                |> Matrix.view solved q
+                |> Html.map (Matrix_Update quiz.id)
 
         _ ->
             Html.text ""

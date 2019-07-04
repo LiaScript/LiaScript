@@ -1,26 +1,29 @@
-module Lia.Markdown.Quiz.MultipleChoice.Types exposing
+module Lia.Markdown.Quiz.Matrix.Types exposing
     ( Quiz
     , State
     , comp
     , initState
     )
 
+import Array exposing (Array)
 import Lia.Markdown.Inline.Types exposing (Inlines)
+import Lia.Markdown.Quiz.Vector.Types as Vector
 
 
 type alias State =
-    List Bool
+    Array Vector.State
 
 
 type alias Quiz =
-    { options : List Inlines
+    { headers : List Inlines
+    , options : List Inlines
     , solution : State
     }
 
 
-initState : Quiz -> State
+initState : State -> State
 initState =
-    .solution >> List.map (\_ -> False)
+    Array.map Vector.initState
 
 
 comp : Quiz -> State -> Bool

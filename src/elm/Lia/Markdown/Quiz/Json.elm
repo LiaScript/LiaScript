@@ -6,11 +6,9 @@ module Lia.Markdown.Quiz.Json exposing
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Quiz.Block.Json as Block
-import Lia.Markdown.Quiz.MultipleChoice.Json as MultipleChoice
-import Lia.Markdown.Quiz.MultipleChoiceMatrix.Json as MultipleChoiceMatrix
-import Lia.Markdown.Quiz.SingleChoice.Json as SingleChoice
-import Lia.Markdown.Quiz.SingleChoiceMatrix.Json as SingleChoiceMatrix
+import Lia.Markdown.Quiz.Matrix.Json as Matrix
 import Lia.Markdown.Quiz.Types exposing (Element, Solution(..), State(..), Vector)
+import Lia.Markdown.Quiz.Vector.Json as Vector
 
 
 fromVector : Vector -> JE.Value
@@ -50,17 +48,11 @@ fromState state =
         Block_State s ->
             Block.fromState s
 
-        SingleChoice_State s ->
-            SingleChoice.fromState s
+        Vector_State s ->
+            Vector.fromState s
 
-        MultipleChoice_State s ->
-            MultipleChoice.fromState s
-
-        SingleChoiceMatrix_State s ->
-            SingleChoiceMatrix.fromState s
-
-        MultipleChoiceMatrix_State s ->
-            MultipleChoiceMatrix.fromState s
+        Matrix_State s ->
+            Matrix.fromState s
 
 
 toVector : JD.Value -> Result JD.Error Vector
@@ -94,9 +86,7 @@ toState : JD.Decoder State
 toState =
     JD.oneOf
         [ Block.toState |> JD.map Block_State
-        , SingleChoice.toState |> JD.map SingleChoice_State
-        , MultipleChoice.toState |> JD.map MultipleChoice_State
-        , SingleChoiceMatrix.toState |> JD.map SingleChoiceMatrix_State
-        , MultipleChoiceMatrix.toState |> JD.map MultipleChoiceMatrix_State
+        , Vector.toState |> JD.map Vector_State
+        , Matrix.toState |> JD.map Matrix_State
         , JD.field "Empty" JD.value |> JD.andThen (\_ -> JD.succeed Empty_State)
         ]

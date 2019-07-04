@@ -19,9 +19,9 @@ type alias Quiz =
     }
 
 
-initState : Quiz -> State
-initState quiz =
-    case quiz.solution of
+initState : State -> State
+initState state =
+    case state of
         Text _ ->
             Text ""
 
