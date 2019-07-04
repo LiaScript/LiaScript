@@ -13,7 +13,7 @@ update : Msg -> State -> State
 update msg state =
     case ( msg, state ) of
         ( Choose option, Select _ _ ) ->
-            Select False option
+            Select False [ option ]
 
         ( Toggle, Select open id ) ->
             Select (not open) id
@@ -31,5 +31,8 @@ toString state =
         Text str ->
             str
 
-        Select _ i ->
+        Select _ [ i ] ->
             String.fromInt i
+
+        _ ->
+            ""

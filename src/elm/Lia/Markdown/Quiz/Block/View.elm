@@ -15,8 +15,11 @@ view solved quiz state =
         Text str ->
             text solved str
 
-        Select open i ->
-            select solved open i quiz.options
+        Select open value ->
+            value
+                |> List.head
+                |> Maybe.withDefault -1
+                |> select solved open quiz.options
 
 
 text : Bool -> String -> Html Msg
@@ -31,8 +34,8 @@ text solved state =
         []
 
 
-select : Bool -> Bool -> Int -> List Inlines -> Html Msg
-select solved open i options =
+select : Bool -> Bool -> List Inlines -> Int -> Html Msg
+select solved open options i =
     Html.span
         []
         [ Html.span
