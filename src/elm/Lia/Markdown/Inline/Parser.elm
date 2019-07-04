@@ -350,16 +350,19 @@ reference =
 
 between_ : String -> Parser Context Inline
 between_ str =
-    lazy <|
-        \() ->
-            [ string str
-                |> keep inlines
-                |> ignore (string str)
-            , string str
-                |> keep (manyTill inlines (string str))
-                |> map (\list -> Container (combine list) Nothing)
-            ]
-                |> choice
+    string str
+        |> keep (manyTill inlines (string str))
+        |> map toContainer
+
+
+toContainer : List Inline -> Inline
+toContainer inline_list =
+    case combine inline_list of
+        [ one ] ->
+            one
+
+        moreThanOne ->
+            Container moreThanOne Nothing
 
 
 strings : Parser Context (Annotation -> Inline)
@@ -368,7 +371,7 @@ strings =
         \() ->
             let
                 base =
-                    regex "[^*_~:;`!\\^\\[\\]|{}\\\\\\n\\-<>=$ ]+"
+                    regex "[^*_~:;`!\\^\\[\\]\\(\\)|{}\\\\\\n\\-<>=$ ]+"
                         |> map Chars
 
                 escape =
@@ -397,7 +400,7 @@ strings =
                         |> map Superscript
 
                 characters =
-                    regex "[~:_;\\-<>=${}\\[\\] ]"
+                    regex "[~:_;\\-<>=${}\\[\\]\\(\\) ]"
                         |> map Chars
 
                 base2 =

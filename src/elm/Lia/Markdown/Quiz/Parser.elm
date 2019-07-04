@@ -23,8 +23,7 @@ import Lia.Markdown.Inline.Parser exposing (javascript, line)
 import Lia.Markdown.Inline.Types exposing (MultInlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Block.Parser as Block
-import Lia.Markdown.Quiz.MultipleChoice.Parser as MultipleChoice
-import Lia.Markdown.Quiz.SingleChoice.Parser as SingleChoice
+import Lia.Markdown.Quiz.Matrix.Parser as Matrix
 import Lia.Markdown.Quiz.Types
     exposing
         ( Element
@@ -34,14 +33,15 @@ import Lia.Markdown.Quiz.Types
         , Type(..)
         , initState
         )
+import Lia.Markdown.Quiz.Vector.Parser as Vector
 import Lia.Parser.Context exposing (Context, indentation)
 import Lia.Parser.Helper exposing (newline, spaces)
 
 
 parse : Parser Context Quiz
 parse =
-    [ map SingleChoice_Type SingleChoice.parse
-    , map MultipleChoice_Type MultipleChoice.parse
+    [ map Matrix_Type Matrix.parse
+    , map Vector_Type Vector.parse
     , onsuccess Empty_Type empty
     , map Block_Type Block.parse
     ]
