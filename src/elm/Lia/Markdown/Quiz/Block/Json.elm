@@ -15,13 +15,16 @@ fromState state =
             Text x ->
                 [ ( "Text", JE.string x ) ]
 
-            Select _ x ->
+            Select _ [ x ] ->
                 [ ( "Select", JE.int x ) ]
+
+            Select _ _ ->
+                [ ( "Select", JE.int -1 ) ]
 
 
 toState : JD.Decoder State
 toState =
     JD.oneOf
         [ JD.field "Text" JD.string |> JD.map Text
-        , JD.field "Select" JD.int |> JD.map (Select False)
+        , JD.field "Select" JD.int |> JD.map (List.singleton >> Select False)
         ]

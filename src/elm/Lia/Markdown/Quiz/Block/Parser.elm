@@ -70,13 +70,13 @@ toSelect list =
     case
         list
             |> List.filter (Tuple.first >> (<=) 0)
-            |> List.head
-            |> Maybe.map Tuple.first
     of
-        Just id ->
-            Select False id
+        [] ->
+            fail "no solution provided"
+
+        ids ->
+            ids
+                |> List.map Tuple.first
+                |> Select False
                 |> Quiz (List.map Tuple.second list)
                 |> succeed
-
-        Nothing ->
-            fail "no solution provided"
