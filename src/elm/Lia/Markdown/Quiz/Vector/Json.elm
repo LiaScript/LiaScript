@@ -13,7 +13,13 @@ fromState state =
     JE.object <|
         case state of
             SingleChoice length value ->
-                [ ( "SingleChoice", JE.list JE.int [ length, value ] ) ]
+                [ ( "SingleChoice"
+                  , JE.list JE.int
+                        [ length
+                        , value |> List.head |> Maybe.withDefault -1
+                        ]
+                  )
+                ]
 
             MultipleChoice x ->
                 [ ( "MultipleChoice", JE.array JE.bool x ) ]
@@ -36,7 +42,7 @@ toSingleChoice : List Int -> JD.Decoder State
 toSingleChoice params =
     case params of
         [ length, value ] ->
-            JD.succeed <| SingleChoice length value
+            JD.succeed <| SingleChoice length [ value ]
 
         _ ->
             JD.fail "SingleChoice decoding ... not enough parameters"

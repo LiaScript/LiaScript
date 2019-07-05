@@ -15,7 +15,12 @@ view solved quiz state =
     case ( quiz.solution, state ) of
         ( SingleChoice _ q, SingleChoice _ s ) ->
             quiz.options
-                |> List.indexedMap (radio solved s)
+                |> List.indexedMap
+                    (s
+                        |> List.head
+                        |> Maybe.withDefault -1
+                        |> radio solved
+                    )
                 |> Html.table [ Attr.attribute "cellspacing" "8" ]
 
         ( MultipleChoice q, MultipleChoice s ) ->

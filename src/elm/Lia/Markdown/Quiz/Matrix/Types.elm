@@ -28,4 +28,14 @@ initState =
 
 comp : Quiz -> State -> Bool
 comp quiz state =
-    quiz.solution == state
+    let
+        list1 =
+            quiz.solution
+                |> Array.toList
+                |> List.map (Vector.Quiz [])
+
+        list2 =
+            Array.toList state
+    in
+    List.map2 Vector.comp list1 list2
+        |> List.all identity

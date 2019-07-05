@@ -19,7 +19,7 @@ toggle : Int -> State -> State
 toggle id state =
     case state of
         SingleChoice length _ ->
-            SingleChoice length id
+            SingleChoice length [ id ]
 
         MultipleChoice vector ->
             case Array.get id vector of
@@ -35,7 +35,10 @@ toString : State -> String
 toString state =
     case state of
         SingleChoice _ value ->
-            String.fromInt value
+            value
+                |> List.head
+                |> Maybe.withDefault -1
+                |> String.fromInt
 
         MultipleChoice values ->
             values

@@ -90,7 +90,5 @@ toSingleChoice bools =
     bools
         |> List.indexedMap Tuple.pair
         |> List.filter Tuple.second
-        |> List.head
-        |> Maybe.map Tuple.first
-        |> Maybe.withDefault -1
+        |> List.map Tuple.first
         |> SingleChoice (List.length bools - 1)

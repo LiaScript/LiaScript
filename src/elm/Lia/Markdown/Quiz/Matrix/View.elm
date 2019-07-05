@@ -41,7 +41,14 @@ tr solved id state =
         Vector.SingleChoice size value ->
             size
                 |> List.range 0
-                |> List.map (radio solved id value)
+                |> List.map
+                    (radio solved
+                        id
+                        (value
+                            |> List.head
+                            |> Maybe.withDefault -1
+                        )
+                    )
 
         Vector.MultipleChoice array ->
             array
