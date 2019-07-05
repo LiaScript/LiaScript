@@ -1,6 +1,6 @@
 module Lia.Markdown.Quiz.Matrix.View exposing (view)
 
-import Array exposing (Array)
+import Array
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)

@@ -1,6 +1,5 @@
 module Lia.Markdown.Quiz.Vector.View exposing (view)
 
-import Array
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)

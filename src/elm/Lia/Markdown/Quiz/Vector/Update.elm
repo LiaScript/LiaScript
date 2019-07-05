@@ -1,6 +1,5 @@
 module Lia.Markdown.Quiz.Vector.Update exposing (Msg(..), toString, toggle, update)
 
-import Array
 import Lia.Markdown.Quiz.Vector.Types exposing (State(..))
 
 
@@ -35,7 +34,7 @@ toggleSingle id list =
         [] ->
             []
 
-        x :: xs ->
+        _ :: xs ->
             (if id == 0 then
                 True
 
