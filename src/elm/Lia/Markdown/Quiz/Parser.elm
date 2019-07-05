@@ -73,7 +73,8 @@ get_counter =
 
 empty : Parser Context ()
 empty =
-    spaces
+    maybe indentation
+        |> ignore spaces
         |> ignore (string "[[!]]")
         |> ignore newline
         |> skip
@@ -81,8 +82,9 @@ empty =
 
 hints : Parser Context MultInlines
 hints =
-    indentation
-        |> keep (string "[[?]]")
+    maybe indentation
+        |> ignore spaces
+        |> ignore (string "[[?]]")
         |> keep line
         |> ignore newline
         |> many
