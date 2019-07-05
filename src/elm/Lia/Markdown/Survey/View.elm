@@ -6,7 +6,7 @@ import Html.Events exposing (onClick, onInput)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inlines)
 import Lia.Markdown.Inline.View exposing (annotation, view_inf)
 import Lia.Markdown.Survey.Model exposing (get_matrix_state, get_submission_state, get_text_state, get_vector_state)
-import Lia.Markdown.Survey.Types exposing (Survey(..), Var, Vector)
+import Lia.Markdown.Survey.Types exposing (Survey(..), Vector)
 import Lia.Markdown.Survey.Update exposing (Msg(..))
 import Translations exposing (Lang, surveySubmit, surveySubmitted, surveyText)
 
@@ -24,9 +24,9 @@ view lang attr survey model =
                     |> view_vector questions
                     |> view_survey lang model idx
 
-            Matrix button vars questions idx ->
+            Matrix button header vars questions idx ->
                 matrix button (MatrixUpdate idx) (get_matrix_state model idx) vars
-                    |> view_matrix vars questions
+                    |> view_matrix header vars questions
                     |> view_survey lang model idx
 
 
@@ -73,7 +73,7 @@ view_text lang str lines idx submitted =
             Html.textarea (Attr.rows lines :: attr) []
 
 
-view_vector : List ( Var, Inlines ) -> (Bool -> ( Var, Inlines ) -> Html Msg) -> Bool -> Html Msg
+view_vector : List ( String, Inlines ) -> (Bool -> ( String, Inlines ) -> Html Msg) -> Bool -> Html Msg
 view_vector questions fn submitted =
     let
         fnX =
@@ -82,12 +82,12 @@ view_vector questions fn submitted =
     Html.div [] <| List.map fnX questions
 
 
-view_matrix : List Var -> List Inlines -> (Bool -> ( Int, Inlines ) -> Html Msg) -> Bool -> Html Msg
-view_matrix vars questions fn submitted =
+view_matrix : List Inlines -> List String -> List Inlines -> (Bool -> ( Int, Inlines ) -> Html Msg) -> Bool -> Html Msg
+view_matrix header vars questions fn submitted =
     let
         th =
-            (vars ++ [ "" ])
-                |> List.map (\v -> Html.td [ mat_attr ] [ Html.text v ])
+            header
+                |> List.map (List.map view_inf >> Html.th [ Attr.align "center" ])
                 |> Html.thead []
 
         fnX =
@@ -96,16 +96,11 @@ view_matrix vars questions fn submitted =
     questions
         |> List.indexedMap Tuple.pair
         |> List.map fnX
-        |> List.append [ th ]
+        |> (::) th
         |> Html.table [ Attr.class "lia-survey-matrix" ]
 
 
-mat_attr : Html.Attribute Msg
-mat_attr =
-    Attr.align "center"
-
-
-vector : Bool -> (Var -> Msg) -> (Var -> Bool) -> Bool -> ( Var, Inlines ) -> Html Msg
+vector : Bool -> (String -> Msg) -> (String -> Bool) -> Bool -> ( String, Inlines ) -> Html Msg
 vector button msg fn submitted ( var, elements ) =
     Html.table [ Attr.attribute "cellspacing" "8" ]
         [ Html.td [ Attr.attribute "valign" "top", Attr.class "lia-label" ]
@@ -115,7 +110,7 @@ vector button msg fn submitted ( var, elements ) =
         ]
 
 
-matrix : Bool -> (Int -> Var -> Msg) -> (Int -> Var -> Bool) -> List Var -> Bool -> ( Int, Inlines ) -> Html Msg
+matrix : Bool -> (Int -> String -> Msg) -> (Int -> String -> Bool) -> List String -> Bool -> ( Int, Inlines ) -> Html Msg
 matrix button msg fn vars submitted ( row, elements ) =
     let
         msgX =
@@ -128,7 +123,7 @@ matrix button msg fn vars submitted ( row, elements ) =
         List.append
             (List.map
                 (\var ->
-                    Html.td [ mat_attr ]
+                    Html.td [ Attr.align "center" ]
                         [ input button (msgX var) (fnX var) submitted ]
                 )
                 vars

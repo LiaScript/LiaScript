@@ -11,6 +11,7 @@ import Combine
         , ignore
         , keep
         , many1
+        , manyTill
         , map
         , maybe
         , modifyState
@@ -21,9 +22,10 @@ import Combine
         , withState
         )
 import Dict
-import Lia.Markdown.Inline.Parser exposing (line)
-import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
-import Lia.Markdown.Survey.Types exposing (State(..), Survey(..), Var)
+import Lia.Markdown.Inline.Parser exposing (inlines, line)
+import Lia.Markdown.Inline.Stringify exposing (stringify)
+import Lia.Markdown.Inline.Types exposing (Inlines)
+import Lia.Markdown.Survey.Types exposing (State(..), Survey(..))
 import Lia.Parser.Context exposing (Context, indentation)
 import Lia.Parser.Helper exposing (newline, spaces)
 
@@ -39,10 +41,17 @@ survey =
         [ text_lines |> map Text
         , vector parens |> map (Vector False)
         , vector brackets |> map (Vector True)
-        , header parens |> map (Matrix False) |> andMap questions
-        , header brackets |> map (Matrix True) |> andMap questions
+        , header "(" ")" |> map (toMatrix False) |> andMap questions
+        , header "[" "]" |> map (toMatrix True) |> andMap questions
         ]
         |> andMap (withState (.survey_vector >> Array.length >> succeed))
+
+
+toMatrix : Bool -> List Inlines -> (List Inlines -> Int -> Survey)
+toMatrix bool ids =
+    ids
+        |> List.map stringify
+        |> Matrix bool ids
 
 
 text_lines : Parser Context Int
@@ -77,15 +86,16 @@ vector p =
         |> many1
 
 
-header : (Parser Context String -> Parser Context Var) -> Parser Context (List Var)
-header p =
-    p id_str
+header : String -> String -> Parser Context (List Inlines)
+header begin end =
+    string begin
+        |> keep (manyTill inlines (string end))
         |> many1
         |> pattern
         |> ignore newline
 
 
-questions : Parser Context MultInlines
+questions : Parser Context (List Inlines)
 questions =
     maybe indentation
         |> ignore (regex "[\t ]*\\[[\t ]+\\]")
@@ -120,7 +130,7 @@ modify_State survey_ =
                         |> extractor (\( v, _ ) -> ( v, False ))
                         |> VectorState bool
 
-                Matrix bool vars qs _ ->
+                Matrix bool _ vars qs _ ->
                     vars
                         |> extractor (\v -> ( v, False ))
                         |> Array.repeat (List.length qs)
