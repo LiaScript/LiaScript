@@ -83,12 +83,12 @@ blocks =
                         , quote
                         , horizontal_line
                         , md_annotations
+                            |> map Survey
+                            |> andMap Survey.parse
+                        , md_annotations
                             |> map Quiz
                             |> andMap Quiz.parse
                             |> andMap solution
-                        , md_annotations
-                            |> map Survey
-                            |> andMap Survey.parse
                         , ordered_list
                         , unordered_list
                         , md_annotations

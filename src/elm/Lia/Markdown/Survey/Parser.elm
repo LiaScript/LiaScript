@@ -12,6 +12,7 @@ import Combine
         , keep
         , many1
         , map
+        , maybe
         , modifyState
         , parens
         , regex
@@ -23,8 +24,8 @@ import Dict
 import Lia.Markdown.Inline.Parser exposing (line)
 import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
 import Lia.Markdown.Survey.Types exposing (State(..), Survey(..), Var)
-import Lia.Parser.Context exposing (Context)
-import Lia.Parser.Helper exposing (newline)
+import Lia.Parser.Context exposing (Context, indentation)
+import Lia.Parser.Helper exposing (newline, spaces)
 
 
 parse : Parser Context Survey
@@ -34,10 +35,6 @@ parse =
 
 survey : Parser Context Survey
 survey =
-    let
-        get_id par =
-            succeed (Array.length par.survey_vector)
-    in
     choice
         [ text_lines |> map Text
         , vector parens |> map (Vector False)
@@ -45,21 +42,24 @@ survey =
         , header parens |> map (Matrix False) |> andMap questions
         , header brackets |> map (Matrix True) |> andMap questions
         ]
-        |> andMap (withState get_id)
+        |> andMap (withState (.survey_vector >> Array.length >> succeed))
 
 
-text_lines : Parser s Int
+text_lines : Parser Context Int
 text_lines =
-    string "["
+    maybe indentation
+        |> ignore spaces
+        |> ignore (string "[")
         |> keep (many1 (regex "_{3,}[\t ]*"))
         |> ignore (string "]")
         |> pattern
         |> map List.length
 
 
-pattern : Parser s a -> Parser s a
+pattern : Parser Context a -> Parser Context a
 pattern p =
-    regex "[\t ]*\\["
+    maybe indentation
+        |> ignore (regex "[\t ]*\\[")
         |> keep p
         |> ignore (regex "][\t ]*")
 
@@ -69,25 +69,26 @@ id_str =
     regex "\\w(\\w+| )*"
 
 
-vector : (Parser s String -> Parser Context a) -> Parser Context (List ( a, Inlines ))
+vector : (Parser Context String -> Parser Context a) -> Parser Context (List ( a, Inlines ))
 vector p =
-    let
-        vec x =
-            many1 (question (pattern (p x)))
-    in
-    vec id_str
+    p id_str
+        |> pattern
+        |> question
+        |> many1
 
 
-header : (Parser s String -> Parser s1 Var) -> Parser s1 (List Var)
+header : (Parser Context String -> Parser Context Var) -> Parser Context (List Var)
 header p =
-    many1 (p id_str)
+    p id_str
+        |> many1
         |> pattern
         |> ignore newline
 
 
 questions : Parser Context MultInlines
 questions =
-    regex "[\t ]*\\[[\t ]+\\]"
+    maybe indentation
+        |> ignore (regex "[\t ]*\\[[\t ]+\\]")
         |> keep line
         |> ignore newline
         |> many1
@@ -103,9 +104,6 @@ question p =
 modify_State : Survey -> Parser Context Survey
 modify_State survey_ =
     let
-        add_state e s =
-            { s | survey_vector = Array.push ( False, e ) s.survey_vector }
-
         state =
             let
                 extractor fn v =
@@ -129,3 +127,8 @@ modify_State survey_ =
                         |> MatrixState bool
     in
     modifyState (add_state state) |> keep (succeed survey_)
+
+
+add_state : State -> Context -> Context
+add_state state c =
+    { c | survey_vector = Array.push ( False, state ) c.survey_vector }
