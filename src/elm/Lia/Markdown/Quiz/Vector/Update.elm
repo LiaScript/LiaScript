@@ -18,31 +18,63 @@ update msg state =
 toggle : Int -> State -> State
 toggle id state =
     case state of
-        SingleChoice length _ ->
-            SingleChoice length [ id ]
+        SingleChoice list ->
+            list
+                |> toggleSingle id
+                |> SingleChoice
 
-        MultipleChoice vector ->
-            case Array.get id vector of
-                Just value ->
-                    Array.set id (not value) vector
-                        |> MultipleChoice
+        MultipleChoice list ->
+            list
+                |> toggleMultiple id
+                |> MultipleChoice
 
-                Nothing ->
-                    state
+
+toggleSingle : Int -> List Bool -> List Bool
+toggleSingle id list =
+    case list of
+        [] ->
+            []
+
+        x :: xs ->
+            (if id == 0 then
+                True
+
+             else
+                False
+            )
+                :: toggleSingle (id - 1) xs
+
+
+toggleMultiple : Int -> List Bool -> List Bool
+toggleMultiple id list =
+    case list of
+        [] ->
+            []
+
+        x :: xs ->
+            (if id == 0 then
+                not x
+
+             else
+                x
+            )
+                :: toggleSingle (id - 1) xs
 
 
 toString : State -> String
 toString state =
     case state of
-        SingleChoice _ value ->
-            value
+        SingleChoice list ->
+            list
+                |> List.indexedMap Tuple.pair
+                |> List.filter Tuple.second
                 |> List.head
+                |> Maybe.map Tuple.first
                 |> Maybe.withDefault -1
                 |> String.fromInt
 
         MultipleChoice values ->
             values
-                |> Array.toList
                 |> List.map
                     (\s ->
                         if s then

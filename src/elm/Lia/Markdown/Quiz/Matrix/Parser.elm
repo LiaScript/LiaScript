@@ -21,7 +21,7 @@ import Lia.Markdown.Inline.Parser exposing (inlines, line)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Matrix.Types exposing (Quiz)
 import Lia.Markdown.Quiz.Vector.Parser as Vector
-import Lia.Markdown.Quiz.Vector.Types exposing (State)
+import Lia.Markdown.Quiz.Vector.Types exposing (State(..))
 import Lia.Parser.Context exposing (Context, indentation)
 import Lia.Parser.Helper exposing (newline, spaces)
 
@@ -73,7 +73,7 @@ single =
         |> keep Vector.single
         |> ignore spaces
         |> many1
-        |> map Vector.toSingleChoice
+        |> map SingleChoice
 
 
 multiple : Parser Context State
@@ -82,7 +82,7 @@ multiple =
         |> keep Vector.multiple
         |> ignore spaces
         |> many1
-        |> map Vector.toMultipleChoice
+        |> map MultipleChoice
 
 
 rows : Parser Context ( List State, List Inlines )

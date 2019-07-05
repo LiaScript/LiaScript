@@ -10,8 +10,8 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 
 
 type State
-    = SingleChoice Int (List Int)
-    | MultipleChoice (Array Bool)
+    = SingleChoice (List Bool)
+    | MultipleChoice (List Bool)
 
 
 type alias Quiz =
@@ -23,26 +23,26 @@ type alias Quiz =
 initState : State -> State
 initState state =
     case state of
-        SingleChoice length _ ->
-            SingleChoice length [ -1 ]
+        SingleChoice list ->
+            list
+                |> List.map (\_ -> False)
+                |> SingleChoice
 
-        MultipleChoice array ->
-            array
-                |> Array.map (\_ -> False)
+        MultipleChoice list ->
+            list
+                |> List.map (\_ -> False)
                 |> MultipleChoice
 
 
 comp : Quiz -> State -> Bool
 comp quiz state =
     case ( quiz.solution, state ) of
-        ( SingleChoice _ solution, SingleChoice _ [ i ] ) ->
-            solution
-                |> List.filter ((==) i)
-                |> List.isEmpty
-                |> not
+        ( SingleChoice list1, SingleChoice list2 ) ->
+            List.map2 (==) list1 list2
+                |> List.any identity
 
-        ( MultipleChoice a1, MultipleChoice a2 ) ->
-            a1 == a2
+        ( MultipleChoice list1, MultipleChoice list2 ) ->
+            list1 == list2
 
         _ ->
             False

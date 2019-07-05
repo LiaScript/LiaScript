@@ -38,32 +38,21 @@ th inlines =
 tr : Bool -> Int -> Vector.State -> List (Html Msg)
 tr solved id state =
     case state of
-        Vector.SingleChoice size value ->
-            size
-                |> List.range 0
-                |> List.map
-                    (radio solved
-                        id
-                        (value
-                            |> List.head
-                            |> Maybe.withDefault -1
-                        )
-                    )
+        Vector.SingleChoice list ->
+            list |> List.indexedMap (radio solved id)
 
-        Vector.MultipleChoice array ->
-            array
-                |> Array.toList
-                |> List.indexedMap (check solved id)
+        Vector.MultipleChoice list ->
+            list |> List.indexedMap (check solved id)
 
 
-radio : Bool -> Int -> Int -> Int -> Html Msg
-radio solved row_id value column_id =
+radio : Bool -> Int -> Int -> Bool -> Html Msg
+radio solved row_id column_id value =
     Html.td [ Attr.align "center" ]
         [ Html.span
             [ Attr.class "lia-radio-item" ]
             [ Html.input
                 [ Attr.type_ "radio"
-                , Attr.checked (value == column_id)
+                , Attr.checked value
                 , if solved then
                     Attr.disabled True
 

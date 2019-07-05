@@ -3,8 +3,6 @@ module Lia.Markdown.Quiz.Vector.Parser exposing
     , multiple
     , parse
     , single
-    , toMultipleChoice
-    , toSingleChoice
     )
 
 import Array
@@ -33,11 +31,11 @@ parse =
     or
         (single
             |> choices
-            |> map (toQuiz toSingleChoice)
+            |> map (toQuiz SingleChoice)
         )
         (multiple
             |> choices
-            |> map (toQuiz toMultipleChoice)
+            |> map (toQuiz MultipleChoice)
         )
 
 
@@ -76,19 +74,3 @@ toQuiz : (List Bool -> State) -> ( List Bool, List Inlines ) -> Quiz
 toQuiz fn ( bools, inlines ) =
     fn bools
         |> Quiz inlines
-
-
-toMultipleChoice : List Bool -> State
-toMultipleChoice bools =
-    bools
-        |> Array.fromList
-        |> MultipleChoice
-
-
-toSingleChoice : List Bool -> State
-toSingleChoice bools =
-    bools
-        |> List.indexedMap Tuple.pair
-        |> List.filter Tuple.second
-        |> List.map Tuple.first
-        |> SingleChoice (List.length bools - 1)
