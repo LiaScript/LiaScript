@@ -123,18 +123,18 @@ modify_State survey_ =
             in
             case survey_ of
                 Text _ _ ->
-                    TextState ""
+                    Text_State ""
 
                 Vector bool vars _ ->
                     vars
                         |> extractor (\( v, _ ) -> ( v, False ))
-                        |> VectorState bool
+                        |> Vector_State bool
 
                 Matrix bool _ vars qs _ ->
                     vars
                         |> extractor (\v -> ( v, False ))
                         |> Array.repeat (List.length qs)
-                        |> MatrixState bool
+                        |> Matrix_State bool
     in
     modifyState (add_state state) |> keep (succeed survey_)
 

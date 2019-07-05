@@ -19,9 +19,9 @@ type alias Element =
 
 
 type State
-    = TextState String
-    | VectorState Bool (Dict String Bool)
-    | MatrixState Bool (Array (Dict String Bool))
+    = Text_State String
+    | Vector_State Bool (Dict String Bool)
+    | Matrix_State Bool (Array (Dict String Bool))
 
 
 type Survey

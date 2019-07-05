@@ -26,32 +26,28 @@ fromState : State -> JE.Value
 fromState state =
     JE.object <|
         case state of
-            TextState str ->
+            Text_State str ->
                 [ ( "Text"
                   , JE.string str
                   )
                 ]
 
-            VectorState True vector ->
-                [ ( "SingleChoice"
+            Vector_State single vector ->
+                [ ( if single then
+                        "SingleChoice"
+
+                    else
+                        "MultipleChoice"
                   , dict2json vector
                   )
                 ]
 
-            VectorState False vector ->
-                [ ( "MultipleChoice"
-                  , dict2json vector
-                  )
-                ]
+            Matrix_State single matrix ->
+                [ ( if single then
+                        "SingleChoiceMatrix"
 
-            MatrixState True matrix ->
-                [ ( "SingleChoiceMatrix"
-                  , JE.array dict2json matrix
-                  )
-                ]
-
-            MatrixState False matrix ->
-                [ ( "MultipleChoiceMatrix"
+                    else
+                        "MultipleChoiceMatrix"
                   , JE.array dict2json matrix
                   )
                 ]
@@ -81,13 +77,13 @@ toState : JD.Decoder State
 toState =
     JD.oneOf
         [ JD.field "Text" JD.string
-            |> JD.map TextState
+            |> JD.map Text_State
         , JD.field "SingleChoice" (JD.dict JD.bool)
-            |> JD.map (VectorState True)
+            |> JD.map (Vector_State True)
         , JD.field "MultipleChoice" (JD.dict JD.bool)
-            |> JD.map (VectorState False)
+            |> JD.map (Vector_State False)
         , JD.field "SingleChoiceMatrix" (JD.array (JD.dict JD.bool))
-            |> JD.map (MatrixState False)
+            |> JD.map (Matrix_State False)
         , JD.field "MultipleChoiceMatrix" (JD.array (JD.dict JD.bool))
-            |> JD.map (MatrixState True)
+            |> JD.map (Matrix_State True)
         ]

@@ -59,8 +59,8 @@ update msg vector =
 update_text : Vector -> Int -> String -> Vector
 update_text vector idx str =
     case Array.get idx vector of
-        Just ( False, TextState _ ) ->
-            set_state vector idx (TextState str)
+        Just ( False, Text_State _ ) ->
+            set_state vector idx (Text_State str)
 
         _ ->
             vector
@@ -69,17 +69,17 @@ update_text vector idx str =
 update_vector : Vector -> Int -> String -> Vector
 update_vector vector idx var =
     case Array.get idx vector of
-        Just ( False, VectorState False element ) ->
+        Just ( False, Vector_State False element ) ->
             element
                 |> Dict.map (\_ _ -> False)
                 |> Dict.update var (\_ -> Just True)
-                |> VectorState False
+                |> Vector_State False
                 |> set_state vector idx
 
-        Just ( False, VectorState True element ) ->
+        Just ( False, Vector_State True element ) ->
             element
                 |> Dict.update var (\b -> Maybe.map not b)
-                |> VectorState True
+                |> Vector_State True
                 |> set_state vector idx
 
         _ ->
@@ -89,7 +89,7 @@ update_vector vector idx var =
 update_matrix : Vector -> Int -> Int -> String -> Vector
 update_matrix vector col_id row_id var =
     case Array.get col_id vector of
-        Just ( False, MatrixState False matrix ) ->
+        Just ( False, Matrix_State False matrix ) ->
             let
                 row =
                     Array.get row_id matrix
@@ -99,10 +99,10 @@ update_matrix vector col_id row_id var =
                 |> Maybe.map (\d -> Dict.update var (\_ -> Just True) d)
                 |> Maybe.map (\d -> Array.set row_id d matrix)
                 |> Maybe.withDefault matrix
-                |> MatrixState False
+                |> Matrix_State False
                 |> set_state vector col_id
 
-        Just ( False, MatrixState True matrix ) ->
+        Just ( False, Matrix_State True matrix ) ->
             let
                 row =
                     Array.get row_id matrix
@@ -111,7 +111,7 @@ update_matrix vector col_id row_id var =
                 |> Maybe.map (\d -> Dict.update var (\b -> Maybe.map not b) d)
                 |> Maybe.map (\d -> Array.set row_id d matrix)
                 |> Maybe.withDefault matrix
-                |> MatrixState True
+                |> Matrix_State True
                 |> set_state vector col_id
 
         _ ->
@@ -136,17 +136,17 @@ submit vector idx =
 submitable : Vector -> Int -> Bool
 submitable vector idx =
     case Array.get idx vector of
-        Just ( False, TextState state ) ->
+        Just ( False, Text_State state ) ->
             state /= ""
 
-        Just ( False, VectorState _ state ) ->
+        Just ( False, Vector_State _ state ) ->
             state
                 |> Dict.values
                 |> List.filter (\a -> a)
                 |> List.length
                 |> (\s -> s > 0)
 
-        Just ( False, MatrixState _ state ) ->
+        Just ( False, Matrix_State _ state ) ->
             state
                 |> Array.toList
                 |> List.map Dict.values
