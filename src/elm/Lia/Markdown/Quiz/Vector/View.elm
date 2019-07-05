@@ -13,23 +13,22 @@ import Lia.Markdown.Quiz.Vector.Update exposing (Msg(..))
 view : Bool -> Quiz -> State -> Html Msg
 view solved quiz state =
     case ( quiz.solution, state ) of
-        ( SingleChoice _ q, SingleChoice _ s ) ->
-            quiz.options
-                |> List.indexedMap (radio solved s)
-                |> Html.table [ Attr.attribute "cellspacing" "8" ]
+        ( SingleChoice _, SingleChoice list ) ->
+            table (radio solved) quiz.options list
 
-        ( MultipleChoice q, MultipleChoice s ) ->
-            let
-                list =
-                    Array.toList s
-            in
-            quiz.options
-                |> List.indexedMap Tuple.pair
-                |> List.map2 (check solved) list
-                |> Html.table [ Attr.attribute "cellspacing" "8" ]
+        ( MultipleChoice _, MultipleChoice list ) ->
+            table (check solved) quiz.options list
 
         _ ->
             Html.text ""
+
+
+table : (Bool -> ( Int, Inlines ) -> Html Msg) -> List Inlines -> List Bool -> Html Msg
+table fn inlines bools =
+    inlines
+        |> List.indexedMap Tuple.pair
+        |> List.map2 fn bools
+        |> Html.table [ Attr.attribute "cellspacing" "8" ]
 
 
 check : Bool -> Bool -> ( Int, Inlines ) -> Html Msg
@@ -57,13 +56,13 @@ check solved checked ( id, line ) =
         ]
 
 
-radio : Bool -> Int -> Int -> Inlines -> Html Msg
-radio solved checked id line =
+radio : Bool -> Bool -> ( Int, Inlines ) -> Html Msg
+radio solved checked ( id, line ) =
     Html.tr [ Attr.class "lia-radio-item" ]
         [ Html.td [ Attr.attribute "valign" "top", Attr.class "lia-label" ]
             [ Html.input
                 [ Attr.type_ "radio"
-                , Attr.checked (id == checked)
+                , Attr.checked checked
                 , if solved then
                     Attr.disabled True
 
