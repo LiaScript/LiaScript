@@ -283,11 +283,10 @@ parsing : Model -> ( Model, Cmd Msg )
 parsing model =
     case Maybe.map (Lia.Script.parse_section model.lia) model.code of
         Just ( lia, Just code ) ->
-            if modBy 4 (Lia.Script.pages model.lia) == 0 then
-                ( { model | lia = lia, code = Just code }, message LiaParse )
-
-            else
-                update LiaParse { model | lia = lia, code = Just code }
+            --if modBy 4 (Lia.Script.pages model.lia) == 0 then
+            --    ( { model | lia = lia, code = Just code }, message LiaParse )
+            --else
+            update LiaParse { model | lia = lia, code = Just code }
 
         Just ( lia, Nothing ) ->
             --if model.templates == Nothing then
