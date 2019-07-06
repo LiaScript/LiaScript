@@ -25,7 +25,8 @@ import Dict
 import Lia.Markdown.Inline.Parser exposing (inlines, line)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
-import Lia.Markdown.Survey.Types exposing (State(..), Survey(..))
+import Lia.Markdown.Quiz.Parser exposing (maybeJS)
+import Lia.Markdown.Survey.Types exposing (State(..), Survey, Type(..))
 import Lia.Parser.Context exposing (Context, indentation)
 import Lia.Parser.Helper exposing (newline, spaces)
 
@@ -44,10 +45,12 @@ survey =
         , header "(" ")" |> map (toMatrix False) |> andMap questions
         , header "[" "]" |> map (toMatrix True) |> andMap questions
         ]
+        |> map Survey
         |> andMap (withState (.survey_vector >> Array.length >> succeed))
+        |> andMap maybeJS
 
 
-toMatrix : Bool -> List Inlines -> (List Inlines -> Int -> Survey)
+toMatrix : Bool -> List Inlines -> (List Inlines -> Type)
 toMatrix bool ids =
     ids
         |> List.map stringify
@@ -121,16 +124,16 @@ modify_State survey_ =
                         |> List.map fn
                         |> Dict.fromList
             in
-            case survey_ of
-                Text _ _ ->
+            case survey_.survey of
+                Text _ ->
                     Text_State ""
 
-                Vector bool vars _ ->
+                Vector bool vars ->
                     vars
                         |> extractor (\( v, _ ) -> ( v, False ))
                         |> Vector_State bool
 
-                Matrix bool _ vars qs _ ->
+                Matrix bool _ vars qs ->
                     vars
                         |> extractor (\v -> ( v, False ))
                         |> Array.repeat (List.length qs)

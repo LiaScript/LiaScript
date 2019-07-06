@@ -6,7 +6,7 @@ import Html.Events exposing (onClick, onInput)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inlines)
 import Lia.Markdown.Inline.View exposing (annotation, view_inf)
 import Lia.Markdown.Survey.Model exposing (get_matrix_state, get_submission_state, get_text_state, get_vector_state)
-import Lia.Markdown.Survey.Types exposing (Survey(..), Vector)
+import Lia.Markdown.Survey.Types exposing (Survey, Type(..), Vector)
 import Lia.Markdown.Survey.Update exposing (Msg(..))
 import Translations exposing (Lang, surveySubmit, surveySubmitted, surveyText)
 
@@ -14,33 +14,33 @@ import Translations exposing (Lang, surveySubmit, surveySubmitted, surveyText)
 view : Lang -> Annotation -> Survey -> Vector -> Html Msg
 view lang attr survey model =
     Html.p (annotation "lia-quiz lia-card" attr) <|
-        case survey of
-            Text lines idx ->
-                view_text lang (get_text_state model idx) lines idx
-                    |> view_survey lang model idx
+        case survey.survey of
+            Text lines ->
+                view_text lang (get_text_state model survey.id) lines survey.id
+                    |> view_survey lang model survey.id survey.javascript
 
-            Vector button questions idx ->
-                vector button (VectorUpdate idx) (get_vector_state model idx)
+            Vector button questions ->
+                vector button (VectorUpdate survey.id) (get_vector_state model survey.id)
                     |> view_vector questions
-                    |> view_survey lang model idx
+                    |> view_survey lang model survey.id survey.javascript
 
-            Matrix button header vars questions idx ->
-                matrix button (MatrixUpdate idx) (get_matrix_state model idx) vars
+            Matrix button header vars questions ->
+                matrix button (MatrixUpdate survey.id) (get_matrix_state model survey.id) vars
                     |> view_matrix header vars questions
-                    |> view_survey lang model idx
+                    |> view_survey lang model survey.id survey.javascript
 
 
-view_survey : Lang -> Vector -> Int -> (Bool -> Html Msg) -> List (Html Msg)
-view_survey lang model idx fn =
+view_survey : Lang -> Vector -> Int -> Maybe String -> (Bool -> Html Msg) -> List (Html Msg)
+view_survey lang model idx javascript fn =
     let
         submitted =
             get_submission_state model idx
     in
-    [ fn submitted, submit_button lang submitted idx ]
+    [ fn submitted, submit_button lang submitted idx javascript ]
 
 
-submit_button : Lang -> Bool -> Int -> Html Msg
-submit_button lang submitted idx =
+submit_button : Lang -> Bool -> Int -> Maybe String -> Html Msg
+submit_button lang submitted idx javascript =
     Html.div []
         [ if submitted then
             Html.button
@@ -49,7 +49,7 @@ submit_button lang submitted idx =
 
           else
             Html.button
-                [ Attr.class "lia-btn", onClick <| Submit idx ]
+                [ Attr.class "lia-btn", onClick <| Submit idx javascript ]
                 [ Html.text (surveySubmit lang) ]
         ]
 

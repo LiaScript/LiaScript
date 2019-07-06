@@ -4,14 +4,14 @@ import Array
 import Dict
 import Lia.Event as Event exposing (Event)
 import Lia.Markdown.Survey.Json as Json
-import Lia.Markdown.Survey.Types exposing (State(..), Vector)
+import Lia.Markdown.Survey.Types exposing (State(..), Vector, toString)
 
 
 type Msg
     = TextUpdate Int String
     | VectorUpdate Int String
     | MatrixUpdate Int Int String
-    | Submit Int
+    | Submit Int (Maybe String)
     | Handle Event
 
 
@@ -27,7 +27,7 @@ update msg vector =
         MatrixUpdate idx row var ->
             ( update_matrix vector idx row var, [] )
 
-        Submit idx ->
+        Submit idx Nothing ->
             if submitable vector idx then
                 let
                     new_vector =
@@ -43,8 +43,19 @@ update msg vector =
             else
                 ( vector, [] )
 
+        Submit idx (Just code) ->
+            case vector |> Array.get idx of
+                Just ( _, state ) ->
+                    ( vector, [ Event.eval idx code [ toString state ] ] )
+
+                _ ->
+                    ( vector, [] )
+
         Handle event ->
             case event.topic of
+                "eval" ->
+                    ( vector, [] )
+
                 "restore" ->
                     ( event.message
                         |> Json.toVector

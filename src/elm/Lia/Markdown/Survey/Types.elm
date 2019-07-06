@@ -1,8 +1,10 @@
 module Lia.Markdown.Survey.Types exposing
     ( Element
     , State(..)
-    , Survey(..)
+    , Survey
+    , Type(..)
     , Vector
+    , toString
     )
 
 import Array exposing (Array)
@@ -24,7 +26,24 @@ type State
     | Matrix_State Bool (Array (Dict String Bool))
 
 
-type Survey
-    = Text Int Int
-    | Vector Bool (List ( String, Inlines )) Int
-    | Matrix Bool MultInlines (List String) MultInlines Int
+toString : State -> String
+toString state =
+    case state of
+        Text_State str ->
+            str
+
+        _ ->
+            ""
+
+
+type alias Survey =
+    { survey : Type
+    , id : Int
+    , javascript : Maybe String
+    }
+
+
+type Type
+    = Text Int
+    | Vector Bool (List ( String, Inlines ))
+    | Matrix Bool MultInlines (List String) MultInlines
