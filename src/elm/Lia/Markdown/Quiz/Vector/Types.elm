@@ -5,7 +5,6 @@ module Lia.Markdown.Quiz.Vector.Types exposing
     , initState
     )
 
-import Array exposing (Array)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 
 

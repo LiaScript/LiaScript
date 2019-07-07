@@ -15,7 +15,7 @@ import Lia.Settings.Model exposing (Mode(..))
 import Lia.Settings.Update exposing (toggle_sound)
 import Lia.Settings.View as Settings
 import Lia.Update exposing (Msg(..), get_active_section)
-import Translations exposing (..)
+import Translations as Trans exposing (Lang)
 
 
 view : Model -> Html Msg
@@ -102,7 +102,7 @@ view_nav section_active mode lang base translations ( speaking, state ) =
     Html.nav [ Attr.class "lia-toolbar" ]
         [ Html.map UpdateSettings <| Settings.toggle_button_toc lang
         , Html.span [ Attr.class "lia-spacer" ] []
-        , navButton "navigate_before" (basePrev lang) PrevSection
+        , navButton "navigate_before" (Trans.basePrev lang) PrevSection
         , Html.span [ Attr.class "lia-labeled lia-left" ]
             [ Html.span
                 [ Attr.class "lia-label"
@@ -122,7 +122,7 @@ view_nav section_active mode lang base translations ( speaking, state ) =
                             " " ++ state
                 ]
             ]
-        , navButton "navigate_next" (baseNext lang) NextSection
+        , navButton "navigate_next" (Trans.baseNext lang) NextSection
         , Html.span [ Attr.class "lia-spacer" ] []
         , Html.map UpdateSettings <| Settings.switch_button_mode lang mode
         ]

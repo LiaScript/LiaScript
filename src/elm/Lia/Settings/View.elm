@@ -9,7 +9,7 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Settings.Model exposing (Mode(..), Model)
 import Lia.Settings.Update exposing (Button(..), Msg(..))
-import Translations exposing (..)
+import Translations as Trans exposing (Lang)
 
 
 view : Model -> Definition -> String -> String -> Lang -> Html Msg
@@ -21,10 +21,10 @@ view model defines url origin lang =
         , Lazy.lazy2 qrCodeView model.buttons.share url
         , Html.div
             [ Attr.class "lia-settings", Attr.style "display" "inline-flex", Attr.style "width" "99%" ]
-            [ dropdown model.buttons.settings "settings" (confSettings lang) (Toggle Settings)
-            , dropdown model.buttons.informations "info" (confInformations lang) (Toggle Informations)
-            , dropdown model.buttons.translations "translate" (confTranslations lang) (Toggle Translations)
-            , dropdown model.buttons.share "share" (confShare lang) (Toggle Share)
+            [ dropdown model.buttons.settings "settings" (Trans.confSettings lang) (Toggle Settings)
+            , dropdown model.buttons.informations "info" (Trans.confInformations lang) (Toggle Informations)
+            , dropdown model.buttons.translations "translate" (Trans.confTranslations lang) (Toggle Translations)
+            , dropdown model.buttons.share "share" (Trans.confShare lang) (Toggle Share)
             ]
         ]
 
@@ -69,7 +69,7 @@ view_settings : Model -> Lang -> Html Msg
 view_settings model lang =
     Html.div (menu_style model.buttons.settings)
         [ Html.p []
-            [ Html.text <| cColor lang
+            [ Html.text <| Trans.cColor lang
             , view_light model.light
             , design_theme lang model.theme
             , view_ace lang model.editor
@@ -97,21 +97,21 @@ navButton str title msg =
 inc_font_size : Lang -> Int -> Html Msg
 inc_font_size lang int =
     Html.div []
-        [ Html.text <| baseFont lang ++ ":"
-        , navButton "-" (baseDec lang) (ChangeFontSize False)
+        [ Html.text <| Trans.baseFont lang ++ ":"
+        , navButton "-" (Trans.baseDec lang) (ChangeFontSize False)
         , Html.text (String.fromInt int ++ "%")
-        , navButton "+" (baseInc lang) (ChangeFontSize True)
+        , navButton "+" (Trans.baseInc lang) (ChangeFontSize True)
         ]
 
 
 design_theme : Lang -> String -> Html Msg
 design_theme lang theme =
-    [ ( "default", "left", cDefault lang )
-    , ( "amber", "right", cAmber lang )
-    , ( "blue", "left", cBlue lang )
-    , ( "green", "right", cGreen lang )
-    , ( "grey", "left", cGray lang )
-    , ( "purple", "right", cPurple lang )
+    [ ( "default", "left", Trans.cDefault lang )
+    , ( "amber", "right", Trans.cAmber lang )
+    , ( "blue", "left", Trans.cBlue lang )
+    , ( "green", "right", Trans.cGreen lang )
+    , ( "grey", "left", Trans.cGray lang )
+    , ( "purple", "right", Trans.cPurple lang )
     ]
         |> List.map (\( c, b, text ) -> check_list (c == theme) c text b)
         |> Html.div [ Attr.class "lia-color" ]
@@ -135,7 +135,7 @@ view_information lang visible definition =
 
           else
             span_block
-                [ bold <| infoAuthor lang
+                [ bold <| Trans.infoAuthor lang
                 , Html.text definition.author
                 ]
         , if String.isEmpty definition.email then
@@ -143,7 +143,7 @@ view_information lang visible definition =
 
           else
             span_block
-                [ bold <| infoEmail lang
+                [ bold <| Trans.infoEmail lang
                 , Html.a
                     [ Attr.href definition.email ]
                     [ Html.text definition.email ]
@@ -153,7 +153,7 @@ view_information lang visible definition =
 
           else
             span_block
-                [ bold <| infoVersion lang
+                [ bold <| Trans.infoVersion lang
                 , Html.text definition.version
                 ]
         , if String.isEmpty definition.date then
@@ -161,7 +161,7 @@ view_information lang visible definition =
 
           else
             span_block
-                [ bold <| infoDate lang
+                [ bold <| Trans.infoDate lang
                 , Html.text definition.date
                 ]
         , if List.isEmpty definition.attributes then
@@ -197,7 +197,7 @@ view_translations : Lang -> Bool -> String -> List ( String, String ) -> Html Ms
 view_translations lang visible base list =
     Html.div (menu_style visible) <|
         if List.isEmpty list then
-            [ Html.text (no_translation lang) ]
+            [ Html.text (Trans.no_translation lang) ]
 
         else
             list
@@ -283,7 +283,7 @@ view_ace lang theme =
               , ( "xcode", "XCode" )
               ]
                 |> List.map op
-                |> Html.optgroup [ Attr.attribute "label" (cBright lang) ]
+                |> Html.optgroup [ Attr.attribute "label" (Trans.cBright lang) ]
             , [ ( "ambiance", "Ambiance" )
               , ( "chaos", "Chaos" )
               , ( "clouds_midnight", "Clouds Midnight" )
@@ -308,7 +308,7 @@ view_ace lang theme =
               , ( "vibrant_ink", "Vibrant Ink" )
               ]
                 |> List.map op
-                |> Html.optgroup [ Attr.attribute "label" (cDark lang) ]
+                |> Html.optgroup [ Attr.attribute "label" (Trans.cDark lang) ]
             ]
         ]
 
@@ -341,7 +341,7 @@ toggle_button_toc : Lang -> Html Msg
 toggle_button_toc lang =
     Html.button
         [ onClick Toggle_TableOfContents
-        , Attr.title (baseToc lang)
+        , Attr.title (Trans.baseToc lang)
         , Attr.class "lia-btn lia-toc-control lia-left"
         ]
         [ Html.text "toc" ]
@@ -355,13 +355,13 @@ switch_button_mode lang mode =
         , Attr.title <|
             case mode of
                 Slides ->
-                    modeSlides lang
+                    Trans.modeSlides lang
 
                 Presentation ->
-                    modePresentation lang
+                    Trans.modePresentation lang
 
                 Textbook ->
-                    modeTextbook lang
+                    Trans.modeTextbook lang
         ]
         [ Html.text <|
             case mode of

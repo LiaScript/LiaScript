@@ -11,13 +11,11 @@ import Combine
         , manyTill
         , map
         , maybe
-        , onsuccess
         , or
         , regex
         , string
-        , succeed
         )
-import Lia.Markdown.Inline.Parser exposing (inlines, line)
+import Lia.Markdown.Inline.Parser exposing (inlines)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Matrix.Types exposing (Quiz)
 import Lia.Markdown.Quiz.Vector.Parser as Vector

@@ -5,7 +5,6 @@ module Lia.Markdown.Quiz.Vector.Parser exposing
     , single
     )
 
-import Array
 import Combine
     exposing
         ( Parser

@@ -264,6 +264,7 @@ ref_title =
         |> optional ""
 
 
+ref_url_1 : Parser Context String
 ref_url_1 =
     choice
         [ url
@@ -283,8 +284,14 @@ ref_url_2 =
 
 
 --ref_pattern : (a -> String -> String -> b) -> Parser s a -> Parser s String -> Parser s b
+--ref_pattern : a -> b -> c -> Parser Context Reference
 
 
+ref_pattern :
+    (m -> String -> String -> Reference)
+    -> Parser Context m
+    -> Parser Context String
+    -> Parser Context Reference
 ref_pattern ref_type info_type url_type =
     map (nicer_ref ref_type) info_type
         |> ignore (string "(")
@@ -293,6 +300,12 @@ ref_pattern ref_type info_type url_type =
         |> ignore (string ")")
 
 
+nicer_ref :
+    (m -> String -> String -> Reference)
+    -> m
+    -> String
+    -> String
+    -> Reference
 nicer_ref ref_type info_string url_string title_string =
     ref_type info_string
         url_string
@@ -304,6 +317,7 @@ nicer_ref ref_type info_string url_string title_string =
         )
 
 
+ref_audio : Parser Context Reference
 ref_audio =
     map Audio ref_info
         |> ignore (string "(")
@@ -312,6 +326,7 @@ ref_audio =
         |> ignore (string ")")
 
 
+ref_video : Parser Context Reference
 ref_video =
     map Movie ref_info
         |> ignore (string "(")

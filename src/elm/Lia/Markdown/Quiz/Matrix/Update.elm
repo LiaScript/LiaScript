@@ -1,6 +1,6 @@
 module Lia.Markdown.Quiz.Matrix.Update exposing (Msg(..), toString, update)
 
-import Array exposing (Array)
+import Array
 import Lia.Markdown.Quiz.Matrix.Types exposing (State)
 import Lia.Markdown.Quiz.Vector.Update as Vector
 

@@ -10,7 +10,7 @@ module Lia.Parser.Context exposing
     )
 
 import Array
-import Combine exposing (Parser, andMap, andThen, ignore, lazy, map, modifyState, regex, skip, succeed, withLine, withState)
+import Combine exposing (Parser, andMap, ignore, map, modifyState, regex, skip, succeed, withLine, withState)
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Code.Types as Code
 import Lia.Markdown.Effect.Model as Effect
