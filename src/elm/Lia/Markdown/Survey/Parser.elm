@@ -66,6 +66,7 @@ text_lines =
         |> ignore (string "]")
         |> pattern
         |> map List.length
+        |> ignore newline
 
 
 pattern : Parser Context a -> Parser Context a

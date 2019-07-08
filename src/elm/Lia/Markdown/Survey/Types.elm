@@ -32,8 +32,38 @@ toString state =
         Text_State str ->
             str
 
-        _ ->
-            ""
+        Vector_State _ dict ->
+            "{"
+                ++ (dict
+                        |> Dict.toList
+                        |> List.map key_value_string
+                        |> List.intersperse ", "
+                        |> String.concat
+                   )
+                ++ "}"
+
+        Matrix_State _ array ->
+            "["
+                ++ (array
+                        |> Array.toList
+                        |> List.map (Vector_State False >> toString)
+                        |> List.intersperse ",\n"
+                        |> String.concat
+                   )
+                ++ "]"
+
+
+key_value_string : ( String, Bool ) -> String
+key_value_string ( key, value ) =
+    "\""
+        ++ key
+        ++ "\": "
+        ++ (if value then
+                "1"
+
+            else
+                "0"
+           )
 
 
 type alias Survey =

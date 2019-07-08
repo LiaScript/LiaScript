@@ -27,11 +27,11 @@ update msg vector =
         MatrixUpdate idx row var ->
             ( update_matrix vector idx row var, [] )
 
-        Submit idx Nothing ->
-            if submitable vector idx then
+        Submit id Nothing ->
+            if submitable vector id then
                 let
                     new_vector =
-                        submit vector idx
+                        submit vector id
                 in
                 ( new_vector
                 , new_vector
@@ -43,10 +43,10 @@ update msg vector =
             else
                 ( vector, [] )
 
-        Submit idx (Just code) ->
-            case vector |> Array.get idx of
-                Just ( _, state ) ->
-                    ( vector, [ Event.eval idx code [ toString state ] ] )
+        Submit id (Just code) ->
+            case vector |> Array.get id of
+                Just ( False, state ) ->
+                    ( vector, [ Event.eval id code [ toString state ] ] )
 
                 _ ->
                     ( vector, [] )
@@ -54,7 +54,16 @@ update msg vector =
         Handle event ->
             case event.topic of
                 "eval" ->
-                    ( vector, [] )
+                    if
+                        event.message
+                            |> Event.evalDecode
+                            |> .result
+                            |> (==) "true"
+                    then
+                        update (Submit event.section Nothing) vector
+
+                    else
+                        ( vector, [] )
 
                 "restore" ->
                     ( event.message

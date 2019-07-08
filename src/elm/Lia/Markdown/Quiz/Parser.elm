@@ -60,6 +60,7 @@ adds type_ =
 maybeJS : Parser Context (Maybe String)
 maybeJS =
     macro
+        |> ignore (maybe indentation)
         |> keep
             (maybe
                 (spaces
