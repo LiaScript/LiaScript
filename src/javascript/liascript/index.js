@@ -204,6 +204,8 @@ class LiaScript {
                     if (event.message.topic == "store") {
                         event.message = event.message.message;
                         self.db.store(event);
+                    } else if (event.message.topic == "eval") {
+                        lia_eval_event(elmSend, self.channel, eventHandler, event);
                     }
                     break;
                 }

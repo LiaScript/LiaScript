@@ -11,7 +11,9 @@ import Combine
         , ignore
         , keep
         , many1
+        , manyTill
         , map
+        , maybe
         , modifyState
         , parens
         , regex
@@ -20,11 +22,13 @@ import Combine
         , withState
         )
 import Dict
-import Lia.Markdown.Inline.Parser exposing (line)
-import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
-import Lia.Markdown.Survey.Types exposing (State(..), Survey(..), Var)
-import Lia.Parser.Context exposing (Context)
-import Lia.Parser.Helper exposing (newline)
+import Lia.Markdown.Inline.Parser exposing (inlines, line)
+import Lia.Markdown.Inline.Stringify exposing (stringify)
+import Lia.Markdown.Inline.Types exposing (Inlines)
+import Lia.Markdown.Quiz.Parser exposing (maybeJS)
+import Lia.Markdown.Survey.Types exposing (State(..), Survey, Type(..))
+import Lia.Parser.Context exposing (Context, indentation)
+import Lia.Parser.Helper exposing (newline, spaces)
 
 
 parse : Parser Context Survey
@@ -34,32 +38,41 @@ parse =
 
 survey : Parser Context Survey
 survey =
-    let
-        get_id par =
-            succeed (Array.length par.survey_vector)
-    in
     choice
         [ text_lines |> map Text
         , vector parens |> map (Vector False)
         , vector brackets |> map (Vector True)
-        , header parens |> map (Matrix False) |> andMap questions
-        , header brackets |> map (Matrix True) |> andMap questions
+        , header "(" ")" |> map (toMatrix False) |> andMap questions
+        , header "[" "]" |> map (toMatrix True) |> andMap questions
         ]
-        |> andMap (withState get_id)
+        |> map Survey
+        |> andMap (withState (.survey_vector >> Array.length >> succeed))
+        |> andMap maybeJS
 
 
-text_lines : Parser s Int
+toMatrix : Bool -> List Inlines -> (List Inlines -> Type)
+toMatrix bool ids =
+    ids
+        |> List.map stringify
+        |> Matrix bool ids
+
+
+text_lines : Parser Context Int
 text_lines =
-    string "["
+    maybe indentation
+        |> ignore spaces
+        |> ignore (string "[")
         |> keep (many1 (regex "_{3,}[\t ]*"))
         |> ignore (string "]")
         |> pattern
         |> map List.length
+        |> ignore newline
 
 
-pattern : Parser s a -> Parser s a
+pattern : Parser Context a -> Parser Context a
 pattern p =
-    regex "[\t ]*\\["
+    maybe indentation
+        |> ignore (regex "[\t ]*\\[")
         |> keep p
         |> ignore (regex "][\t ]*")
 
@@ -69,25 +82,27 @@ id_str =
     regex "\\w(\\w+| )*"
 
 
-vector : (Parser s String -> Parser Context a) -> Parser Context (List ( a, Inlines ))
+vector : (Parser Context String -> Parser Context a) -> Parser Context (List ( a, Inlines ))
 vector p =
-    let
-        vec x =
-            many1 (question (pattern (p x)))
-    in
-    vec id_str
+    p id_str
+        |> pattern
+        |> question
+        |> many1
 
 
-header : (Parser s String -> Parser s1 Var) -> Parser s1 (List Var)
-header p =
-    many1 (p id_str)
+header : String -> String -> Parser Context (List Inlines)
+header begin end =
+    string begin
+        |> keep (manyTill inlines (string end))
+        |> many1
         |> pattern
         |> ignore newline
 
 
-questions : Parser Context MultInlines
+questions : Parser Context (List Inlines)
 questions =
-    regex "[\t ]*\\[[\t ]+\\]"
+    maybe indentation
+        |> ignore (regex "[\t ]*\\[[\t ]+\\]")
         |> keep line
         |> ignore newline
         |> many1
@@ -103,9 +118,6 @@ question p =
 modify_State : Survey -> Parser Context Survey
 modify_State survey_ =
     let
-        add_state e s =
-            { s | survey_vector = Array.push ( False, e ) s.survey_vector }
-
         state =
             let
                 extractor fn v =
@@ -113,19 +125,24 @@ modify_State survey_ =
                         |> List.map fn
                         |> Dict.fromList
             in
-            case survey_ of
-                Text _ _ ->
-                    TextState ""
+            case survey_.survey of
+                Text _ ->
+                    Text_State ""
 
-                Vector bool vars _ ->
+                Vector bool vars ->
                     vars
                         |> extractor (\( v, _ ) -> ( v, False ))
-                        |> VectorState bool
+                        |> Vector_State bool
 
-                Matrix bool vars qs _ ->
+                Matrix bool _ vars qs ->
                     vars
                         |> extractor (\v -> ( v, False ))
                         |> Array.repeat (List.length qs)
-                        |> MatrixState bool
+                        |> Matrix_State bool
     in
     modifyState (add_state state) |> keep (succeed survey_)
+
+
+add_state : State -> Context -> Context
+add_state state c =
+    { c | survey_vector = Array.push ( False, state ) c.survey_vector }

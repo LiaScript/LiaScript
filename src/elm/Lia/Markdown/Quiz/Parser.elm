@@ -1,4 +1,4 @@
-module Lia.Markdown.Quiz.Parser exposing (parse)
+module Lia.Markdown.Quiz.Parser exposing (maybeJS, parse)
 
 import Array
 import Combine
@@ -54,15 +54,19 @@ adds : Type -> Parser Context Quiz
 adds type_ =
     map (Quiz type_) get_counter
         |> andMap hints
-        |> andMap
-            (macro
-                |> keep
-                    (maybe
-                        (spaces
-                            |> keep javascript
-                            |> ignore newline
-                        )
-                    )
+        |> andMap maybeJS
+
+
+maybeJS : Parser Context (Maybe String)
+maybeJS =
+    macro
+        |> ignore (maybe indentation)
+        |> keep
+            (maybe
+                (spaces
+                    |> keep javascript
+                    |> ignore newline
+                )
             )
 
 
