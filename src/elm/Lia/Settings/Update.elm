@@ -63,19 +63,19 @@ update msg model =
             no_log { model | buttons = toggle button model.buttons }
 
         SwitchMode ->
-            log
-                { model
-                    | mode =
-                        case model.mode of
-                            Presentation ->
-                                Slides
+            case model.mode of
+                Presentation ->
+                    log { model | mode = Slides }
 
-                            Slides ->
-                                Textbook
+                Slides ->
+                    let
+                        ( new_model, events ) =
+                            log { model | sound = False, mode = Textbook }
+                    in
+                    ( new_model, soundEvent new_model.sound :: events )
 
-                            Textbook ->
-                                Presentation
-                }
+                Textbook ->
+                    log { model | mode = Presentation }
 
         ChangeTheme theme ->
             log { model | theme = theme }
