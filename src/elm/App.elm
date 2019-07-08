@@ -51,7 +51,6 @@ type alias Model =
     , url : Url.Url
     , state : State
     , lia : Lia.Script.Model
-    , templates : Maybe Int
     , code : Maybe ( String, Int )
     , size : Float
     }
@@ -60,7 +59,7 @@ type alias Model =
 type State
     = Idle -- Wait for user Input
     | Loading -- Start to download the course if course url is defined
-    | Parsing -- Running the PreParser
+    | Parsing Bool Int -- Running the PreParser and loading the imports
     | Running -- Pass all action to Lia
     | Error String -- What has happend
 
@@ -91,7 +90,6 @@ init flags url key =
                     slide
                 )
                 Nothing
-                Nothing
                 0
             , download Load_ReadMe_Result query
             )
@@ -107,28 +105,26 @@ init flags url key =
                     slide
                 )
                 Nothing
-                Nothing
                 0
             , download Load_ReadMe_Result query
             )
 
         ( _, _, Just script ) ->
-            ( Model key
-                url
-                Parsing
-                (Lia.Script.init_textbook "" script "" slide)
-                Nothing
-                (Just ( script, 0 ))
-                (String.length script |> toFloat)
-            , Cmd.none
-            )
+            load_readme
+                (Model key
+                    url
+                    Idle
+                    (Lia.Script.init_textbook "" "" "" slide)
+                    Nothing
+                    0
+                )
+                script
 
         _ ->
             ( Model key
                 url
                 Idle
                 (Lia.Script.init_textbook "" "" "" slide)
-                Nothing
                 Nothing
                 0
             , Cmd.none
@@ -257,14 +253,19 @@ update msg model =
             ( { model | state = Error <| parse_error info }, Cmd.none )
 
         Load_Template_Result (Ok template) ->
-            update
-                LiaParse
+            parsing
                 { model
-                    | templates = Maybe.map ((-) 1) model.templates
-                    , lia =
+                    | lia =
                         template
                             |> String.replace "\u{000D}" ""
                             |> Lia.Script.add_imports model.lia
+                    , state =
+                        case model.state of
+                            Parsing b templates ->
+                                Parsing b (templates - 1)
+
+                            _ ->
+                                model.state
                 }
 
         Load_Template_Result (Err info) ->
@@ -291,21 +292,31 @@ start model =
 
 parsing : Model -> ( Model, Cmd Msg )
 parsing model =
-    case Maybe.map (Lia.Script.parse_section model.lia) model.code of
-        Just ( lia, Just code ) ->
-            --if modBy 4 (Lia.Script.pages model.lia) == 0 then
-            --    ( { model | lia = lia, code = Just code }, message LiaParse )
-            --else
-            update LiaParse { model | lia = lia, code = Just code }
-
-        Just ( lia, Nothing ) ->
-            --if model.templates == Nothing then
-            update LiaStart { model | lia = lia, templates = Nothing }
-
-        --else
-        --    ( { model | lia = lia }, message LiaParse )
-        Nothing ->
+    case model.state of
+        Parsing False 0 ->
             update LiaStart model
+
+        Parsing True templates_to_load ->
+            case model.code of
+                Nothing ->
+                    parsing { model | state = Parsing False templates_to_load }
+
+                Just code ->
+                    let
+                        ( lia, remaining_code ) =
+                            Lia.Script.parse_section model.lia code
+
+                        new_model =
+                            { model | lia = lia, code = remaining_code }
+                    in
+                    if modBy 4 (Lia.Script.pages lia) == 0 then
+                        ( new_model, message LiaParse )
+
+                    else
+                        parsing new_model
+
+        _ ->
+            ( model, Cmd.none )
 
 
 load_readme : Model -> String -> ( Model, Cmd Msg )
@@ -318,7 +329,7 @@ load_readme model readme =
         ( lia, Just ( code, line ), [] ) ->
             ( { model
                 | lia = lia
-                , state = Parsing
+                , state = Parsing True 0
                 , code = Just ( code, line )
                 , size = String.length code |> toFloat
               }
@@ -327,11 +338,10 @@ load_readme model readme =
 
         ( lia, Just ( code, line ), templates ) ->
             ( { model
-                | state = Parsing
-                , lia = lia
+                | lia = lia
+                , state = Parsing True <| List.length templates
                 , code = Just ( code, line )
                 , size = String.length code |> toFloat
-                , templates = Just <| List.length templates
               }
             , templates
                 |> List.map (download Load_Template_Result)
@@ -398,7 +408,7 @@ view model =
                     ]
                 ]
 
-            Parsing ->
+            Parsing _ _ ->
                 let
                     percent =
                         model.code
