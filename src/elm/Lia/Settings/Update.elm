@@ -1,4 +1,12 @@
-module Lia.Settings.Update exposing (Button(..), Msg(..), load, toggle_sound, toggle_table_of_contents, update)
+module Lia.Settings.Update exposing
+    ( Button(..)
+    , Msg(..)
+    , Toggle(..)
+    , load
+    , toggle_sound
+    , toggle_table_of_contents
+    , update
+    )
 
 import Json.Encode as JE
 import Lia.Event exposing (Event)
@@ -8,16 +16,20 @@ import Lia.Settings.Model exposing (Buttons, Mode(..), Model, init_buttons)
 
 
 type Msg
-    = Toggle_TableOfContents
-    | Toggle_Sound
-    | Toggle_Light
-    | Toggle Button
+    = Toggle Toggle
     | ChangeTheme String
     | ChangeEditor String
     | ChangeLang String
     | ChangeFontSize Bool
     | SwitchMode
     | Reset
+
+
+type Toggle
+    = TableOfContents
+    | Sound
+    | Light
+    | Button Button
 
 
 type Button
@@ -30,24 +42,24 @@ type Button
 update : Msg -> Model -> ( Model, List Event )
 update msg model =
     case msg of
-        Toggle_TableOfContents ->
+        Toggle TableOfContents ->
             log
                 { model
                     | table_of_contents = not model.table_of_contents
                     , buttons = init_buttons
                 }
 
-        Toggle_Sound ->
+        Toggle Sound ->
             let
                 ( new_model, events ) =
                     log { model | sound = not model.sound }
             in
             ( new_model, soundEvent new_model.sound :: events )
 
-        Toggle_Light ->
+        Toggle Light ->
             log { model | light = not model.light }
 
-        Toggle button ->
+        Toggle (Button button) ->
             no_log { model | buttons = toggle button model.buttons }
 
         SwitchMode ->
@@ -104,12 +116,12 @@ load model json =
 
 toggle_sound : Msg
 toggle_sound =
-    Toggle_Sound
+    Toggle Sound
 
 
 toggle_table_of_contents : Msg
 toggle_table_of_contents =
-    Toggle_TableOfContents
+    Toggle TableOfContents
 
 
 toggle : Button -> Buttons -> Buttons
