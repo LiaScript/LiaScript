@@ -67,16 +67,9 @@ check state id str =
 
 toSelect : List ( Int, Inlines ) -> Parser Context Quiz
 toSelect list =
-    case
-        list
-            |> List.filter (Tuple.first >> (<=) 0)
-    of
-        [] ->
-            fail "no solution provided"
-
-        ids ->
-            ids
-                |> List.map Tuple.first
-                |> Select False
-                |> Quiz (List.map Tuple.second list)
-                |> succeed
+    list
+        |> List.filter (Tuple.first >> (<=) 0)
+        |> List.map Tuple.first
+        |> Select False
+        |> Quiz (List.map Tuple.second list)
+        |> succeed

@@ -32,6 +32,12 @@ fromState state =
                   )
                 ]
 
+            Select_State _ i ->
+                [ ( "Select"
+                  , JE.int i
+                  )
+                ]
+
             Vector_State single vector ->
                 [ ( if single then
                         "SingleChoice"
@@ -78,6 +84,8 @@ toState =
     JD.oneOf
         [ JD.field "Text" JD.string
             |> JD.map Text_State
+        , JD.field "Select" JD.int
+            |> JD.map (Select_State False)
         , JD.field "SingleChoice" (JD.dict JD.bool)
             |> JD.map (Vector_State True)
         , JD.field "MultipleChoice" (JD.dict JD.bool)

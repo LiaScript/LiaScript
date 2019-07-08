@@ -9,6 +9,8 @@ import Lia.Markdown.Survey.Types exposing (State(..), Vector, toString)
 
 type Msg
     = TextUpdate Int String
+    | SelectUpdate Int Int
+    | SelectChose Int
     | VectorUpdate Int String
     | MatrixUpdate Int Int String
     | Submit Int (Maybe String)
@@ -20,6 +22,12 @@ update msg vector =
     case msg of
         TextUpdate idx str ->
             ( update_text vector idx str, [] )
+
+        SelectUpdate id value ->
+            ( update_select vector id value, [] )
+
+        SelectChose id ->
+            ( update_select_chose vector id, [] )
 
         VectorUpdate idx var ->
             ( update_vector vector idx var, [] )
@@ -81,6 +89,26 @@ update_text vector idx str =
     case Array.get idx vector of
         Just ( False, Text_State _ ) ->
             set_state vector idx (Text_State str)
+
+        _ ->
+            vector
+
+
+update_select : Vector -> Int -> Int -> Vector
+update_select vector id value =
+    case Array.get id vector of
+        Just ( False, Select_State _ _ ) ->
+            set_state vector id (Select_State False value)
+
+        _ ->
+            vector
+
+
+update_select_chose : Vector -> Int -> Vector
+update_select_chose vector id =
+    case Array.get id vector of
+        Just ( False, Select_State b value ) ->
+            set_state vector id (Select_State (not b) value)
 
         _ ->
             vector
@@ -158,6 +186,9 @@ submitable vector idx =
     case Array.get idx vector of
         Just ( False, Text_State state ) ->
             state /= ""
+
+        Just ( False, Select_State _ state ) ->
+            state /= -1
 
         Just ( False, Vector_State _ state ) ->
             state

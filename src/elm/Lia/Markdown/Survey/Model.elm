@@ -1,5 +1,6 @@
 module Lia.Markdown.Survey.Model exposing
     ( get_matrix_state
+    , get_select_state
     , get_submission_state
     , get_text_state
     , get_vector_state
@@ -40,6 +41,16 @@ get_vector_state vector idx var =
 
         _ ->
             False
+
+
+get_select_state : Vector -> Int -> ( Bool, Int )
+get_select_state vector id =
+    case Array.get id vector of
+        Just ( _, Select_State open value ) ->
+            ( open, value )
+
+        _ ->
+            ( False, -1 )
 
 
 get_matrix_state : Vector -> Int -> Int -> String -> Bool
