@@ -22,6 +22,7 @@ type alias Element =
 
 type State
     = Text_State String
+    | Select_State Bool Int
     | Vector_State Bool (Dict String Bool)
     | Matrix_State Bool (Array (Dict String Bool))
 
@@ -31,6 +32,9 @@ toString state =
     case state of
         Text_State str ->
             str
+
+        Select_State _ i ->
+            String.fromInt i
 
         Vector_State _ dict ->
             "{"
@@ -75,5 +79,6 @@ type alias Survey =
 
 type Type
     = Text Int
+    | Select MultInlines
     | Vector Bool (List ( String, Inlines ))
     | Matrix Bool MultInlines (List String) MultInlines

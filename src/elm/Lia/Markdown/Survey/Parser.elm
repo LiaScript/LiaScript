@@ -8,6 +8,7 @@ import Combine
         , andThen
         , brackets
         , choice
+        , fail
         , ignore
         , keep
         , many1
@@ -25,6 +26,8 @@ import Dict
 import Lia.Markdown.Inline.Parser exposing (inlines, line)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
+import Lia.Markdown.Quiz.Block.Parser as Block
+import Lia.Markdown.Quiz.Block.Types as BlockTypes
 import Lia.Markdown.Quiz.Parser exposing (maybeJS)
 import Lia.Markdown.Survey.Types exposing (State(..), Survey, Type(..))
 import Lia.Parser.Context exposing (Context, indentation)
@@ -40,6 +43,7 @@ survey : Parser Context Survey
 survey =
     choice
         [ text_lines |> map Text
+        , Block.parse |> andThen toSelect
         , vector parens |> map (Vector False)
         , vector brackets |> map (Vector True)
         , header "(" ")" |> map (toMatrix False) |> andMap questions
@@ -67,6 +71,15 @@ text_lines =
         |> pattern
         |> map List.length
         |> ignore newline
+
+
+toSelect quiz =
+    case quiz.solution of
+        BlockTypes.Select _ [] ->
+            succeed <| Select quiz.options
+
+        _ ->
+            fail ""
 
 
 pattern : Parser Context a -> Parser Context a
@@ -128,6 +141,9 @@ modify_State survey_ =
             case survey_.survey of
                 Text _ ->
                     Text_State ""
+
+                Select _ ->
+                    Select_State False -1
 
                 Vector bool vars ->
                     vars
