@@ -23,7 +23,7 @@ get_submission_state vector idx =
 get_text_state : Vector -> Int -> String
 get_text_state vector idx =
     case Array.get idx vector of
-        Just ( _, TextState str ) ->
+        Just ( _, Text_State str ) ->
             str
 
         _ ->
@@ -33,7 +33,7 @@ get_text_state vector idx =
 get_vector_state : Vector -> Int -> String -> Bool
 get_vector_state vector idx var =
     case Array.get idx vector of
-        Just ( _, VectorState _ state ) ->
+        Just ( _, Vector_State _ state ) ->
             state
                 |> Dict.get var
                 |> Maybe.withDefault False
@@ -45,7 +45,7 @@ get_vector_state vector idx var =
 get_matrix_state : Vector -> Int -> Int -> String -> Bool
 get_matrix_state vector idx row var =
     case Array.get idx vector of
-        Just ( _, MatrixState _ matrix ) ->
+        Just ( _, Matrix_State _ matrix ) ->
             matrix
                 |> Array.get row
                 |> Maybe.andThen (\d -> Dict.get var d)

@@ -3,7 +3,7 @@ module Lia.Markdown.Survey.Json exposing
     , toVector
     )
 
-import Dict
+import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Survey.Types exposing (Element, State(..), Vector)
@@ -24,36 +24,41 @@ fromElement ( b, state ) =
 
 fromState : State -> JE.Value
 fromState state =
-    let
-        dict2json dict =
-            dict |> Dict.toList |> List.map (\( s, b ) -> ( s, JE.bool b )) |> JE.object
-    in
     JE.object <|
         case state of
-            TextState str ->
-                [ ( "type", JE.string "Text" )
-                , ( "value", JE.string str )
+            Text_State str ->
+                [ ( "Text"
+                  , JE.string str
+                  )
                 ]
 
-            VectorState True vector ->
-                [ ( "type", JE.string "SingleChoice" )
-                , ( "value", dict2json vector )
+            Vector_State single vector ->
+                [ ( if single then
+                        "SingleChoice"
+
+                    else
+                        "MultipleChoice"
+                  , dict2json vector
+                  )
                 ]
 
-            VectorState False vector ->
-                [ ( "type", JE.string "MultipleChoice" )
-                , ( "value", dict2json vector )
+            Matrix_State single matrix ->
+                [ ( if single then
+                        "SingleChoiceMatrix"
+
+                    else
+                        "MultipleChoiceMatrix"
+                  , JE.array dict2json matrix
+                  )
                 ]
 
-            MatrixState True matrix ->
-                [ ( "type", JE.string "SingleChoiceBlock" )
-                , ( "value", JE.array dict2json matrix )
-                ]
 
-            MatrixState False matrix ->
-                [ ( "type", JE.string "MultipleChoiceBlock" )
-                , ( "value", JE.array dict2json matrix )
-                ]
+dict2json : Dict String Bool -> JE.Value
+dict2json dict =
+    dict
+        |> Dict.toList
+        |> List.map (\( s, b ) -> ( s, JE.bool b ))
+        |> JE.object
 
 
 toVector : JD.Value -> Result JD.Error Vector
@@ -70,34 +75,15 @@ toElement =
 
 toState : JD.Decoder State
 toState =
-    let
-        value =
-            JD.field "value"
-
-        dict =
-            JD.dict JD.bool
-
-        state_decoder type_ =
-            case type_ of
-                "Text" ->
-                    JD.map TextState (value JD.string)
-
-                "SingleChoice" ->
-                    JD.map (VectorState True) (value dict)
-
-                "MultipleChoice" ->
-                    JD.map (VectorState False) (value dict)
-
-                "SingleChoiceBlock" ->
-                    JD.map (MatrixState True) (value (JD.array dict))
-
-                "MultipleChoiceBlock" ->
-                    JD.map (MatrixState False) (value (JD.array dict))
-
-                _ ->
-                    JD.fail <|
-                        "not supported type: "
-                            ++ type_
-    in
-    JD.field "type" JD.string
-        |> JD.andThen state_decoder
+    JD.oneOf
+        [ JD.field "Text" JD.string
+            |> JD.map Text_State
+        , JD.field "SingleChoice" (JD.dict JD.bool)
+            |> JD.map (Vector_State True)
+        , JD.field "MultipleChoice" (JD.dict JD.bool)
+            |> JD.map (Vector_State False)
+        , JD.field "SingleChoiceMatrix" (JD.array (JD.dict JD.bool))
+            |> JD.map (Matrix_State False)
+        , JD.field "MultipleChoiceMatrix" (JD.array (JD.dict JD.bool))
+            |> JD.map (Matrix_State True)
+        ]

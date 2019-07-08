@@ -1,12 +1,15 @@
-module Lia.Markdown.Survey.Types exposing (Element, State(..), Survey(..), Var, Vector)
+module Lia.Markdown.Survey.Types exposing
+    ( Element
+    , State(..)
+    , Survey
+    , Type(..)
+    , Vector
+    , toString
+    )
 
 import Array exposing (Array)
 import Dict exposing (Dict)
 import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
-
-
-type alias Var =
-    String
 
 
 type alias Vector =
@@ -18,12 +21,59 @@ type alias Element =
 
 
 type State
-    = TextState String
-    | VectorState Bool (Dict Var Bool)
-    | MatrixState Bool (Array (Dict Var Bool))
+    = Text_State String
+    | Vector_State Bool (Dict String Bool)
+    | Matrix_State Bool (Array (Dict String Bool))
 
 
-type Survey
-    = Text Int Int
-    | Vector Bool (List ( Var, Inlines )) Int
-    | Matrix Bool (List Var) MultInlines Int
+toString : State -> String
+toString state =
+    case state of
+        Text_State str ->
+            str
+
+        Vector_State _ dict ->
+            "{"
+                ++ (dict
+                        |> Dict.toList
+                        |> List.map key_value_string
+                        |> List.intersperse ", "
+                        |> String.concat
+                   )
+                ++ "}"
+
+        Matrix_State _ array ->
+            "["
+                ++ (array
+                        |> Array.toList
+                        |> List.map (Vector_State False >> toString)
+                        |> List.intersperse ",\n"
+                        |> String.concat
+                   )
+                ++ "]"
+
+
+key_value_string : ( String, Bool ) -> String
+key_value_string ( key, value ) =
+    "\""
+        ++ key
+        ++ "\": "
+        ++ (if value then
+                "1"
+
+            else
+                "0"
+           )
+
+
+type alias Survey =
+    { survey : Type
+    , id : Int
+    , javascript : Maybe String
+    }
+
+
+type Type
+    = Text Int
+    | Vector Bool (List ( String, Inlines ))
+    | Matrix Bool MultInlines (List String) MultInlines
