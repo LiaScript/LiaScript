@@ -8,7 +8,7 @@ port module Lia.Update exposing
 
 import Array
 import Json.Encode as JE
-import Lia.Event as Event exposing (Event)
+import Lia.Event.Base as Event exposing (Event)
 import Lia.Index.Update as Index
 import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Update as Markdown

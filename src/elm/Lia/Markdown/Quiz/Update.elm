@@ -2,7 +2,7 @@ module Lia.Markdown.Quiz.Update exposing (Msg(..), evalEventDecoder, handle, upd
 
 import Array
 import Json.Encode as JE
-import Lia.Event as Event exposing (Event)
+import Lia.Event.Base as Event exposing (Event)
 import Lia.Markdown.Quiz.Block.Update as Block
 import Lia.Markdown.Quiz.Json as Json
 import Lia.Markdown.Quiz.Matrix.Update as Matrix

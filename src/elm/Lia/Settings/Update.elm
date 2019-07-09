@@ -10,7 +10,7 @@ module Lia.Settings.Update exposing
     )
 
 import Json.Encode as JE
-import Lia.Event exposing (Event)
+import Lia.Event.Base exposing (Event)
 import Lia.Markdown.Effect.Update exposing (soundEvent)
 import Lia.Settings.Json as Json
 import Lia.Settings.Model exposing (Buttons, Mode(..), Model, init_buttons)

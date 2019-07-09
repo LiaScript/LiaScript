@@ -2,7 +2,7 @@ module Lia.Markdown.Code.Events exposing (eval, evalDecode, flip_view, fullscree
 
 import Array
 import Json.Encode as JE
-import Lia.Event as Event exposing (Event)
+import Lia.Event.Base as Event exposing (Event)
 import Lia.Markdown.Code.Json as Json
 import Lia.Markdown.Code.Log as Log
 import Lia.Markdown.Code.Types exposing (File, Project, Repo, Vector)

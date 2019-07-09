@@ -2,7 +2,7 @@ module Lia.Markdown.Survey.Update exposing (Msg(..), handle, update)
 
 import Array
 import Dict
-import Lia.Event as Event exposing (Event)
+import Lia.Event.Base as Event exposing (Event)
 import Lia.Markdown.Survey.Json as Json
 import Lia.Markdown.Survey.Types exposing (State(..), Vector, toString)
 
