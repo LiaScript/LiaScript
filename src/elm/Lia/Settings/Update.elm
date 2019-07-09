@@ -52,7 +52,7 @@ update msg model =
                             |> load { model | initialized = True }
 
                     "speak" ->
-                        case Json.decodeSpeakEvent event.message |> Debug.log "SSSSSSSSSSSS" of
+                        case Json.decodeSpeakEvent event.message of
                             "start" ->
                                 { model | speaking = True }
 

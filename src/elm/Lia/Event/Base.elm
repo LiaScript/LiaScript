@@ -7,7 +7,6 @@ module Lia.Event.Base exposing
 
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Utils exposing (toJSstring)
 
 
 type alias Event =
