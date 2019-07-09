@@ -3,6 +3,7 @@ module Lia.Markdown.Survey.Update exposing (Msg(..), handle, update)
 import Array
 import Dict
 import Lia.Event.Base as Event exposing (Event)
+import Lia.Event.Eval as Eval exposing (Eval)
 import Lia.Markdown.Survey.Json as Json
 import Lia.Markdown.Survey.Types exposing (State(..), Vector, toString)
 
@@ -54,7 +55,7 @@ update msg vector =
         Submit id (Just code) ->
             case vector |> Array.get id of
                 Just ( False, state ) ->
-                    ( vector, [ Event.eval id code [ toString state ] ] )
+                    ( vector, [ Eval.event id code [ toString state ] ] )
 
                 _ ->
                     ( vector, [] )
@@ -64,7 +65,7 @@ update msg vector =
                 "eval" ->
                     if
                         event.message
-                            |> Event.evalDecode
+                            |> Eval.decode
                             |> .result
                             |> (==) "true"
                     then

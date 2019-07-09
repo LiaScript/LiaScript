@@ -3,6 +3,7 @@ module Lia.Markdown.Quiz.Update exposing (Msg(..), evalEventDecoder, handle, upd
 import Array
 import Json.Encode as JE
 import Lia.Event.Base as Event exposing (Event)
+import Lia.Event.Eval as Eval exposing (Eval)
 import Lia.Markdown.Quiz.Block.Update as Block
 import Lia.Markdown.Quiz.Json as Json
 import Lia.Markdown.Quiz.Matrix.Update as Matrix
@@ -57,7 +58,7 @@ update msg vector =
                         _ ->
                             ""
             in
-            ( vector, [ Event.eval idx code [ state ] ] )
+            ( vector, [ Eval.event idx code [ state ] ] )
 
         ShowHint idx ->
             (\e -> { e | hint = e.hint + 1 })
@@ -146,7 +147,7 @@ evalEventDecoder : JE.Value -> (Element -> Element)
 evalEventDecoder json =
     let
         eval =
-            Event.evalDecode json
+            Eval.decode json
     in
     if eval.ok then
         if eval.result == "true" then

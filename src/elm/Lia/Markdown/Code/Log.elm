@@ -17,7 +17,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Event.Base exposing (Eval)
+import Lia.Event.Eval exposing (Eval)
 
 
 type Level

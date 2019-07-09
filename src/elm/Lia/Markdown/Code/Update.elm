@@ -7,7 +7,8 @@ module Lia.Markdown.Code.Update exposing
 import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Event.Base exposing (Eval, Event)
+import Lia.Event.Base exposing (Event)
+import Lia.Event.Eval as Eval exposing (Eval)
 import Lia.Markdown.Code.Events as Event
 import Lia.Markdown.Code.Json as Json
 import Lia.Markdown.Code.Log as Log
