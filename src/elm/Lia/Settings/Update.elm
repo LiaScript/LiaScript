@@ -11,7 +11,7 @@ module Lia.Settings.Update exposing
 
 import Json.Encode as JE
 import Lia.Event.Base exposing (Event)
-import Lia.Markdown.Effect.Update exposing (soundEvent)
+import Lia.Event.TTS as TTS
 import Lia.Settings.Json as Json
 import Lia.Settings.Model exposing (Buttons, Mode(..), Model, init_buttons)
 
@@ -52,18 +52,9 @@ update msg model =
                             |> load { model | initialized = True }
 
                     "speak" ->
-                        case Json.decodeSpeakEvent event.message of
-                            "start" ->
-                                { model | speaking = True }
-
-                            "stop" ->
-                                { model | speaking = False }
-
-                            "repeat" ->
-                                { model | speaking = True }
-
-                            _ ->
-                                model
+                        event.message
+                            |> TTS.decode
+                            |> tts model
 
                     _ ->
                         model
@@ -80,7 +71,7 @@ update msg model =
                 ( new_model, events ) =
                     log { model | sound = not model.sound }
             in
-            ( new_model, soundEvent new_model.sound :: events )
+            ( new_model, TTS.event new_model.sound :: events )
 
         Toggle Light ->
             log { model | light = not model.light }
@@ -98,7 +89,7 @@ update msg model =
                         ( new_model, events ) =
                             log { model | sound = False, mode = Textbook }
                     in
-                    ( new_model, soundEvent new_model.sound :: events )
+                    ( new_model, TTS.event new_model.sound :: events )
 
                 Textbook ->
                     log { model | mode = Presentation }
@@ -131,6 +122,19 @@ update msg model =
 
         Reset ->
             ( model, [ Event "reset" -1 JE.null ] )
+
+
+tts : Model -> TTS.Msg -> Model
+tts model msg =
+    case msg of
+        TTS.Start ->
+            { model | speaking = True }
+
+        TTS.Repeat ->
+            { model | speaking = True }
+
+        _ ->
+            { model | speaking = False }
 
 
 handle : Event -> Msg

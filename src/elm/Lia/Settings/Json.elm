@@ -1,6 +1,5 @@
 module Lia.Settings.Json exposing
-    ( decodeSpeakEvent
-    , fromModel
+    ( fromModel
     , toModel
     )
 
@@ -81,9 +80,3 @@ toMode str =
 
         _ ->
             JD.fail "unknown presentation mode"
-
-
-decodeSpeakEvent : JD.Value -> String
-decodeSpeakEvent =
-    JD.decodeValue JD.string
-        >> Result.withDefault ""
