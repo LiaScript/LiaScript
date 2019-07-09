@@ -64,6 +64,9 @@ update sound msg model =
                 ( True, Just ( comment, narrator ) ) ->
                     TTS.speak narrator comment :: events
 
+                ( False, Just ( comment, narrator ) ) ->
+                    TTS.backup narrator comment :: events
+
                 _ ->
                     TTS.cancel :: events
             )

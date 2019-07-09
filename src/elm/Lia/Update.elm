@@ -114,7 +114,7 @@ update msg model =
         Handle event ->
             case event.topic of
                 "settings" ->
-                    case event.message |> Event.fromJson of
+                    case event.message |> Event.decode of
                         Ok e ->
                             update
                                 (e
@@ -138,7 +138,7 @@ update msg model =
                 _ ->
                     case
                         ( Array.get event.section model.sections
-                        , Event.fromJson event.message
+                        , Event.decode event.message
                         )
                     of
                         ( Just sec, Ok e ) ->

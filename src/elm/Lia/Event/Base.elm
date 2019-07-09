@@ -1,8 +1,8 @@
 module Lia.Event.Base exposing
     ( Event
-    , fromJson
+    , decode
+    , encode
     , store
-    , toJson
     )
 
 import Json.Decode as JD
@@ -16,8 +16,8 @@ type alias Event =
     }
 
 
-toJson : Event -> JE.Value
-toJson { topic, section, message } =
+encode : Event -> JE.Value
+encode { topic, section, message } =
     JE.object
         [ ( "topic", JE.string topic )
         , ( "section", JE.int section )
@@ -25,8 +25,8 @@ toJson { topic, section, message } =
         ]
 
 
-fromJson : JD.Value -> Result JD.Error Event
-fromJson json =
+decode : JD.Value -> Result JD.Error Event
+decode json =
     JD.decodeValue
         (JD.map3 Event
             (JD.field "topic" JD.string)

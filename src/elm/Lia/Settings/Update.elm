@@ -52,9 +52,10 @@ update msg model =
                             |> load { model | initialized = True }
 
                     "speak" ->
-                        event.message
-                            |> TTS.decode
-                            |> tts model
+                        { model
+                            | speaking =
+                                TTS.decode event.message == TTS.Start
+                        }
 
                     _ ->
                         model
@@ -92,7 +93,7 @@ update msg model =
                     ( new_model, TTS.event new_model.sound :: events )
 
                 Textbook ->
-                    log { model | mode = Presentation }
+                    log { model | sound = True, mode = Presentation }
 
         ChangeTheme theme ->
             log { model | theme = theme }
@@ -122,19 +123,6 @@ update msg model =
 
         Reset ->
             ( model, [ Event "reset" -1 JE.null ] )
-
-
-tts : Model -> TTS.Msg -> Model
-tts model msg =
-    case msg of
-        TTS.Start ->
-            { model | speaking = True }
-
-        TTS.Repeat ->
-            { model | speaking = True }
-
-        _ ->
-            { model | speaking = False }
 
 
 handle : Event -> Msg

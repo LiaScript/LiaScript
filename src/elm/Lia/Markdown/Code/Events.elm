@@ -109,6 +109,6 @@ toggle message id1 id2 value =
     [ value
         |> JE.bool
         |> Event message id2
-        |> Event.toJson
+        |> Event.encode
         |> Event "flip" id1
     ]

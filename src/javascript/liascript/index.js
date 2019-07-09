@@ -45,10 +45,11 @@ function handleEffects(event, elmSend) {
           elmSend( msg );
         }
         else if (event.message == "repeat") {
-          msg.message.message = "repeat";
-          elmSend( msg );
+          event.message = ttsBackup;
+          handleEffects(event, elmSend)
         }
         else {
+          ttsBackup = event.message;
           responsiveVoice.speak(
             event.message[1],
             event.message[0],
@@ -89,7 +90,7 @@ function meta(name, content) {
 
 var eventHandler = undefined;
 var liaStorage   = undefined;
-
+var ttsBackup    = undefined;
 
 class LiaScript {
     constructor(elem, debug = false, course = null, script = null, url="", slide=0, spa = true, channel=null) {

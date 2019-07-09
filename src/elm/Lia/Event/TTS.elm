@@ -1,5 +1,6 @@
 module Lia.Event.TTS exposing
     ( Msg(..)
+    , backup
     , cancel
     , decode
     , event
@@ -15,7 +16,6 @@ import Lia.Utils exposing (toJSstring)
 type Msg
     = Start
     | Stop
-    | Repeat
     | Error String
 
 
@@ -29,7 +29,7 @@ event on =
     )
         |> JE.string
         |> Event "speak" -1
-        |> Event.toJson
+        |> Event.encode
         |> Event "effect" -1
 
 
@@ -41,9 +41,6 @@ decode json =
 
         Ok "stop" ->
             Stop
-
-        Ok "repeat" ->
-            Repeat
 
         Ok msg ->
             Error msg
@@ -64,3 +61,10 @@ speak voice text =
     [ voice, text ]
         |> JE.list JE.string
         |> Event "speak" -1
+
+
+backup : String -> String -> Event
+backup voice text =
+    [ voice, text ]
+        |> JE.list JE.string
+        |> Event "backup" -1

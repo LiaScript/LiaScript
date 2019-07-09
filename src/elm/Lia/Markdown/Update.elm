@@ -50,7 +50,7 @@ update msg section =
             ( { section | effect_model = effect_model }
             , Cmd.map (UpdateEffect sound) cmd
             , event
-                |> List.map Event.toJson
+                |> List.map Event.encode
                 |> send "effect"
             )
 
@@ -63,7 +63,7 @@ update msg section =
                     ( { section | code_vector = vector }
                     , Cmd.none
                     , events
-                        |> List.map Event.toJson
+                        |> List.map Event.encode
                         |> send "code"
                     )
 
@@ -75,7 +75,7 @@ update msg section =
             ( { section | quiz_vector = vector }
             , Cmd.none
             , event
-                |> List.map Event.toJson
+                |> List.map Event.encode
                 |> send "quiz"
             )
 
@@ -87,7 +87,7 @@ update msg section =
             ( { section | survey_vector = vector }
             , Cmd.none
             , event
-                |> List.map Event.toJson
+                |> List.map Event.encode
                 |> send "survey"
             )
 
