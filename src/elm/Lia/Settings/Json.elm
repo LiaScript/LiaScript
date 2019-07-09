@@ -1,4 +1,4 @@
-module Lia.Settings.Json exposing (fromModel, toModel)
+module Lia.Settings.Json exposing (decodeSpeakEvent, fromModel, toModel)
 
 import Json.Decode as JD
 import Json.Encode as JE
@@ -77,3 +77,9 @@ toMode str =
 
         _ ->
             JD.fail "unknown presentation mode"
+
+
+decodeSpeakEvent : JD.Value -> String
+decodeSpeakEvent =
+    JD.decodeValue JD.string
+        >> Result.withDefault ""

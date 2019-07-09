@@ -2,6 +2,7 @@ module Lia.Settings.Update exposing
     ( Button(..)
     , Msg(..)
     , Toggle(..)
+    , handle
     , load
     , toggle_sound
     , toggle_table_of_contents
@@ -23,6 +24,7 @@ type Msg
     | ChangeFontSize Bool
     | SwitchMode
     | Reset
+    | Handle Event
 
 
 type Toggle
@@ -42,6 +44,30 @@ type Button
 update : Msg -> Model -> ( Model, List Event )
 update msg model =
     case msg of
+        Handle event ->
+            no_log <|
+                case event.topic of
+                    "init" ->
+                        event.message
+                            |> load { model | initialized = True }
+
+                    "speak" ->
+                        case Json.decodeSpeakEvent event.message |> Debug.log "SSSSSSSSSSSS" of
+                            "start" ->
+                                { model | speaking = True }
+
+                            "stop" ->
+                                { model | speaking = False }
+
+                            "repeat" ->
+                                { model | speaking = True }
+
+                            _ ->
+                                model
+
+                    _ ->
+                        model
+
         Toggle TableOfContents ->
             log
                 { model
@@ -105,6 +131,11 @@ update msg model =
 
         Reset ->
             ( model, [ Event "reset" -1 JE.null ] )
+
+
+handle : Event -> Msg
+handle =
+    Handle
 
 
 load : Model -> JE.Value -> Model

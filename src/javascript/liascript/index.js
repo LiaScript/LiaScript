@@ -29,39 +29,45 @@ function handleEffects(event, elmSend) {
       break;
     case "speak" : {
       let msg = {
-        topic: "effect",
+        topic: "settings",
         section: -1,
         message: {
-          topic: "speak_end",
+          topic: "speak",
           section: -1,
-          message: ""
+          message: "stop"
         }
       };
 
       try {
         if ( event.message == "cancel" ) {
           responsiveVoice.cancel();
+          msg.message.message = "stop"
           elmSend( msg );
         }
         else if (event.message == "repeat") {
-          msg.message = event;
+          msg.message.message = "repeat";
           elmSend( msg );
         }
         else {
           responsiveVoice.speak(
             event.message[1],
             event.message[0],
-            { onend: e => {
+            { onstart: e => {
+                msg.message.message = "start"
+                elmSend( msg );
+              },
+              onend: e => {
+                msg.message.message = "stop"
                 elmSend( msg );
               },
               onerror: e => {
                 msg.message.message = e.toString();
-                elmSend(msg);
+                elmSend( msg );
               }});
         }
       } catch (e) {
         msg.message.message = e.toString();
-        elmSend(msg);
+        elmSend( msg );
       }
       break;
     }

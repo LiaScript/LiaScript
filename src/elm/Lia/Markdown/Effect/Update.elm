@@ -1,6 +1,5 @@
 module Lia.Markdown.Effect.Update exposing
     ( Msg(..)
-    , handle
     , has_next
     , has_previous
     , init
@@ -23,20 +22,17 @@ type Msg
     | Next
     | Previous
     | Send (List Event)
-    | Handle Event
     | Rendered Bool Dom.Viewport
-
-
-handle : Event -> Msg
-handle =
-    Handle
 
 
 update : Bool -> Msg -> Model -> ( Model, Cmd Msg, List Event )
 update sound msg model =
     case msg of
         Init run_all_javascript ->
-            ( model, Task.perform (Rendered run_all_javascript) Dom.getViewport, [] )
+            ( model
+            , Task.perform (Rendered run_all_javascript) Dom.getViewport
+            , []
+            )
 
         Next ->
             if has_next model then
@@ -65,40 +61,16 @@ update sound msg model =
             in
             case ( sound, current_comment model ) of
                 ( True, Just ( comment, narrator ) ) ->
-                    ( { model | speaking = True }
+                    ( model
                     , Cmd.none
                     , (Event "speak" -1 <| JE.list JE.string [ narrator, comment ]) :: events
                     )
-
-                ( True, Nothing ) ->
-                    speak_stop events model
-
-                ( False, Just _ ) ->
-                    if model.speaking then
-                        { model | speaking = False }
-                            |> speak_stop events
-
-                    else
-                        speak_stop events model
 
                 _ ->
                     speak_stop events model
 
         Rendered run_all_javascript _ ->
             execute sound run_all_javascript 0 model
-
-        Handle event ->
-            case ( event.topic, JD.decodeValue JD.string event.message |> Result.withDefault "" ) of
-                ( "speak_end", "" ) ->
-                    ( { model | speaking = False }, Cmd.none, [] )
-
-                --( "speak_end", error ) ->
-                --    ( { model | speaking = False }, Cmd.none, [] )
-                ( "speak", "repeat" ) ->
-                    update True (Send []) model
-
-                _ ->
-                    ( model, Cmd.none, [] )
 
 
 speak_stop : List Event -> Model -> ( Model, Cmd Msg, List Event )

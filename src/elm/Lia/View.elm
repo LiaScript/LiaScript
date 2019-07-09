@@ -61,7 +61,13 @@ view_article model =
                 [ section
                     |> .effect_model
                     |> state
-                    |> view_nav model.section_active model.settings.mode model.translation model.url (get_translations model.definition)
+                    |> view_nav
+                        model.section_active
+                        model.settings.mode
+                        model.translation
+                        model.url
+                        (get_translations model.definition)
+                        model.settings.speaking
                 , Html.map UpdateMarkdown <| Markdown.view model.translation model.settings.mode section model.settings.editor
                 , view_footer model.translation model.settings.sound model.settings.mode section.effect_model
                 ]
@@ -97,8 +103,8 @@ navButton str title msg =
         [ Html.text str ]
 
 
-view_nav : Int -> Mode -> Lang -> String -> List ( String, String ) -> ( Bool, String ) -> Html Msg
-view_nav section_active mode lang base translations ( speaking, state ) =
+view_nav : Int -> Mode -> Lang -> String -> List ( String, String ) -> Bool -> String -> Html Msg
+view_nav section_active mode lang base translations speaking state =
     Html.nav [ Attr.class "lia-toolbar" ]
         [ Html.map UpdateSettings <| Settings.toggle_button_toc lang
         , Html.span [ Attr.class "lia-spacer" ] []
@@ -119,7 +125,7 @@ view_nav section_active mode lang base translations ( speaking, state ) =
                             ""
 
                         _ ->
-                            " " ++ state
+                            state
                 ]
             ]
         , navButton "navigate_next" (Trans.baseNext lang) NextSection

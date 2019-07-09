@@ -53,7 +53,7 @@ type Msg
 
 speak : Model -> Bool
 speak model =
-    model.ready && model.settings.sound
+    model.settings.initialized && model.settings.sound
 
 
 send : Int -> List ( String, JE.Value ) -> Cmd Markdown.Msg -> Cmd Msg
@@ -114,10 +114,17 @@ update msg model =
         Handle event ->
             case event.topic of
                 "settings" ->
-                    ( { model | settings = Settings.load model.settings event.message, ready = True }
-                    , Cmd.none
-                    , -1
-                    )
+                    case event.message |> Event.fromJson of
+                        Ok e ->
+                            update
+                                (e
+                                    |> Settings.handle
+                                    |> UpdateSettings
+                                )
+                                model
+
+                        _ ->
+                            ( model, Cmd.none, -1 )
 
                 "load" ->
                     update InitSection (generate model)

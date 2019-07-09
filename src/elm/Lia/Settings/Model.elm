@@ -11,6 +11,8 @@ type alias Model =
     , sound : Bool
     , lang : String
     , buttons : Buttons
+    , speaking : Bool
+    , initialized : Bool
     }
 
 
@@ -39,6 +41,8 @@ init mode =
     , sound = True
     , lang = "default"
     , buttons = init_buttons
+    , speaking = False
+    , initialized = False
     }
 
 

@@ -22,7 +22,6 @@ type alias Model =
     , effects : Int
     , comments : Map Element
     , javascript : Map (List String)
-    , speaking : Bool
     }
 
 
@@ -127,4 +126,4 @@ current_comment model =
 
 init : Model
 init =
-    Model 0 0 Dict.empty Dict.empty False
+    Model 0 0 Dict.empty Dict.empty

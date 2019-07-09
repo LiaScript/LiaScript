@@ -119,9 +119,6 @@ handle topic event section =
         "code" ->
             update (UpdateCode (Code.handle event)) section
 
-        "effect" ->
-            update (UpdateEffect False (Effect.handle event)) section
-
         "quiz" ->
             update (UpdateQuiz (Quiz.handle event)) section
 
