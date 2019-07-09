@@ -45,26 +45,28 @@ function handleEffects(event, elmSend) {
           elmSend( msg );
         }
         else if (event.message == "repeat") {
-          event.message = ttsBackup;
+          event.message = [ttsBackup[0], ttsBackup[1], "true"];
           handleEffects(event, elmSend)
         }
         else {
           ttsBackup = event.message;
-          responsiveVoice.speak(
-            event.message[1],
-            event.message[0],
-            { onstart: e => {
-                msg.message.message = "start"
-                elmSend( msg );
-              },
-              onend: e => {
-                msg.message.message = "stop"
-                elmSend( msg );
-              },
-              onerror: e => {
-                msg.message.message = e.toString();
-                elmSend( msg );
-              }});
+          if (event.message[2] == "true") {
+            responsiveVoice.speak(
+              event.message[1],
+              event.message[0],
+              { onstart: e => {
+                  msg.message.message = "start"
+                  elmSend( msg );
+                },
+                onend: e => {
+                  msg.message.message = "stop"
+                  elmSend( msg );
+                },
+                onerror: e => {
+                  msg.message.message = e.toString();
+                  elmSend( msg );
+                }});
+          }
         }
       } catch (e) {
         msg.message.message = e.toString();

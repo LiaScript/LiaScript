@@ -1,6 +1,5 @@
 module Lia.Event.TTS exposing
     ( Msg(..)
-    , backup
     , cancel
     , decode
     , event
@@ -56,15 +55,15 @@ cancel =
         |> Event "speak" -1
 
 
-speak : String -> String -> Event
-speak voice text =
-    [ voice, text ]
+speak : Bool -> String -> String -> Event
+speak loud voice text =
+    [ voice
+    , text
+    , if loud then
+        "true"
+
+      else
+        "false"
+    ]
         |> JE.list JE.string
         |> Event "speak" -1
-
-
-backup : String -> String -> Event
-backup voice text =
-    [ voice, text ]
-        |> JE.list JE.string
-        |> Event "backup" -1

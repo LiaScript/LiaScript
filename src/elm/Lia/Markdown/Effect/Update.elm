@@ -60,12 +60,9 @@ update sound msg model =
             in
             ( model
             , Cmd.none
-            , case ( sound, current_comment model ) of
-                ( True, Just ( comment, narrator ) ) ->
-                    TTS.speak narrator comment :: events
-
-                ( False, Just ( comment, narrator ) ) ->
-                    TTS.backup narrator comment :: events
+            , case current_comment model of
+                Just ( comment, narrator ) ->
+                    TTS.speak sound narrator comment :: events
 
                 _ ->
                     TTS.cancel :: events
