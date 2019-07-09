@@ -1,8 +1,9 @@
-module Inline exposing
+module Parser.Inline.Basic exposing
     ( bold_Suite
     , bold_italic_Suite
     , italic_Suite
     , strike_Suite
+    , superscript_Suite
     , underline_Suite
     )
 
@@ -109,4 +110,17 @@ underline_Suite =
     describe "generating underlined text"
         [ simply "~~test~~" (underline "test")
         , simply "~~test with multiple~~" (underline "test with multiple")
+        ]
+
+
+superscript : String -> Inline
+superscript str =
+    Superscript (chars str) Nothing
+
+
+superscript_Suite : Test
+superscript_Suite =
+    describe "generating superscripted text"
+        [ simply "^test^" (superscript "test")
+        , simply "^test with multiple^" (superscript "test with multiple")
         ]
