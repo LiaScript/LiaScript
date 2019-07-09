@@ -17,7 +17,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Event exposing (Eval)
+import Lia.Event.Eval exposing (Eval)
 
 
 type Level
@@ -128,14 +128,14 @@ add_ level str log =
 
 add_Eval : Eval -> Log -> Log
 add_Eval eval log =
-    { log | ok = eval.ok, details = eval.details }
-        |> (if eval.ok then
-                add_Info
+    (if eval.ok then
+        add_Info eval.result
 
-            else
-                add_Error
-           )
-            eval.result
+     else
+        add_Error eval.result
+    )
+    <|
+        { log | ok = eval.ok, details = eval.details }
 
 
 

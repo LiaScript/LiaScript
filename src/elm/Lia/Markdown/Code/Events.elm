@@ -2,7 +2,8 @@ module Lia.Markdown.Code.Events exposing (eval, evalDecode, flip_view, fullscree
 
 import Array
 import Json.Encode as JE
-import Lia.Event as Event exposing (Event)
+import Lia.Event.Base as Event exposing (Event)
+import Lia.Event.Eval as Eval exposing (Eval)
 import Lia.Markdown.Code.Json as Json
 import Lia.Markdown.Code.Log as Log
 import Lia.Markdown.Code.Types exposing (File, Project, Repo, Vector)
@@ -23,7 +24,7 @@ eval idx project =
     [ project.file
         |> Array.map .code
         |> Array.toList
-        |> Event.eval idx project.evaluation
+        |> Eval.event idx project.evaluation
     ]
 
 
@@ -34,9 +35,9 @@ store model =
         |> Event.store
 
 
-evalDecode : Event -> Event.Eval
+evalDecode : Event -> Eval
 evalDecode event =
-    Event.evalDecode event.message
+    Eval.decode event.message
 
 
 version_update : Int -> Project -> ( Project, List Event )
@@ -108,6 +109,6 @@ toggle message id1 id2 value =
     [ value
         |> JE.bool
         |> Event message id2
-        |> Event.toJson
+        |> Event.encode
         |> Event "flip" id1
     ]

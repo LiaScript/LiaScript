@@ -73,6 +73,7 @@ text_lines =
         |> ignore newline
 
 
+toSelect : BlockTypes.Quiz -> Parser Context Type
 toSelect quiz =
     case quiz.solution of
         BlockTypes.Select _ [] ->

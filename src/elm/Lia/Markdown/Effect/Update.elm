@@ -1,19 +1,17 @@
 module Lia.Markdown.Effect.Update exposing
     ( Msg(..)
-    , handle
     , has_next
     , has_previous
     , init
     , next
     , previous
-    , soundEvent
     , update
     )
 
 import Browser.Dom as Dom
-import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Event as Event exposing (Event)
+import Lia.Event.Base exposing (Event)
+import Lia.Event.TTS as TTS
 import Lia.Markdown.Effect.Model exposing (Model, current_comment, get_all_javascript, get_javascript)
 import Task
 
@@ -23,20 +21,17 @@ type Msg
     | Next
     | Previous
     | Send (List Event)
-    | Handle Event
     | Rendered Bool Dom.Viewport
-
-
-handle : Event -> Msg
-handle =
-    Handle
 
 
 update : Bool -> Msg -> Model -> ( Model, Cmd Msg, List Event )
 update sound msg model =
     case msg of
         Init run_all_javascript ->
-            ( model, Task.perform (Rendered run_all_javascript) Dom.getViewport, [] )
+            ( model
+            , Task.perform (Rendered run_all_javascript) Dom.getViewport
+            , []
+            )
 
         Next ->
             if has_next model then
@@ -63,50 +58,18 @@ update sound msg model =
                     )
                         :: event
             in
-            case ( sound, current_comment model ) of
-                ( True, Just ( comment, narrator ) ) ->
-                    ( { model | speaking = True }
-                    , Cmd.none
-                    , (Event "speak" -1 <| JE.list JE.string [ narrator, comment ]) :: events
-                    )
-
-                ( True, Nothing ) ->
-                    speak_stop events model
-
-                ( False, Just _ ) ->
-                    if model.speaking then
-                        { model | speaking = False }
-                            |> speak_stop events
-
-                    else
-                        speak_stop events model
+            ( model
+            , Cmd.none
+            , case current_comment model of
+                Just ( comment, narrator ) ->
+                    TTS.speak sound narrator comment :: events
 
                 _ ->
-                    speak_stop events model
+                    TTS.cancel :: events
+            )
 
         Rendered run_all_javascript _ ->
             execute sound run_all_javascript 0 model
-
-        Handle event ->
-            case ( event.topic, JD.decodeValue JD.string event.message |> Result.withDefault "" ) of
-                ( "speak_end", "" ) ->
-                    ( { model | speaking = False }, Cmd.none, [] )
-
-                --( "speak_end", error ) ->
-                --    ( { model | speaking = False }, Cmd.none, [] )
-                ( "speak", "repeat" ) ->
-                    update True (Send []) model
-
-                _ ->
-                    ( model, Cmd.none, [] )
-
-
-speak_stop : List Event -> Model -> ( Model, Cmd Msg, List Event )
-speak_stop events model =
-    ( model
-    , Cmd.none
-    , (Event "speak" -1 <| JE.string "cancel") :: events
-    )
 
 
 executeEvent : Int -> String -> Event
@@ -160,17 +123,3 @@ next =
 previous : Msg
 previous =
     Previous
-
-
-soundEvent : Bool -> Event
-soundEvent on =
-    (if on then
-        "repeat"
-
-     else
-        "cancel"
-    )
-        |> JE.string
-        |> Event "speak" -1
-        |> Event.toJson
-        |> Event "effect" -1

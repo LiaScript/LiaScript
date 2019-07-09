@@ -1,4 +1,7 @@
-module Lia.Settings.Json exposing (fromModel, toModel)
+module Lia.Settings.Json exposing
+    ( fromModel
+    , toModel
+    )
 
 import Json.Decode as JD
 import Json.Encode as JE

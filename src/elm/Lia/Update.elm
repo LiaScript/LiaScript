@@ -8,7 +8,7 @@ port module Lia.Update exposing
 
 import Array
 import Json.Encode as JE
-import Lia.Event as Event exposing (Event)
+import Lia.Event.Base as Event exposing (Event)
 import Lia.Index.Update as Index
 import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Update as Markdown
@@ -53,7 +53,7 @@ type Msg
 
 speak : Model -> Bool
 speak model =
-    model.ready && model.settings.sound
+    model.settings.initialized && model.settings.sound
 
 
 send : Int -> List ( String, JE.Value ) -> Cmd Markdown.Msg -> Cmd Msg
@@ -114,10 +114,17 @@ update msg model =
         Handle event ->
             case event.topic of
                 "settings" ->
-                    ( { model | settings = Settings.load model.settings event.message, ready = True }
-                    , Cmd.none
-                    , -1
-                    )
+                    case event.message |> Event.decode of
+                        Ok e ->
+                            update
+                                (e
+                                    |> Settings.handle
+                                    |> UpdateSettings
+                                )
+                                model
+
+                        _ ->
+                            ( model, Cmd.none, -1 )
 
                 "load" ->
                     update InitSection (generate model)
@@ -149,7 +156,7 @@ update msg model =
                 _ ->
                     case
                         ( Array.get event.section model.sections
-                        , Event.fromJson event.message
+                        , Event.decode event.message
                         )
                     of
                         ( Just sec, Ok e ) ->

@@ -4,7 +4,6 @@ import Combine
     exposing
         ( Parser
         , andThen
-        , fail
         , ignore
         , keep
         , map

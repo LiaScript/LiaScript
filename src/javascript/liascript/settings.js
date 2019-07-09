@@ -21,7 +21,7 @@ function initSettings(send, data, local=false) {
     localStorage.setItem(SETTINGS, JSON.stringify(data));
   }
 
-  send( {topic: SETTINGS, section: -1, message: data} );
+  send( {topic: SETTINGS, section: -1, message: {topic: "init", section: -1, message: data}} );
 };
 
 export { initSettings, SETTINGS };

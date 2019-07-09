@@ -21,7 +21,7 @@ import Combine
         , succeed
         , withState
         )
-import Lia.Event exposing (Eval)
+import Lia.Event.Eval exposing (Eval)
 import Lia.Markdown.Code.Log as Log
 import Lia.Markdown.Code.Types exposing (Code(..), Snippet, initProject)
 import Lia.Markdown.Inline.Parser exposing (javascript)

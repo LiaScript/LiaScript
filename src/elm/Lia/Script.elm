@@ -23,7 +23,7 @@ import Array
 import Html exposing (Html)
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition, add_macros)
-import Lia.Event exposing (Event)
+import Lia.Event.Base exposing (Event)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Model exposing (load_src)
 import Lia.Parser.Parser as Parser

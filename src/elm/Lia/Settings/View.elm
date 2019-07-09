@@ -8,7 +8,7 @@ import Lia.Definition.Types exposing (Definition, get_translations)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Settings.Model exposing (Mode(..), Model)
-import Lia.Settings.Update exposing (Button(..), Msg(..))
+import Lia.Settings.Update exposing (Button(..), Msg(..), Toggle(..))
 import Translations as Trans exposing (Lang)
 
 
@@ -21,10 +21,10 @@ view model defines url origin lang =
         , Lazy.lazy2 qrCodeView model.buttons.share url
         , Html.div
             [ Attr.class "lia-settings", Attr.style "display" "inline-flex", Attr.style "width" "99%" ]
-            [ dropdown model.buttons.settings "settings" (Trans.confSettings lang) (Toggle Settings)
-            , dropdown model.buttons.informations "info" (Trans.confInformations lang) (Toggle Informations)
-            , dropdown model.buttons.translations "translate" (Trans.confTranslations lang) (Toggle Translations)
-            , dropdown model.buttons.share "share" (Trans.confShare lang) (Toggle Share)
+            [ dropdown model.buttons.settings "settings" (Trans.confSettings lang) (Toggle <| Button Settings)
+            , dropdown model.buttons.informations "info" (Trans.confInformations lang) (Toggle <| Button Informations)
+            , dropdown model.buttons.translations "translate" (Trans.confTranslations lang) (Toggle <| Button Translations)
+            , dropdown model.buttons.share "share" (Trans.confShare lang) (Toggle <| Button Share)
             ]
         ]
 
@@ -317,7 +317,7 @@ view_light : Bool -> Html Msg
 view_light light =
     Html.span
         [ Attr.class "lia-btn"
-        , onClick Toggle_Light
+        , onClick <| Toggle Light
         , Attr.style "text-align" "right"
         ]
         [ if light then
@@ -340,7 +340,7 @@ option current ( val, text ) =
 toggle_button_toc : Lang -> Html Msg
 toggle_button_toc lang =
     Html.button
-        [ onClick Toggle_TableOfContents
+        [ onClick <| Toggle TableOfContents
         , Attr.title (Trans.baseToc lang)
         , Attr.class "lia-btn lia-toc-control lia-left"
         ]

@@ -29,39 +29,48 @@ function handleEffects(event, elmSend) {
       break;
     case "speak" : {
       let msg = {
-        topic: "effect",
+        topic: "settings",
         section: -1,
         message: {
-          topic: "speak_end",
+          topic: "speak",
           section: -1,
-          message: ""
+          message: "stop"
         }
       };
 
       try {
         if ( event.message == "cancel" ) {
           responsiveVoice.cancel();
+          msg.message.message = "stop"
           elmSend( msg );
         }
         else if (event.message == "repeat") {
-          msg.message = event;
-          elmSend( msg );
+          event.message = [ttsBackup[0], ttsBackup[1], "true"];
+          handleEffects(event, elmSend)
         }
         else {
-          responsiveVoice.speak(
-            event.message[1],
-            event.message[0],
-            { onend: e => {
-                elmSend( msg );
-              },
-              onerror: e => {
-                msg.message.message = e.toString();
-                elmSend(msg);
-              }});
+          ttsBackup = event.message;
+          if (event.message[2] == "true") {
+            responsiveVoice.speak(
+              event.message[1],
+              event.message[0],
+              { onstart: e => {
+                  msg.message.message = "start"
+                  elmSend( msg );
+                },
+                onend: e => {
+                  msg.message.message = "stop"
+                  elmSend( msg );
+                },
+                onerror: e => {
+                  msg.message.message = e.toString();
+                  elmSend( msg );
+                }});
+          }
         }
       } catch (e) {
         msg.message.message = e.toString();
-        elmSend(msg);
+        elmSend( msg );
       }
       break;
     }
@@ -83,7 +92,7 @@ function meta(name, content) {
 
 var eventHandler = undefined;
 var liaStorage   = undefined;
-
+var ttsBackup    = undefined;
 
 class LiaScript {
     constructor(elem, debug = false, course = null, script = null, url="", slide=0, spa = true, channel=null) {
