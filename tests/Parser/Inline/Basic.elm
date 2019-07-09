@@ -1,10 +1,12 @@
 module Parser.Inline.Basic exposing
     ( bold_Suite
     , bold_italic_Suite
+    , formula_Suite
     , italic_Suite
     , strike_Suite
     , superscript_Suite
     , underline_Suite
+    , verbatim_Suite
     )
 
 import Expect exposing (Expectation)
@@ -123,4 +125,38 @@ superscript_Suite =
     describe "generating superscripted text"
         [ simply "^test^" (superscript "test")
         , simply "^test with multiple^" (superscript "test with multiple")
+        ]
+
+
+verbatim : String -> Inline
+verbatim str =
+    Verbatim str Nothing
+
+
+verbatim_Suite : Test
+verbatim_Suite =
+    describe "generating verbatim text"
+        [ simply "`test`" (verbatim "test")
+        , simply "`test with multiple`" (verbatim "test with multiple")
+        ]
+
+
+formula : Bool -> String -> Inline
+formula mode str =
+    Formula
+        (if mode then
+            "true"
+
+         else
+            "false"
+        )
+        str
+        Nothing
+
+
+formula_Suite : Test
+formula_Suite =
+    describe "generating formula text"
+        [ simply "$inline$" (formula False "inline")
+        , simply "$$inline$$" (formula True "inline")
         ]
