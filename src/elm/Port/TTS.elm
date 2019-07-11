@@ -1,4 +1,4 @@
-module Lia.Event.TTS exposing
+module Port.TTS exposing
     ( Msg(..)
     , cancel
     , decode
@@ -8,7 +8,7 @@ module Lia.Event.TTS exposing
 
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Event.Base as Event exposing (Event)
+import Port.Event as Event exposing (Event)
 
 
 type Msg

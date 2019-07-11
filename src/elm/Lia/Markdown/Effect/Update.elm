@@ -10,9 +10,9 @@ module Lia.Markdown.Effect.Update exposing
 
 import Browser.Dom as Dom
 import Json.Encode as JE
-import Lia.Event.Base exposing (Event)
-import Lia.Event.TTS as TTS
 import Lia.Markdown.Effect.Model exposing (Model, current_comment, get_all_javascript, get_javascript)
+import Port.Event exposing (Event)
+import Port.TTS as TTS
 import Task
 
 
