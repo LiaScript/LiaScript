@@ -1,19 +1,17 @@
-"use strict";
+'use strict'
 
 var lia = {
-    log: function() {
-        if(window.debug__)
-            console.log("LiaLog: ", ...arguments);
-    },
+  log: function () {
+    if (window.debug__) console.log('LiaLog: ', ...arguments)
+  },
 
-    warn: function() {
-        if(window.debug__)
-            console.warn("LiaWarn: ", ...arguments);
-    },
+  warn: function () {
+    if (window.debug__) console.warn('LiaWarn: ', ...arguments)
+  },
 
-    error: function() {
-        console.error("LiaError: ", ...arguments);
-    }
-};
+  error: function () {
+    console.error('LiaError: ', ...arguments)
+  }
+}
 
-export { lia };
+export { lia }

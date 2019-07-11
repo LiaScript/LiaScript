@@ -1,40 +1,39 @@
-//import 'katex/dist/katex.min.css';
-import katex from 'katex';
+// import 'katex/dist/katex.min.css';
+import katex from 'katex'
 
 customElements.define('katex-formula', class extends HTMLElement {
-
-  constructor() {
-    super();
+  constructor () {
+    super()
   }
 
-  connectedCallback() {
-    const shadowRoot = this.attachShadow({mode: 'open'});
+  connectedCallback () {
+    const shadowRoot = this.attachShadow({ mode: 'open' })
 
-    let span = document.createElement('span');
-    let link = document.createElement('link');
-    link.href = "formula/katex.min.css";
-    link.rel = "stylesheet";
+    let span = document.createElement('span')
+    let link = document.createElement('link')
+    link.href = 'formula/katex.min.css'
+    link.rel = 'stylesheet'
 
-    shadowRoot.appendChild(link);
-    shadowRoot.appendChild(span);
+    shadowRoot.appendChild(link)
+    shadowRoot.appendChild(span)
 
-    let displayMode = this.getAttribute('displayMode');
+    let displayMode = this.getAttribute('displayMode')
 
-    if(!displayMode) {
-        displayMode = false;
+    if (!displayMode) {
+      displayMode = false
     } else {
-        displayMode = JSON.parse(displayMode);
+      displayMode = JSON.parse(displayMode)
     }
 
     katex.render(this.innerHTML, span, {
-        throwOnError: false,
-        displayMode: displayMode
-    });
+      throwOnError: false,
+      displayMode: displayMode
+    })
   }
 
-  disconnectedCallback() {
+  disconnectedCallback () {
     if (super.disconnectedCallback) {
-      super.disconnectedCallback();
+      super.disconnectedCallback()
     }
   }
 })
