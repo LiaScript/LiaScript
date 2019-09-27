@@ -22,7 +22,8 @@ import Lia.Parser.Helper exposing (newline, stringTill)
 parse : Parser Context Quiz
 parse =
     regex "[\t ]*\\[\\["
-        |> keep (stringTill (string "]]"))
+        |> keep (regex "[^\\]]+")
+        |> ignore (string "]]")
         |> ignore newline
         |> map split
         |> andThen withState
