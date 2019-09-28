@@ -8,7 +8,6 @@ port module Lia.Update exposing
 
 import Array
 import Json.Encode as JE
-import Lia.Event.Base as Event exposing (Event)
 import Lia.Index.Update as Index
 import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Update as Markdown
@@ -17,6 +16,7 @@ import Lia.Parser.Parser exposing (parse_section)
 import Lia.Settings.Model exposing (Mode(..))
 import Lia.Settings.Update as Settings
 import Lia.Types exposing (Section)
+import Port.Event as Event exposing (Event)
 
 
 port event2js : Event -> Cmd msg

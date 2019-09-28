@@ -1,4 +1,4 @@
-module Lia.Event.Base exposing
+module Port.Event exposing
     ( Event
     , decode
     , encode

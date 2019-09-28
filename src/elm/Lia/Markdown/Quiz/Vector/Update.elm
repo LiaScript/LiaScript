@@ -57,7 +57,7 @@ toggleMultiple id list =
              else
                 x
             )
-                :: toggleSingle (id - 1) xs
+                :: toggleMultiple (id - 1) xs
 
 
 toString : State -> String

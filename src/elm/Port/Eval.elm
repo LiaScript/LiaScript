@@ -1,4 +1,4 @@
-module Lia.Event.Eval exposing
+module Port.Eval exposing
     ( Eval
     , decode
     , decoder
@@ -8,8 +8,8 @@ module Lia.Event.Eval exposing
 
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Event.Base exposing (Event)
 import Lia.Utils exposing (toJSstring)
+import Port.Event exposing (Event)
 
 
 type alias Eval =

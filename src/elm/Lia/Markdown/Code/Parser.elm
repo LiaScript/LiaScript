@@ -21,13 +21,13 @@ import Combine
         , succeed
         , withState
         )
-import Lia.Event.Eval exposing (Eval)
 import Lia.Markdown.Code.Log as Log
 import Lia.Markdown.Code.Types exposing (Code(..), Snippet, initProject)
 import Lia.Markdown.Inline.Parser exposing (javascript)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Parser.Context exposing (Context, indentation)
 import Lia.Parser.Helper exposing (c_frame, newline, spaces)
+import Port.Eval exposing (Eval)
 
 
 parse : Parser Context Code

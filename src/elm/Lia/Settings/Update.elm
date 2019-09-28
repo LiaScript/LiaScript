@@ -10,10 +10,10 @@ module Lia.Settings.Update exposing
     )
 
 import Json.Encode as JE
-import Lia.Event.Base exposing (Event)
-import Lia.Event.TTS as TTS
 import Lia.Settings.Json as Json
 import Lia.Settings.Model exposing (Buttons, Mode(..), Model, init_buttons)
+import Port.Event exposing (Event)
+import Port.TTS as TTS
 
 
 type Msg

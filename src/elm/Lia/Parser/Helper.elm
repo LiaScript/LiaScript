@@ -1,5 +1,7 @@
 module Lia.Parser.Helper exposing
-    ( c_frame
+    (  c_frame
+       --  , debug
+
     , newline
     , newlines
     , newlines1
@@ -8,8 +10,37 @@ module Lia.Parser.Helper exposing
     , stringTill
     )
 
-import Combine exposing (Parser, manyTill, map, regex, string)
+import Combine exposing (Parser, manyTill, map, regex, string, withColumn, withLine, withSourceLine)
 import Combine.Char exposing (anyChar)
+
+
+
+{-
+   debug : String -> Parser s a -> Parser s a
+   debug log p =
+       withLine
+           (\y ->
+               withColumn
+                   (\x ->
+                       withSourceLine
+                           (\s ->
+                               let
+                                   output =
+                                       Debug.log log
+                                           ( x
+                                           , y
+                                           , String.slice 0 x s
+                                               ++ "["
+                                               ++ String.slice x (x + 1) s
+                                               ++ "]"
+                                               ++ String.slice (x + 1) -1 s
+                                           )
+                               in
+                               p
+                           )
+                   )
+           )
+-}
 
 
 c_frame : Parser s Int

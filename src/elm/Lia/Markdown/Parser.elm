@@ -83,12 +83,12 @@ blocks =
                         , quote
                         , horizontal_line
                         , md_annotations
-                            |> map Survey
-                            |> andMap Survey.parse
-                        , md_annotations
                             |> map Quiz
                             |> andMap Quiz.parse
                             |> andMap solution
+                        , md_annotations
+                            |> map Survey
+                            |> andMap Survey.parse
                         , ordered_list
                         , unordered_list
                         , md_annotations
@@ -168,6 +168,7 @@ solution =
             ( blocks_, e2 - e1 )
     in
     indentation
+        --  |> debug "solution"
         |> ignore (regex "[\t ]*\\*{3,}[\t ]*\\n+")
         |> keep (withState (\s -> succeed s.effect_model.effects))
         |> map rslt
