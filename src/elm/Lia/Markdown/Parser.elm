@@ -157,7 +157,7 @@ svgbody len =
 svgbob : Parser Context Markdown
 svgbob =
     md_annotations
-        |> map (\attr txt -> ASCII attr (SvgBob.init txt))
+        |> map ASCII
         |> andMap (c_frame |> andThen svgbody)
 
 

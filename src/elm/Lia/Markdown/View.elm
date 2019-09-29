@@ -1,5 +1,6 @@
 module Lia.Markdown.View exposing (view)
 
+import Color
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
@@ -18,6 +19,7 @@ import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Settings.Model exposing (Mode(..))
 import Lia.Types exposing (Section)
+import Svg.Attributes
 import SvgBob
 import Translations exposing (Lang)
 
@@ -28,11 +30,12 @@ type alias Config =
     , section : Section
     , ace_theme : String
     , lang : Lang
+    , light : Bool
     }
 
 
-view : Lang -> Mode -> Section -> String -> Html Msg
-view lang mode section ace_theme =
+view : Lang -> Mode -> Section -> String -> Bool -> Html Msg
+view lang mode section ace_theme light =
     let
         config =
             Config mode
@@ -46,6 +49,7 @@ view lang mode section ace_theme =
                 section
                 ace_theme
                 lang
+                light
     in
     case section.error of
         Just msg ->
@@ -233,7 +237,17 @@ view_block config block =
             Charts.view attr chart
 
         ASCII attr txt ->
-            SvgBob.getSvg (attributes attr) txt
+            txt
+                |> SvgBob.init SvgBob.default
+                |> SvgBob.getSvg
+                    (if config.light then
+                        attributes attr
+
+                     else
+                        attributes attr
+                            |> (::) (Svg.Attributes.style "-webkit-filter: invert(100%);")
+                            |> (::) (Svg.Attributes.style "filter: invert(100%);")
+                    )
 
 
 view_table : Config -> Annotation -> MultInlines -> List String -> List MultInlines -> Html Msg

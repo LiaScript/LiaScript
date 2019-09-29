@@ -68,7 +68,7 @@ view_article model =
                         model.url
                         (get_translations model.definition)
                         model.settings.speaking
-                , Html.map UpdateMarkdown <| Markdown.view model.translation model.settings.mode section model.settings.editor
+                , Html.map UpdateMarkdown <| Markdown.view model.translation model.settings.mode section model.settings.editor model.settings.light
                 , view_footer model.translation model.settings.sound model.settings.mode section.effect_model
                 ]
 

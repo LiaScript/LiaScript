@@ -21,7 +21,7 @@ type Markdown
     | Survey Annotation Survey
     | Chart Annotation Chart
     | Code Annotation Code
-    | ASCII Annotation SvgBob.Model
+    | ASCII Annotation String
 
 
 type alias MarkdownS =
