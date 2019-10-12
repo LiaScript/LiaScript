@@ -12,6 +12,7 @@ module Lia.Definition.Types exposing
 
 import Dict exposing (Dict)
 import Lia.Markdown.Inline.Types exposing (Inlines)
+import Lia.Settings.Model exposing (Mode)
 
 
 type Resource
@@ -38,6 +39,8 @@ type alias Definition =
     , uid : Int
     , debug : Bool
     , onload : String
+    , lightMode : Maybe Bool
+    , mode : Maybe Mode
     }
 
 
@@ -61,6 +64,8 @@ default base =
     , uid = -1
     , debug = False
     , onload = ""
+    , lightMode = Nothing
+    , mode = Nothing
     }
 
 

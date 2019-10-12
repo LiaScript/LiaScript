@@ -41,6 +41,7 @@ import Lia.Parser.Context
         , init
         )
 import Lia.Parser.Helper exposing (newline, stringTill)
+import Lia.Settings.Model exposing (Mode(..))
 
 
 parse : Parser Context Int
@@ -89,6 +90,39 @@ definition =
                         , store "link:" (addToResources Link)
                         , store "translation:" add_translation
                         , store "version:" (\x d -> { d | version = x })
+                        , store "dark:"
+                            (\x d ->
+                                { d
+                                    | lightMode =
+                                        case x |> String.toLower of
+                                            "true" ->
+                                                Just False
+
+                                            "false" ->
+                                                Just True
+
+                                            _ ->
+                                                Nothing
+                                }
+                            )
+                        , store "mode:"
+                            (\x d ->
+                                { d
+                                    | mode =
+                                        case x |> String.toLower of
+                                            "textbook" ->
+                                                Just Textbook
+
+                                            "presentation" ->
+                                                Just Presentation
+
+                                            "slides" ->
+                                                Just Slides
+
+                                            _ ->
+                                                Nothing
+                                }
+                            )
                         , store "debug:"
                             (\x d ->
                                 { d

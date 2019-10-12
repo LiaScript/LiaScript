@@ -3,10 +3,8 @@ module Lia.Script exposing
     , Msg
     , add_imports
     , get_title
-    , init_presentation
+    , init
     , init_script
-    , init_slides
-    , init_textbook
     , load_first_slide
     , load_slide
     , pages
@@ -130,9 +128,22 @@ init_script : Model -> String -> ( Model, Maybe ( String, Int ), List String )
 init_script model script =
     case Parser.parse_defintion model.origin script of
         Ok ( definition, ( code, line ) ) ->
+            let
+                settings =
+                    model.settings
+            in
             ( { model
                 | definition = { definition | resources = [], imports = [], attributes = [] }
                 , translation = Translations.getLnFromCode definition.language
+                , settings =
+                    { settings
+                        | light =
+                            definition.lightMode
+                                |> Maybe.withDefault settings.light
+                        , mode =
+                            definition.mode
+                                |> Maybe.withDefault settings.mode
+                    }
               }
                 |> add_todos definition
             , Just ( code, line )
@@ -196,19 +207,9 @@ searchIndex index str =
             str
 
 
-init_textbook : String -> String -> String -> Maybe Int -> Model
-init_textbook url readme origin slide_number =
-    Lia.Model.init Textbook url readme origin slide_number
-
-
-init_slides : String -> String -> String -> Maybe Int -> Model
-init_slides url readme origin slide_number =
-    Lia.Model.init Slides url readme origin slide_number
-
-
-init_presentation : String -> String -> String -> Maybe Int -> Model
-init_presentation url readme origin slide_number =
-    Lia.Model.init Presentation url readme origin slide_number
+init : JE.Value -> String -> String -> String -> Maybe Int -> Model
+init =
+    Lia.Model.init
 
 
 view : Model -> Html Msg

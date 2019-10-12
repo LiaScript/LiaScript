@@ -15,6 +15,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import Http
+import Json.Encode as JE
 import Lia.Script
 import Process
 import Task
@@ -69,6 +70,7 @@ type alias Flags =
     , script : Maybe String
     , spa : Bool
     , debug : Bool
+    , settings : JE.Value
     }
 
 
@@ -83,12 +85,7 @@ init flags url key =
             ( Model key
                 url
                 Loading
-                (Lia.Script.init_textbook
-                    (get_base url)
-                    query
-                    (get_origin url.query)
-                    slide
-                )
+                (Lia.Script.init flags.settings (get_base url) query (get_origin url.query) slide)
                 Nothing
                 0
             , download Load_ReadMe_Result query
@@ -98,12 +95,7 @@ init flags url key =
             ( Model key
                 { url | query = Just query }
                 Loading
-                (Lia.Script.init_textbook
-                    (get_base url)
-                    query
-                    (get_origin url.query)
-                    slide
-                )
+                (Lia.Script.init flags.settings (get_base url) query (get_origin url.query) slide)
                 Nothing
                 0
             , download Load_ReadMe_Result query
@@ -114,7 +106,7 @@ init flags url key =
                 (Model key
                     url
                     Idle
-                    (Lia.Script.init_textbook "" "" "" slide)
+                    (Lia.Script.init flags.settings "" "" "" slide)
                     Nothing
                     0
                 )
@@ -124,7 +116,7 @@ init flags url key =
             ( Model key
                 url
                 Idle
-                (Lia.Script.init_textbook "" "" "" slide)
+                (Lia.Script.init flags.settings "" "" "" slide)
                 Nothing
                 0
             , Cmd.none
