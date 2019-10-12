@@ -38,6 +38,7 @@ type alias Definition =
     , uid : Int
     , debug : Bool
     , onload : String
+    , lightMode : Maybe Bool
     }
 
 
@@ -61,6 +62,7 @@ default base =
     , uid = -1
     , debug = False
     , onload = ""
+    , lightMode = Nothing
     }
 
 

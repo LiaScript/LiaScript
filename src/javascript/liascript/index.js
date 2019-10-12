@@ -97,13 +97,16 @@ class LiaScript {
 
     eventHandler = new LiaEvents()
 
+    let settings = localStorage.getItem(SETTINGS)
+
     this.app = Elm.App.init({
       node: elem,
       flags: {
         course: course,
         script: script,
         debug: debug,
-        spa: spa
+        spa: spa,
+        settings: settings ? JSON.parse(settings) : settings
       }
     })
 
@@ -113,9 +116,6 @@ class LiaScript {
       lia.log('event2elm => ', msg)
       sendTo(msg)
     }
-
-    let settings = localStorage.getItem(SETTINGS)
-    initSettings(this.app.ports.event2elm.send, settings ? JSON.parse(settings) : settings, true)
 
     this.initChannel(channel, sender)
     this.initEventSystem(this.app.ports.event2js.subscribe, sender)
@@ -272,11 +272,6 @@ class LiaScript {
           meta('og:type', 'website')
           meta('og:url', '')
           meta('og:image', logo)
-
-          if (!self.channel) {
-            let settings = localStorage.getItem(SETTINGS)
-            initSettings(elmSend, settings ? JSON.parse(settings) : settings, true)
-          }
 
           break
         }

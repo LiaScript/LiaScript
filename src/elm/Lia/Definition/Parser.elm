@@ -88,6 +88,21 @@ definition =
                         , store "link:" (addToResources Link)
                         , store "translation:" add_translation
                         , store "version:" (\x d -> { d | version = x })
+                        , store "dark:"
+                            (\x d ->
+                                { d
+                                    | lightMode =
+                                        case x of
+                                            "true" ->
+                                                Just False
+
+                                            "false" ->
+                                                Just True
+
+                                            _ ->
+                                                Nothing
+                                }
+                            )
                         , store "debug:"
                             (\x d ->
                                 { d
