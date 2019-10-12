@@ -140,6 +140,9 @@ init_script model script =
                         | light =
                             definition.lightMode
                                 |> Maybe.withDefault settings.light
+                        , mode =
+                            definition.mode
+                                |> Maybe.withDefault settings.mode
                     }
               }
                 |> add_todos definition

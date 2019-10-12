@@ -40,6 +40,7 @@ import Lia.Parser.Context
         , init
         )
 import Lia.Parser.Helper exposing (newline, stringTill)
+import Lia.Settings.Model exposing (Mode(..))
 
 
 parse : Parser Context ()
@@ -92,12 +93,30 @@ definition =
                             (\x d ->
                                 { d
                                     | lightMode =
-                                        case x of
+                                        case x |> String.toLower of
                                             "true" ->
                                                 Just False
 
                                             "false" ->
                                                 Just True
+
+                                            _ ->
+                                                Nothing
+                                }
+                            )
+                        , store "mode:"
+                            (\x d ->
+                                { d
+                                    | mode =
+                                        case x |> String.toLower of
+                                            "textbook" ->
+                                                Just Textbook
+
+                                            "presentation" ->
+                                                Just Presentation
+
+                                            "slides" ->
+                                                Just Slides
 
                                             _ ->
                                                 Nothing
