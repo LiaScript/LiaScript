@@ -51,11 +51,6 @@ type Msg
     | Handle Event
 
 
-speak : Model -> Bool
-speak model =
-    model.settings.initialized && model.settings.sound
-
-
 send : Int -> List ( String, JE.Value ) -> Cmd Markdown.Msg -> Cmd Msg
 send idx events cmd =
     case events of
@@ -191,7 +186,7 @@ update msg model =
                     else
                         let
                             ( sec_, cmd_, log_ ) =
-                                Markdown.nextEffect (speak model) sec
+                                Markdown.nextEffect model.settings.sound sec
                         in
                         ( set_active_section model sec_
                         , send model.section_active log_ cmd_
@@ -205,7 +200,7 @@ update msg model =
                     else
                         let
                             ( sec_, cmd_, log_ ) =
-                                Markdown.previousEffect (speak model) sec
+                                Markdown.previousEffect model.settings.sound sec
                         in
                         ( set_active_section model sec_
                         , send model.section_active log_ cmd_
@@ -220,7 +215,7 @@ update msg model =
                                     Markdown.initEffect True False sec
 
                                 _ ->
-                                    Markdown.initEffect False (speak model) sec
+                                    Markdown.initEffect False model.settings.sound sec
                     in
                     ( set_active_section { model | to_do = [] } sec_
                     , model.to_do
