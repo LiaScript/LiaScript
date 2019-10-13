@@ -4,6 +4,7 @@ import Combine
     exposing
         ( Parser
         , andThen
+        , fail
         , ignore
         , keep
         , map
@@ -33,10 +34,19 @@ split : String -> Context -> Parser Context Quiz
 split str state =
     case String.split "|" str of
         [ solution ] ->
-            solution
-                |> Text
-                |> Quiz []
-                |> succeed
+            if
+                solution
+                    |> String.replace "_" " "
+                    |> String.trim
+                    |> String.isEmpty
+            then
+                fail ""
+
+            else
+                solution
+                    |> Text
+                    |> Quiz []
+                    |> succeed
 
         options ->
             options
