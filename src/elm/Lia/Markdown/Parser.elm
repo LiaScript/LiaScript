@@ -17,6 +17,8 @@ import Combine
         , modifyState
         , onsuccess
         , regex
+        , sepBy
+        , sepBy1
         , sepEndBy
         , skip
         , string
@@ -37,7 +39,7 @@ import Lia.Markdown.Quiz.Parser as Quiz
 import Lia.Markdown.Survey.Parser as Survey
 import Lia.Markdown.Types exposing (Markdown(..), MarkdownS)
 import Lia.Parser.Context exposing (Context, indentation, indentation_append, indentation_pop, indentation_skip)
-import Lia.Parser.Helper exposing (c_frame, newline, newlines, spaces)
+import Lia.Parser.Helper exposing (c_frame, debug, newline, newlines, spaces)
 import SvgBob
 
 
@@ -89,8 +91,12 @@ blocks =
                         , md_annotations
                             |> map Survey
                             |> andMap Survey.parse
-                        , ordered_list
-                        , unordered_list
+                        , md_annotations
+                            |> map OrderedList
+                            |> andMap ordered_list
+                        , md_annotations
+                            |> map BulletList
+                            |> andMap unordered_list
                         , md_annotations
                             |> map Paragraph
                             |> andMap paragraph
@@ -167,12 +173,13 @@ solution =
         rslt e1 blocks_ e2 =
             ( blocks_, e2 - e1 )
     in
-    indentation
-        --  |> debug "solution"
-        |> ignore (regex "[\t ]*\\*{3,}[\t ]*\\n+")
+    regex "[\t ]*\\*{3,}[\t ]*\\n+"
         |> keep (withState (\s -> succeed s.effect_model.effects))
         |> map rslt
-        |> andMap (manyTill (blocks |> ignore newlines) (indentation |> ignore (regex "[\t ]*\\*{3,}[\t ]*")))
+        |> andMap
+            (manyTill (blocks |> ignore newlines)
+                (regex "[\t ]*\\*{3,}[\t ]*")
+            )
         |> andMap (withState (\s -> succeed s.effect_model.effects))
         |> maybe
 
@@ -185,36 +192,30 @@ ident_blocks =
         |> ignore indentation_pop
 
 
-unordered_list : Parser Context Markdown
+unordered_list : Parser Context (List MarkdownS)
 unordered_list =
-    map BulletList md_annotations
-        |> andMap
+    indentation_append "  "
+        |> keep
             (regex "[*+-] "
-                |> ignore (indentation_append "  ")
-                |> keep
-                    (blocks
-                        |> ignore (regex "\\n?")
-                        |> many1
-                    )
-                |> ignore indentation_pop
+                |> keep (sepBy1 (regex "\\n?") blocks)
                 |> many1
             )
+        |> ignore indentation_pop
+        |> many1
+        |> map List.concat
 
 
-ordered_list : Parser Context Markdown
+ordered_list : Parser Context (List MarkdownS)
 ordered_list =
-    map OrderedList md_annotations
-        |> andMap
+    indentation_append "   "
+        |> keep
             (regex "\\d+\\. "
-                |> ignore (indentation_append "   ")
-                |> keep
-                    (blocks
-                        |> ignore (regex "\\n?")
-                        |> many1
-                    )
-                |> ignore indentation_pop
+                |> keep (sepBy1 (regex "\\n?") blocks)
                 |> many1
             )
+        |> ignore indentation_pop
+        |> many1
+        |> map List.concat
 
 
 horizontal_line : Parser Context Markdown
@@ -280,15 +281,15 @@ quote =
     map Quote md_annotations
         |> andMap
             (string "> "
-                |> ignore (indentation_append "> ?")
+                |> ignore (indentation_append "> ")
                 |> keep
                     (blocks
                         |> ignore (maybe indentation)
                         |> ignore (regex "\\n?")
                         |> many1
                     )
-                |> ignore indentation_pop
             )
+        |> ignore indentation_pop
 
 
 md_annotations : Parser Context Annotation
