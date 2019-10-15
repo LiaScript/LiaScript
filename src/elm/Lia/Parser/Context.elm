@@ -9,7 +9,7 @@ module Lia.Parser.Context exposing
     )
 
 import Array
-import Combine exposing (Parser, ignore, modifyState, regex, skip, succeed, withState)
+import Combine exposing (Parser, ignore, modifyState, regex, skip, string, succeed, withState)
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Code.Types as Code
 import Lia.Markdown.Effect.Model as Effect
@@ -64,7 +64,7 @@ par_ s =
 
     else
         String.concat s.identation
-            |> regex
+            |> string
             |> skip
 
 
