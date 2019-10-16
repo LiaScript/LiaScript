@@ -205,12 +205,14 @@ unordered_list =
         |> map List.concat
 
 
-ordered_list : Parser Context (List MarkdownS)
+ordered_list : Parser Context (List ( String, MarkdownS ))
 ordered_list =
     indentation_append "   "
         |> keep
-            (regex "\\d+\\. "
-                |> keep (sepBy1 (regex "\\n?") blocks)
+            (regex "-?\\d+"
+                |> map Tuple.pair
+                |> ignore (string ". ")
+                |> andMap (sepBy1 (regex "\\n?") blocks)
                 |> many1
             )
         |> ignore indentation_pop
