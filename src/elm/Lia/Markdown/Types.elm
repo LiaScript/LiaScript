@@ -13,7 +13,7 @@ type Markdown
     | Quote Annotation MarkdownS
     | Paragraph Annotation Inlines
     | BulletList Annotation (List MarkdownS)
-    | OrderedList Annotation (List MarkdownS)
+    | OrderedList Annotation (List ( String, MarkdownS ))
     | Table Annotation MultInlines (List String) (List MultInlines)
     | Quiz Annotation Quiz (Maybe ( MarkdownS, Int ))
     | Effect Annotation ( Int, Int, MarkdownS )

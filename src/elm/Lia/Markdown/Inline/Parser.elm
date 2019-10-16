@@ -386,7 +386,7 @@ strings =
         \() ->
             let
                 base =
-                    regex "[^*_~:;`!\\^\\[\\]\\(\\)|{}\\\\\\n\\-<>=$ ]+"
+                    regex "[^*_~:;`!\\^\\[\\]\\(\\)|{}\\\\\\n\\-+<>=$ ]+"
                         |> map Chars
 
                 escape =
@@ -419,7 +419,7 @@ strings =
                         |> map Chars
 
                 base2 =
-                    regex "[^\n|*]+"
+                    regex "[^\n|*|+]+"
                         |> map Chars
             in
             choice
