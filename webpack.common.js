@@ -35,7 +35,7 @@ module.exports = {
   plugins: [
     new elmMinify.WebpackPlugin(),
     new MiniCssExtractPlugin(),
-    new CleanWebpackPlugin(['dist']),
+    //new CleanWebpackPlugin(['dist']),
     new CopyWebpackPlugin([
       { from: 'src/assets/logo.png', to: '.'},
       { from: 'src/assets/README.md', to: '.'},
@@ -50,7 +50,7 @@ module.exports = {
       { from: 'node_modules/katex/dist/katex.min.css', to: 'formula' },
 
       { from: 'node_modules/ace-builds/src-min-noconflict/', to: 'editor' },
-    ], { debug: "info"} ),
+    ], { debug: "warn"} ),
     new HtmlWebpackPlugin({
       filename: 'index.html',
       template: 'src/assets/index.html'
@@ -79,13 +79,23 @@ module.exports = {
         test: /\.(png|svg|jpg|gif)$/,
         exclude: [/elm-stuff/, /node_modules/],
         use: [
-          'file-loader'
+          {
+            loader: 'file-loader',
+            options: {
+              emitFile: false,
+            }
+          }
         ]
       },
       {
         test: /\.(woff|woff2|eot|ttf|otf)$/,
         use: [
-          'file-loader'
+          {
+            loader: 'file-loader',
+            options: {
+              emitFile: false,
+            }
+          }
         ]
       },
       {
@@ -95,7 +105,8 @@ module.exports = {
           loader: 'elm-webpack-loader?verbose=true',
           options: {
             //debug: true,
-            optimize: true
+            optimize: true,
+            cwd: __dirname + '/node_modules/elm/bin'
           },
         },
       }
