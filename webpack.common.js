@@ -106,7 +106,7 @@ module.exports = {
           options: {
             //debug: true,
             optimize: true,
-            cwd: __dirname
+            cwd: __dirname + '/node_modules/elm/bin'
           },
         },
       }

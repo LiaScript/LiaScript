@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "ace-builds": "^1.4.7",
-    "elm": "^0.19.0-no-deps",
+    "elm": "^0.19.1-1",
     "katex": "^0.10.2",
     "sass-material-colors": "0.0.5"
   }
