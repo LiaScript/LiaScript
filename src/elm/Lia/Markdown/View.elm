@@ -234,7 +234,7 @@ view_block config block =
                     Html.text ""
 
         Chart attr chart ->
-            Charts.view attr chart
+            Charts.view (not config.light) attr chart
 
         ASCII attr txt ->
             txt

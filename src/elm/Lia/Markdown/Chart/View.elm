@@ -23,8 +23,8 @@ import LineChart.Legends as Legends
 import LineChart.Line as Line
 
 
-title : String -> Coordinate.System -> Junk.Layers msg
-title str system =
+title : Bool -> String -> Coordinate.System -> Junk.Layers msg
+title dark str system =
     { below = []
     , above =
         [ Junk.labelAt
@@ -41,8 +41,8 @@ title str system =
     }
 
 
-view : Annotation -> Chart -> Html msg
-view attr chart =
+view : Bool -> Annotation -> Chart -> Html msg
+view dark attr chart =
     let
         list =
             chart
@@ -50,7 +50,7 @@ view attr chart =
                 |> Dict.toList
                 |> List.map plot
     in
-    Html.div (annotation "lia-chart" attr)
+    Html.div (annotation "lia-svg" attr)
         [ LineChart.viewCustom
             { y = Axis.default 450 chart.y_label (Tuple.first >> .y)
             , x = Axis.default 600 chart.x_label (Tuple.first >> .x)
@@ -64,7 +64,7 @@ view attr chart =
             , intersection = Intersection.default
             , legends = Legends.none
             , events = Events.default
-            , junk = Junk.custom (title chart.title)
+            , junk = Junk.custom (title dark chart.title)
             , grid = Grid.default
             , area = Area.default
             , line = Line.default

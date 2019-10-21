@@ -43,7 +43,7 @@
         .lia-svg {
             $horiz: map-get($config, spacing-normal);
 
-            //background-color: $bg;
+            background-color: white;
             padding-left: $horiz;
             padding-right: $horiz;
             overflow: auto;
