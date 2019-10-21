@@ -41,7 +41,7 @@
     "webpack-merge": "^4.2.2"
   },
   "dependencies": {
-    "ace-builds": "^1.4.6",
+    "ace-builds": "^1.4.7",
     "katex": "^0.10.2",
     "sass-material-colors": "0.0.5"
   }
