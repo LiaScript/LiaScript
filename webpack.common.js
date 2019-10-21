@@ -79,13 +79,23 @@ module.exports = {
         test: /\.(png|svg|jpg|gif)$/,
         exclude: [/elm-stuff/, /node_modules/],
         use: [
-          'file-loader'
+          {
+            loader: 'file-loader',
+            options: {
+              emitFile: false,
+            }
+          }
         ]
       },
       {
         test: /\.(woff|woff2|eot|ttf|otf)$/,
         use: [
-          'file-loader'
+          {
+            loader: 'file-loader',
+            options: {
+              emitFile: false,
+            }
+          }
         ]
       },
       {
