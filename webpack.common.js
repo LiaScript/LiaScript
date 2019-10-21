@@ -35,7 +35,7 @@ module.exports = {
   plugins: [
     new elmMinify.WebpackPlugin(),
     new MiniCssExtractPlugin(),
-    new CleanWebpackPlugin(['dist']),
+    //new CleanWebpackPlugin(['dist']),
     new CopyWebpackPlugin([
       { from: 'src/assets/logo.png', to: '.'},
       { from: 'src/assets/README.md', to: '.'},
