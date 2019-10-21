@@ -36,7 +36,10 @@ scan sections pattern =
 search : String -> Section -> Section
 search pattern section =
     { section
-        | visible = String.contains pattern section.code
+        | visible =
+            section.code
+                |> String.toLower
+                |> String.contains pattern
     }
 
 
