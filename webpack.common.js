@@ -50,7 +50,7 @@ module.exports = {
       { from: 'node_modules/katex/dist/katex.min.css', to: 'formula' },
 
       { from: 'node_modules/ace-builds/src-min-noconflict/', to: 'editor' },
-    ], { debug: "info"} ),
+    ], { debug: "warn"} ),
     new HtmlWebpackPlugin({
       filename: 'index.html',
       template: 'src/assets/index.html'
