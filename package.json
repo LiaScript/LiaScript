@@ -22,7 +22,6 @@
     "clean-webpack-plugin": "^1.0.1",
     "copy-webpack-plugin": "^4.6.0",
     "css-loader": "^2.1.1",
-    "elm": "^0.19.1-1",
     "elm-minify": "^2.0.4",
     "elm-webpack-loader": "^6.0.0",
     "express": "^4.17.1",
@@ -43,6 +42,7 @@
   },
   "dependencies": {
     "ace-builds": "^1.4.7",
+    "elm": "^0.19.0-no-deps",
     "katex": "^0.10.2",
     "sass-material-colors": "0.0.5"
   }
