@@ -283,7 +283,7 @@ quote =
     map Quote md_annotations
         |> andMap
             (string "> "
-                |> ignore (indentation_append "> ")
+                |> ignore (indentation_append "> ?")
                 |> keep
                     (blocks
                         |> ignore (maybe indentation)

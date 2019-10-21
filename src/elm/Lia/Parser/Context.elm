@@ -67,7 +67,7 @@ par_ s =
 
     else
         String.concat s.identation
-            |> string
+            |> regex
             |> skip
 
 
