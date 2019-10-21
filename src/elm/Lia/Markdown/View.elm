@@ -234,20 +234,23 @@ view_block config block =
                     Html.text ""
 
         Chart attr chart ->
-            Charts.view attr chart
+            Charts.view (not config.light) attr chart
 
         ASCII attr txt ->
             txt
                 |> SvgBob.init SvgBob.default
-                |> SvgBob.getSvg
-                    (if config.light then
-                        attributes attr
+                |> SvgBob.getSvg (attributes attr)
+                |> (\svg ->
+                        if config.light then
+                            svg
 
-                     else
-                        attributes attr
-                            |> (::) (Svg.Attributes.style "-webkit-filter: invert(100%);")
-                            |> (::) (Svg.Attributes.style "filter: invert(100%);")
-                    )
+                        else
+                            Html.div
+                                [ Attr.style "-webkit-filter" "invert(100%)"
+                                , Attr.style "filter" "invert(100%)"
+                                ]
+                                [ svg ]
+                   )
 
 
 view_table : Config -> Annotation -> MultInlines -> List String -> List MultInlines -> Html Msg
