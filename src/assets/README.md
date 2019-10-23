@@ -8,8 +8,6 @@ narrator: US English Female
 
 dark:  true
 
-mode:  Slides
-
 comment:  This is a very simple comment.
           Multiline is also okay.
 
@@ -18,19 +16,28 @@ script:   https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.js
 
 link: https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.css
 
+link: https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.2/animate.min.css
+
 translation: Deutsch  translations/German.md
 translation: Français translations/French.md
 translation: Русский  translations/Russian.md
+
 
 
 -->
 
 # Lia-Script
 
+  <!-- class="animated bounce infinite delay-2s"-->
+ {{2-5}}
+<!-- style="color: red" -->
+this should be red...
+
+
 1. a
 3. c
 
-   + asdf
+   + as {1}{df<!-- class="animated bounce infinite delay-2s"-->}
    * asdfa
 
 -2. e

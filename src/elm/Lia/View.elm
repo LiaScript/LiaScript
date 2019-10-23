@@ -82,7 +82,7 @@ view_footer lang sound mode effects =
         Slides ->
             effects
                 |> current_paragraphs
-                |> List.map (\( _, par ) -> Html.p [] (viewer 9999 par))
+                |> List.map (\( _, par ) -> Html.p [] (viewer mode 9999 par))
                 |> flip List.append [ responsive lang sound (UpdateSettings toggle_sound) ]
                 |> Html.footer [ Attr.class "lia-footer" ]
 

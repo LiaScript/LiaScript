@@ -7,16 +7,17 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Markdown.Quiz.Vector.Types exposing (Quiz, State(..))
 import Lia.Markdown.Quiz.Vector.Update exposing (Msg(..))
+import Lia.Settings.Model exposing (Mode)
 
 
-view : Bool -> Quiz -> State -> Html Msg
-view solved quiz state =
+view : Mode -> Bool -> Quiz -> State -> Html Msg
+view mode solved quiz state =
     case ( quiz.solution, state ) of
         ( SingleChoice _, SingleChoice list ) ->
-            table (radio solved) quiz.options list
+            table (radio mode solved) quiz.options list
 
         ( MultipleChoice _, MultipleChoice list ) ->
-            table (check solved) quiz.options list
+            table (check mode solved) quiz.options list
 
         _ ->
             Html.text ""
@@ -30,8 +31,8 @@ table fn inlines bools =
         |> Html.table [ Attr.attribute "cellspacing" "8" ]
 
 
-check : Bool -> Bool -> ( Int, Inlines ) -> Html Msg
-check solved checked ( id, line ) =
+check : Mode -> Bool -> Bool -> ( Int, Inlines ) -> Html Msg
+check mode solved checked ( id, line ) =
     Html.tr [ Attr.class "lia-check-item" ]
         [ Html.td
             [ Attr.attribute "valign" "top", Attr.class "lia-label" ]
@@ -50,13 +51,13 @@ check solved checked ( id, line ) =
                 [ Html.text "check" ]
             ]
         , line
-            |> List.map view_inf
+            |> List.map (view_inf mode)
             |> Html.td [ Attr.class "lia-label" ]
         ]
 
 
-radio : Bool -> Bool -> ( Int, Inlines ) -> Html Msg
-radio solved checked ( id, line ) =
+radio : Mode -> Bool -> Bool -> ( Int, Inlines ) -> Html Msg
+radio mode solved checked ( id, line ) =
     Html.tr [ Attr.class "lia-radio-item" ]
         [ Html.td [ Attr.attribute "valign" "top", Attr.class "lia-label" ]
             [ Html.input
@@ -72,6 +73,6 @@ radio solved checked ( id, line ) =
             , Html.span [ Attr.class "lia-radio-btn" ] []
             ]
         , line
-            |> List.map view_inf
+            |> List.map (view_inf mode)
             |> Html.td [ Attr.class "lia-label" ]
         ]

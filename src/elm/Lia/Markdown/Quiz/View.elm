@@ -20,44 +20,45 @@ import Lia.Markdown.Quiz.Types
         )
 import Lia.Markdown.Quiz.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Vector.View as Vector
+import Lia.Settings.Model exposing (Mode)
 import Translations exposing (Lang, quizCheck, quizChecked, quizResolved, quizSolution)
 
 
-view : Lang -> Quiz -> Vector -> Html Msg
-view lang quiz vector =
+view : Mode -> Lang -> Quiz -> Vector -> Html Msg
+view mode lang quiz vector =
     case get_state vector quiz.id of
         Just elem ->
-            state_view (solved elem) elem.state quiz
-                |> view_quiz lang elem quiz
+            state_view mode (solved elem) elem.state quiz
+                |> view_quiz mode lang elem quiz
 
         _ ->
             Html.text ""
 
 
-state_view : Bool -> State -> Quiz -> Html Msg
-state_view solved state quiz =
+state_view : Mode -> Bool -> State -> Quiz -> Html Msg
+state_view mode solved state quiz =
     case ( state, quiz.quiz ) of
         ( Block_State s, Block_Type q ) ->
             s
-                |> Block.view solved q
+                |> Block.view mode solved q
                 |> Html.map (Block_Update quiz.id)
 
         ( Vector_State s, Vector_Type q ) ->
             s
-                |> Vector.view solved q
+                |> Vector.view mode solved q
                 |> Html.map (Vector_Update quiz.id)
 
         ( Matrix_State s, Matrix_Type q ) ->
             s
-                |> Matrix.view solved q
+                |> Matrix.view mode solved q
                 |> Html.map (Matrix_Update quiz.id)
 
         _ ->
             Html.text ""
 
 
-view_quiz : Lang -> Element -> Quiz -> Html Msg -> Html Msg
-view_quiz lang state quiz fn =
+view_quiz : Mode -> Lang -> Element -> Quiz -> Html Msg -> Html Msg
+view_quiz mode lang state quiz fn =
     Html.p []
         [ if state.error_msg == "" then
             Html.text ""
@@ -76,7 +77,7 @@ view_quiz lang state quiz fn =
 
           else
             view_button_solution lang state.solved (ShowSolution quiz.id quiz.quiz)
-        , view_hints quiz.id state.hint quiz.hints
+        , view_hints mode quiz.id state.hint quiz.hints
         ]
 
 
@@ -118,8 +119,8 @@ view_button lang trials solved msg =
                 [ Html.text (quizResolved lang) ]
 
 
-view_hints : Int -> Int -> MultInlines -> Html Msg
-view_hints idx counter hints =
+view_hints : Mode -> Int -> Int -> MultInlines -> Html Msg
+view_hints mode idx counter hints =
     let
         v_hints h c =
             case ( h, c ) of
@@ -132,7 +133,7 @@ view_hints idx counter hints =
                 ( x :: xs, _ ) ->
                     Html.p []
                         (Html.span [ Attr.class "lia-icon" ] [ Html.text "lightbulb_outline" ]
-                            :: List.map view_inf x
+                            :: List.map (view_inf mode) x
                         )
                         :: v_hints xs (c - 1)
     in
