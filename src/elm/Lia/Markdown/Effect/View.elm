@@ -1,4 +1,4 @@
-module Lia.Markdown.Effect.View exposing (comment, responsive, state, view, view_block)
+module Lia.Markdown.Effect.View exposing (comment, responsive, state, view)
 
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -19,12 +19,6 @@ view viewer idx elements =
                 |> List.singleton
                 |> Html.span [ Attr.class "lia-effect-circle-inline" ]
             )
-
-
-view_block : (block -> Html msg) -> Int -> List block -> List (Html msg)
-view_block viewer idx blocks =
-    --Html.span [ Attr.class "lia-effect-circle" ] [ Html.text (String.fromInt idx) ]
-    List.map viewer blocks
 
 
 comment : Lang -> String -> Bool -> Bool -> msg -> Model -> (inline -> Html msg) -> Int -> List inline -> Html msg

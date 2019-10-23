@@ -1,6 +1,5 @@
 module Lia.Markdown.View exposing (view)
 
-import Color
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
@@ -8,7 +7,6 @@ import Html.Lazy exposing (lazy2)
 import Lia.Markdown.Chart.View as Charts
 import Lia.Markdown.Code.View as Codes
 import Lia.Markdown.Effect.Model as Comments
-import Lia.Markdown.Effect.View as Effects
 import Lia.Markdown.Footnote.Model as Footnotes
 import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
@@ -19,7 +17,6 @@ import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Settings.Model exposing (Mode(..))
 import Lia.Types exposing (Section)
-import Svg.Attributes
 import SvgBob
 import Translations exposing (Lang)
 
@@ -154,7 +151,7 @@ view_block config block =
                     [ viewCircle id_in
                     , Html.div
                         (annotation "lia-effect-inline" Nothing)
-                        (Effects.view_block (view_block config) id_in sub_blocks)
+                        (List.map (view_block config) sub_blocks)
                     ]
 
             else if (id_in <= config.section.effect_model.visible) && (id_out > config.section.effect_model.visible) then
@@ -169,7 +166,7 @@ view_block config block =
                          )
                             :: annotation "lia-effect-inline" attr
                         )
-                        (Effects.view_block (view_block config) id_in sub_blocks)
+                        (List.map (view_block config) sub_blocks)
                     ]
 
             else

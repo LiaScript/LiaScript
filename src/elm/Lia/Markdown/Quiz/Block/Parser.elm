@@ -17,7 +17,7 @@ import Lia.Markdown.Inline.Parser exposing (parse_inlines)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Block.Types exposing (Quiz, State(..))
 import Lia.Parser.Context exposing (Context)
-import Lia.Parser.Helper exposing (newline, stringTill)
+import Lia.Parser.Helper exposing (newline)
 
 
 parse : Parser Context Quiz
