@@ -37,11 +37,12 @@ this should be red...
 1. a
 3. c
 
-   + as {1}{df<!-- class="animated bounce infinite delay-2s"-->}
+   + as {1}{df}<!-- class="animated bounce infinite delay-2s"-->
    * asdfa
 
 -2. e
 5. ggg
+
 
 
 
