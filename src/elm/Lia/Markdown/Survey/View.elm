@@ -8,11 +8,12 @@ import Lia.Markdown.Inline.View exposing (annotation, view_inf)
 import Lia.Markdown.Survey.Model exposing (get_matrix_state, get_select_state, get_submission_state, get_text_state, get_vector_state)
 import Lia.Markdown.Survey.Types exposing (Survey, Type(..), Vector)
 import Lia.Markdown.Survey.Update exposing (Msg(..))
+import Lia.Settings.Model exposing (Mode)
 import Translations exposing (Lang, surveySubmit, surveySubmitted, surveyText)
 
 
-view : Lang -> Annotation -> Survey -> Vector -> Html Msg
-view lang attr survey model =
+view : Mode -> Lang -> Annotation -> Survey -> Vector -> Html Msg
+view mode lang attr survey model =
     Html.p (annotation "lia-quiz lia-card" attr) <|
         case survey.survey of
             Text lines ->
@@ -20,17 +21,17 @@ view lang attr survey model =
                     |> view_survey lang model survey.id survey.javascript
 
             Select inlines ->
-                view_select lang inlines (get_select_state model survey.id) survey.id
+                view_select mode lang inlines (get_select_state model survey.id) survey.id
                     |> view_survey lang model survey.id survey.javascript
 
             Vector button questions ->
-                vector button (VectorUpdate survey.id) (get_vector_state model survey.id)
+                vector mode button (VectorUpdate survey.id) (get_vector_state model survey.id)
                     |> view_vector questions
                     |> view_survey lang model survey.id survey.javascript
 
             Matrix button header vars questions ->
-                matrix button (MatrixUpdate survey.id) (get_matrix_state model survey.id) vars
-                    |> view_matrix header vars questions
+                matrix mode button (MatrixUpdate survey.id) (get_matrix_state model survey.id) vars
+                    |> view_matrix mode header vars questions
                     |> view_survey lang model survey.id survey.javascript
 
 
@@ -58,8 +59,8 @@ submit_button lang submitted idx javascript =
         ]
 
 
-view_select : Lang -> List Inlines -> ( Bool, Int ) -> Int -> Bool -> Html Msg
-view_select lang options ( open, value ) id submitted =
+view_select : Mode -> Lang -> List Inlines -> ( Bool, Int ) -> Int -> Bool -> Html Msg
+view_select mode lang options ( open, value ) id submitted =
     Html.span
         []
         [ Html.span
@@ -70,7 +71,7 @@ view_select lang options ( open, value ) id submitted =
               else
                 onClick <| SelectChose id
             ]
-            [ get_option value options
+            [ get_option mode value options
             , Html.span
                 [ Attr.class "lia-icon"
                 , Attr.style "float" "right"
@@ -83,7 +84,7 @@ view_select lang options ( open, value ) id submitted =
                 ]
             ]
         , options
-            |> List.indexedMap (option id)
+            |> List.indexedMap (option mode id)
             |> Html.div
                 [ Attr.class "lia-dropdown-options"
                 , Attr.style "max-height" <|
@@ -96,10 +97,10 @@ view_select lang options ( open, value ) id submitted =
         ]
 
 
-option : Int -> Int -> Inlines -> Html Msg
-option id1 id2 opt =
+option : Mode -> Int -> Int -> Inlines -> Html Msg
+option mode id1 id2 opt =
     opt
-        |> List.map view_inf
+        |> List.map (view_inf mode)
         |> Html.div
             [ Attr.class "lia-dropdown-option"
             , SelectUpdate id1 id2
@@ -107,14 +108,14 @@ option id1 id2 opt =
             ]
 
 
-get_option : Int -> List Inlines -> Html Msg
-get_option id list =
+get_option : Mode -> Int -> List Inlines -> Html Msg
+get_option mode id list =
     case ( id, list ) of
         ( 0, x :: _ ) ->
-            x |> List.map view_inf |> Html.span []
+            x |> List.map (view_inf mode) |> Html.span []
 
         ( i, _ :: xs ) ->
-            get_option (i - 1) xs
+            get_option mode (i - 1) xs
 
         ( _, [] ) ->
             Html.text "choose"
@@ -148,12 +149,12 @@ view_vector questions fn submitted =
     Html.div [] <| List.map fnX questions
 
 
-view_matrix : List Inlines -> List String -> List Inlines -> (Bool -> ( Int, Inlines ) -> Html Msg) -> Bool -> Html Msg
-view_matrix header vars questions fn submitted =
+view_matrix : Mode -> List Inlines -> List String -> List Inlines -> (Bool -> ( Int, Inlines ) -> Html Msg) -> Bool -> Html Msg
+view_matrix mode header vars questions fn submitted =
     let
         th =
             header
-                |> List.map (List.map view_inf >> Html.th [ Attr.align "center" ])
+                |> List.map (List.map (view_inf mode) >> Html.th [ Attr.align "center" ])
                 |> Html.thead []
 
         fnX =
@@ -166,18 +167,18 @@ view_matrix header vars questions fn submitted =
         |> Html.table [ Attr.class "lia-survey-matrix" ]
 
 
-vector : Bool -> (String -> Msg) -> (String -> Bool) -> Bool -> ( String, Inlines ) -> Html Msg
-vector button msg fn submitted ( var, elements ) =
+vector : Mode -> Bool -> (String -> Msg) -> (String -> Bool) -> Bool -> ( String, Inlines ) -> Html Msg
+vector mode button msg fn submitted ( var, elements ) =
     Html.table [ Attr.attribute "cellspacing" "8" ]
         [ Html.td [ Attr.attribute "valign" "top", Attr.class "lia-label" ]
             [ input button (msg var) (fn var) submitted ]
         , Html.td [ Attr.class "lia-label" ]
-            [ inline elements ]
+            [ inline mode elements ]
         ]
 
 
-matrix : Bool -> (Int -> String -> Msg) -> (Int -> String -> Bool) -> List String -> Bool -> ( Int, Inlines ) -> Html Msg
-matrix button msg fn vars submitted ( row, elements ) =
+matrix : Mode -> Bool -> (Int -> String -> Msg) -> (Int -> String -> Bool) -> List String -> Bool -> ( Int, Inlines ) -> Html Msg
+matrix mode button msg fn vars submitted ( row, elements ) =
     let
         msgX =
             msg row
@@ -194,7 +195,7 @@ matrix button msg fn vars submitted ( row, elements ) =
                 )
                 vars
             )
-            [ Html.td [] [ inline elements ] ]
+            [ Html.td [] [ inline mode elements ] ]
 
 
 input : Bool -> Msg -> Bool -> Bool -> Html Msg
@@ -242,6 +243,6 @@ input button msg checked submitted =
         ]
 
 
-inline : Inlines -> Html Msg
-inline elements =
-    Html.span [] <| List.map view_inf elements
+inline : Mode -> Inlines -> Html Msg
+inline mode elements =
+    Html.span [] <| List.map (view_inf mode) elements

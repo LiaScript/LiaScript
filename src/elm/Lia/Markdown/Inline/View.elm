@@ -7,6 +7,7 @@ import Html.Parser.Util as Util
 import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..))
+import Lia.Settings.Model exposing (Mode(..))
 
 
 annotation : String -> Annotation -> List (Attribute msg)
@@ -42,9 +43,9 @@ attributes attr =
             []
 
 
-viewer : Int -> Inlines -> List (Html msg)
-viewer visible elements =
-    List.map (view visible) elements
+viewer : Mode -> Int -> Inlines -> List (Html msg)
+viewer mode visible elements =
+    List.map (view mode visible) elements
 
 
 goto : Int -> Attribute msg
@@ -52,26 +53,26 @@ goto line =
     Attr.attribute "ondblclick" ("liaGoto(" ++ String.fromInt line ++ ");")
 
 
-view : Int -> Inline -> Html msg
-view visible element =
+view : Mode -> Int -> Inline -> Html msg
+view mode visible element =
     case element of
         Chars e Nothing ->
             Html.text e
 
         Bold e attr ->
-            Html.b (annotation "lia-bold" attr) [ view visible e ]
+            Html.b (annotation "lia-bold" attr) [ view mode visible e ]
 
         Italic e attr ->
-            Html.em (annotation "lia-italic" attr) [ view visible e ]
+            Html.em (annotation "lia-italic" attr) [ view mode visible e ]
 
         Strike e attr ->
-            Html.s (annotation "lia-strike" attr) [ view visible e ]
+            Html.s (annotation "lia-strike" attr) [ view mode visible e ]
 
         Underline e attr ->
-            Html.u (annotation "lia-underline" attr) [ view visible e ]
+            Html.u (annotation "lia-underline" attr) [ view mode visible e ]
 
         Superscript e attr ->
-            Html.sup (annotation "lia-superscript" attr) [ view visible e ]
+            Html.sup (annotation "lia-superscript" attr) [ view mode visible e ]
 
         Verbatim e attr ->
             Html.code
@@ -79,11 +80,11 @@ view visible element =
                 [ Html.text e ]
 
         Ref e attr ->
-            reference visible e attr
+            reference mode visible e attr
 
-        Formula mode e Nothing ->
+        Formula mode_ e Nothing ->
             Html.node "katex-formula"
-                [ Attr.attribute "displayMode" mode ]
+                [ Attr.attribute "displayMode" mode_ ]
                 [ Html.text e ]
 
         Symbol e Nothing ->
@@ -96,7 +97,7 @@ view visible element =
 
         Container list attr ->
             list
-                |> List.map (\e -> view visible e)
+                |> List.map (\e -> view mode visible e)
                 |> Html.span (annotation "lia-container" attr)
 
         HTML list ->
@@ -107,38 +108,46 @@ view visible element =
         EInline id_in id_out e attr ->
             if (id_in <= visible) && (id_out > visible) then
                 Html.span
-                    (Attr.id (String.fromInt id_in) :: annotation "lia-effect-inline" attr)
-                    (Effect.view (viewer visible) id_in e)
+                    (Attr.id (String.fromInt id_in)
+                        :: annotation "lia-effect-inline"
+                            (if mode == Textbook then
+                                Nothing
+
+                             else
+                                attr
+                            )
+                    )
+                    (Effect.view (viewer mode visible) id_in e)
 
             else
                 Html.text ""
 
         Symbol e attr ->
-            view visible (Container [ Symbol e Nothing ] attr)
+            view mode visible (Container [ Symbol e Nothing ] attr)
 
         Chars e attr ->
-            view visible (Container [ Chars e Nothing ] attr)
+            view mode visible (Container [ Chars e Nothing ] attr)
 
-        Formula mode e attr ->
-            view visible (Container [ Formula mode e Nothing ] attr)
+        Formula mode_ e attr ->
+            view mode visible (Container [ Formula mode_ e Nothing ] attr)
 
         Goto e line ->
-            Html.span [ goto line ] [ view visible e ]
+            Html.span [ goto line ] [ view mode visible e ]
 
 
-view_inf : Inline -> Html msg
-view_inf =
-    view 99999
+view_inf : Mode -> Inline -> Html msg
+view_inf mode =
+    view mode 99999
 
 
-reference : Int -> Reference -> Annotation -> Html msg
-reference visible ref attr =
+reference : Mode -> Int -> Reference -> Annotation -> Html msg
+reference mode visible ref attr =
     case ref of
         Link alt_ url_ title_ ->
-            view_url visible alt_ url_ title_ attr
+            view_url mode visible alt_ url_ title_ attr
 
         Mail alt_ url_ title_ ->
-            view_url visible alt_ url_ title_ attr
+            view_url mode visible alt_ url_ title_ attr
 
         Image alt_ url_ title_ ->
             Html.img
@@ -146,7 +155,7 @@ reference visible ref attr =
                     :: Attr.title title_
                     :: annotation "lia-image" attr
                 )
-                (viewer visible alt_)
+                (viewer mode visible alt_)
 
         Audio alt_ ( tube, url_ ) title_ ->
             if tube then
@@ -158,7 +167,7 @@ reference visible ref attr =
                         :: Attr.style "width" "100%"
                         :: annotation "lia-audio" attr
                     )
-                    (viewer visible alt_)
+                    (viewer mode visible alt_)
 
             else
                 Html.audio
@@ -166,7 +175,7 @@ reference visible ref attr =
                         :: Attr.title title_
                         :: annotation "lia-audio" attr
                     )
-                    [ Html.source [ Attr.src url_ ] [], Html.span [] (viewer visible alt_) ]
+                    [ Html.source [ Attr.src url_ ] [], Html.span [] (viewer mode visible alt_) ]
 
         Movie alt_ ( tube, url_ ) title_ ->
             if tube then
@@ -177,17 +186,17 @@ reference visible ref attr =
                         :: Attr.title title_
                         :: annotation "lia-movie" attr
                     )
-                    (viewer visible alt_)
+                    (viewer mode visible alt_)
 
             else
                 Html.video
                     (Attr.controls True :: Attr.title title_ :: annotation "lia-movie" attr)
-                    [ Html.source [ Attr.src url_ ] [], Html.span [] (viewer visible alt_) ]
+                    [ Html.source [ Attr.src url_ ] [], Html.span [] (viewer mode visible alt_) ]
 
 
-view_url : Int -> Inlines -> String -> String -> Annotation -> Html msg
-view_url visible alt_ url_ title_ attr =
+view_url : Mode -> Int -> Inlines -> String -> String -> Annotation -> Html msg
+view_url mode visible alt_ url_ title_ attr =
     [ Attr.href url_, Attr.title title_ ]
         |> List.append (annotation "lia-link" attr)
         |> Html.a
-        |> (\a -> a (viewer visible alt_))
+        |> (\a -> a (viewer mode visible alt_))

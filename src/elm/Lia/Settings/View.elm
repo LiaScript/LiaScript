@@ -188,7 +188,7 @@ thanks to =
     Html.span []
         [ Html.hr [] []
         , to
-            |> List.map view_inf
+            |> List.map (view_inf Textbook)
             |> span_block
         ]
 

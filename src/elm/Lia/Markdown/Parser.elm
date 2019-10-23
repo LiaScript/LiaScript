@@ -17,7 +17,6 @@ import Combine
         , modifyState
         , onsuccess
         , regex
-        , sepBy
         , sepBy1
         , sepEndBy
         , skip
@@ -40,7 +39,6 @@ import Lia.Markdown.Survey.Parser as Survey
 import Lia.Markdown.Types exposing (Markdown(..), MarkdownS)
 import Lia.Parser.Context exposing (Context, indentation, indentation_append, indentation_pop, indentation_skip)
 import Lia.Parser.Helper exposing (c_frame, debug, newline, newlines, spaces)
-import SvgBob
 
 
 run : Parser Context (List Markdown)

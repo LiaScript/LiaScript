@@ -1,6 +1,5 @@
 module Lia.Markdown.View exposing (view)
 
-import Color
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
@@ -8,7 +7,6 @@ import Html.Lazy exposing (lazy2)
 import Lia.Markdown.Chart.View as Charts
 import Lia.Markdown.Code.View as Codes
 import Lia.Markdown.Effect.Model as Comments
-import Lia.Markdown.Effect.View as Effects
 import Lia.Markdown.Footnote.Model as Footnotes
 import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
@@ -19,7 +17,6 @@ import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Settings.Model exposing (Mode(..))
 import Lia.Types exposing (Section)
-import Svg.Attributes
 import SvgBob
 import Translations exposing (Lang)
 
@@ -39,7 +36,7 @@ view lang mode section ace_theme light =
     let
         config =
             Config mode
-                (viewer <|
+                (viewer mode <|
                     if mode == Textbook then
                         9999
 
@@ -149,17 +146,28 @@ view_block config block =
             Html.p (annotation "lia-paragraph" attr) (config.view elements)
 
         Effect attr ( id_in, id_out, sub_blocks ) ->
-            if config.mode == Textbook || ((id_in <= config.section.effect_model.visible) && (id_out > config.section.effect_model.visible)) then
-                Html.div
-                    ((if id_in == config.section.effect_model.visible then
-                        Attr.id "focused"
+            if config.mode == Textbook then
+                Html.div []
+                    [ viewCircle id_in
+                    , Html.div
+                        (annotation "lia-effect-inline" Nothing)
+                        (List.map (view_block config) sub_blocks)
+                    ]
 
-                      else
-                        Attr.id (String.fromInt id_in)
-                     )
-                        :: annotation "lia-effect-inline" attr
-                    )
-                    (Effects.view_block (view_block config) id_in sub_blocks)
+            else if (id_in <= config.section.effect_model.visible) && (id_out > config.section.effect_model.visible) then
+                Html.div []
+                    [ viewCircle id_in
+                    , Html.div
+                        ((if id_in == config.section.effect_model.visible then
+                            Attr.id "focused"
+
+                          else
+                            Attr.id (String.fromInt id_in)
+                         )
+                            :: annotation "lia-effect-inline" attr
+                        )
+                        (List.map (view_block config) sub_blocks)
+                    ]
 
             else
                 Html.text ""
@@ -189,7 +197,7 @@ view_block config block =
 
         Quiz attr quiz Nothing ->
             Html.div (annotation "lia-quiz lia-card" attr)
-                [ Quizzes.view config.lang quiz config.section.quiz_vector
+                [ Quizzes.view config.mode config.lang quiz config.section.quiz_vector
                     |> Html.map UpdateQuiz
                 ]
 
@@ -198,7 +206,7 @@ view_block config block =
                 case Quizzes.view_solution config.section.quiz_vector quiz of
                     ( empty, True ) ->
                         List.append
-                            [ Html.map UpdateQuiz <| Quizzes.view config.lang quiz config.section.quiz_vector ]
+                            [ Html.map UpdateQuiz <| Quizzes.view config.mode config.lang quiz config.section.quiz_vector ]
                             ((if empty then
                                 Html.text ""
 
@@ -209,13 +217,13 @@ view_block config block =
                             )
 
                     _ ->
-                        [ Quizzes.view config.lang quiz config.section.quiz_vector
+                        [ Quizzes.view config.mode config.lang quiz config.section.quiz_vector
                             |> Html.map UpdateQuiz
                         ]
 
         Survey attr survey ->
             config.section.survey_vector
-                |> Surveys.view config.lang attr survey
+                |> Surveys.view config.mode config.lang attr survey
                 |> Html.map UpdateSurvey
 
         Comment ( id1, id2 ) ->
@@ -251,6 +259,11 @@ view_block config block =
                                 ]
                                 [ svg ]
                    )
+
+
+viewCircle : Int -> Html msg
+viewCircle id =
+    Html.span [ Attr.class "lia-effect-circle" ] [ Html.text (String.fromInt id) ]
 
 
 view_table : Config -> Annotation -> MultInlines -> List String -> List MultInlines -> Html Msg

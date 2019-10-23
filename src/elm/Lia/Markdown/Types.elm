@@ -5,7 +5,6 @@ import Lia.Markdown.Code.Types exposing (Code)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
 import Lia.Markdown.Quiz.Types exposing (Quiz)
 import Lia.Markdown.Survey.Types exposing (Survey)
-import SvgBob
 
 
 type Markdown

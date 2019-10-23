@@ -93,11 +93,31 @@
             }
 
             .lia-effect-circle {
-                $effect-circle-size: 1 + map-get($config, spacing-small);
+                $effect-circle-size: 1 + map-get($config, spacing-normal);
                 $bg: mix(map-get($theme, background), map-get($theme, background-inv), 80%);
 
                 position: absolute;
-                left: $effect-circle-size * 0.5;
+                left: 0.2em;
+                font-size: 90%;
+                display: inline-block;
+                width: $effect-circle-size;
+                height: $effect-circle-size;
+                border-radius: $effect-circle-size;
+                background: $bg;
+                color: color-contrast($bg);
+                text-align: center;
+                vertical-align: middle;
+                padding: map-get($config, spacing-tiny);
+
+                &.animated {
+                  left: $effect-circle-size * -1.5;
+                }
+            }
+
+            .lia-effect-circle-inline {
+                $effect-circle-size: 1 + map-get($config, spacing-small);
+                $bg: mix(map-get($theme, background), map-get($theme, background-inv), 80%);
+
                 font-size: 75%;
                 display: inline-block;
                 width: $effect-circle-size;

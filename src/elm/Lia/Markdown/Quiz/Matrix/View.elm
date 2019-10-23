@@ -9,29 +9,30 @@ import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Markdown.Quiz.Matrix.Types exposing (Quiz, State)
 import Lia.Markdown.Quiz.Matrix.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Vector.Types as Vector
+import Lia.Settings.Model exposing (Mode)
 
 
-view : Bool -> Quiz -> State -> Html Msg
-view solved quiz state =
+view : Mode -> Bool -> Quiz -> State -> Html Msg
+view mode solved quiz state =
     state
         |> Array.toList
         |> List.indexedMap (tr solved)
-        |> List.map2 add_text quiz.options
-        |> (::) (header quiz.headers)
+        |> List.map2 (add_text mode) quiz.options
+        |> (::) (header mode quiz.headers)
         |> Html.table [ Attr.class "lia-survey-matrix" ]
 
 
-header : List Inlines -> Html Msg
-header inlines =
+header : Mode -> List Inlines -> Html Msg
+header mode inlines =
     inlines
-        |> List.map th
+        |> List.map (th mode)
         |> Html.tr [ Attr.class "lia-label" ]
 
 
-th : Inlines -> Html Msg
-th inlines =
+th : Mode -> Inlines -> Html Msg
+th mode inlines =
     inlines
-        |> List.map view_inf
+        |> List.map (view_inf mode)
         |> Html.th [ Attr.align "center" ]
 
 
@@ -91,10 +92,10 @@ check solved row_id column_id value =
         ]
 
 
-add_text : Inlines -> List (Html Msg) -> Html Msg
-add_text inline toRow =
+add_text : Mode -> Inlines -> List (Html Msg) -> Html Msg
+add_text mode inline toRow =
     inline
-        |> List.map view_inf
+        |> List.map (view_inf mode)
         |> Html.td []
         |> List.singleton
         |> List.append toRow

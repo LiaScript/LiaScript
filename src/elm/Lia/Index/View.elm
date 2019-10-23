@@ -7,6 +7,7 @@ import Html.Events exposing (onInput)
 import Lia.Index.Model exposing (Model)
 import Lia.Index.Update exposing (Msg(..))
 import Lia.Markdown.Inline.View exposing (viewer)
+import Lia.Settings.Model exposing (Mode(..))
 import Lia.Types exposing (Section, Sections)
 import Translations exposing (Lang, baseSearch)
 
@@ -65,7 +66,7 @@ toc active section =
                 )
             , Attr.href ("#" ++ String.fromInt (section.idx + 1))
             ]
-            (viewer 9999 section.title)
+            (viewer Presentation 9999 section.title)
 
     else
         Html.text ""
