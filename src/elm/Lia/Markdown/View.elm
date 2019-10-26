@@ -154,23 +154,26 @@ view_block config block =
                         (List.map (view_block config) sub_blocks)
                     ]
 
-            else if (id_in <= config.section.effect_model.visible) && (id_out > config.section.effect_model.visible) then
-                Html.div []
+            else
+                let
+                    visible =
+                        (id_in <= config.section.effect_model.visible)
+                            && (id_out > config.section.effect_model.visible)
+                in
+                Html.div [ Attr.hidden (not visible) ]
                     [ viewCircle id_in
                     , Html.div
-                        ((if id_in == config.section.effect_model.visible then
-                            Attr.id "focused"
+                        ((Attr.id <|
+                            if id_in == config.section.effect_model.visible then
+                                "focused"
 
-                          else
-                            Attr.id (String.fromInt id_in)
+                            else
+                                String.fromInt id_in
                          )
                             :: annotation "lia-effect" attr
                         )
                         (List.map (view_block config) sub_blocks)
                     ]
-
-            else
-                Html.text ""
 
         BulletList attr list ->
             list

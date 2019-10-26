@@ -106,22 +106,27 @@ view mode visible element =
                     )
                     (Effect.view (viewer mode visible) id_in e)
 
-            else if (id_in <= visible) && (id_out > visible) then
-                Html.span
-                    (Attr.id (String.fromInt id_in)
-                        :: annotation
-                            (if attr == Nothing then
-                                "lia-effect"
-
-                             else
-                                ""
-                            )
-                            attr
-                    )
-                    (Effect.view (viewer mode visible) id_in e)
-
             else
-                Html.text ""
+                Html.span
+                    [ if (id_in <= visible) && (id_out > visible) then
+                        Attr.hidden False
+
+                      else
+                        Attr.hidden True
+                    ]
+                    [ Html.span
+                        (Attr.id (String.fromInt id_in)
+                            :: annotation
+                                (if attr == Nothing then
+                                    "lia-effect"
+
+                                 else
+                                    ""
+                                )
+                                attr
+                        )
+                        (Effect.view (viewer mode visible) id_in e)
+                    ]
 
         Symbol e attr ->
             view mode visible (Container [ Symbol e Nothing ] attr)
