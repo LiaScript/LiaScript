@@ -150,7 +150,7 @@ view_block config block =
                 Html.div []
                     [ viewCircle id_in
                     , Html.div
-                        (annotation "lia-effect-inline" Nothing)
+                        (annotation "" Nothing)
                         (List.map (view_block config) sub_blocks)
                     ]
 
@@ -164,7 +164,7 @@ view_block config block =
                           else
                             Attr.id (String.fromInt id_in)
                          )
-                            :: annotation "lia-effect-inline" attr
+                            :: annotation "lia-effect" attr
                         )
                         (List.map (view_block config) sub_blocks)
                     ]
