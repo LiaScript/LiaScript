@@ -9,8 +9,21 @@ const MiniCssExtractPlugin    = require('mini-css-extract-plugin');
 const TerserPlugin            = require('terser-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 
+const { ENV, ELM_DEBUGGER, PORT } = process.env;
+
+const isProd = ENV === "production";
+
+const webpackLoader = {
+  loader: "elm-webpack-loader",
+  options: {
+    debug: !isProd && ELM_DEBUGGER !== "false",
+    optimize: isProd,
+    cwd: __dirname
+  }
+};
 
 module.exports = {
+  mode : isProd ? "production" : "development",
   optimization: {
     minimizer: [
       new TerserPlugin({
@@ -25,7 +38,6 @@ module.exports = {
     'lia/index':     './src/index.js',
     'editor/index':  './src/javascript/webcomponents/ace.js',
     'formula/index': './src/javascript/webcomponents/katex.js'
-
   },
   output: {
     filename: '[name].js',
@@ -101,14 +113,9 @@ module.exports = {
       {
         test: /\.elm$/,
         exclude: [/elm-stuff/, /node_modules/],
-        use: {
-          loader: 'elm-webpack-loader?verbose=true',
-          options: {
-            //debug: true,
-            optimize: true,
-            cwd: __dirname + '/node_modules/elm/bin'
-          },
-        },
+        use: isProd
+          ? [webpackLoader]
+          : [{ loader: "elm-hot-webpack-loader" }, webpackLoader]
       }
     ]
   }
