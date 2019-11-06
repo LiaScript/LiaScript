@@ -24,7 +24,7 @@ import Url
 
 project_url : String
 project_url =
-    "https://gitlab.com/Freinet/LiaScript"
+    "https://github.com/LiaScript/LiaScript"
 
 
 
