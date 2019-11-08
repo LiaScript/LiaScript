@@ -47,8 +47,7 @@ toc : Int -> Section -> Html msg
 toc active section =
     if section.visible then
         Html.a
-            [ --onClick (Load idx)
-              Attr.class
+            [ Attr.class
                 ("lia-toc-l"
                     ++ String.fromInt section.indentation
                     ++ (if section.error /= Nothing then
@@ -65,6 +64,12 @@ toc active section =
                        )
                 )
             , Attr.href ("#" ++ String.fromInt (section.idx + 1))
+            , Attr.id <|
+                if active == section.idx then
+                    "focusedToc"
+
+                else
+                    ""
             ]
             (viewer Presentation 9999 section.title)
 
