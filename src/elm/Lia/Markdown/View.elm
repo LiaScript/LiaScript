@@ -16,7 +16,7 @@ import Lia.Markdown.Survey.View as Surveys
 import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Settings.Model exposing (Mode(..))
-import Lia.Types exposing (Section)
+import Lia.Types exposing (Screen, Section)
 import SvgBob
 import Translations exposing (Lang)
 
@@ -28,11 +28,12 @@ type alias Config =
     , ace_theme : String
     , lang : Lang
     , light : Bool
+    , screen : Screen
     }
 
 
-view : Lang -> Mode -> Section -> String -> Bool -> Html Msg
-view lang mode section ace_theme light =
+view : Lang -> Mode -> Section -> String -> Bool -> Screen -> Html Msg
+view lang mode section ace_theme light screen =
     let
         config =
             Config mode
@@ -47,6 +48,7 @@ view lang mode section ace_theme light =
                 ace_theme
                 lang
                 light
+                screen
     in
     case section.error of
         Just msg ->
@@ -245,7 +247,7 @@ view_block config block =
                     Html.text ""
 
         Chart attr chart ->
-            Charts.view (not config.light) attr chart
+            Charts.view (not config.light) attr config.screen.width chart
 
         ASCII attr txt ->
             txt

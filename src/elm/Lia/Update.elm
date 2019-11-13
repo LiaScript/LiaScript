@@ -7,6 +7,7 @@ port module Lia.Update exposing
     )
 
 import Array
+import Browser.Events
 import Json.Encode as JE
 import Lia.Index.Update as Index
 import Lia.Markdown.Effect.Update as Effect
@@ -15,7 +16,7 @@ import Lia.Model exposing (Model, load_src)
 import Lia.Parser.Parser exposing (parse_section)
 import Lia.Settings.Model exposing (Mode(..))
 import Lia.Settings.Update as Settings
-import Lia.Types exposing (Section)
+import Lia.Types exposing (Screen, Section)
 import Port.Event as Event exposing (Event)
 
 
@@ -34,6 +35,8 @@ subscriptions model =
                 , section
                     |> Markdown.subscriptions
                     |> Sub.map UpdateMarkdown
+                , Browser.Events.onResize Screen
+                    |> Sub.map Resize
                 ]
 
         Nothing ->
@@ -49,6 +52,7 @@ type Msg
     | UpdateSettings Settings.Msg
     | UpdateMarkdown Markdown.Msg
     | Handle Event
+    | Resize Screen
 
 
 send : Int -> List ( String, JE.Value ) -> Cmd Markdown.Msg -> Cmd Msg
@@ -105,6 +109,9 @@ update msg model =
             , Cmd.none
             , -1
             )
+
+        Resize screen ->
+            ( { model | screen = screen }, Cmd.none, -1 )
 
         Handle event ->
             case event.topic of

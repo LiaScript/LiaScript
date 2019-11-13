@@ -8,6 +8,17 @@ import { SETTINGS, initSettings } from './settings'
 import { persistent } from './persistent'
 import { lia } from './logger'
 
+function isInViewport (elem) {
+    var bounding = elem.getBoundingClientRect();
+    return (
+        bounding.top >= 20 &&
+        bounding.left >= 0 &&
+        bounding.bottom <= (window.innerHeight -20 || document.documentElement.clientHeight -20) &&
+        bounding.right <= (window.innerWidth || document.documentElement.clientWidth)
+    );
+};
+
+
 function scrollIntoView (id, delay) {
   setTimeout(function (e) {
     try {
@@ -106,7 +117,11 @@ class LiaScript {
         script: script,
         debug: debug,
         spa: spa,
-        settings: settings ? JSON.parse(settings) : settings
+        settings: settings ? JSON.parse(settings) : settings,
+        screen: {
+          width: window.innerWidth,
+          height: window.innerHeight
+        }
       }
     })
 
@@ -159,6 +174,15 @@ class LiaScript {
           if (sec) {
             sec.scrollTo(0, 0)
           }
+
+
+          let elem = document.getElementById("focusedToc");
+          if (elem) {
+            if (!isInViewport(elem)) {
+              elem.scrollIntoView({ behavior: 'smooth' })
+            }
+          }
+
           break
         }
         case 'load': {
