@@ -17,6 +17,7 @@ import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Encode as JE
 import Lia.Script
+import Lia.Types exposing (Screen)
 import Process
 import Task
 import Url
@@ -71,6 +72,7 @@ type alias Flags =
     , spa : Bool
     , debug : Bool
     , settings : JE.Value
+    , screen : Screen
     }
 
 
@@ -85,7 +87,14 @@ init flags url key =
             ( Model key
                 url
                 Loading
-                (Lia.Script.init flags.settings (get_base url) query (get_origin url.query) slide)
+                (Lia.Script.init
+                    flags.settings
+                    (get_base url)
+                    query
+                    (get_origin url.query)
+                    slide
+                    flags.screen
+                )
                 Nothing
                 0
             , download Load_ReadMe_Result query
@@ -95,7 +104,14 @@ init flags url key =
             ( Model key
                 { url | query = Just query }
                 Loading
-                (Lia.Script.init flags.settings (get_base url) query (get_origin url.query) slide)
+                (Lia.Script.init
+                    flags.settings
+                    (get_base url)
+                    query
+                    (get_origin url.query)
+                    slide
+                    flags.screen
+                )
                 Nothing
                 0
             , download Load_ReadMe_Result query
@@ -106,7 +122,14 @@ init flags url key =
                 (Model key
                     url
                     Idle
-                    (Lia.Script.init flags.settings "" "" "" slide)
+                    (Lia.Script.init
+                        flags.settings
+                        ""
+                        ""
+                        ""
+                        slide
+                        flags.screen
+                    )
                     Nothing
                     0
                 )
@@ -116,7 +139,14 @@ init flags url key =
             ( Model key
                 url
                 Idle
-                (Lia.Script.init flags.settings "" "" "" slide)
+                (Lia.Script.init
+                    flags.settings
+                    ""
+                    ""
+                    ""
+                    slide
+                    flags.screen
+                )
                 Nothing
                 0
             , Cmd.none

@@ -117,7 +117,11 @@ class LiaScript {
         script: script,
         debug: debug,
         spa: spa,
-        settings: settings ? JSON.parse(settings) : settings
+        settings: settings ? JSON.parse(settings) : settings,
+        screen: {
+          width: window.innerWidth,
+          height: window.innerHeight
+        }
       }
     })
 

@@ -55,6 +55,10 @@ view_aside model =
 
 view_article : Model -> Html Msg
 view_article model =
+    let
+        screen =
+            model.screen
+    in
     Html.article [ Attr.class "lia-slide" ] <|
         case get_active_section model of
             Just section ->
@@ -68,7 +72,19 @@ view_article model =
                         model.url
                         (get_translations model.definition)
                         model.settings.speaking
-                , Html.map UpdateMarkdown <| Markdown.view model.translation model.settings.mode section model.settings.editor model.settings.light
+                , Html.map UpdateMarkdown <|
+                    Markdown.view
+                        model.translation
+                        model.settings.mode
+                        section
+                        model.settings.editor
+                        model.settings.light
+                        (if model.settings.table_of_contents then
+                            { screen | width = screen.width - 260 }
+
+                         else
+                            screen
+                        )
                 , view_footer model.translation model.settings.sound model.settings.mode section.effect_model
                 ]
 
