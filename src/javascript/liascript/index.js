@@ -1,6 +1,6 @@
 'use strict'
 
-import { Elm } from '../../elm/App.elm'
+import { Elm } from '../../elm/Main.elm'
 import { LiaDB } from './database'
 import { LiaStorage } from './storage'
 import { LiaEvents, lia_execute_event, lia_eval_event } from './events'
@@ -110,7 +110,7 @@ class LiaScript {
 
     let settings = localStorage.getItem(SETTINGS)
 
-    this.app = Elm.App.init({
+    this.app = Elm.Main.init({
       node: elem,
       flags: {
         course: course,
