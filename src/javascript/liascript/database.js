@@ -1,200 +1,144 @@
 'use strict'
 
+import Dexie from 'dexie'
+
 import {
   lia
 } from './logger'
 
 class LiaDB {
-  constructor (uidDB, versionDB, send = null, channel = null, init = null) {
+  constructor (send = null, channel = null) {
     this.channel = channel
     this.send = send
-    this.versionDB = parseInt(versionDB)
 
-    if (!this.versionDB || channel) return
+    if (channel) return
 
-    this.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB || window.shimIndexedDB
+    this.dbIndex = new Dexie("Index")
+    this.dbIndex.version(1).stores({courses: '&id,updated,author,created,title'})
+  }
 
-    if (!this.indexedDB) {
-      lia.warn('your browser does not support indexedDB')
-      return
-    }
+  open_ (uidDB, versionDB) {
+    let db = new Dexie(uidDB)
 
-    this.uidDB = uidDB
-    this.versionDB = versionDB
+    db.version(versionDB).stores({
+      code: '&id',
+      quiz: '&id',
+      survey: '&id',
+      offline: '&id'
+    })
 
-    let request = this.indexedDB.open(this.uidDB, this.versionDB)
-    request.onupgradeneeded = function (event) {
-      lia.log('creating tables')
+    return db
+  }
 
-      // The database did not previously exist, so create object stores and indexes.
-      let settings = {
-        keyPath: 'id',
-        autoIncrement: false
-      }
+  async open (uidDB, versionDB, init) {
+    if (!versionDB || this.channel) return
 
-      let db = request.result
-      db.createObjectStore('quiz', settings)
-      db.createObjectStore('code', settings)
-      db.createObjectStore('survey', settings)
+    this.db = this.open_(uidDB, versionDB)
 
-      if (init) {
-        send(init)
-      }
-    }
-    request.onsuccess = function (e) {
-      if (init) {
-        let db = request.result
-        let tx = db.transaction(init.topic, 'readonly')
-        let store = tx.objectStore(init.topic)
+    if(init) {
+      const item = await this.db[init.topic].get(init.section)
 
-        let item = store.get(init.section)
-
-        item.onsuccess = function () {
-          lia.log('table', init.table, item.result)
-
-          if (item.result) {
-            init.message.message = item.result.data
-          }
-
-          send(init)
+      if(!!item) {
+        if (item.data) {
+          init.message.message = item.data
         }
-        item.onerror = function () {
-          send(init)
-        }
+        this.send(init)
       }
     }
   }
 
-  store (event) {
-    if (!this.versionDB) return
-
+  async store (event) {
     if (this.channel) {
-      this.channel.push('lia', {
-        store: event.topic,
-        slide: event.section,
-        data: event.message
-      })
-        .receive('ok', e => {
-          lia.log('ok', e)
-        })
-        .receive('error', e => {
-          lia.log('error', e)
-        })
-
+      storeChannel(event)
       return
     }
 
-    lia.log(`liaDB: event(store), table(${event.topic}), id(${event.section}), data(${event.message})`)
-    if (!this.indexedDB) return
+    if (!this.db) return
 
-    let request = this.indexedDB.open(this.uidDB, this.versionDB)
-    request.onsuccess = function (e) {
-      let db = request.result
-      let tx = db.transaction(event.topic, 'readwrite')
-      let store = tx.objectStore(event.topic)
+    lia.warn(`liaDB: event(store), table(${event.topic}), id(${event.section}), data(${event.message})`)
 
-      let item = {
-        id: event.section,
-        data: event.message,
-        created: new Date().getTime()
-      }
-
-      store.put(item)
-
-      tx.oncomplete = function () {
-        // All requests have succeeded and the transaction has committed.
-        lia.log('stored data ...')
-      }
-    }
+    await this.db[event.topic].put({
+      id: event.section,
+      data: event.message,
+      created: new Date().getTime()
+    })
   }
 
-  load (event) {
-    if (!this.versionDB) return
-
-    let send = this.send
-
-    if (this.channel) {
-      this.channel.push('lia', {
-        load: event.topic,
-        slide: event.section
+  storeChannel (event) {
+    this.channel.push('lia', {
+      store: event.topic,
+      slide: event.section,
+      data: event.message
+    })
+      .receive('ok', e => {
+        lia.log('ok', e)
       })
-        .receive('ok', e => {
-          event.message = {
-            topic: 'restore',
-            section: -1,
-            message: e.date
-          }
-          send(event)
-        })
-        .receive('error', e => {
-          lia.error(e)
-        })
+      .receive('error', e => {
+        lia.log('error', e)
+      })
+  }
 
+  async load (event) {
+    if (this.channel) {
+      this.loadChannel(event)
       return
     }
 
-    if (!this.indexedDB) return
+    if (!this.db) return
 
     lia.log('loading => ', event.topic, event.section)
 
-    let request = this.indexedDB.open(this.uidDB, this.versionDB)
-    request.onsuccess = function (e) {
-      try {
-        let db = request.result
-        let tx = db.transaction(event.topic, 'readonly')
-        let store = tx.objectStore(event.topic)
+    const item = await this.db[event.topic].get(event.section)
 
-        let item = store.get(event.section)
-
-        item.onsuccess = function () {
-          lia.log('restore table', event.topic, item.result)
-          if (item.result) {
-            event.message = {
-              topic: 'restore',
-              section: -1,
-              message: item.result.data
-            }
-
-            send(event)
-          }
-        }
-        item.onerror = function () {
-          lia.warn('data not found ...')
-          if (event.topic === 'code') {
-            event.message = {
-              topic: 'restore',
-              section: -1,
-              message: null
-            }
-            send(event)
-          }
-        }
-      } catch (e) {
-        lia.error(e)
+    if(item) {
+      lia.log('restore table', event.topic)//, e._value.data)
+      event.message = {
+        topic: 'restore',
+        section: -1,
+        message: item.data
       }
+      this.send(event)
+    } else if (event.topic === 'code') {
+      event.message = {
+        topic: 'restore',
+        section: -1,
+        message: null
+      }
+      this.send(event)
     }
+  }
+
+  loadChannel(event) {
+    let send = this.send
+
+    this.channel.push('lia', {
+      load: event.topic,
+      slide: event.section
+    })
+      .receive('ok', e => {
+        event.message = {
+          topic: 'restore',
+          section: -1,
+          message: e.date
+        }
+        send(event)
+      })
+      .receive('error', e => {
+        lia.error(e)
+      })
   }
 
   del () {
-    if (!this.versionDB) return
+    if (this.channel || !this.db) return
 
-    if (this.channel) return
+    let name = db.name
 
-    if (!this.indexedDB) return
-
-    let request = this.indexedDB.deleteDatabase(this.uidDB)
-    request.onerror = function (e) {
-      lia.error('error deleting database:', this.uidDB)
-    }
-    request.onsuccess = function (e) {
-      lia.log('database deleted: ', this.uidDB)
-      lia.log(e.result) // should be undefined
-    }
+    this.db.delete()
+      .then(() => { lia.log('database deleted: ', name) })
+      .catch((err) => { lia.error('error deleting database: ', name) })
   }
 
-  update (event, slide) {
-    if (!this.versionDB) return
-
+  async update (event, slide) {
     if (this.channel) {
       this.channel.push('lia', {
         update: event,
@@ -202,80 +146,148 @@ class LiaDB {
       })
       return
     }
-    if (!this.indexedDB) return
 
-    let request = this.indexedDB.open(this.uidDB, this.versionDB)
-    request.onsuccess = function (e) {
-      try {
-        let db = request.result
-        let tx = db.transaction('code', 'readwrite')
-        let store = tx.objectStore('code')
+    if (!this.db) return
 
-        let item = store.get(slide)
+    let db = this.db
+    await db.transaction('rw', db.code, async () => {
+      const vector = await db.code.get(slide);
 
-        item.onsuccess = function () {
-          let vector = item.result
+      if (vector.data) {
+        let project = vector.data[event.section]
 
-          if (vector) {
-            let project = vector.data[event.section]
-
-            switch (event.topic) {
-              case 'flip':
-              {
-                if (event.message.topic === 'view') {
-                  project.file[event.message.section].visible = event.message.message
-                } else if (event.message.topic === 'fullscreen') {
-                  project.file[event.message.section].fullscreen = event.message.message
-                }
-                break
-              }
-              case 'load':
-              {
-                let e_ = event.message
-                project.version_active = e_.version_active
-                project.log = e_.log
-                project.file = e_.file
-                break
-              }
-              case 'version_update':
-              {
-                let e_ = event.message
-                project.version_active = e_.version_active
-                project.log = e_.log
-                project.version[e_.version_active] = e_.version
-                break
-              }
-              case 'version_append':
-              {
-                let e_ = event.message
-                project.version_active = e_.version_active
-                project.log = e_.log
-                project.file = e_.file
-                project.version.push(e_.version)
-                project.repository = { ...project.repository,
-                  ...e_.repository
-                }
-                break
-              }
-              default:
-              {
-                lia.warn('unknown update cmd: ', event)
-              }
+        switch (event.topic) {
+          case 'flip': {
+            if (event.message.topic === 'view') {
+              project.file[event.message.section].visible = event.message.message
+            } else if (event.message.topic === 'fullscreen') {
+              project.file[event.message.section].fullscreen = event.message.message
             }
-            vector.data[event[1]] = project
-            store.put(vector)
+            break
+          }
+          case 'load': {
+            let e_ = event.message
+            project.version_active = e_.version_active
+            project.log = e_.log
+            project.file = e_.file
+            break
+          }
+          case 'version_update': {
+            let e_ = event.message
+            project.version_active = e_.version_active
+            project.log = e_.log
+            project.version[e_.version_active] = e_.version
+            break
+          }
+          case 'version_append': {
+            let e_ = event.message
+            project.version_active = e_.version_active
+            project.log = e_.log
+            project.file = e_.file
+            project.version.push(e_.version)
+            project.repository = { ...project.repository, ...e_.repository }
+            break
+          }
+          default: {
+            lia.warn('unknown update cmd: ', event)
           }
         }
-        item.onerror = function () {
-          lia.error('data not found ...')
-        }
-      } catch (e) {
-        lia.error(e)
+
+        vector.data[event.section] = project
+
+        await (db.code.put(vector))
       }
+
+    })
+  }
+
+  async restore(uidDB) {
+    const course = await this.dbIndex.courses.get(uidDB)
+
+    if (course) {
+      let dbVersion = parseInt( Object.keys(course.data).sort().reverse() )
+
+      let db = this.open_(uidDB, dbVersion)
+
+      const offline = await db.offline.get(0)
+
+      this.send({topic: "restore", message: offline.data, section: -1});
     }
   }
+
+  async listIndex(order = 'updated', desc = false) {
+    if (this.channel) return
+
+    const courses = await this.dbIndex.courses.orderBy(order).toArray()
+
+    if(!desc) {
+      courses.reverse()
+    }
+
+    this.send({
+      topic: 'index',
+      section: -1,
+      message: { list: courses }
+    })
+  }
+
+  async storeIndex(data) {
+    if (this.channel) return
+
+    let date = new Date()
+    let item = await this.dbIndex.courses.get(data.readme)
+
+    if (!item) {
+      item = {
+        id: data.readme,
+        title: data.definition.str_title,
+        author: data.definition.author,
+        data: { },
+        created: date.getTime(),
+        updated: null,
+        updated_str: null
+      }
+    }
+
+    item.updated = date.getTime()
+    item.updated_str = date.toLocaleDateString()
+
+    if (!item.data[data.version]) {
+      item.data[data.version] = data.definition
+      item.data[data.version]['title'] = data.title
+
+      lia.log('storing new version to index', item)
+
+      this.store({
+        topic: 'offline',
+        section: 0,
+        message: data
+      })
+    } else if (item.data[data.version].version !== data.definition.version) {
+        item.data[data.version] = data.definition
+        item.data[data.version]['title'] = data.title
+
+        lia.log('storing new version to index', item)
+
+        this.store({
+          topic: 'offline',
+          section: 0,
+          message: data
+        })
+    }
+
+    this.dbIndex.courses.put(item)
+  }
+
+  async deleteIndex(uidDB) {
+    if (this.channel) return
+
+    await Promise.all([
+      this.dbIndex.courses.delete(uidDB),
+      Dexie.delete(uidDB)
+    ])
+  }
+
 };
 
-export {
-  LiaDB
-}
+export { LiaDB }

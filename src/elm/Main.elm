@@ -8,6 +8,7 @@ import Browser.Navigation as Nav
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Http
+import Index.Model as Index
 import Json.Encode as JE
 import Lia.Script
 import Lia.Types exposing (Screen)
@@ -66,7 +67,8 @@ init flags url key =
                 )
                 Nothing
                 0
-            , download Load_ReadMe_Result query
+                Index.init
+            , download (Load_ReadMe_Result query) query
             )
 
         ( _, Just query, _ ) ->
@@ -83,7 +85,8 @@ init flags url key =
                 )
                 Nothing
                 0
-            , download Load_ReadMe_Result query
+                Index.init
+            , download (Load_ReadMe_Result query) query
             )
 
         ( _, _, Just script ) ->
@@ -101,6 +104,7 @@ init flags url key =
                     )
                     Nothing
                     0
+                    Index.init
                 )
                 script
 
@@ -118,6 +122,7 @@ init flags url key =
                 )
                 Nothing
                 0
+                Index.init
             , Cmd.none
             )
 

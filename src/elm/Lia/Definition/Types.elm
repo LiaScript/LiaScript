@@ -28,7 +28,7 @@ type alias Definition =
     , logo : String
     , narrator : String
     , version : String
-    , comment : String
+    , comment : Inlines
     , resources : List Resource
     , base : String
     , translation : Dict String String
@@ -53,7 +53,7 @@ default base =
     , logo = ""
     , narrator = "US English Male"
     , version = ""
-    , comment = ""
+    , comment = []
     , resources = []
     , base = base
     , translation = Dict.empty

@@ -4,6 +4,7 @@ import Browser
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
+import Index.View as Index
 import Lia.Script
 import Model exposing (Model, State(..))
 import Update exposing (Msg(..))
@@ -23,7 +24,8 @@ view model =
                 [ Html.map LiaScript <| Lia.Script.view model.lia ]
 
             Idle ->
-                [ view_idle model.lia.readme ]
+                [ Html.map UpdateIndex <| Index.view model.index
+                ]
 
             Loading ->
                 [ base_div
@@ -61,26 +63,6 @@ view model =
                     ]
                 ]
     }
-
-
-view_idle : String -> Html Msg
-view_idle url =
-    base_div
-        [ Html.h1 [] [ Html.text "Lia" ]
-        , Html.br [] []
-        , Html.br [] []
-        , Html.input [ Attr.placeholder "enter course URL", Attr.value url, onInput Input ] []
-        , Html.button [ Attr.class "lia-btn", onClick Load ] [ Html.text "load URL" ]
-        , Html.br [] []
-        , Html.br [] []
-        , Html.br [] []
-        , Html.a [ Attr.href project_url ] [ Html.text project_url ]
-        ]
-
-
-viewLink : String -> Html msg
-viewLink path =
-    Html.li [] [ Html.a [ Attr.href path ] [ Html.text path ] ]
 
 
 base_div : List (Html msg) -> Html msg

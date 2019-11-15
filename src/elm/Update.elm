@@ -1,4 +1,4 @@
-module Update exposing
+port module Update exposing
     ( Msg(..)
     , download
     , load_readme
@@ -14,22 +14,32 @@ module Update exposing
 import Browser
 import Browser.Navigation as Navigation
 import Http
+import Index.Update as Index
+import Json.Encode as JE
+import Lia.Json.Decode
 import Lia.Script
 import Model exposing (Model, State(..))
+import Port.Event as Event exposing (Event)
 import Process
 import Task
 import Url exposing (Url)
 
 
+port event2js : Event -> Cmd msg
+
+
+port event2elm : (Event -> msg) -> Sub msg
+
+
 type Msg
     = LiaScript Lia.Script.Msg
+    | Handle Event
+    | UpdateIndex Index.Msg
     | LiaStart
     | LiaParse
     | LinkClicked Browser.UrlRequest
-    | UrlChanged Url
-    | Input String
-    | Load
-    | Load_ReadMe_Result (Result Http.Error String)
+    | UrlChanged Url.Url
+    | Load_ReadMe_Result String (Result Http.Error String)
     | Load_Template_Result (Result Http.Error String)
 
 
@@ -45,18 +55,59 @@ update msg model =
     case msg of
         LiaScript childMsg ->
             let
-                ( lia, cmd, slide_number ) =
+                ( lia, cmd, events ) =
                     Lia.Script.update childMsg model.lia
             in
-            ( { model | lia = lia }
-            , if slide_number < 0 then
-                Cmd.map LiaScript cmd
+            ( { model | lia = { lia | load_slide = -1 } }
+            , events
+                |> List.map event2js
+                |> (::)
+                    (if lia.load_slide < 0 then
+                        Cmd.none
 
-              else
-                Cmd.batch
-                    [ Navigation.pushUrl model.key ("#" ++ String.fromInt slide_number)
-                    , Cmd.map LiaScript cmd
-                    ]
+                     else
+                        Navigation.pushUrl model.key ("#" ++ String.fromInt lia.load_slide)
+                    )
+                |> (::) (Cmd.map LiaScript cmd)
+                |> Cmd.batch
+            )
+
+        Handle event ->
+            case event.topic of
+                "index" ->
+                    update
+                        (event.message
+                            |> Index.handle
+                            |> UpdateIndex
+                        )
+                        model
+
+                "restore" ->
+                    case Lia.Json.Decode.decode model.lia.screen event.message of
+                        Ok lia ->
+                            start { model | lia = lia }
+
+                        Err info ->
+                            ( model, Cmd.none )
+
+                _ ->
+                    update
+                        (event
+                            |> Lia.Script.handle
+                            |> LiaScript
+                        )
+                        model
+
+        UpdateIndex childMsg ->
+            let
+                ( index, cmd, events ) =
+                    Index.update childMsg model.index
+            in
+            ( { model | index = index }
+            , events
+                |> List.map (Event.encode >> Event "index" -1 >> event2js)
+                |> (::) (Cmd.map UpdateIndex cmd)
+                |> Cmd.batch
             )
 
         LinkClicked urlRequest ->
@@ -93,28 +144,16 @@ update msg model =
         LiaParse ->
             parsing model
 
-        Input url ->
-            let
-                lia =
-                    model.lia
-            in
-            ( { model | lia = { lia | readme = url } }
-            , Cmd.none
-            )
-
-        Load ->
-            ( { model | state = Loading }
-            , Cmd.batch
-                [ Navigation.replaceUrl model.key ("?" ++ model.lia.readme)
-                , download Load_ReadMe_Result model.lia.readme
-                ]
-            )
-
-        Load_ReadMe_Result (Ok readme) ->
+        Load_ReadMe_Result _ (Ok readme) ->
             load_readme model readme
 
-        Load_ReadMe_Result (Err info) ->
-            ( { model | state = Error <| parse_error info }, Cmd.none )
+        Load_ReadMe_Result url (Err info) ->
+            ( { model | state = Error <| parse_error info }
+            , url
+                |> JE.string
+                |> Event "offline" -1
+                |> event2js
+            )
 
         Load_Template_Result (Ok template) ->
             parsing
@@ -139,18 +178,21 @@ update msg model =
 start : Model -> ( Model, Cmd Msg )
 start model =
     let
-        ( parsed, cmd, slide_number ) =
+        ( parsed, cmd, events ) =
             Lia.Script.load_first_slide model.lia
     in
-    ( { model | state = Running, lia = parsed }
-    , if slide_number < 0 then
-        Cmd.map LiaScript cmd
+    ( { model | state = Running, lia = { parsed | load_slide = -1 } }
+    , events
+        |> List.map event2js
+        |> (::)
+            (if parsed.load_slide < 0 then
+                Cmd.none
 
-      else
-        Cmd.batch
-            [ Navigation.replaceUrl model.key ("#" ++ String.fromInt slide_number)
-            , Cmd.map LiaScript cmd
-            ]
+             else
+                Navigation.pushUrl model.key ("#" ++ String.fromInt parsed.load_slide)
+            )
+        |> (::) (Cmd.map LiaScript cmd)
+        |> Cmd.batch
     )
 
 

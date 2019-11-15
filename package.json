@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "ace-builds": "^1.4.7",
+    "dexie": "^2.0.4",
     "katex": "^0.10.2",
     "sass-material-colors": "0.0.5"
   }

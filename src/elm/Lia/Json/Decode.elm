@@ -1,0 +1,53 @@
+module Lia.Json.Decode exposing (decode)
+
+import Array exposing (Array)
+import Json.Decode as JD
+import Json.Encode as JE
+import Lia.Definition.Json.Decode as Definition
+import Lia.Index.Model as Index
+import Lia.Markdown.Inline.Json.Decode as Inline
+import Lia.Markdown.Inline.Stringify exposing (stringify)
+import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
+import Lia.Model exposing (Model)
+import Lia.Settings.Model as Settings
+import Lia.Types exposing (Screen, Section, SectionBase, Sections, init_section)
+import Translations
+
+
+decode : Screen -> JD.Value -> Result JD.Error Model
+decode screen json =
+    JD.decodeValue (toModel screen) json
+
+
+andMap : String -> JD.Decoder a -> JD.Decoder (a -> value) -> JD.Decoder value
+andMap key dec =
+    JD.map2 (|>) (JD.field key dec)
+
+
+toModel : Screen -> JD.Decoder Model
+toModel screen =
+    JD.succeed Model
+        |> andMap "url" JD.string
+        |> andMap "readme" JD.string
+        |> andMap "origin" JD.string
+        |> andMap "str_title" JD.string
+        |> JD.map2 (|>) (JD.succeed (Settings.init Settings.Slides))
+        |> JD.map2 (|>) (JD.succeed Nothing)
+        |> andMap "sections" (JD.array toSectionBase |> JD.map (Array.indexedMap init_section))
+        |> andMap "section_active" JD.int
+        |> andMap "definition" Definition.decode
+        |> JD.map2 (|>) (JD.succeed Index.init)
+        |> JD.map2 (|>) (JD.succeed [])
+        |> JD.map2 (|>) (JD.succeed [])
+        |> andMap "translation" (JD.string |> JD.map Translations.getLnFromCode)
+        |> JD.map2 (|>) (JD.succeed identity)
+        |> JD.map2 (|>) (JD.succeed screen)
+        |> JD.map2 (|>) (JD.succeed -1)
+
+
+toSectionBase : JD.Decoder SectionBase
+toSectionBase =
+    JD.map3 SectionBase
+        (JD.field "indentation" JD.int)
+        (JD.field "title" Inline.decode)
+        (JD.field "code" JD.string)

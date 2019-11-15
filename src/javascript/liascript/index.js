@@ -133,9 +133,14 @@ class LiaScript {
     }
 
     this.initChannel(channel, sender)
+    this.initDB(channel, sender)
     this.initEventSystem(this.app.ports.event2js.subscribe, sender)
 
     liaStorage = new LiaStorage(channel)
+  }
+
+  initDB (channel, sender) {
+    this.db = new LiaDB(sender, channel)
   }
 
   initChannel (channel, send) {
@@ -297,6 +302,22 @@ class LiaScript {
           meta('og:url', '')
           meta('og:image', logo)
 
+          break
+        }
+        case 'index' : {
+          switch (event.message.topic) {
+            case 'list': {
+              self.db.listIndex()
+              break
+            }
+            case 'delete' : {
+              self.db.deleteIndex(event.message.message)
+              break
+            }
+
+            default:
+              lia.error('Command  not found => ', event.message)
+          }
           break
         }
         case 'reset': {

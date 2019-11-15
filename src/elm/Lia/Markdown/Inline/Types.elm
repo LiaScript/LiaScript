@@ -34,7 +34,7 @@ type Inline
     | Formula String String Annotation
     | Ref Reference Annotation
     | FootnoteMark String Annotation
-    | HTML (List Html.Parser.Node)
+    | HTML String
     | EInline Int Int Inlines Annotation
     | Container Inlines Annotation
 

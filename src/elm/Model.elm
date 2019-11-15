@@ -2,6 +2,7 @@ module Model exposing (Model, State(..))
 
 import Browser
 import Browser.Navigation as Nav
+import Index.Model as Index
 import Lia.Script
 import Url
 
@@ -13,6 +14,7 @@ type alias Model =
     , lia : Lia.Script.Model
     , code : Maybe String
     , size : Float
+    , index : Index.Model
     }
 
 

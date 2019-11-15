@@ -33,6 +33,7 @@ type alias Model =
     , translation : Translations.Lang
     , search_index : String -> String
     , screen : Screen
+    , load_slide : Int
     }
 
 
@@ -80,6 +81,7 @@ init settings url readme origin slide_number screen =
     , translation = Translations.En
     , search_index = identity
     , screen = screen
+    , load_slide = -1
     }
 
 

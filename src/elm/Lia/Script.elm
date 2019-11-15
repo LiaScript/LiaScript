@@ -3,6 +3,7 @@ module Lia.Script exposing
     , Msg
     , add_imports
     , get_title
+    , handle
     , init
     , init_script
     , load_first_slide
@@ -21,6 +22,7 @@ import Array
 import Html exposing (Html)
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition, add_macros)
+import Lia.Json.Encode as Json
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Model exposing (load_src)
 import Lia.Parser.Parser as Parser
@@ -45,12 +47,12 @@ pages =
     .sections >> Array.length
 
 
-load_slide : Int -> Model -> ( Model, Cmd Msg, Int )
+load_slide : Int -> Model -> ( Model, Cmd Msg, List Event )
 load_slide idx model =
     Lia.Update.update (Load idx) model
 
 
-load_first_slide : Model -> ( Model, Cmd Msg, Int )
+load_first_slide : Model -> ( Model, Cmd Msg, List Event )
 load_first_slide model =
     load_slide
         (if model.section_active > pages model then
@@ -67,21 +69,7 @@ load_first_slide model =
                     |> List.indexedMap generateIndex
                     |> searchIndex
             , to_do =
-                ([ get_title model.sections
-                 , model.readme
-                 , model.definition.version
-                    |> String.split "."
-                    |> List.head
-                    |> Maybe.withDefault "0"
-                    |> String.toInt
-                    |> Maybe.withDefault 0
-                    |> String.fromInt
-                 , model.definition.onload
-                 , model.definition.author
-                 , model.definition.comment
-                 , model.definition.logo
-                 ]
-                    |> JE.list JE.string
+                (Json.encode model
                     |> Event "init" model.section_active
                 )
                     :: model.to_do
@@ -96,6 +84,11 @@ add_imports model code =
 
         Err _ ->
             model
+
+
+handle : Event -> Msg
+handle =
+    Handle
 
 
 add_todos : Definition -> Model -> Model
@@ -222,7 +215,7 @@ subscriptions model =
     Lia.Update.subscriptions model
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, Int )
+update : Msg -> Model -> ( Model, Cmd Msg, List Event )
 update =
     Lia.Update.update
 

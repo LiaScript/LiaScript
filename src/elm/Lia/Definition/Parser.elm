@@ -77,7 +77,7 @@ definition =
                     choice
                         [ store "author:" (\x d -> { d | author = x })
                         , store "base:" (\x d -> { d | base = x })
-                        , store "comment:" (\x d -> { d | comment = String.replace "\n" " " x })
+                        , store "comment:" (\x d -> { d | comment = inline_parser d x })
                         , store "attribute:" (\x d -> { d | attributes = [ inline_parser d x ] |> List.append d.attributes })
                         , store "date:" (\x d -> { d | date = x })
                         , store "email:" (\x d -> { d | email = x })
