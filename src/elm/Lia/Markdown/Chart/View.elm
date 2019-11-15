@@ -23,8 +23,8 @@ import LineChart.Legends as Legends
 import LineChart.Line as Line
 
 
-title : Bool -> String -> Coordinate.System -> Junk.Layers msg
-title dark str system =
+title : String -> Coordinate.System -> Junk.Layers msg
+title str system =
     { below = []
     , above =
         [ Junk.labelAt
@@ -41,8 +41,8 @@ title dark str system =
     }
 
 
-view : Bool -> Annotation -> Int -> Chart -> Html msg
-view dark attr width chart =
+view : Annotation -> Int -> Chart -> Html msg
+view attr width chart =
     let
         list =
             chart
@@ -66,7 +66,7 @@ view dark attr width chart =
             , intersection = Intersection.default
             , legends = Legends.none
             , events = Events.default
-            , junk = Junk.custom (title dark chart.title)
+            , junk = Junk.custom (title chart.title)
             , grid = Grid.default
             , area = Area.default
             , line = Line.default

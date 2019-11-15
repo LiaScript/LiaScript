@@ -70,4 +70,6 @@ init_section idx base =
 
 
 type alias Screen =
-    { width : Int, height : Int }
+    { width : Int
+    , height : Int
+    }
