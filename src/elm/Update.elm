@@ -6,6 +6,7 @@ port module Update exposing
     , parse_error
     , parsing
     , start
+    , subscriptions
     , update
     )
 
@@ -41,6 +42,14 @@ type Msg
     | UrlChanged Url.Url
     | Load_ReadMe_Result String (Result Http.Error String)
     | Load_Template_Result (Result Http.Error String)
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.batch
+        [ event2elm Handle
+        , Sub.map LiaScript (Lia.Script.subscriptions model.lia)
+        ]
 
 
 message : msg -> Cmd msg

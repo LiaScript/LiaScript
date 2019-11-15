@@ -15,7 +15,7 @@ import Lia.Types exposing (Screen)
 import Model exposing (Model, State(..))
 import Process
 import Task
-import Update exposing (Msg(..), download, load_readme, update)
+import Update exposing (Msg(..), download, load_readme, subscriptions, update)
 import Url
 import View exposing (view)
 
@@ -147,8 +147,3 @@ get_origin query =
 get_base : Url.Url -> String
 get_base url =
     Url.toString { url | fragment = Nothing }
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.map LiaScript (Lia.Script.subscriptions model.lia)

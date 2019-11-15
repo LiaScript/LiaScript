@@ -125,6 +125,8 @@ class LiaScript {
       }
     })
 
+    console.log(this.app.ports)
+
     let sendTo = this.app.ports.event2elm.send
 
     let sender = function (msg) {
@@ -278,29 +280,32 @@ class LiaScript {
           break
         }
         case 'init': {
-          let [title, readme, version, onload, author, comment, logo] = event.message
+          let data = event.message
 
-          self.db = new LiaDB(
-            readme, version, elmSend, null, // self.channel,
-            {
-              topic: 'code',
-              section: event.section,
+          self.db.open(
+            data.readme,
+            data.version,
+            { topic: 'code',
+              section: data.section_active,
               message: {
                 topic: 'restore',
                 section: -1,
                 message: null }
-            })
+          })
 
           if (onload !== '') {
             lia_execute_event({ code: onload, delay: 350 })
           }
 
-          meta('author', author)
-          meta('og:description', comment)
-          meta('og:title', title)
+          meta('author', data.definition.author)
+          meta('og:description', data.comment)
+          meta('og:title', data.str_title)
           meta('og:type', 'website')
           meta('og:url', '')
-          meta('og:image', logo)
+          meta('og:image', data.definition.logo)
+
+          // store the basic info in the offline-repositories
+          self.db.storeIndex(data)
 
           break
         }

@@ -57,6 +57,10 @@ send idx events =
 
 update : Msg -> Model -> ( Model, Cmd Msg, List Event )
 update msg model =
+    let
+        xxx =
+            Debug.log "DDDDDDDDDDDDDDDDDDD" msg
+    in
     case msg of
         Load idx ->
             if (-1 < idx) && (idx < Array.length model.sections) then
