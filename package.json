@@ -8,6 +8,7 @@
     "watch": "webpack-dev-server --config webpack.common.js",
     "build": "webpack --config webpack.common.js",
     "prod": "ENV=production webpack --config webpack.common.js",
+    "sw": "workbox injectManifest workbox-config.js",
     "translate": "elm-i18n-gen locale src/elm/Translations.elm"
   },
   "keywords": [
@@ -39,7 +40,8 @@
     "webpack-cli": "^3.3.10",
     "webpack-dev-middleware": "^3.7.2",
     "webpack-dev-server": "^3.9.0",
-    "webpack-merge": "^4.2.2"
+    "webpack-merge": "^4.2.2",
+    "workbox": "0.0.0"
   },
   "dependencies": {
     "ace-builds": "^1.4.7",
