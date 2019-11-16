@@ -1,6 +1,7 @@
 port module Update exposing
     ( Msg(..)
     , download
+    , initIndex
     , load_readme
     , message
     , parse_error
@@ -297,3 +298,8 @@ parse_error msg =
 download : (Result Http.Error String -> Msg) -> String -> Cmd Msg
 download msg url =
     Http.get { url = url, expect = Http.expectString msg }
+
+
+initIndex : Model -> ( Model, Cmd Msg )
+initIndex model =
+    ( model, event2js Index.init )

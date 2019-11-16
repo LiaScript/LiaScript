@@ -1,4 +1,5 @@
 import './scss/main.scss'
+import './scss/course.scss'
 
 import { LiaScript } from './javascript/liascript/index.js'
 

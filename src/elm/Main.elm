@@ -109,22 +109,22 @@ init flags url key =
                 script
 
         _ ->
-            ( Model key
-                url
-                Idle
-                (Lia.Script.init
-                    flags.settings
-                    ""
-                    ""
-                    ""
-                    slide
-                    flags.screen
+            Update.initIndex
+                (Model key
+                    url
+                    Idle
+                    (Lia.Script.init
+                        flags.settings
+                        ""
+                        ""
+                        ""
+                        slide
+                        flags.screen
+                    )
+                    Nothing
+                    0
+                    Index.init
                 )
-                Nothing
-                0
-                Index.init
-            , Cmd.none
-            )
 
 
 get_origin : Maybe String -> String
