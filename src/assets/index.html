@@ -48,6 +48,12 @@
 
   </head>
   <body id="lia">
-
+    <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register("/sw.js").then(console.log).catch(console.error);
+        })
+      }
+    </script>
   </body>
 </html>
