@@ -4,6 +4,7 @@
     .lia-slide {
         @include flex(column, nowrap, flex-start, stretch, stretch);
         overflow: auto;
+        min-width: 320px;
 
         .lia-toolbar {
             @include flex(row, nowrap, flex-start, stretch, stretch);
@@ -36,6 +37,7 @@
             padding-right: $horiz;
             max-height: 40%;
             min-height: 52px;
+            min-width: 320px;
             overflow: auto;
             border-top: map-get($config, spacing-small) solid mix($fg, $bg, 20%);
         }
@@ -57,6 +59,7 @@
             flex: 1 1 auto;
             padding: $vert $horiz;
             overflow: auto;
+            min-width: 320px;
 
             .lia-effect {
                 animation: fadein 2s;
