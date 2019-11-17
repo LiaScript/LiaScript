@@ -4,16 +4,16 @@ import Browser
 import Browser.Navigation as Nav
 import Index.Model as Index
 import Lia.Script
+import Session exposing (Session)
 import Url
 
 
 type alias Model =
-    { key : Nav.Key
-    , size : Float
+    { size : Float
     , code : Maybe String
     , index : Index.Model
+    , session : Session
     , state : State
-    , url : Url.Url
     , lia : Lia.Script.Model
     }
 

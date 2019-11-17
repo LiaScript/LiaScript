@@ -21,7 +21,10 @@ view model =
     , body =
         case model.state of
             Running ->
-                [ Html.map LiaScript <| Lia.Script.view model.lia ]
+                [ model.lia
+                    |> Lia.Script.view model.session.screen
+                    |> Html.map LiaScript
+                ]
 
             Idle ->
                 [ Html.map UpdateIndex <| Index.view model.index

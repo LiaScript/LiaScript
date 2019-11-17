@@ -15,15 +15,16 @@ import Lia.Settings.Model exposing (Mode(..))
 import Lia.Settings.Update exposing (toggle_sound)
 import Lia.Settings.View as Settings
 import Lia.Update exposing (Msg(..), get_active_section)
+import Session exposing (Screen)
 import Translations as Trans exposing (Lang)
 
 
-view : Model -> Html Msg
-view model =
+view : Screen -> Model -> Html Msg
+view screen model =
     Html.div
         (Settings.design model.settings)
         [ view_aside model
-        , view_article model
+        , view_article screen model
         ]
 
 
@@ -53,12 +54,8 @@ view_aside model =
         ]
 
 
-view_article : Model -> Html Msg
-view_article model =
-    let
-        screen =
-            model.screen
-    in
+view_article : Screen -> Model -> Html Msg
+view_article screen model =
     Html.article [ Attr.class "lia-slide" ] <|
         case get_active_section model of
             Just section ->

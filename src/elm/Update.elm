@@ -14,6 +14,7 @@ port module Update exposing
 -- UPDATE
 
 import Browser
+import Browser.Events
 import Browser.Navigation as Navigation
 import Http
 import Index.Update as Index
@@ -23,6 +24,7 @@ import Lia.Script
 import Model exposing (Model, State(..))
 import Port.Event as Event exposing (Event)
 import Process
+import Session exposing (Screen)
 import Task
 import Url exposing (Url)
 
@@ -37,6 +39,7 @@ type Msg
     = LiaScript Lia.Script.Msg
     | Handle Event
     | UpdateIndex Index.Msg
+    | Resize Screen
     | LiaStart
     | LiaParse
     | LinkClicked Browser.UrlRequest
@@ -50,6 +53,7 @@ subscriptions model =
     Sub.batch
         [ event2elm Handle
         , Sub.map LiaScript (Lia.Script.subscriptions model.lia)
+        , Sub.map Resize (Browser.Events.onResize Screen)
         ]
 
 
@@ -76,7 +80,7 @@ update msg model =
                         Cmd.none
 
                      else
-                        Navigation.pushUrl model.key ("#" ++ String.fromInt lia.load_slide)
+                        Navigation.pushUrl model.session.key ("#" ++ String.fromInt lia.load_slide)
                     )
                 |> (::) (Cmd.map LiaScript cmd)
                 |> Cmd.batch
@@ -93,7 +97,7 @@ update msg model =
                         model
 
                 "restore" ->
-                    case Lia.Json.Decode.decode model.lia.screen event.message of
+                    case Lia.Json.Decode.decode event.message of
                         Ok lia ->
                             start { model | lia = lia }
 
@@ -124,9 +128,9 @@ update msg model =
             case urlRequest of
                 Browser.Internal url ->
                     ( model
-                    , if url.query == model.url.query then
+                    , if url.query == model.session.url.query then
                         Url.toString url
-                            |> Navigation.pushUrl model.key
+                            |> Navigation.pushUrl model.session.key
 
                       else
                         Url.toString url
@@ -147,6 +151,13 @@ update msg model =
 
                 Nothing ->
                     ( model, Cmd.none )
+
+        Resize screen ->
+            let
+                session =
+                    model.session
+            in
+            ( { model | session = { session | screen = screen } }, Cmd.none )
 
         LiaStart ->
             start model
@@ -199,7 +210,7 @@ start model =
                 Cmd.none
 
              else
-                Navigation.pushUrl model.key ("#" ++ String.fromInt parsed.load_slide)
+                Navigation.pushUrl model.session.key ("#" ++ String.fromInt parsed.load_slide)
             )
         |> (::) (Cmd.map LiaScript cmd)
         |> Cmd.batch

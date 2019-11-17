@@ -11,9 +11,9 @@ import Http
 import Index.Model as Index
 import Json.Encode as JE
 import Lia.Script
-import Lia.Types exposing (Screen)
 import Model exposing (Model, State(..))
 import Process
+import Session exposing (Screen, Session)
 import Task
 import Update exposing (Msg(..), download, load_readme, subscriptions, update)
 import Url
@@ -53,7 +53,8 @@ init flags url key =
             url.fragment |> Maybe.andThen String.toInt
 
         model =
-            Model key 0 Nothing Index.init
+            Session key flags.screen
+                >> Model 0 Nothing Index.init
     in
     case ( url.query, flags.course, flags.script ) of
         ( Just query, _, _ ) ->
@@ -63,8 +64,7 @@ init flags url key =
                 query
                 (get_origin url.query)
                 slide
-                flags.screen
-                |> model Loading url
+                |> model url Loading
             , download (Load_ReadMe_Result query) query
             )
 
@@ -75,8 +75,7 @@ init flags url key =
                 query
                 (get_origin url.query)
                 slide
-                flags.screen
-                |> model Loading { url | query = Just query }
+                |> model { url | query = Just query } Loading
             , download (Load_ReadMe_Result query) query
             )
 
@@ -87,8 +86,7 @@ init flags url key =
                 ""
                 ""
                 slide
-                flags.screen
-                |> model Idle url
+                |> model url Idle
                 |> load_readme script
 
         _ ->
@@ -98,8 +96,7 @@ init flags url key =
                 ""
                 ""
                 slide
-                flags.screen
-                |> model Idle url
+                |> model url Idle
                 |> Update.initIndex
 
 

@@ -16,7 +16,7 @@ import Lia.Model exposing (Model, load_src)
 import Lia.Parser.Parser exposing (parse_section)
 import Lia.Settings.Model exposing (Mode(..))
 import Lia.Settings.Update as Settings
-import Lia.Types exposing (Screen, Section)
+import Lia.Types exposing (Section)
 import Port.Event as Event exposing (Event)
 
 
@@ -24,17 +24,12 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     case get_active_section model of
         Just section ->
-            Sub.batch
-                [ section
-                    |> Markdown.subscriptions
-                    |> Sub.map UpdateMarkdown
-                , Browser.Events.onResize Screen
-                    |> Sub.map Resize
-                ]
+            section
+                |> Markdown.subscriptions
+                |> Sub.map UpdateMarkdown
 
         Nothing ->
-            Browser.Events.onResize Screen
-                |> Sub.map Resize
+            Sub.none
 
 
 type Msg
@@ -46,7 +41,6 @@ type Msg
     | UpdateSettings Settings.Msg
     | UpdateMarkdown Markdown.Msg
     | Handle Event
-    | Resize Screen
 
 
 send : Int -> List ( String, JE.Value ) -> List Event
@@ -90,9 +84,6 @@ update msg model =
             , Cmd.none
             , []
             )
-
-        Resize screen ->
-            ( { model | screen = screen }, Cmd.none, [] )
 
         Handle event ->
             case event.topic of

@@ -10,13 +10,13 @@ import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
 import Lia.Model exposing (Model)
 import Lia.Settings.Model as Settings
-import Lia.Types exposing (Screen, Section, SectionBase, Sections, init_section)
+import Lia.Types exposing (Section, SectionBase, Sections, init_section)
 import Translations
 
 
-decode : Screen -> JD.Value -> Result JD.Error Model
-decode screen json =
-    JD.decodeValue (toModel screen) json
+decode : JD.Value -> Result JD.Error Model
+decode =
+    JD.decodeValue toModel
 
 
 andMap : String -> JD.Decoder a -> JD.Decoder (a -> value) -> JD.Decoder value
@@ -24,8 +24,8 @@ andMap key dec =
     JD.map2 (|>) (JD.field key dec)
 
 
-toModel : Screen -> JD.Decoder Model
-toModel screen =
+toModel : JD.Decoder Model
+toModel =
     JD.succeed Model
         |> andMap "url" JD.string
         |> andMap "readme" JD.string
@@ -41,7 +41,6 @@ toModel screen =
         |> JD.map2 (|>) (JD.succeed [])
         |> andMap "translation" (JD.string |> JD.map Translations.getLnFromCode)
         |> JD.map2 (|>) (JD.succeed identity)
-        |> JD.map2 (|>) (JD.succeed screen)
         |> JD.map2 (|>) (JD.succeed -1)
 
 

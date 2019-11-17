@@ -16,7 +16,8 @@ import Lia.Markdown.Survey.View as Surveys
 import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Settings.Model exposing (Mode(..))
-import Lia.Types exposing (Screen, Section)
+import Lia.Types exposing (Section)
+import Session exposing (Screen)
 import SvgBob
 import Translations exposing (Lang)
 

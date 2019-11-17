@@ -1,6 +1,5 @@
 module Lia.Types exposing
-    ( Screen
-    , Section
+    ( Section
     , SectionBase
     , Sections
     , init_section
@@ -66,10 +65,4 @@ init_section idx base =
     , definition = Nothing
     , footnotes = Footnote.init
     , footnote2show = Nothing
-    }
-
-
-type alias Screen =
-    { width : Int
-    , height : Int
     }

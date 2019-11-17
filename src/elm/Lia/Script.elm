@@ -27,10 +27,11 @@ import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Model exposing (load_src)
 import Lia.Parser.Parser as Parser
 import Lia.Settings.Model exposing (Mode(..))
-import Lia.Types exposing (Screen, Sections, init_section)
+import Lia.Types exposing (Sections, init_section)
 import Lia.Update exposing (Msg(..))
 import Lia.View
 import Port.Event exposing (Event)
+import Session exposing (Screen)
 import Translations
 
 
@@ -200,19 +201,19 @@ searchIndex index str =
             str
 
 
-init : JE.Value -> String -> String -> String -> Maybe Int -> Screen -> Model
+init : JE.Value -> String -> String -> String -> Maybe Int -> Model
 init =
     Lia.Model.init
 
 
-view : Model -> Html Msg
-view model =
-    Lia.View.view model
+view : Screen -> Model -> Html Msg
+view =
+    Lia.View.view
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
-    Lia.Update.subscriptions model
+subscriptions =
+    Lia.Update.subscriptions
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, List Event )
