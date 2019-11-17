@@ -155,7 +155,7 @@ update msg model =
             parsing model
 
         Load_ReadMe_Result _ (Ok readme) ->
-            load_readme model readme
+            load_readme readme model
 
         Load_ReadMe_Result url (Err info) ->
             ( { model | state = Error <| parse_error info }
@@ -235,8 +235,8 @@ parsing model =
             ( model, Cmd.none )
 
 
-load_readme : Model -> String -> ( Model, Cmd Msg )
-load_readme model readme =
+load_readme : String -> Model -> ( Model, Cmd Msg )
+load_readme readme model =
     case
         readme
             |> String.replace "\u{000D}" ""

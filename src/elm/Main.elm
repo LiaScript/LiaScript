@@ -51,80 +51,56 @@ init flags url key =
     let
         slide =
             url.fragment |> Maybe.andThen String.toInt
+
+        model =
+            Model key 0 Nothing Index.init
     in
     case ( url.query, flags.course, flags.script ) of
         ( Just query, _, _ ) ->
-            ( Model key
-                url
-                Loading
-                (Lia.Script.init
-                    flags.settings
-                    (get_base url)
-                    query
-                    (get_origin url.query)
-                    slide
-                    flags.screen
-                )
-                Nothing
-                0
-                Index.init
+            ( Lia.Script.init
+                flags.settings
+                (get_base url)
+                query
+                (get_origin url.query)
+                slide
+                flags.screen
+                |> model Loading url
             , download (Load_ReadMe_Result query) query
             )
 
         ( _, Just query, _ ) ->
-            ( Model key
-                { url | query = Just query }
-                Loading
-                (Lia.Script.init
-                    flags.settings
-                    (get_base url)
-                    query
-                    (get_origin url.query)
-                    slide
-                    flags.screen
-                )
-                Nothing
-                0
-                Index.init
+            ( Lia.Script.init
+                flags.settings
+                (get_base url)
+                query
+                (get_origin url.query)
+                slide
+                flags.screen
+                |> model Loading { url | query = Just query }
             , download (Load_ReadMe_Result query) query
             )
 
         ( _, _, Just script ) ->
-            load_readme
-                (Model key
-                    url
-                    Idle
-                    (Lia.Script.init
-                        flags.settings
-                        ""
-                        ""
-                        ""
-                        slide
-                        flags.screen
-                    )
-                    Nothing
-                    0
-                    Index.init
-                )
-                script
+            Lia.Script.init
+                flags.settings
+                ""
+                ""
+                ""
+                slide
+                flags.screen
+                |> model Idle url
+                |> load_readme script
 
         _ ->
-            Update.initIndex
-                (Model key
-                    url
-                    Idle
-                    (Lia.Script.init
-                        flags.settings
-                        ""
-                        ""
-                        ""
-                        slide
-                        flags.screen
-                    )
-                    Nothing
-                    0
-                    Index.init
-                )
+            Lia.Script.init
+                flags.settings
+                ""
+                ""
+                ""
+                slide
+                flags.screen
+                |> model Idle url
+                |> Update.initIndex
 
 
 get_origin : Maybe String -> String

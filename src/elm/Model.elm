@@ -9,12 +9,12 @@ import Url
 
 type alias Model =
     { key : Nav.Key
-    , url : Url.Url
-    , state : State
-    , lia : Lia.Script.Model
-    , code : Maybe String
     , size : Float
+    , code : Maybe String
     , index : Index.Model
+    , state : State
+    , url : Url.Url
+    , lia : Lia.Script.Model
     }
 
 
