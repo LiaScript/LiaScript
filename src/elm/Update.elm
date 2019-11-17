@@ -141,16 +141,25 @@ update msg model =
                     ( model, Navigation.load href )
 
         UrlChanged url ->
-            case url.fragment |> Maybe.andThen String.toInt of
-                Just id ->
-                    let
-                        ( lia, cmd, _ ) =
-                            Lia.Script.load_slide (id - 1) model.lia
-                    in
-                    ( { model | lia = lia }, Cmd.map LiaScript cmd )
+            if url /= model.session.url then
+                case url.fragment |> Maybe.andThen String.toInt of
+                    Just id ->
+                        let
+                            ( lia, cmd, events ) =
+                                Lia.Script.load_slide (id - 1) model.lia
+                        in
+                        ( { model | lia = lia, session = Session.setUrl url model.session }
+                        , events
+                            |> List.map event2js
+                            |> (::) (Cmd.map LiaScript cmd)
+                            |> Cmd.batch
+                        )
 
-                Nothing ->
-                    ( model, Cmd.none )
+                    Nothing ->
+                        ( model, Cmd.none )
+
+            else
+                ( model, Cmd.none )
 
         Resize screen ->
             let
