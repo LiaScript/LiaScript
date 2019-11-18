@@ -148,7 +148,7 @@ update msg model =
                     Session.Course uri slide ->
                         let
                             ( lia, cmd, events ) =
-                                Lia.Script.load_slide (slide - 1) model.lia
+                                Lia.Script.load_slide slide model.lia
                         in
                         ( { model
                             | lia = lia

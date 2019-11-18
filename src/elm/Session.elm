@@ -57,6 +57,7 @@ getType url =
             url.fragment
                 |> Maybe.andThen String.toInt
                 |> Maybe.withDefault 1
+                |> (+) -1
                 |> Course str
 
         Nothing ->
