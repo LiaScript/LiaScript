@@ -1,6 +1,8 @@
 module Session exposing
     ( Screen
     , Session
+    , Type(..)
+    , getType
     , navTo
     , navToSlide
     , setUrl
@@ -23,6 +25,11 @@ type alias Screen =
     }
 
 
+type Type
+    = Index
+    | Course String Int
+
+
 setUrl : Url -> Session -> Session
 setUrl url session =
     { session | url = url }
@@ -41,3 +48,16 @@ navToSlide session id =
     in
     { url | fragment = Just <| String.fromInt id }
         |> navTo session
+
+
+getType : Url -> Type
+getType url =
+    case url.query of
+        Just str ->
+            url.fragment
+                |> Maybe.andThen String.toInt
+                |> Maybe.withDefault 1
+                |> Course str
+
+        Nothing ->
+            Index

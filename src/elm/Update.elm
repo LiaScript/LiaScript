@@ -141,11 +141,14 @@ update msg model =
 
         UrlChanged url ->
             if url /= model.session.url then
-                case url.fragment |> Maybe.andThen String.toInt of
-                    Just id ->
+                case Session.getType url of
+                    Session.Index ->
+                        ( model, Cmd.none )
+
+                    Session.Course uri slide ->
                         let
                             ( lia, cmd, events ) =
-                                Lia.Script.load_slide (id - 1) model.lia
+                                Lia.Script.load_slide (slide - 1) model.lia
                         in
                         ( { model
                             | lia = lia
@@ -156,9 +159,6 @@ update msg model =
                             |> (::) (Cmd.map LiaScript cmd)
                             |> Cmd.batch
                         )
-
-                    Nothing ->
-                        ( model, Cmd.none )
 
             else
                 ( model, Cmd.none )
