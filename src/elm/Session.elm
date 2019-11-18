@@ -4,6 +4,7 @@ module Session exposing
     , Type(..)
     , getType
     , navTo
+    , navToHome
     , navToSlide
     , setUrl
     )
@@ -47,6 +48,16 @@ setSlide number session =
 navTo : Session -> Url -> Cmd msg
 navTo session =
     Url.toString >> Navigation.pushUrl session.key
+
+
+navToHome : Session -> Cmd msg
+navToHome session =
+    let
+        url =
+            session.url
+    in
+    { url | query = Nothing, fragment = Nothing }
+        |> navTo session
 
 
 navToSlide : Session -> Int -> Cmd msg

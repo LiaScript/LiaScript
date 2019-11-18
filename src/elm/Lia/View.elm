@@ -123,7 +123,7 @@ view_nav : Int -> Mode -> Lang -> String -> List ( String, String ) -> Bool -> S
 view_nav section_active mode lang base translations speaking state =
     Html.nav [ Attr.class "lia-toolbar" ]
         [ Html.map UpdateSettings <| Settings.toggle_button_toc lang
-        , navButton "home" "index" "" "4px" PrevSection
+        , navButton "home" "index" "" "4px" Home
         , Html.span [ Attr.class "lia-spacer" ] []
         , navButton "navigate_before" (Trans.basePrev lang) "" "" PrevSection
         , Html.span [ Attr.class "lia-labeled lia-left" ]

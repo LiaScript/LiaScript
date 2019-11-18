@@ -42,6 +42,7 @@ type Msg
     | UpdateSettings Settings.Msg
     | UpdateMarkdown Markdown.Msg
     | Handle Event
+    | Home
 
 
 send : Int -> List ( String, JE.Value ) -> List Event
@@ -62,6 +63,9 @@ update session msg model =
 
             else
                 ( model, Cmd.none, [] )
+
+        Home ->
+            ( model, Session.navToHome session, [] )
 
         UpdateSettings childMsg ->
             let

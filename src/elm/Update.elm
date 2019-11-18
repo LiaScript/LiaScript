@@ -136,7 +136,11 @@ update msg model =
             if url /= model.session.url then
                 case Session.getType url of
                     Session.Index ->
-                        ( model, Cmd.none )
+                        initIndex
+                            { model
+                                | state = Idle
+                                , session = Session.setUrl url model.session
+                            }
 
                     Session.Course uri slide ->
                         let
