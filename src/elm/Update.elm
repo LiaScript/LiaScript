@@ -72,16 +72,9 @@ update msg model =
                 ( lia, cmd, events ) =
                     Lia.Script.update model.session childMsg model.lia
             in
-            ( { model | lia = { lia | load_slide = -1 } }
+            ( { model | lia = lia }
             , events
                 |> List.map event2js
-                |> (::)
-                    (if lia.load_slide < 0 then
-                        Cmd.none
-
-                     else
-                        Session.navToSlide model.session lia.load_slide
-                    )
                 |> (::) (Cmd.map LiaScript cmd)
                 |> Cmd.batch
             )
@@ -216,16 +209,9 @@ start model =
         ( parsed, cmd, events ) =
             Lia.Script.load_first_slide model.session model.lia
     in
-    ( { model | state = Running, lia = { parsed | load_slide = -1 } }
+    ( { model | state = Running, lia = parsed }
     , events
         |> List.map event2js
-        |> (::)
-            (if parsed.load_slide < 0 then
-                Cmd.none
-
-             else
-                Navigation.pushUrl model.session.key ("#" ++ String.fromInt parsed.load_slide)
-            )
         |> (::) (Cmd.map LiaScript cmd)
         |> Cmd.batch
     )

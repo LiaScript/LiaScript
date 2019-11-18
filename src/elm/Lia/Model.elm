@@ -32,7 +32,6 @@ type alias Model =
     , to_do : List Event
     , translation : Translations.Lang
     , search_index : String -> String
-    , load_slide : Int
     }
 
 
@@ -79,7 +78,6 @@ init settings url readme origin slide_number =
     , to_do = []
     , translation = Translations.En
     , search_index = identity
-    , load_slide = -1
     }
 
 

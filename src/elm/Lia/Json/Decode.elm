@@ -41,7 +41,6 @@ toModel =
         |> JD.map2 (|>) (JD.succeed [])
         |> andMap "translation" (JD.string |> JD.map Translations.getLnFromCode)
         |> JD.map2 (|>) (JD.succeed identity)
-        |> JD.map2 (|>) (JD.succeed -1)
 
 
 toSectionBase : JD.Decoder SectionBase
