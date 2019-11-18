@@ -35,6 +35,15 @@ setUrl url session =
     { session | url = url }
 
 
+setSlide : Int -> Session -> Session
+setSlide number session =
+    let
+        url =
+            session.url
+    in
+    { session | url = { url | fragment = Just <| String.fromInt number } }
+
+
 navTo : Session -> Url -> Cmd msg
 navTo session =
     Url.toString >> Navigation.pushUrl session.key
@@ -46,7 +55,7 @@ navToSlide session id =
         url =
             session.url
     in
-    { url | fragment = Just <| String.fromInt id }
+    { url | fragment = Just <| String.fromInt (1 + id) }
         |> navTo session
 
 

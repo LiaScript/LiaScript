@@ -70,7 +70,7 @@ update msg model =
         LiaScript childMsg ->
             let
                 ( lia, cmd, events ) =
-                    Lia.Script.update childMsg model.lia
+                    Lia.Script.update model.session childMsg model.lia
             in
             ( { model | lia = { lia | load_slide = -1 } }
             , events
@@ -147,12 +147,15 @@ update msg model =
 
                     Session.Course uri slide ->
                         let
+                            session =
+                                Session.setUrl url model.session
+
                             ( lia, cmd, events ) =
-                                Lia.Script.load_slide slide model.lia
+                                Lia.Script.load_slide session slide model.lia
                         in
                         ( { model
                             | lia = lia
-                            , session = Session.setUrl url model.session
+                            , session = session
                           }
                         , events
                             |> List.map event2js
@@ -211,7 +214,7 @@ start : Model -> ( Model, Cmd Msg )
 start model =
     let
         ( parsed, cmd, events ) =
-            Lia.Script.load_first_slide model.lia
+            Lia.Script.load_first_slide model.session model.lia
     in
     ( { model | state = Running, lia = { parsed | load_slide = -1 } }
     , events

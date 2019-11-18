@@ -31,7 +31,7 @@ import Lia.Types exposing (Sections, init_section)
 import Lia.Update exposing (Msg(..))
 import Lia.View
 import Port.Event exposing (Event)
-import Session exposing (Screen)
+import Session exposing (Screen, Session)
 import Translations
 
 
@@ -48,14 +48,15 @@ pages =
     .sections >> Array.length
 
 
-load_slide : Int -> Model -> ( Model, Cmd Msg, List Event )
-load_slide idx model =
-    Lia.Update.update (Load idx) model
+load_slide : Session -> Int -> Model -> ( Model, Cmd Msg, List Event )
+load_slide session idx =
+    Lia.Update.update session (Load idx)
 
 
-load_first_slide : Model -> ( Model, Cmd Msg, List Event )
-load_first_slide model =
+load_first_slide : Session -> Model -> ( Model, Cmd Msg, List Event )
+load_first_slide session model =
     load_slide
+        session
         (if model.section_active > pages model then
             0
 
@@ -216,7 +217,7 @@ subscriptions =
     Lia.Update.subscriptions
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, List Event )
+update : Session -> Msg -> Model -> ( Model, Cmd Msg, List Event )
 update =
     Lia.Update.update
 

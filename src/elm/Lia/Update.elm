@@ -18,6 +18,7 @@ import Lia.Settings.Model exposing (Mode(..))
 import Lia.Settings.Update as Settings
 import Lia.Types exposing (Section)
 import Port.Event as Event exposing (Event)
+import Session exposing (Session)
 
 
 subscriptions : Model -> Sub Msg
@@ -49,13 +50,13 @@ send idx events =
         |> List.map (\( name, json ) -> Event name idx json)
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, List Event )
-update msg model =
+update : Session -> Msg -> Model -> ( Model, Cmd Msg, List Event )
+update session msg model =
     case msg of
         Load idx ->
             if (-1 < idx) && (idx < Array.length model.sections) then
-                ( { model | section_active = idx, load_slide = idx + 1 }
-                , Cmd.none
+                ( { model | section_active = idx }
+                , Session.navToSlide session idx
                 , [ Event "persistent" idx <| JE.string "store" ]
                 )
 
@@ -91,6 +92,7 @@ update msg model =
                     case event.message |> Event.decode of
                         Ok e ->
                             update
+                                session
                                 (e
                                     |> Settings.handle
                                     |> UpdateSettings
@@ -101,7 +103,7 @@ update msg model =
                             ( model, Cmd.none, [] )
 
                 "load" ->
-                    update InitSection (generate model)
+                    update session InitSection (generate model)
 
                 "reset" ->
                     ( model
@@ -142,7 +144,7 @@ update msg model =
 
                 ( NextSection, Just sec ) ->
                     if (model.settings.mode == Textbook) || not (Effect.has_next sec.effect_model) then
-                        update (Load (model.section_active + 1)) model
+                        update session (Load (model.section_active + 1)) model
 
                     else
                         let
@@ -156,7 +158,7 @@ update msg model =
 
                 ( PrevSection, Just sec ) ->
                     if (model.settings.mode == Textbook) || not (Effect.has_previous sec.effect_model) then
-                        update (Load (model.section_active - 1)) model
+                        update session (Load (model.section_active - 1)) model
 
                     else
                         let
