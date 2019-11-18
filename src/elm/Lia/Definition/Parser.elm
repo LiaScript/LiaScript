@@ -26,6 +26,7 @@ import Lia.Definition.Types
         , addToResources
         , add_imports
         , add_translation
+        , toURL
         )
 import Lia.Markdown.Inline.Parser exposing (comment, inlines)
 import Lia.Markdown.Inline.Types exposing (Inlines)
@@ -82,7 +83,7 @@ definition =
                         , store "date:" (\x d -> { d | date = x })
                         , store "email:" (\x d -> { d | email = x })
                         , store "language:" (\x d -> { d | language = x })
-                        , store "logo:" (\x d -> { d | logo = x })
+                        , store "logo:" (\x d -> { d | logo = toURL d.base x })
                         , store "narrator:" (\x d -> { d | narrator = x })
                         , store "script:" (addToResources Script)
                         , store "import:" add_imports
