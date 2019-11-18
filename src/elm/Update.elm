@@ -80,7 +80,7 @@ update msg model =
                         Cmd.none
 
                      else
-                        Navigation.pushUrl model.session.key ("#" ++ String.fromInt lia.load_slide)
+                        Session.navToSlide model.session lia.load_slide
                     )
                 |> (::) (Cmd.map LiaScript cmd)
                 |> Cmd.batch
@@ -129,8 +129,7 @@ update msg model =
                 Browser.Internal url ->
                     ( model
                     , if url.query == model.session.url.query then
-                        Url.toString url
-                            |> Navigation.pushUrl model.session.key
+                        Session.navTo model.session url
 
                       else
                         Url.toString url
@@ -148,7 +147,10 @@ update msg model =
                             ( lia, cmd, events ) =
                                 Lia.Script.load_slide (id - 1) model.lia
                         in
-                        ( { model | lia = lia, session = Session.setUrl url model.session }
+                        ( { model
+                            | lia = lia
+                            , session = Session.setUrl url model.session
+                          }
                         , events
                             |> List.map event2js
                             |> (::) (Cmd.map LiaScript cmd)
