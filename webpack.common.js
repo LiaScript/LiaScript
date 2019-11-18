@@ -49,7 +49,10 @@ module.exports = {
     new MiniCssExtractPlugin(),
     //new CleanWebpackPlugin(['dist']),
     new CopyWebpackPlugin([
-      { from: 'src/assets/logo.png', to: '.'},
+      { from: 'src/assets/logo_192.png', to: '.'},
+      { from: 'src/assets/logo_512.png', to: '.'},
+      { from: 'src/assets/manifest.webmanifest', to: '.'},
+      { from: 'src/javascript/sw.js', to: '.'},
       { from: 'src/assets/README.md', to: '.'},
       { from: 'vendor/responsivevoice.js', to: '.'},
 
