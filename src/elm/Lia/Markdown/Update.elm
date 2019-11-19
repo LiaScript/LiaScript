@@ -13,7 +13,7 @@ import Lia.Markdown.Code.Update as Code
 import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Quiz.Update as Quiz
 import Lia.Markdown.Survey.Update as Survey
-import Lia.Types exposing (Section)
+import Lia.Section exposing (Section)
 import Port.Event as Event exposing (Event)
 
 

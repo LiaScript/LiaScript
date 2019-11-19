@@ -7,8 +7,8 @@ import Html.Events exposing (onInput)
 import Lia.Index.Model exposing (Model)
 import Lia.Index.Update exposing (Msg(..))
 import Lia.Markdown.Inline.View exposing (viewer)
+import Lia.Section exposing (Section, Sections)
 import Lia.Settings.Model exposing (Mode(..))
-import Lia.Types exposing (Section, Sections)
 import Translations exposing (Lang, baseSearch)
 
 

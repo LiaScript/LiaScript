@@ -7,7 +7,7 @@ import Lia.Markdown.Inline.Json.Encode as Inline
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
 import Lia.Model exposing (Model)
-import Lia.Types exposing (Section, SectionBase, Sections, init_section)
+import Lia.Section as Section exposing (Section, Sections)
 import Translations exposing (Lang(..))
 
 

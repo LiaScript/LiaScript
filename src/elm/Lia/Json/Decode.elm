@@ -9,8 +9,8 @@ import Lia.Markdown.Inline.Json.Decode as Inline
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
 import Lia.Model exposing (Model)
+import Lia.Section as Section exposing (Section, Sections)
 import Lia.Settings.Model as Settings
-import Lia.Types exposing (Section, SectionBase, Sections, init_section)
 import Translations
 
 
@@ -33,7 +33,7 @@ toModel =
         |> andMap "str_title" JD.string
         |> JD.map2 (|>) (JD.succeed (Settings.init Settings.Slides))
         |> JD.map2 (|>) (JD.succeed Nothing)
-        |> andMap "sections" (JD.array toSectionBase |> JD.map (Array.indexedMap init_section))
+        |> andMap "sections" (JD.array toSectionBase |> JD.map (Array.indexedMap Section.init))
         |> andMap "section_active" JD.int
         |> andMap "definition" Definition.decode
         |> JD.map2 (|>) (JD.succeed Index.init)
@@ -43,9 +43,9 @@ toModel =
         |> JD.map2 (|>) (JD.succeed identity)
 
 
-toSectionBase : JD.Decoder SectionBase
+toSectionBase : JD.Decoder Section.Base
 toSectionBase =
-    JD.map3 SectionBase
+    JD.map3 Section.Base
         (JD.field "indentation" JD.int)
         (JD.field "title" Inline.decode)
         (JD.field "code" JD.string)

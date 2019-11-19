@@ -14,9 +14,9 @@ import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (Model, load_src)
 import Lia.Parser.Parser exposing (parse_section)
+import Lia.Section exposing (Section)
 import Lia.Settings.Model exposing (Mode(..))
 import Lia.Settings.Update as Settings
-import Lia.Types exposing (Section)
 import Port.Event as Event exposing (Event)
 import Session exposing (Session)
 

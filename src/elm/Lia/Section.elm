@@ -1,8 +1,8 @@
-module Lia.Types exposing
-    ( Section
-    , SectionBase
+module Lia.Section exposing
+    ( Base
+    , Section
     , Sections
-    , init_section
+    , init
     )
 
 import Array exposing (Array)
@@ -40,15 +40,15 @@ type alias Sections =
     Array Section
 
 
-type alias SectionBase =
+type alias Base =
     { identation : Int
     , title : Inlines
     , code : String
     }
 
 
-init_section : Int -> SectionBase -> Section
-init_section idx base =
+init : Int -> Base -> Section
+init idx base =
     { code = base.code
     , title = base.title
     , visited = True

@@ -26,8 +26,8 @@ import Lia.Json.Encode as Json
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Model exposing (load_src)
 import Lia.Parser.Parser as Parser
+import Lia.Section as Section exposing (Sections)
 import Lia.Settings.Model exposing (Mode(..))
-import Lia.Types exposing (Sections, init_section)
 import Lia.Update exposing (Msg(..))
 import Lia.View
 import Port.Event exposing (Event)
@@ -156,7 +156,7 @@ parse_section model code =
             ( { model
                 | sections =
                     Array.push
-                        (init_section (pages model) sec)
+                        (Section.init (pages model) sec)
                         model.sections
               }
             , if String.isEmpty rest then
