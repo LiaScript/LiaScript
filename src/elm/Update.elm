@@ -40,7 +40,6 @@ type Msg
     | Handle Event
     | UpdateIndex Index.Msg
     | Resize Screen
-    | LiaStart
     | LiaParse
     | LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
@@ -170,9 +169,6 @@ update msg model =
             in
             ( { model | session = { session | screen = screen } }, Cmd.none )
 
-        LiaStart ->
-            start model
-
         LiaParse ->
             parsing model
 
@@ -225,7 +221,7 @@ parsing : Model -> ( Model, Cmd Msg )
 parsing model =
     case model.state of
         Parsing False 0 ->
-            update LiaStart model
+            start model
 
         Parsing True templates_to_load ->
             case model.code of
