@@ -12,6 +12,7 @@ type alias Model =
     { size : Float
     , code : Maybe String
     , index : Index.Model
+    , preload : Maybe Index.Course
     , session : Session
     , state : State
     , lia : Lia.Script.Model

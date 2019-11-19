@@ -319,6 +319,10 @@ class LiaScript {
               self.db.deleteIndex(event.message.message)
               break
             }
+            case 'get' : {
+              self.db.getIndex(event.message.message)
+              break
+            }
 
             default:
               lia.error('Command  not found => ', event.message)

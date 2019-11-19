@@ -215,6 +215,25 @@ class LiaDB {
     }
   }
 
+  async getIndex(uidDB) {
+    const course = await this.dbIndex.courses.get(uidDB)
+
+
+    console.log("SSSSSSSSSSSSSSSS", {
+      id: uidDB,
+      course: course
+    });
+
+    this.send({
+      topic: "getIndex",
+      message: {
+        id: uidDB,
+        course: course
+      },
+      section: -1
+    });
+  }
+
   async listIndex(order = 'updated', desc = false) {
     if (this.channel) return
 

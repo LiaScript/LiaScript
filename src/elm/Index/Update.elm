@@ -1,4 +1,11 @@
-module Index.Update exposing (Msg(..), handle, init, update)
+module Index.Update exposing
+    ( Msg(..)
+    , decodeGet
+    , get
+    , handle
+    , init
+    , update
+    )
 
 import Index.Model exposing (Course, Model, Version)
 import Json.Decode as JD
@@ -27,6 +34,31 @@ delete : String -> Event
 delete id =
     JE.string id
         |> Event "delete" -1
+
+
+get : String -> Event
+get id =
+    JE.string id
+        |> Event "get" -1
+        |> Event.encode
+        |> Event "index" -1
+
+
+decodeGet : JD.Value -> ( String, Maybe Course )
+decodeGet event =
+    case
+        ( JD.decodeValue (JD.field "id" JD.string) event
+        , JD.decodeValue (JD.field "course" decCourse) event
+        )
+    of
+        ( Ok uri, Ok course ) ->
+            ( uri, Just course )
+
+        ( Ok uri, Err _ ) ->
+            ( uri, Nothing )
+
+        ( Err _, _ ) ->
+            ( "", Nothing )
 
 
 handle : JD.Value -> Msg

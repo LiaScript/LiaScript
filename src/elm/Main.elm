@@ -7,7 +7,6 @@ import Browser
 import Browser.Navigation as Nav
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Http
 import Index.Model as Index
 import Json.Encode as JE
 import Lia.Script
@@ -15,7 +14,15 @@ import Model exposing (Model, State(..))
 import Process
 import Session exposing (Screen, Session)
 import Task
-import Update exposing (Msg(..), download, load_readme, subscriptions, update)
+import Update
+    exposing
+        ( Msg(..)
+        , download
+        , getIndex
+        , load_readme
+        , subscriptions
+        , update
+        )
 import Url
 import View exposing (view)
 
@@ -54,30 +61,28 @@ init flags url key =
 
         model =
             Session key flags.screen
-                >> Model 0 Nothing Index.init
+                >> Model 0 Nothing Index.init Nothing
     in
     case ( url.query, flags.course, flags.script ) of
         ( Just query, _, _ ) ->
-            ( Lia.Script.init
+            Lia.Script.init
                 flags.settings
                 (get_base url)
                 query
                 (get_origin url.query)
                 slide
                 |> model url Loading
-            , download (Load_ReadMe_Result query) query
-            )
+                |> getIndex query
 
         ( _, Just query, _ ) ->
-            ( Lia.Script.init
+            Lia.Script.init
                 flags.settings
                 (get_base url)
                 query
                 (get_origin url.query)
                 slide
                 |> model { url | query = Just query } Loading
-            , download (Load_ReadMe_Result query) query
-            )
+                |> getIndex query
 
         ( _, _, Just script ) ->
             Lia.Script.init

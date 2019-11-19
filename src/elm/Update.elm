@@ -1,6 +1,7 @@
 port module Update exposing
     ( Msg(..)
     , download
+    , getIndex
     , initIndex
     , load_readme
     , message
@@ -87,6 +88,18 @@ update msg model =
                             |> UpdateIndex
                         )
                         model
+
+                "getIndex" ->
+                    let
+                        xxx =
+                            Debug.log "asdfasfd" event
+
+                        ( id, course ) =
+                            Index.decodeGet event.message
+                    in
+                    ( { model | preload = course }
+                    , download (Load_ReadMe_Result id) id
+                    )
 
                 "restore" ->
                     case Lia.Json.Decode.decode event.message of
@@ -309,6 +322,11 @@ parse_error msg =
 download : (Result Http.Error String -> Msg) -> String -> Cmd Msg
 download msg url =
     Http.get { url = url, expect = Http.expectString msg }
+
+
+getIndex : String -> Model -> ( Model, Cmd Msg )
+getIndex url model =
+    ( model, Index.get url |> event2js )
 
 
 initIndex : Model -> ( Model, Cmd Msg )
