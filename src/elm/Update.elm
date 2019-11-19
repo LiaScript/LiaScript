@@ -261,43 +261,52 @@ parsing model =
 
 load_readme : String -> Model -> ( Model, Cmd Msg )
 load_readme readme model =
-    case
-        readme
-            |> String.replace "\u{000D}" ""
-            |> Lia.Script.init_script model.lia
-    of
-        ( lia, Just code, [] ) ->
-            ( { model
-                | lia = lia
-                , state = Parsing True 0
-                , code = Just code
-                , size = String.length code |> toFloat
-              }
-            , message LiaParse
+    case model.preload of
+        Just course ->
+            ( model
+            , course.id
+                |> Index.restore
+                |> event2js
             )
 
-        ( lia, Just code, templates ) ->
-            ( { model
-                | lia = lia
-                , state = Parsing True <| List.length templates
-                , code = Just code
-                , size = String.length code |> toFloat
-              }
-            , templates
-                |> List.map (download Load_Template_Result)
-                |> (::) (message LiaParse)
-                |> Cmd.batch
-            )
+        Nothing ->
+            case
+                readme
+                    |> String.replace "\u{000D}" ""
+                    |> Lia.Script.init_script model.lia
+            of
+                ( lia, Just code, [] ) ->
+                    ( { model
+                        | lia = lia
+                        , state = Parsing True 0
+                        , code = Just code
+                        , size = String.length code |> toFloat
+                      }
+                    , message LiaParse
+                    )
 
-        ( lia, Nothing, _ ) ->
-            ( { model
-                | state =
-                    lia.error
-                        |> Maybe.withDefault ""
-                        |> Error
-              }
-            , Cmd.none
-            )
+                ( lia, Just code, templates ) ->
+                    ( { model
+                        | lia = lia
+                        , state = Parsing True <| List.length templates
+                        , code = Just code
+                        , size = String.length code |> toFloat
+                      }
+                    , templates
+                        |> List.map (download Load_Template_Result)
+                        |> (::) (message LiaParse)
+                        |> Cmd.batch
+                    )
+
+                ( lia, Nothing, _ ) ->
+                    ( { model
+                        | state =
+                            lia.error
+                                |> Maybe.withDefault ""
+                                |> Error
+                      }
+                    , Cmd.none
+                    )
 
 
 parse_error : Http.Error -> String

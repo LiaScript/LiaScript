@@ -218,12 +218,6 @@ class LiaDB {
   async getIndex(uidDB) {
     const course = await this.dbIndex.courses.get(uidDB)
 
-
-    console.log("SSSSSSSSSSSSSSSS", {
-      id: uidDB,
-      course: course
-    });
-
     this.send({
       topic: "getIndex",
       message: {

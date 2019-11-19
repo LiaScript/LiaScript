@@ -4,6 +4,7 @@ module Index.Update exposing
     , get
     , handle
     , init
+    , restore
     , update
     )
 
@@ -40,6 +41,14 @@ get : String -> Event
 get id =
     JE.string id
         |> Event "get" -1
+        |> Event.encode
+        |> Event "index" -1
+
+
+restore : String -> Event
+restore id =
+    JE.string id
+        |> Event "restore" -1
         |> Event.encode
         |> Event "index" -1
 
