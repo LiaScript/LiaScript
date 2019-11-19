@@ -1,7 +1,7 @@
 'use strict'
 
 import Dexie from 'dexie'
-
+Dexie.debug = true
 import {
   lia
 } from './logger'
@@ -205,13 +205,17 @@ class LiaDB {
     const course = await this.dbIndex.courses.get(uidDB)
 
     if (course) {
-      let dbVersion = parseInt( Object.keys(course.data).sort().reverse() )
+      let latest = parseInt( Object.keys(course.data).sort().reverse() )
 
-      let db = this.open_(uidDB, dbVersion)
+      let db = this.open_(uidDB, latest )
 
       const offline = await db.offline.get(0)
 
-      this.send({topic: "restore", message: offline.data, section: -1});
+      this.send({
+        topic: "restore",
+        message: offline == undefined ? null : offline.data,
+        section: -1
+      });
     }
   }
 
@@ -245,7 +249,7 @@ class LiaDB {
   }
 
   async storeIndex(data) {
-    if (this.channel) return
+    if (this.channel || data.version == 0) return
 
     let date = new Date()
     let item = await this.dbIndex.courses.get(data.readme)

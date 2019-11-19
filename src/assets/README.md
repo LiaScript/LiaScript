@@ -2,7 +2,9 @@
 
 author:   Andre Dietrich
 email:    andre.dietrich@ovgu.de
-version:  0.0.0
+
+version:  1.0.0
+
 language: en
 narrator: US English Female
 
@@ -27,23 +29,6 @@ translation: Русский  translations/Russian.md
 -->
 
 # Lia-Script
-
-  <!-- class="animated bounce infinite delay-2s"-->
- {{2-5}}
-<!-- style="color: red" -->
-this should be red...
-
-
-1. a
-3. c
-
-   + as {1}{df}<!-- class="animated bounce infinite delay-2s"-->
-   * asdfa
-
--2. e
-5. ggg
-
-
 
 
 ## Quizze

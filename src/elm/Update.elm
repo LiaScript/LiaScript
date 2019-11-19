@@ -107,7 +107,9 @@ update msg model =
                             start { model | lia = lia }
 
                         Err info ->
-                            ( model, Cmd.none )
+                            ( { model | preload = Nothing }
+                            , download (Load_ReadMe_Result model.lia.readme) model.lia.readme
+                            )
 
                 _ ->
                     update
