@@ -8,6 +8,7 @@ module Index.Update exposing
     , update
     )
 
+import Dict
 import Index.Model exposing (Course, Model, Version)
 import Json.Decode as JD
 import Json.Encode as JE
@@ -22,6 +23,7 @@ type Msg
     | Input String
     | Delete String
     | Handle JD.Value
+    | Activate String String
 
 
 init : Event
@@ -98,6 +100,37 @@ update msg model =
 
         Input url ->
             ( { model | input = url }, Cmd.none, [] )
+
+        Activate course version ->
+            ( { model
+                | courses =
+                    model.courses
+                        |> activate course version
+              }
+            , Cmd.none
+            , []
+            )
+
+
+activate : String -> String -> List Course -> List Course
+activate course version list =
+    case list of
+        [] ->
+            []
+
+        c :: cs ->
+            if c.id == course then
+                { c
+                    | active =
+                        c.versions
+                            |> Dict.filter (\_ v -> v.definition.version == version)
+                            |> Dict.keys
+                            |> List.head
+                }
+                    :: cs
+
+            else
+                activate course version cs
 
 
 decode : JD.Value -> Msg

@@ -83,19 +83,39 @@ viewCard course =
             Html.text "something went wrong"
 
 
-viewVersions : Course -> Html msg
+viewVersions : Course -> Html Msg
 viewVersions course =
+    let
+        last =
+            Dict.size course.versions - 1
+    in
     course.versions
-        |> Dict.values
-        |> List.map (.definition >> .version)
-        |> List.sortWith Version.compare
-        |> List.map
-            ((++) "V "
-                >> Html.text
-                >> List.singleton
-                >> Html.a []
-                >> List.singleton
-                >> Html.li []
+        |> Dict.toList
+        |> List.map (\( key, value ) -> ( key, value.definition.version ))
+        |> List.sortBy Tuple.first
+        |> List.indexedMap
+            (\i ( key, value ) ->
+                "V "
+                    ++ value
+                    |> Html.text
+                    |> List.singleton
+                    |> Html.li
+                        [ onClick <| Activate course.id value
+                        , case course.active of
+                            Just active ->
+                                if active == key then
+                                    Attr.style "color" "green"
+
+                                else
+                                    Attr.style "color" "black"
+
+                            Nothing ->
+                                if i == last then
+                                    Attr.style "color" "green"
+
+                                else
+                                    Attr.style "color" "black"
+                        ]
             )
         |> Html.ul []
         |> List.singleton
