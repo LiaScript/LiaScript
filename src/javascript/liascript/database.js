@@ -17,26 +17,32 @@ class LiaDB {
     this.dbIndex.version(1).stores({courses: '&id,updated,author,created,title'})
   }
 
-  open_ (uidDB, versionDB) {
+  open_ (uidDB) {
     let db = new Dexie(uidDB)
 
-    db.version(versionDB).stores({
-      code: '&id',
-      quiz: '&id',
-      survey: '&id',
-      offline: '&id'
+    db.version(1).stores({
+      code: '&id,&version',
+      quiz: '&id,&version',
+      survey: '&id,&version',
+      offline: '&id,&version'
     })
 
     return db
   }
 
   async open (uidDB, versionDB, init) {
+
     if (!versionDB || this.channel) return
 
-    this.db = this.open_(uidDB, versionDB)
+    this.version = versionDB
+    this.db = this.open_(uidDB)
+    await this.db.open()
 
     if(init) {
-      const item = await this.db[init.topic].get(init.section)
+      const item = await this.db[init.topic].get({
+        id: init.section,
+        version: versionDB
+      })
 
       if(!!item) {
         if (item.data) {
@@ -47,7 +53,7 @@ class LiaDB {
     }
   }
 
-  async store (event) {
+  async store (event, versionDB = null) {
     if (this.channel) {
       storeChannel(event)
       return
@@ -59,6 +65,7 @@ class LiaDB {
 
     await this.db[event.topic].put({
       id: event.section,
+      version: versionDB != null ? versionDB : this.version,
       data: event.message,
       created: new Date().getTime()
     })
@@ -78,7 +85,7 @@ class LiaDB {
       })
   }
 
-  async load (event) {
+  async load (event, versionDB = null) {
     if (this.channel) {
       this.loadChannel(event)
       return
@@ -88,7 +95,10 @@ class LiaDB {
 
     lia.log('loading => ', event.topic, event.section)
 
-    const item = await this.db[event.topic].get(event.section)
+    const item = await this.db[event.topic].get({
+      id: event.section,
+      version: versionDB != null ? versionDB : this.version,
+    })
 
     if(item) {
       lia.log('restore table', event.topic)//, e._value.data)
@@ -151,7 +161,10 @@ class LiaDB {
 
     let db = this.db
     await db.transaction('rw', db.code, async () => {
-      const vector = await db.code.get(slide);
+      const vector = await db.code.get({
+        id: slide,
+        version: this.version
+      })
 
       if (vector.data) {
         let project = vector.data[event.section]
@@ -201,15 +214,18 @@ class LiaDB {
     })
   }
 
-  async restore(uidDB) {
+  async restore(uidDB, versionDB = null) {
     const course = await this.dbIndex.courses.get(uidDB)
 
     if (course) {
       let latest = parseInt( Object.keys(course.data).sort().reverse() )
 
-      let db = this.open_(uidDB, latest )
+      let db = this.open_(uidDB)
 
-      const offline = await db.offline.get(0)
+      const offline = await db.offline.get({
+        id: 0,
+        version: versionDB != null ? versionDB : this.version
+      })
 
       this.send({
         topic: "restore",
@@ -275,21 +291,24 @@ class LiaDB {
 
       lia.log('storing new version to index', item)
 
-      this.store({
-        topic: 'offline',
-        section: 0,
-        message: data
+      await this.db.offline.put({
+        id: 0,
+        version: data.version,
+        data: data,
+        created: date.getTime()
       })
+
     } else if (item.data[data.version].version !== data.definition.version) {
         item.data[data.version] = data.definition
         item.data[data.version]['title'] = data.title
 
         lia.log('storing new version to index', item)
 
-        this.store({
-          topic: 'offline',
-          section: 0,
-          message: data
+        await this.db.offline.put({
+          id: 0,
+          version: data.version,
+          data: data,
+          created: date.getTime()
         })
     }
 

@@ -320,7 +320,7 @@ class LiaScript {
               break
             }
             case 'restore' : {
-              self.db.restore(event.message.message)
+              self.db.restore(event.message.message, event.message.section)
               break
             }
             case 'get' : {

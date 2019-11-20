@@ -17,6 +17,7 @@ port module Update exposing
 import Browser
 import Browser.Events
 import Browser.Navigation as Navigation
+import Dict
 import Http
 import Index.Update as Index
 import Json.Encode as JE
@@ -91,9 +92,6 @@ update msg model =
 
                 "getIndex" ->
                     let
-                        xxx =
-                            Debug.log "asdfasfd" event
-
                         ( id, course ) =
                             Index.decodeGet event.message
                     in
@@ -261,54 +259,101 @@ parsing model =
             ( model, Cmd.none )
 
 
+version : String -> Int
+version str =
+    case str |> String.split "." |> List.map String.toInt of
+        (Just major) :: (Just minor) :: (Just patch) :: _ ->
+            10000 * major + 100 * minor + patch
+
+        (Just major) :: (Just minor) :: _ ->
+            10000 * major + 100 * minor
+
+        (Just major) :: _ ->
+            10000 * major
+
+        _ ->
+            0
+
+
+getMajor : String -> Int
+getMajor ver =
+    case ver |> String.split "." |> List.map String.toInt of
+        (Just major) :: _ ->
+            major
+
+        _ ->
+            0
+
+
 load_readme : String -> Model -> ( Model, Cmd Msg )
 load_readme readme model =
+    let
+        ( lia, code, templates ) =
+            readme
+                |> String.replace "\u{000D}" ""
+                |> Lia.Script.init_script model.lia
+    in
     case model.preload of
+        Nothing ->
+            load model lia code templates
+
         Just course ->
-            ( model
-            , course.id
-                |> Index.restore
-                |> event2js
+            let
+                latest =
+                    course.versions
+                        |> Dict.values
+                        |> List.map (.definition >> .version >> version)
+                        |> List.sort
+                        |> List.reverse
+                        |> List.head
+                        |> Maybe.withDefault -1
+            in
+            if latest == version lia.definition.version then
+                ( model
+                , course.id
+                    |> Index.restore (getMajor lia.definition.version)
+                    |> event2js
+                )
+
+            else
+                load model lia code templates
+
+
+load : Model -> Lia.Script.Model -> Maybe String -> List String -> ( Model, Cmd Msg )
+load model lia code templates =
+    case ( code, templates ) of
+        ( Just code_, [] ) ->
+            ( { model
+                | lia = lia
+                , state = Parsing True 0
+                , code = Just code_
+                , size = String.length code_ |> toFloat
+              }
+            , message LiaParse
             )
 
-        Nothing ->
-            case
-                readme
-                    |> String.replace "\u{000D}" ""
-                    |> Lia.Script.init_script model.lia
-            of
-                ( lia, Just code, [] ) ->
-                    ( { model
-                        | lia = lia
-                        , state = Parsing True 0
-                        , code = Just code
-                        , size = String.length code |> toFloat
-                      }
-                    , message LiaParse
-                    )
+        ( Just code_, templates_ ) ->
+            ( { model
+                | lia = lia
+                , state = Parsing True <| List.length templates_
+                , code = Just code_
+                , size = String.length code_ |> toFloat
+              }
+            , templates
+                |> List.map (download Load_Template_Result)
+                |> (::) (message LiaParse)
+                |> Cmd.batch
+            )
 
-                ( lia, Just code, templates ) ->
-                    ( { model
-                        | lia = lia
-                        , state = Parsing True <| List.length templates
-                        , code = Just code
-                        , size = String.length code |> toFloat
-                      }
-                    , templates
-                        |> List.map (download Load_Template_Result)
-                        |> (::) (message LiaParse)
-                        |> Cmd.batch
-                    )
-
-                ( lia, Nothing, _ ) ->
-                    ( { model
-                        | state =
-                            lia.error
-                                |> Maybe.withDefault ""
-                                |> Error
-                      }
-                    , Cmd.none
-                    )
+        ( Nothing, _ ) ->
+            ( { model
+                | state =
+                    lia.error
+                        |> Maybe.withDefault ""
+                        |> Error
+              }
+            , Cmd.none
+            )
 
 
 parse_error : Http.Error -> String

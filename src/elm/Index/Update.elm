@@ -45,12 +45,12 @@ get id =
         |> Event "index" -1
 
 
-restore : String -> Event
-restore id =
-    JE.string id
-        |> Event "restore" -1
-        |> Event.encode
-        |> Event "index" -1
+restore : Int -> String -> Event
+restore version =
+    JE.string
+        >> Event "restore" version
+        >> Event.encode
+        >> Event "index" -1
 
 
 decodeGet : JD.Value -> ( String, Maybe Course )

@@ -4,7 +4,7 @@ console.log("service-worker.js")
 importScripts('https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js')
 
 // Detailed logging is very useful during development
-workbox.setConfig({debug: true})
+workbox.setConfig({debug: false})
 
 // Updating SW lifecycle to update the app after user triggered refresh
 workbox.core.skipWaiting()
