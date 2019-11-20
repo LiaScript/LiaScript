@@ -10,6 +10,7 @@ import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View as Inline
 import Lia.Settings.Model exposing (Mode(..))
+import Version
 
 
 view : Model -> Html Msg
@@ -85,9 +86,11 @@ viewCard course =
 viewVersions : Course -> Html msg
 viewVersions course =
     course.versions
-        |> Dict.keys
+        |> Dict.values
+        |> List.map (.definition >> .version)
+        |> List.sortWith Version.compare
         |> List.map
-            ((++) "V."
+            ((++) "V "
                 >> Html.text
                 >> List.singleton
                 >> Html.a []

@@ -29,6 +29,7 @@ import Process
 import Session exposing (Screen)
 import Task
 import Url exposing (Url)
+import Version
 
 
 port event2js : Event -> Cmd msg
@@ -259,32 +260,6 @@ parsing model =
             ( model, Cmd.none )
 
 
-version : String -> Int
-version str =
-    case str |> String.split "." |> List.map String.toInt of
-        (Just major) :: (Just minor) :: (Just patch) :: _ ->
-            10000 * major + 100 * minor + patch
-
-        (Just major) :: (Just minor) :: _ ->
-            10000 * major + 100 * minor
-
-        (Just major) :: _ ->
-            10000 * major
-
-        _ ->
-            0
-
-
-getMajor : String -> Int
-getMajor ver =
-    case ver |> String.split "." |> List.map String.toInt of
-        (Just major) :: _ ->
-            major
-
-        _ ->
-            0
-
-
 load_readme : String -> Model -> ( Model, Cmd Msg )
 load_readme readme model =
     let
@@ -302,16 +277,16 @@ load_readme readme model =
                 latest =
                     course.versions
                         |> Dict.values
-                        |> List.map (.definition >> .version >> version)
+                        |> List.map (.definition >> .version >> Version.toInt)
                         |> List.sort
                         |> List.reverse
                         |> List.head
                         |> Maybe.withDefault -1
             in
-            if latest == version lia.definition.version then
+            if latest == Version.toInt lia.definition.version then
                 ( model
                 , course.id
-                    |> Index.restore (getMajor lia.definition.version)
+                    |> Index.restore (Version.getMajor lia.definition.version)
                     |> event2js
                 )
 
