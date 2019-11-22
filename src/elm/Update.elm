@@ -101,6 +101,10 @@ update msg model =
                     )
 
                 "restore" ->
+                    let
+                        xxx =
+                            Debug.log "event.message" event
+                    in
                     case Lia.Json.Decode.decode event.message of
                         Ok lia ->
                             start { model | lia = lia }
@@ -125,7 +129,7 @@ update msg model =
             in
             ( { model | index = index }
             , events
-                |> List.map (Event.encode >> Event "index" -1 >> event2js)
+                |> List.map event2js
                 |> (::) (Cmd.map UpdateIndex cmd)
                 |> Cmd.batch
             )
@@ -220,13 +224,18 @@ update msg model =
 start : Model -> ( Model, Cmd Msg )
 start model =
     let
+        session =
+            model.session
+                |> Session.setQuery model.lia.readme
+
         ( parsed, cmd, events ) =
-            Lia.Script.load_first_slide model.session model.lia
+            Lia.Script.load_first_slide session model.lia
     in
-    ( { model | state = Running, lia = parsed }
+    ( { model | state = Running, lia = parsed, session = session }
     , events
         |> List.map event2js
         |> (::) (Cmd.map LiaScript cmd)
+        --|> (::) (Navigation.replaceUrl session.key (Url.toString session.url))
         |> Cmd.batch
     )
 

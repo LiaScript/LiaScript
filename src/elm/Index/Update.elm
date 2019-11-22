@@ -15,6 +15,7 @@ import Json.Encode as JE
 import Lia.Definition.Json.Decode as Definition
 import Lia.Markdown.Inline.Json.Decode as Inline
 import Port.Event as Event exposing (Event)
+import Version
 
 
 type Msg
@@ -22,8 +23,9 @@ type Msg
     | IndexError String
     | Input String
     | Delete String
+    | Restore String (Maybe String)
     | Handle JD.Value
-    | Activate String String
+    | Activate String (Maybe String)
 
 
 init : Event
@@ -101,6 +103,18 @@ update msg model =
         Input url ->
             ( { model | input = url }, Cmd.none, [] )
 
+        Restore course version ->
+            ( model
+            , Cmd.none
+            , [ course
+                    |> restore
+                        (version
+                            |> Maybe.map Version.getMajor
+                            |> Maybe.withDefault 3
+                        )
+              ]
+            )
+
         Activate course version ->
             ( { model
                 | courses =
@@ -112,7 +126,7 @@ update msg model =
             )
 
 
-activate : String -> String -> List Course -> List Course
+activate : String -> Maybe String -> List Course -> List Course
 activate course version list =
     case list of
         [] ->
@@ -122,10 +136,15 @@ activate course version list =
             if c.id == course then
                 { c
                     | active =
-                        c.versions
-                            |> Dict.filter (\_ v -> v.definition.version == version)
-                            |> Dict.keys
-                            |> List.head
+                        case version of
+                            Just ver ->
+                                c.versions
+                                    |> Dict.filter (\_ v -> v.definition.version == ver)
+                                    |> Dict.keys
+                                    |> List.head
+
+                            Nothing ->
+                                Nothing
                 }
                     :: cs
 

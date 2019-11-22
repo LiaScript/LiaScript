@@ -6,6 +6,7 @@ module Session exposing
     , navTo
     , navToHome
     , navToSlide
+    , setQuery
     , setUrl
     )
 
@@ -34,6 +35,15 @@ type Type
 setUrl : Url -> Session -> Session
 setUrl url session =
     { session | url = url }
+
+
+setQuery : String -> Session -> Session
+setQuery query session =
+    let
+        url =
+            session.url
+    in
+    { session | url = { url | query = Just query } }
 
 
 setSlide : Int -> Session -> Session

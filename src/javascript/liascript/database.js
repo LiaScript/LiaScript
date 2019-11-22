@@ -21,10 +21,10 @@ class LiaDB {
     let db = new Dexie(uidDB)
 
     db.version(1).stores({
-      code: '&id,&version',
-      quiz: '&id,&version',
-      survey: '&id,&version',
-      offline: '&id,&version'
+      code: '[id+version]',
+      quiz: '[id+version]',
+      survey: '[id+version]',
+      offline: '[id+version]'
     })
 
     return db
