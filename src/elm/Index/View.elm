@@ -149,46 +149,54 @@ card course =
                             [ Element.paddingXY 10 0
                             ]
                   , viewVersions course
-                  , [ case course.active of
+                  , [ Input.button
+                        btn
+                        { onPress = Just <| Delete course.id
+                        , label =
+                            text "Delete"
+                                |> el [ Element.rgb 1 0 0 |> Font.color ]
+                        }
+                    , Input.button
+                        btn
+                        { onPress = Just <| Delete course.id
+                        , label =
+                            text "Reset"
+                                |> el [ Element.rgb 1 0 0 |> Font.color ]
+                        }
+                    , case course.active of
                         Nothing ->
                             Element.link
-                                [ Font.color <| Element.rgba 0 0 0 0.7
-                                , Border.shadow
-                                    { offset = ( 2, 2 )
-                                    , blur = 1
-                                    , size = 1
-                                    , color = Element.rgba 0 0 0 0.2
-                                    }
-                                , paddingXY 5 4
-                                , Border.rounded 5
-                                , Background.color <| Element.rgb 1 1 1
-                                ]
+                                (Element.alignRight :: btn)
                                 { url = href course.id, label = text "Open" }
 
                         Just ver ->
                             Input.button
-                                [ Font.color <| Element.rgba 0 0 0 0.7
-                                , Border.shadow
-                                    { offset = ( 2, 2 )
-                                    , blur = 1
-                                    , size = 1
-                                    , color = Element.rgba 0 0 0 0.2
-                                    }
-                                , paddingXY 5 4
-                                , Border.rounded 5
-                                , Background.color <| Element.rgb 1 1 1
-                                ]
+                                (Element.alignRight :: btn)
                                 { onPress = Just <| Restore course.id course.active
                                 , label = text "Open"
                                 }
                     ]
-                        |> row [ width fill, padding 10 ]
+                        |> row [ width fill, padding 10, spacing 10 ]
                   ]
                     |> column [ width fill ]
                 ]
 
             _ ->
                 [ text "something went wrong" ]
+
+
+btn =
+    [ Font.color <| Element.rgba 0 0 0 0.7
+    , Border.shadow
+        { offset = ( 2, 2 )
+        , blur = 1
+        , size = 1
+        , color = Element.rgba 0 0 0 0.2
+        }
+    , paddingXY 5 4
+    , Border.rounded 5
+    , Background.color <| Element.rgb 1 1 1
+    ]
 
 
 author : String -> Element msg

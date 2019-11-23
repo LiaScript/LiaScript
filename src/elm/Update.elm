@@ -235,7 +235,6 @@ start model =
     , events
         |> List.map event2js
         |> (::) (Cmd.map LiaScript cmd)
-        --|> (::) (Navigation.replaceUrl session.key (Url.toString session.url))
         |> Cmd.batch
     )
 

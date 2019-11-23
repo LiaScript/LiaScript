@@ -322,6 +322,7 @@ class LiaDB {
       this.dbIndex.courses.delete(uidDB),
       Dexie.delete(uidDB)
     ])
+
   }
 
 };

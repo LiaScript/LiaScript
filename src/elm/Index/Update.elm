@@ -36,9 +36,11 @@ init =
 
 
 delete : String -> Event
-delete id =
-    JE.string id
-        |> Event "delete" -1
+delete =
+    JE.string
+        >> Event "delete" -1
+        >> Event.encode
+        >> Event "index" -1
 
 
 get : String -> Event
@@ -95,7 +97,14 @@ update msg model =
             ( model, Cmd.none, [] )
 
         Delete courseID ->
-            ( model, Cmd.none, [ delete courseID ] )
+            ( { model
+                | courses =
+                    model.courses
+                        |> List.filter (.id >> (/=) courseID)
+              }
+            , Cmd.none
+            , [ delete courseID ]
+            )
 
         Handle json ->
             update (decode json) model

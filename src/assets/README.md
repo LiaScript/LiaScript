@@ -3,7 +3,7 @@
 author:   Andre Dietrich
 email:    andre.dietrich@ovgu.de
 
-version:  9.3.9
+version:  1.3.9
 
 language: en
 narrator: US English Female
