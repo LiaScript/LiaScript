@@ -39,8 +39,9 @@ import Session exposing (Session)
 import Version
 
 
+scaled : Int -> Float -> Int
 scaled w start =
-    (toFloat w / 200.0)
+    (toFloat w / 250.0)
         |> round
         |> Element.modular start 1.1
         |> round
@@ -52,7 +53,7 @@ view session model =
         scale =
             scaled session.screen.width
     in
-    [ text "Lia: Index"
+    [ text "Lia: Open-courSes"
         |> el
             [ centerX
             , scale 20 |> Font.size
@@ -84,10 +85,6 @@ greedyGroupsOf size xs =
     greedyGroupsOfWithStep size size xs
 
 
-{-| Split list into groups of size given by the first argument "greedily" (don't throw the group away if not long enough). After each group, drop a number of elements given by the second argumet before starting the next group.
-greedyGroupsOfWithStep 3 2 [1..6]
-== [[1,2,3],[3,4,5],[5,6]]
--}
 greedyGroupsOfWithStep : Int -> Int -> List a -> List (List a)
 greedyGroupsOfWithStep size step xs =
     let
@@ -110,10 +107,36 @@ greedyGroupsOfWithStep size step xs =
         []
 
 
+url2Color url =
+    url
+        |> String.toList
+        |> List.map Char.toCode
+        |> greedyGroupsOf 3
+        |> List.foldl
+            (\rgb ( r, g, b ) ->
+                case rgb of
+                    [ r_, g_, b_ ] ->
+                        ( r + r_, g + g_, b + b_ )
 
---searchBar :  String -> Element Msg
+                    [ r_, g_ ] ->
+                        ( r_ + r, g_ + g, b )
+
+                    [ r_ ] ->
+                        ( r_ + r, g, b )
+
+                    _ ->
+                        ( r, g, b )
+            )
+            ( 11111, 99, 12 )
+        |> (\( r, g, b ) ->
+                Element.rgb
+                    ((toFloat <| modBy 100 r) / 100)
+                    ((toFloat <| modBy 100 g) / 100)
+                    ((toFloat <| modBy 100 b) / 100)
+           )
 
 
+searchBar : (Float -> Int) -> Int -> String -> Element Msg
 searchBar scale wid_ url =
     [ Input.text
         [ fill
@@ -132,6 +155,7 @@ searchBar scale wid_ url =
             , color = Element.rgba 0 0 0 0.2
             }
          , scale 28 |> px |> height
+         , Background.color <| Element.rgb 1 1 1
          ]
             ++ (if wid_ > 400 then
                     []
@@ -163,10 +187,7 @@ searchBar scale wid_ url =
             ]
 
 
-
---card : Course -> Element Msg
-
-
+card : (Float -> Int) -> Course -> Element Msg
 card scale course =
     column
         [ width fill
@@ -189,7 +210,7 @@ card scale course =
                         none
                             |> el
                                 [ width fill
-                                , Background.color <| Element.rgb 0 0 0
+                                , Background.color <| url2Color course.id
                                 , scale 90 |> px |> height
                                 , str_a
                                     |> author scale
@@ -232,7 +253,14 @@ card scale course =
                             , scale 60 |> px |> height
                             , Element.scrollbarY
                             ]
-                  , viewVersions scale course
+                  , none
+                        |> el [ width fill, px 1 |> height, Background.color <| Element.rgb 0.5 0.5 0.5 ]
+                  , [ viewVersions scale course
+                    , course.last_visit
+                        |> text
+                        |> el [ scale 8 |> Font.size, Element.alignRight ]
+                    ]
+                        |> row [ width fill ]
                   , [ Input.button
                         btn
                         { onPress = Just <| Delete course.id
@@ -287,10 +315,7 @@ btn =
     ]
 
 
-
---author : String -> Element msg
-
-
+author : (Float -> Int) -> String -> Element msg
 author scale str =
     (if str == "" then
         "by Annonymous"
@@ -300,8 +325,8 @@ author scale str =
     )
         |> text
         |> el
-            [ scale 10 |> padding
-            , scale 12 |> Font.size
+            [ scale 5 |> padding
+            , scale 10 |> Font.size
             , width fill
             , Font.bold
             , Background.color <| Element.rgba 0.95 0.95 0.95 0.6
@@ -321,6 +346,7 @@ renderElmUi =
         }
         [ Element.width Element.fill
         , Element.height Element.fill
+        , Background.color <| Element.rgb 0.9 0.9 0.9
         ]
 
 
@@ -329,10 +355,7 @@ href url =
     "./?" ++ url
 
 
-
---viewVersions : Course -> Element Msg
-
-
+viewVersions : (Float -> Int) -> Course -> Element Msg
 viewVersions scale course =
     let
         last =
@@ -363,11 +386,11 @@ viewVersions scale course =
                 in
                 Input.button
                     [ Font.color color
-                    , Border.color color
                     , Border.width 1
                     , scale 8 |> Font.size
                     , paddingXY (scale 5) 2
                     , Border.rounded 5
+                    , Background.color <| Element.rgb 1 1 1
                     ]
                     { onPress =
                         Just <|
@@ -381,7 +404,7 @@ viewVersions scale course =
                     , label = "V " ++ value |> text
                     }
             )
-        |> row [ scale 10 |> spacing ]
+        |> row [ scale 10 |> spacing, Element.scrollbarX, height fill, width fill ]
 
 
 get_active : Course -> Maybe Version
