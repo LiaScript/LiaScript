@@ -101,10 +101,6 @@ update msg model =
                     )
 
                 "restore" ->
-                    let
-                        xxx =
-                            Debug.log "event.message" event
-                    in
                     case Lia.Json.Decode.decode event.message of
                         Ok lia ->
                             start { model | lia = lia }

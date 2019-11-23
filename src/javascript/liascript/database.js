@@ -32,7 +32,7 @@ class LiaDB {
 
   async open (uidDB, versionDB, init) {
 
-    if (!versionDB || this.channel) return
+    if (this.channel) return
 
     this.version = versionDB
     this.db = this.open_(uidDB)
@@ -59,7 +59,7 @@ class LiaDB {
       return
     }
 
-    if (!this.db) return
+    if (!this.db || this.version == 0) return
 
     lia.warn(`liaDB: event(store), table(${event.topic}), id(${event.section}), data(${event.message})`)
 
@@ -264,7 +264,7 @@ class LiaDB {
   }
 
   async storeIndex(data) {
-    if (this.channel || data.version == 0) return
+    if (this.channel) return
 
     let date = new Date()
     let item = await this.dbIndex.courses.get(data.readme)
