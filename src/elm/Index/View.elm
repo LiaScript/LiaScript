@@ -14,6 +14,7 @@ import Element
         , none
         , padding
         , paddingXY
+        , paragraph
         , px
         , row
         , scrollbarY
@@ -34,42 +35,88 @@ import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View as Inline
 import Lia.Settings.Model exposing (Mode(..))
+import Session exposing (Session)
 import Version
 
 
-view : Model -> Html Msg
-view model =
+scaled w start =
+    (toFloat w / 200.0)
+        |> round
+        |> Element.modular start 1.1
+        |> round
+
+
+view : Session -> Model -> Html Msg
+view session model =
+    let
+        scale =
+            scaled session.screen.width
+    in
     [ text "Lia: Index"
         |> el
             [ centerX
-            , Font.size 36
-            , height <| px 30
-            , padding 30
+            , scale 20 |> Font.size
+            , scale 10 |> padding
             ]
-    , searchBar model.input
+    , searchBar scale session.screen.width model.input
     , model.courses
-        |> List.map card
+        |> List.map (card scale)
+        |> greedyGroupsOf (round (toFloat session.screen.width / 420))
+        |> List.map (row [ scale 16 |> spacing, width fill ])
         |> column
             [ width fill
             , height fill
-            , padding 16
-            , spacing 30
+            , scale 10 |> padding
+            , scale 16 |> spacing
             , scrollbarY
             ]
     ]
         |> column
             [ width fill
-            , spacing 20
+            , scale 10 |> spacing
             , height fill
             ]
         |> renderElmUi
 
 
-searchBar : String -> Element Msg
-searchBar url =
+greedyGroupsOf : Int -> List a -> List (List a)
+greedyGroupsOf size xs =
+    greedyGroupsOfWithStep size size xs
+
+
+{-| Split list into groups of size given by the first argument "greedily" (don't throw the group away if not long enough). After each group, drop a number of elements given by the second argumet before starting the next group.
+greedyGroupsOfWithStep 3 2 [1..6]
+== [[1,2,3],[3,4,5],[5,6]]
+-}
+greedyGroupsOfWithStep : Int -> Int -> List a -> List (List a)
+greedyGroupsOfWithStep size step xs =
+    let
+        group =
+            List.take size xs
+
+        xs_ =
+            List.drop step xs
+
+        okayArgs =
+            size > 0 && step > 0
+
+        okayXs =
+            List.length xs > 0
+    in
+    if okayArgs && okayXs then
+        group :: greedyGroupsOfWithStep size step xs_
+
+    else
+        []
+
+
+
+--searchBar :  String -> Element Msg
+
+
+searchBar scale wid_ url =
     [ Input.text
         [ fill
-            |> maximum 400
             |> width
         ]
         { onChange = Input
@@ -78,28 +125,51 @@ searchBar url =
         , label = Input.labelHidden "search input field"
         }
     , Element.link
-        [ Border.shadow
+        ([ Border.shadow
             { offset = ( 0, 0 )
             , blur = 6
             , size = 1
             , color = Element.rgba 0 0 0 0.2
             }
-        , height fill
-        ]
+         , scale 28 |> px |> height
+         ]
+            ++ (if wid_ > 400 then
+                    []
+
+                else
+                    [ width fill ]
+               )
+        )
         { url = href url
-        , label = text "load course" |> el [ Element.paddingXY 20 0 ]
+        , label = text "load course" |> el [ Element.paddingXY 20 0, centerX ]
         }
     ]
-        |> Element.wrappedRow [ spacing 20, width fill, height fill ]
-        |> el [ centerX, height <| px 40 ]
+        |> (if wid_ > 400 then
+                Element.wrappedRow
+                    [ scale 10 |> spacing
+                    , width fill
+                    ]
+
+            else
+                column
+                    [ scale 10 |> spacing
+                    , width fill
+                    ]
+           )
+        |> el
+            [ scale 10 |> Font.size
+            , width fill
+            , paddingXY (scale 10) 0
+            ]
 
 
-card : Course -> Element Msg
-card course =
+
+--card : Course -> Element Msg
+
+
+card scale course =
     column
         [ width fill
-        , height fill
-        , spacing 10
         , Border.color <| Element.rgb 0 0 0
         , Element.clip
         , Border.rounded 10
@@ -116,39 +186,53 @@ card course =
             Just { title, definition } ->
                 [ case ( String.trim definition.author, String.trim definition.logo ) of
                     ( str_a, "" ) ->
-                        str_a
-                            |> author
+                        none
+                            |> el
+                                [ width fill
+                                , Background.color <| Element.rgb 0 0 0
+                                , scale 90 |> px |> height
+                                , str_a
+                                    |> author scale
+                                    |> Element.inFront
+                                ]
 
                     ( str_a, str_l ) ->
                         none
                             |> el
-                                [ Background.image str_l
-                                , width fill
-                                , height <| px 200
+                                [ width fill
+                                , Background.color <| Element.rgb 0 0 0
+                                , Background.image str_l
+                                , scale 90 |> px |> height
                                 , str_a
-                                    |> author
+                                    |> author scale
                                     |> Element.inFront
                                 ]
-                , [ title
+                , [ [ title
                         |> inlines
-                        |> Html.div []
+                        |> Html.div
+                            [ Attr.style "white-space" "nowrap"
+                            , Attr.style "overflow" "hidden"
+                            , Attr.style "text-overflow" "ellipsis"
+                            ]
                         |> Element.html
-                        |> el
-                            [ Font.size 36
+                    ]
+                        |> paragraph
+                            [ scale 16 |> Font.size
                             , width fill
                             , Font.bold
-                            , padding 0
                             , Font.color <| Element.rgb 0.6 0 0
                             ]
                   , [ definition.comment
                         |> inlines
-                        |> Html.p []
+                        |> Html.div []
                         |> Element.html
                     ]
                         |> Element.paragraph
-                            [ Element.paddingXY 10 0
+                            [ scale 10 |> Font.size
+                            , scale 60 |> px |> height
+                            , Element.scrollbarY
                             ]
-                  , viewVersions course
+                  , viewVersions scale course
                   , [ Input.button
                         btn
                         { onPress = Just <| Delete course.id
@@ -176,9 +260,13 @@ card course =
                                 , label = text "Open"
                                 }
                     ]
-                        |> row [ width fill, padding 10, spacing 10 ]
+                        |> row
+                            [ width fill
+                            , scale 10 |> spacing
+                            , scale 11 |> Font.size
+                            ]
                   ]
-                    |> column [ width fill ]
+                    |> column [ width fill, scale 10 |> spacing, scale 10 |> padding ]
                 ]
 
             _ ->
@@ -199,8 +287,11 @@ btn =
     ]
 
 
-author : String -> Element msg
-author str =
+
+--author : String -> Element msg
+
+
+author scale str =
     (if str == "" then
         "by Annonymous"
 
@@ -209,8 +300,8 @@ author str =
     )
         |> text
         |> el
-            [ padding 10
-            , Font.size 24
+            [ scale 10 |> padding
+            , scale 12 |> Font.size
             , width fill
             , Font.bold
             , Background.color <| Element.rgba 0.95 0.95 0.95 0.6
@@ -233,61 +324,16 @@ renderElmUi =
         ]
 
 
-view2 : Model -> Html Msg
-view2 model =
-    model.courses
-        |> List.map viewCard
-        --  |> (::) (searchBar model.input)
-        |> Html.div [ Attr.style "overflow-y" "auto", Attr.style "height" "100%" ]
-
-
 href : String -> String
 href url =
     "./?" ++ url
 
 
-viewCard : Course -> Html Msg
-viewCard course =
-    case get_active course of
-        Just { title, definition } ->
-            Html.div [ Attr.class "course-container" ]
-                [ Html.div [ Attr.class "course-body" ]
-                    [ Html.div [ Attr.class "course-title" ]
-                        [ title
-                            |> inlines
-                            |> Html.h1 []
-                        ]
-                    , Html.div [ Attr.class "course-summary" ]
-                        [ definition.comment
-                            |> inlines
-                            |> Html.p []
-                        ]
-                    ]
-                , Html.div
-                    [ Attr.class "course-footer" ]
-                    [ Html.ul []
-                        [ Html.li [ Attr.class "published-date" ]
-                            [ Html.text course.last_visit ]
-                        , Html.li [ Attr.class "published-date" ]
-                            [ Html.a [ onClick <| Delete course.id ] [ Html.text "delete" ] ]
-                        , Html.li [ Attr.class "published-date" ]
-                            [ Html.a [] [ Html.text "reset" ] ]
-                        , Html.li [ Attr.class "published-date" ]
-                            [ Html.a
-                                []
-                                --  [ href course.id ]
-                                [ Html.text "open" ]
-                            ]
-                        ]
-                    ]
-                ]
 
-        Nothing ->
-            Html.text "something went wrong"
+--viewVersions : Course -> Element Msg
 
 
-viewVersions : Course -> Element Msg
-viewVersions course =
+viewVersions scale course =
     let
         last =
             Dict.size course.versions - 1
@@ -319,8 +365,8 @@ viewVersions course =
                     [ Font.color color
                     , Border.color color
                     , Border.width 1
-                    , Font.size 14
-                    , paddingXY 5 2
+                    , scale 8 |> Font.size
+                    , paddingXY (scale 5) 2
                     , Border.rounded 5
                     ]
                     { onPress =
@@ -335,7 +381,7 @@ viewVersions course =
                     , label = "V " ++ value |> text
                     }
             )
-        |> row [ padding 10, spacing 10 ]
+        |> row [ scale 10 |> spacing ]
 
 
 get_active : Course -> Maybe Version
