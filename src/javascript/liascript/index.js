@@ -323,6 +323,9 @@ class LiaScript {
               self.db.restore(event.message.message, event.message.section)
               break
             }
+            case 'reset' : {
+              self.db.reset(event.message.message, event.message.section)
+            }
             case 'get' : {
               self.db.getIndex(event.message.message)
               break

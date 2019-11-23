@@ -23,40 +23,51 @@ type Msg
     | IndexError String
     | Input String
     | Delete String
+    | Reset String (Maybe String)
     | Restore String (Maybe String)
     | Handle JD.Value
     | Activate String (Maybe String)
 
 
+index : Event -> Event
+index =
+    Event.encode
+        >> Event "index" -1
+
+
 init : Event
 init =
     Event "list" -1 JE.null
-        |> Event.encode
-        |> Event "index" -1
+        |> index
 
 
 delete : String -> Event
 delete =
     JE.string
         >> Event "delete" -1
-        >> Event.encode
-        >> Event "index" -1
+        >> index
 
 
 get : String -> Event
-get id =
-    JE.string id
-        |> Event "get" -1
-        |> Event.encode
-        |> Event "index" -1
+get =
+    JE.string
+        >> Event "get" -1
+        >> index
 
 
 restore : Int -> String -> Event
 restore version =
     JE.string
         >> Event "restore" version
-        >> Event.encode
-        >> Event "index" -1
+        >> index
+
+
+reset : String -> Int -> Event
+reset course version =
+    course
+        |> JE.string
+        |> Event "reset" version
+        |> index
 
 
 decodeGet : JD.Value -> ( String, Maybe Course )
@@ -104,6 +115,30 @@ update msg model =
               }
             , Cmd.none
             , [ delete courseID ]
+            )
+
+        Reset courseID version ->
+            ( model
+            , Cmd.none
+            , [ reset courseID <|
+                    Maybe.withDefault -1 <|
+                        case version of
+                            Just ver ->
+                                String.toInt ver
+
+                            Nothing ->
+                                model.courses
+                                    |> List.filter (.id >> (==) courseID)
+                                    |> List.head
+                                    |> Maybe.map
+                                        (\c ->
+                                            c.versions
+                                                |> Dict.keys
+                                                |> List.filterMap String.toInt
+                                                |> List.maximum
+                                                |> Maybe.withDefault -1
+                                        )
+              ]
             )
 
         Handle json ->

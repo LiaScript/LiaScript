@@ -21,10 +21,10 @@ class LiaDB {
     let db = new Dexie(uidDB)
 
     db.version(1).stores({
-      code: '[id+version]',
-      quiz: '[id+version]',
-      survey: '[id+version]',
-      offline: '[id+version]'
+      code: '[id+version], version',
+      quiz: '[id+version], version',
+      survey: '[id+version], version',
+      offline: '[id+version], version'
     })
 
     return db
@@ -210,7 +210,6 @@ class LiaDB {
 
         await (db.code.put(vector))
       }
-
     })
   }
 
@@ -322,7 +321,17 @@ class LiaDB {
       this.dbIndex.courses.delete(uidDB),
       Dexie.delete(uidDB)
     ])
+  }
 
+  async reset(uidDB, versionDB) {
+    let db = this.open_(uidDB)
+    await db.open()
+
+    await Promise.all([
+      db.code.where("version").equals(versionDB).delete(),
+      db.quiz.where("version").equals(versionDB).delete(),
+      db.survey.where("version").equals(versionDB).delete()
+    ])
   }
 
 };

@@ -158,7 +158,7 @@ card course =
                         }
                     , Input.button
                         btn
-                        { onPress = Just <| Delete course.id
+                        { onPress = Just <| Reset course.id course.active
                         , label =
                             text "Reset"
                                 |> el [ Element.rgb 1 0 0 |> Font.color ]
