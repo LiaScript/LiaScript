@@ -44,7 +44,7 @@ scaled : Int -> Float -> Int
 scaled w start =
     (toFloat w / 250.0)
         |> round
-        |> Element.modular start 1.1
+        |> Element.modular start 1.05
         |> round
 
 
@@ -89,7 +89,7 @@ view session model =
        else
         model.courses
             |> List.map (card scale session.share)
-            |> greedyGroupsOf (round (toFloat session.screen.width / 420))
+            |> greedyGroupsOf (round (toFloat session.screen.width / 380))
             |> List.map (row [ scale 16 |> spacing, width fill ])
       )
         |> column
@@ -280,7 +280,7 @@ card scale share course =
                     ]
                         |> Element.paragraph
                             [ scale 12 |> Font.size
-                            , scale 60 |> px |> height
+                            , scale 48 |> px |> height
                             , Element.scrollbarY
                             ]
                   , none
