@@ -93,6 +93,7 @@ add_macros orig temp =
         | macro = Dict.union orig.macro temp.macro
         , attributes = List.append orig.attributes temp.attributes
         , onload = String.trim (orig.onload ++ "\n" ++ temp.onload)
+        , resources = List.append orig.resources temp.resources
     }
 
 

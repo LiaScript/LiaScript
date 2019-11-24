@@ -129,7 +129,7 @@ init_script model script =
                     model.settings
             in
             ( { model
-                | definition = { definition | imports = [], attributes = [] }
+                | definition = { definition | attributes = [] }
                 , translation = Translations.getLnFromCode definition.language
                 , settings =
                     { settings

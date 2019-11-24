@@ -33,7 +33,8 @@ function handleEffects (event, elmSend) {
       scrollIntoView(event.message, 350)
       break
     case 'persistent':
-      setTimeout((e) => { persistent.load(event.section) }, 10)
+      //Todo
+      //setTimeout((e) => { persistent.load(event.section) }, 10)
       break
     case 'execute':
       lia_execute_event(event.message)
@@ -171,6 +172,8 @@ class LiaScript {
     jsSubscribe(function (event) {
       lia.log('elm2js => ', event)
 
+
+
       switch (event.topic) {
         case 'slide': {
           // if(self.channel)
@@ -253,6 +256,8 @@ class LiaScript {
           let elem = event.message[0]
           let url = event.message[1]
 
+          console.warn(elem, ":", url);
+
           lia.log('loading resource => ', elem, ':', url)
 
           try {
@@ -268,12 +273,13 @@ class LiaScript {
           } catch (e) {
             lia.error('loading resource => ', e.msg)
           }
-          
+
           break
         }
         case 'persistent': {
           if (event.message === 'store') {
-            persistent.store(event.section)
+            // todo, needs to be moved back
+            //persistent.store(event.section)
             elmSend({ topic: 'load', section: -1, message: null })
           }
 
