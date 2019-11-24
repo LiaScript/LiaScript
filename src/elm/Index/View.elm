@@ -62,7 +62,7 @@ view session model =
             , scale 30 |> px |> height
             ]
     , searchBar scale session.screen.width model.input
-    , (if List.isEmpty model.courses then
+    , (if List.isEmpty model.courses && model.initialized then
         [ [ "If you cannot see any courses in this list, try out one of the following links, to get more information about this project and to visit some examples and free interactive books."
                 |> text
           ]
@@ -86,11 +86,14 @@ view session model =
         , text "Have a nice one ;-) ..."
         ]
 
-       else
+       else if model.initialized then
         model.courses
             |> List.map (card scale session.share)
             |> greedyGroupsOf (round (toFloat session.screen.width / 380))
             |> List.map (row [ scale 16 |> spacing, width fill ])
+
+       else
+        []
       )
         |> column
             [ width fill
