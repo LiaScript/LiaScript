@@ -224,8 +224,17 @@ start model =
             model.session
                 |> Session.setQuery model.lia.readme
 
+        slide =
+            session.url.fragment
+                |> Maybe.andThen String.toInt
+                |> Maybe.withDefault 1
+                |> (+) -1
+
+        lia =
+            model.lia
+
         ( parsed, cmd, events ) =
-            Lia.Script.load_first_slide session model.lia
+            Lia.Script.load_first_slide session { lia | section_active = slide }
 
         resources =
             model.preload
