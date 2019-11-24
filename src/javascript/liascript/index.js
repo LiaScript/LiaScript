@@ -126,8 +126,6 @@ class LiaScript {
       }
     })
 
-    console.log(this.app.ports)
-
     let sendTo = this.app.ports.event2elm.send
 
     let sender = function (msg) {
