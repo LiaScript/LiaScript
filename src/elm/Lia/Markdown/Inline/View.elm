@@ -106,8 +106,10 @@ view mode visible element =
                 |> List.map (\e -> view mode visible e)
                 |> Html.span (annotation "lia-container" attr)
 
-        HTML str ->
-            html_parse str
+        HTML nodes ->
+            nodes
+                |> Util.toVirtualDom
+                |> Html.span []
 
         EInline id_in id_out e attr ->
             if mode == Textbook then

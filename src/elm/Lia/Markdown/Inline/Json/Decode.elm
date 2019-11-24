@@ -20,7 +20,8 @@ decInline =
     , inlReader "Strike" Strike
     , inlReader "Superscript" Superscript
     , inlReader "Underline" Underline
-    , strReader "HTML" (\str _ -> HTML str)
+
+    --, strReader "HTML" (\str  -> HTML str)
     , JD.field "Ref" toReference |> JD.map Ref
     , JD.field "Container" (JD.lazy (\_ -> decode)) |> JD.map Container
     , JD.map3 EInline

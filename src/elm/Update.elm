@@ -103,7 +103,7 @@ update msg model =
                 "restore" ->
                     case Lia.Json.Decode.decode event.message of
                         Ok lia ->
-                            start { model | lia = lia }
+                            start { model | lia = Lia.Script.add_todos lia.definition lia }
 
                         Err info ->
                             ( { model | preload = Nothing }
@@ -226,6 +226,10 @@ start model =
 
         ( parsed, cmd, events ) =
             Lia.Script.load_first_slide session model.lia
+
+        resources =
+            model.preload
+                |> Maybe.map (.versions >> Dict.get "0")
     in
     ( { model | state = Running, lia = parsed, session = session }
     , events

@@ -82,7 +82,7 @@ encInline element =
                 ]
 
             HTML str ->
-                [ ( "HTML", JE.string str )
+                [ ( "HTML", JE.string "" )
                 , ( "a", encAnnotation Nothing )
                 ]
 

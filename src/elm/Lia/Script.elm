@@ -2,6 +2,7 @@ module Lia.Script exposing
     ( Model
     , Msg
     , add_imports
+    , add_todos
     , get_title
     , handle
     , init
@@ -128,7 +129,7 @@ init_script model script =
                     model.settings
             in
             ( { model
-                | definition = { definition | resources = [], imports = [], attributes = [] }
+                | definition = { definition | imports = [], attributes = [] }
                 , translation = Translations.getLnFromCode definition.language
                 , settings =
                     { settings

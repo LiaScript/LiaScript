@@ -268,6 +268,9 @@ class LiaScript {
           } catch (e) {
             lia.error('loading resource => ', e.msg)
           }
+
+          console.warn("EEEEEEEEEEEEEEE", event);
+          
           break
         }
         case 'persistent': {
@@ -292,8 +295,8 @@ class LiaScript {
                 message: null }
           })
 
-          if (onload !== '') {
-            lia_execute_event({ code: onload, delay: 350 })
+          if (data.definition.onload !== '') {
+            lia_execute_event({ code: data.definition.onload, delay: 350 })
           }
 
           meta('author', data.definition.author)

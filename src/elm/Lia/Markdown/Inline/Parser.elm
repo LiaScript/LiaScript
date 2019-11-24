@@ -39,6 +39,7 @@ import Combine
         )
 import Combine.Char exposing (anyChar)
 import Dict exposing (Dict)
+import Html.Parser
 import Lia.Markdown.Effect.Model exposing (add_javascript)
 import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Footnote.Parser as Footnote
@@ -153,12 +154,24 @@ html =
 html_void : Parser s Inline
 html_void =
     regex "<[^>\\n]*>"
+        |> andThen html_parse
         |> map HTML
+
+
+html_parse : String -> Parser s (List Html.Parser.Node)
+html_parse str =
+    case Html.Parser.run str of
+        Ok rslt ->
+            succeed rslt
+
+        Err _ ->
+            fail "html parser failed"
 
 
 html_block : Parser s Inline
 html_block =
     regex "<((\\w+|-)+)[\\s\\S]*?</\\1>"
+        |> andThen html_parse
         |> map HTML
 
 

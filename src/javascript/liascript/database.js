@@ -157,7 +157,7 @@ class LiaDB {
       return
     }
 
-    if (!this.db) return
+    if (!this.db || this.version == 0) return
 
     let db = this.db
     await db.transaction('rw', db.code, async () => {
