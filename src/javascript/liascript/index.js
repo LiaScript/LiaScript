@@ -268,8 +268,6 @@ class LiaScript {
           } catch (e) {
             lia.error('loading resource => ', e.msg)
           }
-
-          console.warn("EEEEEEEEEEEEEEE", event);
           
           break
         }
