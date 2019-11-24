@@ -34,7 +34,7 @@ view_aside model =
         [ Attr.class "lia-toc"
         , Attr.style "max-width" <|
             if model.settings.table_of_contents then
-                "300px"
+                "280px"
 
             else
                 "0px"

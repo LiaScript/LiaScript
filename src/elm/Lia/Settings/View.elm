@@ -59,7 +59,7 @@ dropdown active name alt msg =
                         ""
                    )
         , Attr.title alt
-        , Attr.style "width" "48px"
+        , Attr.style "width" "56px"
         , Attr.style "padding" "0px"
         ]
         [ Html.text name ]
