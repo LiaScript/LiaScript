@@ -58,12 +58,35 @@ view session model =
             [ centerX
             , scale 20 |> Font.size
             , scale 10 |> padding
+            , scale 30 |> px |> height
             ]
     , searchBar scale session.screen.width model.input
-    , model.courses
-        |> List.map (card scale)
-        |> greedyGroupsOf (round (toFloat session.screen.width / 420))
-        |> List.map (row [ scale 16 |> spacing, width fill ])
+    , (if List.isEmpty model.courses then
+        [ [ "If you cannot see any courses in this list, try out one of the following links, to get more information about this project and to visit some examples and free interactive books."
+                |> text
+          ]
+            |> paragraph [ Font.justify ]
+        , Element.link [ centerX, Font.color <| Element.rgb 0 0 1, Font.underline ]
+            { url = "https://LiaScript.github.io"
+            , label = text "Project-Website"
+            }
+        , Element.link [ centerX, Font.color <| Element.rgb 0 0 1, Font.underline ]
+            { url = href "https://raw.githubusercontent.com/liaScript/index/master/README.md"
+            , label = text "Index"
+            }
+        , [ "At the end, I hope to see some of your courses in my list."
+                |> text
+          ]
+            |> paragraph [ Font.justify ]
+        , text "Have a nice one ;-) ..."
+        ]
+
+       else
+        model.courses
+            |> List.map (card scale)
+            |> greedyGroupsOf (round (toFloat session.screen.width / 420))
+            |> List.map (row [ scale 16 |> spacing, width fill ])
+      )
         |> column
             [ width fill
             , height fill
@@ -181,9 +204,10 @@ searchBar scale wid_ url =
                     ]
            )
         |> el
-            [ scale 10 |> Font.size
+            [ scale 12 |> Font.size
             , width fill
             , paddingXY (scale 10) 0
+            , height fill
             ]
 
 
@@ -249,7 +273,7 @@ card scale course =
                         |> Element.html
                     ]
                         |> Element.paragraph
-                            [ scale 10 |> Font.size
+                            [ scale 12 |> Font.size
                             , scale 60 |> px |> height
                             , Element.scrollbarY
                             ]
@@ -258,7 +282,7 @@ card scale course =
                   , [ viewVersions scale course
                     , course.last_visit
                         |> text
-                        |> el [ scale 8 |> Font.size, Element.alignRight ]
+                        |> el [ scale 10 |> Font.size, Element.alignRight ]
                     ]
                         |> row [ width fill ]
                   , [ Input.button
@@ -291,7 +315,7 @@ card scale course =
                         |> row
                             [ width fill
                             , scale 10 |> spacing
-                            , scale 11 |> Font.size
+                            , scale 12 |> Font.size
                             ]
                   ]
                     |> column [ width fill, scale 10 |> spacing, scale 10 |> padding ]
@@ -326,7 +350,7 @@ author scale str =
         |> text
         |> el
             [ scale 5 |> padding
-            , scale 10 |> Font.size
+            , scale 12 |> Font.size
             , width fill
             , Font.bold
             , Background.color <| Element.rgba 0.95 0.95 0.95 0.6
@@ -387,7 +411,7 @@ viewVersions scale course =
                 Input.button
                     [ Font.color color
                     , Border.width 1
-                    , scale 8 |> Font.size
+                    , scale 10 |> Font.size
                     , paddingXY (scale 5) 2
                     , Border.rounded 5
                     , Background.color <| Element.rgb 1 1 1
