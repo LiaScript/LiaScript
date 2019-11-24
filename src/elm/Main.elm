@@ -50,6 +50,7 @@ type alias Flags =
     , debug : Bool
     , settings : JE.Value
     , screen : Screen
+    , share : Bool
     }
 
 
@@ -60,7 +61,7 @@ init flags url key =
             url.fragment |> Maybe.andThen String.toInt
 
         model =
-            Session key flags.screen
+            Session flags.share key flags.screen
                 >> Model 0 Nothing Index.init Nothing
     in
     case ( url.query, flags.course, flags.script ) of

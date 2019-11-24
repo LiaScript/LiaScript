@@ -25,6 +25,7 @@ type Msg
     | Delete String
     | Reset String (Maybe String)
     | Restore String (Maybe String)
+    | Share String String String
     | Handle JD.Value
     | Activate String (Maybe String)
 
@@ -167,6 +168,19 @@ update msg model =
               }
             , Cmd.none
             , []
+            )
+
+        Share title text url ->
+            ( model
+            , Cmd.none
+            , [ [ ( "title", JE.string title )
+                , ( "text", JE.string text )
+                , ( "url", JE.string url )
+                ]
+                    |> JE.object
+                    |> Event "share" -1
+                    |> index
+              ]
             )
 
 

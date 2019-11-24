@@ -32,6 +32,7 @@ import Html.Events exposing (onClick, onInput)
 import Index.Model exposing (Course, Model, Version)
 import Index.Update exposing (Msg(..), restore)
 import Lia.Definition.Types exposing (Definition)
+import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View as Inline
 import Lia.Settings.Model exposing (Mode(..))
@@ -71,6 +72,10 @@ view session model =
             , label = text "Project-Website"
             }
         , Element.link [ centerX, Font.color <| Element.rgb 0 0 1, Font.underline ]
+            { url = href "https://raw.githubusercontent.com/liaScript/docs/master/README.md"
+            , label = text "Project-Description"
+            }
+        , Element.link [ centerX, Font.color <| Element.rgb 0 0 1, Font.underline ]
             { url = href "https://raw.githubusercontent.com/liaScript/index/master/README.md"
             , label = text "Index"
             }
@@ -83,7 +88,7 @@ view session model =
 
        else
         model.courses
-            |> List.map (card scale)
+            |> List.map (card scale session.share)
             |> greedyGroupsOf (round (toFloat session.screen.width / 420))
             |> List.map (row [ scale 16 |> spacing, width fill ])
       )
@@ -130,6 +135,7 @@ greedyGroupsOfWithStep size step xs =
         []
 
 
+url2Color : String -> Element.Color
 url2Color url =
     url
         |> String.toList
@@ -211,8 +217,8 @@ searchBar scale wid_ url =
             ]
 
 
-card : (Float -> Int) -> Course -> Element Msg
-card scale course =
+card : (Float -> Int) -> Bool -> Course -> Element Msg
+card scale share course =
     column
         [ width fill
         , Border.color <| Element.rgb 0 0 0
@@ -299,6 +305,20 @@ card scale course =
                             text "Reset"
                                 |> el [ Element.rgb 1 0 0 |> Font.color ]
                         }
+                    , if share then
+                        Input.button
+                            (Element.alignRight :: btn)
+                            { onPress =
+                                Just <|
+                                    Share
+                                        (title |> stringify)
+                                        ((definition.comment |> stringify) ++ "\n")
+                                        ("https://LiaScript.github.io/course/?" ++ course.id)
+                            , label = text "Share"
+                            }
+
+                      else
+                        none
                     , case course.active of
                         Nothing ->
                             Element.link

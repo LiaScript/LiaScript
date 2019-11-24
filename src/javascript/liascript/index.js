@@ -121,7 +121,8 @@ class LiaScript {
         screen: {
           width: window.innerWidth,
           height: window.innerHeight
-        }
+        },
+        share: !!navigator.share
       }
     })
 
@@ -330,6 +331,16 @@ class LiaScript {
             case 'get' : {
               self.db.getIndex(event.message.message)
               break
+            }
+            case 'share' : {
+              try {
+                if (navigator.share) {
+                  navigator.share(event.message.message)
+                }
+              } catch(e) {}
+
+              break;
+
             }
 
             default:

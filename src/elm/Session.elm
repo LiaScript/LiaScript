@@ -15,7 +15,8 @@ import Url exposing (Url)
 
 
 type alias Session =
-    { key : Navigation.Key
+    { share : Bool
+    , key : Navigation.Key
     , screen : Screen
     , url : Url
     }
