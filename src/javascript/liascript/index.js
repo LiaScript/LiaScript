@@ -318,6 +318,7 @@ class LiaScript {
         case 'index' : {
           switch (event.message.topic) {
             case 'list': {
+              responsiveVoice.cancel()
               self.db.listIndex()
               break
             }
