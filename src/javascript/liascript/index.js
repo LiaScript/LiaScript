@@ -173,9 +173,9 @@ class LiaScript {
       lia.log('elm2js => ', event)
 
 
-
       switch (event.topic) {
         case 'slide': {
+          self.db.slide(event.section)
           // if(self.channel)
           //    self.channel.push('lia', { slide: event.section + 1 });
 

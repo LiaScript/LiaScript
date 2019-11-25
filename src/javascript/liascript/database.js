@@ -148,6 +148,20 @@ class LiaDB {
       .catch((err) => { lia.error('error deleting database: ', name) })
   }
 
+  async slide (idx) {
+    try{
+      let data = await this.db.offline.get({
+        id: 0,
+        version: this.version
+      })
+
+      data.data.section_active = idx
+
+      await this.db.offline.put(data)
+    } catch (e) {}
+  }
+
+
   async update (event, slide) {
     if (this.channel) {
       this.channel.push('lia', {

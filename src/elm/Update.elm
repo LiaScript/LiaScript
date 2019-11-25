@@ -227,8 +227,8 @@ start model =
         slide =
             session.url.fragment
                 |> Maybe.andThen String.toInt
-                |> Maybe.withDefault 1
-                |> (+) -1
+                |> Maybe.map ((+) -1)
+                |> Maybe.withDefault lia.section_active
 
         lia =
             model.lia
