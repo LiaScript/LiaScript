@@ -256,8 +256,6 @@ class LiaScript {
           let elem = event.message[0]
           let url = event.message[1]
 
-          console.warn(elem, ":", url);
-
           lia.log('loading resource => ', elem, ':', url)
 
           try {
