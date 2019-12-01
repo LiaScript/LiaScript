@@ -317,12 +317,16 @@ class LiaDB {
 
         lia.log('storing new version to index', item)
 
-        await this.db.offline.put({
+        let db = this.open_(data.readme)
+        await db.open()
+
+        await db.offline.put({
           id: 0,
           version: data.version,
           data: data,
           created: date.getTime()
         })
+
     }
 
     this.dbIndex.courses.put(item)
