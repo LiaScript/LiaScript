@@ -1,11 +1,8 @@
 module Model exposing (Model, State(..))
 
-import Browser
-import Browser.Navigation as Nav
 import Index.Model as Index
 import Lia.Script
 import Session exposing (Session)
-import Url
 
 
 type alias Model =

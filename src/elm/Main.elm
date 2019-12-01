@@ -5,19 +5,14 @@ module Main exposing
 
 import Browser
 import Browser.Navigation as Nav
-import Html exposing (Html)
-import Html.Attributes as Attr
 import Index.Model as Index
 import Json.Encode as JE
 import Lia.Script
 import Model exposing (Model, State(..))
-import Process
 import Session exposing (Screen, Session)
-import Task
 import Update
     exposing
         ( Msg(..)
-        , download
         , getIndex
         , load_readme
         , subscriptions

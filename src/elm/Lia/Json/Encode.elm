@@ -1,13 +1,13 @@
 module Lia.Json.Encode exposing (encode)
 
-import Array exposing (Array)
+import Array
 import Json.Encode as JE
 import Lia.Definition.Json.Encode as Definition
 import Lia.Markdown.Inline.Json.Encode as Inline
 import Lia.Markdown.Inline.Stringify exposing (stringify)
-import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
+import Lia.Markdown.Inline.Types exposing (Inline(..))
 import Lia.Model exposing (Model)
-import Lia.Section as Section exposing (Section, Sections)
+import Lia.Section exposing (Section, Sections)
 import Translations exposing (Lang(..))
 
 

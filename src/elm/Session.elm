@@ -7,6 +7,7 @@ module Session exposing
     , navToHome
     , navToSlide
     , setQuery
+    , setSlide
     , setUrl
     )
 

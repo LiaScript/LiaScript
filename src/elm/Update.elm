@@ -24,11 +24,11 @@ import Json.Encode as JE
 import Lia.Json.Decode
 import Lia.Script
 import Model exposing (Model, State(..))
-import Port.Event as Event exposing (Event)
+import Port.Event exposing (Event)
 import Process
 import Session exposing (Screen)
 import Task
-import Url exposing (Url)
+import Url
 import Version
 
 

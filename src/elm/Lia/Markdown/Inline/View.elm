@@ -3,24 +3,11 @@ module Lia.Markdown.Inline.View exposing (annotation, attributes, reference, vie
 import Dict
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
-import Html.Parser
 import Html.Parser.Util as Util
 import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..))
 import Lia.Settings.Model exposing (Mode(..))
-
-
-html_parse : String -> Html msg
-html_parse str =
-    case Html.Parser.run str of
-        Ok rslt ->
-            rslt
-                |> Util.toVirtualDom
-                |> Html.span []
-
-        Err _ ->
-            Html.span [] [ Html.text str ]
 
 
 annotation : String -> Annotation -> List (Attribute msg)

@@ -1,6 +1,6 @@
 module Index.View exposing (view)
 
-import Dict exposing (Dict)
+import Dict
 import Element
     exposing
         ( Element
@@ -9,8 +9,6 @@ import Element
         , el
         , fill
         , height
-        , maximum
-        , minimum
         , none
         , padding
         , paddingXY
@@ -28,16 +26,13 @@ import Element.Font as Font
 import Element.Input as Input
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Html.Events exposing (onClick, onInput)
 import Index.Model exposing (Course, Model, Version)
-import Index.Update exposing (Msg(..), restore)
-import Lia.Definition.Types exposing (Definition)
+import Index.Update exposing (Msg(..))
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View as Inline
 import Lia.Settings.Model exposing (Mode(..))
 import Session exposing (Session)
-import Version
 
 
 scaled : Int -> Float -> Int
@@ -348,6 +343,7 @@ card scale share course =
                 [ text "something went wrong" ]
 
 
+btn : List (Element.Attribute msg)
 btn =
     [ Font.color <| Element.rgba 0 0 0 0.7
     , Border.shadow

@@ -4,7 +4,6 @@ import Flip exposing (flip)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
-import Lia.Definition.Types exposing (get_translations)
 import Lia.Index.View as Index
 import Lia.Markdown.Effect.Model exposing (current_paragraphs)
 import Lia.Markdown.Effect.View exposing (responsive, state)
@@ -67,7 +66,6 @@ view_article screen model =
                         model.settings.mode
                         model.translation
                         model.url
-                        (get_translations model.definition)
                         model.settings.speaking
                 , Html.map UpdateMarkdown <|
                     Markdown.view
@@ -106,8 +104,8 @@ view_footer lang sound mode effects =
             Html.text ""
 
 
-navButton : String -> String -> String -> String -> msg -> Html msg
-navButton str title padding margin msg =
+navButton : String -> String -> String -> msg -> Html msg
+navButton str title margin msg =
     Html.button
         [ onClick msg
         , Attr.title title
@@ -120,13 +118,13 @@ navButton str title padding margin msg =
         [ Html.text str ]
 
 
-view_nav : Int -> Mode -> Lang -> String -> List ( String, String ) -> Bool -> String -> Html Msg
-view_nav section_active mode lang base translations speaking state =
+view_nav : Int -> Mode -> Lang -> String -> Bool -> String -> Html Msg
+view_nav section_active mode lang base speaking state =
     Html.nav [ Attr.class "lia-toolbar" ]
         [ Html.map UpdateSettings <| Settings.toggle_button_toc lang
-        , navButton "home" "index" "4px" "4px" Home
+        , navButton "home" "index" "4px" Home
         , Html.span [ Attr.class "lia-spacer" ] []
-        , navButton "navigate_before" (Trans.basePrev lang) "" "" PrevSection
+        , navButton "navigate_before" (Trans.basePrev lang) "" PrevSection
         , Html.span [ Attr.class "lia-labeled lia-left" ]
             [ Html.span
                 [ Attr.class "lia-label"
@@ -146,7 +144,7 @@ view_nav section_active mode lang base translations speaking state =
                             state
                 ]
             ]
-        , navButton "navigate_next" (Trans.baseNext lang) "" "" NextSection
+        , navButton "navigate_next" (Trans.baseNext lang) "" NextSection
         , Html.span [ Attr.class "lia-spacer" ] []
         , Html.map UpdateSettings <| Settings.switch_button_mode lang mode
         ]

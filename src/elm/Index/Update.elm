@@ -216,7 +216,7 @@ decode json =
         Ok rslt ->
             rslt
 
-        Err msg ->
+        Err todo ->
             IndexError "decode"
 
 

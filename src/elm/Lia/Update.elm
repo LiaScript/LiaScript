@@ -7,7 +7,6 @@ module Lia.Update exposing
     )
 
 import Array
-import Browser.Events
 import Json.Encode as JE
 import Lia.Index.Update as Index
 import Lia.Markdown.Effect.Update as Effect
