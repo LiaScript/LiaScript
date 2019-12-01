@@ -103,7 +103,12 @@ update msg model =
                 "restore" ->
                     case Lia.Json.Decode.decode event.message of
                         Ok lia ->
-                            start { model | lia = Lia.Script.add_todos lia.definition lia }
+                            start
+                                { model
+                                    | lia =
+                                        Lia.Script.add_todos lia.definition
+                                            { lia | settings = model.lia.settings }
+                                }
 
                         Err info ->
                             ( { model | preload = Nothing }

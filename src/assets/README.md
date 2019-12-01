@@ -3,7 +3,7 @@
 author:   Andre Dietrich
 email:    andre.dietrich@ovgu.de
 
-version:  1.3.9
+version:  1.3.10
 
 language: en
 narrator: US English Female
@@ -32,7 +32,7 @@ translation: Русский  translations/Russian.md
 
 # Lia-Script
 
-asdasf hjssssssssssssssss 9
+asdasf hjssssssssssssssss 10
 
 ## Quizze
 
