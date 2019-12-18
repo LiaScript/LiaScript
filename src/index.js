@@ -1,4 +1,5 @@
-import './scss/main.scss'
+import "babel-polyfill"
+
 
 import { LiaScript } from './javascript/liascript/index.js'
 

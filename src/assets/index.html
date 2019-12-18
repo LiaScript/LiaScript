@@ -7,9 +7,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <script type="text/javascript" src='responsivevoice.js'>
-      responsiveVoice.enableEstimationTimeout = true;
-    </script>
+    <script src="https://code.responsivevoice.org/responsivevoice.js?key=blVZszUw"></script>
 
     <link rel="shortcut icon" sizes="192x192" href="logo_192.png">
 
@@ -28,8 +26,8 @@
 
 
     <!-- Fonts -->
-    <link rel="stylesheet" href="css/material.css">
-    <link rel="stylesheet" href="css/roboto.css">
+    <!--link rel="stylesheet" href="css/material.css">
+    <link rel="stylesheet" href="css/roboto.css"-->
 
     <!-- Favicons -->
     <link rel="apple-touch-icon" href="logo.png">
@@ -62,6 +60,10 @@
     }
     </style>
 
+
+    <link rel="stylesheet" href="../scss/main.scss">
+    <link rel="stylesheet" href="../../node_modules/material-icons/iconfont/material-icons.scss">
+  
   </head>
   <body id="lia">
     <noscript>
@@ -98,12 +100,16 @@
       }
     </script>
 
-    <script>
+    <script src="../index.js"></script>
+    <script src="../javascript/webcomponents/ace.js"></script>
+    <script src="../javascript/webcomponents/katex.js"></script>
+
+    <!--script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function () {
           navigator.serviceWorker.register("/sw.js").then(console.log).catch(console.error);
         })
       }
-    </script>
+    </script-->
   </body>
 </html>

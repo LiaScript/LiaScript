@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "webpack-dev-server --config webpack.common.js",
+    "watch": "npx parcel serve src/assets/index.html",
     "build": "webpack --config webpack.common.js",
     "prod": "ENV=production webpack --config webpack.common.js",
     "sw": "workbox injectManifest workbox-config.js",
@@ -19,6 +19,13 @@
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
   "devDependencies": {
+    "@babel/core": "^7.7.5",
+    "@babel/plugin-syntax-dynamic-import": "^7.7.4",
+    "@babel/plugin-transform-runtime": "^7.7.6",
+    "@babel/polyfill": "^7.7.0",
+    "@babel/preset-env": "^7.7.6",
+    "@babel/runtime": "^7.7.6",
+    "caniuse-lite": "^1.0.30001016",
     "clean-webpack-plugin": "^1.0.1",
     "copy-webpack-plugin": "^4.6.0",
     "css-loader": "^2.1.1",
@@ -30,13 +37,14 @@
     "file-loader": "^3.0.1",
     "html-webpack-plugin": "^3.2.0",
     "mini-css-extract-plugin": "^0.5.0",
-    "node-sass": "^4.13.0",
     "optimize-css-assets-webpack-plugin": "^5.0.3",
+    "parcel": "^1.12.4",
+    "parcel-plugin-static-files-copy": "^2.2.1",
     "sass": "^1.23.7",
     "sass-loader": "^7.3.1",
     "style-loader": "^0.23.1",
     "terser-webpack-plugin": "^1.4.3",
-    "webpack": "^4.41.2",
+    "webpack": "^4.41.3",
     "webpack-cli": "^3.3.10",
     "webpack-dev-middleware": "^3.7.2",
     "webpack-dev-server": "^3.9.0",
@@ -45,8 +53,22 @@
   },
   "dependencies": {
     "ace-builds": "^1.4.7",
+    "babel-polyfill": "^6.26.0",
     "dexie": "^2.0.4",
     "katex": "^0.10.2",
+    "material-icons": "^0.3.1",
     "sass-material-colors": "0.0.5"
+  },
+  "staticFiles": {
+    "staticPath": [
+      {
+        "staticPath": "node_modules/ace-builds/src-min-noconflict",
+        "staticOutDir": "editor"
+      },
+      {
+        "staticPath": "node_modules/katex/dist",
+        "excludeGlob": "**/*.+(!(min.css))"
+      }
+    ]
   }
 }
