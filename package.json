@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch": "npx parcel serve src/assets/index.html",
-    "build": "webpack --config webpack.common.js",
+    "build": "rm -rf dist && npx parcel build --no-source-maps --public-url ./ src/assets/index.html",
     "prod": "ENV=production webpack --config webpack.common.js",
     "sw": "workbox injectManifest workbox-config.js",
     "translate": "elm-i18n-gen locale src/elm/Translations.elm"
@@ -59,16 +59,25 @@
     "material-icons": "^0.3.1",
     "sass-material-colors": "0.0.5"
   },
+  "browserslist": [
+    "defaults"
+  ],
   "staticFiles": {
-    "staticPath": [
-      {
-        "staticPath": "node_modules/ace-builds/src-min-noconflict",
-        "staticOutDir": "editor"
-      },
-      {
-        "staticPath": "node_modules/katex/dist",
-        "excludeGlob": "**/*.+(!(min.css))"
-      }
+    "staticPath": "node_modules/ace-builds/src-min-noconflict",
+    "staticOutDir": "editor"
+  },
+  "staticFiles": {
+    "staticPath": "node_modules/katex/dist",
+    "excludeGlob": [
+      "contrib",
+      "contrib/**",
+      "fonts",
+      "fonts/**",
+      "katex.css",
+      "katex.js",
+      "katex.min.js",
+      "katex.mjs",
+      "*.md"
     ]
   }
 }
