@@ -4,12 +4,12 @@
   "description": "An extended Markdown parser for the creation of online courses.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "watch": "npm run init && npx parcel serve src/assets/index.html",
     "build": "npm run init && npx parcel build --no-minify --public-url ./ src/assets/index.html && npm run sw",
-    "init": "rm -rf dist && mkdir dist && cp node_modules/katex/dist/katex.min.css dist/",
-    "sw": "workbox injectManifest workbox-config.js",
-    "translate": "elm-i18n-gen locale src/elm/Translations.elm"
+    "init" : "rm -rf dist && mkdir dist && cp node_modules/katex/dist/katex.min.css dist/",
+    "sw"   : "npx workbox injectManifest workbox-config.js",
+    "translate": "elm-i18n-gen locale src/elm/Translations.elm",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "elm",
