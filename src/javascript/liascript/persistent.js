@@ -1,5 +1,3 @@
-'use strict'
-
 function swapElements (obj1, obj2) {
   // create marker element and insert it where obj1 is
   var temp = document.createElement('div')

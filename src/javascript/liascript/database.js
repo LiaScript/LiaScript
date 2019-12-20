@@ -1,5 +1,3 @@
-'use strict'
-
 import Dexie from 'dexie'
 Dexie.debug = true
 import {

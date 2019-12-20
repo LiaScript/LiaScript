@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "watch": "npm run init && npx parcel serve src/assets/index.html",
-    "build": "npm run init && npx parcel build --no-minify --public-url ./ src/assets/index.html && npm run sw",
-    "init" : "rm -rf dist && mkdir dist && cp node_modules/katex/dist/katex.min.css dist/",
-    "sw"   : "npx workbox injectManifest workbox-config.js",
+    "build": "npm run init && npx parcel build --no-source-maps --public-url ./ src/assets/index.html && npm run sw",
+    "init": "rm -rf dist && mkdir dist && cp node_modules/katex/dist/katex.min.css dist/",
+    "sw": "npx workbox injectManifest workbox-config.js",
     "translate": "elm-i18n-gen locale src/elm/Translations.elm",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -20,6 +20,7 @@
   "license": "BSD-3-Clause",
   "devDependencies": {
     "@babel/core": "^7.7.5",
+    "@babel/generator": "^7.7.7",
     "@babel/plugin-syntax-dynamic-import": "^7.7.4",
     "@babel/plugin-transform-runtime": "^7.7.6",
     "@babel/polyfill": "^7.7.0",
@@ -35,14 +36,13 @@
   },
   "dependencies": {
     "ace-builds": "^1.4.7",
-    "babel-polyfill": "^6.26.0",
     "dexie": "^2.0.4",
     "katex": "^0.10.2",
     "material-icons": "^0.3.1",
     "sass-material-colors": "0.0.5"
   },
   "browserslist": [
-    "defaults"
+    "cover 99.5%"
   ],
   "staticFiles": {
     "staticPath": [

@@ -1,5 +1,3 @@
-'use strict'
-
 import { Elm } from '../../elm/Main.elm'
 import { LiaDB } from './database'
 import { LiaStorage } from './storage'

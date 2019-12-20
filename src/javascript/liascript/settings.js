@@ -1,5 +1,3 @@
-'use strict'
-
 const SETTINGS = 'settings'
 
 function initSettings (send, data, local = false) {
