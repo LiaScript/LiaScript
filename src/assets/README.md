@@ -2,14 +2,18 @@
 
 author:   Andre Dietrich
 email:    andre.dietrich@ovgu.de
-version:  0.0.0
+
+version:  1.3.13
+
 language: en
 narrator: US English Female
+
+logo: logo.png
 
 dark:  true
 
 comment:  This is a very simple comment.
-          Multiline is also okay.
+          Multiline is also okay version 13.
 
 script:   https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.js
           https://felixhao28.github.io/JSCPP/dist/JSCPP.es5.min.js
@@ -28,23 +32,7 @@ translation: Русский  translations/Russian.md
 
 # Lia-Script
 
-  <!-- class="animated bounce infinite delay-2s"-->
- {{2-5}}
-<!-- style="color: red" -->
-this should be red...
-
-
-1. a
-3. c
-
-   + as {1}{df}<!-- class="animated bounce infinite delay-2s"-->
-   * asdfa
-
--2. e
-5. ggg
-
-
-
+asdasf hjssssssssssssssss 13
 
 ## Quizze
 

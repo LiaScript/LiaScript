@@ -1,5 +1,3 @@
-'use strict'
-
 var lia = {
   log: function () {
     if (window.debug__) console.log('LiaLog: ', ...arguments)

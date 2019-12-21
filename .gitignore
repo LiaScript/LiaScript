@@ -30,3 +30,5 @@ assets/ReadMe.md
 assets/script_escape.md
 assets/Tensor.md
 dist
+.cache
+.coverage

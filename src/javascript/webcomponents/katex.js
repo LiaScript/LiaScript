@@ -11,7 +11,7 @@ customElements.define('katex-formula', class extends HTMLElement {
 
     let span = document.createElement('span')
     let link = document.createElement('link')
-    link.href = 'formula/katex.min.css'
+    link.href = 'katex.min.css'
     link.rel = 'stylesheet'
 
     shadowRoot.appendChild(link)

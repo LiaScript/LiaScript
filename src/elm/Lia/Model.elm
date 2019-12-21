@@ -10,9 +10,9 @@ import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Definition.Types as Definition exposing (Definition, Resource(..))
 import Lia.Index.Model as Index
+import Lia.Section exposing (Sections)
 import Lia.Settings.Json
 import Lia.Settings.Model as Settings
-import Lia.Types exposing (Screen, Sections)
 import Port.Event exposing (Event)
 import Translations
 
@@ -32,7 +32,6 @@ type alias Model =
     , to_do : List Event
     , translation : Translations.Lang
     , search_index : String -> String
-    , screen : Screen
     }
 
 
@@ -46,8 +45,8 @@ settings2model model settings =
             model
 
 
-init : JE.Value -> String -> String -> String -> Maybe Int -> Screen -> Model
-init settings url readme origin slide_number screen =
+init : JE.Value -> String -> String -> String -> Maybe Int -> Model
+init settings url readme origin slide_number =
     let
         default =
             Settings.init Settings.Presentation
@@ -79,7 +78,6 @@ init settings url readme origin slide_number screen =
     , to_do = []
     , translation = Translations.En
     , search_index = identity
-    , screen = screen
     }
 
 

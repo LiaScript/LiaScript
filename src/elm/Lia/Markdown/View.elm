@@ -15,8 +15,9 @@ import Lia.Markdown.Quiz.View as Quizzes
 import Lia.Markdown.Survey.View as Surveys
 import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.Markdown.Update exposing (Msg(..))
+import Lia.Section exposing (Section)
 import Lia.Settings.Model exposing (Mode(..))
-import Lia.Types exposing (Screen, Section)
+import Session exposing (Screen)
 import SvgBob
 import Translations exposing (Lang)
 
@@ -247,7 +248,7 @@ view_block config block =
                     Html.text ""
 
         Chart attr chart ->
-            Charts.view (not config.light) attr config.screen.width chart
+            Charts.view attr config.screen.width chart
 
         ASCII attr txt ->
             txt

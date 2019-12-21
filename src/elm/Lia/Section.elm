@@ -1,9 +1,8 @@
-module Lia.Types exposing
-    ( Screen
+module Lia.Section exposing
+    ( Base
     , Section
-    , SectionBase
     , Sections
-    , init_section
+    , init
     )
 
 import Array exposing (Array)
@@ -41,15 +40,15 @@ type alias Sections =
     Array Section
 
 
-type alias SectionBase =
+type alias Base =
     { identation : Int
     , title : Inlines
     , code : String
     }
 
 
-init_section : Int -> SectionBase -> Section
-init_section idx base =
+init : Int -> Base -> Section
+init idx base =
     { code = base.code
     , title = base.title
     , visited = True
@@ -67,7 +66,3 @@ init_section idx base =
     , footnotes = Footnote.init
     , footnote2show = Nothing
     }
-
-
-type alias Screen =
-    { width : Int, height : Int }

@@ -1,4 +1,4 @@
-port module Lia.Update exposing
+module Lia.Update exposing
     ( Msg(..)
     , get_active_section
     , send
@@ -7,40 +7,29 @@ port module Lia.Update exposing
     )
 
 import Array
-import Browser.Events
 import Json.Encode as JE
 import Lia.Index.Update as Index
 import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (Model, load_src)
 import Lia.Parser.Parser exposing (parse_section)
+import Lia.Section exposing (Section)
 import Lia.Settings.Model exposing (Mode(..))
 import Lia.Settings.Update as Settings
-import Lia.Types exposing (Screen, Section)
 import Port.Event as Event exposing (Event)
-
-
-port event2js : Event -> Cmd msg
-
-
-port event2elm : (Event -> msg) -> Sub msg
+import Session exposing (Session)
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     case get_active_section model of
         Just section ->
-            Sub.batch
-                [ event2elm Handle
-                , section
-                    |> Markdown.subscriptions
-                    |> Sub.map UpdateMarkdown
-                , Browser.Events.onResize Screen
-                    |> Sub.map Resize
-                ]
+            section
+                |> Markdown.subscriptions
+                |> Sub.map UpdateMarkdown
 
         Nothing ->
-            event2elm Handle
+            Sub.none
 
 
 type Msg
@@ -52,50 +41,40 @@ type Msg
     | UpdateSettings Settings.Msg
     | UpdateMarkdown Markdown.Msg
     | Handle Event
-    | Resize Screen
+    | Home
 
 
-send : Int -> List ( String, JE.Value ) -> Cmd Markdown.Msg -> Cmd Msg
-send idx events cmd =
-    case events of
-        [] ->
-            Cmd.map UpdateMarkdown cmd
-
-        list ->
-            list
-                |> List.map (\( name, json ) -> event2js <| Event name idx json)
-                |> (::) (Cmd.map UpdateMarkdown cmd)
-                |> Cmd.batch
+send : Int -> List ( String, JE.Value ) -> List Event
+send idx events =
+    events
+        |> List.map (\( name, json ) -> Event name idx json)
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, Int )
-update msg model =
+update : Session -> Msg -> Model -> ( Model, Cmd Msg, List Event )
+update session msg model =
     case msg of
         Load idx ->
             if (-1 < idx) && (idx < Array.length model.sections) then
                 ( { model | section_active = idx }
-                , event2js <| Event "persistent" idx <| JE.string "store"
-                , idx + 1
+                , Session.navToSlide session idx
+                , [ Event "persistent" idx <| JE.string "store" ]
                 )
 
             else
-                ( model, Cmd.none, -1 )
+                ( model, Cmd.none, [] )
+
+        Home ->
+            ( model, Session.navToHome session, [] )
 
         UpdateSettings childMsg ->
-            case Settings.update childMsg model.settings of
-                ( settings, [] ) ->
-                    ( { model | settings = settings }
-                    , Cmd.none
-                    , -1
-                    )
-
-                ( settings, events ) ->
-                    ( { model | settings = settings }
-                    , events
-                        |> List.map event2js
-                        |> Cmd.batch
-                    , -1
-                    )
+            let
+                ( settings, events ) =
+                    Settings.update childMsg model.settings
+            in
+            ( { model | settings = settings }
+            , Cmd.none
+            , events
+            )
 
         UpdateIndex childMsg ->
             let
@@ -107,11 +86,8 @@ update msg model =
                 , sections = sections
               }
             , Cmd.none
-            , -1
+            , []
             )
-
-        Resize screen ->
-            ( { model | screen = screen }, Cmd.none, -1 )
 
         Handle event ->
             case event.topic of
@@ -119,6 +95,7 @@ update msg model =
                     case event.message |> Event.decode of
                         Ok e ->
                             update
+                                session
                                 (e
                                     |> Settings.handle
                                     |> UpdateSettings
@@ -126,15 +103,15 @@ update msg model =
                                 model
 
                         _ ->
-                            ( model, Cmd.none, -1 )
+                            ( model, Cmd.none, [] )
 
                 "load" ->
-                    update InitSection (generate model)
+                    update session InitSection (generate model)
 
                 "reset" ->
                     ( model
-                    , event2js <| Event "reset" -1 JE.null
-                    , -1
+                    , Cmd.none
+                    , [ Event "reset" -1 JE.null ]
                     )
 
                 _ ->
@@ -149,28 +126,28 @@ update msg model =
                                     Markdown.handle event.topic e sec
                             in
                             ( { model | sections = Array.set event.section sec_ model.sections }
-                            , send event.section events cmd_
-                            , -1
+                            , Cmd.map UpdateMarkdown cmd_
+                            , send event.section events
                             )
 
                         _ ->
-                            ( model, Cmd.none, -1 )
+                            ( model, Cmd.none, [] )
 
         _ ->
             case ( msg, get_active_section model ) of
                 ( UpdateMarkdown childMsg, Just sec ) ->
                     let
-                        ( section, cmd, log_ ) =
+                        ( section, cmd_, log_ ) =
                             Markdown.update childMsg sec
                     in
                     ( set_active_section model section
-                    , send model.section_active log_ cmd
-                    , -1
+                    , Cmd.map UpdateMarkdown cmd_
+                    , send model.section_active log_
                     )
 
                 ( NextSection, Just sec ) ->
                     if (model.settings.mode == Textbook) || not (Effect.has_next sec.effect_model) then
-                        update (Load (model.section_active + 1)) model
+                        update session (Load (model.section_active + 1)) model
 
                     else
                         let
@@ -178,13 +155,13 @@ update msg model =
                                 Markdown.nextEffect model.settings.sound sec
                         in
                         ( set_active_section model sec_
-                        , send model.section_active log_ cmd_
-                        , -1
+                        , Cmd.map UpdateMarkdown cmd_
+                        , send model.section_active log_
                         )
 
                 ( PrevSection, Just sec ) ->
                     if (model.settings.mode == Textbook) || not (Effect.has_previous sec.effect_model) then
-                        update (Load (model.section_active - 1)) model
+                        update session (Load (model.section_active - 1)) model
 
                     else
                         let
@@ -192,8 +169,8 @@ update msg model =
                                 Markdown.previousEffect model.settings.sound sec
                         in
                         ( set_active_section model sec_
-                        , send model.section_active log_ cmd_
-                        , -1
+                        , Cmd.map UpdateMarkdown cmd_
+                        , send model.section_active log_
                         )
 
                 ( InitSection, Just sec ) ->
@@ -207,18 +184,14 @@ update msg model =
                                     Markdown.initEffect False model.settings.sound sec
                     in
                     ( set_active_section { model | to_do = [] } sec_
+                    , Cmd.map UpdateMarkdown cmd_
                     , model.to_do
-                        |> List.map event2js
-                        |> List.append
-                            [ event2js <| Event "slide" model.section_active JE.null
-                            , send model.section_active log_ cmd_
-                            ]
-                        |> Cmd.batch
-                    , -1
+                        |> List.append (send model.section_active log_)
+                        |> (::) (Event "slide" model.section_active JE.null)
                     )
 
                 _ ->
-                    ( model, Cmd.none, -1 )
+                    ( model, Cmd.none, [] )
 
 
 add_load : Int -> Int -> String -> List Event -> List Event

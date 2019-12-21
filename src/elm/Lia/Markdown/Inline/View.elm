@@ -93,8 +93,8 @@ view mode visible element =
                 |> List.map (\e -> view mode visible e)
                 |> Html.span (annotation "lia-container" attr)
 
-        HTML list ->
-            list
+        HTML nodes ->
+            nodes
                 |> Util.toVirtualDom
                 |> Html.span []
 

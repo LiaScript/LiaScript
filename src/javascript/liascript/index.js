@@ -1,6 +1,4 @@
-'use strict'
-
-import { Elm } from '../../elm/App.elm'
+import { Elm } from '../../elm/Main.elm'
 import { LiaDB } from './database'
 import { LiaStorage } from './storage'
 import { LiaEvents, lia_execute_event, lia_eval_event } from './events'
@@ -33,7 +31,8 @@ function handleEffects (event, elmSend) {
       scrollIntoView(event.message, 350)
       break
     case 'persistent':
-      setTimeout((e) => { persistent.load(event.section) }, 10)
+      //Todo
+      //setTimeout((e) => { persistent.load(event.section) }, 10)
       break
     case 'execute':
       lia_execute_event(event.message)
@@ -110,7 +109,7 @@ class LiaScript {
 
     let settings = localStorage.getItem(SETTINGS)
 
-    this.app = Elm.App.init({
+    this.app = Elm.Main.init({
       node: elem,
       flags: {
         course: course,
@@ -121,7 +120,8 @@ class LiaScript {
         screen: {
           width: window.innerWidth,
           height: window.innerHeight
-        }
+        },
+        share: !!navigator.share
       }
     })
 
@@ -133,9 +133,14 @@ class LiaScript {
     }
 
     this.initChannel(channel, sender)
+    this.initDB(channel, sender)
     this.initEventSystem(this.app.ports.event2js.subscribe, sender)
 
     liaStorage = new LiaStorage(channel)
+  }
+
+  initDB (channel, sender) {
+    this.db = new LiaDB(sender, channel)
   }
 
   initChannel (channel, send) {
@@ -165,8 +170,10 @@ class LiaScript {
     jsSubscribe(function (event) {
       lia.log('elm2js => ', event)
 
+
       switch (event.topic) {
         case 'slide': {
+          self.db.slide(event.section)
           // if(self.channel)
           //    self.channel.push('lia', { slide: event.section + 1 });
 
@@ -262,41 +269,85 @@ class LiaScript {
           } catch (e) {
             lia.error('loading resource => ', e.msg)
           }
+
           break
         }
         case 'persistent': {
           if (event.message === 'store') {
-            persistent.store(event.section)
+            // todo, needs to be moved back
+            //persistent.store(event.section)
             elmSend({ topic: 'load', section: -1, message: null })
           }
 
           break
         }
         case 'init': {
-          let [title, readme, version, onload, author, comment, logo] = event.message
+          let data = event.message
 
-          self.db = new LiaDB(
-            readme, version, elmSend, null, // self.channel,
-            {
-              topic: 'code',
-              section: event.section,
+          self.db.open(
+            data.readme,
+            data.version,
+            { topic: 'code',
+              section: data.section_active,
               message: {
                 topic: 'restore',
                 section: -1,
                 message: null }
-            })
+          })
 
-          if (onload !== '') {
-            lia_execute_event({ code: onload, delay: 350 })
+          if (data.definition.onload !== '') {
+            lia_execute_event({ code: data.definition.onload, delay: 350 })
           }
 
-          meta('author', author)
-          meta('og:description', comment)
-          meta('og:title', title)
+          meta('author', data.definition.author)
+          meta('og:description', data.comment)
+          meta('og:title', data.str_title)
           meta('og:type', 'website')
           meta('og:url', '')
-          meta('og:image', logo)
+          meta('og:image', data.definition.logo)
 
+          // store the basic info in the offline-repositories
+          self.db.storeIndex(data)
+
+          break
+        }
+        case 'index' : {
+          switch (event.message.topic) {
+            case 'list': {
+              responsiveVoice.cancel()
+              self.db.listIndex()
+              break
+            }
+            case 'delete' : {
+              self.db.deleteIndex(event.message.message)
+              break
+            }
+            case 'restore' : {
+              self.db.restore(event.message.message, event.message.section)
+              break
+            }
+            case 'reset' : {
+              self.db.reset(event.message.message, event.message.section)
+              break
+            }
+            case 'get' : {
+              self.db.getIndex(event.message.message)
+              break
+            }
+            case 'share' : {
+              try {
+                if (navigator.share) {
+                  navigator.share(event.message.message)
+                }
+              } catch(e) {}
+
+              break;
+
+            }
+
+            default:
+              lia.error('Command  not found => ', event.message)
+          }
           break
         }
         case 'reset': {

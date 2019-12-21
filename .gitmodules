@@ -85,3 +85,6 @@
 [submodule "demos/templates/plantUML"]
 	path = demos/templates/plantUML
 	url = https://github.com/liascript-templates/plantUML.git
+[submodule "lia-localization"]
+	path = lia-localization
+	url = https://github.com/liaScript/lia-localization.git

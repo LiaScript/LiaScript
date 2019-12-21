@@ -1,5 +1,3 @@
-'use strict'
-
 import ace from 'ace-builds/src-noconflict/ace'
 import getMode from './ace-modes'
 
