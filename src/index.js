@@ -11,6 +11,6 @@ if (ua.indexOf('Trident/') > 0 ||
 } else if (document.getElementById('lia')) {
   var app = new LiaScript(
     document.getElementById('lia'),
-    process.env.NODE_ENV !== 'production'
+    false //process.env.NODE_ENV !== 'production'
   )
 }

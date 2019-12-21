@@ -49,10 +49,6 @@
       {
         "staticPath": "node_modules/ace-builds/src-min-noconflict",
         "staticOutDir": "editor"
-      },
-      {
-        "staticPath": "vendor/roboto",
-        "staticOutDir": "css"
       }
     ]
   }
