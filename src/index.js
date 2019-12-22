@@ -9,8 +9,11 @@ if (ua.indexOf('Trident/') > 0 ||
     console.warn("unsupported browser");
     document.getElementById("IE-message").hidden = false;
 } else if (document.getElementById('lia')) {
-  var app = new LiaScript(
-    document.getElementById('lia'),
-    false //process.env.NODE_ENV !== 'production'
-  )
+  let debug = false;
+
+  if (process.env.NODE_ENV === 'development') {
+    debug = true
+  }
+
+  var app = new LiaScript( document.getElementById('lia'), debug )
 }

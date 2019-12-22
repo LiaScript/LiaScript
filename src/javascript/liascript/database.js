@@ -1,5 +1,10 @@
 import Dexie from 'dexie'
-Dexie.debug = true
+
+
+if (process.env.NODE_ENV === 'development') {
+  Dexie.debug = true
+}
+
 import {
   lia
 } from './logger'
