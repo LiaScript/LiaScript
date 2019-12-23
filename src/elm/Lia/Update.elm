@@ -119,10 +119,10 @@ update session msg model =
                 "swipe" ->
                     case JD.decodeValue JD.string event.message of
                         Ok "left" ->
-                            update session PrevSection model
+                            update session NextSection model
 
                         Ok "right" ->
-                            update session NextSection model
+                            update session PrevSection model
 
                         _ ->
                             ( model, Cmd.none, [] )
