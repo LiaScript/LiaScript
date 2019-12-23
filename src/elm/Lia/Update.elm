@@ -7,6 +7,7 @@ module Lia.Update exposing
     )
 
 import Array
+import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Index.Update as Index
 import Lia.Markdown.Effect.Update as Effect
@@ -35,6 +36,7 @@ subscriptions model =
 type Msg
     = Load Int
     | InitSection
+    | Swipe
     | PrevSection
     | NextSection
     | UpdateIndex Index.Msg
@@ -113,6 +115,17 @@ update session msg model =
                     , Cmd.none
                     , [ Event "reset" -1 JE.null ]
                     )
+
+                "swipe" ->
+                    case JD.decodeValue JD.string event.message of
+                        Ok "left" ->
+                            update session PrevSection model
+
+                        Ok "right" ->
+                            update session NextSection model
+
+                        _ ->
+                            ( model, Cmd.none, [] )
 
                 _ ->
                     case

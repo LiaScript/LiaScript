@@ -8,12 +8,12 @@ if (ua.indexOf('Trident/') > 0 ||
     ua.indexOf('MSIE ')    > 0) {
     console.warn("unsupported browser");
     document.getElementById("IE-message").hidden = false;
-} else if (document.getElementById('lia')) {
+} else {
   let debug = false;
 
   if (process.env.NODE_ENV === 'development') {
     debug = true
   }
 
-  var app = new LiaScript( document.getElementById('lia'), debug )
+  var app = new LiaScript( document.body, debug )
 }

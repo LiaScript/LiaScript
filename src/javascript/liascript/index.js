@@ -5,6 +5,7 @@ import { LiaEvents, lia_execute_event, lia_eval_event } from './events'
 import { SETTINGS, initSettings } from './settings'
 import { persistent } from './persistent'
 import { lia } from './logger'
+import { swipedetect } from './swipe'
 
 function isInViewport (elem) {
     var bounding = elem.getBoundingClientRect();
@@ -134,7 +135,7 @@ class LiaScript {
 
     this.initChannel(channel, sender)
     this.initDB(channel, sender)
-    this.initEventSystem(this.app.ports.event2js.subscribe, sender)
+    this.initEventSystem(elem, this.app.ports.event2js.subscribe, sender)
 
     liaStorage = new LiaStorage(channel)
   }
@@ -162,10 +163,18 @@ class LiaScript {
     })
   }
 
-  initEventSystem (jsSubscribe, elmSend) {
+  initEventSystem (elem, jsSubscribe, elmSend) {
     lia.log('initEventSystem')
 
     let self = this
+
+    swipedetect(elem, function(swipedir){
+      elmSend({
+        topic: "swipe",
+        section: -1,
+        message: swipedir
+      })
+    })
 
     jsSubscribe(function (event) {
       lia.log('elm2js => ', event)
