@@ -65,7 +65,7 @@ view_article screen model =
                         model.section_active
                         model.settings.mode
                         model.translation
-                        model.url
+                        model.definition.logo
                         model.settings.speaking
                 , Html.map UpdateMarkdown <|
                     Markdown.view
@@ -119,11 +119,11 @@ navButton str title margin msg =
 
 
 view_nav : Int -> Mode -> Lang -> String -> Bool -> String -> Html Msg
-view_nav section_active mode lang base speaking state =
+view_nav section_active mode lang image_url speaking state =
     Html.nav [ Attr.class "lia-toolbar" ]
         [ Html.map UpdateSettings <| Settings.toggle_button_toc lang
         , navButton "home" "index" "4px" Home
-        , Html.span [ Attr.class "lia-spacer" ] []
+        , logo image_url
         , navButton "navigate_before" (Trans.basePrev lang) "" PrevSection
         , Html.span [ Attr.class "lia-labeled lia-left" ]
             [ Html.span
@@ -148,3 +148,13 @@ view_nav section_active mode lang base speaking state =
         , Html.span [ Attr.class "lia-spacer" ] []
         , Html.map UpdateSettings <| Settings.switch_button_mode lang mode
         ]
+
+logo : String -> Html Msg
+logo image_url =
+    Html.span
+        [ Attr.class "lia-spacer"
+        , Attr.style "background-image" ("url('" ++ image_url ++ "')")
+        , Attr.style "background-repeat" "no-repeat"
+        , Attr.style "background-attachment" "fixed"
+        , Attr.style "margin" "2px"]
+        []
