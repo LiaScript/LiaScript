@@ -123,7 +123,8 @@ view_nav section_active mode lang image_url speaking state =
     Html.nav [ Attr.class "lia-toolbar" ]
         [ Html.map UpdateSettings <| Settings.toggle_button_toc lang
         , navButton "home" "index" "4px" Home
-        , logo image_url
+        , logo image_url "4px"
+        , Html.span [ Attr.class "lia-spacer" ] []
         , navButton "navigate_before" (Trans.basePrev lang) "" PrevSection
         , Html.span [ Attr.class "lia-labeled lia-left" ]
             [ Html.span
@@ -149,12 +150,12 @@ view_nav section_active mode lang image_url speaking state =
         , Html.map UpdateSettings <| Settings.switch_button_mode lang mode
         ]
 
-logo : String -> Html Msg
-logo image_url =
-    Html.span
-        [ Attr.class "lia-spacer"
-        , Attr.style "background-image" ("url('" ++ image_url ++ "')")
-        , Attr.style "background-repeat" "no-repeat"
-        , Attr.style "background-attachment" "fixed"
-        , Attr.style "margin" "2px"]
+logo : String -> String -> Html Msg
+logo image_url margin =
+    Html.img
+        [ Attr.src image_url
+        , Attr.class "lia-logo lia-left"
+        , Attr.style "margin-left" margin
+        , Attr.style "padding" "2px"
+        ]
         []
