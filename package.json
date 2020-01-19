@@ -32,12 +32,12 @@
     "node-elm-compiler": "^5.0.4",
     "parcel": "^1.12.4",
     "parcel-plugin-static-files-copy": "^2.2.2",
-    "sass": "^1.24.5"
+    "sass": "^1.25.0"
   },
   "dependencies": {
     "ace-builds": "^1.4.8",
     "dexie": "^2.0.4",
-    "katex": "^0.10.2",
+    "katex": "^0.11.1",
     "material-icons": "^0.3.1",
     "sass-material-colors": "0.0.5"
   },
