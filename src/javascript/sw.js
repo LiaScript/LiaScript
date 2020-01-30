@@ -21,4 +21,4 @@ workbox.routing.registerRoute(
   new workbox.strategies.StaleWhileRevalidate()
 )
 
-workbox.precaching.precacheAndRoute([]);
+workbox.precaching.precacheAndRoute(self.__WB_MANIFEST);
