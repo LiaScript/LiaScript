@@ -25,7 +25,7 @@ customElements.define('katex-formula', class extends HTMLElement {
       displayMode = JSON.parse(displayMode)
     }
 
-    katex.render(this.innerHTML, span, {
+    katex.render(this.textContent, span, {
       throwOnError: false,
       displayMode: displayMode
     })
