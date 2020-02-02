@@ -9,6 +9,7 @@ import Lia.Markdown.Code.View as Codes
 import Lia.Markdown.Effect.Model as Comments
 import Lia.Markdown.Footnote.Model as Footnotes
 import Lia.Markdown.Footnote.View as Footnote
+import Lia.Markdown.HTML.View as HTML
 import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
 import Lia.Markdown.Inline.View exposing (annotation, attributes, viewer)
 import Lia.Markdown.Quiz.View as Quizzes
@@ -195,6 +196,9 @@ view_block config block =
             elements
                 |> List.map (\e -> view_block config e)
                 |> Html.blockquote (annotation "lia-quote" attr)
+
+        HTML attr node ->
+            HTML.view (view_block config) attr node
 
         Code attr code ->
             code

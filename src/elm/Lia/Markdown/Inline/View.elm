@@ -3,9 +3,9 @@ module Lia.Markdown.Inline.View exposing (annotation, attributes, reference, vie
 import Dict
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
-import Html.Parser.Util as Util
 import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.View as Footnote
+import Lia.Markdown.HTML.View as HTML
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..))
 import Lia.Settings.Model exposing (Mode(..))
 
@@ -93,10 +93,8 @@ view mode visible element =
                 |> List.map (\e -> view mode visible e)
                 |> Html.span (annotation "lia-container" attr)
 
-        HTML nodes ->
-            nodes
-                |> Util.toVirtualDom
-                |> Html.span []
+        HTML node attr ->
+            HTML.view (view mode visible) attr node
 
         EInline id_in id_out e attr ->
             if mode == Textbook then

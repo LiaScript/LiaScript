@@ -6,6 +6,7 @@ import Combine
         , andMap
         , andThen
         , choice
+        , fail
         , ignore
         , keep
         , lazy
@@ -31,6 +32,7 @@ import Lia.Markdown.Code.Parser as Code
 import Lia.Markdown.Effect.Model exposing (set_annotation)
 import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Footnote.Parser as Footnote
+import Lia.Markdown.HTML.Parser as HTML
 import Lia.Markdown.Inline.Parser exposing (attribute, combine, comment, line)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
@@ -95,6 +97,9 @@ blocks =
                         , md_annotations
                             |> map BulletList
                             |> andMap unordered_list
+                        , md_annotations
+                            |> map HTML
+                            |> andMap (HTML.parse blocks)
                         , md_annotations
                             |> map Paragraph
                             |> andMap paragraph

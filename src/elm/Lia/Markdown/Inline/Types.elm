@@ -7,7 +7,7 @@ module Lia.Markdown.Inline.Types exposing
     )
 
 import Dict exposing (Dict)
-import Html.Parser
+import Lia.Markdown.HTML.Types exposing (Node)
 
 
 type alias Inlines =
@@ -34,8 +34,9 @@ type Inline
     | Formula String String Annotation
     | Ref Reference Annotation
     | FootnoteMark String Annotation
-    | HTML (List Html.Parser.Node)
+      --| HTML (List Html.Parser.Node)
     | EInline Int Int Inlines Annotation
+    | HTML (Node Inline) Annotation
     | Container Inlines Annotation
 
 

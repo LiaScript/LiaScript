@@ -3,7 +3,7 @@
 author:   Andre Dietrich
 email:    andre.dietrich@ovgu.de
 
-version:  1.3.13
+version:  1.3.15
 
 language: en
 narrator: US English Female
@@ -32,9 +32,24 @@ translation: Русский  translations/Russian.md
 
 # Lia-Script
 
-asdasf hjssssssssssssssss 13
+<br/>
+
+<div style="color: red">
+
+$$
+\begin{bmatrix}
+1 & x & x^2 \\
+1 & y & y^2 \\
+1 & z & z^2 \\
+\end{bmatrix}
+$$
+
+</div>
 
 ## Quizze
+
+
+<div>
 
 Multiple Choice
 
@@ -47,6 +62,8 @@ Single Choice
     [(X)] Right.
     [( )] Wrong.
     [( )] Wrong.
+
+</div>
 
                                      --{{1}}--
 Everything that is required is simple text-editor and a web-browser. Or you
