@@ -3,7 +3,7 @@
 author:   Andre Dietrich
 email:    andre.dietrich@ovgu.de
 
-version:  1.3.13
+version:  1.3.15
 
 language: en
 narrator: US English Female
@@ -32,9 +32,45 @@ translation: Русский  translations/Russian.md
 
 # Lia-Script
 
-asdasf hjssssssssssssssss 13
+asdfa
+<br/> 12 <br/> asdfs
+
+
+
+<div style="display:none">
+
+$$
+\begin{bmatrix}
+1 & x & x^2 \\
+1 & y & y^2 \\
+1 & z & z^2 \\
+\end{bmatrix}
+$$
+
+</div>
+
+
+<details>
+
+<summary>$ f(a,b,c) = (a^2+b^2+c^2)^3 $</summary>
+
+
+
+
+<p>
+Here is the source data that is discussed in the article ...
+</p>
+
+| Header 1   | Header 2   | Header 3   | Header 4   | Header 5   | Header 6   |
+| :--------- | :--------- | :--------- | :--------- | :--------- | :--------- |
+| Item 1     | Item 2     | Item 3     | Item 4     | Item 5     | Item 6     |
+
+</details>
 
 ## Quizze
+
+
+<div>
 
 Multiple Choice
 
@@ -47,6 +83,8 @@ Single Choice
     [(X)] Right.
     [( )] Wrong.
     [( )] Wrong.
+
+</div>
 
                                      --{{1}}--
 Everything that is required is simple text-editor and a web-browser. Or you

@@ -168,7 +168,7 @@ class LiaScript {
       this.app.ports.event2elm.send({ topic: "reset", section: -1, message: null});
   }
 
-  initEventSystem(jsSubscribe, elmSend) {
+  initEventSystem(elem, jsSubscribe, elmSend) {
       lia.log("initEventSystem");
     let self = this
 

@@ -4,10 +4,12 @@ module Lia.Markdown.Inline.Types exposing
     , Inlines
     , MultInlines
     , Reference(..)
+    , htmlBlock
+    , isHTML
     )
 
 import Dict exposing (Dict)
-import Html.Parser
+import Lia.Markdown.HTML.Types exposing (Node(..))
 
 
 type alias Inlines =
@@ -34,8 +36,8 @@ type Inline
     | Formula String String Annotation
     | Ref Reference Annotation
     | FootnoteMark String Annotation
-    | HTML (List Html.Parser.Node)
     | EInline Int Int Inlines Annotation
+    | IHTML (Node Inline) Annotation
     | Container Inlines Annotation
     | Goto Inline Int
 
@@ -50,3 +52,23 @@ type Reference
     | Image Inlines String String
     | Audio Inlines ( Bool, String ) String
     | Movie Inlines ( Bool, String ) String
+
+
+isHTML : Inline -> Bool
+isHTML inline =
+    case inline of
+        IHTML _ _ ->
+            True
+
+        _ ->
+            False
+
+
+htmlBlock : Inline -> Maybe ( String, List ( String, String ), List Inline )
+htmlBlock inline =
+    case inline of
+        IHTML (Node name attributes content) attr ->
+            Just ( name, attributes, [ Container content attr ] )
+
+        _ ->
+            Nothing

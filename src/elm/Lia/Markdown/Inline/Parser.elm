@@ -39,10 +39,10 @@ import Combine
         )
 import Combine.Char exposing (anyChar)
 import Dict exposing (Dict)
-import Html.Parser
 import Lia.Markdown.Effect.Model exposing (add_javascript)
 import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Footnote.Parser as Footnote
+import Lia.Markdown.HTML.Parser as HTML
 import Lia.Markdown.Inline.Multimedia as Multimedia
 import Lia.Markdown.Inline.Parser.Formula exposing (formula)
 import Lia.Markdown.Inline.Parser.Symbol exposing (arrows, smileys)
@@ -146,33 +146,7 @@ html =
         [ javascript
             |> andThen state
             |> keep (succeed (Chars "" Nothing))
-        , html_void
-        , html_block
         ]
-
-
-html_void : Parser Context Inline
-html_void =
-    regex "<[^>\\n]*>"
-        |> andThen html_parse
-        |> map HTML
-
-
-html_parse : String -> Parser s (List Html.Parser.Node)
-html_parse str =
-    case Html.Parser.run str of
-        Ok rslt ->
-            succeed rslt
-
-        Err _ ->
-            fail "html parser failed"
-
-
-html_block : Parser Context Inline
-html_block =
-    regex "<((\\w+|-)+)[\\s\\S]*?</\\1>"
-        |> andThen html_parse
-        |> map HTML
 
 
 combine : Inlines -> Inlines
@@ -198,7 +172,7 @@ line =
     inlines
         |> andThen goto
         |> many1
-        |> map (append_space >> combine)
+        |> map combine
 
 
 append_space : Inlines -> Inlines
@@ -415,11 +389,15 @@ strings =
                         |> map Superscript
 
                 characters =
-                    regex "[~:_;\\-<>=${}\\[\\]\\(\\) ]"
+                    regex "[~:_;\\-=${}\\[\\]\\(\\)]"
+                        |> map Chars
+
+                spaces =
+                    regex "[ \\t]+"
                         |> map Chars
 
                 base2 =
-                    regex "[^\n|*|+]+"
+                    regex "[^\n|*|+<>]+"
                         |> map Chars
             in
             choice
@@ -433,6 +411,8 @@ strings =
                 , underline
                 , strike
                 , superscript
+                , spaces
+                , HTML.parse inlines |> map IHTML
                 , characters
                 , base2
                 ]
