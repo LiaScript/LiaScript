@@ -148,6 +148,10 @@ class LiaScript {
       this.app.ports.event2elm.send({topic: "goto", section: line, message: null});
   }
 
+  initDB (channel, sender) {
+    this.db = new LiaDB(sender, channel)
+  }
+
   initChannel(channel, send) {
       if(!channel)
           return;
