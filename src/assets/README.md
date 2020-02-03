@@ -70,6 +70,23 @@ Here is the source data that is discussed in the article ...
 ## Quizze
 
 
+<dl>
+  <dt style="color: red">Definition list</dt>
+  <dd>
+
+  <p>Is something people use sometimes.</p>
+
+  $$
+     \sum_{i=1}^\infty\frac{1}{n^2}
+          =\frac{\pi^2}{6}
+  $$
+
+  </dd>
+
+  <dt><b>Markdown in HTML</b></dt>
+  <dd>Does *not* work **very** well. Use HTML <em>tags</em>.</dd>
+</dl>
+
 <div>
 
 Multiple Choice

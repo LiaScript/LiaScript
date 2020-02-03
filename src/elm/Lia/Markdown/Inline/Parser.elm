@@ -169,9 +169,7 @@ combine list =
 
 line : Parser Context Inlines
 line =
-    inlines
-        |> many1
-        |> map combine
+    inlines |> many1 |> map combine
 
 
 append_space : Inlines -> Inlines

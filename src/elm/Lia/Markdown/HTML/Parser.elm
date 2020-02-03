@@ -55,10 +55,10 @@ parse parser =
 
                 else
                     succeed (Node name attributes)
-                        |> ignore (regex "[ \\t]*>[ \\t\\n]*")
+                        |> ignore (regex "[ \\t]*>[ \\t]*\\n*")
                         |> andMap
                             (manyTill
-                                (parser |> ignore (regex "[ \\t\\n]*"))
+                                (parser |> ignore (regex "[\\n]*"))
                                 (closingTag name)
                             )
             )
