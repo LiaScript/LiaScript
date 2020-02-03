@@ -171,7 +171,7 @@ line : Parser Context Inlines
 line =
     inlines
         |> many1
-        |> map (append_space >> combine)
+        |> map combine
 
 
 append_space : Inlines -> Inlines
@@ -190,7 +190,6 @@ inlines =
                      , reference
                      , formula
                      , Effect.inline inlines
-                     , HTML.parse inlines |> map HTML
                      , strings
                      ]
                         |> choice
@@ -383,11 +382,15 @@ strings =
                         |> map Superscript
 
                 characters =
-                    regex "[~:_;\\-<>=${}\\[\\]\\(\\) ]"
+                    regex "[~:_;\\-=${}\\[\\]\\(\\)]"
+                        |> map Chars
+
+                spaces =
+                    regex "[ \\t]+"
                         |> map Chars
 
                 base2 =
-                    regex "[^\n|*|+]+"
+                    regex "[^\n|*|+<>]+"
                         |> map Chars
             in
             choice
@@ -401,6 +404,8 @@ strings =
                 , underline
                 , strike
                 , superscript
+                , spaces
+                , HTML.parse inlines |> map IHTML
                 , characters
                 , base2
                 ]

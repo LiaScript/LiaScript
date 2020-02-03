@@ -47,10 +47,6 @@ parse parser =
         |> andMap tagAttributes
         |> andThen
             (\( name, attributes ) ->
-                let
-                    xx =
-                        Debug.log "SSSS" ( name, attributes )
-                in
                 if isVoidElement name then
                     succeed (Node name attributes [])
                         |> ignore whitespace
@@ -60,8 +56,12 @@ parse parser =
 
                 else
                     succeed (Node name attributes)
-                        |> ignore (regex "[ \\t]*>\\n*")
-                        |> andMap (manyTill parser (closingTag name))
+                        |> ignore (regex "[ \\t]*>[ \\t\\n]*")
+                        |> andMap
+                            (manyTill
+                                (parser |> ignore (regex "[ \\t\\n]*"))
+                                (closingTag name)
+                            )
             )
 
 
@@ -70,6 +70,7 @@ tagName =
     "\\w+(\\-\\w+)?"
         |> regex
         |> map String.toLower
+        |> andThen unscript
 
 
 unscript : String -> Parser Context String
@@ -191,10 +192,6 @@ closingTag name =
             regex "\\w+(-\\w+)?"
                 |> andThen
                     (\closingName ->
-                        let
-                            xxx =
-                                Debug.log "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW" ( closingTag, name )
-                        in
                         if String.toLower closingName == name then
                             succeed ()
 
@@ -204,8 +201,7 @@ closingTag name =
     in
     regex "[ \\t\\n]*</[ \\t]*"
         |> keep chompName
-        |> ignore whitespace
-        |> ignore (string ">")
+        |> ignore (regex "[ \\t\\n]*>")
 
 
 

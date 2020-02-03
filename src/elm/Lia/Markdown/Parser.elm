@@ -34,7 +34,7 @@ import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Footnote.Parser as Footnote
 import Lia.Markdown.HTML.Parser as HTML
 import Lia.Markdown.Inline.Parser exposing (attribute, combine, comment, line)
-import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
+import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, MultInlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Parser as Quiz
 import Lia.Markdown.Survey.Parser as Survey
@@ -234,7 +234,7 @@ paragraph : Parser Context Inlines
 paragraph =
     indentation_skip
         |> keep (many1 (indentation |> keep line |> ignore newline))
-        |> map (List.concat >> combine)
+        |> map (List.intersperse [ Chars " " Nothing ] >> List.concat >> combine)
 
 
 table_row : Parser Context MultInlines

@@ -93,7 +93,7 @@ view mode visible element =
                 |> List.map (\e -> view mode visible e)
                 |> Html.span (annotation "lia-container" attr)
 
-        HTML node attr ->
+        IHTML node attr ->
             HTML.view (view mode visible) attr node
 
         EInline id_in id_out e attr ->

@@ -9,8 +9,9 @@ import Lia.Markdown.Code.View as Codes
 import Lia.Markdown.Effect.Model as Comments
 import Lia.Markdown.Footnote.Model as Footnotes
 import Lia.Markdown.Footnote.View as Footnote
+import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Markdown.HTML.View as HTML
-import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
+import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines, htmlBlock, isHTML)
 import Lia.Markdown.Inline.View exposing (annotation, attributes, viewer)
 import Lia.Markdown.Quiz.View as Quizzes
 import Lia.Markdown.Survey.View as Surveys
@@ -145,6 +146,21 @@ view_block config block =
     case block of
         HLine attr ->
             Html.hr (annotation "lia-horiz-line" attr) []
+
+        Paragraph attr [ element ] ->
+            case htmlBlock element of
+                Just ( name, attributes, inlines ) ->
+                    HTML.view
+                        (config.view
+                            >> List.head
+                            >> Maybe.withDefault
+                                (Html.p (annotation "lia-paragraph" attr) (config.view [ element ]))
+                        )
+                        attr
+                        (Node name attributes [ inlines ])
+
+                Nothing ->
+                    Html.p (annotation "lia-paragraph" attr) (config.view [ element ])
 
         Paragraph attr elements ->
             Html.p (annotation "lia-paragraph" attr) (config.view elements)
