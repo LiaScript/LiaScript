@@ -30,7 +30,6 @@ import Combine.Char exposing (anyChar)
 import Combine.Num exposing (int)
 import Dict exposing (Dict)
 import Hex
-import Html.Parser
 import Lia.Markdown.HTML.NamedCharacterReferences as NamedCharacterReferences
 import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Markdown.Macro.Parser as Macro
