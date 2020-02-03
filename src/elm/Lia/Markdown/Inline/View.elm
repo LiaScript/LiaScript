@@ -100,27 +100,40 @@ view mode visible element =
                 |> List.map (\e -> view mode visible e)
                 |> Html.span (annotation "lia-container" attr)
 
-        HTML list ->
-            list
+        HTML nodes ->
+            nodes
                 |> Util.toVirtualDom
                 |> Html.span []
 
         EInline id_in id_out e attr ->
-            if (id_in <= visible) && (id_out > visible) then
+            if mode == Textbook then
                 Html.span
                     (Attr.id (String.fromInt id_in)
-                        :: annotation "lia-effect-inline"
-                            (if mode == Textbook then
-                                Nothing
-
-                             else
-                                attr
-                            )
+                        :: annotation "" Nothing
                     )
                     (Effect.view (viewer mode visible) id_in e)
 
             else
-                Html.text ""
+                Html.span
+                    [ if (id_in <= visible) && (id_out > visible) then
+                        Attr.hidden False
+
+                      else
+                        Attr.hidden True
+                    ]
+                    [ Html.span
+                        (Attr.id (String.fromInt id_in)
+                            :: annotation
+                                (if attr == Nothing then
+                                    "lia-effect"
+
+                                 else
+                                    ""
+                                )
+                                attr
+                        )
+                        (Effect.view (viewer mode visible) id_in e)
+                    ]
 
         Symbol e attr ->
             view mode visible (Container [ Symbol e Nothing ] attr)

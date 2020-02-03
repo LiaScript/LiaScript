@@ -10,9 +10,9 @@ import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Definition.Types as Definition exposing (Definition, Resource(..))
 import Lia.Index.Model as Index
+import Lia.Section exposing (Sections)
 import Lia.Settings.Json
 import Lia.Settings.Model as Settings
-import Lia.Types exposing (Sections)
 import Port.Event exposing (Event)
 import Translations
 

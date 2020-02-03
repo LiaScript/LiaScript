@@ -1,4 +1,4 @@
-@import "sass-material-colors";
+@import "node_modules/sass-material-colors/sass/_sass-material-colors";
 
 @mixin material-icon($icon: "", $size: 24px) {
     content: "#{$icon}";

@@ -11,7 +11,7 @@ import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Parser as Markdown
 import Lia.Parser.Context exposing (init)
 import Lia.Parser.Preprocessor as Preprocessor
-import Lia.Types exposing (Section, SectionBase)
+import Lia.Section as Section exposing (Section)
 
 
 parse_defintion : String -> String -> Result String ( Definition, ( String, Int ) )
@@ -24,7 +24,7 @@ parse_defintion base code =
             Err (formatError ms stream)
 
 
-parse_titles : Int -> Definition -> String -> Result String ( SectionBase, ( String, Int ) )
+parse_titles : Int -> Definition -> String -> Result String ( Section.Base, ( String, Int ) )
 parse_titles editor_line defines code =
     case Combine.runParser Preprocessor.section (init identity editor_line defines) code of
         Ok ( _, data, ( rslt, line ) ) ->

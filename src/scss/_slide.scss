@@ -4,6 +4,7 @@
     .lia-slide {
         @include flex(column, nowrap, flex-start, stretch, stretch);
         overflow: auto;
+        min-width: 320px;
 
         .lia-toolbar {
             @include flex(row, nowrap, flex-start, stretch, stretch);
@@ -36,6 +37,7 @@
             padding-right: $horiz;
             max-height: 40%;
             min-height: 52px;
+            min-width: 320px;
             overflow: auto;
             border-top: map-get($config, spacing-small) solid mix($fg, $bg, 20%);
         }
@@ -57,38 +59,29 @@
             flex: 1 1 auto;
             padding: $vert $horiz;
             overflow: auto;
+            min-width: 320px;
 
-            .lia-effect-comment-toc {
-                $bg: mix(map-get($theme, background), map-get($theme, primary), 80%);
+            .lia-effect {
+                animation: fadein 2s;
+                -moz-animation: fadein 2s; /* Firefox */
+                -webkit-animation: fadein 2s; /* Safari and Chrome */
+                -o-animation: fadein 2s; /* Opera */
 
-                position: fixed;
-                left: map-get($config, spacing-huge) + map-get($config, toc-width);
-                right: map-get($config, spacing-huge);
-                bottom: map-get($config, spacing-huge);
-                padding: map-get($config, spacing-large);
-                background: rgba($bg, .7);
-                color: color-contrast($bg);
-                animation: show-comment .25s ease-in-out 0s;
-
-                p {
-                    margin: 0;
+                @keyframes fadein {
+                  from { opacity:0; }
+                  to   { opacity:1; }
                 }
-            }
-
-            .lia-effect-comment {
-                $bg: mix(map-get($theme, background), map-get($theme, primary), 80%);
-
-                position: fixed;
-                left: map-get($config, spacing-huge);
-                right: map-get($config, spacing-huge);
-                bottom: map-get($config, spacing-huge);
-                padding: map-get($config, spacing-large);
-                background: rgba($bg, .7);
-                color: color-contrast($bg);
-                animation: show-comment .25s ease-in-out 0s;
-
-                p {
-                    margin: 0;
+                @-moz-keyframes fadein { /* Firefox */
+                  from { opacity:0; }
+                  to   { opacity:1; }
+                }
+                @-webkit-keyframes fadein { /* Safari and Chrome */
+                  from { opacity:0; }
+                  to   { opacity:1; }
+                }
+                @-o-keyframes fadein { /* Opera */
+                  from { opacity:0; }
+                  to   { opacity:1; }
                 }
             }
 

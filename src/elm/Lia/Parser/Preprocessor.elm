@@ -21,7 +21,7 @@ import Lia.Markdown.Inline.Parser exposing (line)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Parser.Context exposing (Context, getLine)
 import Lia.Parser.Helper exposing (newline)
-import Lia.Types exposing (SectionBase)
+import Lia.Section as Section
 
 
 title_tag : Parser Context Int
@@ -56,10 +56,10 @@ body =
         |> map String.concat
 
 
-section : Parser Context ( SectionBase, Int )
+section : Parser Context ( Section.Base, Int )
 section =
     title_tag
-        |> map SectionBase
+        |> map Section.Base
         |> andMap getLine
         |> andMap title_str
         |> andMap body

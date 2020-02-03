@@ -2,7 +2,9 @@ module Lia.Script exposing
     ( Model
     , Msg
     , add_imports
+    , add_todos
     , get_title
+    , handle
     , init
     , init_script
     , load_first_slide
@@ -21,14 +23,16 @@ import Array
 import Html exposing (Html)
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition, add_macros)
+import Lia.Json.Encode as Json
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Model exposing (load_src)
 import Lia.Parser.Parser as Parser
+import Lia.Section as Section exposing (Sections)
 import Lia.Settings.Model exposing (Mode(..))
-import Lia.Types exposing (Sections, init_section)
 import Lia.Update exposing (Msg(..))
 import Lia.View
 import Port.Event exposing (Event)
+import Session exposing (Screen, Session)
 import Translations
 
 
@@ -45,14 +49,15 @@ pages =
     .sections >> Array.length
 
 
-load_slide : Int -> Model -> ( Model, Cmd Msg, Int )
-load_slide idx =
-    Lia.Update.update (Load idx)
+load_slide : Session -> Int -> Model -> ( Model, Cmd Msg, List Event )
+load_slide session idx =
+    Lia.Update.update session (Load idx)
 
 
-load_first_slide : Model -> ( Model, Cmd Msg, Int )
-load_first_slide model =
+load_first_slide : Session -> Model -> ( Model, Cmd Msg, List Event )
+load_first_slide session model =
     load_slide
+        session
         (if model.section_active > pages model then
             0
 
@@ -67,21 +72,7 @@ load_first_slide model =
                     |> List.indexedMap generateIndex
                     |> searchIndex
             , to_do =
-                ([ get_title model.sections
-                 , model.readme
-                 , model.definition.version
-                    |> String.split "."
-                    |> List.head
-                    |> Maybe.withDefault "0"
-                    |> String.toInt
-                    |> Maybe.withDefault 0
-                    |> String.fromInt
-                 , model.definition.onload
-                 , model.definition.author
-                 , model.definition.comment
-                 , model.definition.logo
-                 ]
-                    |> JE.list JE.string
+                (Json.encode model
                     |> Event "init" model.section_active
                 )
                     :: model.to_do
@@ -96,6 +87,11 @@ add_imports model course_url =
 
         Err _ ->
             model
+
+
+handle : Event -> Msg
+handle =
+    Handle
 
 
 add_todos : Definition -> Model -> Model
@@ -133,7 +129,7 @@ init_script model script =
                     model.settings
             in
             ( { model
-                | definition = { definition | resources = [], imports = [], attributes = [] }
+                | definition = { definition | attributes = [] }
                 , translation = Translations.getLnFromCode definition.language
                 , settings =
                     { settings
@@ -161,7 +157,7 @@ parse_section model ( code, line ) =
             ( { model
                 | sections =
                     Array.push
-                        (init_section (pages model) sec)
+                        (Section.init (pages model) sec)
                         model.sections
               }
             , if rest |> Tuple.first |> String.isEmpty then
@@ -212,17 +208,17 @@ init =
     Lia.Model.init
 
 
-view : Model -> Html Msg
-view model =
-    Lia.View.view model
+view : Screen -> Model -> Html Msg
+view =
+    Lia.View.view
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
-    Lia.Update.subscriptions model
+subscriptions =
+    Lia.Update.subscriptions
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, Int )
+update : Session -> Msg -> Model -> ( Model, Cmd Msg, List Event )
 update =
     Lia.Update.update
 

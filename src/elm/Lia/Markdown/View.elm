@@ -15,8 +15,9 @@ import Lia.Markdown.Quiz.View as Quizzes
 import Lia.Markdown.Survey.View as Surveys
 import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.Markdown.Update exposing (Msg(..))
+import Lia.Section exposing (Section)
 import Lia.Settings.Model exposing (Mode(..))
-import Lia.Types exposing (Section)
+import Session exposing (Screen)
 import SvgBob
 import Translations exposing (Lang)
 
@@ -28,11 +29,12 @@ type alias Config =
     , ace_theme : String
     , lang : Lang
     , light : Bool
+    , screen : Screen
     }
 
 
-view : Lang -> Mode -> Section -> String -> Bool -> Html Msg
-view lang mode section ace_theme light =
+view : Lang -> Mode -> Section -> String -> Bool -> Screen -> Html Msg
+view lang mode section ace_theme light screen =
     let
         config =
             Config mode
@@ -47,6 +49,7 @@ view lang mode section ace_theme light =
                 ace_theme
                 lang
                 light
+                screen
     in
     case section.error of
         Just msg ->
@@ -150,27 +153,30 @@ view_block config block =
                 Html.div []
                     [ viewCircle id_in
                     , Html.div
-                        (annotation "lia-effect-inline" Nothing)
-                        (List.map (view_block config) sub_blocks)
-                    ]
-
-            else if (id_in <= config.section.effect_model.visible) && (id_out > config.section.effect_model.visible) then
-                Html.div []
-                    [ viewCircle id_in
-                    , Html.div
-                        ((if id_in == config.section.effect_model.visible then
-                            Attr.id "focused"
-
-                          else
-                            Attr.id (String.fromInt id_in)
-                         )
-                            :: annotation "lia-effect-inline" attr
-                        )
+                        (annotation "" Nothing)
                         (List.map (view_block config) sub_blocks)
                     ]
 
             else
-                Html.text ""
+                let
+                    visible =
+                        (id_in <= config.section.effect_model.visible)
+                            && (id_out > config.section.effect_model.visible)
+                in
+                Html.div [ Attr.hidden (not visible) ]
+                    [ viewCircle id_in
+                    , Html.div
+                        ((Attr.id <|
+                            if id_in == config.section.effect_model.visible then
+                                "focused"
+
+                            else
+                                String.fromInt id_in
+                         )
+                            :: annotation "lia-effect" attr
+                        )
+                        (List.map (view_block config) sub_blocks)
+                    ]
 
         BulletList attr list ->
             list
@@ -242,7 +248,7 @@ view_block config block =
                     Html.text ""
 
         Chart attr chart ->
-            Charts.view (not config.light) attr chart
+            Charts.view attr config.screen.width chart
 
         ASCII attr txt ->
             txt

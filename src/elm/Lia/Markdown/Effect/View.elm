@@ -38,10 +38,7 @@ comment lang class show_inline silent msg model viewer idx elements =
             )
 
     else
-        Html.div
-            [ Attr.class "lia-effect-comment lia-hidden"
-            ]
-            []
+        Html.text ""
 
 
 responsive : Lang -> Bool -> msg -> Html msg

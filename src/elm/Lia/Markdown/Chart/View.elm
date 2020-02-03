@@ -23,8 +23,8 @@ import LineChart.Legends as Legends
 import LineChart.Line as Line
 
 
-title : Bool -> String -> Coordinate.System -> Junk.Layers msg
-title dark str system =
+title : String -> Coordinate.System -> Junk.Layers msg
+title str system =
     { below = []
     , above =
         [ Junk.labelAt
@@ -41,8 +41,8 @@ title dark str system =
     }
 
 
-view : Bool -> Annotation -> Chart -> Html msg
-view dark attr chart =
+view : Annotation -> Int -> Chart -> Html msg
+view attr width chart =
     let
         list =
             chart
@@ -52,19 +52,21 @@ view dark attr chart =
     in
     Html.div (annotation "lia-svg" attr)
         [ LineChart.viewCustom
-            { y = Axis.default 450 chart.y_label (Tuple.first >> .y)
-            , x = Axis.default 600 chart.x_label (Tuple.first >> .x)
+            { y = Axis.full (max 300 (round (toFloat width / 2.8))) chart.y_label (Tuple.first >> .y)
+            , x = Axis.full (max 450 (width - 50)) chart.x_label (Tuple.first >> .x)
             , container =
                 Container.styled "lia-diagram"
                     [ ( "width", "100%" )
-                    , ( "display", "inline" )
+                    , ( "display", "block" )
                     , ( "font-family", "monospace" )
+                    , ( "font-size", "14pt" )
+                    , ( "height", String.fromInt (width - 50) )
                     ]
             , interpolation = Interpolation.monotone
             , intersection = Intersection.default
             , legends = Legends.none
             , events = Events.default
-            , junk = Junk.custom (title dark chart.title)
+            , junk = Junk.custom (title chart.title)
             , grid = Grid.default
             , area = Area.default
             , line = Line.default

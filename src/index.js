@@ -1,13 +1,21 @@
-import './scss/main.scss'
+import "@babel/polyfill"
 
 import { LiaScript } from './javascript/liascript/index.js'
 
-if (document.getElementById('lia')) {
-  if (process.env.NODE_ENV !== 'production') {
-    var app = new LiaScript(document.getElementById('lia'), false)
-  } else {
-    var app = new LiaScript(document.getElementById('lia'), false)
+let ua = window.navigator.userAgent;
+
+if (ua.indexOf('Trident/') > 0 ||
+    ua.indexOf('MSIE ')    > 0) {
+    console.warn("unsupported browser");
+    document.getElementById("IE-message").hidden = false;
+} else {
+  let debug = false;
+
+  if (process.env.NODE_ENV === 'development') {
+    debug = true
   }
+
+  var app = new LiaScript( document.body, debug )
 }
 
 window.showFootnote = (key) => app.footnote(key);

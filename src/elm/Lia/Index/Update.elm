@@ -2,7 +2,7 @@ module Lia.Index.Update exposing (Msg(..), update)
 
 import Array
 import Lia.Index.Model exposing (Model)
-import Lia.Types exposing (Section, Sections)
+import Lia.Section exposing (Section, Sections)
 
 
 type Msg

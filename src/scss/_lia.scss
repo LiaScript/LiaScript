@@ -73,7 +73,7 @@
 }
 
 @mixin _new-theme($theme, $theme-name) {
-    &.lia-canvas.lia-theme-#{$theme-name} {
+    &.lia-canvas.lia-theme-#{"" + $theme-name} {
         $bg: map-get($theme, background);
         $fg: color-contrast($bg);
 

@@ -1,5 +1,3 @@
-'use strict'
-
 function getMode(name) {
   let mode = modes[name]
 
