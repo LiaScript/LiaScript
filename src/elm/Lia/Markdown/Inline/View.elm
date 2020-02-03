@@ -143,7 +143,15 @@ view mode visible element =
             view mode visible (Container [ Formula mode_ e Nothing ] attr)
 
         Goto e line ->
-            Html.span [ goto line ] [ view mode visible e ]
+            case e of
+                Goto e_ line_ ->
+                    view mode visible (Goto e_ line_)
+
+                IHTML node attr ->
+                    HTML.view (view mode visible) attr node
+
+                _ ->
+                    Html.span [ goto line ] [ view mode visible e ]
 
 
 view_inf : Mode -> Inline -> Html msg

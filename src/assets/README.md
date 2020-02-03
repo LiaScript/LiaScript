@@ -37,7 +37,7 @@ asdfa
 
 
 
-<div style="display:none">
+<div style="">
 
 $$
 \begin{bmatrix}
@@ -52,23 +52,25 @@ $$
 
 <details>
 
-<summary>$ f(a,b,c) = (a^2+b^2+c^2)^3 $</summary>
-
-
-
-
-<p>
-Here is the source data that is discussed in the article ...
-</p>
-
-| Header 1   | Header 2   | Header 3   | Header 4   | Header 5   | Header 6   |
-| :--------- | :--------- | :--------- | :--------- | :--------- | :--------- |
-| Item 1     | Item 2     | Item 3     | Item 4     | Item 5     | Item 6     |
-
-</details>
-
 ## Quizze
 
+
+<dl>
+  <dt style="color: red">Definition list</dt>
+  <dd>
+
+  <p>Is something people use sometimes.</p>
+
+  $$
+     \sum_{i=1}^\infty\frac{1}{n^2}
+          =\frac{\pi^2}{6}
+  $$
+
+  </dd>
+
+  <dt><b>Markdown in HTML</b></dt>
+  <dd>Does *not* work **very** well. Use HTML <em>tags</em>.</dd>
+</dl>
 
 <div>
 
@@ -575,13 +577,30 @@ Test **bold** and <b> HTML bold</b> works also inline
 
 Test **bold** and <b> HTML bold</b> works also inline
 
+
+
+<details>
+
+<summary>$ f(a,b,c) = (a^2+b^2+c^2)^3 $</summary>
+
+<p>
+Here is the source data that is discussed in the article ...
+</p>
+
 <dl>
   <dt style="color: red">Definition list</dt>
-  <dd>Is something people use sometimes.</dd>
+  <dd>
+
+  Is something people use sometimes.
+
+  </dd>
 
   <dt><b>Markdown in HTML</b></dt>
   <dd>Does *not* work **very** well. Use HTML <em>tags</em>.</dd>
 </dl>
+
+</details>
+
 
 #### HTML & JavaScirpt
 

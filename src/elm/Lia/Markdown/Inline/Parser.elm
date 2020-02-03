@@ -202,7 +202,12 @@ inlines =
 
 goto : Inline -> Parser Context Inline
 goto i =
-    map (Goto i) getLine
+    case i of
+        IHTML _ _ ->
+            succeed i
+
+        _ ->
+            map (Goto i) getLine
 
 
 url : Parser s String
