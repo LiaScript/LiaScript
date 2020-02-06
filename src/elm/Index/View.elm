@@ -33,6 +33,8 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View as Inline
 import Lia.Settings.Model exposing (Mode(..))
 import Session exposing (Session)
+import Update exposing (toDownloadLink)
+import Url
 
 
 scaled : Int -> Float -> Int
@@ -394,8 +396,8 @@ renderElmUi =
 
 
 href : String -> String
-href url =
-    "./?" ++ url
+href =
+    toDownloadLink >> (++) "./?"
 
 
 viewVersions : (Float -> Int) -> Course -> Element Msg
