@@ -39,7 +39,8 @@
     "dexie": "^2.0.4",
     "katex": "^0.11.1",
     "material-icons": "^0.3.1",
-    "sass-material-colors": "0.0.5"
+    "sass-material-colors": "0.0.5",
+    "workbox-cli": "^5.0.0"
   },
   "browserslist": [
     "cover 99.5%"
