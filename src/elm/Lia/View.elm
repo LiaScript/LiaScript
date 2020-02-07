@@ -124,12 +124,11 @@ view_nav section_active mode lang base speaking state =
     Html.nav [ Attr.class "lia-toolbar", Attr.id "lia-toolbar-nav" ]
         [ Html.map UpdateSettings <| Settings.toggle_button_toc lang
         , navButton "home" "index" "4px" "lia-btn-home" Home
-        , Html.span [ Attr.class "lia-spacer", Attr.id "lia-space-left" ] []
+        , Html.span [ Attr.class "lia-spacer", Attr.id "lia-spacer-left" ] []
         , navButton "navigate_before" (Trans.basePrev lang) "" "lia-btn-prev" PrevSection
-        , Html.span [ Attr.class "lia-labeled lia-left" ]
+        , Html.span [ Attr.class "lia-labeled lia-left", Attr.id "lia-label-section" ]
             [ Html.span
                 [ Attr.class "lia-label"
-                , Attr.id "lia-label-section"
                 , if speaking then
                     Attr.style "text-decoration" "underline"
 
@@ -147,6 +146,6 @@ view_nav section_active mode lang base speaking state =
                 ]
             ]
         , navButton "navigate_next" (Trans.baseNext lang) "" "lia-btn-next" NextSection
-        , Html.span [ Attr.class "lia-spacer", Attr.id "lia-space-right" ] []
+        , Html.span [ Attr.class "lia-spacer", Attr.id "lia-spacer-right" ] []
         , Html.map UpdateSettings <| Settings.switch_button_mode lang mode
         ]
