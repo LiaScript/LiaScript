@@ -129,6 +129,7 @@ view_nav section_active mode lang base speaking state =
         , Html.span [ Attr.class "lia-labeled lia-left" ]
             [ Html.span
                 [ Attr.class "lia-label"
+                , Attr.id "lia-label-section"
                 , if speaking then
                     Attr.style "text-decoration" "underline"
 
