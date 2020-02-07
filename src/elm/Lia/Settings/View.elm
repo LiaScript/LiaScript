@@ -50,6 +50,7 @@ dropdown : Bool -> String -> String -> Msg -> Html Msg
 dropdown active name alt msg =
     Html.button
         [ onClick msg
+        , Attr.id <| "lia-btn-" ++ name
         , Attr.class <|
             "lia-btn lia-icon"
                 ++ (if active then
@@ -343,6 +344,7 @@ toggle_button_toc lang =
         [ onClick <| Toggle TableOfContents
         , Attr.title (Trans.baseToc lang)
         , Attr.class "lia-btn lia-toc-control lia-left"
+        , Attr.id "lia-btn-toc"
         ]
         [ Html.text "toc" ]
 
@@ -352,6 +354,7 @@ switch_button_mode lang mode =
     Html.button
         [ Attr.class "lia-btn lia-right"
         , onClick SwitchMode
+        , Attr.id "lia-btn-mode"
         , Attr.title <|
             case mode of
                 Slides ->

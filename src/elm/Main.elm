@@ -16,6 +16,7 @@ import Update
         , getIndex
         , load_readme
         , subscriptions
+        , toDownloadLink
         , update
         )
 import Url
@@ -58,26 +59,33 @@ init flags url key =
         model =
             Session flags.share key flags.screen
                 >> Model 0 Nothing Index.init Nothing
+
+        courseUrl =
+            { url
+                | query =
+                    url.query
+                        |> Maybe.map toDownloadLink
+            }
     in
-    case ( url.query, flags.course, flags.script ) of
+    case ( courseUrl.query, flags.course, flags.script ) of
         ( Just query, _, _ ) ->
             Lia.Script.init
                 flags.settings
-                (get_base url)
+                (get_base courseUrl)
                 query
-                (get_origin url.query)
+                (get_origin courseUrl.query)
                 slide
-                |> model url Loading
+                |> model courseUrl Loading
                 |> getIndex query
 
         ( _, Just query, _ ) ->
             Lia.Script.init
                 flags.settings
-                (get_base url)
+                (get_base courseUrl)
                 query
-                (get_origin url.query)
+                (get_origin courseUrl.query)
                 slide
-                |> model { url | query = Just query } Loading
+                |> model { courseUrl | query = Just query } Loading
                 |> getIndex query
 
         ( _, _, Just script ) ->
@@ -87,7 +95,7 @@ init flags url key =
                 ""
                 ""
                 slide
-                |> model url Idle
+                |> model courseUrl Idle
                 |> load_readme
             )
                 script
@@ -99,7 +107,7 @@ init flags url key =
                 ""
                 ""
                 slide
-                |> model url Idle
+                |> model courseUrl Idle
                 |> Update.initIndex
 
 

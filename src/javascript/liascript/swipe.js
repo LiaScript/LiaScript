@@ -16,6 +16,21 @@ function swipedetect(el, callback){
       detecttouch = !!('ontouchstart' in window) || !!('ontouchstart' in document.documentElement) || !!window.ontouchstart || !!window.Touch || !!window.onmsgesturechange || (window.DocumentTouch && window.document instanceof window.DocumentTouch),
       handleswipe = callback || function(swipedir){}
 
+  function isContained(m, e) {
+    e = e || window.event
+    let c=/(click)|(mousedown)|(mouseup)/i.test(e.type)? e.target : ( e.relatedTarget || ((e.type=="mouseover")? e.fromElement : e.toElement) )
+
+    while (c && c!=m) {
+      try {
+        c=c.parentNode
+      } catch(e) {
+        c=m
+      }
+    }
+
+    return c==m
+}
+
   touchsurface.addEventListener('touchstart', function(e){
     var touchobj = e.changedTouches[0]
         swipedir = 'none'

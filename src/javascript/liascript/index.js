@@ -26,6 +26,8 @@ function scrollIntoView (id, delay) {
   }, delay)
 };
 
+var firstSpeak = true;
+
 function handleEffects (event, elmSend) {
   switch (event.topic) {
     case 'scrollTo':
@@ -57,6 +59,12 @@ function handleEffects (event, elmSend) {
         } else if (event.message === 'repeat') {
           event.message = [ttsBackup[0], ttsBackup[1], 'true']
           handleEffects(event, elmSend)
+        } else if (firstSpeak) {
+          // this is a hack to deal with the delay in responsivevoice
+          firstSpeak = false;
+          setTimeout(function() {
+            handleEffects (event, elmSend)
+          }, 1000)
         } else {
           ttsBackup = event.message
           if (event.message[2] === 'true') {
@@ -327,7 +335,9 @@ class LiaScript {
         case 'index' : {
           switch (event.message.topic) {
             case 'list': {
-              responsiveVoice.cancel()
+              try {
+                responsiveVoice.cancel()
+              } catch (e) {}
               self.db.listIndex()
               break
             }

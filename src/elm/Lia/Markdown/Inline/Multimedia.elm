@@ -1,24 +1,24 @@
-module Lia.Markdown.Inline.Multimedia exposing (audio, movie)
+module Lia.Markdown.Inline.Multimedia exposing (audio, movie, search)
 
 import Regex
 
 
 type alias Stream =
     { embed : String -> String
-    , pattern : Regex.Regex
+    , pattern : String
     }
 
 
 movie : String -> ( Bool, String )
 movie =
     [ { embed = \w -> "https://www.youtube.com/embed/" ++ w
-      , pattern = regex "(?:http(?:s)?://)?(?:www\\.)?(?:youtu\\.be/|youtube\\.com/(?:(?:watch)?\\?(?:.*&)?v(?:i)?=|(?:v|vi|user)/))([^\\?&\"'<> #]+)"
+      , pattern = "(?:http(?:s)?://)?(?:www\\.)?(?:youtu\\.be/|youtube\\.com/(?:(?:watch)?\\?(?:.*&)?v(?:i)?=|(?:v|vi|user)/))([^\\?&\"'<> #]+)"
       }
     , { embed = \w -> "https://player.vimeo.com/video/" ++ w
-      , pattern = regex "(?:http(?:s)?://)?(?:www\\.)?(?:player.)?(?:vimeo\\.com).*?(\\d+)"
+      , pattern = "(?:http(?:s)?://)?(?:www\\.)?(?:player.)?(?:vimeo\\.com).*?(\\d+)"
       }
     , { embed = \w -> "https://www.teachertube.com/embed/video/" ++ w
-      , pattern = regex "(?:http(?:s)?://)?(?:www\\.)?(?:teachertube\\.com).*?(\\d+)"
+      , pattern = "(?:http(?:s)?://)?(?:www\\.)?(?:teachertube\\.com).*?(\\d+)"
       }
     ]
         |> search
@@ -27,7 +27,7 @@ movie =
 audio : String -> ( Bool, String )
 audio =
     [ { embed = \w -> "https://w.soundcloud.com/player/?url=https://soundcloud.com/" ++ w
-      , pattern = regex "https?:\\/\\/(?:w\\.|www\\.|)(?:soundcloud\\.com\\/)(?:(?:player\\/\\?url=https\\%3A\\/\\/api.soundcloud.com\\/tracks\\/)|)(((\\w|-)[^A-z]{7})|([A-Za-z0-9]+(?:[-_][A-Za-z0-9]+)*(?!\\/sets(?:\\/|$))(?:\\/[A-Za-z0-9]+(?:[-_][A-Za-z0-9]+)*){1,2}))"
+      , pattern = "https?:\\/\\/(?:w\\.|www\\.|)(?:soundcloud\\.com\\/)(?:(?:player\\/\\?url=https\\%3A\\/\\/api.soundcloud.com\\/tracks\\/)|)(((\\w|-)[^A-z]{7})|([A-Za-z0-9]+(?:[-_][A-Za-z0-9]+)*(?!\\/sets(?:\\/|$))(?:\\/[A-Za-z0-9]+(?:[-_][A-Za-z0-9]+)*){1,2}))"
       }
 
     -- , { embed = \w -> "http://open.spotify.com/track/" ++ w
@@ -59,9 +59,9 @@ regex pattern =
         |> Maybe.withDefault Regex.never
 
 
-check : Regex.Regex -> String -> Maybe String
+check : String -> String -> Maybe String
 check pattern url =
-    case Regex.findAtMost 1 pattern url of
+    case Regex.findAtMost 1 (regex pattern) url of
         [ match ] ->
             match.submatches
                 |> List.head

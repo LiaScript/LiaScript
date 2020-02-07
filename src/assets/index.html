@@ -101,16 +101,18 @@
     <script src="../javascript/webcomponents/katex.js"></script>
 
     <script>
-    if ('serviceWorker' in navigator) {
+    if (process.env.NODE_ENV !== 'development') {
+      if ('serviceWorker' in navigator) {
         window.addEventListener('load', function () {
           let sw = "./sw.js"
           try {
             navigator.serviceWorker.register(sw).then(console.log).catch(console.error);
-          } catch (e) {
+          }   catch (e) {
             console.warn("sw: ", e);
           }
         })
       }
+    }
     </script>
   </body>
 </html>

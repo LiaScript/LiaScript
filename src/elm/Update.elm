@@ -9,6 +9,7 @@ port module Update exposing
     , parsing
     , start
     , subscriptions
+    , toDownloadLink
     , update
     )
 
@@ -22,6 +23,7 @@ import Http
 import Index.Update as Index
 import Json.Encode as JE
 import Lia.Json.Decode
+import Lia.Markdown.Inline.Multimedia exposing (search)
 import Lia.Script
 import Model exposing (Model, State(..))
 import Port.Event exposing (Event)
@@ -143,7 +145,8 @@ update msg model =
                         Session.navTo model.session url
 
                       else
-                        Url.toString url
+                        url
+                            |> Url.toString
                             |> Navigation.load
                     )
 
@@ -430,3 +433,30 @@ getIndex url model =
 initIndex : Model -> ( Model, Cmd Msg )
 initIndex model =
     ( model, event2js Index.init )
+
+
+toDownloadLink : String -> String
+toDownloadLink =
+    search
+        [ { embed =
+                \w ->
+                    "https://raw.githubusercontent.com/"
+                        ++ (case w |> String.split "/" of
+                                -- [user, repo]
+                                [ _, _ ] ->
+                                    w ++ "/master/README.md"
+
+                                -- user :: repo :: "tree" :: path ..
+                                _ :: _ :: "tree" :: _ ->
+                                    String.replace "/tree/" "/" w ++ "/README.md"
+
+                                _ ->
+                                    String.replace "/blob/" "/" w
+                           )
+          , pattern = "(?:http(?:s)?://)?(?:www\\.)?github\\.com/(.*)"
+          }
+        , { embed = \w -> "https://dl.dropbox.com/s/" ++ w
+          , pattern = "(?:http(?:s)?://)?www\\.dropbox\\.com/s/(.*)"
+          }
+        ]
+        >> Tuple.second
