@@ -104,8 +104,8 @@ view_footer lang sound mode effects =
             Html.text ""
 
 
-navButton : String -> String -> String -> msg -> Html msg
-navButton str title margin msg =
+navButton : String -> String -> String -> String -> msg -> Html msg
+navButton str title margin id msg =
     Html.button
         [ onClick msg
         , Attr.title title
@@ -114,17 +114,18 @@ navButton str title margin msg =
         --, Attr.style "padding-left" padding
         , Attr.style "margin-left" margin
         , Attr.style "padding" "2px"
+        , Attr.id id
         ]
         [ Html.text str ]
 
 
 view_nav : Int -> Mode -> Lang -> String -> Bool -> String -> Html Msg
 view_nav section_active mode lang base speaking state =
-    Html.nav [ Attr.class "lia-toolbar" ]
+    Html.nav [ Attr.class "lia-toolbar", Attr.id "lia-toolbar-nav" ]
         [ Html.map UpdateSettings <| Settings.toggle_button_toc lang
-        , navButton "home" "index" "4px" Home
-        , Html.span [ Attr.class "lia-spacer" ] []
-        , navButton "navigate_before" (Trans.basePrev lang) "" PrevSection
+        , navButton "home" "index" "4px" "lia-btn-home" Home
+        , Html.span [ Attr.class "lia-spacer", Attr.id "lia-space-left" ] []
+        , navButton "navigate_before" (Trans.basePrev lang) "" "lia-btn-prev" PrevSection
         , Html.span [ Attr.class "lia-labeled lia-left" ]
             [ Html.span
                 [ Attr.class "lia-label"
@@ -144,7 +145,7 @@ view_nav section_active mode lang base speaking state =
                             state
                 ]
             ]
-        , navButton "navigate_next" (Trans.baseNext lang) "" NextSection
-        , Html.span [ Attr.class "lia-spacer" ] []
+        , navButton "navigate_next" (Trans.baseNext lang) "" "lia-btn-next" NextSection
+        , Html.span [ Attr.class "lia-spacer", Attr.id "lia-space-right" ] []
         , Html.map UpdateSettings <| Settings.switch_button_mode lang mode
         ]

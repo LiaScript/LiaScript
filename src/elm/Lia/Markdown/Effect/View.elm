@@ -43,9 +43,10 @@ comment lang class show_inline silent msg model viewer idx elements =
 
 responsive : Lang -> Bool -> msg -> Html msg
 responsive lang sound msg =
-    Html.span []
+    Html.span [ Attr.id "lia-span-responsive" ]
         [ Html.button
             [ Attr.class "lia-btn lia-icon"
+            , Attr.id "lia-btn-sound"
             , onClick msg
             , Attr.title <|
                 if sound then
