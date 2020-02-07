@@ -396,12 +396,14 @@ toDownloadLink =
         [ { embed =
                 \w ->
                     "https://raw.githubusercontent.com/"
-                        ++ (case w |> String.split "/" |> List.length of
-                                2 ->
+                        ++ (case w |> String.split "/" of
+                                -- [user, repo]
+                                [ _, _ ] ->
                                     w ++ "/master/README.md"
 
-                                3 ->
-                                    w ++ "/README.md"
+                                -- user :: repo :: "tree" :: path ..
+                                _ :: _ :: "tree" :: _ ->
+                                    String.replace "/tree/" "/" w ++ "/README.md"
 
                                 _ ->
                                     String.replace "/blob/" "/" w
