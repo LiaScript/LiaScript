@@ -7,6 +7,7 @@ import Browser
 import Browser.Navigation as Nav
 import Index.Model as Index
 import Json.Encode as JE
+import Lia.Parser.PatReplace exposing (link)
 import Lia.Script
 import Model exposing (Model, State(..))
 import Session exposing (Screen, Session)
@@ -16,7 +17,6 @@ import Update
         , getIndex
         , load_readme
         , subscriptions
-        , toDownloadLink
         , update
         )
 import Url
@@ -61,11 +61,7 @@ init flags url key =
                 >> Model 0 Nothing Index.init Nothing
 
         courseUrl =
-            { url
-                | query =
-                    url.query
-                        |> Maybe.map toDownloadLink
-            }
+            { url | query = Maybe.map link url.query }
     in
     case ( courseUrl.query, flags.course, flags.script ) of
         ( Just query, _, _ ) ->
