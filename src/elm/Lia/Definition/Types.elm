@@ -12,6 +12,7 @@ module Lia.Definition.Types exposing
 
 import Dict exposing (Dict)
 import Lia.Markdown.Inline.Types exposing (Inlines)
+import Lia.Parser.PatReplace exposing (link)
 import Lia.Settings.Model exposing (Mode)
 
 
@@ -103,7 +104,7 @@ add_imports url def =
         | imports =
             url
                 |> String.split "\n"
-                |> List.map (toURL def.base)
+                |> List.map (toURL def.base >> link)
                 |> List.append def.imports
     }
 
