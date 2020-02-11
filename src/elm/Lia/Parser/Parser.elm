@@ -5,7 +5,17 @@ module Lia.Parser.Parser exposing
     , parse_titles
     )
 
-import Combine exposing (InputStream, currentLocation, ignore, keep, regex)
+import Combine
+    exposing
+        ( InputStream
+        , currentLocation
+        , ignore
+        , keep
+        , or
+        , regex
+        , string
+        , withColumn
+        )
 import Lia.Definition.Parser
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Parser as Markdown
@@ -20,7 +30,10 @@ parse_defintion base code =
     case
         Combine.runParser
             (Lia.Definition.Parser.parse
-                |> ignore (stringTill (regex "\n#"))
+                |> ignore
+                    (or (string "#")
+                        (stringTill (regex "\n#"))
+                    )
             )
             (base
                 |> Lia.Definition.Types.default
