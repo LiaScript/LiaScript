@@ -5,20 +5,45 @@ module Lia.Parser.Parser exposing
     , parse_titles
     )
 
-import Combine exposing (InputStream, currentLocation, keep)
+import Combine
+    exposing
+        ( InputStream
+        , currentLocation
+        , ignore
+        , keep
+        , or
+        , regex
+        , string
+        , withColumn
+        )
+import Combine.Char exposing (anyChar)
 import Lia.Definition.Parser
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Parser as Markdown
 import Lia.Parser.Context exposing (init)
+import Lia.Parser.Helper exposing (stringTill)
 import Lia.Parser.Preprocessor as Preprocessor
 import Lia.Section as Section exposing (Section)
 
 
 parse_defintion : String -> String -> Result String ( Definition, ( String, Int ) )
 parse_defintion base code =
-    case Combine.runParser Lia.Definition.Parser.parse (init identity 0 <| Lia.Definition.Types.default base) code of
+    case
+        Combine.runParser
+            (Lia.Definition.Parser.parse
+                |> ignore
+                    (or (string "#")
+                        (stringTill (regex "\n#"))
+                    )
+            )
+            (base
+                |> Lia.Definition.Types.default
+                |> init identity 0
+            )
+            code
+    of
         Ok ( state, data, line ) ->
-            Ok ( state.defines, ( data.input, line ) )
+            Ok ( state.defines, ( "#" ++ data.input, line ) )
 
         Err ( _, stream, ms ) ->
             Err (formatError ms stream)

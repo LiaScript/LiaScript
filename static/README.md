@@ -30,6 +30,8 @@ translation: Русский  translations/Russian.md
 
 -->
 
+
+
 # Lia-Script
 
 asdfa
@@ -37,7 +39,7 @@ asdfa
 
 
 
-<div style="">
+<div style="display:none">
 
 $$
 \begin{bmatrix}

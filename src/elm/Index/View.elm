@@ -31,9 +31,9 @@ import Index.Update exposing (Msg(..))
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View as Inline
+import Lia.Parser.PatReplace exposing (link)
 import Lia.Settings.Model exposing (Mode(..))
 import Session exposing (Session)
-import Update exposing (toDownloadLink)
 import Url
 
 
@@ -397,7 +397,7 @@ renderElmUi =
 
 href : String -> String
 href =
-    toDownloadLink >> (++) "./?"
+    link >> (++) "./?"
 
 
 viewVersions : (Float -> Int) -> Course -> Element Msg
