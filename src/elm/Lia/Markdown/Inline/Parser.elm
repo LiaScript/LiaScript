@@ -142,11 +142,9 @@ html =
                     }
                 )
     in
-    choice
-        [ javascript
-            |> andThen state
-            |> keep (succeed (Chars "" Nothing))
-        ]
+    javascript
+        |> andThen state
+        |> keep (succeed (Chars "" Nothing))
 
 
 combine : Inlines -> Inlines

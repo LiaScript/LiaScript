@@ -31,10 +31,6 @@ translation: Русский  translations/Russian.md
 -->
 
 
-kkkkk
-
-
-llllasdfasfdaadfa
 
 # Lia-Script
 
