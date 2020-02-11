@@ -16,7 +16,6 @@ import Combine
         , string
         , withColumn
         )
-import Combine.Char exposing (anyChar)
 import Lia.Definition.Parser
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Parser as Markdown

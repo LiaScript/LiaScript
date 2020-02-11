@@ -1,4 +1,4 @@
-module Lia.Parser.Preprocessor exposing (check, section)
+module Lia.Parser.Preprocessor exposing (section)
 
 import Combine
     exposing
