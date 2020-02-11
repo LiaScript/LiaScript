@@ -104,7 +104,7 @@ add_imports url def =
         | imports =
             url
                 |> String.split "\n"
-                |> List.map (toURL def.base >> link)
+                |> List.map (String.trim >> toURL def.base >> link)
                 |> List.append def.imports
     }
 
