@@ -172,27 +172,27 @@ eval_parameter param ( state, i, code ) =
 
 get : String -> Definition -> Maybe String
 get name def =
-    case name of
-        "@author" ->
+    case name |> String.dropLeft 1 |> String.toLower of
+        "author" ->
             Just def.author
 
-        "@date" ->
+        "date" ->
             Just def.date
 
-        "@email" ->
+        "email" ->
             Just def.email
 
-        "@version" ->
+        "version" ->
             Just def.version
 
-        "@section" ->
+        "section" ->
             Just (String.fromInt def.section)
 
-        "@uid" ->
+        "uid" ->
             Just (String.fromInt def.section ++ "_" ++ String.fromInt def.uid)
 
         _ ->
-            Dict.get (String.slice 0 -1 name) def.macro
+            Dict.get name def.macro
 
 
 add : ( String, String ) -> Definition -> Definition

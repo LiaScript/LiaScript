@@ -206,6 +206,7 @@ key_value =
         |> andMap value
 
 
+start : Parser Context (Maybe String)
 start =
     string "@"
         |> maybe
@@ -228,21 +229,12 @@ value =
 lines : Parser Context String
 lines =
     regex "([ \\t].*|[ \\t]*\\n)+"
-        |> map (String.replace "\n" " " >> String.trim)
+        |> map (String.words >> List.intersperse " " >> String.concat)
 
 
 multiline : Parser Context String
 multiline =
     stringTill (string "\n@end")
-
-
-ending : Parser Context String
-ending =
-    indentation_append "  "
-        |> ignore indentation_skip
-        |> keep (many1 (indentation |> keep (regex ".+\\n")))
-        |> ignore indentation_pop
-        |> map (\list -> list |> List.map String.trimLeft |> String.concat |> String.trimRight)
 
 
 set : (Definition -> Definition) -> Parser Context ()
