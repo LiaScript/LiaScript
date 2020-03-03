@@ -100,13 +100,15 @@ add_macros orig temp =
 
 add_imports : String -> Definition -> Definition
 add_imports url def =
-    { def
-        | imports =
-            url
-                |> String.split "\n"
-                |> List.map (String.trim >> toURL def.base >> link)
-                |> List.append def.imports
-    }
+    { def | imports = append link def.base url def.imports }
+
+
+
+--            url
+--                |> String.words
+--                |> List.map (toURL def.base >> link)
+--                |> List.append def.imports
+--    }
 
 
 toURL : String -> String -> String
@@ -126,6 +128,6 @@ addToResources to urls def =
 append : (String -> a) -> String -> String -> List a -> List a
 append to base urls list =
     urls
-        |> String.split "\n"
+        |> String.words
         |> List.map (toURL base >> to)
         |> List.append list

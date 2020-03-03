@@ -13,6 +13,8 @@ import Combine
         , map
         , maybe
         , modifyState
+        , onsuccess
+        , or
         , regex
         , regexWith
         , skip
@@ -47,13 +49,11 @@ import Lia.Settings.Model exposing (Mode(..))
 
 parse : Parser Context Int
 parse =
-    lazy <|
-        \() ->
-            definition
-                |> keep (modifyState (\s -> { s | defines_updated = True }))
-                |> maybe
-                |> ignore whitespace
-                |> keep getLine
+    definition
+        |> keep (modifyState (\s -> { s | defines_updated = True }))
+        |> maybe
+        |> ignore whitespace
+        |> keep getLine
 
 
 inline_parser : Definition -> String -> Inlines
@@ -74,93 +74,167 @@ definition : Parser Context ()
 definition =
     lazy <|
         \() ->
-            let
-                list =
-                    choice
-                        [ store "author:" (\x d -> { d | author = x })
-                        , store "base:" (\x d -> { d | base = x })
-                        , store "comment:" (\x d -> { d | comment = inline_parser d x })
-                        , store "attribute:" (\x d -> { d | attributes = [ inline_parser d x ] |> List.append d.attributes })
-                        , store "date:" (\x d -> { d | date = x })
-                        , store "email:" (\x d -> { d | email = x })
-                        , store "language:" (\x d -> { d | language = x })
-                        , store "logo:" (\x d -> { d | logo = toURL d.base x })
-                        , store "narrator:" (\x d -> { d | narrator = x })
-                        , store "script:" (addToResources Script)
-                        , store "import:" add_imports
-                        , store "link:" (addToResources Link)
-                        , store "translation:" add_translation
-                        , store "version:" (\x d -> { d | version = x })
-                        , store "dark:"
-                            (\x d ->
-                                { d
-                                    | lightMode =
-                                        case x |> String.toLower of
-                                            "true" ->
-                                                Just False
-
-                                            "false" ->
-                                                Just True
-
-                                            _ ->
-                                                Nothing
-                                }
-                            )
-                        , store "mode:"
-                            (\x d ->
-                                { d
-                                    | mode =
-                                        case x |> String.toLower of
-                                            "textbook" ->
-                                                Just Textbook
-
-                                            "presentation" ->
-                                                Just Presentation
-
-                                            "slides" ->
-                                                Just Slides
-
-                                            _ ->
-                                                Nothing
-                                }
-                            )
-                        , store "debug:"
-                            (\x d ->
-                                { d
-                                    | debug =
-                                        if x == "true" then
-                                            True
-
-                                        else
-                                            False
-                                }
-                            )
-                        , regex "@onload[\t ]*\\n"
-                            |> keep (stringTill (string "\n@end"))
-                            |> andThen (\x -> set (\def -> { def | onload = String.trim x }))
-                        , Macro.pattern
-                            |> ignore (regex "[\t ]*:[\t ]*")
-                            |> map Tuple.pair
-                            |> andMap (regex ".+")
-                            |> ignore newline
-                            |> andThen (\x -> set (Macro.add x))
-                        , Macro.pattern
-                            |> ignore (regex "[\t ]*\\n")
-                            |> map Tuple.pair
-                            |> andMap (stringTill (string "\n@end"))
-                            |> andThen (\x -> set (Macro.add x))
-                        ]
-            in
-            (whitespace |> keep list)
+            whitespace
+                |> keep defs
                 |> many1
                 |> ignore whitespace
                 |> comment
                 |> skip
 
 
-store : String -> (String -> Definition -> Definition) -> Parser Context ()
-store str fn =
-    regexWith True False str |> keep (ending |> andThen (fn >> set))
+store : ( String, String ) -> Parser Context ()
+store ( key_, value_ ) =
+    case key_ of
+        "attribute" ->
+            set
+                (\c ->
+                    { c
+                        | attributes =
+                            [ inline_parser c value_ ]
+                                |> List.append c.attributes
+                    }
+                )
+
+        "author" ->
+            set (\c -> { c | author = value_ })
+
+        "base" ->
+            set (\c -> { c | base = value_ })
+
+        "comment" ->
+            set (\c -> { c | comment = inline_parser c value_ })
+
+        "dark" ->
+            set
+                (\c ->
+                    { c
+                        | lightMode =
+                            case String.toLower value_ of
+                                "true" ->
+                                    Just False
+
+                                "false" ->
+                                    Just True
+
+                                _ ->
+                                    Nothing
+                    }
+                )
+
+        "date" ->
+            set (\c -> { c | date = value_ })
+
+        "email" ->
+            set (\c -> { c | email = value_ })
+
+        "import" ->
+            set (add_imports value_)
+
+        "language" ->
+            set (\c -> { c | language = value_ })
+
+        "link" ->
+            set (addToResources Link value_)
+
+        "logo" ->
+            set (\c -> { c | logo = toURL c.base value_ })
+
+        "narrator" ->
+            set (\c -> { c | narrator = value_ })
+
+        "script" ->
+            set (addToResources Script value_)
+
+        "translation" ->
+            set (add_translation value_)
+
+        "version" ->
+            set (\c -> { c | version = value_ })
+
+        "mode" ->
+            set
+                (\c ->
+                    { c
+                        | mode =
+                            case value_ |> String.toLower of
+                                "textbook" ->
+                                    Just Textbook
+
+                                "presentation" ->
+                                    Just Presentation
+
+                                "slides" ->
+                                    Just Slides
+
+                                _ ->
+                                    Nothing
+                    }
+                )
+
+        "debug" ->
+            set
+                (\c ->
+                    { c
+                        | debug =
+                            if value_ == "true" then
+                                True
+
+                            else
+                                False
+                    }
+                )
+
+        "onload" ->
+            set (\c -> { c | onload = value_ })
+
+        _ ->
+            set (Macro.add ( key_, value_ ))
+
+
+defs : Parser Context ()
+defs =
+    choice
+        [ regex "@@@.*\n" |> ignore multiline |> skip
+        , regex "@@.*\n" |> ignore lines |> skip
+        , key_value |> andThen store
+        ]
+
+
+key_value : Parser Context ( String, String )
+key_value =
+    key
+        |> map Tuple.pair
+        |> andMap value
+
+
+start =
+    string "@"
+        |> maybe
+
+
+key : Parser Context String
+key =
+    start
+        |> keep (regex "\\w+[\\w\\-.\\d]*")
+        |> map String.toLower
+
+
+value : Parser Context String
+value =
+    or
+        (regex "[\\t ]*:" |> keep lines)
+        (regex "[\t ]*\\n" |> keep multiline)
+
+
+lines : Parser Context String
+lines =
+    regex "([ \\t].*|[ \\t]*\\n)+"
+        |> map (String.replace "\n" " " >> String.trim)
+
+
+multiline : Parser Context String
+multiline =
+    stringTill (string "\n@end")
 
 
 ending : Parser Context String

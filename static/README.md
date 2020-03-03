@@ -1,16 +1,19 @@
 <!--
 
-author:   Andre Dietrich
+@author:   Andre Dietrich
+
+
+  Sebastian Zug
+
+
 email:    andre.dietrich@ovgu.de
 
-version:  1.3.15
+version:  0.3.15
 
 language: en
 narrator: US English Female
 
 logo: logo.png
-
-dark:  true
 
 comment:  This is a very simple comment.
           Multiline is also okay version 13.
@@ -35,7 +38,7 @@ translation: Русский  translations/Russian.md
 # Lia-Script
 
 asdfa
-<br/> 12 <br/> asdfs
+<br/> 13 <br/> asdfs
 
 
 
