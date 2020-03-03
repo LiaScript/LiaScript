@@ -307,15 +307,20 @@ load_readme readme model =
                         |> List.head
                         |> Maybe.withDefault -1
             in
-            if latest == Version.toInt lia.definition.version then
+            if
+                latest
+                    /= Version.toInt lia.definition.version
+                    || Version.getMajor lia.definition.version
+                    == 0
+            then
+                load model lia code templates
+
+            else
                 ( model
                 , course.id
                     |> Index.restore (Version.getMajor lia.definition.version)
                     |> event2js
                 )
-
-            else
-                load model lia code templates
 
 
 load : Model -> Lia.Script.Model -> Maybe String -> List String -> ( Model, Cmd Msg )
