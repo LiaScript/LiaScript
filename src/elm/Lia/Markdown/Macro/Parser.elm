@@ -191,8 +191,8 @@ get name def =
         "uid" ->
             Just (String.fromInt def.section ++ "_" ++ String.fromInt def.uid)
 
-        _ ->
-            Dict.get name def.macro
+        id ->
+            Dict.get id def.macro
 
 
 add : ( String, String ) -> Definition -> Definition
