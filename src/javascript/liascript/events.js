@@ -161,6 +161,9 @@ function lia_eval_event (send, channel, handler, event) {
       },
       register: (name, fn) => {
         handler.register(name, fn)
+      },
+      dispatch: (name, data) => {
+        handler.dispatch(name, data)
       }
     }
   )
