@@ -37,6 +37,8 @@ class LiaDB {
 
     if (this.channel) return
 
+    return
+
     this.version = versionDB
     this.db = this.open_(uidDB)
     await this.db.open()
