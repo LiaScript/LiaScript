@@ -236,6 +236,14 @@ lines =
 multiline : Parser Context String
 multiline =
     stringTill (string "\n@end")
+        |> map
+            (\x ->
+                if String.startsWith "\n" x then
+                    " " ++ x
+
+                else
+                    x
+            )
 
 
 set : (Definition -> Definition) -> Parser Context ()
