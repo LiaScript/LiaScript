@@ -33,11 +33,12 @@ import Lia.Definition.Types exposing (Definition)
 import Lia.Parser.Context exposing (Context, indentation)
 import Lia.Parser.Helper exposing (c_frame, spaces)
 import Lia.Utils exposing (toJSstring)
+import Regex
 
 
 pattern : Parser s String
 pattern =
-    spaces |> keep (regex "@[\\w.]+")
+    spaces |> keep (regex "@@?\\w+[\\w\\d.\\-]*")
 
 
 parameter : Parser Context String
@@ -172,27 +173,73 @@ eval_parameter param ( state, i, code ) =
 
 get : String -> Definition -> Maybe String
 get name def =
-    case name |> String.dropLeft 1 |> String.toLower of
-        "author" ->
-            Just def.author
+    let
+        ( isDebug, id ) =
+            if String.startsWith "@@" name then
+                ( True, String.dropLeft 2 name )
 
-        "date" ->
-            Just def.date
+            else
+                ( False, String.dropLeft 1 name )
+    in
+    Maybe.map
+        (if isDebug then
+            debug
 
-        "email" ->
-            Just def.email
+         else
+            identity
+        )
+    <|
+        case id of
+            "author" ->
+                Just def.author
 
-        "version" ->
-            Just def.version
+            "date" ->
+                Just def.date
 
-        "section" ->
-            Just (String.fromInt def.section)
+            "email" ->
+                Just def.email
 
-        "uid" ->
-            Just (String.fromInt def.section ++ "_" ++ String.fromInt def.uid)
+            "version" ->
+                Just def.version
 
-        id ->
-            Dict.get id def.macro
+            "section" ->
+                Just (String.fromInt def.section)
+
+            "uid" ->
+                Just (String.fromInt def.section ++ "_" ++ String.fromInt def.uid)
+
+            _ ->
+                Dict.get id def.macro
+
+
+
+--      |> Maybe.map debug
+
+
+debug : String -> String
+debug =
+    String.replace "\\" "\\\\"
+        >> String.replace "<" "\\<"
+        >> String.replace ">" "\\>"
+        >> debugReplace
+        >> debugEnvironment
+
+
+debugEnvironment : String -> String
+debugEnvironment code =
+    "<pre style='background: #CCCCCC'><code>\n"
+        ++ code
+        ++ "\n</code></pre>"
+
+
+debugReplace : String -> String
+debugReplace string =
+    case Regex.fromString "@[a-zA-Z]+[\\w\\d.\\-]*" of
+        Just regex ->
+            Regex.replace regex (.match >> (++) "@") string
+
+        Nothing ->
+            string
 
 
 add : ( String, String ) -> Definition -> Definition
