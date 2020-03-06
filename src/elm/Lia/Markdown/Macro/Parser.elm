@@ -212,10 +212,6 @@ get name def =
                 Dict.get id def.macro
 
 
-
---      |> Maybe.map debug
-
-
 debug : String -> String
 debug =
     String.replace "\\" "\\\\"
