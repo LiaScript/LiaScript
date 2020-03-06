@@ -216,7 +216,6 @@ key : Parser Context String
 key =
     start
         |> keep (regex "\\w+[\\w\\-.\\d]*")
-        |> map String.toLower
 
 
 value : Parser Context String
