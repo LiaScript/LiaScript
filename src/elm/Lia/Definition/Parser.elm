@@ -102,7 +102,18 @@ store ( key_, value_ ) =
             set (\c -> { c | base = value_ })
 
         "comment" ->
-            set (\c -> { c | comment = inline_parser c value_ })
+            set
+                (\c ->
+                    let
+                        singleLineComment =
+                            reduce value_
+                    in
+                    Macro.add
+                        ( "comment"
+                        , singleLineComment
+                        )
+                        { c | comment = inline_parser c singleLineComment }
+                )
 
         "dark" ->
             set
@@ -229,7 +240,12 @@ value =
 lines : Parser Context String
 lines =
     regex "([ \\t].*|[ \\t]*\\n)+"
-        |> map (String.words >> List.intersperse " " >> String.concat)
+        |> map reduce
+
+
+reduce : String -> String
+reduce =
+    String.words >> List.intersperse " " >> String.concat
 
 
 multiline : Parser Context String
