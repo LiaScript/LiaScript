@@ -219,6 +219,19 @@ get name def =
 debug : String -> String
 debug =
     String.replace "\\" "\\\\"
+        >> String.replace "*" "\\*"
+        >> String.replace "_" "\\_"
+        >> String.replace "+" "\\+"
+        >> String.replace "-" "\\-"
+        >> String.replace "^" "\\^"
+        >> String.replace "~" "\\~"
+        >> String.replace "$" "\\$"
+        >> String.replace "{" "\\{"
+        >> String.replace "}" "\\}"
+        >> String.replace "[" "\\["
+        >> String.replace "]" "\\]"
+        >> String.replace "|" "\\|"
+        >> String.replace "#" "\\#"
         >> String.replace "<" "\\<"
         >> String.replace ">" "\\>"
         >> debugReplace
