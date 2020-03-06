@@ -222,6 +222,14 @@ debug =
         >> String.replace "<" "\\<"
         >> String.replace ">" "\\>"
         >> debugReplace
+        >> debugEnvironment
+
+
+debugEnvironment : String -> String
+debugEnvironment code =
+    "<pre style='background: #CCCCCC'><code>\n"
+        ++ code
+        ++ "\n</code></pre>"
 
 
 debugReplace : String -> String
