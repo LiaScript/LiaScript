@@ -230,15 +230,16 @@ debug =
         >> String.replace "#" "\\#"
         >> String.replace "<" "\\<"
         >> String.replace ">" "\\>"
+        >> String.replace "\n" "<br>"
         >> debugReplace
         >> debugEnvironment
 
 
 debugEnvironment : String -> String
 debugEnvironment code =
-    "<pre style='background: #CCCCCC'><code>\n"
+    "<code style='background: #CCCCCC;'>"
         ++ code
-        ++ "\n</code></pre>"
+        ++ "</code>"
 
 
 debugReplace : String -> String
