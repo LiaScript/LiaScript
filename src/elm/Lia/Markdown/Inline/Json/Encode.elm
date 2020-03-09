@@ -1,6 +1,7 @@
 module Lia.Markdown.Inline.Json.Encode exposing (encode)
 
 import Json.Encode as JE
+import Lia.Markdown.HTML.Types as HTML
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..))
 
 
@@ -81,8 +82,10 @@ encInline element =
                 , ( "a", encAnnotation a )
                 ]
 
-            IHTML _ a ->
-                [ ( "IHTML", JE.string "" )
+            IHTML node a ->
+                [ ( "IHTML"
+                  , HTML.encode encInline node
+                  )
                 , ( "a", encAnnotation a )
                 ]
 

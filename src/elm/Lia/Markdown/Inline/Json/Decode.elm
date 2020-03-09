@@ -1,6 +1,7 @@
 module Lia.Markdown.Inline.Json.Decode exposing (decode)
 
 import Json.Decode as JD
+import Lia.Markdown.HTML.Types as HTML
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..))
 
 
@@ -20,10 +21,9 @@ decInline =
     , inlReader "Strike" Strike
     , inlReader "Superscript" Superscript
     , inlReader "Underline" Underline
-
-    --, strReader "HTML" (\str  -> HTML str)
     , JD.field "Ref" toReference |> JD.map Ref
     , JD.field "Container" (JD.lazy (\_ -> decode)) |> JD.map Container
+    , JD.field "IHTML" (JD.lazy (\_ -> HTML.decode decInline)) |> JD.map IHTML
     , JD.map3 EInline
         (JD.field "i" JD.int)
         (JD.field "j" JD.int)
