@@ -81,9 +81,9 @@ encInline element =
                 , ( "a", encAnnotation a )
                 ]
 
-            IHTML _ _ ->
-                [ ( "HTML", JE.string "" )
-                , ( "a", encAnnotation Nothing )
+            IHTML _ a ->
+                [ ( "IHTML", JE.string "" )
+                , ( "a", encAnnotation a )
                 ]
 
 

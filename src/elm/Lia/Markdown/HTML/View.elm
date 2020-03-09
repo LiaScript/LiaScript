@@ -1,6 +1,6 @@
 module Lia.Markdown.HTML.View exposing (view)
 
-import Dict exposing (Dict)
+import Dict
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Lia.Markdown.HTML.Types exposing (Node(..))

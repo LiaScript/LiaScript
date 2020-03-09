@@ -9,32 +9,23 @@ import Combine
         , fail
         , ignore
         , keep
-        , lazy
         , many
         , many1
         , manyTill
         , map
         , maybe
-        , modifyState
-        , optional
         , or
         , regex
-        , runParser
-        , skip
         , string
         , succeed
         , whitespace
-        , withState
         )
-import Combine.Char exposing (anyChar)
 import Combine.Num exposing (int)
-import Dict exposing (Dict)
+import Dict
 import Hex
 import Lia.Markdown.HTML.NamedCharacterReferences as NamedCharacterReferences
 import Lia.Markdown.HTML.Types exposing (Node(..))
-import Lia.Markdown.Macro.Parser as Macro
-import Lia.Parser.Context exposing (Context, searchIndex)
-import Lia.Parser.Helper exposing (spaces, stringTill)
+import Lia.Parser.Context exposing (Context)
 
 
 parse : Parser Context x -> Parser Context (Node x)
