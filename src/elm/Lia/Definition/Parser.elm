@@ -13,10 +13,8 @@ import Combine
         , map
         , maybe
         , modifyState
-        , onsuccess
         , or
         , regex
-        , regexWith
         , skip
         , string
         , whitespace
@@ -38,12 +36,11 @@ import Lia.Parser.Context
         ( Context
         , getLine
         , indentation
-        , indentation_append
         , indentation_pop
         , indentation_skip
         , init
         )
-import Lia.Parser.Helper exposing (newline, stringTill)
+import Lia.Parser.Helper exposing (stringTill)
 import Lia.Settings.Model exposing (Mode(..))
 
 

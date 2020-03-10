@@ -17,7 +17,6 @@ import Combine
         , andMap
         , andThen
         , choice
-        , fail
         , ignore
         , keep
         , lazy
@@ -171,11 +170,6 @@ line =
         |> andThen goto
         |> many1
         |> map combine
-
-
-append_space : Inlines -> Inlines
-append_space list =
-    List.append list [ Chars " " Nothing ]
 
 
 inlines : Parser Context Inline

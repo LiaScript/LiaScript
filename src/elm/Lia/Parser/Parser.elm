@@ -14,7 +14,6 @@ import Combine
         , or
         , regex
         , string
-        , withColumn
         )
 import Lia.Definition.Parser
 import Lia.Definition.Types exposing (Definition)

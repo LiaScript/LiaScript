@@ -6,7 +6,6 @@ import Combine
         , andMap
         , andThen
         , choice
-        , fail
         , ignore
         , keep
         , lazy
