@@ -8,6 +8,7 @@ import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.HTML.View as HTML
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..))
 import Lia.Settings.Model exposing (Mode(..))
+import Oembed
 
 
 annotation : String -> Annotation -> List (Attribute msg)
@@ -193,6 +194,19 @@ reference mode visible ref attr =
                 Html.video
                     (Attr.controls True :: Attr.title title_ :: annotation "lia-movie" attr)
                     [ Html.source [ Attr.src url_ ] [], Html.span [] (viewer mode visible alt_) ]
+
+        Embed alt_ url title_ ->
+            oembed Nothing url
+
+
+customProviders =
+    []
+
+
+oembed : Maybe { maxHeight : Int, maxWidth : Int } -> String -> Html msg
+oembed options url =
+    Oembed.view customProviders options url
+        |> Maybe.withDefault (Html.text ("Couldn't find oembed provider for url " ++ url))
 
 
 view_url : Mode -> Int -> Inlines -> String -> String -> Annotation -> Html msg

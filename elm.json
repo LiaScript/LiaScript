@@ -9,6 +9,7 @@
             "andre-dietrich/elm-svgbob": "2.0.0",
             "andre-dietrich/parser-combinators": "4.0.0",
             "avh4/elm-color": "1.0.0",
+            "dillonkearns/elm-oembed": "1.0.0",
             "elm/browser": "1.0.2",
             "elm/core": "1.0.5",
             "elm/html": "1.0.0",
@@ -30,6 +31,7 @@
             "elm/svg": "1.0.1",
             "elm/time": "1.0.0",
             "elm/virtual-dom": "1.0.2",
+            "elm-community/list-extra": "8.2.3",
             "justinmimbs/date": "3.2.0",
             "justinmimbs/time-extra": "1.1.0",
             "myrho/elm-round": "1.0.4",
@@ -43,9 +45,9 @@
             "elm-explorations/test": "1.2.2"
         },
         "indirect": {
+            "elm/random": "1.0.0",
             "elm-community/random-extra": "3.1.0",
-            "owanturist/elm-union-find": "1.0.0",
-            "elm/random": "1.0.0"
+            "owanturist/elm-union-find": "1.0.0"
         }
     }
 }

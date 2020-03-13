@@ -85,6 +85,7 @@ toReference =
     [ toRef Link "Link"
     , toRef Mail "Mail"
     , toRef Image "Image"
+    , toRef Embed "Embed"
     , toMultimedia Audio "Audio"
     , toMultimedia Movie "Movie"
     ]

@@ -99,6 +99,9 @@ encReference ref =
         Mail list url title ->
             encRef "Mail" list url title
 
+        Embed list url title ->
+            encRef "Embed" list url title
+
         Image list url title ->
             encRef "Image" list url title
 
