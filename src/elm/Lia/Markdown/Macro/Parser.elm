@@ -1,4 +1,4 @@
-module Lia.Markdown.Macro.Parser exposing (add, get, macro, pattern)
+module Lia.Markdown.Macro.Parser exposing (add, get, macro)
 
 import Combine
     exposing
@@ -13,8 +13,8 @@ import Combine
         , manyTill
         , map
         , maybe
+        , modifyInput
         , modifyState
-        , modifyStream
         , onsuccess
         , optional
         , or
@@ -38,7 +38,7 @@ import Regex
 
 pattern : Parser s String
 pattern =
-    spaces |> keep (regex "@@?\\w+[\\w\\d.\\-]*")
+    spaces |> keep (regex "@-?@?\\w[\\w\\d._]+")
 
 
 parameter : Parser Context String
@@ -130,7 +130,7 @@ inject_macro ( name, params ) =
     let
         inject state =
             case get name state.defines of
-                Just code ->
+                Just ( isDebug, deepDebug, code ) ->
                     let
                         code_ =
                             if state.identation == [] then
@@ -151,8 +151,16 @@ inject_macro ( name, params ) =
                                 ( state, 0, code_ )
                                 params
                     in
-                    (++) new_code
-                        |> modifyStream
+                    (++)
+                        (new_code
+                            |> (if isDebug then
+                                    debug deepDebug
+
+                                else
+                                    identity
+                               )
+                        )
+                        |> modifyInput
                         |> keep (putState new_state)
                         |> keep (succeed ())
 
@@ -171,24 +179,20 @@ eval_parameter param ( state, i, code ) =
     ( new_state, i + 1, String.replace ("@" ++ String.fromInt i) new_param code )
 
 
-get : String -> Definition -> Maybe String
+get : String -> Definition -> Maybe ( Bool, Bool, String )
 get name def =
     let
-        ( isDebug, id ) =
+        ( isDebug, deepDebug, id ) =
             if String.startsWith "@@" name then
-                ( True, String.dropLeft 2 name )
+                ( True, True, String.dropLeft 2 name )
+
+            else if String.startsWith "@-@" name then
+                ( True, False, String.dropLeft 3 name )
 
             else
-                ( False, String.dropLeft 1 name )
+                ( False, False, String.dropLeft 1 name )
     in
-    Maybe.map
-        (if isDebug then
-            debug
-
-         else
-            identity
-        )
-    <|
+    Maybe.map (\x -> ( isDebug, deepDebug, x )) <|
         case id of
             "author" ->
                 Just def.author
@@ -212,41 +216,41 @@ get name def =
                 Dict.get id def.macro
 
 
-debug : String -> String
-debug =
-    String.replace "\\" "\\\\"
-        >> String.replace "*" "\\*"
-        >> String.replace "_" "\\_"
-        >> String.replace "+" "\\+"
-        >> String.replace "-" "\\-"
-        >> String.replace "^" "\\^"
-        >> String.replace "~" "\\~"
-        >> String.replace "$" "\\$"
-        >> String.replace "{" "\\{"
-        >> String.replace "}" "\\}"
-        >> String.replace "[" "\\["
-        >> String.replace "]" "\\]"
-        >> String.replace "|" "\\|"
-        >> String.replace "#" "\\#"
+debug : Bool -> String -> String
+debug env =
+    debugReplace "[*+`{}#^|$\\[\\]]" (.match >> (++) "\\")
         >> String.replace "<" "\\<"
         >> String.replace ">" "\\>"
-        >> String.replace "\n" "<br>"
-        >> debugReplace
-        >> debugEnvironment
+        >> String.replace "\\\\`" "`"
+        >> String.replace "\n" "<br id='ls'>"
+        >> debugReplace "@[a-zA-Z]+[\\w\\d._\\-]*"
+            (\x ->
+                if x.match /= "@input" then
+                    "@-" ++ x.match
+
+                else
+                    x.match
+            )
+        >> String.replace "\\<br id='ls'\\>" "<br id='ls'>"
+        >> debugEnvironment env
 
 
-debugEnvironment : String -> String
-debugEnvironment code =
-    "<code style='background: #CCCCCC;'>"
-        ++ code
-        ++ "</code>"
+debugEnvironment : Bool -> String -> String
+debugEnvironment env code =
+    if env then
+        "<pre id='ls'><code style='background: #CCCCCC; white-space: pre;'>"
+            ++ code
+            ++ "</code></pre>"
+
+    else
+        code
 
 
-debugReplace : String -> String
-debugReplace string =
-    case Regex.fromString "@[a-zA-Z]+[\\w\\d.\\-]*" of
+debugReplace : String -> (Regex.Match -> String) -> String -> String
+debugReplace pat fn string =
+    case Regex.fromString pat of
         Just regex ->
-            Regex.replace regex (.match >> (++) "@") string
+            Regex.replace regex fn string
 
         Nothing ->
             string
