@@ -52,6 +52,7 @@ type Reference
     | Image Inlines String String
     | Audio Inlines ( Bool, String ) String
     | Movie Inlines ( Bool, String ) String
+    | Embed Inlines String String
 
 
 isHTML : Inline -> Bool

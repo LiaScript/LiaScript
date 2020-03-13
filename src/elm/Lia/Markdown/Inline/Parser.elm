@@ -308,30 +308,32 @@ ref_video =
 
 reference : Parser Context (Annotation -> Inline)
 reference =
-    lazy <|
-        \() ->
-            let
-                mail_ =
-                    ref_pattern Mail ref_info email
+    let
+        mail_ =
+            ref_pattern Mail ref_info email
 
-                link =
-                    ref_pattern Link ref_info ref_url_1
+        link =
+            ref_pattern Link ref_info ref_url_1
 
-                image =
-                    string "!"
-                        |> keep (ref_pattern Image ref_info ref_url_2)
+        image =
+            string "!"
+                |> keep (ref_pattern Image ref_info ref_url_2)
 
-                audio =
-                    string "?"
-                        |> keep ref_audio
+        audio =
+            string "?"
+                |> keep ref_audio
 
-                movie =
-                    string "!?"
-                        |> keep ref_video
-            in
-            [ movie, audio, image, mail_, link ]
-                |> choice
-                |> map Ref
+        movie =
+            string "!?"
+                |> keep ref_video
+
+        embed =
+            string "??"
+                |> keep (ref_pattern Embed ref_info ref_url_1)
+    in
+    [ embed, movie, audio, image, mail_, link ]
+        |> choice
+        |> map Ref
 
 
 between_ : String -> Parser Context Inline

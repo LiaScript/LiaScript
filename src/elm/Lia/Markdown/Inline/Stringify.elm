@@ -70,3 +70,6 @@ ref2string ref =
 
         Mail alt _ _ ->
             stringify alt
+
+        Embed alt _ _ ->
+            stringify alt
