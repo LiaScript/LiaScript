@@ -14,6 +14,7 @@ import Combine
         , map
         , maybe
         , modifyInput
+        , modifyPosition
         , modifyState
         , onsuccess
         , optional
@@ -150,17 +151,18 @@ inject_macro ( name, params ) =
                                 eval_parameter
                                 ( state, 0, code_ )
                                 params
+
+                        inject_code =
+                            if isDebug then
+                                debug deepDebug new_code
+
+                            else
+                                new_code
                     in
                     (++)
-                        (new_code
-                            |> (if isDebug then
-                                    debug deepDebug
-
-                                else
-                                    identity
-                               )
-                        )
+                        inject_code
                         |> modifyInput
+                        |> keep (modifyPosition ((+) (-1 * String.length inject_code)))
                         |> keep (putState new_state)
                         |> keep (succeed ())
 
