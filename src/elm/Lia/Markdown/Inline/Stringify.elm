@@ -1,5 +1,6 @@
 module Lia.Markdown.Inline.Stringify exposing (stringify)
 
+import Lia.Markdown.HTML.Types as HTML
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 
 
@@ -45,6 +46,11 @@ inline2string inline =
 
         Container inlines _ ->
             stringify inlines
+
+        IHTML node _ ->
+            node
+                |> HTML.getContent
+                |> stringify
 
         _ ->
             ""
