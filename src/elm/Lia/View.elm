@@ -3,7 +3,7 @@ module Lia.View exposing (view)
 import Flip exposing (flip)
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Html.Events exposing (onClick)
+import Html.Events exposing (onClick, preventDefaultOn)
 import Lia.Index.View as Index
 import Lia.Markdown.Effect.Model exposing (current_paragraphs)
 import Lia.Markdown.Effect.View exposing (responsive, state)
@@ -13,7 +13,7 @@ import Lia.Model exposing (Model)
 import Lia.Settings.Model exposing (Mode(..))
 import Lia.Settings.Update exposing (toggle_sound)
 import Lia.Settings.View as Settings
-import Lia.Update exposing (Msg(..), get_active_section)
+import Lia.Update exposing (Msg(..), get_active_section, key_decoder)
 import Session exposing (Screen)
 import Translations as Trans exposing (Lang)
 
@@ -55,7 +55,7 @@ view_aside model =
 
 view_article : Screen -> Model -> Html Msg
 view_article screen model =
-    Html.article [ Attr.class "lia-slide" ] <|
+    Html.article [ Attr.class "lia-slide", preventDefaultOn "keydown" key_decoder ] <|
         case get_active_section model of
             Just section ->
                 [ section
