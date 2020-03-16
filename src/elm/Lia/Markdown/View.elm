@@ -368,13 +368,14 @@ view_table config attr header format body id ( column, dir ) =
             List.map2 Tuple.pair format
                 >> List.indexedMap
                     (\i ( f, r ) ->
-                        Html.th [ Attr.align f ]
+                        Html.th [ Attr.align f, Attr.style "height" "100%" ]
                             [ Html.span [] (config.view r)
                             , Html.span
                                 [ Attr.class "lia-icon"
                                 , Attr.style "float" "right"
                                 , Attr.style "cursor" "pointer"
                                 , Attr.style "margin-right" "-17px"
+                                , Attr.style "margin-top" "-8px"
                                 , onClick <| Sort id i
                                 ]
                                 [ Html.div
