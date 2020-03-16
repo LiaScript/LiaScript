@@ -29,6 +29,7 @@ type alias Section =
     , code_vector : Code.Vector
     , quiz_vector : Quiz.Vector
     , survey_vector : Survey.Vector
+    , table_vector : Array ( Int, Bool )
     , effect_model : Effect.Model
     , definition : Maybe Definition
     , footnotes : Footnote.Model
@@ -61,6 +62,7 @@ init idx base =
     , code_vector = Array.empty
     , quiz_vector = Array.empty
     , survey_vector = Array.empty
+    , table_vector = Array.empty
     , effect_model = Effect.init
     , definition = Nothing
     , footnotes = Footnote.init

@@ -8,7 +8,7 @@ module Lia.Parser.Context exposing
     , searchIndex
     )
 
-import Array
+import Array exposing (Array)
 import Combine exposing (Parser, ignore, modifyState, regex, skip, succeed, withState)
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Code.Types as Code
@@ -24,6 +24,7 @@ type alias Context =
     , code_vector : Code.Vector
     , quiz_vector : Quiz.Vector
     , survey_vector : Survey.Vector
+    , table_vector : Array ( Int, Bool )
     , effect_model : Effect.Model
     , effect_number : List Int
     , defines : Definition
@@ -40,6 +41,7 @@ init search_index global =
     , code_vector = Array.empty
     , quiz_vector = Array.empty
     , survey_vector = Array.empty
+    , table_vector = Array.empty
     , effect_model = Effect.init
     , effect_number = [ 0 ]
     , defines = global

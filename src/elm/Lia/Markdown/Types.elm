@@ -14,7 +14,7 @@ type Markdown
     | Paragraph Annotation Inlines
     | BulletList Annotation (List MarkdownS)
     | OrderedList Annotation (List ( String, MarkdownS ))
-    | Table Annotation MultInlines (List String) (List MultInlines)
+    | Table Annotation MultInlines (List String) (List MultInlines) Int
     | Quiz Annotation Quiz (Maybe ( MarkdownS, Int ))
     | Effect Annotation ( Int, Int, MarkdownS )
     | Comment ( Int, Int )
