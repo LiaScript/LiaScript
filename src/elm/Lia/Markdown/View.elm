@@ -369,13 +369,24 @@ view_table config attr header format body id ( column, dir ) =
                 >> List.indexedMap
                     (\i ( f, r ) ->
                         Html.th [ Attr.align f, Attr.style "height" "100%" ]
-                            [ Html.span [] (config.view r)
+                            [ Html.span
+                                (if f /= "right" then
+                                    [ Attr.style "float" f, Attr.style "height" "100%" ]
+
+                                 else
+                                    [ Attr.style "height" "100%" ]
+                                )
+                                (config.view r)
                             , Html.span
                                 [ Attr.class "lia-icon"
                                 , Attr.style "float" "right"
                                 , Attr.style "cursor" "pointer"
                                 , Attr.style "margin-right" "-17px"
-                                , Attr.style "margin-top" "-8px"
+                                , Attr.style "margin-top" "-10px"
+
+                                --  , Attr.style "height" "100%"
+                                --  , Attr.style "position" "relative"
+                                --  , Attr.style "vertical-align" "top"
                                 , onClick <| Sort id i
                                 ]
                                 [ Html.div
@@ -423,11 +434,10 @@ view_table config attr header format body id ( column, dir ) =
                 |> sort
                 |> List.map (view_row2 >> Html.tr [ Attr.class "lia-inline lia-table-row" ])
                 |> List.append
-                    (header
+                    [ header
                         |> view_head2
-                        |> Html.thead [ Attr.class "lia-inline lia-table-head" ]
-                        |> List.singleton
-                    )
+                        |> Html.thead [ Attr.class "lia-inline lia-table-head", Attr.style "height" "100%" ]
+                    ]
 
 
 view_list : Config -> List ( String, List Markdown ) -> List (Html Msg)
