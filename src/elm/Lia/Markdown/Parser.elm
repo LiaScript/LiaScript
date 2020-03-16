@@ -1,6 +1,5 @@
 module Lia.Markdown.Parser exposing (run)
 
-import Array
 import Combine
     exposing
         ( Parser
@@ -19,7 +18,6 @@ import Combine
         , onsuccess
         , regex
         , sepBy1
-        , sepEndBy
         , skip
         , string
         , succeed
@@ -34,7 +32,7 @@ import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Footnote.Parser as Footnote
 import Lia.Markdown.HTML.Parser as HTML
 import Lia.Markdown.Inline.Parser exposing (attribute, combine, comment, line)
-import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, MultInlines)
+import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Parser as Quiz
 import Lia.Markdown.Survey.Parser as Survey

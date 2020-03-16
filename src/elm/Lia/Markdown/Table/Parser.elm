@@ -5,43 +5,26 @@ import Combine
     exposing
         ( Parser
         , andMap
-        , andThen
         , choice
         , ignore
         , keep
-        , lazy
         , many
         , many1
         , manyTill
         , map
-        , maybe
         , modifyState
         , onsuccess
         , or
         , regex
-        , sepBy1
         , sepEndBy
-        , skip
         , string
         , succeed
-        , whitespace
         , withState
         )
-import Dict
-import Lia.Markdown.Chart.Parser as Chart
-import Lia.Markdown.Code.Parser as Code
-import Lia.Markdown.Effect.Model exposing (set_annotation)
-import Lia.Markdown.Effect.Parser as Effect
-import Lia.Markdown.Footnote.Parser as Footnote
-import Lia.Markdown.HTML.Parser as HTML
-import Lia.Markdown.Inline.Parser exposing (attribute, combine, comment, line)
-import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, MultInlines)
-import Lia.Markdown.Macro.Parser exposing (macro)
-import Lia.Markdown.Quiz.Parser as Quiz
-import Lia.Markdown.Survey.Parser as Survey
+import Lia.Markdown.Inline.Parser exposing (line)
+import Lia.Markdown.Inline.Types exposing (Inline(..), MultInlines)
 import Lia.Markdown.Table.Types exposing (Table(..))
-import Lia.Parser.Context exposing (Context, indentation, indentation_append, indentation_pop, indentation_skip)
-import Lia.Parser.Helper exposing (c_frame, debug, newline, newlines, spaces)
+import Lia.Parser.Context exposing (Context, indentation, indentation_skip)
 
 
 parse : Parser Context Table

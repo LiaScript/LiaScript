@@ -8,7 +8,6 @@ port module Lia.Markdown.Update exposing
     , update
     )
 
-import Array exposing (Array)
 import Json.Encode as JE
 import Lia.Markdown.Code.Update as Code
 import Lia.Markdown.Effect.Update as Effect
@@ -105,27 +104,6 @@ update msg section =
 
         FootnoteHide ->
             ( { section | footnote2show = Nothing }, Cmd.none, [] )
-
-
-updateSort : Array ( Int, Bool ) -> Int -> Int -> Array ( Int, Bool )
-updateSort tables table_id column_id =
-    case Array.get table_id tables of
-        Just ( col, True ) ->
-            if col == column_id then
-                Array.set table_id ( column_id, False ) tables
-
-            else
-                Array.set table_id ( column_id, True ) tables
-
-        Just ( col, False ) ->
-            if col == column_id then
-                Array.set table_id ( -1, False ) tables
-
-            else
-                Array.set table_id ( column_id, True ) tables
-
-        _ ->
-            Array.set table_id ( column_id, True ) tables
 
 
 nextEffect : Bool -> Section -> ( Section, Cmd Msg, List ( String, JE.Value ) )

@@ -1,19 +1,10 @@
-port module Lia.Markdown.Table.Update exposing
+module Lia.Markdown.Table.Update exposing
     ( Msg(..)
     , update
     )
 
 import Array exposing (Array)
-import Json.Encode as JE
-import Lia.Markdown.Code.Update as Code
-import Lia.Markdown.Effect.Update as Effect
-import Lia.Markdown.Quiz.Update as Quiz
-import Lia.Markdown.Survey.Update as Survey
 import Lia.Markdown.Table.Types exposing (Vector)
-import Port.Event as Event exposing (Event)
-
-
-port footnote : (String -> msg) -> Sub msg
 
 
 type Msg
