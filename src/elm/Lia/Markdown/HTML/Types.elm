@@ -2,6 +2,7 @@ module Lia.Markdown.HTML.Types exposing
     ( Node(..)
     , decode
     , encode
+    , getContent
     )
 
 import Dict
@@ -11,6 +12,11 @@ import Json.Encode as JE
 
 type Node content
     = Node String (List ( String, String )) (List content)
+
+
+getContent : Node content -> List content
+getContent (Node _ _ content) =
+    content
 
 
 encode : (content -> JE.Value) -> Node content -> JE.Value
