@@ -78,6 +78,7 @@ parse_section search_index global section =
                     , code_vector = state.code_vector
                     , quiz_vector = state.quiz_vector
                     , survey_vector = state.survey_vector
+                    , table_vector = state.table_vector
                     , effect_model = state.effect_model
                     , footnotes = state.footnotes
                     , definition =

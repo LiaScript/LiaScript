@@ -1,5 +1,6 @@
 module Lia.Markdown.Parser exposing (run)
 
+import Array
 import Combine
     exposing
         ( Parser
@@ -252,6 +253,7 @@ simple_table =
         |> keep md_annotations
         |> map (\a b -> Table a [] [] b)
         |> andMap (many1 table_row)
+        |> modify_StateTable
 
 
 formated_table : Parser Context Markdown
@@ -278,6 +280,13 @@ formated_table =
         |> andMap table_row
         |> andMap format
         |> andMap (many table_row)
+        |> modify_StateTable
+
+
+modify_StateTable : Parser Context (Int -> Markdown) -> Parser Context Markdown
+modify_StateTable =
+    andMap (withState (.table_vector >> Array.length >> succeed))
+        >> ignore (modifyState (\s -> { s | table_vector = Array.push ( -1, False ) s.table_vector }))
 
 
 quote : Parser Context Markdown
