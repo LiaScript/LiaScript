@@ -502,11 +502,11 @@ Markdown-format:
 
 Result:
 
-| Tables asdfadsf adsfafdsafd asdfasfsdf         | Are           | Cool  |
-| ----------------- |:-------------:| -----:|
-| *** col 3 is ***  | right-aligned | $1600 |
-| ** col 2 is **    | centered      |   $12 |
-| * zebra stripes * | are neat      |    $1 |
+| Tables            |  Are  | Cool |
+| ----------------- |:-----:| ----:|
+| *** col 3 is ***  | 12 kg | 1600 |
+| ** col 2 is **    | 13 kg |   12 |
+| * zebra stripes * | 22 kg |    1 |
 
 
 

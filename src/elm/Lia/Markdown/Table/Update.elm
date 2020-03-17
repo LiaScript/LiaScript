@@ -4,36 +4,41 @@ module Lia.Markdown.Table.Update exposing
     )
 
 import Array exposing (Array)
-import Lia.Markdown.Table.Types exposing (Vector)
+import Lia.Markdown.Table.Types exposing (Class(..), State, Vector)
 
 
 type Msg
     = Sort Int Int
+    | Toggle Int
 
 
 update : Msg -> Vector -> Vector
 update msg vector =
-    case msg of
-        Sort table_id column_id ->
-            updateSort vector table_id column_id
+    Maybe.withDefault vector <|
+        case msg of
+            Sort id col ->
+                vector
+                    |> Array.get id
+                    |> Maybe.map (\state -> Array.set id (updateSort col state) vector)
+
+            Toggle id ->
+                vector
+                    |> Array.get id
+                    |> Maybe.map (\state -> Array.set id { state | diagram = not state.diagram } vector)
 
 
-updateSort : Array ( Int, Bool ) -> Int -> Int -> Array ( Int, Bool )
-updateSort tables table_id column_id =
-    case Array.get table_id tables of
-        Just ( col, True ) ->
-            if col == column_id then
-                Array.set table_id ( column_id, False ) tables
 
-            else
-                Array.set table_id ( column_id, True ) tables
+--case Array.get id vector of
+--  Just (col, dir, )
 
-        Just ( col, False ) ->
-            if col == column_id then
-                Array.set table_id ( -1, False ) tables
 
-            else
-                Array.set table_id ( column_id, True ) tables
+updateSort : Int -> State -> State
+updateSort column state =
+    if state.column /= column then
+        { state | column = column, dir = True }
 
-        _ ->
-            Array.set table_id ( column_id, True ) tables
+    else if state.dir then
+        { state | dir = False }
+
+    else
+        { state | column = -1 }

@@ -9,56 +9,89 @@ import Html.Events exposing (onClick)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
 import Lia.Markdown.Inline.View exposing (annotation)
-import Lia.Markdown.Table.Types exposing (Table(..), Vector)
+import Lia.Markdown.Table.Types exposing (Class(..), Row, State, Table(..), Vector)
 import Lia.Markdown.Table.Update as Sub
 import Lia.Markdown.Update exposing (Msg(..))
 
 
 view : (Inlines -> List (Html Msg)) -> Annotation -> Table -> Vector -> Html Msg
 view viewer attr table vector =
-    Html.table (annotation "lia-table" attr) <|
-        case table of
-            Unformatted rows id ->
-                Array.get id vector
-                    |> Maybe.withDefault ( -1, False )
-                    |> unformatted viewer rows id
+    case table of
+        Unformatted class rows id ->
+            let
+                state =
+                    getState id vector
+            in
+            state
+                |> unformatted viewer rows id
+                |> toTable id attr class state.diagram
 
-            Formatted head format rows id ->
-                Array.get id vector
-                    |> Maybe.withDefault ( -1, False )
-                    |> formatted viewer head format rows id
+        Formatted class head format rows id ->
+            let
+                state =
+                    getState id vector
+            in
+            state
+                |> formatted viewer head format rows id
+                |> toTable id attr class state.diagram
 
 
-unformatted : (Inlines -> List (Html Msg)) -> List MultInlines -> Int -> ( Int, Bool ) -> List (Html Msg)
-unformatted viewer rows id order =
-    case sort order rows of
-        [] ->
-            []
+getState : Int -> Vector -> State
+getState id =
+    Array.get id >> Maybe.withDefault (State -1 False False)
 
+
+toTable : Int -> Annotation -> Class -> Bool -> List (Html Msg) -> Html Msg
+toTable id attr class diagram body =
+    Html.div [ Attr.style "float" "left" ]
+        [ Html.div
+            [ Attr.class "lia-icon"
+            , Attr.style "float" "left"
+            , Attr.style "cursor" "pointer"
+            , Attr.style "color" "gray"
+            , onClick <| UpdateTable <| Sub.Toggle id
+            ]
+            [ Html.text <|
+                if diagram then
+                    "list"
+
+                else
+                    "bar_chart"
+            ]
+        , Html.div [] [ Html.table (annotation "lia-table" attr) body ]
+        ]
+
+
+unformatted : (Inlines -> List (Html Msg)) -> List Row -> Int -> State -> List (Html Msg)
+unformatted viewer rows id state =
+    case sort state rows of
         head :: tail ->
             tail
                 |> List.map
-                    (List.map (viewer >> Html.td [ Attr.align "left" ])
+                    (List.map (.inlines >> viewer >> Html.td [ Attr.align "left" ])
                         >> Html.tr [ Attr.class "lia-inline lia-table-row" ]
                     )
                 |> (::)
                     (head
-                        |> view_head1 viewer id order
+                        |> view_head1 viewer id state
                         |> Html.tr [ Attr.class "lia-inline lia-table-row" ]
                     )
 
+        [] ->
+            []
 
-formatted : (Inlines -> List (Html Msg)) -> MultInlines -> List String -> List MultInlines -> Int -> ( Int, Bool ) -> List (Html Msg)
-formatted viewer head format rows id order =
+
+formatted : (Inlines -> List (Html Msg)) -> MultInlines -> List String -> List Row -> Int -> State -> List (Html Msg)
+formatted viewer head format rows id state =
     rows
-        |> sort order
+        |> sort state
         |> List.map
-            (List.map2 (\f -> viewer >> Html.td [ Attr.align f ]) format
+            (List.map2 (\f -> .inlines >> viewer >> Html.td [ Attr.align f ]) format
                 >> Html.tr [ Attr.class "lia-inline lia-table-row" ]
             )
         |> (::)
             (head
-                |> view_head2 viewer id format order
+                |> view_head2 viewer id format state
                 |> Html.thead [ Attr.class "lia-inline lia-table-head" ]
             )
 
@@ -74,40 +107,40 @@ get i list =
             |> get (i - 1)
 
 
-sort : ( Int, Bool ) -> List MultInlines -> List MultInlines
-sort ( column, dir ) =
-    if column /= -1 then
-        if dir then
-            List.sortBy (get column >> Maybe.map stringify >> Maybe.withDefault "")
+sort : State -> List Row -> List Row
+sort state =
+    if state.column /= -1 then
+        if state.dir then
+            List.sortBy (get state.column >> Maybe.map .string >> Maybe.withDefault "")
 
         else
-            List.sortBy (get column >> Maybe.map stringify >> Maybe.withDefault "") >> List.reverse
+            List.sortBy (get state.column >> Maybe.map .string >> Maybe.withDefault "") >> List.reverse
 
     else
         identity
 
 
-view_head1 : (Inlines -> List (Html Msg)) -> Int -> ( Int, Bool ) -> List Inlines -> List (Html Msg)
-view_head1 viewer id order =
+view_head1 : (Inlines -> List (Html Msg)) -> Int -> State -> Row -> List (Html Msg)
+view_head1 viewer id state =
     List.indexedMap
         (\i r ->
-            header viewer id "left" order i r
+            header viewer id "left" state i r.inlines
                 |> Html.td [ Attr.align "left" ]
         )
 
 
-view_head2 : (Inlines -> List (Html Msg)) -> Int -> List String -> ( Int, Bool ) -> List Inlines -> List (Html Msg)
-view_head2 viewer id format order =
+view_head2 : (Inlines -> List (Html Msg)) -> Int -> List String -> State -> List Inlines -> List (Html Msg)
+view_head2 viewer id format state =
     List.map2 Tuple.pair format
         >> List.indexedMap
             (\i ( f, r ) ->
-                header viewer id f order i r
+                header viewer id f state i r
                     |> Html.th [ Attr.align f, Attr.style "height" "100%" ]
             )
 
 
-header : (Inlines -> List (Html Msg)) -> Int -> String -> ( Int, Bool ) -> Int -> Inlines -> List (Html Msg)
-header viewer id format ( column, dir ) i r =
+header : (Inlines -> List (Html Msg)) -> Int -> String -> State -> Int -> Inlines -> List (Html Msg)
+header viewer id format state i r =
     [ Html.span
         (if format /= "right" then
             [ Attr.style "float" format, Attr.style "height" "100%" ]
@@ -131,7 +164,7 @@ header viewer id format ( column, dir ) i r =
         [ Html.div
             [ Attr.style "height" "6px"
             , Attr.style "color" <|
-                if column == i && dir then
+                if state.column == i && state.dir then
                     "red"
 
                 else
@@ -141,7 +174,7 @@ header viewer id format ( column, dir ) i r =
         , Html.div
             [ Attr.style "height" "6px"
             , Attr.style "color" <|
-                if column == i && not dir then
+                if state.column == i && not state.dir then
                     "red"
 
                 else
