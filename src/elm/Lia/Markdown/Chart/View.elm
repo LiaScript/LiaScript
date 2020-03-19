@@ -14,7 +14,13 @@ view : Annotation -> Bool -> Chart -> Html msg
 view attr light chart =
     Html.node "e-charts"
         (List.append
-            [ encode chart
+            [ Attr.attribute "mode" <|
+                if light then
+                    ""
+
+                else
+                    "dark"
+            , encode chart
                 |> Attr.attribute "option"
             ]
             (annotation "lia-chart" attr)

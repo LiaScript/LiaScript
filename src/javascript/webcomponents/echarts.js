@@ -2,7 +2,7 @@ import echarts from 'echarts'
 
 customElements.define('e-charts', class extends HTMLElement {
   static get observedAttributes() {
-    return ["style", "option"];
+    return ["style", "option", "mode"];
   }
 
   constructor () {
@@ -24,7 +24,7 @@ customElements.define('e-charts', class extends HTMLElement {
   connectedCallback () {
     if (!this.chart) {
       let container = this.shadowRoot.querySelector("#container")
-      this.chart = echarts.init(container)
+      this.chart = echarts.init(container, this.mode)
       this.updateChart()
     }
   }
@@ -44,6 +44,12 @@ customElements.define('e-charts', class extends HTMLElement {
         container.style = newValue;
       }
       this.resizeChart();
+    } else if (name === "mode") {
+      echarts.dispose(this.chart);
+
+      let container = this.shadowRoot.querySelector("#container")
+      this.chart = echarts.init(container, newValue)
+      this.updateChart();
     }
   }
 
@@ -80,6 +86,24 @@ customElements.define('e-charts', class extends HTMLElement {
       this.setAttribute("option", val);
     } else {
       this.setAttribute("option", "{}");
+    }
+    this.updateChart();
+  }
+
+  get mode() {
+    if (this.hasAttribute("mode")) {
+      return this.getAttribute("mode");
+    } else {
+      return "";
+    }
+  }
+
+  set mode(val) {
+    alert (val)
+    if (val) {
+      this.setAttribute("mode", val);
+    } else {
+      this.setAttribute("mode", "");
     }
     this.updateChart();
   }
