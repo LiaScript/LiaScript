@@ -13,10 +13,11 @@ type alias Chart =
     { title : String
     , y_label : String
     , x_label : String
+    , legend : List String
     , diagrams : Dict Char Diagram
     }
 
 
 type Diagram
-    = Line (List Point)
-    | Dots (List Point)
+    = Line (List Point) (Maybe String)
+    | Dots (List Point) (Maybe String)
