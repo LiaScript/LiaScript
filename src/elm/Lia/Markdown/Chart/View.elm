@@ -14,13 +14,7 @@ view : Annotation -> Bool -> Chart -> Html msg
 view attr light chart =
     Html.node "e-charts"
         (List.append
-            [ encode
-                { title = chart.title
-                , xLabel = chart.x_label
-                , yLabel = chart.y_label
-                , legend = chart.legend
-                }
-                chart
+            [ encode chart
                 |> Attr.attribute "option"
             ]
             (annotation "lia-chart" attr)
@@ -28,24 +22,24 @@ view attr light chart =
         []
 
 
-encode : { title : String, xLabel : String, yLabel : String, legend : List String } -> Chart -> String
-encode data chart =
+encode : Chart -> String
+encode chart =
     JE.encode 0 <|
         JE.object
             [ ( "xAxis"
               , JE.object
                     [ ( "type", JE.string "value" )
-                    , ( "name", JE.string data.xLabel )
+                    , ( "name", JE.string chart.xLabel )
                     ]
               )
             , ( "yAxis"
               , JE.object
                     [ ( "type", JE.string "value" )
-                    , ( "name", JE.string data.yLabel )
+                    , ( "name", JE.string chart.yLabel )
                     ]
               )
-            , ( "title", JE.object [ ( "text", JE.string data.title ) ] )
-            , ( "legend", JE.object [ ( "data", JE.list JE.string data.legend ) ] )
+            , ( "title", JE.object [ ( "text", JE.string chart.title ) ] )
+            , ( "legend", JE.object [ ( "data", JE.list JE.string chart.legend ) ] )
             , ( "toolbox"
               , JE.object
                     [ ( "feature"
@@ -66,10 +60,7 @@ encode data chart =
                       )
                     ]
               )
-            , ( "tooltip"
-              , JE.object
-                    []
-              )
+            , ( "tooltip", JE.object [] )
             , ( "series"
               , chart.diagrams
                     |> Dict.toList

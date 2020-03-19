@@ -11,8 +11,8 @@ type alias Point =
 
 type alias Chart =
     { title : String
-    , y_label : String
-    , x_label : String
+    , yLabel : String
+    , xLabel : String
     , legend : List String
     , diagrams : Dict Char Diagram
     }
