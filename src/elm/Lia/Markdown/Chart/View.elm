@@ -290,10 +290,10 @@ symbolSize c =
     ( "symbolSize"
     , JE.int <|
         if Char.isLower c then
-            10
+            5
 
         else
-            16
+            10
     )
 
 
