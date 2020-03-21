@@ -3,7 +3,7 @@ module Lia.Markdown.Table.Update exposing
     , update
     )
 
-import Array exposing (Array)
+import Array
 import Lia.Markdown.Table.Types exposing (Class(..), State, Vector)
 
 

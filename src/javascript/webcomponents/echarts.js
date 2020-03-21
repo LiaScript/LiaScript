@@ -1,5 +1,7 @@
 import echarts from 'echarts'
 
+var style = "width: 100%; height: 400px;"
+
 customElements.define('e-charts', class extends HTMLElement {
   static get observedAttributes() {
     return ["style", "option", "mode"];
@@ -10,7 +12,7 @@ customElements.define('e-charts', class extends HTMLElement {
     const shadowRoot = this.attachShadow({ mode: 'open' })
 
     let div = document.createElement('div')
-    div.style = "width: 100%; height: 400px;"
+    div.style = style
     div.id = "container"
 
     shadowRoot.appendChild(div)
@@ -41,15 +43,17 @@ customElements.define('e-charts', class extends HTMLElement {
     } else if (name === "style") {
       let container = this.shadowRoot.querySelector("#container");
       if (container) {
-        container.style = newValue;
+        container.style = style + newValue;
       }
       this.resizeChart();
     } else if (name === "mode") {
-      echarts.dispose(this.chart);
+        if (!this.chart)
+          return;
 
-      let container = this.shadowRoot.querySelector("#container")
-      this.chart = echarts.init(container, newValue)
-      this.updateChart();
+        echarts.dispose(this.chart);
+        let container = this.shadowRoot.querySelector("#container")
+        this.chart = echarts.init(container, newValue)
+        this.updateChart();
     }
   }
 

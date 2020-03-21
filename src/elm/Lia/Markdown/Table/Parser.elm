@@ -23,9 +23,10 @@ import Combine
         )
 import Lia.Markdown.Inline.Parser exposing (line)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
-import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, MultInlines)
+import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
 import Lia.Markdown.Table.Types exposing (Cell, Class(..), Row, State, Table(..))
 import Lia.Parser.Context exposing (Context, indentation, indentation_skip)
+import Set
 
 
 parse : Parser Context Table
@@ -38,14 +39,72 @@ parse =
 
 classify : Table -> Table
 classify table =
-    table
+    case table of
+        Unformatted _ rows id ->
+            Unformatted
+                (checkDiagram False rows)
+                rows
+                id
+
+        Formatted _ head formatting rows id ->
+            Formatted
+                (checkDiagram True rows)
+                head
+                formatting
+                rows
+                id
+
+
+checkDiagram formatted rows =
+    if
+        rows
+            |> List.filterMap List.tail
+            |> List.all someNumbers
+    then
+        let
+            head =
+                List.map (List.head >> Maybe.andThen .float) rows
+        in
+        if List.all ((/=) Nothing) head then
+            if
+                head
+                    |> List.filterMap identity
+                    |> Set.fromList
+                    |> Set.size
+                    |> (==) (List.length head)
+            then
+                Lines
+
+            else
+                Scatter
+
+        else if formatted then
+            BarChart
+
+        else
+            None
+
+    else
+        None
+
+
+allNumbers : Row -> Bool
+allNumbers =
+    List.all (.float >> (/=) Nothing)
+
+
+someNumbers : Row -> Bool
+someNumbers =
+    List.any (.float >> (/=) Nothing)
 
 
 cell : Inlines -> Cell
 cell data =
     let
         str =
-            stringify data
+            data
+                |> stringify
+                |> String.trim
     in
     str
         |> String.split " "

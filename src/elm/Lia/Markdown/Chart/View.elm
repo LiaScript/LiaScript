@@ -1,17 +1,32 @@
-module Lia.Markdown.Chart.View exposing (view)
+module Lia.Markdown.Chart.View exposing
+    ( getColor
+    , view
+    , viewBarChart
+    )
 
 import Char exposing (isLower, toLower)
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Encode as JE
-import Lia.Markdown.Chart.Types exposing (Chart, Diagram(..), Point)
+import Lia.Markdown.Chart.Types exposing (Chart, Diagram(..))
 import Lia.Markdown.Inline.Types exposing (Annotation)
 import Lia.Markdown.Inline.View exposing (annotation)
 
 
 view : Annotation -> Bool -> Chart -> Html msg
-view attr light chart =
+view attr light =
+    encodeChart >> eCharts attr light
+
+
+viewBarChart : Annotation -> Bool -> String -> List String -> List ( Maybe String, List (Maybe Float) ) -> Html msg
+viewBarChart attr light title category data =
+    encodeBarChart title category data
+        |> eCharts attr light
+
+
+eCharts : Annotation -> Bool -> JE.Value -> Html msg
+eCharts attr light option =
     Html.node "e-charts"
         (List.append
             [ Attr.attribute "mode" <|
@@ -20,7 +35,8 @@ view attr light chart =
 
                 else
                     "dark"
-            , encode chart
+            , option
+                |> JE.encode 0
                 |> Attr.attribute "option"
             ]
             (annotation "lia-chart" attr)
@@ -28,51 +44,138 @@ view attr light chart =
         []
 
 
-encode : Chart -> String
-encode chart =
-    JE.encode 0 <|
-        JE.object
-            [ ( "xAxis"
-              , JE.object
-                    [ ( "type", JE.string "value" )
-                    , ( "name", JE.string chart.xLabel )
-                    ]
-              )
-            , ( "yAxis"
-              , JE.object
-                    [ ( "type", JE.string "value" )
-                    , ( "name", JE.string chart.yLabel )
-                    ]
-              )
-            , ( "title", JE.object [ ( "text", JE.string chart.title ) ] )
-            , ( "legend", JE.object [ ( "data", JE.list JE.string chart.legend ) ] )
-            , ( "toolbox"
-              , JE.object
-                    [ ( "feature"
-                      , JE.object
-                            [ ( "saveAsImage", JE.object [ ( "title", JE.string "store" ) ] )
-                            , ( "dataView", JE.object [ ( "title", JE.string "data" ) ] )
-                            , ( "dataZoom"
-                              , JE.object
-                                    [ ( "title"
-                                      , JE.object
-                                            [ ( "zoom", JE.string "zoom" )
-                                            , ( "back", JE.string "back" )
-                                            ]
-                                      )
-                                    ]
-                              )
-                            ]
-                      )
-                    ]
-              )
-            , ( "tooltip", JE.object [] )
-            , ( "series"
-              , chart.diagrams
-                    |> Dict.toList
-                    |> JE.list series
-              )
-            ]
+encodeBarChart : String -> List String -> List ( Maybe String, List (Maybe Float) ) -> JE.Value
+encodeBarChart xLabel category data =
+    let
+        bars =
+            data
+                |> List.foldl
+                    (\( label, floats ) bs ->
+                        if List.all ((==) Nothing) floats then
+                            bs
+
+                        else
+                            JE.object
+                                [ ( "type", JE.string "bar" )
+                                , ( "name"
+                                  , label
+                                        |> Maybe.map JE.string
+                                        |> Maybe.withDefault JE.null
+                                  )
+                                , ( "barGap", JE.int 0 )
+                                , ( "data"
+                                  , floats
+                                        |> List.map (Maybe.map JE.float >> Maybe.withDefault JE.null)
+                                        |> JE.list identity
+                                  )
+                                ]
+                                :: bs
+                    )
+                    []
+                |> JE.list identity
+
+        leg =
+            []
+    in
+    JE.object
+        [ ( "xAxis"
+          , JE.object
+                [ ( "type", JE.string "category" )
+                , ( "name", JE.string xLabel )
+                , ( "data"
+                  , category
+                        |> JE.list JE.string
+                  )
+                ]
+          )
+        , ( "yAxis"
+          , JE.object [ ( "type", JE.string "value" ) ]
+          )
+
+        --, ( "title", JE.object [ ( "text", JE.string chart.title ) ] )
+        , ( "legend"
+          , JE.object
+                [ ( "data"
+                  , data
+                        |> List.unzip
+                        |> Tuple.first
+                        |> List.filterMap identity
+                        |> JE.list JE.string
+                  )
+                ]
+          )
+        , toolbox
+        , ( "tooltip", JE.object [] )
+        , ( "series", bars )
+        ]
+
+
+encodeChart : Chart -> JE.Value
+encodeChart chart =
+    JE.object
+        [ ( "xAxis"
+          , JE.object
+                [ ( "type", JE.string "value" )
+                , ( "name", JE.string chart.xLabel )
+                ]
+          )
+        , ( "yAxis"
+          , JE.object
+                [ ( "type", JE.string "value" )
+                , ( "name", JE.string chart.yLabel )
+                ]
+          )
+        , ( "title", JE.object [ ( "text", JE.string chart.title ) ] )
+        , ( "legend", JE.object [ ( "data", JE.list JE.string chart.legend ) ] )
+        , toolbox
+        , ( "tooltip", JE.object [] )
+        , ( "series"
+          , chart.diagrams
+                |> Dict.toList
+                |> JE.list series
+          )
+        ]
+
+
+toolbox : ( String, JE.Value )
+toolbox =
+    ( "toolbox"
+    , JE.object
+        [ ( "feature"
+          , JE.object
+                [ ( "saveAsImage", JE.object [ ( "title", JE.string "store" ) ] )
+                , ( "dataView", JE.object [ ( "title", JE.string "data" ) ] )
+                , ( "dataZoom"
+                  , JE.object
+                        [ ( "title"
+                          , JE.object
+                                [ ( "zoom", JE.string "zoom" )
+                                , ( "back", JE.string "back" )
+                                ]
+                          )
+                        ]
+                  )
+                , ( "magicType"
+                  , JE.object
+                        [ ( "type", JE.list JE.string [ "stack", "tiled", "line", "bar" ] )
+                        , ( "title"
+                          , JE.object
+                                [ ( "title"
+                                  , JE.object
+                                        [ ( "line", JE.string "stack" )
+                                        , ( "bar", JE.string "tiled" )
+                                        , ( "stack", JE.string "line" )
+                                        , ( "tiled", JE.string "bar" )
+                                        ]
+                                  )
+                                ]
+                          )
+                        ]
+                  )
+                ]
+          )
+        ]
+    )
 
 
 series : ( Char, Diagram ) -> JE.Value
@@ -244,3 +347,12 @@ color char =
           )
         ]
     )
+
+
+getColor : Int -> Char
+getColor i =
+    "*abcdefghijklmnopqrstuvwxyz+ABCDEFGHIJKLMNOPQRSTUVWXYZ#1234567890!§$%&/()=?'_.,;:<>|^°~"
+        |> String.slice i -1
+        |> String.uncons
+        |> Maybe.map Tuple.first
+        |> Maybe.withDefault '~'

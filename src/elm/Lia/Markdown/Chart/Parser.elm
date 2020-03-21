@@ -4,7 +4,6 @@ import Combine
     exposing
         ( Parser
         , andMap
-        , braces
         , ignore
         , keep
         , many1
@@ -16,7 +15,6 @@ import Combine
         , string
         , whitespace
         )
-import Combine.Char
 import Combine.Num exposing (float, int)
 import Dict exposing (Dict)
 import Lia.Markdown.Chart.Types exposing (Chart, Diagram(..), Point)
