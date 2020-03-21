@@ -121,7 +121,12 @@ encodeBarChart xLabel category data =
 encode : Bool -> Chart -> JE.Value
 encode withColor chart =
     JE.object
-        [ ( "xAxis"
+        [ ( "textStyle"
+          , JE.object
+                [ ( "fontFamily", JE.string "Roboto" )
+                ]
+          )
+        , ( "xAxis"
           , JE.object
                 [ ( "type", JE.string "value" )
                 , ( "name", JE.string chart.xLabel )
@@ -139,7 +144,7 @@ encode withColor chart =
                 [ ( "data", JE.list JE.string chart.legend )
 
                 --, ( "right", JE.int 0 )
-                , ( "top", JE.int 25 )
+                , ( "top", JE.int 28 )
                 ]
           )
         , toolbox
@@ -170,7 +175,7 @@ toolbox =
     ( "toolbox"
     , JE.object
         [ ( "bottom", JE.int 8 )
-        , ( "left", JE.string "38%" )
+        , ( "left", JE.string "center" )
         , ( "feature"
           , JE.object
                 [ ( "saveAsImage", JE.object [ ( "title", JE.string "store" ) ] )
