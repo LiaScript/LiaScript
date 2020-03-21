@@ -70,7 +70,6 @@
 
     <link rel="stylesheet" href="../scss/main.scss">
     <link rel="stylesheet" href="../../node_modules/material-icons/iconfont/material-icons.scss">
-
   </head>
   <body>
     <noscript>
@@ -100,7 +99,7 @@
     <script src="../javascript/webcomponents/ace.js"></script>
     <script src="../javascript/webcomponents/katex.js"></script>
     <script src="../javascript/webcomponents/oembed.js"></script>
-
+    <script src="../javascript/webcomponents/echarts.js"></script>
     <script>
     if (process.env.NODE_ENV !== 'development') {
       if ('serviceWorker' in navigator) {
@@ -115,5 +114,10 @@
       }
     }
     </script>
+    <script>
+            window.addEventListener('WebComponentsReady', function (e) {
+                window.customElements.define("echarts-webcomponent", EChartsWebComponent);
+            });
+        </script>
   </body>
 </html>

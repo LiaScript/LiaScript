@@ -34,7 +34,6 @@ import Lia.Markdown.Inline.View as Inline
 import Lia.Parser.PatReplace exposing (link)
 import Lia.Settings.Model exposing (Mode(..))
 import Session exposing (Session)
-import Url
 
 
 scaled : Int -> Float -> Int

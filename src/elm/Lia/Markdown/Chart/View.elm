@@ -1,290 +1,412 @@
-module Lia.Markdown.Chart.View exposing (view)
+module Lia.Markdown.Chart.View exposing
+    ( getColor
+    , view
+    , viewBarChart
+    , viewChart
+    )
 
 import Char exposing (isLower, toLower)
-import Color
 import Dict exposing (Dict)
 import Html exposing (Html)
-import Lia.Markdown.Chart.Types exposing (Chart, Diagram(..), Point)
+import Html.Attributes as Attr
+import Json.Encode as JE
+import Lia.Markdown.Chart.Types exposing (Chart, Diagram(..))
 import Lia.Markdown.Inline.Types exposing (Annotation)
 import Lia.Markdown.Inline.View exposing (annotation)
-import LineChart
-import LineChart.Area as Area
-import LineChart.Axis as Axis
-import LineChart.Axis.Intersection as Intersection
-import LineChart.Colors as Colors
-import LineChart.Container as Container
-import LineChart.Coordinate as Coordinate
-import LineChart.Dots as Dots
-import LineChart.Events as Events
-import LineChart.Grid as Grid
-import LineChart.Interpolation as Interpolation
-import LineChart.Junk as Junk
-import LineChart.Legends as Legends
-import LineChart.Line as Line
 
 
-title : String -> Coordinate.System -> Junk.Layers msg
-title str system =
-    { below = []
-    , above =
-        [ Junk.labelAt
-            system
-            (system.x.max / 2)
-            system.y.max
-            0
-            -5
-            "middle"
-            Color.black
-            str
-        ]
-    , html = []
-    }
+view : Annotation -> Bool -> Chart -> Html msg
+view attr light =
+    encode True >> eCharts attr light
 
 
-view : Annotation -> Int -> Chart -> Html msg
-view attr width chart =
-    let
-        list =
-            chart
-                |> .diagrams
-                |> Dict.toList
-                |> List.map plot
-    in
-    Html.div (annotation "lia-svg" attr)
-        [ LineChart.viewCustom
-            { y = Axis.full (max 300 (round (toFloat width / 2.8))) chart.y_label (Tuple.first >> .y)
-            , x = Axis.full (max 450 (width - 50)) chart.x_label (Tuple.first >> .x)
-            , container =
-                Container.styled "lia-diagram"
-                    [ ( "width", "100%" )
-                    , ( "display", "block" )
-                    , ( "font-family", "monospace" )
-                    , ( "font-size", "14pt" )
-                    , ( "height", String.fromInt (width - 50) )
-                    ]
-            , interpolation = Interpolation.monotone
-            , intersection = Intersection.default
-            , legends = Legends.none
-            , events = Events.default
-            , junk = Junk.custom (title chart.title)
-            , grid = Grid.default
-            , area = Area.default
-            , line = Line.default
-            , dots = customDotsConfig
-            }
-            list
-        ]
+viewChart : Annotation -> Bool -> Chart -> Html msg
+viewChart attr light =
+    encode False >> eCharts attr light
 
 
-plot : ( Char, Diagram ) -> LineChart.Series ( Point, Bool )
-plot config =
-    case config of
-        ( c, Line points ) ->
-            points
-                |> dotSize c
-                |> LineChart.line (get_color c) (dotType c) ""
-
-        ( c, Dots points ) ->
-            points
-                |> dotSize c
-                |> LineChart.dash (get_color c) (dotType c) "" [ 0, 50 ]
+viewBarChart : Annotation -> Bool -> String -> List String -> List ( Maybe String, List (Maybe Float) ) -> Html msg
+viewBarChart attr light title category data =
+    encodeBarChart title category data
+        |> eCharts attr light
 
 
-dotSize : Char -> List Point -> List ( Point, Bool )
-dotSize c points =
-    let
-        small =
-            Char.isLower c
-    in
-    List.map (\p -> ( p, small )) points
-
-
-dotType : Char -> Dots.Shape
-dotType c =
-    case c of
-        't' ->
-            Dots.triangle
-
-        'T' ->
-            Dots.triangle
-
-        'A' ->
-            Dots.triangle
-
-        'v' ->
-            Dots.triangle
-
-        'V' ->
-            Dots.triangle
-
-        '#' ->
-            Dots.square
-
-        'H' ->
-            Dots.square
-
-        'B' ->
-            Dots.square
-
-        'N' ->
-            Dots.square
-
-        '+' ->
-            Dots.plus
-
-        'x' ->
-            Dots.cross
-
-        'X' ->
-            Dots.cross
-
-        _ ->
-            Dots.circle
-
-
-customDotsConfig : Dots.Config ( Point, Bool )
-customDotsConfig =
-    let
-        styleLegend _ =
-            Dots.full 7
-
-        styleIndividual ( _, small ) =
-            Dots.full <|
-                if small then
-                    5
+eCharts : Annotation -> Bool -> JE.Value -> Html msg
+eCharts attr light option =
+    Html.node "e-charts"
+        (List.append
+            [ Attr.attribute "mode" <|
+                if light then
+                    ""
 
                 else
-                    12
+                    "dark"
+            , option
+                |> JE.encode 0
+                |> Attr.attribute "option"
+            ]
+            (annotation "lia-chart" attr)
+        )
+        []
+
+
+encodeBarChart : String -> List String -> List ( Maybe String, List (Maybe Float) ) -> JE.Value
+encodeBarChart xLabel category data =
+    let
+        bars =
+            data
+                |> List.foldl
+                    (\( label, floats ) bs ->
+                        if List.all ((==) Nothing) floats then
+                            bs
+
+                        else
+                            JE.object
+                                [ ( "type", JE.string "bar" )
+                                , ( "name"
+                                  , label
+                                        |> Maybe.map JE.string
+                                        |> Maybe.withDefault JE.null
+                                  )
+                                , ( "barGap", JE.int 0 )
+                                , ( "data"
+                                  , floats
+                                        |> List.map (Maybe.map JE.float >> Maybe.withDefault JE.null)
+                                        |> JE.list identity
+                                  )
+                                ]
+                                :: bs
+                    )
+                    []
+                |> JE.list identity
+
+        leg =
+            []
     in
-    Dots.customAny
-        { legend = styleLegend
-        , individual = styleIndividual
-        }
+    JE.object
+        [ ( "xAxis"
+          , JE.object
+                [ ( "type", JE.string "category" )
+                , ( "name", JE.string xLabel )
+                , ( "data"
+                  , category
+                        |> JE.list JE.string
+                  )
+                ]
+          )
+        , ( "yAxis"
+          , JE.object [ ( "type", JE.string "value" ) ]
+          )
+
+        --, ( "title", JE.object [ ( "text", JE.string chart.title ) ] )
+        , ( "legend"
+          , JE.object
+                [ ( "data"
+                  , data
+                        |> List.unzip
+                        |> Tuple.first
+                        |> List.filterMap identity
+                        |> JE.list JE.string
+                  )
+                ]
+          )
+        , toolbox
+
+        --  , brush
+        , ( "tooltip", JE.object [] )
+        , ( "series", bars )
+        ]
 
 
+encode : Bool -> Chart -> JE.Value
+encode withColor chart =
+    JE.object
+        [ ( "textStyle"
+          , JE.object
+                [ ( "fontFamily", JE.string "Roboto" )
+                ]
+          )
+        , ( "xAxis"
+          , JE.object
+                [ ( "type", JE.string "value" )
+                , ( "name", JE.string chart.xLabel )
+                ]
+          )
+        , ( "yAxis"
+          , JE.object
+                [ ( "type", JE.string "value" )
+                , ( "name", JE.string chart.yLabel )
+                ]
+          )
+        , ( "title", JE.object [ ( "text", JE.string chart.title ) ] )
+        , ( "legend"
+          , JE.object
+                [ ( "data", JE.list JE.string chart.legend )
 
-{-
+                --, ( "right", JE.int 0 )
+                , ( "top", JE.int 28 )
+                ]
+          )
+        , toolbox
 
-             let
-                 plot_dot =
-                     Plot.dot (dot c)
-             in
-             case ( c, type_ ) of
-                 ( 'x', Line _ ) ->
-                     Plot.line
-                         (\dict ->
-                             dict
-                                 |> get_points c
-                                 |> List.map (\{ x, y } -> plot_dot x y)
-                         )
-
-                 ( 'X', Line _ ) ->
-                     Plot.line
-                         (\dict ->
-                             dict
-                                 |> get_points c
-                                 |> List.map (\{ x, y } -> plot_dot x y)
-                         )
-
-                 ( _, Line _ ) ->
-                     { axis = Plot.normalAxis
-                     , interpolation = Plot.Monotone Nothing [ Attr.stroke "black" ]
-                     , toDataPoints =
-                         \dict ->
-                             dict
-                                 |> get_points c
-                                 |> List.map (\{ x, y } -> plot_dot x y)
-                     }
-
-                 ( _, Dots _ ) ->
-                     Plot.dots
-                         (\dict ->
-                             dict
-                                 |> get_points c
-                                 |> List.map (\{ x, y } -> plot_dot x y)
-                         )
+        --  , brush
+        , ( "tooltip", JE.object [] )
+        , ( "series"
+          , chart.diagrams
+                |> Dict.toList
+                |> JE.list (series withColor)
+          )
+        ]
 
 
-
-   dot c =
-          let
-              size =
-                  if isLower c then
-                      5
-
-                  else
-                      8
-
-              color =
-                  get_color c
-          in
-          case c of
-              '#' ->
-                  Plot.viewSquare size color
-
-              '+' ->
-                  Plot.viewDiamond size size color
-
-              't' ->
-                  Plot.viewTriangle color
-
-              _ ->
-                  Plot.viewCircle size color
-
-   {-
-
-      get_points : Char -> Dict Char Diagram -> List Point
-      get_points c dict =
-          case Dict.get c dict of
-              Just (Dots d) ->
-                  d
-
-              Just (Line d) ->
-                  d
-
-              _ ->
-                  []
-
-   -}
--}
+brush : ( String, JE.Value )
+brush =
+    ( "brush"
+    , JE.object
+        [ ( "toolbox"
+          , JE.list JE.string [ "rect", "polygon", "lineX", "lineY", "keep", "clear" ]
+          )
+        ]
+    )
 
 
-colors : Dict Char Color.Color
+toolbox : ( String, JE.Value )
+toolbox =
+    ( "toolbox"
+    , JE.object
+        [ ( "bottom", JE.int 8 )
+        , ( "left", JE.string "center" )
+        , ( "feature"
+          , JE.object
+                [ ( "saveAsImage", JE.object [ ( "title", JE.string "store" ) ] )
+                , ( "dataView"
+                  , JE.object
+                        [ ( "title", JE.string "edit" )
+                        , ( "lang", JE.list JE.string [ "data view", "turn off", "refresh" ] )
+                        ]
+                  )
+                , ( "dataZoom"
+                  , JE.object
+                        [ ( "title"
+                          , JE.object
+                                [ ( "zoom", JE.string "zoom" )
+                                , ( "back", JE.string "back" )
+                                ]
+                          )
+                        ]
+                  )
+                , ( "magicType"
+                  , JE.object
+                        [ ( "type"
+                          , JE.list JE.string
+                                [ "tiled"
+                                , "line"
+                                , "bar"
+                                ]
+                          )
+                        , ( "title"
+                          , JE.object
+                                [ ( "stack", JE.string "stack" )
+                                , ( "tiled", JE.string "tiled" )
+                                , ( "line", JE.string "line" )
+                                , ( "bar", JE.string "bar" )
+                                ]
+                          )
+                        ]
+                  )
+                ]
+          )
+        ]
+    )
+
+
+series : Bool -> ( Char, Diagram ) -> JE.Value
+series withColor ( char, diagram ) =
+    JE.object <|
+        List.append
+            ([ symbol char
+             , symbolSize char
+             ]
+                ++ (if withColor then
+                        [ color char ]
+
+                    else
+                        []
+                   )
+            )
+        <|
+            case diagram of
+                Line list label ->
+                    [ ( "data"
+                      , list
+                            |> List.map (\point -> JE.list JE.float [ point.x, point.y ])
+                            |> JE.list identity
+                      )
+                    , ( "type", JE.string "line" )
+                    , ( "barGap", JE.int 0 )
+                    , smooth withColor char
+                    ]
+                        ++ name label
+
+                Dots list label ->
+                    [ ( "data"
+                      , list
+                            |> List.map (\point -> JE.list JE.float [ point.x, point.y ])
+                            |> JE.list identity
+                      )
+                    , ( "barGap", JE.int 0 )
+                    , ( "type", JE.string "scatter" )
+                    ]
+                        ++ name label
+
+
+name : Maybe String -> List ( String, JE.Value )
+name label =
+    case label of
+        Nothing ->
+            []
+
+        Just str ->
+            [ ( "name", JE.string str ) ]
+
+
+smooth : Bool -> Char -> ( String, JE.Value )
+smooth withColor char =
+    ( "smooth"
+    , if withColor then
+        char
+            |> Char.toCode
+            |> modBy 2
+            |> (==) 0
+            |> JE.bool
+
+      else
+        JE.bool False
+    )
+
+
+symbolSize : Char -> ( String, JE.Value )
+symbolSize c =
+    ( "symbolSize"
+    , JE.int <|
+        if Char.isLower c then
+            10
+
+        else
+            16
+    )
+
+
+symbol : Char -> ( String, JE.Value )
+symbol c =
+    ( "symbol"
+    , JE.string <|
+        case c of
+            'd' ->
+                "diamond"
+
+            'D' ->
+                "diamond"
+
+            't' ->
+                "triangle"
+
+            'T' ->
+                "triangle"
+
+            'A' ->
+                "arrow"
+
+            'v' ->
+                "triangle"
+
+            'V' ->
+                "triangle"
+
+            '#' ->
+                "rect"
+
+            'H' ->
+                "rect"
+
+            'B' ->
+                "roundRect"
+
+            'N' ->
+                "roundRect"
+
+            'p' ->
+                "pin"
+
+            'P' ->
+                "pin"
+
+            '+' ->
+                "diamond"
+
+            'x' ->
+                "rect"
+
+            'X' ->
+                "rect"
+
+            _ ->
+                "circle"
+    )
+
+
+colors : Dict Char String
 colors =
-    [ ( '*', Color.black )
-    , ( '+', Color.black )
-    , ( 'x', Color.black )
-    , ( 'a', Color.rgb255 127 255 212 ) -- Aquamarine
-    , ( 'b', Color.blue )
-    , ( 'c', Colors.cyan )
-    , ( 'd', Color.darkRed )
-    , ( 'e', Color.grey )
-    , ( 'f', Color.rgb255 230 230 250 ) -- Forest green
-    , ( 'g', Color.green )
-    , ( 'h', Color.rgb255 240 255 240 ) -- Honey dew
-    , ( 'i', Color.rgb255 75 0 130 ) -- Indigo
-    , ( 'j', Color.black ) -- navaJo white
-    , ( 'k', Color.rgb255 240 230 140 ) -- Kaki
-    , ( 'l', Color.rgb255 230 230 250 ) -- Lavender
-    , ( 'm', Color.rgb255 255 0 255 ) -- Magenta
-    , ( 'n', Color.brown )
-    , ( 'o', Color.orange )
-    , ( 'p', Colors.pink )
-    , ( 'q', Color.rgb255 0 255 255 ) -- aQua
-    , ( 'r', Colors.red )
-    , ( 's', Colors.strongBlue )
-    , ( 't', Colors.teal )
-    , ( 'u', Colors.rust )
-    , ( 'v', Colors.purple )
-    , ( 'w', Color.white )
-    , ( 'y', Color.yellow )
-    , ( 'z', Color.rgb255 240 255 255 ) -- aZure
+    [ ( '*', "#000000" )
+    , ( '+', "#000000" )
+    , ( 'x', "#000000" )
+    , ( 'a', "#FFBF00" ) -- Amber
+    , ( 'b', "#0000FF" ) -- Blue
+    , ( 'c', "#00FFFF" ) -- Cyan
+    , ( 'd', "#8B0000" ) -- Dark red
+    , ( 'e', "#555D50" ) -- Ebony
+    , ( 'f', "#014421" ) -- Forest green
+    , ( 'g', "#008000" ) -- Green
+    , ( 'h', "#DF73FF" ) -- Heliotrope
+    , ( 'i', "#4B0082" ) -- Indigo
+    , ( 'j', "#00A86B" ) -- Jade
+    , ( 'k', "#C3B091" ) -- Kaki
+    , ( 'l', "#00FF00" ) -- Lime
+    , ( 'm', "#3EB489" ) -- Mint
+    , ( 'n', "#88540B" ) -- browN
+    , ( 'o', "#FF7F00" ) -- Orange
+    , ( 'p', "#FFC0CB" ) -- Pink
+    , ( 'q', "#436B95" ) -- Queen blue
+    , ( 'r', "#FF0000" ) -- Red
+    , ( 's', "#C0C0C0" ) -- Silver
+    , ( 't', "#008080" ) -- Teal
+    , ( 'u', "#3F00FF" ) -- Ultramarine
+    , ( 'v', "#EE82EE" )
+    , ( 'w', "#FFFFFF" )
+    , ( 'y', "#FFFF00" )
+    , ( 'z', "#39A78E" ) -- Zomp
     ]
         |> Dict.fromList
 
 
-get_color : Char -> Color.Color
-get_color c =
-    colors
-        |> Dict.get (toLower c)
-        |> Maybe.withDefault Color.black
+color : Char -> ( String, JE.Value )
+color char =
+    ( "itemStyle"
+    , JE.object
+        [ ( "color"
+          , colors
+                |> Dict.get (toLower char)
+                |> Maybe.withDefault "#000000"
+                |> JE.string
+          )
+        ]
+    )
+
+
+getColor : Int -> Char
+getColor i =
+    "*abcdefghijklmnopqrstuvwxyz+ABCDEFGHIJKLMNOPQRSTUVWXYZ#1234567890!§$%&/()=?'_.,;:<>|^°~"
+        |> String.slice i -1
+        |> String.uncons
+        |> Maybe.map Tuple.first
+        |> Maybe.withDefault '~'

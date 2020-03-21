@@ -13,6 +13,7 @@ import Lia.Markdown.Footnote.Model as Footnote
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Markdown.Survey.Types as Survey
+import Lia.Markdown.Table.Types as Table
 import Lia.Markdown.Types exposing (Markdown)
 
 
@@ -29,7 +30,7 @@ type alias Section =
     , code_vector : Code.Vector
     , quiz_vector : Quiz.Vector
     , survey_vector : Survey.Vector
-    , table_vector : Array ( Int, Bool )
+    , table_vector : Table.Vector
     , effect_model : Effect.Model
     , definition : Maybe Definition
     , footnotes : Footnote.Model

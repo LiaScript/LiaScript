@@ -8,10 +8,12 @@ import Combine
         , keep
         , many1
         , map
+        , maybe
         , optional
         , or
         , regex
         , string
+        , whitespace
         )
 import Combine.Num exposing (float, int)
 import Dict exposing (Dict)
@@ -28,8 +30,16 @@ parse =
                 ( y0, y_segment ) =
                     segmentation (List.length rows) y_min y_max
 
-                ( y_label, data ) =
+                ( label, data ) =
                     List.unzip rows
+
+                ( y_label, data_labels ) =
+                    List.unzip label
+
+                labels =
+                    data_labels
+                        |> List.filterMap identity
+                        |> Dict.fromList
             in
             data
                 |> List.reverse
@@ -50,20 +60,25 @@ parse =
                 |> List.foldr magicMerge Dict.empty
                 |> Dict.map (\_ v -> List.sortBy .x v)
                 |> Dict.map
-                    (\_ v ->
+                    (\k v ->
                         if v |> List.map .x |> unique Nothing then
-                            Line v
+                            labels
+                                |> Dict.get (String.fromChar k)
+                                |> Line v
 
                         else
-                            Dots v
+                            labels
+                                |> Dict.get (String.fromChar k)
+                                |> Dots v
                     )
                 |> Chart
                     title
                     (y_label |> String.concat |> String.trim)
                     x_label
+                    (Dict.values labels)
     in
     optional "" (regex "[\t ]*[a-zA-Z0-9 .\\\\()\\-]+\\n")
-        |> map chart
+        |> map (String.trim >> chart)
         |> andMap (regex "[\t ]*" |> keep number |> optional 1.0)
         |> andMap (many1 row)
         |> andMap (regex "[\t ]*" |> keep number |> optional 0.0)
@@ -92,19 +107,21 @@ magicMerge left right =
     Dict.merge Dict.insert (\key l r dict -> Dict.insert key (l ++ r) dict) Dict.insert left right Dict.empty
 
 
-row : Parser Context ( String, Dict Char (List Int) )
+row : Parser Context ( ( String, Maybe ( String, String ) ), Dict Char (List Int) )
 row =
     let
-        indexes y_label str =
-            ( y_label
-                |> String.trim
-                |> (\w ->
-                        if w == "" then
-                            " "
+        indexes y_label str label =
+            ( ( y_label
+                    |> String.trim
+                    |> (\w ->
+                            if w == "" then
+                                " "
 
-                        else
-                            w
-                   )
+                            else
+                                w
+                       )
+              , label
+              )
             , str
                 |> String.toList
                 |> Set.fromList
@@ -117,8 +134,18 @@ row =
     regex "[^\n|]*"
         |> ignore (string "|")
         |> map indexes
+        |> andMap (regex "[ \\*a-zA-Z\\+#]*")
         |> andMap
-            (regex "[ \\*a-zA-Z\\+#]*" |> ignore (regex "[\t ]*\\n"))
+            (maybe
+                (string "("
+                    |> ignore whitespace
+                    |> keep (regex "[A-Za-z\\+\\*#]?")
+                    |> map Tuple.pair
+                    |> andMap (regex "[^)]+")
+                    |> ignore (string ")")
+                )
+            )
+        |> ignore (regex "[\t ]*\\n")
 
 
 segmentation : Int -> Float -> Float -> ( Float, Float )

@@ -1,6 +1,5 @@
 module Lia.Markdown.View exposing (view)
 
-import Array
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
@@ -12,11 +11,11 @@ import Lia.Markdown.Footnote.Model as Footnotes
 import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Markdown.HTML.View as HTML
-import Lia.Markdown.Inline.Stringify exposing (stringify)
-import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines, htmlBlock, isHTML)
+import Lia.Markdown.Inline.Types exposing (Inlines, htmlBlock)
 import Lia.Markdown.Inline.View exposing (annotation, attributes, viewer)
 import Lia.Markdown.Quiz.View as Quizzes
 import Lia.Markdown.Survey.View as Surveys
+import Lia.Markdown.Table.View as Table
 import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Section exposing (Section)
@@ -207,11 +206,8 @@ view_block config block =
                 |> view_list config
                 |> Html.ol (annotation "lia-list lia-ordered" attr)
 
-        Table attr header format body id ->
-            config.section.table_vector
-                |> Array.get id
-                |> Maybe.withDefault ( -1, False )
-                |> view_table config attr header format body id
+        Table attr table ->
+            Table.view config.view attr config.light table config.section.table_vector
 
         Quote attr elements ->
             elements
@@ -273,7 +269,7 @@ view_block config block =
                     Html.text ""
 
         Chart attr chart ->
-            Charts.view attr config.screen.width chart
+            Charts.view attr config.light chart
 
         ASCII attr txt ->
             txt
@@ -295,139 +291,6 @@ view_block config block =
 viewCircle : Int -> Html msg
 viewCircle id =
     Html.span [ Attr.class "lia-effect-circle" ] [ Html.text (String.fromInt id) ]
-
-
-view_table : Config -> Annotation -> MultInlines -> List String -> List MultInlines -> Int -> ( Int, Bool ) -> Html Msg
-view_table config attr header format body id ( column, dir ) =
-    let
-        str i list =
-            if i == 0 then
-                List.head list
-
-            else
-                List.tail list
-                    |> Maybe.withDefault []
-                    |> str (i - 1)
-
-        sort =
-            if column /= -1 then
-                if dir then
-                    List.sortBy (str column >> Maybe.map stringify >> Maybe.withDefault "")
-
-                else
-                    List.sortBy (str column >> Maybe.map stringify >> Maybe.withDefault "") >> List.reverse
-
-            else
-                identity
-
-        view_row1 =
-            List.map (config.view >> Html.td [ Attr.align "left" ])
-
-        view_head1 =
-            List.indexedMap
-                (\i r ->
-                    Html.td [ Attr.align "left" ]
-                        [ Html.span [ Attr.style "float" "left" ] (config.view r)
-                        , Html.div
-                            [ Attr.class "lia-icon"
-                            , Attr.style "float" "right"
-                            , Attr.style "cursor" "pointer"
-                            , Attr.style "margin-right" "-17px"
-                            , onClick <| Sort id i
-                            ]
-                            [ Html.div
-                                [ Attr.style "height" "6px"
-                                , Attr.style "color" <|
-                                    if column == i && dir then
-                                        "red"
-
-                                    else
-                                        "gray"
-                                ]
-                                [ Html.text "arrow_drop_up" ]
-                            , Html.div
-                                [ Attr.style "height" "6px"
-                                , Attr.style "color" <|
-                                    if column == i && not dir then
-                                        "red"
-
-                                    else
-                                        "gray"
-                                ]
-                                [ Html.text "arrow_drop_down" ]
-                            ]
-                        ]
-                )
-
-        view_row2 =
-            List.map2
-                (\f -> config.view >> Html.td [ Attr.align f ])
-                format
-
-        view_head2 =
-            List.map2 Tuple.pair format
-                >> List.indexedMap
-                    (\i ( f, r ) ->
-                        Html.th [ Attr.align f, Attr.style "height" "100%" ]
-                            [ Html.span [] (config.view r)
-                            , Html.span
-                                [ Attr.class "lia-icon"
-                                , Attr.style "float" "right"
-                                , Attr.style "cursor" "pointer"
-                                , Attr.style "margin-right" "-17px"
-                                , Attr.style "margin-top" "-8px"
-                                , onClick <| Sort id i
-                                ]
-                                [ Html.div
-                                    [ Attr.style "height" "6px"
-                                    , Attr.style "color" <|
-                                        if column == i && dir then
-                                            "red"
-
-                                        else
-                                            "gray"
-                                    ]
-                                    [ Html.text "arrow_drop_up" ]
-                                , Html.div
-                                    [ Attr.style "height" "6px"
-                                    , Attr.style "color" <|
-                                        if column == i && not dir then
-                                            "red"
-
-                                        else
-                                            "gray"
-                                    ]
-                                    [ Html.text "arrow_drop_down" ]
-                                ]
-                            ]
-                    )
-    in
-    Html.table (annotation "lia-table" attr) <|
-        if header == [] then
-            case sort body of
-                [] ->
-                    []
-
-                head :: tail ->
-                    tail
-                        |> List.map (view_row1 >> Html.tr [ Attr.class "lia-inline lia-table-row" ])
-                        |> List.append
-                            (head
-                                |> view_head1
-                                |> Html.tr [ Attr.class "lia-inline lia-table-row" ]
-                                |> List.singleton
-                            )
-
-        else
-            body
-                |> sort
-                |> List.map (view_row2 >> Html.tr [ Attr.class "lia-inline lia-table-row" ])
-                |> List.append
-                    (header
-                        |> view_head2
-                        |> Html.thead [ Attr.class "lia-inline lia-table-head" ]
-                        |> List.singleton
-                    )
 
 
 view_list : Config -> List ( String, List Markdown ) -> List (Html Msg)
