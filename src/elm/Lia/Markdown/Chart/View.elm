@@ -2,6 +2,7 @@ module Lia.Markdown.Chart.View exposing
     ( getColor
     , view
     , viewBarChart
+    , viewChart
     )
 
 import Char exposing (isLower, toLower)
@@ -16,7 +17,12 @@ import Lia.Markdown.Inline.View exposing (annotation)
 
 view : Annotation -> Bool -> Chart -> Html msg
 view attr light =
-    encodeChart >> eCharts attr light
+    encode True >> eCharts attr light
+
+
+viewChart : Annotation -> Bool -> Chart -> Html msg
+viewChart attr light =
+    encode False >> eCharts attr light
 
 
 viewBarChart : Annotation -> Bool -> String -> List String -> List ( Maybe String, List (Maybe Float) ) -> Html msg
@@ -112,8 +118,8 @@ encodeBarChart xLabel category data =
         ]
 
 
-encodeChart : Chart -> JE.Value
-encodeChart chart =
+encode : Bool -> Chart -> JE.Value
+encode withColor chart =
     JE.object
         [ ( "xAxis"
           , JE.object
@@ -131,7 +137,8 @@ encodeChart chart =
         , ( "legend"
           , JE.object
                 [ ( "data", JE.list JE.string chart.legend )
-                , ( "right", JE.int 0 )
+
+                --, ( "right", JE.int 0 )
                 , ( "top", JE.int 25 )
                 ]
           )
@@ -142,7 +149,7 @@ encodeChart chart =
         , ( "series"
           , chart.diagrams
                 |> Dict.toList
-                |> JE.list series
+                |> JE.list (series withColor)
           )
         ]
 
@@ -208,14 +215,20 @@ toolbox =
     )
 
 
-series : ( Char, Diagram ) -> JE.Value
-series ( char, diagram ) =
+series : Bool -> ( Char, Diagram ) -> JE.Value
+series withColor ( char, diagram ) =
     JE.object <|
         List.append
-            [ symbol char
-            , symbolSize char
-            , color char
-            ]
+            ([ symbol char
+             , symbolSize char
+             ]
+                ++ (if withColor then
+                        [ color char ]
+
+                    else
+                        []
+                   )
+            )
         <|
             case diagram of
                 Line list label ->
@@ -226,7 +239,7 @@ series ( char, diagram ) =
                       )
                     , ( "type", JE.string "line" )
                     , ( "barGap", JE.int 0 )
-                    , smooth char
+                    , smooth withColor char
                     ]
                         ++ name label
 
@@ -252,14 +265,18 @@ name label =
             [ ( "name", JE.string str ) ]
 
 
-smooth : Char -> ( String, JE.Value )
-smooth char =
+smooth : Bool -> Char -> ( String, JE.Value )
+smooth withColor char =
     ( "smooth"
-    , char
-        |> Char.toCode
-        |> modBy 2
-        |> (==) 0
-        |> JE.bool
+    , if withColor then
+        char
+            |> Char.toCode
+            |> modBy 2
+            |> (==) 0
+            |> JE.bool
+
+      else
+        JE.bool False
     )
 
 

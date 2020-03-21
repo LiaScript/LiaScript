@@ -151,7 +151,7 @@ chart attr mode class head rows =
               , legend = List.filterMap identity legend
               , diagrams = diagrams |> Dict.fromList
               }
-                |> Chart.view attr mode
+                |> Chart.viewChart attr mode
             ]
 
 
