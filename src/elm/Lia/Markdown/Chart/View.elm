@@ -105,6 +105,8 @@ encodeBarChart xLabel category data =
                 ]
           )
         , toolbox
+
+        --  , brush
         , ( "tooltip", JE.object [] )
         , ( "series", bars )
         ]
@@ -126,8 +128,16 @@ encodeChart chart =
                 ]
           )
         , ( "title", JE.object [ ( "text", JE.string chart.title ) ] )
-        , ( "legend", JE.object [ ( "data", JE.list JE.string chart.legend ) ] )
+        , ( "legend"
+          , JE.object
+                [ ( "data", JE.list JE.string chart.legend )
+                , ( "right", JE.int 0 )
+                , ( "top", JE.int 25 )
+                ]
+          )
         , toolbox
+
+        --  , brush
         , ( "tooltip", JE.object [] )
         , ( "series"
           , chart.diagrams
@@ -137,14 +147,32 @@ encodeChart chart =
         ]
 
 
+brush : ( String, JE.Value )
+brush =
+    ( "brush"
+    , JE.object
+        [ ( "toolbox"
+          , JE.list JE.string [ "rect", "polygon", "lineX", "lineY", "keep", "clear" ]
+          )
+        ]
+    )
+
+
 toolbox : ( String, JE.Value )
 toolbox =
     ( "toolbox"
     , JE.object
-        [ ( "feature"
+        [ ( "bottom", JE.int 8 )
+        , ( "left", JE.string "38%" )
+        , ( "feature"
           , JE.object
                 [ ( "saveAsImage", JE.object [ ( "title", JE.string "store" ) ] )
-                , ( "dataView", JE.object [ ( "title", JE.string "data" ) ] )
+                , ( "dataView"
+                  , JE.object
+                        [ ( "title", JE.string "edit" )
+                        , ( "lang", JE.list JE.string [ "data view", "turn off", "refresh" ] )
+                        ]
+                  )
                 , ( "dataZoom"
                   , JE.object
                         [ ( "title"
@@ -157,17 +185,19 @@ toolbox =
                   )
                 , ( "magicType"
                   , JE.object
-                        [ ( "type", JE.list JE.string [ "stack", "tiled", "line", "bar" ] )
+                        [ ( "type"
+                          , JE.list JE.string
+                                [ "tiled"
+                                , "line"
+                                , "bar"
+                                ]
+                          )
                         , ( "title"
                           , JE.object
-                                [ ( "title"
-                                  , JE.object
-                                        [ ( "line", JE.string "stack" )
-                                        , ( "bar", JE.string "tiled" )
-                                        , ( "stack", JE.string "line" )
-                                        , ( "tiled", JE.string "bar" )
-                                        ]
-                                  )
+                                [ ( "stack", JE.string "stack" )
+                                , ( "tiled", JE.string "tiled" )
+                                , ( "line", JE.string "line" )
+                                , ( "bar", JE.string "bar" )
                                 ]
                           )
                         ]
@@ -195,6 +225,7 @@ series ( char, diagram ) =
                             |> JE.list identity
                       )
                     , ( "type", JE.string "line" )
+                    , ( "barGap", JE.int 0 )
                     , smooth char
                     ]
                         ++ name label
@@ -205,6 +236,7 @@ series ( char, diagram ) =
                             |> List.map (\point -> JE.list JE.float [ point.x, point.y ])
                             |> JE.list identity
                       )
+                    , ( "barGap", JE.int 0 )
                     , ( "type", JE.string "scatter" )
                     ]
                         ++ name label

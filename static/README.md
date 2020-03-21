@@ -502,13 +502,20 @@ Markdown-format:
 
 Result:
 
-| Tables            |  Are  | Cool |
-| ----------------- |:-----:| ----:|
-| *** col 3 is ***  | 12 kg | 1600 |
-| ** col 2 is **    | 13 kg |   12 |
-| * zebra stripes * | 22 kg |    1 |
 
+| Gruppe | Gewicht | Alter |
+| ------ |:-------:| -----:|
+| a1     |  -12 kg  |    16 |
+| a2     |  13 kg  |    12 |
+| a3     |  22 kg  |     1 |
+| g3     |   222   | 223.9 |
 
+| Gruppe | Gewicht | Alter |
+| ------ |:-------:| -----:|
+|  1     |  12 kg  |    16 |
+|  2     |  13 kg  |    12 |
+|  3     |  22 kg  |     1 |
+|  4     |   222   | 223.9 |
 
 ### Blockquotes
 
@@ -1351,7 +1358,7 @@ Markdown-format:
 ```markdown
                                       diagram titel
     1.5 |           *
-        |
+        |                              (* just a line plot)
       y |        *      *
       - |      *          *
       a |     *             *       *
@@ -1367,7 +1374,7 @@ Result:
 
                             diagram titel
     1.5 |           *
-        |
+        |                             (* just a line plot)
       y |        *      *
       - |      *          *
       a |     *             *       *
@@ -1430,8 +1437,8 @@ Markdown-format:
     +-------------------------------------------
 ```
 
-    | r          *
-    |    r
+    | r          *                              (* just a line plot)
+    |    r                                      (r stands for red)
     |       r *      *
     |        * r       *
     |       *      r      *       *
@@ -1469,7 +1476,7 @@ Markdown-format:
 ```
 
 
-    10 |        rrrrrrrrrrrr    x
+    10 |        rrrrrrrrrrrr    A   A
        |    rrrrrrrrrrrrrrrr
        |  rrrrrrrrrrrrrrrrr  BBBBB
        | rrrrrrrrrrrrrrrr  BBBBBBBB
@@ -1479,9 +1486,20 @@ Markdown-format:
        | rrrrrrrr  BBBBBBBBBBBBBBBB
        |  rrrrr  BBBBBBBBBBBBBBBBB
        |        BBBBBBBBBBBBBBBB
-       |   x    BBBBBBBBBBBBB
+       |   A    BBBBBBBBBBBBB
        +-----------------------------
          0                           2
+
+
+               Title - dots
+6 | A a B b C c D d E e F f
+  | G g H h I i J j K k L l
+  | M m N n o O P p Q q R r
+  | S s T t U u V v W w X x
+  | Y y z Z           + * #
+1 +------------------------
+  0                      24
+
 
 ## Surveys
 

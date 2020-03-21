@@ -35,6 +35,8 @@ customElements.define('e-charts', class extends HTMLElement {
     if (super.disconnectedCallback) {
       super.disconnectedCallback()
     }
+    echarts.dispose(this.chart);
+    let container = this.shadowRoot.querySelector("#container")
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
