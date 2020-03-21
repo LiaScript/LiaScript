@@ -18,9 +18,9 @@ customElements.define('e-charts', class extends HTMLElement {
     shadowRoot.appendChild(div)
 
     let self = this
-    window.onresize = function() {
+    window.addEventListener("resize", function() {
       self.resizeChart();
-    }
+    });
   }
 
   connectedCallback () {
