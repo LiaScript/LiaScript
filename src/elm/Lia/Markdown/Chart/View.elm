@@ -260,6 +260,7 @@ series withColor ( char, diagram ) =
                       )
                     , ( "type", JE.string "line" )
                     , ( "barGap", JE.int 0 )
+                    , style withColor char
                     , smooth withColor char
                     ]
                         ++ name label_
@@ -284,6 +285,29 @@ name label_ =
 
         Just str ->
             [ ( "name", JE.string str ) ]
+
+
+style : Bool -> Char -> ( String, JE.Value )
+style withColor char =
+    ( "lineStyle"
+    , JE.object
+        [ ( "type"
+          , JE.string <|
+                if withColor then
+                    if modBy 7 (Char.toCode char) == 0 then
+                        "dashed"
+
+                    else if modBy 5 (Char.toCode char) == 0 then
+                        "dotted"
+
+                    else
+                        "solid"
+
+                else
+                    "solid"
+          )
+        ]
+    )
 
 
 smooth : Bool -> Char -> ( String, JE.Value )
