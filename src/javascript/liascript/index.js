@@ -263,6 +263,14 @@ class LiaScript {
           // if (self.channel) {
           //  self.channel.push('lia', {settings: event.message});
           // } else {
+
+          try {
+            let conf = JSON.parse(localStorage.getItem(SETTINGS))
+            if (conf.table_of_contents != event.message.table_of_contents) {
+              setTimeout(function(){ window.dispatchEvent(new Event('resize')) }, 200)
+            }
+          } catch(e) { }
+          //window.dispatchEvent(new Event('resize'));
           localStorage.setItem(SETTINGS, JSON.stringify(event.message))
           // }
           break
