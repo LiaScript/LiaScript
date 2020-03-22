@@ -56,7 +56,7 @@ encodeBarChart xLabel category data =
         bars =
             data
                 |> List.foldl
-                    (\( label, floats ) bs ->
+                    (\( label_, floats ) bs ->
                         if List.all ((==) Nothing) floats then
                             bs
 
@@ -64,11 +64,12 @@ encodeBarChart xLabel category data =
                             JE.object
                                 [ ( "type", JE.string "bar" )
                                 , ( "name"
-                                  , label
+                                  , label_
                                         |> Maybe.map JE.string
                                         |> Maybe.withDefault JE.null
                                   )
                                 , ( "barGap", JE.int 0 )
+                                , label
                                 , ( "data"
                                   , floats
                                         |> List.map (Maybe.map JE.float >> Maybe.withDefault JE.null)
@@ -116,6 +117,20 @@ encodeBarChart xLabel category data =
         , ( "tooltip", JE.object [] )
         , ( "series", bars )
         ]
+
+
+label : ( String, JE.Value )
+label =
+    ( "label"
+    , JE.object
+        [ ( "normal"
+          , JE.object
+                [ ( "show", JE.bool False )
+                , ( "position", JE.string "top" )
+                ]
+          )
+        ]
+    )
 
 
 encode : Bool -> Chart -> JE.Value
@@ -226,6 +241,7 @@ series withColor ( char, diagram ) =
         List.append
             ([ symbol char
              , symbolSize char
+             , label
              ]
                 ++ (if withColor then
                         [ color char ]
@@ -236,7 +252,7 @@ series withColor ( char, diagram ) =
             )
         <|
             case diagram of
-                Line list label ->
+                Line list label_ ->
                     [ ( "data"
                       , list
                             |> List.map (\point -> JE.list JE.float [ point.x, point.y ])
@@ -244,11 +260,12 @@ series withColor ( char, diagram ) =
                       )
                     , ( "type", JE.string "line" )
                     , ( "barGap", JE.int 0 )
+                    , style withColor char
                     , smooth withColor char
                     ]
-                        ++ name label
+                        ++ name label_
 
-                Dots list label ->
+                Dots list label_ ->
                     [ ( "data"
                       , list
                             |> List.map (\point -> JE.list JE.float [ point.x, point.y ])
@@ -257,17 +274,40 @@ series withColor ( char, diagram ) =
                     , ( "barGap", JE.int 0 )
                     , ( "type", JE.string "scatter" )
                     ]
-                        ++ name label
+                        ++ name label_
 
 
 name : Maybe String -> List ( String, JE.Value )
-name label =
-    case label of
+name label_ =
+    case label_ of
         Nothing ->
             []
 
         Just str ->
             [ ( "name", JE.string str ) ]
+
+
+style : Bool -> Char -> ( String, JE.Value )
+style withColor char =
+    ( "lineStyle"
+    , JE.object
+        [ ( "type"
+          , JE.string <|
+                if withColor then
+                    if modBy 7 (Char.toCode char) == 0 then
+                        "dashed"
+
+                    else if modBy 5 (Char.toCode char) == 0 then
+                        "dotted"
+
+                    else
+                        "solid"
+
+                else
+                    "solid"
+          )
+        ]
+    )
 
 
 smooth : Bool -> Char -> ( String, JE.Value )
@@ -290,10 +330,10 @@ symbolSize c =
     ( "symbolSize"
     , JE.int <|
         if Char.isLower c then
-            10
+            5
 
         else
-            16
+            10
     )
 
 
