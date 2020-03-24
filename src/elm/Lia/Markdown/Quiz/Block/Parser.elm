@@ -17,15 +17,13 @@ import Lia.Markdown.Inline.Parser exposing (parse_inlines)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Block.Types exposing (Quiz, State(..))
 import Lia.Parser.Context exposing (Context)
-import Lia.Parser.Helper exposing (newline)
+import Lia.Parser.Helper exposing (newline, stringTill)
 
 
 parse : Parser Context Quiz
 parse =
     regex "[\t ]*\\[\\["
-        |> keep (regex "[^\\]]+")
-        |> ignore (string "]]")
-        |> ignore newline
+        |> keep (stringTill (string "]]"))
         |> map split
         |> andThen withState
 
