@@ -24,6 +24,7 @@ parse : Parser Context Quiz
 parse =
     regex "[\t ]*\\[\\["
         |> keep (stringTill (string "]]"))
+        |> ignore newline
         |> map split
         |> andThen withState
 
@@ -32,12 +33,13 @@ split : String -> Context -> Parser Context Quiz
 split str state =
     case String.split "|" str of
         [ solution ] ->
-            if
-                solution
-                    |> String.replace "_" " "
-                    |> String.trim
-                    |> String.isEmpty
-            then
+            let
+                str_ =
+                    solution
+                        |> String.replace "_" " "
+                        |> String.trim
+            in
+            if str_ == "?" || str_ == "!" || str_ == "" then
                 fail ""
 
             else
