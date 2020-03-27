@@ -38,28 +38,16 @@ ggg: bla bla bla
 # Lia-Script
 
 
-??[some more info](https://www.youtube.com/watch?v=VdWk7rrWSdM)
 
 
-asdfa
-<br/> 13 <br/> asdfs
 
-@ggg
-
-<div style="display:none">
-
-$$
-\begin{bmatrix}
-1 & x & x^2 \\
-1 & y & y^2 \\
-1 & z & z^2 \\
-\end{bmatrix}
-$$
-
-</div>
+sasfdsa
 
 
-<details>
+[[afdafsd | (___asfdas___)]]
+
+
+adfadsf
 
 ## Quizze
 
