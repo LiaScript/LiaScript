@@ -349,9 +349,7 @@ class LiaScript {
 
         }
         case 'reset': {
-          self.connector.del()
-          self.connector.initSettings(null, false)
-
+          self.connector.reset()
           window.location.reload()
           break
         }

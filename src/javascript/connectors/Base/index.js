@@ -45,11 +45,19 @@ class Connector {
 
   storeToIndex(json) { }
 
-  restoreFromIndex(uidDB, versionDB = null) { }
+  restoreFromIndex(uidDB, versionDB = null) {}
 
-  reset(uidDB, versionDB = null) { }
+  reset(uidDB, versionDB = null) {
+    this.initSettings(null, true)
+  }
 
-  getFromIndex(uidDB) { }
+  getFromIndex(uidDB) {
+    this.send({
+      topic: "restore",
+      message: null,
+      section: -1
+    });
+  }
 }
 
 export { Connector }
