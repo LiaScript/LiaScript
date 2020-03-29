@@ -1,5 +1,4 @@
 import { Elm } from '../../elm/Main.elm'
-import { LiaDB } from './database'
 import { LiaStorage } from './storage'
 import { LiaEvents, lia_execute_event, lia_eval_event } from './events'
 import { SETTINGS, initSettings } from './settings'
@@ -111,7 +110,7 @@ var liaStorage = undefined
 var ttsBackup = undefined
 
 class LiaScript {
-  constructor (elem, debug = false, course = null, script = null, url = '', slide = 0, spa = true, channel = null) {
+  constructor (elem, connector, debug = false, course = null, script = null, url = '', slide = 0, spa = true) {
     if (debug) window.debug__ = true
 
     eventHandler = new LiaEvents()
@@ -141,26 +140,11 @@ class LiaScript {
       sendTo(msg)
     }
 
-    this.initChannel(channel, sender)
-    this.initDB(channel, sender)
+    this.connector = connector
+    this.connector.connect(sender)
     this.initEventSystem(elem, this.app.ports.event2js.subscribe, sender)
 
-    liaStorage = new LiaStorage(channel)
-  }
-
-  initDB (channel, sender) {
-    this.db = new LiaDB(sender, channel)
-  }
-
-  initChannel (channel, send) {
-    if (!channel) return
-
-    this.channel = channel
-    channel.on('service', e => { eventHandler.dispatch(e.event_id, e.message) })
-
-    channel.join()
-      .receive('ok', (e) => { lia.log('joined to channel', e) }) // initSettings(send, e); })
-      .receive('error', e => { lia.error('channel join => ', e) })
+    //liaStorage = new LiaStorage(channel)
   }
 
   reset () {
@@ -190,9 +174,7 @@ class LiaScript {
 
       switch (event.topic) {
         case 'slide': {
-          self.db.slide(event.section)
-          // if(self.channel)
-          //    self.channel.push('lia', { slide: event.section + 1 });
+          self.connector.slide(event.section)
 
           let sec = document.getElementsByTagName('section')[0]
           if (sec) {
@@ -210,7 +192,7 @@ class LiaScript {
           break
         }
         case 'load': {
-          self.db.load({
+          self.connector.load({
             topic: event.message,
             section: event.section,
             message: null })
@@ -219,11 +201,11 @@ class LiaScript {
         case 'code' : {
           switch (event.message.topic) {
             case 'eval':
-              lia_eval_event(elmSend, self.channel, eventHandler, event)
+              lia_eval_event(elmSend, eventHandler, event)
               break
             case 'store':
               event.message = event.message.message
-              self.db.store(event)
+              self.connector.store(event)
               break
             case 'input':
               eventHandler.dispatch_input(event)
@@ -232,7 +214,7 @@ class LiaScript {
               eventHandler.dispatch_input(event)
               break
             default: {
-              self.db.update(event.message, event.section)
+              self.connector.update(event.message, event.section)
             }
           }
           break
@@ -240,7 +222,7 @@ class LiaScript {
         case 'quiz' : {
           if (event.message.topic === 'store') {
             event.message = event.message.message
-            self.db.store(event)
+            self.connector.store(event)
           } else if (event.message.topic === 'eval') {
             lia_eval_event(elmSend, self.channel, eventHandler, event)
           }
@@ -250,7 +232,7 @@ class LiaScript {
         case 'survey' : {
           if (event.message.topic === 'store') {
             event.message = event.message.message
-            self.db.store(event)
+            self.connector.store(event)
           } else if (event.message.topic === 'eval') {
             lia_eval_event(elmSend, self.channel, eventHandler, event)
           }
@@ -309,16 +291,7 @@ class LiaScript {
         case 'init': {
           let data = event.message
 
-          self.db.open(
-            data.readme,
-            data.version,
-            { topic: 'code',
-              section: data.section_active,
-              message: {
-                topic: 'restore',
-                section: -1,
-                message: null }
-          })
+          self.connector.open(data.readme, data.version, data.section_active )
 
           if (data.definition.onload !== '') {
             lia_execute_event({ code: data.definition.onload, delay: 350 })
@@ -332,7 +305,7 @@ class LiaScript {
           meta('og:image', data.definition.logo)
 
           // store the basic info in the offline-repositories
-          self.db.storeIndex(data)
+          self.connector.storeToIndex(data)
 
           break
         }
@@ -342,23 +315,23 @@ class LiaScript {
               try {
                 responsiveVoice.cancel()
               } catch (e) {}
-              self.db.listIndex()
+              self.connector.getIndex()
               break
             }
             case 'delete' : {
-              self.db.deleteIndex(event.message.message)
+              self.connector.deleteFromIndex(event.message.message)
               break
             }
             case 'restore' : {
-              self.db.restore(event.message.message, event.message.section)
+              self.connector.restoreFromIndex(event.message.message, event.message.section)
               break
             }
             case 'reset' : {
-              self.db.reset(event.message.message, event.message.section)
+              self.connector.reset(event.message.message, event.message.section)
               break
             }
             case 'get' : {
-              self.db.getIndex(event.message.message)
+              self.connector.getFromIndex(event.message.message)
               break
             }
             case 'share' : {
@@ -378,10 +351,9 @@ class LiaScript {
           break
         }
         case 'reset': {
-          self.db.del()
-          if (!self.channel) {
-            initSettings(elmSend, null, true)
-          }
+          self.connector.del()
+          self.connector.initSettings(elmSend, null, true)
+
           window.location.reload()
           break
         }
