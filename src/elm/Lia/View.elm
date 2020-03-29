@@ -7,6 +7,7 @@ import Html.Events exposing (onClick, preventDefaultOn)
 import Lia.Index.View as Index
 import Lia.Markdown.Effect.Model exposing (current_paragraphs)
 import Lia.Markdown.Effect.View exposing (responsive, state)
+import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model)
@@ -14,21 +15,22 @@ import Lia.Settings.Model exposing (Mode(..))
 import Lia.Settings.Update exposing (toggle_sound)
 import Lia.Settings.View as Settings
 import Lia.Update exposing (Msg(..), get_active_section, key_decoder)
+import Port.Share exposing (share)
 import Session exposing (Screen)
 import Translations as Trans exposing (Lang)
 
 
-view : Screen -> Bool -> Model -> Html Msg
-view screen hasIndex model =
+view : Screen -> Bool -> Bool -> Model -> Html Msg
+view screen hasShareAPI hasIndex model =
     Html.div
         (Settings.design model.settings)
-        [ view_aside model
+        [ view_aside hasShareAPI model
         , view_article screen hasIndex model
         ]
 
 
-view_aside : Model -> Html Msg
-view_aside model =
+view_aside : Bool -> Model -> Html Msg
+view_aside hasShareAPI model =
     Html.aside
         [ Attr.class "lia-toc"
         , Attr.style "max-width" <|
@@ -40,16 +42,21 @@ view_aside model =
         ]
         [ Html.map UpdateIndex <| Index.view_search model.translation model.index_model
         , Index.view model.section_active model.sections
-        , Html.map UpdateSettings <|
-            Settings.view model.settings
-                (model
-                    |> get_active_section
-                    |> Maybe.andThen .definition
-                    |> Maybe.withDefault model.definition
-                )
+        , model
+            |> get_active_section
+            |> Maybe.andThen .definition
+            |> Maybe.withDefault model.definition
+            |> Settings.view model.settings
                 model.url
                 model.origin
                 model.translation
+                (if hasShareAPI then
+                    Just <| share model.title (stringify model.definition.comment) model.url
+
+                 else
+                    Nothing
+                )
+            |> Html.map UpdateSettings
         ]
 
 

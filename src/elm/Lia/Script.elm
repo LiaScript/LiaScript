@@ -208,7 +208,7 @@ init =
     Lia.Model.init
 
 
-view : Screen -> Bool -> Model -> Html Msg
+view : Screen -> Bool -> Bool -> Model -> Html Msg
 view =
     Lia.View.view
 

@@ -21,7 +21,10 @@ view model =
         case model.state of
             Running ->
                 [ model.lia
-                    |> Lia.Script.view model.session.screen model.haseIndex
+                    |> Lia.Script.view
+                        model.session.screen
+                        model.session.share
+                        model.hasIndex
                     |> Html.map LiaScript
                 ]
 

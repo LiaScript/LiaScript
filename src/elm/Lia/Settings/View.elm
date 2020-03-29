@@ -9,11 +9,12 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Settings.Model exposing (Mode(..), Model)
 import Lia.Settings.Update exposing (Button(..), Msg(..), Toggle(..))
+import Port.Event exposing (Event)
 import Translations as Trans exposing (Lang)
 
 
-view : Model -> Definition -> String -> String -> Lang -> Html Msg
-view model defines url origin lang =
+view : Model -> String -> String -> Lang -> Maybe Event -> Definition -> Html Msg
+view model url origin lang share defines =
     Html.div []
         [ Lazy.lazy2 view_settings model lang
         , Lazy.lazy3 view_information lang model.buttons.informations defines
@@ -24,7 +25,13 @@ view model defines url origin lang =
             [ dropdown model.buttons.settings "settings" (Trans.confSettings lang) (Toggle <| Button Settings)
             , dropdown model.buttons.informations "info" (Trans.confInformations lang) (Toggle <| Button Informations)
             , dropdown model.buttons.translations "translate" (Trans.confTranslations lang) (Toggle <| Button Translations)
-            , dropdown model.buttons.share "share" (Trans.confShare lang) (Toggle <| Button Share)
+            , dropdown model.buttons.share
+                "share"
+                (Trans.confShare lang)
+                (share
+                    |> Maybe.map ShareCourse
+                    |> Maybe.withDefault (Toggle <| Button Share)
+                )
             ]
         ]
 

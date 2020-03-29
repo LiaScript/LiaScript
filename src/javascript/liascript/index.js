@@ -331,21 +331,22 @@ class LiaScript {
               self.connector.getFromIndex(event.message.message)
               break
             }
-            case 'share' : {
-              try {
-                if (navigator.share) {
-                  navigator.share(event.message.message)
-                }
-              } catch(e) {}
-
-              break;
-
-            }
-
             default:
               lia.error('Command  not found => ', event.message)
           }
           break
+        }
+        case 'share' : {
+          try {
+            if (navigator.share) {
+              navigator.share(event.message.message)
+            }
+          } catch(e) {
+            lia.error('sharing was not possible => ', event.message, e)
+          }
+
+          break;
+
         }
         case 'reset': {
           self.connector.del()
