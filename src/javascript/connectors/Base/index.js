@@ -2,7 +2,7 @@ import { LiaStorage } from './storage'
 import { SETTINGS, initSettings } from './settings'
 
 class Connector {
-  constructor (send = null) {
+  constructor () {
   }
 
   hasIndex() {
@@ -10,6 +10,7 @@ class Connector {
   }
 
   connect(send = null) {
+    this.send = send
   }
 
   storage() {
@@ -28,58 +29,27 @@ class Connector {
     return JSON.parse(localStorage.getItem(SETTINGS))
   }
 
-  open(uidDB, versionDB, slide) {
-    this.database.open(
-      uidDB,
-      versionDB,
-      { topic: 'code',
-        section: slide,
-        message: {
-          topic: 'restore',
-          section: -1,
-          message: null }
-    })
-  }
+  open(uidDB, versionDB, slide) { }
 
-  load(event) {
-    this.database.load(event)
-  }
+  load(event) { }
 
-  store(event) {
-    this.database.store(event)
-  }
+  store(event) { }
 
-  update(event, id) {
-    this.database.update(event, id)
-  }
+  update(event, id) { }
 
-  slide(id) {
-    this.database.slide(id)
-  }
+  slide(id) { }
 
-  getIndex() {
-    this.database.listIndex()
-  }
+  getIndex() { }
 
-  deleteFromIndex(msg) {
-    this.database.deleteIndex(msg)
-  }
+  deleteFromIndex(msg) { }
 
-  storeToIndex(json) {
-    this.database.storeIndex(json)
-  }
+  storeToIndex(json) { }
 
-  restoreFromIndex(uidDB, versionDB = null) {
-    this.database.restore(uidDB, versionDB)
-  }
+  restoreFromIndex(uidDB, versionDB = null) { }
 
-  reset(uidDB, versionDB = null) {
-    this.database.reset(uidDB, versionDB)
-  }
+  reset(uidDB, versionDB = null) { }
 
-  getFromIndex(uidDB) {
-    this.database.getIndex(uidDB)
-  }
+  getFromIndex(uidDB) { }
 }
 
 export { Connector }
