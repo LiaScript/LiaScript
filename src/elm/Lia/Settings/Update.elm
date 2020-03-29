@@ -25,6 +25,7 @@ type Msg
     | SwitchMode
     | Reset
     | Handle Event
+    | ShareCourse Event
 
 
 type Toggle
@@ -127,6 +128,9 @@ update msg model =
 
         Reset ->
             ( model, [ Event "reset" -1 JE.null ] )
+
+        ShareCourse event ->
+            ( model, [ event ] )
 
 
 handle : Event -> Msg

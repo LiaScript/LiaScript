@@ -7,6 +7,7 @@ import Session exposing (Session)
 
 type alias Model =
     { size : Float
+    , hasIndex : Bool
     , code : Maybe ( String, Int )
     , index : Index.Model
     , preload : Maybe Index.Course

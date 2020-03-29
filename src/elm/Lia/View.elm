@@ -7,6 +7,7 @@ import Html.Events exposing (onClick, preventDefaultOn)
 import Lia.Index.View as Index
 import Lia.Markdown.Effect.Model exposing (current_paragraphs)
 import Lia.Markdown.Effect.View exposing (responsive, state)
+import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model)
@@ -14,21 +15,22 @@ import Lia.Settings.Model exposing (Mode(..))
 import Lia.Settings.Update exposing (toggle_sound)
 import Lia.Settings.View as Settings
 import Lia.Update exposing (Msg(..), get_active_section, key_decoder)
+import Port.Share exposing (share)
 import Session exposing (Screen)
 import Translations as Trans exposing (Lang)
 
 
-view : Screen -> Model -> Html Msg
-view screen model =
+view : Screen -> Bool -> Bool -> Model -> Html Msg
+view screen hasShareAPI hasIndex model =
     Html.div
         (Settings.design model.settings)
-        [ view_aside model
-        , view_article screen model
+        [ view_aside hasShareAPI model
+        , view_article screen hasIndex model
         ]
 
 
-view_aside : Model -> Html Msg
-view_aside model =
+view_aside : Bool -> Model -> Html Msg
+view_aside hasShareAPI model =
     Html.aside
         [ Attr.class "lia-toc"
         , Attr.style "max-width" <|
@@ -40,21 +42,26 @@ view_aside model =
         ]
         [ Html.map UpdateIndex <| Index.view_search model.translation model.index_model
         , Index.view model.section_active model.sections
-        , Html.map UpdateSettings <|
-            Settings.view model.settings
-                (model
-                    |> get_active_section
-                    |> Maybe.andThen .definition
-                    |> Maybe.withDefault model.definition
-                )
+        , model
+            |> get_active_section
+            |> Maybe.andThen .definition
+            |> Maybe.withDefault model.definition
+            |> Settings.view model.settings
                 model.url
                 model.origin
                 model.translation
+                (if hasShareAPI then
+                    Just <| share model.title (stringify model.definition.comment) model.url
+
+                 else
+                    Nothing
+                )
+            |> Html.map UpdateSettings
         ]
 
 
-view_article : Screen -> Model -> Html Msg
-view_article screen model =
+view_article : Screen -> Bool -> Model -> Html Msg
+view_article screen hasIndex model =
     Html.article [ Attr.class "lia-slide", preventDefaultOn "keydown" key_decoder ] <|
         case get_active_section model of
             Just section ->
@@ -63,6 +70,7 @@ view_article screen model =
                     |> state
                     |> view_nav
                         model.section_active
+                        hasIndex
                         model.settings.mode
                         model.translation
                         model.url
@@ -119,11 +127,15 @@ navButton str title margin id msg =
         [ Html.text str ]
 
 
-view_nav : Int -> Mode -> Lang -> String -> Bool -> String -> Html Msg
-view_nav section_active mode lang base speaking state =
+view_nav : Int -> Bool -> Mode -> Lang -> String -> Bool -> String -> Html Msg
+view_nav section_active hasIndex mode lang base speaking state =
     Html.nav [ Attr.class "lia-toolbar", Attr.id "lia-toolbar-nav" ]
         [ Html.map UpdateSettings <| Settings.toggle_button_toc lang
-        , navButton "home" "index" "4px" "lia-btn-home" Home
+        , if hasIndex then
+            navButton "home" "index" "4px" "lia-btn-home" Home
+
+          else
+            Html.text ""
         , Html.span [ Attr.class "lia-spacer", Attr.id "lia-spacer-left" ] []
         , navButton "navigate_before" (Trans.basePrev lang) "" "lia-btn-prev" PrevSection
         , Html.span [ Attr.class "lia-labeled lia-left", Attr.id "lia-label-section" ]

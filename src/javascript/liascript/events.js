@@ -136,7 +136,7 @@ function lia_eval (code, send) {
   }
 };
 
-function lia_eval_event (send, channel, handler, event) {
+function lia_eval_event (send, handler, event) {
   lia_eval(
     event.message.message, {
       lia: (result, details = [], ok = true) => {
@@ -153,7 +153,7 @@ function lia_eval_event (send, channel, handler, event) {
         event.message.message = list_to_string(sep, args)
         send(event)
       },
-      service: websocket(channel),
+      //service: websocket(channel),
       handle: (name, fn) => {
         let e1 = event.section
         let e2 = event.message.section

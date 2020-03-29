@@ -15,6 +15,7 @@ import Json.Encode as JE
 import Lia.Definition.Json.Decode as Definition
 import Lia.Markdown.Inline.Json.Decode as Inline
 import Port.Event as Event exposing (Event)
+import Port.Share exposing (share)
 import Version
 
 
@@ -173,14 +174,7 @@ update msg model =
         Share title text url ->
             ( model
             , Cmd.none
-            , [ [ ( "title", JE.string title )
-                , ( "text", JE.string text )
-                , ( "url", JE.string url )
-                ]
-                    |> JE.object
-                    |> Event "share" -1
-                    |> index
-              ]
+            , [ share title text url ]
             )
 
 

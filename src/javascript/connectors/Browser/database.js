@@ -7,14 +7,11 @@ if (process.env.NODE_ENV === 'development') {
 
 import {
   lia
-} from './logger'
+} from '../../liascript/logger'
 
 class LiaDB {
-  constructor (send = null, channel = null) {
-    this.channel = channel
+  constructor (send = null) {
     this.send = send
-
-        // this.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB || window.shimIndexedDB;
 
     this.dbIndex = new Dexie("Index")
     this.dbIndex.version(1).stores({courses: '&id,updated,author,created,title'})
@@ -34,10 +31,6 @@ class LiaDB {
   }
 
   async open (uidDB, versionDB, init) {
-
-    if (this.channel) return
-
-    return
 
     this.version = versionDB
     this.db = this.open_(uidDB)
@@ -59,11 +52,6 @@ class LiaDB {
   }
 
   async store (event, versionDB = null) {
-    if (this.channel) {
-      storeChannel(event)
-      return
-    }
-
     if (!this.db || this.version == 0) return
 
     lia.warn(`liaDB: event(store), table(${event.topic}), id(${event.section}), data(${event.message})`)
@@ -76,26 +64,7 @@ class LiaDB {
     })
   }
 
-  storeChannel (event) {
-    this.channel.push('lia', {
-      store: event.topic,
-      slide: event.section,
-      data: event.message
-    })
-      .receive('ok', e => {
-        lia.log('ok', e)
-      })
-      .receive('error', e => {
-        lia.log('error', e)
-      })
-  }
-
   async load (event, versionDB = null) {
-    if (this.channel) {
-      this.loadChannel(event)
-      return
-    }
-
     if (!this.db) return
 
     lia.log('loading => ', event.topic, event.section)
@@ -123,28 +92,9 @@ class LiaDB {
     }
   }
 
-  loadChannel(event) {
-    let send = this.send
-
-    this.channel.push('lia', {
-      load: event.topic,
-      slide: event.section
-    })
-      .receive('ok', e => {
-        event.message = {
-          topic: 'restore',
-          section: -1,
-          message: e.date
-        }
-        send(event)
-      })
-      .receive('error', e => {
-        lia.error(e)
-      })
-  }
 
   del () {
-    if (this.channel || !this.db) return
+    if (!this.db) return
 
     let name = db.name
 
@@ -168,14 +118,6 @@ class LiaDB {
 
 
   async update (event, slide) {
-    if (this.channel) {
-      this.channel.push('lia', {
-        update: event,
-        slide: slide
-      })
-      return
-    }
-
     if (!this.db || this.version == 0) return
 
     let db = this.db
@@ -267,8 +209,6 @@ class LiaDB {
   }
 
   async listIndex(order = 'updated', desc = false) {
-    if (this.channel) return
-
     const courses = await this.dbIndex.courses.orderBy(order).toArray()
 
     if(!desc) {
@@ -283,8 +223,6 @@ class LiaDB {
   }
 
   async storeIndex(data) {
-    if (this.channel) return
-
     let date = new Date()
     let item = await this.dbIndex.courses.get(data.readme)
 
@@ -338,8 +276,6 @@ class LiaDB {
   }
 
   async deleteIndex(uidDB) {
-    if (this.channel) return
-
     await Promise.all([
       this.dbIndex.courses.delete(uidDB),
       Dexie.delete(uidDB)

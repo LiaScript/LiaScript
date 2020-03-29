@@ -1,6 +1,8 @@
 import "@babel/polyfill"
 
 import { LiaScript } from './javascript/liascript/index.js'
+import { Connector } from './javascript/connectors/Base/index.js'
+
 
 let ua = window.navigator.userAgent;
 
@@ -15,7 +17,7 @@ if (ua.indexOf('Trident/') > 0 ||
     debug = true
   }
 
-  var app = new LiaScript( document.body, debug )
+  var app = new LiaScript( document.body, new Connector(), debug )
 }
 
 window.showFootnote = (key) => app.footnote(key);
