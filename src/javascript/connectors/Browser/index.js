@@ -1,4 +1,5 @@
 import { LiaDB } from './database'
+import { LiaStorage } from './storage'
 import { SETTINGS, initSettings } from './settings'
 
 class Connector {
@@ -10,6 +11,10 @@ class Connector {
     this.send = send
     this.database = new LiaDB(send)
     this.initSettings(this.getSettings(), true)
+  }
+
+  storage() {
+    return new LiaStorage()
   }
 
   initSettings(data = null, local = false){

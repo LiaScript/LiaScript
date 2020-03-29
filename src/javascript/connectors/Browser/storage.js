@@ -1,29 +1,10 @@
-import {
-  lia
-} from './logger'
-
 class LiaStorage {
-  constructor (channel = null) {
-    if (!channel) return
-
-    this.channel = channel
+  constructor () {
     this._init()
   }
 
   _init () {
-    if (!this.channel) return
-
     let store = this._setLocal
-
-    this.channel.push('lia', {
-      get_local_storage: []
-    })
-      .receive('ok', (e) => {
-        store(e)
-      })
-      .receive('error', (e) => {
-        lia.error('storing => ', e)
-      })
   }
 
   getItems (key = []) {
@@ -40,12 +21,6 @@ class LiaStorage {
   }
 
   setItems (dict) {
-    if (this.channel) {
-      this.channel.push('lia', {
-        set_local_storage: dict
-      })
-    }
-
     this._setLocal(dict)
   }
 

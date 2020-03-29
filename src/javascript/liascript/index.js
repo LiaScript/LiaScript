@@ -1,5 +1,4 @@
 import { Elm } from '../../elm/Main.elm'
-import { LiaStorage } from './storage'
 import { LiaEvents, lia_execute_event, lia_eval_event } from './events'
 import { persistent } from './persistent'
 import { lia } from './logger'
@@ -141,7 +140,7 @@ class LiaScript {
     this.connector.connect(sender)
     this.initEventSystem(elem, this.app.ports.event2js.subscribe, sender)
 
-    //liaStorage = new LiaStorage(channel)
+    liaStorage = this.connector.storage()
   }
 
   reset () {
