@@ -1,15 +1,31 @@
-import { LiaDB } from './database'
-import { Connector as Base } from '../Base/index'
+import { LiaStorage } from './storage'
+import { SETTINGS, initSettings } from './settings'
 
-class Connector extends Base {
+class Connector {
+  constructor (send = null) {
+  }
+
   hasIndex() {
-    return true
+    return false
   }
 
   connect(send = null) {
-    this.send = send
-    this.database = new LiaDB(send)
-    this.initSettings(this.getSettings(), true)
+  }
+
+  storage() {
+    return new LiaStorage()
+  }
+
+  initSettings(data = null, local = false){
+    initSettings(this.send, data, local)
+  }
+
+  setSettings(data) {
+    localStorage.setItem(SETTINGS, JSON.stringify(data))
+  }
+
+  getSettings() {
+    return JSON.parse(localStorage.getItem(SETTINGS))
   }
 
   open(uidDB, versionDB, slide) {
