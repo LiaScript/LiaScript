@@ -4,7 +4,10 @@ import { SETTINGS, initSettings } from './settings'
 
 class Connector {
   constructor (send = null) {
-    this.hasIndex = true
+  }
+
+  hasIndex() {
+    return true
   }
 
   connect(send = null) {

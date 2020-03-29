@@ -47,6 +47,7 @@ type alias Flags =
     , settings : JE.Value
     , screen : Screen
     , share : Bool
+    , hasIndex : Bool
     }
 
 
@@ -58,7 +59,7 @@ init flags url key =
 
         model =
             Session flags.share key flags.screen
-                >> Model 0 Nothing Index.init Nothing
+                >> Model 0 flags.hasIndex Nothing Index.init Nothing
 
         courseUrl =
             { url | query = Maybe.map link url.query }

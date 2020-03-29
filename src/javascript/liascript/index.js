@@ -125,7 +125,8 @@ class LiaScript {
           width: window.innerWidth,
           height: window.innerHeight
         },
-        share: !!navigator.share
+        share: !!navigator.share,
+        hasIndex: connector.hasIndex()
       }
     })
 

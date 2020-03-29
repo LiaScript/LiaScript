@@ -18,12 +18,12 @@ import Session exposing (Screen)
 import Translations as Trans exposing (Lang)
 
 
-view : Screen -> Model -> Html Msg
-view screen model =
+view : Screen -> Bool -> Model -> Html Msg
+view screen hasIndex model =
     Html.div
         (Settings.design model.settings)
         [ view_aside model
-        , view_article screen model
+        , view_article screen hasIndex model
         ]
 
 
@@ -53,8 +53,8 @@ view_aside model =
         ]
 
 
-view_article : Screen -> Model -> Html Msg
-view_article screen model =
+view_article : Screen -> Bool -> Model -> Html Msg
+view_article screen hasIndex model =
     Html.article [ Attr.class "lia-slide", preventDefaultOn "keydown" key_decoder ] <|
         case get_active_section model of
             Just section ->
@@ -63,6 +63,7 @@ view_article screen model =
                     |> state
                     |> view_nav
                         model.section_active
+                        hasIndex
                         model.settings.mode
                         model.translation
                         model.url
@@ -119,11 +120,15 @@ navButton str title margin id msg =
         [ Html.text str ]
 
 
-view_nav : Int -> Mode -> Lang -> String -> Bool -> String -> Html Msg
-view_nav section_active mode lang base speaking state =
+view_nav : Int -> Bool -> Mode -> Lang -> String -> Bool -> String -> Html Msg
+view_nav section_active hasIndex mode lang base speaking state =
     Html.nav [ Attr.class "lia-toolbar", Attr.id "lia-toolbar-nav" ]
         [ Html.map UpdateSettings <| Settings.toggle_button_toc lang
-        , navButton "home" "index" "4px" "lia-btn-home" Home
+        , if hasIndex then
+            navButton "home" "index" "4px" "lia-btn-home" Home
+
+          else
+            Html.text ""
         , Html.span [ Attr.class "lia-spacer", Attr.id "lia-spacer-left" ] []
         , navButton "navigate_before" (Trans.basePrev lang) "" "lia-btn-prev" PrevSection
         , Html.span [ Attr.class "lia-labeled lia-left", Attr.id "lia-label-section" ]
