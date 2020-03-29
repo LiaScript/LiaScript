@@ -1,7 +1,6 @@
 import { Elm } from '../../elm/Main.elm'
 import { LiaStorage } from './storage'
 import { LiaEvents, lia_execute_event, lia_eval_event } from './events'
-import { SETTINGS, initSettings } from './settings'
 import { persistent } from './persistent'
 import { lia } from './logger'
 import { swipedetect } from './swipe'
@@ -115,8 +114,6 @@ class LiaScript {
 
     eventHandler = new LiaEvents()
 
-    let settings = localStorage.getItem(SETTINGS)
-
     this.app = Elm.Main.init({
       node: elem,
       flags: {
@@ -124,7 +121,7 @@ class LiaScript {
         script: script,
         debug: debug,
         spa: spa,
-        settings: settings ? JSON.parse(settings) : settings,
+        settings: connector.getSettings(),
         screen: {
           width: window.innerWidth,
           height: window.innerHeight
@@ -241,20 +238,20 @@ class LiaScript {
         case 'effect' :
           handleEffects(event.message, elmSend)
           break
-        case SETTINGS: {
+        case "settings": {
           // if (self.channel) {
           //  self.channel.push('lia', {settings: event.message});
           // } else {
 
           try {
-            let conf = JSON.parse(localStorage.getItem(SETTINGS))
+            let conf = self.connector.getSettings()
             if (conf.table_of_contents != event.message.table_of_contents) {
               setTimeout(function(){ window.dispatchEvent(new Event('resize')) }, 200)
             }
           } catch(e) { }
-          //window.dispatchEvent(new Event('resize'));
-          localStorage.setItem(SETTINGS, JSON.stringify(event.message))
-          // }
+
+          self.connector.setSettings(event.message)
+
           break
         }
         case 'resource' : {
@@ -352,7 +349,7 @@ class LiaScript {
         }
         case 'reset': {
           self.connector.del()
-          self.connector.initSettings(elmSend, null, true)
+          self.connector.initSettings(null, false)
 
           window.location.reload()
           break

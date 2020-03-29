@@ -1,15 +1,27 @@
 import { LiaDB } from './database'
-//import { SETTINGS, initSettings } from './settings'
+import { SETTINGS, initSettings } from './settings'
 
 class Connector {
   constructor (send = null) {
     this.hasIndex = true
-
-    //this.settings = initSettings()
   }
 
   connect(send = null) {
+    this.send = send
     this.database = new LiaDB(send)
+    this.initSettings(this.getSettings(), true)
+  }
+
+  initSettings(data = null, local = false){
+    initSettings(this.send, data, local)
+  }
+
+  setSettings(data) {
+    localStorage.setItem(SETTINGS, JSON.stringify(data))
+  }
+
+  getSettings() {
+    return JSON.parse(localStorage.getItem(SETTINGS))
   }
 
   open(uidDB, versionDB, slide) {
@@ -54,7 +66,7 @@ class Connector {
   }
 
   restoreFromIndex(uidDB, versionDB = null) {
-    this.database.restore(uidBD, versionDB)
+    this.database.restore(uidDB, versionDB)
   }
 
   reset(uidDB, versionDB = null) {
