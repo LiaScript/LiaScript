@@ -1,7 +1,7 @@
 module Lia.Update exposing
     ( Msg(..)
-    , key_decoder
     , get_active_section
+    , key_decoder
     , send
     , subscriptions
     , update
@@ -54,20 +54,23 @@ send idx events =
         |> List.map (\( name, json ) -> Event name idx json)
 
 
-key_to_message : String -> (Msg, Bool)
+key_to_message : String -> ( Msg, Bool )
 key_to_message s =
-   case s of
-      "ArrowLeft" -> (PrevSection, True)
+    case s of
+        "ArrowLeft" ->
+            ( PrevSection, True )
 
-      "ArrowRight" -> (NextSection, True)
+        "ArrowRight" ->
+            ( NextSection, True )
 
-      _ -> (KeyPressIgnored, False)
+        _ ->
+            ( KeyPressIgnored, False )
 
 
-key_decoder : JD.Decoder (Msg, Bool)
+key_decoder : JD.Decoder ( Msg, Bool )
 key_decoder =
-   JD.field "key" JD.string
-      |> JD.map key_to_message
+    JD.field "key" JD.string
+        |> JD.map key_to_message
 
 
 update : Session -> Msg -> Model -> ( Model, Cmd Msg, List Event )
@@ -134,6 +137,9 @@ update session msg model =
                     , [ Event "reset" -1 JE.null ]
                     )
 
+                "goto" ->
+                    update session (Load (event.section - 1)) model
+
                 "swipe" ->
                     case JD.decodeValue JD.string event.message of
                         Ok "left" ->
@@ -165,7 +171,7 @@ update session msg model =
                             ( model, Cmd.none, [] )
 
         KeyPressIgnored ->
-            (model, Cmd.none, [])
+            ( model, Cmd.none, [] )
 
         _ ->
             case ( msg, get_active_section model ) of
