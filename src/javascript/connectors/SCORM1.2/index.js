@@ -132,6 +132,11 @@ class Connector extends Base {
       }
     }
 
+    this.scorm.LMSSetValue(
+      "cmi.interactions."+ id +".time",
+      (new Date()).toISOString().split("T")[1].split(".")[0] // only hh:mm:ss are allowed in this version of scorm
+    )
+
     this.scorm.LMSCommit("")
   }
 
