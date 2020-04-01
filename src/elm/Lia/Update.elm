@@ -138,7 +138,7 @@ update session msg model =
                     )
 
                 "goto" ->
-                    update session (Load (event.section - 1)) model
+                    update session (Load event.section) model
 
                 "swipe" ->
                     case JD.decodeValue JD.string event.message of
