@@ -10,26 +10,73 @@ class Connector extends Base {
     this.scorm = window.top.API
     //window.top.API = null
 
+    if(!this.scorm) return
+
     console.log("LMSInitialize", this.scorm.LMSInitialize(""))
 
     // store state information only in normal mode
-    this.active = this.scorm.LMSGetValue("cmi.core.lesson_mode") == "normal"
+    let mode = this.scorm.LMSGetValue("cmi.core.lesson_mode")
+    this.active = mode == "normal"
+
+    this.scorm.LMSSetValue(
+      "cmi.core.lesson_status",
+      mode == "browse" ? "browsed" : "incomplete"
+    )
+
+    this.scorm.LMSCommit("")
   }
 
   connect(send = null) {
     this.send = send
   }
 
-  slide(id) {
-    this.scorm.LMSSetValue("cmi.core.lesson_location", id.toString())
-    this.scorm.LMSCommit("")
+  score(visited) {
+    let score = (visited.filter(e => e).length * 100 / visited.length)
+    this.scorm.LMSSetValue("cmi.core.score.raw", score.toString())
+
+    if (score >= 100) {
+      this.scorm.LMSSetValue("cmi.core.lesson_status", "completed")
+    }
   }
 
-  open(uidDB, versionDB, slide){
-    slide = parseInt(this.scorm.LMSGetValue("cmi.core.lesson_location"))
+  slide(id) {
+    if(!this.scorm) return
 
-    if ( slide )
-      this.send({topic: "goto", section: slide, message: null});
+    let location = this.scorm.LMSGetValue("cmi.core.lesson_location")
+
+    try {
+      location = JSON.parse(location)
+      location.slide = id
+      location.visited[id] = true;
+
+      this.scorm.LMSSetValue("cmi.core.lesson_location", JSON.stringify(location))
+      this.score(location.visited)
+      this.scorm.LMSCommit("")
+    } catch (e) {
+      console.warn("slide:", e);
+    }
+  }
+
+  open(uidDB, versionDB, slide, data){
+    if(!this.scorm) return
+
+    let location = null
+
+    try {
+      location = JSON.parse(this.scorm.LMSGetValue("cmi.core.lesson_location"))
+      this.send({topic: "goto", section: location.slide, message: null})
+    } catch (e) {
+      location = {
+        slide: slide,
+        visited: Array(data.sections.length).fill(false)
+      }
+
+      location.visited[slide] = true
+
+      this.scorm.LMSSetValue("cmi.core.lesson_location", JSON.stringify(location))
+      this.score(location.visited)
+      this.scorm.LMSCommit("")
+    }
   }
 
   countObjectives() {
@@ -141,8 +188,7 @@ class Connector extends Base {
   }
 
   store(event) {
-    if(!this.active)
-      return
+    if (!this.scorm || !this.active) return
 
     if (event.topic === "code") {
       for(let i=0; i< event.message.length; i++) {
@@ -190,6 +236,8 @@ class Connector extends Base {
 
 
   load(event) {
+    if(!this.scorm) return
+
     if (event.topic === "code") {
       event.message = {
         topic: 'restore',

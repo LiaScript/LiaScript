@@ -288,7 +288,12 @@ class LiaScript {
         case 'init': {
           let data = event.message
 
-          self.connector.open(data.readme, data.version, data.section_active )
+          self.connector.open(
+            data.readme,
+            data.version,
+            data.section_active,
+            data
+          )
 
           if (data.definition.onload !== '') {
             lia_execute_event({ code: data.definition.onload, delay: 350 })
