@@ -4,12 +4,19 @@
   "description": "An extended Markdown parser for the creation of online courses.",
   "main": "index.js",
   "scripts": {
-    "watch": "npm run init && npx parcel serve src/assets/index.html",
-    "build": "npm run init && npx parcel build --no-source-maps --public-url ./ src/assets/index.html && npm run sw",
     "init": "rm -rf dist && mkdir dist && cp node_modules/katex/dist/katex.min.css dist/",
     "sw": "npx workbox injectManifest workbox-config.js",
     "translate": "elm-i18n-gen locale src/elm/Translations.elm",
-    "test": "npx elm-test"
+    "test": "npx elm-test",
+
+    "watch": "npm run build:app",
+    "build": "npm run build:app",
+    "build:app": "npm run init && npx parcel build --no-source-maps --public-url ./ src/entry/app/index.html && npm run sw",
+    "watch:app": "npm run init && npx parcel serve src/entry/app/index.html",
+    "build:editor": "npm run init && npx parcel build --no-source-maps --public-url ./ src/entry/editor/index.html",
+    "watch:editor": "npm run init && npx parcel serve src/entry/editor/index.html",
+    "build:scorm1.2": "npm run init && npx parcel build --no-source-maps --public-url ./ src/entry/scorm1.2/index.html",
+    "watch:scorm1.2": "npm run init && npx parcel serve src/entry/scorm1.2/index.html"
   },
   "keywords": [
     "elm",

@@ -4,12 +4,12 @@
   "description": "An interpreter for interactive online courses developed in LiaScript.",
   "icons": [
     {
-      "src": "logo_192.png",
+      "src": "../../assets/logo_192.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "logo_512.png",
+      "src": "../../assets/logo_512.png",
       "type": "image/png",
       "sizes": "512x512"
     }
