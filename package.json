@@ -13,8 +13,8 @@
     "build": "npm run build:app",
     "build:app": "npm run init && npx parcel build --no-source-maps --public-url ./ src/entry/app/index.html && npm run sw",
     "watch:app": "npm run init && npx parcel serve src/entry/app/index.html",
-    "build:editor": "npm run init && npx parcel build --no-source-maps --public-url ./ src/entry/editor/index.html",
-    "watch:editor": "npm run init && npx parcel serve src/entry/editor/index.html",
+    "build:base": "npm run init && npx parcel build --no-source-maps --public-url ./ src/entry/base/index.html",
+    "watch:base": "npm run init && npx parcel serve src/entry/base/index.html",
     "build:scorm1.2": "npm run init && npx parcel build --no-source-maps --public-url ./ src/entry/scorm1.2/index.html",
     "watch:scorm1.2": "npm run init && npx parcel serve src/entry/scorm1.2/index.html"
   },
