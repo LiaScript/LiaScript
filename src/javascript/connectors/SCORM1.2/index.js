@@ -84,7 +84,6 @@ class Connector extends Base {
       this.scorm.LMSSetValue("cmi.core.lesson_status", "passed")
     } else if (score >= 100) {
       this.scorm.LMSSetValue("cmi.core.lesson_status", "completed")
-    }
     } else if (finished == solved) {
       this.scorm.LMSSetValue("cmi.core.lesson_status", "failed")
     }
