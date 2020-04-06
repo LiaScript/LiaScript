@@ -8,7 +8,6 @@
     "sw": "npx workbox injectManifest workbox-config.js",
     "translate": "elm-i18n-gen locale src/elm/Translations.elm",
     "test": "npx elm-test",
-
     "watch": "npm run build:app",
     "build": "npm run build:app",
     "build:app": "npm run init && npx parcel build --no-source-maps --public-url ./ src/entry/app/index.html && npm run sw",

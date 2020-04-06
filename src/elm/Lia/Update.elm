@@ -1,5 +1,6 @@
 module Lia.Update exposing
     ( Msg(..)
+    , generate
     , get_active_section
     , key_decoder
     , send

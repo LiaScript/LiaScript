@@ -18,25 +18,78 @@ class Connector extends Base {
     let mode = this.scorm.LMSGetValue("cmi.core.lesson_mode")
     this.active = mode == "normal"
 
-    this.scorm.LMSSetValue(
-      "cmi.core.lesson_status",
-      mode == "browse" ? "browsed" : "incomplete"
-    )
+  //  this.scorm.LMSSetValue(
+  //    "cmi.core.lesson_status",
+  //    mode == "browse" ? "browsed" : "incomplete"
+  //  )
 
     this.scorm.LMSCommit("")
+
+    this.restore()
+  }
+
+  restore() {
+    this.quiz = window.config_.quiz.map((e) => e.map(_ => null))
+    this.survey = window.config_.survey.map((e) => e.map(_ => null))
+
+    let count = this.countObjectives()
+
+    // search all objectives for the given topics and sections
+    for (let i=0; i<count; i++) {
+      let item = this.getObjective(i)
+      if (!!item) {
+        if (item.type == "survey") {
+          this.survey[item.sec][item.i] = true
+        } else if (item.type == "quiz") {
+          if (item.data.solved == 1) {
+            this.quiz[item.sec][item.i] = true
+          } else if (item.data.solved == -1) {
+            this.quiz[item.sec][item.i] = false
+          }
+        }
+      }
+    }
+
+    this.score()
   }
 
   connect(send = null) {
     this.send = send
   }
 
-  score(visited) {
-    let score = (visited.filter(e => e).length * 100 / visited.length)
+  score() {
+    let total =
+      this.quiz.reduce((a,b) => a + b.length, 0) +
+        this.survey.reduce((a,b) => a + b.length, 0)
+
+    let solved =
+      this.quiz.map((e) => e.filter((f) => f == true))
+        .reduce((a,b) => a + b.length, 0) +
+      this.survey.map((e) => e.filter((f) => f == true))
+        .reduce((a,b) => a + b.length, 0)
+
+    let finished =
+      this.quiz.map((e) => e.filter((f) => f != null))
+        .reduce((a,b) => a + b.length, 0) +
+      this.survey.map((e) => e.filter((f) => f != null))
+        .reduce((a,b) => a + b.length, 0)
+
+    let score = solved == 0 ? 0 : (solved * 100 / total)
+
     this.scorm.LMSSetValue("cmi.core.score.raw", score.toString())
 
-    if (score >= 100) {
+    let masteryScore = JSON.parse(this.scorm.LMSGetValue("cmi.student_data.mastery_score"))
+
+    if (score >= masteryScore && score < 100) {
+      this.scorm.LMSSetValue("cmi.core.lesson_status", "passed")
+    } else if (score >= 100) {
       this.scorm.LMSSetValue("cmi.core.lesson_status", "completed")
     }
+    } else if (finished == solved) {
+      this.scorm.LMSSetValue("cmi.core.lesson_status", "failed")
+    }
+
+    this.scorm.LMSCommit("")
   }
 
   slide(id) {
@@ -50,7 +103,7 @@ class Connector extends Base {
       location.visited[id] = true;
 
       this.scorm.LMSSetValue("cmi.core.lesson_location", JSON.stringify(location))
-      this.score(location.visited)
+
       this.scorm.LMSCommit("")
     } catch (e) {
       console.warn("slide:", e);
@@ -74,7 +127,7 @@ class Connector extends Base {
       location.visited[slide] = true
 
       this.scorm.LMSSetValue("cmi.core.lesson_location", JSON.stringify(location))
-      this.score(location.visited)
+
       this.scorm.LMSCommit("")
     }
   }
@@ -129,8 +182,21 @@ class Connector extends Base {
     }
 
     console.log("setObjective", this.scorm.LMSSetValue("cmi.objectives."+ id +".id", blob))
-
     this.scorm.LMSCommit("")
+
+    switch (obj.type) {
+      case "quiz":
+        if (obj.data.solved == 1) {
+          this.quiz[obj.sec][obj.i] = true
+        } else if (obj.data.solved == -1) {
+          this.quiz[obj.sec][obj.i] = false
+        }
+        break
+      case "survey":
+        this.survey[obj.sec][obj.i] = true
+    }
+    this.score()
+
   }
 
   logInteraction(obj) {
@@ -232,6 +298,8 @@ class Connector extends Base {
       this.setObjective(items.length == 0 ? this.countObjectives() : items[i], obj)
       this.logInteraction(obj)
     }
+
+    this.score()
   }
 
 

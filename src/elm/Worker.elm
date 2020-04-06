@@ -1,9 +1,13 @@
 port module Worker exposing (init)
 
+import Array
 import Http
 import Json.Encode as JE
 import Lia.Json.Encode as Lia
+import Lia.Markdown.Quiz.Json as Quiz
+import Lia.Markdown.Survey.Json as Survey
 import Lia.Script
+import Lia.Update exposing (generate)
 import Model exposing (State(..))
 import Platform
 import Process
@@ -67,8 +71,8 @@ message msg =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Handle [ "string2Json", readme ] ->
-            load_readme readme { model | cmd = "string2Json" }
+        Handle [ cmd, readme ] ->
+            load_readme readme { model | cmd = cmd }
 
         Handle cmd ->
             ( model
@@ -124,9 +128,33 @@ respond : Model -> ( Model, Cmd Msg )
 respond model =
     ( { model | state = Idle }
     , case model.cmd of
-        "string2Json" ->
+        "json" ->
             model.lia
                 |> Lia.encode
+                |> JE.encode 2
+                |> Tuple.pair True
+                |> output
+
+        "fullJson" ->
+            let
+                lia =
+                    parseSection 0 model.lia
+            in
+            [ ( "lia"
+              , Lia.encode lia
+              )
+            , ( "quiz"
+              , lia.sections
+                    |> Array.map .quiz_vector
+                    |> JE.array Quiz.fromVector
+              )
+            , ( "survey"
+              , lia.sections
+                    |> Array.map .survey_vector
+                    |> JE.array Survey.fromVector
+              )
+            ]
+                |> JE.object
                 |> JE.encode 2
                 |> Tuple.pair True
                 |> output
@@ -134,6 +162,22 @@ respond model =
         _ ->
             error "unknown cmd" model.cmd
     )
+
+
+parseSections : Lia.Script.Model -> Lia.Script.Model
+parseSections =
+    parseSection 0
+
+
+parseSection : Int -> Lia.Script.Model -> Lia.Script.Model
+parseSection active lia =
+    if Array.length lia.sections == active then
+        lia
+
+    else
+        { lia | section_active = active }
+            |> generate
+            |> parseSection (active + 1)
 
 
 parsing : Model -> ( Model, Cmd Msg )
