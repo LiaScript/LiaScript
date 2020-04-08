@@ -4,17 +4,24 @@
   "description": "An extended Markdown parser for the creation of online courses.",
   "main": "index.js",
   "scripts": {
-    "watch": "npm run init && npx parcel serve src/assets/index.html",
-    "build": "npm run init && parcel build --no-source-maps --public-url ./ src/assets/index.html && npm run sw",
     "init": "rm -rf dist && mkdir dist && cp node_modules/katex/dist/katex.min.css dist/",
     "sw": "npx workbox injectManifest workbox-config.js",
     "translate": "elm-i18n-gen locale src/elm/Translations.elm",
-    "test": "npx elm-test"
+    "test": "npx elm-test",
+
+    "watch": "npm run watch:app",
+    "build": "npm run build:app",
+    "build:app": "npm run init && npx parcel build --no-source-maps --public-url ./ src/entry/app/index.html && npm run sw",
+    "watch:app": "npm run init && npx parcel serve src/entry/app/index.html",
+    "build:base": "npm run init && npx parcel build --no-source-maps --public-url ./ src/entry/base/index.html",
+    "watch:base": "npm run init && npx parcel serve src/entry/base/index.html",
+    "build:scorm1.2": "npm run init && npx parcel build --no-source-maps --public-url ./ src/entry/scorm1.2/index.html",
+    "watch:scorm1.2": "npm run init && npx parcel serve src/entry/scorm1.2/index.html"
   },
   "keywords": [
     "elm",
-    "brunch",
-    "sass"
+    "LiaScript",
+    "OER"
   ],
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
@@ -42,7 +49,8 @@
     "echarts": "^4.7.0",
     "katex": "^0.11.1",
     "material-icons": "^0.3.1",
-    "sass-material-colors": "0.0.5"
+    "sass-material-colors": "0.0.5",
+    "simplify-scorm": "0.0.1"
   },
   "browserslist": [
     "cover 99.5%"

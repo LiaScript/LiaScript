@@ -14,6 +14,7 @@ import Combine
         , regex
         , string
         , succeed
+        , whitespace
         , withColumn
         , withLine
         )
@@ -26,7 +27,9 @@ import Lia.Section as Section
 
 title_tag : Parser Context Int
 title_tag =
-    regex "#+" |> map String.length
+    regex "#+"
+        |> map String.length
+        |> ignore whitespace
 
 
 check : Int -> Parser s ()

@@ -29,7 +29,7 @@ class Connector {
     return JSON.parse(localStorage.getItem(SETTINGS))
   }
 
-  open(uidDB, versionDB, slide) { }
+  open(uidDB, versionDB, slide, data = null) { }
 
   load(event) { }
 

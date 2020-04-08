@@ -12,7 +12,7 @@ class Connector extends Base {
     this.initSettings(this.getSettings(), true)
   }
 
-  open(uidDB, versionDB, slide) {
+  open(uidDB, versionDB, slide, data = null) {
     this.database.open(
       uidDB,
       versionDB,

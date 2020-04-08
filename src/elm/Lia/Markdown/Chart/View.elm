@@ -80,9 +80,6 @@ encodeBarChart xLabel category data =
                     )
                     []
                 |> JE.list identity
-
-        leg =
-            []
     in
     JE.object
         [ ( "xAxis"

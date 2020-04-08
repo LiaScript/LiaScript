@@ -224,7 +224,7 @@ class LiaScript {
             event.message = event.message.message
             self.connector.store(event)
           } else if (event.message.topic === 'eval') {
-            lia_eval_event(elmSend, self.channel, eventHandler, event)
+            lia_eval_event(elmSend, eventHandler, event)
           }
 
           break
@@ -234,7 +234,7 @@ class LiaScript {
             event.message = event.message.message
             self.connector.store(event)
           } else if (event.message.topic === 'eval') {
-            lia_eval_event(elmSend, self.channel, eventHandler, event)
+            lia_eval_event(elmSend, eventHandler, event)
           }
           break
         }
@@ -291,7 +291,12 @@ class LiaScript {
         case 'init': {
           let data = event.message
 
-          self.connector.open(data.readme, data.version, data.section_active )
+          self.connector.open(
+            data.readme,
+            data.version,
+            data.section_active,
+            data
+          )
 
           if (data.definition.onload !== '') {
             lia_execute_event({ code: data.definition.onload, delay: 350 })
