@@ -5,8 +5,10 @@ module Lia.Markdown.Table.Types exposing
     , State
     , Table(..)
     , Vector
+    , allNumbers
     , get
     , getColumn
+    , someNumbers
     )
 
 import Array exposing (Array)
@@ -87,3 +89,13 @@ get id list =
 
             else
                 get (id - 1) xs
+
+
+allNumbers : Row -> Bool
+allNumbers =
+    List.all (.float >> (/=) Nothing)
+
+
+someNumbers : Row -> Bool
+someNumbers =
+    List.any (.float >> (/=) Nothing)

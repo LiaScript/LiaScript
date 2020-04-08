@@ -93,7 +93,16 @@ pattern p =
 
 id_str : Parser s String
 id_str =
-    regex "\\w(\\w+| )*"
+    "\\w(\\w+| )*"
+        |> regex
+        |> andThen
+            (\s ->
+                if s == "X" then
+                    fail ""
+
+                else
+                    succeed s
+            )
 
 
 vector : (Parser Context String -> Parser Context a) -> Parser Context (List ( a, Inlines ))

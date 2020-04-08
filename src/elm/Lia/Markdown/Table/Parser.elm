@@ -24,7 +24,7 @@ import Combine
 import Lia.Markdown.Inline.Parser exposing (line)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
-import Lia.Markdown.Table.Types exposing (Cell, Class(..), Row, State, Table(..))
+import Lia.Markdown.Table.Types exposing (Cell, Class(..), Row, State, Table(..), someNumbers)
 import Lia.Parser.Context exposing (Context, indentation, indentation_skip)
 import Set
 
@@ -86,16 +86,6 @@ checkDiagram formatted rows =
 
     else
         None
-
-
-allNumbers : Row -> Bool
-allNumbers =
-    List.all (.float >> (/=) Nothing)
-
-
-someNumbers : Row -> Bool
-someNumbers =
-    List.any (.float >> (/=) Nothing)
 
 
 cell : Inlines -> Cell
