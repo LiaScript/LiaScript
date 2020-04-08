@@ -105,6 +105,7 @@ cell data =
             data
                 |> stringify
                 |> String.trim
+                |> String.toLower
     in
     str
         |> String.split " "
