@@ -10,7 +10,16 @@ import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inlines, MultInlines)
 import Lia.Markdown.Inline.View exposing (annotation)
-import Lia.Markdown.Table.Types exposing (Class(..), Row, State, Table(..), Vector, getColumn)
+import Lia.Markdown.Table.Types
+    exposing
+        ( Class(..)
+        , Row
+        , State
+        , Table(..)
+        , Vector
+        , allNumbers
+        , getColumn
+        )
 import Lia.Markdown.Table.Update as Sub
 import Lia.Markdown.Update exposing (Msg(..))
 
@@ -240,16 +249,29 @@ get i list =
 
 
 sort : State -> List Row -> List Row
-sort state =
+sort state matrix =
     if state.column /= -1 then
+        let
+            sorted =
+                if
+                    matrix
+                        |> get state.column
+                        |> Maybe.map allNumbers
+                        |> Maybe.withDefault False
+                then
+                    List.sortBy (get state.column >> Maybe.andThen .float >> Maybe.withDefault 0) matrix
+
+                else
+                    List.sortBy (get state.column >> Maybe.map .string >> Maybe.withDefault "") matrix
+        in
         if state.dir then
-            List.sortBy (get state.column >> Maybe.map .string >> Maybe.withDefault "")
+            sorted
 
         else
-            List.sortBy (get state.column >> Maybe.map .string >> Maybe.withDefault "") >> List.reverse
+            List.reverse sorted
 
     else
-        identity
+        matrix
 
 
 view_head1 : (Inlines -> List (Html Msg)) -> Int -> State -> Row -> List (Html Msg)
