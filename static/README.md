@@ -38,7 +38,11 @@ ggg: bla bla bla
 # Lia-Script
 
 
-
+| Header 1 | Header 2 | Header 3 |
+|:-------- |:-------- |:-------- |
+| 1        | 2        | 3        |
+| 4        | 0.2      | 8        |
+| 6         | -1.3333         | h         |
 
 
 sasfdsa
@@ -1046,6 +1050,9 @@ Markdown-format: `[[solution]]`
 Please enter the word * "solution" * into the text-field!
 
     [[solution]]
+    <script>
+    alert("@input")
+    </script>
 
 ### Single-Choice
 
@@ -1536,18 +1543,18 @@ a number in double square brackets. But, and this is also possible for all other
 kinds of surveys you can define some kind of variable name with a starting colon.
 
 ```markdown
-    [[:red]]         is it red
-    [[:green]]       green
-    [[:blue]]        or blue
-    [[:dark purple]] no one likes purple ( last chance ;-) )
+    [[red]]         is it red
+    [[green]]       green
+    [[blue]]        or blue
+    [[dark purple]] no one likes purple ( last chance ;-) )
 ```
 
 Select some of your favored colors!
 
-    [[:red]]         is it red
-    [[:green]]       green
-    [[:blue]]        or blue
-    [[:dark purple]] no one likes purple ( last chance ;-) )
+    [[red]]         is it red
+    [[green]]       green
+    [[blue]]        or blue
+    [[dark purple]] no one likes purple ( last chance ;-) )
 
 ### Single Choice Matrix
 
@@ -1558,16 +1565,16 @@ also used by the trailing rows.
 Markdown-format:
 
 ```markdown
-    [(:totally)(:agree)(:unsure)(:maybe not)(:disagree)]
-    [                                                  ] liaScript is great?
-    [                                                  ] I would use it to make online **courses**?
-    [                                                  ] I would use it for online **surveys**?
+    [(totally)(agree)(unsure)(maybe not)(disagree)]
+    [                                             ] liaScript is great?
+    [                                             ] I would use it to make online **courses**?
+    [                                             ] I would use it for online **surveys**?
 ```
 
-    [(:totally)(:agree)(:unsure)(:maybe not)(:disagree)]
-    [                                                  ] liaScript is great?
-    [                                                  ] I would use it to make online **courses**?
-    [                                                  ] I would use it for online **surveys**?
+    [(totally)(agree)(unsure)(maybe not)(disagree)]
+    [                                             ] liaScript is great?
+    [                                             ] I would use it to make online **courses**?
+    [                                             ] I would use it for online **surveys**?
 
 ### Multi Choice Matrix
 
@@ -1729,12 +1736,12 @@ https://ivanceras.github.io/svgbob-editor/
 
 ``````````````````````````````
        HO
-        \       
-         \      
+        \
+         \
           \____________
-          /------------ O     
+          /------------ O
          /
-   _____/        
+   _____/
  H2N
 ``````````````````````````````
 
