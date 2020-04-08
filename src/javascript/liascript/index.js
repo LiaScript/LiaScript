@@ -221,7 +221,7 @@ class LiaScript {
             event.message = event.message.message
             self.connector.store(event)
           } else if (event.message.topic === 'eval') {
-            lia_eval_event(elmSend, self.channel, eventHandler, event)
+            lia_eval_event(elmSend, eventHandler, event)
           }
 
           break
@@ -231,7 +231,7 @@ class LiaScript {
             event.message = event.message.message
             self.connector.store(event)
           } else if (event.message.topic === 'eval') {
-            lia_eval_event(elmSend, self.channel, eventHandler, event)
+            lia_eval_event(elmSend, eventHandler, event)
           }
           break
         }
