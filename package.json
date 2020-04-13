@@ -6,7 +6,7 @@
   "scripts": {
     "init": "rm -rf dist && mkdir dist && cp node_modules/katex/dist/katex.min.css dist/",
     "sw": "npx workbox injectManifest workbox-config.js",
-    "translate": "elm-i18n-gen locale src/elm/Translations.elm",
+    "translate": "elm-i18n-gen lia-localization/locale src/elm/Translations.elm",
     "test": "npx elm-test",
     "watch": "npm run watch:app",
     "build": "npm run build:app",
