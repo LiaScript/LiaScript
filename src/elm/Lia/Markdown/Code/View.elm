@@ -10,8 +10,7 @@ import Lia.Markdown.Code.Log as Log exposing (Log)
 import Lia.Markdown.Code.Terminal as Terminal
 import Lia.Markdown.Code.Types exposing (Code(..), File, Snippet, Vector)
 import Lia.Markdown.Code.Update exposing (Msg(..))
-import Lia.Markdown.Inline.Types exposing (Annotation)
-import Lia.Markdown.Inline.View exposing (annotation, attributes)
+import Lia.Markdown.Inline.Annotation exposing (Annotation, annotation, attributes)
 import Translations exposing (Lang, codeExecute, codeFirst, codeLast, codeMaximize, codeMinimize, codeNext, codePrev, codeRunning)
 
 

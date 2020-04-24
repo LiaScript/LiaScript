@@ -1,4 +1,9 @@
-module Lia.Markdown.Inline.View exposing (annotation, attributes, reference, view, view_inf, viewer)
+module Lia.Markdown.Inline.View exposing
+    ( reference
+    , view
+    , view_inf
+    , viewer
+    )
 
 import Dict
 import Html exposing (Attribute, Html)
@@ -6,42 +11,10 @@ import Html.Attributes as Attr
 import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.HTML.View as HTML
-import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..))
+import Lia.Markdown.Inline.Annotation exposing (Annotation, annotation, attributes)
+import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 import Lia.Settings.Model exposing (Mode(..))
 import Oembed
-
-
-annotation : String -> Annotation -> List (Attribute msg)
-annotation cls attr =
-    case attr of
-        Just dict ->
-            --Dict.update "class" (\v -> Maybe.map ()(++)(cls ++ " ")) v) dict
-            dict
-                |> Dict.insert "class"
-                    (case Dict.get "class" dict of
-                        Just c ->
-                            "lia-inline " ++ cls ++ " " ++ c
-
-                        Nothing ->
-                            "lia-inline " ++ cls
-                    )
-                |> Dict.toList
-                |> List.map (\( key, value ) -> Attr.attribute key value)
-
-        Nothing ->
-            [ Attr.class ("lia-inline " ++ cls) ]
-
-
-attributes : Annotation -> List (Attribute msg)
-attributes attr =
-    case attr of
-        Just dict ->
-            dict
-                |> Dict.toList
-                |> List.map (\( key, value ) -> Attr.attribute key value)
-
-        Nothing ->
-            []
 
 
 viewer : Mode -> Int -> Inlines -> List (Html msg)

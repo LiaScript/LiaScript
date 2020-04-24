@@ -7,15 +7,15 @@ import Html.Lazy exposing (lazy2)
 import Lia.Markdown.Chart.View as Charts
 import Lia.Markdown.Code.View as Codes
 import Lia.Markdown.Effect.Model as Comments
-import Lia.Markdown.Effect.Types as Effect
+import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.Model as Footnotes
 import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Markdown.HTML.View as HTML
+import Lia.Markdown.Inline.Annotation exposing (annotation, attributes)
 import Lia.Markdown.Inline.Types exposing (Inlines, htmlBlock)
-import Lia.Markdown.Inline.View exposing (annotation, attributes, viewer)
+import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Quiz.View as Quizzes
-import Lia.Markdown.Stringify exposing (stringify)
 import Lia.Markdown.Survey.View as Surveys
 import Lia.Markdown.Table.View as Table
 import Lia.Markdown.Types exposing (Markdown(..))
@@ -168,140 +168,10 @@ view_block config block =
         Paragraph attr elements ->
             Html.p (annotation "lia-paragraph" attr) (config.view elements)
 
-        {- PlayBack attr ( ( in_, out_ ), narrator, sub_blocks ) ->
-           Html.div []
-               [ Html.button
-                   [ Attr.class "lia-btn lia-icon"
-                   , sub_blocks
-                       |> List.map stringify
-                       |> List.intersperse "\n"
-                       |> String.concat
-                       |> Speak narrator
-                       |> onClick
-                   ]
-                   [ Html.text "play_arrow" ]
-               , Html.div
-                   (annotation "" Nothing)
-                   (List.map (view_block config) sub_blocks)
-               ]
-        -}
         Effect attr e ->
-            if config.mode == Textbook then
-                Html.div [] <|
-                    case Effect.class e of
-                        Effect.Animation ->
-                            [ viewCircle e.begin
-                            , Html.div
-                                (annotation "" Nothing)
-                                (List.map (view_block config) e.content)
-                            ]
-
-                        Effect.PlayBack ->
-                            [ Html.button
-                                [ Attr.class "lia-btn lia-icon"
-                                , Attr.style "margin-left" "49%"
-                                , e.content
-                                    |> List.map stringify
-                                    |> List.intersperse "\n"
-                                    |> String.concat
-                                    |> Speak e.voice
-                                    |> onClick
-                                ]
-                                [ Html.text "play_arrow" ]
-                            , Html.div
-                                (annotation "" Nothing)
-                                (List.map (view_block config) e.content)
-                            ]
-
-                        Effect.PlayBackAnimation ->
-                            [ Html.button
-                                [ Attr.class "lia-btn lia-icon"
-                                , Attr.style "margin-left" "49%"
-                                , e.content
-                                    |> List.map stringify
-                                    |> List.intersperse "\n"
-                                    |> String.concat
-                                    |> Speak e.voice
-                                    |> onClick
-                                ]
-                                [ Html.text "play_arrow" ]
-                            , Html.div []
-                                [ viewCircle e.begin
-                                , Html.div
-                                    (annotation "" Nothing)
-                                    (List.map (view_block config) e.content)
-                                ]
-                            ]
-
-            else
-                let
-                    visible =
-                        (e.begin <= config.section.effect_model.visible)
-                            && (e.end > config.section.effect_model.visible)
-                in
-                case Effect.class e of
-                    Effect.Animation ->
-                        Html.div [ Attr.hidden (not visible) ] <|
-                            [ viewCircle e.begin
-                            , Html.div
-                                ((Attr.id <|
-                                    if e.begin == config.section.effect_model.visible then
-                                        "focused"
-
-                                    else
-                                        String.fromInt e.begin
-                                 )
-                                    :: annotation "lia-effect" attr
-                                )
-                                (List.map (view_block config) e.content)
-                            ]
-
-                    Effect.PlayBack ->
-                        Html.div []
-                            [ Html.button
-                                [ Attr.class "lia-btn lia-icon"
-                                , Attr.style "margin-left" "49%"
-                                , e.content
-                                    |> List.map stringify
-                                    |> List.intersperse "\n"
-                                    |> String.concat
-                                    |> Speak e.voice
-                                    |> onClick
-                                ]
-                                [ Html.text "play_arrow" ]
-                            , Html.div
-                                (annotation "" Nothing)
-                                (List.map (view_block config) e.content)
-                            ]
-
-                    Effect.PlayBackAnimation ->
-                        Html.div [ Attr.hidden (not visible) ] <|
-                            [ Html.button
-                                [ Attr.class "lia-btn lia-icon"
-                                , Attr.style "margin-left" "49%"
-                                , e.content
-                                    |> List.map stringify
-                                    |> List.intersperse "\n"
-                                    |> String.concat
-                                    |> Speak e.voice
-                                    |> onClick
-                                ]
-                                [ Html.text "play_arrow" ]
-                            , Html.div []
-                                [ viewCircle e.begin
-                                , Html.div
-                                    ((Attr.id <|
-                                        if e.begin == config.section.effect_model.visible then
-                                            "focused"
-
-                                        else
-                                            String.fromInt e.begin
-                                     )
-                                        :: annotation "lia-effect" attr
-                                    )
-                                    (List.map (view_block config) e.content)
-                                ]
-                            ]
+            e.content
+                |> List.map (view_block config)
+                |> Effect.block config.section.effect_model config.mode attr e
 
         BulletList attr list ->
             list
@@ -393,13 +263,6 @@ view_block config block =
                                 ]
                                 [ svg ]
                    )
-
-
-viewCircle : Int -> Html msg
-viewCircle id =
-    Html.span
-        [ Attr.class "lia-effect-circle" ]
-        [ Html.text (String.fromInt id) ]
 
 
 view_list : Config -> List ( String, List Markdown ) -> List (Html Msg)

@@ -30,7 +30,10 @@ type Msg
     | UpdateTable Table.Msg
     | FootnoteHide
     | FootnoteShow String
-    | Speak String String
+
+
+
+--  | Speak String String
 
 
 subscriptions : Section -> Sub Msg
@@ -107,8 +110,10 @@ update msg section =
         FootnoteHide ->
             ( { section | footnote2show = Nothing }, Cmd.none, [] )
 
-        Speak voice text ->
-            ( section, Cmd.none, [ TTS.speak True voice text ] |> List.map Event.encode |> send "effect" )
+
+
+--    Speak voice text ->
+--        ( section, Cmd.none, [ TTS.speak True voice text ] |> List.map Event.encode |> send "effect" )
 
 
 nextEffect : Bool -> Section -> ( Section, Cmd Msg, List ( String, JE.Value ) )
