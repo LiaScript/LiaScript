@@ -45,12 +45,12 @@ block model mode attr e body =
                     ]
 
                 PlayBack ->
-                    [ block_playback e
+                    [ block_playback model.speaking e
                     , Html.div (annotation "" Nothing) body
                     ]
 
                 PlayBackAnimation ->
-                    [ block_playback e
+                    [ block_playback model.speaking e
                     , Html.div []
                         [ circle e.begin
                         , Html.div (annotation "" Nothing) body
@@ -82,7 +82,7 @@ block model mode attr e body =
 
             PlayBack ->
                 Html.div []
-                    [ block_playback e
+                    [ block_playback model.speaking e
                     , Html.div
                         (annotation "" Nothing)
                         body
@@ -90,7 +90,7 @@ block model mode attr e body =
 
             PlayBackAnimation ->
                 Html.div [ Attr.hidden (not visible) ] <|
-                    [ block_playback e
+                    [ block_playback model.speaking e
                     , Html.div []
                         [ circle e.begin
                         , Html.div
@@ -108,20 +108,31 @@ block model mode attr e body =
                     ]
 
 
-block_playback : Effect Markdown -> Html Msg
-block_playback e =
-    Html.button
-        [ Attr.class "lia-btn lia-icon"
-        , Attr.style "margin-left" "49%"
-        , e.content
-            |> List.map stringify
-            |> List.intersperse "\n"
-            |> String.concat
-            |> E.Speak e.id e.voice
-            |> UpdateEffect True
-            |> onClick
-        ]
-        [ Html.text "play_arrow" ]
+block_playback : Maybe Int -> Effect Markdown -> Html Msg
+block_playback speaking e =
+    if speaking == Just e.id then
+        Html.button
+            [ Attr.class "lia-btn lia-icon"
+            , Attr.style "margin-left" "49%"
+            , E.Mute
+                |> UpdateEffect True
+                |> onClick
+            ]
+            [ Html.text "stop" ]
+
+    else
+        Html.button
+            [ Attr.class "lia-btn lia-icon"
+            , Attr.style "margin-left" "49%"
+            , e.content
+                |> List.map stringify
+                |> List.intersperse "\n"
+                |> String.concat
+                |> E.Speak e.id e.voice
+                |> UpdateEffect True
+                |> onClick
+            ]
+            [ Html.text "play_arrow" ]
 
 
 circle : Int -> Html msg
