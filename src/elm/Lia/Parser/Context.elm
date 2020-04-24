@@ -28,6 +28,7 @@ type alias Context =
     , table_vector : Table.Vector
     , effect_model : Effect.Model
     , effect_number : List Int
+    , effect_id : Int
     , defines : Definition
     , footnotes : Footnote.Model
     , defines_updated : Bool
@@ -45,6 +46,7 @@ init search_index global =
     , table_vector = Array.empty
     , effect_model = Effect.init
     , effect_number = [ 0 ]
+    , effect_id = 0
     , defines = global
     , footnotes = Footnote.init
     , defines_updated = False

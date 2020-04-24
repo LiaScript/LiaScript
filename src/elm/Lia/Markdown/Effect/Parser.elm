@@ -1,4 +1,9 @@
-module Lia.Markdown.Effect.Parser exposing (comment, hidden_comment, inline, markdown)
+module Lia.Markdown.Effect.Parser exposing
+    ( comment
+    , hidden_comment
+    , inline
+    , markdown
+    )
 
 import Array
 import Combine
@@ -6,6 +11,9 @@ import Combine
         ( Parser
         , andMap
         , andThen
+        , chainl
+        , choice
+        , fail
         , ignore
         , keep
         , manyTill
@@ -18,12 +26,14 @@ import Combine
         , skip
         , string
         , succeed
+        , whitespace
         , withState
         )
 import Combine.Char exposing (anyChar)
 import Combine.Num exposing (int)
 import Dict
 import Lia.Markdown.Effect.Model exposing (Element)
+import Lia.Markdown.Effect.Types as Effect exposing (Effect)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
@@ -32,26 +42,21 @@ import Lia.Parser.Context exposing (Context, indentation, indentation_skip)
 import Lia.Parser.Helper exposing (newlines, newlines1, spaces1)
 
 
-markdown : Parser Context Markdown -> Parser Context ( Int, Int, List Markdown )
+markdown : Parser Context Markdown -> Parser Context (Effect Markdown)
 markdown blocks =
     regex "[\t ]*{{"
-        |> keep effect_number
-        |> map (\a b c -> ( a, b, c ))
-        |> andMap
-            (regex "[\t ]*-[\t ]*"
-                |> keep int
-                |> optional 99999
-            )
+        |> keep definition
+        |> map (\e b c -> { e | content = b, id = c })
         |> ignore (regex "}}[\t ]*")
         |> ignore (or (skip (string "\n")) indentation_skip)
         |> andMap (or (multi blocks) (single blocks))
         |> ignore reset_effect_number
+        |> andMap effect_id
 
 
 single : Parser Context Markdown -> Parser Context (List Markdown)
-single blocks =
-    blocks
-        |> map List.singleton
+single =
+    map List.singleton
 
 
 multi : Parser Context Markdown -> Parser Context (List Markdown)
@@ -60,9 +65,7 @@ multi blocks =
         |> ignore (regex "[\t ]*\\*{3,}\\n+")
         |> keep
             (manyTill
-                (blocks
-                    |> ignore newlines
-                )
+                (blocks |> ignore newlines)
                 (regex "[\t ]*\\*{3,}")
             )
 
@@ -107,6 +110,73 @@ effect_number =
     int |> andThen state
 
 
+effect : Effect x -> Parser Context (Effect x)
+effect e =
+    whitespace
+        |> keep
+            (choice
+                [ end_ e
+                , begin_ e
+                , playback_ e
+                , voice_ e
+                ]
+            )
+        |> optional e
+
+
+definition : Parser Context (Effect x)
+definition =
+    withState (.defines >> .narrator >> succeed)
+        |> map Effect.init
+        |> andThen effect
+        |> andThen effect
+        |> andThen effect
+        |> andThen effect
+        |> andThen
+            (\e ->
+                if Effect.empty e then
+                    let
+                        xxx =
+                            Debug.log "WWWWWWWWWWWWWWWWWWWW" e
+                    in
+                    fail "no effect definition"
+
+                else
+                    succeed e
+            )
+
+
+begin_ : Effect x -> Parser Context (Effect x)
+begin_ e =
+    effect_number |> map (\i -> { e | begin = i })
+
+
+end_ : Effect x -> Parser Context (Effect x)
+end_ e =
+    regex "-[\t ]*"
+        |> keep int
+        |> map (\i -> { e | end = i })
+
+
+voice_ : Effect x -> Parser Context (Effect x)
+voice_ e =
+    macro
+        |> keep (regex "([A-Za-z][A-Za-z0-9]+[ \t])+")
+        |> map (\str -> { e | voice = String.trim str })
+
+
+playback_ : Effect x -> Parser Context (Effect x)
+playback_ e =
+    string "|>"
+        |> keep (succeed { e | playback = True })
+
+
+effect_id : Parser Context Int
+effect_id =
+    withState (.effect_id >> succeed)
+        |> ignore (modifyState (\s -> { s | effect_id = s.effect_id + 1 }))
+
+
 reset_effect_number : Parser Context ()
 reset_effect_number =
     modifyState
@@ -134,6 +204,25 @@ comment paragraph =
         |> andMap (indentation |> keep paragraph)
         |> andThen (add_comment True)
         |> ignore reset_effect_number
+
+
+narrator_ : Parser Context String
+narrator_ =
+    let
+        mod n =
+            case n of
+                Nothing ->
+                    withState (.defines >> .narrator >> succeed)
+
+                Just voice ->
+                    succeed (String.trim voice)
+    in
+    maybe
+        (spaces1
+            |> keep macro
+            |> keep (regex "[A-Za-z0-9 ]+")
+        )
+        |> andThen mod
 
 
 hidden_comment : Parser Context ()

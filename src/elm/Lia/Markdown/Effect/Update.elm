@@ -21,6 +21,7 @@ type Msg
     | Next
     | Previous
     | Send (List Event)
+    | Speak String String Int
     | Rendered Bool Dom.Viewport
 
 
@@ -48,6 +49,9 @@ update sound msg model =
 
             else
                 ( model, Cmd.none, [] )
+
+        Speak voice text id ->
+            ( model, Cmd.none, [ TTS.speak True voice text ] )
 
         Send event ->
             let
