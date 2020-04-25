@@ -70,19 +70,15 @@ multi blocks =
             )
 
 
-inline : Parser Context Inline -> Parser Context (Annotation -> Inline)
+inline : Parser Context Inline -> Parser Context (Effect Inline)
 inline inlines =
     string "{"
-        |> keep effect_number
-        |> map EInline
-        |> andMap
-            (regex "[\t ]*-[\t ]*"
-                |> keep int
-                |> optional 99999
-            )
+        |> keep definition
+        |> map (\e b c -> { e | content = b, id = c })
         |> ignore (string "}{")
         |> andMap (manyTill inlines (string "}"))
         |> ignore reset_effect_number
+        |> andMap effect_id
 
 
 effect_number : Parser Context Int
@@ -135,10 +131,6 @@ definition =
         |> andThen
             (\e ->
                 if Effect.empty e then
-                    let
-                        xxx =
-                            Debug.log "WWWWWWWWWWWWWWWWWWWW" e
-                    in
                     fail "no effect definition"
 
                 else

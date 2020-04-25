@@ -9,6 +9,7 @@ module Lia.Markdown.Inline.Types exposing
     )
 
 import Dict exposing (Dict)
+import Lia.Markdown.Effect.Types exposing (Effect)
 import Lia.Markdown.HTML.Types exposing (Node(..))
 
 
@@ -36,7 +37,7 @@ type Inline
     | Formula String String Annotation
     | Ref Reference Annotation
     | FootnoteMark String Annotation
-    | EInline Int Int Inlines Annotation
+    | EInline (Effect Inline) Annotation
     | IHTML (Node Inline) Annotation
     | Container Inlines Annotation
 

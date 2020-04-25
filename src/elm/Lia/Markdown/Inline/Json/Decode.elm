@@ -1,6 +1,7 @@
 module Lia.Markdown.Inline.Json.Decode exposing (decode)
 
 import Json.Decode as JD
+import Lia.Markdown.Effect.Types exposing (Effect)
 import Lia.Markdown.HTML.Types as HTML
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..))
 
@@ -24,13 +25,21 @@ decInline =
     , JD.field "Ref" toReference |> JD.map Ref
     , JD.field "Container" (JD.lazy (\_ -> decode)) |> JD.map Container
     , JD.field "IHTML" (JD.lazy (\_ -> HTML.decode decInline)) |> JD.map IHTML
-    , JD.map3 EInline
-        (JD.field "i" JD.int)
-        (JD.field "j" JD.int)
-        (JD.field "EInline" (JD.lazy (\_ -> decode)))
+    , effect |> JD.map EInline
     ]
         |> JD.oneOf
         |> JD.andThen toAnnotation
+
+
+effect : JD.Decoder (Effect Inline)
+effect =
+    JD.map6 Effect
+        (JD.field "EInline" (JD.lazy (\_ -> decode)))
+        (JD.field "playback" JD.bool)
+        (JD.field "begin" JD.int)
+        (JD.field "end" JD.int)
+        (JD.field "voice" JD.string)
+        (JD.field "id" JD.int)
 
 
 strReader :

@@ -70,24 +70,24 @@ view mode visible element =
         IHTML node attr ->
             HTML.view (view mode visible) attr node
 
-        EInline id_in id_out e attr ->
+        EInline e attr ->
             if mode == Textbook then
                 Html.span
-                    (Attr.id (String.fromInt id_in)
+                    (Attr.id (String.fromInt e.begin)
                         :: annotation "" Nothing
                     )
-                    (Effect.view (viewer mode visible) id_in e)
+                    (Effect.view (viewer mode visible) e.begin e.content)
 
             else
                 Html.span
-                    [ if (id_in <= visible) && (id_out > visible) then
+                    [ if (e.begin <= visible) && (e.end > visible) then
                         Attr.hidden False
 
                       else
                         Attr.hidden True
                     ]
                     [ Html.span
-                        (Attr.id (String.fromInt id_in)
+                        (Attr.id (String.fromInt e.begin)
                             :: annotation
                                 (if attr == Nothing then
                                     "lia-effect"
@@ -97,7 +97,7 @@ view mode visible element =
                                 )
                                 attr
                         )
-                        (Effect.view (viewer mode visible) id_in e)
+                        (Effect.view (viewer mode visible) e.begin e.content)
                     ]
 
         Symbol e attr ->

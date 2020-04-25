@@ -8,10 +8,10 @@ module Lia.Markdown.Effect.Types exposing
 
 
 type alias Effect body =
-    { playback : Bool
+    { content : List body
+    , playback : Bool
     , begin : Int
     , end : Int
-    , content : List body
     , voice : String
     , id : Int
     }

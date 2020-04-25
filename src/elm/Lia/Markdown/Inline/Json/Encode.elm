@@ -70,10 +70,13 @@ encInline element =
                 , ( "a", encAnnotation a )
                 ]
 
-            EInline i j list a ->
-                [ ( "EInline", encode list )
-                , ( "i", JE.int i )
-                , ( "j", JE.int j )
+            EInline e a ->
+                [ ( "EInline", encode e.content )
+                , ( "begin", JE.int e.begin )
+                , ( "end", JE.int e.end )
+                , ( "playback", JE.bool e.playback )
+                , ( "voice", JE.string e.voice )
+                , ( "id", JE.int e.id )
                 , ( "a", encAnnotation a )
                 ]
 

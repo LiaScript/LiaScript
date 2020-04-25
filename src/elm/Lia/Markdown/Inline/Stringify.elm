@@ -41,8 +41,8 @@ inline2string inline =
         Ref ref _ ->
             ref2string ref
 
-        EInline _ _ inlines _ ->
-            stringify inlines
+        EInline e _ ->
+            stringify e.content
 
         Container inlines _ ->
             stringify inlines
