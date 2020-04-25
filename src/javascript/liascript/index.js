@@ -81,7 +81,9 @@ function handleEffects (event, elmSend, section) {
               event.message[1],
               event.message[0],
               { onstart: e => {
+
                 msg.message.message = 'start'
+
                 elmSend(msg)
               },
               onend: e => {
@@ -154,6 +156,10 @@ class LiaScript {
     this.initEventSystem(elem, this.app.ports.event2js.subscribe, sender)
 
     liaStorage = this.connector.storage()
+
+    window.playback = function(event) {
+      handleEffects(event.message, sender, event.section)
+    }
   }
 
   reset () {

@@ -153,7 +153,7 @@ end_ e =
 voice_ : Effect x -> Parser Context (Effect x)
 voice_ e =
     macro
-        |> keep (regex "([A-Za-z][A-Za-z0-9]+[ \t])+")
+        |> keep (regex "([A-Za-z][A-Za-z0-9]+[ \t]*)+")
         |> map (\str -> { e | voice = String.trim str })
 
 

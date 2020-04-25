@@ -92,6 +92,9 @@ update sound msg model =
             case event.topic of
                 "speak" ->
                     case event.message |> JD.decodeValue JD.string of
+                        Ok "start" ->
+                            ( { model | speaking = Just event.section }, Cmd.none, [] )
+
                         Ok "stop" ->
                             ( { model | speaking = Nothing }, Cmd.none, [] )
 

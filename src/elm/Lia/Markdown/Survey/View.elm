@@ -4,8 +4,9 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import Lia.Markdown.Inline.Annotation exposing (Annotation, annotation)
+import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inlines)
-import Lia.Markdown.Inline.View exposing (view_inf)
+import Lia.Markdown.Inline.View exposing (view_inf, viewer)
 import Lia.Markdown.Survey.Model exposing (get_matrix_state, get_select_state, get_submission_state, get_text_state, get_vector_state)
 import Lia.Markdown.Survey.Types exposing (Survey, Type(..), Vector)
 import Lia.Markdown.Survey.Update exposing (Msg(..))
@@ -13,55 +14,55 @@ import Lia.Settings.Model exposing (Mode)
 import Translations exposing (Lang, surveySubmit, surveySubmitted, surveyText)
 
 
-view : Mode -> Lang -> Annotation -> Survey -> Vector -> Html Msg
-view mode lang attr survey model =
+view : Config -> Annotation -> Survey -> Vector -> Html Msg
+view config attr survey model =
     Html.p (annotation "lia-quiz lia-card" attr) <|
         case survey.survey of
             Text lines ->
-                view_text lang (get_text_state model survey.id) lines survey.id
-                    |> view_survey lang model survey.id survey.javascript
+                view_text config (get_text_state model survey.id) lines survey.id
+                    |> view_survey config model survey.id survey.javascript
 
             Select inlines ->
-                view_select mode lang inlines (get_select_state model survey.id) survey.id
-                    |> view_survey lang model survey.id survey.javascript
+                view_select config inlines (get_select_state model survey.id) survey.id
+                    |> view_survey config model survey.id survey.javascript
 
             Vector button questions ->
-                vector mode button (VectorUpdate survey.id) (get_vector_state model survey.id)
+                vector config button (VectorUpdate survey.id) (get_vector_state model survey.id)
                     |> view_vector questions
-                    |> view_survey lang model survey.id survey.javascript
+                    |> view_survey config model survey.id survey.javascript
 
             Matrix button header vars questions ->
-                matrix mode button (MatrixUpdate survey.id) (get_matrix_state model survey.id) vars
-                    |> view_matrix mode header vars questions
-                    |> view_survey lang model survey.id survey.javascript
+                matrix config button (MatrixUpdate survey.id) (get_matrix_state model survey.id) vars
+                    |> view_matrix config header vars questions
+                    |> view_survey config model survey.id survey.javascript
 
 
-view_survey : Lang -> Vector -> Int -> Maybe String -> (Bool -> Html Msg) -> List (Html Msg)
-view_survey lang model idx javascript fn =
+view_survey : Config -> Vector -> Int -> Maybe String -> (Bool -> Html Msg) -> List (Html Msg)
+view_survey config model idx javascript fn =
     let
         submitted =
             get_submission_state model idx
     in
-    [ fn submitted, submit_button lang submitted idx javascript ]
+    [ fn submitted, submit_button config submitted idx javascript ]
 
 
-submit_button : Lang -> Bool -> Int -> Maybe String -> Html Msg
-submit_button lang submitted idx javascript =
+submit_button : Config -> Bool -> Int -> Maybe String -> Html Msg
+submit_button config submitted idx javascript =
     Html.div []
         [ if submitted then
             Html.button
                 [ Attr.class "lia-btn", Attr.disabled True ]
-                [ Html.text (surveySubmitted lang) ]
+                [ Html.text (surveySubmitted config.lang) ]
 
           else
             Html.button
                 [ Attr.class "lia-btn", onClick <| Submit idx javascript ]
-                [ Html.text (surveySubmit lang) ]
+                [ Html.text (surveySubmit config.lang) ]
         ]
 
 
-view_select : Mode -> Lang -> List Inlines -> ( Bool, Int ) -> Int -> Bool -> Html Msg
-view_select mode lang options ( open, value ) id submitted =
+view_select : Config -> List Inlines -> ( Bool, Int ) -> Int -> Bool -> Html Msg
+view_select config options ( open, value ) id submitted =
     Html.span
         []
         [ Html.span
@@ -72,7 +73,7 @@ view_select mode lang options ( open, value ) id submitted =
               else
                 onClick <| SelectChose id
             ]
-            [ get_option mode value options
+            [ get_option config value options
             , Html.span
                 [ Attr.class "lia-icon"
                 , Attr.style "float" "right"
@@ -85,7 +86,7 @@ view_select mode lang options ( open, value ) id submitted =
                 ]
             ]
         , options
-            |> List.indexedMap (option mode id)
+            |> List.indexedMap (option config id)
             |> Html.div
                 [ Attr.class "lia-dropdown-options"
                 , Attr.style "max-height" <|
@@ -98,10 +99,10 @@ view_select mode lang options ( open, value ) id submitted =
         ]
 
 
-option : Mode -> Int -> Int -> Inlines -> Html Msg
-option mode id1 id2 opt =
+option : Config -> Int -> Int -> Inlines -> Html Msg
+option config id1 id2 opt =
     opt
-        |> List.map (view_inf mode)
+        |> viewer config
         |> Html.div
             [ Attr.class "lia-dropdown-option"
             , SelectUpdate id1 id2
@@ -109,26 +110,26 @@ option mode id1 id2 opt =
             ]
 
 
-get_option : Mode -> Int -> List Inlines -> Html Msg
-get_option mode id list =
+get_option : Config -> Int -> List Inlines -> Html Msg
+get_option config id list =
     case ( id, list ) of
         ( 0, x :: _ ) ->
-            x |> List.map (view_inf mode) |> Html.span []
+            x |> viewer config |> Html.span []
 
         ( i, _ :: xs ) ->
-            get_option mode (i - 1) xs
+            get_option config (i - 1) xs
 
         ( _, [] ) ->
             Html.text "choose"
 
 
-view_text : Lang -> String -> Int -> Int -> Bool -> Html Msg
-view_text lang str lines idx submitted =
+view_text : Config -> String -> Int -> Int -> Bool -> Html Msg
+view_text config str lines idx submitted =
     let
         attr =
             [ onInput <| TextUpdate idx
             , Attr.class "lia-textarea"
-            , Attr.placeholder (surveyText lang)
+            , Attr.placeholder (surveyText config.lang)
             , Attr.value str
             , Attr.disabled submitted
             ]
@@ -150,12 +151,12 @@ view_vector questions fn submitted =
     Html.div [] <| List.map fnX questions
 
 
-view_matrix : Mode -> List Inlines -> List String -> List Inlines -> (Bool -> ( Int, Inlines ) -> Html Msg) -> Bool -> Html Msg
-view_matrix mode header vars questions fn submitted =
+view_matrix : Config -> List Inlines -> List String -> List Inlines -> (Bool -> ( Int, Inlines ) -> Html Msg) -> Bool -> Html Msg
+view_matrix config header vars questions fn submitted =
     let
         th =
             header
-                |> List.map (List.map (view_inf mode) >> Html.th [ Attr.align "center" ])
+                |> List.map (viewer config >> Html.th [ Attr.align "center" ])
                 |> Html.thead []
 
         fnX =
@@ -168,18 +169,18 @@ view_matrix mode header vars questions fn submitted =
         |> Html.table [ Attr.class "lia-survey-matrix" ]
 
 
-vector : Mode -> Bool -> (String -> Msg) -> (String -> Bool) -> Bool -> ( String, Inlines ) -> Html Msg
-vector mode button msg fn submitted ( var, elements ) =
+vector : Config -> Bool -> (String -> Msg) -> (String -> Bool) -> Bool -> ( String, Inlines ) -> Html Msg
+vector config button msg fn submitted ( var, elements ) =
     Html.table [ Attr.attribute "cellspacing" "8" ]
         [ Html.td [ Attr.attribute "valign" "top", Attr.class "lia-label" ]
             [ input button (msg var) (fn var) submitted ]
         , Html.td [ Attr.class "lia-label" ]
-            [ inline mode elements ]
+            [ inline config elements ]
         ]
 
 
-matrix : Mode -> Bool -> (Int -> String -> Msg) -> (Int -> String -> Bool) -> List String -> Bool -> ( Int, Inlines ) -> Html Msg
-matrix mode button msg fn vars submitted ( row, elements ) =
+matrix : Config -> Bool -> (Int -> String -> Msg) -> (Int -> String -> Bool) -> List String -> Bool -> ( Int, Inlines ) -> Html Msg
+matrix config button msg fn vars submitted ( row, elements ) =
     let
         msgX =
             msg row
@@ -196,7 +197,7 @@ matrix mode button msg fn vars submitted ( row, elements ) =
                 )
                 vars
             )
-            [ Html.td [] [ inline mode elements ] ]
+            [ Html.td [] [ inline config elements ] ]
 
 
 input : Bool -> Msg -> Bool -> Bool -> Html Msg
@@ -244,6 +245,6 @@ input button msg checked submitted =
         ]
 
 
-inline : Mode -> Inlines -> Html Msg
-inline mode elements =
-    Html.span [] <| List.map (view_inf mode) elements
+inline : Config -> Inlines -> Html Msg
+inline config elements =
+    Html.span [] <| viewer config elements

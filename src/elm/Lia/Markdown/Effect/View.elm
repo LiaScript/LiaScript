@@ -1,42 +1,43 @@
 module Lia.Markdown.Effect.View exposing
     ( block
     , comment
+    , inline
     , responsive
     , state
-    , view
     )
 
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
+import Json.Encode as JE
 import Lia.Markdown.Effect.Model exposing (Model)
 import Lia.Markdown.Effect.Types exposing (Class(..), Effect, class)
 import Lia.Markdown.Effect.Update as E
 import Lia.Markdown.Inline.Annotation exposing (Annotation, annotation)
+import Lia.Markdown.Inline.Config exposing (Config)
+import Lia.Markdown.Inline.Stringify as I
+import Lia.Markdown.Inline.Types exposing (Inline)
 import Lia.Markdown.Stringify exposing (stringify)
 import Lia.Markdown.Types exposing (Markdown)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Settings.Model exposing (Mode(..))
+import Port.Event as Event exposing (Event)
+import Port.TTS
 import Translations exposing (Lang, soundOff, soundOn)
 
 
-view : (List inline -> List (Html msg)) -> Int -> List inline -> List (Html msg)
-view viewer idx elements =
-    elements
-        |> viewer
-        |> (::) (Html.text " ")
-        |> (::)
-            (idx
-                |> String.fromInt
-                |> Html.text
-                |> List.singleton
-                |> Html.span [ Attr.class "lia-effect-circle-inline" ]
-            )
+circle_ : Int -> Html msg
+circle_ idx =
+    idx
+        |> String.fromInt
+        |> Html.text
+        |> List.singleton
+        |> Html.span [ Attr.class "lia-effect-circle-inline" ]
 
 
-block : Model -> Mode -> Annotation -> Effect Markdown -> List (Html Msg) -> Html Msg
-block model mode attr e body =
-    if mode == Textbook then
+block : Config -> Model -> Annotation -> Effect Markdown -> List (Html Msg) -> Html Msg
+block config model attr e body =
+    if config.mode == Textbook then
         Html.div [] <|
             case class e of
                 Animation ->
@@ -108,6 +109,89 @@ block model mode attr e body =
                     ]
 
 
+inline : Config -> Annotation -> Effect Inline -> List (Html msg) -> Html msg
+inline config attr e body =
+    if config.mode == Textbook then
+        case class e of
+            Animation ->
+                circle_ e.begin
+                    :: Html.text " "
+                    :: body
+                    |> Html.span
+                        (Attr.id (String.fromInt e.begin)
+                            :: annotation "" Nothing
+                        )
+
+            PlayBack ->
+                inline_playback config e
+                    :: body
+                    |> Html.span (annotation "" attr)
+
+            PlayBackAnimation ->
+                circle_ e.begin
+                    :: inline_playback config e
+                    :: body
+                    |> Html.span
+                        (Attr.id (String.fromInt e.begin)
+                            :: annotation "" Nothing
+                        )
+
+    else
+        case class e of
+            Animation ->
+                Html.span
+                    [ if (e.begin <= config.visible) && (e.end > config.visible) then
+                        Attr.hidden False
+
+                      else
+                        Attr.hidden True
+                    ]
+                    [ circle_ e.begin
+                        :: Html.text " "
+                        :: body
+                        |> Html.span
+                            (Attr.id (String.fromInt e.begin)
+                                :: annotation
+                                    (if attr == Nothing then
+                                        "lia-effect"
+
+                                     else
+                                        ""
+                                    )
+                                    attr
+                            )
+                    ]
+
+            PlayBack ->
+                inline_playback config e
+                    :: body
+                    |> Html.span (annotation "" attr)
+
+            PlayBackAnimation ->
+                Html.span
+                    [ if (e.begin <= config.visible) && (e.end > config.visible) then
+                        Attr.hidden False
+
+                      else
+                        Attr.hidden True
+                    ]
+                    [ circle_ e.begin
+                        :: inline_playback config e
+                        :: body
+                        |> Html.span
+                            (Attr.id (String.fromInt e.begin)
+                                :: annotation
+                                    (if attr == Nothing then
+                                        "lia-effect"
+
+                                     else
+                                        ""
+                                    )
+                                    attr
+                            )
+                    ]
+
+
 block_playback : Maybe Int -> Effect Markdown -> Html Msg
 block_playback speaking e =
     if speaking == Just e.id then
@@ -132,6 +216,41 @@ block_playback speaking e =
                 |> E.Speak e.id e.voice
                 |> UpdateEffect True
                 |> onClick
+            ]
+            [ Html.text "play_arrow" ]
+
+
+inline_playback : Config -> Effect Inline -> Html msg
+inline_playback config e =
+    if config.speaking == Just e.id then
+        Html.button
+            [ Attr.class "lia-btn lia-icon"
+            , Attr.style "scale" "0.75"
+            , Attr.style "margin" "0px"
+            , Port.TTS.mute e.id
+                |> Event.encode
+                |> Event "effect" config.slide
+                |> Event.encode
+                |> JE.encode 0
+                |> (\event -> "playback(" ++ event ++ ")")
+                |> Attr.attribute "onclick"
+            ]
+            [ Html.text "stop" ]
+
+    else
+        Html.button
+            [ Attr.class "lia-btn lia-icon"
+            , Attr.style "scale" "0.75"
+            , Attr.style "margin" "0px"
+            , e.content
+                |> I.stringify
+                |> Port.TTS.playback e.id e.voice
+                |> Event.encode
+                |> Event "effect" config.slide
+                |> Event.encode
+                |> JE.encode 0
+                |> (\event -> "playback(" ++ event ++ ")")
+                |> Attr.attribute "onclick"
             ]
             [ Html.text "play_arrow" ]
 

@@ -6,6 +6,7 @@ import Html.Events exposing (onClick)
 import Html.Lazy exposing (lazy2)
 import Lia.Markdown.Chart.View as Charts
 import Lia.Markdown.Code.View as Codes
+import Lia.Markdown.Config as Config exposing (Config)
 import Lia.Markdown.Effect.Model as Comments
 import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.Model as Footnotes
@@ -27,36 +28,9 @@ import SvgBob
 import Translations exposing (Lang)
 
 
-type alias Config =
-    { mode : Mode
-    , view : Inlines -> List (Html Msg)
-    , section : Section
-    , ace_theme : String
-    , lang : Lang
-    , light : Bool
-    , screen : Screen
-    }
-
-
-view : Lang -> Mode -> Section -> String -> Bool -> Screen -> Html Msg
-view lang mode section ace_theme light screen =
-    let
-        config =
-            Config mode
-                (viewer mode <|
-                    if mode == Textbook then
-                        9999
-
-                    else
-                        section.effect_model.visible
-                )
-                section
-                ace_theme
-                lang
-                light
-                screen
-    in
-    case section.error of
+view : Config -> Html Msg
+view config =
+    case config.section.error of
         Just msg ->
             Html.section [ Attr.class "lia-content" ]
                 [ view_header config
@@ -64,7 +38,7 @@ view lang mode section ace_theme light screen =
                 ]
 
         Nothing ->
-            lazy2 view_body ( config, section.footnote2show, section.footnotes ) section.body
+            view_body ( config, config.section.footnote2show, config.section.footnotes ) config.section.body
 
 
 view_body : ( Config, Maybe String, Footnotes.Model ) -> List Markdown -> Html Msg
@@ -74,7 +48,7 @@ view_body ( config, footnote2show, footnotes ) body =
         |> (::) (view_footnote (view_block config) footnote2show footnotes)
         |> (::) (view_header config)
         |> (\s ->
-                if config.mode == Textbook then
+                if config.main.mode == Textbook then
                     List.append s [ Footnote.block (view_block config) footnotes ]
 
                 else
@@ -171,7 +145,7 @@ view_block config block =
         Effect attr e ->
             e.content
                 |> List.map (view_block config)
-                |> Effect.block config.section.effect_model config.mode attr e
+                |> Effect.block config.main config.section.effect_model attr e
 
         BulletList attr list ->
             list
@@ -196,12 +170,12 @@ view_block config block =
 
         Code attr code ->
             code
-                |> Codes.view config.lang config.ace_theme attr config.section.code_vector
+                |> Codes.view config.main.lang config.ace_theme attr config.section.code_vector
                 |> Html.map UpdateCode
 
         Quiz attr quiz Nothing ->
             Html.div (annotation "lia-quiz lia-card" attr)
-                [ Quizzes.view config.mode config.lang quiz config.section.quiz_vector
+                [ Quizzes.view config.main quiz config.section.quiz_vector
                     |> Html.map UpdateQuiz
                 ]
 
@@ -210,7 +184,7 @@ view_block config block =
                 case Quizzes.view_solution config.section.quiz_vector quiz of
                     ( empty, True ) ->
                         List.append
-                            [ Html.map UpdateQuiz <| Quizzes.view config.mode config.lang quiz config.section.quiz_vector ]
+                            [ Html.map UpdateQuiz <| Quizzes.view config.main quiz config.section.quiz_vector ]
                             ((if empty then
                                 Html.text ""
 
@@ -221,18 +195,18 @@ view_block config block =
                             )
 
                     _ ->
-                        [ Quizzes.view config.mode config.lang quiz config.section.quiz_vector
+                        [ Quizzes.view config.main quiz config.section.quiz_vector
                             |> Html.map UpdateQuiz
                         ]
 
         Survey attr survey ->
             config.section.survey_vector
-                |> Surveys.view config.mode config.lang attr survey
+                |> Surveys.view config.main attr survey
                 |> Html.map UpdateSurvey
 
         Comment ( id1, id2 ) ->
             case
-                ( config.mode
+                ( config.main.mode
                 , id1 == config.section.effect_model.visible
                 , Comments.get_paragraph id1 id2 config.section.effect_model
                 )

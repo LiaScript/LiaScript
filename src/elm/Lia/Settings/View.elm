@@ -179,24 +179,23 @@ view_information lang visible definition =
             span_block
                 [ bold "Attributes:"
                 , Html.br [] []
-                , view_attributes definition.attributes
+                , view_attributes lang definition.attributes
                 ]
         ]
 
 
-view_attributes : List Inlines -> Html Msg
-view_attributes thanks_to =
-    thanks_to
-        |> List.map thanks
-        |> Html.span []
+view_attributes : Lang -> List Inlines -> Html Msg
+view_attributes lang =
+    List.map (thanks lang)
+        >> Html.span []
 
 
-thanks : Inlines -> Html msg
-thanks to =
+thanks : Lang -> Inlines -> Html msg
+thanks lang to =
     Html.span []
         [ Html.hr [] []
         , to
-            |> List.map (view_inf Textbook)
+            |> List.map (view_inf lang)
             |> span_block
         ]
 
