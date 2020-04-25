@@ -3,6 +3,8 @@ module Port.TTS exposing
     , cancel
     , decode
     , event
+    , mute
+    , playback
     , speak
     )
 
@@ -66,3 +68,20 @@ speak loud voice text =
     ]
         |> JE.list JE.string
         |> Event "speak" -1
+
+
+playback : Int -> String -> String -> Event
+playback id voice text =
+    [ voice
+    , text
+    , "true"
+    ]
+        |> JE.list JE.string
+        |> Event "speak" id
+
+
+mute : Int -> Event.Event
+mute id =
+    "cancel"
+        |> JE.string
+        |> Event "speak" id

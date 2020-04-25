@@ -25,7 +25,7 @@ function scrollIntoView (id, delay) {
 
 var firstSpeak = true;
 
-function handleEffects (event, elmSend) {
+function handleEffects (event, elmSend, section) {
   switch (event.topic) {
     case 'scrollTo':
       scrollIntoView(event.message, 350)
@@ -45,6 +45,18 @@ function handleEffects (event, elmSend) {
           topic: 'speak',
           section: -1,
           message: 'stop'
+        }
+      }
+
+      if ( section >= 0 ) {
+        msg = {
+          topic: 'effect',
+          section: section,
+          message: {
+            topic: 'speak',
+            section: event.section,
+            message: 'stop'
+          }
         }
       }
 
@@ -236,7 +248,7 @@ class LiaScript {
           break
         }
         case 'effect' :
-          handleEffects(event.message, elmSend)
+          handleEffects(event.message, elmSend, event.section)
           break
         case "settings": {
           // if (self.channel) {

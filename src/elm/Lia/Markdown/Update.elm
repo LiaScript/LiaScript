@@ -143,5 +143,8 @@ handle topic event section =
         "survey" ->
             update (UpdateSurvey (Survey.handle event)) section
 
+        "effect" ->
+            update (UpdateEffect True (Effect.handle event)) section
+
         _ ->
             ( section, Cmd.none, [] )

@@ -114,7 +114,8 @@ block_playback speaking e =
         Html.button
             [ Attr.class "lia-btn lia-icon"
             , Attr.style "margin-left" "49%"
-            , E.Mute
+            , e.id
+                |> E.Mute
                 |> UpdateEffect True
                 |> onClick
             ]
