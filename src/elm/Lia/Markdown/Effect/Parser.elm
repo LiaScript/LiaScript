@@ -11,7 +11,6 @@ import Combine
         ( Parser
         , andMap
         , andThen
-        , chainl
         , choice
         , fail
         , ignore
@@ -35,7 +34,7 @@ import Dict
 import Lia.Markdown.Effect.Model exposing (Element)
 import Lia.Markdown.Effect.Types as Effect exposing (Effect)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
-import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines)
+import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.Parser.Context exposing (Context, indentation, indentation_skip)
@@ -196,25 +195,6 @@ comment paragraph =
         |> andMap (indentation |> keep paragraph)
         |> andThen (add_comment True)
         |> ignore reset_effect_number
-
-
-narrator_ : Parser Context String
-narrator_ =
-    let
-        mod n =
-            case n of
-                Nothing ->
-                    withState (.defines >> .narrator >> succeed)
-
-                Just voice ->
-                    succeed (String.trim voice)
-    in
-    maybe
-        (spaces1
-            |> keep macro
-            |> keep (regex "[A-Za-z0-9 ]+")
-        )
-        |> andThen mod
 
 
 hidden_comment : Parser Context ()

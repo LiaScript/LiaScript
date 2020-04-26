@@ -3,10 +3,9 @@ module Lia.Markdown.View exposing (view)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
-import Html.Lazy exposing (lazy2)
 import Lia.Markdown.Chart.View as Charts
 import Lia.Markdown.Code.View as Codes
-import Lia.Markdown.Config as Config exposing (Config)
+import Lia.Markdown.Config exposing (Config)
 import Lia.Markdown.Effect.Model as Comments
 import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.Model as Footnotes
@@ -14,18 +13,14 @@ import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Markdown.HTML.View as HTML
 import Lia.Markdown.Inline.Annotation exposing (annotation, attributes)
-import Lia.Markdown.Inline.Types exposing (Inlines, htmlBlock)
-import Lia.Markdown.Inline.View exposing (viewer)
+import Lia.Markdown.Inline.Types exposing (htmlBlock)
 import Lia.Markdown.Quiz.View as Quizzes
 import Lia.Markdown.Survey.View as Surveys
 import Lia.Markdown.Table.View as Table
 import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.Markdown.Update exposing (Msg(..))
-import Lia.Section exposing (Section)
 import Lia.Settings.Model exposing (Mode(..))
-import Session exposing (Screen)
 import SvgBob
-import Translations exposing (Lang)
 
 
 view : Config -> Html Msg

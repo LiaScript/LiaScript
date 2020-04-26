@@ -55,6 +55,7 @@ classify table =
                 id
 
 
+checkDiagram : Bool -> List Row -> Class
 checkDiagram formatted rows =
     if
         rows

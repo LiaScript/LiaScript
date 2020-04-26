@@ -3,7 +3,6 @@ module Lia.Markdown.Inline.Config exposing
     , init
     )
 
-import Html exposing (Html)
 import Lia.Settings.Model exposing (Mode(..))
 import Translations exposing (Lang)
 

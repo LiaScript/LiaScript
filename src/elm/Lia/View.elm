@@ -9,7 +9,7 @@ import Lia.Markdown.Config as Config
 import Lia.Markdown.Effect.Model exposing (current_paragraphs)
 import Lia.Markdown.Effect.View exposing (responsive, state)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
-import Lia.Markdown.Inline.View exposing (view_inf, viewer)
+import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model)
 import Lia.Settings.Model exposing (Mode(..))

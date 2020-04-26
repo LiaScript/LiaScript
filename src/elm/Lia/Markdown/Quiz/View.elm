@@ -21,8 +21,7 @@ import Lia.Markdown.Quiz.Types
         )
 import Lia.Markdown.Quiz.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Vector.View as Vector
-import Lia.Settings.Model exposing (Mode)
-import Translations exposing (Lang, quizCheck, quizChecked, quizResolved, quizSolution)
+import Translations exposing (quizCheck, quizChecked, quizResolved, quizSolution)
 
 
 view : Config -> Quiz -> Vector -> Html Msg

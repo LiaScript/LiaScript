@@ -5,7 +5,7 @@ import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
-import Lia.Markdown.Chart.Types exposing (Chart, Diagram(..), Point)
+import Lia.Markdown.Chart.Types exposing (Diagram(..), Point)
 import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.Inline.Annotation exposing (Annotation, annotation)
 import Lia.Markdown.Inline.Stringify exposing (stringify)

@@ -10,7 +10,6 @@ import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Quiz.Matrix.Types exposing (Quiz, State)
 import Lia.Markdown.Quiz.Matrix.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Vector.Types as Vector
-import Lia.Settings.Model exposing (Mode)
 
 
 view : Config -> Bool -> Quiz -> State -> Html Msg

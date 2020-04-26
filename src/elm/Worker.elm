@@ -12,7 +12,6 @@ import Model exposing (State(..))
 import Platform
 import Process
 import Task
-import Url
 
 
 port output : ( Bool, String ) -> Cmd msg
@@ -162,11 +161,6 @@ respond model =
         _ ->
             error "unknown cmd" model.cmd
     )
-
-
-parseSections : Lia.Script.Model -> Lia.Script.Model
-parseSections =
-    parseSection 0
 
 
 parseSection : Int -> Lia.Script.Model -> Lia.Script.Model

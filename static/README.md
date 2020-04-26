@@ -39,9 +39,15 @@ ggg: bla bla bla
 
 
 
+| Header 1             | Header 2                               |
+|:-------------------- |:-------------------------------------- |
+| {|>}{ich gehe}       | {|> UK English Female}{I go}           |
+| {|>}{du gehst}       | {|> UK English Female}{you go}         |
+| {|>}{er/sie/es geht} | {|> UK English Female}{he/she/it goes} |
+| {|>}{wir gehen}      | {|> UK English Female}{we go}          |
+| {|>}{ihr geht}       | {|> UK English Female}{you go}         |
+| {|>}{sie gehen}      | {|> UK English Female}{they go}        |
 
-            {{|>}}
-dies {|> Deutsch Female 1-2}{__ist sehr schöner wunderbarer ein__} kleiner test jahu kleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahukleiner test jahu
 
 
             {{|>}}

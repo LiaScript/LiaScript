@@ -6,7 +6,6 @@ import Html.Attributes as Attr
 import Html.Events exposing (onInput)
 import Lia.Index.Model exposing (Model)
 import Lia.Index.Update exposing (Msg(..))
-import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Section exposing (Section, Sections)
 import Lia.Settings.Model exposing (Mode(..))

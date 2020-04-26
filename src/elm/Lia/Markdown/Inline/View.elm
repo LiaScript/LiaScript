@@ -5,8 +5,7 @@ module Lia.Markdown.Inline.View exposing
     , viewer
     )
 
-import Dict
-import Html exposing (Attribute, Html)
+import Html exposing (Html)
 import Html.Attributes as Attr
 import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.View as Footnote
@@ -174,10 +173,11 @@ reference config ref attr =
                     (Attr.controls True :: Attr.title title_ :: annotation "lia-movie" attr)
                     [ Html.source [ Attr.src url_ ] [], Html.span [] (viewer config alt_) ]
 
-        Embed alt_ url title_ ->
+        Embed _ url _ ->
             oembed Nothing url
 
 
+customProviders : List Oembed.Provider
 customProviders =
     []
 

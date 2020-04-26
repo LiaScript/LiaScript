@@ -16,7 +16,6 @@ import Lia.Markdown.Survey.Update as Survey
 import Lia.Markdown.Table.Update as Table
 import Lia.Section exposing (Section)
 import Port.Event as Event exposing (Event)
-import Port.TTS as TTS
 
 
 port footnote : (String -> msg) -> Sub msg

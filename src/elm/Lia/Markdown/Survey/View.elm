@@ -6,12 +6,11 @@ import Html.Events exposing (onClick, onInput)
 import Lia.Markdown.Inline.Annotation exposing (Annotation, annotation)
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inlines)
-import Lia.Markdown.Inline.View exposing (view_inf, viewer)
+import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Survey.Model exposing (get_matrix_state, get_select_state, get_submission_state, get_text_state, get_vector_state)
 import Lia.Markdown.Survey.Types exposing (Survey, Type(..), Vector)
 import Lia.Markdown.Survey.Update exposing (Msg(..))
-import Lia.Settings.Model exposing (Mode)
-import Translations exposing (Lang, surveySubmit, surveySubmitted, surveyText)
+import Translations exposing (surveySubmit, surveySubmitted, surveyText)
 
 
 view : Config -> Annotation -> Survey -> Vector -> Html Msg
