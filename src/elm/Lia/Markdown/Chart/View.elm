@@ -11,8 +11,8 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Encode as JE
 import Lia.Markdown.Chart.Types exposing (Chart, Diagram(..))
+import Lia.Markdown.Inline.Annotation exposing (annotation)
 import Lia.Markdown.Inline.Types exposing (Annotation)
-import Lia.Markdown.Inline.View exposing (annotation)
 
 
 view : Annotation -> Bool -> Chart -> Html msg

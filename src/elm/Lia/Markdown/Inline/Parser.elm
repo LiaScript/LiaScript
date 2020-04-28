@@ -182,7 +182,7 @@ inlines =
                      , Footnote.inline
                      , reference
                      , formula
-                     , Effect.inline inlines
+                     , inlines |> Effect.inline |> map EInline
                      , strings
                      ]
                         |> choice

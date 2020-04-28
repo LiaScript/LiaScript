@@ -3,21 +3,21 @@ module Lia.Markdown.Quiz.Vector.View exposing (view)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
+import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inlines)
-import Lia.Markdown.Inline.View exposing (view_inf)
+import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Quiz.Vector.Types exposing (Quiz, State(..))
 import Lia.Markdown.Quiz.Vector.Update exposing (Msg(..))
-import Lia.Settings.Model exposing (Mode)
 
 
-view : Mode -> Bool -> Quiz -> State -> Html Msg
-view mode solved quiz state =
+view : Config -> Bool -> Quiz -> State -> Html Msg
+view config solved quiz state =
     case ( quiz.solution, state ) of
         ( SingleChoice _, SingleChoice list ) ->
-            table (radio mode solved) quiz.options list
+            table (radio config solved) quiz.options list
 
         ( MultipleChoice _, MultipleChoice list ) ->
-            table (check mode solved) quiz.options list
+            table (check config solved) quiz.options list
 
         _ ->
             Html.text ""
@@ -31,8 +31,8 @@ table fn inlines bools =
         |> Html.table [ Attr.attribute "cellspacing" "8" ]
 
 
-check : Mode -> Bool -> Bool -> ( Int, Inlines ) -> Html Msg
-check mode solved checked ( id, line ) =
+check : Config -> Bool -> Bool -> ( Int, Inlines ) -> Html Msg
+check config solved checked ( id, line ) =
     Html.tr [ Attr.class "lia-check-item" ]
         [ Html.td
             [ Attr.attribute "valign" "top", Attr.class "lia-label" ]
@@ -51,13 +51,13 @@ check mode solved checked ( id, line ) =
                 [ Html.text "check" ]
             ]
         , line
-            |> List.map (view_inf mode)
+            |> viewer config
             |> Html.td [ Attr.class "lia-label" ]
         ]
 
 
-radio : Mode -> Bool -> Bool -> ( Int, Inlines ) -> Html Msg
-radio mode solved checked ( id, line ) =
+radio : Config -> Bool -> Bool -> ( Int, Inlines ) -> Html Msg
+radio config solved checked ( id, line ) =
     Html.tr [ Attr.class "lia-radio-item" ]
         [ Html.td [ Attr.attribute "valign" "top", Attr.class "lia-label" ]
             [ Html.input
@@ -73,6 +73,6 @@ radio mode solved checked ( id, line ) =
             , Html.span [ Attr.class "lia-radio-btn" ] []
             ]
         , line
-            |> List.map (view_inf mode)
+            |> viewer config
             |> Html.td [ Attr.class "lia-label" ]
         ]

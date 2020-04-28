@@ -1,5 +1,6 @@
 module Lia.Markdown.Effect.Update exposing
     ( Msg(..)
+    , handle
     , has_next
     , has_previous
     , init
@@ -9,6 +10,7 @@ module Lia.Markdown.Effect.Update exposing
     )
 
 import Browser.Dom as Dom
+import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Effect.Model exposing (Model, current_comment, get_all_javascript, get_javascript)
 import Port.Event exposing (Event)
@@ -21,7 +23,10 @@ type Msg
     | Next
     | Previous
     | Send (List Event)
+    | Speak Int String String
+    | Mute Int
     | Rendered Bool Dom.Viewport
+    | Handle Event
 
 
 update : Bool -> Msg -> Model -> ( Model, Cmd Msg, List Event )
@@ -49,6 +54,18 @@ update sound msg model =
             else
                 ( model, Cmd.none, [] )
 
+        Speak id voice text ->
+            ( { model | speaking = Just id }
+            , Cmd.none
+            , [ TTS.playback id voice text ]
+            )
+
+        Mute id ->
+            ( { model | speaking = Nothing }
+            , Cmd.none
+            , [ TTS.mute id ]
+            )
+
         Send event ->
             let
                 events =
@@ -70,6 +87,22 @@ update sound msg model =
 
         Rendered run_all_javascript _ ->
             execute sound run_all_javascript 0 model
+
+        Handle event ->
+            case event.topic of
+                "speak" ->
+                    case event.message |> JD.decodeValue JD.string of
+                        Ok "start" ->
+                            ( { model | speaking = Just event.section }, Cmd.none, [] )
+
+                        Ok "stop" ->
+                            ( { model | speaking = Nothing }, Cmd.none, [] )
+
+                        _ ->
+                            ( model, Cmd.none, [] )
+
+                _ ->
+                    ( model, Cmd.none, [] )
 
 
 executeEvent : Int -> String -> Event
@@ -123,3 +156,8 @@ next =
 previous : Msg
 previous =
     Previous
+
+
+handle : Event -> Msg
+handle =
+    Handle

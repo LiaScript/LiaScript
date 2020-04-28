@@ -11,7 +11,7 @@ email:    andre.dietrich@ovgu.de
 version:  0.3.15
 
 language: en
-narrator: US English Female
+narrator: Deutsch Male
 
 logo: logo.png
 
@@ -44,14 +44,16 @@ ggg: bla bla bla
 | 4        | 0.2      | 8        |
 | 6         | -1.3333         | h         |
 
-
-sasfdsa
-
-
-[[afdafsd | (___asfdas___)]]
+            {{|>}}
+dies ist ein {|> Deutsch Female 1-2}{kleiner} test jahu
 
 
-adfadsf
+            {{|> 3}}
+dies ist ein kleiner test jahu
+
+
+{{2}} ddd
+
 
 ## Quizze
 

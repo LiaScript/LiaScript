@@ -5,10 +5,11 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, preventDefaultOn)
 import Lia.Index.View as Index
+import Lia.Markdown.Config as Config
 import Lia.Markdown.Effect.Model exposing (current_paragraphs)
 import Lia.Markdown.Effect.View exposing (responsive, state)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
-import Lia.Markdown.Inline.View exposing (viewer)
+import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model)
 import Lia.Settings.Model exposing (Mode(..))
@@ -41,7 +42,7 @@ view_aside hasShareAPI model =
                 "0px"
         ]
         [ Html.map UpdateIndex <| Index.view_search model.translation model.index_model
-        , Index.view model.section_active model.sections
+        , Index.view model.translation model.section_active model.sections
         , model
             |> get_active_section
             |> Maybe.andThen .definition
@@ -75,19 +76,21 @@ view_article screen hasIndex model =
                         model.translation
                         model.url
                         model.settings.speaking
-                , Html.map UpdateMarkdown <|
-                    Markdown.view
-                        model.translation
-                        model.settings.mode
-                        section
-                        model.settings.editor
-                        model.settings.light
-                        (if model.settings.table_of_contents then
-                            { screen | width = screen.width - 260 }
+                , Config.init
+                    model.settings.mode
+                    section
+                    model.section_active
+                    model.settings.editor
+                    model.translation
+                    model.settings.light
+                    (if model.settings.table_of_contents then
+                        { screen | width = screen.width - 260 }
 
-                         else
-                            screen
-                        )
+                     else
+                        screen
+                    )
+                    |> Markdown.view
+                    |> Html.map UpdateMarkdown
                 , view_footer model.translation model.settings.sound model.settings.mode section.effect_model
                 ]
 
@@ -101,7 +104,7 @@ view_footer lang sound mode effects =
         Slides ->
             effects
                 |> current_paragraphs
-                |> List.map (\( _, par ) -> Html.p [] (viewer mode 9999 par))
+                |> List.map (\( _, par ) -> Html.p [] (List.map (view_inf lang) par))
                 |> flip List.append [ responsive lang sound (UpdateSettings toggle_sound) ]
                 |> Html.footer [ Attr.class "lia-footer" ]
 

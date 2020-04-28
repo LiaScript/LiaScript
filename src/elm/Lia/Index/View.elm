@@ -6,7 +6,7 @@ import Html.Attributes as Attr
 import Html.Events exposing (onInput)
 import Lia.Index.Model exposing (Model)
 import Lia.Index.Update exposing (Msg(..))
-import Lia.Markdown.Inline.View exposing (viewer)
+import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Section exposing (Section, Sections)
 import Lia.Settings.Model exposing (Mode(..))
 import Translations exposing (Lang, baseSearch)
@@ -32,11 +32,11 @@ view_search lang model =
         ]
 
 
-view : Int -> Sections -> Html msg
-view active sections =
+view : Lang -> Int -> Sections -> Html msg
+view lang active sections =
     let
         toc_ =
-            toc active
+            toc lang active
     in
     sections
         |> Array.toList
@@ -44,8 +44,8 @@ view active sections =
         |> Html.div [ Attr.class "lia-content" ]
 
 
-toc : Int -> Section -> Html msg
-toc active section =
+toc : Lang -> Int -> Section -> Html msg
+toc lang active section =
     if section.visible then
         Html.a
             [ Attr.class
@@ -72,7 +72,7 @@ toc active section =
                 else
                     ""
             ]
-            (viewer Presentation 9999 section.title)
+            (List.map (view_inf lang) section.title)
 
     else
         Html.text ""

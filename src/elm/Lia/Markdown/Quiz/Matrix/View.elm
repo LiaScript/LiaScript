@@ -4,35 +4,35 @@ import Array
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
+import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inlines)
-import Lia.Markdown.Inline.View exposing (view_inf)
+import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Quiz.Matrix.Types exposing (Quiz, State)
 import Lia.Markdown.Quiz.Matrix.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Vector.Types as Vector
-import Lia.Settings.Model exposing (Mode)
 
 
-view : Mode -> Bool -> Quiz -> State -> Html Msg
-view mode solved quiz state =
+view : Config -> Bool -> Quiz -> State -> Html Msg
+view config solved quiz state =
     state
         |> Array.toList
         |> List.indexedMap (tr solved)
-        |> List.map2 (add_text mode) quiz.options
-        |> (::) (header mode quiz.headers)
+        |> List.map2 (add_text config) quiz.options
+        |> (::) (header config quiz.headers)
         |> Html.table [ Attr.class "lia-survey-matrix" ]
 
 
-header : Mode -> List Inlines -> Html Msg
-header mode inlines =
+header : Config -> List Inlines -> Html Msg
+header config inlines =
     inlines
-        |> List.map (th mode)
+        |> List.map (th config)
         |> Html.tr [ Attr.class "lia-label" ]
 
 
-th : Mode -> Inlines -> Html Msg
-th mode inlines =
+th : Config -> Inlines -> Html Msg
+th config inlines =
     inlines
-        |> List.map (view_inf mode)
+        |> viewer config
         |> Html.th [ Attr.align "center" ]
 
 
@@ -92,10 +92,10 @@ check solved row_id column_id value =
         ]
 
 
-add_text : Mode -> Inlines -> List (Html Msg) -> Html Msg
-add_text mode inline toRow =
+add_text : Config -> Inlines -> List (Html Msg) -> Html Msg
+add_text config inline toRow =
     inline
-        |> List.map (view_inf mode)
+        |> viewer config
         |> Html.td []
         |> List.singleton
         |> List.append toRow

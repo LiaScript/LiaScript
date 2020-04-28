@@ -31,6 +31,10 @@ type Msg
     | FootnoteShow String
 
 
+
+--  | Speak String String
+
+
 subscriptions : Section -> Sub Msg
 subscriptions _ =
     footnote FootnoteShow
@@ -132,6 +136,9 @@ handle topic event section =
 
         "survey" ->
             update (UpdateSurvey (Survey.handle event)) section
+
+        "effect" ->
+            update (UpdateEffect True (Effect.handle event)) section
 
         _ ->
             ( section, Cmd.none, [] )

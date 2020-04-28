@@ -1,15 +1,41 @@
 module Lia.Markdown.Inline.Types exposing
     ( Annotation
+    , Config
     , Inline(..)
     , Inlines
     , MultInlines
     , Reference(..)
+    , config
     , htmlBlock
     , isHTML
     )
 
 import Dict exposing (Dict)
+import Lia.Markdown.Effect.Types exposing (Effect)
 import Lia.Markdown.HTML.Types exposing (Node(..))
+import Lia.Settings.Model exposing (Mode(..))
+import Translations exposing (Lang)
+
+
+type alias Config =
+    { mode : Mode
+    , visible : Int
+    , speaking : Maybe Int
+    , lang : Lang
+    }
+
+
+config : Mode -> Int -> Maybe Int -> Lang -> Config
+config mode visible speaking lang =
+    Config mode
+        (if mode == Textbook then
+            99999
+
+         else
+            visible
+        )
+        speaking
+        lang
 
 
 type alias Inlines =
@@ -36,7 +62,7 @@ type Inline
     | Formula String String Annotation
     | Ref Reference Annotation
     | FootnoteMark String Annotation
-    | EInline Int Int Inlines Annotation
+    | EInline (Effect Inline) Annotation
     | IHTML (Node Inline) Annotation
     | Container Inlines Annotation
     | Goto Inline Int
