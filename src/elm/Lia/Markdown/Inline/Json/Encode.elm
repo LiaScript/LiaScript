@@ -73,7 +73,11 @@ encInline element =
             EInline e a ->
                 [ ( "EInline", encode e.content )
                 , ( "begin", JE.int e.begin )
-                , ( "end", JE.int e.end )
+                , ( "end"
+                  , e.end
+                        |> Maybe.map JE.int
+                        |> Maybe.withDefault JE.null
+                  )
                 , ( "playback", JE.bool e.playback )
                 , ( "voice", JE.string e.voice )
                 , ( "id", JE.int e.id )

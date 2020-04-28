@@ -146,7 +146,7 @@ end_ : Effect x -> Parser Context (Effect x)
 end_ e =
     regex "-[\t ]*"
         |> keep int
-        |> map (\i -> { e | end = i })
+        |> map (\i -> { e | end = Just i })
 
 
 voice_ : Effect x -> Parser Context (Effect x)

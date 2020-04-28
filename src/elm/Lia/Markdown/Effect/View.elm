@@ -11,7 +11,7 @@ import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Json.Encode as JE
 import Lia.Markdown.Effect.Model exposing (Model)
-import Lia.Markdown.Effect.Types exposing (Class(..), Effect, class)
+import Lia.Markdown.Effect.Types exposing (Class(..), Effect, class, isIn)
 import Lia.Markdown.Effect.Update as E
 import Lia.Markdown.Inline.Annotation exposing (Annotation, annotation)
 import Lia.Markdown.Inline.Config exposing (Config)
@@ -61,8 +61,7 @@ block config model attr e body =
     else
         let
             visible =
-                (e.begin <= model.visible)
-                    && (e.end > model.visible)
+                isIn (Just model.visible) e
         in
         case class e of
             Animation ->
@@ -140,7 +139,7 @@ inline config attr e body =
         case class e of
             Animation ->
                 Html.span
-                    [ if (e.begin <= config.visible) && (e.end > config.visible) then
+                    [ if isIn (Just config.visible) e then
                         Attr.hidden False
 
                       else
@@ -169,7 +168,7 @@ inline config attr e body =
 
             PlayBackAnimation ->
                 Html.span
-                    [ if (e.begin <= config.visible) && (e.end > config.visible) then
+                    [ if isIn (Just config.visible) e then
                         Attr.hidden False
 
                       else

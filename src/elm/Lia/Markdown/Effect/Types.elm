@@ -4,6 +4,7 @@ module Lia.Markdown.Effect.Types exposing
     , class
     , empty
     , init
+    , isIn
     )
 
 
@@ -11,7 +12,7 @@ type alias Effect body =
     { content : List body
     , playback : Bool
     , begin : Int
-    , end : Int
+    , end : Maybe Int
     , voice : String
     , id : Int
     }
@@ -21,11 +22,27 @@ init : String -> Effect body
 init voice =
     { playback = False
     , begin = -1
-    , end = 999999
+    , end = Nothing
     , content = []
     , voice = voice
     , id = -1
     }
+
+
+isIn : Maybe Int -> Effect x -> Bool
+isIn id effect =
+    Maybe.map (isIn_ effect) id
+        |> Maybe.withDefault True
+
+
+isIn_ : Effect x -> Int -> Bool
+isIn_ effect id =
+    case effect.end of
+        Nothing ->
+            effect.begin <= id
+
+        Just end ->
+            (effect.begin <= id) && (end > id)
 
 
 empty : Effect body -> Bool

@@ -37,7 +37,7 @@ effect =
         (JD.field "EInline" (JD.lazy (\_ -> decode)))
         (JD.field "playback" JD.bool)
         (JD.field "begin" JD.int)
-        (JD.field "end" JD.int)
+        (JD.field "end" (JD.maybe JD.int))
         (JD.field "voice" JD.string)
         (JD.field "id" JD.int)
 

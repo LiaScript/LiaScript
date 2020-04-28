@@ -3,22 +3,23 @@ module Lia.Markdown.Inline.Stringify exposing
     , stringify_
     )
 
+import Lia.Markdown.Effect.Types as Effect
 import Lia.Markdown.HTML.Types as HTML
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 
 
 stringify : Inlines -> String
 stringify =
-    stringify_ -1
+    stringify_ Nothing
 
 
-stringify_ : Int -> Inlines -> String
+stringify_ : Maybe Int -> Inlines -> String
 stringify_ effect_id =
     List.map (inline2string effect_id)
         >> String.concat
 
 
-inline2string : Int -> Inline -> String
+inline2string : Maybe Int -> Inline -> String
 inline2string effect_id inline =
     case inline of
         Chars str _ ->
@@ -49,10 +50,7 @@ inline2string effect_id inline =
             ref2string ref
 
         EInline e _ ->
-            if effect_id == -1 then
-                stringify_ effect_id e.content
-
-            else if (e.begin <= effect_id) && (e.end > effect_id) then
+            if Effect.isIn effect_id e then
                 stringify_ effect_id e.content
 
             else
