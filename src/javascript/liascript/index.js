@@ -160,6 +160,8 @@ class LiaScript {
     window.playback = function(event) {
       handleEffects(event.message, sender, event.section)
     }
+
+    setTimeout(function(){ firstSpeak = false }, 1000)
   }
 
   reset () {
