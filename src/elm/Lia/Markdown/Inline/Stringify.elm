@@ -1,36 +1,43 @@
-module Lia.Markdown.Inline.Stringify exposing (stringify)
+module Lia.Markdown.Inline.Stringify exposing
+    ( stringify
+    , stringify_
+    )
 
 import Lia.Markdown.HTML.Types as HTML
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 
 
 stringify : Inlines -> String
-stringify inlines =
-    inlines
-        |> List.map inline2string
-        |> String.concat
+stringify =
+    stringify_ -1
 
 
-inline2string : Inline -> String
-inline2string inline =
+stringify_ : Int -> Inlines -> String
+stringify_ effect_id =
+    List.map (inline2string effect_id)
+        >> String.concat
+
+
+inline2string : Int -> Inline -> String
+inline2string effect_id inline =
     case inline of
         Chars str _ ->
             str
 
         Bold x _ ->
-            inline2string x
+            inline2string effect_id x
 
         Italic x _ ->
-            inline2string x
+            inline2string effect_id x
 
         Strike x _ ->
-            inline2string x
+            inline2string effect_id x
 
         Underline x _ ->
-            inline2string x
+            inline2string effect_id x
 
         Superscript x _ ->
-            inline2string x
+            inline2string effect_id x
 
         Verbatim str _ ->
             str
@@ -42,15 +49,14 @@ inline2string inline =
             ref2string ref
 
         EInline e _ ->
-            stringify e.content
+            if effect_id == -1 then
+                stringify_ effect_id e.content
 
-        Container inlines _ ->
-            stringify inlines
+            else if (e.begin <= effect_id) && (e.end > effect_id) then
+                stringify_ effect_id e.content
 
-        IHTML node _ ->
-            node
-                |> HTML.getContent
-                |> stringify
+            else
+                ""
 
         _ ->
             ""
