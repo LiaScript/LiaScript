@@ -159,6 +159,7 @@ voice_ e =
 playback_ : Effect x -> Parser Context (Effect x)
 playback_ e =
     string "|>"
+        |> or (string "!>")
         |> keep (succeed { e | playback = True })
 
 
