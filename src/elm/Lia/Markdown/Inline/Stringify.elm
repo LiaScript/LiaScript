@@ -20,25 +20,25 @@ stringify_ effect_id =
 
 
 inline2string : Maybe Int -> Inline -> String
-inline2string effect_id inline =
+inline2string id inline =
     case inline of
         Chars str _ ->
             str
 
         Bold x _ ->
-            inline2string effect_id x
+            inline2string id x
 
         Italic x _ ->
-            inline2string effect_id x
+            inline2string id x
 
         Strike x _ ->
-            inline2string effect_id x
+            inline2string id x
 
         Underline x _ ->
-            inline2string effect_id x
+            inline2string id x
 
         Superscript x _ ->
-            inline2string effect_id x
+            inline2string id x
 
         Verbatim str _ ->
             str
@@ -47,11 +47,11 @@ inline2string effect_id inline =
             str
 
         Ref ref _ ->
-            ref2string ref
+            ref2string id ref
 
         EInline e _ ->
-            if Effect.isIn effect_id e then
-                stringify_ effect_id e.content
+            if Effect.isIn id e then
+                stringify_ id e.content
 
             else
                 ""
@@ -60,23 +60,23 @@ inline2string effect_id inline =
             ""
 
 
-ref2string : Reference -> String
-ref2string ref =
+ref2string : Maybe Int -> Reference -> String
+ref2string id ref =
     case ref of
         Movie alt _ _ ->
-            stringify alt
+            stringify_ id alt
 
         Image alt _ _ ->
-            stringify alt
+            stringify_ id alt
 
         Audio alt _ _ ->
-            stringify alt
+            stringify_ id alt
 
         Link alt _ _ ->
-            stringify alt
+            stringify_ id alt
 
         Mail alt _ _ ->
-            stringify alt
+            stringify_ id alt
 
         Embed alt _ _ ->
-            stringify alt
+            stringify_ id alt

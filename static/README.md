@@ -51,7 +51,7 @@ ggg: bla bla bla
 
 
             {{|>}}
-dies ist ein kleiner test jahu
+dies ist ein {|> Deutsch Female 1-2}{kleiner} test jahu
 
 
             {{|> 3}}

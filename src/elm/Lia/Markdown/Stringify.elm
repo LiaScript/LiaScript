@@ -1,32 +1,37 @@
 module Lia.Markdown.Stringify exposing (stringify)
 
+import Lia.Markdown.Effect.Types exposing (isIn)
 import Lia.Markdown.HTML.Types as HTML
 import Lia.Markdown.Inline.Stringify as Inline
 import Lia.Markdown.Table.Types exposing (Table(..))
 import Lia.Markdown.Types exposing (Markdown(..))
 
 
-stringify : Markdown -> String
-stringify markdown =
+stringify : Maybe Int -> Markdown -> String
+stringify id markdown =
     case markdown of
         Paragraph _ inlines ->
-            Inline.stringify inlines
+            Inline.stringify_ id inlines
 
         Quote _ md ->
-            block md
+            block id md
 
         BulletList _ mds ->
             mds
-                |> List.map block
+                |> List.map (block id)
                 |> String.concat
 
         OrderedList _ mds ->
             mds
-                |> List.map (Tuple.second >> block)
+                |> List.map (Tuple.second >> block id)
                 |> String.concat
 
         Effect _ e ->
-            block e.content
+            if isIn id e then
+                block id e.content
+
+            else
+                "\n"
 
         Table _ (Unformatted _ rows _) ->
             rows
@@ -37,7 +42,7 @@ stringify markdown =
             let
                 head =
                     header
-                        |> List.map Inline.stringify
+                        |> List.map (Inline.stringify_ id)
                         |> String.concat
 
                 body =
@@ -50,17 +55,14 @@ stringify markdown =
         HTML _ node ->
             node
                 |> HTML.getContent
-                |> block
+                |> block id
 
         _ ->
             ""
 
 
-
---=
---| Formatted Class MultInlines (List String) (List Row) Int
-
-
-block : List Markdown -> String
-block =
-    List.map stringify >> String.concat
+block : Maybe Int -> List Markdown -> String
+block id =
+    List.map (stringify id)
+        >> List.intersperse "\n"
+        >> String.concat

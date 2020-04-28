@@ -43,7 +43,7 @@ view_body ( config, footnote2show, footnotes ) body =
         |> (::) (view_footnote (view_block config) footnote2show footnotes)
         |> (::) (view_header config)
         |> (\s ->
-                if config.main.mode == Textbook then
+                if config.main.visible == Nothing then
                     List.append s [ Footnote.block (view_block config) footnotes ]
 
                 else
@@ -201,12 +201,11 @@ view_block config block =
 
         Comment ( id1, id2 ) ->
             case
-                ( config.main.mode
-                , id1 == config.section.effect_model.visible
+                ( config.main.visible
                 , Comments.get_paragraph id1 id2 config.section.effect_model
                 )
             of
-                ( Textbook, _, Just ( attr, par ) ) ->
+                ( Nothing, Just ( attr, par ) ) ->
                     par
                         |> Paragraph attr
                         |> view_block config

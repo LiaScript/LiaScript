@@ -37,7 +37,7 @@ circle_ idx =
 
 block : Config -> Model -> Annotation -> Effect Markdown -> List (Html Msg) -> Html Msg
 block config model attr e body =
-    if config.mode == Textbook then
+    if config.visible == Nothing then
         Html.div [] <|
             case class e of
                 Animation ->
@@ -46,12 +46,12 @@ block config model attr e body =
                     ]
 
                 PlayBack ->
-                    [ block_playback model.speaking e
+                    [ block_playback config e
                     , Html.div (annotation "" Nothing) body
                     ]
 
                 PlayBackAnimation ->
-                    [ block_playback model.speaking e
+                    [ block_playback config e
                     , Html.div []
                         [ circle e.begin
                         , Html.div (annotation "" Nothing) body
@@ -82,7 +82,7 @@ block config model attr e body =
 
             PlayBack ->
                 Html.div []
-                    [ block_playback model.speaking e
+                    [ block_playback config e
                     , Html.div
                         (annotation "" Nothing)
                         body
@@ -90,7 +90,7 @@ block config model attr e body =
 
             PlayBackAnimation ->
                 Html.div [ Attr.hidden (not visible) ] <|
-                    [ block_playback model.speaking e
+                    [ block_playback config e
                     , Html.div []
                         [ circle e.begin
                         , Html.div
@@ -110,7 +110,7 @@ block config model attr e body =
 
 inline : Config -> Annotation -> Effect Inline -> List (Html msg) -> Html msg
 inline config attr e body =
-    if config.mode == Textbook then
+    if config.visible == Nothing then
         case class e of
             Animation ->
                 circle_ e.begin
@@ -139,7 +139,7 @@ inline config attr e body =
         case class e of
             Animation ->
                 Html.span
-                    [ if isIn (Just config.visible) e then
+                    [ if isIn config.visible e then
                         Attr.hidden False
 
                       else
@@ -168,7 +168,7 @@ inline config attr e body =
 
             PlayBackAnimation ->
                 Html.span
-                    [ if isIn (Just config.visible) e then
+                    [ if isIn config.visible e then
                         Attr.hidden False
 
                       else
@@ -191,9 +191,9 @@ inline config attr e body =
                     ]
 
 
-block_playback : Maybe Int -> Effect Markdown -> Html Msg
-block_playback speaking e =
-    if speaking == Just e.id then
+block_playback : Config -> Effect Markdown -> Html Msg
+block_playback config e =
+    if config.speaking == Just e.id then
         Html.button
             [ Attr.class "lia-btn lia-icon"
             , Attr.style "margin-left" "49%"
@@ -209,7 +209,7 @@ block_playback speaking e =
             [ Attr.class "lia-btn lia-icon"
             , Attr.style "margin-left" "49%"
             , e.content
-                |> List.map stringify
+                |> List.map (stringify config.visible)
                 |> List.intersperse "\n"
                 |> String.concat
                 |> E.Speak e.id e.voice
@@ -224,7 +224,7 @@ inline_playback config e =
     if config.speaking == Just e.id then
         Html.button
             [ Attr.class "lia-btn lia-icon"
-            , Attr.style "scale" "0.75"
+            , Attr.style "scale" "0.65"
             , Attr.style "margin" "0px"
             , Port.TTS.mute e.id
                 |> Event.encode
@@ -239,7 +239,7 @@ inline_playback config e =
     else
         Html.button
             [ Attr.class "lia-btn lia-icon"
-            , Attr.style "scale" "0.75"
+            , Attr.style "scale" "0.65"
             , Attr.style "margin" "0px"
             , e.content
                 |> I.stringify
@@ -269,13 +269,9 @@ comment lang class show_inline silent msg model viewer idx elements =
             |> Html.div []
 
     else if idx == model.visible then
-        Html.div
-            [ Attr.class class
-            ]
-            (List.append
-                (List.map viewer elements)
-                [ responsive lang silent msg ]
-            )
+        [ responsive lang silent msg ]
+            |> List.append (List.map viewer elements)
+            |> Html.div [ Attr.class class ]
 
     else
         Html.text ""

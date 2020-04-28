@@ -9,8 +9,9 @@ import Translations exposing (Lang)
 
 type alias Config =
     { slide : Int
-    , mode : Mode
-    , visible : Int
+
+    --, mode : Mode
+    , visible : Maybe Int
     , speaking : Maybe Int
     , lang : Lang
     }
@@ -20,12 +21,12 @@ init : Int -> Mode -> Int -> Maybe Int -> Lang -> Config
 init slide mode visible speaking lang =
     Config
         slide
-        mode
+        --mode
         (if mode == Textbook then
-            99999
+            Nothing
 
          else
-            visible
+            Just visible
         )
         speaking
         lang
