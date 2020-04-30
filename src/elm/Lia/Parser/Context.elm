@@ -9,7 +9,7 @@ module Lia.Parser.Context exposing
     , searchIndex
     )
 
-import Array exposing (Array)
+import Array
 import Combine
     exposing
         ( Parser
@@ -19,7 +19,6 @@ import Combine
         , modifyState
         , regex
         , skip
-        , string
         , succeed
         , withLine
         , withState

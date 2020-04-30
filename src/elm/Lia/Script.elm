@@ -20,7 +20,6 @@ module Lia.Script exposing
     )
 
 import Array
-import Dict exposing (Dict)
 import Html exposing (Html)
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition, add_macros)

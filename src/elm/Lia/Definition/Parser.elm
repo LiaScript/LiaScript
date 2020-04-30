@@ -36,9 +36,6 @@ import Lia.Parser.Context
     exposing
         ( Context
         , getLine
-        , indentation
-        , indentation_pop
-        , indentation_skip
         , init
         )
 import Lia.Parser.Helper exposing (stringTill)
