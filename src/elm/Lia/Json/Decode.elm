@@ -1,6 +1,7 @@
 module Lia.Json.Decode exposing (decode)
 
 import Array
+import Dict
 import Json.Decode as JD
 import Lia.Definition.Json.Decode as Definition
 import Lia.Index.Model as Index
@@ -39,6 +40,7 @@ toModel =
         |> JD.map2 (|>) (JD.succeed [])
         |> andMap "translation" (JD.string |> JD.map Translations.getLnFromCode)
         |> JD.map2 (|>) (JD.succeed identity)
+        |> JD.map2 (|>) (JD.succeed Dict.empty)
 
 
 
