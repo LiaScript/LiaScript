@@ -39,6 +39,9 @@ port event2js : Event -> Cmd msg
 port event2elm : (Event -> msg) -> Sub msg
 
 
+port jit : (String -> msg) -> Sub msg
+
+
 type Msg
     = LiaScript Lia.Script.Msg
     | Handle Event
@@ -49,12 +52,14 @@ type Msg
     | UrlChanged Url.Url
     | Load_ReadMe_Result String (Result Http.Error String)
     | Load_Template_Result (Result Http.Error String)
+    | JIT String
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ event2elm Handle
+        [ jit JIT
+        , event2elm Handle
         , Sub.map LiaScript (Lia.Script.subscriptions model.lia)
         , Sub.map Resize (Browser.Events.onResize Screen)
         ]
@@ -70,6 +75,15 @@ message msg =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        JIT code ->
+            load_readme
+                { model
+                    | parse_steps = 1
+                    , lia = model.lia |> Lia.Script.backup
+                    , lia_ = model.lia
+                }
+                code
+
         LiaScript childMsg ->
             let
                 ( lia, cmd, events ) =
@@ -274,7 +288,7 @@ parsing model =
                         new_model =
                             { model | lia = lia, code = remaining_code }
                     in
-                    if modBy 4 (Lia.Script.pages lia) == 0 then
+                    if modBy model.parse_steps (Lia.Script.pages lia) == 1 then
                         ( new_model, message LiaParse )
 
                     else
@@ -286,6 +300,47 @@ parsing model =
 
 load_readme : Model -> String -> ( Model, Cmd Msg )
 load_readme model readme =
+    case
+        readme
+            |> String.replace "\u{000D}" ""
+            |> Lia.Script.init_script model.lia
+    of
+        ( lia, Just ( code, line ), [] ) ->
+            ( { model
+                | lia = lia
+                , state = Parsing True 0
+                , code = Just ( code, line )
+                , size = String.length code |> toFloat
+              }
+            , message LiaParse
+            )
+
+        ( lia, Just ( code, line ), templates ) ->
+            ( { model
+                | lia = lia
+                , state = Parsing True <| List.length templates
+                , code = Just ( code, line )
+                , size = String.length code |> toFloat
+              }
+            , templates
+                |> List.map (download Load_Template_Result)
+                |> (::) (message LiaParse)
+                |> Cmd.batch
+            )
+
+        ( lia, Nothing, _ ) ->
+            ( { model
+                | state =
+                    lia.error
+                        |> Maybe.withDefault ""
+                        |> Error
+              }
+            , Cmd.none
+            )
+
+
+update_readme : Model -> String -> ( Model, Cmd Msg )
+update_readme model readme =
     case
         readme
             |> String.replace "\u{000D}" ""

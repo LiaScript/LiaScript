@@ -57,9 +57,17 @@ init flags url key =
         slide =
             url.fragment |> Maybe.andThen String.toInt
 
-        model =
-            Session flags.share key flags.screen
-                >> Model 0 flags.hasIndex Nothing Index.init Nothing
+        model u s m =
+            Model 4
+                0
+                flags.hasIndex
+                Nothing
+                Index.init
+                Nothing
+                (Session flags.share key flags.screen u)
+                s
+                m
+                m
 
         courseUrl =
             { url | query = Maybe.map link url.query }

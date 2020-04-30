@@ -18,4 +18,6 @@ if (ua.indexOf('Trident/') > 0 ||
   }
 
   var app = new LiaScript( document.body, new Connector(), debug )
+
+  window.showFootnote = (key) => app.footnote(key);
 }

@@ -172,6 +172,11 @@ class LiaScript {
       this.app.ports.event2elm.send({topic: "goto", section: line, message: null});
   }
 
+  jit(code) {
+      // port to jit compiler
+      this.app.ports.jit.send(code)
+  }
+
   reset() {
       this.app.ports.event2elm.send({ topic: "reset", section: -1, message: null});
   }

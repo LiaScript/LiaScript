@@ -6,7 +6,8 @@ import Session exposing (Session)
 
 
 type alias Model =
-    { size : Float
+    { parse_steps : Int
+    , size : Float
     , hasIndex : Bool
     , code : Maybe ( String, Int )
     , index : Index.Model
@@ -14,6 +15,7 @@ type alias Model =
     , session : Session
     , state : State
     , lia : Lia.Script.Model
+    , lia_ : Lia.Script.Model
     }
 
 

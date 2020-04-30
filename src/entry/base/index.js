@@ -14,3 +14,4 @@ var app = new LiaScript( document.body, new Connector(), debug )
 
 window.showFootnote = (key) => app.footnote(key);
 window.gotoLia = (line) => app.goto(line);
+window.jitLia = (code) => app.jit(code);

@@ -3,6 +3,7 @@ module Lia.Script exposing
     , Msg
     , add_imports
     , add_todos
+    , backup
     , get_title
     , handle
     , init
@@ -20,6 +21,7 @@ module Lia.Script exposing
     )
 
 import Array
+import Dict exposing (Dict)
 import Html exposing (Html)
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition, add_macros)
@@ -27,7 +29,7 @@ import Lia.Json.Encode as Json
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Model exposing (load_src)
 import Lia.Parser.Parser as Parser
-import Lia.Section as Section exposing (Sections)
+import Lia.Section as Section exposing (Section, Sections)
 import Lia.Settings.Model exposing (Mode(..))
 import Lia.Update exposing (Msg(..))
 import Lia.View
@@ -42,6 +44,23 @@ type alias Model =
 
 type alias Msg =
     Lia.Update.Msg
+
+
+backup : Model -> Model
+backup model =
+    { model
+        | backup =
+            model.sections
+                |> Array.map entry
+                >> Array.toList
+                >> Dict.fromList
+        , sections = Array.empty
+    }
+
+
+entry : Section -> ( String, String )
+entry sec =
+    ( stringify sec.title, sec.code )
 
 
 pages : Model -> Int
