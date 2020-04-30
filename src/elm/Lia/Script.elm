@@ -20,6 +20,7 @@ module Lia.Script exposing
     )
 
 import Array
+import Dict exposing (Dict)
 import Html exposing (Html)
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition, add_macros)
@@ -152,7 +153,7 @@ init_script model script =
 
 parse_section : Model -> ( String, Int ) -> ( Model, Maybe ( String, Int ) )
 parse_section model ( code, line ) =
-    case Parser.parse_titles line model.definition code of
+    case Parser.parse_titles line model.backup model.definition code of
         Ok ( sec, rest ) ->
             ( { model
                 | sections =

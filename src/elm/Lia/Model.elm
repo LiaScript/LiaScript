@@ -1,16 +1,19 @@
 module Lia.Model exposing
     ( Model
+    , backup
     , init
     , load_src
     , settings2model
     )
 
 import Array
+import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Definition.Types as Definition exposing (Definition, Resource(..))
 import Lia.Index.Model as Index
-import Lia.Section exposing (Sections)
+import Lia.Markdown.Inline.Stringify exposing (stringify)
+import Lia.Section exposing (Section, Sections)
 import Lia.Settings.Json
 import Lia.Settings.Model as Settings
 import Port.Event exposing (Event)
@@ -32,6 +35,7 @@ type alias Model =
     , to_do : List Event
     , translation : Translations.Lang
     , search_index : String -> String
+    , backup : Dict String String
     }
 
 
@@ -78,7 +82,21 @@ init settings url readme origin slide_number =
     , to_do = []
     , translation = Translations.En
     , search_index = identity
+    , backup = Dict.empty
     }
+
+
+backup : Model -> Dict String String
+backup =
+    .sections
+        >> Array.map entry
+        >> Array.toList
+        >> Dict.fromList
+
+
+entry : Section -> ( String, String )
+entry sec =
+    ( stringify sec.title, sec.code )
 
 
 load_src : List Resource -> List Resource -> ( List Resource, List Event )

@@ -18,6 +18,7 @@ import Combine
         , withColumn
         , withLine
         )
+import Dict exposing (Dict)
 import Lia.Markdown.Inline.Parser exposing (line)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Parser.Context exposing (Context, getLine)

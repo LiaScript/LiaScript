@@ -15,6 +15,7 @@ import Combine
         , regex
         , string
         )
+import Dict exposing (Dict)
 import Lia.Definition.Parser
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Parser as Markdown
@@ -36,7 +37,7 @@ parse_defintion base code =
             )
             (base
                 |> Lia.Definition.Types.default
-                |> init identity 0
+                |> init Dict.empty identity 0
             )
             code
     of
@@ -47,9 +48,14 @@ parse_defintion base code =
             Err (formatError ms stream)
 
 
-parse_titles : Int -> Definition -> String -> Result String ( Section.Base, ( String, Int ) )
-parse_titles editor_line defines code =
-    case Combine.runParser Preprocessor.section (init identity editor_line defines) code of
+parse_titles :
+    Int
+    -> Dict String String
+    -> Definition
+    -> String
+    -> Result String ( Section.Base, ( String, Int ) )
+parse_titles editor_line dict defines code =
+    case Combine.runParser Preprocessor.section (init dict identity editor_line defines) code of
         Ok ( _, data, ( rslt, line ) ) ->
             Ok ( rslt, ( data.input, line ) )
 
@@ -66,7 +72,7 @@ parse_section search_index global section =
     case
         Combine.runParser
             (Lia.Definition.Parser.parse |> keep Markdown.run)
-            (init search_index section.editor_line { global | section = section.idx })
+            (init Dict.empty search_index section.editor_line { global | section = section.idx })
             section.code
     of
         Ok ( state, _, es ) ->

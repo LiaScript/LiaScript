@@ -24,6 +24,7 @@ import Combine
         , withLine
         , withState
         )
+import Dict exposing (Dict)
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Code.Types as Code
 import Lia.Markdown.Effect.Model as Effect
@@ -48,11 +49,12 @@ type alias Context =
     , defines_updated : Bool
     , search_index : String -> String
     , editor_line : Int
+    , dict : Dict String String
     }
 
 
-init : (String -> String) -> Int -> Definition -> Context
-init search_index editor_line global =
+init : Dict String String -> (String -> String) -> Int -> Definition -> Context
+init dict search_index editor_line global =
     { identation = []
     , identation_skip = False
     , code_vector = Array.empty
@@ -67,6 +69,7 @@ init search_index editor_line global =
     , defines_updated = False
     , search_index = search_index
     , editor_line = editor_line
+    , dict = dict
     }
 
 

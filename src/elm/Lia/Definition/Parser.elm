@@ -19,6 +19,7 @@ import Combine
         , string
         , whitespace
         )
+import Dict
 import Lia.Definition.Types
     exposing
         ( Definition
@@ -58,7 +59,7 @@ inline_parser defines str =
     case
         str
             |> String.replace "\n" " "
-            |> Combine.runParser line (init identity 0 defines)
+            |> Combine.runParser line (init Dict.empty identity 0 defines)
     of
         Ok ( _, _, rslt ) ->
             rslt
