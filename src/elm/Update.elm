@@ -48,7 +48,7 @@ type Msg
     | LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
     | Load_ReadMe_Result String (Result Http.Error String)
-    | Load_Template_Result (Result Http.Error String)
+    | Load_Template_Result String (Result Http.Error String)
 
 
 subscriptions : Model -> Sub Msg
@@ -98,7 +98,7 @@ update msg model =
                             Index.decodeGet event.message
                     in
                     ( { model | preload = course }
-                    , download (Load_ReadMe_Result id) id
+                    , download Load_ReadMe_Result id
                     )
 
                 "restore" ->
@@ -113,7 +113,7 @@ update msg model =
 
                         Err info ->
                             ( { model | preload = Nothing }
-                            , download (Load_ReadMe_Result model.lia.readme) model.lia.readme
+                            , download Load_ReadMe_Result model.lia.readme
                             )
 
                 _ ->
@@ -204,7 +204,7 @@ update msg model =
                 |> event2js
             )
 
-        Load_Template_Result (Ok template) ->
+        Load_Template_Result url (Ok template) ->
             parsing
                 { model
                     | lia =
@@ -220,7 +220,7 @@ update msg model =
                                 model.state
                 }
 
-        Load_Template_Result (Err info) ->
+        Load_Template_Result url (Err info) ->
             ( { model | state = Error <| parse_error info }, Cmd.none )
 
 
@@ -379,9 +379,9 @@ parse_error msg =
             "Bad body " ++ body
 
 
-download : (Result Http.Error String -> Msg) -> String -> Cmd Msg
+download : (String -> Result Http.Error String -> Msg) -> String -> Cmd Msg
 download msg url =
-    Http.get { url = url, expect = Http.expectString msg }
+    Http.get { url = url, expect = Http.expectString (msg url) }
 
 
 getIndex : String -> Model -> ( Model, Cmd Msg )
