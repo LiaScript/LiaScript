@@ -1,10 +1,10 @@
 <!--
 
-author:   Andre Dietrich
+author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.6.0
+version:  0.6.1
 language: en
-narrator: US English Female
+narrator: UK English Male
 
 comment:  Main LiaScript Parser project, written in elm.
 
@@ -158,6 +158,12 @@ Parcel out there, who could help?
 
 ## Version-Changes
 
+
+__0.6.1__
+
+* Better error handling, faulty Markdown is now parsed until the end of a
+  section
+* Minor optimizations to speedup JIT compilation.
 
 __0.6.0__
 
