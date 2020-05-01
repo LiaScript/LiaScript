@@ -8,6 +8,7 @@ module Lia.Markdown.Inline.Parser exposing
     , inlines
     , javascript
     , line
+    , lineWithProblems
     , parse_inlines
     )
 
@@ -167,6 +168,13 @@ combine list =
 line : Parser Context Inlines
 line =
     inlines |> many1 |> map combine
+
+
+lineWithProblems : Parser Context Inlines
+lineWithProblems =
+    or inlines (regex "." |> map (\x -> Chars x Nothing))
+        |> many1
+        |> map combine
 
 
 inlines : Parser Context Inline

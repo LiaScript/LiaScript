@@ -70,32 +70,8 @@ parse_section search_index global section =
             (init search_index { global | section = section.idx })
             section.code
     of
-        Ok ( state, x, es ) ->
-            if x.input == "" then
-                return section state es
-
-            else
-                parse_section2 section state es x.input
-
-        Err ( _, stream, ms ) ->
-            formatError ms stream |> Err
-
-
-parse_section2 section state es code =
-    case
-        code
-            |> Combine.runParser Markdown.run state
-    of
-        Ok ( state2, x, es2 ) ->
-            let
-                xxx =
-                    Debug.log "SSSSSSSSSSSSSS" ( x, es2 )
-            in
-            if x.input == "" then
-                return section state2 (es ++ es2)
-
-            else
-                parse_section2 section state2 (es ++ es2) x.input
+        Ok ( state, _, es ) ->
+            return section state es
 
         Err ( _, stream, ms ) ->
             formatError ms stream |> Err
