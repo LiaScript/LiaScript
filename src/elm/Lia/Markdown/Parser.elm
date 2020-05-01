@@ -103,6 +103,9 @@ blocks =
                         , md_annotations
                             |> map Paragraph
                             |> andMap paragraph
+                        , md_annotations
+                            |> map Paragraph
+                            |> andMap problem
                         ]
             in
             indentation
@@ -235,6 +238,15 @@ paragraph =
     indentation_skip
         |> keep (many1 (indentation |> keep line |> ignore newline))
         |> map (List.intersperse [ Chars " " Nothing ] >> List.concat >> combine)
+
+
+problem : Parser Context Inlines
+problem =
+    indentation_skip
+        |> ignore indentation
+        |> keep (regex "[^\n]+")
+        |> map (\x -> [ Chars x Nothing ])
+        |> ignore newline
 
 
 quote : Parser Context Markdown

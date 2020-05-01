@@ -38,27 +38,18 @@ ggg: bla bla bla
 # Lia-Script
 
 
-
-| Header 1             | Header 2                               |
-|:-------------------- |:-------------------------------------- |
-| {|>}{ich gehe}       | {|> UK English Female}{I go}           |
-| {|>}{du gehst}       | {|> UK English Female}{you go}         |
-| {|>}{er/sie/es geht} | {|> UK English Female}{he/she/it goes} |
-| {|>}{wir gehen}      | {|> UK English Female}{we go}          |
-| {|>}{ihr geht}       | {|> UK English Female}{you go}         |
-| {|>}{sie gehen}      | {|> UK English Female}{they go}        |
+| Header 1 | Header 2 | Header 3 |
+|:-------- |:-------- |:-------- |
+| Item ssssss1   | Item 2   | Item 3   |
+|asdfaf    | asdfsa|
+| Item 1   | Item 2   | Item 3   |
 
 
+asdfasf
 
-            {{|>}}
-dies ist ein {|> Deutsch Female 1-2}{kleiner} test jahu
-
-
-            {{|> 3}}
-dies ist ein kleiner test jahu
-
-
-{{2}} ddd
+| Header 1 | Header 2 | Header 3 |
+|:-------- |:-------- |:-------- |
+| Item 1   | Item 2   | Item 3   |
 
 
 ## Quizze

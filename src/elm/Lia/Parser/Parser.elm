@@ -18,7 +18,8 @@ import Combine
 import Lia.Definition.Parser
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Parser as Markdown
-import Lia.Parser.Context exposing (init)
+import Lia.Markdown.Types exposing (Markdown)
+import Lia.Parser.Context exposing (Context, init)
 import Lia.Parser.Helper exposing (stringTill)
 import Lia.Parser.Preprocessor as Preprocessor
 import Lia.Section as Section exposing (Section)
@@ -69,29 +70,58 @@ parse_section search_index global section =
             (init search_index { global | section = section.idx })
             section.code
     of
-        Ok ( state, _, es ) ->
-            Ok
-                { section
-                    | body = es
-                    , error = Nothing
-                    , visited = True
-                    , code_vector = state.code_vector
-                    , quiz_vector = state.quiz_vector
-                    , survey_vector = state.survey_vector
-                    , table_vector = state.table_vector
-                    , effect_model = state.effect_model
-                    , footnotes = state.footnotes
-                    , definition =
-                        if state.defines_updated then
-                            Just state.defines
+        Ok ( state, x, es ) ->
+            if x.input == "" then
+                return section state es
 
-                        else
-                            Nothing
-                    , parsed = True
-                }
+            else
+                parse_section2 section state es x.input
 
         Err ( _, stream, ms ) ->
             formatError ms stream |> Err
+
+
+parse_section2 section state es code =
+    case
+        code
+            |> Combine.runParser Markdown.run state
+    of
+        Ok ( state2, x, es2 ) ->
+            let
+                xxx =
+                    Debug.log "SSSSSSSSSSSSSS" ( x, es2 )
+            in
+            if x.input == "" then
+                return section state2 (es ++ es2)
+
+            else
+                parse_section2 section state2 (es ++ es2) x.input
+
+        Err ( _, stream, ms ) ->
+            formatError ms stream |> Err
+
+
+return : Section -> Context -> List Markdown -> Result String Section
+return section state es =
+    Ok
+        { section
+            | body = es
+            , error = Nothing
+            , visited = True
+            , code_vector = state.code_vector
+            , quiz_vector = state.quiz_vector
+            , survey_vector = state.survey_vector
+            , table_vector = state.table_vector
+            , effect_model = state.effect_model
+            , footnotes = state.footnotes
+            , definition =
+                if state.defines_updated then
+                    Just state.defines
+
+                else
+                    Nothing
+            , parsed = True
+        }
 
 
 formatError : List String -> InputStream -> String

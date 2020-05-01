@@ -382,7 +382,7 @@ strings =
                         |> map Chars
 
                 base2 =
-                    regex "[^\n|*|+<>]+"
+                    regex "[^\n*|+<>]+"
                         |> map Chars
             in
             choice
