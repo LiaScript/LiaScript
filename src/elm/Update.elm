@@ -112,7 +112,7 @@ update msg model =
                             Index.decodeGet event.message
                     in
                     ( { model | preload = course }
-                    , download (Load_ReadMe_Result id) id
+                    , download Load_ReadMe_Result id
                     )
 
                 "restore" ->
@@ -127,7 +127,7 @@ update msg model =
 
                         Err info ->
                             ( { model | preload = Nothing }
-                            , download (Load_ReadMe_Result model.lia.readme) model.lia.readme
+                            , download Load_ReadMe_Result model.lia.readme
                             )
 
                 _ ->
@@ -232,6 +232,7 @@ update msg model =
 
                             _ ->
                                 model.state
+                    , templates = Dict.insert url template model.templates
                 }
 
         Load_Template_Result url (Err info) ->
@@ -323,7 +324,7 @@ load_readme model readme =
                 , size = String.length code |> toFloat
               }
             , templates
-                |> List.map (\t -> download (Load_Template_Result t) t)
+                |> List.map (\t -> download Load_Template_Result t)
                 |> (::) (message LiaParse)
                 |> Cmd.batch
             )
@@ -364,7 +365,7 @@ update_readme model readme =
                 , size = String.length code |> toFloat
               }
             , templates
-                |> List.map (\t -> download (Load_Template_Result t) t)
+                |> List.map (\t -> download Load_Template_Result t)
                 |> (::) (message LiaParse)
                 |> Cmd.batch
             )
@@ -439,7 +440,7 @@ load model lia code templates =
                 , size = code_ |> Tuple.first >> String.length >> toFloat
               }
             , templates
-                |> List.map (\t -> download (Load_Template_Result t) t)
+                |> List.map (\t -> download Load_Template_Result t)
                 |> (::) (message LiaParse)
                 |> Cmd.batch
             )
@@ -474,9 +475,9 @@ parse_error msg =
             "Bad body " ++ body
 
 
-download : (Result Http.Error String -> Msg) -> String -> Cmd Msg
+download : (String -> Result Http.Error String -> Msg) -> String -> Cmd Msg
 download msg url =
-    Http.get { url = url, expect = Http.expectString msg }
+    Http.get { url = url, expect = Http.expectString (msg url) }
 
 
 getIndex : String -> Model -> ( Model, Cmd Msg )

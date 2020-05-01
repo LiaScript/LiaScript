@@ -4,19 +4,24 @@ import Combine
     exposing
         ( Parser
         , andMap
+        , andThen
         , choice
         , fail
         , ignore
         , keep
         , many
         , map
+        , optional
         , regex
         , string
         , succeed
         , whitespace
         , withColumn
+        , withState
         )
+import Dict exposing (Dict)
 import Lia.Markdown.Inline.Parser exposing (line)
+import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Parser.Context exposing (Context, getLine)
 import Lia.Parser.Helper exposing (newline)
@@ -60,9 +65,31 @@ body =
 section : Parser Context ( Section.Base, Int )
 section =
     title_tag
-        |> map Section.Base
+        |> map base
         |> andMap getLine
-        |> andMap title_str
+        |> andMap
+            (title_str
+                |> map Tuple.pair
+                |> andMap (withState (.backup >> succeed))
+                |> andThen memo
+            )
         |> andMap body
         |> map Tuple.pair
         |> andMap getLine
+
+
+base : Int -> Int -> ( Inlines, String ) -> String -> Section.Base
+base indentation_ line_ ( title_, head ) tail =
+    Section.Base indentation_ line_ title_ (head ++ tail)
+
+
+memo : ( Inlines, Dict String String ) -> Parser Context ( Inlines, String )
+memo ( key, dict ) =
+    Dict.get (stringify key) dict
+        |> Maybe.map (string >> optional "")
+        |> Maybe.withDefault (succeed "")
+        |> map (Tuple.pair key)
+
+
+
+-->> Maybe.withDefault (fail "not head not found")

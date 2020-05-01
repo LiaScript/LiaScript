@@ -48,12 +48,12 @@ type alias Context =
     , defines_updated : Bool
     , search_index : String -> String
     , editor_line : Int
-    , dict : Dict String String
+    , backup : Dict String String
     }
 
 
 init : Dict String String -> (String -> String) -> Int -> Definition -> Context
-init dict search_index editor_line global =
+init backup search_index editor_line global =
     { identation = []
     , identation_skip = False
     , code_vector = Array.empty
@@ -68,7 +68,7 @@ init dict search_index editor_line global =
     , defines_updated = False
     , search_index = search_index
     , editor_line = editor_line
-    , dict = dict
+    , backup = backup
     }
 
 

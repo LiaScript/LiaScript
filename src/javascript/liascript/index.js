@@ -24,6 +24,7 @@ function scrollIntoView (id, delay) {
 };
 
 var firstSpeak = true;
+var firstLoad = true;
 
 function handleEffects (event, elmSend, section) {
   switch (event.topic) {
@@ -327,15 +328,24 @@ class LiaScript {
             lia_execute_event({ code: data.definition.onload, delay: 350 })
           }
 
-          meta('author', data.definition.author)
-          meta('og:description', data.comment)
-          meta('og:title', data.str_title)
-          meta('og:type', 'website')
-          meta('og:url', '')
-          meta('og:image', data.definition.logo)
+          // signal the ready state to the editor
+          if (firstLoad) {
+            firstLoad = false
 
-          // store the basic info in the offline-repositories
-          self.connector.storeToIndex(data)
+            meta('author', data.definition.author)
+            meta('og:description', data.comment)
+            meta('og:title', data.str_title)
+            meta('og:type', 'website')
+            meta('og:url', '')
+            meta('og:image', data.definition.logo)
+
+            // store the basic info in the offline-repositories
+            self.connector.storeToIndex(data)
+
+            try {
+              window.liaReady()
+            } catch (e) {}
+          }
 
           break
         }
