@@ -31,7 +31,7 @@ import Lia.Markdown.Effect.Model exposing (set_annotation)
 import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Footnote.Parser as Footnote
 import Lia.Markdown.HTML.Parser as HTML
-import Lia.Markdown.Inline.Parser exposing (attribute, combine, comment, line)
+import Lia.Markdown.Inline.Parser exposing (attribute, combine, comment, line, lineWithProblems)
 import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Parser as Quiz
@@ -103,6 +103,9 @@ blocks =
                         , md_annotations
                             |> map Paragraph
                             |> andMap paragraph
+                        , md_annotations
+                            |> map Paragraph
+                            |> andMap problem
                         ]
             in
             indentation
@@ -199,7 +202,7 @@ unordered_list : Parser Context (List MarkdownS)
 unordered_list =
     indentation_append "  "
         |> keep
-            (regex "[*+-] "
+            (regex "[ \\t]*[*+\\-][ \\t]+"
                 |> keep (sepBy1 (regex "\\n?") blocks)
                 |> many1
             )
@@ -210,7 +213,7 @@ unordered_list =
 
 ordered_list : Parser Context (List ( String, MarkdownS ))
 ordered_list =
-    indentation_append "   "
+    indentation_append "  "
         |> keep
             (regex "-?\\d+"
                 |> map Tuple.pair
@@ -235,6 +238,14 @@ paragraph =
     indentation_skip
         |> keep (many1 (indentation |> keep line |> ignore newline))
         |> map (List.intersperse [ Chars " " Nothing ] >> List.concat >> combine)
+
+
+problem : Parser Context Inlines
+problem =
+    indentation_skip
+        |> ignore indentation
+        |> keep lineWithProblems
+        |> ignore newline
 
 
 quote : Parser Context Markdown

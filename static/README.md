@@ -40,6 +40,7 @@ ggg: bla bla bla
 
 | Header 1 | Header 2 | Header 3 |
 |:-------- |:-------- |:-------- |
+<<<<<<< HEAD
 | 1        | 2        | 3        |
 | 4        | 0.2      | 8        |
 | 6         | -1.3333         | h         |
@@ -53,6 +54,18 @@ dies ist ein kleiner test jahu
 
 
 {{2}} ddd
+=======
+| Item ssssss1   | Item 2   | Item 3   |
+|asdfaf    | asdfsa|
+| Item 1   | Item 2   | Item 3   |
+
+
+asdfasf
+
+| Header 1 | Header 2 | Header 3 |
+|:-------- |:-------- |:-------- |
+| Item 1   | Item 2   | Item 3   |
+>>>>>>> development
 
 
 ## Quizze
