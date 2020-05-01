@@ -32,3 +32,4 @@ assets/Tensor.md
 dist
 .cache
 .coverage
+static/README.md
