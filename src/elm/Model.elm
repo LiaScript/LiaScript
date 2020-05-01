@@ -1,5 +1,6 @@
 module Model exposing (Model, State(..))
 
+import Dict exposing (Dict)
 import Index.Model as Index
 import Lia.Script
 import Session exposing (Session)
@@ -16,6 +17,7 @@ type alias Model =
     , state : State
     , lia : Lia.Script.Model
     , lia_ : Lia.Script.Model
+    , templates : Dict String String
     }
 
 

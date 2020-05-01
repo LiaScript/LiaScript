@@ -51,7 +51,7 @@ type Msg
     | LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
     | Load_ReadMe_Result String (Result Http.Error String)
-    | Load_Template_Result (Result Http.Error String)
+    | Load_Template_Result String (Result Http.Error String)
     | JIT String
 
 
@@ -218,7 +218,7 @@ update msg model =
                 |> event2js
             )
 
-        Load_Template_Result (Ok template) ->
+        Load_Template_Result url (Ok template) ->
             parsing
                 { model
                     | lia =
@@ -234,7 +234,7 @@ update msg model =
                                 model.state
                 }
 
-        Load_Template_Result (Err info) ->
+        Load_Template_Result url (Err info) ->
             ( { model | state = Error <| parse_error info }, Cmd.none )
 
 
@@ -323,7 +323,7 @@ load_readme model readme =
                 , size = String.length code |> toFloat
               }
             , templates
-                |> List.map (download Load_Template_Result)
+                |> List.map (\t -> download (Load_Template_Result t) t)
                 |> (::) (message LiaParse)
                 |> Cmd.batch
             )
@@ -364,7 +364,7 @@ update_readme model readme =
                 , size = String.length code |> toFloat
               }
             , templates
-                |> List.map (download Load_Template_Result)
+                |> List.map (\t -> download (Load_Template_Result t) t)
                 |> (::) (message LiaParse)
                 |> Cmd.batch
             )
@@ -439,7 +439,7 @@ load model lia code templates =
                 , size = code_ |> Tuple.first >> String.length >> toFloat
               }
             , templates
-                |> List.map (download Load_Template_Result)
+                |> List.map (\t -> download (Load_Template_Result t) t)
                 |> (::) (message LiaParse)
                 |> Cmd.batch
             )

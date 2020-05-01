@@ -5,6 +5,7 @@ module Main exposing
 
 import Browser
 import Browser.Navigation as Nav
+import Dict
 import Index.Model as Index
 import Json.Encode as JE
 import Lia.Parser.PatReplace exposing (link)
@@ -68,6 +69,7 @@ init flags url key =
                 s
                 m
                 m
+                Dict.empty
 
         courseUrl =
             { url | query = Maybe.map link url.query }
