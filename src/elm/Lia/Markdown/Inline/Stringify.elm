@@ -48,6 +48,9 @@ inline2string id inline =
         Ref ref _ ->
             ref2string id ref
 
+        IHTML (HTML.Node _ _ x) _ ->
+            stringify_ id x
+
         EInline e _ ->
             if Effect.isIn id e then
                 stringify_ id e.content
