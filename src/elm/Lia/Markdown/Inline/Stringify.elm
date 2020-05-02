@@ -4,6 +4,7 @@ module Lia.Markdown.Inline.Stringify exposing
     )
 
 import Lia.Markdown.Effect.Types as Effect
+import Lia.Markdown.HTML.Types as HTML
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 
 
