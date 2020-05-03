@@ -39,7 +39,7 @@ parse_defintion base code =
                 |> Lia.Definition.Types.default
                 |> init identity
             )
-            code
+            (code ++ "\n")
     of
         Ok ( state, data, _ ) ->
             Ok ( state.defines, "#" ++ data.input )
