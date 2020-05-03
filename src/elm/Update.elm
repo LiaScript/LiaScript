@@ -82,7 +82,7 @@ update msg model =
                     , lia = model.lia |> Lia.Script.backup
                     , lia_ = model.lia
                 }
-                code
+                (code ++ "\n")
 
         LiaScript childMsg ->
             let
