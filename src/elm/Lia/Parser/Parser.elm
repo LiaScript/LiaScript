@@ -46,7 +46,11 @@ parse_defintion base code =
             Ok ( state.defines, ( "#" ++ data.input, line ) )
 
         Err ( _, stream, ms ) ->
-            Err (formatError ms stream)
+            if String.trim code == "" then
+                parse_defintion base notification
+
+            else
+                Err (formatError ms stream)
 
 
 parse_titles :
@@ -135,3 +139,19 @@ formatError ms stream =
         ++ "\\nI expected one of the following:\\n"
         ++ expectationSeparator
         ++ String.join expectationSeparator ms
+
+
+notification : String
+notification =
+    """# Welcome to LiaScript (Ups)
+
+> The file you have loaded does not contain any content or it is not a valid
+> Markdown file.
+
+LiaScript is domain specific language that is based on Markdown. For more
+information visit:
+
+* Project-website: https://LiaScript.github.io
+* Documentation: https://github.com/liascript/docs
+* YouTube: https://www.youtube.com/channel/UCyiTe2GkW_u05HSdvUblGYg
+  """
