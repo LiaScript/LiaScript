@@ -84,7 +84,8 @@ load_first_slide session model =
             model.section_active
         )
         { model
-            | search_index =
+            | title = get_title model.sections
+            , search_index =
                 model.sections
                     |> Array.map (.title >> stringify >> String.trim)
                     |> Array.toList
@@ -195,10 +196,8 @@ get_title sections =
     sections
         |> Array.get 0
         |> Maybe.map .title
-        |> Maybe.map stringify
+        |> Maybe.map (stringify >> String.trim)
         |> Maybe.withDefault "Lia"
-        |> String.trim
-        |> (++) "Lia: "
 
 
 filterIndex : String -> ( String, String ) -> Bool
