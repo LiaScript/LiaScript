@@ -42,8 +42,8 @@ fromElement element =
 fromState : State -> JE.Value
 fromState state =
     case state of
-        Empty_State ->
-            JE.object [ ( "Empty", JE.null ) ]
+        Generic_State ->
+            JE.object [ ( "Generic", JE.null ) ]
 
         Block_State s ->
             Block.fromState s
@@ -88,5 +88,5 @@ toState =
         [ Block.toState |> JD.map Block_State
         , Vector.toState |> JD.map Vector_State
         , Matrix.toState |> JD.map Matrix_State
-        , JD.field "Empty" JD.value |> JD.andThen (\_ -> JD.succeed Empty_State)
+        , JD.field "Generic" JD.value |> JD.andThen (\_ -> JD.succeed Generic_State)
         ]

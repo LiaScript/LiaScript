@@ -43,14 +43,14 @@ type alias Element =
 
 
 type State
-    = Empty_State
+    = Generic_State
     | Block_State Block.State
     | Vector_State Vector.State
     | Matrix_State Matrix.State
 
 
 type Type
-    = Empty_Type
+    = Generic_Type
     | Block_Type Block.Quiz
     | Vector_Type Vector.Quiz
     | Matrix_Type Matrix.Quiz
@@ -67,8 +67,8 @@ type alias Quiz =
 initState : Type -> State
 initState quiz =
     case quiz of
-        Empty_Type ->
-            Empty_State
+        Generic_Type ->
+            Generic_State
 
         Block_Type q ->
             q.solution
@@ -89,8 +89,8 @@ initState quiz =
 toState : Type -> State
 toState quiz =
     case quiz of
-        Empty_Type ->
-            Empty_State
+        Generic_Type ->
+            Generic_State
 
         Block_Type q ->
             Block_State q.solution
