@@ -40,7 +40,7 @@ parse_defintion base code =
                 |> Lia.Definition.Types.default
                 |> init Dict.empty identity 0
             )
-            code
+            (code ++ "\n")
     of
         Ok ( state, data, line ) ->
             Ok ( state.defines, ( "#" ++ data.input, line ) )
