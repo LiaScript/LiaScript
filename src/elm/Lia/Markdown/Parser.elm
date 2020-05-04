@@ -213,7 +213,7 @@ unordered_list =
 
 ordered_list : Parser Context (List ( String, MarkdownS ))
 ordered_list =
-    indentation_append "  "
+    indentation_append "   "
         |> keep
             (regex "-?\\d+"
                 |> map Tuple.pair
