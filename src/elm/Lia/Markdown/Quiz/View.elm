@@ -72,11 +72,7 @@ view_quiz config state quiz fn =
             Html.text state.error_msg
         , fn
         , view_button config state.trial state.solved (Check quiz.id quiz.quiz quiz.javascript)
-        , if quiz.quiz == Empty_Type then
-            Html.text ""
-
-          else
-            view_button_solution config state.solved (ShowSolution quiz.id quiz.quiz)
+        , view_button_solution config state.solved (ShowSolution quiz.id quiz.quiz)
         , view_hints config quiz.id state.hint quiz.hints
         ]
 
@@ -162,10 +158,9 @@ view_hints config idx counter hints =
             (v_hints hints counter)
 
 
-view_solution : Vector -> Quiz -> ( Bool, Bool )
+view_solution : Vector -> Quiz -> Bool
 view_solution vector quiz =
     quiz.id
         |> get_state vector
         |> Maybe.map solved
         |> Maybe.withDefault False
-        |> Tuple.pair (quiz.quiz == Empty_Type)

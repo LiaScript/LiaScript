@@ -42,7 +42,7 @@ parse : Parser Context Quiz
 parse =
     [ map Matrix_Type Matrix.parse
     , map Vector_Type Vector.parse
-    , onsuccess Empty_Type empty
+    , onsuccess Generic_Type generic
     , map Block_Type Block.parse
     ]
         |> choice
@@ -75,8 +75,8 @@ get_counter =
     withState (\s -> succeed (Array.length s.quiz_vector))
 
 
-empty : Parser Context ()
-empty =
+generic : Parser Context ()
+generic =
     maybe indentation
         |> ignore spaces
         |> ignore (string "[[!]]")

@@ -176,23 +176,15 @@ view_block config block =
 
         Quiz attr quiz (Just ( answer, hidden_effects )) ->
             Html.div (annotation "lia-quiz lia-card" attr) <|
-                case Quizzes.view_solution config.section.quiz_vector quiz of
-                    ( empty, True ) ->
-                        List.append
-                            [ Html.map UpdateQuiz <| Quizzes.view config.main quiz config.section.quiz_vector ]
-                            ((if empty then
-                                Html.text ""
+                if Quizzes.view_solution config.section.quiz_vector quiz then
+                    List.append
+                        [ Html.map UpdateQuiz <| Quizzes.view config.main quiz config.section.quiz_vector ]
+                        (Html.hr [] [] :: List.map (view_block config) answer)
 
-                              else
-                                Html.hr [] []
-                             )
-                                :: List.map (view_block config) answer
-                            )
-
-                    _ ->
-                        [ Quizzes.view config.main quiz config.section.quiz_vector
-                            |> Html.map UpdateQuiz
-                        ]
+                else
+                    [ Quizzes.view config.main quiz config.section.quiz_vector
+                        |> Html.map UpdateQuiz
+                    ]
 
         Survey attr survey ->
             config.section.survey_vector
