@@ -63,9 +63,9 @@ view_aside hasShareAPI model =
 
 view_article : Screen -> Bool -> Model -> Html Msg
 view_article screen hasIndex model =
-    Html.article [ Attr.class "lia-slide", preventDefaultOn "keydown" key_decoder ] <|
-        case get_active_section model of
-            Just section ->
+    case get_active_section model of
+        Just section ->
+            Html.article [ Attr.class "lia-slide", preventDefaultOn "keydown" key_decoder ]
                 [ section
                     |> .effect_model
                     |> state
@@ -94,8 +94,8 @@ view_article screen hasIndex model =
                 , view_footer model.translation model.settings.sound model.settings.mode section.effect_model
                 ]
 
-            Nothing ->
-                [ Html.text "" ]
+        Nothing ->
+            Html.text "no content"
 
 
 view_footer : Lang -> Bool -> Mode -> Lia.Markdown.Effect.Model.Model -> Html Msg

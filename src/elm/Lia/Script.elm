@@ -58,8 +58,8 @@ load_first_slide : Session -> Model -> ( Model, Cmd Msg, List Event )
 load_first_slide session model =
     load_slide
         session
-        (if model.section_active > pages model then
-            0
+        (if model.section_active >= pages model then
+            pages model - 1
 
          else
             model.section_active
