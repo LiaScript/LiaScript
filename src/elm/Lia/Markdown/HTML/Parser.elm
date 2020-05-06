@@ -79,7 +79,7 @@ tagAttributes =
 
 tagAttribute : Parser Context ( String, String )
 tagAttribute =
-    regex "\\w+"
+    regex "[A-Za-z0-9_\\-]+"
         |> map (String.toLower >> Tuple.pair)
         |> ignore whitespace
         |> andMap tagAttributeValue
