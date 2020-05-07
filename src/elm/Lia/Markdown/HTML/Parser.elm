@@ -26,10 +26,16 @@ import Hex
 import Lia.Markdown.HTML.NamedCharacterReferences as NamedCharacterReferences
 import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Parser.Context exposing (Context)
+import Lia.Parser.Helper exposing (stringTill)
 
 
 parse : Parser Context x -> Parser Context (Node x)
-parse parser =
+parse =
+    tag >> or liaKeep
+
+
+tag : Parser Context x -> Parser Context (Node x)
+tag parser =
     regex "[ \\t]*<[ \\t]*"
         |> keep tagName
         |> map Tuple.pair
@@ -53,6 +59,13 @@ parse parser =
                                 (closingTag name)
                             )
             )
+
+
+liaKeep : Parser Context (Node x)
+liaKeep =
+    string "<lia-keep>"
+        |> keep (stringTill (string "</lia-keep>"))
+        |> map NodeX
 
 
 tagName : Parser Context String

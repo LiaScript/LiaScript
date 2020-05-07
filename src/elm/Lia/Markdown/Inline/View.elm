@@ -76,7 +76,7 @@ view config element =
                 |> Html.span (annotation "lia-container" attr)
 
         IHTML node attr ->
-            HTML.view (view config) attr node
+            HTML.view Html.span (view config) attr node
 
         EInline e attr ->
             e.content
