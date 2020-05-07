@@ -127,7 +127,7 @@ view config element =
                     view config (Goto e_ line_)
 
                 IHTML node attr ->
-                    HTML.view (view config) attr node
+                    HTML.view Html.span (view config) attr node
 
                 _ ->
                     Html.span [ goto line ] [ view config e ]
