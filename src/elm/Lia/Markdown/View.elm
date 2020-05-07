@@ -123,6 +123,7 @@ view_block config block =
             case htmlBlock element of
                 Just ( name, attributes, inlines ) ->
                     HTML.view
+                        Html.div
                         (config.view
                             >> List.head
                             >> Maybe.withDefault
@@ -161,7 +162,7 @@ view_block config block =
                 |> Html.blockquote (annotation "lia-quote" attr)
 
         HTML attr node ->
-            HTML.view (view_block config) attr node
+            HTML.view Html.div (view_block config) attr node
 
         Code attr code ->
             code
