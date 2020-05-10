@@ -30,7 +30,6 @@ import Process
 import Session exposing (Screen)
 import Task
 import Url
-import Version
 
 
 port event2js : Event -> Cmd msg
@@ -125,7 +124,7 @@ update msg model =
                                             { lia | settings = model.lia.settings }
                                 }
 
-                        Err info ->
+                        Err _ ->
                             ( { model | preload = Nothing }
                             , download Load_ReadMe_Result model.lia.readme
                             )
@@ -235,7 +234,7 @@ update msg model =
                     , templates = Dict.insert url template model.templates
                 }
 
-        Load_Template_Result url (Err info) ->
+        Load_Template_Result _ (Err info) ->
             ( { model | state = Error <| parse_error info }, Cmd.none )
 
 
