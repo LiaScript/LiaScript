@@ -343,9 +343,13 @@ class LiaScript {
             self.connector.storeToIndex(data)
 
             try {
-              window.liaReady()
+              window.top.liaReady()
             } catch (e) {}
           }
+
+          try {
+            window.top.liaDefinitions(data.definition)
+          } catch (e) {}
 
           break
         }
