@@ -115,7 +115,7 @@ encodeBarChart xLabel category data =
                   )
                 ]
           )
-        , toolbox
+        , toolbox { saveAsImage = True, dataView = True, dataZoom = True, magicType = True }
 
         --  , brush
         , ( "tooltip", JE.object [] )
@@ -171,7 +171,7 @@ encodePieChart title subtitle data =
         ]
             |> JE.list identity
       )
-    , toolbox
+    , toolbox { saveAsImage = True, dataView = True, dataZoom = False, magicType = False }
 
     --, ( "legend"
     --  , JE.object
@@ -234,7 +234,7 @@ encode withColor chart =
                 , ( "top", JE.int 28 )
                 ]
           )
-        , toolbox
+        , toolbox { saveAsImage = True, dataView = True, dataZoom = True, magicType = True }
 
         --  , brush
         , ( "tooltip", JE.object [] )
@@ -257,51 +257,78 @@ brush =
     )
 
 
-toolbox : ( String, JE.Value )
-toolbox =
+toolbox : { saveAsImage : Bool, dataView : Bool, dataZoom : Bool, magicType : Bool } -> ( String, JE.Value )
+toolbox config =
     ( "toolbox"
     , JE.object
         [ ( "bottom", JE.int 8 )
         , ( "left", JE.string "center" )
         , ( "feature"
-          , JE.object
-                [ ( "saveAsImage", JE.object [ ( "title", JE.string "store" ) ] )
-                , ( "dataView"
-                  , JE.object
-                        [ ( "title", JE.string "edit" )
-                        , ( "lang", JE.list JE.string [ "data view", "turn off", "refresh" ] )
-                        ]
-                  )
-                , ( "dataZoom"
-                  , JE.object
-                        [ ( "title"
+          , []
+                |> List.append
+                    (if config.saveAsImage then
+                        [ ( "saveAsImage", JE.object [ ( "title", JE.string "store" ) ] ) ]
+
+                     else
+                        []
+                    )
+                |> List.append
+                    (if config.dataView then
+                        [ ( "dataView"
                           , JE.object
-                                [ ( "zoom", JE.string "zoom" )
-                                , ( "back", JE.string "back" )
+                                [ ( "title", JE.string "edit" )
+                                , ( "lang", JE.list JE.string [ "data view", "turn off", "refresh" ] )
                                 ]
                           )
                         ]
-                  )
-                , ( "magicType"
-                  , JE.object
-                        [ ( "type"
-                          , JE.list JE.string
-                                [ "tiled"
-                                , "line"
-                                , "bar"
-                                ]
-                          )
-                        , ( "title"
+
+                     else
+                        []
+                    )
+                |> List.append
+                    (if config.dataZoom then
+                        [ ( "dataZoom"
                           , JE.object
-                                [ ( "stack", JE.string "stack" )
-                                , ( "tiled", JE.string "tiled" )
-                                , ( "line", JE.string "line" )
-                                , ( "bar", JE.string "bar" )
+                                [ ( "title"
+                                  , JE.object
+                                        [ ( "zoom", JE.string "zoom" )
+                                        , ( "back", JE.string "back" )
+                                        ]
+                                  )
                                 ]
                           )
                         ]
-                  )
-                ]
+
+                     else
+                        []
+                    )
+                |> List.append
+                    (if config.magicType then
+                        [ ( "magicType"
+                          , JE.object
+                                [ ( "type"
+                                  , JE.list JE.string
+                                        [ "tiled"
+                                        , "line"
+                                        , "bar"
+                                        ]
+                                  )
+                                , ( "title"
+                                  , JE.object
+                                        [ ( "stack", JE.string "stack" )
+                                        , ( "tiled", JE.string "tiled" )
+                                        , ( "line", JE.string "line" )
+                                        , ( "bar", JE.string "bar" )
+                                        ]
+                                  )
+                                ]
+                          )
+                        ]
+
+                     else
+                        []
+                    )
+                |> JE.object
           )
         ]
     )
