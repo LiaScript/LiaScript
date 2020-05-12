@@ -3,6 +3,7 @@ module Lia.Markdown.Chart.View exposing
     , view
     , viewBarChart
     , viewChart
+    , viewPieChart
     )
 
 import Char exposing (isLower, toLower)
@@ -28,6 +29,12 @@ viewChart attr light =
 viewBarChart : Annotation -> Bool -> String -> List String -> List ( Maybe String, List (Maybe Float) ) -> Html msg
 viewBarChart attr light title category data =
     encodeBarChart title category data
+        |> eCharts attr light
+
+
+viewPieChart : Annotation -> Bool -> Maybe String -> Maybe String -> List ( String, Float ) -> Html msg
+viewPieChart attr light title subtitle data =
+    encodePieChart title subtitle data
         |> eCharts attr light
 
 
@@ -108,12 +115,91 @@ encodeBarChart xLabel category data =
                   )
                 ]
           )
-        , toolbox
+        , toolbox { saveAsImage = True, dataView = True, dataZoom = True, magicType = True }
 
         --  , brush
         , ( "tooltip", JE.object [] )
         , ( "series", bars )
         ]
+
+
+encodePieChart : Maybe String -> Maybe String -> List ( String, Float ) -> JE.Value
+encodePieChart title subtitle data =
+    let
+        pieces =
+            data
+                |> List.map
+                    (\( name_, value_ ) ->
+                        JE.object
+                            [ ( "name", JE.string name_ )
+                            , ( "value", JE.float value_ )
+                            ]
+                    )
+                |> JE.list identity
+
+        head =
+            if title /= Nothing || subtitle /= Nothing then
+                [ ( "title"
+                  , JE.object
+                        [ ( "text"
+                          , title |> Maybe.withDefault "" |> JE.string
+                          )
+                        , ( "subtext", subtitle |> Maybe.withDefault "" |> JE.string )
+                        , ( "left", JE.string "center" )
+                        ]
+                  )
+                ]
+
+            else
+                []
+    in
+    [ ( "series"
+      , [ JE.object
+            [ ( "type", JE.string "pie" )
+            , ( "name", subtitle |> Maybe.withDefault "" |> JE.string )
+
+            --, ( "roseType", JE.string "radius" )
+            , ( "radius"
+              , JE.string <|
+                    if title /= Nothing || subtitle /= Nothing then
+                        "65%"
+
+                    else
+                        "75%"
+              )
+            , ( "center", JE.string "50%" )
+            , ( "selectedMode", JE.string "single" )
+            , ( "data", pieces )
+            ]
+        ]
+            |> JE.list identity
+      )
+    , toolbox { saveAsImage = True, dataView = True, dataZoom = False, magicType = False }
+
+    --, ( "legend"
+    --  , JE.object
+    --        [ ( "data"
+    --          , data
+    --                |> List.map Tuple.first
+    --                |> JE.list JE.string
+    --          )
+    --, ( "right", JE.int 0 )
+    --        , ( "top", JE.int 28 )
+    --        ]
+    --  )
+    --  , brush
+    , ( "tooltip"
+      , JE.object
+            [ ( "trigger", JE.string "item" )
+            , ( "formatter"
+              , JE.string "{b} : {c} ({d}%)"
+                -- "{a}<br/>{b} : {c} ({d}%)"
+              )
+            ]
+      )
+    ]
+        |> List.append head
+        |> JE.object
 
 
 label : ( String, JE.Value )
@@ -159,7 +245,7 @@ encode withColor chart =
                 , ( "top", JE.int 28 )
                 ]
           )
-        , toolbox
+        , toolbox { saveAsImage = True, dataView = True, dataZoom = True, magicType = True }
 
         --  , brush
         , ( "tooltip", JE.object [] )
@@ -182,51 +268,78 @@ brush =
     )
 
 
-toolbox : ( String, JE.Value )
-toolbox =
+toolbox : { saveAsImage : Bool, dataView : Bool, dataZoom : Bool, magicType : Bool } -> ( String, JE.Value )
+toolbox config =
     ( "toolbox"
     , JE.object
         [ ( "bottom", JE.int 8 )
         , ( "left", JE.string "center" )
         , ( "feature"
-          , JE.object
-                [ ( "saveAsImage", JE.object [ ( "title", JE.string "store" ) ] )
-                , ( "dataView"
-                  , JE.object
-                        [ ( "title", JE.string "edit" )
-                        , ( "lang", JE.list JE.string [ "data view", "turn off", "refresh" ] )
-                        ]
-                  )
-                , ( "dataZoom"
-                  , JE.object
-                        [ ( "title"
+          , []
+                |> List.append
+                    (if config.saveAsImage then
+                        [ ( "saveAsImage", JE.object [ ( "title", JE.string "store" ) ] ) ]
+
+                     else
+                        []
+                    )
+                |> List.append
+                    (if config.dataView then
+                        [ ( "dataView"
                           , JE.object
-                                [ ( "zoom", JE.string "zoom" )
-                                , ( "back", JE.string "back" )
+                                [ ( "title", JE.string "edit" )
+                                , ( "lang", JE.list JE.string [ "data view", "turn off", "refresh" ] )
                                 ]
                           )
                         ]
-                  )
-                , ( "magicType"
-                  , JE.object
-                        [ ( "type"
-                          , JE.list JE.string
-                                [ "tiled"
-                                , "line"
-                                , "bar"
-                                ]
-                          )
-                        , ( "title"
+
+                     else
+                        []
+                    )
+                |> List.append
+                    (if config.dataZoom then
+                        [ ( "dataZoom"
                           , JE.object
-                                [ ( "stack", JE.string "stack" )
-                                , ( "tiled", JE.string "tiled" )
-                                , ( "line", JE.string "line" )
-                                , ( "bar", JE.string "bar" )
+                                [ ( "title"
+                                  , JE.object
+                                        [ ( "zoom", JE.string "zoom" )
+                                        , ( "back", JE.string "back" )
+                                        ]
+                                  )
                                 ]
                           )
                         ]
-                  )
-                ]
+
+                     else
+                        []
+                    )
+                |> List.append
+                    (if config.magicType then
+                        [ ( "magicType"
+                          , JE.object
+                                [ ( "type"
+                                  , JE.list JE.string
+                                        [ "tiled"
+                                        , "line"
+                                        , "bar"
+                                        ]
+                                  )
+                                , ( "title"
+                                  , JE.object
+                                        [ ( "stack", JE.string "stack" )
+                                        , ( "tiled", JE.string "tiled" )
+                                        , ( "line", JE.string "line" )
+                                        , ( "bar", JE.string "bar" )
+                                        ]
+                                  )
+                                ]
+                          )
+                        ]
+
+                     else
+                        []
+                    )
+                |> JE.object
           )
         ]
     )
@@ -249,7 +362,7 @@ series withColor ( char, diagram ) =
             )
         <|
             case diagram of
-                Line list label_ ->
+                Lines list label_ ->
                     [ ( "data"
                       , list
                             |> List.map (\point -> JE.list JE.float [ point.x, point.y ])

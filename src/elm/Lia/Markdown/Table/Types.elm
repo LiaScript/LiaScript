@@ -23,9 +23,10 @@ type Table
 
 type Class
     = None
-    | Lines
-    | Scatter
+    | LinePlot
+    | ScatterPlot
     | BarChart
+    | PieChart Bool
 
 
 type alias Vector =

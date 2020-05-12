@@ -67,20 +67,27 @@ checkDiagram formatted rows =
                 List.map (List.head >> Maybe.andThen .float) rows
         in
         if List.all ((/=) Nothing) head then
-            if
+            if formatted && List.length head == 1 then
+                PieChart False
+
+            else if
                 head
                     |> List.filterMap identity
                     |> Set.fromList
                     |> Set.size
                     |> (==) (List.length head)
             then
-                Lines
+                LinePlot
 
             else
-                Scatter
+                ScatterPlot
 
         else if formatted then
-            BarChart
+            if List.length head == 1 then
+                PieChart True
+
+            else
+                BarChart
 
         else
             None

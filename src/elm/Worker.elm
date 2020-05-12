@@ -3,9 +3,11 @@ port module Worker exposing (init)
 import Array
 import Http
 import Json.Encode as JE
+import Lia.Definition.Json.Encode as Def
 import Lia.Json.Encode as Lia
 import Lia.Markdown.Quiz.Json as Quiz
 import Lia.Markdown.Survey.Json as Survey
+import Lia.Parser.Parser as Parser
 import Lia.Script
 import Lia.Update exposing (generate)
 import Model exposing (State(..))
@@ -56,8 +58,22 @@ init : Flags -> ( Model, Cmd Msg )
 init flags =
     ( Lia.Script.init JE.null "" "" "" Nothing
         |> Model Idle "" Nothing
-    , Cmd.none
+    , if flags.cmd == "" then
+        Cmd.none
+
+      else
+        flags.cmd
+            |> defines
+            |> output
     )
+
+
+defines : String -> ( Bool, String )
+defines str =
+    str
+        |> Parser.parse_defintion ""
+        |> Result.map (Tuple.first >> Def.encode >> JE.encode 2 >> Tuple.pair True)
+        |> Result.withDefault ( False, "" )
 
 
 message : msg -> Cmd msg
@@ -70,6 +86,11 @@ message msg =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        Handle [ "defines", readme ] ->
+            ( model
+            , readme |> defines >> output
+            )
+
         Handle [ cmd, readme ] ->
             load_readme readme { model | cmd = cmd }
 
