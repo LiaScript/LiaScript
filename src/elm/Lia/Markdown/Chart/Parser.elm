@@ -64,7 +64,7 @@ parse =
                         if v |> List.map .x |> unique Nothing then
                             labels
                                 |> Dict.get (String.fromChar k)
-                                |> Line v
+                                |> Lines v
 
                         else
                             labels

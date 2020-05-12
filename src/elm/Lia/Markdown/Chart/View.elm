@@ -249,7 +249,7 @@ series withColor ( char, diagram ) =
             )
         <|
             case diagram of
-                Line list label_ ->
+                Lines list label_ ->
                     [ ( "data"
                       , list
                             |> List.map (\point -> JE.list JE.float [ point.x, point.y ])

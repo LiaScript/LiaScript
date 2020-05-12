@@ -23,5 +23,5 @@ type alias Chart =
 
 
 type Diagram
-    = Line (List Point) (Maybe String)
+    = Lines (List Point) (Maybe String)
     | Dots (List Point) (Maybe String)

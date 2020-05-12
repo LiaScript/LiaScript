@@ -142,8 +142,8 @@ chart attr mode class head rows =
 
                 ( legend, diagrams ) =
                     toData
-                        (if class == Lines then
-                            Line
+                        (if class == LinePlot then
+                            Lines
 
                          else
                             Dots
@@ -181,7 +181,7 @@ toTable id attr class diagram body =
                     BarChart ->
                         "bar_chart"
 
-                    Lines ->
+                    LinePlot ->
                         "multiline_chart"
 
                     _ ->
