@@ -58,8 +58,22 @@ init : Flags -> ( Model, Cmd Msg )
 init flags =
     ( Lia.Script.init JE.null "" "" "" Nothing
         |> Model Idle "" Nothing
-    , Cmd.none
+    , if flags.cmd == "" then
+        Cmd.none
+
+      else
+        flags.cmd
+            |> defines
+            |> output
     )
+
+
+defines : String -> ( Bool, String )
+defines str =
+    str
+        |> Parser.parse_defintion ""
+        |> Result.map (Tuple.first >> Def.encode >> JE.encode 2 >> Tuple.pair True)
+        |> Result.withDefault ( False, "" )
 
 
 message : msg -> Cmd msg
@@ -74,11 +88,7 @@ update msg model =
     case msg of
         Handle [ "defines", readme ] ->
             ( model
-            , readme
-                |> Parser.parse_defintion ""
-                |> Result.map (Tuple.first >> Def.encode >> JE.encode 2 >> Tuple.pair True)
-                |> Result.withDefault ( False, "" )
-                |> output
+            , readme |> defines >> output
             )
 
         Handle [ cmd, readme ] ->
