@@ -117,51 +117,101 @@ toBarChart i head rows =
 chart : Annotation -> Bool -> Class -> List Inlines -> List Row -> Html Msg
 chart attr mode class head rows =
     Html.div [ Attr.style "float" "left", Attr.style "width" "100%" ] <|
-        if class == BarChart then
-            let
-                title =
-                    head
-                        |> List.head
-                        |> Maybe.map (stringify >> String.trim)
-                        |> Maybe.withDefault ""
-
-                category =
-                    rows
-                        |> getColumn 0 []
-                        |> Maybe.map (Tuple.second >> List.map (.string >> String.trim))
-                        |> Maybe.withDefault []
-            in
-            [ toBarChart 1 head rows
-                |> Chart.viewBarChart attr mode title category
-            ]
-
-        else
-            let
-                points =
-                    List.filterMap (List.head >> Maybe.andThen .float >> Maybe.map Point) rows
-
-                ( legend, diagrams ) =
-                    toData
-                        (if class == LinePlot then
-                            Lines
-
-                         else
-                            Dots
-                        )
-                        points
-                        1
+        case class of
+            BarChart ->
+                let
+                    title =
                         head
+                            |> List.head
+                            |> Maybe.map (stringify >> String.trim)
+                            |> Maybe.withDefault ""
+
+                    category =
                         rows
-                        |> List.unzip
-            in
-            [ { title = ""
-              , yLabel = ""
-              , xLabel = head |> List.head |> Maybe.map (stringify >> String.trim) |> Maybe.withDefault ""
-              , legend = List.filterMap identity legend
-              , diagrams = diagrams |> Dict.fromList
-              }
-                |> Chart.viewChart attr mode
-            ]
+                            |> getColumn 0 []
+                            |> Maybe.map (Tuple.second >> List.map (.string >> String.trim))
+                            |> Maybe.withDefault []
+                in
+                [ toBarChart 1 head rows
+                    |> Chart.viewBarChart attr mode title category
+                ]
+
+            PieChart withTitle ->
+                if withTitle then
+                    let
+                        ( main, title ) =
+                            case head of
+                                m :: heads_ ->
+                                    ( stringify m |> String.trim |> Just
+                                    , heads_
+                                        |> List.map (stringify >> String.trim)
+                                    )
+
+                                [] ->
+                                    ( Nothing, [] )
+
+                        sub =
+                            rows
+                                |> List.head
+                                |> Maybe.andThen List.head
+                                |> Maybe.map .string
+
+                        data =
+                            rows
+                                |> List.head
+                                |> Maybe.andThen List.tail
+                                |> Maybe.withDefault []
+                                |> List.map .float
+                    in
+                    [ List.map2 (\title_ -> Maybe.map (Tuple.pair title_)) title data
+                        |> List.filterMap identity
+                        |> Chart.viewPieChart attr mode main sub
+                    ]
+
+                else
+                    let
+                        title =
+                            head
+                                |> List.map (stringify >> String.trim)
+
+                        data =
+                            rows
+                                |> List.head
+                                |> Maybe.withDefault []
+                                |> List.map .float
+                    in
+                    [ List.map2 (\title_ -> Maybe.map (Tuple.pair title_)) title data
+                        |> List.filterMap identity
+                        |> Chart.viewPieChart attr mode Nothing Nothing
+                    ]
+
+            _ ->
+                let
+                    points =
+                        List.filterMap (List.head >> Maybe.andThen .float >> Maybe.map Point) rows
+
+                    ( legend, diagrams ) =
+                        toData
+                            (if class == LinePlot then
+                                Lines
+
+                             else
+                                Dots
+                            )
+                            points
+                            1
+                            head
+                            rows
+                            |> List.unzip
+                in
+                [ { title = ""
+                  , yLabel = ""
+                  , xLabel = head |> List.head |> Maybe.map (stringify >> String.trim) |> Maybe.withDefault ""
+                  , legend = List.filterMap identity legend
+                  , diagrams = diagrams |> Dict.fromList
+                  }
+                    |> Chart.viewChart attr mode
+                ]
 
 
 getState : Int -> Vector -> State
@@ -180,6 +230,9 @@ toTable id attr class diagram body =
                 case class of
                     BarChart ->
                         "bar_chart"
+
+                    PieChart _ ->
+                        "pie_chart"
 
                     LinePlot ->
                         "multiline_chart"

@@ -26,7 +26,7 @@ type Class
     | LinePlot
     | ScatterPlot
     | BarChart
-    | PieChart
+    | PieChart Bool
 
 
 type alias Vector =

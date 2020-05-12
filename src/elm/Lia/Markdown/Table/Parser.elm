@@ -66,11 +66,11 @@ checkDiagram formatted rows =
             head =
                 List.map (List.head >> Maybe.andThen .float) rows
         in
-        if formatted && List.length head == 1 then
-            PieChart
+        if List.all ((/=) Nothing) head then
+            if formatted && List.length head == 1 then
+                PieChart False
 
-        else if List.all ((/=) Nothing) head then
-            if
+            else if
                 head
                     |> List.filterMap identity
                     |> Set.fromList
@@ -83,7 +83,11 @@ checkDiagram formatted rows =
                 ScatterPlot
 
         else if formatted then
-            BarChart
+            if List.length head == 1 then
+                PieChart True
+
+            else
+                BarChart
 
         else
             None

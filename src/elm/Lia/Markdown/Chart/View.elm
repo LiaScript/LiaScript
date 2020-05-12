@@ -3,6 +3,7 @@ module Lia.Markdown.Chart.View exposing
     , view
     , viewBarChart
     , viewChart
+    , viewPieChart
     )
 
 import Char exposing (isLower, toLower)
@@ -28,6 +29,12 @@ viewChart attr light =
 viewBarChart : Annotation -> Bool -> String -> List String -> List ( Maybe String, List (Maybe Float) ) -> Html msg
 viewBarChart attr light title category data =
     encodeBarChart title category data
+        |> eCharts attr light
+
+
+viewPieChart : Annotation -> Bool -> Maybe String -> Maybe String -> List ( String, Float ) -> Html msg
+viewPieChart attr light title subtitle data =
+    encodePieChart title subtitle data
         |> eCharts attr light
 
 
@@ -114,6 +121,74 @@ encodeBarChart xLabel category data =
         , ( "tooltip", JE.object [] )
         , ( "series", bars )
         ]
+
+
+encodePieChart : Maybe String -> Maybe String -> List ( String, Float ) -> JE.Value
+encodePieChart title subtitle data =
+    let
+        pieces =
+            data
+                |> List.map
+                    (\( name_, value_ ) ->
+                        JE.object
+                            [ ( "name", JE.string name_ )
+                            , ( "value", JE.float value_ )
+                            ]
+                    )
+                |> JE.list identity
+
+        head =
+            if title /= Nothing || subtitle /= Nothing then
+                [ ( "title"
+                  , JE.object
+                        [ ( "text"
+                          , title |> Maybe.withDefault "" |> JE.string
+                          )
+                        , ( "subtext", subtitle |> Maybe.withDefault "" |> JE.string )
+                        , ( "left", JE.string "center" )
+                        ]
+                  )
+                ]
+
+            else
+                []
+    in
+    [ ( "series"
+      , [ JE.object
+            [ ( "type", JE.string "pie" )
+            , ( "radius"
+              , JE.string <|
+                    if title /= Nothing || subtitle /= Nothing then
+                        "65%"
+
+                    else
+                        "75%"
+              )
+            , ( "center", JE.list JE.string [ "50%", "50%" ] )
+            , ( "selectedMode", JE.string "single" )
+            , ( "data", pieces )
+            ]
+        ]
+            |> JE.list identity
+      )
+    , toolbox
+
+    --, ( "legend"
+    --  , JE.object
+    --        [ ( "data"
+    --          , data
+    --                |> List.map Tuple.first
+    --                |> JE.list JE.string
+    --          )
+    --, ( "right", JE.int 0 )
+    --        , ( "top", JE.int 28 )
+    --        ]
+    --  )
+    --  , brush
+    , ( "tooltip", JE.object [] )
+    ]
+        |> List.append head
+        |> JE.object
 
 
 label : ( String, JE.Value )
