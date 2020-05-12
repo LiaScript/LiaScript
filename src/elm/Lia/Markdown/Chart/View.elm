@@ -156,6 +156,9 @@ encodePieChart title subtitle data =
     [ ( "series"
       , [ JE.object
             [ ( "type", JE.string "pie" )
+            , ( "name", subtitle |> Maybe.withDefault "" |> JE.string )
+
+            --, ( "roseType", JE.string "radius" )
             , ( "radius"
               , JE.string <|
                     if title /= Nothing || subtitle /= Nothing then
@@ -164,7 +167,7 @@ encodePieChart title subtitle data =
                     else
                         "75%"
               )
-            , ( "center", JE.list JE.string [ "50%", "50%" ] )
+            , ( "center", JE.string "50%" )
             , ( "selectedMode", JE.string "single" )
             , ( "data", pieces )
             ]
@@ -185,7 +188,15 @@ encodePieChart title subtitle data =
     --        ]
     --  )
     --  , brush
-    , ( "tooltip", JE.object [] )
+    , ( "tooltip"
+      , JE.object
+            [ ( "trigger", JE.string "item" )
+            , ( "formatter"
+              , JE.string "{b} : {c} ({d}%)"
+                -- "{a}<br/>{b} : {c} ({d}%)"
+              )
+            ]
+      )
     ]
         |> List.append head
         |> JE.object
