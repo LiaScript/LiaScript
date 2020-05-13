@@ -42,48 +42,59 @@ classify table =
     case table of
         Unformatted _ rows id ->
             Unformatted
-                (checkDiagram False rows)
+                (checkDiagram Nothing rows)
                 rows
                 id
 
         Formatted _ head formatting rows id ->
             Formatted
-                (checkDiagram True rows)
+                (checkDiagram (Just head) rows)
                 head
                 formatting
                 rows
                 id
 
 
-checkDiagram : Bool -> List Row -> Class
-checkDiagram formatted rows =
+checkDiagram : Maybe (List Inlines) -> List Row -> Class
+checkDiagram headLine rows =
     if
         rows
             |> List.filterMap List.tail
             |> List.all someNumbers
     then
         let
-            head =
+            firstColumn =
                 List.map (List.head >> Maybe.andThen .float) rows
         in
-        if List.all ((/=) Nothing) head then
-            if formatted && List.length head == 1 then
+        if List.all ((/=) Nothing) firstColumn then
+            if headLine /= Nothing && List.length firstColumn == 1 then
                 PieChart False
 
             else if
-                head
+                firstColumn
                     |> List.filterMap identity
                     |> Set.fromList
                     |> Set.size
-                    |> (==) (List.length head)
+                    |> (==) (List.length firstColumn)
             then
-                LinePlot
+                let
+                    headNumbers =
+                        headLine
+                            |> Maybe.andThen List.tail
+                            |> Maybe.map (List.map (stringify >> String.trim >> float))
+                            |> Maybe.withDefault [ Nothing ]
+                in
+                if List.length headNumbers > 1 && List.all ((/=) Nothing) headNumbers then
+                    HeatMap
+
+                else
+                    LinePlot
 
             else
                 ScatterPlot
 
-        else if formatted then
-            if List.length head == 1 then
+        else if headLine /= Nothing then
+            if List.length firstColumn == 1 then
                 PieChart True
 
             else
@@ -106,10 +117,12 @@ cell data =
                 |> String.toLower
     in
     str
-        |> String.split " "
-        |> List.head
-        |> Maybe.andThen String.toFloat
+        |> float
         |> Cell data str
+
+
+float =
+    String.split " " >> List.head >> Maybe.andThen String.toFloat
 
 
 row : Parser Context Row

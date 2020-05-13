@@ -136,54 +136,56 @@ chart attr mode class head rows =
                     |> Chart.viewBarChart attr mode title category
                 ]
 
-            PieChart withTitle ->
-                if withTitle then
-                    let
-                        ( main, title ) =
-                            case head of
-                                m :: heads_ ->
-                                    ( stringify m |> String.trim |> Just
-                                    , heads_
-                                        |> List.map (stringify >> String.trim)
-                                    )
+            PieChart False ->
+                let
+                    title =
+                        head
+                            |> List.map (stringify >> String.trim)
 
-                                [] ->
-                                    ( Nothing, [] )
+                    data =
+                        rows
+                            |> List.head
+                            |> Maybe.withDefault []
+                            |> List.map .float
+                in
+                [ List.map2 (\title_ -> Maybe.map (Tuple.pair title_)) title data
+                    |> List.filterMap identity
+                    |> Chart.viewPieChart attr mode Nothing Nothing
+                ]
 
-                        sub =
-                            rows
-                                |> List.head
-                                |> Maybe.andThen List.head
-                                |> Maybe.map .string
+            PieChart True ->
+                let
+                    ( main, title ) =
+                        case head of
+                            m :: heads_ ->
+                                ( stringify m |> String.trim |> Just
+                                , heads_
+                                    |> List.map (stringify >> String.trim)
+                                )
 
-                        data =
-                            rows
-                                |> List.head
-                                |> Maybe.andThen List.tail
-                                |> Maybe.withDefault []
-                                |> List.map .float
-                    in
-                    [ List.map2 (\title_ -> Maybe.map (Tuple.pair title_)) title data
-                        |> List.filterMap identity
-                        |> Chart.viewPieChart attr mode main sub
-                    ]
+                            [] ->
+                                ( Nothing, [] )
 
-                else
-                    let
-                        title =
-                            head
-                                |> List.map (stringify >> String.trim)
+                    sub =
+                        rows
+                            |> List.head
+                            |> Maybe.andThen List.head
+                            |> Maybe.map .string
 
-                        data =
-                            rows
-                                |> List.head
-                                |> Maybe.withDefault []
-                                |> List.map .float
-                    in
-                    [ List.map2 (\title_ -> Maybe.map (Tuple.pair title_)) title data
-                        |> List.filterMap identity
-                        |> Chart.viewPieChart attr mode Nothing Nothing
-                    ]
+                    data =
+                        rows
+                            |> List.head
+                            |> Maybe.andThen List.tail
+                            |> Maybe.withDefault []
+                            |> List.map .float
+                in
+                [ List.map2 (\title_ -> Maybe.map (Tuple.pair title_)) title data
+                    |> List.filterMap identity
+                    |> Chart.viewPieChart attr mode main sub
+                ]
+
+            HeatMap ->
+                [ Html.text "HeatMap" ]
 
             _ ->
                 let
@@ -236,6 +238,9 @@ toTable id attr class diagram body =
 
                     LinePlot ->
                         "multiline_chart"
+
+                    HeatMap ->
+                        "apps"
 
                     _ ->
                         "scatter_plot"

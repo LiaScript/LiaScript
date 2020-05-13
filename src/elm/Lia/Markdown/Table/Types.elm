@@ -27,6 +27,9 @@ type Class
     | ScatterPlot
     | BarChart
     | PieChart Bool
+    | HeatMap
+    | Radar
+    | Parallel
 
 
 type alias Vector =
