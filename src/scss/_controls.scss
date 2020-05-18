@@ -317,7 +317,7 @@
         position: relative;
         overflow: hidden;
         transition: background 0.25s ease-in 0s;
-        padding: 0 map-get($config, spacing-large);
+        padding: 0 map-get($config, spacing-normal);
         line-height: 2em;
 
         &:not([disabled]) {

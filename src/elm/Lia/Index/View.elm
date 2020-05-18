@@ -3,7 +3,7 @@ module Lia.Index.View exposing (view, view_search)
 import Array
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Html.Events exposing (onInput)
+import Html.Events exposing (onClick, onInput)
 import Lia.Index.Model exposing (Model)
 import Lia.Index.Update exposing (Msg(..))
 import Lia.Markdown.Inline.View exposing (view_inf)
@@ -14,19 +14,47 @@ import Translations exposing (Lang, baseSearch)
 
 view_search : Lang -> Model -> Html Msg
 view_search lang model =
-    Html.span [ Attr.class "lia-toolbar", Attr.id "lia-toolbar-index" ]
+    Html.div [ Attr.class "lia-toolbar", Attr.id "lia-toolbar-index" ]
         -- [ Html.span [ Attr.class "lia-icon", Attr.style [ ( "float", "left" ), ( "font-size", "16px" ) ] ] [ Html.text "search" ]
         --, Html.span [ Attr.style [ ( "float", "right" ), ( "max-width", "100px" ), ( "position", "relative" ) ] ]
-        [ Html.input
-            [ Attr.type_ "input"
-            , Attr.value model
-            , Attr.class "lia-input"
-            , Attr.placeholder (baseSearch lang)
-            , Attr.style "max-width" "100%"
-            , onInput ScanIndex
-            , Attr.id "lia-input-search"
+        [ Html.span [ Attr.style "width" "100%", Attr.style "height" "100%" ]
+            [ Html.span
+                [ Attr.style "height" "100%"
+                ]
+                [ Html.input
+                    [ Attr.type_ "search"
+                    , Attr.value model
+                    , Attr.class "lia-input lia-left"
+                    , Attr.placeholder (baseSearch lang)
+                    , Attr.style "width" "calc(100% - 35px)"
+
+                    --, Attr.style "height" "40%"
+                    , onInput ScanIndex
+                    , Attr.id "lia-input-search"
+                    ]
+                    []
+                ]
+            , Html.span
+                [ Attr.style "height" "100%"
+                ]
+                [ if String.isEmpty model then
+                    Html.span
+                        [ Attr.class "lia-icon lia-right"
+                        , Attr.style "padding" "16px 0px"
+                        ]
+                        [ Html.text "" ]
+
+                  else
+                    Html.span
+                        [ Attr.class "lia-icon lia-right"
+                        , onClick <| ScanIndex ""
+                        , Attr.style "padding" "16px 0px"
+                        , Attr.style "cursor" "pointer"
+                        , Attr.style "width" "5%"
+                        ]
+                        [ Html.text "close" ]
+                ]
             ]
-            []
 
         --  ]
         ]

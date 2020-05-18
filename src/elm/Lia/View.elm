@@ -120,11 +120,11 @@ navButton str title margin id msg =
     Html.button
         [ onClick msg
         , Attr.title title
-        , Attr.class "lia-btn lia-slide-control lia-left"
+        , Attr.class "lia-btn lia-control lia-slide-control lia-left"
 
         --, Attr.style "padding-left" padding
-        , Attr.style "margin-left" margin
-        , Attr.style "padding" "2px"
+        --, Attr.style "margin-left" margin
+        --, Attr.style "padding" "0px 8px"
         , Attr.id id
         ]
         [ Html.text str ]
