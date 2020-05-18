@@ -67,6 +67,7 @@ init flags url key =
     case ( courseUrl.query, flags.course, flags.script ) of
         ( Just query, _, _ ) ->
             Lia.Script.init
+                flags.screen.width
                 flags.settings
                 (get_base courseUrl)
                 query
@@ -77,6 +78,7 @@ init flags url key =
 
         ( _, Just query, _ ) ->
             Lia.Script.init
+                flags.screen.width
                 flags.settings
                 (get_base courseUrl)
                 query
@@ -87,6 +89,7 @@ init flags url key =
 
         ( _, _, Just script ) ->
             Lia.Script.init
+                flags.screen.width
                 flags.settings
                 ""
                 ""
@@ -97,6 +100,7 @@ init flags url key =
 
         _ ->
             Lia.Script.init
+                flags.screen.width
                 flags.settings
                 ""
                 ""

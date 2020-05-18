@@ -45,11 +45,11 @@ settings2model model settings =
             model
 
 
-init : JE.Value -> String -> String -> String -> Maybe Int -> Model
-init settings url readme origin slide_number =
+init : Int -> JE.Value -> String -> String -> String -> Maybe Int -> Model
+init width settings url readme origin slide_number =
     let
         default =
-            Settings.init Settings.Presentation
+            Settings.init width Settings.Presentation
     in
     { url = url
     , readme = readme
@@ -59,6 +59,16 @@ init settings url readme origin slide_number =
         settings
             |> Lia.Settings.Json.toModel default
             |> Result.withDefault default
+            |> (\set ->
+                    { set
+                        | table_of_contents =
+                            if width > 620 then
+                                set.table_of_contents
+
+                            else
+                                False
+                    }
+               )
     , error = Nothing
     , sections = Array.empty
     , section_active =

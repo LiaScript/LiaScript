@@ -26,7 +26,22 @@ class Connector {
   }
 
   getSettings() {
-    return JSON.parse(localStorage.getItem(SETTINGS))
+    if (window.innerWidth <= 620) {
+      let data
+
+      try{
+        data = JSON.parse(localStorage.getItem(SETTINGS))
+        data.table_of_contents = false
+        this.setSettings(data)
+      } catch(e) {
+
+      }
+
+      return data;
+
+    } else {
+      return JSON.parse(localStorage.getItem(SETTINGS))
+    }
   }
 
   open(uidDB, versionDB, slide, data = null) { }
