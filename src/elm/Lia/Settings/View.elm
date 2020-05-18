@@ -23,7 +23,7 @@ view model url origin lang share defines =
         , Html.div
             [ Attr.class "lia-settings", Attr.style "display" "inline-flex", Attr.style "width" "99%" ]
             [ dropdown model.buttons.settings "settings" (Trans.confSettings lang) (Toggle <| Button Settings)
-            , dropdown model.buttons.informations "info" (Trans.confInformations lang) (Toggle <| Button Informations)
+            , dropdown model.buttons.informations "info" (Trans.confInformation lang) (Toggle <| Button Informations)
             , dropdown model.buttons.translations "translate" (Trans.confTranslations lang) (Toggle <| Button Translations)
             , dropdown model.buttons.share
                 "share"
@@ -153,7 +153,7 @@ view_information lang visible definition =
             span_block
                 [ bold <| Trans.infoEmail lang
                 , Html.a
-                    [ Attr.href definition.email ]
+                    [ Attr.href definition.email, Attr.class "lia-link" ]
                     [ Html.text definition.email ]
                 ]
         , if String.isEmpty definition.version then
@@ -211,7 +211,7 @@ view_translations lang visible base list =
                 |> List.map
                     (\( lang_, url ) ->
                         Html.a
-                            [ Attr.href (base ++ url) ]
+                            [ Attr.href (base ++ url), Attr.class "lia-link" ]
                             [ Html.text lang_, Html.br [] [] ]
                     )
 

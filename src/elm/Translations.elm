@@ -391,12 +391,12 @@ infoVersion lang  =
       Ua -> "версія: "
       Zh -> "版本: "
 
-confInformations: Lang -> String
-confInformations lang  =
+confInformation: Lang -> String
+confInformation lang  =
   case lang of 
       Bg -> "Информация"
       De -> "Informationen"
-      En -> "Informations"
+      En -> "Information"
       Es -> "informaciones"
       Fa -> "اطلاعات"
       Hy -> "ինֆորմացիա"
