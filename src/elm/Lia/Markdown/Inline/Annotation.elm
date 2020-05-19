@@ -14,8 +14,8 @@ type alias Parameters =
 
 
 annotation : String -> Parameters -> List (Attribute msg)
-annotation cls ps =
-    List.append ps [ ( "class", "lia-inline " ++ cls ) ] |> toAttribute
+annotation cls =
+    (::) ( "class", "lia-inline " ++ cls ) >> toAttribute
 
 
 toAttribute : Parameters -> List (Attribute msg)

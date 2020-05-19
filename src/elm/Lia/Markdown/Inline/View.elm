@@ -39,10 +39,6 @@ view config element =
             Html.s (annotation "lia-strike" attr) [ view config e ]
 
         Underline e attr ->
-            let
-                xxx =
-                    Debug.log "fffffffffffffffffffffffff" attr
-            in
             Html.u (annotation "lia-underline" attr) [ view config e ]
 
         Superscript e attr ->
