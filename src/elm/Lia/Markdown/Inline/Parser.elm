@@ -101,20 +101,32 @@ annotations : Parser Context Parameters
 annotations =
     spaces
         |> keep (comment attribute)
-        |> map attr_
+        |> map styling
         |> maybe
         |> map (Maybe.withDefault [])
         |> ignore comments
 
 
-attr_ : Parameters -> Parameters
-attr_ dict =
-    case dict of
-        [] ->
-            []
+styling : Parameters -> Parameters
+styling p =
+    if p == [] then
+        []
 
-        _ ->
-            ( "style", "display: inline-block" ) :: dict
+    else if List.any (Tuple.first >> (==) "style") p then
+        p
+            |> List.map
+                (\( key, value ) ->
+                    ( key
+                    , if key == "style" then
+                        "display: inline-block; " ++ value
+
+                      else
+                        value
+                    )
+                )
+
+    else
+        ( "style", "display: inline-block;" ) :: p
 
 
 javascript : Parser s String
