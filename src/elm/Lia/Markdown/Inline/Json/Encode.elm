@@ -2,7 +2,8 @@ module Lia.Markdown.Inline.Json.Encode exposing (encode)
 
 import Json.Encode as JE
 import Lia.Markdown.HTML.Types as HTML
-import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..))
+import Lia.Markdown.Inline.Annotation exposing (Parameters)
+import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 
 
 encode : Inlines -> JE.Value
@@ -138,11 +139,13 @@ encMultimedia class list ( stream, url ) title =
         ]
 
 
-encAnnotation : Annotation -> JE.Value
+encAnnotation : Parameters -> JE.Value
 encAnnotation annotation =
     case annotation of
-        Just a ->
-            JE.dict identity JE.string a
-
-        Nothing ->
+        [] ->
             JE.null
+
+        _ ->
+            annotation
+                |> List.map (\( key, value ) -> JE.list JE.string [ key, value ])
+                |> JE.list identity

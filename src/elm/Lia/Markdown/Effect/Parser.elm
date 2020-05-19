@@ -204,7 +204,7 @@ hidden_comment =
         |> keep effect_number
         |> map
             (\i voice text ->
-                ( i, voice, [ Chars (text |> String.fromList |> String.trim) Nothing ] )
+                ( i, voice, [ Chars (text |> String.fromList |> String.trim) [] ] )
             )
         |> andMap
             (spaces1
@@ -243,7 +243,7 @@ add_comment visible ( idx, temp_narrator, par ) =
                                         (if visible then
                                             { cmt
                                                 | comment = cmt.comment ++ "\n" ++ stringify par
-                                                , paragraphs = Array.push ( Nothing, par ) cmt.paragraphs
+                                                , paragraphs = Array.push ( [], par ) cmt.paragraphs
                                             }
 
                                          else
@@ -258,7 +258,7 @@ add_comment visible ( idx, temp_narrator, par ) =
                                             (stringify par)
                                             (Array.fromList <|
                                                 if visible then
-                                                    [ ( Nothing, par ) ]
+                                                    [ ( [], par ) ]
 
                                                 else
                                                     []

@@ -3,7 +3,7 @@ module Lia.Markdown.Survey.View exposing (view)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
-import Lia.Markdown.Inline.Annotation exposing (Annotation, annotation)
+import Lia.Markdown.Inline.Annotation exposing (Parameters, annotation)
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
@@ -13,7 +13,7 @@ import Lia.Markdown.Survey.Update exposing (Msg(..))
 import Translations exposing (surveySubmit, surveySubmitted, surveyText)
 
 
-view : Config -> Annotation -> Survey -> Vector -> Html Msg
+view : Config -> Parameters -> Survey -> Vector -> Html Msg
 view config attr survey model =
     Html.p (annotation "lia-quiz lia-card" attr) <|
         case survey.survey of

@@ -3,7 +3,8 @@ module Lia.Markdown.Inline.Json.Decode exposing (decode)
 import Json.Decode as JD
 import Lia.Markdown.Effect.Types exposing (Effect)
 import Lia.Markdown.HTML.Types as HTML
-import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..))
+import Lia.Markdown.Inline.Annotation exposing (Parameters)
+import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 
 
 decode : JD.Decoder Inlines
@@ -44,23 +45,38 @@ effect =
 
 strReader :
     String
-    -> (String -> Annotation -> Inline)
-    -> JD.Decoder (Annotation -> Inline)
+    -> (String -> Parameters -> Inline)
+    -> JD.Decoder (Parameters -> Inline)
 strReader key type_ =
     JD.field key JD.string |> JD.map type_
 
 
 inlReader :
     String
-    -> (Inline -> Annotation -> Inline)
-    -> JD.Decoder (Annotation -> Inline)
+    -> (Inline -> Parameters -> Inline)
+    -> JD.Decoder (Parameters -> Inline)
 inlReader key type_ =
     JD.field key (JD.lazy (\_ -> decInline)) |> JD.map type_
 
 
-toAnnotation : (Annotation -> Inline) -> JD.Decoder Inline
+toAnnotation : (Parameters -> Inline) -> JD.Decoder Inline
 toAnnotation fn =
-    JD.maybe (JD.field "a" (JD.dict JD.string))
+    [ JD.list
+        (JD.list JD.string
+            |> JD.andThen
+                (\p ->
+                    case p of
+                        [ key, value ] ->
+                            JD.succeed ( key, value )
+
+                        _ ->
+                            JD.fail "not correct parameter list"
+                )
+        )
+        |> JD.field "a"
+    , JD.succeed []
+    ]
+        |> JD.oneOf
         |> JD.map fn
 
 

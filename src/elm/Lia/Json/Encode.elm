@@ -18,7 +18,7 @@ encode model =
           , model.sections
                 |> Array.get 0
                 |> Maybe.map .title
-                |> Maybe.withDefault [ Chars model.title Nothing ]
+                |> Maybe.withDefault [ Chars model.title [] ]
                 |> Inline.encode
           )
         , ( "str_title"

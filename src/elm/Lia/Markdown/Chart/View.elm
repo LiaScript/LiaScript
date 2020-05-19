@@ -12,33 +12,32 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Encode as JE
 import Lia.Markdown.Chart.Types exposing (Chart, Diagram(..))
-import Lia.Markdown.Inline.Annotation exposing (annotation)
-import Lia.Markdown.Inline.Types exposing (Annotation)
+import Lia.Markdown.Inline.Annotation exposing (Parameters, annotation)
 
 
-view : Annotation -> Bool -> Chart -> Html msg
+view : Parameters -> Bool -> Chart -> Html msg
 view attr light =
     encode True >> eCharts attr light
 
 
-viewChart : Annotation -> Bool -> Chart -> Html msg
+viewChart : Parameters -> Bool -> Chart -> Html msg
 viewChart attr light =
     encode False >> eCharts attr light
 
 
-viewBarChart : Annotation -> Bool -> String -> List String -> List ( Maybe String, List (Maybe Float) ) -> Html msg
+viewBarChart : Parameters -> Bool -> String -> List String -> List ( Maybe String, List (Maybe Float) ) -> Html msg
 viewBarChart attr light title category data =
     encodeBarChart title category data
         |> eCharts attr light
 
 
-viewPieChart : Annotation -> Bool -> Maybe String -> Maybe String -> List ( String, Float ) -> Html msg
+viewPieChart : Parameters -> Bool -> Maybe String -> Maybe String -> List ( String, Float ) -> Html msg
 viewPieChart attr light title subtitle data =
     encodePieChart title subtitle data
         |> eCharts attr light
 
 
-eCharts : Annotation -> Bool -> JE.Value -> Html msg
+eCharts : Parameters -> Bool -> JE.Value -> Html msg
 eCharts attr light option =
     Html.node "e-charts"
         (List.append

@@ -13,7 +13,7 @@ import Json.Encode as JE
 import Lia.Markdown.Effect.Model exposing (Model)
 import Lia.Markdown.Effect.Types exposing (Class(..), Effect, class, isIn)
 import Lia.Markdown.Effect.Update as E
-import Lia.Markdown.Inline.Annotation exposing (Annotation, annotation)
+import Lia.Markdown.Inline.Annotation exposing (Parameters, annotation)
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Stringify as I
 import Lia.Markdown.Inline.Types exposing (Inline)
@@ -35,7 +35,7 @@ circle_ idx =
         |> Html.span [ Attr.class "lia-effect-circle-inline" ]
 
 
-block : Config -> Model -> Annotation -> Effect Markdown -> List (Html Msg) -> Html Msg
+block : Config -> Model -> Parameters -> Effect Markdown -> List (Html Msg) -> Html Msg
 block config model attr e body =
     if contradiction e.begin e.end then
         Html.text ""
@@ -45,19 +45,19 @@ block config model attr e body =
             case class e of
                 Animation ->
                     [ circle e.begin
-                    , Html.div (annotation "" Nothing) body
+                    , Html.div (annotation "" []) body
                     ]
 
                 PlayBack ->
                     [ block_playback config e
-                    , Html.div (annotation "" Nothing) body
+                    , Html.div (annotation "" []) body
                     ]
 
                 PlayBackAnimation ->
                     [ block_playback config e
                     , Html.div []
                         [ circle e.begin
-                        , Html.div (annotation "" Nothing) body
+                        , Html.div (annotation "" []) body
                         ]
                     ]
 
@@ -87,7 +87,7 @@ block config model attr e body =
                 Html.div []
                     [ block_playback config e
                     , Html.div
-                        (annotation "" Nothing)
+                        (annotation "" [])
                         body
                     ]
 
@@ -117,7 +117,7 @@ contradiction begin end =
     False
 
 
-inline : Config -> Annotation -> Effect Inline -> List (Html msg) -> Html msg
+inline : Config -> Parameters -> Effect Inline -> List (Html msg) -> Html msg
 inline config attr e body =
     if contradiction e.begin e.end then
         Html.text ""
@@ -130,7 +130,7 @@ inline config attr e body =
                     :: body
                     |> Html.span
                         (Attr.id (String.fromInt e.begin)
-                            :: annotation "" Nothing
+                            :: annotation "" []
                         )
 
             PlayBack ->
@@ -144,7 +144,7 @@ inline config attr e body =
                     :: body
                     |> Html.span
                         (Attr.id (String.fromInt e.begin)
-                            :: annotation "" Nothing
+                            :: annotation "" []
                         )
 
     else
@@ -163,7 +163,7 @@ inline config attr e body =
                         |> Html.span
                             (Attr.id (String.fromInt e.begin)
                                 :: annotation
-                                    (if attr == Nothing then
+                                    (if attr == [] then
                                         "lia-effect"
 
                                      else
@@ -192,7 +192,7 @@ inline config attr e body =
                         |> Html.span
                             (Attr.id (String.fromInt e.begin)
                                 :: annotation
-                                    (if attr == Nothing then
+                                    (if attr == [] then
                                         "lia-effect"
 
                                      else

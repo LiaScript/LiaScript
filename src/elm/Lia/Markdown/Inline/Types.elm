@@ -1,6 +1,5 @@
 module Lia.Markdown.Inline.Types exposing
-    ( Annotation
-    , Config
+    ( Config
     , Inline(..)
     , Inlines
     , MultInlines
@@ -13,6 +12,7 @@ module Lia.Markdown.Inline.Types exposing
 import Dict exposing (Dict)
 import Lia.Markdown.Effect.Types exposing (Effect)
 import Lia.Markdown.HTML.Types exposing (Node(..))
+import Lia.Markdown.Inline.Annotation exposing (Parameters)
 import Lia.Settings.Model exposing (Mode(..))
 import Translations exposing (Lang)
 
@@ -46,25 +46,21 @@ type alias MultInlines =
     List Inlines
 
 
-type alias Annotation =
-    Maybe (Dict String String)
-
-
 type Inline
-    = Chars String Annotation
-    | Symbol String Annotation
-    | Bold Inline Annotation
-    | Italic Inline Annotation
-    | Strike Inline Annotation
-    | Underline Inline Annotation
-    | Superscript Inline Annotation
-    | Verbatim String Annotation
-    | Formula String String Annotation
-    | Ref Reference Annotation
-    | FootnoteMark String Annotation
-    | EInline (Effect Inline) Annotation
-    | IHTML (Node Inline) Annotation
-    | Container Inlines Annotation
+    = Chars String Parameters
+    | Symbol String Parameters
+    | Bold Inline Parameters
+    | Italic Inline Parameters
+    | Strike Inline Parameters
+    | Underline Inline Parameters
+    | Superscript Inline Parameters
+    | Verbatim String Parameters
+    | Formula String String Parameters
+    | Ref Reference Parameters
+    | FootnoteMark String Parameters
+    | EInline (Effect Inline) Parameters
+    | IHTML (Node Inline) Parameters
+    | Container Inlines Parameters
 
 
 type Reference

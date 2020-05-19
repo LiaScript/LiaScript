@@ -8,10 +8,11 @@ module Lia.Markdown.HTML.Types exposing
 import Dict
 import Json.Decode as JD
 import Json.Encode as JE
+import Lia.Markdown.Inline.Annotation exposing (Parameters)
 
 
 type Node content
-    = Node String (List ( String, String )) (List content)
+    = Node String Parameters (List content)
     | NodeX String
 
 

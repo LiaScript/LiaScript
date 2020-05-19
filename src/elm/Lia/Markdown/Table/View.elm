@@ -7,7 +7,7 @@ import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Lia.Markdown.Chart.Types exposing (Diagram(..), Point)
 import Lia.Markdown.Chart.View as Chart
-import Lia.Markdown.Inline.Annotation exposing (Annotation, annotation)
+import Lia.Markdown.Inline.Annotation exposing (Parameters, annotation)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
 import Lia.Markdown.Table.Types
@@ -24,7 +24,7 @@ import Lia.Markdown.Table.Update as Sub
 import Lia.Markdown.Update exposing (Msg(..))
 
 
-view : (Inlines -> List (Html Msg)) -> Annotation -> Bool -> Table -> Vector -> Html Msg
+view : (Inlines -> List (Html Msg)) -> Parameters -> Bool -> Table -> Vector -> Html Msg
 view viewer attr mode table vector =
     case table of
         Unformatted class rows id ->
@@ -114,7 +114,7 @@ toBarChart i head rows =
                 ( title, data ) :: toBarChart (i + 1) head rows
 
 
-chart : Annotation -> Bool -> Class -> List Inlines -> List Row -> Html Msg
+chart : Parameters -> Bool -> Class -> List Inlines -> List Row -> Html Msg
 chart attr mode class head rows =
     Html.div [ Attr.style "float" "left", Attr.style "width" "100%" ] <|
         case class of
@@ -221,7 +221,7 @@ getState id =
     Array.get id >> Maybe.withDefault (State -1 False False)
 
 
-toTable : Int -> Annotation -> Class -> Bool -> List (Html Msg) -> Html Msg
+toTable : Int -> Parameters -> Class -> Bool -> List (Html Msg) -> Html Msg
 toTable id attr class diagram body =
     if class == None then
         Html.table (annotation "lia-table" attr) body

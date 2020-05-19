@@ -16,6 +16,7 @@ import Combine
         , maybe
         , modifyState
         , onsuccess
+        , optional
         , regex
         , sepBy1
         , skip
@@ -31,8 +32,9 @@ import Lia.Markdown.Effect.Model exposing (set_annotation)
 import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Footnote.Parser as Footnote
 import Lia.Markdown.HTML.Parser as HTML
+import Lia.Markdown.Inline.Annotation exposing (Parameters)
 import Lia.Markdown.Inline.Parser exposing (attribute, combine, comment, line, lineWithProblems)
-import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines)
+import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Parser as Quiz
 import Lia.Markdown.Survey.Parser as Survey
@@ -114,10 +116,13 @@ blocks =
                 |> ignore (maybe (whitespace |> keep Effect.hidden_comment))
 
 
-to_comment : ( Annotation, ( Int, Int ) ) -> Parser Context Markdown
+to_comment : ( Parameters, ( Int, Int ) ) -> Parser Context Markdown
 to_comment ( attr, ( id1, id2 ) ) =
     (case attr of
-        Just _ ->
+        [] ->
+            succeed ()
+
+        _ ->
             modifyState
                 (\s ->
                     let
@@ -126,9 +131,6 @@ to_comment ( attr, ( id1, id2 ) ) =
                     in
                     { s | effect_model = { e | comments = set_annotation id1 id2 e.comments attr } }
                 )
-
-        Nothing ->
-            succeed ()
     )
         |> onsuccess (Comment ( id1, id2 ))
 
@@ -237,7 +239,7 @@ paragraph : Parser Context Inlines
 paragraph =
     indentation_skip
         |> keep (many1 (indentation |> keep line |> ignore newline))
-        |> map (List.intersperse [ Chars " " Nothing ] >> List.concat >> combine)
+        |> map (List.intersperse [ Chars " " [] ] >> List.concat >> combine)
 
 
 problem : Parser Context Inlines
@@ -264,15 +266,15 @@ quote =
         |> ignore indentation_pop
 
 
-md_annotations : Parser Context Annotation
+md_annotations : Parser Context Parameters
 md_annotations =
     spaces
         |> keep macro
         |> keep (comment attribute)
-        |> map Dict.fromList
+        --|> map Dict.fromList
         |> ignore
             (regex "[\t ]*\\n"
                 |> ignore indentation
                 |> maybe
             )
-        |> maybe
+        |> optional []
