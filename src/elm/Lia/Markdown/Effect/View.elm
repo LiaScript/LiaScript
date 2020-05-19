@@ -13,7 +13,7 @@ import Json.Encode as JE
 import Lia.Markdown.Effect.Model exposing (Model)
 import Lia.Markdown.Effect.Types exposing (Class(..), Effect, class, isIn)
 import Lia.Markdown.Effect.Update as E
-import Lia.Markdown.Inline.Annotation exposing (Parameters, annotation)
+import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Stringify as I
 import Lia.Markdown.Inline.Types exposing (Inline)

@@ -1,8 +1,8 @@
 module Lia.Markdown.Inline.Json.Encode exposing (encode)
 
 import Json.Encode as JE
+import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.HTML.Types as HTML
-import Lia.Markdown.Inline.Annotation exposing (Parameters)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 
 

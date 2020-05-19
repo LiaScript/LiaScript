@@ -11,8 +11,8 @@ module Lia.Markdown.Inline.Types exposing
 
 import Dict exposing (Dict)
 import Lia.Markdown.Effect.Types exposing (Effect)
+import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.HTML.Types exposing (Node(..))
-import Lia.Markdown.Inline.Annotation exposing (Parameters)
 import Lia.Settings.Model exposing (Mode(..))
 import Translations exposing (Lang)
 

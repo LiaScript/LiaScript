@@ -2,8 +2,8 @@ module Lia.Markdown.Inline.Json.Decode exposing (decode)
 
 import Json.Decode as JD
 import Lia.Markdown.Effect.Types exposing (Effect)
+import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.HTML.Types as HTML
-import Lia.Markdown.Inline.Annotation exposing (Parameters)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 
 

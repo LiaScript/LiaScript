@@ -31,9 +31,9 @@ import Lia.Markdown.Code.Parser as Code
 import Lia.Markdown.Effect.Model exposing (set_annotation)
 import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Footnote.Parser as Footnote
+import Lia.Markdown.HTML.Attributes as Attributes exposing (Parameters)
 import Lia.Markdown.HTML.Parser as HTML
-import Lia.Markdown.Inline.Annotation exposing (Parameters)
-import Lia.Markdown.Inline.Parser exposing (attribute, combine, comment, line, lineWithProblems)
+import Lia.Markdown.Inline.Parser exposing (combine, comment, line, lineWithProblems)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Parser as Quiz
@@ -270,8 +270,7 @@ md_annotations : Parser Context Parameters
 md_annotations =
     spaces
         |> keep macro
-        |> keep (comment attribute)
-        --|> map Dict.fromList
+        |> keep (comment Attributes.parse)
         |> ignore
             (regex "[\t ]*\\n"
                 |> ignore indentation

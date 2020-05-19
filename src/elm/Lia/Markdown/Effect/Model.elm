@@ -14,7 +14,7 @@ module Lia.Markdown.Effect.Model exposing
 
 import Array exposing (Array)
 import Dict exposing (Dict)
-import Lia.Markdown.Inline.Annotation exposing (Parameters)
+import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 
 

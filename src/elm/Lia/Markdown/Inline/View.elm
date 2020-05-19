@@ -9,8 +9,8 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.View as Footnote
+import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.HTML.View as HTML
-import Lia.Markdown.Inline.Annotation exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.Inline.Config as Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 import Lia.Settings.Model exposing (Mode(..))
@@ -76,35 +76,6 @@ view config element =
                 |> viewer config
                 |> Effect.inline config attr e
 
-        {- if config.mode == Textbook then
-               Html.span
-                   (Attr.id (String.fromInt e.begin)
-                       :: annotation "" Nothing
-                   )
-                   (Effect.view (viewer config) e.begin e.content)
-
-           else
-               Html.span
-                   [ if (e.begin <= config.visible) && (e.end > config.visible) then
-                       Attr.hidden False
-
-                     else
-                       Attr.hidden True
-                   ]
-                   [ Html.span
-                       (Attr.id (String.fromInt e.begin)
-                           :: annotation
-                               (if attr == Nothing then
-                                   "lia-effect"
-
-                                else
-                                   ""
-                               )
-                               attr
-                       )
-                       (Effect.view (viewer config) e.begin e.content)
-                   ]
-        -}
         Symbol e attr ->
             view config (Container [ Symbol e [] ] attr)
 

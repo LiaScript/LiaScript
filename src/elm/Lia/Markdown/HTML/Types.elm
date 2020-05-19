@@ -8,7 +8,7 @@ module Lia.Markdown.HTML.Types exposing
 import Dict
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Markdown.Inline.Annotation exposing (Parameters)
+import Lia.Markdown.HTML.Attributes exposing (Parameters)
 
 
 type Node content

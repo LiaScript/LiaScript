@@ -1,6 +1,5 @@
 module Lia.Markdown.Inline.Parser exposing
     ( annotations
-    , attribute
     , combine
     , comment
     , comment_string
@@ -42,8 +41,8 @@ import Dict exposing (Dict)
 import Lia.Markdown.Effect.Model exposing (add_javascript)
 import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Footnote.Parser as Footnote
+import Lia.Markdown.HTML.Attributes as Attributes exposing (Parameters)
 import Lia.Markdown.HTML.Parser as HTML
-import Lia.Markdown.Inline.Annotation exposing (Parameters)
 import Lia.Markdown.Inline.Multimedia as Multimedia
 import Lia.Markdown.Inline.Parser.Formula exposing (formula)
 import Lia.Markdown.Inline.Parser.Symbol exposing (arrows, smileys)
@@ -70,6 +69,7 @@ parse_inlines state str =
 comment : Parser s a -> Parser s (List a)
 comment p =
     string "<!--"
+        |> ignore whitespace
         |> keep (manyTill p (string "-->"))
 
 
@@ -88,19 +88,10 @@ comments =
         |> skip
 
 
-attribute : Parser s ( String, String )
-attribute =
-    whitespace
-        |> keep (regex "\\w+")
-        |> ignore (regex "[ \t\n]*=[ \t\n]*\"")
-        |> map (\k v -> ( String.toLower k, v ))
-        |> andMap (stringTill (regex "\"[ \t\n]*"))
-
-
 annotations : Parser Context Parameters
 annotations =
     spaces
-        |> keep (comment attribute)
+        |> keep (comment Attributes.parse)
         |> map styling
         |> maybe
         |> map (Maybe.withDefault [])

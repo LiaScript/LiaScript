@@ -10,9 +10,9 @@ import Lia.Markdown.Effect.Model as Comments
 import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.Model as Footnotes
 import Lia.Markdown.Footnote.View as Footnote
+import Lia.Markdown.HTML.Attributes exposing (annotation, toAttribute)
 import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Markdown.HTML.View as HTML
-import Lia.Markdown.Inline.Annotation exposing (annotation, toAttribute)
 import Lia.Markdown.Inline.Types exposing (htmlBlock)
 import Lia.Markdown.Quiz.View as Quizzes
 import Lia.Markdown.Survey.View as Surveys

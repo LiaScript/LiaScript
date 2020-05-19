@@ -4,8 +4,8 @@ import Dict
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Json.Encode as JE
+import Lia.Markdown.HTML.Attributes exposing (Parameters, toAttribute)
 import Lia.Markdown.HTML.Types exposing (Node(..))
-import Lia.Markdown.Inline.Annotation exposing (Parameters, toAttribute)
 
 
 view : (List (Html.Attribute msg) -> List (Html msg) -> Html msg) -> (x -> Html msg) -> Parameters -> Node x -> Html msg

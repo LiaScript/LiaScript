@@ -12,7 +12,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Encode as JE
 import Lia.Markdown.Chart.Types exposing (Chart, Diagram(..))
-import Lia.Markdown.Inline.Annotation exposing (Parameters, annotation)
+import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
 
 
 view : Parameters -> Bool -> Chart -> Html msg
