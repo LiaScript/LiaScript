@@ -317,7 +317,7 @@
         position: relative;
         overflow: hidden;
         transition: background 0.25s ease-in 0s;
-        padding: 0 map-get($config, spacing-large);
+        padding: 0 map-get($config, spacing-normal);
         line-height: 2em;
 
         &:not([disabled]) {
@@ -608,6 +608,8 @@
         .lia-survey-matrix {
             padding: map-get($config, spacing-normal);
         }
+
+        display: inline-block;
     }
 
     .lia-survey-matrix {
@@ -646,6 +648,7 @@
       //todo add shadow with changeing colors according to dark and light...
       border-radius: 5px;
       //box-shadow: 8px 7px 0px #eee;
+      display: inline-block;
     }
 
     .lia-toolbar {

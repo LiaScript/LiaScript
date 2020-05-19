@@ -51,7 +51,7 @@ settings model toc mode theme light editor font_size sound lang =
 
 
 toModel : Model -> JD.Value -> Result JD.Error Model
-toModel model json =
+toModel model =
     JD.decodeValue
         (JD.map8 (settings model)
             (JD.field "table_of_contents" JD.bool)
@@ -63,7 +63,6 @@ toModel model json =
             (JD.field "sound" JD.bool)
             (JD.field "lang" JD.string)
         )
-        json
 
 
 toMode : String -> JD.Decoder Mode

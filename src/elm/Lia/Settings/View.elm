@@ -19,11 +19,11 @@ view model url origin lang share defines =
         [ Lazy.lazy2 view_settings model lang
         , Lazy.lazy3 view_information lang model.buttons.informations defines
         , view_translations lang model.buttons.translations (origin ++ "?") (Lia.Definition.Types.get_translations defines)
-        , Lazy.lazy2 qrCodeView model.buttons.share url
+        , qrCodeView model.buttons.share url
         , Html.div
             [ Attr.class "lia-settings", Attr.style "display" "inline-flex", Attr.style "width" "99%" ]
             [ dropdown model.buttons.settings "settings" (Trans.confSettings lang) (Toggle <| Button Settings)
-            , dropdown model.buttons.informations "info" (Trans.confInformations lang) (Toggle <| Button Informations)
+            , dropdown model.buttons.informations "info" (Trans.confInformation lang) (Toggle <| Button Informations)
             , dropdown model.buttons.translations "translate" (Trans.confTranslations lang) (Toggle <| Button Translations)
             , dropdown model.buttons.share
                 "share"
@@ -38,6 +38,10 @@ view model url origin lang share defines =
 
 design : Model -> List (Html.Attribute msg)
 design model =
+    let
+        float =
+            String.fromFloat (toFloat model.font_size / 100.0)
+    in
     [ Attr.class
         ("lia-canvas lia-theme-"
             ++ model.theme
@@ -49,7 +53,10 @@ design model =
                     "dark"
                )
         )
-    , Attr.style "font-size" <| String.fromInt model.font_size ++ "%"
+    , Attr.style "transform" <| "scale(" ++ float ++ ")"
+    , Attr.style "transform-origin" "top left"
+    , Attr.style "height" <| "calc(100vh / " ++ float ++ ")"
+    , Attr.style "width" <| "calc(100vw / " ++ float ++ ")"
     ]
 
 
@@ -118,7 +125,7 @@ design_theme lang theme =
     , ( "amber", "right", Trans.cAmber lang )
     , ( "blue", "left", Trans.cBlue lang )
     , ( "green", "right", Trans.cGreen lang )
-    , ( "grey", "left", Trans.cGray lang )
+    , ( "gray", "left", Trans.cGray lang )
     , ( "purple", "right", Trans.cPurple lang )
     ]
         |> List.map (\( c, b, text ) -> check_list (c == theme) c text b)
@@ -153,7 +160,7 @@ view_information lang visible definition =
             span_block
                 [ bold <| Trans.infoEmail lang
                 , Html.a
-                    [ Attr.href definition.email ]
+                    [ Attr.href definition.email, Attr.class "lia-link" ]
                     [ Html.text definition.email ]
                 ]
         , if String.isEmpty definition.version then
@@ -211,7 +218,7 @@ view_translations lang visible base list =
                 |> List.map
                     (\( lang_, url ) ->
                         Html.a
-                            [ Attr.href (base ++ url) ]
+                            [ Attr.href (base ++ url), Attr.class "lia-link" ]
                             [ Html.text lang_, Html.br [] [] ]
                     )
 
@@ -219,7 +226,7 @@ view_translations lang visible base list =
 check_list : Bool -> String -> String -> String -> Html Msg
 check_list checked label text dir =
     Html.label
-        [ Attr.class label, Attr.style "float" dir ]
+        [ Attr.class label, Attr.style "float" dir, Attr.style "overflow" "hidden", Attr.style "width" "42%" ]
         [ Html.input
             [ Attr.type_ "radio"
             , Attr.name "toggle"
@@ -255,13 +262,13 @@ menu_style visible =
 qrCodeView : Bool -> String -> Html msg
 qrCodeView visible url =
     Html.div (menu_style visible)
-        [ Html.p []
-            [ Html.img
-                [ Attr.src ("https://api.qrserver.com/v1/create-qr-code/?size=222x222&data=" ++ url)
-                , Attr.style "width" "99%"
-                ]
-                []
+        [ Html.img
+            [ Attr.src ("https://api.qrserver.com/v1/create-qr-code/?size=222x222&data=" ++ url)
+            , Attr.style "height" "240px"
+            , Attr.style "width" "100%"
+            , Attr.style "margin-top" "5px"
             ]
+            []
         ]
 
 
@@ -331,7 +338,7 @@ view_light light =
             Html.text "🌞"
 
           else
-            Html.text "🌝"
+            Html.text "🌘"
         ]
 
 

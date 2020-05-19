@@ -115,7 +115,7 @@ update msg model =
                     )
 
                 "restore" ->
-                    case Lia.Json.Decode.decode event.message of
+                    case Lia.Json.Decode.decode model.session.screen.width event.message of
                         Ok lia ->
                             start
                                 { model

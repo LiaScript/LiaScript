@@ -80,6 +80,22 @@ LiaScript courses.
 
 --------------------------------------------------------------------------------
 
+
+__CodiMD -> LiaMD:__ At the
+[#SemesterHack](https://hochschulforumdigitalisierung.de/de/online-hackathon)
+we updated the free and open online editor for Markdown (CodiMD) to work with
+LiaScript. This can now be used to setup and host your own LiaScript online
+editor, and it runs also in docker.
+
+* Project-Sources:
+  https://github.com/liascript/codimd
+
+* Result-presentation of the hackathon:
+  https://semesterhack.incom.org/project/187
+
+--------------------------------------------------------------------------------
+
+
 __LiaScript-Exporter:__ Currently a command-line tool to export
 LiaScript-courses to other formats. At the moment SCORM1.2 is supported that
 allows to upload a course packed as zip, into nearly every commonly used
@@ -90,6 +106,7 @@ and [OPAL](https://bildungsportal.sachsen.de/opal).
 GitHub: https://github.com/LiaScript/LiaScript-Exporter/
 
 --------------------------------------------------------------------------------
+
 
 __Localization:__ The project internationlization files are contained at
 
@@ -158,6 +175,17 @@ Parcel out there, who could help?
 
 ## Version-Changes
 
+
+__0.6.2__ (19/05/2020)
+
+* Added tag `<lia-keep>`: innerHTML is parsed without checking or parsing for
+  Markdown
+* fix: HTML-paramters with `-` are now also allowed
+* fix: better search, with titles, and search-delete button
+* fix: some overflow CSS bugs for quotes and quizzes
+* App starts with closed table of contents on mobile devices
+* fix: navigation buttons are now all of equal size
+* fix: Title tab now shows the main title of the course
 
 __0.6.1__
 

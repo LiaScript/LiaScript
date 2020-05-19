@@ -221,7 +221,7 @@ searchIndex index str =
             str
 
 
-init : JE.Value -> String -> String -> String -> Maybe Int -> Model
+init : Int -> JE.Value -> String -> String -> String -> Maybe Int -> Model
 init =
     Lia.Model.init
 

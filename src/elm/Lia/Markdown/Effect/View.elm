@@ -37,7 +37,10 @@ circle_ idx =
 
 block : Config -> Model -> Annotation -> Effect Markdown -> List (Html Msg) -> Html Msg
 block config model attr e body =
-    if config.visible == Nothing then
+    if contradiction e.begin e.end then
+        Html.text ""
+
+    else if config.visible == Nothing then
         Html.div [] <|
             case class e of
                 Animation ->
@@ -108,9 +111,18 @@ block config model attr e body =
                     ]
 
 
+contradiction : Int -> Maybe Int -> Bool
+contradiction begin end =
+    --Maybe.withDefault 999999 >> (>) begin
+    False
+
+
 inline : Config -> Annotation -> Effect Inline -> List (Html msg) -> Html msg
 inline config attr e body =
-    if config.visible == Nothing then
+    if contradiction e.begin e.end then
+        Html.text ""
+
+    else if config.visible == Nothing then
         case class e of
             Animation ->
                 circle_ e.begin
