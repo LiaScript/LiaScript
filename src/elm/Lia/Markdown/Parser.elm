@@ -25,7 +25,6 @@ import Combine
         , whitespace
         , withState
         )
-import Dict
 import Lia.Markdown.Chart.Parser as Chart
 import Lia.Markdown.Code.Parser as Code
 import Lia.Markdown.Effect.Model exposing (set_annotation)

@@ -16,9 +16,7 @@ import Combine
         , keep
         , many
         , many1
-        , manyTill
         , map
-        , maybe
         , or
         , regex
         , string
@@ -26,7 +24,7 @@ import Combine
         , whitespace
         )
 import Combine.Num exposing (int)
-import Dict exposing (Dict)
+import Dict
 import Hex
 import Html exposing (Attribute)
 import Html.Attributes as Attr

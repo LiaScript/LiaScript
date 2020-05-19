@@ -1,7 +1,6 @@
 module Lia.Markdown.HTML.View exposing (view)
 
-import Dict
-import Html exposing (Attribute, Html)
+import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Encode as JE
 import Lia.Markdown.HTML.Attributes exposing (Parameters, toAttribute)

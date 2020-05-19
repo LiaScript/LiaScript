@@ -5,12 +5,10 @@ import Combine
         ( Parser
         , andMap
         , andThen
-        , choice
         , fail
         , ignore
         , keep
         , many
-        , many1
         , manyTill
         , map
         , maybe
@@ -20,9 +18,6 @@ import Combine
         , succeed
         , whitespace
         )
-import Combine.Num exposing (int)
-import Dict
-import Hex
 import Lia.Markdown.HTML.Attributes as Attributes
 import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Parser.Context exposing (Context)

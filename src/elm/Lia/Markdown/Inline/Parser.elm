@@ -37,7 +37,6 @@ import Combine
         , withState
         )
 import Combine.Char exposing (anyChar)
-import Dict exposing (Dict)
 import Lia.Markdown.Effect.Model exposing (add_javascript)
 import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Footnote.Parser as Footnote

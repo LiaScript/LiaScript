@@ -9,7 +9,6 @@ module Lia.Markdown.Inline.Types exposing
     , isHTML
     )
 
-import Dict exposing (Dict)
 import Lia.Markdown.Effect.Types exposing (Effect)
 import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.HTML.Types exposing (Node(..))

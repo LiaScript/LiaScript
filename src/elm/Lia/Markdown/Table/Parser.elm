@@ -121,6 +121,7 @@ cell data =
         |> Cell data str
 
 
+float : String -> Maybe Float
 float =
     String.split " " >> List.head >> Maybe.andThen String.toFloat
 
