@@ -154,7 +154,12 @@ view_block config block =
                 |> Html.ol (annotation "lia-list lia-ordered" attr)
 
         Table attr table ->
-            Table.view config.view attr config.light table config.section.table_vector
+            Table.view
+                config.view
+                attr
+                config.light
+                table
+                config.section.table_vector
 
         Quote attr elements ->
             elements

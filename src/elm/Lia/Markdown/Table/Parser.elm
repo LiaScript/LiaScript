@@ -68,7 +68,8 @@ checkDiagram headLine rows =
         in
         if List.all ((/=) Nothing) firstColumn then
             if headLine /= Nothing && List.length firstColumn == 1 then
-                PieChart False
+                --False
+                PieChart
 
             else if
                 firstColumn
@@ -95,7 +96,8 @@ checkDiagram headLine rows =
 
         else if headLine /= Nothing then
             if List.length firstColumn == 1 then
-                PieChart True
+                --True
+                PieChart
 
             else
                 BarChart

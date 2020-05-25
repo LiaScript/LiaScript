@@ -26,7 +26,7 @@ type Class
     | LinePlot
     | ScatterPlot
     | BarChart
-    | PieChart Bool
+    | PieChart
     | HeatMap
     | Radar
     | Parallel

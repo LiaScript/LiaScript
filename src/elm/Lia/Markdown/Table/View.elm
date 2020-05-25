@@ -26,42 +26,115 @@ import Lia.Markdown.Update exposing (Msg(..))
 
 view : (Inlines -> List (Html Msg)) -> Parameters -> Bool -> Table -> Vector -> Html Msg
 view viewer attr mode table vector =
+    let
+        activate =
+            if
+                attr
+                    |> List.filter (Tuple.first >> (==) "diagram-show")
+                    |> List.head
+                    |> Maybe.map
+                        (Tuple.second
+                            >> String.toLower
+                            >> String.trim
+                            >> (\param -> param == "true" || param == "")
+                        )
+                    |> Maybe.withDefault False
+            then
+                not
+
+            else
+                identity
+
+        userClass =
+            attr
+                |> List.filter (Tuple.first >> (==) "diagram-type")
+                |> List.head
+                |> Maybe.andThen
+                    (Tuple.second
+                        >> String.toLower
+                        >> String.trim
+                        >> (\param ->
+                                case param of
+                                    "lineplot" ->
+                                        Just LinePlot
+
+                                    "line" ->
+                                        Just LinePlot
+
+                                    "scatterplot" ->
+                                        Just ScatterPlot
+
+                                    "scatter" ->
+                                        Just ScatterPlot
+
+                                    "barchart" ->
+                                        Just BarChart
+
+                                    "bar" ->
+                                        Just BarChart
+
+                                    "piechart" ->
+                                        Just PieChart
+
+                                    "pie" ->
+                                        Just PieChart
+
+                                    "heatmap" ->
+                                        Just HeatMap
+
+                                    "map" ->
+                                        Just HeatMap
+
+                                    "radar" ->
+                                        Just Radar
+
+                                    "parallel" ->
+                                        Just Parallel
+
+                                    "none" ->
+                                        Just None
+
+                                    _ ->
+                                        Nothing
+                           )
+                    )
+    in
     case table of
         Unformatted class rows id ->
             let
                 state =
                     getState id vector
             in
-            if state.diagram then
+            if activate state.diagram then
                 Html.div [ Attr.style "float" "left", Attr.style "width" "100%" ]
                     [ toggleBtn id "list"
                     , rows
                         |> sort state
-                        |> chart attr mode class []
+                        |> chart attr mode (userClass |> Maybe.withDefault class) []
                     ]
 
             else
                 state
                     |> unformatted viewer rows id
-                    |> toTable id attr class state.diagram
+                    |> toTable id attr (userClass |> Maybe.withDefault class) state.diagram
 
         Formatted class head format rows id ->
             let
                 state =
                     getState id vector
             in
-            if state.diagram then
+            if activate state.diagram then
                 Html.div [ Attr.style "float" "left", Attr.style "width" "100%" ]
                     [ toggleBtn id "list"
                     , rows
                         |> sort state
-                        |> chart attr mode class head
+                        |> chart attr mode (userClass |> Maybe.withDefault class) head
                     ]
 
             else
                 state
                     |> formatted viewer head format rows id
-                    |> toTable id attr class state.diagram
+                    |> toTable id attr (userClass |> Maybe.withDefault class) state.diagram
 
 
 toData :
@@ -136,53 +209,58 @@ chart attr mode class head rows =
                     |> Chart.viewBarChart attr mode title category
                 ]
 
-            PieChart False ->
-                let
-                    title =
-                        head
-                            |> List.map (stringify >> String.trim)
+            PieChart ->
+                if
+                    rows
+                        |> List.map (List.head >> Maybe.andThen .float)
+                        |> List.all ((/=) Nothing)
+                then
+                    let
+                        title =
+                            head
+                                |> List.map (stringify >> String.trim)
 
-                    data =
-                        rows
-                            |> List.head
-                            |> Maybe.withDefault []
-                            |> List.map .float
-                in
-                [ List.map2 (\title_ -> Maybe.map (Tuple.pair title_)) title data
-                    |> List.filterMap identity
-                    |> Chart.viewPieChart attr mode Nothing Nothing
-                ]
+                        data =
+                            rows
+                                |> List.head
+                                |> Maybe.withDefault []
+                                |> List.map .float
+                    in
+                    [ List.map2 (\title_ -> Maybe.map (Tuple.pair title_)) title data
+                        |> List.filterMap identity
+                        |> Chart.viewPieChart attr mode Nothing Nothing
+                    ]
 
-            PieChart True ->
-                let
-                    ( main, title ) =
-                        case head of
-                            m :: heads_ ->
-                                ( stringify m |> String.trim |> Just
-                                , heads_
-                                    |> List.map (stringify >> String.trim)
-                                )
+                else
+                    let
+                        ( main, title ) =
+                            case head of
+                                m :: heads_ ->
+                                    ( stringify m |> String.trim |> Just
+                                    , heads_
+                                        |> List.map (stringify >> String.trim)
+                                    )
 
-                            [] ->
-                                ( Nothing, [] )
+                                [] ->
+                                    ( Nothing, [] )
 
-                    sub =
-                        rows
-                            |> List.head
-                            |> Maybe.andThen List.head
-                            |> Maybe.map .string
+                        sub =
+                            rows
+                                |> List.head
+                                |> Maybe.andThen List.head
+                                |> Maybe.map .string
 
-                    data =
-                        rows
-                            |> List.head
-                            |> Maybe.andThen List.tail
-                            |> Maybe.withDefault []
-                            |> List.map .float
-                in
-                [ List.map2 (\title_ -> Maybe.map (Tuple.pair title_)) title data
-                    |> List.filterMap identity
-                    |> Chart.viewPieChart attr mode main sub
-                ]
+                        data =
+                            rows
+                                |> List.head
+                                |> Maybe.andThen List.tail
+                                |> Maybe.withDefault []
+                                |> List.map .float
+                    in
+                    [ List.map2 (\title_ -> Maybe.map (Tuple.pair title_)) title data
+                        |> List.filterMap identity
+                        |> Chart.viewPieChart attr mode main sub
+                    ]
 
             HeatMap ->
                 [ Html.text "HeatMap" ]
@@ -233,13 +311,19 @@ toTable id attr class diagram body =
                     BarChart ->
                         "bar_chart"
 
-                    PieChart _ ->
+                    PieChart ->
                         "pie_chart"
 
                     LinePlot ->
                         "multiline_chart"
 
                     HeatMap ->
+                        "apps"
+
+                    Radar ->
+                        "star_outline"
+
+                    Parallel ->
                         "apps"
 
                     _ ->
