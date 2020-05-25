@@ -2,6 +2,9 @@ import {
   lia
 } from './logger'
 
+window.event_semaphore = 0
+var lia_queue = []
+
 // Basic class for handline Code-Errors
 class LiaError extends Error {
   constructor (message, files, ...params) {
@@ -114,7 +117,33 @@ function getLineNumber (error) {
   }
 };
 
+function lia_wait () {
+  if (window.event_semaphore > 0) {
+    setTimeout(function(e) { lia_wait() }, 100)
+  } else {
+    while(lia_queue.length) {
+      let event = lia_queue.pop()
+
+      if (event.type == "eval")
+        lia_eval (event.code, event.send)
+      else if (event.type == "exec")
+        lia_execute_event (event.event)
+      else
+        lia.warn("lia_queue => unknown event => ", JSON.stringify(event))
+    }
+  }
+}
+
 function lia_eval (code, send) {
+  if (window.event_semaphore > 0) {
+    lia_queue.push({type: "eval", code: code, send: send})
+
+    if (lia_queue.length == 1) {
+      lia_wait()
+    }
+    return
+  }
+
   try {
     let console = {
       debug: (...args) => send.log('debug', '\n', args),
@@ -180,6 +209,15 @@ function list_to_string (sep, list) {
 };
 
 function lia_execute_event (event) {
+  if (window.event_semaphore > 0) {
+    lia_queue.push({type: "exec", event: event})
+
+    if (lia_queue.length == 1) {
+      lia_wait()
+    }
+    return
+  }
+
   try {
     setTimeout(() => {
       eval(event.code)

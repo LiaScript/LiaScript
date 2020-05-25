@@ -23,8 +23,6 @@ function scrollIntoView (id, delay) {
   }, delay)
 };
 
-var firstSpeak = true;
-
 function handleEffects (event, elmSend, section) {
   switch (event.topic) {
     case 'scrollTo':
@@ -120,6 +118,8 @@ function meta (name, content) {
 var eventHandler = undefined
 var liaStorage = undefined
 var ttsBackup = undefined
+var firstSpeak = true
+
 
 class LiaScript {
   constructor (elem, connector, debug = false, course = null, script = null, url = '', slide = 0, spa = true) {
@@ -286,12 +286,22 @@ class LiaScript {
               tag.href = url
               tag.rel = 'stylesheet'
             } else {
+              window.event_semaphore++
+
               tag.src = url
               tag.async = false
+              tag.onload = function(e) {
+                window.event_semaphore--
+                lia.log("successfully loaded :", url);
+              }
+              tag.onerror = function(e) {
+                window.event_semaphore--
+                lia.error("could not load :", url);
+              }
             }
             document.head.appendChild(tag)
           } catch (e) {
-            lia.error('loading resource => ', e.msg)
+            lia.error('loading resource => ', e)
           }
 
           break
