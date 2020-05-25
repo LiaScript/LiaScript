@@ -297,10 +297,14 @@ class LiaScript {
             } else {
               tag.src = url
               tag.async = false
+              tag.type = 'text/javascript'
+              //tag.onload = function() { alert("Success"); };
+              //tag.onerror = function(e) { alert("failed: " + JSON.stringify(e)); };
             }
+
             document.head.appendChild(tag)
           } catch (e) {
-            lia.error('loading resource => ', e.msg)
+            console.warn('loading resource => ', e)
           }
 
           break

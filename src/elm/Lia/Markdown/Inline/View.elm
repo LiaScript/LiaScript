@@ -25,7 +25,7 @@ viewer config =
 
 goto : Int -> Attribute msg
 goto line =
-    Attr.attribute "ondblclick" ("window.top.liaGoto(" ++ String.fromInt line ++ ");")
+    Attr.attribute "ondblclick" ("window.liaGoto(" ++ String.fromInt line ++ ");")
 
 
 view : Config -> Inline -> Html msg
