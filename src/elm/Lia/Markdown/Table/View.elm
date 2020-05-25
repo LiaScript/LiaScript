@@ -265,6 +265,28 @@ chart attr mode class head rows =
             HeatMap ->
                 [ Html.text "HeatMap" ]
 
+            Radar ->
+                let
+                    title =
+                        head
+                            |> List.head
+                            |> Maybe.map (stringify >> String.trim)
+                            |> Maybe.withDefault ""
+
+                    categories =
+                        head
+                            |> List.tail
+                            |> Maybe.map (List.map (stringify >> String.trim))
+                            |> Maybe.withDefault []
+                in
+                [ rows
+                    |> List.map toRadar
+                    |> Chart.viewRadarChart attr mode title categories
+                ]
+
+            Parallel ->
+                [ Html.text "Parallel" ]
+
             _ ->
                 let
                     points =
@@ -292,6 +314,21 @@ chart attr mode class head rows =
                   }
                     |> Chart.viewChart attr mode
                 ]
+
+
+toRadar : Row -> ( String, List (Maybe Float) )
+toRadar row =
+    case row of
+        [] ->
+            ( "", [] )
+
+        head :: tail ->
+            ( head
+                |> .string
+                |> String.trim
+            , tail
+                |> List.map .float
+            )
 
 
 getState : Int -> Vector -> State

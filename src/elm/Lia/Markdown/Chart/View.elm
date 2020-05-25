@@ -4,6 +4,7 @@ module Lia.Markdown.Chart.View exposing
     , viewBarChart
     , viewChart
     , viewPieChart
+    , viewRadarChart
     )
 
 import Char exposing (isLower, toLower)
@@ -28,6 +29,12 @@ viewChart attr light =
 viewBarChart : Parameters -> Bool -> String -> List String -> List ( Maybe String, List (Maybe Float) ) -> Html msg
 viewBarChart attr light title category data =
     encodeBarChart title category data
+        |> eCharts attr light
+
+
+viewRadarChart : Parameters -> Bool -> String -> List String -> List ( String, List (Maybe Float) ) -> Html msg
+viewRadarChart attr light title category data =
+    encodeRadarChart title category data
         |> eCharts attr light
 
 
@@ -120,6 +127,98 @@ encodeBarChart xLabel category data =
         , ( "tooltip", JE.object [] )
         , ( "series", bars )
         ]
+
+
+calcMax : List { x | max : Float } -> List (Maybe Float) -> List { x | max : Float }
+calcMax =
+    List.map2
+        (\i d ->
+            let
+                value =
+                    Maybe.withDefault 0 d
+            in
+            if value > i.max then
+                { i | max = value }
+
+            else
+                i
+        )
+
+
+encodeRadarChart : String -> List String -> List ( String, List (Maybe Float) ) -> JE.Value
+encodeRadarChart title category data =
+    let
+        max_ =
+            category
+                |> List.map (\c -> { name = c, max = 0 })
+
+        indicator =
+            data
+                |> List.map Tuple.second
+                |> List.foldl (\d i -> calcMax i d) max_
+                |> List.map
+                    (\i ->
+                        JE.object
+                            [ ( "name", JE.string i.name )
+                            , ( "max", JE.float i.max )
+                            ]
+                    )
+                |> JE.list identity
+
+        values =
+            data
+                |> List.map
+                    (\( name_, value ) ->
+                        JE.object
+                            [ ( "name", JE.string name_ )
+                            , ( "value"
+                              , value
+                                    |> List.map (Maybe.withDefault 0 >> JE.float)
+                                    |> JE.list identity
+                              )
+                            ]
+                    )
+                |> JE.list identity
+    in
+    [ ( "radar"
+      , JE.object
+            [ ( "indicator", indicator )
+            , ( "name"
+              , JE.object
+                    [ ( "textStyle"
+                      , JE.object
+                            [ ( "color", JE.string "#fff" )
+                            , ( "backgroundColor", JE.string "#999" )
+                            , ( "borderRadius", JE.int 3 )
+                            , ( "padding", JE.list JE.int [ 3, 5 ] )
+                            ]
+                      )
+                    ]
+              )
+            ]
+      )
+    , toolbox { saveAsImage = True, dataView = True, dataZoom = True, magicType = True }
+    , ( "tooltip", JE.object [] )
+    , ( "series"
+      , [ JE.object
+            [ ( "type", JE.string "radar" )
+            , ( "data", values )
+            ]
+        ]
+            |> JE.list identity
+      )
+    ]
+        ++ (if title == "" then
+                []
+
+            else
+                [ ( "title"
+                  , JE.object
+                        [ ( "text", JE.string title ) ]
+                  )
+                ]
+           )
+        |> JE.object
 
 
 encodePieChart : Maybe String -> Maybe String -> List ( String, Float ) -> JE.Value
