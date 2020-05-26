@@ -3,6 +3,7 @@ module Lia.Markdown.Chart.View exposing
     , view
     , viewBarChart
     , viewChart
+    , viewHeatMap
     , viewPieChart
     , viewRadarChart
     )
@@ -41,6 +42,19 @@ viewRadarChart attr light title category data =
 viewPieChart : Parameters -> Bool -> Maybe String -> Maybe String -> List ( String, Float ) -> Html msg
 viewPieChart attr light title subtitle data =
     encodePieChart title subtitle data
+        |> eCharts attr light
+
+
+viewHeatMap :
+    Parameters
+    -> Bool
+    -> Maybe String
+    -> List String
+    -> List String
+    -> List (List ( Int, Int, Maybe Float ))
+    -> Html msg
+viewHeatMap attr light title x y data =
+    encodeHeatMap title x y data
         |> eCharts attr light
 
 
@@ -121,7 +135,7 @@ encodeBarChart xLabel category data =
                   )
                 ]
           )
-        , toolbox { saveAsImage = True, dataView = True, dataZoom = True, magicType = True }
+        , toolbox Nothing { saveAsImage = True, dataView = True, dataZoom = True, magicType = True }
 
         --  , brush
         , ( "tooltip", JE.object [] )
@@ -197,7 +211,7 @@ encodeRadarChart title category data =
               )
             ]
       )
-    , toolbox { saveAsImage = True, dataView = True, dataZoom = True, magicType = True }
+    , toolbox Nothing { saveAsImage = True, dataView = True, dataZoom = False, magicType = False }
     , ( "tooltip", JE.object [] )
     , ( "series"
       , [ JE.object
@@ -215,6 +229,126 @@ encodeRadarChart title category data =
                 [ ( "title"
                   , JE.object
                         [ ( "text", JE.string title ) ]
+                  )
+                ]
+           )
+        |> JE.object
+
+
+encodeHeatMap : Maybe String -> List String -> List String -> List (List ( Int, Int, Maybe Float )) -> JE.Value
+encodeHeatMap title xAxis yAxis data =
+    let
+        ( min, max ) =
+            data
+                |> List.concat
+                |> List.foldl
+                    (\( _, _, value ) ( min_, max_ ) ->
+                        let
+                            v =
+                                Maybe.withDefault 0 value
+                        in
+                        ( if v < min_ then
+                            v
+
+                          else
+                            min_
+                        , if v > max_ then
+                            v
+
+                          else
+                            max_
+                        )
+                    )
+                    ( 9999999999, 0 )
+    in
+    [ toolbox (Just "7%") { saveAsImage = True, dataView = True, dataZoom = False, magicType = False }
+    , ( "tooltip", JE.object [] )
+    , ( "grid"
+      , JE.object <|
+            if title == Nothing then
+                [ ( "height", JE.string "82%" )
+                , ( "top", JE.string "0%" )
+
+                --, ( "width", JE.string "100%" )
+                ]
+
+            else
+                [ ( "height", JE.string "74%" )
+                , ( "top", JE.string "7%" )
+
+                --, ( "width", JE.string "100%" )
+                ]
+      )
+    , ( "xAxis"
+      , JE.object
+            [ ( "type", JE.string "category" )
+            , ( "data", JE.list JE.string xAxis )
+            , ( "splitArea", JE.object [ ( "show", JE.bool True ) ] )
+            ]
+      )
+    , ( "yAxis"
+      , JE.object
+            [ ( "type", JE.string "category" )
+            , ( "data", JE.list JE.string yAxis )
+            , ( "splitArea", JE.object [ ( "show", JE.bool True ) ] )
+            ]
+      )
+    , ( "visualMap"
+      , JE.object
+            [ ( "min", JE.float min )
+            , ( "max", JE.float max )
+            , ( "calculable", JE.bool True )
+
+            --, ( "width", JE.string "300px" )
+            , ( "itemHeight", JE.string "150px" )
+            , ( "right", JE.string "7%" )
+            , ( "bottom", JE.string "9" )
+            , ( "orient", JE.string "horizontal" )
+            ]
+      )
+    , ( "series"
+      , [ JE.object
+            [ ( "type", JE.string "heatmap" )
+            , ( "label", JE.object [ ( "show", JE.bool True ) ] )
+            , ( "data"
+              , data
+                    |> List.concat
+                    |> List.map
+                        (\( x, y, z ) ->
+                            JE.list identity
+                                [ JE.int x
+                                , JE.int y
+                                , z |> Maybe.map JE.float |> Maybe.withDefault JE.null
+                                ]
+                        )
+                    |> JE.list identity
+              )
+            , ( "emphasis"
+              , JE.object
+                    [ ( "itemStyle"
+                      , JE.object
+                            [ ( "shadowBlur", JE.int 10 )
+                            , ( "shadowColor", JE.string "rgba(0, 0, 0, 0.5)" )
+                            ]
+                      )
+                    ]
+              )
+            ]
+        ]
+            |> JE.list identity
+      )
+    ]
+        ++ (if title == Nothing then
+                []
+
+            else
+                [ ( "title"
+                  , JE.object
+                        [ ( "text"
+                          , title |> Maybe.withDefault "" |> JE.string
+                          )
+                        , ( "left", JE.string "center" )
+                        ]
                   )
                 ]
            )
@@ -272,7 +406,7 @@ encodePieChart title subtitle data =
         ]
             |> JE.list identity
       )
-    , toolbox { saveAsImage = True, dataView = True, dataZoom = False, magicType = False }
+    , toolbox Nothing { saveAsImage = True, dataView = True, dataZoom = False, magicType = False }
 
     --, ( "legend"
     --  , JE.object
@@ -343,7 +477,7 @@ encode withColor chart =
                 , ( "top", JE.int 28 )
                 ]
           )
-        , toolbox { saveAsImage = True, dataView = True, dataZoom = True, magicType = True }
+        , toolbox Nothing { saveAsImage = True, dataView = True, dataZoom = True, magicType = True }
 
         --  , brush
         , ( "tooltip", JE.object [] )
@@ -366,12 +500,16 @@ brush =
     )
 
 
-toolbox : { saveAsImage : Bool, dataView : Bool, dataZoom : Bool, magicType : Bool } -> ( String, JE.Value )
-toolbox config =
+toolbox : Maybe String -> { saveAsImage : Bool, dataView : Bool, dataZoom : Bool, magicType : Bool } -> ( String, JE.Value )
+toolbox position config =
     ( "toolbox"
     , JE.object
         [ ( "bottom", JE.int 8 )
-        , ( "left", JE.string "center" )
+        , ( "left"
+          , position
+                |> Maybe.withDefault "center"
+                |> JE.string
+          )
         , ( "feature"
           , []
                 |> List.append

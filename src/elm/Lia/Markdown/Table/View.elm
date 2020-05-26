@@ -263,7 +263,73 @@ chart attr mode class head rows =
                     ]
 
             HeatMap ->
-                [ Html.text "HeatMap" ]
+                if head == [] then
+                    let
+                        y =
+                            rows
+                                |> List.head
+                                |> Maybe.andThen List.tail
+                                |> Maybe.withDefault []
+                                |> List.map .string
+
+                        x =
+                            rows
+                                |> List.tail
+                                |> Maybe.withDefault []
+                                |> List.filterMap List.head
+                                |> List.map .string
+                                |> List.reverse
+                    in
+                    [ rows
+                        |> List.tail
+                        |> Maybe.withDefault []
+                        |> List.map (List.tail >> Maybe.withDefault [])
+                        |> List.indexedMap
+                            (\y_ row ->
+                                row
+                                    |> List.indexedMap (\x_ cell -> ( x_, y_, cell.float ))
+                            )
+                        |> Chart.viewHeatMap attr mode Nothing y x
+                    ]
+
+                else
+                    let
+                        y =
+                            head
+                                |> List.tail
+                                |> Maybe.withDefault []
+                                |> List.map (stringify >> String.trim)
+
+                        x =
+                            rows
+                                |> List.filterMap List.head
+                                |> List.map .string
+                                |> List.reverse
+
+                        title =
+                            head
+                                |> List.head
+                                |> Maybe.withDefault []
+                                |> stringify
+                                |> String.trim
+                                |> (\title_ ->
+                                        if title_ == "" then
+                                            Nothing
+
+                                        else
+                                            Just title_
+                                   )
+                    in
+                    [ rows
+                        |> List.map (List.tail >> Maybe.withDefault [])
+                        |> List.reverse
+                        |> List.indexedMap
+                            (\y_ row ->
+                                row
+                                    |> List.indexedMap (\x_ cell -> ( x_, y_, cell.float ))
+                            )
+                        |> Chart.viewHeatMap attr mode title y x
+                    ]
 
             Radar ->
                 let
