@@ -332,23 +332,47 @@ chart attr mode class head rows =
                     ]
 
             Radar ->
-                let
-                    title =
-                        head
-                            |> List.head
-                            |> Maybe.map (stringify >> String.trim)
-                            |> Maybe.withDefault ""
+                if head == [] then
+                    let
+                        title =
+                            rows
+                                |> List.head
+                                |> Maybe.andThen List.head
+                                |> Maybe.map .string
+                                |> Maybe.withDefault ""
 
-                    categories =
-                        head
-                            |> List.tail
-                            |> Maybe.map (List.map (stringify >> String.trim))
-                            |> Maybe.withDefault []
-                in
-                [ rows
-                    |> List.map toRadar
-                    |> Chart.viewRadarChart attr mode title categories
-                ]
+                        categories =
+                            rows
+                                |> List.head
+                                |> Maybe.andThen List.tail
+                                |> Maybe.map (List.map .string)
+                                |> Maybe.withDefault []
+                    in
+                    [ rows
+                        |> List.tail
+                        |> Maybe.withDefault []
+                        |> List.map toRadar
+                        |> Chart.viewRadarChart attr mode title categories
+                    ]
+
+                else
+                    let
+                        title =
+                            head
+                                |> List.head
+                                |> Maybe.map (stringify >> String.trim)
+                                |> Maybe.withDefault ""
+
+                        categories =
+                            head
+                                |> List.tail
+                                |> Maybe.map (List.map (stringify >> String.trim))
+                                |> Maybe.withDefault []
+                    in
+                    [ rows
+                        |> List.map toRadar
+                        |> Chart.viewRadarChart attr mode title categories
+                    ]
 
             Parallel ->
                 [ Html.text "Parallel" ]

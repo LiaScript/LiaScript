@@ -217,6 +217,15 @@ encodeRadarChart title category data =
       , [ JE.object
             [ ( "type", JE.string "radar" )
             , ( "data", values )
+            , ( "emphasis"
+              , JE.object
+                    [ ( "lineStyle"
+                      , JE.object
+                            [ ( "width", JE.int 4 )
+                            ]
+                      )
+                    ]
+              )
             ]
         ]
             |> JE.list identity
