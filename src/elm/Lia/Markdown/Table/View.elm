@@ -189,9 +189,32 @@ toBarChart i head rows =
 
 chart : Parameters -> Bool -> Class -> List Inlines -> List Row -> Html Msg
 chart attr mode class head rows =
-    Html.div [ Attr.style "float" "left", Attr.style "width" "100%" ] <|
-        case class of
-            BarChart ->
+    Html.div [ Attr.style "float" "left", Attr.style "width" "100%" ]
+        [ case ( class, head ) of
+            ( BarChart, [] ) ->
+                let
+                    title =
+                        rows
+                            |> List.head
+                            |> Maybe.andThen List.head
+                            |> Maybe.map .string
+                            |> Maybe.withDefault ""
+
+                    category =
+                        rows
+                            |> List.tail
+                            |> Maybe.withDefault []
+                            |> getColumn 0 []
+                            |> Maybe.map (Tuple.second >> List.map (.string >> String.trim))
+                            |> Maybe.withDefault []
+                in
+                rows
+                    |> List.tail
+                    |> Maybe.withDefault []
+                    |> toBarChart 1 (rows |> List.head |> Maybe.withDefault [] |> List.map .inlines)
+                    |> Chart.viewBarChart attr mode title category
+
+            ( BarChart, _ ) ->
                 let
                     title =
                         head
@@ -205,11 +228,13 @@ chart attr mode class head rows =
                             |> Maybe.map (Tuple.second >> List.map (.string >> String.trim))
                             |> Maybe.withDefault []
                 in
-                [ toBarChart 1 head rows
+                toBarChart 1 head rows
                     |> Chart.viewBarChart attr mode title category
-                ]
 
-            PieChart ->
+            ( PieChart, [] ) ->
+                Html.text "todo"
+
+            ( PieChart, _ ) ->
                 if
                     rows
                         |> List.map (List.head >> Maybe.andThen .float)
@@ -226,10 +251,9 @@ chart attr mode class head rows =
                                 |> Maybe.withDefault []
                                 |> List.map .float
                     in
-                    [ List.map2 (\title_ -> Maybe.map (Tuple.pair title_)) title data
+                    List.map2 (\title_ -> Maybe.map (Tuple.pair title_)) title data
                         |> List.filterMap identity
                         |> Chart.viewPieChart attr mode Nothing Nothing
-                    ]
 
                 else
                     let
@@ -257,125 +281,136 @@ chart attr mode class head rows =
                                 |> Maybe.withDefault []
                                 |> List.map .float
                     in
-                    [ List.map2 (\title_ -> Maybe.map (Tuple.pair title_)) title data
+                    List.map2 (\title_ -> Maybe.map (Tuple.pair title_)) title data
                         |> List.filterMap identity
                         |> Chart.viewPieChart attr mode main sub
-                    ]
 
-            HeatMap ->
-                if head == [] then
-                    let
-                        y =
-                            rows
-                                |> List.head
-                                |> Maybe.andThen List.tail
-                                |> Maybe.withDefault []
-                                |> List.map .string
+            ( HeatMap, [] ) ->
+                let
+                    y =
+                        rows
+                            |> List.head
+                            |> Maybe.andThen List.tail
+                            |> Maybe.withDefault []
+                            |> List.map .string
 
-                        x =
-                            rows
-                                |> List.tail
-                                |> Maybe.withDefault []
-                                |> List.filterMap List.head
-                                |> List.map .string
-                                |> List.reverse
-                    in
-                    [ rows
-                        |> List.tail
-                        |> Maybe.withDefault []
-                        |> List.map (List.tail >> Maybe.withDefault [])
-                        |> List.indexedMap
-                            (\y_ row ->
-                                row
-                                    |> List.indexedMap (\x_ cell -> ( x_, y_, cell.float ))
-                            )
-                        |> Chart.viewHeatMap attr mode Nothing y x
-                    ]
+                    x =
+                        rows
+                            |> List.tail
+                            |> Maybe.withDefault []
+                            |> List.filterMap List.head
+                            |> List.map .string
+                            |> List.reverse
+                in
+                rows
+                    |> List.tail
+                    |> Maybe.withDefault []
+                    |> List.map (List.tail >> Maybe.withDefault [])
+                    |> List.indexedMap
+                        (\y_ row ->
+                            row
+                                |> List.indexedMap (\x_ cell -> ( x_, y_, cell.float ))
+                        )
+                    |> Chart.viewHeatMap attr mode Nothing y x
 
-                else
-                    let
-                        y =
-                            head
-                                |> List.tail
-                                |> Maybe.withDefault []
-                                |> List.map (stringify >> String.trim)
+            ( HeatMap, _ ) ->
+                let
+                    y =
+                        head
+                            |> List.tail
+                            |> Maybe.withDefault []
+                            |> List.map (stringify >> String.trim)
 
-                        x =
-                            rows
-                                |> List.filterMap List.head
-                                |> List.map .string
-                                |> List.reverse
+                    x =
+                        rows
+                            |> List.filterMap List.head
+                            |> List.map .string
+                            |> List.reverse
 
-                        title =
-                            head
-                                |> List.head
-                                |> Maybe.withDefault []
-                                |> stringify
-                                |> String.trim
-                                |> (\title_ ->
-                                        if title_ == "" then
-                                            Nothing
+                    title =
+                        head
+                            |> List.head
+                            |> Maybe.withDefault []
+                            |> stringify
+                            |> String.trim
+                            |> (\title_ ->
+                                    if title_ == "" then
+                                        Nothing
 
-                                        else
-                                            Just title_
-                                   )
-                    in
-                    [ rows
-                        |> List.map (List.tail >> Maybe.withDefault [])
-                        |> List.reverse
-                        |> List.indexedMap
-                            (\y_ row ->
-                                row
-                                    |> List.indexedMap (\x_ cell -> ( x_, y_, cell.float ))
-                            )
-                        |> Chart.viewHeatMap attr mode title y x
-                    ]
+                                    else
+                                        Just title_
+                               )
+                in
+                rows
+                    |> List.map (List.tail >> Maybe.withDefault [])
+                    |> List.reverse
+                    |> List.indexedMap
+                        (\y_ row ->
+                            row
+                                |> List.indexedMap (\x_ cell -> ( x_, y_, cell.float ))
+                        )
+                    |> Chart.viewHeatMap attr mode title y x
 
-            Radar ->
-                if head == [] then
-                    let
-                        title =
-                            rows
-                                |> List.head
-                                |> Maybe.andThen List.head
-                                |> Maybe.map .string
-                                |> Maybe.withDefault ""
+            ( Radar, [] ) ->
+                let
+                    title =
+                        rows
+                            |> List.head
+                            |> Maybe.andThen List.head
+                            |> Maybe.map .string
+                            |> Maybe.withDefault ""
 
-                        categories =
-                            rows
-                                |> List.head
-                                |> Maybe.andThen List.tail
-                                |> Maybe.map (List.map .string)
-                                |> Maybe.withDefault []
-                    in
-                    [ rows
-                        |> List.tail
-                        |> Maybe.withDefault []
-                        |> List.map toRadar
-                        |> Chart.viewRadarChart attr mode title categories
-                    ]
+                    categories =
+                        rows
+                            |> List.head
+                            |> Maybe.andThen List.tail
+                            |> Maybe.map (List.map .string)
+                            |> Maybe.withDefault []
+                in
+                rows
+                    |> List.tail
+                    |> Maybe.withDefault []
+                    |> List.map toRadar
+                    |> Chart.viewRadarChart attr mode title categories
 
-                else
-                    let
-                        title =
-                            head
-                                |> List.head
-                                |> Maybe.map (stringify >> String.trim)
-                                |> Maybe.withDefault ""
+            ( Radar, _ ) ->
+                let
+                    title =
+                        head
+                            |> List.head
+                            |> Maybe.map (stringify >> String.trim)
+                            |> Maybe.withDefault ""
 
-                        categories =
-                            head
-                                |> List.tail
-                                |> Maybe.map (List.map (stringify >> String.trim))
-                                |> Maybe.withDefault []
-                    in
-                    [ rows
-                        |> List.map toRadar
-                        |> Chart.viewRadarChart attr mode title categories
-                    ]
+                    categories =
+                        head
+                            |> List.tail
+                            |> Maybe.map (List.map (stringify >> String.trim))
+                            |> Maybe.withDefault []
+                in
+                rows
+                    |> List.map toRadar
+                    |> Chart.viewRadarChart attr mode title categories
 
-            Parallel ->
-                [ Html.text "Parallel" ]
+            ( Parallel, [] ) ->
+                Html.text "Parallel"
+
+            ( Parallel, _ ) ->
+                let
+                    title =
+                        head
+                            |> List.head
+                            |> Maybe.map (stringify >> String.trim)
+                            |> Maybe.withDefault ""
+
+                    categories =
+                        head
+                            |> List.tail
+                            |> Maybe.map (List.map (stringify >> String.trim))
+                            |> Maybe.withDefault []
+                in
+                rows
+                    |> List.map toRadar
+                    |> Chart.viewRadarChart attr mode title categories
 
             _ ->
                 let
@@ -396,14 +431,14 @@ chart attr mode class head rows =
                             rows
                             |> List.unzip
                 in
-                [ { title = ""
-                  , yLabel = ""
-                  , xLabel = head |> List.head |> Maybe.map (stringify >> String.trim) |> Maybe.withDefault ""
-                  , legend = List.filterMap identity legend
-                  , diagrams = diagrams |> Dict.fromList
-                  }
+                { title = ""
+                , yLabel = ""
+                , xLabel = head |> List.head |> Maybe.map (stringify >> String.trim) |> Maybe.withDefault ""
+                , legend = List.filterMap identity legend
+                , diagrams = diagrams |> Dict.fromList
+                }
                     |> Chart.viewChart attr mode
-                ]
+        ]
 
 
 toRadar : Row -> ( String, List (Maybe Float) )
