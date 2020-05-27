@@ -27,8 +27,8 @@ import Lia.Markdown.Table.Update as Sub
 import Lia.Markdown.Update exposing (Msg(..))
 
 
-view : (Inlines -> List (Html Msg)) -> Int -> Parameters -> Bool -> Table -> Vector -> Html Msg
-view viewer width attr mode table vector =
+view : (Inlines -> List (Html Msg)) -> Int -> Maybe Int -> Parameters -> Bool -> Table -> Vector -> Html Msg
+view viewer width effectId attr mode table vector =
     let
         activate =
             if
@@ -109,19 +109,19 @@ view viewer width attr mode table vector =
         Html.div [ Attr.style "float" "left", Attr.style "width" "100%" ]
             [ toggleBtn table.id "list"
             , table.body
-                |> toMatrix Nothing
+                |> toMatrix effectId
                 |> sort state
                 |> chart width attr mode (userClass |> Maybe.withDefault table.class) table.head
             ]
 
     else if table.head == [] && table.format == [] then
         state
-            |> unformatted viewer (toMatrix Nothing table.body) table.id
+            |> unformatted viewer (toMatrix effectId table.body) table.id
             |> toTable table.id attr (userClass |> Maybe.withDefault table.class) state.diagram
 
     else
         state
-            |> formatted viewer table.head table.format (toMatrix Nothing table.body) table.id
+            |> formatted viewer table.head table.format (toMatrix effectId table.body) table.id
             |> toTable table.id attr (userClass |> Maybe.withDefault table.class) state.diagram
 
 

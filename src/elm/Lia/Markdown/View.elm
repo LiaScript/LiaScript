@@ -157,6 +157,7 @@ view_block config block =
             Table.view
                 config.view
                 config.screen.width
+                config.main.visible
                 attr
                 config.light
                 table
