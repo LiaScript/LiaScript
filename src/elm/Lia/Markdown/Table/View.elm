@@ -10,15 +10,18 @@ import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
+import Lia.Markdown.Table.Matrix as Matrix exposing (Matrix, Row)
 import Lia.Markdown.Table.Types
     exposing
-        ( Class(..)
-        , Row
+        ( Cell
+        , Class(..)
         , State
-        , Table(..)
+        , Table
         , Vector
-        , allNumbers
         , getColumn
+        , isNumber
+        , toCell
+        , toMatrix
         )
 import Lia.Markdown.Table.Update as Sub
 import Lia.Markdown.Update exposing (Msg(..))
@@ -98,43 +101,28 @@ view viewer width attr mode table vector =
                                         Nothing
                            )
                     )
+
+        state =
+            getState table.id vector
     in
-    case table of
-        Unformatted class rows id ->
-            let
-                state =
-                    getState id vector
-            in
-            if activate state.diagram then
-                Html.div [ Attr.style "float" "left", Attr.style "width" "100%" ]
-                    [ toggleBtn id "list"
-                    , rows
-                        |> sort state
-                        |> chart width attr mode (userClass |> Maybe.withDefault class) []
-                    ]
+    if activate state.diagram then
+        Html.div [ Attr.style "float" "left", Attr.style "width" "100%" ]
+            [ toggleBtn table.id "list"
+            , table.body
+                |> toMatrix Nothing
+                |> sort state
+                |> chart width attr mode (userClass |> Maybe.withDefault table.class) table.head
+            ]
 
-            else
-                state
-                    |> unformatted viewer rows id
-                    |> toTable id attr (userClass |> Maybe.withDefault class) state.diagram
+    else if table.head == [] && table.format == [] then
+        state
+            |> unformatted viewer (toMatrix Nothing table.body) table.id
+            |> toTable table.id attr (userClass |> Maybe.withDefault table.class) state.diagram
 
-        Formatted class head format rows id ->
-            let
-                state =
-                    getState id vector
-            in
-            if activate state.diagram then
-                Html.div [ Attr.style "float" "left", Attr.style "width" "100%" ]
-                    [ toggleBtn id "list"
-                    , rows
-                        |> sort state
-                        |> chart width attr mode (userClass |> Maybe.withDefault class) head
-                    ]
-
-            else
-                state
-                    |> formatted viewer head format rows id
-                    |> toTable id attr (userClass |> Maybe.withDefault class) state.diagram
+    else
+        state
+            |> formatted viewer table.head table.format (toMatrix Nothing table.body) table.id
+            |> toTable table.id attr (userClass |> Maybe.withDefault table.class) state.diagram
 
 
 toData :
@@ -142,7 +130,7 @@ toData :
     -> List (Float -> Point)
     -> Int
     -> List Inlines
-    -> List Row
+    -> Matrix Cell
     -> List ( Maybe String, ( Char, Diagram ) )
 toData fn points i head rows =
     case getColumn i head rows of
@@ -169,7 +157,7 @@ toData fn points i head rows =
                         :: toData fn points (i + 1) head rows
 
 
-toBarChart : Int -> List Inlines -> List Row -> List ( Maybe String, List (Maybe Float) )
+toBarChart : Int -> List Inlines -> Matrix Cell -> List ( Maybe String, List (Maybe Float) )
 toBarChart i head rows =
     case getColumn i head rows of
         Nothing ->
@@ -187,7 +175,7 @@ toBarChart i head rows =
                 ( title, data ) :: toBarChart (i + 1) head rows
 
 
-chart : Int -> Parameters -> Bool -> Class -> List Inlines -> List Row -> Html Msg
+chart : Int -> Parameters -> Bool -> Class -> List Inlines -> Matrix Cell -> Html Msg
 chart width attr mode class head rows =
     Html.div [ Attr.style "float" "left", Attr.style "width" "100%" ]
         [ case ( class, head ) of
@@ -443,7 +431,7 @@ chart width attr mode class head rows =
         ]
 
 
-toRadar : Row -> ( String, List (Maybe Float) )
+toRadar : Row Cell -> ( String, List (Maybe Float) )
 toRadar row =
     case row of
         [] ->
@@ -509,7 +497,7 @@ toggleBtn id icon =
         ]
 
 
-unformatted : (Inlines -> List (Html Msg)) -> List Row -> Int -> State -> List (Html Msg)
+unformatted : (Inlines -> List (Html Msg)) -> Matrix Cell -> Int -> State -> List (Html Msg)
 unformatted viewer rows id state =
     case sort state rows of
         head :: tail ->
@@ -528,7 +516,7 @@ unformatted viewer rows id state =
             []
 
 
-formatted : (Inlines -> List (Html Msg)) -> MultInlines -> List String -> List Row -> Int -> State -> List (Html Msg)
+formatted : (Inlines -> List (Html Msg)) -> MultInlines -> List String -> Matrix Cell -> Int -> State -> List (Html Msg)
 formatted viewer head format rows id state =
     rows
         |> sort state
@@ -554,15 +542,15 @@ get i list =
             |> get (i - 1)
 
 
-sort : State -> List Row -> List Row
+sort : State -> Matrix Cell -> Matrix Cell
 sort state matrix =
     if state.column /= -1 then
         let
             sorted =
                 if
                     matrix
-                        |> get state.column
-                        |> Maybe.map allNumbers
+                        |> Matrix.column state.column
+                        |> Maybe.map (List.all isNumber)
                         |> Maybe.withDefault False
                 then
                     List.sortBy (get state.column >> Maybe.andThen .float >> Maybe.withDefault 0) matrix
@@ -580,7 +568,7 @@ sort state matrix =
         matrix
 
 
-view_head1 : (Inlines -> List (Html Msg)) -> Int -> State -> Row -> List (Html Msg)
+view_head1 : (Inlines -> List (Html Msg)) -> Int -> State -> Row Cell -> List (Html Msg)
 view_head1 viewer id state =
     List.indexedMap
         (\i r ->

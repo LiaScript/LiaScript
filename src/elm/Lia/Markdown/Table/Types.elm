@@ -1,24 +1,29 @@
 module Lia.Markdown.Table.Types exposing
     ( Cell
     , Class(..)
-    , Row
     , State
-    , Table(..)
+    , Table
     , Vector
-    , allNumbers
-    , get
+    , float
     , getColumn
-    , someNumbers
+    , isNumber
+    , toCell
+    , toMatrix
     )
 
 import Array exposing (Array)
-import Lia.Markdown.Inline.Stringify exposing (stringify)
+import Lia.Markdown.Inline.Stringify exposing (stringify, stringify_)
 import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
+import Lia.Markdown.Table.Matrix as Matrix exposing (Matrix)
 
 
-type Table
-    = Unformatted Class (List Row) Int
-    | Formatted Class MultInlines (List String) (List Row) Int
+type alias Table =
+    { class : Class
+    , head : List Inlines
+    , format : List String
+    , body : List (List Inlines)
+    , id : Int
+    }
 
 
 type Class
@@ -43,10 +48,6 @@ type alias State =
     }
 
 
-type alias Row =
-    List Cell
-
-
 type alias Cell =
     { inlines : Inlines
     , string : String
@@ -54,22 +55,43 @@ type alias Cell =
     }
 
 
+toMatrix : Maybe Int -> Matrix Inlines -> Matrix Cell
+toMatrix id =
+    Matrix.map (toCell id)
+
+
+toCell : Maybe Int -> Inlines -> Cell
+toCell effectId data =
+    let
+        str =
+            data
+                |> stringify_ effectId
+                |> String.trim
+                |> String.toLower
+    in
+    str
+        |> float
+        |> Cell data str
+
+
+float : String -> Maybe Float
+float =
+    String.split " " >> List.head >> Maybe.andThen String.toFloat
+
+
 getColumn : Int -> List Inlines -> List (List c) -> Maybe ( Maybe String, List c )
 getColumn i head rows =
-    let
-        column =
-            List.filterMap (get i) rows
-    in
-    if column == [] then
-        Nothing
+    case Matrix.column i rows of
+        Just column ->
+            Just
+                ( head
+                    |> List.head
+                    |> Maybe.andThen (stringify >> String.trim >> isEmpty)
+                , column
+                )
 
-    else
-        Just
-            ( head
-                |> get i
-                |> Maybe.andThen (stringify >> String.trim >> isEmpty)
-            , column
-            )
+        _ ->
+            Nothing
 
 
 isEmpty : String -> Maybe String
@@ -81,25 +103,6 @@ isEmpty str =
         Just str
 
 
-get : Int -> List c -> Maybe c
-get id list =
-    case list of
-        [] ->
-            Nothing
-
-        x :: xs ->
-            if id == 0 then
-                Just x
-
-            else
-                get (id - 1) xs
-
-
-allNumbers : Row -> Bool
-allNumbers =
-    List.all (.float >> (/=) Nothing)
-
-
-someNumbers : Row -> Bool
-someNumbers =
-    List.any (.float >> (/=) Nothing)
+isNumber : Cell -> Bool
+isNumber =
+    .float >> (/=) Nothing

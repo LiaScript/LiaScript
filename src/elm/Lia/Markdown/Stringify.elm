@@ -3,7 +3,6 @@ module Lia.Markdown.Stringify exposing (stringify)
 import Lia.Markdown.Effect.Types exposing (isIn)
 import Lia.Markdown.HTML.Types as HTML
 import Lia.Markdown.Inline.Stringify as Inline
-import Lia.Markdown.Table.Types exposing (Table(..))
 import Lia.Markdown.Types exposing (Markdown(..))
 
 
@@ -33,21 +32,16 @@ stringify id markdown =
             else
                 "\n"
 
-        Table _ (Unformatted _ rows _) ->
-            rows
-                |> List.map (List.map .string >> String.concat)
-                |> String.concat
-
-        Table _ (Formatted _ header _ rows _) ->
+        Table _ table ->
             let
                 head =
-                    header
+                    table.head
                         |> List.map (Inline.stringify_ id)
                         |> String.concat
 
                 body =
-                    rows
-                        |> List.map (List.map .string >> String.concat)
+                    table.body
+                        |> List.map (List.map (Inline.stringify_ id) >> String.concat)
                         |> String.concat
             in
             head ++ " " ++ body

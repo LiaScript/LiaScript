@@ -24,7 +24,8 @@ import Combine
 import Lia.Markdown.Inline.Parser exposing (line)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
-import Lia.Markdown.Table.Types exposing (Cell, Class(..), Row, State, Table(..), someNumbers)
+import Lia.Markdown.Table.Matrix as Matrix exposing (Matrix)
+import Lia.Markdown.Table.Types exposing (Cell, Class(..), State, Table, float, isNumber, toCell, toMatrix)
 import Lia.Parser.Context exposing (Context, indentation, indentation_skip)
 import Set
 
@@ -39,28 +40,45 @@ parse =
 
 classify : Table -> Table
 classify table =
-    case table of
-        Unformatted _ rows id ->
-            Unformatted
-                (checkDiagram Nothing rows)
-                rows
-                id
+    { table
+        | class =
+            checkDiagram
+                (if table.head == [] then
+                    Nothing
 
-        Formatted _ head formatting rows id ->
-            Formatted
-                (checkDiagram (Just head) rows)
-                head
-                formatting
-                rows
-                id
+                 else
+                    table.head
+                        |> List.map (toCell Nothing)
+                        |> Just
+                )
+                (toMatrix Nothing table.body)
+    }
 
 
-checkDiagram : Maybe (List Inlines) -> List Row -> Class
+
+{- case table of
+   Unformatted _ rows id ->
+       Unformatted
+           (checkDiagram Nothing rows)
+           rows
+           id
+
+   Formatted _ head formatting rows id ->
+       Formatted
+           (checkDiagram (Just head) rows)
+           head
+           formatting
+           rows
+           id
+-}
+
+
+checkDiagram : Maybe (List Cell) -> Matrix Cell -> Class
 checkDiagram headLine rows =
     if
         rows
             |> List.filterMap List.tail
-            |> List.all someNumbers
+            |> Matrix.any isNumber
     then
         let
             firstColumn =
@@ -82,7 +100,7 @@ checkDiagram headLine rows =
                     headNumbers =
                         headLine
                             |> Maybe.andThen List.tail
-                            |> Maybe.map (List.map (stringify >> String.trim >> float))
+                            |> Maybe.map (List.map .float)
                             |> Maybe.withDefault [ Nothing ]
                 in
                 if List.length headNumbers > 1 && List.all ((/=) Nothing) headNumbers then
@@ -109,31 +127,12 @@ checkDiagram headLine rows =
         None
 
 
-cell : Inlines -> Cell
-cell data =
-    let
-        str =
-            data
-                |> stringify
-                |> String.trim
-                |> String.toLower
-    in
-    str
-        |> float
-        |> Cell data str
-
-
-float : String -> Maybe Float
-float =
-    String.split " " >> List.head >> Maybe.andThen String.toFloat
-
-
-row : Parser Context Row
+row : Parser Context (List Inlines)
 row =
     indentation
         |> keep
             (manyTill
-                (string "|" |> keep line |> map cell)
+                (string "|" |> keep line)
                 (regex "\\|[\t ]*\\n")
             )
 
@@ -142,13 +141,13 @@ simple : Parser Context (Int -> Table)
 simple =
     row
         |> many1
-        |> map (Unformatted None)
+        |> map (Table None [] [])
 
 
 formated : Parser Context (Int -> Table)
 formated =
     row
-        |> map (List.map .inlines >> Formatted None)
+        |> map (Table None)
         |> andMap format
         |> andMap (many row)
 
