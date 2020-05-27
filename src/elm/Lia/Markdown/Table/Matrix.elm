@@ -11,6 +11,7 @@ module Lia.Markdown.Table.Matrix exposing
     , some
     , split
     , tail
+    , transpose
     )
 
 import Array exposing (Array)

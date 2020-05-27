@@ -5,7 +5,6 @@ module Lia.Markdown.Table.Types exposing
     , Table
     , Vector
     , float
-    , getColumn
     , isNumber
     , toCell
     , toMatrix
@@ -67,7 +66,6 @@ toCell effectId data =
             data
                 |> stringify_ effectId
                 |> String.trim
-                |> String.toLower
     in
     str
         |> float
@@ -77,21 +75,6 @@ toCell effectId data =
 float : String -> Maybe Float
 float =
     String.split " " >> List.head >> Maybe.andThen String.toFloat
-
-
-getColumn : Int -> List Inlines -> List (List c) -> Maybe ( Maybe String, List c )
-getColumn i head rows =
-    case Matrix.column i rows of
-        Just column ->
-            Just
-                ( head
-                    |> List.head
-                    |> Maybe.andThen (stringify >> String.trim >> isEmpty)
-                , column
-                )
-
-        _ ->
-            Nothing
 
 
 isEmpty : String -> Maybe String

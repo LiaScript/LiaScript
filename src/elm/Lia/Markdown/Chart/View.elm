@@ -27,13 +27,13 @@ viewChart attr light =
     encode False >> eCharts attr light
 
 
-viewBarChart : Parameters -> Bool -> String -> List String -> List ( Maybe String, List (Maybe Float) ) -> Html msg
+viewBarChart : Parameters -> Bool -> Maybe String -> List String -> List ( Maybe String, List (Maybe Float) ) -> Html msg
 viewBarChart attr light title category data =
     encodeBarChart title category data
         |> eCharts attr light
 
 
-viewRadarChart : Parameters -> Bool -> String -> List String -> List ( String, List (Maybe Float) ) -> Html msg
+viewRadarChart : Parameters -> Bool -> Maybe String -> List String -> List ( String, List (Maybe Float) ) -> Html msg
 viewRadarChart attr light title category data =
     encodeRadarChart title category data
         |> eCharts attr light
@@ -77,7 +77,7 @@ eCharts attr light option =
         []
 
 
-encodeBarChart : String -> List String -> List ( Maybe String, List (Maybe Float) ) -> JE.Value
+encodeBarChart : Maybe String -> List String -> List ( Maybe String, List (Maybe Float) ) -> JE.Value
 encodeBarChart xLabel category data =
     let
         bars =
@@ -111,13 +111,19 @@ encodeBarChart xLabel category data =
     JE.object
         [ ( "xAxis"
           , JE.object
-                [ ( "type", JE.string "category" )
-                , ( "name", JE.string xLabel )
-                , ( "data"
-                  , category
+                ([ ( "type", JE.string "category" )
+
+                 --, ( "name", JE.string xLabel )
+                 , ( "data"
+                   , category
                         |> JE.list JE.string
-                  )
-                ]
+                   )
+                 ]
+                    ++ (xLabel
+                            |> Maybe.map (\title -> [ ( "name", JE.string title ) ])
+                            |> Maybe.withDefault []
+                       )
+                )
           )
         , ( "yAxis"
           , JE.object [ ( "type", JE.string "value" ) ]
@@ -159,7 +165,7 @@ calcMax =
         )
 
 
-encodeRadarChart : String -> List String -> List ( String, List (Maybe Float) ) -> JE.Value
+encodeRadarChart : Maybe String -> List String -> List ( String, List (Maybe Float) ) -> JE.Value
 encodeRadarChart title category data =
     let
         max_ =
@@ -231,17 +237,17 @@ encodeRadarChart title category data =
             |> JE.list identity
       )
     ]
-        ++ (if title == "" then
-                []
-
-            else
-                [ ( "title"
-                  , JE.object
-                        [ ( "text", JE.string title ) ]
-                  )
-                ]
-           )
+        ++ (title |> Maybe.map encodeTitle |> Maybe.withDefault [])
         |> JE.object
+
+
+encodeTitle : String -> List ( String, JE.Value )
+encodeTitle title =
+    [ ( "title"
+      , JE.object
+            [ ( "text", JE.string title ) ]
+      )
+    ]
 
 
 encodeHeatMap : Maybe String -> List String -> List String -> List (List ( Int, Int, Maybe Float )) -> JE.Value
