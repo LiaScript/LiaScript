@@ -39,8 +39,8 @@ viewRadarChart attr light title category data =
         |> eCharts attr light
 
 
-viewPieChart : Parameters -> Bool -> Maybe String -> Maybe String -> List ( String, Float ) -> Html msg
-viewPieChart attr light title subtitle data =
+viewPieChart : Int -> Parameters -> Bool -> Maybe String -> Maybe String -> List (List ( String, Float )) -> Html msg
+viewPieChart width attr light title subtitle data =
     encodePieChart title subtitle data
         |> eCharts attr light
 
@@ -364,19 +364,41 @@ encodeHeatMap title xAxis yAxis data =
         |> JE.object
 
 
-encodePieChart : Maybe String -> Maybe String -> List ( String, Float ) -> JE.Value
+encodePieChart : Maybe String -> Maybe String -> List (List ( String, Float )) -> JE.Value
 encodePieChart title subtitle data =
     let
         pieces =
             data
                 |> List.map
-                    (\( name_, value_ ) ->
+                    (\x ->
                         JE.object
-                            [ ( "name", JE.string name_ )
-                            , ( "value", JE.float value_ )
+                            [ ( "type", JE.string "pie" )
+                            , ( "name", subtitle |> Maybe.withDefault "" |> JE.string )
+
+                            --, ( "roseType", JE.string "radius" )
+                            , ( "radius"
+                              , JE.string <|
+                                    if title /= Nothing || subtitle /= Nothing then
+                                        "65%"
+
+                                    else
+                                        "75%"
+                              )
+                            , ( "center", JE.string "50%" )
+                            , ( "selectedMode", JE.string "single" )
+                            , ( "data"
+                              , x
+                                    |> List.map
+                                        (\( name_, value_ ) ->
+                                            JE.object
+                                                [ ( "name", JE.string name_ )
+                                                , ( "value", JE.float value_ )
+                                                ]
+                                        )
+                                    |> JE.list identity
+                              )
                             ]
                     )
-                |> JE.list identity
 
         head =
             if title /= Nothing || subtitle /= Nothing then
@@ -394,27 +416,7 @@ encodePieChart title subtitle data =
             else
                 []
     in
-    [ ( "series"
-      , [ JE.object
-            [ ( "type", JE.string "pie" )
-            , ( "name", subtitle |> Maybe.withDefault "" |> JE.string )
-
-            --, ( "roseType", JE.string "radius" )
-            , ( "radius"
-              , JE.string <|
-                    if title /= Nothing || subtitle /= Nothing then
-                        "65%"
-
-                    else
-                        "75%"
-              )
-            , ( "center", JE.string "50%" )
-            , ( "selectedMode", JE.string "single" )
-            , ( "data", pieces )
-            ]
-        ]
-            |> JE.list identity
-      )
+    [ ( "series", JE.list identity pieces )
     , toolbox Nothing { saveAsImage = True, dataView = True, dataZoom = False, magicType = False }
 
     --, ( "legend"

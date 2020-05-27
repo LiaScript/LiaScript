@@ -24,8 +24,8 @@ import Lia.Markdown.Table.Update as Sub
 import Lia.Markdown.Update exposing (Msg(..))
 
 
-view : (Inlines -> List (Html Msg)) -> Parameters -> Bool -> Table -> Vector -> Html Msg
-view viewer attr mode table vector =
+view : (Inlines -> List (Html Msg)) -> Int -> Parameters -> Bool -> Table -> Vector -> Html Msg
+view viewer width attr mode table vector =
     let
         activate =
             if
@@ -110,7 +110,7 @@ view viewer attr mode table vector =
                     [ toggleBtn id "list"
                     , rows
                         |> sort state
-                        |> chart attr mode (userClass |> Maybe.withDefault class) []
+                        |> chart width attr mode (userClass |> Maybe.withDefault class) []
                     ]
 
             else
@@ -128,7 +128,7 @@ view viewer attr mode table vector =
                     [ toggleBtn id "list"
                     , rows
                         |> sort state
-                        |> chart attr mode (userClass |> Maybe.withDefault class) head
+                        |> chart width attr mode (userClass |> Maybe.withDefault class) head
                     ]
 
             else
@@ -187,8 +187,8 @@ toBarChart i head rows =
                 ( title, data ) :: toBarChart (i + 1) head rows
 
 
-chart : Parameters -> Bool -> Class -> List Inlines -> List Row -> Html Msg
-chart attr mode class head rows =
+chart : Int -> Parameters -> Bool -> Class -> List Inlines -> List Row -> Html Msg
+chart width attr mode class head rows =
     Html.div [ Attr.style "float" "left", Attr.style "width" "100%" ]
         [ case ( class, head ) of
             ( BarChart, [] ) ->
@@ -247,13 +247,14 @@ chart attr mode class head rows =
 
                         data =
                             rows
-                                |> List.head
-                                |> Maybe.withDefault []
-                                |> List.map .float
+                                |> List.map (List.map .float)
                     in
-                    List.map2 (\title_ -> Maybe.map (Tuple.pair title_)) title data
-                        |> List.filterMap identity
-                        |> Chart.viewPieChart attr mode Nothing Nothing
+                    data
+                        |> List.map
+                            (List.map2 (\title_ -> Maybe.map (Tuple.pair title_)) title
+                                >> List.filterMap identity
+                            )
+                        |> Chart.viewPieChart width attr mode Nothing Nothing
 
                 else
                     let
@@ -283,7 +284,8 @@ chart attr mode class head rows =
                     in
                     List.map2 (\title_ -> Maybe.map (Tuple.pair title_)) title data
                         |> List.filterMap identity
-                        |> Chart.viewPieChart attr mode main sub
+                        |> List.singleton
+                        |> Chart.viewPieChart width attr mode main sub
 
             ( HeatMap, [] ) ->
                 let
