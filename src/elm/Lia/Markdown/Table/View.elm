@@ -40,7 +40,7 @@ view viewer width effectId attr mode table vector =
                 |> sort state
                 |> (::) (List.map (toCell effectId) table.head)
                 |> diagramTranspose attr
-                |> chart width attr mode (diagramType table.class attr)
+                |> chart width (table.format /= []) attr mode (diagramType table.class attr)
             ]
 
     else if table.head == [] && table.format == [] then
@@ -126,8 +126,8 @@ diagramType default =
         >> Maybe.withDefault default
 
 
-chart : Int -> Parameters -> Bool -> Class -> Matrix Cell -> Html Msg
-chart width attr mode class matrix =
+chart : Int -> Bool -> Parameters -> Bool -> Class -> Matrix Cell -> Html Msg
+chart width isFormated attr mode class matrix =
     let
         ( head, body ) =
             Matrix.split matrix
@@ -242,24 +242,37 @@ chart width attr mode class matrix =
 
             Map ->
                 let
+                    data =
+                        if isFormated then
+                            body
+
+                        else
+                            matrix
+
                     categories =
-                        body
+                        data
                             |> Matrix.column 0
                             |> Maybe.withDefault []
                             |> List.map .string
 
                     values =
-                        body
+                        data
                             |> Matrix.column 1
                             |> Maybe.withDefault []
                             |> List.map .float
-
-                    data =
-                        List.map2 Tuple.pair categories values
+                            |> List.map2 Tuple.pair categories
                 in
                 attr
                     |> Param.get "data-src"
-                    |> Chart.viewMapChart attr mode title data
+                    |> Chart.viewMapChart attr
+                        mode
+                        (if isFormated then
+                            title
+
+                         else
+                            Nothing
+                        )
+                        values
 
             _ ->
                 let
