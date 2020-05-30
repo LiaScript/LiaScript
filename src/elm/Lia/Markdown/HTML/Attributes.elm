@@ -1,6 +1,9 @@
 module Lia.Markdown.HTML.Attributes exposing
     ( Parameters
     , annotation
+    , base
+    , get
+    , isSet
     , parse
     , toAttribute
     )
@@ -35,6 +38,32 @@ type alias Parameters =
     List ( String, String )
 
 
+get : String -> Parameters -> Maybe String
+get name attr =
+    case attr of
+        [] ->
+            Nothing
+
+        ( key, value ) :: xs ->
+            if key == name then
+                Just value
+
+            else
+                get name xs
+
+
+isSet : String -> Parameters -> Bool
+isSet name =
+    get name
+        >> Maybe.map (String.trim >> String.toLower >> isTrue)
+        >> Maybe.withDefault False
+
+
+isTrue : String -> Bool
+isTrue val =
+    val == "" || val == "1" || val == "true"
+
+
 annotation : String -> Parameters -> List (Attribute msg)
 annotation cls =
     (::) ( "class", "lia-inline " ++ cls ) >> toAttribute
@@ -45,13 +74,47 @@ toAttribute =
     List.map (\( key, value ) -> Attr.attribute key value)
 
 
-parse : Parser context ( String, String )
-parse =
+base : String -> ( String, String ) -> ( String, String )
+base url ( key, value ) =
+    ( key
+    , if
+        key
+            == "src"
+            || key
+            == "href"
+            || key
+            == "data"
+            || key
+            == "data-src"
+            || key
+            == "formaction"
+            || key
+            == "poster"
+      then
+        toURL url value
+
+      else
+        value
+    )
+
+
+toURL : String -> String -> String
+toURL basis url =
+    if String.startsWith "http" url then
+        url
+
+    else
+        basis ++ url
+
+
+parse : String -> Parser context ( String, String )
+parse url =
     regex "[A-Za-z0-9_\\-]+"
         |> map (String.toLower >> Tuple.pair)
         |> ignore whitespace
         |> andMap tagAttributeValue
         |> ignore whitespace
+        |> map (base url)
 
 
 tagAttributeValue : Parser context String

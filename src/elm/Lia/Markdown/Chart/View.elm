@@ -4,6 +4,7 @@ module Lia.Markdown.Chart.View exposing
     , viewBarChart
     , viewChart
     , viewHeatMap
+    , viewMapChart
     , viewPieChart
     , viewRadarChart
     )
@@ -19,30 +20,43 @@ import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
 
 view : Parameters -> Bool -> Chart -> Html msg
 view attr light =
-    encode True >> eCharts attr light
+    encode True >> eCharts attr light Nothing
 
 
 viewChart : Parameters -> Bool -> Chart -> Html msg
 viewChart attr light =
-    encode False >> eCharts attr light
+    encode False >> eCharts attr light Nothing
 
 
 viewBarChart : Parameters -> Bool -> Maybe String -> List String -> List ( Maybe String, List (Maybe Float) ) -> Html msg
 viewBarChart attr light title category data =
     encodeBarChart title category data
-        |> eCharts attr light
+        |> eCharts attr light Nothing
 
 
 viewRadarChart : Parameters -> Bool -> Maybe String -> List String -> List ( String, List (Maybe Float) ) -> Html msg
 viewRadarChart attr light title category data =
     encodeRadarChart title category data
-        |> eCharts attr light
+        |> eCharts attr light Nothing
 
 
-viewPieChart : Int -> Parameters -> Bool -> Maybe String -> Maybe String -> List (List ( String, Float )) -> Html msg
+viewMapChart : Parameters -> Bool -> Maybe String -> List ( String, Maybe Float ) -> Maybe String -> Html msg
+viewMapChart attr light title data json =
+    encodeMapChart title data json
+        |> eCharts attr light json
+
+
+viewPieChart :
+    Int
+    -> Parameters
+    -> Bool
+    -> Maybe String
+    -> Maybe String
+    -> List (List ( String, Float ))
+    -> Html msg
 viewPieChart width attr light title subtitle data =
     encodePieChart title subtitle data
-        |> eCharts attr light
+        |> eCharts attr light Nothing
 
 
 viewHeatMap :
@@ -55,11 +69,11 @@ viewHeatMap :
     -> Html msg
 viewHeatMap attr light title x y data =
     encodeHeatMap title x y data
-        |> eCharts attr light
+        |> eCharts attr light Nothing
 
 
-eCharts : Parameters -> Bool -> JE.Value -> Html msg
-eCharts attr light option =
+eCharts : Parameters -> Bool -> Maybe String -> JE.Value -> Html msg
+eCharts attr light json option =
     Html.node "e-charts"
         (List.append
             [ Attr.attribute "mode" <|
@@ -71,6 +85,9 @@ eCharts attr light option =
             , option
                 |> JE.encode 0
                 |> Attr.attribute "option"
+            , json
+                |> Maybe.withDefault ""
+                |> Attr.attribute "json"
             ]
             (annotation "lia-chart" attr)
         )
@@ -147,6 +164,75 @@ encodeBarChart xLabel category data =
         , ( "tooltip", JE.object [] )
         , ( "series", bars )
         ]
+
+
+encodeMapChart : Maybe String -> List ( String, Maybe Float ) -> Maybe String -> JE.Value
+encodeMapChart title data json =
+    let
+        ( min, max ) =
+            data
+                |> List.filterMap Tuple.second
+                |> List.foldl
+                    (\value ( min_, max_ ) ->
+                        ( if value < min_ then
+                            value
+
+                          else
+                            min_
+                        , if value > max_ then
+                            value
+
+                          else
+                            max_
+                        )
+                    )
+                    ( 9999999999, 0 )
+    in
+    [ ( "series"
+      , [ JE.object
+            [ ( "type", JE.string "map" )
+            , ( "map"
+              , json
+                    |> Maybe.withDefault ""
+                    |> JE.string
+              )
+            , ( "data"
+              , data
+                    |> List.filterMap
+                        (\( key, value ) ->
+                            case value of
+                                Just num ->
+                                    [ ( "name", JE.string key )
+                                    , ( "value", JE.float num )
+                                    ]
+                                        |> JE.object
+                                        |> Just
+
+                                Nothing ->
+                                    Nothing
+                        )
+                    |> JE.list identity
+              )
+            ]
+        ]
+            |> JE.list identity
+      )
+    , ( "visualMap"
+      , JE.object
+            [ ( "min", JE.float min )
+            , ( "max", JE.float max )
+            , ( "calculable", JE.bool True )
+            , ( "itemHeight", JE.string "150px" )
+            , ( "right", JE.string "0" )
+            , ( "bottom", JE.string "center" )
+            , ( "orient", JE.string "vertical" )
+            ]
+      )
+    , toolbox Nothing { saveAsImage = True, dataView = True, dataZoom = False, magicType = False }
+    , ( "tooltip", JE.object [] )
+    ]
+        ++ (title |> Maybe.map encodeTitle |> Maybe.withDefault [])
+        |> JE.object
 
 
 calcMax : List { x | max : Float } -> List (Maybe Float) -> List { x | max : Float }

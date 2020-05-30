@@ -7,7 +7,7 @@ import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Lia.Markdown.Chart.Types exposing (Diagram(..), Point)
 import Lia.Markdown.Chart.View as Chart
-import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
+import Lia.Markdown.HTML.Attributes as Param exposing (Parameters)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
 import Lia.Markdown.Table.Matrix as Matrix exposing (Matrix, Row)
@@ -56,7 +56,7 @@ view viewer width effectId attr mode table vector =
 
 diagramShow : Parameters -> Bool -> Bool
 diagramShow attr active =
-    if diagramSet "diagram-show" attr then
+    if Param.isSet "data-show" attr then
         not active
 
     else
@@ -65,33 +65,18 @@ diagramShow attr active =
 
 diagramTranspose : Parameters -> Matrix Cell -> Matrix Cell
 diagramTranspose attr matrix =
-    if diagramSet "diagram-transpose" attr then
+    if Param.isSet "data-transpose" attr then
         Matrix.transpose matrix
 
     else
         matrix
 
 
-diagramSet : String -> Parameters -> Bool
-diagramSet name =
-    List.filter (Tuple.first >> (==) name)
-        >> List.head
-        >> Maybe.map
-            (Tuple.second
-                >> String.toLower
-                >> String.trim
-                >> (\param -> param == "true" || param == "")
-            )
-        >> Maybe.withDefault False
-
-
 diagramType : Class -> Parameters -> Class
 diagramType default =
-    List.filter (Tuple.first >> (==) "diagram-type")
-        >> List.head
+    Param.get "data-type"
         >> Maybe.map
-            (Tuple.second
-                >> String.toLower
+            (String.toLower
                 >> String.trim
                 >> (\param ->
                         case param of
@@ -123,7 +108,7 @@ diagramType default =
                                 HeatMap
 
                             "map" ->
-                                HeatMap
+                                Map
 
                             "radar" ->
                                 Radar
@@ -255,6 +240,27 @@ chart width attr mode class matrix =
             Parallel ->
                 Html.text "Parallel"
 
+            Map ->
+                let
+                    categories =
+                        body
+                            |> Matrix.column 0
+                            |> Maybe.withDefault []
+                            |> List.map .string
+
+                    values =
+                        body
+                            |> Matrix.column 1
+                            |> Maybe.withDefault []
+                            |> List.map .float
+
+                    data =
+                        List.map2 Tuple.pair categories values
+                in
+                attr
+                    |> Param.get "data-src"
+                    |> Chart.viewMapChart attr mode title data
+
             _ ->
                 let
                     xs : List (Maybe Float)
@@ -312,7 +318,7 @@ getState id =
 toTable : Int -> Parameters -> Class -> Bool -> List (Html Msg) -> Html Msg
 toTable id attr class diagram body =
     if class == None then
-        Html.table (annotation "lia-table" attr) body
+        Html.table (Param.annotation "lia-table" attr) body
 
     else
         Html.div [ Attr.style "float" "left", Attr.style "width" "100%" ]
@@ -336,9 +342,12 @@ toTable id attr class diagram body =
                     Parallel ->
                         "apps"
 
+                    Map ->
+                        "map"
+
                     _ ->
                         "scatter_plot"
-            , Html.div [] [ Html.table (annotation "lia-table" attr) body ]
+            , Html.div [] [ Html.table (Param.annotation "lia-table" attr) body ]
             ]
 
 

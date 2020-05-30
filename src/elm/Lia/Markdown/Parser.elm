@@ -267,9 +267,14 @@ quote =
 
 md_annotations : Parser Context Parameters
 md_annotations =
+    let
+        attr =
+            withState (.defines >> .base >> succeed)
+                |> andThen Attributes.parse
+    in
     spaces
         |> keep macro
-        |> keep (comment Attributes.parse)
+        |> keep (comment attr)
         |> ignore
             (regex "[\t ]*\\n"
                 |> ignore indentation

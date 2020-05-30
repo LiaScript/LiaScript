@@ -89,8 +89,13 @@ comments =
 
 annotations : Parser Context Parameters
 annotations =
+    let
+        attr =
+            withState (.defines >> .base >> succeed)
+                |> andThen Attributes.parse
+    in
     spaces
-        |> keep (comment Attributes.parse)
+        |> keep (comment attr)
         |> map styling
         |> maybe
         |> map (Maybe.withDefault [])

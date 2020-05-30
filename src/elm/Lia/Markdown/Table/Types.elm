@@ -34,6 +34,7 @@ type Class
     | HeatMap
     | Radar
     | Parallel
+    | Map
 
 
 type alias Vector =

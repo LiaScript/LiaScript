@@ -17,6 +17,7 @@ import Combine
         , string
         , succeed
         , whitespace
+        , withState
         )
 import Lia.Markdown.HTML.Attributes as Attributes
 import Lia.Markdown.HTML.Types exposing (Node(..))
@@ -31,11 +32,16 @@ parse =
 
 tag : Parser Context x -> Parser Context (Node x)
 tag parser =
+    let
+        attr =
+            withState (.defines >> .base >> succeed)
+                |> andThen Attributes.parse
+    in
     regex "[ \\t]*<[ \\t]*"
         |> keep tagName
         |> map Tuple.pair
         |> ignore whitespace
-        |> andMap (many Attributes.parse)
+        |> andMap (many attr)
         |> andThen
             (\( name, attributes ) ->
                 if isVoidElement name then
