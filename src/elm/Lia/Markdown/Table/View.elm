@@ -179,20 +179,16 @@ chart width isFormated attr mode class matrix =
 
                         sub =
                             body
-                                |> List.head
-                                |> Maybe.andThen List.head
-                                |> Maybe.map .string
+                                |> Matrix.column 0
+                                |> Maybe.map (List.map .string)
 
                         data =
                             body
-                                |> List.head
-                                |> Maybe.andThen List.tail
-                                |> Maybe.withDefault []
-                                |> List.map .float
+                                |> Matrix.map .float
+                                |> List.filterMap List.tail
                     in
-                    List.map2 (\c -> Maybe.map (Tuple.pair c)) category data
-                        |> List.filterMap identity
-                        |> List.singleton
+                    data
+                        |> List.map (List.map2 (\c -> Maybe.map (Tuple.pair c)) category >> List.filterMap identity)
                         |> Chart.viewPieChart width attr mode title sub
 
             HeatMap ->

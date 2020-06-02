@@ -51,11 +51,11 @@ viewPieChart :
     -> Parameters
     -> Bool
     -> Maybe String
-    -> Maybe String
+    -> Maybe (List String)
     -> List (List ( String, Float ))
     -> Html msg
 viewPieChart width attr light title subtitle data =
-    encodePieChart title subtitle data
+    encodePieChart width title subtitle data
         |> eCharts attr light Nothing
 
 
@@ -336,6 +336,15 @@ encodeTitle title =
     ]
 
 
+encodeLegend : List ( String, JE.Value ) -> List String -> ( String, JE.Value )
+encodeLegend params data =
+    ( "legend"
+    , ( "data", JE.list JE.string data )
+        :: params
+        |> JE.object
+    )
+
+
 encodeHeatMap : Maybe String -> List String -> List String -> List (List ( Int, Int, Maybe Float )) -> JE.Value
 encodeHeatMap title xAxis yAxis data =
     let
@@ -456,27 +465,156 @@ encodeHeatMap title xAxis yAxis data =
         |> JE.object
 
 
-encodePieChart : Maybe String -> Maybe String -> List (List ( String, Float )) -> JE.Value
-encodePieChart title subtitle data =
+encodePieChart : Int -> Maybe String -> Maybe (List String) -> List (List ( String, Float )) -> JE.Value
+encodePieChart width title subtitle data =
+    if List.length data == 1 then
+        let
+            pieces =
+                data
+                    |> List.head
+                    |> Maybe.withDefault []
+                    |> List.map
+                        (\( name_, value_ ) ->
+                            JE.object
+                                [ ( "name", JE.string name_ )
+                                , ( "value", JE.float value_ )
+                                ]
+                        )
+                    |> JE.list identity
+
+            head =
+                if title /= Nothing || subtitle /= Nothing then
+                    [ ( "title"
+                      , JE.object
+                            [ ( "text"
+                              , title |> Maybe.withDefault "" |> JE.string
+                              )
+                            , ( "subtext", subtitle |> Maybe.withDefault [] |> List.head |> Maybe.withDefault "" |> JE.string )
+                            , ( "left", JE.string "center" )
+                            ]
+                      )
+                    ]
+
+                else
+                    []
+        in
+        [ ( "series"
+          , [ JE.object
+                [ ( "type", JE.string "pie" )
+                , ( "name", subtitle |> Maybe.andThen List.head |> Maybe.withDefault "" |> JE.string )
+
+                --, ( "roseType", JE.string "radius" )
+                , ( "radius"
+                  , JE.string <|
+                        if title /= Nothing || subtitle /= Nothing then
+                            "65%"
+
+                        else
+                            "75%"
+                  )
+                , ( "center", JE.string "50%" )
+                , ( "selectedMode", JE.string "single" )
+                , ( "data", pieces )
+                ]
+            ]
+                |> JE.list identity
+          )
+        , toolbox Nothing
+            { saveAsImage = True
+            , dataView = True
+            , dataZoom = False
+            , magicType = False
+            }
+
+        --, ( "legend"
+        --  , JE.object
+        --        [ ( "data"
+        --          , data
+        --                |> List.map Tuple.first
+        --                |> JE.list JE.string
+        --          )
+        --, ( "right", JE.int 0 )
+        --        , ( "top", JE.int 28 )
+        --        ]
+        --  )
+        --  , brush
+        , ( "tooltip"
+          , JE.object
+                [ ( "trigger", JE.string "item" )
+                , ( "formatter"
+                  , JE.string "{b} : {c} ({d}%)"
+                    -- "{a}<br/>{b} : {c} ({d}%)"
+                  )
+                ]
+          )
+        ]
+            |> List.append head
+            |> JE.object
+
+    else
+        encodePieCharts width title subtitle data
+
+
+encodePieCharts : Int -> Maybe String -> Maybe (List String) -> List (List ( String, Float )) -> JE.Value
+encodePieCharts width title subtitle data =
     let
+        relWidth =
+            (toFloat width
+                / (5.9 * toFloat (List.length data))
+                |> (\w ->
+                        if w > 72 then
+                            72
+
+                        else
+                            w
+                   )
+                |> String.fromFloat
+            )
+                ++ "%"
+
+        step =
+            100 / toFloat (2 * List.length data)
+
+        categories =
+            data
+                |> List.head
+                |> Maybe.map (List.map Tuple.first)
+                |> Maybe.withDefault []
+
         pieces =
             data
-                |> List.map
-                    (\x ->
+                |> List.indexedMap
+                    (\i x ->
                         JE.object
                             [ ( "type", JE.string "pie" )
-                            , ( "name", subtitle |> Maybe.withDefault "" |> JE.string )
 
+                            --, ( "name", subtitle |> Maybe.withDefault "" |> JE.string )
                             --, ( "roseType", JE.string "radius" )
                             , ( "radius"
                               , JE.string <|
                                     if title /= Nothing || subtitle /= Nothing then
-                                        "65%"
+                                        relWidth
 
                                     else
                                         "75%"
                               )
-                            , ( "center", JE.string "50%" )
+                            , ( "center"
+                              , [ String.fromFloat (toFloat (2 * i) * step + step)
+                                    ++ "%"
+                                , "50%"
+                                ]
+                                    |> JE.list JE.string
+                              )
+                            , ( "label"
+                              , JE.object
+                                    [ ( "normal"
+                                      , JE.object
+                                            [ ( "formatter", JE.string "{c}" )
+                                            , ( "position", JE.string "inside" )
+                                            ]
+                                      )
+                                    ]
+                              )
                             , ( "selectedMode", JE.string "single" )
                             , ( "data"
                               , x
@@ -495,13 +633,30 @@ encodePieChart title subtitle data =
         head =
             if title /= Nothing || subtitle /= Nothing then
                 [ ( "title"
-                  , JE.object
-                        [ ( "text"
-                          , title |> Maybe.withDefault "" |> JE.string
-                          )
-                        , ( "subtext", subtitle |> Maybe.withDefault "" |> JE.string )
-                        , ( "left", JE.string "center" )
-                        ]
+                  , subtitle
+                        |> Maybe.withDefault []
+                        |> List.indexedMap
+                            (\i sub ->
+                                JE.object
+                                    [ ( "subtext", JE.string sub )
+                                    , ( "bottom", JE.int 40 )
+                                    , ( "textAlign", JE.string "center" )
+                                    , ( "left"
+                                      , String.fromFloat (toFloat (2 * i) * step + step)
+                                            ++ "%"
+                                            |> JE.string
+                                      )
+                                    ]
+                            )
+                        |> (::)
+                            (JE.object
+                                [ ( "text"
+                                  , title |> Maybe.withDefault "" |> JE.string
+                                  )
+                                , ( "left", JE.string "center" )
+                                ]
+                            )
+                        |> JE.list identity
                   )
                 ]
 
@@ -523,6 +678,7 @@ encodePieChart title subtitle data =
     --        ]
     --  )
     --  , brush
+    , encodeLegend [ ( "top", JE.string "30px" ) ] categories
     , ( "tooltip"
       , JE.object
             [ ( "trigger", JE.string "item" )
