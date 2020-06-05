@@ -3,6 +3,7 @@ module Session exposing
     , Session
     , Type(..)
     , getType
+    , load
     , navTo
     , navToHome
     , navToSlide
@@ -60,6 +61,11 @@ setSlide number session =
 navTo : Session -> Url -> Cmd msg
 navTo session =
     Url.toString >> Navigation.pushUrl session.key
+
+
+load : Url -> Cmd msg
+load =
+    Url.toString >> Navigation.load
 
 
 navToHome : Session -> Cmd msg
