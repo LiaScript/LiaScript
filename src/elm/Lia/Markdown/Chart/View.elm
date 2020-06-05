@@ -3,6 +3,7 @@ module Lia.Markdown.Chart.View exposing
     , view
     , viewBarChart
     , viewChart
+    , viewGraph
     , viewHeatMap
     , viewMapChart
     , viewPieChart
@@ -31,6 +32,12 @@ viewChart attr light =
 viewBarChart : Parameters -> Bool -> Maybe String -> List String -> List ( Maybe String, List (Maybe Float) ) -> Html msg
 viewBarChart attr light title category data =
     encodeBarChart title category data
+        |> eCharts attr light Nothing
+
+
+viewGraph : Parameters -> Bool -> Maybe String -> List String -> List ( String, String, Float ) -> Html msg
+viewGraph attr light title nodes edges =
+    encodeGraph title nodes edges
         |> eCharts attr light Nothing
 
 
@@ -92,6 +99,77 @@ eCharts attr light json option =
             (annotation "lia-chart" attr)
         )
         []
+
+
+encodeGraph : Maybe String -> List String -> List ( String, String, Float ) -> JE.Value
+encodeGraph title nodes edges =
+    let
+        min =
+            edges
+                |> List.map (\( _, _, v ) -> v)
+                |> List.minimum
+
+        max =
+            edges
+                |> List.map (\( _, _, v ) -> v)
+                |> List.maximum
+    in
+    JE.object
+        [ toolbox Nothing { saveAsImage = True, dataView = False, dataZoom = False, magicType = False }
+        , ( "tooltip", JE.object [] )
+        , ( "series"
+          , [ ( "type", JE.string "graph" )
+            , ( "layout", JE.string "force" )
+            , ( "label", JE.object [ ( "show", JE.bool True ) ] )
+            , ( "symbolSize", JE.float 40 )
+            , ( "force"
+              , JE.object
+                    [ ( "repulsion", JE.int 300 )
+                    , ( "edgeLength", JE.int 100 )
+                    , ( "gravity", JE.float 0.1 )
+                    ]
+              )
+            , ( "draggable", JE.bool True )
+            , ( "data"
+              , nodes
+                    |> List.map
+                        (\node ->
+                            [ ( "id", JE.string node )
+                            , ( "name", JE.string node )
+                            ]
+                        )
+                    |> JE.list JE.object
+              )
+            , ( "edges"
+              , edges
+                    |> List.map
+                        (\( source, target, v ) ->
+                            [ ( "source", JE.string source )
+                            , ( "target", JE.string target )
+                            , ( "lineStyle"
+                              , [ ( "width", JE.float v )
+
+                                --, ( "curvenes", JE.float 20 )
+                                , ( "opacity"
+                                  , JE.float <|
+                                        if v > 0 then
+                                            0.9
+
+                                        else
+                                            0.3
+                                  )
+                                ]
+                                    |> JE.object
+                              )
+                            ]
+                        )
+                    |> JE.list JE.object
+              )
+            ]
+                |> List.singleton
+                |> JE.list JE.object
+          )
+        ]
 
 
 encodeBarChart : Maybe String -> List String -> List ( Maybe String, List (Maybe Float) ) -> JE.Value

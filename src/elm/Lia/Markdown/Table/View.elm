@@ -24,6 +24,7 @@ import Lia.Markdown.Table.Types
         )
 import Lia.Markdown.Table.Update as Sub
 import Lia.Markdown.Update exposing (Msg(..))
+import Set
 
 
 view : (Inlines -> List (Html Msg)) -> Int -> Maybe Int -> Parameters -> Bool -> Table -> Vector -> Html Msg
@@ -112,6 +113,9 @@ diagramType default =
 
                             "radar" ->
                                 Radar
+
+                            "graph" ->
+                                Graph
 
                             "parallel" ->
                                 Parallel
@@ -236,6 +240,56 @@ chart width isFormated attr mode class matrix =
             Parallel ->
                 Html.text "Parallel"
 
+            Graph ->
+                let
+                    nodesA =
+                        head
+                            |> List.tail
+                            |> Maybe.withDefault []
+                            |> List.map .string
+
+                    nodesB =
+                        body
+                            |> Matrix.column 0
+                            |> Maybe.withDefault []
+                            |> List.map .string
+
+                    nodes =
+                        nodesA
+                            ++ nodesB
+                            |> Set.fromList
+                            |> Set.toList
+                            |> List.filter ((/=) "")
+                in
+                body
+                    |> List.map
+                        (\row ->
+                            case row of
+                                [] ->
+                                    []
+
+                                b :: values ->
+                                    values
+                                        |> List.map2
+                                            (\a v ->
+                                                case v.float of
+                                                    Just float ->
+                                                        if float == 0 then
+                                                            Nothing
+
+                                                        else
+                                                            Just ( a, b.string, float )
+
+                                                    _ ->
+                                                        Nothing
+                                            )
+                                            nodesA
+                        )
+                    |> List.concat
+                    |> List.filterMap identity
+                    |> List.filter (\( a, b, _ ) -> a /= "" || b /= "")
+                    |> Chart.viewGraph attr mode Nothing nodes
+
             Map ->
                 let
                     data =
@@ -343,13 +397,16 @@ toTable id attr class diagram body =
                         "multiline_chart"
 
                     HeatMap ->
-                        "apps"
+                        "view_comfy"
 
                     Radar ->
                         "star_outline"
 
                     Parallel ->
                         "apps"
+
+                    Graph ->
+                        "device_hub"
 
                     Map ->
                         "map"
