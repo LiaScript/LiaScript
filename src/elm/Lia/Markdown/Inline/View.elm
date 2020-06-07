@@ -9,8 +9,8 @@ import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.View as Footnote
+import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.HTML.View as HTML
-import Lia.Markdown.Inline.Annotation exposing (Annotation, annotation, attributes)
 import Lia.Markdown.Inline.Config as Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 import Lia.Settings.Model exposing (Mode(..))
@@ -31,7 +31,7 @@ goto line =
 view : Config -> Inline -> Html msg
 view config element =
     case element of
-        Chars e Nothing ->
+        Chars e [] ->
             Html.text e
 
         Bold e attr ->
@@ -57,17 +57,17 @@ view config element =
         Ref e attr ->
             reference config e attr
 
-        Formula mode_ e Nothing ->
+        Formula mode_ e [] ->
             Html.node "katex-formula"
                 [ Attr.attribute "displayMode" mode_ ]
                 [ Html.text e ]
 
-        Symbol e Nothing ->
+        Symbol e [] ->
             Html.text e
 
         FootnoteMark e attr ->
             attr
-                |> attributes
+                |> toAttribute
                 |> Footnote.inline e
 
         Container list attr ->
@@ -83,43 +83,14 @@ view config element =
                 |> viewer config
                 |> Effect.inline config attr e
 
-        {- if config.mode == Textbook then
-               Html.span
-                   (Attr.id (String.fromInt e.begin)
-                       :: annotation "" Nothing
-                   )
-                   (Effect.view (viewer config) e.begin e.content)
-
-           else
-               Html.span
-                   [ if (e.begin <= config.visible) && (e.end > config.visible) then
-                       Attr.hidden False
-
-                     else
-                       Attr.hidden True
-                   ]
-                   [ Html.span
-                       (Attr.id (String.fromInt e.begin)
-                           :: annotation
-                               (if attr == Nothing then
-                                   "lia-effect"
-
-                                else
-                                   ""
-                               )
-                               attr
-                       )
-                       (Effect.view (viewer config) e.begin e.content)
-                   ]
-        -}
         Symbol e attr ->
-            view config (Container [ Symbol e Nothing ] attr)
+            view config (Container [ Symbol e [] ] attr)
 
         Chars e attr ->
-            view config (Container [ Chars e Nothing ] attr)
+            view config (Container [ Chars e [] ] attr)
 
         Formula mode_ e attr ->
-            view config (Container [ Formula mode_ e Nothing ] attr)
+            view config (Container [ Formula mode_ e [] ] attr)
 
         Goto e line ->
             case e of
@@ -138,7 +109,7 @@ view_inf =
     Config.init -1 Textbook 0 Nothing >> view
 
 
-reference : Config -> Reference -> Annotation -> Html msg
+reference : Config -> Reference -> Parameters -> Html msg
 reference config ref attr =
     case ref of
         Link alt_ url_ title_ ->
@@ -206,7 +177,7 @@ oembed options url =
         |> Maybe.withDefault (Html.text ("Couldn't find oembed provider for url " ++ url))
 
 
-view_url : Config -> Inlines -> String -> String -> Annotation -> Html msg
+view_url : Config -> Inlines -> String -> String -> Parameters -> Html msg
 view_url config alt_ url_ title_ attr =
     [ Attr.href url_, Attr.title title_ ]
         |> List.append (annotation "lia-link" attr)

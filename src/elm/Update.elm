@@ -71,6 +71,11 @@ message msg =
         |> Task.perform identity
 
 
+proxy : String
+proxy =
+    "https://cors-anywhere.herokuapp.com/"
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -206,16 +211,24 @@ update msg model =
         LiaParse ->
             parsing model
 
-        Load_ReadMe_Result _ (Ok readme) ->
+        Load_ReadMe_Result url (Ok readme) ->
             load_readme model readme
 
         Load_ReadMe_Result url (Err info) ->
-            ( { model | state = Error <| parse_error info }
-            , url
-                |> JE.string
-                |> Event "offline" -1
-                |> event2js
-            )
+            if String.startsWith proxy url then
+                ( { model | state = Error <| parse_error info }
+                , url
+                    |> JE.string
+                    |> Event "offline" -1
+                    |> event2js
+                )
+
+            else
+                ( model
+                , Session.setQuery (proxy ++ url) model.session
+                    |> .url
+                    |> Session.load
+                )
 
         Load_Template_Result url (Ok template) ->
             parsing
@@ -234,8 +247,12 @@ update msg model =
                     , templates = Dict.insert url template model.templates
                 }
 
-        Load_Template_Result _ (Err info) ->
-            ( { model | state = Error <| parse_error info }, Cmd.none )
+        Load_Template_Result url (Err info) ->
+            if String.startsWith proxy url then
+                ( { model | state = Error <| parse_error info }, Cmd.none )
+
+            else
+                ( model, download Load_Template_Result (proxy ++ url) )
 
 
 start : Model -> ( Model, Cmd Msg )
@@ -476,7 +493,10 @@ parse_error msg =
 
 download : (String -> Result Http.Error String -> Msg) -> String -> Cmd Msg
 download msg url =
-    Http.get { url = url, expect = Http.expectString (msg url) }
+    Http.get
+        { url = url
+        , expect = Http.expectString (msg url)
+        }
 
 
 getIndex : String -> Model -> ( Model, Cmd Msg )

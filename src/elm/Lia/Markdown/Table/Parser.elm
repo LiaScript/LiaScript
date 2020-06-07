@@ -24,7 +24,8 @@ import Combine
 import Lia.Markdown.Inline.Parser exposing (line)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
-import Lia.Markdown.Table.Types exposing (Cell, Class(..), Row, State, Table(..), someNumbers)
+import Lia.Markdown.Table.Matrix as Matrix exposing (Matrix)
+import Lia.Markdown.Table.Types exposing (Cell, Class(..), State, Table, float, isNumber, toCell, toMatrix)
 import Lia.Parser.Context exposing (Context, indentation, indentation_skip)
 import Set
 
@@ -39,52 +40,82 @@ parse =
 
 classify : Table -> Table
 classify table =
-    case table of
-        Unformatted _ rows id ->
-            Unformatted
-                (checkDiagram False rows)
-                rows
-                id
+    { table
+        | class =
+            checkDiagram
+                (if table.head == [] then
+                    Nothing
 
-        Formatted _ head formatting rows id ->
-            Formatted
-                (checkDiagram True rows)
-                head
-                formatting
-                rows
-                id
+                 else
+                    table.head
+                        |> List.map (toCell Nothing)
+                        |> Just
+                )
+                (toMatrix Nothing table.body)
+    }
 
 
-checkDiagram : Bool -> List Row -> Class
-checkDiagram formatted rows =
+
+{- case table of
+   Unformatted _ rows id ->
+       Unformatted
+           (checkDiagram Nothing rows)
+           rows
+           id
+
+   Formatted _ head formatting rows id ->
+       Formatted
+           (checkDiagram (Just head) rows)
+           head
+           formatting
+           rows
+           id
+-}
+
+
+checkDiagram : Maybe (List Cell) -> Matrix Cell -> Class
+checkDiagram headLine rows =
     if
         rows
             |> List.filterMap List.tail
-            |> List.all someNumbers
+            |> Matrix.any isNumber
     then
         let
-            head =
+            firstColumn =
                 List.map (List.head >> Maybe.andThen .float) rows
         in
-        if List.all ((/=) Nothing) head then
-            if formatted && List.length head == 1 then
-                PieChart False
+        if List.all ((/=) Nothing) firstColumn then
+            if headLine /= Nothing && List.length firstColumn == 1 then
+                --False
+                PieChart
 
             else if
-                head
+                firstColumn
                     |> List.filterMap identity
                     |> Set.fromList
                     |> Set.size
-                    |> (==) (List.length head)
+                    |> (==) (List.length firstColumn)
             then
-                LinePlot
+                let
+                    headNumbers =
+                        headLine
+                            |> Maybe.andThen List.tail
+                            |> Maybe.map (List.map .float)
+                            |> Maybe.withDefault [ Nothing ]
+                in
+                if List.length headNumbers > 1 && List.all ((/=) Nothing) headNumbers then
+                    HeatMap
+
+                else
+                    LinePlot
 
             else
                 ScatterPlot
 
-        else if formatted then
-            if List.length head == 1 then
-                PieChart True
+        else if headLine /= Nothing then
+            if List.length firstColumn == 1 then
+                --True
+                PieChart
 
             else
                 BarChart
@@ -96,28 +127,12 @@ checkDiagram formatted rows =
         None
 
 
-cell : Inlines -> Cell
-cell data =
-    let
-        str =
-            data
-                |> stringify
-                |> String.trim
-                |> String.toLower
-    in
-    str
-        |> String.split " "
-        |> List.head
-        |> Maybe.andThen String.toFloat
-        |> Cell data str
-
-
-row : Parser Context Row
+row : Parser Context (List Inlines)
 row =
     indentation
         |> keep
             (manyTill
-                (string "|" |> keep line |> map cell)
+                (string "|" |> keep line)
                 (regex "\\|[\t ]*\\n")
             )
 
@@ -126,13 +141,13 @@ simple : Parser Context (Int -> Table)
 simple =
     row
         |> many1
-        |> map (Unformatted None)
+        |> map (Table None [] [])
 
 
 formated : Parser Context (Int -> Table)
 formated =
     row
-        |> map (List.map .inlines >> Formatted None)
+        |> map (Table None)
         |> andMap format
         |> andMap (many row)
 

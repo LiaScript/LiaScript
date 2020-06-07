@@ -1,6 +1,5 @@
 module Lia.Markdown.Inline.Parser exposing
     ( annotations
-    , attribute
     , combine
     , comment
     , comment_string
@@ -38,15 +37,15 @@ import Combine
         , withState
         )
 import Combine.Char exposing (anyChar)
-import Dict exposing (Dict)
 import Lia.Markdown.Effect.Model exposing (add_javascript)
 import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Footnote.Parser as Footnote
+import Lia.Markdown.HTML.Attributes as Attributes exposing (Parameters)
 import Lia.Markdown.HTML.Parser as HTML
 import Lia.Markdown.Inline.Multimedia as Multimedia
 import Lia.Markdown.Inline.Parser.Formula exposing (formula)
 import Lia.Markdown.Inline.Parser.Symbol exposing (arrows, smileys)
-import Lia.Markdown.Inline.Types exposing (Annotation, Inline(..), Inlines, Reference(..))
+import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 import Lia.Markdown.Macro.Parser as Macro
 import Lia.Parser.Context exposing (Context, getLine, searchIndex)
 import Lia.Parser.Helper exposing (spaces, stringTill)
@@ -69,6 +68,7 @@ parse_inlines state str =
 comment : Parser s a -> Parser s (List a)
 comment p =
     string "<!--"
+        |> ignore whitespace
         |> keep (manyTill p (string "-->"))
 
 
@@ -87,35 +87,41 @@ comments =
         |> skip
 
 
-attribute : Parser s ( String, String )
-attribute =
-    whitespace
-        |> keep (regex "\\w+")
-        |> ignore (regex "[ \t\n]*=[ \t\n]*\"")
-        |> map (\k v -> ( String.toLower k, v ))
-        |> andMap (stringTill (regex "\"[ \t\n]*"))
-
-
-annotations : Parser Context Annotation
+annotations : Parser Context Parameters
 annotations =
+    let
+        attr =
+            withState (.defines >> .base >> succeed)
+                |> andThen Attributes.parse
+    in
     spaces
-        |> keep (comment attribute)
-        |> map (Dict.fromList >> attr_)
+        |> keep (comment attr)
+        |> map styling
         |> maybe
+        |> map (Maybe.withDefault [])
         |> ignore comments
 
 
-attr_ : Dict String String -> Dict String String
-attr_ dict =
-    Dict.insert "style"
-        (case Dict.get "style" dict of
-            Just value ->
-                "display: inline-block;" ++ value
+styling : Parameters -> Parameters
+styling p =
+    if p == [] then
+        []
 
-            Nothing ->
-                "display: inline-block;"
-        )
-        dict
+    else if List.any (Tuple.first >> (==) "style") p then
+        p
+            |> List.map
+                (\( key, value ) ->
+                    ( key
+                    , if key == "style" then
+                        "display: inline-block; " ++ value
+
+                      else
+                        value
+                    )
+                )
+
+    else
+        ( "style", "display: inline-block;" ) :: p
 
 
 javascript : Parser s String
@@ -144,7 +150,7 @@ html =
     in
     javascript
         |> andThen state
-        |> keep (succeed (Chars "" Nothing))
+        |> keep (succeed (Chars "" []))
 
 
 combine : Inlines -> Inlines
@@ -158,8 +164,8 @@ combine list =
 
         x1 :: x2 :: xs ->
             case ( x1, x2 ) of
-                ( Chars str1 Nothing, Chars str2 Nothing ) ->
-                    combine (Chars (str1 ++ str2) Nothing :: xs)
+                ( Chars str1 [], Chars str2 [] ) ->
+                    combine (Chars (str1 ++ str2) [] :: xs)
 
                 _ ->
                     x1 :: combine (x2 :: xs)
@@ -175,7 +181,7 @@ line =
 
 lineWithProblems : Parser Context Inlines
 lineWithProblems =
-    or inlines (regex "." |> map (\x -> Chars x Nothing))
+    or inlines (regex "." |> map (\x -> Chars x []))
         |> many1
         |> map combine
 
@@ -223,9 +229,9 @@ email =
         |> map ((++) "mailto:")
 
 
-inline_url : Parser Context (Annotation -> Inline)
+inline_url : Parser s (Parameters -> Inline)
 inline_url =
-    map (\u -> Ref (Link [ Chars u Nothing ] u "")) url
+    map (\u -> Ref (Link [ Chars u [] ] u "")) url
 
 
 ref_info : Parser Context Inlines
@@ -314,7 +320,7 @@ ref_video =
         |> ignore (string ")")
 
 
-reference : Parser Context (Annotation -> Inline)
+reference : Parser Context (Parameters -> Inline)
 reference =
     let
         mail_ =
@@ -358,10 +364,10 @@ toContainer inline_list =
             one
 
         moreThanOne ->
-            Container moreThanOne Nothing
+            Container moreThanOne []
 
 
-strings : Parser Context (Annotation -> Inline)
+strings : Parser Context (Parameters -> Inline)
 strings =
     lazy <|
         \() ->
@@ -425,7 +431,7 @@ strings =
                 ]
 
 
-code : Parser Context (Annotation -> Inline)
+code : Parser s (Parameters -> Inline)
 code =
     string "`"
         |> keep (regex "[^`\\n]+")

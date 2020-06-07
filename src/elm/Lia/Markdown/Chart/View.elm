@@ -3,7 +3,11 @@ module Lia.Markdown.Chart.View exposing
     , view
     , viewBarChart
     , viewChart
+    , viewGraph
+    , viewHeatMap
+    , viewMapChart
     , viewPieChart
+    , viewRadarChart
     )
 
 import Char exposing (isLower, toLower)
@@ -12,34 +16,71 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Encode as JE
 import Lia.Markdown.Chart.Types exposing (Chart, Diagram(..))
-import Lia.Markdown.Inline.Annotation exposing (annotation)
-import Lia.Markdown.Inline.Types exposing (Annotation)
+import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
 
 
-view : Annotation -> Bool -> Chart -> Html msg
+view : Parameters -> Bool -> Chart -> Html msg
 view attr light =
-    encode True >> eCharts attr light
+    encode True >> eCharts attr light Nothing
 
 
-viewChart : Annotation -> Bool -> Chart -> Html msg
+viewChart : Parameters -> Bool -> Chart -> Html msg
 viewChart attr light =
-    encode False >> eCharts attr light
+    encode False >> eCharts attr light Nothing
 
 
-viewBarChart : Annotation -> Bool -> String -> List String -> List ( Maybe String, List (Maybe Float) ) -> Html msg
+viewBarChart : Parameters -> Bool -> Maybe String -> List String -> List ( Maybe String, List (Maybe Float) ) -> Html msg
 viewBarChart attr light title category data =
     encodeBarChart title category data
-        |> eCharts attr light
+        |> eCharts attr light Nothing
 
 
-viewPieChart : Annotation -> Bool -> Maybe String -> Maybe String -> List ( String, Float ) -> Html msg
-viewPieChart attr light title subtitle data =
-    encodePieChart title subtitle data
-        |> eCharts attr light
+viewGraph : Parameters -> Bool -> Maybe String -> List String -> List ( String, String, Float ) -> Html msg
+viewGraph attr light title nodes edges =
+    encodeGraph title nodes edges
+        |> eCharts attr light Nothing
 
 
-eCharts : Annotation -> Bool -> JE.Value -> Html msg
-eCharts attr light option =
+viewRadarChart : Parameters -> Bool -> Maybe String -> List String -> List ( String, List (Maybe Float) ) -> Html msg
+viewRadarChart attr light title category data =
+    encodeRadarChart title category data
+        |> eCharts attr light Nothing
+
+
+viewMapChart : Parameters -> Bool -> Maybe String -> List ( String, Maybe Float ) -> Maybe String -> Html msg
+viewMapChart attr light title data json =
+    encodeMapChart title data json
+        |> eCharts attr light json
+
+
+viewPieChart :
+    Int
+    -> Parameters
+    -> Bool
+    -> Maybe String
+    -> Maybe (List String)
+    -> List (List ( String, Float ))
+    -> Html msg
+viewPieChart width attr light title subtitle data =
+    encodePieChart width title subtitle data
+        |> eCharts attr light Nothing
+
+
+viewHeatMap :
+    Parameters
+    -> Bool
+    -> Maybe String
+    -> List String
+    -> List String
+    -> List (List ( Int, Int, Maybe Float ))
+    -> Html msg
+viewHeatMap attr light title x y data =
+    encodeHeatMap title x y data
+        |> eCharts attr light Nothing
+
+
+eCharts : Parameters -> Bool -> Maybe String -> JE.Value -> Html msg
+eCharts attr light json option =
     Html.node "e-charts"
         (List.append
             [ Attr.attribute "mode" <|
@@ -51,13 +92,87 @@ eCharts attr light option =
             , option
                 |> JE.encode 0
                 |> Attr.attribute "option"
+            , json
+                |> Maybe.withDefault ""
+                |> Attr.attribute "json"
             ]
             (annotation "lia-chart" attr)
         )
         []
 
 
-encodeBarChart : String -> List String -> List ( Maybe String, List (Maybe Float) ) -> JE.Value
+encodeGraph : Maybe String -> List String -> List ( String, String, Float ) -> JE.Value
+encodeGraph title nodes edges =
+    let
+        min =
+            edges
+                |> List.map (\( _, _, v ) -> v)
+                |> List.minimum
+
+        max =
+            edges
+                |> List.map (\( _, _, v ) -> v)
+                |> List.maximum
+    in
+    JE.object
+        [ toolbox Nothing { saveAsImage = True, dataView = False, dataZoom = False, magicType = False }
+        , ( "tooltip", JE.object [] )
+        , ( "series"
+          , [ ( "type", JE.string "graph" )
+            , ( "layout", JE.string "force" )
+            , ( "label", JE.object [ ( "show", JE.bool True ) ] )
+            , ( "symbolSize", JE.float 40 )
+            , ( "force"
+              , JE.object
+                    [ ( "repulsion", JE.int 300 )
+                    , ( "edgeLength", JE.int 100 )
+                    , ( "gravity", JE.float 0.1 )
+                    ]
+              )
+            , ( "draggable", JE.bool True )
+            , ( "data"
+              , nodes
+                    |> List.map
+                        (\node ->
+                            [ ( "id", JE.string node )
+                            , ( "name", JE.string node )
+                            ]
+                        )
+                    |> JE.list JE.object
+              )
+            , ( "edges"
+              , edges
+                    |> List.map
+                        (\( source, target, v ) ->
+                            [ ( "source", JE.string source )
+                            , ( "target", JE.string target )
+                            , ( "lineStyle"
+                              , [ ( "width", JE.float v )
+
+                                --, ( "curvenes", JE.float 20 )
+                                , ( "opacity"
+                                  , JE.float <|
+                                        if v > 0 then
+                                            0.9
+
+                                        else
+                                            0.3
+                                  )
+                                ]
+                                    |> JE.object
+                              )
+                            ]
+                        )
+                    |> JE.list JE.object
+              )
+            ]
+                |> List.singleton
+                |> JE.list JE.object
+          )
+        ]
+
+
+encodeBarChart : Maybe String -> List String -> List ( Maybe String, List (Maybe Float) ) -> JE.Value
 encodeBarChart xLabel category data =
     let
         bars =
@@ -91,13 +206,19 @@ encodeBarChart xLabel category data =
     JE.object
         [ ( "xAxis"
           , JE.object
-                [ ( "type", JE.string "category" )
-                , ( "name", JE.string xLabel )
-                , ( "data"
-                  , category
+                ([ ( "type", JE.string "category" )
+
+                 --, ( "name", JE.string xLabel )
+                 , ( "data"
+                   , category
                         |> JE.list JE.string
-                  )
-                ]
+                   )
+                 ]
+                    ++ (xLabel
+                            |> Maybe.map (\title -> [ ( "name", JE.string title ) ])
+                            |> Maybe.withDefault []
+                       )
+                )
           )
         , ( "yAxis"
           , JE.object [ ( "type", JE.string "value" ) ]
@@ -115,7 +236,7 @@ encodeBarChart xLabel category data =
                   )
                 ]
           )
-        , toolbox { saveAsImage = True, dataView = True, dataZoom = True, magicType = True }
+        , toolbox Nothing { saveAsImage = True, dataView = True, dataZoom = True, magicType = True }
 
         --  , brush
         , ( "tooltip", JE.object [] )
@@ -123,58 +244,505 @@ encodeBarChart xLabel category data =
         ]
 
 
-encodePieChart : Maybe String -> Maybe String -> List ( String, Float ) -> JE.Value
-encodePieChart title subtitle data =
+encodeMapChart : Maybe String -> List ( String, Maybe Float ) -> Maybe String -> JE.Value
+encodeMapChart title data json =
     let
-        pieces =
+        ( min, max ) =
             data
+                |> List.filterMap Tuple.second
+                |> List.foldl
+                    (\value ( min_, max_ ) ->
+                        ( if value < min_ then
+                            value
+
+                          else
+                            min_
+                        , if value > max_ then
+                            value
+
+                          else
+                            max_
+                        )
+                    )
+                    ( 9999999999, 0 )
+    in
+    [ ( "series"
+      , [ JE.object
+            [ ( "type", JE.string "map" )
+            , ( "map"
+              , json
+                    |> Maybe.withDefault ""
+                    |> JE.string
+              )
+            , ( "data"
+              , data
+                    |> List.filterMap
+                        (\( key, value ) ->
+                            case value of
+                                Just num ->
+                                    [ ( "name", JE.string key )
+                                    , ( "value", JE.float num )
+                                    ]
+                                        |> JE.object
+                                        |> Just
+
+                                Nothing ->
+                                    Nothing
+                        )
+                    |> JE.list identity
+              )
+            ]
+        ]
+            |> JE.list identity
+      )
+    , ( "visualMap"
+      , JE.object
+            [ ( "min", JE.float min )
+            , ( "max", JE.float max )
+            , ( "calculable", JE.bool True )
+            , ( "itemHeight", JE.string "150px" )
+            , ( "right", JE.string "0" )
+            , ( "bottom", JE.string "center" )
+            , ( "orient", JE.string "vertical" )
+            ]
+      )
+    , toolbox Nothing { saveAsImage = True, dataView = True, dataZoom = False, magicType = False }
+    , ( "tooltip", JE.object [] )
+    ]
+        ++ (title |> Maybe.map encodeTitle |> Maybe.withDefault [])
+        |> JE.object
+
+
+calcMax : List { x | max : Float } -> List (Maybe Float) -> List { x | max : Float }
+calcMax =
+    List.map2
+        (\i d ->
+            let
+                value =
+                    Maybe.withDefault 0 d
+            in
+            if value > i.max then
+                { i | max = value }
+
+            else
+                i
+        )
+
+
+encodeRadarChart : Maybe String -> List String -> List ( String, List (Maybe Float) ) -> JE.Value
+encodeRadarChart title category data =
+    let
+        max_ =
+            category
+                |> List.map (\c -> { name = c, max = 0 })
+
+        indicator =
+            data
+                |> List.map Tuple.second
+                |> List.foldl (\d i -> calcMax i d) max_
                 |> List.map
-                    (\( name_, value_ ) ->
+                    (\i ->
                         JE.object
-                            [ ( "name", JE.string name_ )
-                            , ( "value", JE.float value_ )
+                            [ ( "name", JE.string i.name )
+                            , ( "max", JE.float i.max )
                             ]
                     )
                 |> JE.list identity
 
-        head =
-            if title /= Nothing || subtitle /= Nothing then
+        values =
+            data
+                |> List.map
+                    (\( name_, value ) ->
+                        JE.object
+                            [ ( "name", JE.string name_ )
+                            , ( "value"
+                              , value
+                                    |> List.map (Maybe.withDefault 0 >> JE.float)
+                                    |> JE.list identity
+                              )
+                            ]
+                    )
+                |> JE.list identity
+    in
+    [ ( "radar"
+      , JE.object
+            [ ( "indicator", indicator )
+            , ( "name"
+              , JE.object
+                    [ ( "textStyle"
+                      , JE.object
+                            [ ( "color", JE.string "#fff" )
+                            , ( "backgroundColor", JE.string "#999" )
+                            , ( "borderRadius", JE.int 3 )
+                            , ( "padding", JE.list JE.int [ 3, 5 ] )
+                            ]
+                      )
+                    ]
+              )
+            ]
+      )
+    , toolbox Nothing { saveAsImage = True, dataView = True, dataZoom = False, magicType = False }
+    , ( "tooltip", JE.object [] )
+    , ( "series"
+      , [ JE.object
+            [ ( "type", JE.string "radar" )
+            , ( "data", values )
+            , ( "emphasis"
+              , JE.object
+                    [ ( "lineStyle"
+                      , JE.object
+                            [ ( "width", JE.int 4 )
+                            ]
+                      )
+                    ]
+              )
+            ]
+        ]
+            |> JE.list identity
+      )
+    ]
+        ++ (title |> Maybe.map encodeTitle |> Maybe.withDefault [])
+        |> JE.object
+
+
+encodeTitle : String -> List ( String, JE.Value )
+encodeTitle title =
+    [ ( "title"
+      , JE.object
+            [ ( "text", JE.string title ) ]
+      )
+    ]
+
+
+encodeLegend : List ( String, JE.Value ) -> List String -> ( String, JE.Value )
+encodeLegend params data =
+    ( "legend"
+    , ( "data", JE.list JE.string data )
+        :: params
+        |> JE.object
+    )
+
+
+encodeHeatMap : Maybe String -> List String -> List String -> List (List ( Int, Int, Maybe Float )) -> JE.Value
+encodeHeatMap title xAxis yAxis data =
+    let
+        ( min, max ) =
+            data
+                |> List.concat
+                |> List.foldl
+                    (\( _, _, value ) ( min_, max_ ) ->
+                        let
+                            v =
+                                Maybe.withDefault 0 value
+                        in
+                        ( if v < min_ then
+                            v
+
+                          else
+                            min_
+                        , if v > max_ then
+                            v
+
+                          else
+                            max_
+                        )
+                    )
+                    ( 9999999999, 0 )
+    in
+    [ toolbox (Just "7%") { saveAsImage = True, dataView = True, dataZoom = False, magicType = False }
+    , ( "tooltip", JE.object [] )
+    , ( "grid"
+      , JE.object <|
+            if title == Nothing then
+                [ ( "height", JE.string "82%" )
+                , ( "top", JE.string "0%" )
+
+                --, ( "width", JE.string "100%" )
+                ]
+
+            else
+                [ ( "height", JE.string "74%" )
+                , ( "top", JE.string "7%" )
+
+                --, ( "width", JE.string "100%" )
+                ]
+      )
+    , ( "xAxis"
+      , JE.object
+            [ ( "type", JE.string "category" )
+            , ( "data", JE.list JE.string xAxis )
+            , ( "splitArea", JE.object [ ( "show", JE.bool True ) ] )
+            ]
+      )
+    , ( "yAxis"
+      , JE.object
+            [ ( "type", JE.string "category" )
+            , ( "data", JE.list JE.string yAxis )
+            , ( "splitArea", JE.object [ ( "show", JE.bool True ) ] )
+            ]
+      )
+    , ( "visualMap"
+      , JE.object
+            [ ( "min", JE.float min )
+            , ( "max", JE.float max )
+            , ( "calculable", JE.bool True )
+
+            --, ( "width", JE.string "300px" )
+            , ( "itemHeight", JE.string "150px" )
+            , ( "right", JE.string "7%" )
+            , ( "bottom", JE.string "9" )
+            , ( "orient", JE.string "horizontal" )
+            ]
+      )
+    , ( "series"
+      , [ JE.object
+            [ ( "type", JE.string "heatmap" )
+            , ( "label", JE.object [ ( "show", JE.bool True ) ] )
+            , ( "data"
+              , data
+                    |> List.concat
+                    |> List.map
+                        (\( x, y, z ) ->
+                            JE.list identity
+                                [ JE.int x
+                                , JE.int y
+                                , z |> Maybe.map JE.float |> Maybe.withDefault JE.null
+                                ]
+                        )
+                    |> JE.list identity
+              )
+            , ( "emphasis"
+              , JE.object
+                    [ ( "itemStyle"
+                      , JE.object
+                            [ ( "shadowBlur", JE.int 10 )
+                            , ( "shadowColor", JE.string "rgba(0, 0, 0, 0.5)" )
+                            ]
+                      )
+                    ]
+              )
+            ]
+        ]
+            |> JE.list identity
+      )
+    ]
+        ++ (if title == Nothing then
+                []
+
+            else
                 [ ( "title"
                   , JE.object
                         [ ( "text"
                           , title |> Maybe.withDefault "" |> JE.string
                           )
-                        , ( "subtext", subtitle |> Maybe.withDefault "" |> JE.string )
                         , ( "left", JE.string "center" )
                         ]
+                  )
+                ]
+           )
+        |> JE.object
+
+
+encodePieChart : Int -> Maybe String -> Maybe (List String) -> List (List ( String, Float )) -> JE.Value
+encodePieChart width title subtitle data =
+    if List.length data == 1 then
+        let
+            pieces =
+                data
+                    |> List.head
+                    |> Maybe.withDefault []
+                    |> List.map
+                        (\( name_, value_ ) ->
+                            JE.object
+                                [ ( "name", JE.string name_ )
+                                , ( "value", JE.float value_ )
+                                ]
+                        )
+                    |> JE.list identity
+
+            head =
+                if title /= Nothing || subtitle /= Nothing then
+                    [ ( "title"
+                      , JE.object
+                            [ ( "text"
+                              , title |> Maybe.withDefault "" |> JE.string
+                              )
+                            , ( "subtext", subtitle |> Maybe.withDefault [] |> List.head |> Maybe.withDefault "" |> JE.string )
+                            , ( "left", JE.string "center" )
+                            ]
+                      )
+                    ]
+
+                else
+                    []
+        in
+        [ ( "series"
+          , [ JE.object
+                [ ( "type", JE.string "pie" )
+                , ( "name", subtitle |> Maybe.andThen List.head |> Maybe.withDefault "" |> JE.string )
+
+                --, ( "roseType", JE.string "radius" )
+                , ( "radius"
+                  , JE.string <|
+                        if title /= Nothing || subtitle /= Nothing then
+                            "65%"
+
+                        else
+                            "75%"
+                  )
+                , ( "center", JE.string "50%" )
+                , ( "selectedMode", JE.string "single" )
+                , ( "data", pieces )
+                ]
+            ]
+                |> JE.list identity
+          )
+        , toolbox Nothing
+            { saveAsImage = True
+            , dataView = True
+            , dataZoom = False
+            , magicType = False
+            }
+
+        --, ( "legend"
+        --  , JE.object
+        --        [ ( "data"
+        --          , data
+        --                |> List.map Tuple.first
+        --                |> JE.list JE.string
+        --          )
+        --, ( "right", JE.int 0 )
+        --        , ( "top", JE.int 28 )
+        --        ]
+        --  )
+        --  , brush
+        , ( "tooltip"
+          , JE.object
+                [ ( "trigger", JE.string "item" )
+                , ( "formatter"
+                  , JE.string "{b} : {c} ({d}%)"
+                    -- "{a}<br/>{b} : {c} ({d}%)"
+                  )
+                ]
+          )
+        ]
+            |> List.append head
+            |> JE.object
+
+    else
+        encodePieCharts width title subtitle data
+
+
+encodePieCharts : Int -> Maybe String -> Maybe (List String) -> List (List ( String, Float )) -> JE.Value
+encodePieCharts width title subtitle data =
+    let
+        relWidth =
+            (toFloat width
+                / (5.9 * toFloat (List.length data))
+                |> (\w ->
+                        if w > 72 then
+                            72
+
+                        else
+                            w
+                   )
+                |> String.fromFloat
+            )
+                ++ "%"
+
+        step =
+            100 / toFloat (2 * List.length data)
+
+        categories =
+            data
+                |> List.head
+                |> Maybe.map (List.map Tuple.first)
+                |> Maybe.withDefault []
+
+        pieces =
+            data
+                |> List.indexedMap
+                    (\i x ->
+                        JE.object
+                            [ ( "type", JE.string "pie" )
+
+                            --, ( "name", subtitle |> Maybe.withDefault "" |> JE.string )
+                            --, ( "roseType", JE.string "radius" )
+                            , ( "radius"
+                              , JE.string <|
+                                    if title /= Nothing || subtitle /= Nothing then
+                                        relWidth
+
+                                    else
+                                        "75%"
+                              )
+                            , ( "center"
+                              , [ String.fromFloat (toFloat (2 * i) * step + step)
+                                    ++ "%"
+                                , "50%"
+                                ]
+                                    |> JE.list JE.string
+                              )
+                            , ( "label"
+                              , JE.object
+                                    [ ( "normal"
+                                      , JE.object
+                                            [ ( "formatter", JE.string "{c}" )
+                                            , ( "position", JE.string "inside" )
+                                            ]
+                                      )
+                                    ]
+                              )
+                            , ( "selectedMode", JE.string "single" )
+                            , ( "data"
+                              , x
+                                    |> List.map
+                                        (\( name_, value_ ) ->
+                                            JE.object
+                                                [ ( "name", JE.string name_ )
+                                                , ( "value", JE.float value_ )
+                                                ]
+                                        )
+                                    |> JE.list identity
+                              )
+                            ]
+                    )
+
+        head =
+            if title /= Nothing || subtitle /= Nothing then
+                [ ( "title"
+                  , subtitle
+                        |> Maybe.withDefault []
+                        |> List.indexedMap
+                            (\i sub ->
+                                JE.object
+                                    [ ( "subtext", JE.string sub )
+                                    , ( "bottom", JE.int 40 )
+                                    , ( "textAlign", JE.string "center" )
+                                    , ( "left"
+                                      , String.fromFloat (toFloat (2 * i) * step + step)
+                                            ++ "%"
+                                            |> JE.string
+                                      )
+                                    ]
+                            )
+                        |> (::)
+                            (JE.object
+                                [ ( "text"
+                                  , title |> Maybe.withDefault "" |> JE.string
+                                  )
+                                , ( "left", JE.string "center" )
+                                ]
+                            )
+                        |> JE.list identity
                   )
                 ]
 
             else
                 []
     in
-    [ ( "series"
-      , [ JE.object
-            [ ( "type", JE.string "pie" )
-            , ( "name", subtitle |> Maybe.withDefault "" |> JE.string )
-
-            --, ( "roseType", JE.string "radius" )
-            , ( "radius"
-              , JE.string <|
-                    if title /= Nothing || subtitle /= Nothing then
-                        "65%"
-
-                    else
-                        "75%"
-              )
-            , ( "center", JE.string "50%" )
-            , ( "selectedMode", JE.string "single" )
-            , ( "data", pieces )
-            ]
-        ]
-            |> JE.list identity
-      )
-    , toolbox { saveAsImage = True, dataView = True, dataZoom = False, magicType = False }
+    [ ( "series", JE.list identity pieces )
+    , toolbox Nothing { saveAsImage = True, dataView = True, dataZoom = False, magicType = False }
 
     --, ( "legend"
     --  , JE.object
@@ -188,6 +756,7 @@ encodePieChart title subtitle data =
     --        ]
     --  )
     --  , brush
+    , encodeLegend [ ( "top", JE.string "30px" ) ] categories
     , ( "tooltip"
       , JE.object
             [ ( "trigger", JE.string "item" )
@@ -245,7 +814,7 @@ encode withColor chart =
                 , ( "top", JE.int 28 )
                 ]
           )
-        , toolbox { saveAsImage = True, dataView = True, dataZoom = True, magicType = True }
+        , toolbox Nothing { saveAsImage = True, dataView = True, dataZoom = True, magicType = True }
 
         --  , brush
         , ( "tooltip", JE.object [] )
@@ -268,12 +837,16 @@ brush =
     )
 
 
-toolbox : { saveAsImage : Bool, dataView : Bool, dataZoom : Bool, magicType : Bool } -> ( String, JE.Value )
-toolbox config =
+toolbox : Maybe String -> { saveAsImage : Bool, dataView : Bool, dataZoom : Bool, magicType : Bool } -> ( String, JE.Value )
+toolbox position config =
     ( "toolbox"
     , JE.object
         [ ( "bottom", JE.int 8 )
-        , ( "left", JE.string "center" )
+        , ( "left"
+          , position
+                |> Maybe.withDefault "center"
+                |> JE.string
+          )
         , ( "feature"
           , []
                 |> List.append

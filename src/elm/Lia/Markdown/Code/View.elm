@@ -10,11 +10,11 @@ import Lia.Markdown.Code.Log as Log exposing (Log)
 import Lia.Markdown.Code.Terminal as Terminal
 import Lia.Markdown.Code.Types exposing (Code(..), File, Snippet, Vector)
 import Lia.Markdown.Code.Update exposing (Msg(..))
-import Lia.Markdown.Inline.Annotation exposing (Annotation, annotation, attributes)
+import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Translations exposing (Lang, codeExecute, codeFirst, codeLast, codeMaximize, codeMinimize, codeNext, codePrev, codeRunning)
 
 
-view : Lang -> String -> Annotation -> Vector -> Code -> Html Msg
+view : Lang -> String -> Parameters -> Vector -> Code -> Html Msg
 view lang theme attr model code =
     case code of
         Highlight lang_title_code ->
@@ -89,7 +89,7 @@ div_ =
         ]
 
 
-view_code : String -> Annotation -> Snippet -> Html Msg
+view_code : String -> Parameters -> Snippet -> Html Msg
 view_code theme attr snippet =
     let
         headless =
@@ -108,7 +108,7 @@ view_code theme attr snippet =
         ]
 
 
-view_eval : Lang -> String -> Annotation -> Bool -> (Int -> JE.Value) -> Int -> Int -> File -> Html Msg
+view_eval : Lang -> String -> Parameters -> Bool -> (Int -> JE.Value) -> Int -> Int -> File -> Html Msg
 view_eval lang theme attr running errors id_1 id_2 file =
     let
         headless =
@@ -204,7 +204,7 @@ pixel from_lines =
     from_lines * 21 + 16
 
 
-highlight : String -> Annotation -> String -> String -> Bool -> Html Msg
+highlight : String -> Parameters -> String -> String -> Bool -> Html Msg
 highlight theme attr lang code headless =
     let
         top_border =
@@ -216,7 +216,7 @@ highlight theme attr lang code headless =
     in
     Editor.editor
         (attr
-            |> attributes
+            |> toAttribute
             |> List.append
                 [ Attr.style "border-bottom-left-radius" "4px"
                 , Attr.style "border-bottom-right-radius" "4px"
@@ -238,7 +238,7 @@ highlight theme attr lang code headless =
         []
 
 
-evaluate : String -> Annotation -> Bool -> ( Int, Int ) -> File -> Bool -> JE.Value -> Html Msg
+evaluate : String -> Parameters -> Bool -> ( Int, Int ) -> File -> Bool -> JE.Value -> Html Msg
 evaluate theme attr running ( id_1, id_2 ) file headless errors =
     let
         total_lines =
@@ -256,7 +256,7 @@ evaluate theme attr running ( id_1, id_2 ) file headless errors =
     in
     Editor.editor
         (attr
-            |> attributes
+            |> toAttribute
             |> List.append
                 (max_lines
                     |> pixel
