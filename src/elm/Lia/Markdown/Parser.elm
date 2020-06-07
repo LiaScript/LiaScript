@@ -17,6 +17,7 @@ import Combine
         , modifyState
         , onsuccess
         , optional
+        , or
         , regex
         , sepBy1
         , skip
@@ -32,7 +33,7 @@ import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Footnote.Parser as Footnote
 import Lia.Markdown.HTML.Attributes as Attributes exposing (Parameters)
 import Lia.Markdown.HTML.Parser as HTML
-import Lia.Markdown.Inline.Parser exposing (combine, comment, line, lineWithProblems)
+import Lia.Markdown.Inline.Parser exposing (combine, comment, comments, line, lineWithProblems)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Parser as Quiz
@@ -107,6 +108,8 @@ blocks =
                         , md_annotations
                             |> map Paragraph
                             |> andMap problem
+                        , comments
+                            |> onsuccess Skip
                         ]
             in
             indentation
