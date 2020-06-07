@@ -26,6 +26,7 @@ type Markdown
     | Code Parameters Code
     | ASCII Parameters String
     | HTML Parameters (Node Markdown)
+    | Skip
 
 
 type alias MarkdownS =

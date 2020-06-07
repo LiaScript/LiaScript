@@ -232,6 +232,9 @@ view_block config block =
                                 [ svg ]
                    )
 
+        Skip ->
+            Html.text ""
+
 
 view_list : Config -> List ( String, List Markdown ) -> List (Html Msg)
 view_list config list =
