@@ -233,7 +233,21 @@ checkDiagram headLine rows =
                 Graph
 
             else
-                BarChart
+                let
+                    maxima =
+                        rows
+                            |> Matrix.transpose
+                            |> Matrix.split
+                            |> Tuple.second
+                            |> Matrix.map .float
+                            |> List.map (List.filterMap identity >> List.maximum)
+                            |> List.filterMap identity
+                in
+                if (maxima |> List.maximum |> Maybe.withDefault 0 |> abs) > 10 * (maxima |> List.minimum |> Maybe.withDefault 0 |> abs) then
+                    Radar
+
+                else
+                    BarChart
 
         else
             None
