@@ -233,7 +233,57 @@ chart width isFormated attr mode class matrix =
                     |> List.concat
                     |> List.filterMap identity
                     |> List.filter (\( a, b, _ ) -> a /= "" || b /= "")
-                    |> Chart.viewGraph attr mode Nothing nodes
+                    |> Chart.viewGraph attr mode title nodes
+
+            Sankey ->
+                let
+                    nodesA =
+                        head
+                            |> List.tail
+                            |> Maybe.withDefault []
+                            |> List.map .string
+
+                    nodesB =
+                        body
+                            |> Matrix.column 0
+                            |> Maybe.withDefault []
+                            |> List.map .string
+
+                    nodes =
+                        nodesA
+                            ++ nodesB
+                            |> Set.fromList
+                            |> Set.toList
+                            |> List.filter ((/=) "")
+                in
+                body
+                    |> List.map
+                        (\row ->
+                            case row of
+                                [] ->
+                                    []
+
+                                b :: values ->
+                                    values
+                                        |> List.map2
+                                            (\a v ->
+                                                case v.float of
+                                                    Just float ->
+                                                        if float == 0 then
+                                                            Nothing
+
+                                                        else
+                                                            Just ( a, b.string, float )
+
+                                                    _ ->
+                                                        Nothing
+                                            )
+                                            nodesA
+                        )
+                    |> List.concat
+                    |> List.filterMap identity
+                    |> List.filter (\( a, b, _ ) -> a /= "" || b /= "")
+                    |> Chart.viewSankey attr mode title nodes
 
             Map ->
                 let

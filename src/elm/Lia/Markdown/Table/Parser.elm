@@ -136,6 +136,9 @@ diagramType =
                     "parallel" ->
                         Just Parallel
 
+                    "sankey" ->
+                        Just Sankey
+
                     "none" ->
                         Just None
 
@@ -216,11 +219,21 @@ checkDiagram headLine rows =
                 --True
                 PieChart
 
+            else if
+                -- check if x ans y are qual
+                (headLine
+                    |> Maybe.andThen List.tail
+                    |> Maybe.map (List.map .string)
+                )
+                    == (rows
+                            |> Matrix.column 0
+                            |> Maybe.map (List.map .string)
+                       )
+            then
+                Graph
+
             else
                 BarChart
-
-        else if Maybe.andThen List.tail headLine == Matrix.column 0 rows then
-            Graph
 
         else
             None

@@ -8,6 +8,7 @@ module Lia.Markdown.Chart.View exposing
     , viewMapChart
     , viewPieChart
     , viewRadarChart
+    , viewSankey
     )
 
 import Char exposing (isLower, toLower)
@@ -38,6 +39,12 @@ viewBarChart attr light title category data =
 viewGraph : Parameters -> Bool -> Maybe String -> List String -> List ( String, String, Float ) -> Html msg
 viewGraph attr light title nodes edges =
     encodeGraph title nodes edges
+        |> eCharts attr light Nothing
+
+
+viewSankey : Parameters -> Bool -> Maybe String -> List String -> List ( String, String, Float ) -> Html msg
+viewSankey attr light title nodes edges =
+    encodeSankey title nodes edges
         |> eCharts attr light Nothing
 
 
@@ -135,73 +142,162 @@ encodeGraph title nodes edges =
                 |> List.map (\( _, _, v ) -> v)
                 |> minMax
                 |> Maybe.withDefault ( 0, 0 )
+
+        lineWidth v =
+            1 + (4 * abs v / (max - min))
+
+        dict =
+            edges
+                |> List.map (\( source, target, val ) -> ( ( source, target ), val ))
+                |> Dict.fromList
+
+        directed =
+            dict
+                |> Dict.map (\( s, t ) v -> Dict.get ( t, s ) dict == Just v)
+                |> Dict.values
+                |> List.all identity
     in
-    JE.object
-        [ toolbox Nothing { saveAsImage = True, dataView = False, dataZoom = False, magicType = False }
-        , ( "tooltip", JE.object [] )
-        , ( "series"
-          , [ ( "type", JE.string "graph" )
-            , ( "layout", JE.string "force" )
-            , ( "label", JE.object [ ( "show", JE.bool True ) ] )
-            , ( "symbolSize", JE.float 40 )
-            , ( "roam", JE.bool True )
-            , ( "animation", JE.bool True )
+    [ toolbox Nothing { saveAsImage = True, dataView = False, dataZoom = False, magicType = False }
+    , ( "tooltip", JE.object [] )
+    , ( "series"
+      , [ ( "type", JE.string "graph" )
+        , ( "layout", JE.string "force" )
+        , ( "label", JE.object [ ( "show", JE.bool True ) ] )
+        , ( "symbolSize", JE.float 40 )
+        , ( "roam", JE.bool True )
+        , ( "animation", JE.bool True )
 
-            --, ( "animationDurationUpdate", JE.int 30000 )
-            , ( "edgeSymbol", JE.list JE.string [ "circle", "arrow" ] )
-            , ( "force"
-              , JE.object
-                    [ ( "repulsion", JE.int 300 )
-                    , ( "edgeLength", JE.int 100 )
+        --, ( "animationDurationUpdate", JE.int 30000 )
+        , ( "edgeSymbol"
+          , JE.list JE.string <|
+                if directed then
+                    []
 
-                    --, ( "gravity", JE.float 0.1 )
-                    ]
-              )
-            , ( "draggable", JE.bool True )
-            , ( "data"
-              , nodes
-                    |> List.map
-                        (\node ->
-                            [ ( "id", JE.string node )
-                            , ( "name", JE.string node )
+                else
+                    [ "circle", "arrow" ]
+          )
+        , ( "force"
+          , JE.object
+                [ ( "repulsion", JE.int 300 )
+                , ( "edgeLength", JE.int 100 )
+                , ( "gravity", JE.float 0.1 )
+                ]
+          )
+        , ( "draggable", JE.bool True )
+        , ( "data"
+          , nodes
+                |> List.map
+                    (\node ->
+                        [ ( "id", JE.string node )
+                        , ( "name", JE.string node )
 
-                            --, ( "fixed", JE.bool True )
-                            --, ( "x", JE.int 100 )
-                            --, ( "y", JE.int 100 )
-                            ]
-                        )
-                    |> JE.list JE.object
-              )
-            , ( "edges"
-              , edges
-                    |> List.map
-                        (\( source, target, v ) ->
-                            [ ( "source", JE.string source )
-                            , ( "target", JE.string target )
-                            , ( "symbolSize", JE.list JE.int [ 5 ] )
-                            , ( "lineStyle"
-                              , [ ( "width", JE.float v )
-                                , ( "curveness", JE.float 0.3 )
-                                , ( "opacity"
-                                  , JE.float <|
-                                        if v > 0 then
-                                            0.9
+                        --, ( "fixed", JE.bool True )
+                        --, ( "x", JE.int 100 )
+                        --, ( "y", JE.int 100 )
+                        ]
+                    )
+                |> JE.list JE.object
+          )
+        , ( "edges"
+          , edges
+                |> List.map
+                    (\( source, target, v ) ->
+                        [ ( "source", JE.string source )
+                        , ( "target", JE.string target )
+                        , ( "symbolSize", JE.list JE.int [ 5 ] )
+                        , ( "value", JE.float v )
+                        , ( "lineStyle"
+                          , [ ( "width", JE.float <| lineWidth v )
+                            , ( "curveness"
+                              , JE.float <|
+                                    if directed then
+                                        0
 
-                                        else
-                                            0.3
-                                  )
-                                ]
-                                    |> JE.object
+                                    else if Dict.get ( target, source ) dict == Nothing then
+                                        0
+
+                                    else
+                                        0.25
+                              )
+                            , ( "opacity"
+                              , JE.float <|
+                                    if v > 0 then
+                                        0.9
+
+                                    else
+                                        0.3
                               )
                             ]
-                        )
-                    |> JE.list JE.object
-              )
-            ]
-                |> List.singleton
+                                |> JE.object
+                          )
+                        ]
+                    )
                 |> JE.list JE.object
           )
         ]
+            |> List.singleton
+            |> JE.list JE.object
+      )
+    ]
+        |> add (encodeTitle (Just ( "left", "center" ))) title
+        |> JE.object
+
+
+encodeSankey : Maybe String -> List String -> List ( String, String, Float ) -> JE.Value
+encodeSankey title nodes edges =
+    let
+        dict =
+            edges
+                |> List.map (\( source, target, val ) -> ( ( source, target ), val ))
+                |> Dict.fromList
+
+        cleared =
+            dict
+                |> Dict.toList
+                |> List.foldl
+                    (\( ( s, t ), _ ) d ->
+                        if Dict.get ( t, s ) d /= Nothing then
+                            Dict.remove ( t, s ) d
+
+                        else
+                            d
+                    )
+                    dict
+                |> Dict.toList
+    in
+    [ toolbox Nothing { saveAsImage = True, dataView = False, dataZoom = False, magicType = False }
+    , ( "tooltip", JE.object [] )
+    , ( "height", JE.string "80%" )
+    , ( "width", JE.string "90%" )
+    , ( "series"
+      , [ ( "type", JE.string "sankey" )
+        , ( "layout", JE.string "none" )
+        , ( "focusNodeAdjacency", JE.string "allEdges" )
+        , ( "animation", JE.bool True )
+        , ( "data"
+          , nodes
+                |> List.map (\node -> [ ( "name", JE.string node ) ])
+                |> JE.list JE.object
+          )
+        , ( "edges"
+          , cleared
+                |> List.map
+                    (\( ( source, target ), v ) ->
+                        [ ( "source", JE.string source )
+                        , ( "target", JE.string target )
+                        , ( "value", JE.float v )
+                        ]
+                    )
+                |> JE.list JE.object
+          )
+        , ( "lineStyle", JE.object [ ( "color", JE.string "source" ) ] )
+        ]
+            |> List.singleton
+            |> JE.list JE.object
+      )
+    ]
+        |> add (encodeTitle (Just ( "left", "center" ))) title
+        |> JE.object
 
 
 encodeBarChart : Maybe String -> List String -> List ( Maybe String, List (Maybe Float) ) -> JE.Value
