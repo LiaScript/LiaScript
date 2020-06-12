@@ -7,6 +7,7 @@ import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Lia.Markdown.Chart.Types exposing (Diagram(..), Point)
 import Lia.Markdown.Chart.View as Chart
+import Lia.Markdown.Config exposing (Config)
 import Lia.Markdown.HTML.Attributes as Param exposing (Parameters)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
@@ -27,32 +28,33 @@ import Lia.Markdown.Update exposing (Msg(..))
 import Set
 
 
-view : (Inlines -> List (Html Msg)) -> Int -> Maybe Int -> Parameters -> Bool -> Table -> Vector -> Html Msg
-view viewer width effectId attr mode table vector =
+view : Config -> Parameters -> Table -> Html Msg
+view config attr table =
+    --viewer width effectId attr mode table vector =
     let
         state =
-            getState table.id vector
+            getState table.id config.section.table_vector
     in
     if diagramShow attr state.diagram then
         Html.div [ Attr.style "float" "left", Attr.style "width" "100%" ]
             [ toggleBtn table.id "list"
             , table.body
-                |> toMatrix effectId
+                |> toMatrix config.main.visible
                 |> sort state
-                |> (::) (List.map (toCell effectId) table.head)
+                |> (::) (List.map (toCell config.main.visible) table.head)
                 |> diagramTranspose attr
-                |> chart width (table.format /= []) attr mode (diagramType table.class attr)
+                |> chart config.screen.width (table.format /= []) attr config.light table.class
             ]
 
     else if table.head == [] && table.format == [] then
         state
-            |> unformatted viewer (toMatrix effectId table.body) table.id
-            |> toTable table.id attr (diagramType table.class attr) state.diagram
+            |> unformatted config.view (toMatrix config.main.visible table.body) table.id
+            |> toTable table.id attr table.class state.diagram
 
     else
         state
-            |> formatted viewer table.head table.format (toMatrix effectId table.body) table.id
-            |> toTable table.id attr (diagramType table.class attr) state.diagram
+            |> formatted config.view table.head table.format (toMatrix config.main.visible table.body) table.id
+            |> toTable table.id attr table.class state.diagram
 
 
 diagramShow : Parameters -> Bool -> Bool
@@ -73,63 +75,6 @@ diagramTranspose attr matrix =
         matrix
 
 
-diagramType : Class -> Parameters -> Class
-diagramType default =
-    Param.get "data-type"
-        >> Maybe.map
-            (String.toLower
-                >> String.trim
-                >> (\param ->
-                        case param of
-                            "lineplot" ->
-                                LinePlot
-
-                            "line" ->
-                                LinePlot
-
-                            "scatterplot" ->
-                                ScatterPlot
-
-                            "scatter" ->
-                                ScatterPlot
-
-                            "barchart" ->
-                                BarChart
-
-                            "bar" ->
-                                BarChart
-
-                            "piechart" ->
-                                PieChart
-
-                            "pie" ->
-                                PieChart
-
-                            "heatmap" ->
-                                HeatMap
-
-                            "map" ->
-                                Map
-
-                            "radar" ->
-                                Radar
-
-                            "graph" ->
-                                Graph
-
-                            "parallel" ->
-                                Parallel
-
-                            "none" ->
-                                None
-
-                            _ ->
-                                default
-                   )
-            )
-        >> Maybe.withDefault default
-
-
 chart : Int -> Bool -> Parameters -> Bool -> Class -> Matrix Cell -> Html Msg
 chart width isFormated attr mode class matrix =
     let
@@ -137,7 +82,7 @@ chart width isFormated attr mode class matrix =
             Matrix.split matrix
 
         title =
-            getTitle head
+            getTitle attr head
     in
     Html.div [ Attr.style "float" "left", Attr.style "width" "100%" ]
         [ case class of
@@ -358,9 +303,9 @@ chart width isFormated attr mode class matrix =
                             |> List.map2 type_ legend
                             |> List.indexedMap (\i diagram -> ( Chart.getColor i, diagram ))
                 in
-                { title = ""
+                { title = title |> Maybe.withDefault ""
                 , yLabel = ""
-                , xLabel = title |> Maybe.withDefault ""
+                , xLabel = ""
                 , legend = legend
                 , diagrams = diagrams |> Dict.fromList
                 }
@@ -368,9 +313,23 @@ chart width isFormated attr mode class matrix =
         ]
 
 
-getTitle : Row Cell -> Maybe String
-getTitle =
-    List.head >> Maybe.map .string
+getTitle : Parameters -> Row Cell -> Maybe String
+getTitle attr row =
+    case Param.get "data-title" attr of
+        Just title ->
+            Just title
+
+        Nothing ->
+            row
+                |> List.head
+                |> Maybe.andThen
+                    (\cell ->
+                        if cell.string == "" then
+                            Nothing
+
+                        else
+                            Just cell.string
+                    )
 
 
 getState : Int -> Vector -> State

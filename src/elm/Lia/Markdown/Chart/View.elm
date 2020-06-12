@@ -101,18 +101,40 @@ eCharts attr light json option =
         []
 
 
+minMax : List comparable -> Maybe ( comparable, comparable )
+minMax list =
+    case list of
+        [] ->
+            Nothing
+
+        l :: ls ->
+            ls
+                |> List.foldl
+                    (\value ( min, max ) ->
+                        ( if value < min then
+                            value
+
+                          else
+                            min
+                        , if value > max then
+                            value
+
+                          else
+                            max
+                        )
+                    )
+                    ( l, l )
+                |> Just
+
+
 encodeGraph : Maybe String -> List String -> List ( String, String, Float ) -> JE.Value
 encodeGraph title nodes edges =
     let
-        min =
+        ( min, max ) =
             edges
                 |> List.map (\( _, _, v ) -> v)
-                |> List.minimum
-
-        max =
-            edges
-                |> List.map (\( _, _, v ) -> v)
-                |> List.maximum
+                |> minMax
+                |> Maybe.withDefault ( 0, 0 )
     in
     JE.object
         [ toolbox Nothing { saveAsImage = True, dataView = False, dataZoom = False, magicType = False }
@@ -122,11 +144,17 @@ encodeGraph title nodes edges =
             , ( "layout", JE.string "force" )
             , ( "label", JE.object [ ( "show", JE.bool True ) ] )
             , ( "symbolSize", JE.float 40 )
+            , ( "roam", JE.bool True )
+            , ( "animation", JE.bool True )
+
+            --, ( "animationDurationUpdate", JE.int 30000 )
+            , ( "edgeSymbol", JE.list JE.string [ "circle", "arrow" ] )
             , ( "force"
               , JE.object
                     [ ( "repulsion", JE.int 300 )
                     , ( "edgeLength", JE.int 100 )
-                    , ( "gravity", JE.float 0.1 )
+
+                    --, ( "gravity", JE.float 0.1 )
                     ]
               )
             , ( "draggable", JE.bool True )
@@ -136,6 +164,10 @@ encodeGraph title nodes edges =
                         (\node ->
                             [ ( "id", JE.string node )
                             , ( "name", JE.string node )
+
+                            --, ( "fixed", JE.bool True )
+                            --, ( "x", JE.int 100 )
+                            --, ( "y", JE.int 100 )
                             ]
                         )
                     |> JE.list JE.object
@@ -146,10 +178,10 @@ encodeGraph title nodes edges =
                         (\( source, target, v ) ->
                             [ ( "source", JE.string source )
                             , ( "target", JE.string target )
+                            , ( "symbolSize", JE.list JE.int [ 5 ] )
                             , ( "lineStyle"
                               , [ ( "width", JE.float v )
-
-                                --, ( "curvenes", JE.float 20 )
+                                , ( "curveness", JE.float 0.3 )
                                 , ( "opacity"
                                   , JE.float <|
                                         if v > 0 then
@@ -220,9 +252,7 @@ encodeBarChart xLabel category data =
                        )
                 )
           )
-        , ( "yAxis"
-          , JE.object [ ( "type", JE.string "value" ) ]
-          )
+        , yAxis "value" Nothing []
 
         --, ( "title", JE.object [ ( "text", JE.string chart.title ) ] )
         , ( "legend"
@@ -250,21 +280,8 @@ encodeMapChart title data json =
         ( min, max ) =
             data
                 |> List.filterMap Tuple.second
-                |> List.foldl
-                    (\value ( min_, max_ ) ->
-                        ( if value < min_ then
-                            value
-
-                          else
-                            min_
-                        , if value > max_ then
-                            value
-
-                          else
-                            max_
-                        )
-                    )
-                    ( 9999999999, 0 )
+                |> minMax
+                |> Maybe.withDefault ( 0, 0 )
     in
     [ ( "series"
       , [ JE.object
@@ -309,8 +326,18 @@ encodeMapChart title data json =
     , toolbox Nothing { saveAsImage = True, dataView = True, dataZoom = False, magicType = False }
     , ( "tooltip", JE.object [] )
     ]
-        ++ (title |> Maybe.map encodeTitle |> Maybe.withDefault [])
+        |> add (encodeTitle Nothing) title
         |> JE.object
+
+
+add : (a -> b) -> Maybe a -> List b -> List b
+add transform to list =
+    case to of
+        Just data ->
+            transform data :: list
+
+        Nothing ->
+            list
 
 
 calcMax : List { x | max : Float } -> List (Maybe Float) -> List { x | max : Float }
@@ -353,16 +380,15 @@ encodeRadarChart title category data =
             data
                 |> List.map
                     (\( name_, value ) ->
-                        JE.object
-                            [ ( "name", JE.string name_ )
-                            , ( "value"
-                              , value
-                                    |> List.map (Maybe.withDefault 0 >> JE.float)
-                                    |> JE.list identity
-                              )
-                            ]
+                        [ ( "name", JE.string name_ )
+                        , ( "value"
+                          , value
+                                |> List.map (Maybe.withDefault 0 >> JE.float)
+                                |> JE.list identity
+                          )
+                        ]
                     )
-                |> JE.list identity
+                |> JE.list JE.object
     in
     [ ( "radar"
       , JE.object
@@ -401,17 +427,17 @@ encodeRadarChart title category data =
             |> JE.list identity
       )
     ]
-        ++ (title |> Maybe.map encodeTitle |> Maybe.withDefault [])
+        |> add (encodeTitle Nothing) title
         |> JE.object
 
 
-encodeTitle : String -> List ( String, JE.Value )
-encodeTitle title =
-    [ ( "title"
-      , JE.object
-            [ ( "text", JE.string title ) ]
-      )
-    ]
+encodeTitle : Maybe ( String, String ) -> String -> ( String, JE.Value )
+encodeTitle position title =
+    ( "title"
+    , [ ( "text", JE.string title ) ]
+        |> add (Tuple.mapSecond JE.string) position
+        |> JE.object
+    )
 
 
 encodeLegend : List ( String, JE.Value ) -> List String -> ( String, JE.Value )
@@ -423,31 +449,49 @@ encodeLegend params data =
     )
 
 
+xAxis : Maybe ( Float, Float ) -> String -> Maybe String -> List String -> ( String, JE.Value )
+xAxis =
+    axis True
+
+
+yAxis : String -> Maybe String -> List String -> ( String, JE.Value )
+yAxis =
+    axis False Nothing
+
+
+axis : Bool -> Maybe ( Float, Float ) -> String -> Maybe String -> List String -> ( String, JE.Value )
+axis x min_max type_ title data =
+    ( if x then
+        "xAxis"
+
+      else
+        "yAxis"
+    , [ ( "type", JE.string type_ ) ]
+        |> add (Tuple.first >> JE.float >> Tuple.pair "min") min_max
+        |> add (Tuple.second >> JE.float >> Tuple.pair "max") min_max
+        |> add (JE.string >> Tuple.pair "name") title
+        |> List.append
+            (if data == [] then
+                []
+
+             else
+                [ ( "data", JE.list JE.string data )
+                , ( "splitArea", JE.object [ ( "show", JE.bool True ) ] )
+                ]
+            )
+        |> JE.object
+    )
+
+
 encodeHeatMap : Maybe String -> List String -> List String -> List (List ( Int, Int, Maybe Float )) -> JE.Value
-encodeHeatMap title xAxis yAxis data =
+encodeHeatMap title xLabels yLabels data =
     let
         ( min, max ) =
             data
                 |> List.concat
-                |> List.foldl
-                    (\( _, _, value ) ( min_, max_ ) ->
-                        let
-                            v =
-                                Maybe.withDefault 0 value
-                        in
-                        ( if v < min_ then
-                            v
-
-                          else
-                            min_
-                        , if v > max_ then
-                            v
-
-                          else
-                            max_
-                        )
-                    )
-                    ( 9999999999, 0 )
+                |> List.filterMap (\( _, _, v ) -> v)
+                |> minMax
+                |> Maybe.withDefault ( 0, 0 )
     in
     [ toolbox (Just "7%") { saveAsImage = True, dataView = True, dataZoom = False, magicType = False }
     , ( "tooltip", JE.object [] )
@@ -467,20 +511,8 @@ encodeHeatMap title xAxis yAxis data =
                 --, ( "width", JE.string "100%" )
                 ]
       )
-    , ( "xAxis"
-      , JE.object
-            [ ( "type", JE.string "category" )
-            , ( "data", JE.list JE.string xAxis )
-            , ( "splitArea", JE.object [ ( "show", JE.bool True ) ] )
-            ]
-      )
-    , ( "yAxis"
-      , JE.object
-            [ ( "type", JE.string "category" )
-            , ( "data", JE.list JE.string yAxis )
-            , ( "splitArea", JE.object [ ( "show", JE.bool True ) ] )
-            ]
-      )
+    , xAxis Nothing "category" Nothing xLabels
+    , yAxis "category" Nothing yLabels
     , ( "visualMap"
       , JE.object
             [ ( "min", JE.float min )
@@ -526,20 +558,7 @@ encodeHeatMap title xAxis yAxis data =
             |> JE.list identity
       )
     ]
-        ++ (if title == Nothing then
-                []
-
-            else
-                [ ( "title"
-                  , JE.object
-                        [ ( "text"
-                          , title |> Maybe.withDefault "" |> JE.string
-                          )
-                        , ( "left", JE.string "center" )
-                        ]
-                  )
-                ]
-           )
+        |> add (encodeTitle (Just ( "left", "center" ))) title
         |> JE.object
 
 
@@ -579,7 +598,12 @@ encodePieChart width title subtitle data =
         [ ( "series"
           , [ JE.object
                 [ ( "type", JE.string "pie" )
-                , ( "name", subtitle |> Maybe.andThen List.head |> Maybe.withDefault "" |> JE.string )
+                , ( "name"
+                  , subtitle
+                        |> Maybe.andThen List.head
+                        |> Maybe.withDefault ""
+                        |> JE.string
+                  )
 
                 --, ( "roseType", JE.string "radius" )
                 , ( "radius"
@@ -638,10 +662,10 @@ encodePieCharts width title subtitle data =
     let
         relWidth =
             (toFloat width
-                / (5.9 * toFloat (List.length data))
+                / (6.1 * toFloat (List.length data))
                 |> (\w ->
-                        if w > 72 then
-                            72
+                        if w > 70 then
+                            70
 
                         else
                             w
@@ -665,16 +689,8 @@ encodePieCharts width title subtitle data =
                     (\i x ->
                         JE.object
                             [ ( "type", JE.string "pie" )
-
-                            --, ( "name", subtitle |> Maybe.withDefault "" |> JE.string )
-                            --, ( "roseType", JE.string "radius" )
                             , ( "radius"
-                              , JE.string <|
-                                    if title /= Nothing || subtitle /= Nothing then
-                                        relWidth
-
-                                    else
-                                        "75%"
+                              , JE.string relWidth
                               )
                             , ( "center"
                               , [ String.fromFloat (toFloat (2 * i) * step + step)
@@ -787,24 +803,33 @@ label =
 
 encode : Bool -> Chart -> JE.Value
 encode withColor chart =
+    let
+        ( min, max ) =
+            chart.diagrams
+                |> Dict.toList
+                |> List.map Tuple.second
+                |> List.map
+                    (\diagram ->
+                        List.map .x <|
+                            case diagram of
+                                Lines points _ ->
+                                    points
+
+                                Dots points _ ->
+                                    points
+                    )
+                |> List.concat
+                |> minMax
+                |> Maybe.withDefault ( 0, 0 )
+    in
     JE.object
         [ ( "textStyle"
           , JE.object
                 [ ( "fontFamily", JE.string "Roboto" )
                 ]
           )
-        , ( "xAxis"
-          , JE.object
-                [ ( "type", JE.string "value" )
-                , ( "name", JE.string chart.xLabel )
-                ]
-          )
-        , ( "yAxis"
-          , JE.object
-                [ ( "type", JE.string "value" )
-                , ( "name", JE.string chart.yLabel )
-                ]
-          )
+        , xAxis (Just ( min, max )) "value" (Just chart.xLabel) []
+        , yAxis "value" (Just chart.yLabel) []
         , ( "title", JE.object [ ( "text", JE.string chart.title ) ] )
         , ( "legend"
           , JE.object
@@ -916,6 +941,90 @@ toolbox position config =
           )
         ]
     )
+
+
+toolboX :
+    Maybe String
+    -> { saveAsImage : Bool, dataView : Bool, dataZoom : Bool, magicType : Bool }
+    -> List ( String, JE.Value )
+    -> List ( String, JE.Value )
+toolboX position config =
+    (::)
+        ( "toolbox"
+        , JE.object
+            [ ( "bottom", JE.int 8 )
+            , ( "left"
+              , position
+                    |> Maybe.withDefault "center"
+                    |> JE.string
+              )
+            , ( "feature"
+              , (if config.saveAsImage then
+                    [ ( "saveAsImage", JE.object [ ( "title", JE.string "store" ) ] ) ]
+
+                 else
+                    []
+                )
+                    |> List.append
+                        (if config.dataView then
+                            [ ( "dataView"
+                              , JE.object
+                                    [ ( "title", JE.string "edit" )
+                                    , ( "lang", JE.list JE.string [ "data view", "turn off", "refresh" ] )
+                                    ]
+                              )
+                            ]
+
+                         else
+                            []
+                        )
+                    |> List.append
+                        (if config.dataZoom then
+                            [ ( "dataZoom"
+                              , JE.object
+                                    [ ( "title"
+                                      , JE.object
+                                            [ ( "zoom", JE.string "zoom" )
+                                            , ( "back", JE.string "back" )
+                                            ]
+                                      )
+                                    ]
+                              )
+                            ]
+
+                         else
+                            []
+                        )
+                    |> List.append
+                        (if config.magicType then
+                            [ ( "magicType"
+                              , JE.object
+                                    [ ( "type"
+                                      , JE.list JE.string
+                                            [ "tiled"
+                                            , "line"
+                                            , "bar"
+                                            ]
+                                      )
+                                    , ( "title"
+                                      , JE.object
+                                            [ ( "stack", JE.string "stack" )
+                                            , ( "tiled", JE.string "tiled" )
+                                            , ( "line", JE.string "line" )
+                                            , ( "bar", JE.string "bar" )
+                                            ]
+                                      )
+                                    ]
+                              )
+                            ]
+
+                         else
+                            []
+                        )
+                    |> JE.object
+              )
+            ]
+        )
 
 
 series : Bool -> ( Char, Diagram ) -> JE.Value

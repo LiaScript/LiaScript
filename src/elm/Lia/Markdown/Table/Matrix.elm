@@ -120,5 +120,5 @@ some percent fn =
             )
             ( 0, 0 )
         >> (\( true, false ) ->
-                true * (true + false) >= percent
+                Debug.log "sssssssssssssssss" (true / (true + false)) >= percent
            )

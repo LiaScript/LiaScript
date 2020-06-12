@@ -34,6 +34,8 @@ type Class
     | HeatMap
     | Radar
     | Parallel
+    | Sankey
+    | BoxPlot
     | Graph
     | Map
 
