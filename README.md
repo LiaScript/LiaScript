@@ -176,6 +176,18 @@ Parcel out there, who could help?
 ## Version-Changes
 
 
+__0.7.0__ (14/06/2020)
+
+* Tables are now smarter and can be used also in conjunction with animations
+* Supported tables are now (BarChart, ScatterPlot, LineChart, HeatMap, Map,
+  Sankey, Graph (directed and undirected), Parallel, Radar, and PieChart)
+* Added special tags for table definitions: `data-type`, `data-src`,
+  `data-transpose`, `data-show`
+* JavaScript execution is now delayed until all resources are loaded
+* Unified parsing of HTML attributes and comment attributes
+* HTML resources are now also checked if they are relative or not
+* fix: single HTML-comments can now also be detached from any Markdown body
+
 __0.6.2__ (19/05/2020)
 
 * Added tag `<lia-keep>`: innerHTML is parsed without checking or parsing for
