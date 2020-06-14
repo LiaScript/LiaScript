@@ -232,6 +232,17 @@ checkDiagram headLine rows =
             then
                 Graph
 
+            else if
+                (List.length rows
+                    * (headLine
+                        |> Maybe.map List.length
+                        |> Maybe.withDefault 1
+                      )
+                )
+                    >= 50
+            then
+                Parallel
+
             else
                 let
                     maxima =

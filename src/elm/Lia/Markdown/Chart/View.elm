@@ -6,6 +6,7 @@ module Lia.Markdown.Chart.View exposing
     , viewGraph
     , viewHeatMap
     , viewMapChart
+    , viewParallel
     , viewPieChart
     , viewRadarChart
     , viewSankey
@@ -33,6 +34,12 @@ viewChart attr light =
 viewBarChart : Parameters -> Bool -> Maybe String -> List String -> List ( Maybe String, List (Maybe Float) ) -> Html msg
 viewBarChart attr light title category data =
     encodeBarChart title category data
+        |> eCharts attr light Nothing
+
+
+viewParallel : Parameters -> Bool -> Maybe String -> List String -> List (List (Maybe Float)) -> Html msg
+viewParallel attr light title category data =
+    encodeParallel title category data
         |> eCharts attr light Nothing
 
 
@@ -367,6 +374,41 @@ encodeBarChart xLabel category data =
         --  , brush
         , ( "tooltip", JE.object [] )
         , ( "series", bars )
+        ]
+
+
+encodeParallel : Maybe String -> List String -> List (List (Maybe Float)) -> JE.Value
+encodeParallel xLabel category data =
+    JE.object
+        [ ( "parallelAxis"
+          , category
+                |> List.indexedMap (\i cat -> [ ( "dim", JE.int i ), ( "name", JE.string cat ) ])
+                |> JE.list JE.object
+          )
+        , ( "parallel"
+          , [ ( "axisExpandable", JE.bool True )
+            , ( "axisExpandCenter", JE.int 15 )
+            , ( "axisExpandCount", JE.int 10 )
+            , ( "axisExpandWidth", JE.int 100 )
+            , ( "axisExpandTriggerOn", JE.string "mousemove" )
+            ]
+                |> JE.object
+          )
+        , ( "series"
+          , [ ( "type", JE.string "parallel" )
+            , ( "data"
+              , data
+                    |> List.map
+                        (List.map (Maybe.map JE.float >> Maybe.withDefault JE.null) >> JE.list identity)
+                    |> JE.list identity
+              )
+            ]
+                |> JE.object
+          )
+        , toolbox Nothing { saveAsImage = True, dataView = True, dataZoom = True, magicType = True }
+
+        --  , brush
+        , ( "tooltip", JE.object [] )
         ]
 
 

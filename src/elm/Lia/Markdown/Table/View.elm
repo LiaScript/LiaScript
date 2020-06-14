@@ -37,7 +37,7 @@ view config attr table =
     in
     if diagramShow attr state.diagram then
         Html.div [ Attr.style "float" "left", Attr.style "width" "100%" ]
-            [ toggleBtn table.id "list"
+            [ toggleBtn table.id "table"
             , table.body
                 |> toMatrix config.main.visible
                 |> sort state
@@ -183,7 +183,19 @@ chart width isFormated attr mode class matrix =
                     |> Chart.viewRadarChart attr mode title categories
 
             Parallel ->
-                Html.text "Parallel"
+                let
+                    category =
+                        head
+                            |> List.tail
+                            |> Maybe.withDefault []
+                            |> List.map .string
+                in
+                body
+                    |> Matrix.transpose
+                    |> Matrix.tail
+                    |> Matrix.map .float
+                    |> Matrix.transpose
+                    |> Chart.viewParallel attr mode title category
 
             Graph ->
                 let
@@ -397,46 +409,58 @@ toTable id attr class diagram body =
             [ toggleBtn id <|
                 case class of
                     BarChart ->
-                        "bar_chart"
+                        "barchart"
 
                     PieChart ->
-                        "pie_chart"
+                        "piechart"
 
                     LinePlot ->
-                        "multiline_chart"
+                        "lineplot"
 
                     HeatMap ->
-                        "view_comfy"
+                        "heatmap"
 
                     Radar ->
-                        "star_outline"
+                        "radar"
 
                     Parallel ->
-                        "apps"
+                        "parallel"
 
                     Graph ->
-                        "device_hub"
+                        "graph"
 
                     Map ->
                         "map"
 
-                    _ ->
-                        "scatter_plot"
-            , Html.div [] [ Html.table (Param.annotation "lia-table" attr) body ]
+                    Sankey ->
+                        "sankey"
+
+                    ScatterPlot ->
+                        "scatterplot"
+
+                    BoxPlot ->
+                        "boxplot"
+
+                    None ->
+                        ""
+
+            --, Html.br [] []
+            , Html.table (Param.annotation "lia-table" attr) body
             ]
 
 
 toggleBtn : Int -> String -> Html Msg
 toggleBtn id icon =
-    Html.div
-        [ Attr.class "lia-icon"
-        , Attr.style "float" "left"
+    Html.img
+        [ Attr.style "float" "left"
         , Attr.style "cursor" "pointer"
-        , Attr.style "color" "gray"
+        , Attr.style "height" "16px"
+
+        --, Attr.style "position" "absolute"
         , onClick <| UpdateTable <| Sub.Toggle id
+        , Attr.src <| "img/" ++ icon ++ ".png"
         ]
-        [ Html.text icon
-        ]
+        []
 
 
 unformatted : (Inlines -> List (Html Msg)) -> Matrix Cell -> Int -> State -> List (Html Msg)
