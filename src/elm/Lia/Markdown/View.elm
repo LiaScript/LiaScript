@@ -155,13 +155,9 @@ view_block config block =
 
         Table attr table ->
             Table.view
-                config.view
-                config.screen.width
-                config.main.visible
+                config
                 attr
-                config.light
                 table
-                config.section.table_vector
 
         Quote attr elements ->
             elements

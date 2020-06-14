@@ -78,7 +78,11 @@ blocks =
                             |> map Chart
                             |> andMap Chart.parse
                         , md_annotations
-                            |> map Table
+                            |> map
+                                (\attr ->
+                                    Table.classify attr
+                                        >> Table attr
+                                )
                             |> andMap Table.parse
                         , svgbob
                         , md_annotations

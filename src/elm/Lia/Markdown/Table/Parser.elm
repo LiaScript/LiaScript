@@ -1,4 +1,4 @@
-module Lia.Markdown.Table.Parser exposing (parse)
+module Lia.Markdown.Table.Parser exposing (classify, parse)
 
 import Array
 import Combine
@@ -21,6 +21,7 @@ import Combine
         , succeed
         , withState
         )
+import Lia.Markdown.HTML.Attributes as Param exposing (Parameters)
 import Lia.Markdown.Inline.Parser exposing (line)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
@@ -35,61 +36,138 @@ parse =
     indentation_skip
         |> keep (or formated simple)
         |> modify_State
-        |> map classify
 
 
-classify : Table -> Table
-classify table =
+classify : Parameters -> Table -> Table
+classify attr table =
     { table
         | class =
-            checkDiagram
-                (if table.head == [] then
-                    Nothing
+            case diagramType attr of
+                Just class ->
+                    class
 
-                 else
-                    table.head
-                        |> List.map (toCell Nothing)
-                        |> Just
-                )
-                (toMatrix Nothing table.body)
+                _ ->
+                    if Param.get "data-src" attr /= Nothing then
+                        Map
+
+                    else
+                        let
+                            matrix =
+                                if Param.isSet "data-transpose" attr then
+                                    { table
+                                        | head =
+                                            case List.head table.head of
+                                                Nothing ->
+                                                    []
+
+                                                Just cell ->
+                                                    table.body
+                                                        |> Matrix.column 0
+                                                        |> Maybe.withDefault []
+                                                        |> (::) cell
+                                        , body =
+                                            table.head
+                                                :: table.body
+                                                |> Matrix.transpose
+                                                |> Matrix.split
+                                                |> Tuple.second
+                                    }
+
+                                else
+                                    table
+                        in
+                        checkDiagram
+                            (if matrix.head == [] then
+                                Nothing
+
+                             else
+                                matrix.head
+                                    |> List.map (toCell Nothing)
+                                    |> Just
+                            )
+                            (toMatrix Nothing matrix.body)
     }
 
 
+diagramType : Parameters -> Maybe Class
+diagramType =
+    Param.get "data-type"
+        >> Maybe.withDefault ""
+        >> String.toLower
+        >> String.trim
+        >> (\param ->
+                case param of
+                    "lineplot" ->
+                        Just LinePlot
 
-{- case table of
-   Unformatted _ rows id ->
-       Unformatted
-           (checkDiagram Nothing rows)
-           rows
-           id
+                    "line" ->
+                        Just LinePlot
 
-   Formatted _ head formatting rows id ->
-       Formatted
-           (checkDiagram (Just head) rows)
-           head
-           formatting
-           rows
-           id
--}
+                    "scatterplot" ->
+                        Just ScatterPlot
+
+                    "scatter" ->
+                        Just ScatterPlot
+
+                    "barchart" ->
+                        Just BarChart
+
+                    "bar" ->
+                        Just BarChart
+
+                    "piechart" ->
+                        Just PieChart
+
+                    "pie" ->
+                        Just PieChart
+
+                    "heatmap" ->
+                        Just HeatMap
+
+                    "map" ->
+                        Just Map
+
+                    "radar" ->
+                        Just Radar
+
+                    "graph" ->
+                        Just Graph
+
+                    "parallel" ->
+                        Just Parallel
+
+                    "sankey" ->
+                        Just Sankey
+
+                    "none" ->
+                        Just None
+
+                    _ ->
+                        Nothing
+           )
 
 
 checkDiagram : Maybe (List Cell) -> Matrix Cell -> Class
 checkDiagram headLine rows =
     if
+        -- if body has numbers ...
         rows
             |> List.filterMap List.tail
             |> Matrix.any isNumber
     then
         let
+            -- get first column
             firstColumn =
                 List.map (List.head >> Maybe.andThen .float) rows
         in
+        -- all element in first column are numbers
         if List.all ((/=) Nothing) firstColumn then
+            -- headline contains elements and there is exactly one row
             if headLine /= Nothing && List.length firstColumn == 1 then
-                --False
                 PieChart
 
             else if
+                -- thera are only unique numbers in first column
                 firstColumn
                     |> List.filterMap identity
                     |> Set.fromList
@@ -97,28 +175,90 @@ checkDiagram headLine rows =
                     |> (==) (List.length firstColumn)
             then
                 let
+                    -- get all numbers from headline
                     headNumbers =
                         headLine
                             |> Maybe.andThen List.tail
                             |> Maybe.map (List.map .float)
                             |> Maybe.withDefault [ Nothing ]
                 in
-                if List.length headNumbers > 1 && List.all ((/=) Nothing) headNumbers then
+                if
+                    --
+                    List.length headNumbers
+                        > 1
+                        && List.all ((/=) Nothing) headNumbers
+                then
                     HeatMap
 
-                else
+                else if
+                    rows
+                        |> Matrix.transpose
+                        |> Matrix.split
+                        |> Tuple.second
+                        |> Matrix.some 0.3 isNumber
+                then
                     LinePlot
 
-            else
+                else
+                    None
+
+            else if
+                rows
+                    |> Matrix.transpose
+                    |> Matrix.split
+                    |> Tuple.second
+                    |> Matrix.some 0.3 isNumber
+            then
                 ScatterPlot
+
+            else
+                None
 
         else if headLine /= Nothing then
             if List.length firstColumn == 1 then
                 --True
                 PieChart
 
+            else if
+                -- check if x ans y are qual
+                (headLine
+                    |> Maybe.andThen List.tail
+                    |> Maybe.map (List.map .string)
+                )
+                    == (rows
+                            |> Matrix.column 0
+                            |> Maybe.map (List.map .string)
+                       )
+            then
+                Graph
+
+            else if
+                (List.length rows
+                    * (headLine
+                        |> Maybe.map List.length
+                        |> Maybe.withDefault 1
+                      )
+                )
+                    >= 50
+            then
+                Parallel
+
             else
-                BarChart
+                let
+                    maxima =
+                        rows
+                            |> Matrix.transpose
+                            |> Matrix.split
+                            |> Tuple.second
+                            |> Matrix.map .float
+                            |> List.map (List.filterMap identity >> List.maximum)
+                            |> List.filterMap identity
+                in
+                if (maxima |> List.maximum |> Maybe.withDefault 0 |> abs) > 10 * (maxima |> List.minimum |> Maybe.withDefault 0 |> abs) then
+                    Radar
+
+                else
+                    BarChart
 
         else
             None

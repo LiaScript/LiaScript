@@ -120,5 +120,5 @@ some percent fn =
             )
             ( 0, 0 )
         >> (\( true, false ) ->
-                true * (true + false) >= percent
+                (true / (true + false)) >= percent
            )
