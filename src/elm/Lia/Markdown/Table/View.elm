@@ -367,8 +367,8 @@ chart width isFormated attr mode class matrix =
                             |> List.indexedMap (\i diagram -> ( Chart.getColor i, diagram ))
                 in
                 { title = labels.main |> Maybe.withDefault ""
-                , yLabel = labels.x |> Maybe.withDefault ""
-                , xLabel = labels.y |> Maybe.withDefault ""
+                , yLabel = labels.y |> Maybe.withDefault ""
+                , xLabel = labels.x |> Maybe.withDefault ""
                 , legend = legend
                 , diagrams = diagrams |> Dict.fromList
                 }
