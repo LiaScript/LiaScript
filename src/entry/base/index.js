@@ -33,7 +33,10 @@ window.addEventListener('message', event => {
       case "goto":
         app.goto(event.data.param);
         break;
+      case "reload":
+        window.location.reload()
+        break
       default:
-
+        console.warn("could not handle event: ", event);
     }
 });
