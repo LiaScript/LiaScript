@@ -1,6 +1,7 @@
 module Lia.Markdown.Chart.Types exposing
     ( Chart
     , Diagram(..)
+    , Labels
     , Point
     )
 
@@ -19,6 +20,13 @@ type alias Chart =
     , xLabel : String
     , legend : List String
     , diagrams : Dict Char Diagram
+    }
+
+
+type alias Labels =
+    { main : Maybe String
+    , x : Maybe String
+    , y : Maybe String
     }
 
 
