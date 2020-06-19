@@ -5,7 +5,7 @@ import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
-import Lia.Markdown.Chart.Types exposing (Diagram(..), Point)
+import Lia.Markdown.Chart.Types exposing (Diagram(..), Labels, Point)
 import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.Config exposing (Config)
 import Lia.Markdown.HTML.Attributes as Param exposing (Parameters)
@@ -81,8 +81,8 @@ chart width isFormated attr mode class matrix =
         ( head, body ) =
             Matrix.split matrix
 
-        title =
-            getTitle attr head
+        labels =
+            getLabels attr head
     in
     Html.div [ Attr.style "float" "left", Attr.style "width" "100%" ]
         [ case class of
@@ -101,7 +101,7 @@ chart width isFormated attr mode class matrix =
                             , row |> List.tail |> Maybe.map (List.map .float) |> Maybe.withDefault []
                             )
                         )
-                    |> Chart.viewBarChart attr mode title category
+                    |> Chart.viewBarChart attr mode labels category
 
             PieChart ->
                 if
@@ -116,7 +116,7 @@ chart width isFormated attr mode class matrix =
                             (List.map2 (\category -> Maybe.map (Tuple.pair category.string)) head
                                 >> List.filterMap identity
                             )
-                        |> Chart.viewPieChart width attr mode Nothing Nothing
+                        |> Chart.viewPieChart width attr mode labels Nothing
 
                 else
                     let
@@ -138,7 +138,7 @@ chart width isFormated attr mode class matrix =
                     in
                     data
                         |> List.map (List.map2 (\c -> Maybe.map (Tuple.pair c)) category >> List.filterMap identity)
-                        |> Chart.viewPieChart width attr mode title sub
+                        |> Chart.viewPieChart width attr mode labels sub
 
             HeatMap ->
                 let
@@ -163,7 +163,7 @@ chart width isFormated attr mode class matrix =
                             row
                                 |> List.indexedMap (\x_ cell -> ( x_, y_, cell.float ))
                         )
-                    |> Chart.viewHeatMap attr mode Nothing y x
+                    |> Chart.viewHeatMap attr mode labels y x
 
             Radar ->
                 let
@@ -180,7 +180,7 @@ chart width isFormated attr mode class matrix =
                             , row |> List.tail |> Maybe.map (List.map .float) |> Maybe.withDefault []
                             )
                         )
-                    |> Chart.viewRadarChart attr mode title categories
+                    |> Chart.viewRadarChart attr mode labels categories
 
             Parallel ->
                 let
@@ -195,7 +195,7 @@ chart width isFormated attr mode class matrix =
                     |> Matrix.tail
                     |> Matrix.map .float
                     |> Matrix.transpose
-                    |> Chart.viewParallel attr mode title category
+                    |> Chart.viewParallel attr mode labels category
 
             Graph ->
                 let
@@ -245,7 +245,7 @@ chart width isFormated attr mode class matrix =
                     |> List.concat
                     |> List.filterMap identity
                     |> List.filter (\( a, b, _ ) -> a /= "" || b /= "")
-                    |> Chart.viewGraph attr mode title nodes
+                    |> Chart.viewGraph attr mode labels nodes
 
             Sankey ->
                 let
@@ -295,7 +295,7 @@ chart width isFormated attr mode class matrix =
                     |> List.concat
                     |> List.filterMap identity
                     |> List.filter (\( a, b, _ ) -> a /= "" || b /= "")
-                    |> Chart.viewSankey attr mode title nodes
+                    |> Chart.viewSankey attr mode labels nodes
 
             Map ->
                 let
@@ -323,12 +323,7 @@ chart width isFormated attr mode class matrix =
                     |> Param.get "data-src"
                     |> Chart.viewMapChart attr
                         mode
-                        (if isFormated then
-                            title
-
-                         else
-                            Nothing
-                        )
+                        labels
                         values
 
             _ ->
@@ -365,9 +360,9 @@ chart width isFormated attr mode class matrix =
                             |> List.map2 type_ legend
                             |> List.indexedMap (\i diagram -> ( Chart.getColor i, diagram ))
                 in
-                { title = title |> Maybe.withDefault ""
-                , yLabel = ""
-                , xLabel = ""
+                { title = labels.main |> Maybe.withDefault ""
+                , yLabel = labels.x |> Maybe.withDefault ""
+                , xLabel = labels.y |> Maybe.withDefault ""
                 , legend = legend
                 , diagrams = diagrams |> Dict.fromList
                 }
@@ -375,23 +370,29 @@ chart width isFormated attr mode class matrix =
         ]
 
 
-getTitle : Parameters -> Row Cell -> Maybe String
-getTitle attr row =
-    case Param.get "data-title" attr of
-        Just title ->
-            Just title
+getLabels : Parameters -> Row Cell -> Labels
+getLabels attr row =
+    { main =
+        case Param.get "data-title" attr of
+            Just title ->
+                Just title
 
-        Nothing ->
-            row
-                |> List.head
-                |> Maybe.andThen
-                    (\cell ->
-                        if cell.string == "" then
-                            Nothing
+            Nothing ->
+                row
+                    |> List.head
+                    |> Maybe.andThen
+                        (\cell ->
+                            if cell.string == "" then
+                                Nothing
 
-                        else
-                            Just cell.string
-                    )
+                            else
+                                Just cell.string
+                        )
+    , x =
+        Param.get "data-xlabel" attr
+    , y =
+        Param.get "data-ylabel" attr
+    }
 
 
 getState : Int -> Vector -> State

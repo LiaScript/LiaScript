@@ -17,7 +17,7 @@ import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Encode as JE
-import Lia.Markdown.Chart.Types exposing (Chart, Diagram(..))
+import Lia.Markdown.Chart.Types exposing (Chart, Diagram(..), Labels)
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
 
 
@@ -31,39 +31,63 @@ viewChart attr light =
     encode False >> eCharts attr light Nothing
 
 
-viewBarChart : Parameters -> Bool -> Maybe String -> List String -> List ( Maybe String, List (Maybe Float) ) -> Html msg
-viewBarChart attr light title category data =
-    encodeBarChart title category data
+viewBarChart :
+    Parameters
+    -> Bool
+    -> Labels
+    -> List String
+    -> List ( Maybe String, List (Maybe Float) )
+    -> Html msg
+viewBarChart attr light labels category data =
+    encodeBarChart labels category data
         |> eCharts attr light Nothing
 
 
-viewParallel : Parameters -> Bool -> Maybe String -> List String -> List (List (Maybe Float)) -> Html msg
-viewParallel attr light title category data =
-    encodeParallel title category data
+viewParallel :
+    Parameters
+    -> Bool
+    -> Labels
+    -> List String
+    -> List (List (Maybe Float))
+    -> Html msg
+viewParallel attr light labels category data =
+    encodeParallel labels category data
         |> eCharts attr light Nothing
 
 
-viewGraph : Parameters -> Bool -> Maybe String -> List String -> List ( String, String, Float ) -> Html msg
-viewGraph attr light title nodes edges =
-    encodeGraph title nodes edges
+viewGraph :
+    Parameters
+    -> Bool
+    -> Labels
+    -> List String
+    -> List ( String, String, Float )
+    -> Html msg
+viewGraph attr light labels nodes edges =
+    encodeGraph labels nodes edges
         |> eCharts attr light Nothing
 
 
-viewSankey : Parameters -> Bool -> Maybe String -> List String -> List ( String, String, Float ) -> Html msg
-viewSankey attr light title nodes edges =
-    encodeSankey title nodes edges
+viewSankey :
+    Parameters
+    -> Bool
+    -> Labels
+    -> List String
+    -> List ( String, String, Float )
+    -> Html msg
+viewSankey attr light labels nodes edges =
+    encodeSankey labels nodes edges
         |> eCharts attr light Nothing
 
 
-viewRadarChart : Parameters -> Bool -> Maybe String -> List String -> List ( String, List (Maybe Float) ) -> Html msg
-viewRadarChart attr light title category data =
-    encodeRadarChart title category data
+viewRadarChart : Parameters -> Bool -> Labels -> List String -> List ( String, List (Maybe Float) ) -> Html msg
+viewRadarChart attr light labels category data =
+    encodeRadarChart labels category data
         |> eCharts attr light Nothing
 
 
-viewMapChart : Parameters -> Bool -> Maybe String -> List ( String, Maybe Float ) -> Maybe String -> Html msg
-viewMapChart attr light title data json =
-    encodeMapChart title data json
+viewMapChart : Parameters -> Bool -> Labels -> List ( String, Maybe Float ) -> Maybe String -> Html msg
+viewMapChart attr light labels data json =
+    encodeMapChart labels data json
         |> eCharts attr light json
 
 
@@ -71,25 +95,25 @@ viewPieChart :
     Int
     -> Parameters
     -> Bool
-    -> Maybe String
+    -> Labels
     -> Maybe (List String)
     -> List (List ( String, Float ))
     -> Html msg
-viewPieChart width attr light title subtitle data =
-    encodePieChart width title subtitle data
+viewPieChart width attr light labels subtitle data =
+    encodePieChart width labels subtitle data
         |> eCharts attr light Nothing
 
 
 viewHeatMap :
     Parameters
     -> Bool
-    -> Maybe String
+    -> Labels
     -> List String
     -> List String
     -> List (List ( Int, Int, Maybe Float ))
     -> Html msg
-viewHeatMap attr light title x y data =
-    encodeHeatMap title x y data
+viewHeatMap attr light labels x y data =
+    encodeHeatMap labels x y data
         |> eCharts attr light Nothing
 
 
@@ -141,8 +165,8 @@ minMax list =
                 |> Just
 
 
-encodeGraph : Maybe String -> List String -> List ( String, String, Float ) -> JE.Value
-encodeGraph title nodes edges =
+encodeGraph : Labels -> List String -> List ( String, String, Float ) -> JE.Value
+encodeGraph labels nodes edges =
     let
         ( min, max ) =
             edges
@@ -246,12 +270,12 @@ encodeGraph title nodes edges =
             |> JE.list JE.object
       )
     ]
-        |> add (encodeTitle (Just ( "left", "center" ))) title
+        |> add (encodeTitle (Just ( "left", "center" ))) labels.main
         |> JE.object
 
 
-encodeSankey : Maybe String -> List String -> List ( String, String, Float ) -> JE.Value
-encodeSankey title nodes edges =
+encodeSankey : Labels -> List String -> List ( String, String, Float ) -> JE.Value
+encodeSankey labels nodes edges =
     let
         dict =
             edges
@@ -303,12 +327,12 @@ encodeSankey title nodes edges =
             |> JE.list JE.object
       )
     ]
-        |> add (encodeTitle (Just ( "left", "center" ))) title
+        |> add (encodeTitle (Just ( "left", "center" ))) labels.main
         |> JE.object
 
 
-encodeBarChart : Maybe String -> List String -> List ( Maybe String, List (Maybe Float) ) -> JE.Value
-encodeBarChart xLabel category data =
+encodeBarChart : Labels -> List String -> List ( Maybe String, List (Maybe Float) ) -> JE.Value
+encodeBarChart labels category data =
     let
         bars =
             data
@@ -349,13 +373,13 @@ encodeBarChart xLabel category data =
                         |> JE.list JE.string
                    )
                  ]
-                    ++ (xLabel
+                    ++ (labels.x
                             |> Maybe.map (\title -> [ ( "name", JE.string title ) ])
                             |> Maybe.withDefault []
                        )
                 )
           )
-        , yAxis "value" Nothing []
+        , yAxis "value" labels.y []
 
         --, ( "title", JE.object [ ( "text", JE.string chart.title ) ] )
         , ( "legend"
@@ -377,8 +401,8 @@ encodeBarChart xLabel category data =
         ]
 
 
-encodeParallel : Maybe String -> List String -> List (List (Maybe Float)) -> JE.Value
-encodeParallel xLabel category data =
+encodeParallel : Labels -> List String -> List (List (Maybe Float)) -> JE.Value
+encodeParallel labels category data =
     JE.object
         [ ( "parallelAxis"
           , category
@@ -412,8 +436,8 @@ encodeParallel xLabel category data =
         ]
 
 
-encodeMapChart : Maybe String -> List ( String, Maybe Float ) -> Maybe String -> JE.Value
-encodeMapChart title data json =
+encodeMapChart : Labels -> List ( String, Maybe Float ) -> Maybe String -> JE.Value
+encodeMapChart labels data json =
     let
         ( min, max ) =
             data
@@ -464,7 +488,7 @@ encodeMapChart title data json =
     , toolbox Nothing { saveAsImage = True, dataView = True, dataZoom = False, magicType = False }
     , ( "tooltip", JE.object [] )
     ]
-        |> add (encodeTitle Nothing) title
+        |> add (encodeTitle Nothing) labels.main
         |> JE.object
 
 
@@ -494,8 +518,8 @@ calcMax =
         )
 
 
-encodeRadarChart : Maybe String -> List String -> List ( String, List (Maybe Float) ) -> JE.Value
-encodeRadarChart title category data =
+encodeRadarChart : Labels -> List String -> List ( String, List (Maybe Float) ) -> JE.Value
+encodeRadarChart labels category data =
     let
         max_ =
             category
@@ -565,7 +589,7 @@ encodeRadarChart title category data =
             |> JE.list identity
       )
     ]
-        |> add (encodeTitle Nothing) title
+        |> add (encodeTitle Nothing) labels.main
         |> JE.object
 
 
@@ -621,8 +645,8 @@ axis x min_max type_ title data =
     )
 
 
-encodeHeatMap : Maybe String -> List String -> List String -> List (List ( Int, Int, Maybe Float )) -> JE.Value
-encodeHeatMap title xLabels yLabels data =
+encodeHeatMap : Labels -> List String -> List String -> List (List ( Int, Int, Maybe Float )) -> JE.Value
+encodeHeatMap labels xLabels yLabels data =
     let
         ( min, max ) =
             data
@@ -635,7 +659,7 @@ encodeHeatMap title xLabels yLabels data =
     , ( "tooltip", JE.object [] )
     , ( "grid"
       , JE.object <|
-            if title == Nothing then
+            if labels.main == Nothing then
                 [ ( "height", JE.string "82%" )
                 , ( "top", JE.string "0%" )
 
@@ -649,8 +673,8 @@ encodeHeatMap title xLabels yLabels data =
                 --, ( "width", JE.string "100%" )
                 ]
       )
-    , xAxis Nothing "category" Nothing xLabels
-    , yAxis "category" Nothing yLabels
+    , xAxis Nothing "category" labels.x xLabels
+    , yAxis "category" labels.y yLabels
     , ( "visualMap"
       , JE.object
             [ ( "min", JE.float min )
@@ -696,12 +720,12 @@ encodeHeatMap title xLabels yLabels data =
             |> JE.list identity
       )
     ]
-        |> add (encodeTitle (Just ( "left", "center" ))) title
+        |> add (encodeTitle (Just ( "left", "center" ))) labels.main
         |> JE.object
 
 
-encodePieChart : Int -> Maybe String -> Maybe (List String) -> List (List ( String, Float )) -> JE.Value
-encodePieChart width title subtitle data =
+encodePieChart : Int -> Labels -> Maybe (List String) -> List (List ( String, Float )) -> JE.Value
+encodePieChart width labels subtitle data =
     if List.length data == 1 then
         let
             pieces =
@@ -718,11 +742,11 @@ encodePieChart width title subtitle data =
                     |> JE.list identity
 
             head =
-                if title /= Nothing || subtitle /= Nothing then
+                if labels.main /= Nothing || subtitle /= Nothing then
                     [ ( "title"
                       , JE.object
                             [ ( "text"
-                              , title |> Maybe.withDefault "" |> JE.string
+                              , labels.main |> Maybe.withDefault "" |> JE.string
                               )
                             , ( "subtext", subtitle |> Maybe.withDefault [] |> List.head |> Maybe.withDefault "" |> JE.string )
                             , ( "left", JE.string "center" )
@@ -746,7 +770,7 @@ encodePieChart width title subtitle data =
                 --, ( "roseType", JE.string "radius" )
                 , ( "radius"
                   , JE.string <|
-                        if title /= Nothing || subtitle /= Nothing then
+                        if labels.main /= Nothing || subtitle /= Nothing then
                             "65%"
 
                         else
@@ -792,7 +816,7 @@ encodePieChart width title subtitle data =
             |> JE.object
 
     else
-        encodePieCharts width title subtitle data
+        encodePieCharts width labels.main subtitle data
 
 
 encodePieCharts : Int -> Maybe String -> Maybe (List String) -> List (List ( String, Float )) -> JE.Value
