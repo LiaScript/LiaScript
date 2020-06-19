@@ -197,6 +197,12 @@ chart width isFormated attr mode class matrix =
                     |> Matrix.transpose
                     |> Chart.viewParallel attr mode labels category
 
+            BoxPlot ->
+                body
+                    |> Matrix.map .float
+                    |> Matrix.transpose
+                    |> Chart.viewBoxPlot attr mode labels (List.map .string head)
+
             Graph ->
                 let
                     nodesA =

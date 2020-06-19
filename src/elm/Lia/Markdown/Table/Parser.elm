@@ -139,6 +139,9 @@ diagramType =
                     "sankey" ->
                         Just Sankey
 
+                    "boxplot" ->
+                        Just BoxPlot
+
                     "none" ->
                         Just None
 
