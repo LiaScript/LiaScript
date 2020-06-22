@@ -139,18 +139,7 @@ update msg model =
                         -- preserve previous logging by setting ok to false
                         "LIA: terminal" ->
                             model
-                                |> maybe_project event.section
-                                    (\p ->
-                                        { p
-                                            | terminal = Just <| Terminal.init
-                                            , log =
-                                                if e.ok then
-                                                    Log.empty
-
-                                                else
-                                                    p.log
-                                        }
-                                    )
+                                |> maybe_project event.section (\p -> { p | terminal = Just <| Terminal.init })
                                 |> Maybe.map (\p -> ( p, [] ))
                                 |> maybe_update event.section model
 

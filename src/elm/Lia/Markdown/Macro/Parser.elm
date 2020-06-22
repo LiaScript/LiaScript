@@ -33,13 +33,20 @@ import Dict
 import Lia.Definition.Types exposing (Definition)
 import Lia.Parser.Context exposing (Context, indentation)
 import Lia.Parser.Helper exposing (c_frame, spaces)
-import Lia.Utils exposing (toJSstring)
+import Lia.Utils exposing (toEscapeString, toJSstring)
 import Regex
 
 
-pattern : Parser s String
+pattern : Parser s ( String, Bool )
 pattern =
-    spaces |> keep (regex "@-?@?\\w[\\w\\d._]+")
+    spaces
+        |> keep (regex "@-?@?\\w[\\w\\d._]+")
+        |> map Tuple.pair
+        |> andMap
+            (string "'"
+                |> onsuccess True
+                |> optional False
+            )
 
 
 parameter : Parser Context String
@@ -74,11 +81,11 @@ macro =
         |> skip
 
 
-uid_macro : Parser Context ( String, List String )
+uid_macro : Parser Context ( ( String, Bool ), List String )
 uid_macro =
     string "@uid"
         |> keep (modifyState uid_update)
-        |> onsuccess ( "@uid", [] )
+        |> onsuccess ( ( "@uid", False ), [] )
 
 
 uid_update : Context -> Context
@@ -90,7 +97,7 @@ uid_update state =
     { state | defines = { def | uid = def.uid + 1 } }
 
 
-simple_macro : Parser Context ( String, List String )
+simple_macro : Parser Context ( ( String, Bool ), List String )
 simple_macro =
     pattern
         |> map Tuple.pair
@@ -126,8 +133,8 @@ macro_listing =
             )
 
 
-inject_macro : ( String, List String ) -> Parser Context ()
-inject_macro ( name, params ) =
+inject_macro : ( ( String, Bool ), List String ) -> Parser Context ()
+inject_macro ( ( name, escape ), params ) =
     let
         inject state =
             case get name state.defines of
@@ -153,11 +160,18 @@ inject_macro ( name, params ) =
                                 params
 
                         inject_code =
-                            if isDebug then
-                                debug deepDebug new_code
+                            (if escape then
+                                toEscapeString new_code
 
-                            else
+                             else
                                 new_code
+                            )
+                                |> (if isDebug then
+                                        debug deepDebug
+
+                                    else
+                                        identity
+                                   )
                     in
                     (++)
                         inject_code
@@ -178,7 +192,12 @@ eval_parameter param ( state, i, code ) =
         ( new_state, new_param ) =
             macro_parse state param
     in
-    ( new_state, i + 1, String.replace ("@" ++ String.fromInt i) new_param code )
+    ( new_state
+    , i + 1
+    , code
+        |> String.replace ("@" ++ String.fromInt i ++ "'") (toEscapeString new_param)
+        |> String.replace ("@" ++ String.fromInt i) new_param
+    )
 
 
 get : String -> Definition -> Maybe ( Bool, Bool, String )
@@ -240,9 +259,9 @@ debug env =
 debugEnvironment : Bool -> String -> String
 debugEnvironment env code =
     if env then
-        "<pre id='ls'><code style='background: #CCCCCC; white-space: pre;'>"
+        "<lia-keep><pre id='ls'><code style='background: #CCCCCC; white-space: pre;'>"
             ++ code
-            ++ "</code></pre>"
+            ++ "</code></pre></lia-keep>"
 
     else
         code
