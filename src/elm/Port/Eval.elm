@@ -8,7 +8,7 @@ module Port.Eval exposing
 
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Utils exposing (toJSstring)
+import Lia.Utils exposing (toEscapeString, toJSstring)
 import Port.Event exposing (Event)
 
 
@@ -31,14 +31,16 @@ event id code replacement =
     replacement
         |> List.indexedMap (\i r -> ( i, toJSstring r ))
         |> List.foldl replace_input code
+        |> String.replace "@input'" (toEscapeString replacement_0)
         |> String.replace "@input" replacement_0
         |> JE.string
         |> Event "eval" id
 
 
 replace_input : ( Int, String ) -> String -> String
-replace_input ( int, insert ) into =
-    String.replace ("@input(" ++ String.fromInt int ++ ")") insert into
+replace_input ( int, insert ) =
+    String.replace ("@input'(" ++ String.fromInt int ++ ")") (toEscapeString insert)
+        >> String.replace ("@input(" ++ String.fromInt int ++ ")") insert
 
 
 decoder : JD.Decoder Eval
