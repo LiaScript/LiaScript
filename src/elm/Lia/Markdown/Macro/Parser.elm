@@ -39,13 +39,14 @@ import Regex
 pattern : Parser s ( String, Bool )
 pattern =
     spaces
-        |> keep (regex "@-?@?\\w[\\w\\d._]+")
-        |> map Tuple.pair
+        |> keep (regex "@-?@?")
+        |> map (\ad escape name -> ( ad ++ name, escape ))
         |> andMap
             (string "'"
                 |> onsuccess True
                 |> optional False
             )
+        |> andMap (regex "\\w[\\w\\d._]+")
 
 
 parameter : Parser Context String
@@ -191,7 +192,7 @@ eval_parameter param ( state, i, code ) =
     ( new_state
     , i + 1
     , code
-        |> String.replace ("@" ++ String.fromInt i ++ "'") (toEscapeString new_param)
+        |> String.replace ("@'" ++ String.fromInt i) (toEscapeString new_param)
         |> String.replace ("@" ++ String.fromInt i) new_param
     )
 

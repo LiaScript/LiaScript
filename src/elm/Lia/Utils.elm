@@ -19,4 +19,5 @@ toEscapeString str =
     str
         |> String.replace "\"" "\\\""
         |> String.replace "'" "\\'"
+        |> String.replace "`" "\\`"
         |> String.replace "\n" "\\n"
