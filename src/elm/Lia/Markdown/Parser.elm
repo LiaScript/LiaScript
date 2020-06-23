@@ -112,8 +112,9 @@ blocks =
                         , md_annotations
                             |> map Paragraph
                             |> andMap problem
-                        , comments
-                            |> onsuccess Skip
+
+                        --, comments
+                        --    |> onsuccess Skip
                         ]
             in
             indentation
