@@ -1,6 +1,6 @@
 {
-  "name": "lia-script",
-  "version": "0.7.0",
+  "name": "LiaScript",
+  "version": "0.7.1",
   "description": "An extended Markdown parser for the creation of online courses.",
   "main": "index.js",
   "scripts": {

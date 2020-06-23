@@ -176,6 +176,16 @@ Parcel out there, who could help?
 ## Version-Changes
 
 
+__0.7.1__ (23/06/2020)
+
+* Added string escaping with an additonal macro-notation `@'name`, which works
+  also with `@'1` or `@'input` ...
+* New visualization type for tables `data-type="boxplot"`
+* More settings for table-diagrams, i.e. `data-title`, `data-xlabel`,
+  `data-ylabel`
+* fix: Macro debugging caused some errors, due to new HTML handling, this was
+  fixed, but the visualization is still not as expected...
+
 __0.7.0__ (14/06/2020)
 
 * Tables are now smarter and can be used also in conjunction with animations
