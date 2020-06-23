@@ -251,7 +251,6 @@ debug env =
             )
         >> String.replace "\\<br id='ls'\\>" "<br id='ls'>"
         >> debugEnvironment env
-        >> Debug.log "WWWWWWWWWWWWWWWWWW"
 
 
 debugEnvironment : Bool -> String -> String
