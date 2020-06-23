@@ -530,37 +530,38 @@ encodeBarChart labels category data =
 
 encodeParallel : Labels -> List String -> List (List (Maybe Float)) -> JE.Value
 encodeParallel labels category data =
-    JE.object
-        [ ( "parallelAxis"
-          , category
-                |> List.indexedMap (\i cat -> [ ( "dim", JE.int i ), ( "name", JE.string cat ) ])
-                |> JE.list JE.object
-          )
-        , ( "parallel"
-          , [ ( "axisExpandable", JE.bool True )
-            , ( "axisExpandCenter", JE.int 15 )
-            , ( "axisExpandCount", JE.int 10 )
-            , ( "axisExpandWidth", JE.int 100 )
-            , ( "axisExpandTriggerOn", JE.string "mousemove" )
-            ]
-                |> JE.object
-          )
-        , ( "series"
-          , [ ( "type", JE.string "parallel" )
-            , ( "data"
-              , data
-                    |> List.map
-                        (List.map (Maybe.map JE.float >> Maybe.withDefault JE.null) >> JE.list identity)
-                    |> JE.list identity
-              )
-            ]
-                |> JE.object
-          )
-        , toolbox Nothing { saveAsImage = True, dataView = True, dataZoom = True, magicType = True }
-
-        --  , brush
-        , ( "tooltip", JE.object [] )
+    [ ( "parallelAxis"
+      , category
+            |> List.indexedMap (\i cat -> [ ( "dim", JE.int i ), ( "name", JE.string cat ) ])
+            |> JE.list JE.object
+      )
+    , ( "parallel"
+      , [ ( "axisExpandable", JE.bool True )
+        , ( "axisExpandCenter", JE.int 15 )
+        , ( "axisExpandCount", JE.int 10 )
+        , ( "axisExpandWidth", JE.int 100 )
+        , ( "axisExpandTriggerOn", JE.string "mousemove" )
         ]
+            |> JE.object
+      )
+    , ( "series"
+      , [ ( "type", JE.string "parallel" )
+        , ( "data"
+          , data
+                |> List.map
+                    (List.map (Maybe.map JE.float >> Maybe.withDefault JE.null) >> JE.list identity)
+                |> JE.list identity
+          )
+        ]
+            |> JE.object
+      )
+    , toolbox Nothing { saveAsImage = True, dataView = True, dataZoom = False, magicType = False }
+
+    --  , brush
+    , ( "tooltip", JE.object [] )
+    ]
+        |> add (encodeTitle Nothing) labels.main
+        |> JE.object
 
 
 encodeMapChart : Labels -> List ( String, Maybe Float ) -> Maybe String -> JE.Value

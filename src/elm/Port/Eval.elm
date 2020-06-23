@@ -31,7 +31,7 @@ event id code replacement =
     replacement
         |> List.indexedMap (\i r -> ( i, toJSstring r ))
         |> List.foldl replace_input code
-        |> String.replace "@input'" (toEscapeString replacement_0)
+        |> String.replace "@'input" (toEscapeString replacement_0)
         |> String.replace "@input" replacement_0
         |> JE.string
         |> Event "eval" id
@@ -39,7 +39,7 @@ event id code replacement =
 
 replace_input : ( Int, String ) -> String -> String
 replace_input ( int, insert ) =
-    String.replace ("@input'(" ++ String.fromInt int ++ ")") (toEscapeString insert)
+    String.replace ("@'input(" ++ String.fromInt int ++ ")") (toEscapeString insert)
         >> String.replace ("@input(" ++ String.fromInt int ++ ")") insert
 
 
