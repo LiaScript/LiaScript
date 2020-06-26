@@ -175,6 +175,9 @@ Parcel out there, who could help?
 
 ## Version-Changes
 
+__0.7.2__ (26/06/2020)
+
+* fix: HTML elements with quoted strings that contain & are now accepted
 
 __0.7.1__ (23/06/2020)
 

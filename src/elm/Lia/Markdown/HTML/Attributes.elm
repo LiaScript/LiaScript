@@ -138,7 +138,7 @@ tagAttributeQuotedValue quote =
     string quote
         |> keep
             (choice
-                [ regex <| "[^&" ++ quote ++ "]*"
+                [ regex <| "[^" ++ quote ++ "]*"
                 , characterReference
                 ]
                 |> many
