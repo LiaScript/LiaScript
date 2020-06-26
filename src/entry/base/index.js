@@ -16,6 +16,7 @@ window.showFootnote = (key) => app.footnote(key);
 window.gotoLia = (line) => app.goto(line);
 window.jitLia = (code) => app.jit(code);
 
+/*
 window.liaGoto = function(line) {
   window.top.postMessage({cmd: "goto", param: line});
 }
@@ -23,6 +24,7 @@ window.liaGoto = function(line) {
 window.liaLog = function(e) {
   window.top.postMessage({cmd: "log", param: e});
 }
+*/
 
 window.addEventListener('message', event => {
     // IMPORTANT: check the origin of the data!
