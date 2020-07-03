@@ -215,6 +215,13 @@ highlight theme attr lang code headless =
 
             else
                 "0px"
+
+        readOnly =
+            if Params.get "data-readonly" attr == Nothing then
+                True
+
+            else
+                Params.isSet "data-readonly" attr
     in
     Editor.editor
         (attr
@@ -227,7 +234,10 @@ highlight theme attr lang code headless =
                 , Attr.style "border" "1px solid gray"
                 , Editor.value code
                 , Editor.mode lang
-                , Editor.theme theme
+                , attr
+                    |> Params.get "data-theme"
+                    |> Maybe.withDefault theme
+                    |> Editor.theme
                 , attr
                     |> Params.get "data-tabsize"
                     |> Maybe.andThen String.toInt
@@ -243,8 +253,8 @@ highlight theme attr lang code headless =
                     |> Maybe.withDefault 1
                     |> Editor.firstLineNumber
                 , Editor.useSoftTabs False
-                , Editor.readOnly True
-                , Editor.showCursor False
+                , Editor.readOnly readOnly
+                , Editor.showCursor (not readOnly)
                 , Editor.highlightActiveLine False
                 , attr
                     |> Params.isSet "data-showgutter"
@@ -274,6 +284,14 @@ evaluate theme attr running ( id_1, id_2 ) file headless errors =
 
             else
                 total_lines
+
+        readOnly =
+            if running then
+                running
+
+            else
+                attr
+                    |> Params.isSet "data-readonly"
     in
     Editor.editor
         (attr
@@ -287,7 +305,10 @@ evaluate theme attr running ( id_1, id_2 ) file headless errors =
                 [ Editor.onChange <| Update id_1 id_2
                 , Editor.value file.code
                 , Editor.mode file.lang
-                , Editor.theme theme
+                , attr
+                    |> Params.get "data-theme"
+                    |> Maybe.withDefault theme
+                    |> Editor.theme
                 , Editor.maxLines
                     (if max_lines > 16 then
                         -1
@@ -295,7 +316,7 @@ evaluate theme attr running ( id_1, id_2 ) file headless errors =
                      else
                         max_lines
                     )
-                , Editor.readOnly running
+                , Editor.readOnly readOnly
                 , attr
                     |> Params.get "data-tabsize"
                     |> Maybe.andThen String.toInt
