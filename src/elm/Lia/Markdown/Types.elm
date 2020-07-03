@@ -23,7 +23,7 @@ type Markdown
     | Comment ( Int, Int )
     | Survey Parameters Survey
     | Chart Parameters Chart
-    | Code Parameters Code
+    | Code Code
     | ASCII Parameters String
     | HTML Parameters (Node Markdown)
     | Skip

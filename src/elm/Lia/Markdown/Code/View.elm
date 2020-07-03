@@ -1,6 +1,7 @@
 module Lia.Markdown.Code.View exposing (view)
 
 import Array
+import Flip exposing (flip)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
@@ -14,12 +15,12 @@ import Lia.Markdown.HTML.Attributes as Params exposing (Parameters)
 import Translations exposing (Lang, codeExecute, codeFirst, codeLast, codeMaximize, codeMinimize, codeNext, codePrev, codeRunning)
 
 
-view : Lang -> String -> Parameters -> Vector -> Code -> Html Msg
-view lang theme attr model code =
+view : Lang -> String -> Vector -> Code -> Html Msg
+view lang theme model code =
     case code of
         Highlight lang_title_code ->
             lang_title_code
-                |> List.map (view_code theme attr)
+                |> List.map (view_code theme)
                 |> div_
 
         Evaluate id_1 ->
@@ -31,8 +32,9 @@ view lang theme attr model code =
                     in
                     div_
                         [ project.file
-                            |> Array.indexedMap (view_eval lang theme attr project.running errors id_1)
                             |> Array.toList
+                            |> List.indexedMap (view_eval lang theme project.running errors id_1)
+                            |> List.map2 (\a e -> e a) project.attr
                             |> Html.div []
                         , view_control lang
                             id_1
@@ -89,8 +91,8 @@ div_ =
         ]
 
 
-view_code : String -> Parameters -> Snippet -> Html Msg
-view_code theme attr snippet =
+view_code : String -> Snippet -> Html Msg
+view_code theme snippet =
     let
         headless =
             snippet.name == ""
@@ -104,12 +106,12 @@ view_code theme attr snippet =
                 [ Attr.class "lia-accordion-dummy" ]
                 [ Html.text snippet.name
                 ]
-        , highlight theme attr snippet.lang snippet.code headless
+        , highlight theme snippet.attr snippet.lang snippet.code headless
         ]
 
 
-view_eval : Lang -> String -> Parameters -> Bool -> (Int -> JE.Value) -> Int -> Int -> File -> Html Msg
-view_eval lang theme attr running errors id_1 id_2 file =
+view_eval : Lang -> String -> Bool -> (Int -> JE.Value) -> Int -> Int -> File -> Parameters -> Html Msg
+view_eval lang theme running errors id_1 id_2 file attr =
     let
         headless =
             file.name == ""

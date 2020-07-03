@@ -17,6 +17,7 @@ import Dict exposing (Dict)
 import Json.Encode as JE
 import Lia.Markdown.Code.Log as Log exposing (Log)
 import Lia.Markdown.Code.Terminal exposing (Terminal)
+import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import MD5
 
 
@@ -51,6 +52,7 @@ type alias Project =
     , running : Bool
     , terminal : Maybe Terminal
     , compact_view : Bool
+    , attr : List Parameters
     }
 
 
@@ -64,7 +66,8 @@ type alias File =
 
 
 type alias Snippet =
-    { lang : String
+    { attr : Parameters
+    , lang : String
     , name : String
     , code : String
     }
@@ -75,16 +78,27 @@ type Code
     | Evaluate Int
 
 
-toFile : ( Snippet, Bool ) -> File
-toFile ( { lang, name, code }, visible ) =
-    File lang name code visible False
+toFile : ( Snippet, Bool ) -> ( Parameters, File )
+toFile ( { attr, lang, name, code }, visible ) =
+    ( attr, File lang name code visible False )
 
 
 initProject : Array ( Snippet, Bool ) -> String -> Log -> Project
 initProject array comment output =
     let
-        files =
-            Array.map toFile array
+        ( attr, files ) =
+            Array.foldl
+                (\s ( a, f ) ->
+                    let
+                        ( a_, f_ ) =
+                            toFile s
+                    in
+                    ( List.append a [ a_ ]
+                    , Array.push f_ f
+                    )
+                )
+                ( [], Array.empty )
+                array
 
         repository =
             files
@@ -92,9 +106,9 @@ initProject array comment output =
                 |> Array.toList
     in
     { file = files
+    , attr = attr
     , focus = -1
-    , version =
-        Array.fromList [ ( List.map Tuple.first repository, Log.empty ) ]
+    , version = Array.fromList [ ( List.map Tuple.first repository, Log.empty ) ]
     , evaluation = comment
     , version_active = 0
     , log = output

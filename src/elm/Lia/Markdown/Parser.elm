@@ -85,9 +85,7 @@ blocks =
                                 )
                             |> andMap Table.parse
                         , svgbob
-                        , md_annotations
-                            |> map Code
-                            |> andMap Code.parse
+                        , map Code (Code.parse md_annotations)
                         , quote
                         , horizontal_line
                         , md_annotations

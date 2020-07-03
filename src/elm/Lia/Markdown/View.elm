@@ -167,9 +167,9 @@ view_block config block =
         HTML attr node ->
             HTML.view Html.div (view_block config) attr node
 
-        Code attr code ->
+        Code code ->
             code
-                |> Codes.view config.main.lang config.ace_theme attr config.section.code_vector
+                |> Codes.view config.main.lang config.ace_theme config.section.code_vector
                 |> Html.map UpdateCode
 
         Quiz attr quiz Nothing ->

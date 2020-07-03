@@ -13,6 +13,7 @@ import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Code.Log as Log
 import Lia.Markdown.Code.Types exposing (File, Project, Repo, Vector, Version)
+import Lia.Markdown.HTML.Attributes exposing (Parameters)
 
 
 merge : Vector -> Vector -> Vector
@@ -33,9 +34,17 @@ fromVector vector =
     JE.array fromProject vector
 
 
-toVector : JD.Value -> Result JD.Error (Maybe Vector)
-toVector json =
-    JD.decodeValue (JD.nullable (JD.array toProject)) json
+toVector : JD.Value -> List (List Parameters) -> Result JD.Error (Maybe Vector)
+toVector json attrs =
+    json
+        |> JD.decodeValue (JD.nullable (JD.array toProject))
+        |> Result.map
+            (Maybe.map
+                (Array.toList
+                    >> List.map2 (\a p -> p a) attrs
+                    >> Array.fromList
+                )
+            )
 
 
 fromProject : Project -> JE.Value
@@ -50,12 +59,19 @@ fromProject p =
         ]
 
 
-project : Array File -> Array Version -> Int -> Log.Log -> Repo -> Bool -> Project
+project :
+    Array File
+    -> Array Version
+    -> Int
+    -> Log.Log
+    -> Repo
+    -> Bool
+    -> (List Parameters -> Project)
 project files version active log repository compact =
     Project files -1 version active repository "" log False Nothing compact
 
 
-toProject : JD.Decoder Project
+toProject : JD.Decoder (List Parameters -> Project)
 toProject =
     JD.map6 project
         (JD.field "file" (JD.array toFile))
