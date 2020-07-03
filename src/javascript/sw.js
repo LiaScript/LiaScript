@@ -12,9 +12,9 @@ workbox.core.clientsClaim()
 
 workbox.googleAnalytics.initialize();
 
-workbox.routing.registerRoute( /\/$/, new workbox.strategies.StaleWhileRevalidate() )
-workbox.routing.registerRoute( /\/*/, new workbox.strategies.StaleWhileRevalidate() )
-workbox.routing.registerRoute( /.+\/*/, new workbox.strategies.StaleWhileRevalidate() )
+workbox.routing.registerRoute( /\/$/, new workbox.strategies.NetworkFirst() )
+workbox.routing.registerRoute( /\/*/, new workbox.strategies.NetworkFirst() )
+workbox.routing.registerRoute( /.+\/*/, new workbox.strategies.NetworkFirst() )
 
 workbox.routing.registerRoute(
   /https:\/\/code\.responsivevoice\.org/,

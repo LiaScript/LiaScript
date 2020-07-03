@@ -5,7 +5,10 @@ module Lia.Markdown.Code.Editor exposing
     , enableLiveAutocompletion
     , enableSnippets
     , extensions
+    , firstLineNumber
+    , fontSize
     , highlightActiveLine
+    , marker
     , maxLines
     , mode
     , onChange
@@ -47,6 +50,11 @@ value =
     JE.string >> Attr.property "value"
 
 
+firstLineNumber : Int -> Html.Attribute msg
+firstLineNumber =
+    JE.int >> Attr.property "firstLineNumber"
+
+
 mode : String -> Html.Attribute msg
 mode =
     JE.string >> Attr.property "mode"
@@ -60,6 +68,16 @@ theme =
 tabSize : Int -> Html.Attribute msg
 tabSize =
     JE.int >> Attr.property "tabSize"
+
+
+fontSize : String -> Html.Attribute msg
+fontSize =
+    JE.string >> Attr.property "fontSize"
+
+
+marker : String -> Html.Attribute msg
+marker =
+    JE.string >> Attr.property "marker"
 
 
 useSoftTabs : Bool -> Html.Attribute msg

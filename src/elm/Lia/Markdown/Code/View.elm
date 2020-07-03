@@ -10,7 +10,7 @@ import Lia.Markdown.Code.Log as Log exposing (Log)
 import Lia.Markdown.Code.Terminal as Terminal
 import Lia.Markdown.Code.Types exposing (Code(..), File, Snippet, Vector)
 import Lia.Markdown.Code.Update exposing (Msg(..))
-import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
+import Lia.Markdown.HTML.Attributes as Params exposing (Parameters)
 import Translations exposing (Lang, codeExecute, codeFirst, codeLast, codeMaximize, codeMinimize, codeNext, codePrev, codeRunning)
 
 
@@ -114,7 +114,7 @@ view_eval lang theme attr running errors id_1 id_2 file =
         headless =
             file.name == ""
     in
-    Html.div (annotation "" attr)
+    Html.div (Params.annotation "" attr)
         [ if headless then
             Html.text ""
 
@@ -216,7 +216,7 @@ highlight theme attr lang code headless =
     in
     Editor.editor
         (attr
-            |> toAttribute
+            |> Params.toAttribute
             |> List.append
                 [ Attr.style "border-bottom-left-radius" "4px"
                 , Attr.style "border-bottom-right-radius" "4px"
@@ -226,13 +226,32 @@ highlight theme attr lang code headless =
                 , Editor.value code
                 , Editor.mode lang
                 , Editor.theme theme
-                , Editor.tabSize 2
+                , attr
+                    |> Params.get "data-tabsize"
+                    |> Maybe.andThen String.toInt
+                    |> Maybe.withDefault 2
+                    |> Editor.tabSize
+                , attr
+                    |> Params.get "data-marker"
+                    |> Maybe.withDefault ""
+                    |> Editor.marker
+                , attr
+                    |> Params.get "data-firstlinenumber"
+                    |> Maybe.andThen String.toInt
+                    |> Maybe.withDefault 1
+                    |> Editor.firstLineNumber
                 , Editor.useSoftTabs False
                 , Editor.readOnly True
                 , Editor.showCursor False
                 , Editor.highlightActiveLine False
-                , Editor.showGutter False
+                , attr
+                    |> Params.isSet "data-showgutter"
+                    |> Editor.showGutter
                 , Editor.showPrintMargin False
+                , attr
+                    |> Params.get "data-fontsize"
+                    |> Maybe.withDefault "12pt"
+                    |> Editor.fontSize
                 ]
         )
         []
@@ -256,7 +275,7 @@ evaluate theme attr running ( id_1, id_2 ) file headless errors =
     in
     Editor.editor
         (attr
-            |> toAttribute
+            |> Params.toAttribute
             |> List.append
                 (max_lines
                     |> pixel
@@ -275,7 +294,31 @@ evaluate theme attr running ( id_1, id_2 ) file headless errors =
                         max_lines
                     )
                 , Editor.readOnly running
-                , Editor.tabSize 2
+                , attr
+                    |> Params.get "data-tabsize"
+                    |> Maybe.andThen String.toInt
+                    |> Maybe.withDefault 2
+                    |> Editor.tabSize
+                , attr
+                    |> Params.get "data-fontsize"
+                    |> Maybe.withDefault "12pt"
+                    |> Editor.fontSize
+                , attr
+                    |> Params.get "data-marker"
+                    |> Maybe.withDefault ""
+                    |> Editor.marker
+                , attr
+                    |> Params.get "data-firstlinenumber"
+                    |> Maybe.andThen String.toInt
+                    |> Maybe.withDefault 1
+                    |> Editor.firstLineNumber
+                , if Params.get "data-showgutter" attr /= Nothing then
+                    attr
+                        |> Params.isSet "data-showgutter"
+                        |> Editor.showGutter
+
+                  else
+                    Editor.showGutter True
                 , Editor.useSoftTabs False
                 , Editor.annotations errors
                 , Editor.enableBasicAutocompletion True
