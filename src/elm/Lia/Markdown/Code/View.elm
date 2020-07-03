@@ -1,6 +1,7 @@
 module Lia.Markdown.Code.View exposing (view)
 
 import Array
+import Flip exposing (flip)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
@@ -10,16 +11,16 @@ import Lia.Markdown.Code.Log as Log exposing (Log)
 import Lia.Markdown.Code.Terminal as Terminal
 import Lia.Markdown.Code.Types exposing (Code(..), File, Snippet, Vector)
 import Lia.Markdown.Code.Update exposing (Msg(..))
-import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
+import Lia.Markdown.HTML.Attributes as Params exposing (Parameters)
 import Translations exposing (Lang, codeExecute, codeFirst, codeLast, codeMaximize, codeMinimize, codeNext, codePrev, codeRunning)
 
 
-view : Lang -> String -> Parameters -> Vector -> Code -> Html Msg
-view lang theme attr model code =
+view : Lang -> String -> Vector -> Code -> Html Msg
+view lang theme model code =
     case code of
         Highlight lang_title_code ->
             lang_title_code
-                |> List.map (view_code theme attr)
+                |> List.map (view_code theme)
                 |> div_
 
         Evaluate id_1 ->
@@ -31,8 +32,9 @@ view lang theme attr model code =
                     in
                     div_
                         [ project.file
-                            |> Array.indexedMap (view_eval lang theme attr project.running errors id_1)
                             |> Array.toList
+                            |> List.indexedMap (view_eval lang theme project.running errors id_1)
+                            |> List.map2 (\a e -> e a) project.attr
                             |> Html.div []
                         , view_control lang
                             id_1
@@ -89,8 +91,8 @@ div_ =
         ]
 
 
-view_code : String -> Parameters -> Snippet -> Html Msg
-view_code theme attr snippet =
+view_code : String -> Snippet -> Html Msg
+view_code theme snippet =
     let
         headless =
             snippet.name == ""
@@ -104,17 +106,17 @@ view_code theme attr snippet =
                 [ Attr.class "lia-accordion-dummy" ]
                 [ Html.text snippet.name
                 ]
-        , highlight theme attr snippet.lang snippet.code headless
+        , highlight theme snippet.attr snippet.lang snippet.code headless
         ]
 
 
-view_eval : Lang -> String -> Parameters -> Bool -> (Int -> JE.Value) -> Int -> Int -> File -> Html Msg
-view_eval lang theme attr running errors id_1 id_2 file =
+view_eval : Lang -> String -> Bool -> (Int -> JE.Value) -> Int -> Int -> File -> Parameters -> Html Msg
+view_eval lang theme running errors id_1 id_2 file attr =
     let
         headless =
             file.name == ""
     in
-    Html.div (annotation "" attr)
+    Html.div (Params.annotation "" attr)
         [ if headless then
             Html.text ""
 
@@ -213,10 +215,17 @@ highlight theme attr lang code headless =
 
             else
                 "0px"
+
+        readOnly =
+            if Params.get "data-readonly" attr == Nothing then
+                True
+
+            else
+                Params.isSet "data-readonly" attr
     in
     Editor.editor
         (attr
-            |> toAttribute
+            |> Params.toAttribute
             |> List.append
                 [ Attr.style "border-bottom-left-radius" "4px"
                 , Attr.style "border-bottom-right-radius" "4px"
@@ -225,14 +234,36 @@ highlight theme attr lang code headless =
                 , Attr.style "border" "1px solid gray"
                 , Editor.value code
                 , Editor.mode lang
-                , Editor.theme theme
-                , Editor.tabSize 2
+                , attr
+                    |> Params.get "data-theme"
+                    |> Maybe.withDefault theme
+                    |> Editor.theme
+                , attr
+                    |> Params.get "data-tabsize"
+                    |> Maybe.andThen String.toInt
+                    |> Maybe.withDefault 2
+                    |> Editor.tabSize
+                , attr
+                    |> Params.get "data-marker"
+                    |> Maybe.withDefault ""
+                    |> Editor.marker
+                , attr
+                    |> Params.get "data-firstlinenumber"
+                    |> Maybe.andThen String.toInt
+                    |> Maybe.withDefault 1
+                    |> Editor.firstLineNumber
                 , Editor.useSoftTabs False
-                , Editor.readOnly True
-                , Editor.showCursor False
+                , Editor.readOnly readOnly
+                , Editor.showCursor (not readOnly)
                 , Editor.highlightActiveLine False
-                , Editor.showGutter False
+                , attr
+                    |> Params.isSet "data-showgutter"
+                    |> Editor.showGutter
                 , Editor.showPrintMargin False
+                , attr
+                    |> Params.get "data-fontsize"
+                    |> Maybe.withDefault "12pt"
+                    |> Editor.fontSize
                 ]
         )
         []
@@ -253,10 +284,18 @@ evaluate theme attr running ( id_1, id_2 ) file headless errors =
 
             else
                 total_lines
+
+        readOnly =
+            if running then
+                running
+
+            else
+                attr
+                    |> Params.isSet "data-readonly"
     in
     Editor.editor
         (attr
-            |> toAttribute
+            |> Params.toAttribute
             |> List.append
                 (max_lines
                     |> pixel
@@ -266,7 +305,10 @@ evaluate theme attr running ( id_1, id_2 ) file headless errors =
                 [ Editor.onChange <| Update id_1 id_2
                 , Editor.value file.code
                 , Editor.mode file.lang
-                , Editor.theme theme
+                , attr
+                    |> Params.get "data-theme"
+                    |> Maybe.withDefault theme
+                    |> Editor.theme
                 , Editor.maxLines
                     (if max_lines > 16 then
                         -1
@@ -274,8 +316,32 @@ evaluate theme attr running ( id_1, id_2 ) file headless errors =
                      else
                         max_lines
                     )
-                , Editor.readOnly running
-                , Editor.tabSize 2
+                , Editor.readOnly readOnly
+                , attr
+                    |> Params.get "data-tabsize"
+                    |> Maybe.andThen String.toInt
+                    |> Maybe.withDefault 2
+                    |> Editor.tabSize
+                , attr
+                    |> Params.get "data-fontsize"
+                    |> Maybe.withDefault "12pt"
+                    |> Editor.fontSize
+                , attr
+                    |> Params.get "data-marker"
+                    |> Maybe.withDefault ""
+                    |> Editor.marker
+                , attr
+                    |> Params.get "data-firstlinenumber"
+                    |> Maybe.andThen String.toInt
+                    |> Maybe.withDefault 1
+                    |> Editor.firstLineNumber
+                , if Params.get "data-showgutter" attr /= Nothing then
+                    attr
+                        |> Params.isSet "data-showgutter"
+                        |> Editor.showGutter
+
+                  else
+                    Editor.showGutter True
                 , Editor.useSoftTabs False
                 , Editor.annotations errors
                 , Editor.enableBasicAutocompletion True

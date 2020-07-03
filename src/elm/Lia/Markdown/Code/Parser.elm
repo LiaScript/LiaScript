@@ -23,6 +23,7 @@ import Combine
         )
 import Lia.Markdown.Code.Log as Log
 import Lia.Markdown.Code.Types exposing (Code(..), Snippet, initProject)
+import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.Inline.Parser exposing (javascript)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Parser.Context exposing (Context, indentation)
@@ -30,9 +31,9 @@ import Lia.Parser.Helper exposing (c_frame, newline, spaces)
 import Port.Eval exposing (Eval)
 
 
-parse : Parser Context Code
-parse =
-    sepBy1 newline listing
+parse : Parser Context Parameters -> Parser Context Code
+parse attr =
+    sepBy1 newline (attr |> andThen listing)
         |> map Tuple.pair
         |> andMap
             (regex "[ \n]?"
@@ -91,12 +92,12 @@ code_body len =
         |> map (String.concat >> String.dropRight 1)
 
 
-listing : Parser Context ( Snippet, Bool )
-listing =
+listing : Parameters -> Parser Context ( Snippet, Bool )
+listing attr =
     let
         body len =
             header
-                |> map (\h ( v, t ) c -> ( Snippet h (String.trim t) c, v ))
+                |> map (\h ( v, t ) c -> ( Snippet attr h (String.trim t) c, v ))
                 |> andMap title
                 |> andMap (code_body len)
     in

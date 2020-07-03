@@ -13,6 +13,37 @@ const debounce = (func) => {
   }
 }
 
+function markerStyle(name) {
+  return "ace_color_" + name.replaceAll(" ", "")
+                            .replaceAll(".", "")
+                            .replaceAll(",", "_")
+                            .replaceAll("(", "")
+                            .replaceAll(")", "")
+}
+
+function addMarker(color, name=null) {
+
+  if (!color)
+    return
+
+  name = markerStyle( name ? name : color )
+
+  if (!document.head.getElementsByTagName("style")[name]) {
+    let node = document.createElement('style')
+    node.type = 'text/css';
+    node.id = name
+    node.appendChild(document.createTextNode(
+      `.${name} {
+        position:absolute;
+        background:${ color };
+        z-index:20
+      }`
+    ))
+    document.getElementsByTagName('head')[0].appendChild(node)
+  }
+}
+
+
 customElements.define('code-editor', class extends HTMLElement {
   constructor () {
     super()
@@ -26,6 +57,7 @@ customElements.define('code-editor', class extends HTMLElement {
       shared: null,
       showPrintMargin: true,
       highlightActiveLine: true,
+      firstLineNumber: 1,
       tabSize: 4,
       useSoftTabs: true,
       useWrapMode: false,
@@ -34,9 +66,28 @@ customElements.define('code-editor', class extends HTMLElement {
       showGutter: true,
       extensions: [],
       maxLines: Infinity,
+      marker: "",
       minLines: 1,
       annotations: [],
       fontSize: '12pt'
+    }
+
+    let markers = {
+      "error":  "rgba(255,0,0,0.3)",
+      "warn":   "rgba(255,255,102,0.3)",
+      "debug":  "rgba(100,100,100,0.3)",
+      "info":   "rgba(0,255,0,0.3)",
+      "log":    "rgba(0,0,255,0.3)",
+    }
+
+    try {
+      let keys = Object.keys(markers)
+
+      for (let i=0; i<keys.length; i++) {
+        addMarker(markers[keys[i]], keys[i])
+      }
+    } catch(e) {
+      console.warn("ace.js => ", e);
     }
   }
 
@@ -49,6 +100,7 @@ customElements.define('code-editor', class extends HTMLElement {
       mode: getMode(this.model.mode),
       showPrintMargin: this.model.showPrintMargin,
       highlightActiveLine: this.model.highlightActiveLine,
+      firstLineNumber: this.model.firstLineNumber,
       tabSize: this.model.tabSize,
       useSoftTabs: this.model.useSoftTabs,
       readOnly: this.model.readOnly,
@@ -76,6 +128,8 @@ customElements.define('code-editor', class extends HTMLElement {
 
       this._editor.on('change', runDispatch)
     }
+
+    this.setMarker()
   }
 
   disconnectedCallback () {
@@ -152,7 +206,43 @@ customElements.define('code-editor', class extends HTMLElement {
     return this.model.fontSize
   }
   set fontSize (value) {
-    this.setOption('fontSize', value + 'pt')
+    this.setOption('fontSize', value)
+  }
+
+
+  setMarker () {
+    let Range = ace.require('ace/range').Range
+    let value = this.model.marker.split(";")
+
+    for (let i=0; i<value.length; i++) {
+      let m = value[i].split(" ").filter( e => e != "")
+
+      addMarker(m[4])
+
+      this._editor.session.addMarker(
+        new Range (
+          parseInt(m[0]),
+          parseInt(m[1]),
+          parseInt(m[2]),
+          parseInt(m[3])
+        ),
+        markerStyle(m[4]),
+        m[5] ? m[5] : "fullLine"
+      )
+    }
+  }
+  get marker () {
+    return this.model.marker
+  }
+  set marker (value) {
+    this.model.marker = value
+  }
+
+  get firstLineNumber () {
+    return this.model.firstLineNumber
+  }
+  set firstLineNumber (value) {
+    this.setOption('firstLineNumber', value)
   }
 
   get highlightActiveLine () {

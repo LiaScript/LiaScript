@@ -36,7 +36,12 @@ handle =
 
 restore : JE.Value -> Vector -> ( Vector, List Event )
 restore json model =
-    case Json.toVector json of
+    case
+        model
+            |> Array.map .attr
+            |> Array.toList
+            |> Json.toVector json
+    of
         Ok (Just model_) ->
             ( Json.merge model model_, [] )
 
