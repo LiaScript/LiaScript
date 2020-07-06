@@ -14,11 +14,13 @@ const debounce = (func) => {
 }
 
 function markerStyle(name) {
-  return "ace_color_" + name.replaceAll(" ", "")
-                            .replaceAll(".", "")
-                            .replaceAll(",", "_")
-                            .replaceAll("(", "")
-                            .replaceAll(")", "")
+  if (typeof name == "string")
+    name = "ace_color_" + name.replaceAll(" ", "")
+                              .replaceAll(".", "")
+                              .replaceAll(",", "_")
+                              .replaceAll("(", "")
+                              .replaceAll(")", "")
+  return name
 }
 
 function addMarker(color, name=null) {
