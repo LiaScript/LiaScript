@@ -175,6 +175,10 @@ Parcel out there, who could help?
 
 ## Version-Changes
 
+__0.7.3__ (06/07/2020)
+
+* Editor settings via attributes: `data-theme`, `data-marker`, `data-`...
+
 __0.7.2__ (26/06/2020)
 
 * fix: HTML elements with quoted strings that contain & are now accepted
