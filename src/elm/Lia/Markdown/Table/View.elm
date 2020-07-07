@@ -25,18 +25,22 @@ import Lia.Markdown.Table.Types
         )
 import Lia.Markdown.Table.Update as Sub
 import Lia.Markdown.Update exposing (Msg(..))
+import Lia.Utils exposing (blockKeydown)
 import Set
 
 
 view : Config -> Parameters -> Table -> Html Msg
 view config attr table =
-    --viewer width effectId attr mode table vector =
     let
         state =
             getState table.id config.section.table_vector
     in
     if diagramShow attr state.diagram then
-        Html.div [ Attr.style "float" "left", Attr.style "width" "100%" ]
+        Html.div
+            [ Attr.style "float" "left"
+            , Attr.style "width" "100%"
+            , blockKeydown (UpdateTable Sub.NoOp)
+            ]
             [ toggleBtn table.id "table"
             , table.body
                 |> toMatrix config.main.visible

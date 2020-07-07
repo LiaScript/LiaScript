@@ -175,6 +175,12 @@ Parcel out there, who could help?
 
 ## Version-Changes
 
+__0.7.4__ (07/07/2020)
+
+* fix: some problems with arrow navigation, added `stopPropagationOn` for
+  dealing with key-press events that should not interact with the navigation
+* fix: some css for cards, such as quizzes and surveys
+
 __0.7.3__ (06/07/2020)
 
 * Editor settings via attributes: `data-theme`, `data-marker`, `data-`...

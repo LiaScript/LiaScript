@@ -8,6 +8,7 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Quiz.Block.Types exposing (Quiz, State(..))
 import Lia.Markdown.Quiz.Block.Update exposing (Msg(..))
+import Lia.Utils exposing (blockKeydown)
 
 
 view : Config -> Bool -> Quiz -> State -> Html Msg
@@ -31,6 +32,7 @@ text solved state =
         , Attr.value state
         , Attr.disabled solved
         , onInput Input
+        , blockKeydown (Input state)
         ]
         []
 

@@ -9,6 +9,7 @@ import Lia.Index.Update exposing (Msg(..))
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Section exposing (Section, Sections)
 import Lia.Settings.Model exposing (Mode(..))
+import Lia.Utils exposing (blockKeydown)
 import Translations exposing (Lang, baseSearch)
 
 
@@ -30,6 +31,7 @@ view_search lang model =
 
                     --, Attr.style "height" "40%"
                     , onInput ScanIndex
+                    , blockKeydown (ScanIndex model)
                     , Attr.id "lia-input-search"
                     ]
                     []

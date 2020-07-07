@@ -19,7 +19,7 @@ import Combine
         , whitespace
         , withState
         )
-import Lia.Markdown.HTML.Attributes as Attributes
+import Lia.Markdown.HTML.Attributes as Params
 import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (stringTill)
@@ -35,7 +35,7 @@ tag parser =
     let
         attr =
             withState (.defines >> .base >> succeed)
-                |> andThen Attributes.parse
+                |> andThen Params.parse
     in
     regex "[ \\t]*<[ \\t]*"
         |> keep tagName
