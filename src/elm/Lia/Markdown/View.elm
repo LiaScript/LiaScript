@@ -162,7 +162,13 @@ view_block config block =
         Quote attr elements ->
             elements
                 |> List.map (\e -> view_block config e)
-                |> Html.blockquote (annotation "lia-quote" attr)
+                |> Html.blockquote
+                    (if config.screen.width > 360 then
+                        Attr.style "width" "80%" :: annotation "lia-quote" attr
+
+                     else
+                        annotation "lia-quote" attr
+                    )
 
         HTML attr node ->
             HTML.view Html.div (view_block config) attr node

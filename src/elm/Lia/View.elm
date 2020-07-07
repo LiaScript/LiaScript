@@ -24,7 +24,7 @@ import Translations as Trans exposing (Lang)
 view : Screen -> Bool -> Bool -> Model -> Html Msg
 view screen hasShareAPI hasIndex model =
     Html.div
-        (Settings.design model.settings)
+        (preventDefaultOn "keydown" key_decoder :: Settings.design model.settings)
         [ view_aside hasShareAPI model
         , view_article screen hasIndex model
         ]
@@ -65,7 +65,7 @@ view_article : Screen -> Bool -> Model -> Html Msg
 view_article screen hasIndex model =
     case get_active_section model of
         Just section ->
-            Html.article [ Attr.class "lia-slide", preventDefaultOn "keydown" key_decoder ]
+            Html.article [ Attr.class "lia-slide" ]
                 [ section
                     |> .effect_model
                     |> state
