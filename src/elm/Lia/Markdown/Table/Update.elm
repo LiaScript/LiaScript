@@ -10,6 +10,7 @@ import Lia.Markdown.Table.Types exposing (Class(..), State, Vector)
 type Msg
     = Sort Int Int
     | Toggle Int
+    | NoOp
 
 
 update : Msg -> Vector -> Vector
@@ -25,6 +26,9 @@ update msg vector =
                 vector
                     |> Array.get id
                     |> Maybe.map (\state -> Array.set id { state | diagram = not state.diagram } vector)
+
+            NoOp ->
+                Just vector
 
 
 

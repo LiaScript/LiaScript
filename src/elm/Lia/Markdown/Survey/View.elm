@@ -10,6 +10,7 @@ import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Survey.Model exposing (get_matrix_state, get_select_state, get_submission_state, get_text_state, get_vector_state)
 import Lia.Markdown.Survey.Types exposing (Survey, Type(..), Vector)
 import Lia.Markdown.Survey.Update exposing (Msg(..))
+import Lia.Utils exposing (blockKeydown)
 import Translations exposing (surveySubmit, surveySubmitted, surveyText)
 
 
@@ -127,6 +128,7 @@ view_text config str lines idx submitted =
     let
         attr =
             [ onInput <| TextUpdate idx
+            , blockKeydown (TextUpdate idx str)
             , Attr.class "lia-textarea"
             , Attr.placeholder (surveyText config.lang)
             , Attr.value str
