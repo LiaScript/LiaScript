@@ -3,7 +3,7 @@ module Lia.Markdown.Code.Terminal exposing (Msg(..), Terminal, init, update, vie
 import Array exposing (Array)
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Html.Events exposing (keyCode, on, onInput)
+import Html.Events exposing (keyCode, onInput, stopPropagationOn)
 import Json.Decode as JD
 
 
@@ -115,4 +115,5 @@ restore_input up terminal =
 
 onKeyDown : (Int -> msg) -> Html.Attribute msg
 onKeyDown tagger =
-    on "keydown" (JD.map tagger keyCode)
+    stopPropagationOn "keydown"
+        (JD.map (\x -> ( x, True )) (JD.map tagger keyCode))
