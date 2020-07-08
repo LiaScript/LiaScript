@@ -54,7 +54,7 @@ design model =
                )
         )
     , Attr.style "transform" <| "scale(" ++ float ++ ")"
-    , Attr.style "transform-origin" "top left"
+    , Attr.style "transform-origin" "bottom left"
     , Attr.style "height" <| "calc(100vh / " ++ float ++ ")"
     , Attr.style "width" <| "calc(100vw / " ++ float ++ ")"
     ]
