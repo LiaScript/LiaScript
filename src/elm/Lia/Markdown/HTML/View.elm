@@ -19,5 +19,5 @@ view containerX fn attr obj =
                         |> toAttribute
                     )
 
-        NodeX content ->
+        InnerHtml content ->
             containerX [ Attr.property "innerHTML" <| JE.string content ] []

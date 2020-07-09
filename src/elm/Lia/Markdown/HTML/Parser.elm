@@ -66,7 +66,7 @@ liaKeep : Parser Context (Node x)
 liaKeep =
     string "<lia-keep>"
         |> keep (stringTill (string "</lia-keep>"))
-        |> map NodeX
+        |> map InnerHtml
 
 
 tagName : Parser Context String
