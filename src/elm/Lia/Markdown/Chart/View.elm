@@ -13,7 +13,7 @@ module Lia.Markdown.Chart.View exposing
     , viewSankey
     )
 
-import Char exposing (isLower, toLower)
+import Char exposing (toLower)
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -1231,90 +1231,6 @@ toolbox position config =
           )
         ]
     )
-
-
-toolboX :
-    Maybe String
-    -> { saveAsImage : Bool, dataView : Bool, dataZoom : Bool, magicType : Bool }
-    -> List ( String, JE.Value )
-    -> List ( String, JE.Value )
-toolboX position config =
-    (::)
-        ( "toolbox"
-        , JE.object
-            [ ( "bottom", JE.int 8 )
-            , ( "left"
-              , position
-                    |> Maybe.withDefault "center"
-                    |> JE.string
-              )
-            , ( "feature"
-              , (if config.saveAsImage then
-                    [ ( "saveAsImage", JE.object [ ( "title", JE.string "store" ) ] ) ]
-
-                 else
-                    []
-                )
-                    |> List.append
-                        (if config.dataView then
-                            [ ( "dataView"
-                              , JE.object
-                                    [ ( "title", JE.string "edit" )
-                                    , ( "lang", JE.list JE.string [ "data view", "turn off", "refresh" ] )
-                                    ]
-                              )
-                            ]
-
-                         else
-                            []
-                        )
-                    |> List.append
-                        (if config.dataZoom then
-                            [ ( "dataZoom"
-                              , JE.object
-                                    [ ( "title"
-                                      , JE.object
-                                            [ ( "zoom", JE.string "zoom" )
-                                            , ( "back", JE.string "back" )
-                                            ]
-                                      )
-                                    ]
-                              )
-                            ]
-
-                         else
-                            []
-                        )
-                    |> List.append
-                        (if config.magicType then
-                            [ ( "magicType"
-                              , JE.object
-                                    [ ( "type"
-                                      , JE.list JE.string
-                                            [ "tiled"
-                                            , "line"
-                                            , "bar"
-                                            ]
-                                      )
-                                    , ( "title"
-                                      , JE.object
-                                            [ ( "stack", JE.string "stack" )
-                                            , ( "tiled", JE.string "tiled" )
-                                            , ( "line", JE.string "line" )
-                                            , ( "bar", JE.string "bar" )
-                                            ]
-                                      )
-                                    ]
-                              )
-                            ]
-
-                         else
-                            []
-                        )
-                    |> JE.object
-              )
-            ]
-        )
 
 
 series : Bool -> ( Char, Diagram ) -> JE.Value

@@ -1,9 +1,6 @@
 module Lia.Markdown.Inline.Parser exposing
-    ( annotations
-    , combine
+    ( combine
     , comment
-    , comment_string
-    , comments
     , inlines
     , javascript
     , line
@@ -70,13 +67,6 @@ comment p =
     string "<!--"
         |> ignore whitespace
         |> keep (manyTill p (string "-->"))
-
-
-comment_string : Parser s String
-comment_string =
-    anyChar
-        |> comment
-        |> map (String.fromList >> String.trim)
 
 
 comments : Parser Context ()

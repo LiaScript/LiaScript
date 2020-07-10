@@ -4,7 +4,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import Html.Lazy as Lazy
-import Lia.Definition.Types exposing (Definition, get_translations)
+import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Settings.Model exposing (Mode(..), Model)
@@ -53,10 +53,15 @@ design model =
                     "dark"
                )
         )
-    , Attr.style "transform" <| "scale(" ++ float ++ ")"
-    , Attr.style "transform-origin" "top left"
     , Attr.style "height" <| "calc(100vh / " ++ float ++ ")"
     , Attr.style "width" <| "calc(100vw / " ++ float ++ ")"
+    , Attr.style "transform" <| "scale(" ++ float ++ ")"
+    , Attr.style "-webkit-transform-origin" "top left"
+    , Attr.style "-moz-transform-origin" "top left"
+
+    --, Attr.style "transform-origin" "bottom left"
+    , Attr.style "transform-origin" "top left"
+    , Attr.style "position" "absolute"
     ]
 
 

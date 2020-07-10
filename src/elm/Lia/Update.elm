@@ -3,7 +3,6 @@ module Lia.Update exposing
     , generate
     , get_active_section
     , key_decoder
-    , send
     , subscriptions
     , update
     )
@@ -38,7 +37,6 @@ subscriptions model =
 type Msg
     = Load Int
     | InitSection
-    | Swipe
     | PrevSection
     | NextSection
     | UpdateIndex Index.Msg

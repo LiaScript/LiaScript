@@ -1,4 +1,4 @@
-module Lia.Markdown.Quiz.View exposing (view, view_solution)
+module Lia.Markdown.Quiz.View exposing (class, view, view_solution)
 
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -8,7 +8,6 @@ import Lia.Markdown.Inline.Types exposing (MultInlines)
 import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Quiz.Block.View as Block
 import Lia.Markdown.Quiz.Matrix.View as Matrix
-import Lia.Markdown.Quiz.Model exposing (get_state)
 import Lia.Markdown.Quiz.Types
     exposing
         ( Element
@@ -17,6 +16,7 @@ import Lia.Markdown.Quiz.Types
         , State(..)
         , Type(..)
         , Vector
+        , getState
         , solved
         )
 import Lia.Markdown.Quiz.Update exposing (Msg(..))
@@ -26,13 +26,29 @@ import Translations exposing (quizCheck, quizChecked, quizResolved, quizSolution
 
 view : Config -> Quiz -> Vector -> Html Msg
 view config quiz vector =
-    case get_state vector quiz.id of
+    case getState vector quiz.id of
         Just elem ->
             state_view config (solved elem) elem.state quiz
                 |> view_quiz config elem quiz
 
         _ ->
             Html.text ""
+
+
+class : Int -> Vector -> String
+class id vector =
+    case
+        getState vector id
+            |> Maybe.map .solved
+    of
+        Just Solved ->
+            "lia-quiz lia-card solved"
+
+        Just ReSolved ->
+            "lia-quiz lia-card resolved"
+
+        _ ->
+            "lia-quiz lia-card open"
 
 
 state_view : Config -> Bool -> State -> Quiz -> Html Msg
@@ -161,6 +177,6 @@ view_hints config idx counter hints =
 view_solution : Vector -> Quiz -> Bool
 view_solution vector quiz =
     quiz.id
-        |> get_state vector
+        |> getState vector
         |> Maybe.map solved
         |> Maybe.withDefault False

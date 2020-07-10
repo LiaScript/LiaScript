@@ -2,11 +2,9 @@ module Lia.Model exposing
     ( Model
     , init
     , load_src
-    , settings2model
     )
 
 import Array
-import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Definition.Types as Definition exposing (Definition, Resource(..))
 import Lia.Index.Model as Index
@@ -33,16 +31,6 @@ type alias Model =
     , translation : Translations.Lang
     , search_index : String -> String
     }
-
-
-settings2model : Model -> Result JD.Error Settings.Model -> Model
-settings2model model settings =
-    case settings of
-        Ok new_settings ->
-            { model | settings = new_settings }
-
-        Err _ ->
-            model
 
 
 init : Int -> JE.Value -> String -> String -> String -> Maybe Int -> Model

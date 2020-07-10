@@ -23,10 +23,18 @@ import Combine
         )
 import Lia.Markdown.HTML.Attributes as Param exposing (Parameters)
 import Lia.Markdown.Inline.Parser exposing (line)
-import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
 import Lia.Markdown.Table.Matrix as Matrix exposing (Matrix)
-import Lia.Markdown.Table.Types exposing (Cell, Class(..), State, Table, float, isNumber, toCell, toMatrix)
+import Lia.Markdown.Table.Types
+    exposing
+        ( Cell
+        , Class(..)
+        , State
+        , Table
+        , isNumber
+        , toCell
+        , toMatrix
+        )
 import Lia.Parser.Context exposing (Context, indentation, indentation_skip)
 import Set
 

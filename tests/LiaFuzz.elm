@@ -1,8 +1,7 @@
 module LiaFuzz exposing (fuzzRegex)
 
-import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer)
-import Random.Regex exposing (..)
+import Random.Regex exposing (Encoding(..))
 import Shrink
 
 
