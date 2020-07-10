@@ -177,7 +177,8 @@ Parcel out there, who could help?
 
 __0.7.5__ (10/07/2020)
 
-* fix: jumping on animations on mobile or if content too long ... 
+* fix: jumping on animations on mobile or if content too long ...
+* update ace editor to 1.4.12
 
 __0.7.4__ (07/07/2020)
 
