@@ -13,7 +13,7 @@ import Lia.Markdown.HTML.Attributes exposing (Parameters)
 
 type Node content
     = Node String Parameters (List content)
-    | NodeX String
+    | InnerHtml String
 
 
 getContent : Node content -> List content
@@ -22,7 +22,7 @@ getContent node =
         Node _ _ content ->
             content
 
-        NodeX _ ->
+        InnerHtml _ ->
             []
 
 
@@ -40,8 +40,8 @@ encode contentEncoder obj =
                 , ( "children", JE.list contentEncoder children )
                 ]
 
-            NodeX content ->
-                [ ( "nodex", JE.string content ) ]
+            InnerHtml content ->
+                [ ( "node_inline", JE.string content ) ]
 
 
 decode : JD.Decoder content -> JD.Decoder (Node content)
