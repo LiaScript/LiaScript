@@ -179,6 +179,8 @@ __0.7.5__ (10/07/2020)
 
 * fix: jumping on animations on mobile or if content too long ...
 * update ace editor to 1.4.12
+* updated elm-ui to 1.0.7
+* added special classes to quizzes to enable the usage of quiz-banks
 
 __0.7.4__ (07/07/2020)
 
