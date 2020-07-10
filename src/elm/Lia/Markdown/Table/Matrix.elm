@@ -4,19 +4,15 @@ module Lia.Markdown.Table.Matrix exposing
     , all
     , any
     , column
-    , get
     , head
     , map
-    , row
     , some
     , split
     , tail
     , transpose
     )
 
-import Array exposing (Array)
-import Lia.Markdown.Inline.Stringify exposing (stringify, stringify_)
-import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
+import Lia.Utils as Util
 
 
 type alias Matrix cell =
@@ -32,28 +28,9 @@ map fn =
     List.map (List.map fn)
 
 
-get : Int -> Int -> Matrix cell -> Maybe cell
-get i j =
-    row i >> Maybe.andThen (row j)
-
-
-row : Int -> List row -> Maybe row
-row i matrix =
-    case matrix of
-        [] ->
-            Nothing
-
-        r :: rs ->
-            if i <= 0 then
-                Just r
-
-            else
-                row (i - 1) rs
-
-
 column : Int -> Matrix cell -> Maybe (Row cell)
 column i =
-    transpose >> row i
+    transpose >> Util.get i
 
 
 head : Matrix cell -> Row cell

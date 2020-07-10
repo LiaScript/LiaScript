@@ -178,17 +178,7 @@ store ( key_, value_ ) =
                 )
 
         "debug" ->
-            set
-                (\c ->
-                    { c
-                        | debug =
-                            if value_ == "true" then
-                                True
-
-                            else
-                                False
-                    }
-                )
+            set (\c -> { c | debug = value_ == "true" })
 
         "onload" ->
             set (\c -> { c | onload = value_ })

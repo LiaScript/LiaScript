@@ -1,6 +1,5 @@
 module Lia.Markdown.Effect.View exposing
     ( block
-    , comment
     , inline
     , responsive
     , state
@@ -271,22 +270,6 @@ circle id =
     Html.span
         [ Attr.class "lia-effect-circle" ]
         [ Html.text (String.fromInt id) ]
-
-
-comment : Lang -> String -> Bool -> Bool -> msg -> Model -> (inline -> Html msg) -> Int -> List inline -> Html msg
-comment lang class show_inline silent msg model viewer idx elements =
-    if show_inline then
-        elements
-            |> List.map viewer
-            |> Html.div []
-
-    else if idx == model.visible then
-        [ responsive lang silent msg ]
-            |> List.append (List.map viewer elements)
-            |> Html.div [ Attr.class class ]
-
-    else
-        Html.text ""
 
 
 responsive : Lang -> Bool -> msg -> Html msg

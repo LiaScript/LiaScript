@@ -1,13 +1,8 @@
 port module Update exposing
     ( Msg(..)
-    , download
     , getIndex
     , initIndex
     , load_readme
-    , message
-    , parse_error
-    , parsing
-    , start
     , subscriptions
     , update
     )
@@ -22,7 +17,6 @@ import Http
 import Index.Update as Index
 import Json.Encode as JE
 import Lia.Json.Decode
-import Lia.Parser.PatReplace exposing (replace)
 import Lia.Script
 import Model exposing (Model, State(..))
 import Port.Event exposing (Event)

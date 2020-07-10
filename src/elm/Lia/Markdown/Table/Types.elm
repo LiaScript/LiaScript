@@ -4,15 +4,15 @@ module Lia.Markdown.Table.Types exposing
     , State
     , Table
     , Vector
-    , float
+    , isEmpty
     , isNumber
     , toCell
     , toMatrix
     )
 
 import Array exposing (Array)
-import Lia.Markdown.Inline.Stringify exposing (stringify, stringify_)
-import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
+import Lia.Markdown.Inline.Stringify exposing (stringify_)
+import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Table.Matrix as Matrix exposing (Matrix)
 
 

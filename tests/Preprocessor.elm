@@ -1,13 +1,13 @@
 module Preprocessor exposing (basic)
 
 import Expect exposing (Expectation)
-import Fuzz exposing (Fuzzer, int, list, string)
 import Lia.Definition.Types exposing (default)
 import Lia.Parser.Parser as Parser
 import LiaFuzz exposing (fuzzRegex)
-import Test exposing (..)
+import Test exposing (Test, describe, fuzz)
 
 
+run_preprocessor : Int -> String -> Expectation
 run_preprocessor len code =
     case Parser.parse_titles (default "") code of
         Ok list ->

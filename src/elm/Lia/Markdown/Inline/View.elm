@@ -1,7 +1,5 @@
 module Lia.Markdown.Inline.View exposing
-    ( reference
-    , view
-    , view_inf
+    ( view_inf
     , viewer
     )
 

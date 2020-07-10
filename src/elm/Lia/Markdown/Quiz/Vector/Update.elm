@@ -35,13 +35,7 @@ toggleSingle id list =
             []
 
         _ :: xs ->
-            (if id == 0 then
-                True
-
-             else
-                False
-            )
-                :: toggleSingle (id - 1) xs
+            (id == 0) :: toggleSingle (id - 1) xs
 
 
 toggleMultiple : Int -> List Bool -> List Bool

@@ -16,11 +16,6 @@ type alias Event =
     }
 
 
-baseID : Int
-baseID =
-    -12345
-
-
 encode : Event -> JE.Value
 encode { topic, section, message } =
     JE.object
@@ -28,21 +23,6 @@ encode { topic, section, message } =
         , ( "section", JE.int section )
         , ( "message", message )
         ]
-
-
-baseEncode : Event -> JE.Value
-baseEncode e =
-    encode { e | section = baseID }
-
-
-isBase : JE.Value -> Bool
-isBase json =
-    case JD.decodeValue (JD.field "section" JD.int) json of
-        Ok section ->
-            section == baseID
-
-        _ ->
-            False
 
 
 

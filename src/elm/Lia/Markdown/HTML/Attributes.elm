@@ -1,7 +1,6 @@
 module Lia.Markdown.HTML.Attributes exposing
     ( Parameters
     , annotation
-    , base
     , get
     , isSet
     , parse

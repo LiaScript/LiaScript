@@ -9,11 +9,6 @@ import Model exposing (Model, State(..))
 import Update exposing (Msg(..))
 
 
-project_url : String
-project_url =
-    "https://github.com/LiaScript/LiaScript"
-
-
 view : Model -> Browser.Document Msg
 view model =
     { title = model.lia.title

@@ -1,7 +1,6 @@
 module Lia.Markdown.Code.View exposing (view)
 
 import Array
-import Flip exposing (flip)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
@@ -41,12 +40,7 @@ view lang theme model code =
                             project.version_active
                             (Array.length project.version)
                             project.running
-                            (if project.terminal == Nothing then
-                                False
-
-                             else
-                                True
-                            )
+                            (project.terminal /= Nothing)
                         , view_result project.log
                         , case project.terminal of
                             Nothing ->

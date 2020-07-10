@@ -1,6 +1,5 @@
 module Lia.Markdown.Code.Types exposing
     ( Code(..)
-    , EventMsg
     , File
     , Project
     , Repo
@@ -14,7 +13,6 @@ module Lia.Markdown.Code.Types exposing
 
 import Array exposing (Array)
 import Dict exposing (Dict)
-import Json.Encode as JE
 import Lia.Markdown.Code.Log as Log exposing (Log)
 import Lia.Markdown.Code.Terminal exposing (Terminal)
 import Lia.Markdown.HTML.Attributes exposing (Parameters)
@@ -35,10 +33,6 @@ type alias Repo =
 
 type alias Vector =
     Array Project
-
-
-type alias EventMsg =
-    List JE.Value
 
 
 type alias Project =
