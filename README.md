@@ -175,6 +175,10 @@ Parcel out there, who could help?
 
 ## Version-Changes
 
+__0.7.5__ (10/07/2020)
+
+* fix: jumping on animations on mobile or if content too long ... 
+
 __0.7.4__ (07/07/2020)
 
 * fix: some problems with arrow navigation, added `stopPropagationOn` for
