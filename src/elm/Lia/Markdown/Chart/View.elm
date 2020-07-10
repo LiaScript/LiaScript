@@ -13,7 +13,7 @@ module Lia.Markdown.Chart.View exposing
     , viewSankey
     )
 
-import Char exposing (isLower, toLower)
+import Char exposing (toLower)
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr

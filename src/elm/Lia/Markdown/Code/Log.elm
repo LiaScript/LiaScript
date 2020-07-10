@@ -5,8 +5,6 @@ module Lia.Markdown.Code.Log exposing
     , add_Eval
     , add_Info
     , add_Warn
-    , clear
-    , decode
     , decoder
     , empty
     , encode
@@ -94,11 +92,6 @@ add_Warn =
 add_Error : String -> Log -> Log
 add_Error =
     add_ Error
-
-
-clear : Log -> Log
-clear log =
-    { log | lines = 0, messages = [] }
 
 
 add_ : Level -> String -> Log -> Log
@@ -225,11 +218,6 @@ encMessage { level, text } =
         [ ( "level", encLevel level )
         , ( "text", JE.string text )
         ]
-
-
-decode : JD.Value -> Result JD.Error Log
-decode json =
-    JD.decodeValue decoder json
 
 
 decoder : JD.Decoder Log

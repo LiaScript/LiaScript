@@ -1,6 +1,5 @@
 module Lia.Parser.Parser exposing
-    ( formatError
-    , parse_defintion
+    ( parse_defintion
     , parse_section
     , parse_titles
     )

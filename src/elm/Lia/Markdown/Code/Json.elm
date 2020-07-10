@@ -3,8 +3,6 @@ module Lia.Markdown.Code.Json exposing
     , fromVector
     , fromVersion
     , merge
-    , toDetails
-    , toProject
     , toVector
     )
 
@@ -116,10 +114,3 @@ toVersion =
     JD.map2 Tuple.pair
         (JD.field "hashes" (JD.list JD.string))
         (JD.field "log" Log.decoder)
-
-
-toDetails : JD.Value -> Array JD.Value
-toDetails json =
-    json
-        |> JD.decodeValue (JD.array JD.value)
-        |> Result.withDefault Array.empty

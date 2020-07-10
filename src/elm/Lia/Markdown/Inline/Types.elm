@@ -1,40 +1,15 @@
 module Lia.Markdown.Inline.Types exposing
-    ( Config
-    , Inline(..)
+    ( Inline(..)
     , Inlines
     , MultInlines
     , Reference(..)
-    , config
     , htmlBlock
-    , isHTML
     )
 
 import Lia.Markdown.Effect.Types exposing (Effect)
 import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Settings.Model exposing (Mode(..))
-import Translations exposing (Lang)
-
-
-type alias Config =
-    { mode : Mode
-    , visible : Int
-    , speaking : Maybe Int
-    , lang : Lang
-    }
-
-
-config : Mode -> Int -> Maybe Int -> Lang -> Config
-config mode visible speaking lang =
-    Config mode
-        (if mode == Textbook then
-            99999
-
-         else
-            visible
-        )
-        speaking
-        lang
 
 
 type alias Inlines =
@@ -69,16 +44,6 @@ type Reference
     | Audio Inlines ( Bool, String ) String
     | Movie Inlines ( Bool, String ) String
     | Embed Inlines String String
-
-
-isHTML : Inline -> Bool
-isHTML inline =
-    case inline of
-        IHTML _ _ ->
-            True
-
-        _ ->
-            False
 
 
 htmlBlock : Inline -> Maybe ( String, List ( String, String ), List Inline )

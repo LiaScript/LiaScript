@@ -8,7 +8,6 @@ module Session exposing
     , navToHome
     , navToSlide
     , setQuery
-    , setSlide
     , setUrl
     )
 
@@ -47,15 +46,6 @@ setQuery query session =
             session.url
     in
     { session | url = { url | query = Just query } }
-
-
-setSlide : Int -> Session -> Session
-setSlide number session =
-    let
-        url =
-            session.url
-    in
-    { session | url = { url | fragment = Just <| String.fromInt number } }
 
 
 navTo : Session -> Url -> Cmd msg

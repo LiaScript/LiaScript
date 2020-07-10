@@ -18,6 +18,7 @@ import Lia.Markdown.Table.Types
         , State
         , Table
         , Vector
+        , isEmpty
         , isNumber
         , toCell
         , toMatrix
@@ -389,14 +390,7 @@ getLabels attr row =
             Nothing ->
                 row
                     |> List.head
-                    |> Maybe.andThen
-                        (\cell ->
-                            if cell.string == "" then
-                                Nothing
-
-                            else
-                                Just cell.string
-                        )
+                    |> Maybe.andThen (.string >> isEmpty)
     , x =
         Param.get "data-xlabel" attr
     , y =

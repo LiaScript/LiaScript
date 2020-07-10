@@ -4,7 +4,6 @@ module Lia.Markdown.Table.Types exposing
     , State
     , Table
     , Vector
-    , float
     , isEmpty
     , isNumber
     , toCell

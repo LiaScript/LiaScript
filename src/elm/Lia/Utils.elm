@@ -1,6 +1,6 @@
 module Lia.Utils exposing
     ( blockKeydown
-    , stopPropagationOn
+    , get
     , toEscapeString
     , toJSstring
     )
@@ -42,3 +42,17 @@ blockKeydown =
 stopPropagationOn : String -> msg -> Html.Attribute msg
 stopPropagationOn name msg =
     Events.stopPropagationOn name (JD.succeed ( msg, True ))
+
+
+get : Int -> List x -> Maybe x
+get i list =
+    case list of
+        [] ->
+            Nothing
+
+        r :: rs ->
+            if i <= 0 then
+                Just r
+
+            else
+                get (i - 1) rs

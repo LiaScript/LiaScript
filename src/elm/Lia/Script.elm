@@ -3,7 +3,6 @@ module Lia.Script exposing
     , Msg
     , add_imports
     , add_todos
-    , get_title
     , handle
     , init
     , init_script
@@ -11,10 +10,7 @@ module Lia.Script exposing
     , load_slide
     , pages
     , parse_section
-    , plain_mode
-    , slide_mode
     , subscriptions
-    , switch_mode
     , update
     , view
     )
@@ -220,22 +216,3 @@ subscriptions =
 update : Session -> Msg -> Model -> ( Model, Cmd Msg, List Event )
 update =
     Lia.Update.update
-
-
-switch_mode : Mode -> Model -> Model
-switch_mode mode model =
-    let
-        settings =
-            model.settings
-    in
-    { model | settings = { settings | mode = mode } }
-
-
-plain_mode : Model -> Model
-plain_mode =
-    switch_mode Textbook
-
-
-slide_mode : Model -> Model
-slide_mode =
-    switch_mode Slides

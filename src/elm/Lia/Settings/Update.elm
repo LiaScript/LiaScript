@@ -3,9 +3,7 @@ module Lia.Settings.Update exposing
     , Msg(..)
     , Toggle(..)
     , handle
-    , load
     , toggle_sound
-    , toggle_table_of_contents
     , update
     )
 
@@ -148,11 +146,6 @@ load model json =
 toggle_sound : Msg
 toggle_sound =
     Toggle Sound
-
-
-toggle_table_of_contents : Msg
-toggle_table_of_contents =
-    Toggle TableOfContents
 
 
 toggle : Button -> Buttons -> Buttons

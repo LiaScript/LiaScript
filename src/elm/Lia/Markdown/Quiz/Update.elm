@@ -1,4 +1,4 @@
-module Lia.Markdown.Quiz.Update exposing (Msg(..), evalEventDecoder, handle, update)
+module Lia.Markdown.Quiz.Update exposing (Msg(..), handle, update)
 
 import Array
 import Json.Encode as JE

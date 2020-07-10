@@ -1,4 +1,4 @@
-module Version exposing (compare, getMajor, toInt)
+module Version exposing (getMajor, toInt)
 
 
 toInt : String -> Int
@@ -15,25 +15,6 @@ toInt str =
 
         _ ->
             0
-
-
-compare : String -> String -> Order
-compare v1 v2 =
-    let
-        i1 =
-            toInt v1
-
-        i2 =
-            toInt v2
-    in
-    if i1 < i2 then
-        LT
-
-    else if i1 > i2 then
-        GT
-
-    else
-        EQ
 
 
 getMajor : String -> Int

@@ -9,14 +9,14 @@ module Parser.Inline.Basic exposing
     , verbatim_Suite
     )
 
-import Expect exposing (Expectation)
-import Fuzz exposing (Fuzzer, int, list, string)
+--import LiaFuzz exposing (fuzzRegex)
+
+import Expect
 import Lia.Definition.Types exposing (default)
 import Lia.Markdown.Inline.Parser exposing (parse_inlines)
 import Lia.Markdown.Inline.Types exposing (Inline(..))
 import Lia.Parser.Context as Context
-import LiaFuzz exposing (fuzzRegex)
-import Test exposing (..)
+import Test exposing (Test, describe, test)
 
 
 parse : String -> List Inline
@@ -29,7 +29,7 @@ parse =
 
 chars : String -> Inline
 chars str =
-    Chars str Nothing
+    Chars str []
 
 
 end : Inline
@@ -37,6 +37,7 @@ end =
     chars " "
 
 
+simply : String -> Inline -> Test
 simply str rslt =
     test str <|
         \_ ->
@@ -46,7 +47,7 @@ simply str rslt =
 
 italic : String -> Inline
 italic str =
-    Italic (chars str) Nothing
+    Italic (chars str) []
 
 
 italic_Suite : Test
@@ -61,7 +62,7 @@ italic_Suite =
 
 bold : String -> Inline
 bold str =
-    Bold (chars str) Nothing
+    Bold (chars str) []
 
 
 bold_Suite : Test
@@ -76,7 +77,7 @@ bold_Suite =
 
 bold_italic : String -> Inline
 bold_italic str =
-    Bold (italic str) Nothing
+    Bold (italic str) []
 
 
 bold_italic_Suite : Test
@@ -91,7 +92,7 @@ bold_italic_Suite =
 
 strike : String -> Inline
 strike str =
-    Strike (chars str) Nothing
+    Strike (chars str) []
 
 
 strike_Suite : Test
@@ -104,7 +105,7 @@ strike_Suite =
 
 underline : String -> Inline
 underline str =
-    Underline (chars str) Nothing
+    Underline (chars str) []
 
 
 underline_Suite : Test
@@ -117,7 +118,7 @@ underline_Suite =
 
 superscript : String -> Inline
 superscript str =
-    Superscript (chars str) Nothing
+    Superscript (chars str) []
 
 
 superscript_Suite : Test
@@ -130,7 +131,7 @@ superscript_Suite =
 
 verbatim : String -> Inline
 verbatim str =
-    Verbatim str Nothing
+    Verbatim str []
 
 
 verbatim_Suite : Test
@@ -151,7 +152,7 @@ formula mode str =
             "false"
         )
         str
-        Nothing
+        []
 
 
 formula_Suite : Test
