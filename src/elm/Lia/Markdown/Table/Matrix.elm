@@ -14,10 +14,6 @@ module Lia.Markdown.Table.Matrix exposing
     , transpose
     )
 
-import Array exposing (Array)
-import Lia.Markdown.Inline.Stringify exposing (stringify, stringify_)
-import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
-
 
 type alias Matrix cell =
     List (Row cell)

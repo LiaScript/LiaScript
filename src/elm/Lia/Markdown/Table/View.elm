@@ -9,7 +9,6 @@ import Lia.Markdown.Chart.Types exposing (Diagram(..), Labels, Point)
 import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.Config exposing (Config)
 import Lia.Markdown.HTML.Attributes as Param exposing (Parameters)
-import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
 import Lia.Markdown.Table.Matrix as Matrix exposing (Matrix, Row)
 import Lia.Markdown.Table.Types
@@ -53,12 +52,12 @@ view config attr table =
     else if table.head == [] && table.format == [] then
         state
             |> unformatted config.view (toMatrix config.main.visible table.body) table.id
-            |> toTable table.id attr table.class state.diagram
+            |> toTable table.id attr table.class
 
     else
         state
             |> formatted config.view table.head table.format (toMatrix config.main.visible table.body) table.id
-            |> toTable table.id attr table.class state.diagram
+            |> toTable table.id attr table.class
 
 
 diagramShow : Parameters -> Bool -> Bool
@@ -410,8 +409,8 @@ getState id =
     Array.get id >> Maybe.withDefault (State -1 False False)
 
 
-toTable : Int -> Parameters -> Class -> Bool -> List (Html Msg) -> Html Msg
-toTable id attr class diagram body =
+toTable : Int -> Parameters -> Class -> List (Html Msg) -> Html Msg
+toTable id attr class body =
     if class == None then
         Html.table (Param.annotation "lia-table" attr) body
 
@@ -454,8 +453,6 @@ toTable id attr class diagram body =
 
                     None ->
                         ""
-
-            --, Html.br [] []
             , Html.table (Param.annotation "lia-table" attr) body
             ]
 
