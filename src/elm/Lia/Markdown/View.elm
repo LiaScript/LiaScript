@@ -179,13 +179,13 @@ view_block config block =
                 |> Html.map UpdateCode
 
         Quiz attr quiz Nothing ->
-            Html.div (annotation "lia-quiz lia-card" attr)
+            Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr)
                 [ Quizzes.view config.main quiz config.section.quiz_vector
                     |> Html.map UpdateQuiz
                 ]
 
         Quiz attr quiz (Just ( answer, hidden_effects )) ->
-            Html.div (annotation "lia-quiz lia-card" attr) <|
+            Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr) <|
                 if Quizzes.view_solution config.section.quiz_vector quiz then
                     List.append
                         [ Html.map UpdateQuiz <| Quizzes.view config.main quiz config.section.quiz_vector ]

@@ -1,4 +1,4 @@
-module Lia.Markdown.Quiz.View exposing (view, view_solution)
+module Lia.Markdown.Quiz.View exposing (class, view, view_solution)
 
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -33,6 +33,22 @@ view config quiz vector =
 
         _ ->
             Html.text ""
+
+
+class : Int -> Vector -> String
+class id vector =
+    case
+        getState vector id
+            |> Maybe.map .solved
+    of
+        Just Solved ->
+            "lia-quiz lia-card solved"
+
+        Just ReSolved ->
+            "lia-quiz lia-card resolved"
+
+        _ ->
+            "lia-quiz lia-card open"
 
 
 state_view : Config -> Bool -> State -> Quiz -> Html Msg
