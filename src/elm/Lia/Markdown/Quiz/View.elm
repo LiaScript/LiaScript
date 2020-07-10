@@ -8,7 +8,6 @@ import Lia.Markdown.Inline.Types exposing (MultInlines)
 import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Quiz.Block.View as Block
 import Lia.Markdown.Quiz.Matrix.View as Matrix
-import Lia.Markdown.Quiz.Model exposing (get_state)
 import Lia.Markdown.Quiz.Types
     exposing
         ( Element
@@ -17,6 +16,7 @@ import Lia.Markdown.Quiz.Types
         , State(..)
         , Type(..)
         , Vector
+        , getState
         , solved
         )
 import Lia.Markdown.Quiz.Update exposing (Msg(..))
@@ -26,7 +26,7 @@ import Translations exposing (quizCheck, quizChecked, quizResolved, quizSolution
 
 view : Config -> Quiz -> Vector -> Html Msg
 view config quiz vector =
-    case get_state vector quiz.id of
+    case getState vector quiz.id of
         Just elem ->
             state_view config (solved elem) elem.state quiz
                 |> view_quiz config elem quiz
@@ -161,6 +161,6 @@ view_hints config idx counter hints =
 view_solution : Vector -> Quiz -> Bool
 view_solution vector quiz =
     quiz.id
-        |> get_state vector
+        |> getState vector
         |> Maybe.map solved
         |> Maybe.withDefault False
