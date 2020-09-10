@@ -175,6 +175,11 @@ Parcel out there, who could help?
 
 ## Version-Changes
 
+__0.7.6__ (10/09/2020)
+
+* fix: typo in css for grey design
+* npm update
+
 __0.7.5__ (10/07/2020)
 
 * fix: jumping on animations on mobile or if content too long ...

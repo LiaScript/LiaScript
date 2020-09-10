@@ -130,7 +130,7 @@ design_theme lang theme =
     , ( "amber", "right", Trans.cAmber lang )
     , ( "blue", "left", Trans.cBlue lang )
     , ( "green", "right", Trans.cGreen lang )
-    , ( "gray", "left", Trans.cGray lang )
+    , ( "grey", "left", Trans.cGray lang )
     , ( "purple", "right", Trans.cPurple lang )
     ]
         |> List.map (\( c, b, text ) -> check_list (c == theme) c text b)
