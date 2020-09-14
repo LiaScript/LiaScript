@@ -10,6 +10,8 @@ comment:  Main LiaScript Parser project, written in elm.
 
 -->
 
+[![Gitter](https://badges.gitter.im/LiaScript/community.svg)](https://gitter.im/LiaScript/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+
 # LiaScript
 
 [LiaScript](https://LiaScript.github.io) is an extension to Markdown to support
