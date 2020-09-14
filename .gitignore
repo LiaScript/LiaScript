@@ -5,7 +5,7 @@ build
 *.tgz
 *~
 src/Lia/Helper.elm.bak
-bak/*
+backup/*
 assets/img/*
 assets/ccourse.md
 assets/tau.md
