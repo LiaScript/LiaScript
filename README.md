@@ -198,6 +198,9 @@ __Badges:__
 
 ## Version-Changes
 
+* added laziness to Charts, Tables, and ASCII-art in order to increase speed
+* npm updates
+
 __0.7.6__ (10/09/2020)
 
 * fix: typo in css for grey design
