@@ -5,6 +5,7 @@ import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
+import Html.Lazy as Lazy
 import Lia.Markdown.Chart.Types exposing (Diagram(..), Labels, Point)
 import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.Config exposing (Config)
@@ -36,19 +37,7 @@ view config attr table =
             getState table.id config.section.table_vector
     in
     if diagramShow attr state.diagram then
-        Html.div
-            [ Attr.style "float" "left"
-            , Attr.style "width" "100%"
-            , blockKeydown (UpdateTable Sub.NoOp)
-            ]
-            [ toggleBtn table.id "table"
-            , table.body
-                |> toMatrix config.main.visible
-                |> sort state
-                |> (::) (List.map (toCell config.main.visible) table.head)
-                |> diagramTranspose attr
-                |> chart config.screen.width (table.format /= []) attr config.light table.class
-            ]
+        Lazy.lazy6 viewDiagram table state config.main.visible config.screen.width config.light attr
 
     else if table.head == [] && table.format == [] then
         state
@@ -59,6 +48,23 @@ view config attr table =
         state
             |> formatted config.view table.head table.format (toMatrix config.main.visible table.body) table.id
             |> toTable table.id attr table.class
+
+
+viewDiagram : Table -> State -> Maybe Int -> Int -> Bool -> Parameters -> Html Msg
+viewDiagram table state visible width light attr =
+    Html.div
+        [ Attr.style "float" "left"
+        , Attr.style "width" "100%"
+        , blockKeydown (UpdateTable Sub.NoOp)
+        ]
+        [ toggleBtn table.id "table"
+        , table.body
+            |> toMatrix visible
+            |> sort state
+            |> (::) (List.map (toCell visible) table.head)
+            |> diagramTranspose attr
+            |> chart width (table.format /= []) attr light table.class
+        ]
 
 
 diagramShow : Parameters -> Bool -> Bool

@@ -10,6 +10,8 @@ comment:  Main LiaScript Parser project, written in elm.
 
 -->
 
+[![LiaScript](https://raw.githubusercontent.com/LiaScript/LiaScript/master/badges/course.svg)](https://LiaScript.github.io/course/?https://github.com/LiaScript/docs) [![Gitter](https://badges.gitter.im/LiaScript/community.svg)](https://gitter.im/LiaScript/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+
 # LiaScript
 
 [LiaScript](https://LiaScript.github.io) is an extension to Markdown to support
@@ -173,7 +175,31 @@ I could not compile the project so far, that it runs on Internet explorer and
 other older Browsers, that are still in use. Is there is an expert on Babel and
 Parcel out there, who could help?
 
+## Badges
+
+Simply replace `URL` at the end of the snippet below with your desired GitHub
+repository (and the main README.md of your master-branch will be used) or
+directly point to any Markdown-file anywhere within the web.
+
+__Badges:__
+
+* course:
+
+  [![LiaScript](https://raw.githubusercontent.com/LiaScript/LiaScript/master/badges/course.svg)](https://LiaScript.github.io/course/?https://github.com/LiaScript/docs)
+
+  `[![LiaScript](https://raw.githubusercontent.com/LiaScript/LiaScript/master/badges/course.svg)](https://LiaScript.github.io/course/?URL)`
+
+* learn more:
+
+  [![LiaScript](https://raw.githubusercontent.com/LiaScript/LiaScript/master/badges/learn_more.svg)](https://LiaScript.github.io/course/?https://raw.githubusercontent.com/LiaScript/docs/master/README.md)
+
+  `[![LiaScript](https://raw.githubusercontent.com/LiaScript/LiaScript/master/badges/learn_more.svg)](https://LiaScript.github.io/course/?URL)`
+
+
 ## Version-Changes
+
+* added laziness to Charts, Tables, and ASCII-art in order to increase speed
+* npm updates
 
 __0.7.6__ (10/09/2020)
 

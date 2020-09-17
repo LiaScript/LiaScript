@@ -3,6 +3,7 @@ module Lia.Markdown.View exposing (view)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
+import Html.Lazy as Lazy
 import Lia.Markdown.Chart.View as Charts
 import Lia.Markdown.Code.View as Codes
 import Lia.Markdown.Config exposing (Config)
@@ -10,7 +11,7 @@ import Lia.Markdown.Effect.Model as Comments
 import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.Model as Footnotes
 import Lia.Markdown.Footnote.View as Footnote
-import Lia.Markdown.HTML.Attributes exposing (annotation, toAttribute)
+import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Markdown.HTML.View as HTML
 import Lia.Markdown.Inline.Types exposing (htmlBlock)
@@ -37,19 +38,18 @@ view config =
 
 
 view_body : ( Config, Maybe String, Footnotes.Model ) -> List Markdown -> Html Msg
-view_body ( config, footnote2show, footnotes ) body =
-    body
-        |> List.map (view_block config)
-        |> (::) (view_footnote (view_block config) footnote2show footnotes)
-        |> (::) (view_header config)
-        |> (\s ->
+view_body ( config, footnote2show, footnotes ) =
+    List.map (view_block config)
+        >> (::) (view_footnote (view_block config) footnote2show footnotes)
+        >> (::) (view_header config)
+        >> (\s ->
                 if config.main.visible == Nothing then
                     List.append s [ Footnote.block (view_block config) footnotes ]
 
                 else
                     s
            )
-        |> Html.section [ Attr.class "lia-content" ]
+        >> Html.section [ Attr.class "lia-content" ]
 
 
 view_footnote : (Markdown -> Html Msg) -> Maybe String -> Footnotes.Model -> Html Msg
@@ -216,45 +216,47 @@ view_block config block =
                     Html.text ""
 
         Chart attr chart ->
-            Charts.view attr config.light chart
+            Lazy.lazy3 Charts.view attr config.light chart
 
         ASCII attr txt ->
-            txt
-                |> SvgBob.init SvgBob.default
-                |> SvgBob.getSvg (toAttribute attr)
-                |> (\svg ->
-                        if config.light then
-                            svg
-
-                        else
-                            Html.div
-                                [ Attr.style "-webkit-filter" "invert(100%)"
-                                , Attr.style "filter" "invert(100%)"
-                                ]
-                                [ svg ]
-                   )
+            Lazy.lazy3 view_ascii attr config.light txt
 
         Skip ->
             Html.text ""
 
 
+view_ascii : Parameters -> Bool -> String -> Html Msg
+view_ascii attr light =
+    SvgBob.init SvgBob.default
+        >> SvgBob.getSvg (toAttribute attr)
+        >> (\svg ->
+                if light then
+                    svg
+
+                else
+                    Html.div
+                        [ Attr.style "-webkit-filter" "invert(100%)"
+                        , Attr.style "filter" "invert(100%)"
+                        ]
+                        [ svg ]
+           )
+
+
 view_list : Config -> List ( String, List Markdown ) -> List (Html Msg)
-view_list config list =
+view_list config =
     let
         viewer ( value, sub_list ) =
             List.map (view_block config) sub_list
                 |> Html.li [ Attr.value value ]
     in
-    list
-        |> List.map viewer
+    List.map viewer
 
 
 view_bulletlist : Config -> List (List Markdown) -> List (Html Msg)
-view_bulletlist config list =
+view_bulletlist config =
     let
         viewer =
             List.map (view_block config)
                 >> Html.li []
     in
-    list
-        |> List.map viewer
+    List.map viewer
