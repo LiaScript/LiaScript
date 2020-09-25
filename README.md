@@ -198,8 +198,12 @@ __Badges:__
 
 ## Version-Changes
 
+
+__0.7.7__ (25/09/2020)
+
 * added laziness to Charts, Tables, and ASCII-art in order to increase speed
 * npm updates
+* added russian translation
 
 __0.7.6__ (10/09/2020)
 
