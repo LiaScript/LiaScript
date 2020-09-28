@@ -6,7 +6,7 @@
     "elm-version": "0.19.1",
     "dependencies": {
         "direct": {
-            "andre-dietrich/elm-svgbob": "2.0.0",
+            "andre-dietrich/elm-svgbob": "2.0.1",
             "andre-dietrich/parser-combinators": "4.0.0",
             "dillonkearns/elm-oembed": "1.0.0",
             "elm/browser": "1.0.2",

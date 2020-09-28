@@ -198,6 +198,10 @@ __Badges:__
 
 ## Version-Changes
 
+__0.7.8__ (28/09/2020)
+
+* updated ascii-art generation, which now supports the usage of emojies, see the
+  documentation at: https://github.com/andre-dietrich/elm-svgbob
 
 __0.7.7__ (25/09/2020)
 
