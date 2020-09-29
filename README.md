@@ -175,6 +175,31 @@ I could not compile the project so far, that it runs on Internet explorer and
 other older Browsers, that are still in use. Is there is an expert on Babel and
 Parcel out there, who could help?
 
+## Preview
+
+If you want to add a preview-link for the course to your site, simply add the
+follwing script to the head of your website and place the custom webcomponent
+`preview-lia` anyone in your document, with `src` pointing to your LiaScript
+course.
+
+``` html
+<html>
+  <head>
+  ...
+  <!-- add preview-lia tag support to display all course related information -->
+  <script type="text/javascript" src="https://liascript.github.io/course/preview-lia.js">
+  </script>
+  ...
+  </head>
+  <body>
+  ...
+  <preview-lia src="https://raw.githubusercontent.com/liaScript/docs/master/README.md">
+  </preview-lia>
+  ...
+  </body>
+</html>
+```
+
 ## Badges
 
 Simply replace `URL` at the end of the snippet below with your desired GitHub
@@ -197,6 +222,16 @@ __Badges:__
 
 
 ## Version-Changes
+
+__0.7.9__ (29/09/2020)
+
+* tables do not increase the size of the frame anymore
+* `[preview-lia](course-url)` depicts now a preview link for the LiaScript
+  course in your course. The same can be achieved with the web component
+  `<preview-lia src="course-url"></preview-lia>`
+
+  See section [Preview](#Preview) for more information.
+
 
 __0.7.8__ (28/09/2020)
 
