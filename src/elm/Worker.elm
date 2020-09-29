@@ -88,7 +88,12 @@ update msg model =
     case msg of
         Handle [ "defines", readme ] ->
             ( model
-            , readme |> defines >> output
+            , load_readme readme { model | cmd = "json" }
+                |> Tuple.first
+                |> parsing
+                |> Tuple.first
+                |> respond
+                |> Tuple.second
             )
 
         Handle [ cmd, readme ] ->
