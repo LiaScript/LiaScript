@@ -86,3 +86,6 @@ ref2string id ref =
 
         Embed alt _ _ ->
             stringify_ id alt
+
+        Preview _ ->
+            ""

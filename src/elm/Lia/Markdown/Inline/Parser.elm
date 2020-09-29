@@ -26,6 +26,7 @@ import Combine
         , optional
         , or
         , regex
+        , regexWith
         , runParser
         , skip
         , string
@@ -42,7 +43,7 @@ import Lia.Markdown.HTML.Parser as HTML
 import Lia.Markdown.Inline.Multimedia as Multimedia
 import Lia.Markdown.Inline.Parser.Formula exposing (formula)
 import Lia.Markdown.Inline.Parser.Symbol exposing (arrows, smileys)
-import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
+import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Preview(..), Reference(..))
 import Lia.Markdown.Macro.Parser as Macro
 import Lia.Parser.Context exposing (Context, getLine, searchIndex)
 import Lia.Parser.Helper exposing (spaces, stringTill)
@@ -316,6 +317,14 @@ reference =
         mail_ =
             ref_pattern Mail ref_info email
 
+        previewLia =
+            regexWith True False "\\[\\w*preview-lia\\w*\\]"
+                |> ignore (string "(")
+                |> keep ref_url_1
+                |> ignore ref_title
+                |> ignore (string ")")
+                |> map (Lia >> Preview)
+
         link =
             ref_pattern Link ref_info ref_url_1
 
@@ -335,7 +344,7 @@ reference =
             string "??"
                 |> keep (ref_pattern Embed ref_info ref_url_1)
     in
-    [ embed, movie, audio, image, mail_, link ]
+    [ embed, movie, audio, image, mail_, previewLia, link ]
         |> choice
         |> map Ref
 

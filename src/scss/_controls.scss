@@ -568,6 +568,8 @@
 
 
         border-collapse: collapse;
+        overflow-x: auto;
+        display: block;
 
         .lia-table-head {
             th {

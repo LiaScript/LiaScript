@@ -10,7 +10,7 @@ import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.HTML.View as HTML
 import Lia.Markdown.Inline.Config as Config exposing (Config)
-import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
+import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Preview(..), Reference(..))
 import Lia.Settings.Model exposing (Mode(..))
 import Oembed
 import Translations exposing (Lang)
@@ -163,6 +163,9 @@ reference config ref attr =
         Embed _ url _ ->
             oembed Nothing url
 
+        Preview link ->
+            preview link attr
+
 
 customProviders : List Oembed.Provider
 customProviders =
@@ -181,3 +184,10 @@ view_url config alt_ url_ title_ attr =
         |> List.append (annotation "lia-link" attr)
         |> Html.a
         |> (\a -> a (viewer config alt_))
+
+
+preview : Preview -> Parameters -> Html msg
+preview link attr =
+    case link of
+        Lia url ->
+            Html.node "preview-lia" [ Attr.attribute "src" url ] []
