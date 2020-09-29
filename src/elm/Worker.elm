@@ -214,10 +214,10 @@ parsing model =
                 Just code ->
                     let
                         ( lia, remaining_code ) =
-                            Lia.Script.parse_section model.lia code
+                            Lia.Script.parse_section model.lia ( code, 0 )
 
                         new_model =
-                            { model | lia = lia, code = remaining_code }
+                            { model | lia = lia, code = remaining_code |> Maybe.map Tuple.first }
                     in
                     if modBy 4 (Lia.Script.pages lia) == 0 then
                         ( new_model, message LiaParse )
@@ -237,7 +237,9 @@ load_readme readme model =
                 |> String.replace "\u{000D}" ""
                 |> Lia.Script.init_script model.lia
     in
-    load model lia code templates
+    code
+        |> Maybe.map (\( code_, _ ) -> load model lia (Just code_) templates)
+        |> Maybe.withDefault ( model, Cmd.none )
 
 
 load : Model -> Lia.Script.Model -> Maybe String -> List String -> ( Model, Cmd Msg )
