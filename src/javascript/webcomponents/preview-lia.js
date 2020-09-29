@@ -207,7 +207,7 @@ customElements.define('preview-lia', class extends HTMLElement {
       }
     }
     </style>
-    <div class="blog-card" id="container"></div>
+    <div id="container" style="display: inline"></div>
     `;
 
     this._shadowRoot = this.attachShadow({ mode: 'open' });
@@ -222,11 +222,10 @@ customElements.define('preview-lia', class extends HTMLElement {
     } else {
       this._src = urls[0]
     }
-    console.warn("ssssssssssssssssssssssss", this._src);
 
     let div = this._shadowRoot.getElementById("container")
 
-    div.innerHTML = "loading"
+    div.innerHTML = `<a href="${this.getAttribute('src')}">preview-lia</a>`
 
     let self = this
 
@@ -239,36 +238,41 @@ customElements.define('preview-lia', class extends HTMLElement {
         let tag
 
         try {
-          tag = json.definition.macro.tags.split(";").map(e => e.trim())
+          tag = json.definition.macro.tags.split(",").map(e => e.trim())
         } catch (e) {
           tag = []
         } finally {
 
         }
 
-        div.innerHTML = `<div class="meta">
-          <div class="photo" style="background-image: url(${json.definition.logo})"></div>
-          <ul class="details">
-            <li class="author">${json.definition.author}</li>
-            <li class="date"><a href="mailto:${json.definition.email}">${json.definition.email}</a></li>
-            <li class="tags">
-              <ul>
-                <li>${!tag[0] ? "" : tag[0]}</li>
-                <li>${!tag[1] ? "" : tag[1]}</li>
-                <li>${!tag[2] ? "" : tag[2]}</li>
-                <li>${!tag[3] ? "" : "..."}</li>
-              </ul>
-            </li>
-          </ul>
-        </div>
-        <div class="description">
-          <h1>${json.str_title}</h1>
-          <h2>Version: ${json.definition.version}</h2>
-          <p> ${json.comment} </p>
-          <p class="read-more">
-            <a href="https://LiaScript.github.io/course/?${self._src}">Enroll</a>
-          </p>
-        </div>`
+        if (json.sections.length != 0) {
+          div.className = "blog-card"
+          div.style = ""
+          div.innerHTML = `<div class="meta">
+            <div class="photo" style="background-image: url(${json.definition.logo})"></div>
+            <ul class="details">
+              <li class="author">${json.definition.author}</li>
+              <li class="date"><a href="mailto:${json.definition.email}">${json.definition.email}</a></li>
+              <li class="tags">
+                <ul>
+                  <li>${!tag[0] ? "" : tag[0]}</li>
+                  <li>${!tag[1] ? "" : tag[1]}</li>
+                  <li>${!tag[2] ? "" : tag[2]}</li>
+                  <li>${!tag[3] ? "" : "..."}</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+          <div class="description">
+            <h1>${json.str_title}</h1>
+            <h2>Version: ${json.definition.version}</h2>
+            <p> ${json.comment} </p>
+            <p class="read-more">
+              <a href="https://LiaScript.github.io/course/?${self._src}">Open</a>
+            </p>
+          </div>`
+        }
+
 
 
 
