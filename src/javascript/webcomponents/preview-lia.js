@@ -223,6 +223,8 @@ customElements.define('preview-lia', class extends HTMLElement {
       this._src = urls[0]
     }
 
+    console.warn("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", this._src);
+
     let link = this.getAttribute('link')
 
     if (!link)
@@ -246,15 +248,22 @@ customElements.define('preview-lia', class extends HTMLElement {
           tag = json.definition.macro.tags.split(",").map(e => e.trim())
         } catch (e) {
           tag = []
-        } finally {
-
         }
+
+        let logo = json.definition.logo
+
+        if(!logo.startsWith("http")) {
+          let base = this._src.split("/")
+          base.pop()
+          logo = base.join("/") + "/" + logo
+        }
+
 
         if (json.sections.length != 0) {
           div.className = "blog-card"
           div.style = ""
           div.innerHTML = `<div class="meta">
-            <div class="photo" style="background-image: url(${json.definition.logo})"></div>
+            <div class="photo" style="background-image: url(${logo})"></div>
             <ul class="details">
               <li class="author">${json.definition.author}</li>
               <li class="date"><a href="mailto:${json.definition.email}">${json.definition.email}</a></li>
