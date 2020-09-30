@@ -223,8 +223,6 @@ customElements.define('preview-lia', class extends HTMLElement {
       this._src = urls[0]
     }
 
-    console.warn("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", this._src);
-
     let link = this.getAttribute('link')
 
     if (!link)
@@ -253,7 +251,7 @@ customElements.define('preview-lia', class extends HTMLElement {
         let logo = json.definition.logo
 
         if(!logo.startsWith("http")) {
-          let base = this._src.split("/")
+          let base = self._src.split("/")
           base.pop()
           logo = base.join("/") + "/" + logo
         }
