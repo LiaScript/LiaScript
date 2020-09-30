@@ -3,7 +3,7 @@ module Lia.Markdown.Inline.Json.Encode exposing (encode)
 import Json.Encode as JE
 import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.HTML.Types as HTML
-import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Preview(..), Reference(..))
+import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 
 
 encode : Inlines -> JE.Value
@@ -119,8 +119,11 @@ encReference ref =
         Movie list url title ->
             encMultimedia "Movie" list url title
 
-        Preview (Lia url) ->
-            encRef "Lia" [] url ""
+        Preview_Lia url ->
+            encRef "Preview_Lia" [] url ""
+
+        Preview_Link url ->
+            encRef "Preview_Link" [] url ""
 
 
 encRef : String -> Inlines -> String -> String -> JE.Value

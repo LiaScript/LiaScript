@@ -43,7 +43,7 @@ import Lia.Markdown.HTML.Parser as HTML
 import Lia.Markdown.Inline.Multimedia as Multimedia
 import Lia.Markdown.Inline.Parser.Formula exposing (formula)
 import Lia.Markdown.Inline.Parser.Symbol exposing (arrows, smileys)
-import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Preview(..), Reference(..))
+import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 import Lia.Markdown.Macro.Parser as Macro
 import Lia.Parser.Context exposing (Context, searchIndex)
 import Lia.Parser.Helper exposing (spaces, stringTill)
@@ -309,7 +309,7 @@ reference =
                 |> keep ref_url_1
                 |> ignore ref_title
                 |> ignore (string ")")
-                |> map (Lia >> Preview)
+                |> map Preview_Lia
 
         link =
             ref_pattern Link ref_info ref_url_1
