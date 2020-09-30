@@ -223,6 +223,11 @@ customElements.define('preview-lia', class extends HTMLElement {
       this._src = urls[0]
     }
 
+    let link = this.getAttribute('link')
+
+    if (!link)
+      link = "https://LiaScript.github.io/course/?" + this._src
+
     let div = this._shadowRoot.getElementById("container")
 
     div.innerHTML = `<a href="${this.getAttribute('src')}">preview-lia</a>`
@@ -268,13 +273,10 @@ customElements.define('preview-lia', class extends HTMLElement {
             <h2>Version: ${json.definition.version}</h2>
             <p> ${json.comment} </p>
             <p class="read-more">
-              <a href="https://LiaScript.github.io/course/?${self._src}">Open</a>
+              <a href="${ link }">Open</a>
             </p>
           </div>`
         }
-
-
-
 
         //`${json.str_title} <br>  <img style="width: 90px" src="${json.definition.logo}">`
       } else {
