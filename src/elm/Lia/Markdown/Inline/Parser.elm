@@ -23,6 +23,7 @@ import Combine
         , map
         , maybe
         , modifyState
+        , onsuccess
         , optional
         , or
         , regex
@@ -303,21 +304,21 @@ reference =
         mail_ =
             ref_pattern Mail ref_info email
 
-        previewLia =
-            regexWith True False "\\[\\w*preview-lia\\w*\\]"
+        preview =
+            regexWith True False "\\[\\w*preview-"
+                |> keep
+                    (choice
+                        [ regexWith True False "lia"
+                            |> onsuccess Preview_Lia
+                        , regexWith True False "link"
+                            |> onsuccess Preview_Link
+                        ]
+                    )
+                |> ignore (regex "\\w*]")
                 |> ignore (string "(")
-                |> keep ref_url_1
+                |> andMap ref_url_1
                 |> ignore ref_title
                 |> ignore (string ")")
-                |> map Preview_Lia
-
-        previewLink =
-            regexWith True False "\\[\\w*preview-link\\w*\\]"
-                |> ignore (string "(")
-                |> keep ref_url_1
-                |> ignore ref_title
-                |> ignore (string ")")
-                |> map Preview_Link
 
         link =
             ref_pattern Link ref_info ref_url_1
@@ -338,7 +339,7 @@ reference =
             string "??"
                 |> keep (ref_pattern Embed ref_info ref_url_1)
     in
-    [ embed, movie, audio, image, mail_, previewLia, previewLink, link ]
+    [ embed, movie, audio, image, mail_, preview, link ]
         |> choice
         |> map Ref
 
