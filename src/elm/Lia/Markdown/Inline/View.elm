@@ -99,12 +99,15 @@ reference config ref attr =
             view_url config alt_ url_ title_ attr
 
         Image alt_ url_ title_ ->
-            Html.img
-                (Attr.src url_
-                    :: Attr.title title_
-                    :: annotation "lia-image" attr
-                )
-                (viewer config alt_)
+            Html.figure [ Attr.style "display" "table" ]
+                [ Html.img
+                    (Attr.src url_
+                        :: Attr.title title_
+                        :: annotation "lia-image" attr
+                    )
+                    []
+                , Html.figcaption [ Attr.style "display" "table-caption", Attr.style "caption-side" "bottom" ] (viewer config alt_)
+                ]
 
         Audio alt_ ( tube, url_ ) title_ ->
             if tube then
