@@ -231,8 +231,7 @@ ref_url_1 : Parser Context String
 ref_url_1 =
     choice
         [ url
-        , andMap (regex "#[\\w-]+") searchIndex
-        , andMap (regex "#\\S+") searchIndex
+        , andMap (regex "#[^ \t\\)]+") searchIndex
         , regex "[^\\)\n \"]*"
         ]
 
