@@ -53,9 +53,7 @@ view config attr table =
 viewDiagram : Table -> State -> Maybe Int -> Int -> Bool -> Parameters -> Html Msg
 viewDiagram table state visible width light attr =
     Html.div
-        [ Attr.style "float" "left"
-        , Attr.style "width" "100%"
-        , blockKeydown (UpdateTable Sub.NoOp)
+        [ blockKeydown (UpdateTable Sub.NoOp)
         ]
         [ toggleBtn table.id "table"
         , table.body
@@ -94,7 +92,7 @@ chart width isFormated attr mode class matrix =
         labels =
             getLabels attr head
     in
-    Html.div [ Attr.style "float" "left", Attr.style "width" "100%" ]
+    Html.div []
         [ case class of
             BarChart ->
                 let
@@ -415,7 +413,7 @@ toTable id attr class body =
         Html.table (Param.annotation "lia-table" attr) body
 
     else
-        Html.div [ Attr.style "float" "left", Attr.style "width" "100%" ]
+        Html.div []
             [ toggleBtn id <|
                 case class of
                     BarChart ->
@@ -453,18 +451,15 @@ toTable id attr class body =
 
                     None ->
                         ""
-            , Html.table (Param.annotation "lia-table" attr) body
+            , Html.table (Attr.style "margin-top" "-0.2em" :: Param.annotation "lia-table" attr) body
             ]
 
 
 toggleBtn : Int -> String -> Html Msg
 toggleBtn id icon =
     Html.img
-        [ Attr.style "float" "left"
-        , Attr.style "cursor" "pointer"
+        [ Attr.style "cursor" "pointer"
         , Attr.style "height" "16px"
-
-        --, Attr.style "position" "absolute"
         , onClick <| UpdateTable <| Sub.Toggle id
         , Attr.src <| "img/" ++ icon ++ ".png"
         ]
