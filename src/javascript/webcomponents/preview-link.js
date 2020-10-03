@@ -130,7 +130,7 @@ customElements.define('preview-link', class extends HTMLElement {
 
     template.innerHTML = `
     <style></style>
-    <div id="container_" style="display: inline;"></div>
+    <a href="" id="container_" style="display: inline-block;">preview-link</a>
     <iframe id="iframe" style="display: none;"></iframe>
     `;
 
@@ -142,9 +142,7 @@ customElements.define('preview-link', class extends HTMLElement {
     this._src = this.getAttribute('src')
     this._base = this._src
 
-    let div = this._shadowRoot.getElementById("container_")
-
-    div.innerHTML = `<a href="${this._src}">preview-link</a>`
+    this._shadowRoot.getElementById("container_").href = this._src
 
     let self = this
     fetch(self)
@@ -166,8 +164,6 @@ customElements.define('preview-link', class extends HTMLElement {
         self._description = getDescription(iframe.contentDocument)
         self._domain = getDomainName(iframe.content, self._base)
         self._image = getImage(iframe.contentDocument)
-        //iframe.srcdoc = ""
-        //iframe = null
 
         self.show()
       }
@@ -178,11 +174,10 @@ customElements.define('preview-link', class extends HTMLElement {
   show() {
     let div = this._shadowRoot.getElementById("container_")
 
-    div.style =
-    div.innerHTML = `<a href="${this._base}" style="display: block; width: 400px;">
-                      <img src="${this._image}" style="height:100px; float: left">
-                      <div style="float: right"><h5>${this._title}</h5>
-                      <p>${this._description}</p>
-                      </div></a>`
+    div.innerHTML = `<div style="float: left">
+                        <h4>${this._title}</h4>
+                        <p style="max-width: 400px">${this._description}</p>
+                      </div>
+                      <img src="${this._image}" style="height:100%; float: right;">`
   }
 })
