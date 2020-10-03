@@ -10,6 +10,7 @@ import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.HTML.View as HTML
 import Lia.Markdown.Inline.Config as Config exposing (Config)
+import Lia.Markdown.Inline.Stringify exposing (stringify_)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 import Lia.Settings.Model exposing (Mode(..))
 import Oembed
@@ -89,6 +90,33 @@ view_inf =
     Config.init -1 Textbook 0 Nothing >> view
 
 
+stringFrom : Maybe Int -> Maybe Inlines -> String
+stringFrom visibility =
+    Maybe.map (stringify_ visibility)
+        >> Maybe.withDefault ""
+
+
+title : Maybe Int -> Maybe Inlines -> Html.Attribute msg
+title visibility =
+    stringFrom visibility >> Attr.title
+
+
+alt : Maybe Int -> Inlines -> Html.Attribute msg
+alt visibility =
+    Just >> stringFrom visibility >> Attr.alt
+
+
+img : Parameters -> Maybe Int -> Inlines -> String -> Maybe Inlines -> Html msg
+img attr visibility alt_ url_ title_ =
+    Html.img
+        (Attr.src url_
+            :: title visibility title_
+            :: alt visibility alt_
+            :: annotation "lia-image" attr
+        )
+        []
+
+
 reference : Config -> Reference -> Parameters -> Html msg
 reference config ref attr =
     case ref of
@@ -99,24 +127,19 @@ reference config ref attr =
             view_url config alt_ url_ title_ attr
 
         Image alt_ url_ title_ ->
-            if alt_ == [] then
-                Html.img
-                    (Attr.src url_
-                        :: Attr.title title_
-                        :: annotation "lia-image" attr
-                    )
-                    []
+            case title_ of
+                Nothing ->
+                    img attr config.visible alt_ url_ title_
 
-            else
-                Html.figure [ Attr.style "display" "table" ]
-                    [ Html.img
-                        (Attr.src url_
-                            :: Attr.title title_
-                            :: annotation "lia-image" attr
-                        )
-                        []
-                    , Html.figcaption [ Attr.style "display" "table-caption", Attr.style "caption-side" "bottom" ] (viewer config alt_)
-                    ]
+                Just caption ->
+                    Html.figure [ Attr.style "display" "table" ]
+                        [ img attr config.visible alt_ url_ title_
+                        , Html.figcaption
+                            [ Attr.style "display" "table-caption"
+                            , Attr.style "caption-side" "bottom"
+                            ]
+                            (viewer config caption)
+                        ]
 
         Audio alt_ ( tube, url_ ) title_ ->
             if tube then
@@ -124,7 +147,7 @@ reference config ref attr =
                     (Attr.src url_
                         :: Attr.attribute "allowfullscreen" ""
                         :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                        :: Attr.title title_
+                        :: title config.visible title_
                         :: Attr.style "width" "100%"
                         :: annotation "lia-audio" attr
                     )
@@ -133,7 +156,7 @@ reference config ref attr =
             else
                 Html.audio
                     (Attr.controls True
-                        :: Attr.title title_
+                        :: title config.visible title_
                         :: annotation "lia-audio" attr
                     )
                     [ Html.source [ Attr.src url_ ] [], Html.span [] (viewer config alt_) ]
@@ -144,14 +167,14 @@ reference config ref attr =
                     (Attr.src url_
                         :: Attr.attribute "allowfullscreen" ""
                         :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                        :: Attr.title title_
+                        :: title config.visible title_
                         :: annotation "lia-movie" attr
                     )
                     (viewer config alt_)
 
             else
                 Html.video
-                    (Attr.controls True :: Attr.title title_ :: annotation "lia-movie" attr)
+                    (Attr.controls True :: title config.visible title_ :: annotation "lia-movie" attr)
                     [ Html.source [ Attr.src url_ ] [], Html.span [] (viewer config alt_) ]
 
         Embed _ url _ ->
@@ -175,9 +198,9 @@ oembed options url =
         |> Maybe.withDefault (Html.text ("Couldn't find oembed provider for url " ++ url))
 
 
-view_url : Config -> Inlines -> String -> String -> Parameters -> Html msg
+view_url : Config -> Inlines -> String -> Maybe Inlines -> Parameters -> Html msg
 view_url config alt_ url_ title_ attr =
-    [ Attr.href url_, Attr.title title_ ]
+    [ Attr.href url_, title config.visible title_ ]
         |> List.append (annotation "lia-link" attr)
         |> Html.a
         |> (\a -> a (viewer config alt_))

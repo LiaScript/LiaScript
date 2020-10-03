@@ -120,29 +120,38 @@ encReference ref =
             encMultimedia "Movie" list url title
 
         Preview_Lia url ->
-            encRef "Preview_Lia" [] url ""
+            encRef "Preview_Lia" [] url Nothing
 
         Preview_Link url ->
-            encRef "Preview_Link" [] url ""
+            encRef "Preview_Link" [] url Nothing
 
 
-encRef : String -> Inlines -> String -> String -> JE.Value
+encRef : String -> Inlines -> String -> Maybe Inlines -> JE.Value
 encRef class list url title =
     JE.object
         [ ( class, encode list )
         , ( "url", JE.string url )
-        , ( "title", JE.string title )
+        , encTitle title
         ]
 
 
-encMultimedia : String -> Inlines -> ( Bool, String ) -> String -> JE.Value
+encMultimedia : String -> Inlines -> ( Bool, String ) -> Maybe Inlines -> JE.Value
 encMultimedia class list ( stream, url ) title =
     JE.object
         [ ( class, encode list )
         , ( "stream", JE.bool stream )
         , ( "url", JE.string url )
-        , ( "title", JE.string title )
+        , encTitle title
         ]
+
+
+encTitle : Maybe Inlines -> ( String, JE.Value )
+encTitle title =
+    ( "title"
+    , title
+        |> Maybe.map encode
+        |> Maybe.withDefault JE.null
+    )
 
 
 encAnnotation : Parameters -> JE.Value

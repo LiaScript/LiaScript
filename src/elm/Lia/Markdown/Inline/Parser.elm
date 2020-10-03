@@ -209,7 +209,7 @@ email =
 
 inline_url : Parser s (Parameters -> Inline)
 inline_url =
-    map (\u -> Ref (Link [ Chars u [] ] u "")) url
+    map (\u -> Ref (Link [ Chars u [] ] u Nothing)) url
 
 
 ref_info : Parser Context Inlines
@@ -218,13 +218,13 @@ ref_info =
         |> keep (manyTill inlines (string "]"))
 
 
-ref_title : Parser s String
+ref_title : Parser Context (Maybe Inlines)
 ref_title =
     spaces
         |> ignore (string "\"")
-        |> keep (stringTill (string "\""))
+        |> keep (manyTill inlines (string "\""))
         |> ignore spaces
-        |> optional ""
+        |> maybe
 
 
 ref_url_1 : Parser Context String
@@ -250,7 +250,7 @@ ref_url_2 =
 
 
 ref_pattern :
-    (m -> String -> String -> Reference)
+    (m -> String -> Maybe Inlines -> Reference)
     -> Parser Context m
     -> Parser Context String
     -> Parser Context Reference
@@ -263,20 +263,15 @@ ref_pattern ref_type info_type url_type =
 
 
 nicer_ref :
-    (m -> String -> String -> Reference)
+    (m -> String -> Maybe Inlines -> Reference)
     -> m
     -> String
-    -> String
+    -> Maybe Inlines
     -> Reference
 nicer_ref ref_type info_string url_string title_string =
     ref_type info_string
         url_string
-        (if String.isEmpty title_string then
-            url_string
-
-         else
-            title_string
-        )
+        title_string
 
 
 ref_audio : Parser Context Reference
@@ -366,7 +361,7 @@ strings =
         \() ->
             let
                 base =
-                    regex "[^*_~:;`!\\^\\[\\]\\(\\)|{}\\\\\\n\\-<>=$ ]+"
+                    regex "[^*_~:;`!\\^\\[\\]\\(\\)|{}\\\\\\n\\-<>=$ \"]+"
                         |> map Chars
 
                 escape =

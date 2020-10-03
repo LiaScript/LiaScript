@@ -81,18 +81,23 @@ toAnnotation fn =
 
 
 toRef :
-    (Inlines -> String -> String -> Reference)
+    (Inlines -> String -> Maybe Inlines -> Reference)
     -> String
     -> JD.Decoder Reference
 toRef fn3 class =
     JD.map3 fn3
         (JD.field class (JD.lazy (\_ -> decode)))
         (JD.field "url" JD.string)
-        (JD.field "title" JD.string)
+        toTitle
+
+
+toTitle : JD.Decoder (Maybe Inlines)
+toTitle =
+    JD.field "title" (JD.lazy (\_ -> JD.maybe decode))
 
 
 toMultimedia :
-    (Inlines -> ( Bool, String ) -> String -> value)
+    (Inlines -> ( Bool, String ) -> Maybe Inlines -> value)
     -> String
     -> JD.Decoder value
 toMultimedia fn3 class =
@@ -102,7 +107,7 @@ toMultimedia fn3 class =
             (JD.field "stream" JD.bool)
             (JD.field "url" JD.string)
         )
-        (JD.field "title" JD.string)
+        toTitle
 
 
 toReference : JD.Decoder Reference
