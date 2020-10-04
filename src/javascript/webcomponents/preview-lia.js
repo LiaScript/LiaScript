@@ -210,7 +210,7 @@ customElements.define('preview-lia', class extends HTMLElement {
     <div id="container" style="display: inline"></div>
     `;
 
-    this._shadowRoot = this.attachShadow({ mode: 'open' });
+    this._shadowRoot = this.attachShadow({ mode: 'closed' });
     this._shadowRoot.appendChild(template.content.cloneNode(true));
   }
 

@@ -130,7 +130,11 @@ generateIndex : Int -> String -> ( String, String )
 generateIndex id title =
     ( title
         |> String.toLower
-        |> String.replace " " "-"
+        |> String.replace "-" " "
+        |> String.split " "
+        |> List.filter (String.isEmpty >> not)
+        |> List.intersperse "-"
+        |> String.concat
         |> (++) "#"
     , "#" ++ String.fromInt (id + 1)
     )

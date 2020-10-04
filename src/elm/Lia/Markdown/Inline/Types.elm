@@ -2,7 +2,6 @@ module Lia.Markdown.Inline.Types exposing
     ( Inline(..)
     , Inlines
     , MultInlines
-    , Preview(..)
     , Reference(..)
     , htmlBlock
     )
@@ -40,17 +39,14 @@ type Inline
 
 
 type Reference
-    = Link Inlines String String
-    | Mail Inlines String String
-    | Image Inlines String String
-    | Audio Inlines ( Bool, String ) String
-    | Movie Inlines ( Bool, String ) String
-    | Embed Inlines String String
-    | Preview Preview
-
-
-type Preview
-    = Lia String
+    = Link Inlines String (Maybe Inlines)
+    | Mail Inlines String (Maybe Inlines)
+    | Image Inlines String (Maybe Inlines)
+    | Audio Inlines ( Bool, String ) (Maybe Inlines)
+    | Movie Inlines ( Bool, String ) (Maybe Inlines)
+    | Embed Inlines String (Maybe Inlines)
+    | Preview_Lia String
+    | Preview_Link String
 
 
 htmlBlock : Inline -> Maybe ( String, List ( String, String ), List Inline )

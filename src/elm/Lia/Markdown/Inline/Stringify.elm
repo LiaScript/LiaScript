@@ -87,5 +87,8 @@ ref2string id ref =
         Embed alt _ _ ->
             stringify_ id alt
 
-        Preview _ ->
-            ""
+        Preview_Lia _ ->
+            "preview-lia"
+
+        Preview_Link _ ->
+            "preview-link"

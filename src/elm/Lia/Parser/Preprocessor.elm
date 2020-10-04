@@ -24,7 +24,7 @@ import Lia.Markdown.Inline.Parser exposing (line)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Parser.Context exposing (Context, getLine)
-import Lia.Parser.Helper exposing (newline)
+import Lia.Parser.Helper exposing (newline, spaces1)
 import Lia.Section as Section
 
 
@@ -32,16 +32,16 @@ title_tag : Parser Context Int
 title_tag =
     regex "#+"
         |> map String.length
-        |> ignore whitespace
+        |> ignore spaces1
 
 
 check : Int -> Parser s ()
 check c =
-    if c /= 0 then
-        succeed ()
+    if c == 0 then
+        fail ""
 
     else
-        fail ""
+        succeed ()
 
 
 title_str : Parser Context Inlines
@@ -55,6 +55,7 @@ body =
     , regex "(`{3,})[\\S\\s]*?\\1" -- code_block or ascii art
     , regex "`.+?`" -- code_block or ascii art
     , regex "(?:<([\\w+\\-]+)[\\S\\s]*?</\\2>|`|<)"
+    , regex "#+(\\w|[ \t]*\n)"
     , withColumn check |> keep (string "#")
     ]
         |> choice

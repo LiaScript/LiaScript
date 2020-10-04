@@ -23,6 +23,7 @@ import Combine
         , map
         , maybe
         , modifyState
+        , onsuccess
         , optional
         , or
         , regex
@@ -43,7 +44,7 @@ import Lia.Markdown.HTML.Parser as HTML
 import Lia.Markdown.Inline.Multimedia as Multimedia
 import Lia.Markdown.Inline.Parser.Formula exposing (formula)
 import Lia.Markdown.Inline.Parser.Symbol exposing (arrows, smileys)
-import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Preview(..), Reference(..))
+import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 import Lia.Markdown.Macro.Parser as Macro
 import Lia.Parser.Context exposing (Context, getLine, searchIndex)
 import Lia.Parser.Helper exposing (spaces, stringTill)
@@ -222,7 +223,7 @@ email =
 
 inline_url : Parser s (Parameters -> Inline)
 inline_url =
-    map (\u -> Ref (Link [ Chars u [] ] u "")) url
+    map (\u -> Ref (Link [ Chars u [] ] u Nothing)) url
 
 
 ref_info : Parser Context Inlines
@@ -231,21 +232,20 @@ ref_info =
         |> keep (manyTill inlines (string "]"))
 
 
-ref_title : Parser s String
+ref_title : Parser Context (Maybe Inlines)
 ref_title =
     spaces
         |> ignore (string "\"")
-        |> keep (stringTill (string "\""))
+        |> keep (manyTill inlines (string "\""))
         |> ignore spaces
-        |> optional ""
+        |> maybe
 
 
 ref_url_1 : Parser Context String
 ref_url_1 =
     choice
         [ url
-        , andMap (regex "#[\\w-]+") searchIndex
-        , andMap (regex "#\\S+") searchIndex
+        , andMap (regex "#[^ \t\\)]+") searchIndex
         , regex "[^\\)\n \"]*"
         ]
 
@@ -264,7 +264,7 @@ ref_url_2 =
 
 
 ref_pattern :
-    (m -> String -> String -> Reference)
+    (m -> String -> Maybe Inlines -> Reference)
     -> Parser Context m
     -> Parser Context String
     -> Parser Context Reference
@@ -277,20 +277,15 @@ ref_pattern ref_type info_type url_type =
 
 
 nicer_ref :
-    (m -> String -> String -> Reference)
+    (m -> String -> Maybe Inlines -> Reference)
     -> m
     -> String
-    -> String
+    -> Maybe Inlines
     -> Reference
 nicer_ref ref_type info_string url_string title_string =
     ref_type info_string
         url_string
-        (if String.isEmpty title_string then
-            url_string
-
-         else
-            title_string
-        )
+        title_string
 
 
 ref_audio : Parser Context Reference
@@ -317,13 +312,21 @@ reference =
         mail_ =
             ref_pattern Mail ref_info email
 
-        previewLia =
-            regexWith True False "\\[\\w*preview-lia\\w*\\]"
+        preview =
+            regexWith True False "\\[\\w*preview-"
+                |> keep
+                    (choice
+                        [ regexWith True False "lia"
+                            |> onsuccess Preview_Lia
+                        , regexWith True False "link"
+                            |> onsuccess Preview_Link
+                        ]
+                    )
+                |> ignore (regex "\\w*]")
                 |> ignore (string "(")
-                |> keep ref_url_1
+                |> andMap ref_url_1
                 |> ignore ref_title
                 |> ignore (string ")")
-                |> map (Lia >> Preview)
 
         link =
             ref_pattern Link ref_info ref_url_1
@@ -344,7 +347,7 @@ reference =
             string "??"
                 |> keep (ref_pattern Embed ref_info ref_url_1)
     in
-    [ embed, movie, audio, image, mail_, previewLia, link ]
+    [ embed, movie, audio, image, mail_, preview, link ]
         |> choice
         |> map Ref
 
@@ -372,7 +375,7 @@ strings =
         \() ->
             let
                 base =
-                    regex "[^*_~:;`!\\^\\[\\]\\(\\)|{}\\\\\\n\\-<>=$ ]+"
+                    regex "[^*_~:;`!\\^\\[\\]\\(\\)|{}\\\\\\n\\-<>=$ \"]+"
                         |> map Chars
 
                 escape =

@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.6.1
+version:  0.7.10
 language: en
 narrator: UK English Male
 
@@ -222,6 +222,14 @@ __Badges:__
 
 
 ## Version-Changes
+
+__0.7.10__
+
+* fix: tables floating left error
+* fix: not allowed # titles added to preprocessing
+* `[preview-link](url)` works like `preview-lia` but for common links
+* fix: internal links with starting `[link](#1.-test)` can now deal with multiple spaces and special characters
+* The alt-information of images is now used as image caption `![alt](url)`
 
 __0.7.9__ (29/09/2020)
 
