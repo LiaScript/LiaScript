@@ -150,7 +150,7 @@ reference config ref attr =
                     img attr config.visible alt_ url_ title_
 
                 Just caption ->
-                    Html.figure [ Attr.style "display" "table" ]
+                    Html.figure [ Attr.style "display" "inline-table" ]
                         [ img attr config.visible alt_ url_ title_
                         , Html.figcaption
                             [ Attr.style "display" "table-caption"
@@ -164,26 +164,29 @@ reference config ref attr =
                 Html.iframe
                     (Attr.src url_
                         :: Attr.attribute "allowfullscreen" ""
+                        :: alt config.visible alt_
                         :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                         :: title config.visible title_
                         :: Attr.style "width" "100%"
                         :: annotation "lia-audio" attr
                     )
-                    (viewer config alt_)
+                    []
 
             else
                 Html.audio
                     (Attr.controls True
                         :: title config.visible title_
+                        :: alt config.visible alt_
                         :: annotation "lia-audio" attr
                     )
-                    [ Html.source [ Attr.src url_ ] [], Html.span [] (viewer config alt_) ]
+                    [ Html.source [ Attr.src url_ ] [] ]
 
         Movie alt_ ( tube, url_ ) title_ ->
             if tube then
                 Html.iframe
                     (Attr.src url_
                         :: Attr.attribute "allowfullscreen" ""
+                        :: alt config.visible alt_
                         :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                         :: title config.visible title_
                         :: annotation "lia-movie" attr
@@ -192,8 +195,12 @@ reference config ref attr =
 
             else
                 Html.video
-                    (Attr.controls True :: title config.visible title_ :: annotation "lia-movie" attr)
-                    [ Html.source [ Attr.src url_ ] [], Html.span [] (viewer config alt_) ]
+                    (Attr.controls True
+                        :: alt config.visible alt_
+                        :: title config.visible title_
+                        :: annotation "lia-movie" attr
+                    )
+                    [ Html.source [ Attr.src url_ ] [] ]
 
         Embed _ url _ ->
             oembed Nothing url
