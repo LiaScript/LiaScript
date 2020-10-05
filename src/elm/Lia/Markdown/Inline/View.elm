@@ -135,6 +135,23 @@ img attr visibility alt_ url_ title_ =
         []
 
 
+figure : Config -> Maybe Inlines -> Html msg -> Html msg
+figure config title_ element =
+    case title_ of
+        Nothing ->
+            element
+
+        Just caption ->
+            Html.figure [ Attr.style "display" "inline-table" ]
+                [ element
+                , Html.figcaption
+                    [ Attr.style "display" "table-caption"
+                    , Attr.style "caption-side" "bottom"
+                    ]
+                    (viewer config caption)
+                ]
+
+
 reference : Config -> Reference -> Parameters -> Html msg
 reference config ref attr =
     case ref of
@@ -145,62 +162,53 @@ reference config ref attr =
             view_url config alt_ url_ title_ attr
 
         Image alt_ url_ title_ ->
-            case title_ of
-                Nothing ->
-                    img attr config.visible alt_ url_ title_
-
-                Just caption ->
-                    Html.figure [ Attr.style "display" "inline-table" ]
-                        [ img attr config.visible alt_ url_ title_
-                        , Html.figcaption
-                            [ Attr.style "display" "table-caption"
-                            , Attr.style "caption-side" "bottom"
-                            ]
-                            (viewer config caption)
-                        ]
+            img attr config.visible alt_ url_ title_
+                |> figure config title_
 
         Audio alt_ ( tube, url_ ) title_ ->
-            if tube then
-                Html.iframe
-                    (Attr.src url_
-                        :: Attr.attribute "allowfullscreen" ""
-                        :: alt config.visible alt_
-                        :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                        :: title config.visible title_
-                        :: Attr.style "width" "100%"
-                        :: annotation "lia-audio" attr
-                    )
-                    []
+            figure config title_ <|
+                if tube then
+                    Html.iframe
+                        (Attr.src url_
+                            :: Attr.attribute "allowfullscreen" ""
+                            :: alt config.visible alt_
+                            :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                            :: title config.visible title_
+                            :: Attr.style "width" "100%"
+                            :: annotation "lia-audio" attr
+                        )
+                        []
 
-            else
-                Html.audio
-                    (Attr.controls True
-                        :: title config.visible title_
-                        :: alt config.visible alt_
-                        :: annotation "lia-audio" attr
-                    )
-                    [ Html.source [ Attr.src url_ ] [] ]
+                else
+                    Html.audio
+                        (Attr.controls True
+                            :: title config.visible title_
+                            :: alt config.visible alt_
+                            :: annotation "lia-audio" attr
+                        )
+                        [ Html.source [ Attr.src url_ ] [] ]
 
         Movie alt_ ( tube, url_ ) title_ ->
-            if tube then
-                Html.iframe
-                    (Attr.src url_
-                        :: Attr.attribute "allowfullscreen" ""
-                        :: alt config.visible alt_
-                        :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                        :: title config.visible title_
-                        :: annotation "lia-movie" attr
-                    )
-                    (viewer config alt_)
+            figure config title_ <|
+                if tube then
+                    Html.iframe
+                        (Attr.src url_
+                            :: Attr.attribute "allowfullscreen" ""
+                            :: alt config.visible alt_
+                            :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                            :: title config.visible title_
+                            :: annotation "lia-movie" attr
+                        )
+                        (viewer config alt_)
 
-            else
-                Html.video
-                    (Attr.controls True
-                        :: alt config.visible alt_
-                        :: title config.visible title_
-                        :: annotation "lia-movie" attr
-                    )
-                    [ Html.source [ Attr.src url_ ] [] ]
+                else
+                    Html.video
+                        (Attr.controls True
+                            :: alt config.visible alt_
+                            :: title config.visible title_
+                            :: annotation "lia-movie" attr
+                        )
+                        [ Html.source [ Attr.src url_ ] [] ]
 
         Embed _ url _ ->
             oembed Nothing url
