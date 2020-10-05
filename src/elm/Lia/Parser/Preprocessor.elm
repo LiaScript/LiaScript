@@ -55,8 +55,8 @@ body =
     , regex "(`{3,})[\\S\\s]*?\\1" -- code_block or ascii art
     , regex "`.+?`" -- code_block or ascii art
     , regex "(?:<([\\w+\\-]+)[\\S\\s]*?</\\2>|`|<)"
-    , regex "#+(\\w|[ \t]*\n)"
     , withColumn check |> keep (string "#")
+    , regex "#+(\\w|[ \t]*\n)"
     ]
         |> choice
         |> many
