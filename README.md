@@ -223,6 +223,15 @@ __Badges:__
 
 ## Version-Changes
 
+__0.7.10__ (06/10/2020)
+
+* better internal reference handling, which works now also with unicode-symbols
+* stable preprocessor, which handles single `#` more securely
+* multimedia captions `![alt](url "title")`, the title element can now contain
+  Markdown content, which will be displayed as a caption; it works also for
+  audio and video content
+* fix: floating bug with tables
+
 __0.7.9__ (29/09/2020)
 
 * tables do not increase the size of the frame anymore
