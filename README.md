@@ -223,6 +223,13 @@ __Badges:__
 
 ## Version-Changes
 
+__0.7.11__ (06/10/2020)
+
+* Added a Makefile for better local development.
+* Use `make all KEY="your-key"` with your key for your website from
+  https://responsivevoice.com
+* Use `make help` to get some help 😏
+
 __0.7.10__ (06/10/2020)
 
 * better internal reference handling, which works now also with unicode-symbols

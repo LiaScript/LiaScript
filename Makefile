@@ -1,3 +1,16 @@
+help:
+	@echo "Simple Makefile to build LiaScript locally"
+	@echo ""
+	@echo "make install              - same as 'npm i' will install"
+	@echo "make all                  - will build the entire app as a PWA"
+	@echo "make editor               - will bild the editor in branch 'editor'"
+	@echo "                            note that the target is different"
+	@echo "                            no indexeddb support"
+	@echo "make ... KEY='adfia2'     - if you want to host this app by your own,"
+	@echo "                            you will have to get a responsivevoice-API key"
+	@echo "                            your key can be passed via the KEY parameter"
+
+
 all: app index manifest responsivevoice
 	rm dist/README.md
 
@@ -34,3 +47,9 @@ manifest:
 preview:
 	sed -i -r "s/preview-lia\.([^.])*/preview-lia/g" dist/index.html
 	mv dist/preview-lia.*.js dist/preview-lia.js
+
+watch:
+	npm run watch
+
+install:
+	npm run i
