@@ -223,13 +223,14 @@ __Badges:__
 
 ## Version-Changes
 
-__0.7.10__
+__0.7.10__ (06/10/2020)
 
-* fix: tables floating left error
-* fix: not allowed # titles added to preprocessing
-* `[preview-link](url)` works like `preview-lia` but for common links
-* fix: internal links with starting `[link](#1.-test)` can now deal with multiple spaces and special characters
-* The alt-information of images is now used as image caption `![alt](url)`
+* better internal reference handling, which works now also with unicode-symbols
+* stable preprocessor, which handles single `#` more securely
+* multimedia captions `![alt](url "title")`, the title element can now contain
+  Markdown content, which will be displayed as a caption; it works also for
+  audio and video content
+* fix: floating bug with tables
 
 __0.7.9__ (29/09/2020)
 
