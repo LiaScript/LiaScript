@@ -25,7 +25,7 @@ index: preview
 	sed -i "s/src=\"preview\-lia\./src=\".\/preview-lia./g" dist/index.html
 
 responsivevoice:
-	sed -i "s/responsivevoice\.js\"/responsivevoice.js?key=blVZszUw\"/g" dist/index.html
+	sed -i "s/responsivevoice\.js\"/responsivevoice.js?key=$(KEY)\"/g" dist/index.html
 
 manifest:
 	sed -i "s/\"logo_/\".\/logo_/g" dist/manifest.webmanifest
