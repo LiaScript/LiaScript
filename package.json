@@ -50,7 +50,7 @@
     "dexie": "^2.0.4",
     "echarts": "^4.9.0",
     "elm-analyse": "^0.16.5",
-    "katex": "^0.11.1",
+    "katex": "^0.12.0",
     "material-icons": "^0.3.1",
     "sass-material-colors": "0.0.5",
     "simplify-scorm": "0.0.1"
