@@ -4,7 +4,6 @@ import Combine
     exposing
         ( Parser
         , andMap
-        , andThen
         , choice
         , fail
         , ignore
@@ -15,7 +14,6 @@ import Combine
         , regex
         , string
         , succeed
-        , whitespace
         , withColumn
         , withState
         )

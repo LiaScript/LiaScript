@@ -10,7 +10,7 @@ workbox.setConfig({debug: false})
 workbox.core.skipWaiting()
 workbox.core.clientsClaim()
 
-workbox.googleAnalytics.initialize();
+//workbox.googleAnalytics.initialize();
 
 workbox.routing.registerRoute( /\/$/, new workbox.strategies.NetworkFirst() )
 workbox.routing.registerRoute( /\/*/, new workbox.strategies.NetworkFirst() )

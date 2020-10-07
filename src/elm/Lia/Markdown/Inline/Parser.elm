@@ -24,7 +24,6 @@ import Combine
         , maybe
         , modifyState
         , onsuccess
-        , optional
         , or
         , regex
         , regexWith
