@@ -115,8 +115,8 @@ view_footer lang sound mode effects =
             Html.text ""
 
 
-navButton : String -> String -> String -> String -> msg -> Html msg
-navButton str title margin id msg =
+navButton : String -> String -> String -> msg -> Html msg
+navButton str title id msg =
     Html.button
         [ onClick msg
         , Attr.title title
@@ -135,12 +135,12 @@ view_nav section_active hasIndex mode lang base speaking state =
     Html.nav [ Attr.class "lia-toolbar", Attr.id "lia-toolbar-nav" ]
         [ Html.map UpdateSettings <| Settings.toggle_button_toc lang
         , if hasIndex then
-            navButton "home" "index" "4px" "lia-btn-home" Home
+            navButton "home" "index" "lia-btn-home" Home
 
           else
             Html.text ""
         , Html.span [ Attr.class "lia-spacer", Attr.id "lia-spacer-left" ] []
-        , navButton "navigate_before" (Trans.basePrev lang) "" "lia-btn-prev" PrevSection
+        , navButton "navigate_before" (Trans.basePrev lang) "lia-btn-prev" PrevSection
         , Html.span [ Attr.class "lia-labeled lia-left", Attr.id "lia-label-section" ]
             [ Html.span
                 [ Attr.class "lia-label"
@@ -160,7 +160,7 @@ view_nav section_active hasIndex mode lang base speaking state =
                             state
                 ]
             ]
-        , navButton "navigate_next" (Trans.baseNext lang) "" "lia-btn-next" NextSection
+        , navButton "navigate_next" (Trans.baseNext lang) "lia-btn-next" NextSection
         , Html.span [ Attr.class "lia-spacer", Attr.id "lia-spacer-right" ] []
         , Html.map UpdateSettings <| Settings.switch_button_mode lang mode
         ]
