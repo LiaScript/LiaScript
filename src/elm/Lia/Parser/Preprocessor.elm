@@ -4,6 +4,7 @@ import Combine
     exposing
         ( Parser
         , andMap
+        , andThen
         , choice
         , fail
         , ignore
