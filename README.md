@@ -223,6 +223,11 @@ __Badges:__
 
 ## Version-Changes
 
+__0.7.12__ (07/10/2020)
+
+* removed Google-Analytics
+* upgrade KaTeX to 0.12.0 
+
 __0.7.11__ (06/10/2020)
 
 * Added a Makefile for better local development.
