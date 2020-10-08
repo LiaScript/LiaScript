@@ -150,6 +150,7 @@ function lia_eval (code, send) {
       log: (...args) => send.log('info', '\n', args),
       warn: (...args) => send.log('warn', '\n', args),
       error: (...args) => send.log('error', '\n', args),
+      html: (...args)  => send.log('html', '\n', args),
       clear: () => send.lia('LIA: clear')
     }
 

@@ -181,6 +181,16 @@ update msg model =
                         |> Maybe.map (\p -> ( p, [] ))
                         |> maybe_update event.section model
 
+                "html" ->
+                    let
+                        _ =
+                            Debug.log "wwwwwwwwwwwwww" event.message
+                    in
+                    model
+                        |> maybe_project event.section (logger Log.add_HTML event.message)
+                        |> Maybe.map (\p -> ( p, [] ))
+                        |> maybe_update event.section model
+
                 _ ->
                     ( model, [] )
 
