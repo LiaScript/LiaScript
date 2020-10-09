@@ -78,10 +78,15 @@ view config element =
                 |> Effect.inline config attr e
 
         Script id ->
-            config.effects
-                |> Dict.get id
-                |> Maybe.withDefault ""
-                |> Html.text
+            case Dict.get id config.effects of
+                Just (Ok str) ->
+                    Html.text str
+
+                Just (Err str) ->
+                    Html.span [ Attr.style "color" "red" ] [ Html.text str ]
+
+                Nothing ->
+                    Html.text ""
 
         Symbol e attr ->
             view config (Container [ Symbol e [] ] attr)

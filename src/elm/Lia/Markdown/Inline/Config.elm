@@ -15,11 +15,11 @@ type alias Config =
     , visible : Maybe Int
     , speaking : Maybe Int
     , lang : Lang
-    , effects : Dict Int String
+    , effects : Dict Int (Result String String)
     }
 
 
-init : Int -> Mode -> Int -> Maybe Int -> Dict Int String -> Lang -> Config
+init : Int -> Mode -> Int -> Maybe Int -> Dict Int (Result String String) -> Lang -> Config
 init slide mode visible speaking effects lang =
     Config
         slide

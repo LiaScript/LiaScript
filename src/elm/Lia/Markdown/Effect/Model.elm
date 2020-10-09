@@ -35,8 +35,7 @@ type alias Model =
 type alias JavaScript =
     { effect_id : Int
     , script : String
-    , result : Maybe String
-    , error : Maybe String
+    , result : Maybe (Result String String)
     }
 
 
@@ -56,12 +55,12 @@ jsAdd idx script model =
     { model
         | javascript =
             Array.push
-                (JavaScript idx script Nothing Nothing)
+                (JavaScript idx script Nothing)
                 model.javascript
     }
 
 
-toConfig : Model -> Dict Int String
+toConfig : Model -> Dict Int (Result String String)
 toConfig =
     .javascript
         >> Array.indexedMap
@@ -79,6 +78,7 @@ jsGetResult idx =
     .javascript
         >> Array.get idx
         >> Maybe.andThen .result
+        >> Maybe.andThen Result.toMaybe
 
 
 jsSetResult : Int -> Model -> Eval -> Model
@@ -88,12 +88,16 @@ jsSetResult idx model eval =
             case Array.get idx model.javascript of
                 Just js ->
                     Array.set idx
-                        (if eval.ok then
-                            { js | result = Just eval.result, error = Nothing }
+                        { js
+                            | result =
+                                Just
+                                    (if eval.ok then
+                                        Ok eval.result
 
-                         else
-                            { js | result = Nothing, error = Just eval.result }
-                        )
+                                     else
+                                        Err eval.result
+                                    )
+                        }
                         model.javascript
 
                 _ ->

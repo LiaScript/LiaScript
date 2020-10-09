@@ -14,13 +14,13 @@ stringify =
     stringify_ Dict.empty Nothing
 
 
-stringify_ : Dict Int String -> Maybe Int -> Inlines -> String
+stringify_ : Dict Int (Result String String) -> Maybe Int -> Inlines -> String
 stringify_ effects id =
     List.map (inline2string effects id)
         >> String.concat
 
 
-inline2string : Dict Int String -> Maybe Int -> Inline -> String
+inline2string : Dict Int (Result String String) -> Maybe Int -> Inline -> String
 inline2string effects id inline =
     case inline of
         Chars str _ ->
@@ -63,13 +63,14 @@ inline2string effects id inline =
         Script i ->
             effects
                 |> Dict.get i
+                |> Maybe.andThen Result.toMaybe
                 |> Maybe.withDefault ""
 
         _ ->
             ""
 
 
-ref2string : Dict Int String -> Maybe Int -> Reference -> String
+ref2string : Dict Int (Result String String) -> Maybe Int -> Reference -> String
 ref2string effects id ref =
     case ref of
         Movie alt _ _ ->

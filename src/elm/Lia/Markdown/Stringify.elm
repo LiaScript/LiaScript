@@ -7,7 +7,7 @@ import Lia.Markdown.Inline.Stringify as Inline
 import Lia.Markdown.Types exposing (Markdown(..))
 
 
-stringify : Dict Int String -> Maybe Int -> Markdown -> String
+stringify : Dict Int (Result String String) -> Maybe Int -> Markdown -> String
 stringify effects id markdown =
     case markdown of
         Paragraph _ inlines ->
@@ -56,7 +56,7 @@ stringify effects id markdown =
             ""
 
 
-block : Dict Int String -> Maybe Int -> List Markdown -> String
+block : Dict Int (Result String String) -> Maybe Int -> List Markdown -> String
 block effects id =
     List.map (stringify effects id)
         >> List.intersperse "\n"

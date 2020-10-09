@@ -59,12 +59,12 @@ type alias Cell =
     }
 
 
-toMatrix : Dict Int String -> Maybe Int -> Matrix Inlines -> Matrix Cell
+toMatrix : Dict Int (Result String String) -> Maybe Int -> Matrix Inlines -> Matrix Cell
 toMatrix effects id =
     Matrix.map (toCell effects id)
 
 
-toCell : Dict Int String -> Maybe Int -> Inlines -> Cell
+toCell : Dict Int (Result String String) -> Maybe Int -> Inlines -> Cell
 toCell effects effectId data =
     let
         str =
