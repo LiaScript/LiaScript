@@ -6,6 +6,7 @@ module Lia.Markdown.Code.Log exposing
     , decoder
     , empty
     , encode
+    , length
     , view
     )
 
@@ -44,16 +45,17 @@ empty =
     Log True Debug Array.empty []
 
 
-view : Log -> List (Html msg)
+view : Log -> List ( String, Html msg )
 view log =
     log.messages
         |> Array.toList
         |> List.map view_message
 
 
-view_message : Message -> Html msg
+view_message : Message -> ( String, Html msg )
 view_message { level, text } =
-    case level of
+    ( text
+    , case level of
         Debug ->
             Html.span [ Attr.style "color" "lightblue" ] [ Html.text text ]
 
@@ -68,6 +70,7 @@ view_message { level, text } =
 
         HTML ->
             Html.div [ Attr.property "innerHTML" <| JE.string text ] []
+    )
 
 
 add : Level -> String -> Log -> Log
@@ -109,6 +112,17 @@ encode log =
         , ( "messages", JE.array encMessage log.messages )
         , ( "details", JE.list identity log.details )
         ]
+
+
+length : Array Message -> Int
+length =
+    Array.map len
+        >> Array.foldl (+) 0
+
+
+len : Message -> Int
+len =
+    .text >> String.indexes "\n" >> List.length
 
 
 encLevel : Level -> JE.Value

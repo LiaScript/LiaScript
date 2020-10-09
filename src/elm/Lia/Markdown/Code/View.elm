@@ -4,6 +4,7 @@ import Array
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
+import Html.Keyed as Keyed
 import Json.Encode as JE
 import Lia.Markdown.Code.Editor as Editor
 import Lia.Markdown.Code.Log as Log exposing (Log)
@@ -354,10 +355,11 @@ view_result log =
 
     else
         Log.view log
-            |> Html.pre
+            |> Keyed.node "pre"
                 [ Attr.class "lia-code-stdout"
                 , log.messages
-                    |> Array.length
+                    |> Log.length
+                    |> (*) 2
                     |> scroll_to_end
                 ]
 
