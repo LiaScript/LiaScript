@@ -6,7 +6,7 @@ module Lia.Markdown.Inline.Types exposing
     , htmlBlock
     )
 
-import Lia.Markdown.Effect.Types exposing (Effect)
+import Lia.Markdown.Effect.Types exposing (Effect, Script)
 import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Settings.Model exposing (Mode(..))
@@ -33,6 +33,7 @@ type Inline
     | Ref Reference Parameters
     | FootnoteMark String Parameters
     | EInline (Effect Inline) Parameters
+    | Script Int Parameters
     | IHTML (Node Inline) Parameters
     | Container Inlines Parameters
 

@@ -2,13 +2,14 @@ module Lia.Markdown.Effect.Model exposing
     ( Element
     , Map
     , Model
-    , add_javascript
     , current_comment
     , current_paragraphs
-    , get_all_javascript
-    , get_javascript
     , get_paragraph
     , init
+    , jsAdd
+    , jsCount
+    , jsGet
+    , jsGetAll
     , set_annotation
     )
 
@@ -22,8 +23,15 @@ type alias Model =
     { visible : Int
     , effects : Int
     , comments : Map Element
-    , javascript : Map (List String)
+    , javascript : Map (List JavaScript)
     , speaking : Maybe Int
+    }
+
+
+type alias JavaScript =
+    { id : Int
+    , script : String
+    , result : Maybe String
     }
 
 
@@ -38,39 +46,49 @@ type alias Element =
     }
 
 
-add_javascript : Int -> String -> Model -> Model
-add_javascript idx script model =
+jsAdd : Int -> String -> Model -> Model
+jsAdd idx script model =
+    let
+        counter =
+            jsCount model
+    in
     { model
         | javascript =
             Dict.insert idx
                 (case Dict.get idx model.javascript of
                     Just a ->
-                        List.append a [ script ]
+                        List.append a [ JavaScript counter script Nothing ]
 
                     Nothing ->
-                        [ script ]
+                        [ JavaScript counter script Nothing ]
                 )
                 model.javascript
     }
 
 
-get_javascript : Model -> List String
-get_javascript model =
-    case Dict.get model.visible model.javascript of
-        Just a ->
-            a
-
-        _ ->
-            []
+jsCount : Model -> Int
+jsCount =
+    .javascript
+        >> Dict.values
+        >> List.map List.length
+        >> List.sum
 
 
-get_all_javascript : Model -> List String
-get_all_javascript model =
+jsGet : Model -> List String
+jsGet model =
     model.javascript
-        |> Dict.toList
-        |> List.sort
-        |> List.map (\( _, v ) -> v)
-        |> List.concat
+        |> Dict.get model.visible
+        |> Maybe.map (List.map .script)
+        |> Maybe.withDefault []
+
+
+jsGetAll : Model -> List String
+jsGetAll =
+    .javascript
+        >> Dict.toList
+        >> List.sortBy Tuple.first
+        >> List.map (Tuple.second >> List.map .script)
+        >> List.concat
 
 
 set_annotation : Int -> Int -> Map Element -> Parameters -> Map Element

@@ -59,6 +59,9 @@ inline2string id inline =
             else
                 ""
 
+        Script i _ ->
+            ""
+
         _ ->
             ""
 

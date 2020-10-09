@@ -35,7 +35,7 @@ import Combine
         , withState
         )
 import Combine.Char exposing (anyChar)
-import Lia.Markdown.Effect.Model exposing (add_javascript)
+import Lia.Markdown.Effect.Model exposing (jsAdd)
 import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Footnote.Parser as Footnote
 import Lia.Markdown.HTML.Attributes as Attributes exposing (Parameters)
@@ -117,8 +117,8 @@ styling p =
 
 javascript : Parser s String
 javascript =
-    string "<script>"
-        |> keep (stringTill (string "</script>"))
+    regexWith True False "<script>"
+        |> keep (stringTill (regexWith True False "</script>"))
 
 
 html : Parser Context Inline
@@ -129,7 +129,7 @@ html =
                 (\s ->
                     { s
                         | effect_model =
-                            add_javascript
+                            jsAdd
                                 (s.effect_number
                                     |> List.head
                                     |> Maybe.withDefault 0
@@ -142,6 +142,10 @@ html =
     javascript
         |> andThen state
         |> keep (succeed (Chars "" []))
+
+
+scriptID =
+    succeed 5
 
 
 combine : Inlines -> Inlines

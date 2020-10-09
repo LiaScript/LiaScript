@@ -26,6 +26,7 @@ decInline =
     , JD.field "Ref" toReference |> JD.map Ref
     , JD.field "Container" (JD.lazy (\_ -> decode)) |> JD.map Container
     , JD.field "IHTML" (JD.lazy (\_ -> HTML.decode decInline)) |> JD.map IHTML
+    , JD.map Script (JD.field "Script" JD.int)
     , effect |> JD.map EInline
     ]
         |> JD.oneOf

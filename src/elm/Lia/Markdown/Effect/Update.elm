@@ -12,7 +12,7 @@ module Lia.Markdown.Effect.Update exposing
 import Browser.Dom as Dom
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Markdown.Effect.Model exposing (Model, current_comment, get_all_javascript, get_javascript)
+import Lia.Markdown.Effect.Model exposing (Model, current_comment, jsGet, jsGetAll)
 import Port.Event exposing (Event)
 import Port.TTS as TTS
 import Task
@@ -119,10 +119,10 @@ execute sound run_all delay model =
     let
         javascript =
             if run_all then
-                get_all_javascript model
+                jsGetAll model
 
             else
-                get_javascript model
+                jsGet model
     in
     update sound
         (javascript

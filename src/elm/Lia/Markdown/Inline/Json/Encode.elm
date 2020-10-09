@@ -97,6 +97,13 @@ encInline element =
                 , ( "a", encAnnotation a )
                 ]
 
+            Script id a ->
+                [ ( "Script"
+                  , JE.int id
+                  )
+                , ( "a", encAnnotation a )
+                ]
+
 
 encReference : Reference -> JE.Value
 encReference ref =
