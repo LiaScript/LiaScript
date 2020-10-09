@@ -159,35 +159,31 @@ update msg model =
 
                 "debug" ->
                     model
-                        |> maybe_project event.section (logger Log.add_Debug event.message)
+                        |> maybe_project event.section (logger Log.add Log.Debug event.message)
                         |> Maybe.map (\p -> ( p, [] ))
                         |> maybe_update event.section model
 
                 "info" ->
                     model
-                        |> maybe_project event.section (logger Log.add_Info event.message)
+                        |> maybe_project event.section (logger Log.add Log.Info event.message)
                         |> Maybe.map (\p -> ( p, [] ))
                         |> maybe_update event.section model
 
                 "warn" ->
                     model
-                        |> maybe_project event.section (logger Log.add_Warn event.message)
+                        |> maybe_project event.section (logger Log.add Log.Warn event.message)
                         |> Maybe.map (\p -> ( p, [] ))
                         |> maybe_update event.section model
 
                 "error" ->
                     model
-                        |> maybe_project event.section (logger Log.add_Error event.message)
+                        |> maybe_project event.section (logger Log.add Log.Error event.message)
                         |> Maybe.map (\p -> ( p, [] ))
                         |> maybe_update event.section model
 
                 "html" ->
-                    let
-                        _ =
-                            Debug.log "wwwwwwwwwwwwww" event.message
-                    in
                     model
-                        |> maybe_project event.section (logger Log.add_HTML event.message)
+                        |> maybe_project event.section (logger Log.add Log.HTML event.message)
                         |> Maybe.map (\p -> ( p, [] ))
                         |> maybe_update event.section model
 
@@ -215,7 +211,7 @@ update_terminal f msg project =
             )
 
         Just ( terminal, Just str ) ->
-            ( { project | terminal = Just terminal, log = Log.add_Info str project.log }
+            ( { project | terminal = Just terminal, log = Log.add Log.Info str project.log }
             , [ f str ]
             )
 
@@ -343,17 +339,17 @@ clr project =
             project
 
 
-logger : (String -> Log.Log -> Log.Log) -> JD.Value -> Project -> Project
-logger fn event_str project =
+logger : (Log.Level -> String -> Log.Log -> Log.Log) -> Log.Level -> JD.Value -> Project -> Project
+logger fn level event_str project =
     case ( project.version |> Array.get project.version_active, JD.decodeValue JD.string event_str ) of
         ( Just ( code, _ ), Ok str ) ->
             { project
                 | version =
                     Array.set
                         project.version_active
-                        ( code, fn str project.log )
+                        ( code, fn level str project.log )
                         project.version
-                , log = fn str project.log
+                , log = fn level str project.log
             }
 
         _ ->

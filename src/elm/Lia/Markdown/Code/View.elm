@@ -347,27 +347,18 @@ evaluate theme attr running ( id_1, id_2 ) file headless errors =
         []
 
 
-
---error : String -> Html msg
---error info =
---    Html.pre
---        [ Attr.class "lia-code-stdout"
---        , Attr.style "color" "red"
---        , scroll_to_end info
---        ]
---        [ Html.text info ]
-
-
 view_result : Log -> Html msg
 view_result log =
-    if log.lines == 0 then
+    if Array.isEmpty log.messages then
         Html.div [ Attr.style "margin-top" "8px" ] []
 
     else
         Log.view log
             |> Html.pre
                 [ Attr.class "lia-code-stdout"
-                , scroll_to_end log.lines
+                , log.messages
+                    |> Array.length
+                    |> scroll_to_end
                 ]
 
 

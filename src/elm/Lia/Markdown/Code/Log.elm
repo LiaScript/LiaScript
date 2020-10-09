@@ -1,17 +1,15 @@
 module Lia.Markdown.Code.Log exposing
-    ( Log
-    , add_Debug
-    , add_Error
+    ( Level(..)
+    , Log
+    , add
     , add_Eval
-    , add_HTML
-    , add_Info
-    , add_Warn
     , decoder
     , empty
     , encode
     , view
     )
 
+import Array exposing (Array)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Decode as JD
@@ -36,26 +34,20 @@ type alias Message =
 type alias Log =
     { ok : Bool
     , level : Level
-    , messages : List Message
-    , lines : Int
+    , messages : Array Message
     , details : List JE.Value
     }
 
 
 empty : Log
 empty =
-    Log True Debug [] 0 []
-
-
-maxLines : Int
-maxLines =
-    250
+    Log True Debug Array.empty []
 
 
 view : Log -> List (Html msg)
 view log =
     log.messages
-        |> List.reverse
+        |> Array.toList
         |> List.map view_message
 
 
@@ -78,131 +70,35 @@ view_message { level, text } =
             Html.div [ Attr.property "innerHTML" <| JE.string text ] []
 
 
-add_Debug : String -> Log -> Log
-add_Debug =
-    add_ Debug
+add : Level -> String -> Log -> Log
+add level str log =
+    { log
+        | messages =
+            log.messages
+                |> Array.push (Message level str)
+                |> crop
+    }
 
 
-add_Info : String -> Log -> Log
-add_Info =
-    add_ Info
+crop : Array Message -> Array Message
+crop messages =
+    if Array.length messages < 250 then
+        messages
 
-
-add_Warn : String -> Log -> Log
-add_Warn =
-    add_ Warn
-
-
-add_Error : String -> Log -> Log
-add_Error =
-    add_ Error
-
-
-add_HTML : String -> Log -> Log
-add_HTML =
-    add_ HTML
-
-
-add_ : Level -> String -> Log -> Log
-add_ level str log =
-    let
-        lines =
-            str
-                |> String.lines
-                |> List.length
-    in
-    --shrink <|
-    case log.messages of
-        x :: xs ->
-            { log
-                | lines = log.lines + lines - 1
-                , messages =
-                    if x.level == level && x.level /= HTML then
-                        { x | text = x.text ++ str } :: xs
-
-                    else
-                        Message level str :: x :: xs
-            }
-
-        [] ->
-            { log
-                | lines = lines
-                , messages = [ Message level str ]
-            }
+    else
+        Array.slice 1 250 messages
 
 
 add_Eval : Eval -> Log -> Log
 add_Eval eval log =
     (if eval.ok then
-        add_Info eval.result
+        add Info eval.result
 
      else
-        add_Error eval.result
+        add Error eval.result
     )
     <|
         { log | ok = eval.ok, details = eval.details }
-
-
-shrink : Log -> Log
-shrink log =
-    if log.lines < maxLines then
-        log
-
-    else
-        let
-            ( lines, messages ) =
-                log.messages
-                    |> List.reverse
-                    |> cut_log log.lines
-        in
-        { log
-            | lines = lines
-            , messages =
-                messages
-                    |> List.reverse
-        }
-
-
-cut_log : Int -> List Message -> ( Int, List Message )
-cut_log lines list =
-    if lines < maxLines then
-        ( lines, list )
-
-    else
-        case list of
-            [] ->
-                ( 0, [] )
-
-            msg :: msgs ->
-                if msg.level == HTML then
-                    cut_log (lines - 1) msgs
-
-                else
-                    let
-                        text_ =
-                            String.lines msg.text
-
-                        lines_ =
-                            List.length text_
-
-                        offset =
-                            --10005 - 12 = 99993
-                            lines - lines_
-                    in
-                    if offset >= maxLines then
-                        cut_log offset msgs
-
-                    else
-                        ( offset
-                        , { msg
-                            | text =
-                                text_
-                                    |> List.drop (maxLines - offset)
-                                    |> List.intersperse "\n"
-                                    |> String.concat
-                          }
-                            :: msgs
-                        )
 
 
 encode : Log -> JE.Value
@@ -210,8 +106,7 @@ encode log =
     JE.object
         [ ( "ok", JE.bool log.ok )
         , ( "level", encLevel log.level )
-        , ( "messages", JE.list encMessage log.messages )
-        , ( "lines", JE.int log.lines )
+        , ( "messages", JE.array encMessage log.messages )
         , ( "details", JE.list identity log.details )
         ]
 
@@ -246,11 +141,10 @@ encMessage { level, text } =
 
 decoder : JD.Decoder Log
 decoder =
-    JD.map5 Log
+    JD.map4 Log
         (JD.field "ok" JD.bool)
         (JD.field "level" decLevel)
-        (JD.field "messages" (JD.list decMessage))
-        (JD.field "lines" JD.int)
+        (JD.field "messages" (JD.array decMessage))
         (JD.field "details" (JD.list JD.value))
 
 
