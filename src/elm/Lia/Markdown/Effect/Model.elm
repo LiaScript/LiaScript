@@ -10,7 +10,8 @@ module Lia.Markdown.Effect.Model exposing
     , jsCount
     , jsGet
     , jsGetAll
-    , jsResult
+    , jsGetResult
+    , jsSetResult
     , set_annotation
     , toConfig
     )
@@ -19,21 +20,23 @@ import Array exposing (Array)
 import Dict exposing (Dict)
 import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.Inline.Types exposing (Inlines)
+import Port.Eval exposing (Eval)
 
 
 type alias Model =
     { visible : Int
     , effects : Int
     , comments : Map Element
-    , javascript : Map (List JavaScript)
+    , javascript : Array JavaScript
     , speaking : Maybe Int
     }
 
 
 type alias JavaScript =
-    { id : Int
+    { effect_id : Int
     , script : String
     , result : Maybe String
+    , error : Maybe String
     }
 
 
@@ -50,20 +53,10 @@ type alias Element =
 
 jsAdd : Int -> String -> Model -> Model
 jsAdd idx script model =
-    let
-        counter =
-            jsCount model
-    in
     { model
         | javascript =
-            Dict.insert idx
-                (case Dict.get idx model.javascript of
-                    Just a ->
-                        List.append a [ JavaScript counter script Nothing ]
-
-                    Nothing ->
-                        [ JavaScript counter script Nothing ]
-                )
+            Array.push
+                (JavaScript idx script Nothing Nothing)
                 model.javascript
     }
 
@@ -71,49 +64,71 @@ jsAdd idx script model =
 toConfig : Model -> Dict Int String
 toConfig =
     .javascript
-        >> Dict.values
-        >> List.concat
-        >> List.filterMap
-            (\js ->
+        >> Array.indexedMap
+            (\id js ->
                 js.result
-                    |> Maybe.map (Tuple.pair js.id)
+                    |> Maybe.map (Tuple.pair id)
             )
+        >> Array.toList
+        >> List.filterMap identity
         >> Dict.fromList
 
 
-jsResult : Int -> Model -> Maybe String
-jsResult idx model =
-    model.javascript
-        |> Dict.values
-        |> List.concat
-        |> List.filter (.id >> (==) idx)
-        |> List.head
-        |> Maybe.andThen .result
+jsGetResult : Int -> Model -> Maybe String
+jsGetResult idx =
+    .javascript
+        >> Array.get idx
+        >> Maybe.andThen .result
+
+
+jsSetResult : Int -> Model -> Eval -> Model
+jsSetResult idx model eval =
+    { model
+        | javascript =
+            case Array.get idx model.javascript of
+                Just js ->
+                    Array.set idx
+                        (if eval.ok then
+                            { js | result = Just eval.result, error = Nothing }
+
+                         else
+                            { js | result = Nothing, error = Just eval.result }
+                        )
+                        model.javascript
+
+                _ ->
+                    model.javascript
+    }
 
 
 jsCount : Model -> Int
 jsCount =
     .javascript
-        >> Dict.values
-        >> List.map List.length
-        >> List.sum
+        >> Array.length
+        >> (+) -1
 
 
 jsGet : Model -> List ( Int, String )
 jsGet model =
     model.javascript
-        |> Dict.get model.visible
-        |> Maybe.map (List.map (\js -> ( js.id, js.script )))
-        |> Maybe.withDefault []
+        |> Array.indexedMap
+            (\i js ->
+                if js.effect_id == model.visible then
+                    Just ( i, js.script )
+
+                else
+                    Nothing
+            )
+        |> Array.toList
+        |> List.filterMap identity
 
 
 jsGetAll : Model -> List ( Int, String )
 jsGetAll =
     .javascript
-        >> Dict.toList
+        >> Array.indexedMap (\i js -> ( i, js.script ))
+        >> Array.toList
         >> List.sortBy Tuple.first
-        >> List.map (Tuple.second >> List.map (\js -> ( js.id, js.script )))
-        >> List.concat
 
 
 set_annotation : Int -> Int -> Map Element -> Parameters -> Map Element
@@ -175,5 +190,5 @@ init =
         0
         0
         Dict.empty
-        Dict.empty
+        Array.empty
         Nothing

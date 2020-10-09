@@ -126,8 +126,9 @@ function lia_wait () {
 
       if (event.type == "eval")
         lia_eval (event.code, event.send)
-      else if (event.type == "exec")
-        lia_execute_event (event.event)
+      else if (event.type == "exec") {
+        lia_execute_event (event.event, event.send, event.section)
+      }
       else
         lia.warn("lia_queue => unknown event => ", JSON.stringify(event))
     }
@@ -209,9 +210,9 @@ function list_to_string (sep, list) {
   return str + sep
 };
 
-function lia_execute_event (event) {
+function lia_execute_event (event, send=null, section=null) {
   if (window.event_semaphore > 0) {
-    lia_queue.push({type: "exec", event: event})
+    lia_queue.push({type: "exec", event: event, send: send, section: section})
 
     if (lia_queue.length == 1) {
       lia_wait()
@@ -219,13 +220,44 @@ function lia_execute_event (event) {
     return
   }
 
-  try {
-    setTimeout(() => {
-      eval(event.code)
-    }, event.delay)
-  } catch (e) {
-    lia.error('exec => ', e)
-  }
+
+  setTimeout(() => {
+    try {
+
+      let x = eval(event.code)
+
+      if (section != null && x != undefined && typeof event.id == "number") {
+        send({
+          topic: "effect",
+          section: section,
+          message: {
+            topic: "code",
+            section: event.id,
+            message: {
+              ok: true,
+              result: JSON.stringify(x),
+              details: []
+            }
+          }
+        })
+      }
+    } catch (e) {
+      lia.error('exec => ', e.message)
+      send({
+        topic: "effect",
+        section: section,
+        message: {
+          topic: "code",
+          section: event.id,
+          message: {
+            ok: false,
+            result: e.message,
+            details: []
+          }
+        }
+      })
+    }
+  }, event.delay)
 };
 
 function websocket (channel = null) {

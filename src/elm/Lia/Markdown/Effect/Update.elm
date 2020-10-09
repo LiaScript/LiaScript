@@ -12,7 +12,8 @@ module Lia.Markdown.Effect.Update exposing
 import Browser.Dom as Dom
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Markdown.Effect.Model exposing (Model, current_comment, jsGet, jsGetAll)
+import Lia.Markdown.Effect.Model exposing (Model, current_comment, jsGet, jsGetAll, jsSetResult)
+import Port.Eval as Eval exposing (Eval)
 import Port.Event exposing (Event)
 import Port.TTS as TTS
 import Task
@@ -89,6 +90,10 @@ update sound msg model =
             execute sound run_all_javascript 0 model
 
         Handle event ->
+            let
+                _ =
+                    Debug.log "asdasfd" event.topic
+            in
             case event.topic of
                 "speak" ->
                     case event.message |> JD.decodeValue JD.string of
@@ -101,13 +106,21 @@ update sound msg model =
                         _ ->
                             ( model, Cmd.none, [] )
 
+                "code" ->
+                    ( event.message
+                        |> Eval.decode
+                        |> jsSetResult event.section model
+                    , Cmd.none
+                    , []
+                    )
+
                 _ ->
                     ( model, Cmd.none, [] )
 
 
 executeEvent : Int -> ( Int, String ) -> Event
 executeEvent delay ( id, code ) =
-    Event "execute" -1 <|
+    Event "execute" id <|
         JE.object
             [ ( "delay", JE.int delay )
             , ( "code", JE.string code )

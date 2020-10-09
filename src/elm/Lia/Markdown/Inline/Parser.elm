@@ -147,12 +147,7 @@ html =
 
 scriptID : Parser Context Int
 scriptID =
-    withState
-        (.effect_model
-            >> jsCount
-            >> (+) -1
-            >> succeed
-        )
+    withState (.effect_model >> jsCount >> succeed)
 
 
 combine : Inlines -> Inlines

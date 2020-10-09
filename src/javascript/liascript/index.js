@@ -33,7 +33,7 @@ function handleEffects (event, elmSend, section) {
       //setTimeout((e) => { persistent.load(event.section) }, 10)
       break
     case 'execute':
-      lia_execute_event(event.message)
+      lia_execute_event(event.message, elmSend, section)
       break
     case 'speak' : {
       let msg = {
@@ -256,6 +256,7 @@ class LiaScript {
           break
         }
         case 'effect' :
+          console.warn("----------------", event);
           handleEffects(event.message, elmSend, event.section)
           break
         case "settings": {
