@@ -35,7 +35,7 @@ import Combine
         , withState
         )
 import Combine.Char exposing (anyChar)
-import Lia.Markdown.Effect.Model exposing (jsAdd)
+import Lia.Markdown.Effect.Model exposing (jsAdd, jsCount)
 import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Footnote.Parser as Footnote
 import Lia.Markdown.HTML.Attributes as Attributes exposing (Parameters)
@@ -141,11 +141,18 @@ html =
     in
     javascript
         |> andThen state
-        |> keep (succeed (Chars "" []))
+        |> keep scriptID
+        |> map Script
 
 
+scriptID : Parser Context Int
 scriptID =
-    succeed 5
+    withState
+        (.effect_model
+            >> jsCount
+            >> (+) -1
+            >> succeed
+        )
 
 
 combine : Inlines -> Inlines

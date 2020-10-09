@@ -1,7 +1,6 @@
 module Lia.Markdown.Effect.Types exposing
     ( Class(..)
     , Effect
-    , Script
     , class
     , empty
     , init
@@ -17,10 +16,6 @@ type alias Effect body =
     , voice : String
     , id : Int
     }
-
-
-type alias Script =
-    Int
 
 
 init : String -> Effect body

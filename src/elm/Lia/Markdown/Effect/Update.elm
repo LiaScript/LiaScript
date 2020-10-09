@@ -105,12 +105,13 @@ update sound msg model =
                     ( model, Cmd.none, [] )
 
 
-executeEvent : Int -> String -> Event
-executeEvent delay code =
+executeEvent : Int -> ( Int, String ) -> Event
+executeEvent delay ( id, code ) =
     Event "execute" -1 <|
         JE.object
             [ ( "delay", JE.int delay )
             , ( "code", JE.string code )
+            , ( "id", JE.int id )
             ]
 
 

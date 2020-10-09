@@ -99,20 +99,20 @@ jsCount =
         >> List.sum
 
 
-jsGet : Model -> List String
+jsGet : Model -> List ( Int, String )
 jsGet model =
     model.javascript
         |> Dict.get model.visible
-        |> Maybe.map (List.map .script)
+        |> Maybe.map (List.map (\js -> ( js.id, js.script )))
         |> Maybe.withDefault []
 
 
-jsGetAll : Model -> List String
+jsGetAll : Model -> List ( Int, String )
 jsGetAll =
     .javascript
         >> Dict.toList
         >> List.sortBy Tuple.first
-        >> List.map (Tuple.second >> List.map .script)
+        >> List.map (Tuple.second >> List.map (\js -> ( js.id, js.script )))
         >> List.concat
 
 

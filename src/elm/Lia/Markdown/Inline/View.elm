@@ -77,8 +77,11 @@ view config element =
                 |> viewer config
                 |> Effect.inline config attr e
 
-        Script e attr ->
-            Html.text "script"
+        Script id ->
+            config.effects
+                |> Dict.get id
+                |> Maybe.withDefault ""
+                |> Html.text
 
         Symbol e attr ->
             view config (Container [ Symbol e [] ] attr)
