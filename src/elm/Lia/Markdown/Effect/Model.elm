@@ -10,7 +10,9 @@ module Lia.Markdown.Effect.Model exposing
     , jsCount
     , jsGet
     , jsGetAll
+    , jsResult
     , set_annotation
+    , toConfig
     )
 
 import Array exposing (Array)
@@ -64,6 +66,29 @@ jsAdd idx script model =
                 )
                 model.javascript
     }
+
+
+toConfig : Model -> Dict Int String
+toConfig =
+    .javascript
+        >> Dict.values
+        >> List.concat
+        >> List.filterMap
+            (\js ->
+                js.result
+                    |> Maybe.map (Tuple.pair js.id)
+            )
+        >> Dict.fromList
+
+
+jsResult : Int -> Model -> Maybe String
+jsResult idx model =
+    model.javascript
+        |> Dict.values
+        |> List.concat
+        |> List.filter (.id >> (==) idx)
+        |> List.head
+        |> Maybe.andThen .result
 
 
 jsCount : Model -> Int

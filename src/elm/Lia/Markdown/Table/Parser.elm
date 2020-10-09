@@ -21,6 +21,7 @@ import Combine
         , succeed
         , withState
         )
+import Dict
 import Lia.Markdown.HTML.Attributes as Param exposing (Parameters)
 import Lia.Markdown.Inline.Parser exposing (line)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
@@ -90,10 +91,10 @@ classify attr table =
 
                              else
                                 matrix.head
-                                    |> List.map (toCell Nothing)
+                                    |> List.map (toCell Dict.empty Nothing)
                                     |> Just
                             )
-                            (toMatrix Nothing matrix.body)
+                            (toMatrix Dict.empty Nothing matrix.body)
     }
 
 

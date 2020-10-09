@@ -1,7 +1,7 @@
 module Lia.Markdown.Table.View exposing (view)
 
 import Array
-import Dict
+import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
@@ -37,29 +37,36 @@ view config attr table =
             getState table.id config.section.table_vector
     in
     if diagramShow attr state.diagram then
-        Lazy.lazy6 viewDiagram table state config.main.visible config.screen.width config.light attr
+        Lazy.lazy7 viewDiagram
+            table
+            state
+            config.main.effects
+            config.main.visible
+            config.screen.width
+            config.light
+            attr
 
     else if table.head == [] && table.format == [] then
         state
-            |> unformatted config.view (toMatrix config.main.visible table.body) table.id
+            |> unformatted config.view (toMatrix config.main.effects config.main.visible table.body) table.id
             |> toTable table.id attr table.class
 
     else
         state
-            |> formatted config.view table.head table.format (toMatrix config.main.visible table.body) table.id
+            |> formatted config.view table.head table.format (toMatrix config.main.effects config.main.visible table.body) table.id
             |> toTable table.id attr table.class
 
 
-viewDiagram : Table -> State -> Maybe Int -> Int -> Bool -> Parameters -> Html Msg
-viewDiagram table state visible width light attr =
+viewDiagram : Table -> State -> Dict Int String -> Maybe Int -> Int -> Bool -> Parameters -> Html Msg
+viewDiagram table state effects visible width light attr =
     Html.div
         [ blockKeydown (UpdateTable Sub.NoOp)
         ]
         [ toggleBtn table.id "table"
         , table.body
-            |> toMatrix visible
+            |> toMatrix effects visible
             |> sort state
-            |> (::) (List.map (toCell visible) table.head)
+            |> (::) (List.map (toCell effects visible) table.head)
             |> diagramTranspose attr
             |> chart width (table.format /= []) attr light table.class
         ]

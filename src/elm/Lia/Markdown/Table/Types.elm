@@ -11,6 +11,7 @@ module Lia.Markdown.Table.Types exposing
     )
 
 import Array exposing (Array)
+import Dict exposing (Dict)
 import Lia.Markdown.Inline.Stringify exposing (stringify_)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Table.Matrix as Matrix exposing (Matrix)
@@ -58,17 +59,17 @@ type alias Cell =
     }
 
 
-toMatrix : Maybe Int -> Matrix Inlines -> Matrix Cell
-toMatrix id =
-    Matrix.map (toCell id)
+toMatrix : Dict Int String -> Maybe Int -> Matrix Inlines -> Matrix Cell
+toMatrix effects id =
+    Matrix.map (toCell effects id)
 
 
-toCell : Maybe Int -> Inlines -> Cell
-toCell effectId data =
+toCell : Dict Int String -> Maybe Int -> Inlines -> Cell
+toCell effects effectId data =
     let
         str =
             data
-                |> stringify_ effectId
+                |> stringify_ effects effectId
                 |> String.trim
     in
     str

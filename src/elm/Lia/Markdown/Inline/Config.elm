@@ -3,6 +3,7 @@ module Lia.Markdown.Inline.Config exposing
     , init
     )
 
+import Dict exposing (Dict)
 import Lia.Settings.Model exposing (Mode(..))
 import Translations exposing (Lang)
 
@@ -14,11 +15,12 @@ type alias Config =
     , visible : Maybe Int
     , speaking : Maybe Int
     , lang : Lang
+    , effects : Dict Int String
     }
 
 
-init : Int -> Mode -> Int -> Maybe Int -> Lang -> Config
-init slide mode visible speaking lang =
+init : Int -> Mode -> Int -> Maybe Int -> Dict Int String -> Lang -> Config
+init slide mode visible speaking effects lang =
     Config
         slide
         --mode
@@ -30,3 +32,4 @@ init slide mode visible speaking lang =
         )
         speaking
         lang
+        effects
