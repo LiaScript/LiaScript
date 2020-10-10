@@ -1,6 +1,5 @@
 module Lia.Markdown.Effect.Model exposing
     ( Element
-    , Map
     , Model
     , current_comment
     , current_paragraphs
@@ -26,7 +25,7 @@ import Port.Eval exposing (Eval)
 type alias Model =
     { visible : Int
     , effects : Int
-    , comments : Map Element
+    , comments : Dict Int Element
     , javascript : Array JavaScript
     , speaking : Maybe Int
     }
@@ -37,10 +36,6 @@ type alias JavaScript =
     , script : String
     , result : Maybe (Result String String)
     }
-
-
-type alias Map e =
-    Dict Int e
 
 
 type alias Element =
@@ -135,7 +130,7 @@ jsGetAll =
         >> List.sortBy Tuple.first
 
 
-set_annotation : Int -> Int -> Map Element -> Parameters -> Map Element
+set_annotation : Int -> Int -> Dict Int Element -> Parameters -> Dict Int Element
 set_annotation id1 id2 m attr =
     case Dict.get id1 m of
         Just e ->
