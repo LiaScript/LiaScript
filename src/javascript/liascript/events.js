@@ -224,9 +224,25 @@ function lia_execute_event (event, send=null, section=null) {
   setTimeout(() => {
     try {
 
-      let x = eval(event.code)
+      const fn = (msg) => {
+        send({
+          topic: "effect",
+          section: section,
+          message: {
+            topic: "codeX",
+            section: event.id,
+            message: {
+              ok: true,
+              result:  msg,
+              details: []
+            }
+          }
+        })
+      }
 
-      if (section != null && x != undefined && typeof event.id == "number") {
+      const result = eval(event.code)
+
+      if (section != null && typeof event.id == "number") {
         send({
           topic: "effect",
           section: section,
@@ -235,7 +251,7 @@ function lia_execute_event (event, send=null, section=null) {
             section: event.id,
             message: {
               ok: true,
-              result: JSON.stringify(x),
+              result: result == undefined ? "LIA: stop" : JSON.stringify(result),
               details: []
             }
           }

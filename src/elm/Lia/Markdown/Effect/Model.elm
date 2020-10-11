@@ -10,14 +10,16 @@ module Lia.Markdown.Effect.Model exposing
     , jsGet
     , jsGetAll
     , jsGetResult
+    , jsRunning
     , jsSetResult
+    , jsUpdateResult
     , set_annotation
     , toConfig
     )
 
 import Array exposing (Array)
 import Dict exposing (Dict)
-import Lia.Markdown.HTML.Attributes exposing (Parameters)
+import Lia.Markdown.HTML.Attributes as Attr exposing (Parameters)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Port.Eval exposing (Eval)
 
@@ -35,6 +37,9 @@ type alias JavaScript =
     { effect_id : Int
     , script : String
     , result : Maybe (Result String String)
+    , running : Bool
+    , parameters : Parameters
+    , output : Maybe String
     }
 
 
@@ -45,14 +50,33 @@ type alias Element =
     }
 
 
-jsAdd : Int -> String -> Model -> Model
-jsAdd idx script model =
+jsAdd : Int -> Parameters -> String -> Model -> Model
+jsAdd id params script model =
     { model
         | javascript =
             Array.push
-                (JavaScript idx script Nothing)
+                (JavaScript id
+                    script
+                    (params
+                        |> Attr.get "data-default"
+                        |> Maybe.map Ok
+                    )
+                    False
+                    params
+                    Nothing
+                )
                 model.javascript
     }
+
+
+jsRunning : Int -> Bool -> Array JavaScript -> Array JavaScript
+jsRunning id state javascript =
+    case Array.get id javascript of
+        Just js ->
+            Array.set id { js | running = state } javascript
+
+        _ ->
+            javascript
 
 
 toConfig : Model -> Dict Int (Result String String)
@@ -84,15 +108,37 @@ jsSetResult idx model eval =
                 Just js ->
                     Array.set idx
                         { js
-                            | result =
-                                Just
-                                    (if eval.ok then
-                                        Ok eval.result
+                            | running = eval.result == "\"LIA: wait\""
+                            , result =
+                                if
+                                    eval.result
+                                        == "\"LIA: stop\""
+                                        || eval.result
+                                        == "\"LIA: wait\""
+                                then
+                                    js.result
 
-                                     else
-                                        Err eval.result
-                                    )
+                                else if eval.ok then
+                                    Just (Ok eval.result)
+
+                                else
+                                    Just (Err eval.result)
                         }
+                        model.javascript
+
+                _ ->
+                    model.javascript
+    }
+
+
+jsUpdateResult : Int -> Model -> String -> Model
+jsUpdateResult idx model result =
+    { model
+        | javascript =
+            case Array.get idx model.javascript of
+                Just js ->
+                    Array.set idx
+                        { js | result = Just (Ok result) }
                         model.javascript
 
                 _ ->
@@ -110,6 +156,7 @@ jsCount =
 jsGet : Model -> List ( Int, String )
 jsGet model =
     model.javascript
+        |> Array.filter (.running >> not)
         |> Array.indexedMap
             (\i js ->
                 if js.effect_id == model.visible then
@@ -125,6 +172,7 @@ jsGet model =
 jsGetAll : Model -> List ( Int, String )
 jsGetAll =
     .javascript
+        >> Array.filter (.running >> not)
         >> Array.indexedMap (\i js -> ( i, js.script ))
         >> Array.toList
         >> List.sortBy Tuple.first

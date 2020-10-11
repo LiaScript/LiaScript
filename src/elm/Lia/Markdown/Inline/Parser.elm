@@ -121,10 +121,24 @@ javascript =
         |> keep (stringTill (regexWith True False "</script>"))
 
 
+javascriptWithAttributes : Parser Context ( Parameters, String )
+javascriptWithAttributes =
+    let
+        attr =
+            withState (.defines >> .base >> succeed)
+                |> andThen Attributes.parse
+    in
+    regexWith True False "<script"
+        |> keep (many (whitespace |> keep attr))
+        |> ignore (string ">")
+        |> map Tuple.pair
+        |> andMap (stringTill (regexWith True False "</script>"))
+
+
 html : Parser Context Inline
 html =
     let
-        state script =
+        state ( attr, script ) =
             modifyState
                 (\s ->
                     { s
@@ -134,12 +148,13 @@ html =
                                     |> List.head
                                     |> Maybe.withDefault 0
                                 )
+                                attr
                                 script
                                 s.effect_model
                     }
                 )
     in
-    javascript
+    javascriptWithAttributes
         |> andThen state
         |> keep scriptID
         |> map Script
