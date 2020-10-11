@@ -153,11 +153,12 @@ html =
                                 s.effect_model
                     }
                 )
+                |> keep (succeed attr)
     in
     javascriptWithAttributes
         |> andThen state
-        |> keep scriptID
-        |> map Script
+        |> map (\attr id -> Script id attr)
+        |> andMap scriptID
 
 
 scriptID : Parser Context Int

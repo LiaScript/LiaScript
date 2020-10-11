@@ -60,7 +60,7 @@ inline2string effects id inline =
             else
                 ""
 
-        Script i ->
+        Script i _ ->
             effects
                 |> Dict.get i
                 |> Maybe.andThen Result.toMaybe

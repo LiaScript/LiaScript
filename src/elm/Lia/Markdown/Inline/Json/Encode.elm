@@ -97,12 +97,11 @@ encInline element =
                 , ( "a", encAnnotation a )
                 ]
 
-            Script id ->
+            Script id a ->
                 [ ( "Script"
                   , JE.int id
                   )
-
-                --  , ( "a", encAnnotation a )
+                , ( "a", encAnnotation a )
                 ]
 
 

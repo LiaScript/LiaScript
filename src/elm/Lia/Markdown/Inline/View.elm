@@ -77,10 +77,10 @@ view config element =
                 |> viewer config
                 |> Effect.inline config attr e
 
-        Script id ->
+        Script id attr ->
             case Dict.get id config.effects of
                 Just (Ok str) ->
-                    Html.text str
+                    Html.span (annotation "lia-script" attr) [ Html.text str ]
 
                 Just (Err str) ->
                     Html.span [ Attr.style "color" "red" ] [ Html.text str ]

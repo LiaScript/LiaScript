@@ -22,6 +22,7 @@ import Dict exposing (Dict)
 import Lia.Markdown.HTML.Attributes as Attr exposing (Parameters)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Port.Eval exposing (Eval)
+import Regex
 
 
 type alias Model =
@@ -36,10 +37,10 @@ type alias Model =
 type alias JavaScript =
     { effect_id : Int
     , script : String
-    , result : Maybe (Result String String)
     , running : Bool
-    , parameters : Parameters
+    , result : Maybe (Result String String)
     , output : Maybe String
+    , input : List String
     }
 
 
@@ -50,6 +51,12 @@ type alias Element =
     }
 
 
+input : Regex.Regex
+input =
+    Maybe.withDefault Regex.never <|
+        Regex.fromString "@input\\(`([^`]+)`\\)"
+
+
 jsAdd : Int -> Parameters -> String -> Model -> Model
 jsAdd id params script model =
     { model
@@ -57,13 +64,20 @@ jsAdd id params script model =
             Array.push
                 (JavaScript id
                     script
+                    False
                     (params
                         |> Attr.get "data-default"
                         |> Maybe.map Ok
                     )
-                    False
-                    params
-                    Nothing
+                    (params
+                        |> Attr.get "data-output"
+                    )
+                    (script
+                        |> Regex.find input
+                        |> List.map .submatches
+                        |> List.concat
+                        |> List.filterMap identity
+                    )
                 )
                 model.javascript
     }
