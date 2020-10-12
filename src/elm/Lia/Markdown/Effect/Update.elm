@@ -12,15 +12,11 @@ module Lia.Markdown.Effect.Update exposing
 import Browser.Dom as Dom
 import Json.Decode as JD
 import Json.Encode as JE
+import Lia.Markdown.Effect.JavaScript as JS
 import Lia.Markdown.Effect.Model
     exposing
         ( Model
         , current_comment
-        , jsGet
-        , jsGetAll
-        , jsRunning
-        , jsSetResult
-        , jsUpdateResult
         )
 import Port.Eval as Eval exposing (Eval)
 import Port.Event exposing (Event)
@@ -113,18 +109,25 @@ update sound msg model =
                                 ( model, Cmd.none, [] )
 
                     "code" ->
-                        ( event.message
-                            |> Eval.decode
-                            |> jsSetResult event.section model
+                        ( { model
+                            | javascript =
+                                JS.setEval
+                                    event.section
+                                    (Eval.decode event.message)
+                                    model.javascript
+                          }
                         , Cmd.none
                         , []
                         )
 
                     "codeX" ->
-                        ( event.message
-                            |> Eval.decode
-                            |> .result
-                            |> jsUpdateResult event.section model
+                        ( { model
+                            | javascript =
+                                event.message
+                                    |> Eval.decode
+                                    |> .result
+                                    |> JS.setResult event.section model.javascript
+                          }
                         , Cmd.none
                         , []
                         )
@@ -143,7 +146,7 @@ markRunning ( model, cmd, events ) =
                         js
 
                     else
-                        jsRunning e.section True js
+                        JS.isRunning e.section True js
                 )
                 model.javascript
                 events
@@ -168,10 +171,10 @@ execute sound run_all delay model =
     let
         javascript =
             if run_all then
-                jsGetAll model
+                JS.getAll .script model.javascript
 
             else
-                jsGet model
+                JS.getVisible model.effects model.javascript
     in
     update sound
         (javascript
