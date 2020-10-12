@@ -146,7 +146,7 @@ markRunning ( model, cmd, events ) =
                         js
 
                     else
-                        JS.isRunning e.section True js
+                        JS.setRunning e.section True js
                 )
                 model.javascript
                 events

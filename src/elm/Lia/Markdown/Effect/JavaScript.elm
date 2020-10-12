@@ -10,9 +10,12 @@ type alias JavaScript =
     { effect_id : Int
     , script : String
     , running : Bool
+    , update : Bool
+    , runOnce : Bool
     , result : Maybe (Result String String)
     , output : Maybe String
     , input : List String
+    , counter : Int
     }
 
 
@@ -28,6 +31,8 @@ push id params script javascript =
         (JavaScript id
             script
             False
+            False
+            (Attr.isSet "data-run-once" params)
             (params
                 |> Attr.get "data-default"
                 |> Maybe.map Ok
@@ -41,18 +46,14 @@ push id params script javascript =
                 |> List.concat
                 |> List.filterMap identity
             )
+            0
         )
         javascript
 
 
-isRunning : Int -> Bool -> Array JavaScript -> Array JavaScript
-isRunning id state javascript =
-    case Array.get id javascript of
-        Just js ->
-            Array.set id { js | running = state } javascript
-
-        _ ->
-            javascript
+setRunning : Int -> Bool -> Array JavaScript -> Array JavaScript
+setRunning id state javascript =
+    set id (\js -> { js | running = state }) javascript
 
 
 count : Array JavaScript -> Int
@@ -71,7 +72,7 @@ getAll : (JavaScript -> x) -> Array JavaScript -> List ( Int, x )
 getAll fn =
     Array.indexedMap
         (\i js ->
-            if js.running then
+            if js.running || (js.runOnce && js.counter == 1) then
                 Nothing
 
             else
@@ -112,6 +113,14 @@ eval_ : Eval -> JavaScript -> JavaScript
 eval_ e js =
     { js
         | running = e.result == "\"LIA: wait\""
+        , counter =
+            js.counter
+                + (if e.result == "\"LIA: wait\"" then
+                    0
+
+                   else
+                    1
+                  )
         , result =
             if
                 e.result
