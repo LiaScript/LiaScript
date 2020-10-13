@@ -109,28 +109,93 @@ update sound msg model =
                                 ( model, Cmd.none, [] )
 
                     "code" ->
-                        ( { model
-                            | javascript =
-                                JS.setEval
-                                    event.section
-                                    (Eval.decode event.message)
-                                    model.javascript
-                          }
-                        , Cmd.none
-                        , []
-                        )
+                        let
+                            javascript =
+                                model.javascript
+                                    |> JS.update event.section (Eval.decode event.message)
+
+                            node =
+                                javascript
+                                    |> JS.get identity event.section
+
+                            nodeUpdate =
+                                if
+                                    node
+                                        |> Maybe.map (.update >> (==) True)
+                                        |> Maybe.withDefault False
+                                then
+                                    node
+                                        |> Maybe.map
+                                            (.script
+                                                >> Tuple.pair event.section
+                                                >> List.singleton
+                                            )
+                                        |> Maybe.withDefault []
+
+                                else
+                                    []
+                        in
+                        case Maybe.andThen .output node of
+                            Nothing ->
+                                ( { model
+                                    | javascript =
+                                        JS.set
+                                            event.section
+                                            (\js -> { js | update = False })
+                                            javascript
+                                  }
+                                , Cmd.none
+                                , nodeUpdate
+                                    |> JS.replaceInputs javascript
+                                    |> List.map (executeEvent 0)
+                                )
+
+                            Just output ->
+                                ( { model
+                                    | javascript =
+                                        javascript
+                                            |> JS.updateChildren output
+                                            |> JS.set event.section (\js -> { js | update = False })
+                                  }
+                                , Cmd.none
+                                , javascript
+                                    |> JS.scriptChildren output
+                                    |> List.append nodeUpdate
+                                    |> JS.replaceInputs javascript
+                                    |> List.map (executeEvent 0)
+                                )
 
                     "codeX" ->
-                        ( { model
-                            | javascript =
+                        let
+                            javascript =
                                 event.message
                                     |> Eval.decode
                                     |> .result
                                     |> JS.setResult event.section model.javascript
-                          }
-                        , Cmd.none
-                        , []
-                        )
+
+                            node =
+                                javascript
+                                    |> JS.get identity event.section
+                        in
+                        case Maybe.andThen .output node of
+                            Nothing ->
+                                ( { model
+                                    | javascript =
+                                        javascript
+                                  }
+                                , Cmd.none
+                                , []
+                                )
+
+                            Just output ->
+                                ( { model | javascript = JS.updateChildren output javascript }
+                                , Cmd.none
+                                , javascript
+                                    |> JS.scriptChildren output
+                                    |> JS.replaceInputs javascript
+                                    |> Debug.log "WWWWWWWWWWWWWWWWWWWWW"
+                                    |> List.map (executeEvent 0)
+                                )
 
                     _ ->
                         ( model, Cmd.none, [] )

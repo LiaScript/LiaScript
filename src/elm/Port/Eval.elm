@@ -4,6 +4,8 @@ module Port.Eval exposing
     , decoder
     , encode
     , event
+    , replace_id
+    , replace_input
     )
 
 import Json.Decode as JD
@@ -30,17 +32,23 @@ event id code replacement =
     in
     replacement
         |> List.indexedMap (\i r -> ( i, toJSstring r ))
-        |> List.foldl replace_input code
+        |> List.foldl replace_id code
         |> String.replace "@'input" (toEscapeString replacement_0)
         |> String.replace "@input" replacement_0
         |> JE.string
         |> Event "eval" id
 
 
-replace_input : ( Int, String ) -> String -> String
-replace_input ( int, insert ) =
-    String.replace ("@'input(" ++ String.fromInt int ++ ")") (toEscapeString insert)
-        >> String.replace ("@input(" ++ String.fromInt int ++ ")") insert
+replace_id : ( Int, String ) -> String -> String
+replace_id ( id, insert ) =
+    String.replace ("@'input(" ++ String.fromInt id ++ ")") (toEscapeString insert)
+        >> String.replace ("@input(" ++ String.fromInt id ++ ")") insert
+
+
+replace_input : ( String, String ) -> String -> String
+replace_input ( key, insert ) =
+    String.replace ("@'input(`" ++ key ++ "`)") (toEscapeString insert)
+        >> String.replace ("@input(`" ++ key ++ "`)") insert
 
 
 decoder : JD.Decoder Eval

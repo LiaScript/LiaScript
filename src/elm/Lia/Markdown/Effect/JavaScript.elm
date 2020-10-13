@@ -1,8 +1,9 @@
 module Lia.Markdown.Effect.JavaScript exposing (..)
 
 import Array exposing (Array)
+import Dict exposing (Dict)
 import Lia.Markdown.HTML.Attributes as Attr exposing (Parameters)
-import Port.Eval exposing (Eval)
+import Port.Eval as Eval exposing (Eval)
 import Regex
 
 
@@ -62,24 +63,74 @@ count =
 
 
 getVisible : Int -> Array JavaScript -> List ( Int, String )
-getVisible visble =
-    getAll identity
-        >> List.filter (Tuple.second >> .effect_id >> (==) visble)
-        >> List.map (Tuple.mapSecond .script)
+getVisible visble javascript =
+    javascript
+        |> getAll identity
+        |> List.filter (Tuple.second >> .effect_id >> (==) visble)
+        |> List.map (Tuple.mapSecond .script)
+        |> replaceInputs javascript
+
+
+filterMap : (JavaScript -> Bool) -> (JavaScript -> x) -> Array JavaScript -> List ( Int, x )
+filterMap filter map =
+    Array.toIndexedList
+        >> List.filter (Tuple.second >> filter)
+        >> List.map (Tuple.mapSecond map)
+
+
+replaceInputs : Array JavaScript -> List ( Int, String ) -> List ( Int, String )
+replaceInputs javascript =
+    let
+        inputs =
+            javascript
+                |> Array.toList
+                |> List.filterMap
+                    (\js ->
+                        case ( js.output, js.result ) of
+                            ( Just output, Just (Ok result) ) ->
+                                Just ( output, result )
+
+                            _ ->
+                                Nothing
+                    )
+    in
+    List.map (Tuple.mapSecond (\s -> List.foldl Eval.replace_input s inputs |> Debug.log "eeeeeeeeeeeeeeeee"))
+
+
+updateChildren : String -> Array JavaScript -> Array JavaScript
+updateChildren output =
+    Array.map
+        (\js ->
+            if js.running && List.member output js.input then
+                { js | update = True }
+
+            else
+                js
+        )
+
+
+scriptChildren : String -> Array JavaScript -> List ( Int, String )
+scriptChildren output javascript =
+    javascript
+        |> Array.toIndexedList
+        |> List.filterMap
+            (\( i, js ) ->
+                if js.running then
+                    Nothing
+
+                else
+                    Just
+                        ( i, js.script )
+            )
+        |> replaceInputs javascript
 
 
 getAll : (JavaScript -> x) -> Array JavaScript -> List ( Int, x )
-getAll fn =
-    Array.indexedMap
-        (\i js ->
-            if js.running || (js.runOnce && js.counter == 1) then
-                Nothing
-
-            else
-                Just ( i, fn js )
+getAll =
+    filterMap
+        (\js ->
+            not js.running || not (js.runOnce && js.counter == 1)
         )
-        >> Array.toList
-        >> List.filterMap identity
 
 
 get : (JavaScript -> x) -> Int -> Array JavaScript -> Maybe x
@@ -104,23 +155,16 @@ set idx fn javascript =
             javascript
 
 
-setEval : Int -> Eval -> Array JavaScript -> Array JavaScript
-setEval id =
-    eval_ >> set id
+update : Int -> Eval -> Array JavaScript -> Array JavaScript
+update id e =
+    set id (eval_ e)
 
 
 eval_ : Eval -> JavaScript -> JavaScript
 eval_ e js =
     { js
         | running = e.result == "\"LIA: wait\""
-        , counter =
-            js.counter
-                + (if e.result == "\"LIA: wait\"" then
-                    0
-
-                   else
-                    1
-                  )
+        , counter = js.counter + 1
         , result =
             if
                 e.result
@@ -141,3 +185,21 @@ eval_ e js =
 setResult : Int -> Array JavaScript -> String -> Array JavaScript
 setResult id javascript result =
     set id (\js -> { js | result = Just (Ok result) }) javascript
+
+
+publish : Int -> Array JavaScript -> Array JavaScript
+publish id javascript =
+    case Array.get id javascript |> Maybe.andThen .output of
+        Just output ->
+            javascript
+                |> Array.map
+                    (\node ->
+                        if List.member output node.input then
+                            { node | update = True }
+
+                        else
+                            node
+                    )
+
+        _ ->
+            javascript
