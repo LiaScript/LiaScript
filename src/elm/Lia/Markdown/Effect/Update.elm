@@ -121,7 +121,7 @@ update sound msg model =
                             nodeUpdate =
                                 if
                                     node
-                                        |> Maybe.map (.update >> (==) True)
+                                        |> Maybe.map .update
                                         |> Maybe.withDefault False
                                 then
                                     node
@@ -193,7 +193,6 @@ update sound msg model =
                                 , javascript
                                     |> JS.scriptChildren output
                                     |> JS.replaceInputs javascript
-                                    |> Debug.log "WWWWWWWWWWWWWWWWWWWWW"
                                     |> List.map (executeEvent 0)
                                 )
 

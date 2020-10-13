@@ -94,7 +94,7 @@ replaceInputs javascript =
                                 Nothing
                     )
     in
-    List.map (Tuple.mapSecond (\s -> List.foldl Eval.replace_input s inputs |> Debug.log "eeeeeeeeeeeeeeeee"))
+    List.map (Tuple.mapSecond (\s -> List.foldl Eval.replace_input s inputs))
 
 
 updateChildren : String -> Array JavaScript -> Array JavaScript
@@ -115,12 +115,11 @@ scriptChildren output javascript =
         |> Array.toIndexedList
         |> List.filterMap
             (\( i, js ) ->
-                if js.running then
-                    Nothing
+                if not js.running && List.member output js.input then
+                    Just ( i, js.script )
 
                 else
-                    Just
-                        ( i, js.script )
+                    Nothing
             )
         |> replaceInputs javascript
 
