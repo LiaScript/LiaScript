@@ -2,6 +2,7 @@ module Lia.Markdown.Survey.Update exposing (Msg(..), handle, update)
 
 import Array
 import Dict
+import Lia.Markdown.Effect.JavaScript as JS
 import Lia.Markdown.Survey.Json as Json
 import Lia.Markdown.Survey.Types exposing (State(..), Vector, toString)
 import Port.Eval as Eval
@@ -16,25 +17,26 @@ type Msg
     | MatrixUpdate Int Int String
     | Submit Int (Maybe String)
     | Handle Event
+    | Script JS.Msg
 
 
-update : Msg -> Vector -> ( Vector, List Event )
+update : Msg -> Vector -> ( Vector, List Event, Maybe JS.Msg )
 update msg vector =
     case msg of
         TextUpdate idx str ->
-            ( update_text vector idx str, [] )
+            ( update_text vector idx str, [], Nothing )
 
         SelectUpdate id value ->
-            ( update_select vector id value, [] )
+            ( update_select vector id value, [], Nothing )
 
         SelectChose id ->
-            ( update_select_chose vector id, [] )
+            ( update_select_chose vector id, [], Nothing )
 
         VectorUpdate idx var ->
-            ( update_vector vector idx var, [] )
+            ( update_vector vector idx var, [], Nothing )
 
         MatrixUpdate idx row var ->
-            ( update_matrix vector idx row var, [] )
+            ( update_matrix vector idx row var, [], Nothing )
 
         Submit id Nothing ->
             if submitable vector id then
@@ -47,18 +49,22 @@ update msg vector =
                     |> Json.fromVector
                     |> Event.store
                     |> List.singleton
+                , Nothing
                 )
 
             else
-                ( vector, [] )
+                ( vector, [], Nothing )
 
         Submit id (Just code) ->
             case vector |> Array.get id of
                 Just ( False, state ) ->
-                    ( vector, [ Eval.event id code [ toString state ] ] )
+                    ( vector, [ Eval.event id code [ toString state ] ], Nothing )
 
                 _ ->
-                    ( vector, [] )
+                    ( vector, [], Nothing )
+
+        Script sub ->
+            ( vector, [], Just sub )
 
         Handle event ->
             case event.topic of
@@ -72,17 +78,18 @@ update msg vector =
                         update (Submit event.section Nothing) vector
 
                     else
-                        ( vector, [] )
+                        ( vector, [], Nothing )
 
                 "restore" ->
                     ( event.message
                         |> Json.toVector
                         |> Result.withDefault vector
                     , []
+                    , Nothing
                     )
 
                 _ ->
-                    ( vector, [] )
+                    ( vector, [], Nothing )
 
 
 update_text : Vector -> Int -> String -> Vector

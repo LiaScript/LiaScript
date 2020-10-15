@@ -29,6 +29,7 @@ type Msg
     | Share String String String
     | Handle JD.Value
     | Activate String (Maybe String)
+    | NoOp
 
 
 index : Event -> Event
@@ -176,6 +177,9 @@ update msg model =
             , Cmd.none
             , [ share title text url ]
             )
+
+        NoOp ->
+            ( model, Cmd.none, [] )
 
 
 activate : String -> Maybe String -> List Course -> List Course

@@ -202,7 +202,7 @@ view_attributes lang =
         >> Html.span []
 
 
-thanks : Lang -> Inlines -> Html msg
+thanks : Lang -> Inlines -> Html Msg
 thanks lang to =
     Html.span []
         [ Html.hr [] []
@@ -210,6 +210,7 @@ thanks lang to =
             |> List.map (view_inf lang)
             |> span_block
         ]
+        |> Html.map (\_ -> Ignore)
 
 
 view_translations : Lang -> Bool -> String -> List ( String, String ) -> Html Msg

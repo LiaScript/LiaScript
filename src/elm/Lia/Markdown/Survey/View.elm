@@ -102,7 +102,7 @@ view_select config options ( open, value ) id submitted =
 option : Config -> Int -> Int -> Inlines -> Html Msg
 option config id1 id2 opt =
     opt
-        |> viewer config
+        |> (viewer config >> List.map (Html.map Script))
         |> Html.div
             [ Attr.class "lia-dropdown-option"
             , SelectUpdate id1 id2
@@ -114,7 +114,7 @@ get_option : Config -> Int -> List Inlines -> Html Msg
 get_option config id list =
     case ( id, list ) of
         ( 0, x :: _ ) ->
-            x |> viewer config |> Html.span []
+            x |> (viewer config >> List.map (Html.map Script)) |> Html.span []
 
         ( i, _ :: xs ) ->
             get_option config (i - 1) xs
@@ -157,7 +157,7 @@ view_matrix config header vars questions fn submitted =
     let
         th =
             header
-                |> List.map (viewer config >> Html.th [ Attr.align "center" ])
+                |> List.map ((viewer config >> List.map (Html.map Script)) >> Html.th [ Attr.align "center" ])
                 |> Html.thead []
 
         fnX =
@@ -248,4 +248,4 @@ input button msg checked submitted =
 
 inline : Config -> Inlines -> Html Msg
 inline config elements =
-    Html.span [] <| viewer config elements
+    Html.span [] <| (viewer config >> List.map (Html.map Script)) elements

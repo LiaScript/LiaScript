@@ -467,6 +467,6 @@ get_active course =
                 |> Dict.get id
 
 
-inlines : Inlines -> List (Html msg)
+inlines : Inlines -> List (Html Msg)
 inlines =
-    List.map (Inline.view_inf En)
+    List.map (Inline.view_inf En >> Html.map (always NoOp))

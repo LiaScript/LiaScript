@@ -9,6 +9,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Json.Encode as JE
+import Lia.Markdown.Effect.JavaScript as JS
 import Lia.Markdown.Effect.Model exposing (Model)
 import Lia.Markdown.Effect.Types exposing (Class(..), Effect, class, isIn)
 import Lia.Markdown.Effect.Update as E

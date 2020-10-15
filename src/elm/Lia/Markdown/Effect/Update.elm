@@ -7,6 +7,7 @@ module Lia.Markdown.Effect.Update exposing
     , next
     , previous
     , update
+    , updateSub
     )
 
 import Browser.Dom as Dom
@@ -33,6 +34,12 @@ type Msg
     | Mute Int
     | Rendered Bool Dom.Viewport
     | Handle Event
+    | Script JS.Msg
+
+
+updateSub : JS.Msg -> Model -> ( Model, Cmd Msg, List Event )
+updateSub msg =
+    update True (Script msg)
 
 
 update : Bool -> Msg -> Model -> ( Model, Cmd Msg, List Event )
@@ -94,6 +101,34 @@ update sound msg model =
 
             Rendered run_all_javascript _ ->
                 execute sound run_all_javascript 0 model
+
+            Script sub ->
+                case sub of
+                    JS.Click id ->
+                        case JS.get identity id model.javascript of
+                            Just node ->
+                                ( { model
+                                    | javascript =
+                                        if node.running then
+                                            JS.set id
+                                                (always { node | update = True })
+                                                model.javascript
+
+                                        else
+                                            model.javascript
+                                  }
+                                , Cmd.none
+                                , if node.running then
+                                    []
+
+                                  else
+                                    [ ( id, node.script ) ]
+                                        |> JS.replaceInputs model.javascript
+                                        |> List.map (executeEvent 0)
+                                )
+
+                            _ ->
+                                ( model, Cmd.none, [] )
 
             Handle event ->
                 case event.topic of

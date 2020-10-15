@@ -5,7 +5,7 @@ import Lia.Markdown.Effect.Model exposing (toConfig)
 import Lia.Markdown.Inline.Config as Inline
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
-import Lia.Markdown.Update exposing (Msg)
+import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Section exposing (Section)
 import Lia.Settings.Model exposing (Mode(..))
 import Session exposing (Screen)
@@ -34,7 +34,7 @@ init mode section id ace_theme lang light screen =
                 lang
     in
     Config
-        (viewer config)
+        (viewer config >> List.map (Html.map Script))
         section
         ace_theme
         light

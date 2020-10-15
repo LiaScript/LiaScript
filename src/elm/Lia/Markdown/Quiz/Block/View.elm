@@ -76,10 +76,12 @@ select config solved open options i =
 
 
 option : Config -> Int -> Inlines -> Html Msg
-option config id opt =
-    opt
-        |> viewer config
-        |> Html.div
+option config id =
+    viewer config
+        >> Html.div []
+        >> Html.map Script
+        >> List.singleton
+        >> Html.div
             [ Attr.class "lia-dropdown-option"
             , id
                 |> Choose
@@ -94,6 +96,7 @@ get_option config id list =
             x
                 |> viewer config
                 |> Html.span []
+                |> Html.map Script
 
         ( i, _ :: xs ) ->
             xs

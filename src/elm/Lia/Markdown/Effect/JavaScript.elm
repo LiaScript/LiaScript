@@ -20,6 +20,15 @@ type alias JavaScript =
     }
 
 
+type Msg
+    = Click Int
+
+
+none : x -> ( x, Maybe y )
+none x =
+    ( x, Nothing )
+
+
 input : Regex.Regex
 input =
     Maybe.withDefault Regex.never <|

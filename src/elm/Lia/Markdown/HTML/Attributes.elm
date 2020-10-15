@@ -37,6 +37,9 @@ type alias Parameters =
     List ( String, String )
 
 
+{-| Search the attribute list for a certain key, the corresponding value will be
+returned, if present.
+-}
 get : String -> Parameters -> Maybe String
 get name attr =
     case attr of

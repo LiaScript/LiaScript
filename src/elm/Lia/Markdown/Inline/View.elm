@@ -6,10 +6,12 @@ module Lia.Markdown.Inline.View exposing
 import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
+import Html.Events as Event
+import Lia.Markdown.Effect.JavaScript as JS
 import Lia.Markdown.Effect.Model as E
 import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.View as Footnote
-import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
+import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, get, toAttribute)
 import Lia.Markdown.HTML.View as HTML
 import Lia.Markdown.Inline.Config as Config exposing (Config)
 import Lia.Markdown.Inline.Stringify exposing (stringify_)
@@ -19,12 +21,12 @@ import Oembed
 import Translations exposing (Lang)
 
 
-viewer : Config -> Inlines -> List (Html msg)
+viewer : Config -> Inlines -> List (Html JS.Msg)
 viewer config =
     List.map (view config)
 
 
-view : Config -> Inline -> Html msg
+view : Config -> Inline -> Html JS.Msg
 view config element =
     case element of
         Chars e [] ->
@@ -80,7 +82,12 @@ view config element =
         Script id attr ->
             case Dict.get id config.effects of
                 Just (Ok str) ->
-                    Html.span (annotation "lia-script" attr) [ Html.text str ]
+                    case get "data-input" attr |> Debug.log "#############" of
+                        Just "button" ->
+                            Html.span (Event.onClick (JS.Click id) :: Attr.title "output" :: annotation "lia-script" attr) [ Html.text str ]
+
+                        _ ->
+                            Html.span (annotation "lia-script" attr) [ Html.text str ]
 
                 Just (Err str) ->
                     Html.span [ Attr.style "color" "red" ] [ Html.text str ]
@@ -98,7 +105,7 @@ view config element =
             view config (Container [ Formula mode_ e [] ] attr)
 
 
-view_inf : Lang -> Inline -> Html msg
+view_inf : Lang -> Inline -> Html JS.Msg
 view_inf =
     Config.init -1 Textbook 0 Nothing Dict.empty >> view
 
@@ -130,7 +137,7 @@ img config attr alt_ url_ title_ =
         []
 
 
-figure : Config -> Maybe Inlines -> Html msg -> Html msg
+figure : Config -> Maybe Inlines -> Html JS.Msg -> Html JS.Msg
 figure config title_ element =
     case title_ of
         Nothing ->
@@ -147,7 +154,7 @@ figure config title_ element =
                 ]
 
 
-reference : Config -> Reference -> Parameters -> Html msg
+reference : Config -> Reference -> Parameters -> Html JS.Msg
 reference config ref attr =
     case ref of
         Link alt_ url_ title_ ->
@@ -226,7 +233,7 @@ oembed options url =
         |> Maybe.withDefault (Html.text ("Couldn't find oembed provider for url " ++ url))
 
 
-view_url : Config -> Inlines -> String -> Maybe Inlines -> Parameters -> Html msg
+view_url : Config -> Inlines -> String -> Maybe Inlines -> Parameters -> Html JS.Msg
 view_url config alt_ url_ title_ attr =
     [ Attr.href url_, title config title_ ]
         |> List.append (annotation "lia-link" attr)

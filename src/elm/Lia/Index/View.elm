@@ -6,6 +6,7 @@ import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import Lia.Index.Model exposing (Model)
 import Lia.Index.Update exposing (Msg(..))
+import Lia.Markdown.Effect.JavaScript as JS
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Section exposing (Section, Sections)
 import Lia.Settings.Model exposing (Mode(..))
@@ -62,7 +63,7 @@ view_search lang model =
         ]
 
 
-view : Lang -> Int -> Sections -> Html msg
+view : Lang -> Int -> Sections -> Html ( Int, JS.Msg )
 view lang active sections =
     let
         toc_ =
@@ -74,35 +75,36 @@ view lang active sections =
         |> Html.div [ Attr.class "lia-content" ]
 
 
-toc : Lang -> Int -> Section -> Html msg
+toc : Lang -> Int -> Section -> Html ( Int, JS.Msg )
 toc lang active section =
     if section.visible then
-        Html.a
-            [ Attr.class
-                ("lia-toc-l"
-                    ++ String.fromInt section.indentation
-                    ++ (if section.error /= Nothing then
-                            " lia-error"
+        Html.map (Tuple.pair section.idx) <|
+            Html.a
+                [ Attr.class
+                    ("lia-toc-l"
+                        ++ String.fromInt section.indentation
+                        ++ (if section.error /= Nothing then
+                                " lia-error"
 
-                        else if active == section.idx then
-                            " lia-active"
+                            else if active == section.idx then
+                                " lia-active"
 
-                        else if section.visited then
-                            ""
+                            else if section.visited then
+                                ""
 
-                        else
-                            " lia-not-visited"
-                       )
-                )
-            , Attr.href ("#" ++ String.fromInt (section.idx + 1))
-            , Attr.id <|
-                if active == section.idx then
-                    "focusedToc"
+                            else
+                                " lia-not-visited"
+                           )
+                    )
+                , Attr.href ("#" ++ String.fromInt (section.idx + 1))
+                , Attr.id <|
+                    if active == section.idx then
+                        "focusedToc"
 
-                else
-                    ""
-            ]
-            (List.map (view_inf lang) section.title)
+                    else
+                        ""
+                ]
+                (List.map (view_inf lang) section.title)
 
     else
         Html.text ""

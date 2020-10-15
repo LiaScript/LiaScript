@@ -30,10 +30,10 @@ header config inlines =
 
 
 th : Config -> Inlines -> Html Msg
-th config inlines =
-    inlines
-        |> viewer config
-        |> Html.th [ Attr.align "center" ]
+th config =
+    viewer config
+        >> Html.th [ Attr.align "center" ]
+        >> Html.map Script
 
 
 tr : Bool -> Int -> Vector.State -> List (Html Msg)
@@ -97,6 +97,7 @@ add_text config inline toRow =
     inline
         |> viewer config
         |> Html.td []
+        |> Html.map Script
         |> List.singleton
         |> List.append toRow
         |> Html.tr []
