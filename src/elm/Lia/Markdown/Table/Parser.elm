@@ -1,6 +1,6 @@
 module Lia.Markdown.Table.Parser exposing (classify, parse)
 
-import Array
+import Array exposing (Array)
 import Combine
     exposing
         ( Parser
@@ -21,7 +21,7 @@ import Combine
         , succeed
         , withState
         )
-import Dict
+import Lia.Markdown.Effect.JavaScript exposing (JavaScript)
 import Lia.Markdown.HTML.Attributes as Param exposing (Parameters)
 import Lia.Markdown.Inline.Parser exposing (line)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
@@ -47,8 +47,8 @@ parse =
         |> modify_State
 
 
-classify : Parameters -> Table -> Table
-classify attr table =
+classify : Parameters -> Table -> Array JavaScript -> Table
+classify attr table js =
     { table
         | class =
             case diagramType attr of
@@ -91,10 +91,10 @@ classify attr table =
 
                              else
                                 matrix.head
-                                    |> List.map (toCell Dict.empty Nothing)
+                                    |> List.map (toCell js Nothing)
                                     |> Just
                             )
-                            (toMatrix Dict.empty Nothing matrix.body)
+                            (toMatrix js Nothing matrix.body)
     }
 
 

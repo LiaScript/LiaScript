@@ -4,6 +4,7 @@ module Port.Eval exposing
     , decoder
     , encode
     , event
+    , replace_0
     , replace_id
     , replace_input
     )
@@ -24,7 +25,7 @@ type alias Eval =
 event : Int -> String -> List String -> Event
 event id code replacement =
     let
-        replacement_0 =
+        default =
             replacement
                 |> List.head
                 |> Maybe.withDefault ""
@@ -33,10 +34,15 @@ event id code replacement =
     replacement
         |> List.indexedMap (\i r -> ( i, toJSstring r ))
         |> List.foldl replace_id code
-        |> String.replace "@'input" (toEscapeString replacement_0)
-        |> String.replace "@input" replacement_0
+        |> replace_0 default
         |> JE.string
         |> Event "eval" id
+
+
+replace_0 : String -> String -> String
+replace_0 replacement =
+    String.replace "@'input" (toEscapeString replacement)
+        >> String.replace "@input" replacement
 
 
 replace_id : ( Int, String ) -> String -> String

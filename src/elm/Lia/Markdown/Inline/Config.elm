@@ -3,23 +3,29 @@ module Lia.Markdown.Inline.Config exposing
     , init
     )
 
-import Dict exposing (Dict)
+import Array exposing (Array)
+import Lia.Markdown.Effect.JavaScript exposing (JavaScript)
 import Lia.Settings.Model exposing (Mode(..))
 import Translations exposing (Lang)
 
 
 type alias Config =
     { slide : Int
-
-    --, mode : Mode
     , visible : Maybe Int
     , speaking : Maybe Int
     , lang : Lang
-    , effects : Dict Int (Result String String)
+    , effects : Array JavaScript
     }
 
 
-init : Int -> Mode -> Int -> Maybe Int -> Dict Int (Result String String) -> Lang -> Config
+init :
+    Int
+    -> Mode
+    -> Int
+    -> Maybe Int
+    -> Array JavaScript
+    -> Lang
+    -> Config
 init slide mode visible speaking effects lang =
     Config
         slide

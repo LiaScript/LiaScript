@@ -1,7 +1,6 @@
 module Lia.Markdown.Config exposing (Config, init)
 
 import Html exposing (Html)
-import Lia.Markdown.Effect.Model exposing (toConfig)
 import Lia.Markdown.Inline.Config as Inline
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
@@ -30,7 +29,7 @@ init mode section id ace_theme lang light screen =
                 mode
                 section.effect_model.visible
                 section.effect_model.speaking
-                (toConfig section.effect_model)
+                section.effect_model.javascript
                 lang
     in
     Config

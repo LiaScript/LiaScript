@@ -11,7 +11,7 @@ module Lia.Markdown.Table.Types exposing
     )
 
 import Array exposing (Array)
-import Dict exposing (Dict)
+import Lia.Markdown.Effect.JavaScript exposing (JavaScript)
 import Lia.Markdown.Inline.Stringify exposing (stringify_)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Table.Matrix as Matrix exposing (Matrix)
@@ -59,12 +59,12 @@ type alias Cell =
     }
 
 
-toMatrix : Dict Int (Result String String) -> Maybe Int -> Matrix Inlines -> Matrix Cell
+toMatrix : Array JavaScript -> Maybe Int -> Matrix Inlines -> Matrix Cell
 toMatrix effects id =
     Matrix.map (toCell effects id)
 
 
-toCell : Dict Int (Result String String) -> Maybe Int -> Inlines -> Cell
+toCell : Array JavaScript -> Maybe Int -> Inlines -> Cell
 toCell effects effectId data =
     let
         str =

@@ -6,12 +6,11 @@ module Lia.Markdown.Effect.Model exposing
     , get_paragraph
     , init
     , set_annotation
-    , toConfig
     )
 
 import Array exposing (Array)
 import Dict exposing (Dict)
-import Lia.Markdown.Effect.JavaScript exposing (JavaScript)
+import Lia.Markdown.Effect.JavaScript as JS exposing (JavaScript)
 import Lia.Markdown.HTML.Attributes as Attr exposing (Parameters)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Port.Eval exposing (Eval)
@@ -31,19 +30,6 @@ type alias Element =
     , comment : String
     , paragraphs : Array ( Parameters, Inlines )
     }
-
-
-toConfig : Model -> Dict Int (Result String String)
-toConfig =
-    .javascript
-        >> Array.indexedMap
-            (\id js ->
-                js.result
-                    |> Maybe.map (Tuple.pair id)
-            )
-        >> Array.toList
-        >> List.filterMap identity
-        >> Dict.fromList
 
 
 set_annotation : Int -> Int -> Dict Int Element -> Parameters -> Dict Int Element

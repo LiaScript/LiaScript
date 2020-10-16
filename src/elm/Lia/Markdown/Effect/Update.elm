@@ -10,6 +10,7 @@ module Lia.Markdown.Effect.Update exposing
     , updateSub
     )
 
+import Array
 import Browser.Dom as Dom
 import Json.Decode as JD
 import Json.Encode as JE
@@ -104,28 +105,77 @@ update sound msg model =
 
             Script sub ->
                 case sub of
+                    JS.Activate id ->
+                        ( { model
+                            | javascript =
+                                model.javascript
+                                    |> JS.set id
+                                        (\js ->
+                                            let
+                                                input =
+                                                    js.input
+                                            in
+                                            { js | input = { input | active = not input.active } }
+                                        )
+                          }
+                        , Task.attempt
+                            (\_ ->
+                                Event "" -1 JE.null
+                                    |> Handle
+                            )
+                            (Dom.focus "lia-focus")
+                        , []
+                        )
+
+                    JS.Deactivate id ->
+                        case JS.get identity id model.javascript of
+                            Just node ->
+                                let
+                                    input =
+                                        node.input
+                                in
+                                reRun id
+                                    { node
+                                        | input = { input | active = False }
+                                    }
+                                    model
+
+                            _ ->
+                                ( model, Cmd.none, [] )
+
+                    JS.Value id str ->
+                        case JS.get identity id model.javascript of
+                            Just node ->
+                                let
+                                    input =
+                                        node.input
+                                in
+                                reRun id
+                                    { node
+                                        | input =
+                                            { input
+                                                | value =
+                                                    if String.isEmpty str then
+                                                        input.default
+
+                                                    else
+                                                        str
+
+                                                --, active = False
+                                            }
+                                    }
+                                    model
+
+                            _ ->
+                                ( model, Cmd.none, [] )
+
+                    JS.Date id ->
+                        ( model, Cmd.none, [] )
+
                     JS.Click id ->
                         case JS.get identity id model.javascript of
                             Just node ->
-                                ( { model
-                                    | javascript =
-                                        if node.running then
-                                            JS.set id
-                                                (always { node | update = True })
-                                                model.javascript
-
-                                        else
-                                            model.javascript
-                                  }
-                                , Cmd.none
-                                , if node.running then
-                                    []
-
-                                  else
-                                    [ ( id, node.script ) ]
-                                        |> JS.replaceInputs model.javascript
-                                        |> List.map (executeEvent 0)
-                                )
+                                reRun id node model
 
                             _ ->
                                 ( model, Cmd.none, [] )
@@ -160,12 +210,9 @@ update sound msg model =
                                         |> Maybe.withDefault False
                                 then
                                     node
-                                        |> Maybe.map
-                                            (.script
-                                                >> Tuple.pair event.section
-                                                >> List.singleton
-                                            )
+                                        |> Maybe.map (\n -> [ ( event.section, n.script, n.input.value ) ])
                                         |> Maybe.withDefault []
+                                        |> JS.replaceInputs javascript
 
                                 else
                                     []
@@ -181,7 +228,6 @@ update sound msg model =
                                   }
                                 , Cmd.none
                                 , nodeUpdate
-                                    |> JS.replaceInputs javascript
                                     |> List.map (executeEvent 0)
                                 )
 
@@ -196,7 +242,6 @@ update sound msg model =
                                 , javascript
                                     |> JS.scriptChildren output
                                     |> List.append nodeUpdate
-                                    |> JS.replaceInputs javascript
                                     |> List.map (executeEvent 0)
                                 )
 
@@ -227,12 +272,37 @@ update sound msg model =
                                 , Cmd.none
                                 , javascript
                                     |> JS.scriptChildren output
-                                    |> JS.replaceInputs javascript
                                     |> List.map (executeEvent 0)
                                 )
 
                     _ ->
                         ( model, Cmd.none, [] )
+
+
+reRun : Int -> JS.JavaScript -> Model -> ( Model, Cmd Msg, List Event )
+reRun id node model =
+    ( { model
+        | javascript =
+            JS.set id
+                (always
+                    (if node.running then
+                        { node | update = True }
+
+                     else
+                        node
+                    )
+                )
+                model.javascript
+      }
+    , Cmd.none
+    , if node.running then
+        []
+
+      else
+        [ ( id, node.script, node.input.value ) ]
+            |> JS.replaceInputs model.javascript
+            |> List.map (executeEvent 0)
+    )
 
 
 markRunning : ( Model, Cmd Msg, List Event ) -> ( Model, Cmd Msg, List Event )

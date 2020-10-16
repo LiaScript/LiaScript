@@ -1,7 +1,7 @@
 module Lia.Markdown.Table.View exposing (view)
 
-import Array
-import Dict exposing (Dict)
+import Array exposing (Array)
+import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
@@ -9,6 +9,7 @@ import Html.Lazy as Lazy
 import Lia.Markdown.Chart.Types exposing (Diagram(..), Labels, Point)
 import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.Config exposing (Config)
+import Lia.Markdown.Effect.JavaScript exposing (JavaScript)
 import Lia.Markdown.HTML.Attributes as Param exposing (Parameters)
 import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
 import Lia.Markdown.Table.Matrix as Matrix exposing (Matrix, Row)
@@ -57,7 +58,7 @@ view config attr table =
             |> toTable table.id attr table.class
 
 
-viewDiagram : Table -> State -> Dict Int (Result String String) -> Maybe Int -> Int -> Bool -> Parameters -> Html Msg
+viewDiagram : Table -> State -> Array JavaScript -> Maybe Int -> Int -> Bool -> Parameters -> Html Msg
 viewDiagram table state effects visible width light attr =
     Html.div
         [ blockKeydown (UpdateTable Sub.NoOp)

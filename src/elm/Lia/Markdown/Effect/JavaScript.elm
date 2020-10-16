@@ -15,13 +15,67 @@ type alias JavaScript =
     , runOnce : Bool
     , result : Maybe (Result String String)
     , output : Maybe String
-    , input : List String
+    , inputs : List String
     , counter : Int
+    , input : Input
+    }
+
+
+type Type
+    = Checkbox_
+      --| Color_
+    | Date_
+      --| DatetimeLocal_
+      --| Email_
+      --| File_
+      --| Hidden_
+      --| Image_
+      --| Month_
+    | Number_
+      --| Password_
+      --| Radio_
+    | Range_
+
+
+
+--| Reset_
+--| Search_
+--| Select_ (List String)
+--| Submit_
+--| Tel_
+--| Text_ -- default
+--| Time_
+--| Url_
+--| Week_
+
+
+type alias Input =
+    { active : Bool
+    , value : String
+    , default : String
+    , type_ : Maybe String
     }
 
 
 type Msg
     = Click Int
+    | Date Int
+    | Activate Int
+    | Deactivate Int
+    | Value Int String
+
+
+setInput : Parameters -> Input
+setInput params =
+    let
+        value =
+            params
+                |> Attr.get "value"
+                |> Maybe.withDefault ""
+    in
+    params
+        |> Attr.get "input"
+        |> Input False value value
 
 
 none : x -> ( x, Maybe y )
@@ -42,13 +96,13 @@ push id params script javascript =
             script
             False
             False
-            (Attr.isSet "data-run-once" params)
+            (Attr.isSet "run-once" params)
             (params
-                |> Attr.get "data-default"
+                |> Attr.get "default"
                 |> Maybe.map Ok
             )
             (params
-                |> Attr.get "data-output"
+                |> Attr.get "output"
             )
             (script
                 |> Regex.find input
@@ -57,6 +111,7 @@ push id params script javascript =
                 |> List.filterMap identity
             )
             0
+            (setInput params)
         )
         javascript
 
@@ -75,8 +130,14 @@ getVisible : Int -> Array JavaScript -> List ( Int, String )
 getVisible visble javascript =
     javascript
         |> getAll identity
-        |> List.filter (Tuple.second >> .effect_id >> (==) visble)
-        |> List.map (Tuple.mapSecond .script)
+        |> List.filterMap
+            (\( id, node ) ->
+                if node.effect_id == visble then
+                    Just ( id, node.script, node.input.value )
+
+                else
+                    Nothing
+            )
         |> replaceInputs javascript
 
 
@@ -87,7 +148,7 @@ filterMap filter map =
         >> List.map (Tuple.mapSecond map)
 
 
-replaceInputs : Array JavaScript -> List ( Int, String ) -> List ( Int, String )
+replaceInputs : Array JavaScript -> List ( Int, String, String ) -> List ( Int, String )
 replaceInputs javascript =
     let
         inputs =
@@ -103,14 +164,21 @@ replaceInputs javascript =
                                 Nothing
                     )
     in
-    List.map (Tuple.mapSecond (\s -> List.foldl Eval.replace_input s inputs))
+    List.map
+        (\( id, script, input_ ) ->
+            ( id
+            , inputs
+                |> List.foldl Eval.replace_input script
+                |> Eval.replace_0 input_
+            )
+        )
 
 
 updateChildren : String -> Array JavaScript -> Array JavaScript
 updateChildren output =
     Array.map
         (\js ->
-            if js.running && List.member output js.input then
+            if js.running && List.member output js.inputs then
                 { js | update = True }
 
             else
@@ -124,8 +192,8 @@ scriptChildren output javascript =
         |> Array.toIndexedList
         |> List.filterMap
             (\( i, js ) ->
-                if not js.running && List.member output js.input then
-                    Just ( i, js.script )
+                if not js.running && List.member output js.inputs then
+                    Just ( i, js.script, js.input.value )
 
                 else
                     Nothing
@@ -202,7 +270,7 @@ publish id javascript =
             javascript
                 |> Array.map
                     (\node ->
-                        if List.member output node.input then
+                        if List.member output node.inputs then
                             { node | update = True }
 
                         else

@@ -3,7 +3,8 @@ module Lia.Markdown.Inline.Stringify exposing
     , stringify_
     )
 
-import Dict exposing (Dict)
+import Array exposing (Array)
+import Lia.Markdown.Effect.JavaScript exposing (JavaScript)
 import Lia.Markdown.Effect.Types as Effect
 import Lia.Markdown.HTML.Types as HTML
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
@@ -11,16 +12,16 @@ import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 
 stringify : Inlines -> String
 stringify =
-    stringify_ Dict.empty Nothing
+    stringify_ Array.empty Nothing
 
 
-stringify_ : Dict Int (Result String String) -> Maybe Int -> Inlines -> String
+stringify_ : Array JavaScript -> Maybe Int -> Inlines -> String
 stringify_ effects id =
     List.map (inline2string effects id)
         >> String.concat
 
 
-inline2string : Dict Int (Result String String) -> Maybe Int -> Inline -> String
+inline2string : Array JavaScript -> Maybe Int -> Inline -> String
 inline2string effects id inline =
     case inline of
         Chars str _ ->
@@ -62,7 +63,8 @@ inline2string effects id inline =
 
         Script i _ ->
             effects
-                |> Dict.get i
+                |> Array.get i
+                |> Maybe.andThen .result
                 |> Maybe.andThen Result.toMaybe
                 |> Maybe.withDefault ""
 
@@ -70,7 +72,7 @@ inline2string effects id inline =
             ""
 
 
-ref2string : Dict Int (Result String String) -> Maybe Int -> Reference -> String
+ref2string : Array JavaScript -> Maybe Int -> Reference -> String
 ref2string effects id ref =
     case ref of
         Movie alt _ _ ->

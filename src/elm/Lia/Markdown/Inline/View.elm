@@ -3,10 +3,13 @@ module Lia.Markdown.Inline.View exposing
     , viewer
     )
 
+import Array
+import Conditional.List as CList
 import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events as Event
+import Json.Decode as JD
 import Lia.Markdown.Effect.JavaScript as JS
 import Lia.Markdown.Effect.Model as E
 import Lia.Markdown.Effect.View as Effect
@@ -80,17 +83,31 @@ view config element =
                 |> Effect.inline config attr e
 
         Script id attr ->
-            case Dict.get id config.effects of
-                Just (Ok str) ->
-                    case get "data-input" attr |> Debug.log "#############" of
-                        Just "button" ->
-                            Html.span (Event.onClick (JS.Click id) :: Attr.title "output" :: annotation "lia-script" attr) [ Html.text str ]
+            case Array.get id config.effects of
+                Just node ->
+                    case node.result of
+                        Just (Ok str) ->
+                            if node.input.active then
+                                Html.input
+                                    (attr
+                                        |> annotation ""
+                                        |> List.append (input_ node.input id attr)
+                                    )
+                                    [ Html.text str ]
 
-                        _ ->
-                            Html.span (annotation "lia-script" attr) [ Html.text str ]
+                            else
+                                Html.span
+                                    (attr
+                                        |> annotation "lia-script"
+                                        |> List.append (script node.input id attr)
+                                    )
+                                    [ Html.text str ]
 
-                Just (Err str) ->
-                    Html.span [ Attr.style "color" "red" ] [ Html.text str ]
+                        Just (Err str) ->
+                            Html.span [ Attr.style "color" "red" ] [ Html.text str ]
+
+                        Nothing ->
+                            Html.text ""
 
                 Nothing ->
                     Html.text ""
@@ -105,9 +122,72 @@ view config element =
             view config (Container [ Formula mode_ e [] ] attr)
 
 
+script : JS.Input -> Int -> Parameters -> List (Html.Attribute JS.Msg)
+script input id attr =
+    []
+        |> List.append (data_input input id attr)
+        |> CList.addWhen
+            (attr
+                |> get "output"
+                |> Maybe.map Attr.title
+            )
+
+
+input_ : JS.Input -> Int -> Parameters -> List (Html.Attribute JS.Msg)
+input_ input id attr =
+    case get "input" attr of
+        Just str ->
+            [ Attr.type_ str
+            , Event.onInput (JS.Value id)
+            , Attr.value input.value
+            , Event.onBlur (JS.Deactivate id)
+            , Attr.id "lia-focus"
+            ]
+
+        Nothing ->
+            []
+
+
+data_input : JS.Input -> Int -> Parameters -> List (Html.Attribute JS.Msg)
+data_input input id attr =
+    case get "input" attr of
+        Just "button" ->
+            [ Event.onClick (JS.Click id)
+            , Attr.style "cursor" "pointer"
+            ]
+
+        Just "date" ->
+            [ Event.onClick (JS.Activate id)
+            , Attr.style "cursor" "pointer"
+            ]
+
+        Just "number" ->
+            [ Event.onClick (JS.Activate id)
+            , Attr.style "cursor" "pointer"
+            ]
+
+        Just "range" ->
+            [ Event.onClick (JS.Activate id)
+            , Attr.style "cursor" "pointer"
+            ]
+
+        Just "time" ->
+            [ Event.onClick (JS.Activate id)
+            , Attr.style "cursor" "pointer"
+            ]
+
+        Just "week" ->
+            [ Event.onClick (JS.Activate id)
+            , Attr.style "cursor" "pointer"
+            ]
+
+        _ ->
+            []
+
+
 view_inf : Lang -> Inline -> Html JS.Msg
 view_inf =
-    Config.init -1 Textbook 0 Nothing Dict.empty >> view
+    Config.init -1 Textbook 0 Nothing Array.empty >> view
 
 
 stringFrom : Config -> Maybe Inlines -> String
