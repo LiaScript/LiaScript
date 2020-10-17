@@ -6,11 +6,12 @@ port module Lia.Markdown.Update exposing
     , previousEffect
     , subscriptions
     , update
+    , updateSub
     )
 
 import Json.Encode as JE
 import Lia.Markdown.Code.Update as Code
-import Lia.Markdown.Effect.JavaScript as JS
+import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Quiz.Update as Quiz
 import Lia.Markdown.Survey.Update as Survey
@@ -30,7 +31,7 @@ type Msg
     | UpdateTable Table.Msg
     | FootnoteHide
     | FootnoteShow String
-    | Script JS.Msg
+    | Script Script.Msg
 
 
 

@@ -2,7 +2,7 @@ module Lia.Markdown.Survey.Update exposing (Msg(..), handle, update)
 
 import Array
 import Dict
-import Lia.Markdown.Effect.JavaScript as JS
+import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Survey.Json as Json
 import Lia.Markdown.Survey.Types exposing (State(..), Vector, toString)
 import Port.Eval as Eval
@@ -17,10 +17,10 @@ type Msg
     | MatrixUpdate Int Int String
     | Submit Int (Maybe String)
     | Handle Event
-    | Script JS.Msg
+    | Script Script.Msg
 
 
-update : Msg -> Vector -> ( Vector, List Event, Maybe JS.Msg )
+update : Msg -> Vector -> ( Vector, List Event, Maybe Script.Msg )
 update msg vector =
     case msg of
         TextUpdate idx str ->

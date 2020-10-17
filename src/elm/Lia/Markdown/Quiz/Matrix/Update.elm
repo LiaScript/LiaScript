@@ -1,17 +1,17 @@
 module Lia.Markdown.Quiz.Matrix.Update exposing (Msg(..), toString, update)
 
 import Array
-import Lia.Markdown.Effect.JavaScript as JS
+import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Quiz.Matrix.Types exposing (State)
 import Lia.Markdown.Quiz.Vector.Update as Vector
 
 
 type Msg
     = Toggle Int Int
-    | Script JS.Msg
+    | Script Script.Msg
 
 
-update : Msg -> State -> ( State, Maybe JS.Msg )
+update : Msg -> State -> ( State, Maybe Script.Msg )
 update msg state =
     case msg of
         Toggle row_id column_id ->

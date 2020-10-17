@@ -4,7 +4,7 @@ module Lia.Markdown.Inline.Stringify exposing
     )
 
 import Array exposing (Array)
-import Lia.Markdown.Effect.JavaScript exposing (JavaScript)
+import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.Effect.Types as Effect
 import Lia.Markdown.HTML.Types as HTML
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
@@ -15,13 +15,13 @@ stringify =
     stringify_ Array.empty Nothing
 
 
-stringify_ : Array JavaScript -> Maybe Int -> Inlines -> String
+stringify_ : Scripts -> Maybe Int -> Inlines -> String
 stringify_ effects id =
     List.map (inline2string effects id)
         >> String.concat
 
 
-inline2string : Array JavaScript -> Maybe Int -> Inline -> String
+inline2string : Scripts -> Maybe Int -> Inline -> String
 inline2string effects id inline =
     case inline of
         Chars str _ ->
@@ -72,7 +72,7 @@ inline2string effects id inline =
             ""
 
 
-ref2string : Array JavaScript -> Maybe Int -> Reference -> String
+ref2string : Scripts -> Maybe Int -> Reference -> String
 ref2string effects id ref =
     case ref of
         Movie alt _ _ ->

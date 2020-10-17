@@ -6,7 +6,7 @@ import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import Lia.Index.Model exposing (Model)
 import Lia.Index.Update exposing (Msg(..))
-import Lia.Markdown.Effect.JavaScript as JS
+import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Section exposing (Section, Sections)
 import Lia.Settings.Model exposing (Mode(..))
@@ -63,7 +63,7 @@ view_search lang model =
         ]
 
 
-view : Lang -> Int -> Sections -> Html ( Int, JS.Msg )
+view : Lang -> Int -> Sections -> Html ( Int, Script.Msg )
 view lang active sections =
     let
         toc_ =
@@ -75,7 +75,7 @@ view lang active sections =
         |> Html.div [ Attr.class "lia-content" ]
 
 
-toc : Lang -> Int -> Section -> Html ( Int, JS.Msg )
+toc : Lang -> Int -> Section -> Html ( Int, Script.Msg )
 toc lang active section =
     if section.visible then
         Html.map (Tuple.pair section.idx) <|

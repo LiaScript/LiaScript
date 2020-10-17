@@ -1,4 +1,4 @@
-module Lia.Markdown.Effect.JavaScript exposing (..)
+module Lia.Markdown.JavaScript exposing (..)
 
 import Array exposing (Array)
 import Dict exposing (Dict)
@@ -114,11 +114,6 @@ push id params script javascript =
             (setInput params)
         )
         javascript
-
-
-setRunning : Int -> Bool -> Array JavaScript -> Array JavaScript
-setRunning id state javascript =
-    set id (\js -> { js | running = state }) javascript
 
 
 count : Array JavaScript -> Int

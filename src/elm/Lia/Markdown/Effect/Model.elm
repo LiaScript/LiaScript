@@ -10,7 +10,7 @@ module Lia.Markdown.Effect.Model exposing
 
 import Array exposing (Array)
 import Dict exposing (Dict)
-import Lia.Markdown.Effect.JavaScript as JS exposing (JavaScript)
+import Lia.Markdown.Effect.Script.Types as JS exposing (Script)
 import Lia.Markdown.HTML.Attributes as Attr exposing (Parameters)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Port.Eval exposing (Eval)
@@ -20,7 +20,7 @@ type alias Model =
     { visible : Int
     , effects : Int
     , comments : Dict Int Element
-    , javascript : Array JavaScript
+    , javascript : Array Script
     , speaking : Maybe Int
     }
 

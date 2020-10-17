@@ -10,8 +10,10 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events as Event
 import Json.Decode as JD
-import Lia.Markdown.Effect.JavaScript as JS
 import Lia.Markdown.Effect.Model as E
+import Lia.Markdown.Effect.Script.Input as Input
+import Lia.Markdown.Effect.Script.Types as JS
+import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, get, toAttribute)
@@ -24,12 +26,12 @@ import Oembed
 import Translations exposing (Lang)
 
 
-viewer : Config -> Inlines -> List (Html JS.Msg)
+viewer : Config -> Inlines -> List (Html Script.Msg)
 viewer config =
     List.map (view config)
 
 
-view : Config -> Inline -> Html JS.Msg
+view : Config -> Inline -> Html Script.Msg
 view config element =
     case element of
         Chars e [] ->
@@ -122,7 +124,7 @@ view config element =
             view config (Container [ Formula mode_ e [] ] attr)
 
 
-script : JS.Input -> Int -> Parameters -> List (Html.Attribute JS.Msg)
+script : Input.Input -> Int -> Parameters -> List (Html.Attribute Script.Msg)
 script input id attr =
     []
         |> List.append (data_input input id attr)
@@ -133,14 +135,14 @@ script input id attr =
             )
 
 
-input_ : JS.Input -> Int -> Parameters -> List (Html.Attribute JS.Msg)
+input_ : Input.Input -> Int -> Parameters -> List (Html.Attribute Script.Msg)
 input_ input id attr =
     case get "input" attr of
         Just str ->
             [ Attr.type_ str
-            , Event.onInput (JS.Value id)
+            , Event.onInput (Script.Value id)
             , Attr.value input.value
-            , Event.onBlur (JS.Deactivate id)
+            , Event.onBlur (Script.Deactivate id)
             , Attr.id "lia-focus"
             ]
 
@@ -148,36 +150,36 @@ input_ input id attr =
             []
 
 
-data_input : JS.Input -> Int -> Parameters -> List (Html.Attribute JS.Msg)
+data_input : Input.Input -> Int -> Parameters -> List (Html.Attribute Script.Msg)
 data_input input id attr =
     case get "input" attr of
         Just "button" ->
-            [ Event.onClick (JS.Click id)
+            [ Event.onClick (Script.Click id)
             , Attr.style "cursor" "pointer"
             ]
 
         Just "date" ->
-            [ Event.onClick (JS.Activate id)
+            [ Event.onClick (Script.Activate id)
             , Attr.style "cursor" "pointer"
             ]
 
         Just "number" ->
-            [ Event.onClick (JS.Activate id)
+            [ Event.onClick (Script.Activate id)
             , Attr.style "cursor" "pointer"
             ]
 
         Just "range" ->
-            [ Event.onClick (JS.Activate id)
+            [ Event.onClick (Script.Activate id)
             , Attr.style "cursor" "pointer"
             ]
 
         Just "time" ->
-            [ Event.onClick (JS.Activate id)
+            [ Event.onClick (Script.Activate id)
             , Attr.style "cursor" "pointer"
             ]
 
         Just "week" ->
-            [ Event.onClick (JS.Activate id)
+            [ Event.onClick (Script.Activate id)
             , Attr.style "cursor" "pointer"
             ]
 
@@ -185,7 +187,7 @@ data_input input id attr =
             []
 
 
-view_inf : Lang -> Inline -> Html JS.Msg
+view_inf : Lang -> Inline -> Html Script.Msg
 view_inf =
     Config.init -1 Textbook 0 Nothing Array.empty >> view
 
@@ -217,7 +219,7 @@ img config attr alt_ url_ title_ =
         []
 
 
-figure : Config -> Maybe Inlines -> Html JS.Msg -> Html JS.Msg
+figure : Config -> Maybe Inlines -> Html Script.Msg -> Html Script.Msg
 figure config title_ element =
     case title_ of
         Nothing ->
@@ -234,7 +236,7 @@ figure config title_ element =
                 ]
 
 
-reference : Config -> Reference -> Parameters -> Html JS.Msg
+reference : Config -> Reference -> Parameters -> Html Script.Msg
 reference config ref attr =
     case ref of
         Link alt_ url_ title_ ->
@@ -313,7 +315,7 @@ oembed options url =
         |> Maybe.withDefault (Html.text ("Couldn't find oembed provider for url " ++ url))
 
 
-view_url : Config -> Inlines -> String -> Maybe Inlines -> Parameters -> Html JS.Msg
+view_url : Config -> Inlines -> String -> Maybe Inlines -> Parameters -> Html Script.Msg
 view_url config alt_ url_ title_ attr =
     [ Attr.href url_, title config title_ ]
         |> List.append (annotation "lia-link" attr)

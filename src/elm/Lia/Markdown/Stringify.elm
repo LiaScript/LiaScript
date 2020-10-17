@@ -1,14 +1,14 @@
 module Lia.Markdown.Stringify exposing (stringify)
 
 import Array exposing (Array)
-import Lia.Markdown.Effect.JavaScript exposing (JavaScript)
+import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.Effect.Types exposing (isIn)
 import Lia.Markdown.HTML.Types as HTML
 import Lia.Markdown.Inline.Stringify as Inline
 import Lia.Markdown.Types exposing (Markdown(..))
 
 
-stringify : Array JavaScript -> Maybe Int -> Markdown -> String
+stringify : Scripts -> Maybe Int -> Markdown -> String
 stringify effects id markdown =
     case markdown of
         Paragraph _ inlines ->
@@ -57,7 +57,7 @@ stringify effects id markdown =
             ""
 
 
-block : Array JavaScript -> Maybe Int -> List Markdown -> String
+block : Scripts -> Maybe Int -> List Markdown -> String
 block effects id =
     List.map (stringify effects id)
         >> List.intersperse "\n"

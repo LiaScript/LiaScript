@@ -2,7 +2,7 @@ module Lia.Markdown.Quiz.Update exposing (Msg(..), handle, update)
 
 import Array
 import Json.Encode as JE
-import Lia.Markdown.Effect.JavaScript as JS
+import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Quiz.Block.Update as Block
 import Lia.Markdown.Quiz.Json as Json
 import Lia.Markdown.Quiz.Matrix.Update as Matrix
@@ -20,10 +20,10 @@ type Msg
     | ShowHint Int
     | ShowSolution Int Type
     | Handle Event
-    | Script JS.Msg
+    | Script Script.Msg
 
 
-update : Msg -> Vector -> ( Vector, List Event, Maybe JS.Msg )
+update : Msg -> Vector -> ( Vector, List Event, Maybe Script.Msg )
 update msg vector =
     case msg of
         Block_Update id _ ->
@@ -112,8 +112,8 @@ get idx vector =
 update_ :
     Int
     -> Vector
-    -> (Element -> ( Element, Maybe JS.Msg ))
-    -> ( Vector, List Event, Maybe JS.Msg )
+    -> (Element -> ( Element, Maybe Script.Msg ))
+    -> ( Vector, List Event, Maybe Script.Msg )
 update_ idx vector fn =
     case get idx vector |> Maybe.map fn of
         Just ( elem, sub ) ->
@@ -123,7 +123,7 @@ update_ idx vector fn =
             ( vector, [], Nothing )
 
 
-state_ : Msg -> Element -> ( Element, Maybe JS.Msg )
+state_ : Msg -> Element -> ( Element, Maybe Script.Msg )
 state_ msg e =
     case ( msg, e.state ) of
         ( Block_Update _ m, Block_State s ) ->
@@ -185,7 +185,7 @@ evalEventDecoder json =
         \e -> ( { e | error_msg = eval.result }, Nothing )
 
 
-store : ( Vector, List Event, Maybe JS.Msg ) -> ( Vector, List Event, Maybe JS.Msg )
+store : ( Vector, List Event, Maybe Script.Msg ) -> ( Vector, List Event, Maybe Script.Msg )
 store ( vector, events, sub ) =
     ( vector
     , (vector
@@ -197,7 +197,7 @@ store ( vector, events, sub ) =
     )
 
 
-check : Type -> Element -> ( Element, Maybe JS.Msg )
+check : Type -> Element -> ( Element, Maybe Script.Msg )
 check solution e =
     ( { e
         | trial = e.trial + 1

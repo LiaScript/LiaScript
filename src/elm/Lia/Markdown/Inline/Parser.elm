@@ -35,8 +35,8 @@ import Combine
         , withState
         )
 import Combine.Char exposing (anyChar)
-import Lia.Markdown.Effect.JavaScript as JS
 import Lia.Markdown.Effect.Parser as Effect
+import Lia.Markdown.Effect.Script.Types as JS
 import Lia.Markdown.Footnote.Parser as Footnote
 import Lia.Markdown.HTML.Attributes as Attributes exposing (Parameters)
 import Lia.Markdown.HTML.Parser as HTML
