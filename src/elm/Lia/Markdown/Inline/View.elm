@@ -3,17 +3,15 @@ module Lia.Markdown.Inline.View exposing
     , viewer
     )
 
-import Array
-import Conditional.List as CList
 import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events as Event
 import Json.Decode as JD
 import Lia.Markdown.Effect.Model as E
-import Lia.Markdown.Effect.Script.Input as Input
-import Lia.Markdown.Effect.Script.Types as JS
-import Lia.Markdown.Effect.Script.Update as Script
+import Lia.Markdown.Effect.Script.Types exposing (Scripts)
+import Lia.Markdown.Effect.Script.Update exposing (Msg)
+import Lia.Markdown.Effect.Script.View as JS
 import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, get, toAttribute)
@@ -26,12 +24,12 @@ import Oembed
 import Translations exposing (Lang)
 
 
-viewer : Config -> Inlines -> List (Html Script.Msg)
+viewer : Config -> Inlines -> List (Html Msg)
 viewer config =
     List.map (view config)
 
 
-view : Config -> Inline -> Html Script.Msg
+view : Config -> Inline -> Html Msg
 view config element =
     case element of
         Chars e [] ->
@@ -85,34 +83,7 @@ view config element =
                 |> Effect.inline config attr e
 
         Script id attr ->
-            case Array.get id config.effects of
-                Just node ->
-                    case node.result of
-                        Just (Ok str) ->
-                            if node.input.active then
-                                Html.input
-                                    (attr
-                                        |> annotation ""
-                                        |> List.append (input_ node.input id attr)
-                                    )
-                                    [ Html.text str ]
-
-                            else
-                                Html.span
-                                    (attr
-                                        |> annotation "lia-script"
-                                        |> List.append (script node.input id attr)
-                                    )
-                                    [ Html.text str ]
-
-                        Just (Err str) ->
-                            Html.span [ Attr.style "color" "red" ] [ Html.text str ]
-
-                        Nothing ->
-                            Html.text ""
-
-                Nothing ->
-                    Html.text ""
+            JS.view id attr config.scripts
 
         Symbol e attr ->
             view config (Container [ Symbol e [] ] attr)
@@ -124,77 +95,14 @@ view config element =
             view config (Container [ Formula mode_ e [] ] attr)
 
 
-script : Input.Input -> Int -> Parameters -> List (Html.Attribute Script.Msg)
-script input id attr =
-    []
-        |> List.append (data_input input id attr)
-        |> CList.addWhen
-            (attr
-                |> get "output"
-                |> Maybe.map Attr.title
-            )
-
-
-input_ : Input.Input -> Int -> Parameters -> List (Html.Attribute Script.Msg)
-input_ input id attr =
-    case get "input" attr of
-        Just str ->
-            [ Attr.type_ str
-            , Event.onInput (Script.Value id)
-            , Attr.value input.value
-            , Event.onBlur (Script.Deactivate id)
-            , Attr.id "lia-focus"
-            ]
-
-        Nothing ->
-            []
-
-
-data_input : Input.Input -> Int -> Parameters -> List (Html.Attribute Script.Msg)
-data_input input id attr =
-    case get "input" attr of
-        Just "button" ->
-            [ Event.onClick (Script.Click id)
-            , Attr.style "cursor" "pointer"
-            ]
-
-        Just "date" ->
-            [ Event.onClick (Script.Activate id)
-            , Attr.style "cursor" "pointer"
-            ]
-
-        Just "number" ->
-            [ Event.onClick (Script.Activate id)
-            , Attr.style "cursor" "pointer"
-            ]
-
-        Just "range" ->
-            [ Event.onClick (Script.Activate id)
-            , Attr.style "cursor" "pointer"
-            ]
-
-        Just "time" ->
-            [ Event.onClick (Script.Activate id)
-            , Attr.style "cursor" "pointer"
-            ]
-
-        Just "week" ->
-            [ Event.onClick (Script.Activate id)
-            , Attr.style "cursor" "pointer"
-            ]
-
-        _ ->
-            []
-
-
-view_inf : Lang -> Inline -> Html Script.Msg
-view_inf =
-    Config.init -1 Textbook 0 Nothing Array.empty >> view
+view_inf : Scripts -> Lang -> Inline -> Html Msg
+view_inf scripts =
+    Config.init -1 Textbook 0 Nothing scripts >> view
 
 
 stringFrom : Config -> Maybe Inlines -> String
 stringFrom config =
-    Maybe.map (stringify_ config.effects config.visible)
+    Maybe.map (stringify_ config.scripts config.visible)
         >> Maybe.withDefault ""
 
 
@@ -219,7 +127,7 @@ img config attr alt_ url_ title_ =
         []
 
 
-figure : Config -> Maybe Inlines -> Html Script.Msg -> Html Script.Msg
+figure : Config -> Maybe Inlines -> Html Msg -> Html Msg
 figure config title_ element =
     case title_ of
         Nothing ->
@@ -236,7 +144,7 @@ figure config title_ element =
                 ]
 
 
-reference : Config -> Reference -> Parameters -> Html Script.Msg
+reference : Config -> Reference -> Parameters -> Html Msg
 reference config ref attr =
     case ref of
         Link alt_ url_ title_ ->
@@ -315,7 +223,7 @@ oembed options url =
         |> Maybe.withDefault (Html.text ("Couldn't find oembed provider for url " ++ url))
 
 
-view_url : Config -> Inlines -> String -> Maybe Inlines -> Parameters -> Html Script.Msg
+view_url : Config -> Inlines -> String -> Maybe Inlines -> Parameters -> Html Msg
 view_url config alt_ url_ title_ attr =
     [ Attr.href url_, title config title_ ]
         |> List.append (annotation "lia-link" attr)

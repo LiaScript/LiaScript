@@ -104,7 +104,7 @@ toc lang active section =
                     else
                         ""
                 ]
-                (List.map (view_inf lang) section.title)
+                (List.map (view_inf Array.empty lang) section.title)
 
     else
         Html.text ""

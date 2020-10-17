@@ -6,7 +6,7 @@ port module Lia.Markdown.Update exposing
     , previousEffect
     , subscriptions
     , update
-    , updateSub
+    , updateScript
     )
 
 import Json.Encode as JE
@@ -87,7 +87,7 @@ update msg section =
                 |> List.map Event.encode
                 |> send "quiz"
             )
-                |> updateSub sub
+                |> updateScript sub
 
         UpdateSurvey childMsg ->
             let
@@ -100,7 +100,7 @@ update msg section =
                 |> List.map Event.encode
                 |> send "survey"
             )
-                |> updateSub sub
+                |> updateScript sub
 
         UpdateTable childMsg ->
             let
@@ -111,7 +111,7 @@ update msg section =
             , Cmd.none
             , []
             )
-                |> updateSub sub
+                |> updateScript sub
 
         FootnoteShow key ->
             ( { section | footnote2show = Just key }, Cmd.none, [] )
@@ -119,11 +119,11 @@ update msg section =
         FootnoteHide ->
             ( { section | footnote2show = Nothing }, Cmd.none, [] )
 
-        Script sub ->
-            updateSub (Just sub) ( section, Cmd.none, [] )
+        Script childMsg ->
+            updateScript (Just childMsg) ( section, Cmd.none, [] )
 
 
-updateSub msg ( section, cmd, events ) =
+updateScript msg ( section, cmd, events ) =
     case msg of
         Nothing ->
             ( section, cmd, events )

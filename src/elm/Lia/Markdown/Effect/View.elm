@@ -221,7 +221,7 @@ block_playback config e =
             [ Attr.class "lia-btn lia-icon"
             , Attr.style "margin-left" "49%"
             , e.content
-                |> List.map (stringify config.effects config.visible)
+                |> List.map (stringify config.scripts config.visible)
                 |> List.intersperse "\n"
                 |> String.concat
                 |> E.Speak e.id e.voice

@@ -179,7 +179,7 @@ update session msg model =
                 Just sec ->
                     let
                         ( section, cmd_, log_ ) =
-                            Markdown.updateSub (Just sub) ( sec, Cmd.none, [] )
+                            Markdown.updateScript (Just sub) ( sec, Cmd.none, [] )
                     in
                     ( { model | sections = Array.set id section model.sections }
                     , Cmd.map UpdateMarkdown cmd_

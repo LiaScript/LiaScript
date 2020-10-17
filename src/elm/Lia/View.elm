@@ -113,7 +113,7 @@ view_footer lang sound mode slide effects =
                 |> current_paragraphs
                 |> List.map
                     (Tuple.second
-                        >> List.map (view_inf lang)
+                        >> List.map (view_inf effects.javascript lang)
                         >> Html.p []
                         >> Html.map (Tuple.pair slide >> Script)
                     )

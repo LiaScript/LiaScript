@@ -41,7 +41,7 @@ view config attr table =
         Lazy.lazy7 viewDiagram
             table
             state
-            config.main.effects
+            config.main.scripts
             config.main.visible
             config.screen.width
             config.light
@@ -49,12 +49,12 @@ view config attr table =
 
     else if table.head == [] && table.format == [] then
         state
-            |> unformatted config.view (toMatrix config.main.effects config.main.visible table.body) table.id
+            |> unformatted config.view (toMatrix config.main.scripts config.main.visible table.body) table.id
             |> toTable table.id attr table.class
 
     else
         state
-            |> formatted config.view table.head table.format (toMatrix config.main.effects config.main.visible table.body) table.id
+            |> formatted config.view table.head table.format (toMatrix config.main.scripts config.main.visible table.body) table.id
             |> toTable table.id attr table.class
 
 

@@ -13,7 +13,7 @@ type alias Config =
     , visible : Maybe Int
     , speaking : Maybe Int
     , lang : Lang
-    , effects : Scripts
+    , scripts : Scripts
     }
 
 
