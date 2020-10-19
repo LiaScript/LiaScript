@@ -2,6 +2,7 @@ module Lia.Markdown.HTML.Attributes exposing
     ( Parameters
     , annotation
     , get
+    , isNotSet
     , isSet
     , parse
     , toAttribute
@@ -59,6 +60,13 @@ isSet name =
     get name
         >> Maybe.map (String.trim >> String.toLower >> isTrue)
         >> Maybe.withDefault False
+
+
+isNotSet : String -> Parameters -> Bool
+isNotSet name =
+    get name
+        >> Maybe.map (String.trim >> String.toLower >> isTrue)
+        >> Maybe.withDefault True
 
 
 isTrue : String -> Bool

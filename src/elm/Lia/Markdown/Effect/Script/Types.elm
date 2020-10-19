@@ -18,6 +18,8 @@ type alias Script =
     , running : Bool
     , update : Bool
     , runOnce : Bool
+    , modify : Bool
+    , edit : Bool
     , result : Maybe (Result String String)
     , output : Maybe String
     , inputs : List String
@@ -40,6 +42,8 @@ push id params script javascript =
             False
             False
             (Attr.isSet "run-once" params)
+            (Attr.isNotSet "modify" params)
+            False
             (params
                 |> Attr.get "default"
                 |> Maybe.map Ok

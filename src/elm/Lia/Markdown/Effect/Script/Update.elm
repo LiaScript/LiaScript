@@ -10,7 +10,9 @@ module Lia.Markdown.Effect.Script.Update exposing
 
 import Array exposing (Array)
 import Browser.Dom as Dom
+import Conditional.String as CString
 import Json.Encode as JE
+import Lia.Markdown.Effect.Script.Input as Input
 import Lia.Markdown.Effect.Script.Types as Script exposing (Script, Scripts)
 import Port.Eval as Eval exposing (Eval)
 import Port.Event exposing (Event)
@@ -19,10 +21,10 @@ import Task
 
 type Msg
     = Click Int
-    | Date Int
-    | Activate Int
-    | Deactivate Int
+    | Activate Bool Int
     | Value Int String
+    | Edit Bool Int
+    | EditCode Int String
     | NoOp
     | Handle Event
 
@@ -30,71 +32,51 @@ type Msg
 update : Msg -> Scripts -> ( Scripts, Cmd Msg, List Event )
 update msg scripts =
     case msg of
-        Activate id ->
+        Activate bool id ->
             ( scripts
                 |> Script.set id
-                    (\js ->
-                        let
-                            input =
-                                js.input
-                        in
-                        { js | input = { input | active = not input.active } }
-                    )
-            , Task.attempt (always NoOp) (Dom.focus "lia-focus")
+                    (\js -> { js | input = Input.active bool js.input })
+            , if bool then
+                Task.attempt (always NoOp) (Dom.focus "lia-focus")
+
+              else
+                Cmd.none
             , []
             )
 
-        Deactivate id ->
-            case Script.get identity id scripts of
-                Just node ->
-                    let
-                        input =
-                            node.input
-                    in
-                    reRun id
-                        { node | input = { input | active = False } }
-                        scripts
-
-                _ ->
-                    ( scripts, Cmd.none, [] )
-
         Value id str ->
-            case Script.get identity id scripts of
-                Just node ->
-                    let
-                        input =
-                            node.input
-                    in
-                    reRun id
-                        { node
-                            | input =
-                                { input
-                                    | value =
-                                        if String.isEmpty str then
-                                            input.default
-
-                                        else
-                                            str
-                                }
-                        }
-                        scripts
-
-                _ ->
-                    ( scripts, Cmd.none, [] )
-
-        Date id ->
-            ( scripts, Cmd.none, [] )
+            reRun (\js -> { js | input = Input.value str js.input }) Cmd.none id scripts
 
         Click id ->
-            case Script.get identity id scripts of
-                Just node ->
-                    reRun id node scripts
-
-                _ ->
-                    ( scripts, Cmd.none, [] )
+            reRun identity Cmd.none id scripts
 
         NoOp ->
             ( scripts, Cmd.none, [] )
+
+        Edit bool id ->
+            let
+                fn js =
+                    { js
+                        | edit = bool
+                        , input = Input.active False js.input
+                    }
+            in
+            if bool then
+                ( scripts
+                    |> Script.set id fn
+                , Task.attempt (always NoOp) (Dom.focus "lia-focus")
+                , []
+                )
+
+            else
+                reRun fn Cmd.none id scripts
+
+        EditCode id str ->
+            ( scripts
+                |> Script.set id (\js -> { js | script = str })
+            , Cmd.none
+            , []
+            )
 
         Handle event ->
             case event.topic of
@@ -174,27 +156,36 @@ update msg scripts =
                     ( scripts, Cmd.none, [] )
 
 
-reRun : Int -> Script -> Scripts -> ( Scripts, Cmd Msg, List Event )
-reRun id node scripts =
-    ( Script.set id
-        (always
-            (if node.running then
-                { node | update = True }
+reRun : (Script -> Script) -> Cmd Msg -> Int -> Scripts -> ( Scripts, Cmd Msg, List Event )
+reRun fn cmd id scripts =
+    let
+        scripts_ =
+            scripts
+                |> Script.set id
+                    (\js ->
+                        fn <|
+                            if js.running then
+                                { js | update = True }
 
-             else
-                node
+                            else
+                                js
+                    )
+    in
+    case Script.get identity id scripts_ of
+        Just node ->
+            ( scripts_
+            , cmd
+            , if node.running then
+                []
+
+              else
+                [ ( id, node.script, node.input.value ) ]
+                    |> Script.replaceInputs scripts
+                    |> List.map (execute 0)
             )
-        )
-        scripts
-    , Cmd.none
-    , if node.running then
-        []
 
-      else
-        [ ( id, node.script, node.input.value ) ]
-            |> Script.replaceInputs scripts
-            |> List.map (execute 0)
-    )
+        Nothing ->
+            ( scripts_, cmd, [] )
 
 
 execute : Int -> ( Int, String ) -> Event
@@ -214,24 +205,36 @@ update_ id e =
 
 eval_ : Eval -> Script -> Script
 eval_ e js =
+    let
+        result =
+            trim e.result
+
+        waiting =
+            result == "LIA: wait"
+    in
     { js
-        | running = e.result == "\"LIA: wait\""
+        | running = waiting
         , counter = js.counter + 1
         , result =
-            if
-                e.result
-                    == "\"LIA: stop\""
-                    || e.result
-                    == "\"LIA: wait\""
-            then
+            if waiting then
+                js.result
+
+            else if result == "LIA: stop" then
                 js.result
 
             else if e.ok then
-                Just (Ok e.result)
+                Just (Ok result)
 
             else
-                Just (Err e.result)
+                Just (Err result)
     }
+
+
+trim : String -> String
+trim str =
+    str
+        |> CString.dropLeftIf (String.startsWith "\"" str) 1
+        |> CString.dropRightIf (String.endsWith "\"" str) 1
 
 
 setRunning : Int -> Bool -> Scripts -> Scripts

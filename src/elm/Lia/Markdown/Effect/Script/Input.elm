@@ -8,25 +8,26 @@ import Regex
 
 
 type Type_
-    = Checkbox_
+    = Button_
+    | Checkbox_
     | Color_
     | Date_
     | DatetimeLocal_
     | Email_
-      --| File_
+    | File_
       --| Hidden_
-      --| Image_
+    | Image_
     | Month_
     | Number_
     | Password_
-      --| Radio_
+    | Radio_ (List String)
     | Range_
       --| Reset_
     | Search_
     | Select_ (List String)
-    | Submit_
     | Tel_
     | Text_ -- default
+    | Textarea_
     | Time_
     | Url_
     | Week_
@@ -43,68 +44,152 @@ type alias Input =
 from : Parameters -> Input
 from params =
     let
-        value =
+        val =
             params
                 |> Attr.get "value"
                 |> Maybe.withDefault ""
     in
-    type_ params
-        |> Input False value value
+    params
+        |> Attr.get "input"
+        |> Maybe.map (parseType_ params)
+        |> Input False val val
 
 
-type_ : Parameters -> Maybe Type_
-type_ params =
-    case params |> Attr.get "input" >> Maybe.map (String.trim >> String.toLower) of
-        Just "button" ->
-            Just Submit_
+type_ : Type_ -> String
+type_ t =
+    case t of
+        Button_ ->
+            "button"
 
-        Just "checkbox" ->
-            Just Checkbox_
+        Checkbox_ ->
+            "checkbox"
 
-        Just "color" ->
-            Just Color_
+        Color_ ->
+            "color"
 
-        Just "date" ->
-            Just Date_
+        Date_ ->
+            "date"
 
-        Just "datetime-local" ->
-            Just DatetimeLocal_
+        DatetimeLocal_ ->
+            "datetime-local"
 
-        Just "email" ->
-            Just Email_
+        Email_ ->
+            "email"
 
-        Just "month" ->
-            Just Month_
+        File_ ->
+            "file"
 
-        Just "password" ->
-            Just Password_
+        Image_ ->
+            "image"
 
-        Just "search" ->
-            Just Search_
+        Month_ ->
+            "month"
 
-        Just "select" ->
-            Just (Select_ (options params))
+        Number_ ->
+            "number"
 
-        Just "submit" ->
-            Just Submit_
+        Password_ ->
+            "password"
 
-        Just "tel" ->
-            Just Tel_
+        Radio_ _ ->
+            "radio"
 
-        Just "time" ->
-            Just Time_
+        Range_ ->
+            "range"
 
-        Just "url" ->
-            Just Url_
+        Search_ ->
+            "search"
 
-        Just "week" ->
-            Just Week_
+        Select_ _ ->
+            "select"
 
-        Just _ ->
-            Just Text_
+        Tel_ ->
+            "tel"
 
-        Nothing ->
-            Nothing
+        Text_ ->
+            "text"
+
+        Textarea_ ->
+            "textarea"
+
+        Time_ ->
+            "time"
+
+        Url_ ->
+            "url"
+
+        Week_ ->
+            "week"
+
+
+parseType_ : Parameters -> String -> Type_
+parseType_ params input_ =
+    case input_ of
+        "button" ->
+            Button_
+
+        "checkbox" ->
+            Checkbox_
+
+        "color" ->
+            Color_
+
+        "date" ->
+            Date_
+
+        "datetime-local" ->
+            DatetimeLocal_
+
+        "email" ->
+            Email_
+
+        "file" ->
+            File_
+
+        "image" ->
+            Image_
+
+        "month" ->
+            Month_
+
+        "number" ->
+            Number_
+
+        "password" ->
+            Password_
+
+        "radio" ->
+            Radio_ (options params)
+
+        "range" ->
+            Range_
+
+        "search" ->
+            Search_
+
+        "select" ->
+            Select_ (options params)
+
+        "submit" ->
+            Button_
+
+        "tel" ->
+            Tel_
+
+        "textarea" ->
+            Textarea_
+
+        "time" ->
+            Time_
+
+        "url" ->
+            Url_
+
+        "week" ->
+            Week_
+
+        _ ->
+            Text_
 
 
 options : Parameters -> List String
@@ -113,3 +198,21 @@ options =
         >> Maybe.map (String.split "|")
         >> Maybe.withDefault []
         >> List.map String.trim
+        >> List.filter (String.isEmpty >> not)
+
+
+active : Bool -> Input -> Input
+active bool i =
+    { i | active = bool }
+
+
+value : String -> Input -> Input
+value str i =
+    { i
+        | value =
+            if String.isEmpty str then
+                i.default
+
+            else
+                str
+    }
