@@ -21,6 +21,7 @@ import Task
 
 type Msg
     = Click Int
+    | Reset Int
     | Activate Bool Int
     | Value Int String
     | Edit Bool Int
@@ -48,7 +49,25 @@ update msg scripts =
             reRun (\js -> { js | input = Input.value str js.input }) Cmd.none id scripts
 
         Click id ->
+            let
+                _ =
+                    Debug.log "sssssssssssssssssssssssssssssssss" id
+            in
             reRun identity Cmd.none id scripts
+
+        Reset id ->
+            reRun
+                (\js ->
+                    { js
+                        | input =
+                            js.input
+                                |> Input.default
+                                |> Input.active True
+                    }
+                )
+                Cmd.none
+                id
+                scripts
 
         NoOp ->
             ( scripts, Cmd.none, [] )

@@ -208,11 +208,9 @@ active bool i =
 
 value : String -> Input -> Input
 value str i =
-    { i
-        | value =
-            if String.isEmpty str then
-                i.default
+    { i | value = str }
 
-            else
-                str
-    }
+
+default : Input -> Input
+default i =
+    { i | value = i.default }

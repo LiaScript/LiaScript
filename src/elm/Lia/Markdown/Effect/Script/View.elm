@@ -5,6 +5,8 @@ import Conditional.List as CList
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events as Event
+import Json.Decode as JD
+import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Input as Input exposing (Input)
 import Lia.Markdown.Effect.Script.Types exposing (Script, Scripts)
 import Lia.Markdown.Effect.Script.Update exposing (Msg(..))
@@ -24,7 +26,7 @@ view id attr scripts =
                         input attr id node
 
                     else
-                        script attr id node
+                        script True attr id node
 
                 Nothing ->
                     Html.text ""
@@ -33,8 +35,8 @@ view id attr scripts =
             Html.text ""
 
 
-script : Parameters -> Int -> Script -> Html Msg
-script attr id node =
+script : Bool -> Parameters -> Int -> Script -> Html Msg
+script withStyling attr id node =
     case node.result of
         Nothing ->
             Html.text ""
@@ -52,18 +54,39 @@ script attr id node =
             Html.span
                 (annotation "lia-script" attr
                     |> CList.addIf node.modify (Attr.style "background-color" "lightgray")
-                    |> (::) (Attr.style "padding" "1px 5px 1px 5px")
-                    |> (::) (Attr.style "border-radius" "5px")
-                    |> CList.addIf node.modify (onEdit True id)
+                    |> CList.appendIf withStyling
+                        [ Attr.style "padding" "1px 5px 1px 5px"
+                        , Attr.style "border-radius" "5px"
+                        ]
+                    |> CList.addIf (not withStyling) (Attr.style "margin" "5px")
+                    --  |> CList.addIf node.modify (onEdit True id)
                     |> CList.addIf err (Attr.style "color" "red")
-                    |> CList.appendIf (node.input.type_ /= Nothing)
+                    |> CList.appendIf (node.input.type_ /= Nothing && withStyling)
                         [ Attr.style "cursor" "pointer"
                         , Attr.style "border" "2px solid #73AD21"
                         ]
-                    |> CList.addIf (node.input.type_ == Just Input.Button_) (Event.onClick (Click id))
-                    |> CList.addIf (node.input.type_ /= Just Input.Button_ && node.input.type_ /= Nothing) (onActivate True id)
+                    --|> CList.addIf (node.input.type_ == Just Input.Button_) (Event.onClick (Click id))
+                    --|> CList.addIf (node.input.type_ /= Just Input.Button_ && node.input.type_ /= Nothing) (onActivate True id)
+                    |> (::)
+                        (Event.on "click"
+                            (JD.maybe
+                                (JD.field "detail" JD.int)
+                                |> JD.map (Maybe.withDefault -1 >> Click)
+                            )
+                        )
                 )
-                [ Html.text str ]
+                [ if String.startsWith "HTML: " str then
+                    Html.span
+                        [ str
+                            |> String.dropLeft 5
+                            |> JE.string
+                            |> Attr.property "innerHTML"
+                        ]
+                        []
+
+                  else
+                    Html.text str
+                ]
 
 
 input_ : Input -> Int -> Parameters -> List (Html.Attribute Msg)
@@ -85,7 +108,7 @@ input : Parameters -> Int -> Script -> Html Msg
 input attr id node =
     case node.input.type_ of
         Just Input.Button_ ->
-            script attr id node
+            script True attr id node
 
         Just Input.Checkbox_ ->
             [ Html.input
@@ -105,11 +128,12 @@ input attr id node =
                 []
             , Html.span
                 [ Attr.class "lia-check-btn"
-                , Attr.style "margin" "0px 8px 0px 8px"
+                , Attr.style "margin" "0px 4px 0px 4px"
                 ]
                 [ Html.text "check" ]
             ]
                 |> Html.span []
+                |> span attr id node
 
         Just (Input.Radio_ options) ->
             options
@@ -147,6 +171,7 @@ input attr id node =
                     , Attr.id "lia-focus"
                     , Attr.value node.input.value
                     ]
+                |> span attr id node
 
         Just Input.Textarea_ ->
             Html.textarea
@@ -161,28 +186,45 @@ input attr id node =
                 []
 
         Just type_ ->
-            Html.span []
-                [ base type_ id attr node.input.value
-                , script attr id node
-                ]
+            base type_ id attr node.input.value
+                |> span attr id node
 
         Nothing ->
-            script attr id node
+            script True attr id node
+
+
+span attr id node control =
+    Html.span
+        [ Attr.style "background-color" "lightgray"
+        , Attr.style "padding" "1px 1px 3px 1px"
+        , Attr.style "border-radius" "5px"
+        , Attr.style "border" "2px solid #73AD21"
+        ]
+        [ control, script False attr id node ]
 
 
 base : Input.Type_ -> Int -> Parameters -> String -> Html Msg
 base type_ id attr value =
-    Html.input
-        (annotation "lia-script" attr
-            |> List.append
-                [ Event.onInput (Value id)
-                , Attr.type_ <| Input.type_ type_
-                , Attr.value value
-                , onActivate False id
-                , Attr.id "lia-focus"
-                ]
-        )
-        []
+    Html.form [ Attr.id "lia-focus", Attr.style "display" "inline-block" ]
+        [ Html.span
+            [ Attr.class "lia-hint-btn"
+            , Attr.style "position" "relative"
+            , Attr.style "cursor" "pointer"
+            , Event.onClick (Reset id)
+            ]
+            [ Html.text "cancel" ]
+        , Html.input
+            (annotation "lia-script" attr
+                |> List.append
+                    [ Event.onInput (Value id)
+                    , Attr.type_ <| Input.type_ type_
+                    , Attr.value value
+                    , onActivate False id
+                    ]
+            )
+            []
+        , Html.text " "
+        ]
 
 
 onActivate : Bool -> Int -> Html.Attribute Msg
