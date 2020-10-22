@@ -256,7 +256,6 @@ class LiaScript {
           break
         }
         case 'effect' :
-          console.warn("----------------", event);
           handleEffects(event.message, elmSend, event.section)
           break
         case "settings": {

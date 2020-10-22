@@ -16,6 +16,7 @@ import Lia.Markdown.Effect.Script.Input as Input
 import Lia.Markdown.Effect.Script.Types as Script exposing (Script, Scripts)
 import Port.Eval as Eval exposing (Eval)
 import Port.Event exposing (Event)
+import Process
 import Task
 
 
@@ -28,6 +29,7 @@ type Msg
     | EditCode Int String
     | NoOp
     | Handle Event
+    | Delay Float Msg
 
 
 update : Msg -> Scripts -> ( Scripts, Cmd Msg, List Event )
@@ -49,10 +51,6 @@ update msg scripts =
             reRun (\js -> { js | input = Input.value str js.input }) Cmd.none id scripts
 
         Click id ->
-            let
-                _ =
-                    Debug.log "sssssssssssssssssssssssssssssssss" id
-            in
             reRun identity Cmd.none id scripts
 
         Reset id ->
@@ -71,6 +69,13 @@ update msg scripts =
 
         NoOp ->
             ( scripts, Cmd.none, [] )
+
+        Delay milliseconds subMsg ->
+            ( scripts
+            , Process.sleep milliseconds
+                |> Task.perform (always subMsg)
+            , []
+            )
 
         Edit bool id ->
             let

@@ -15,7 +15,7 @@ type Type_
     | DatetimeLocal_
     | Email_
     | File_
-      --| Hidden_
+    | Hidden_
     | Image_
     | Month_
     | Number_
@@ -78,6 +78,9 @@ type_ t =
 
         File_ ->
             "file"
+
+        Hidden_ ->
+            "hidden"
 
         Image_ ->
             "image"
@@ -145,6 +148,9 @@ parseType_ params input_ =
 
         "file" ->
             File_
+
+        "hidden" ->
+            Hidden_
 
         "image" ->
             Image_
@@ -214,3 +220,8 @@ value str i =
 default : Input -> Input
 default i =
     { i | value = i.default }
+
+
+isHidden : Input -> Bool
+isHidden =
+    .type_ >> (==) (Just Hidden_)

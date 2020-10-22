@@ -8,6 +8,7 @@ import Html.Events as Event
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Input as Input exposing (Input)
+import Lia.Markdown.Effect.Script.Intl as Intl
 import Lia.Markdown.Effect.Script.Types exposing (Script, Scripts)
 import Lia.Markdown.Effect.Script.Update exposing (Msg(..))
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, get, toAttribute)
@@ -19,7 +20,10 @@ view id attr scripts =
         Just node ->
             case node.result of
                 Just _ ->
-                    if node.edit then
+                    if Input.isHidden node.input then
+                        Html.text ""
+
+                    else if node.edit then
                         edit id node.script
 
                     else if node.input.active then
@@ -54,26 +58,30 @@ script withStyling attr id node =
             Html.span
                 (annotation "lia-script" attr
                     |> CList.addIf node.modify (Attr.style "background-color" "lightgray")
-                    |> CList.appendIf withStyling
-                        [ Attr.style "padding" "1px 5px 1px 5px"
-                        , Attr.style "border-radius" "5px"
-                        ]
-                    |> CList.addIf (not withStyling) (Attr.style "margin" "5px")
-                    --  |> CList.addIf node.modify (onEdit True id)
-                    |> CList.addIf err (Attr.style "color" "red")
-                    |> CList.appendIf (node.input.type_ /= Nothing && withStyling)
-                        [ Attr.style "cursor" "pointer"
-                        , Attr.style "border" "2px solid #73AD21"
-                        ]
-                    --|> CList.addIf (node.input.type_ == Just Input.Button_) (Event.onClick (Click id))
-                    --|> CList.addIf (node.input.type_ /= Just Input.Button_ && node.input.type_ /= Nothing) (onActivate True id)
-                    |> (::)
-                        (Event.on "click"
-                            (JD.maybe
-                                (JD.field "detail" JD.int)
-                                |> JD.map (Maybe.withDefault -1 >> Click)
-                            )
+                    |> List.append
+                        (if withStyling then
+                            [ Attr.style "padding" "1px 5px 1px 5px"
+                            , Attr.style "border-radius" "5px"
+                            ]
+                                |> CList.appendIf (node.input.type_ /= Nothing)
+                                    [ Attr.style "cursor" "pointer"
+                                    , Attr.style "border" "2px solid #73AD21"
+                                    ]
+
+                         else
+                            [ Attr.style "margin" "5px" ]
                         )
+                    |> CList.addIf node.modify (onEdit True id)
+                    |> CList.addIf err (Attr.style "color" "red")
+                    |> CList.addIf (node.input.type_ == Just Input.Button_) (Event.onClick (Click id))
+                    |> CList.addIf (node.input.type_ /= Just Input.Button_ && node.input.type_ /= Nothing) (onActivate True id)
+                 --|> (::)
+                 --    (Event.on "click"
+                 --        (JD.maybe
+                 --            (JD.field "detail" JD.int)
+                 --            |> JD.map (Maybe.withDefault -1 >> Click)
+                 --        )
+                 --    )
                 )
                 [ if String.startsWith "HTML: " str then
                     Html.span
@@ -85,7 +93,7 @@ script withStyling attr id node =
                         []
 
                   else
-                    Html.text str
+                    Intl.view node.intl str
                 ]
 
 
@@ -200,12 +208,14 @@ span attr id node control =
         , Attr.style "border-radius" "5px"
         , Attr.style "border" "2px solid #73AD21"
         ]
-        [ control, script False attr id node ]
+        [ control
+        , script False attr id node
+        ]
 
 
 base : Input.Type_ -> Int -> Parameters -> String -> Html Msg
 base type_ id attr value =
-    Html.form [ Attr.id "lia-focus", Attr.style "display" "inline-block" ]
+    Html.span []
         [ Html.span
             [ Attr.class "lia-hint-btn"
             , Attr.style "position" "relative"
@@ -220,6 +230,7 @@ base type_ id attr value =
                     , Attr.type_ <| Input.type_ type_
                     , Attr.value value
                     , onActivate False id
+                    , Attr.id "lia-focus"
                     ]
             )
             []
@@ -230,6 +241,7 @@ base type_ id attr value =
 onActivate : Bool -> Int -> Html.Attribute Msg
 onActivate bool =
     Activate bool
+        >> Delay 200
         >> (if bool then
                 Event.onClick
 
@@ -245,7 +257,7 @@ onEdit bool =
                 Event.onDoubleClick
 
             else
-                Event.onBlur
+                Delay 300 >> Event.onBlur
            )
 
 

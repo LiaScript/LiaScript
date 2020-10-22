@@ -1,6 +1,7 @@
 module Lia.Markdown.HTML.Attributes exposing
     ( Parameters
     , annotation
+    , filterNames
     , get
     , isNotSet
     , isSet
@@ -53,6 +54,16 @@ get name attr =
 
             else
                 get name xs
+
+
+filterNames : List String -> Parameters -> Parameters
+filterNames names =
+    List.filter (filter_ names)
+
+
+filter_ : List String -> ( String, x ) -> Bool
+filter_ names ( name, _ ) =
+    List.member name names
 
 
 isSet : String -> Parameters -> Bool

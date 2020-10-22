@@ -3,6 +3,7 @@ module Lia.Markdown.Effect.Script.Types exposing (..)
 import Array exposing (Array)
 import Dict exposing (Dict)
 import Lia.Markdown.Effect.Script.Input as Input exposing (Input)
+import Lia.Markdown.Effect.Script.Intl as Intl exposing (Intl)
 import Lia.Markdown.HTML.Attributes as Attr exposing (Parameters)
 import Port.Eval as Eval exposing (Eval)
 import Regex
@@ -25,6 +26,7 @@ type alias Script =
     , inputs : List String
     , counter : Int
     , input : Input
+    , intl : Maybe Intl
     }
 
 
@@ -59,6 +61,7 @@ push id params script javascript =
             )
             0
             (Input.from params)
+            (Intl.from params)
         )
         javascript
 
