@@ -6,29 +6,43 @@ import Json.Encode as JE
 import Lia.Markdown.HTML.Attributes as Params exposing (Parameters)
 
 
-type Intl
-    = Number Parameters
-    | DateTime Parameters
+type alias Intl =
+    Parameters
 
 
 number : List String
 number =
     [ "locale"
-    , "localeStyle"
+    , "localestyle"
     , "currency"
-    , "localeMatcher"
-    , "useGrouping"
-    , "minimumIntegerDigits"
-    , "minimumFractionDigits"
-    , "maximumFractionDigits"
-    , "minimumSignificantDigits"
-    , "maximumSignificantDigits"
+    , "localematcher"
+    , "usegrouping"
+    , "minimumintegerdigits"
+    , "minimumfractiondigits"
+    , "maximumfractiondigits"
+    , "minimumsignificantdigits"
+    , "maximumsignificantdigits"
     ]
 
 
 datetime : List String
 datetime =
-    []
+    [ "locale"
+    , "localematcher"
+    , "timezone"
+    , "hour12"
+    , "hourcycle"
+    , "formatmatcher"
+    , "weekday"
+    , "era"
+    , "year"
+    , "month"
+    , "day"
+    , "hour"
+    , "minute"
+    , "second"
+    , "timezonename"
+    ]
 
 
 from : Parameters -> Maybe Intl
@@ -37,13 +51,13 @@ from params =
         Just "number" ->
             params
                 |> Params.filterNames number
-                |> Number
+                |> (::) ( "format", "number" )
                 |> Just
 
         Just "datetime" ->
             params
                 |> Params.filterNames datetime
-                |> Number
+                |> (::) ( "format", "datetime" )
                 |> Just
 
         _ ->
@@ -56,18 +70,15 @@ view intl =
         Nothing ->
             Html.text
 
-        Just (Number attr) ->
-            node "intl-number" attr
-
-        Just (DateTime attr) ->
-            node "intl-datetime" attr
+        Just attr ->
+            node attr
 
 
-node : String -> Parameters -> String -> Html msg
-node name attr value =
-    Html.node name
+node : Parameters -> String -> Html msg
+node attr value =
+    Html.node "intl-format"
         (attr
             |> Params.toAttribute
             |> (::) (Attr.property "value" (JE.string value))
         )
-        []
+        [ Html.text value ]

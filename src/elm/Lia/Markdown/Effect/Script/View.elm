@@ -63,17 +63,22 @@ script withStyling attr id node =
                             [ Attr.style "padding" "1px 5px 1px 5px"
                             , Attr.style "border-radius" "5px"
                             ]
-                                |> CList.appendIf (node.input.type_ /= Nothing)
-                                    [ Attr.style "cursor" "pointer"
-                                    , Attr.style "border" "2px solid #73AD21"
-                                    ]
+                                |> CList.addIf (node.input.type_ /= Nothing) (Attr.style "border" "2px solid #73AD21")
 
                          else
                             [ Attr.style "margin" "5px" ]
                         )
+                    |> List.append
+                        (if node.input.type_ == Just Input.Button_ then
+                            [ Event.onClick (Click id)
+                            , Attr.style "cursor" "pointer"
+                            ]
+
+                         else
+                            [ Attr.style "cursor" "cell" ]
+                        )
                     |> CList.addIf node.modify (onEdit True id)
                     |> CList.addIf err (Attr.style "color" "red")
-                    |> CList.addIf (node.input.type_ == Just Input.Button_) (Event.onClick (Click id))
                     |> CList.addIf (node.input.type_ /= Just Input.Button_ && node.input.type_ /= Nothing) (onActivate True id)
                  --|> (::)
                  --    (Event.on "click"
@@ -126,11 +131,12 @@ input attr id node =
                 , Attr.id "lia-focus"
                 , Event.onCheck
                     (\b ->
-                        if b then
-                            Value id "true"
+                        Value id <|
+                            if b then
+                                "true"
 
-                        else
-                            Value id "false"
+                            else
+                                "false"
                     )
                 ]
                 []
@@ -208,22 +214,27 @@ span attr id node control =
         , Attr.style "border-radius" "5px"
         , Attr.style "border" "2px solid #73AD21"
         ]
-        [ control
+        [ reset id
+        , control
         , script False attr id node
         ]
+
+
+reset : Int -> Html Msg
+reset id =
+    Html.span
+        [ Attr.class "lia-hint-btn"
+        , Attr.style "position" "relative"
+        , Attr.style "cursor" "pointer"
+        , Event.onClick (Reset id)
+        ]
+        [ Html.text "clear" ]
 
 
 base : Input.Type_ -> Int -> Parameters -> String -> Html Msg
 base type_ id attr value =
     Html.span []
-        [ Html.span
-            [ Attr.class "lia-hint-btn"
-            , Attr.style "position" "relative"
-            , Attr.style "cursor" "pointer"
-            , Event.onClick (Reset id)
-            ]
-            [ Html.text "cancel" ]
-        , Html.input
+        [ Html.input
             (annotation "lia-script" attr
                 |> List.append
                     [ Event.onInput (Value id)
