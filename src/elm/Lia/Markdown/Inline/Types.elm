@@ -33,6 +33,7 @@ type Inline
     | Ref Reference Parameters
     | FootnoteMark String Parameters
     | EInline (Effect Inline) Parameters
+    | Script Int Parameters
     | IHTML (Node Inline) Parameters
     | Container Inlines Parameters
     | Goto Inline Int

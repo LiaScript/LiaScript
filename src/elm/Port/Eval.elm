@@ -4,6 +4,9 @@ module Port.Eval exposing
     , decoder
     , encode
     , event
+    , replace_0
+    , replace_id
+    , replace_input
     )
 
 import Json.Decode as JD
@@ -22,7 +25,7 @@ type alias Eval =
 event : Int -> String -> List String -> Event
 event id code replacement =
     let
-        replacement_0 =
+        default =
             replacement
                 |> List.head
                 |> Maybe.withDefault ""
@@ -30,17 +33,28 @@ event id code replacement =
     in
     replacement
         |> List.indexedMap (\i r -> ( i, toJSstring r ))
-        |> List.foldl replace_input code
-        |> String.replace "@'input" (toEscapeString replacement_0)
-        |> String.replace "@input" replacement_0
+        |> List.foldl replace_id code
+        |> replace_0 default
         |> JE.string
         |> Event "eval" id
 
 
-replace_input : ( Int, String ) -> String -> String
-replace_input ( int, insert ) =
-    String.replace ("@'input(" ++ String.fromInt int ++ ")") (toEscapeString insert)
-        >> String.replace ("@input(" ++ String.fromInt int ++ ")") insert
+replace_0 : String -> String -> String
+replace_0 replacement =
+    String.replace "@'input" (toEscapeString replacement)
+        >> String.replace "@input" replacement
+
+
+replace_id : ( Int, String ) -> String -> String
+replace_id ( id, insert ) =
+    String.replace ("@'input(" ++ String.fromInt id ++ ")") (toEscapeString insert)
+        >> String.replace ("@input(" ++ String.fromInt id ++ ")") insert
+
+
+replace_input : ( String, String ) -> String -> String
+replace_input ( key, insert ) =
+    String.replace ("@'input(`" ++ key ++ "`)") (toEscapeString insert)
+        >> String.replace ("@input(`" ++ key ++ "`)") insert
 
 
 decoder : JD.Decoder Eval

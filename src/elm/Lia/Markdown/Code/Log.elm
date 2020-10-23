@@ -1,16 +1,16 @@
 module Lia.Markdown.Code.Log exposing
-    ( Log
-    , add_Debug
-    , add_Error
+    ( Level(..)
+    , Log
+    , add
     , add_Eval
-    , add_Info
-    , add_Warn
     , decoder
     , empty
     , encode
+    , length
     , view
     )
 
+import Array exposing (Array)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Decode as JD
@@ -23,6 +23,7 @@ type Level
     | Info -- for information of any kind
     | Warn -- for warnings
     | Error -- for errors
+    | HTML -- show html content
 
 
 type alias Message =
@@ -34,154 +35,73 @@ type alias Message =
 type alias Log =
     { ok : Bool
     , level : Level
-    , messages : List Message
-    , lines : Int
+    , messages : Array Message
     , details : List JE.Value
     }
 
 
 empty : Log
 empty =
-    Log True Debug [] 0 []
+    Log True Debug Array.empty []
 
 
-view : Log -> List (Html msg)
+view : Log -> List ( String, Html msg )
 view log =
     log.messages
-        |> List.reverse
+        |> Array.toList
         |> List.map view_message
 
 
-view_message : Message -> Html msg
+view_message : Message -> ( String, Html msg )
 view_message { level, text } =
-    Html.span [ view_level level ] [ Html.text text ]
+    ( text
+    , case level of
+        Debug ->
+            Html.span [ Attr.style "color" "lightblue" ] [ Html.text text ]
+
+        Info ->
+            Html.span [ Attr.style "color" "white" ] [ Html.text text ]
+
+        Warn ->
+            Html.span [ Attr.style "color" "yellow" ] [ Html.text text ]
+
+        Error ->
+            Html.span [ Attr.style "color" "red" ] [ Html.text text ]
+
+        HTML ->
+            Html.div [ Attr.property "innerHTML" <| JE.string text ] []
+    )
 
 
-view_level : Level -> Html.Attribute msg
-view_level level =
-    Attr.style "color" <|
-        case level of
-            Debug ->
-                "lightblue"
-
-            Info ->
-                "white"
-
-            Warn ->
-                "yellow"
-
-            Error ->
-                "red"
+add : Level -> String -> Log -> Log
+add level str log =
+    { log
+        | messages =
+            log.messages
+                |> Array.push (Message level str)
+                |> crop
+    }
 
 
-add_Debug : String -> Log -> Log
-add_Debug =
-    add_ Debug
+crop : Array Message -> Array Message
+crop messages =
+    if Array.length messages < 250 then
+        messages
 
-
-add_Info : String -> Log -> Log
-add_Info =
-    add_ Info
-
-
-add_Warn : String -> Log -> Log
-add_Warn =
-    add_ Warn
-
-
-add_Error : String -> Log -> Log
-add_Error =
-    add_ Error
-
-
-add_ : Level -> String -> Log -> Log
-add_ level str log =
-    let
-        lines =
-            str
-                |> String.lines
-                |> List.length
-    in
-    --    shrink <|
-    case log.messages of
-        x :: xs ->
-            { log
-                | lines = log.lines + lines - 1
-                , messages =
-                    if x.level == level then
-                        { x | text = x.text ++ str } :: xs
-
-                    else
-                        Message level str :: x :: xs
-            }
-
-        [] ->
-            { log | lines = lines, messages = [ Message level str ] }
+    else
+        Array.slice 1 250 messages
 
 
 add_Eval : Eval -> Log -> Log
 add_Eval eval log =
     (if eval.ok then
-        add_Info eval.result
+        add Info eval.result
 
      else
-        add_Error eval.result
+        add Error eval.result
     )
     <|
         { log | ok = eval.ok, details = eval.details }
-
-
-
--- max_lines : Int
--- max_lines =
---     1000
---
---
--- shrink : Log -> Log
--- shrink log =
---     if log.lines <= max_lines then
---         log
---
---     else
---         { log
---             | lines = max_lines
---             , messages =
---                 log.messages
---                     |> List.reverse
---                     |> cut_log log.lines
---                     |> List.reverse
---         }
---
---
--- cut_log : Int -> List Message -> List Message
--- cut_log lines list =
---     case list of
---         [] ->
---             []
---
---         msg :: msgs ->
---             let
---                 msg_text =
---                     Debug.log "Text" <| String.lines msg.text
---
---                 msg_lines =
---                     Debug.log "Lines" <| List.length msg_text
---
---                 offset =
---                     Debug.log "Offset" (lines - msg_lines)
---             in
---             if offset < max_lines then
---                 { msg
---                     | text =
---                         msg_text
---                             |> List.drop (max_lines - offset)
---                             |> List.intersperse "\n"
---                             |> String.concat
---                 }
---                     :: msgs
---
---             else
---                 cut_log offset msgs
 
 
 encode : Log -> JE.Value
@@ -189,10 +109,20 @@ encode log =
     JE.object
         [ ( "ok", JE.bool log.ok )
         , ( "level", encLevel log.level )
-        , ( "messages", JE.list encMessage log.messages )
-        , ( "lines", JE.int log.lines )
+        , ( "messages", JE.array encMessage log.messages )
         , ( "details", JE.list identity log.details )
         ]
+
+
+length : Array Message -> Int
+length =
+    Array.map len
+        >> Array.foldl (+) 0
+
+
+len : Message -> Int
+len =
+    .text >> String.indexes "\n" >> List.length
 
 
 encLevel : Level -> JE.Value
@@ -211,6 +141,9 @@ encLevel level =
             Error ->
                 2
 
+            HTML ->
+                3
+
 
 encMessage : Message -> JE.Value
 encMessage { level, text } =
@@ -222,11 +155,10 @@ encMessage { level, text } =
 
 decoder : JD.Decoder Log
 decoder =
-    JD.map5 Log
+    JD.map4 Log
         (JD.field "ok" JD.bool)
         (JD.field "level" decLevel)
-        (JD.field "messages" (JD.list decMessage))
-        (JD.field "lines" JD.int)
+        (JD.field "messages" (JD.array decMessage))
         (JD.field "details" (JD.list JD.value))
 
 

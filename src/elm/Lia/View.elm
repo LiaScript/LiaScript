@@ -42,7 +42,9 @@ view_aside hasShareAPI model =
                 "0px"
         ]
         [ Html.map UpdateIndex <| Index.view_search model.translation model.index_model
-        , Index.view model.translation model.section_active model.sections
+        , model.sections
+            |> Index.view model.translation model.section_active
+            |> Html.map Script
         , model
             |> get_active_section
             |> Maybe.andThen .definition
@@ -91,20 +93,30 @@ view_article screen hasIndex model =
                     )
                     |> Markdown.view
                     |> Html.map UpdateMarkdown
-                , view_footer model.translation model.settings.sound model.settings.mode section.effect_model
+                , view_footer
+                    model.translation
+                    model.settings.sound
+                    model.settings.mode
+                    model.section_active
+                    section.effect_model
                 ]
 
         Nothing ->
             Html.text "no content"
 
 
-view_footer : Lang -> Bool -> Mode -> Lia.Markdown.Effect.Model.Model -> Html Msg
-view_footer lang sound mode effects =
+view_footer : Lang -> Bool -> Mode -> Int -> Lia.Markdown.Effect.Model.Model -> Html Msg
+view_footer lang sound mode slide effects =
     case mode of
         Slides ->
             effects
                 |> current_paragraphs
-                |> List.map (\( _, par ) -> Html.p [] (List.map (view_inf lang) par))
+                |> List.map
+                    (Tuple.second
+                        >> List.map (view_inf effects.javascript lang)
+                        >> Html.p []
+                        >> Html.map (Tuple.pair slide >> Script)
+                    )
                 |> flip List.append [ responsive lang sound (UpdateSettings toggle_sound) ]
                 |> Html.footer [ Attr.class "lia-footer" ]
 

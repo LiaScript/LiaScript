@@ -10,6 +10,7 @@ import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Json.Encode as JE
 import Lia.Markdown.Effect.Model exposing (Model)
+import Lia.Markdown.Effect.Script.Types as JS
 import Lia.Markdown.Effect.Types exposing (Class(..), Effect, class, isIn)
 import Lia.Markdown.Effect.Update as E
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
@@ -220,7 +221,7 @@ block_playback config e =
             [ Attr.class "lia-btn lia-icon"
             , Attr.style "margin-left" "49%"
             , e.content
-                |> List.map (stringify config.visible)
+                |> List.map (stringify config.scripts config.visible)
                 |> List.intersperse "\n"
                 |> String.concat
                 |> E.Speak e.id e.voice

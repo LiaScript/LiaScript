@@ -1,7 +1,9 @@
 module Lia.Markdown.HTML.Attributes exposing
     ( Parameters
     , annotation
+    , filterNames
     , get
+    , isNotSet
     , isSet
     , parse
     , toAttribute
@@ -37,6 +39,9 @@ type alias Parameters =
     List ( String, String )
 
 
+{-| Search the attribute list for a certain key, the corresponding value will be
+returned, if present.
+-}
 get : String -> Parameters -> Maybe String
 get name attr =
     case attr of
@@ -51,11 +56,28 @@ get name attr =
                 get name xs
 
 
+filterNames : List String -> Parameters -> Parameters
+filterNames names =
+    List.filter (filter_ names)
+
+
+filter_ : List String -> ( String, x ) -> Bool
+filter_ names ( name, _ ) =
+    List.member name names
+
+
 isSet : String -> Parameters -> Bool
 isSet name =
     get name
         >> Maybe.map (String.trim >> String.toLower >> isTrue)
         >> Maybe.withDefault False
+
+
+isNotSet : String -> Parameters -> Bool
+isNotSet name =
+    get name
+        >> Maybe.map (String.trim >> String.toLower >> isTrue)
+        >> Maybe.withDefault True
 
 
 isTrue : String -> Bool

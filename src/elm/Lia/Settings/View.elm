@@ -1,5 +1,6 @@
 module Lia.Settings.View exposing (design, switch_button_mode, toggle_button_toc, view)
 
+import Array
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
@@ -202,14 +203,15 @@ view_attributes lang =
         >> Html.span []
 
 
-thanks : Lang -> Inlines -> Html msg
+thanks : Lang -> Inlines -> Html Msg
 thanks lang to =
     Html.span []
         [ Html.hr [] []
         , to
-            |> List.map (view_inf lang)
+            |> List.map (view_inf Array.empty lang)
             |> span_block
         ]
+        |> Html.map (\_ -> Ignore)
 
 
 view_translations : Lang -> Bool -> String -> List ( String, String ) -> Html Msg

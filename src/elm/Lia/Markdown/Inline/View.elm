@@ -3,11 +3,18 @@ module Lia.Markdown.Inline.View exposing
     , viewer
     )
 
+import Dict
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
+import Html.Events as Event
+import Json.Decode as JD
+import Lia.Markdown.Effect.Model as E
+import Lia.Markdown.Effect.Script.Types exposing (Scripts)
+import Lia.Markdown.Effect.Script.Update exposing (Msg)
+import Lia.Markdown.Effect.Script.View as JS
 import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.View as Footnote
-import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
+import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, get, toAttribute)
 import Lia.Markdown.HTML.View as HTML
 import Lia.Markdown.Inline.Config as Config exposing (Config)
 import Lia.Markdown.Inline.Stringify exposing (stringify_)
@@ -17,7 +24,7 @@ import Oembed
 import Translations exposing (Lang)
 
 
-viewer : Config -> Inlines -> List (Html msg)
+viewer : Config -> Inlines -> List (Html Msg)
 viewer config =
     List.map (view config)
 
@@ -27,7 +34,7 @@ goto line =
     Attr.attribute "ondblclick" ("window.liaGoto(" ++ String.fromInt line ++ ");")
 
 
-view : Config -> Inline -> Html msg
+view : Config -> Inline -> Html Msg
 view config element =
     case element of
         Chars e [] ->
@@ -82,6 +89,9 @@ view config element =
                 |> viewer config
                 |> Effect.inline config attr e
 
+        Script id attr ->
+            JS.view id attr config.scripts
+
         Symbol e attr ->
             view config (Container [ Symbol e [] ] attr)
 
@@ -103,39 +113,39 @@ view config element =
                     Html.span [ goto line ] [ view config e ]
 
 
-view_inf : Lang -> Inline -> Html msg
-view_inf =
-    Config.init -1 Textbook 0 Nothing >> view
+view_inf : Scripts -> Lang -> Inline -> Html Msg
+view_inf scripts =
+    Config.init -1 Textbook 0 Nothing scripts >> view
 
 
-stringFrom : Maybe Int -> Maybe Inlines -> String
-stringFrom visibility =
-    Maybe.map (stringify_ visibility)
+stringFrom : Config -> Maybe Inlines -> String
+stringFrom config =
+    Maybe.map (stringify_ config.scripts config.visible)
         >> Maybe.withDefault ""
 
 
-title : Maybe Int -> Maybe Inlines -> Html.Attribute msg
-title visibility =
-    stringFrom visibility >> Attr.title
+title : Config -> Maybe Inlines -> Html.Attribute msg
+title config =
+    stringFrom config >> Attr.title
 
 
-alt : Maybe Int -> Inlines -> Html.Attribute msg
-alt visibility =
-    Just >> stringFrom visibility >> Attr.alt
+alt : Config -> Inlines -> Html.Attribute msg
+alt config =
+    Just >> stringFrom config >> Attr.alt
 
 
-img : Parameters -> Maybe Int -> Inlines -> String -> Maybe Inlines -> Html msg
-img attr visibility alt_ url_ title_ =
+img : Config -> Parameters -> Inlines -> String -> Maybe Inlines -> Html msg
+img config attr alt_ url_ title_ =
     Html.img
         (Attr.src url_
-            :: title visibility title_
-            :: alt visibility alt_
+            :: title config title_
+            :: alt config alt_
             :: annotation "lia-image" attr
         )
         []
 
 
-figure : Config -> Maybe Inlines -> Html msg -> Html msg
+figure : Config -> Maybe Inlines -> Html Msg -> Html Msg
 figure config title_ element =
     case title_ of
         Nothing ->
@@ -152,7 +162,7 @@ figure config title_ element =
                 ]
 
 
-reference : Config -> Reference -> Parameters -> Html msg
+reference : Config -> Reference -> Parameters -> Html Msg
 reference config ref attr =
     case ref of
         Link alt_ url_ title_ ->
@@ -162,7 +172,7 @@ reference config ref attr =
             view_url config alt_ url_ title_ attr
 
         Image alt_ url_ title_ ->
-            img attr config.visible alt_ url_ title_
+            img config attr alt_ url_ title_
                 |> figure config title_
 
         Audio alt_ ( tube, url_ ) title_ ->
@@ -171,9 +181,9 @@ reference config ref attr =
                     Html.iframe
                         (Attr.src url_
                             :: Attr.attribute "allowfullscreen" ""
-                            :: alt config.visible alt_
+                            :: alt config alt_
                             :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                            :: title config.visible title_
+                            :: title config title_
                             :: Attr.style "width" "100%"
                             :: annotation "lia-audio" attr
                         )
@@ -182,8 +192,8 @@ reference config ref attr =
                 else
                     Html.audio
                         (Attr.controls True
-                            :: title config.visible title_
-                            :: alt config.visible alt_
+                            :: title config title_
+                            :: alt config alt_
                             :: annotation "lia-audio" attr
                         )
                         [ Html.source [ Attr.src url_ ] [] ]
@@ -194,9 +204,9 @@ reference config ref attr =
                     Html.iframe
                         (Attr.src url_
                             :: Attr.attribute "allowfullscreen" ""
-                            :: alt config.visible alt_
+                            :: alt config alt_
                             :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                            :: title config.visible title_
+                            :: title config title_
                             :: annotation "lia-movie" attr
                         )
                         (viewer config alt_)
@@ -204,8 +214,8 @@ reference config ref attr =
                 else
                     Html.video
                         (Attr.controls True
-                            :: alt config.visible alt_
-                            :: title config.visible title_
+                            :: alt config alt_
+                            :: title config title_
                             :: annotation "lia-movie" attr
                         )
                         [ Html.source [ Attr.src url_ ] [] ]
@@ -231,9 +241,9 @@ oembed options url =
         |> Maybe.withDefault (Html.text ("Couldn't find oembed provider for url " ++ url))
 
 
-view_url : Config -> Inlines -> String -> Maybe Inlines -> Parameters -> Html msg
+view_url : Config -> Inlines -> String -> Maybe Inlines -> Parameters -> Html Msg
 view_url config alt_ url_ title_ attr =
-    [ Attr.href url_, title config.visible title_ ]
+    [ Attr.href url_, title config title_ ]
         |> List.append (annotation "lia-link" attr)
         |> Html.a
         |> (\a -> a (viewer config alt_))

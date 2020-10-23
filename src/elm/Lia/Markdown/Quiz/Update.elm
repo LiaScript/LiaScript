@@ -2,6 +2,7 @@ module Lia.Markdown.Quiz.Update exposing (Msg(..), handle, update)
 
 import Array
 import Json.Encode as JE
+import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Quiz.Block.Update as Block
 import Lia.Markdown.Quiz.Json as Json
 import Lia.Markdown.Quiz.Matrix.Update as Matrix
@@ -19,19 +20,20 @@ type Msg
     | ShowHint Int
     | ShowSolution Int Type
     | Handle Event
+    | Script Script.Msg
 
 
-update : Msg -> Vector -> ( Vector, List Event )
+update : Msg -> Vector -> ( Vector, List Event, Maybe Script.Msg )
 update msg vector =
     case msg of
         Block_Update id _ ->
-            ( update_ id vector (state_ msg), [] )
+            update_ id vector (state_ msg)
 
         Vector_Update id _ ->
-            ( update_ id vector (state_ msg), [] )
+            update_ id vector (state_ msg)
 
         Matrix_Update id _ ->
-            ( update_ id vector (state_ msg), [] )
+            update_ id vector (state_ msg)
 
         Check id solution Nothing ->
             check solution
@@ -58,15 +60,15 @@ update msg vector =
                         _ ->
                             ""
             in
-            ( vector, [ Eval.event idx code [ state ] ] )
+            ( vector, [ Eval.event idx code [ state ] ], Nothing )
 
         ShowHint idx ->
-            (\e -> { e | hint = e.hint + 1 })
+            (\e -> ( { e | hint = e.hint + 1 }, Nothing ))
                 |> update_ idx vector
                 |> store
 
         ShowSolution idx solution ->
-            (\e -> { e | state = toState solution, solved = ReSolved, error_msg = "" })
+            (\e -> ( { e | state = toState solution, solved = ReSolved, error_msg = "" }, Nothing ))
                 |> update_ idx vector
                 |> store
 
@@ -83,10 +85,14 @@ update msg vector =
                         |> Json.toVector
                         |> Result.withDefault vector
                     , []
+                    , Nothing
                     )
 
                 _ ->
-                    ( vector, [] )
+                    ( vector, [], Nothing )
+
+        Script sub ->
+            ( vector, [], Just sub )
 
 
 get : Int -> Vector -> Maybe Element
@@ -103,39 +109,44 @@ get idx vector =
             Nothing
 
 
-update_ : Int -> Vector -> (Element -> Element) -> Vector
-update_ idx vector f =
-    case get idx vector of
-        Just elem ->
-            Array.set idx (f elem) vector
+update_ :
+    Int
+    -> Vector
+    -> (Element -> ( Element, Maybe Script.Msg ))
+    -> ( Vector, List Event, Maybe Script.Msg )
+update_ idx vector fn =
+    case get idx vector |> Maybe.map fn of
+        Just ( elem, sub ) ->
+            ( Array.set idx elem vector, [], sub )
 
         _ ->
-            vector
+            ( vector, [], Nothing )
 
 
-state_ : Msg -> Element -> Element
+state_ : Msg -> Element -> ( Element, Maybe Script.Msg )
 state_ msg e =
-    { e
-        | state =
-            case ( msg, e.state ) of
-                ( Block_Update _ m, Block_State s ) ->
-                    s
-                        |> Block.update m
-                        |> Block_State
+    case ( msg, e.state ) of
+        ( Block_Update _ m, Block_State s ) ->
+            s
+                |> Block.update m
+                |> Tuple.mapFirst (setState e Block_State)
 
-                ( Vector_Update _ m, Vector_State s ) ->
-                    s
-                        |> Vector.update m
-                        |> Vector_State
+        ( Vector_Update _ m, Vector_State s ) ->
+            s
+                |> Vector.update m
+                |> Tuple.mapFirst (setState e Vector_State)
 
-                ( Matrix_Update _ m, Matrix_State s ) ->
-                    s
-                        |> Matrix.update m
-                        |> Matrix_State
+        ( Matrix_Update _ m, Matrix_State s ) ->
+            s
+                |> Matrix.update m
+                |> Tuple.mapFirst (setState e Matrix_State)
 
-                _ ->
-                    e.state
-    }
+        _ ->
+            ( e, Nothing )
+
+
+setState e fn state =
+    { e | state = fn state }
 
 
 handle : Event -> Msg
@@ -143,7 +154,7 @@ handle =
     Handle
 
 
-evalEventDecoder : JE.Value -> (Element -> Element)
+evalEventDecoder : JE.Value -> (Element -> ( Element, Maybe sub ))
 evalEventDecoder json =
     let
         eval =
@@ -152,37 +163,45 @@ evalEventDecoder json =
     if eval.ok then
         if eval.result == "true" then
             \e ->
-                { e
+                ( { e
                     | trial = e.trial + 1
                     , solved = Solved
                     , error_msg = ""
-                }
+                  }
+                , Nothing
+                )
 
         else
             \e ->
-                { e
+                ( { e
                     | trial = e.trial + 1
                     , solved = Open
                     , error_msg = ""
-                }
+                  }
+                , Nothing
+                )
 
     else
-        \e -> { e | error_msg = eval.result }
+        \e -> ( { e | error_msg = eval.result }, Nothing )
 
 
-store : Vector -> ( Vector, List Event )
-store vector =
+store : ( Vector, List Event, Maybe Script.Msg ) -> ( Vector, List Event, Maybe Script.Msg )
+store ( vector, events, sub ) =
     ( vector
-    , vector
+    , (vector
         |> Json.fromVector
         |> Event.store
-        |> List.singleton
+      )
+        :: events
+    , sub
     )
 
 
-check : Type -> Element -> Element
+check : Type -> Element -> ( Element, Maybe Script.Msg )
 check solution e =
-    { e
+    ( { e
         | trial = e.trial + 1
         , solved = comp solution e.state
-    }
+      }
+    , Nothing
+    )

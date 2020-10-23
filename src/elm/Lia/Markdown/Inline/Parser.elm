@@ -35,8 +35,8 @@ import Combine
         , withState
         )
 import Combine.Char exposing (anyChar)
-import Lia.Markdown.Effect.Model exposing (add_javascript)
 import Lia.Markdown.Effect.Parser as Effect
+import Lia.Markdown.Effect.Script.Types as JS
 import Lia.Markdown.Footnote.Parser as Footnote
 import Lia.Markdown.HTML.Attributes as Attributes exposing (Parameters)
 import Lia.Markdown.HTML.Parser as HTML
@@ -117,31 +117,60 @@ styling p =
 
 javascript : Parser s String
 javascript =
-    string "<script>"
-        |> keep (stringTill (string "</script>"))
+    regexWith True False "<script>"
+        |> keep (stringTill (regexWith True False "</script>"))
+
+
+javascriptWithAttributes : Parser Context ( Parameters, String )
+javascriptWithAttributes =
+    let
+        attr =
+            withState (.defines >> .base >> succeed)
+                |> andThen Attributes.parse
+    in
+    regexWith True False "<script"
+        |> keep (many (whitespace |> keep attr))
+        |> ignore (string ">")
+        |> map Tuple.pair
+        |> andMap (stringTill (regexWith True False "</script>"))
 
 
 html : Parser Context Inline
 html =
     let
-        state script =
+        state ( attr, script ) =
             modifyState
                 (\s ->
+                    let
+                        effect_model =
+                            s.effect_model
+                    in
                     { s
                         | effect_model =
-                            add_javascript
-                                (s.effect_number
-                                    |> List.head
-                                    |> Maybe.withDefault 0
-                                )
-                                script
-                                s.effect_model
+                            { effect_model
+                                | javascript =
+                                    JS.push
+                                        (s.effect_number
+                                            |> List.head
+                                            |> Maybe.withDefault 0
+                                        )
+                                        attr
+                                        script
+                                        effect_model.javascript
+                            }
                     }
                 )
+                |> keep (succeed attr)
     in
-    javascript
+    javascriptWithAttributes
         |> andThen state
-        |> keep (succeed (Chars "" []))
+        |> map (\attr id -> Script id attr)
+        |> andMap scriptID
+
+
+scriptID : Parser Context Int
+scriptID =
+    withState (.effect_model >> .javascript >> JS.count >> succeed)
 
 
 combine : Inlines -> Inlines

@@ -77,12 +77,9 @@ blocks =
                             |> map Chart
                             |> andMap Chart.parse
                         , md_annotations
-                            |> map
-                                (\attr ->
-                                    Table.classify attr
-                                        >> Table attr
-                                )
+                            |> map (\attr tab -> Table.classify attr tab >> Table attr)
                             |> andMap Table.parse
+                            |> andMap (withState (.effect_model >> .javascript >> succeed))
                         , svgbob
                         , map Code (Code.parse md_annotations)
                         , quote

@@ -3,22 +3,29 @@ module Lia.Markdown.Inline.Config exposing
     , init
     )
 
+import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Settings.Model exposing (Mode(..))
 import Translations exposing (Lang)
 
 
 type alias Config =
     { slide : Int
-
-    --, mode : Mode
     , visible : Maybe Int
     , speaking : Maybe Int
     , lang : Lang
+    , scripts : Scripts
     }
 
 
-init : Int -> Mode -> Int -> Maybe Int -> Lang -> Config
-init slide mode visible speaking lang =
+init :
+    Int
+    -> Mode
+    -> Int
+    -> Maybe Int
+    -> Scripts
+    -> Lang
+    -> Config
+init slide mode visible speaking effects lang =
     Config
         slide
         --mode
@@ -30,3 +37,4 @@ init slide mode visible speaking lang =
         )
         speaking
         lang
+        effects

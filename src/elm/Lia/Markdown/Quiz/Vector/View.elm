@@ -53,6 +53,7 @@ check config solved checked ( id, line ) =
         , line
             |> viewer config
             |> Html.td [ Attr.class "lia-label" ]
+            |> Html.map Script
         ]
 
 
@@ -75,4 +76,5 @@ radio config solved checked ( id, line ) =
         , line
             |> viewer config
             |> Html.td [ Attr.class "lia-label" ]
+            |> Html.map Script
         ]

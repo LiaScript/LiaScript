@@ -24,6 +24,7 @@ type Msg
     | Reset
     | Handle Event
     | ShareCourse Event
+    | Ignore
 
 
 type Toggle
@@ -129,6 +130,9 @@ update msg model =
 
         ShareCourse event ->
             ( model, [ event ] )
+
+        Ignore ->
+            ( model, [] )
 
 
 handle : Event -> Msg

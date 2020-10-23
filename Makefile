@@ -47,6 +47,7 @@ manifest:
 preview:
 	sed -i -r "s/preview-lia\.([^.])*/preview-lia/g" dist/index.html
 	mv dist/preview-lia.*.js dist/preview-lia.js
+	sed -i -r "s/preview-lia\.([^.])*/preview-lia/g" dist/sw.js
 
 watch:
 	npm run watch

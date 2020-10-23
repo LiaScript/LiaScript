@@ -59,7 +59,8 @@ function swipedetect(el, callback){
       }
     }
     // check that elapsed time is within specified, horizontal dist traveled >= threshold, and vertical dist traveled <= 100
-    handleswipe(swipedir)
+    if (swipedir !== "none")
+      handleswipe(swipedir)
     e.preventDefault()
   }, { passive: true })
 
@@ -96,8 +97,10 @@ function swipedetect(el, callback){
           }
         }
         // check that elapsed time is within specified, horizontal dist traveled >= threshold, and vertical dist traveled <= 100
-        handleswipe(swipedir)
+        if (swipedir !== "none")
+          handleswipe(swipedir)
         ismousedown = false
+
         e.preventDefault()
       }
     }, { passive: true })

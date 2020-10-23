@@ -1,5 +1,6 @@
 module Index.View exposing (view)
 
+import Array
 import Dict
 import Element
     exposing
@@ -467,6 +468,6 @@ get_active course =
                 |> Dict.get id
 
 
-inlines : Inlines -> List (Html msg)
+inlines : Inlines -> List (Html Msg)
 inlines =
-    List.map (Inline.view_inf En)
+    List.map (Inline.view_inf Array.empty En >> Html.map (always NoOp))

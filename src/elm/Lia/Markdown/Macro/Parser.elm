@@ -39,8 +39,7 @@ import Regex
 
 pattern : Parser s ( String, Bool )
 pattern =
-    spaces
-        |> keep (regex "@-?@?")
+    regex "@-?@?"
         |> map (\ad escape name -> ( ad ++ name, escape ))
         |> andMap
             (string "'"

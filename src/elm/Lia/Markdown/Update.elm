@@ -6,10 +6,12 @@ port module Lia.Markdown.Update exposing
     , previousEffect
     , subscriptions
     , update
+    , updateScript
     )
 
 import Json.Encode as JE
 import Lia.Markdown.Code.Update as Code
+import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Quiz.Update as Quiz
 import Lia.Markdown.Survey.Update as Survey
@@ -29,6 +31,7 @@ type Msg
     | UpdateTable Table.Msg
     | FootnoteHide
     | FootnoteShow String
+    | Script Script.Msg
 
 
 
@@ -75,7 +78,7 @@ update msg section =
 
         UpdateQuiz childMsg ->
             let
-                ( vector, event ) =
+                ( vector, event, sub ) =
                     Quiz.update childMsg section.quiz_vector
             in
             ( { section | quiz_vector = vector }
@@ -84,10 +87,11 @@ update msg section =
                 |> List.map Event.encode
                 |> send "quiz"
             )
+                |> updateScript sub
 
         UpdateSurvey childMsg ->
             let
-                ( vector, event ) =
+                ( vector, event, sub ) =
                     Survey.update childMsg section.survey_vector
             in
             ( { section | survey_vector = vector }
@@ -96,18 +100,45 @@ update msg section =
                 |> List.map Event.encode
                 |> send "survey"
             )
+                |> updateScript sub
 
         UpdateTable childMsg ->
-            ( { section | table_vector = Table.update childMsg section.table_vector }
+            let
+                ( vector, sub ) =
+                    Table.update childMsg section.table_vector
+            in
+            ( { section | table_vector = vector }
             , Cmd.none
             , []
             )
+                |> updateScript sub
 
         FootnoteShow key ->
             ( { section | footnote2show = Just key }, Cmd.none, [] )
 
         FootnoteHide ->
             ( { section | footnote2show = Nothing }, Cmd.none, [] )
+
+        Script childMsg ->
+            updateScript (Just childMsg) ( section, Cmd.none, [] )
+
+
+updateScript msg ( section, cmd, events ) =
+    case msg of
+        Nothing ->
+            ( section, cmd, events )
+
+        Just sub ->
+            let
+                ( effect_model, cmd2, event ) =
+                    Effect.updateSub sub section.effect_model
+            in
+            ( { section | effect_model = effect_model }
+            , Cmd.batch [ cmd, Cmd.map (UpdateEffect True) cmd2 ]
+            , event
+                |> List.map Event.encode
+                |> send "effect"
+            )
 
 
 nextEffect : Bool -> Section -> ( Section, Cmd Msg, List ( String, JE.Value ) )

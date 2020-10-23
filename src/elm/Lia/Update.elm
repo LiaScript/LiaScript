@@ -11,6 +11,7 @@ import Array
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Index.Update as Index
+import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (Model, load_src)
@@ -45,6 +46,7 @@ type Msg
     | Handle Event
     | Home
     | KeyPressIgnored
+    | Script ( Int, Script.Msg )
 
 
 send : Int -> List ( String, JE.Value ) -> List Event
@@ -186,6 +188,21 @@ update session msg model =
 
         KeyPressIgnored ->
             ( model, Cmd.none, [] )
+
+        Script ( id, sub ) ->
+            case Array.get id model.sections of
+                Just sec ->
+                    let
+                        ( section, cmd_, log_ ) =
+                            Markdown.updateScript (Just sub) ( sec, Cmd.none, [] )
+                    in
+                    ( { model | sections = Array.set id section model.sections }
+                    , Cmd.map UpdateMarkdown cmd_
+                    , send id log_
+                    )
+
+                _ ->
+                    ( model, Cmd.none, [] )
 
         _ ->
             case ( msg, get_active_section model ) of

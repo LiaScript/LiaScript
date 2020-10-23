@@ -9,6 +9,7 @@ import Html.Lazy as Lazy
 import Lia.Markdown.Chart.Types exposing (Diagram(..), Labels, Point)
 import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.Config exposing (Config)
+import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.HTML.Attributes as Param exposing (Parameters)
 import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
 import Lia.Markdown.Table.Matrix as Matrix exposing (Matrix, Row)
@@ -37,29 +38,36 @@ view config attr table =
             getState table.id config.section.table_vector
     in
     if diagramShow attr state.diagram then
-        Lazy.lazy6 viewDiagram table state config.main.visible config.screen.width config.light attr
+        Lazy.lazy7 viewDiagram
+            table
+            state
+            config.main.scripts
+            config.main.visible
+            config.screen.width
+            config.light
+            attr
 
     else if table.head == [] && table.format == [] then
         state
-            |> unformatted config.view (toMatrix config.main.visible table.body) table.id
+            |> unformatted config.view (toMatrix config.main.scripts config.main.visible table.body) table.id
             |> toTable table.id attr table.class
 
     else
         state
-            |> formatted config.view table.head table.format (toMatrix config.main.visible table.body) table.id
+            |> formatted config.view table.head table.format (toMatrix config.main.scripts config.main.visible table.body) table.id
             |> toTable table.id attr table.class
 
 
-viewDiagram : Table -> State -> Maybe Int -> Int -> Bool -> Parameters -> Html Msg
-viewDiagram table state visible width light attr =
+viewDiagram : Table -> State -> Scripts -> Maybe Int -> Int -> Bool -> Parameters -> Html Msg
+viewDiagram table state effects visible width light attr =
     Html.div
         [ blockKeydown (UpdateTable Sub.NoOp)
         ]
         [ toggleBtn table.id "table"
         , table.body
-            |> toMatrix visible
+            |> toMatrix effects visible
             |> sort state
-            |> (::) (List.map (toCell visible) table.head)
+            |> (::) (List.map (toCell effects visible) table.head)
             |> diagramTranspose attr
             |> chart width (table.format /= []) attr light table.class
         ]

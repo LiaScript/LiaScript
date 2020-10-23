@@ -161,17 +161,15 @@ view_hints config idx counter hints =
                 , Attr.style "cursor" "pointer"
                 ]
                 [ Html.text "help" ]
-            , Html.div
-                [ Attr.class "lia-hints"
-                ]
-                (v_hints hints counter)
+            , v_hints hints counter
+                |> Html.div [ Attr.class "lia-hints" ]
+                |> Html.map Script
             ]
 
     else
-        Html.div
-            [ Attr.class "lia-hints"
-            ]
-            (v_hints hints counter)
+        v_hints hints counter
+            |> Html.div [ Attr.class "lia-hints" ]
+            |> Html.map Script
 
 
 view_solution : Vector -> Quiz -> Bool

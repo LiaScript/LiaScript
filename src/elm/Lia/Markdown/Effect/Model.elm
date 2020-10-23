@@ -1,12 +1,8 @@
 module Lia.Markdown.Effect.Model exposing
     ( Element
-    , Map
     , Model
-    , add_javascript
     , current_comment
     , current_paragraphs
-    , get_all_javascript
-    , get_javascript
     , get_paragraph
     , init
     , set_annotation
@@ -14,21 +10,19 @@ module Lia.Markdown.Effect.Model exposing
 
 import Array exposing (Array)
 import Dict exposing (Dict)
-import Lia.Markdown.HTML.Attributes exposing (Parameters)
+import Lia.Markdown.Effect.Script.Types as JS exposing (Script)
+import Lia.Markdown.HTML.Attributes as Attr exposing (Parameters)
 import Lia.Markdown.Inline.Types exposing (Inlines)
+import Port.Eval exposing (Eval)
 
 
 type alias Model =
     { visible : Int
     , effects : Int
-    , comments : Map Element
-    , javascript : Map (List String)
+    , comments : Dict Int Element
+    , javascript : Array Script
     , speaking : Maybe Int
     }
-
-
-type alias Map e =
-    Dict Int e
 
 
 type alias Element =
@@ -38,42 +32,7 @@ type alias Element =
     }
 
 
-add_javascript : Int -> String -> Model -> Model
-add_javascript idx script model =
-    { model
-        | javascript =
-            Dict.insert idx
-                (case Dict.get idx model.javascript of
-                    Just a ->
-                        List.append a [ script ]
-
-                    Nothing ->
-                        [ script ]
-                )
-                model.javascript
-    }
-
-
-get_javascript : Model -> List String
-get_javascript model =
-    case Dict.get model.visible model.javascript of
-        Just a ->
-            a
-
-        _ ->
-            []
-
-
-get_all_javascript : Model -> List String
-get_all_javascript model =
-    model.javascript
-        |> Dict.toList
-        |> List.sort
-        |> List.map (\( _, v ) -> v)
-        |> List.concat
-
-
-set_annotation : Int -> Int -> Map Element -> Parameters -> Map Element
+set_annotation : Int -> Int -> Dict Int Element -> Parameters -> Dict Int Element
 set_annotation id1 id2 m attr =
     case Dict.get id1 m of
         Just e ->
@@ -132,5 +91,5 @@ init =
         0
         0
         Dict.empty
-        Dict.empty
+        Array.empty
         Nothing

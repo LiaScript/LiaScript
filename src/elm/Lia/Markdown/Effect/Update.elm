@@ -7,12 +7,20 @@ module Lia.Markdown.Effect.Update exposing
     , next
     , previous
     , update
+    , updateSub
     )
 
+import Array
 import Browser.Dom as Dom
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Markdown.Effect.Model exposing (Model, current_comment, get_all_javascript, get_javascript)
+import Lia.Markdown.Effect.Model
+    exposing
+        ( Model
+        , current_comment
+        )
+import Lia.Markdown.Effect.Script.Update as Script
+import Port.Eval as Eval exposing (Eval)
 import Port.Event exposing (Event)
 import Port.TTS as TTS
 import Task
@@ -27,91 +35,120 @@ type Msg
     | Mute Int
     | Rendered Bool Dom.Viewport
     | Handle Event
+    | Script Script.Msg
+
+
+updateSub : Script.Msg -> Model -> ( Model, Cmd Msg, List Event )
+updateSub msg =
+    update True (Script msg)
 
 
 update : Bool -> Msg -> Model -> ( Model, Cmd Msg, List Event )
 update sound msg model =
-    case msg of
-        Init run_all_javascript ->
-            ( model
-            , Task.perform (Rendered run_all_javascript) Dom.getViewport
-            , []
-            )
+    markRunning <|
+        case msg of
+            Init run_all_javascript ->
+                ( model
+                , Task.perform (Rendered run_all_javascript) Dom.getViewport
+                , []
+                )
 
-        Next ->
-            if has_next model then
-                { model | visible = model.visible + 1 }
-                    |> execute sound False 0
+            Next ->
+                if has_next model then
+                    { model | visible = model.visible + 1 }
+                        |> execute sound False 0
 
-            else
-                ( model, Cmd.none, [] )
-
-        Previous ->
-            if has_previous model then
-                { model | visible = model.visible - 1 }
-                    |> execute sound False 0
-
-            else
-                ( model, Cmd.none, [] )
-
-        Speak id voice text ->
-            ( { model | speaking = Just id }
-            , Cmd.none
-            , [ TTS.playback id voice text ]
-            )
-
-        Mute id ->
-            ( { model | speaking = Nothing }
-            , Cmd.none
-            , [ TTS.mute id ]
-            )
-
-        Send event ->
-            let
-                events =
-                    ("focused"
-                        |> JE.string
-                        |> Event "scrollTo" -1
-                    )
-                        :: event
-            in
-            ( model
-            , Cmd.none
-            , case current_comment model of
-                Just ( comment, narrator ) ->
-                    TTS.speak sound narrator comment :: events
-
-                _ ->
-                    TTS.cancel :: events
-            )
-
-        Rendered run_all_javascript _ ->
-            execute sound run_all_javascript 0 model
-
-        Handle event ->
-            case event.topic of
-                "speak" ->
-                    case event.message |> JD.decodeValue JD.string of
-                        Ok "start" ->
-                            ( { model | speaking = Just event.section }, Cmd.none, [] )
-
-                        Ok "stop" ->
-                            ( { model | speaking = Nothing }, Cmd.none, [] )
-
-                        _ ->
-                            ( model, Cmd.none, [] )
-
-                _ ->
+                else
                     ( model, Cmd.none, [] )
 
+            Previous ->
+                if has_previous model then
+                    { model | visible = model.visible - 1 }
+                        |> execute sound False 0
 
-executeEvent : Int -> String -> Event
-executeEvent delay code =
-    Event "execute" -1 <|
-        JE.object
-            [ ( "delay", JE.int delay )
-            , ( "code", JE.string code )
-            ]
+                else
+                    ( model, Cmd.none, [] )
+
+            Speak id voice text ->
+                ( { model | speaking = Just id }
+                , Cmd.none
+                , [ TTS.playback id voice text ]
+                )
+
+            Mute id ->
+                ( { model | speaking = Nothing }
+                , Cmd.none
+                , [ TTS.mute id ]
+                )
+
+            Send event ->
+                let
+                    events =
+                        ("focused"
+                            |> JE.string
+                            |> Event "scrollTo" -1
+                        )
+                            :: event
+                in
+                ( model
+                , Cmd.none
+                , case current_comment model of
+                    Just ( comment, narrator ) ->
+                        TTS.speak sound narrator comment :: events
+
+                    _ ->
+                        TTS.cancel :: events
+                )
+
+            Rendered run_all_javascript _ ->
+                execute sound run_all_javascript 0 model
+
+            Script childMsg ->
+                let
+                    ( scripts, cmd, events ) =
+                        Script.update childMsg model.javascript
+                in
+                ( { model | javascript = scripts }, Cmd.map Script cmd, events )
+
+            Handle event ->
+                case event.topic of
+                    "speak" ->
+                        case event.message |> JD.decodeValue JD.string of
+                            Ok "start" ->
+                                ( { model | speaking = Just event.section }, Cmd.none, [] )
+
+                            Ok "stop" ->
+                                ( { model | speaking = Nothing }, Cmd.none, [] )
+
+                            _ ->
+                                ( model, Cmd.none, [] )
+
+                    _ ->
+                        let
+                            ( scripts, cmd, events ) =
+                                Script.update (Script.Handle event) model.javascript
+                        in
+                        ( { model | javascript = scripts }, Cmd.map Script cmd, events )
+
+
+markRunning : ( Model, Cmd Msg, List Event ) -> ( Model, Cmd Msg, List Event )
+markRunning ( model, cmd, events ) =
+    ( { model
+        | javascript =
+            List.foldl
+                (\e js ->
+                    if e.section < 0 then
+                        js
+
+                    else
+                        Script.setRunning e.section True js
+                )
+                model.javascript
+                events
+      }
+    , cmd
+    , events
+    )
 
 
 execute : Bool -> Bool -> Int -> Model -> ( Model, Cmd Msg, List Event )
@@ -119,14 +156,14 @@ execute sound run_all delay model =
     let
         javascript =
             if run_all then
-                get_all_javascript model
+                Script.getAll .script model.javascript
 
             else
-                get_javascript model
+                Script.getVisible model.effects model.javascript
     in
     update sound
         (javascript
-            |> List.map (executeEvent delay)
+            |> List.map (Script.execute delay)
             |> (::) (Event "persistent" -1 (JE.string "load"))
             |> Send
         )
