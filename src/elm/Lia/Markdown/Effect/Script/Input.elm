@@ -9,7 +9,7 @@ import Regex
 
 type Type_
     = Button_
-    | Checkbox_
+    | Checkbox_ (List String)
     | Color_
     | Date_
     | DatetimeLocal_
@@ -61,7 +61,7 @@ type_ t =
         Button_ ->
             "button"
 
-        Checkbox_ ->
+        Checkbox_ _ ->
             "checkbox"
 
         Color_ ->
@@ -132,7 +132,7 @@ parseType_ params input_ =
             Button_
 
         "checkbox" ->
-            Checkbox_
+            Checkbox_ (options params)
 
         "color" ->
             Color_

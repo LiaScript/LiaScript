@@ -12,6 +12,7 @@ import Lia.Markdown.Effect.Script.Intl as Intl
 import Lia.Markdown.Effect.Script.Types exposing (Script, Scripts)
 import Lia.Markdown.Effect.Script.Update exposing (Msg(..))
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, get, toAttribute)
+import Lia.Utils exposing (blockKeydown)
 
 
 view : Int -> Parameters -> Scripts -> Html Msg
@@ -123,7 +124,7 @@ input attr id node =
         Just Input.Button_ ->
             script True attr id node
 
-        Just Input.Checkbox_ ->
+        Just (Input.Checkbox_ []) ->
             [ Html.input
                 [ Attr.checked (node.input.value == "true")
                 , Attr.type_ "checkbox"
@@ -146,6 +147,29 @@ input attr id node =
                 ]
                 [ Html.text "check" ]
             ]
+                |> Html.span []
+                |> span attr id node
+
+        Just (Input.Checkbox_ options) ->
+            options
+                |> List.map
+                    (\o ->
+                        [ Html.text o
+                        , Html.input
+                            [ --Attr.checked (node.input.value == "true")
+                              Attr.type_ "checkbox"
+                            , Attr.id "lia-focus"
+                            , onActivate False id
+                            ]
+                            []
+                        , Html.span
+                            [ Attr.class "lia-check-btn"
+                            , Attr.style "margin" "0px 4px 0px 4px"
+                            ]
+                            [ Html.text "check" ]
+                        ]
+                            |> Html.span []
+                    )
                 |> Html.span []
                 |> span attr id node
 
@@ -207,6 +231,7 @@ input attr id node =
             script True attr id node
 
 
+span : Parameters -> Int -> Script -> Html Msg -> Html Msg
 span attr id node control =
     Html.span
         [ Attr.style "background-color" "lightgray"
@@ -279,5 +304,6 @@ edit id code =
         , Attr.id "lia-focus"
         , onEdit False id
         , Event.onInput (EditCode id)
+        , blockKeydown NoOp
         ]
         []
