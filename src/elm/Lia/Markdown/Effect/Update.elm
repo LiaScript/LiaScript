@@ -156,7 +156,7 @@ execute sound run_all delay model =
     let
         javascript =
             if run_all then
-                Script.getAll .script model.javascript
+                Script.getAll model.javascript
 
             else
                 Script.getVisible model.effects model.javascript
