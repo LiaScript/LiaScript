@@ -198,6 +198,30 @@ parseType_ params input_ =
             Text_
 
 
+{-| Defines if an input-type should be reevaluted on change.
+-}
+runnable : Type_ -> Bool
+runnable t =
+    case t of
+        Email_ ->
+            False
+
+        Password_ ->
+            False
+
+        Tel_ ->
+            False
+
+        Textarea_ ->
+            False
+
+        Url_ ->
+            False
+
+        _ ->
+            True
+
+
 options : Parameters -> List String
 options =
     Attr.get "options"

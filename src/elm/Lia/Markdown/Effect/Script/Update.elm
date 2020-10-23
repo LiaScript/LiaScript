@@ -24,7 +24,7 @@ type Msg
     = Click Int
     | Reset Int
     | Activate Bool Int
-    | Value Int String
+    | Value Int Bool String
     | Edit Bool Int
     | EditCode Int String
     | NoOp
@@ -35,20 +35,41 @@ type Msg
 update : Msg -> Scripts -> ( Scripts, Cmd Msg, List Event )
 update msg scripts =
     case msg of
-        Activate bool id ->
-            ( scripts
-                |> Script.set id
-                    (\js -> { js | input = Input.active bool js.input })
-            , if bool then
-                Task.attempt (always NoOp) (Dom.focus "lia-focus")
+        Activate active id ->
+            case Array.get id scripts of
+                Just node ->
+                    if
+                        not active
+                            && (node.input.type_
+                                    |> Maybe.map (Input.runnable >> not)
+                                    |> Maybe.withDefault False
+                               )
+                    then
+                        reRun (\js -> { js | input = Input.active active js.input }) Cmd.none id scripts
 
-              else
-                Cmd.none
-            , []
-            )
+                    else
+                        ( Array.set id { node | input = Input.active active node.input } scripts
+                        , if active then
+                            Task.attempt (always NoOp) (Dom.focus "lia-focus")
 
-        Value id str ->
-            reRun (\js -> { js | input = Input.value str js.input }) Cmd.none id scripts
+                          else
+                            Cmd.none
+                        , []
+                        )
+
+                Nothing ->
+                    ( scripts, Cmd.none, [] )
+
+        Value id exec str ->
+            if exec then
+                reRun (\js -> { js | input = Input.value str js.input }) Cmd.none id scripts
+
+            else
+                ( scripts
+                    |> Script.set id (\js -> { js | input = Input.value str js.input })
+                , Cmd.none
+                , []
+                )
 
         Click id ->
             reRun identity Cmd.none id scripts

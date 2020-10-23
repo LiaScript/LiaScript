@@ -103,21 +103,6 @@ script withStyling attr id node =
                 ]
 
 
-input_ : Input -> Int -> Parameters -> List (Html.Attribute Msg)
-input_ html id attr =
-    case get "input" attr of
-        Just str ->
-            [ Attr.type_ str
-            , Event.onInput (Value id)
-            , Attr.value html.value
-            , onActivate False id
-            , Attr.id "lia-focus"
-            ]
-
-        Nothing ->
-            []
-
-
 input : Parameters -> Int -> Script -> Html Msg
 input attr id node =
     case node.input.type_ of
@@ -132,7 +117,7 @@ input attr id node =
                 , Attr.id "lia-focus"
                 , Event.onCheck
                     (\b ->
-                        Value id <|
+                        Value id True <|
                             if b then
                                 "true"
 
@@ -192,7 +177,7 @@ attributes : Int -> String -> Parameters -> List (Html.Attribute Msg)
 attributes id value =
     annotation "lia-script"
         >> List.append
-            [ Event.onInput (Value id)
+            [ Event.onInput (Value id True)
             , onActivate False id
             , Attr.value value
             , Attr.id "lia-focus"
@@ -230,7 +215,10 @@ base type_ id attr value =
         [ Html.input
             (annotation "lia-script" attr
                 |> List.append
-                    [ Event.onInput (Value id)
+                    [ type_
+                        |> Input.runnable
+                        |> Value id
+                        |> Event.onInput
                     , Attr.type_ <| Input.type_ type_
                     , Attr.value value
                     , onActivate False id
