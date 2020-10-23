@@ -223,7 +223,13 @@ __Badges:__
 
 ## Version-Changes
 
-__0.7.13__ (//2020)
+__0.8.0__ (//2020)
+
+* script-tags can now be used like web-components, which may return a value:
+
+  * with reactive programming
+  * with attached input elements
+  * formatting is also possible with Intl
 
 * Terminal supports the output of HTML content via
   `console.html("<img src'= ...>")`
