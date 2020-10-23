@@ -296,18 +296,29 @@ setRunning id state javascript =
     Script.set id (\js -> { js | running = state }) javascript
 
 
-getAll : (Script -> x) -> Scripts -> List ( Int, x )
-getAll =
+getIdle : (Script -> x) -> Scripts -> List ( Int, x )
+getIdle =
     Script.filterMap
         (\js ->
             not js.running || not (js.runOnce && js.counter == 1)
         )
 
 
+getAll : Scripts -> List ( Int, String )
+getAll javascript =
+    javascript
+        |> getIdle identity
+        |> List.map
+            (\( id, node ) ->
+                ( id, node.script, node.input.value )
+            )
+        |> Script.replaceInputs javascript
+
+
 getVisible : Int -> Scripts -> List ( Int, String )
 getVisible visble javascript =
     javascript
-        |> getAll identity
+        |> getIdle identity
         |> List.filterMap
             (\( id, node ) ->
                 if node.effect_id == visble then
