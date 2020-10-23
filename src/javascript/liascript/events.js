@@ -210,9 +210,31 @@ function list_to_string (sep, list) {
   return str + sep
 };
 
-function lia_execute_event (event, send=null, section=null) {
+function execute_response(topic, event_id, sender, section) {
+  return (msg, ok=true) => {
+    if (typeof msg !== "string") {
+      msg = JSON.stringify(msg)
+    }
+
+    sender({
+      topic: "effect",
+      section: section,
+      message: {
+        topic: topic,
+        section: event_id,
+        message: {
+          ok: ok,
+          result:  msg,
+          details: []
+        }
+      }
+    })
+  }
+}
+
+function lia_execute_event (event, sender=null, section=null) {
   if (window.event_semaphore > 0) {
-    lia_queue.push({type: "exec", event: event, send: send, section: section})
+    lia_queue.push({type: "exec", event: event, send: sender, section: section})
 
     if (lia_queue.length == 1) {
       lia_wait()
@@ -220,58 +242,23 @@ function lia_execute_event (event, send=null, section=null) {
     return
   }
 
-
   setTimeout(() => {
+    let send = {
+      lia: execute_response("code", event.id, sender, section),
+      output: execute_response("codeX", event.id, sender, section),
+      wait: () => { (execute_response("code", event.id, sender, section))("LIA: wait") },
+      stop: () => { (execute_response("code", event.id, sender, section))("LIA: stop") },
+      html: (msg) => { (execute_response("code", event.id, sender, section))("HTML: " + msg) }
+    }
+
     try {
-
-      const fn = (msg) => {
-        send({
-          topic: "effect",
-          section: section,
-          message: {
-            topic: "codeX",
-            section: event.id,
-            message: {
-              ok: true,
-              result:  msg,
-              details: []
-            }
-          }
-        })
-      }
-
       const result = eval(event.code)
-
       if (section != null && typeof event.id == "number") {
-        send({
-          topic: "effect",
-          section: section,
-          message: {
-            topic: "code",
-            section: event.id,
-            message: {
-              ok: true,
-              result: result == undefined ? "LIA: stop" : JSON.stringify(result),
-              details: []
-            }
-          }
-        })
+        send.lia(result == undefined ? "LIA: stop" : result)
       }
     } catch (e) {
       lia.error('exec => ', e.message)
-      send({
-        topic: "effect",
-        section: section,
-        message: {
-          topic: "code",
-          section: event.id,
-          message: {
-            ok: false,
-            result: e.message,
-            details: []
-          }
-        }
-      })
+      send.lia(e.message, false)
     }
   }, event.delay)
 };

@@ -106,9 +106,9 @@ update msg scripts =
             case event.topic of
                 "code" ->
                     let
-                        javascript =
+                        ( publish, javascript ) =
                             scripts
-                                |> update_ event.section (Eval.decode event.message)
+                                |> update_ event.section event.message
 
                         node =
                             javascript
@@ -143,19 +143,21 @@ update msg scripts =
                                 |> Script.updateChildren output
                                 |> Script.set event.section (\js -> { js | update = False })
                             , Cmd.none
-                            , javascript
-                                |> Script.scriptChildren output
-                                |> List.append nodeUpdate
-                                |> List.map (execute 0)
+                            , if publish then
+                                javascript
+                                    |> Script.scriptChildren output
+                                    |> List.append nodeUpdate
+                                    |> List.map (execute 0)
+
+                              else
+                                []
                             )
 
                 "codeX" ->
                     let
-                        javascript =
-                            event.message
-                                |> Eval.decode
-                                |> .result
-                                |> Script.setResult event.section scripts
+                        ( publish, javascript ) =
+                            scripts
+                                |> update_ event.section event.message
 
                         node =
                             javascript
@@ -171,9 +173,13 @@ update msg scripts =
                         Just output ->
                             ( Script.updateChildren output javascript
                             , Cmd.none
-                            , javascript
-                                |> Script.scriptChildren output
-                                |> List.map (execute 0)
+                            , if publish then
+                                javascript
+                                    |> Script.scriptChildren output
+                                    |> List.map (execute 0)
+
+                              else
+                                []
                             )
 
                 _ ->
@@ -222,19 +228,27 @@ execute delay ( id, code ) =
             ]
 
 
-update_ : Int -> Eval -> Scripts -> Scripts
-update_ id e =
-    Script.set id (eval_ e)
+update_ : Int -> JE.Value -> Scripts -> ( Bool, Scripts )
+update_ id e scripts =
+    case Array.get id scripts of
+        Just js ->
+            let
+                new =
+                    eval_ (Eval.decode e) js
+            in
+            ( new.result /= js.result
+            , Array.set id new scripts
+            )
+
+        _ ->
+            ( False, scripts )
 
 
 eval_ : Eval -> Script -> Script
 eval_ e js =
     let
-        result =
-            trim e.result
-
         waiting =
-            result == "LIA: wait"
+            e.result == "LIA: wait"
     in
     { js
         | running = waiting
@@ -243,22 +257,17 @@ eval_ e js =
             if waiting then
                 js.result
 
-            else if result == "LIA: stop" then
+            else if e.result == "LIA: stop" then
                 js.result
 
-            else if e.ok then
-                Just (Ok result)
-
             else
-                Just (Err result)
+                Just <|
+                    if e.ok then
+                        Ok e.result
+
+                    else
+                        Err e.result
     }
-
-
-trim : String -> String
-trim str =
-    str
-        |> CString.dropLeftIf (String.startsWith "\"" str) 1
-        |> CString.dropRightIf (String.endsWith "\"" str) 1
 
 
 setRunning : Int -> Bool -> Scripts -> Scripts
