@@ -152,76 +152,22 @@ input attr id node =
 
         Just (Input.Checkbox_ options) ->
             options
-                |> List.map
-                    (\o ->
-                        [ Html.text o
-                        , Html.input
-                            [ --Attr.checked (node.input.value == "true")
-                              Attr.type_ "checkbox"
-                            , Attr.id "lia-focus"
-                            , onActivate False id
-                            ]
-                            []
-                        , Html.span
-                            [ Attr.class "lia-check-btn"
-                            , Attr.style "margin" "0px 4px 0px 4px"
-                            ]
-                            [ Html.text "check" ]
-                        ]
-                            |> Html.span []
-                    )
-                |> Html.span []
+                |> select id node.input.value attr
                 |> span attr id node
 
         Just (Input.Radio_ options) ->
             options
-                |> List.map
-                    (\o ->
-                        [ Html.label []
-                            [ Html.text o
-                            , Html.input
-                                [ Attr.value o
-                                , Attr.type_ "radio"
-                                , Event.onInput (Value id)
-                                ]
-                                []
-                            , Html.span
-                                [ Attr.class "lia-radio-btn"
-                                , Attr.style "margin" "0px 8px 0px 8px"
-                                ]
-                                []
-                            ]
-                        ]
-                    )
-                |> List.concat
-                |> Html.span
-                    [ Event.onInput (Value id)
-                    , onActivate False id
-                    , Attr.id "lia-focus"
-                    ]
+                |> select id node.input.value attr
+                |> span attr id node
 
         Just (Input.Select_ options) ->
             options
-                |> List.map (\o -> Html.option [ Attr.value o ] [ Html.text o ])
-                |> Html.select
-                    [ Event.onInput (Value id)
-                    , onActivate False id
-                    , Attr.id "lia-focus"
-                    , Attr.value node.input.value
-                    ]
+                |> select id node.input.value attr
                 |> span attr id node
 
         Just Input.Textarea_ ->
-            Html.textarea
-                (annotation "lia-script" attr
-                    |> List.append
-                        [ Event.onInput (Value id)
-                        , Attr.value node.input.value
-                        , onActivate False id
-                        , Attr.id "lia-focus"
-                        ]
-                )
-                []
+            textarea id node.input.value attr
+                |> span attr id node
 
         Just type_ ->
             base type_ id attr node.input.value
@@ -229,6 +175,28 @@ input attr id node =
 
         Nothing ->
             script True attr id node
+
+
+select : Int -> String -> Parameters -> List String -> Html Msg
+select id value attr =
+    List.map (\o -> Html.option [ Attr.value o ] [ Html.text o ])
+        >> Html.select (attributes id value attr)
+
+
+textarea : Int -> String -> Parameters -> Html Msg
+textarea id value attr =
+    Html.textarea (attributes id value attr) []
+
+
+attributes : Int -> String -> Parameters -> List (Html.Attribute Msg)
+attributes id value =
+    annotation "lia-script"
+        >> List.append
+            [ Event.onInput (Value id)
+            , onActivate False id
+            , Attr.value value
+            , Attr.id "lia-focus"
+            ]
 
 
 span : Parameters -> Int -> Script -> Html Msg -> Html Msg
@@ -282,6 +250,7 @@ onActivate bool =
                 Event.onClick
 
             else
+                --JD.succeed >> Event.on "focusout"
                 Event.onBlur
            )
 
