@@ -40,6 +40,21 @@ view id attr scripts =
             Html.text ""
 
 
+class : Script -> String
+class node =
+    if node.input.type_ /= Nothing && node.modify then
+        "lia-script-with-border"
+
+    else if node.input.type_ /= Nothing then
+        "lia-script-border"
+
+    else if node.modify then
+        "lia-script"
+
+    else
+        ""
+
+
 script : Bool -> Parameters -> Int -> Script -> Html Msg
 script withStyling attr id node =
     case node.result of
@@ -57,26 +72,27 @@ script withStyling attr id node =
                             ( rslt, True )
             in
             Html.span
-                (annotation "lia-script" attr
-                    |> CList.addIf node.modify (Attr.style "background-color" "lightgray")
-                    |> List.append
-                        (if withStyling then
-                            [ Attr.style "padding" "1px 5px 1px 5px"
-                            , Attr.style "border-radius" "5px"
-                            ]
-                                |> CList.addIf (node.input.type_ /= Nothing) (Attr.style "border" "2px solid #73AD21")
+                (annotation
+                    (if withStyling then
+                        class node
 
-                         else
-                            [ Attr.style "margin" "5px" ]
-                        )
+                     else
+                        ""
+                    )
+                    attr
+                    |> CList.addIf (not withStyling) (Attr.style "margin" "5px")
                     |> List.append
-                        (if node.input.type_ == Just Input.Button_ then
-                            [ Event.onClick (Click id)
-                            , Attr.style "cursor" "pointer"
-                            ]
+                        (case node.input.type_ of
+                            Just Input.Button_ ->
+                                [ Event.onClick (Click id)
+                                , Attr.style "cursor" "pointer"
+                                ]
 
-                         else
-                            [ Attr.style "cursor" "cell" ]
+                            Just _ ->
+                                [ Attr.style "cursor" "cell" ]
+
+                            _ ->
+                                []
                         )
                     |> CList.addIf node.modify (onEdit True id)
                     |> CList.addIf err (Attr.style "color" "red")
@@ -175,7 +191,7 @@ textarea id value attr =
 
 attributes : Int -> String -> Parameters -> List (Html.Attribute Msg)
 attributes id value =
-    annotation "lia-script"
+    annotation ""
         >> List.append
             [ Event.onInput (Value id True)
             , onActivate False id
@@ -187,10 +203,7 @@ attributes id value =
 span : Parameters -> Int -> Script -> Html Msg -> Html Msg
 span attr id node control =
     Html.span
-        [ Attr.style "background-color" "lightgray"
-        , Attr.style "padding" "1px 1px 3px 1px"
-        , Attr.style "border-radius" "5px"
-        , Attr.style "border" "2px solid #73AD21"
+        [ Attr.class (class node)
         ]
         [ reset id
         , control
