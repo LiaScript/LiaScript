@@ -17,6 +17,7 @@ import Combine
         , modifyState
         , onsuccess
         , optional
+        , or
         , regex
         , sepBy1
         , skip
@@ -83,6 +84,9 @@ blocks =
                         , svgbob
                         , map Code (Code.parse md_annotations)
                         , quote
+                        , md_annotations
+                            |> map Header
+                            |> andMap subHeader
                         , horizontal_line
                         , md_annotations
                             |> map Survey
@@ -174,6 +178,26 @@ svgbob =
     md_annotations
         |> map ASCII
         |> andMap (c_frame |> andThen svgbody)
+
+
+subHeader : Parser Context ( Inlines, Int )
+subHeader =
+    line
+        |> ignore (regex "[ \t]*\n")
+        |> map Tuple.pair
+        |> andMap underline
+        |> ignore (regex "[ \t]*\n")
+
+
+
+--|> ignore (regex "[ \t]*\n")
+
+
+underline : Parser Context Int
+underline =
+    or
+        (regex "={3,}[ \t]*" |> keep (succeed 1))
+        (regex "-{3,}[ \t]*" |> keep (succeed 2))
 
 
 solution : Parser Context (Maybe ( List Markdown, Int ))

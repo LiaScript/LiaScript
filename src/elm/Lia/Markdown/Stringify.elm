@@ -53,6 +53,9 @@ stringify effects id markdown =
                 |> HTML.getContent
                 |> block effects id
 
+        Header _ ( title, _ ) ->
+            Inline.stringify_ effects id title
+
         _ ->
             ""
 
