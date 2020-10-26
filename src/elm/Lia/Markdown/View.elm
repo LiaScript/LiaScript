@@ -14,7 +14,7 @@ import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Markdown.HTML.View as HTML
-import Lia.Markdown.Inline.Types exposing (htmlBlock)
+import Lia.Markdown.Inline.Types exposing (Inlines, htmlBlock)
 import Lia.Markdown.Quiz.View as Quizzes
 import Lia.Markdown.Survey.View as Surveys
 import Lia.Markdown.Table.View as Table
@@ -89,28 +89,36 @@ view_footnote viewer key footnotes =
 
 view_header : Config -> Html Msg
 view_header config =
-    config.view config.section.title
-        |> (case config.section.indentation of
+    [ header config
+        config.section.indentation
+        []
+        config.section.title
+    ]
+        |> Html.header []
+
+
+header : Config -> Int -> Parameters -> Inlines -> Html Msg
+header config i attr =
+    config.view
+        >> (case i of
                 1 ->
-                    Html.h1 [ Attr.class "lia-inline lia-h1" ]
+                    Html.h1 (annotation "lia-inline lia-h1" attr)
 
                 2 ->
-                    Html.h2 [ Attr.class "lia-inline lia-h2" ]
+                    Html.h2 (annotation "lia-inline lia-h2" attr)
 
                 3 ->
-                    Html.h3 [ Attr.class "lia-inline lia-h3" ]
+                    Html.h3 (annotation "lia-inline lia-h3" attr)
 
                 4 ->
-                    Html.h4 [ Attr.class "lia-inline lia-h4" ]
+                    Html.h4 (annotation "lia-inline lia-h4" attr)
 
                 5 ->
-                    Html.h5 [ Attr.class "lia-inline lia-h5" ]
+                    Html.h5 (annotation "lia-inline lia-h5" attr)
 
                 _ ->
-                    Html.h6 [ Attr.class "lia-inline lia-h6" ]
+                    Html.h6 (annotation "lia-inline lia-h6" attr)
            )
-        |> List.singleton
-        |> Html.header []
 
 
 view_block : Config -> Markdown -> Html Msg
@@ -214,6 +222,12 @@ view_block config block =
 
                 _ ->
                     Html.text ""
+
+        Header attr ( elements, sub ) ->
+            header config
+                (config.section.indentation + sub)
+                attr
+                elements
 
         Chart attr chart ->
             Lazy.lazy3 Charts.view attr config.light chart

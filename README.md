@@ -223,7 +223,19 @@ __Badges:__
 
 ## Version-Changes
 
-__0.8.0__ (//2020)
+__0.8.1__ (27/10/2020)
+
+* Support for subHeaders via:
+
+  ```markdown
+  subHeader
+  =========
+
+  sub-subHeader
+  ------------
+  ```
+
+__0.8.0__ (26/10/2020)
 
 * script-tags can now be used like web-components, which may return a value:
 

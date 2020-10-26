@@ -26,6 +26,7 @@ type Markdown
     | Code Code
     | ASCII Parameters String
     | HTML Parameters (Node Markdown)
+    | Header Parameters ( Inlines, Int )
     | Skip
 
 
