@@ -43,11 +43,11 @@ responsivevoice:
 manifest:
 	sed -i "s/\"logo_/\".\/logo_/g" dist/manifest.webmanifest
 	sed -i "s/\"index\.html/\".\/index.html/g" dist/manifest.webmanifest
+	sed -i -r "s/preview-lia\.([^.])*/preview-lia/g" dist/sw.js
 
 preview:
 	sed -i -r "s/preview-lia\.([^.])*/preview-lia/g" dist/index.html
 	mv dist/preview-lia.*.js dist/preview-lia.js
-	sed -i -r "s/preview-lia\.([^.])*/preview-lia/g" dist/sw.js
 
 watch:
 	npm run watch
