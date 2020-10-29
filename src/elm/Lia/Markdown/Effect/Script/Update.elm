@@ -300,7 +300,7 @@ getIdle : (Script -> x) -> Scripts -> List ( Int, x )
 getIdle =
     Script.filterMap
         (\js ->
-            not js.running || not (js.runOnce && js.counter == 1)
+            not js.running && not (js.runOnce && js.counter >= 1)
         )
 
 
@@ -316,12 +316,12 @@ getAll javascript =
 
 
 getVisible : Int -> Scripts -> List ( Int, String )
-getVisible visble javascript =
+getVisible visible javascript =
     javascript
         |> getIdle identity
         |> List.filterMap
             (\( id, node ) ->
-                if node.effect_id == visble then
+                if node.effect_id == visible then
                     Just ( id, node.script, node.input.value )
 
                 else
