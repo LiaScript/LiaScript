@@ -159,7 +159,7 @@ execute sound run_all delay model =
                 Script.getAll model.javascript
 
             else
-                Script.getVisible model.effects model.javascript
+                Script.getVisible model.visible model.javascript
     in
     update sound
         (javascript
