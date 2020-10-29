@@ -300,7 +300,7 @@ getIdle : (Script -> x) -> Scripts -> List ( Int, x )
 getIdle =
     Script.filterMap
         (\js ->
-            not js.running || not (js.runOnce && js.counter == 1)
+            not js.running && not (js.runOnce && js.counter >= 1)
         )
 
 

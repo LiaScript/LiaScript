@@ -7,7 +7,6 @@ import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events as Event
-import Json.Decode as JD
 import Lia.Markdown.Effect.Model as E
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.Effect.Script.Update exposing (Msg)
