@@ -209,6 +209,9 @@ runnable t =
         Password_ ->
             False
 
+        Search_ ->
+            False
+
         Tel_ ->
             False
 
