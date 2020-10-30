@@ -25,6 +25,7 @@ type Msg
     | Reset Int
     | Activate Bool Int
     | Value Int Bool String
+    | Toggle Int String
     | Edit Bool Int
     | EditCode Int String
     | NoOp
@@ -45,10 +46,34 @@ update msg scripts =
                                     |> Maybe.withDefault False
                                )
                     then
-                        reRun (\js -> { js | input = Input.active active js.input }) Cmd.none id scripts
+                        reRun
+                            (\js ->
+                                { js
+                                    | input =
+                                        if node.updated then
+                                            js.input
+
+                                        else
+                                            Input.active active js.input
+                                    , updated = False
+                                }
+                            )
+                            Cmd.none
+                            id
+                            scripts
 
                     else
-                        ( Array.set id { node | input = Input.active active node.input } scripts
+                        ( Array.set id
+                            { node
+                                | input =
+                                    if node.updated then
+                                        node.input
+
+                                    else
+                                        Input.active active node.input
+                                , updated = False
+                            }
+                            scripts
                         , if active then
                             Task.attempt (always NoOp) (Dom.focus "lia-focus")
 
@@ -70,6 +95,9 @@ update msg scripts =
                 , Cmd.none
                 , []
                 )
+
+        Toggle id str ->
+            reRun (\js -> { js | input = Input.toggle str js.input, updated = True }) Cmd.none id scripts
 
         Click id ->
             reRun identity Cmd.none id scripts

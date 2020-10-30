@@ -16,6 +16,7 @@ type alias Scripts =
 type alias Script =
     { effect_id : Int
     , script : String
+    , updated : Bool -- use this for preventing closing
     , running : Bool
     , update : Bool
     , runOnce : Bool
@@ -41,6 +42,7 @@ push id params script javascript =
     Array.push
         (Script id
             script
+            False
             False
             False
             (Attr.isSet "run-once" params)
