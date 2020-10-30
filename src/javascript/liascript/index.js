@@ -201,10 +201,12 @@ class LiaScript {
         case 'slide': {
           self.connector.slide(event.section)
 
+          /*
           let sec = document.getElementsByTagName('section')[0]
           if (sec) {
             sec.scrollTo(0, 0)
           }
+          */
 
 
           let elem = document.getElementById("focusedToc");
