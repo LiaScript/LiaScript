@@ -153,12 +153,12 @@ input attr id node =
 
         Just (Input.Checkbox_ options) ->
             options
-                |> select id node.input.value attr
+                |> checkbox id node.input.value attr
                 |> span attr id node
 
         Just (Input.Radio_ options) ->
             options
-                |> select id node.input.value attr
+                |> radio id node.input.value attr
                 |> span attr id node
 
         Just (Input.Select_ options) ->
@@ -182,6 +182,58 @@ select : Int -> String -> Parameters -> List String -> Html Msg
 select id value attr =
     List.map (\o -> Html.option [ Attr.value o ] [ Html.text o ])
         >> Html.select (attributes id value attr)
+
+
+checkbox : Int -> String -> Parameters -> List String -> Html Msg
+checkbox id value attr =
+    let
+        list =
+            value
+                |> Input.decodeList
+                |> Maybe.withDefault []
+    in
+    List.map
+        (\o ->
+            [ Html.text (" " ++ o ++ " ")
+            , Html.input
+                [ Attr.value o
+                , Attr.type_ "checkbox"
+                , Event.onCheck (always (Checkbox id o))
+                , Attr.checked (List.member o list)
+                , onActivate False id
+                , Attr.autofocus True
+                ]
+                []
+            , Html.span
+                [ Attr.class "lia-check-btn" ]
+                [ Html.text "check" ]
+            ]
+        )
+        >> List.concat
+        >> Html.span []
+
+
+radio : Int -> String -> Parameters -> List String -> Html Msg
+radio id value attr =
+    List.map
+        (\o ->
+            [ Html.text (" " ++ o ++ " ")
+            , Html.input
+                [ Attr.value o
+                , Attr.type_ "radio"
+                , Event.onCheck (always (Radio id o))
+                , Attr.checked (o == value)
+                , onActivate False id
+                , Attr.autofocus True
+                ]
+                []
+            , Html.span
+                [ Attr.class "lia-radio-btn" ]
+                []
+            ]
+        )
+        >> List.concat
+        >> Html.span []
 
 
 textarea : Int -> String -> Parameters -> Html Msg

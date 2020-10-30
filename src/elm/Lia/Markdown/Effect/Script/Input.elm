@@ -2,6 +2,8 @@ module Lia.Markdown.Effect.Script.Input exposing (..)
 
 import Array exposing (Array)
 import Dict exposing (Dict)
+import Json.Decode as JD
+import Json.Encode as JE
 import Lia.Markdown.HTML.Attributes as Attr exposing (Parameters)
 import Port.Eval as Eval exposing (Eval)
 import Regex
@@ -242,6 +244,34 @@ active bool i =
 value : String -> Input -> Input
 value str i =
     { i | value = str }
+
+
+toggle : String -> Input -> Input
+toggle str i =
+    { i
+        | value =
+            encodeList <|
+                case decodeList i.value of
+                    Just list ->
+                        if List.member str list then
+                            List.filter ((/=) str) list
+
+                        else
+                            str :: list
+
+                    Nothing ->
+                        []
+    }
+
+
+decodeList : String -> Maybe (List String)
+decodeList =
+    JD.decodeString (JD.list JD.string) >> Result.toMaybe
+
+
+encodeList : List String -> String
+encodeList =
+    JE.list JE.string >> JE.encode 0
 
 
 default : Input -> Input
