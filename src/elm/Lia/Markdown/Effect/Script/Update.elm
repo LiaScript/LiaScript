@@ -25,7 +25,8 @@ type Msg
     | Reset Int
     | Activate Bool Int
     | Value Int Bool String
-    | Toggle Int String
+    | Radio Int String
+    | Checkbox Int String
     | Edit Bool Int
     | EditCode Int String
     | NoOp
@@ -96,8 +97,11 @@ update msg scripts =
                 , []
                 )
 
-        Toggle id str ->
+        Checkbox id str ->
             reRun (\js -> { js | input = Input.toggle str js.input, updated = True }) Cmd.none id scripts
+
+        Radio id str ->
+            reRun (\js -> { js | input = Input.value str js.input, updated = True }) Cmd.none id scripts
 
         Click id ->
             reRun identity Cmd.none id scripts

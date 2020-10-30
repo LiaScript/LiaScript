@@ -158,7 +158,7 @@ input attr id node =
 
         Just (Input.Radio_ options) ->
             options
-                |> select id node.input.value attr
+                |> radio id node.input.value attr
                 |> span attr id node
 
         Just (Input.Select_ options) ->
@@ -198,7 +198,7 @@ checkbox id value attr =
             , Html.input
                 [ Attr.value o
                 , Attr.type_ "checkbox"
-                , Event.onCheck (always (Toggle id o))
+                , Event.onCheck (always (Checkbox id o))
                 , Attr.checked (List.member o list)
                 , onActivate False id
                 , Attr.autofocus True
@@ -207,6 +207,29 @@ checkbox id value attr =
             , Html.span
                 [ Attr.class "lia-check-btn" ]
                 [ Html.text "check" ]
+            ]
+        )
+        >> List.concat
+        >> Html.span []
+
+
+radio : Int -> String -> Parameters -> List String -> Html Msg
+radio id value attr =
+    List.map
+        (\o ->
+            [ Html.text (" " ++ o ++ " ")
+            , Html.input
+                [ Attr.value o
+                , Attr.type_ "radio"
+                , Event.onCheck (always (Radio id o))
+                , Attr.checked (o == value)
+                , onActivate False id
+                , Attr.autofocus True
+                ]
+                []
+            , Html.span
+                [ Attr.class "lia-radio-btn" ]
+                []
             ]
         )
         >> List.concat
