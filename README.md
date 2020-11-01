@@ -223,6 +223,11 @@ __Badges:__
 
 ## Version-Changes
 
+__0.8.2__ (01/11/2020)
+
+* little bugfixes, multiple inputs for scripts and internationlization for scripts outputs...
+
+
 __0.8.1__ (27/10/2020)
 
 * Support for subHeaders via:
