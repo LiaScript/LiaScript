@@ -47,7 +47,8 @@ datetime =
 
 relativetime : List String
 relativetime =
-    [ "unit"
+    [ "locale"
+    , "unit"
     , "localematcher"
     , "numeric"
     , "style"
@@ -56,7 +57,8 @@ relativetime =
 
 list : List String
 list =
-    [ "localematcher"
+    [ "locale"
+    , "localematcher"
     , "type"
     , "style"
     ]
@@ -64,7 +66,8 @@ list =
 
 pluralrules : List String
 pluralrules =
-    [ "localematcher"
+    [ "locale"
+    , "localematcher"
     , "type"
     , "minimumintegerdigits"
     , "minimumfractiondigits"
