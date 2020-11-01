@@ -13,35 +13,49 @@ type alias Intl =
 number : List String
 number =
     [ "locale"
-    , "localestyle"
+    , "compactdisplay"
     , "currency"
+    , "currencydisplay"
+    , "currencysign"
     , "localematcher"
-    , "usegrouping"
-    , "minimumintegerdigits"
-    , "minimumfractiondigits"
     , "maximumfractiondigits"
-    , "minimumsignificantdigits"
     , "maximumsignificantdigits"
+    , "minimumfractiondigits"
+    , "minimumintegerdigits"
+    , "minimumsignificantdigits"
+    , "notation"
+    , "numberingsystem"
+    , "signdisplay"
+    , "localestyle"
+    , "unit"
+    , "unitdisplay"
+    , "usegrouping"
     ]
 
 
 datetime : List String
 datetime =
     [ "locale"
-    , "localematcher"
-    , "timezone"
+    , "calendar"
+    , "datestyle"
+    , "day"
+    , "dayperiod"
+    , "era"
+    , "formatmatcher"
+    , "fractionalseconddigits"
+    , "hour"
     , "hour12"
     , "hourcycle"
-    , "formatmatcher"
-    , "weekday"
-    , "era"
-    , "year"
-    , "month"
-    , "day"
-    , "hour"
+    , "localematcher"
     , "minute"
+    , "month"
+    , "numberingsystem"
     , "second"
+    , "timestyle"
+    , "timezone"
     , "timezonename"
+    , "weekday"
+    , "year"
     ]
 
 
@@ -51,7 +65,7 @@ relativetime =
     , "unit"
     , "localematcher"
     , "numeric"
-    , "style"
+    , "localestyle"
     ]
 
 
@@ -60,7 +74,7 @@ list =
     [ "locale"
     , "localematcher"
     , "type"
-    , "style"
+    , "localestyle"
     ]
 
 

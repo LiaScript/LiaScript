@@ -17,34 +17,49 @@ customElements.define('intl-format', class extends HTMLElement {
     switch (this.format) {
       case "number":
         this.option = {
-          style:                    this.get('localeStyle'),
+          compactDisplay:           this.get('compactDisplay'),
           currency:                 this.get('currency'),
+          currencyDisplay:          this.get('currencyDisplay'),
+          currencySign:             this.get('currencySign'),
           localeMatcher:            this.get('localeMatcher'),
-          useGrouping:              this.get('useGrouping'),
-          minimumIntegerDigits:     this.get('minimumIntegerDigits'),
-          minimumFractionDigits:    this.get('minimumFractionDigits'),
           maximumFractionDigits:    this.get('maximumFractionDigits'),
+          maximumSignificantDigits: this.get('maximumSignificantDigits'),
+          minimumFractionDigits:    this.get('minimumFractionDigits'),
+          minimumIntegerDigits:     this.get('minimumIntegerDigits'),
           minimumSignificantDigits: this.get('minimumSignificantDigits'),
-          maximumSignificantDigits: this.get('maximumSignificantDigits')
+          notation:                 this.get('notation'),
+          numberingSystem:          this.get('numberingSystem'),
+          signDisplay:              this.get('signDisplay'),
+          style:                    this.get('localeStyle'),
+          unit:                     this.get('unit'),
+          unitDisplay:              this.get('unitDisplay'),
+          useGrouping:              this.get('useGrouping')
         }
+
         break
 
       case "datetime":
         this.option = {
-          localeMatcher:            this.get('localeMatcher'),
-          timeZone:                 this.get('timeZone'),
+          calendar:                 this.get('calendar'),
+          dateStyle:                this.get('dateStyle'),
+          day:                      this.get('day'),
+          dayPeriod:                this.get('dayPeriod'),
+          era:                      this.get('era'),
+          formatMatcher:            this.get('formatMatcher'),
+          fractionalSecondDigits:   this.get('fractionalSecondDigits'),
+          hour:                     this.get('hour'),
           hour12:                   this.get('hour12'),
           hourCycle:                this.get('hourCycle'),
-          formatMatcher:            this.get('formatMatcher'),
-          weekday:                  this.get('weekday'),
-          era:                      this.get('era'),
-          year:                     this.get('year'),
-          month:                    this.get('month'),
-          day:                      this.get('day'),
-          hour:                     this.get('hour'),
+          localeMatcher:            this.get('localeMatcher'),
           minute:                   this.get('minute'),
+          month:                    this.get('month'),
+          numberingSystem:          this.get('numberingSystem'),
           second:                   this.get('second'),
-          timeZoneName:             this.get('timeZoneName')
+          timeStyle:                this.get('timeStyle'),
+          timeZone:                 this.get('timeZone'),
+          timeZoneName:             this.get('timeZoneName'),
+          weekday:                  this.get('weekday'),
+          year:                     this.get('year')
         }
         break
       // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/RelativeTimeFormat/RelativeTimeFormat
@@ -53,26 +68,26 @@ customElements.define('intl-format', class extends HTMLElement {
         this.option = {
           localeMatcher:            this.get('localeMatcher'),
           numeric:                  this.get('numeric'),
-          style:                    this.get('style')
+          style:                    this.get('localeStyle')
         }
         break
 
       case "list":
         this.option = {
           localeMatcher:            this.get('localeMatcher'),
-          type:                     this.get('type'),
-          style:                    this.get('style')
+          style:                    this.get('localeStyle'),
+          type:                     this.get('type')
         }
         break
       case "pluralrules":
         this.option = {
           localeMatcher:            this.get('localeMatcher'),
-          type:                     this.get('type'),
-          minimumIntegerDigits:     this.get('minimumIntegerDigits'),
-          minimumFractionDigits:    this.get('minimumFractionDigits'),
           maximumFractionDigits:    this.get('maximumFractionDigits'),
+          maximumSignificantDigits: this.get('maximumSignificantDigits'),
+          minimumFractionDigits:    this.get('minimumFractionDigits'),
+          minimumIntegerDigits:     this.get('minimumIntegerDigits'),
           minimumSignificantDigits: this.get('minimumSignificantDigits'),
-          maximumSignificantDigits: this.get('maximumSignificantDigits')
+          type:                     this.get('type')
         }
         break
       default:
