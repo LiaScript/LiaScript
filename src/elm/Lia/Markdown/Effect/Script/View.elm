@@ -181,7 +181,7 @@ input attr id node =
 select : Int -> String -> Parameters -> List String -> Html Msg
 select id value attr =
     List.map (\o -> Html.option [ Attr.value o ] [ Html.text o ])
-        >> Html.select (attributes id value attr)
+        >> Html.select (attributes True id value attr)
 
 
 checkbox : Int -> String -> Parameters -> List String -> Html Msg
@@ -238,17 +238,18 @@ radio id value attr =
 
 textarea : Int -> String -> Parameters -> Html Msg
 textarea id value attr =
-    Html.textarea (attributes id value attr) []
+    Html.textarea (attributes False id value attr) []
 
 
-attributes : Int -> String -> Parameters -> List (Html.Attribute Msg)
-attributes id value =
+attributes : Bool -> Int -> String -> Parameters -> List (Html.Attribute Msg)
+attributes updateOnChange id value =
     annotation ""
         >> List.append
-            [ Event.onInput (Value id True)
+            [ Event.onInput (Value id updateOnChange)
             , onActivate False id
             , Attr.value value
             , Attr.id "lia-focus"
+            , blockKeydown NoOp
             ]
 
 
@@ -288,6 +289,7 @@ base type_ id attr value =
                     , Attr.value value
                     , onActivate False id
                     , Attr.id "lia-focus"
+                    , blockKeydown NoOp
                     ]
             )
             []
