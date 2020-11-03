@@ -228,6 +228,8 @@ __.0.8.3__ (//20202)
 * script format locale default is defined by global language default
 * fix: order of script execution corrected in textbook mode
 * fix: caching bug in Katex fomulas
+* added funnel diagram to table visualization
+* optimitzed table diagram generation
 
 
 __0.8.2__ (01/11/2020)

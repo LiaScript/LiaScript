@@ -50,9 +50,8 @@ type Msg
 
 
 send : Int -> List ( String, JE.Value ) -> List Event
-send idx events =
-    events
-        |> List.map (\( name, json ) -> Event name idx json)
+send idx =
+    List.map (\( name, json ) -> Event name idx json)
 
 
 key_to_message : String -> ( Msg, Bool )

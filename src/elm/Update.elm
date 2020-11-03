@@ -76,6 +76,7 @@ update msg model =
             in
             ( { model | lia = lia }
             , events
+                |> List.reverse
                 |> List.map event2js
                 |> (::) (Cmd.map LiaScript cmd)
                 |> Cmd.batch
