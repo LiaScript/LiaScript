@@ -7,6 +7,7 @@ import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events as Event
+import Json.Encode as JE
 import Lia.Markdown.Effect.Model as E
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.Effect.Script.Update exposing (Msg)
@@ -57,8 +58,12 @@ view config element =
 
         Formula mode_ e [] ->
             Html.node "katex-formula"
-                [ Attr.attribute "displayMode" mode_ ]
-                [ Html.text e ]
+                [ Attr.attribute "displayMode" mode_
+                , e
+                    |> JE.string
+                    |> Attr.property "formula"
+                ]
+                []
 
         Symbol e [] ->
             Html.text e

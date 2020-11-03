@@ -9,26 +9,48 @@ customElements.define('katex-formula', class extends HTMLElement {
   connectedCallback () {
     const shadowRoot = this.attachShadow({ mode: 'open' })
 
-    let span = document.createElement('span')
     let link = document.createElement('link')
-    link.href = 'katex.min.css'
     link.rel = 'stylesheet'
+    link.href = 'katex.min.css'
+
+    this.span = document.createElement('span')
 
     shadowRoot.appendChild(link)
-    shadowRoot.appendChild(span)
+    shadowRoot.appendChild(this.span)
 
-    let displayMode = this.getAttribute('displayMode')
+    this.displayMode = this.getAttribute('displayMode')
 
-    if (!displayMode) {
-      displayMode = false
+    if (!this.displayMode) {
+      this.displayMode = false
     } else {
-      displayMode = JSON.parse(displayMode)
+      this.displayMode = JSON.parse(this.displayMode)
     }
 
-    katex.render(this.textContent, span, {
-      throwOnError: false,
-      displayMode: displayMode
-    })
+    this.render()
+  }
+
+  render() {
+    if(this.formula_ && this.span) {
+      try{
+        katex.render(this.formula_, this.span, {
+          throwOnError: false,
+          displayMode: this.displayMode
+        })
+      } catch (e) {
+        console.warn("katex", e.message)
+      }
+    }
+  }
+
+  get formula() {
+    return this.formula_
+  }
+
+  set formula(value) {
+    if (this.formula_ != value) {
+      this.formula_ = value
+      this.render()
+    }
   }
 
   disconnectedCallback () {
