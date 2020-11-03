@@ -156,6 +156,43 @@ chart width isFormated attr mode class matrix =
                         |> List.map (List.map2 (\c -> Maybe.map (Tuple.pair c)) category >> List.filterMap identity)
                         |> Chart.viewPieChart width attr mode labels sub
 
+            Funnel ->
+                if
+                    body
+                        |> Matrix.column 0
+                        |> Maybe.map (List.all isNumber)
+                        |> Maybe.withDefault False
+                then
+                    body
+                        |> Matrix.map .float
+                        |> List.map
+                            (List.map2 (\category -> Maybe.map (Tuple.pair category.string)) head
+                                >> List.filterMap identity
+                            )
+                        |> Chart.viewFunnel width attr mode labels Nothing
+
+                else
+                    let
+                        category =
+                            head
+                                |> List.tail
+                                |> Maybe.withDefault []
+                                |> List.map .string
+
+                        sub =
+                            body
+                                |> Matrix.column 0
+                                |> Maybe.map (List.map .string)
+
+                        data =
+                            body
+                                |> Matrix.map .float
+                                |> List.filterMap List.tail
+                    in
+                    data
+                        |> List.map (List.map2 (\c -> Maybe.map (Tuple.pair c)) category >> List.filterMap identity)
+                        |> Chart.viewFunnel width attr mode labels sub
+
             HeatMap ->
                 let
                     y =
@@ -456,6 +493,9 @@ toTable id attr class body =
 
                     BoxPlot ->
                         "boxplot"
+
+                    Funnel ->
+                        "funnel"
 
                     None ->
                         ""

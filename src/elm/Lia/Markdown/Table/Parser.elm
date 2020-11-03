@@ -151,6 +151,9 @@ diagramType =
                     "boxplot" ->
                         Just BoxPlot
 
+                    "funnel" ->
+                        Just Funnel
+
                     "none" ->
                         Just None
 
