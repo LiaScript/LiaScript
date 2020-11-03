@@ -12,8 +12,7 @@ type alias Intl =
 
 number : List String
 number =
-    [ "locale"
-    , "compactdisplay"
+    [ "compactdisplay"
     , "currency"
     , "currencydisplay"
     , "currencysign"
@@ -35,8 +34,7 @@ number =
 
 datetime : List String
 datetime =
-    [ "locale"
-    , "calendar"
+    [ "calendar"
     , "datestyle"
     , "day"
     , "dayperiod"
@@ -61,8 +59,7 @@ datetime =
 
 relativetime : List String
 relativetime =
-    [ "locale"
-    , "unit"
+    [ "unit"
     , "localematcher"
     , "numeric"
     , "localestyle"
@@ -71,8 +68,7 @@ relativetime =
 
 list : List String
 list =
-    [ "locale"
-    , "localematcher"
+    [ "localematcher"
     , "type"
     , "localestyle"
     ]
@@ -80,8 +76,7 @@ list =
 
 pluralrules : List String
 pluralrules =
-    [ "locale"
-    , "localematcher"
+    [ "localematcher"
     , "type"
     , "minimumintegerdigits"
     , "minimumfractiondigits"
@@ -91,26 +86,34 @@ pluralrules =
     ]
 
 
-from : Parameters -> Maybe Intl
-from params =
-    case params |> Params.get "format" |> Maybe.map String.toLower of
-        Just "number" ->
-            to "number" number params
+from : String -> Parameters -> Maybe Intl
+from lang params =
+    Maybe.map ((::) (locale lang params)) <|
+        case params |> Params.get "format" |> Maybe.map String.toLower of
+            Just "number" ->
+                to "number" number params
 
-        Just "datetime" ->
-            to "datetime" datetime params
+            Just "datetime" ->
+                to "datetime" datetime params
 
-        Just "relativetime" ->
-            to "relativetime" relativetime params
+            Just "relativetime" ->
+                to "relativetime" relativetime params
 
-        Just "list" ->
-            to "list" list params
+            Just "list" ->
+                to "list" list params
 
-        Just "pluralrules" ->
-            to "pluralrules" pluralrules params
+            Just "pluralrules" ->
+                to "pluralrules" pluralrules params
 
-        _ ->
-            Nothing
+            _ ->
+                Nothing
+
+
+locale : String -> Parameters -> ( String, String )
+locale lang =
+    Params.get "locale"
+        >> Maybe.withDefault lang
+        >> Tuple.pair "locale"
 
 
 to : String -> List String -> Parameters -> Maybe Intl

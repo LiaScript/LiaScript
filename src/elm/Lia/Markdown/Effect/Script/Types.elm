@@ -37,8 +37,8 @@ input =
         Regex.fromString "@input\\(`([^`]+)`\\)"
 
 
-push : Int -> Parameters -> String -> Array Script -> Array Script
-push id params script javascript =
+push : String -> Int -> Parameters -> String -> Array Script -> Array Script
+push lang id params script javascript =
     Array.push
         (Script id
             script
@@ -63,7 +63,7 @@ push id params script javascript =
             )
             0
             (Input.from params)
-            (Intl.from params)
+            (Intl.from lang params)
         )
         javascript
 
