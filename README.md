@@ -223,6 +223,13 @@ __Badges:__
 
 ## Version-Changes
 
+__.0.8.3__ (//20202)
+
+* script format locale default is defined by global language default
+* fix: order of script execution corrected in textbook mode
+* fix: caching bug in Katex fomulas
+
+
 __0.8.2__ (01/11/2020)
 
 * little bugfixes, multiple inputs for scripts and internationlization for scripts outputs...
