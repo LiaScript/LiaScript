@@ -233,6 +233,9 @@ goto i =
         IHTML _ _ ->
             succeed i
 
+        Script _ _ ->
+            succeed i
+
         _ ->
             map (Goto i) getLine
 
