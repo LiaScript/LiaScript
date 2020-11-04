@@ -155,9 +155,7 @@ eCharts attr light json option =
 
                 else
                     "dark"
-            , option
-                |> JE.encode 0
-                |> Attr.attribute "option"
+            , Attr.property "option" option
             , json
                 |> Maybe.withDefault ""
                 |> Attr.attribute "json"
