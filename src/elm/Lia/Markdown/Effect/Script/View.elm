@@ -5,27 +5,34 @@ import Conditional.List as CList
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events as Event
-import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Markdown.Effect.Script.Input as Input exposing (Input)
+import Lia.Markdown.Code.Editor as Editor
+import Lia.Markdown.Effect.Script.Input as Input
 import Lia.Markdown.Effect.Script.Intl as Intl
 import Lia.Markdown.Effect.Script.Types exposing (Script, Scripts)
 import Lia.Markdown.Effect.Script.Update exposing (Msg(..))
-import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, get, toAttribute)
+import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, get)
 import Lia.Utils exposing (blockKeydown)
 
 
-view : Int -> Parameters -> Scripts -> Html Msg
-view id attr scripts =
+view : Maybe String -> Int -> Parameters -> Scripts -> Html Msg
+view theme id attr scripts =
     case Array.get id scripts of
         Just node ->
             case node.result of
                 Just _ ->
-                    if Input.isHidden node.input then
-                        Html.text ""
+                    if node.edit then
+                        Html.span []
+                            [ editor theme id node.script
+                            , if Input.isHidden node.input then
+                                Html.text ""
 
-                    else if node.edit then
-                        edit id node.script
+                              else
+                                script True attr id node
+                            ]
+
+                    else if Input.isHidden node.input then
+                        Html.text ""
 
                     else if node.input.active then
                         input attr id node
@@ -185,7 +192,7 @@ select id value attr =
 
 
 checkbox : Int -> String -> Parameters -> List String -> Html Msg
-checkbox id value attr =
+checkbox id value _ =
     let
         list =
             value
@@ -214,7 +221,7 @@ checkbox id value attr =
 
 
 radio : Int -> String -> Parameters -> List String -> Html Msg
-radio id value attr =
+radio id value _ =
     List.map
         (\o ->
             [ Html.text (" " ++ o ++ " ")
@@ -321,13 +328,48 @@ onEdit bool =
            )
 
 
-edit : Int -> String -> Html Msg
-edit id code =
-    Html.input
-        [ Attr.value code
-        , Attr.id "lia-focus"
-        , onEdit False id
-        , Event.onInput (EditCode id)
-        , blockKeydown NoOp
+editor : Maybe String -> Int -> String -> Html Msg
+editor theme id code =
+    Html.div
+        [ Attr.style "position" "fixed"
+        , Attr.style "display" "block"
+        , Attr.style "width" "100%"
+        , Attr.style "height" "100%"
+        , Attr.style "top" "0"
+        , Attr.style "left" "0"
+        , Attr.style "right" "0"
+        , Attr.style "bottom" "0"
+        , Attr.style "background-color" "rgba(0,0,0,0.6)"
+        , Attr.style "z-index" "2"
+        , Attr.style "cursor" "pointer"
+        , Attr.style "overflow" "auto"
         ]
-        []
+        [ Html.div
+            [ Attr.style "position" "absolute"
+            , Attr.style "top" "90px"
+            , Attr.style "left" "50%"
+            , Attr.style "width" "90%"
+            , Attr.style "max-width" "800px"
+            , Attr.style "transform" "translate(-50%,0%)"
+            , Attr.style "-ms-transform" "translate(-50%,0%)"
+            ]
+            [ Editor.editor
+                [ Editor.onChange (EditCode id)
+                , Editor.value code
+                , theme
+                    |> Maybe.withDefault "crimson_editor"
+                    |> Editor.theme
+                , Editor.onBlur (Edit False id)
+                , Editor.focus
+                , Editor.mode "javascript"
+                , Editor.maxLines 16
+                , Editor.showGutter True
+                , Editor.useSoftTabs False
+                , Editor.enableBasicAutocompletion True
+                , Editor.enableLiveAutocompletion True
+                , Editor.enableSnippets True
+                , Editor.extensions [ "language_tools" ]
+                ]
+                []
+            ]
+        ]

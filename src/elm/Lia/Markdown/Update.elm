@@ -44,8 +44,8 @@ subscriptions _ =
 
 
 send : String -> List JE.Value -> List ( String, JE.Value )
-send name values =
-    List.map (Tuple.pair name) values
+send name =
+    List.map (Tuple.pair name)
 
 
 update : Msg -> Section -> ( Section, Cmd Msg, List ( String, JE.Value ) )
@@ -123,6 +123,7 @@ update msg section =
             updateScript (Just childMsg) ( section, Cmd.none, [] )
 
 
+updateScript : Maybe Script.Msg -> ( Section, Cmd Msg, List ( String, JE.Value ) ) -> ( Section, Cmd Msg, List ( String, JE.Value ) )
 updateScript msg ( section, cmd, events ) =
     case msg of
         Nothing ->

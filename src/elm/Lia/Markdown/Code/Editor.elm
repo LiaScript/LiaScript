@@ -6,12 +6,15 @@ module Lia.Markdown.Code.Editor exposing
     , enableSnippets
     , extensions
     , firstLineNumber
+    , focus
     , fontSize
     , highlightActiveLine
     , marker
     , maxLines
     , mode
+    , onBlur
     , onChange
+    , onFocus
     , readOnly
     , showCursor
     , showGutter
@@ -43,6 +46,36 @@ onChange msg =
         |> JD.at [ "target", "value" ]
         |> JD.map msg
         |> Html.Events.on "editorChanged"
+
+
+onFocus : msg -> Html.Attribute msg
+onFocus msg =
+    JD.bool
+        |> JD.at [ "target", "focus" ]
+        |> JD.andThen
+            (\b ->
+                if b then
+                    JD.succeed msg
+
+                else
+                    JD.fail "no focus"
+            )
+        |> Html.Events.on "editorFocus"
+
+
+onBlur : msg -> Html.Attribute msg
+onBlur msg =
+    JD.bool
+        |> JD.at [ "target", "focus" ]
+        |> JD.andThen
+            (\b ->
+                if b then
+                    JD.fail "no blur"
+
+                else
+                    JD.succeed msg
+            )
+        |> Html.Events.on "editorFocus"
 
 
 value : String -> Html.Attribute msg
@@ -148,3 +181,8 @@ extensions =
 boolean : String -> Bool -> Html.Attribute msg
 boolean prop =
     JE.bool >> Attr.property prop
+
+
+focus : Html.Attribute msg
+focus =
+    boolean "focus" True

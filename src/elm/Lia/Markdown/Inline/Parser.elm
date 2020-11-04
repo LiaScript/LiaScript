@@ -150,6 +150,7 @@ html =
                             { effect_model
                                 | javascript =
                                     JS.push
+                                        s.defines.language
                                         (s.effect_number
                                             |> List.head
                                             |> Maybe.withDefault 0

@@ -1,11 +1,10 @@
 module Lia.Markdown.Effect.Script.Types exposing (..)
 
 import Array exposing (Array)
-import Dict exposing (Dict)
 import Lia.Markdown.Effect.Script.Input as Input exposing (Input)
 import Lia.Markdown.Effect.Script.Intl as Intl exposing (Intl)
 import Lia.Markdown.HTML.Attributes as Attr exposing (Parameters)
-import Port.Eval as Eval exposing (Eval)
+import Port.Eval as Eval
 import Regex
 
 
@@ -37,8 +36,8 @@ input =
         Regex.fromString "@input\\(`([^`]+)`\\)"
 
 
-push : Int -> Parameters -> String -> Array Script -> Array Script
-push id params script javascript =
+push : String -> Int -> Parameters -> String -> Array Script -> Array Script
+push lang id params script javascript =
     Array.push
         (Script id
             script
@@ -63,7 +62,7 @@ push id params script javascript =
             )
             0
             (Input.from params)
-            (Intl.from params)
+            (Intl.from lang params)
         )
         javascript
 

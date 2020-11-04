@@ -39,6 +39,7 @@ type Class
     | BoxPlot
     | Graph
     | Map
+    | Funnel
 
 
 type alias Vector =

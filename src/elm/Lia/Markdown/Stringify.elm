@@ -1,6 +1,5 @@
 module Lia.Markdown.Stringify exposing (stringify)
 
-import Array exposing (Array)
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.Effect.Types exposing (isIn)
 import Lia.Markdown.HTML.Types as HTML

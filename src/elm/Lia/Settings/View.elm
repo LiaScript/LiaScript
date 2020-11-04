@@ -318,6 +318,7 @@ view_ace lang theme =
               , ( "merbivore_soft", "Merbivore Soft" )
               , ( "mono_industrial", "Mono Industrial" )
               , ( "monokai", "Monokai" )
+              , ( "nord_dark", "Nord Dark" )
               , ( "pastel_on_dark", "Pastel on dark" )
               , ( "solarized_dark", "Solarized Dark" )
               , ( "terminal", "Terminal" )

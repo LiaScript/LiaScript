@@ -92,6 +92,8 @@ customElements.define('code-editor', class extends HTMLElement {
     } catch(e) {
       console.warn("ace.js => ", e);
     }
+
+    this.focus_ = false
   }
 
   connectedCallback () {
@@ -132,7 +134,22 @@ customElements.define('code-editor', class extends HTMLElement {
       this._editor.on('change', runDispatch)
     }
 
+    let self = this
+    this._editor.on("focus", function(){
+      self.focus_ = true
+      self.dispatchEvent(new CustomEvent('editorFocus'))
+    })
+
+    this._editor.on("blur",  function(){
+      self.focus_ = false
+      self.dispatchEvent(new CustomEvent('editorFocus'))
+    })
+
     this.setMarker()
+
+    if(this.focus_)
+      this.setFocus()
+
   }
 
   disconnectedCallback () {
@@ -353,5 +370,27 @@ customElements.define('code-editor', class extends HTMLElement {
   }
   set value (value) {
     this.setOption('value', value)
+  }
+
+  get focus() {
+    return this.focus_
+  }
+  set focus(value) {
+    this.focus_ = value
+
+    if (value)
+      this.setFocus()
+  }
+
+  setFocus() {
+    if (!this._editor) return
+
+    try {
+        this._editor.focus()
+    } catch (e) {
+      console.log(
+        'Problem Ace: focus => ',
+        e.toString())
+    }
   }
 })

@@ -4,7 +4,7 @@ var style = "width: 100%; height: 400px; margin-top: -0.2em;"
 
 customElements.define('e-charts', class extends HTMLElement {
   static get observedAttributes() {
-    return ["style", "option", "mode", "json"];
+    return ["style", "mode", "json"];
   }
 
   constructor () {
@@ -28,6 +28,8 @@ customElements.define('e-charts', class extends HTMLElement {
       let container = this.shadowRoot.querySelector("#container")
       this.data = null
       this.chart = echarts.init(container, this.mode)
+      this.option_ = JSON.parse(this.getAttribute("option")) || this.option_
+
       this.updateChart()
     }
   }
@@ -42,9 +44,7 @@ customElements.define('e-charts', class extends HTMLElement {
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    if (name === "option") {
-      this.updateChart();
-    } else if (name === "style") {
+   if (name === "style") {
       let container = this.shadowRoot.querySelector("#container");
       if (container) {
         container.style = style + newValue;
@@ -92,11 +92,13 @@ customElements.define('e-charts', class extends HTMLElement {
   }
 
   updateChart() {
-    if (!this.chart) return;
+    console.warn(this.option_);
+
+    if (!this.chart || !this.option_) return;
 
     //this.chart.clear();
 
-    let option = JSON.parse(this.option || "{}");
+    let option = this.option_ || {}
 
     //console.warn(option);
 
@@ -106,6 +108,8 @@ customElements.define('e-charts', class extends HTMLElement {
     if (this.data) {
       echarts.registerMap(this.data.name, this.data.data)
     }
+
+    console.warn(option);
 
     this.chart.setOption(option, true);
     //this.resizeChart()
@@ -118,20 +122,16 @@ customElements.define('e-charts', class extends HTMLElement {
   }
 
   get option() {
-    if (this.hasAttribute("option")) {
-      return this.getAttribute("option");
-    } else {
-      return "{}";
-    }
+    return this.option_
   }
 
   set option(val) {
     if (val) {
-      this.setAttribute("option", val);
-    } else {
-      this.setAttribute("option", "{}");
+      if( JSON.stringify(val) != JSON.stringify(this.option_) ) {
+        this.option_ = val
+        this.updateChart();
+      }
     }
-    this.updateChart();
   }
 
   get mode() {

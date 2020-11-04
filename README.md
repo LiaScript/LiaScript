@@ -223,11 +223,14 @@ __Badges:__
 
 ## Version-Changes
 
-__.0.8.3__ (//20202)
+__.0.8.3__ (04/11/20202)
 
 * script format locale default is defined by global language default
 * fix: order of script execution corrected in textbook mode
 * fix: caching bug in Katex fomulas
+* added funnel diagram to table visualization
+* optimitzed table diagram generation
+* double-click on script now uses an overlay editor
 
 
 __0.8.2__ (01/11/2020)

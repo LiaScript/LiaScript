@@ -10,7 +10,6 @@ module Lia.Markdown.Effect.Update exposing
     , updateSub
     )
 
-import Array
 import Browser.Dom as Dom
 import Json.Decode as JD
 import Json.Encode as JE
@@ -20,7 +19,7 @@ import Lia.Markdown.Effect.Model
         , current_comment
         )
 import Lia.Markdown.Effect.Script.Update as Script
-import Port.Eval as Eval exposing (Eval)
+import Port.Eval as Eval
 import Port.Event exposing (Event)
 import Port.TTS as TTS
 import Task

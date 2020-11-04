@@ -1,12 +1,8 @@
 module Lia.Markdown.Effect.Script.Input exposing (..)
 
-import Array exposing (Array)
-import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.HTML.Attributes as Attr exposing (Parameters)
-import Port.Eval as Eval exposing (Eval)
-import Regex
 
 
 type Type_
