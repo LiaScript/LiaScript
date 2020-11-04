@@ -1,11 +1,10 @@
 module Lia.Markdown.Effect.Script.Types exposing (..)
 
 import Array exposing (Array)
-import Dict exposing (Dict)
 import Lia.Markdown.Effect.Script.Input as Input exposing (Input)
 import Lia.Markdown.Effect.Script.Intl as Intl exposing (Intl)
 import Lia.Markdown.HTML.Attributes as Attr exposing (Parameters)
-import Port.Eval as Eval exposing (Eval)
+import Port.Eval as Eval
 import Regex
 
 

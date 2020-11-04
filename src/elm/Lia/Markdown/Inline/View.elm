@@ -3,18 +3,15 @@ module Lia.Markdown.Inline.View exposing
     , viewer
     )
 
-import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Html.Events as Event
 import Json.Encode as JE
-import Lia.Markdown.Effect.Model as E
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.Effect.Script.Update exposing (Msg)
 import Lia.Markdown.Effect.Script.View as JS
 import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.View as Footnote
-import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, get, toAttribute)
+import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.HTML.View as HTML
 import Lia.Markdown.Inline.Config as Config exposing (Config)
 import Lia.Markdown.Inline.Stringify exposing (stringify_)

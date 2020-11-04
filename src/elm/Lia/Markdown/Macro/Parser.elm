@@ -31,7 +31,7 @@ import Combine
 import Dict
 import Lia.Definition.Types exposing (Definition)
 import Lia.Parser.Context exposing (Context, indentation)
-import Lia.Parser.Helper exposing (c_frame, spaces)
+import Lia.Parser.Helper exposing (c_frame)
 import Lia.Utils exposing (toEscapeString, toJSstring)
 import Regex
 

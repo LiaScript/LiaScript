@@ -3,7 +3,7 @@ module Lia.Markdown.Inline.Stringify exposing
     , stringify_
     )
 
-import Array exposing (Array)
+import Array
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.Effect.Types as Effect
 import Lia.Markdown.HTML.Types as HTML

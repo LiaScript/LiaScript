@@ -5,14 +5,13 @@ import Conditional.List as CList
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events as Event
-import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Code.Editor as Editor
-import Lia.Markdown.Effect.Script.Input as Input exposing (Input)
+import Lia.Markdown.Effect.Script.Input as Input
 import Lia.Markdown.Effect.Script.Intl as Intl
 import Lia.Markdown.Effect.Script.Types exposing (Script, Scripts)
 import Lia.Markdown.Effect.Script.Update exposing (Msg(..))
-import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, get, toAttribute)
+import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, get)
 import Lia.Utils exposing (blockKeydown)
 
 
@@ -193,7 +192,7 @@ select id value attr =
 
 
 checkbox : Int -> String -> Parameters -> List String -> Html Msg
-checkbox id value attr =
+checkbox id value _ =
     let
         list =
             value
@@ -222,7 +221,7 @@ checkbox id value attr =
 
 
 radio : Int -> String -> Parameters -> List String -> Html Msg
-radio id value attr =
+radio id value _ =
     List.map
         (\o ->
             [ Html.text (" " ++ o ++ " ")

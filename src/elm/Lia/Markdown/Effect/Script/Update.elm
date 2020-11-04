@@ -8,9 +8,8 @@ module Lia.Markdown.Effect.Script.Update exposing
     , update
     )
 
-import Array exposing (Array)
+import Array
 import Browser.Dom as Dom
-import Conditional.String as CString
 import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Input as Input
 import Lia.Markdown.Effect.Script.Types as Script exposing (Script, Scripts)
