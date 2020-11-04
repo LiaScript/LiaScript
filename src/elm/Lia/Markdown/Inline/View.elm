@@ -87,7 +87,7 @@ view config element =
                 |> Effect.inline config attr e
 
         Script id attr ->
-            JS.view id attr config.scripts
+            JS.view config.theme id attr config.scripts
 
         Symbol e attr ->
             view config (Container [ Symbol e [] ] attr)
@@ -100,8 +100,8 @@ view config element =
 
 
 view_inf : Scripts -> Lang -> Inline -> Html Msg
-view_inf scripts =
-    Config.init -1 Textbook 0 Nothing scripts >> view
+view_inf scripts lang =
+    Config.init -1 Textbook 0 Nothing scripts lang Nothing |> view
 
 
 stringFrom : Config -> Maybe Inlines -> String

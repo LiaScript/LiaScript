@@ -13,6 +13,7 @@ type alias Config =
     , visible : Maybe Int
     , speaking : Maybe Int
     , lang : Lang
+    , theme : Maybe String
     , scripts : Scripts
     }
 
@@ -24,11 +25,11 @@ init :
     -> Maybe Int
     -> Scripts
     -> Lang
+    -> Maybe String
     -> Config
-init slide mode visible speaking effects lang =
+init slide mode visible speaking effects theme lang =
     Config
         slide
-        --mode
         (if mode == Textbook then
             Nothing
 
@@ -36,5 +37,6 @@ init slide mode visible speaking effects lang =
             Just visible
         )
         speaking
+        theme
         lang
         effects

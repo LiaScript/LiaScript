@@ -16,15 +16,15 @@ import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, get, toAtt
 import Lia.Utils exposing (blockKeydown)
 
 
-view : Int -> Parameters -> Scripts -> Html Msg
-view id attr scripts =
+view : Maybe String -> Int -> Parameters -> Scripts -> Html Msg
+view theme id attr scripts =
     case Array.get id scripts of
         Just node ->
             case node.result of
                 Just _ ->
                     if node.edit then
                         Html.span []
-                            [ edit id node.script
+                            [ editor theme id node.script
                             , if Input.isHidden node.input then
                                 Html.text ""
 
@@ -329,8 +329,8 @@ onEdit bool =
            )
 
 
-edit : Int -> String -> Html Msg
-edit id code =
+editor : Maybe String -> Int -> String -> Html Msg
+editor theme id code =
     Html.div
         [ Attr.style "position" "fixed"
         , Attr.style "display" "block"
@@ -357,7 +357,9 @@ edit id code =
             [ Editor.editor
                 [ Editor.onChange (EditCode id)
                 , Editor.value code
-                , Editor.theme "crimson_editor"
+                , theme
+                    |> Maybe.withDefault "crimson_editor"
+                    |> Editor.theme
                 , Editor.onBlur (Edit False id)
                 , Editor.focus
                 , Editor.mode "javascript"

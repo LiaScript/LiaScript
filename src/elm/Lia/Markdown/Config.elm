@@ -31,6 +31,7 @@ init mode section id ace_theme lang light screen =
                 section.effect_model.speaking
                 section.effect_model.javascript
                 lang
+                (Just ace_theme)
     in
     Config
         (viewer config >> List.map (Html.map Script))
