@@ -106,6 +106,15 @@ closingTag name =
 
 
 
+-- webcomponents
+
+
+isWebComponent : String -> Bool
+isWebComponent =
+    String.contains "-"
+
+
+
 -- Void elements
 
 
