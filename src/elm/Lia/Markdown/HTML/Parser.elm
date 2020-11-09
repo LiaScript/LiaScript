@@ -71,7 +71,7 @@ liaKeep =
 
 tagName : Parser Context String
 tagName =
-    "\\w+(\\-\\w+)?"
+    "\\w+(\\-\\w+)*"
         |> regex
         |> map String.toLower
         |> andThen unscript
