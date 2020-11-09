@@ -90,7 +90,7 @@ closingTag : String -> Parser Context ()
 closingTag name =
     let
         chompName =
-            regex "\\w+(-\\w+)?"
+            regex "\\w+(\\-\\w+)*"
                 |> andThen
                     (\closingName ->
                         if String.toLower closingName == name then
