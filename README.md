@@ -223,7 +223,14 @@ __Badges:__
 
 ## Version-Changes
 
-__.0.8.3__ (04/11/20202)
+__0.8.4__ (10/11/20202)
+
+* attached scripts can now also use inputs from detached scripts
+* script inputs now react to onEnter events
+* fix: nameing issue in web-components
+* macros can now have an infinite length of input paratmeters
+
+__0.8.3__ (04/11/20202)
 
 * script format locale default is defined by global language default
 * fix: order of script execution corrected in textbook mode
