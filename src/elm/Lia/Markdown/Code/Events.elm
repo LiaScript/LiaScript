@@ -5,6 +5,7 @@ import Json.Encode as JE
 import Lia.Markdown.Code.Json as Json
 import Lia.Markdown.Code.Log as Log
 import Lia.Markdown.Code.Types exposing (File, Project, Repo, Vector)
+import Lia.Markdown.Effect.Script.Types exposing (Scripts, outputs)
 import Port.Eval as Eval exposing (Eval)
 import Port.Event as Event exposing (Event)
 
@@ -19,12 +20,12 @@ input idx string =
     Event "input" idx <| JE.string string
 
 
-eval : Int -> Project -> List Event
-eval idx project =
+eval : Scripts -> Int -> Project -> List Event
+eval scripts idx project =
     [ project.file
         |> Array.map .code
         |> Array.toList
-        |> Eval.event idx project.evaluation
+        |> Eval.event idx project.evaluation (outputs scripts)
     ]
 
 

@@ -1,6 +1,7 @@
 module Lia.Utils exposing
     ( blockKeydown
     , get
+    , onEnter
     , toEscapeString
     , toJSstring
     )
@@ -56,3 +57,18 @@ get i list =
 
             else
                 get (i - 1) rs
+
+
+isEnter : msg -> Int -> JD.Decoder msg
+isEnter msg code =
+    if code == 13 then
+        JD.succeed msg
+
+    else
+        JD.fail "not ENTER"
+
+
+onEnter : msg -> Html.Attribute msg
+onEnter msg =
+    JD.andThen (isEnter msg) Events.keyCode
+        |> Events.on "keyup"

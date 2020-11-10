@@ -12,6 +12,7 @@ import Lia.Markdown.Code.Json as Json
 import Lia.Markdown.Code.Log as Log
 import Lia.Markdown.Code.Terminal as Terminal
 import Lia.Markdown.Code.Types exposing (Code(..), File, Project, Vector, loadVersion, updateVersion)
+import Lia.Markdown.Effect.Script.Types exposing (Scripts, outputs)
 import Port.Eval exposing (Eval)
 import Port.Event exposing (Event)
 
@@ -58,12 +59,12 @@ restore json model =
             ( model, [] )
 
 
-update : Msg -> Vector -> ( Vector, List Event )
-update msg model =
+update : Scripts -> Msg -> Vector -> ( Vector, List Event )
+update scripts msg model =
     case msg of
         Eval idx ->
             model
-                |> maybe_project idx (eval idx)
+                |> maybe_project idx (eval scripts idx)
                 |> Maybe.map (is_version_new idx)
                 |> maybe_update idx model
 
@@ -219,9 +220,9 @@ update_terminal f msg project =
             ( project, [] )
 
 
-eval : Int -> Project -> ( Project, List Event )
-eval idx project =
-    ( { project | running = True }, Event.eval idx project )
+eval : Scripts -> Int -> Project -> ( Project, List Event )
+eval scripts idx project =
+    ( { project | running = True }, Event.eval scripts idx project )
 
 
 maybe_project : Int -> (a -> b) -> Array a -> Maybe b

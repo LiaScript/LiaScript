@@ -84,21 +84,25 @@ filterMap filter map =
         >> List.map (Tuple.mapSecond map)
 
 
-replaceInputs : Array Script -> List ( Int, String, String ) -> List ( Int, String )
+outputs : Scripts -> List ( String, String )
+outputs =
+    Array.toList
+        >> List.filterMap
+            (\js ->
+                case ( js.output, js.result ) of
+                    ( Just output, Just (Ok result) ) ->
+                        Just ( output, result )
+
+                    _ ->
+                        Nothing
+            )
+
+
+replaceInputs : Scripts -> List ( Int, String, String ) -> List ( Int, String )
 replaceInputs javascript =
     let
         inputs =
-            javascript
-                |> Array.toList
-                |> List.filterMap
-                    (\js ->
-                        case ( js.output, js.result ) of
-                            ( Just output, Just (Ok result) ) ->
-                                Just ( output, result )
-
-                            _ ->
-                                Nothing
-                    )
+            outputs javascript
     in
     List.map
         (\( id, script, input_ ) ->

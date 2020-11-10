@@ -2,6 +2,7 @@ module Lia.Markdown.Survey.Update exposing (Msg(..), handle, update)
 
 import Array
 import Dict
+import Lia.Markdown.Effect.Script.Types exposing (Scripts, outputs)
 import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Survey.Json as Json
 import Lia.Markdown.Survey.Types exposing (State(..), Vector, toString)
@@ -20,8 +21,8 @@ type Msg
     | Script Script.Msg
 
 
-update : Msg -> Vector -> ( Vector, List Event, Maybe Script.Msg )
-update msg vector =
+update : Scripts -> Msg -> Vector -> ( Vector, List Event, Maybe Script.Msg )
+update scripts msg vector =
     case msg of
         TextUpdate idx str ->
             ( update_text vector idx str, [], Nothing )
@@ -58,7 +59,12 @@ update msg vector =
         Submit id (Just code) ->
             case vector |> Array.get id of
                 Just ( False, state ) ->
-                    ( vector, [ Eval.event id code [ toString state ] ], Nothing )
+                    ( vector
+                    , [ [ toString state ]
+                            |> Eval.event id code (outputs scripts)
+                      ]
+                    , Nothing
+                    )
 
                 _ ->
                     ( vector, [], Nothing )
@@ -75,7 +81,7 @@ update msg vector =
                             |> .result
                             |> (==) "true"
                     then
-                        update (Submit event.section Nothing) vector
+                        update scripts (Submit event.section Nothing) vector
 
                     else
                         ( vector, [], Nothing )
