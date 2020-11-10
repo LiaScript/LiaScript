@@ -22,18 +22,22 @@ type alias Eval =
     }
 
 
-event : Int -> String -> List String -> Event
-event id code replacement =
+event : Int -> String -> List ( String, String ) -> List String -> Event
+event id code scripts inputs =
     let
         default =
-            replacement
+            inputs
                 |> List.head
                 |> Maybe.withDefault ""
                 |> toJSstring
+
+        code_ =
+            scripts
+                |> List.foldl replace_input code
     in
-    replacement
+    inputs
         |> List.indexedMap (\i r -> ( i, toJSstring r ))
-        |> List.foldl replace_id code
+        |> List.foldl replace_id code_
         |> replace_0 default
         |> JE.string
         |> Event "eval" id

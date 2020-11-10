@@ -64,7 +64,7 @@ update msg section =
             )
 
         UpdateCode childMsg ->
-            case Code.update childMsg section.code_vector of
+            case Code.update section.effect_model.javascript childMsg section.code_vector of
                 ( vector, [] ) ->
                     ( { section | code_vector = vector }, Cmd.none, [] )
 
@@ -79,7 +79,7 @@ update msg section =
         UpdateQuiz childMsg ->
             let
                 ( vector, event, sub ) =
-                    Quiz.update childMsg section.quiz_vector
+                    Quiz.update section.effect_model.javascript childMsg section.quiz_vector
             in
             ( { section | quiz_vector = vector }
             , Cmd.none
@@ -92,7 +92,7 @@ update msg section =
         UpdateSurvey childMsg ->
             let
                 ( vector, event, sub ) =
-                    Survey.update childMsg section.survey_vector
+                    Survey.update section.effect_model.javascript childMsg section.survey_vector
             in
             ( { section | survey_vector = vector }
             , Cmd.none

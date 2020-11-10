@@ -2,6 +2,7 @@ module Lia.Markdown.Quiz.Update exposing (Msg(..), handle, update)
 
 import Array
 import Json.Encode as JE
+import Lia.Markdown.Effect.Script.Types exposing (Scripts, outputs)
 import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Quiz.Block.Update as Block
 import Lia.Markdown.Quiz.Json as Json
@@ -23,8 +24,8 @@ type Msg
     | Script Script.Msg
 
 
-update : Msg -> Vector -> ( Vector, List Event, Maybe Script.Msg )
-update msg vector =
+update : Scripts -> Msg -> Vector -> ( Vector, List Event, Maybe Script.Msg )
+update scripts msg vector =
     case msg of
         Block_Update id _ ->
             update_ id vector (state_ msg)
@@ -60,7 +61,14 @@ update msg vector =
                         _ ->
                             ""
             in
-            ( vector, [ Eval.event idx code [ state ] ], Nothing )
+            ( vector
+            , [ Eval.event idx
+                    code
+                    (outputs scripts)
+                    [ state ]
+              ]
+            , Nothing
+            )
 
         ShowHint idx ->
             (\e -> ( { e | hint = e.hint + 1 }, Nothing ))
