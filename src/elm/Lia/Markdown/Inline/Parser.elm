@@ -156,7 +156,7 @@ html =
                                             |> Maybe.withDefault 0
                                         )
                                         attr
-                                        script
+                                        (String.trim script)
                                         effect_model.javascript
                             }
                     }
