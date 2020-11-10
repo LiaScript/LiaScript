@@ -12,7 +12,7 @@ import Lia.Markdown.Effect.Script.Intl as Intl
 import Lia.Markdown.Effect.Script.Types exposing (Script, Scripts)
 import Lia.Markdown.Effect.Script.Update exposing (Msg(..))
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, get)
-import Lia.Utils exposing (blockKeydown)
+import Lia.Utils exposing (blockKeydown, onEnter)
 
 
 view : Maybe String -> Int -> Parameters -> Scripts -> Html Msg
@@ -297,6 +297,7 @@ base type_ id attr value =
                     , onActivate False id
                     , Attr.id "lia-focus"
                     , blockKeydown NoOp
+                    , onEnter (Activate False id)
                     ]
             )
             []
