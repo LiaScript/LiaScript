@@ -223,7 +223,11 @@ __Badges:__
 
 ## Version-Changes
 
-__0.8.4__ (10/11/20202)
+__0.8.5__ (12/11/2020)
+
+* hotfix: internal macro-parameters work only form @0 ot @9
+
+__0.8.4__ (10/11/2020)
 
 * attached scripts can now also use inputs from detached scripts
 * script inputs now react to onEnter events

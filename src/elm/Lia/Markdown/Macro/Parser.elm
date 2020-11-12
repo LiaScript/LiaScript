@@ -154,9 +154,9 @@ inject_macro ( ( name, escape ), params ) =
                                         )
 
                         ( new_state, _, new_code ) =
-                            List.foldr
+                            List.foldl
                                 eval_parameter
-                                ( state, List.length params - 1, code_ )
+                                ( state, 0, code_ )
                                 params
 
                         inject_code =
@@ -193,7 +193,7 @@ eval_parameter param ( state, i, code ) =
             macro_parse state param
     in
     ( new_state
-    , i - 1
+    , i + 1
     , code
         |> String.replace ("@'" ++ String.fromInt i) (toEscapeString new_param)
         |> String.replace ("@" ++ String.fromInt i) new_param
