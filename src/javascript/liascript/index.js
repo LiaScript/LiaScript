@@ -28,7 +28,7 @@ function isInViewport(elem) {
 
 
 function scrollIntoView(id, delay) {
-  setTimeout(function(e) {
+  setTimeout(function() {
     try {
       document.getElementById(id).scrollIntoView({
         behavior: 'smooth'
