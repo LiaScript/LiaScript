@@ -1,14 +1,17 @@
-import { LiaStorage } from './storage'
-import { SETTINGS, initSettings } from './settings'
+import {
+  LiaStorage
+} from './storage'
+import {
+  SETTINGS,
+  initSettings
+} from './settings'
 
 class Connector {
-  constructor () {
-  }
+  constructor() {}
 
   hasIndex() {
     return false
   }
-
   connect(send = null) {
     this.send = send
   }
@@ -17,7 +20,7 @@ class Connector {
     return new LiaStorage()
   }
 
-  initSettings(data = null, local = false){
+  initSettings(data = null, local = false) {
     initSettings(this.send, data, local)
   }
 
@@ -29,11 +32,11 @@ class Connector {
     if (window.innerWidth <= 620) {
       let data
 
-      try{
+      try {
         data = JSON.parse(localStorage.getItem(SETTINGS))
         data.table_of_contents = false
         this.setSettings(data)
-      } catch(e) {
+      } catch (e) {
 
       }
 
@@ -44,21 +47,21 @@ class Connector {
     }
   }
 
-  open(uidDB, versionDB, slide, data = null) { }
+  open(uidDB, versionDB, slide, data = null) {}
 
-  load(event) { }
+  load(event) {}
 
-  store(event) { }
+  store(event) {}
 
-  update(event, id) { }
+  update(event, id) {}
 
-  slide(id) { }
+  slide(id) {}
 
-  getIndex() { }
+  getIndex() {}
 
-  deleteFromIndex(msg) { }
+  deleteFromIndex(msg) {}
 
-  storeToIndex(json) { }
+  storeToIndex(json) {}
 
   restoreFromIndex(uidDB, versionDB = null) {}
 
@@ -75,4 +78,6 @@ class Connector {
   }
 }
 
-export { Connector }
+export {
+  Connector
+}

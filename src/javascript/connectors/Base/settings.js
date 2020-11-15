@@ -1,6 +1,6 @@
 const SETTINGS = 'settings'
 
-function initSettings (send, data, local = false) {
+function initSettings(send, data, local = false) {
 
   if (data == null) {
     data = {

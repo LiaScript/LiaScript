@@ -1,15 +1,18 @@
 var lia = {
-  log: function () {
+  log: function() {
     if (window.debug__) console.log('LiaLog: ', ...arguments)
   },
 
-  warn: function () {
+  warn: function() {
     if (window.debug__) console.warn('LiaWarn: ', ...arguments)
   },
 
-  error: function () {
+  error: function() {
     console.error('LiaError: ', ...arguments)
   }
 }
 
-export { lia }
+
+export {
+  lia
+}

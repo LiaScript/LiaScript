@@ -2,12 +2,15 @@
 import katex from 'katex'
 
 customElements.define('katex-formula', class extends HTMLElement {
-  constructor () {
+  constructor() {
     super()
   }
 
-  connectedCallback () {
-    const shadowRoot = this.attachShadow({ mode: 'open' })
+
+  connectedCallback() {
+    const shadowRoot = this.attachShadow({
+      mode: 'open'
+    })
 
     let link = document.createElement('link')
     link.rel = 'stylesheet'
@@ -30,8 +33,8 @@ customElements.define('katex-formula', class extends HTMLElement {
   }
 
   render() {
-    if(this.formula_ && this.span) {
-      try{
+    if (this.formula_ && this.span) {
+      try {
         katex.render(this.formula_, this.span, {
           throwOnError: false,
           displayMode: this.displayMode
@@ -53,7 +56,7 @@ customElements.define('katex-formula', class extends HTMLElement {
     }
   }
 
-  disconnectedCallback () {
+  disconnectedCallback() {
     if (super.disconnectedCallback) {
       super.disconnectedCallback()
     }

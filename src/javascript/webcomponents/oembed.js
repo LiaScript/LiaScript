@@ -2,7 +2,9 @@ customElements.define(
   "oembed-element",
   class extends HTMLElement {
     connectedCallback() {
-      let shadow = this.attachShadow({ mode: "closed" });
+      let shadow = this.attachShadow({
+        mode: "closed"
+      });
       const urlAttr = this.getAttribute("url");
       if (urlAttr) {
         renderOembed(shadow, urlAttr, {
@@ -22,6 +24,7 @@ customElements.define(
     }
   }
 );
+
 
 /**
  *
@@ -123,7 +126,8 @@ function getDiscoverUrl(url, callback) {
   httpGetAsync(apiUrl, function(response) {
     let dom = document.createElement("html");
     dom.innerHTML = response;
-    /** @type {HTMLLinkElement | null} */ const oembedTag = dom.querySelector(
+    /** @type {HTMLLinkElement | null} */
+    const oembedTag = dom.querySelector(
       'link[type="application/json+oembed"]'
     );
     callback(oembedTag && oembedTag.href);
@@ -142,6 +146,6 @@ function httpGetAsync(theUrl, callback) {
       callback(xmlHttp.responseText);
   };
   xmlHttp.open("GET", theUrl, true); // true for asynchronous
-  xmlHttp.setRequestHeader('X-Requested-With','XMLHttpRequest');
+  xmlHttp.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
   xmlHttp.send(null);
 }

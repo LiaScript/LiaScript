@@ -1,8 +1,8 @@
-function fetch (self, trial = 0) {
+function fetch(self, trial = 0) {
   var http = new XMLHttpRequest();
 
   http.open("GET", self._src, true);
-  http.setRequestHeader('User-Agent','bla');
+  http.setRequestHeader('User-Agent', 'bla');
 
   http.onload = function(e) {
 
@@ -24,6 +24,7 @@ function fetch (self, trial = 0) {
   }
   http.send();
 }
+
 
 function getTitle(doc) {
 
@@ -93,15 +94,15 @@ function getDomainName(doc, uri) {
     }
   }
 
-  return domainName != null
-    ? new URL(domainName).hostname.replace("www.", "")
-    : new URL(uri).hostname.replace("www.", "");
+  return domainName != null ?
+    new URL(domainName).hostname.replace("www.", "") :
+    new URL(uri).hostname.replace("www.", "");
 }
 
 function getImage(doc, uri) {
   const ogImg = doc.querySelector('meta[property="og:image"]');
   if (ogImg != null && ogImg.content.length > 0) {
-      return ogImg.content;
+    return ogImg.content;
   }
   const imgRelLink = doc.querySelector('link[rel="image_src"]');
   if (imgRelLink != null && imgRelLink.href.length > 0) {
@@ -114,7 +115,7 @@ function getImage(doc, uri) {
 
   try {
     return Array.from(doc.getElementsByTagName("img"))[0].src;
-  } catch(e) {}
+  } catch (e) {}
 
   return null;
 }
@@ -123,7 +124,7 @@ function getImage(doc, uri) {
 
 
 customElements.define('preview-link', class extends HTMLElement {
-  constructor () {
+  constructor() {
     super()
 
     const template = document.createElement('template');
@@ -134,11 +135,13 @@ customElements.define('preview-link', class extends HTMLElement {
     <iframe id="iframe" style="display: none;"></iframe>
     `;
 
-    this._shadowRoot = this.attachShadow({ mode: 'closed' });
+    this._shadowRoot = this.attachShadow({
+      mode: 'closed'
+    });
     this._shadowRoot.appendChild(template.content.cloneNode(true));
   }
 
-  connectedCallback () {
+  connectedCallback() {
     this._src = this.getAttribute('src')
     this._base = this._src
 
@@ -148,7 +151,7 @@ customElements.define('preview-link', class extends HTMLElement {
     fetch(self)
   }
 
-  disconnectedCallback () {
+  disconnectedCallback() {
     if (super.disconnectedCallback) {
       super.disconnectedCallback()
     }
@@ -159,7 +162,7 @@ customElements.define('preview-link', class extends HTMLElement {
       let iframe = this._shadowRoot.getElementById("iframe")
 
       let self = this
-      iframe.onload = function(){
+      iframe.onload = function() {
         self._title = getTitle(iframe.contentDocument)
         self._description = getDescription(iframe.contentDocument)
         self._domain = getDomainName(iframe.content, self._base)

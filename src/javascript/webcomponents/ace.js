@@ -3,7 +3,7 @@ import getMode from './ace-modes'
 
 const debounce = (func) => {
   let token
-  return function () {
+  return function() {
     const later = () => {
       token = null
       func.apply(null, arguments)
@@ -13,23 +13,24 @@ const debounce = (func) => {
   }
 }
 
+
 function markerStyle(name) {
   if (typeof name == "string") {
     name = "ace_color_" + name.replace(/ /g, "")
-                              .replace(/\./g, "")
-                              .replace(/,/g, "_")
-                              .replace(/\(/g, "")
-                              .replace(/\)/g, "")
+      .replace(/\./g, "")
+      .replace(/,/g, "_")
+      .replace(/\(/g, "")
+      .replace(/\)/g, "")
   }
   return name
 }
 
-function addMarker(color, name=null) {
+function addMarker(color, name = null) {
 
   if (!color)
     return
 
-  name = markerStyle( name ? name : color )
+  name = markerStyle(name ? name : color)
 
   if (!document.head.getElementsByTagName("style")[name]) {
     let node = document.createElement('style')
@@ -48,7 +49,7 @@ function addMarker(color, name=null) {
 
 
 customElements.define('code-editor', class extends HTMLElement {
-  constructor () {
+  constructor() {
     super()
 
     ace.config.set('basePath', 'editor/')
@@ -76,27 +77,27 @@ customElements.define('code-editor', class extends HTMLElement {
     }
 
     let markers = {
-      "error":  "rgba(255,0,0,0.3)",
-      "warn":   "rgba(255,255,102,0.3)",
-      "debug":  "rgba(100,100,100,0.3)",
-      "info":   "rgba(0,255,0,0.3)",
-      "log":    "rgba(0,0,255,0.3)",
+      "error": "rgba(255,0,0,0.3)",
+      "warn": "rgba(255,255,102,0.3)",
+      "debug": "rgba(100,100,100,0.3)",
+      "info": "rgba(0,255,0,0.3)",
+      "log": "rgba(0,0,255,0.3)",
     }
 
     try {
       let keys = Object.keys(markers)
 
-      for (let i=0; i<keys.length; i++) {
+      for (let i = 0; i < keys.length; i++) {
         addMarker(markers[keys[i]], keys[i])
       }
-    } catch(e) {
+    } catch (e) {
       console.warn("ace.js => ", e);
     }
 
     this.focus_ = false
   }
 
-  connectedCallback () {
+  connectedCallback() {
     this.setExtension()
 
     this._editor = ace.edit(this, {
@@ -135,30 +136,30 @@ customElements.define('code-editor', class extends HTMLElement {
     }
 
     let self = this
-    this._editor.on("focus", function(){
+    this._editor.on("focus", function() {
       self.focus_ = true
       self.dispatchEvent(new CustomEvent('editorFocus'))
     })
 
-    this._editor.on("blur",  function(){
+    this._editor.on("blur", function() {
       self.focus_ = false
       self.dispatchEvent(new CustomEvent('editorFocus'))
     })
 
     this.setMarker()
 
-    if(this.focus_)
+    if (this.focus_)
       this.setFocus()
 
   }
 
-  disconnectedCallback () {
+  disconnectedCallback() {
     if (super.disconnectedCallback) {
       super.disconnectedCallback()
     }
   }
 
-  setOption (option, value) {
+  setOption(option, value) {
     if (this.model[option] === value) return
 
     this.model[option] = value
@@ -177,10 +178,10 @@ customElements.define('code-editor', class extends HTMLElement {
     }
   }
 
-  get annotations () {
+  get annotations() {
     return this.model.annotations
   }
-  set annotations (list) {
+  set annotations(list) {
     if (this.model.annotations === list) return
 
     if (list == null) this.model.annotations = []
@@ -200,10 +201,10 @@ customElements.define('code-editor', class extends HTMLElement {
     }
   }
 
-  get extensions () {
+  get extensions() {
     return this.model.extensions
   }
-  set extensions (values) {
+  set extensions(values) {
     if (this.model.extensions === values) return
 
     this.model.extensions = values
@@ -212,7 +213,7 @@ customElements.define('code-editor', class extends HTMLElement {
 
     this.setExtension()
   }
-  setExtension () {
+  setExtension() {
     for (let ext in this.model.extensions) {
       try {
         ace.require('ace/ext/' + ext)
@@ -222,25 +223,25 @@ customElements.define('code-editor', class extends HTMLElement {
     }
   }
 
-  get fontSize () {
+  get fontSize() {
     return this.model.fontSize
   }
-  set fontSize (value) {
+  set fontSize(value) {
     this.setOption('fontSize', value)
   }
 
 
-  setMarker () {
+  setMarker() {
     let Range = ace.require('ace/range').Range
     let value = this.model.marker.split(";")
 
-    for (let i=0; i<value.length; i++) {
-      let m = value[i].split(" ").filter( e => e != "")
+    for (let i = 0; i < value.length; i++) {
+      let m = value[i].split(" ").filter(e => e != "")
 
       addMarker(m[4])
 
       this._editor.session.addMarker(
-        new Range (
+        new Range(
           parseInt(m[0]),
           parseInt(m[1]),
           parseInt(m[2]),
@@ -251,45 +252,45 @@ customElements.define('code-editor', class extends HTMLElement {
       )
     }
   }
-  get marker () {
+  get marker() {
     return this.model.marker
   }
-  set marker (value) {
+  set marker(value) {
     this.model.marker = value
   }
 
-  get firstLineNumber () {
+  get firstLineNumber() {
     return this.model.firstLineNumber
   }
-  set firstLineNumber (value) {
+  set firstLineNumber(value) {
     this.setOption('firstLineNumber', value)
   }
 
-  get highlightActiveLine () {
+  get highlightActiveLine() {
     return this.model.highlightActiveLine
   }
-  set highlightActiveLine (value) {
+  set highlightActiveLine(value) {
     this.setOption('highlightActiveLine', value)
   }
 
-  get maxLines () {
+  get maxLines() {
     return this.model.maxLines
   }
-  set maxLines (value) {
+  set maxLines(value) {
     this.setOption('maxLines', value < 0 ? Infinity : value)
   }
 
-  get minLines () {
+  get minLines() {
     return this.model.minLines
   }
-  set minLines (value) {
+  set minLines(value) {
     this.setOption('minLines', value < 0 ? 1 : value)
   }
 
-  get mode () {
+  get mode() {
     return this.model.mode
   }
-  set mode (mode) {
+  set mode(mode) {
     if (this.model.mode === mode) return
 
     this.model.mode = mode
@@ -303,45 +304,45 @@ customElements.define('code-editor', class extends HTMLElement {
     }
   }
 
-  get readOnly () {
+  get readOnly() {
     return this.model.readOnly
   }
-  set readOnly (value) {
+  set readOnly(value) {
     this.setOption('readOnly', value)
   }
 
-  get showCursor () {
+  get showCursor() {
     return this.model.showCursor
   }
-  set showCursor (value) {
+  set showCursor(value) {
     this.setOption('showCursor', value)
   }
 
-  get showGutter () {
+  get showGutter() {
     return this.model.showGutter
   }
-  set showGutter (value) {
+  set showGutter(value) {
     this.setOption('showGutter', value)
   }
 
-  get showPrintMargin () {
+  get showPrintMargin() {
     return this.model.showPrintMargin
   }
-  set showPrintMargin (value) {
+  set showPrintMargin(value) {
     this.setOption('showPrintMargin', value)
   }
 
-  get tabSize () {
+  get tabSize() {
     return this.model.tabSize
   }
-  set tabSize (value) {
+  set tabSize(value) {
     this.setOption('tabSize', value)
   }
 
-  get theme () {
+  get theme() {
     return this.model.theme
   }
-  set theme (theme) {
+  set theme(theme) {
     if (this.model.theme === theme) return
 
     this.model.theme = theme
@@ -351,24 +352,24 @@ customElements.define('code-editor', class extends HTMLElement {
     this._editor.setTheme('ace/theme/' + theme)
   }
 
-  get useSoftTabs () {
+  get useSoftTabs() {
     return this.model.useSoftTabs
   }
-  set useSoftTabs (value) {
+  set useSoftTabs(value) {
     this.setOption('useSoftTabs', value)
   }
 
-  get useWrapMode () {
+  get useWrapMode() {
     return this.model.useWrapMode
   }
-  set useWrapMode (value) {
+  set useWrapMode(value) {
     this.setOption('useWrapMode', value)
   }
 
-  get value () {
+  get value() {
     return this.model.value
   }
-  set value (value) {
+  set value(value) {
     this.setOption('value', value)
   }
 
@@ -386,7 +387,7 @@ customElements.define('code-editor', class extends HTMLElement {
     if (!this._editor) return
 
     try {
-        this._editor.focus()
+      this._editor.focus()
     } catch (e) {
       console.log(
         'Problem Ace: focus => ',

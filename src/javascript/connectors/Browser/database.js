@@ -10,14 +10,17 @@ import {
 } from '../../liascript/logger'
 
 class LiaDB {
-  constructor (send = null) {
+  constructor(send = null) {
     this.send = send
 
     this.dbIndex = new Dexie("Index")
-    this.dbIndex.version(1).stores({courses: '&id,updated,author,created,title'})
+    this.dbIndex.version(1).stores({
+      courses: '&id,updated,author,created,title'
+    })
   }
 
-  open_ (uidDB) {
+
+  open_(uidDB) {
     let db = new Dexie(uidDB)
 
     db.version(1).stores({
@@ -30,19 +33,19 @@ class LiaDB {
     return db
   }
 
-  async open (uidDB, versionDB, init) {
+  async open(uidDB, versionDB, init) {
 
     this.version = versionDB
     this.db = this.open_(uidDB)
     await this.db.open()
 
-    if(init) {
+    if (init) {
       const item = await this.db[init.topic].get({
         id: init.section,
         version: versionDB
       })
 
-      if(!!item) {
+      if (!!item) {
         if (item.data) {
           init.message.message = item.data
         }
@@ -51,7 +54,7 @@ class LiaDB {
     }
   }
 
-  async store (event, versionDB = null) {
+  async store(event, versionDB = null) {
     if (!this.db || this.version == 0) return
 
     lia.warn(`liaDB: event(store), table(${event.topic}), id(${event.section}), data(${event.message})`)
@@ -64,7 +67,7 @@ class LiaDB {
     })
   }
 
-  async load (event, versionDB = null) {
+  async load(event, versionDB = null) {
     if (!this.db) return
 
     lia.log('loading => ', event.topic, event.section)
@@ -74,8 +77,8 @@ class LiaDB {
       version: versionDB != null ? versionDB : this.version,
     })
 
-    if(item) {
-      lia.log('restore table', event.topic)//, e._value.data)
+    if (item) {
+      lia.log('restore table', event.topic) //, e._value.data)
       event.message = {
         topic: 'restore',
         section: -1,
@@ -93,18 +96,22 @@ class LiaDB {
   }
 
 
-  del () {
+  del() {
     if (!this.db) return
 
     let name = db.name
 
     this.db.delete()
-      .then(() => { lia.log('database deleted: ', name) })
-      .catch((err) => { lia.error('error deleting database: ', name) })
+      .then(() => {
+        lia.log('database deleted: ', name)
+      })
+      .catch((err) => {
+        lia.error('error deleting database: ', name)
+      })
   }
 
-  async slide (idx) {
-    try{
+  async slide(idx) {
+    try {
       let data = await this.db.offline.get({
         id: 0,
         version: this.version
@@ -117,7 +124,7 @@ class LiaDB {
   }
 
 
-  async update (event, slide) {
+  async update(event, slide) {
     if (!this.db || this.version == 0) return
 
     let db = this.db
@@ -159,7 +166,10 @@ class LiaDB {
             project.log = e_.log
             project.file = e_.file
             project.version.push(e_.version)
-            project.repository = { ...project.repository, ...e_.repository }
+            project.repository = {
+              ...project.repository,
+              ...e_.repository
+            }
             break
           }
           default: {
@@ -178,7 +188,7 @@ class LiaDB {
     const course = await this.dbIndex.courses.get(uidDB)
 
     if (course) {
-      let latest = parseInt( Object.keys(course.data).sort().reverse() )
+      let latest = parseInt(Object.keys(course.data).sort().reverse())
 
       let db = this.open_(uidDB)
 
@@ -211,14 +221,16 @@ class LiaDB {
   async listIndex(order = 'updated', desc = false) {
     const courses = await this.dbIndex.courses.orderBy(order).toArray()
 
-    if(!desc) {
+    if (!desc) {
       courses.reverse()
     }
 
     this.send({
       topic: 'index',
       section: -1,
-      message: { list: courses }
+      message: {
+        list: courses
+      }
     })
   }
 
@@ -231,7 +243,7 @@ class LiaDB {
         id: data.readme,
         title: data.definition.str_title,
         author: data.definition.author,
-        data: { },
+        data: {},
         created: date.getTime(),
         updated: null,
         updated_str: null
@@ -255,20 +267,20 @@ class LiaDB {
       })
 
     } else if (item.data[data.version].version !== data.definition.version) {
-        item.data[data.version] = data.definition
-        item.data[data.version]['title'] = data.title
+      item.data[data.version] = data.definition
+      item.data[data.version]['title'] = data.title
 
-        lia.log('storing new version to index', item)
+      lia.log('storing new version to index', item)
 
-        let db = this.open_(data.readme)
-        await db.open()
+      let db = this.open_(data.readme)
+      await db.open()
 
-        await db.offline.put({
-          id: 0,
-          version: data.version,
-          data: data,
-          created: date.getTime()
-        })
+      await db.offline.put({
+        id: 0,
+        version: data.version,
+        data: data,
+        created: date.getTime()
+      })
 
     }
 
@@ -295,4 +307,6 @@ class LiaDB {
 
 };
 
-export { LiaDB }
+export {
+  LiaDB
+}

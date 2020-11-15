@@ -1,6 +1,8 @@
-import { Elm } from '../../elm/Worker.elm'
+import {
+  Elm
+} from '../../elm/Worker.elm'
 
-function fetch (self) {
+function fetch(self) {
   var http = new XMLHttpRequest();
 
   http.open("GET", self._src, true);
@@ -18,12 +20,17 @@ function fetch (self) {
   http.send();
 }
 
+
 customElements.define('preview-lia', class extends HTMLElement {
-  constructor () {
+  constructor() {
 
     super()
 
-    this.lia = Elm.Worker.init({flags: { cmd: "" }})
+    this.lia = Elm.Worker.init({
+      flags: {
+        cmd: ""
+      }
+    })
 
     const template = document.createElement('template');
 
@@ -210,11 +217,13 @@ customElements.define('preview-lia', class extends HTMLElement {
     <div id="container" style="display: inline"></div>
     `;
 
-    this._shadowRoot = this.attachShadow({ mode: 'closed' });
+    this._shadowRoot = this.attachShadow({
+      mode: 'closed'
+    });
     this._shadowRoot.appendChild(template.content.cloneNode(true));
   }
 
-  connectedCallback () {
+  connectedCallback() {
     let urls = this.getAttribute('src').split("/course/?")
 
     if (urls.length == 2) {
@@ -234,7 +243,7 @@ customElements.define('preview-lia', class extends HTMLElement {
 
     let self = this
 
-    this.lia.ports.output.subscribe(function (event) {
+    this.lia.ports.output.subscribe(function(event) {
       let [ok, json] = event
 
       if (ok) {
@@ -250,7 +259,7 @@ customElements.define('preview-lia', class extends HTMLElement {
 
         let logo = json.definition.logo
 
-        if(!logo.startsWith("http")) {
+        if (!logo.startsWith("http")) {
           let base = self._src.split("/")
           base.pop()
           logo = base.join("/") + "/" + logo
@@ -294,7 +303,7 @@ customElements.define('preview-lia', class extends HTMLElement {
     fetch(self)
   }
 
-  disconnectedCallback () {
+  disconnectedCallback() {
     if (super.disconnectedCallback) {
       super.disconnectedCallback()
     }

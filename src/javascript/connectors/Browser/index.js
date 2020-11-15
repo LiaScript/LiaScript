@@ -1,5 +1,9 @@
-import { LiaDB } from './database'
-import { Connector as Base } from '../Base/index'
+import {
+  LiaDB
+} from './database'
+import {
+  Connector as Base
+} from '../Base/index'
 
 class Connector extends Base {
   hasIndex() {
@@ -15,14 +19,15 @@ class Connector extends Base {
   open(uidDB, versionDB, slide, data = null) {
     this.database.open(
       uidDB,
-      versionDB,
-      { topic: 'code',
+      versionDB, {
+        topic: 'code',
         section: slide,
         message: {
           topic: 'restore',
           section: -1,
-          message: null }
-    })
+          message: null
+        }
+      })
   }
 
   load(event) {
@@ -66,4 +71,6 @@ class Connector extends Base {
   }
 }
 
-export { Connector }
+export {
+  Connector
+}

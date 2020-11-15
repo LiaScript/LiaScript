@@ -7,9 +7,12 @@ customElements.define('e-charts', class extends HTMLElement {
     return ["style", "mode", "json"];
   }
 
-  constructor () {
+
+  constructor() {
     super()
-    const shadowRoot = this.attachShadow({ mode: 'open' })
+    const shadowRoot = this.attachShadow({
+      mode: 'open'
+    })
 
     let div = document.createElement('div')
     div.style = style
@@ -23,7 +26,7 @@ customElements.define('e-charts', class extends HTMLElement {
     });
   }
 
-  connectedCallback () {
+  connectedCallback() {
     if (!this.chart) {
       let container = this.shadowRoot.querySelector("#container")
       this.data = null
@@ -34,7 +37,7 @@ customElements.define('e-charts', class extends HTMLElement {
     }
   }
 
-  disconnectedCallback () {
+  disconnectedCallback() {
     if (super.disconnectedCallback) {
       super.disconnectedCallback()
     }
@@ -44,50 +47,52 @@ customElements.define('e-charts', class extends HTMLElement {
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-   if (name === "style") {
+    if (name === "style") {
       let container = this.shadowRoot.querySelector("#container");
       if (container) {
         container.style = style + newValue;
       }
       this.resizeChart();
     } else if (name === "mode") {
-        if (!this.chart)
-          return;
+      if (!this.chart)
+        return;
 
-        echarts.dispose(this.chart);
-        let container = this.shadowRoot.querySelector("#container")
-        this.chart = echarts.init(container, newValue)
-        this.updateChart();
+      echarts.dispose(this.chart);
+      let container = this.shadowRoot.querySelector("#container")
+      this.chart = echarts.init(container, newValue)
+      this.updateChart();
     } else if (name === "json") {
-        if (typeof newValue == 'string' && newValue != "") {
+      if (typeof newValue == 'string' && newValue != "") {
 
-          try {
-            if (this.data.name == newData)
-              return
-          } catch (e) { }
+        try {
+          if (this.data.name == newData)
+            return
+        } catch (e) {}
 
-          let self = this
+        let self = this
 
-          var xmlHttp = new XMLHttpRequest();
-          xmlHttp.onreadystatechange = function() {
-            if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
-              self.updateJson(newValue, xmlHttp.responseText)
-            else {
-              console.warn("eCharts ... could not load =>", JSON.stringify(newValue))
-            }
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = function() {
+          if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+            self.updateJson(newValue, xmlHttp.responseText)
+          else {
+            console.warn("eCharts ... could not load =>", JSON.stringify(newValue))
           }
-          xmlHttp.open("GET", newValue, true); // true for asynchronous
-          xmlHttp.send(null);
         }
-        else {
-          this.data = null
-        }
+        xmlHttp.open("GET", newValue, true); // true for asynchronous
+        xmlHttp.send(null);
+      } else {
+        this.data = null
+      }
 
     }
   }
 
   updateJson(url, json) {
-    this.data = { name: url, data: json }
+    this.data = {
+      name: url,
+      data: json
+    }
     this.updateChart()
   }
 
@@ -127,7 +132,7 @@ customElements.define('e-charts', class extends HTMLElement {
 
   set option(val) {
     if (val) {
-      if( JSON.stringify(val) != JSON.stringify(this.option_) ) {
+      if (JSON.stringify(val) != JSON.stringify(this.option_)) {
         this.option_ = val
         this.updateChart();
       }
@@ -151,7 +156,7 @@ customElements.define('e-charts', class extends HTMLElement {
     this.updateChart();
   }
 
-  get json () {
+  get json() {
     if (this.hasAttribute("json")) {
       return this.getAttribute("json");
     } else {
@@ -159,7 +164,7 @@ customElements.define('e-charts', class extends HTMLElement {
     }
   }
 
-  set json (val) {
+  set json(val) {
     if (val) {
       this.setAttribute("json", val)
     } else if (this.data) {

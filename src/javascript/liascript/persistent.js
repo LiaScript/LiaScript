@@ -1,4 +1,4 @@
-function swapElements (obj1, obj2) {
+function swapElements(obj1, obj2) {
   // create marker element and insert it where obj1 is
   var temp = document.createElement('div')
   obj1.parentNode.insertBefore(temp, obj1)
@@ -13,11 +13,12 @@ function swapElements (obj1, obj2) {
   temp.parentNode.removeChild(temp)
 }
 
+
 var persistent = {
   bag: document.createElement('div'),
   section: -1,
 
-  store: function (section) {
+  store: function(section) {
     if (section === this.section) return
 
     this.section = section
@@ -29,7 +30,7 @@ var persistent = {
     }
   },
 
-  load: function (section) {
+  load: function(section) {
     let elements = document.getElementsByClassName('persistent')
 
     for (var e of elements) {
