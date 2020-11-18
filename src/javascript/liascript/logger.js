@@ -1,4 +1,4 @@
-var lia = {
+const lia = {
   log: function () {
     if (window.debug__) console.log('LiaLog: ', ...arguments)
 
@@ -21,4 +21,6 @@ var lia = {
   }
 }
 
-export { lia }
+export {
+  lia
+}

@@ -1,31 +1,36 @@
-import { Elm } from '../../elm/Worker.elm'
+import {
+  Elm
+} from '../../elm/Worker.elm'
 
 function fetch (self) {
-  var http = new XMLHttpRequest();
+  let http = new XMLHttpRequest()
 
-  http.open("GET", self._src, true);
+  http.open('GET', self._src, true)
 
-  http.onload = function(e) {
-    if (http.readyState == 4 && http.status == 200) {
+  http.onload = function (_e) {
+    if (http.readyState === 4 && http.status === 200) {
       try {
         self.parse(http.responseText)
       } catch (e) {
-        console.warn("fetching", e);
+        console.warn('fetching', e)
       }
     }
-    http = null;
+    http = null
   }
-  http.send();
+  http.send()
 }
 
 customElements.define('preview-lia', class extends HTMLElement {
   constructor () {
-
     super()
 
-    this.lia = Elm.Worker.init({flags: { cmd: "" }})
+    this.lia = Elm.Worker.init({
+      flags: {
+        cmd: ''
+      }
+    })
 
-    const template = document.createElement('template');
+    const template = document.createElement('template')
 
     template.innerHTML = `
     <style>
@@ -208,16 +213,18 @@ customElements.define('preview-lia', class extends HTMLElement {
     }
     </style>
     <div id="container" style="display: inline"></div>
-    `;
+    `
 
-    this._shadowRoot = this.attachShadow({ mode: 'closed' });
-    this._shadowRoot.appendChild(template.content.cloneNode(true));
+    this._shadowRoot = this.attachShadow({
+      mode: 'closed'
+    })
+    this._shadowRoot.appendChild(template.content.cloneNode(true))
   }
 
   connectedCallback () {
-    let urls = this.getAttribute('src').split("/course/?")
+    const urls = this.getAttribute('src').split('/course/?')
 
-    if (urls.length == 2) {
+    if (urls.length === 2) {
       this._src = urls[1]
     } else {
       this._src = urls[0]
@@ -225,10 +232,11 @@ customElements.define('preview-lia', class extends HTMLElement {
 
     let link = this.getAttribute('link')
 
-    if (!link)
-      link = "https://LiaScript.github.io/course/?" + this._src
+    if (!link) {
+      link = 'https://LiaScript.github.io/course/?' + this._src
+    }
 
-    let div = this._shadowRoot.getElementById("container")
+    let div = this._shadowRoot.getElementById('container')
 
     div.innerHTML = `<a href="${this.getAttribute('src')}">preview-lia</a>`
 
@@ -243,23 +251,22 @@ customElements.define('preview-lia', class extends HTMLElement {
         let tag
 
         try {
-          tag = json.definition.macro.tags.split(",").map(e => e.trim())
+          tag = json.definition.macro.tags.split(',').map(e => e.trim())
         } catch (e) {
           tag = []
         }
 
         let logo = json.definition.logo
 
-        if(!logo.startsWith("http")) {
-          let base = self._src.split("/")
+        if (!logo.startsWith('http')) {
+          let base = self._src.split('/')
           base.pop()
-          logo = base.join("/") + "/" + logo
+          logo = base.join('/') + '/' + logo
         }
 
-
-        if (json.sections.length != 0) {
-          div.className = "blog-card"
-          div.style = ""
+        if (json.sections.length !== 0) {
+          div.className = 'blog-card'
+          div.style = ''
           div.innerHTML = `<div class="meta">
             <div class="photo" style="background-image: url(${logo})"></div>
             <ul class="details">
@@ -267,10 +274,10 @@ customElements.define('preview-lia', class extends HTMLElement {
               <li class="date"><a href="mailto:${json.definition.email}">${json.definition.email}</a></li>
               <li class="tags">
                 <ul>
-                  <li>${!tag[0] ? "" : tag[0]}</li>
-                  <li>${!tag[1] ? "" : tag[1]}</li>
-                  <li>${!tag[2] ? "" : tag[2]}</li>
-                  <li>${!tag[3] ? "" : "..."}</li>
+                  <li>${!tag[0] ? '' : tag[0]}</li>
+                  <li>${!tag[1] ? '' : tag[1]}</li>
+                  <li>${!tag[2] ? '' : tag[2]}</li>
+                  <li>${!tag[3] ? '' : '...'}</li>
                 </ul>
               </li>
             </ul>
@@ -280,14 +287,14 @@ customElements.define('preview-lia', class extends HTMLElement {
             <h2>Version: ${json.definition.version}</h2>
             <p> ${json.comment} </p>
             <p class="read-more">
-              <a href="${ link }">Open</a>
+              <a href="${link}">Open</a>
             </p>
           </div>`
         }
 
-        //`${json.str_title} <br>  <img style="width: 90px" src="${json.definition.logo}">`
+        // `${json.str_title} <br>  <img style="width: 90px" src="${json.definition.logo}">`
       } else {
-        console.warn("could not load course ...");
+        console.warn('could not load course ...')
       }
     })
 
@@ -300,7 +307,7 @@ customElements.define('preview-lia', class extends HTMLElement {
     }
   }
 
-  parse(course) {
-    this.lia.ports.input.send(["defines", course])
+  parse (course) {
+    this.lia.ports.input.send(['defines', course])
   }
 })

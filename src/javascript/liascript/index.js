@@ -1,24 +1,37 @@
-import { Elm } from '../../elm/Main.elm'
-import { LiaEvents, lia_execute_event, lia_eval_event } from './events'
-import { persistent } from './persistent'
-import { lia } from './logger'
-import { swipedetect } from './swipe'
+import {
+  Elm
+} from '../../elm/Main.elm'
+import {
+  LiaEvents,
+  lia_execute_event,
+  lia_eval_event
+} from './events'
+import {
+  persistent
+} from './persistent'
+import {
+  lia
+} from './logger'
+import {
+  swipedetect
+} from './swipe'
 
 function isInViewport (elem) {
-    var bounding = elem.getBoundingClientRect();
-    return (
-        bounding.top >= 20 &&
-        bounding.left >= 0 &&
-        bounding.bottom <= (window.innerHeight -20 || document.documentElement.clientHeight -20) &&
-        bounding.right <= (window.innerWidth || document.documentElement.clientWidth)
-    );
+  const bounding = elem.getBoundingClientRect()
+  return (
+    bounding.top >= 20 &&
+    bounding.left >= 0 &&
+    bounding.bottom <= (window.innerHeight - 20 || document.documentElement.clientHeight - 20) &&
+    bounding.right <= (window.innerWidth || document.documentElement.clientWidth)
+  )
 };
 
-
 function scrollIntoView (id, delay) {
-  setTimeout(function (e) {
+  setTimeout(function () {
     try {
-      document.getElementById(id).scrollIntoView({ behavior: 'smooth' })
+      document.getElementById(id).scrollIntoView({
+        behavior: 'smooth'
+      })
     } catch (e) {}
   }, delay)
 };
@@ -29,13 +42,13 @@ function handleEffects (event, elmSend, section) {
       scrollIntoView(event.message, 350)
       break
     case 'persistent':
-      //Todo
-      //setTimeout((e) => { persistent.load(event.section) }, 10)
+      // Todo
+      // setTimeout((e) => { persistent.load(event.section) }, 10)
       break
     case 'execute':
       lia_execute_event(event.message, elmSend, section)
       break
-    case 'speak' : {
+    case 'speak': {
       let msg = {
         topic: 'settings',
         section: -1,
@@ -46,7 +59,7 @@ function handleEffects (event, elmSend, section) {
         }
       }
 
-      if ( section >= 0 ) {
+      if (section >= 0) {
         msg = {
           topic: 'effect',
           section: section,
@@ -77,21 +90,21 @@ function handleEffects (event, elmSend, section) {
           if (event.message[2] === 'true') {
             responsiveVoice.speak(
               event.message[1],
-              event.message[0],
-              { onstart: e => {
+              event.message[0], {
+                onstart: (e) => {
+                  msg.message.message = 'start'
 
-                msg.message.message = 'start'
-
-                elmSend(msg)
-              },
-              onend: e => {
-                msg.message.message = 'stop'
-                elmSend(msg)
-              },
-              onerror: e => {
-                msg.message.message = e.toString()
-                elmSend(msg)
-              } })
+                  elmSend(msg)
+                },
+                onend: (e) => {
+                  msg.message.message = 'stop'
+                  elmSend(msg)
+                },
+                onerror: (e) => {
+                  msg.message.message = e.toString()
+                  elmSend(msg)
+                }
+              })
           }
         }
       } catch (e) {
@@ -115,9 +128,9 @@ function meta (name, content) {
 }
 // -----------------------------------------------------------------------------
 
-var eventHandler = undefined
-var liaStorage = undefined
-var ttsBackup = undefined
+var eventHandler
+var liaStorage
+var ttsBackup
 var firstSpeak = true
 var firstLoad = true
 
@@ -144,9 +157,9 @@ class LiaScript {
       }
     })
 
-    let sendTo = this.app.ports.event2elm.send
+    const sendTo = this.app.ports.event2elm.send
 
-    let sender = function (msg) {
+    const sender = function (msg) {
       lia.log('event2elm => ', msg)
       sendTo(msg)
     }
@@ -157,11 +170,13 @@ class LiaScript {
 
     liaStorage = this.connector.storage()
 
-    window.playback = function(event) {
+    window.playback = function (event) {
       handleEffects(event.message, sender, event.section)
     }
 
-    setTimeout(function(){ firstSpeak = false }, 1000)
+    setTimeout(function () {
+      firstSpeak = false
+    }, 1000)
   }
 
   footnote(key) {
@@ -185,9 +200,9 @@ class LiaScript {
       lia.log("initEventSystem");
     let self = this
 
-    swipedetect(elem, function(swipedir){
+    swipedetect(elem, function (swipedir) {
       elmSend({
-        topic: "swipe",
+        topic: 'swipe',
         section: -1,
         message: swipedir
       })
@@ -195,7 +210,6 @@ class LiaScript {
 
     jsSubscribe(function (event) {
       lia.log('elm2js => ', event)
-
 
       switch (event.topic) {
         case 'slide': {
@@ -208,11 +222,12 @@ class LiaScript {
           }
           */
 
-
-          let elem = document.getElementById("focusedToc");
+          let elem = document.getElementById('focusedToc')
           if (elem) {
             if (!isInViewport(elem)) {
-              elem.scrollIntoView({ behavior: 'smooth' })
+              elem.scrollIntoView({
+                behavior: 'smooth'
+              })
             }
           }
 
@@ -222,10 +237,11 @@ class LiaScript {
           self.connector.load({
             topic: event.message,
             section: event.section,
-            message: null })
+            message: null
+          })
           break
         }
-        case 'code' : {
+        case 'code': {
           switch (event.message.topic) {
             case 'eval':
               lia_eval_event(elmSend, eventHandler, event)
@@ -246,7 +262,7 @@ class LiaScript {
           }
           break
         }
-        case 'quiz' : {
+        case 'quiz': {
           if (event.message.topic === 'store') {
             event.message = event.message.message
             self.connector.store(event)
@@ -256,7 +272,7 @@ class LiaScript {
 
           break
         }
-        case 'survey' : {
+        case 'survey': {
           if (event.message.topic === 'store') {
             event.message = event.message.message
             self.connector.store(event)
@@ -265,33 +281,35 @@ class LiaScript {
           }
           break
         }
-        case 'effect' :
+        case 'effect':
           handleEffects(event.message, elmSend, event.section)
           break
-        case "settings": {
+        case 'settings': {
           // if (self.channel) {
           //  self.channel.push('lia', {settings: event.message});
           // } else {
 
           try {
             let conf = self.connector.getSettings()
-            if (conf.table_of_contents != event.message.table_of_contents) {
-              setTimeout(function(){ window.dispatchEvent(new Event('resize')) }, 200)
+            if (conf.table_of_contents !== event.message.table_of_contents) {
+              setTimeout(function () {
+                window.dispatchEvent(new Event('resize'))
+              }, 200)
             }
-          } catch(e) { }
+          } catch (e) {}
 
           self.connector.setSettings(event.message)
 
           break
         }
-        case 'resource' : {
+        case 'resource': {
           let elem = event.message[0]
           let url = event.message[1]
 
           lia.log('loading resource => ', elem, ':', url)
 
           try {
-            var tag = document.createElement(elem)
+            let tag = document.createElement(elem)
             if (elem === 'link') {
               tag.href = url
               tag.rel = 'stylesheet'
@@ -300,13 +318,13 @@ class LiaScript {
 
               tag.src = url
               tag.async = false
-              tag.onload = function(e) {
+              tag.onload = function (e) {
                 window.event_semaphore--
-                lia.log("successfully loaded :", url);
+                lia.log('successfully loaded :', url)
               }
-              tag.onerror = function(e) {
+              tag.onerror = function (e) {
                 window.event_semaphore--
-                lia.error("could not load :", url);
+                lia.error('could not load :', url)
               }
             }
 
@@ -320,8 +338,12 @@ class LiaScript {
         case 'persistent': {
           if (event.message === 'store') {
             // todo, needs to be moved back
-            //persistent.store(event.section)
-            elmSend({ topic: 'load', section: -1, message: null })
+            // persistent.store(event.section)
+            elmSend({
+              topic: 'load',
+              section: -1,
+              message: null
+            })
           }
 
           break
@@ -337,7 +359,10 @@ class LiaScript {
           )
 
           if (data.definition.onload !== '') {
-            lia_execute_event({ code: data.definition.onload, delay: 350 })
+            lia_execute_event({
+              code: data.definition.onload,
+              delay: 350
+            })
           }
 
           // signal the ready state to the editor
@@ -365,7 +390,7 @@ class LiaScript {
 
           break
         }
-        case 'index' : {
+        case 'index': {
           switch (event.message.topic) {
             case 'list': {
               try {
@@ -374,19 +399,19 @@ class LiaScript {
               self.connector.getIndex()
               break
             }
-            case 'delete' : {
+            case 'delete': {
               self.connector.deleteFromIndex(event.message.message)
               break
             }
-            case 'restore' : {
+            case 'restore': {
               self.connector.restoreFromIndex(event.message.message, event.message.section)
               break
             }
-            case 'reset' : {
+            case 'reset': {
               self.connector.reset(event.message.message, event.message.section)
               break
             }
-            case 'get' : {
+            case 'get': {
               self.connector.getFromIndex(event.message.message)
               break
             }
@@ -395,17 +420,16 @@ class LiaScript {
           }
           break
         }
-        case 'share' : {
+        case 'share': {
           try {
             if (navigator.share) {
               navigator.share(event.message.message)
             }
-          } catch(e) {
+          } catch (e) {
             lia.error('sharing was not possible => ', event.message, e)
           }
 
-          break;
-
+          break
         }
         case 'reset': {
           self.connector.reset()
@@ -419,4 +443,6 @@ class LiaScript {
   }
 };
 
-export { LiaScript };
+export {
+  LiaScript
+}

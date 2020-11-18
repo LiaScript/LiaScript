@@ -7,7 +7,9 @@ customElements.define('katex-formula', class extends HTMLElement {
   }
 
   connectedCallback () {
-    const shadowRoot = this.attachShadow({ mode: 'open' })
+    const shadowRoot = this.attachShadow({
+      mode: 'open'
+    })
 
     let link = document.createElement('link')
     link.rel = 'stylesheet'
@@ -29,25 +31,25 @@ customElements.define('katex-formula', class extends HTMLElement {
     this.render()
   }
 
-  render() {
-    if(this.formula_ && this.span) {
-      try{
+  render () {
+    if (this.formula_ && this.span) {
+      try {
         katex.render(this.formula_, this.span, {
           throwOnError: false,
           displayMode: this.displayMode
         })
       } catch (e) {
-        console.warn("katex", e.message)
+        console.warn('katex', e.message)
       }
     }
   }
 
-  get formula() {
+  get formula () {
     return this.formula_
   }
 
-  set formula(value) {
-    if (this.formula_ != value) {
+  set formula (value) {
+    if (this.formula_ !== value) {
       this.formula_ = value
       this.render()
     }

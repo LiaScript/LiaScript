@@ -13,39 +13,36 @@ const debounce = (func) => {
   }
 }
 
-function markerStyle(name) {
-  if (typeof name == "string") {
-    name = "ace_color_" + name.replace(/ /g, "")
-                              .replace(/\./g, "")
-                              .replace(/,/g, "_")
-                              .replace(/\(/g, "")
-                              .replace(/\)/g, "")
+function markerStyle (name) {
+  if (typeof name === 'string') {
+    name = 'ace_color_' + name.replace(/ /g, '')
+      .replace(/\./g, '')
+      .replace(/,/g, '_')
+      .replace(/\(/g, '')
+      .replace(/\)/g, '')
   }
   return name
 }
 
-function addMarker(color, name=null) {
+function addMarker (color, name = null) {
+  if (!color) return
 
-  if (!color)
-    return
+  name = markerStyle(name || color)
 
-  name = markerStyle( name ? name : color )
-
-  if (!document.head.getElementsByTagName("style")[name]) {
+  if (!document.head.getElementsByTagName('style')[name]) {
     let node = document.createElement('style')
-    node.type = 'text/css';
+    node.type = 'text/css'
     node.id = name
     node.appendChild(document.createTextNode(
       `.${name} {
         position:absolute;
-        background:${ color };
+        background:${color};
         z-index:20
       }`
     ))
     document.getElementsByTagName('head')[0].appendChild(node)
   }
 }
-
 
 customElements.define('code-editor', class extends HTMLElement {
   constructor () {
@@ -69,28 +66,28 @@ customElements.define('code-editor', class extends HTMLElement {
       showGutter: true,
       extensions: [],
       maxLines: Infinity,
-      marker: "",
+      marker: '',
       minLines: 1,
       annotations: [],
       fontSize: '12pt'
     }
 
     let markers = {
-      "error":  "rgba(255,0,0,0.3)",
-      "warn":   "rgba(255,255,102,0.3)",
-      "debug":  "rgba(100,100,100,0.3)",
-      "info":   "rgba(0,255,0,0.3)",
-      "log":    "rgba(0,0,255,0.3)",
+      error: 'rgba(255,0,0,0.3)',
+      warn: 'rgba(255,255,102,0.3)',
+      debug: 'rgba(100,100,100,0.3)',
+      info: 'rgba(0,255,0,0.3)',
+      log: 'rgba(0,0,255,0.3)'
     }
 
     try {
       let keys = Object.keys(markers)
 
-      for (let i=0; i<keys.length; i++) {
+      for (let i = 0; i < keys.length; i++) {
         addMarker(markers[keys[i]], keys[i])
       }
-    } catch(e) {
-      console.warn("ace.js => ", e);
+    } catch (e) {
+      console.warn('ace.js => ', e)
     }
 
     this.focus_ = false
@@ -135,21 +132,21 @@ customElements.define('code-editor', class extends HTMLElement {
     }
 
     let self = this
-    this._editor.on("focus", function(){
+    this._editor.on('focus', function () {
       self.focus_ = true
       self.dispatchEvent(new CustomEvent('editorFocus'))
     })
 
-    this._editor.on("blur",  function(){
+    this._editor.on('blur', function () {
       self.focus_ = false
       self.dispatchEvent(new CustomEvent('editorFocus'))
     })
 
     this.setMarker()
 
-    if(this.focus_)
+    if (this.focus_) {
       this.setFocus()
-
+    }
   }
 
   disconnectedCallback () {
@@ -180,6 +177,7 @@ customElements.define('code-editor', class extends HTMLElement {
   get annotations () {
     return this.model.annotations
   }
+
   set annotations (list) {
     if (this.model.annotations === list) return
 
@@ -203,6 +201,7 @@ customElements.define('code-editor', class extends HTMLElement {
   get extensions () {
     return this.model.extensions
   }
+
   set extensions (values) {
     if (this.model.extensions === values) return
 
@@ -212,8 +211,9 @@ customElements.define('code-editor', class extends HTMLElement {
 
     this.setExtension()
   }
+
   setExtension () {
-    for (let ext in this.model.extensions) {
+    for (const ext in this.model.extensions) {
       try {
         ace.require('ace/ext/' + ext)
       } catch (e) {
@@ -225,35 +225,37 @@ customElements.define('code-editor', class extends HTMLElement {
   get fontSize () {
     return this.model.fontSize
   }
+
   set fontSize (value) {
     this.setOption('fontSize', value)
   }
 
-
   setMarker () {
     let Range = ace.require('ace/range').Range
-    let value = this.model.marker.split(";")
+    let value = this.model.marker.split(';')
 
-    for (let i=0; i<value.length; i++) {
-      let m = value[i].split(" ").filter( e => e != "")
+    for (let i = 0; i < value.length; i++) {
+      let m = value[i].split(' ').filter(e => e !== '')
 
       addMarker(m[4])
 
       this._editor.session.addMarker(
-        new Range (
+        new Range(
           parseInt(m[0]),
           parseInt(m[1]),
           parseInt(m[2]),
           parseInt(m[3])
         ),
         markerStyle(m[4]),
-        m[5] ? m[5] : "fullLine"
+        m[5] ? m[5] : 'fullLine'
       )
     }
   }
+
   get marker () {
     return this.model.marker
   }
+
   set marker (value) {
     this.model.marker = value
   }
@@ -261,6 +263,7 @@ customElements.define('code-editor', class extends HTMLElement {
   get firstLineNumber () {
     return this.model.firstLineNumber
   }
+
   set firstLineNumber (value) {
     this.setOption('firstLineNumber', value)
   }
@@ -268,6 +271,7 @@ customElements.define('code-editor', class extends HTMLElement {
   get highlightActiveLine () {
     return this.model.highlightActiveLine
   }
+
   set highlightActiveLine (value) {
     this.setOption('highlightActiveLine', value)
   }
@@ -275,6 +279,7 @@ customElements.define('code-editor', class extends HTMLElement {
   get maxLines () {
     return this.model.maxLines
   }
+
   set maxLines (value) {
     this.setOption('maxLines', value < 0 ? Infinity : value)
   }
@@ -282,6 +287,7 @@ customElements.define('code-editor', class extends HTMLElement {
   get minLines () {
     return this.model.minLines
   }
+
   set minLines (value) {
     this.setOption('minLines', value < 0 ? 1 : value)
   }
@@ -289,6 +295,7 @@ customElements.define('code-editor', class extends HTMLElement {
   get mode () {
     return this.model.mode
   }
+
   set mode (mode) {
     if (this.model.mode === mode) return
 
@@ -306,6 +313,7 @@ customElements.define('code-editor', class extends HTMLElement {
   get readOnly () {
     return this.model.readOnly
   }
+
   set readOnly (value) {
     this.setOption('readOnly', value)
   }
@@ -313,6 +321,7 @@ customElements.define('code-editor', class extends HTMLElement {
   get showCursor () {
     return this.model.showCursor
   }
+
   set showCursor (value) {
     this.setOption('showCursor', value)
   }
@@ -320,6 +329,7 @@ customElements.define('code-editor', class extends HTMLElement {
   get showGutter () {
     return this.model.showGutter
   }
+
   set showGutter (value) {
     this.setOption('showGutter', value)
   }
@@ -327,6 +337,7 @@ customElements.define('code-editor', class extends HTMLElement {
   get showPrintMargin () {
     return this.model.showPrintMargin
   }
+
   set showPrintMargin (value) {
     this.setOption('showPrintMargin', value)
   }
@@ -334,6 +345,7 @@ customElements.define('code-editor', class extends HTMLElement {
   get tabSize () {
     return this.model.tabSize
   }
+
   set tabSize (value) {
     this.setOption('tabSize', value)
   }
@@ -341,6 +353,7 @@ customElements.define('code-editor', class extends HTMLElement {
   get theme () {
     return this.model.theme
   }
+
   set theme (theme) {
     if (this.model.theme === theme) return
 
@@ -354,6 +367,7 @@ customElements.define('code-editor', class extends HTMLElement {
   get useSoftTabs () {
     return this.model.useSoftTabs
   }
+
   set useSoftTabs (value) {
     this.setOption('useSoftTabs', value)
   }
@@ -361,6 +375,7 @@ customElements.define('code-editor', class extends HTMLElement {
   get useWrapMode () {
     return this.model.useWrapMode
   }
+
   set useWrapMode (value) {
     this.setOption('useWrapMode', value)
   }
@@ -368,25 +383,28 @@ customElements.define('code-editor', class extends HTMLElement {
   get value () {
     return this.model.value
   }
+
   set value (value) {
     this.setOption('value', value)
   }
 
-  get focus() {
+  get focus () {
     return this.focus_
   }
-  set focus(value) {
+
+  set focus (value) {
     this.focus_ = value
 
-    if (value)
+    if (value) {
       this.setFocus()
+    }
   }
 
-  setFocus() {
+  setFocus () {
     if (!this._editor) return
 
     try {
-        this._editor.focus()
+      this._editor.focus()
     } catch (e) {
       console.log(
         'Problem Ace: focus => ',

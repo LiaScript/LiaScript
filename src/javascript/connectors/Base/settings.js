@@ -1,7 +1,6 @@
 const SETTINGS = 'settings'
 
 function initSettings (send, data, local = false) {
-
   if (data == null) {
     data = {
       table_of_contents: true,

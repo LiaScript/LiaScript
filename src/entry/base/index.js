@@ -1,10 +1,13 @@
-import "@babel/polyfill"
+import '@babel/polyfill'
 
-import { LiaScript } from '../../javascript/liascript/index.js'
-import { Connector } from '../../javascript/connectors/Base/index.js'
+import {
+  LiaScript
+} from '../../javascript/liascript/index.js'
+import {
+  Connector
+} from '../../javascript/connectors/Base/index.js'
 
-
-let debug = false;
+let debug = false
 
 if (process.env.NODE_ENV === 'development') {
   debug = true
