@@ -1,14 +1,13 @@
 import echarts from 'echarts'
 
-var style = "width: 100%; height: 400px; margin-top: -0.2em;"
+var style = 'width: 100%; height: 400px; margin-top: -0.2em;'
 
 customElements.define('e-charts', class extends HTMLElement {
-  static get observedAttributes() {
-    return ["style", "mode", "json"];
+  static get observedAttributes () {
+    return ['style', 'mode', 'json']
   }
 
-
-  constructor() {
+  constructor () {
     super()
     const shadowRoot = this.attachShadow({
       mode: 'open'
@@ -16,79 +15,74 @@ customElements.define('e-charts', class extends HTMLElement {
 
     let div = document.createElement('div')
     div.style = style
-    div.id = "container"
+    div.id = 'container'
 
     shadowRoot.appendChild(div)
 
     let self = this
-    window.addEventListener("resize", function() {
-      self.resizeChart();
-    });
+    window.addEventListener('resize', function () {
+      self.resizeChart()
+    })
   }
 
-  connectedCallback() {
+  connectedCallback () {
     if (!this.chart) {
-      let container = this.shadowRoot.querySelector("#container")
+      let container = this.shadowRoot.querySelector('#container')
       this.data = null
       this.chart = echarts.init(container, this.mode)
-      this.option_ = JSON.parse(this.getAttribute("option")) || this.option_
+      this.option_ = JSON.parse(this.getAttribute('option')) || this.option_
 
       this.updateChart()
     }
   }
 
-  disconnectedCallback() {
+  disconnectedCallback () {
     if (super.disconnectedCallback) {
       super.disconnectedCallback()
     }
-    echarts.dispose(this.chart);
+    echarts.dispose(this.chart)
     this.data = null
-    let container = this.shadowRoot.querySelector("#container")
   }
 
-  attributeChangedCallback(name, oldValue, newValue) {
-    if (name === "style") {
-      let container = this.shadowRoot.querySelector("#container");
+  attributeChangedCallback (name, oldValue, newValue) {
+    if (name === 'style') {
+      let container = this.shadowRoot.querySelector('#container')
       if (container) {
-        container.style = style + newValue;
+        container.style = style + newValue
       }
-      this.resizeChart();
-    } else if (name === "mode") {
-      if (!this.chart)
-        return;
+      this.resizeChart()
+    } else if (name === 'mode') {
+      if (!this.chart) return
 
-      echarts.dispose(this.chart);
-      let container = this.shadowRoot.querySelector("#container")
+      echarts.dispose(this.chart)
+      let container = this.shadowRoot.querySelector('#container')
       this.chart = echarts.init(container, newValue)
-      this.updateChart();
-    } else if (name === "json") {
-      if (typeof newValue == 'string' && newValue != "") {
-
+      this.updateChart()
+    } else if (name === 'json') {
+      if (typeof newValue === 'string' && newValue !== '') {
         try {
-          if (this.data.name == newData)
-            return
+          if (this.data.name === newValue) return
         } catch (e) {}
 
         let self = this
 
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = function() {
-          if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+        let xmlHttp = new XMLHttpRequest()
+        xmlHttp.onreadystatechange = function () {
+          if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
             self.updateJson(newValue, xmlHttp.responseText)
-          else {
-            console.warn("eCharts ... could not load =>", JSON.stringify(newValue))
+          } else {
+            console.warn('eCharts ... could not load =>', JSON.stringify(newValue))
           }
         }
-        xmlHttp.open("GET", newValue, true); // true for asynchronous
-        xmlHttp.send(null);
+        xmlHttp.open('GET', newValue, true) // true for asynchronous
+        xmlHttp.send(null)
       } else {
         this.data = null
       }
-
     }
   }
 
-  updateJson(url, json) {
+  updateJson (url, json) {
     this.data = {
       name: url,
       data: json
@@ -96,80 +90,77 @@ customElements.define('e-charts', class extends HTMLElement {
     this.updateChart()
   }
 
-  updateChart() {
-    console.warn(this.option_);
+  updateChart () {
+    console.warn(this.option_)
 
-    if (!this.chart || !this.option_) return;
+    if (!this.chart || !this.option_) return
 
-    //this.chart.clear();
+    // this.chart.clear();
 
     let option = this.option_ || {}
 
-    //console.warn(option);
+    // console.warn(option);
 
-    //this.chart.setOption({},true);
-
+    // this.chart.setOption({},true);
 
     if (this.data) {
       echarts.registerMap(this.data.name, this.data.data)
     }
 
-    console.warn(option);
-
-    this.chart.setOption(option, true);
-    //this.resizeChart()
+    this.chart.setOption(option, true)
+    // this.resizeChart()
   }
 
-  resizeChart() {
-    if (!this.chart) return;
+  resizeChart () {
+    if (!this.chart) return
 
     this.chart.resize()
   }
 
-  get option() {
+  get option () {
     return this.option_
   }
 
-  set option(val) {
+  set option (val) {
     if (val) {
-      if (JSON.stringify(val) != JSON.stringify(this.option_)) {
+      if (JSON.stringify(val) !== JSON.stringify(this.option_)) {
         this.option_ = val
-        this.updateChart();
+        this.updateChart()
       }
     }
   }
 
-  get mode() {
-    if (this.hasAttribute("mode")) {
-      return this.getAttribute("mode");
+  get mode () {
+    if (this.hasAttribute('mode')) {
+      return this.getAttribute('mode')
     } else {
-      return "";
+      return ''
     }
   }
 
-  set mode(val) {
+  set mode (val) {
     if (val) {
-      this.setAttribute("mode", val);
+      this.setAttribute('mode', val)
     } else {
-      this.setAttribute("mode", "");
+      this.setAttribute('mode', '')
     }
-    this.updateChart();
+    this.updateChart()
   }
 
-  get json() {
-    if (this.hasAttribute("json")) {
-      return this.getAttribute("json");
+  get json () {
+    if (this.hasAttribute('json')) {
+      return this.getAttribute('json')
     } else {
-      return "";
+      return ''
     }
   }
 
-  set json(val) {
+  set json (val) {
     if (val) {
-      this.setAttribute("json", val)
+      this.setAttribute('json', val)
     } else if (this.data) {
-      this.setAttribute("json", "")
+      this.setAttribute('json', '')
     }
-    this.updateChart();
+    this.updateChart()
   }
 })

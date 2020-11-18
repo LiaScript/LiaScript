@@ -7,28 +7,29 @@ import {
 } from './settings'
 
 class Connector {
-  constructor() {}
+  constructor () {}
 
-  hasIndex() {
+  hasIndex () {
     return false
   }
-  connect(send = null) {
+
+  connect (send = null) {
     this.send = send
   }
 
-  storage() {
+  storage () {
     return new LiaStorage()
   }
 
-  initSettings(data = null, local = false) {
+  initSettings (data = null, local = false) {
     initSettings(this.send, data, local)
   }
 
-  setSettings(data) {
+  setSettings (data) {
     localStorage.setItem(SETTINGS, JSON.stringify(data))
   }
 
-  getSettings() {
+  getSettings () {
     if (window.innerWidth <= 620) {
       let data
 
@@ -40,41 +41,40 @@ class Connector {
 
       }
 
-      return data;
-
+      return data
     } else {
       return JSON.parse(localStorage.getItem(SETTINGS))
     }
   }
 
-  open(uidDB, versionDB, slide, data = null) {}
+  open (uidDB, versionDB, slide, data = null) {}
 
-  load(event) {}
+  load (event) {}
 
-  store(event) {}
+  store (event) {}
 
-  update(event, id) {}
+  update (event, id) {}
 
-  slide(id) {}
+  slide (id) {}
 
-  getIndex() {}
+  getIndex () {}
 
-  deleteFromIndex(msg) {}
+  deleteFromIndex (msg) {}
 
-  storeToIndex(json) {}
+  storeToIndex (json) {}
 
-  restoreFromIndex(uidDB, versionDB = null) {}
+  restoreFromIndex (uidDB, versionDB = null) {}
 
-  reset(uidDB, versionDB = null) {
+  reset (uidDB, versionDB = null) {
     this.initSettings(null, true)
   }
 
-  getFromIndex(uidDB) {
+  getFromIndex (uidDB) {
     this.send({
-      topic: "restore",
+      topic: 'restore',
       message: null,
       section: -1
-    });
+    })
   }
 }
 

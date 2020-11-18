@@ -1,10 +1,10 @@
 customElements.define('intl-format', class extends HTMLElement {
-  constructor() {
+  constructor () {
     super()
     this.span = document.createElement('span')
   }
 
-  connectedCallback() {
+  connectedCallback () {
     const shadowRoot = this.attachShadow({
       mode: 'open'
     })
@@ -16,7 +16,7 @@ customElements.define('intl-format', class extends HTMLElement {
     this.format = this.get('format')
 
     switch (this.format) {
-      case "number":
+      case 'number':
         this.option = {
           compactDisplay: this.get('compactDisplay'),
           currency: this.get('currency'),
@@ -39,7 +39,7 @@ customElements.define('intl-format', class extends HTMLElement {
 
         break
 
-      case "datetime":
+      case 'datetime':
         this.option = {
           calendar: this.get('calendar'),
           dateStyle: this.get('dateStyle'),
@@ -64,7 +64,7 @@ customElements.define('intl-format', class extends HTMLElement {
         }
         break
         // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/RelativeTimeFormat/RelativeTimeFormat
-      case "relativetime":
+      case 'relativetime':
         this.unit = this.get('unit')
         this.option = {
           localeMatcher: this.get('localeMatcher'),
@@ -73,14 +73,14 @@ customElements.define('intl-format', class extends HTMLElement {
         }
         break
 
-      case "list":
+      case 'list':
         this.option = {
           localeMatcher: this.get('localeMatcher'),
           style: this.get('localeStyle'),
           type: this.get('type')
         }
         break
-      case "pluralrules":
+      case 'pluralrules':
         this.option = {
           localeMatcher: this.get('localeMatcher'),
           maximumFractionDigits: this.get('maximumFractionDigits'),
@@ -100,48 +100,49 @@ customElements.define('intl-format', class extends HTMLElement {
     this.view()
   }
 
-  view() {
+  view () {
     let value
     try {
       switch (this.format) {
-        case "number":
+        case 'number':
           value = new Intl.NumberFormat(this.locale, this.option).format(parseFloat(this.value_))
           break
-        case "datetime":
+        case 'datetime':
           value = new Intl.DateTimeFormat(this.locale, this.option).format(Date.parse(this.value_))
           break
-        case "relativetime":
+        case 'relativetime':
           value = new Intl.RelativeTimeFormat(this.locale, this.option).format(this.value_, this.unit)
           break
-        case "list":
+        case 'list':
           value = new Intl.ListFormat(this.locale, this.option).format(JSON.parse(this.value_))
           break
-        case "pluralrules":
+        case 'pluralrules':
           value = new Intl.PluralRules(this.locale, this.option).select(this.value_)
           break
       }
     } catch (e) {
-      console.warn("intl-format: ", e.message)
+      console.warn('intl-format: ', e.message)
     }
 
-    this.span.innerText = value ? value : this.value_
+    this.span.innerText = value || this.value_
   }
 
-  get(name) {
+  get (name) {
     return (this.getAttribute(name) || undefined)
   }
 
-  get value() {
+  get value () {
     return this.value_
   }
-  set value(value) {
-    if (this.value_ != value) {
+
+  set value (value) {
+    if (this.value_ !== value) {
       this.value_ = value
       this.view()
     }
   }
 
-  disconnectedCallback() {
+  disconnectedCallback () {
     if (super.disconnectedCallback) {
       super.disconnectedCallback()
     }

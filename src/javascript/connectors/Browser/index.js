@@ -6,17 +6,17 @@ import {
 } from '../Base/index'
 
 class Connector extends Base {
-  hasIndex() {
+  hasIndex () {
     return true
   }
 
-  connect(send = null) {
+  connect (send = null) {
     this.send = send
     this.database = new LiaDB(send)
     this.initSettings(this.getSettings(), true)
   }
 
-  open(uidDB, versionDB, slide, data = null) {
+  open (uidDB, versionDB, slide, data = null) {
     this.database.open(
       uidDB,
       versionDB, {
@@ -30,43 +30,43 @@ class Connector extends Base {
       })
   }
 
-  load(event) {
+  load (event) {
     this.database.load(event)
   }
 
-  store(event) {
+  store (event) {
     this.database.store(event)
   }
 
-  update(event, id) {
+  update (event, id) {
     this.database.update(event, id)
   }
 
-  slide(id) {
+  slide (id) {
     this.database.slide(id)
   }
 
-  getIndex() {
+  getIndex () {
     this.database.listIndex()
   }
 
-  deleteFromIndex(msg) {
+  deleteFromIndex (msg) {
     this.database.deleteIndex(msg)
   }
 
-  storeToIndex(json) {
+  storeToIndex (json) {
     this.database.storeIndex(json)
   }
 
-  restoreFromIndex(uidDB, versionDB = null) {
+  restoreFromIndex (uidDB, versionDB = null) {
     this.database.restore(uidDB, versionDB)
   }
 
-  reset(uidDB, versionDB = null) {
+  reset (uidDB, versionDB = null) {
     this.database.reset(uidDB, versionDB)
   }
 
-  getFromIndex(uidDB) {
+  getFromIndex (uidDB) {
     this.database.getIndex(uidDB)
   }
 }

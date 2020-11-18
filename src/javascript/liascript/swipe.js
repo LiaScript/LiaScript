@@ -1,26 +1,24 @@
-function swipedetect(el, callback) {
+function swipedetect (el, callback) {
+  let touchsurface = el
+  let swipedir
+  let startX
+  let startY
+  let distX
+  let distY
+  let threshold = 150
+  let restraint = 100
+  let allowedTime = 300
+  let elapsedTime
+  let startTime
+  let ismousedown = false
+  let detecttouch = !!('ontouchstart' in window) || !!('ontouchstart' in document.documentElement) || !!window.ontouchstart || !!window.Touch || !!window.onmsgesturechange || (window.DocumentTouch && window.document instanceof window.DocumentTouch)
+  let handleswipe = callback || function (swipedir) {}
 
-  var touchsurface = el,
-    swipedir,
-    startX,
-    startY,
-    distX,
-    distY,
-    dist,
-    threshold = 150,
-    restraint = 100,
-    allowedTime = 300,
-    elapsedTime,
-    startTime,
-    ismousedown = false,
-    detecttouch = !!('ontouchstart' in window) || !!('ontouchstart' in document.documentElement) || !!window.ontouchstart || !!window.Touch || !!window.onmsgesturechange || (window.DocumentTouch && window.document instanceof window.DocumentTouch),
-    handleswipe = callback || function(swipedir) {}
-
-  function isContained(m, e) {
+  function isContained (m, e) {
     e = e || window.event
-    let c = /(click)|(mousedown)|(mouseup)/i.test(e.type) ? e.target : (e.relatedTarget || ((e.type == "mouseover") ? e.fromElement : e.toElement))
+    let c = /(click)|(mousedown)|(mouseup)/i.test(e.type) ? e.target : (e.relatedTarget || ((e.type === 'mouseover') ? e.fromElement : e.toElement))
 
-    while (c && c != m) {
+    while (c && c !== m) {
       try {
         c = c.parentNode
       } catch (e) {
@@ -28,14 +26,12 @@ function swipedetect(el, callback) {
       }
     }
 
-    return c == m
+    return c === m
   }
 
-
-  touchsurface.addEventListener('touchstart', function(e) {
-    var touchobj = e.changedTouches[0]
+  touchsurface.addEventListener('touchstart', function (e) {
+    let touchobj = e.changedTouches[0]
     swipedir = 'none'
-    dist = 0
     startX = touchobj.pageX
     startY = touchobj.pageY
     startTime = new Date().getTime() // record time when finger first makes contact with surface
@@ -44,14 +40,14 @@ function swipedetect(el, callback) {
     passive: true
   })
 
-  touchsurface.addEventListener('touchmove', function(e) {
+  touchsurface.addEventListener('touchmove', function (e) {
     e.preventDefault() // prevent scrolling when inside DIV
   }, {
     passive: true
   })
 
-  touchsurface.addEventListener('touchend', function(e) {
-    var touchobj = e.changedTouches[0]
+  touchsurface.addEventListener('touchend', function (e) {
+    let touchobj = e.changedTouches[0]
     distX = touchobj.pageX - startX // get horizontal dist traveled by finger while in contact with surface
     distY = touchobj.pageY - startY // get vertical dist traveled by finger while in contact with surface
     elapsedTime = new Date().getTime() - startTime // get time elapsed
@@ -63,19 +59,17 @@ function swipedetect(el, callback) {
       }
     }
     // check that elapsed time is within specified, horizontal dist traveled >= threshold, and vertical dist traveled <= 100
-    if (swipedir !== "none")
-      handleswipe(swipedir)
+    if (swipedir !== 'none') handleswipe(swipedir)
     e.preventDefault()
   }, {
     passive: true
   })
 
   if (!detecttouch) {
-    document.body.addEventListener('mousedown', function(e) {
+    document.body.addEventListener('mousedown', function (e) {
       if (isContained(touchsurface, e)) {
-        var touchobj = e
+        let touchobj = e
         swipedir = 'none'
-        dist = 0
         startX = touchobj.pageX
         startY = touchobj.pageY
         startTime = new Date().getTime() // record time when finger first makes contact with surface
@@ -86,15 +80,15 @@ function swipedetect(el, callback) {
       passive: true
     })
 
-    document.body.addEventListener('mousemove', function(e) {
+    document.body.addEventListener('mousemove', function (e) {
       e.preventDefault() // prevent scrolling when inside DIV
     }, {
       passive: true
     })
 
-    document.body.addEventListener('mouseup', function(e) {
+    document.body.addEventListener('mouseup', function (e) {
       if (ismousedown) {
-        var touchobj = e
+        let touchobj = e
         distX = touchobj.pageX - startX // get horizontal dist traveled by finger while in contact with surface
         distY = touchobj.pageY - startY // get vertical dist traveled by finger while in contact with surface
         elapsedTime = new Date().getTime() - startTime // get time elapsed
@@ -106,8 +100,7 @@ function swipedetect(el, callback) {
           }
         }
         // check that elapsed time is within specified, horizontal dist traveled >= threshold, and vertical dist traveled <= 100
-        if (swipedir !== "none")
-          handleswipe(swipedir)
+        if (swipedir !== 'none') handleswipe(swipedir)
         ismousedown = false
 
         e.preventDefault()

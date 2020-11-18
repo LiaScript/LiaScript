@@ -2,13 +2,12 @@ import {
   lia
 } from './logger'
 
-
 window.event_semaphore = 0
-var lia_queue = []
+let lia_queue = []
 
 // Basic class for handline Code-Errors
 class LiaError extends Error {
-  constructor(message, files, ...params) {
+  constructor (message, files, ...params) {
     super(...params)
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, LiaError)
@@ -22,7 +21,7 @@ class LiaError extends Error {
     }
   }
 
-  add_detail(fileId, msg, type, line, column) {
+  add_detail (fileId, msg, type, line, column) {
     this.details[fileId].push({
       row: line,
       column: column,
@@ -31,7 +30,7 @@ class LiaError extends Error {
     })
   }
 
-  get_detail(msg, type, line, column = 0) {
+  get_detail (msg, type, line, column = 0) {
     return {
       row: line,
       column: column,
@@ -43,7 +42,7 @@ class LiaError extends Error {
   // sometimes you need to adjust the compile messages to fit into the
   // editor ... use this function to adapt the row parameters ...
   // file_id with 0 will apply the correction value to all files
-  correct_lines(fileId, by) {
+  correct_lines (fileId, by) {
     if (fileId == null) {
       for (let i = 0; i < this.details.length; i++) {
         this.correct_lines(i, by)
@@ -56,19 +55,17 @@ class LiaError extends Error {
   }
 };
 
-
-
 class LiaEvents {
-  constructor() {
+  constructor () {
     this.event = {}
     this.input = {}
   }
 
-  register(name, fn) {
+  register (name, fn) {
     this.event[name] = fn
   }
 
-  register_input(id1, id2, name, fn) {
+  register_input (id1, id2, name, fn) {
     if (this.input[id1] === undefined) {
       this.input[id1] = {}
     }
@@ -79,26 +76,26 @@ class LiaEvents {
     this.input[id1][id2][name] = fn
   }
 
-  dispatch_input(event) { // id1, id2, name, msg) {
+  dispatch_input (event) { // id1, id2, name, msg) {
     try {
-      this.input[event.section][event.message.section][event.message.topic](event.message.message);
+      this.input[event.section][event.message.section][event.message.topic](event.message.message)
     } catch (e) {
       lia.error('unable to dispatch message', event.message)
     }
   }
 
-  dispatch(name, data) {
+  dispatch (name, data) {
     if (this.event.hasOwnProperty(name)) {
       this.event[name](data)
     }
   }
 
-  remove(name) {
+  remove (name) {
     delete this.event[name]
   }
 };
 
-function getLineNumber(error) {
+function getLineNumber (error) {
   try {
     // firefox
     const firefoxRegex = /<anonymous>:(\d+):\d+/
@@ -118,41 +115,42 @@ function getLineNumber(error) {
   }
 };
 
-function lia_wait() {
+function lia_wait () {
   if (window.event_semaphore > 0) {
-    setTimeout(function(e) {
+    setTimeout(function (e) {
       lia_wait()
     }, 100)
   } else {
     while (lia_queue.length) {
       let event = lia_queue.pop()
 
-      if (event.type == "eval")
+      if (event.type === 'eval') {
         lia_eval(event.code, event.send)
-      else if (event.type == "exec") {
+      } else if (event.type === 'exec') {
         lia_execute_event(event.event, event.send, event.section)
-      } else
-        lia.warn("lia_queue => unknown event => ", JSON.stringify(event))
+      } else {
+        lia.warn('lia_queue => unknown event => ', JSON.stringify(event))
+      }
     }
   }
 }
 
-function lia_eval(code, send) {
+function lia_eval (code, send) {
   if (window.event_semaphore > 0) {
     lia_queue.push({
-      type: "eval",
+      type: 'eval',
       code: code,
       send: send
     })
 
-    if (lia_queue.length == 1) {
+    if (lia_queue.length === 1) {
       lia_wait()
     }
     return
   }
 
   try {
-    let console = {
+    const console = {
       debug: (...args) => send.log('debug', '\n', args),
       log: (...args) => send.log('info', '\n', args),
       warn: (...args) => send.log('warn', '\n', args),
@@ -173,7 +171,7 @@ function lia_eval(code, send) {
   }
 };
 
-function lia_eval_event(send, handler, event) {
+function lia_eval_event (send, handler, event) {
   lia_eval(
     event.message.message, {
       lia: (result, details = [], ok = true) => {
@@ -190,10 +188,10 @@ function lia_eval_event(send, handler, event) {
         event.message.message = list_to_string(sep, args)
         send(event)
       },
-      //service: websocket(channel),
+      // service: websocket(channel),
       handle: (name, fn) => {
-        let e1 = event.section
-        let e2 = event.message.section
+        const e1 = event.section
+        const e2 = event.message.section
         handler.register_input(e1, e2, name, fn)
       },
       register: (name, fn) => {
@@ -206,7 +204,7 @@ function lia_eval_event(send, handler, event) {
   )
 };
 
-function list_to_string(sep, list) {
+function list_to_string (sep, list) {
   let str = ''
 
   for (let i = 0; i < list[0].length; i++) {
@@ -216,14 +214,14 @@ function list_to_string(sep, list) {
   return str + sep
 };
 
-function execute_response(topic, event_id, sender, section) {
+function execute_response (topic, event_id, sender, section) {
   return (msg, ok = true) => {
-    if (typeof msg !== "string") {
+    if (typeof msg !== 'string') {
       msg = JSON.stringify(msg)
     }
 
     sender({
-      topic: "effect",
+      topic: 'effect',
       section: section,
       message: {
         topic: topic,
@@ -238,16 +236,16 @@ function execute_response(topic, event_id, sender, section) {
   }
 }
 
-function lia_execute_event(event, sender = null, section = null) {
+function lia_execute_event (event, sender = null, section = null) {
   if (window.event_semaphore > 0) {
     lia_queue.push({
-      type: "exec",
+      type: 'exec',
       event: event,
       send: sender,
       section: section
     })
 
-    if (lia_queue.length == 1) {
+    if (lia_queue.length === 1) {
       lia_wait()
     }
     return
@@ -255,23 +253,23 @@ function lia_execute_event(event, sender = null, section = null) {
 
   setTimeout(() => {
     let send = {
-      lia: execute_response("code", event.id, sender, section),
-      output: execute_response("codeX", event.id, sender, section),
+      lia: execute_response('code', event.id, sender, section),
+      output: execute_response('codeX', event.id, sender, section),
       wait: () => {
-        (execute_response("code", event.id, sender, section))("LIA: wait")
+        (execute_response('code', event.id, sender, section))('LIA: wait')
       },
       stop: () => {
-        (execute_response("code", event.id, sender, section))("LIA: stop")
+        (execute_response('code', event.id, sender, section))('LIA: stop')
       },
       html: (msg) => {
-        (execute_response("code", event.id, sender, section))("HTML: " + msg)
+        (execute_response('code', event.id, sender, section))('HTML: ' + msg)
       }
     }
 
     try {
       const result = eval(event.code)
-      if (section != null && typeof event.id == "number") {
-        send.lia(result == undefined ? "LIA: stop" : result)
+      if (section != null && typeof event.id === 'number') {
+        send.lia(result === undefined ? 'LIA: stop' : result)
       }
     } catch (e) {
       lia.error('exec => ', e.message)
@@ -280,9 +278,9 @@ function lia_execute_event(event, sender = null, section = null) {
   }, event.delay)
 };
 
-function websocket(channel = null) {
+function websocket (channel = null) {
   if (channel) {
-    return function(eventID, message) {
+    return function (eventID, message) {
       return channel.push('lia', {
         event_id: eventID,
         message: message

@@ -1,11 +1,9 @@
-function getMode(name) {
-  let mode = modes[name]
-
-  return 'ace/mode/' + (mode || 'text')
+function getMode (name) {
+  return 'ace/mode/' + (modes[name] || 'text')
 };
 
-
 const modes = {
+  // A
   'abap': 'abap',
   'abc': 'abc',
   'actionscript': 'actionscript',
@@ -26,7 +24,7 @@ const modes = {
   'x86asm': 'assembly_x86',
   'autohotkey': 'autohotkey',
 
-
+  // B
   'bat': 'batchfile',
   'btm': 'batchfile',
   'cmd': 'batchfile',
@@ -59,7 +57,7 @@ const modes = {
   'css': 'css',
   'curly': 'curly',
 
-
+  // C
   'dart': 'dart',
   'diff': 'diff',
   'patch': 'diff',
@@ -71,7 +69,7 @@ const modes = {
   'dot': 'dot',
   'drools': 'drools',
 
-
+  // E
   'edifact': 'edifact',
   'eiffel': 'eiffel',
   'ejs': 'ejs',
@@ -82,7 +80,7 @@ const modes = {
   'erl': 'erlang',
   'erlang': 'erlang',
 
-
+  // F
   'forth': 'forth',
   'fortran': 'fortran',
   'f90': 'fortran',
@@ -93,7 +91,7 @@ const modes = {
   'fsl': 'fsl',
   'ftl': 'ftl',
 
-
+  // G
   'gcode': 'gcode',
   'nc': 'gcode',
   'gherkin': 'gherkin',
@@ -105,7 +103,7 @@ const modes = {
   'graphqlschema': 'graphqlschema',
   'groovy': 'groovy',
 
-
+  // H
   'haml': 'haml',
   'handlebars': 'handlebars',
   'hbs': 'handlebars',
@@ -128,11 +126,11 @@ const modes = {
   'xsl': 'html',
   'html_ruby': 'html_ruby',
 
-
+  // I
   'ini': 'ini',
   'io': 'io',
 
-
+  // J
   'jack': 'jack',
   'jade': 'jade',
   'java': 'java',
@@ -146,11 +144,11 @@ const modes = {
   'jsx': 'jsx',
   'julia': 'julia',
 
-
+  // K
   'kot': 'kotlin',
   'kotlin': 'kotlin',
 
-
+  // L
   'latex': 'latex',
   'less': 'less',
   'liquid': 'liquid',
@@ -164,7 +162,7 @@ const modes = {
   'luapage': 'luapage',
   'lucene': 'lucene',
 
-
+  // M
   'mak': 'makefile',
   'makefile': 'makefile',
   'mk': 'makefile',
@@ -180,13 +178,13 @@ const modes = {
   'mushcode': 'mushcode',
   'mysql': 'mysql',
 
-
+  // N
   'nginx': 'nginx',
   'nim': 'nim',
   'nix': 'nix',
   'nsis': 'nsis',
 
-
+  // O
   'mm': 'objectivec',
   'objc': 'objectivec',
   'objectivec': 'objectivec',
@@ -194,7 +192,7 @@ const modes = {
   'ml': 'ocaml',
   'ocaml': 'ocaml',
 
-
+  // P
   'delphi': 'pascal',
   'dfm': 'pascal',
   'dpr': 'pascal',
@@ -229,7 +227,7 @@ const modes = {
   'py': 'python',
   'python': 'python',
 
-
+  // R
   'razor': 'razor',
   'rdoc': 'rdoc',
   'red': 'red',
@@ -246,7 +244,7 @@ const modes = {
   'rs': 'rust',
   'rust': 'rust',
 
-
+  // S
   'sass': 'sass',
   'scad': 'scad',
   'openscad': 'scad',
@@ -271,7 +269,7 @@ const modes = {
   'svg': 'svg',
   'swift': 'swift',
 
-
+  // T
   'tcl': 'tcl',
   'tk': 'tcl',
   'terraform': 'terraform',
@@ -286,7 +284,7 @@ const modes = {
   'ts': 'typescript',
   'typescript': 'typescript',
 
-
+  // V
   'vala': 'vala',
   'vbs': 'vbscript',
   'vbscript': 'vbscript',
@@ -296,12 +294,15 @@ const modes = {
   'vhdl': 'vhdl',
   'visualforce': 'visualforce',
 
+  // W
   'wollok': 'wollok',
 
+  // X
   'xml': 'xml',
   'xpath': 'xquery',
   'xq': 'xquery',
 
+  // Y
   'yaml': 'yaml'
 }
 

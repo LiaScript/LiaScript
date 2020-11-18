@@ -1,4 +1,4 @@
-import "@babel/polyfill"
+import '@babel/polyfill'
 
 import {
   LiaScript
@@ -7,11 +7,10 @@ import {
   Connector
 } from '../../javascript/connectors/Base/index.js'
 
-
-let debug = false;
+let debug = false
 
 if (process.env.NODE_ENV === 'development') {
   debug = true
 }
 
-var app = new LiaScript(document.body, new Connector(), debug)
+const app = new LiaScript(document.body, new Connector(), debug)

@@ -1,13 +1,13 @@
 class LiaStorage {
-  constructor() {
+  constructor () {
     this._init()
   }
 
-  _init() {
+  _init () {
     let store = this._setLocal
   }
 
-  getItems(key = []) {
+  getItems (key = []) {
     if (typeof key === 'string') key = [key]
 
     let rslt = {}
@@ -20,11 +20,11 @@ class LiaStorage {
     return rslt
   }
 
-  setItems(dict) {
+  setItems (dict) {
     this._setLocal(dict)
   }
 
-  _setLocal(dict) {
+  _setLocal (dict) {
     if (typeof dict === 'object') {
       for (const [key, value] of Object.entries(dict)) {
         localStorage.setItem(key, JSON.stringify(value))

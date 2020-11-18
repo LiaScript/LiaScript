@@ -2,12 +2,11 @@
 import katex from 'katex'
 
 customElements.define('katex-formula', class extends HTMLElement {
-  constructor() {
+  constructor () {
     super()
   }
 
-
-  connectedCallback() {
+  connectedCallback () {
     const shadowRoot = this.attachShadow({
       mode: 'open'
     })
@@ -32,7 +31,7 @@ customElements.define('katex-formula', class extends HTMLElement {
     this.render()
   }
 
-  render() {
+  render () {
     if (this.formula_ && this.span) {
       try {
         katex.render(this.formula_, this.span, {
@@ -40,23 +39,23 @@ customElements.define('katex-formula', class extends HTMLElement {
           displayMode: this.displayMode
         })
       } catch (e) {
-        console.warn("katex", e.message)
+        console.warn('katex', e.message)
       }
     }
   }
 
-  get formula() {
+  get formula () {
     return this.formula_
   }
 
-  set formula(value) {
-    if (this.formula_ != value) {
+  set formula (value) {
+    if (this.formula_ !== value) {
       this.formula_ = value
       this.render()
     }
   }
 
-  disconnectedCallback() {
+  disconnectedCallback () {
     if (super.disconnectedCallback) {
       super.disconnectedCallback()
     }
