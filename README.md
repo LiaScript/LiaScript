@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.6.1
+version:  0.6.2
 language: en
 narrator: UK English Male
 
@@ -222,6 +222,11 @@ __Badges:__
 
 
 ## Version-Changes
+
+__0.8.6__ (18/11/2020)
+
+* updated ASCII-Art, which now now supports escaping via `"`
+* updates with eslint & npm update
 
 __0.8.5__ (12/11/2020)
 
