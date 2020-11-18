@@ -111,7 +111,7 @@ customElements.define('intl-format', class extends HTMLElement {
           value = new Intl.DateTimeFormat(this.locale, this.option).format(Date.parse(this.value_))
           break
         case "relativetime":
-          value = new Intl.RelativeTimeFormat(this.locle, this.option).format(this.value_, this.unit)
+          value = new Intl.RelativeTimeFormat(this.locale, this.option).format(this.value_, this.unit)
           break
         case "list":
           value = new Intl.ListFormat(this.locale, this.option).format(JSON.parse(this.value_))
