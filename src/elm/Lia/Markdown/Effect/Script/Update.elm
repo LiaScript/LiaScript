@@ -39,7 +39,7 @@ update msg scripts =
         Activate active id ->
             case Array.get id scripts of
                 Just node ->
-                    if not active && not node.input.updateOnChange then
+                    if not active && node.input.updateOnChange then
                         reRun
                             (\js ->
                                 { js
