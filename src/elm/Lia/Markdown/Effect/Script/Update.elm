@@ -12,7 +12,7 @@ import Array
 import Browser.Dom as Dom
 import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Input as Input
-import Lia.Markdown.Effect.Script.Types as Script exposing (Script, Scripts)
+import Lia.Markdown.Effect.Script.Types as Script exposing (Script, Scripts, Stdout(..))
 import Port.Eval as Eval exposing (Eval)
 import Port.Event exposing (Event)
 import Process
@@ -315,10 +315,21 @@ eval_ e js =
             else
                 Just <|
                     if e.ok then
-                        Ok e.result
+                        if String.startsWith "HTML: " e.result then
+                            e.result
+                                |> String.dropLeft 5
+                                |> HTML
+
+                        else if String.startsWith "LIASCRIPT: " e.result then
+                            e.result
+                                |> String.dropLeft 10
+                                |> LIASCRIPT
+
+                        else
+                            Text e.result
 
                     else
-                        Err e.result
+                        Error e.result
     }
 
 

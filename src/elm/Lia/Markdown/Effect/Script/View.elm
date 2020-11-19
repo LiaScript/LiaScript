@@ -9,7 +9,7 @@ import Json.Encode as JE
 import Lia.Markdown.Code.Editor as Editor
 import Lia.Markdown.Effect.Script.Input as Input
 import Lia.Markdown.Effect.Script.Intl as Intl
-import Lia.Markdown.Effect.Script.Types exposing (Script, Scripts)
+import Lia.Markdown.Effect.Script.Types exposing (Script, Scripts, Stdout(..), isError)
 import Lia.Markdown.Effect.Script.Update exposing (Msg(..))
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, get)
 import Lia.Utils exposing (blockKeydown, onEnter)
@@ -69,15 +69,6 @@ script withStyling attr id node =
             Html.text ""
 
         Just result ->
-            let
-                ( str, err ) =
-                    case result of
-                        Ok rslt ->
-                            ( rslt, False )
-
-                        Err rslt ->
-                            ( rslt, True )
-            in
             Html.span
                 (annotation
                     (if withStyling then
@@ -102,7 +93,7 @@ script withStyling attr id node =
                                 []
                         )
                     |> CList.addIf node.modify (onEdit True id)
-                    |> CList.addIf err (Attr.style "color" "red")
+                    |> CList.addIf (isError result) (Attr.style "color" "red")
                     |> CList.addIf (node.input.type_ /= Just Input.Button_ && node.input.type_ /= Nothing) (onActivate True id)
                  --|> (::)
                  --    (Event.on "click"
@@ -112,17 +103,23 @@ script withStyling attr id node =
                  --        )
                  --    )
                 )
-                [ if String.startsWith "HTML: " str then
-                    Html.span
-                        [ str
-                            |> String.dropLeft 5
-                            |> JE.string
-                            |> Attr.property "innerHTML"
-                        ]
-                        []
+                [ case result of
+                    Text str ->
+                        Intl.view node.intl str
 
-                  else
-                    Intl.view node.intl str
+                    Error str ->
+                        Html.text str
+
+                    HTML str ->
+                        Html.span
+                            [ str
+                                |> JE.string
+                                |> Attr.property "innerHTML"
+                            ]
+                            []
+
+                    LIASCRIPT str ->
+                        Html.text str
                 ]
 
 
