@@ -1,5 +1,5 @@
 import ace from 'ace-builds/src-noconflict/ace'
-import getMode from './ace-modes'
+import getMode from './editor-modes'
 
 const debounce = (func) => {
   let token
@@ -44,7 +44,7 @@ function addMarker (color, name = null) {
   }
 }
 
-customElements.define('code-editor', class extends HTMLElement {
+customElements.define('lia-editor', class extends HTMLElement {
   constructor () {
     super()
 

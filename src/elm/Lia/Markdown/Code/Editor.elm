@@ -37,7 +37,7 @@ editor : List (Html.Attribute msg) -> List (Html msg) -> Html msg
 editor attr =
     Attr.style "display" "block"
         :: attr
-        |> Html.node "code-editor"
+        |> Html.node "lia-editor"
 
 
 onChange : (String -> msg) -> Html.Attribute msg
