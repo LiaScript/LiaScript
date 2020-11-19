@@ -66,31 +66,29 @@ input =
 push : String -> Int -> Parameters -> String -> Scripts -> Scripts
 push lang id params script javascript =
     Array.push
-        (Script id
-            script
-            False
-            False
-            False
-            (Attr.isSet "run-once" params)
-            (Attr.isNotSet "modify" params)
-            False
-            (params
+        { effect_id = id
+        , script = script
+        , updated = False -- use this for preventing closing
+        , running = False
+        , update = False
+        , runOnce = Attr.isSet "run-once" params
+        , modify = Attr.isNotSet "modify" params
+        , edit = False
+        , result =
+            params
                 |> Attr.get "default"
                 |> Maybe.map Text
-            )
-            (params
-                |> Attr.get "output"
-            )
-            (script
+        , output = Attr.get "output" params
+        , inputs =
+            script
                 |> Regex.find input
                 |> List.map .submatches
                 |> List.concat
                 |> List.filterMap identity
-            )
-            0
-            (Input.from params)
-            (Intl.from lang params)
-        )
+        , counter = 0
+        , input = Input.from params
+        , intl = Intl.from lang params
+        }
         javascript
 
 

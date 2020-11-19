@@ -24,8 +24,8 @@ type Msg
     | Reset Int
     | Activate Bool Int
     | Value Int Bool String
-    | Radio Int String
-    | Checkbox Int String
+    | Radio Int Bool String
+    | Checkbox Int Bool String
     | Edit Bool Int
     | EditCode Int String
     | NoOp
@@ -39,13 +39,7 @@ update msg scripts =
         Activate active id ->
             case Array.get id scripts of
                 Just node ->
-                    if
-                        not active
-                            && (node.input.type_
-                                    |> Maybe.map (Input.runnable >> not)
-                                    |> Maybe.withDefault False
-                               )
-                    then
+                    if not active && not node.input.updateOnChange then
                         reRun
                             (\js ->
                                 { js
@@ -96,11 +90,27 @@ update msg scripts =
                 , []
                 )
 
-        Checkbox id str ->
-            reRun (\js -> { js | input = Input.toggle str js.input, updated = True }) Cmd.none id scripts
+        Checkbox id exec str ->
+            if exec then
+                reRun (\js -> { js | input = Input.toggle str js.input, updated = True }) Cmd.none id scripts
 
-        Radio id str ->
-            reRun (\js -> { js | input = Input.value str js.input, updated = True }) Cmd.none id scripts
+            else
+                ( scripts
+                    |> Script.set id (\js -> { js | input = Input.toggle str js.input, updated = True })
+                , Cmd.none
+                , []
+                )
+
+        Radio id exec str ->
+            if exec then
+                reRun (\js -> { js | input = Input.value str js.input, updated = True }) Cmd.none id scripts
+
+            else
+                ( scripts
+                    |> Script.set id (\js -> { js | input = Input.value str js.input, updated = True })
+                , Cmd.none
+                , []
+                )
 
         Click id ->
             reRun identity Cmd.none id scripts

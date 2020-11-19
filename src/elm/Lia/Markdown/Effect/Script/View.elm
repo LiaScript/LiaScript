@@ -7,7 +7,7 @@ import Html.Attributes as Attr
 import Html.Events as Event
 import Json.Encode as JE
 import Lia.Markdown.Code.Editor as Editor
-import Lia.Markdown.Effect.Script.Input as Input
+import Lia.Markdown.Effect.Script.Input as Input exposing (Input)
 import Lia.Markdown.Effect.Script.Intl as Intl
 import Lia.Markdown.Effect.Script.Types exposing (Script, Scripts, Stdout(..), isError)
 import Lia.Markdown.Effect.Script.Update exposing (Msg(..))
@@ -137,7 +137,7 @@ input attr id node =
                 , Attr.id "lia-focus"
                 , Event.onCheck
                     (\b ->
-                        Value id True <|
+                        Value id node.input.updateOnChange <|
                             if b then
                                 "true"
 
@@ -157,12 +157,12 @@ input attr id node =
 
         Just (Input.Checkbox_ options) ->
             options
-                |> checkbox id node.input.value attr
+                |> checkbox node.input.updateOnChange id node.input.value attr
                 |> span attr id node
 
         Just (Input.Radio_ options) ->
             options
-                |> radio id node.input.value attr
+                |> radio node.input.updateOnChange id node.input.value attr
                 |> span attr id node
 
         Just (Input.Select_ options) ->
@@ -171,11 +171,11 @@ input attr id node =
                 |> span attr id node
 
         Just Input.Textarea_ ->
-            textarea id node.input.value attr
+            textarea id node.input.value attr node.input.updateOnChange
                 |> span attr id node
 
         Just type_ ->
-            base type_ id attr node.input.value
+            base node.input id attr node.input.value
                 |> span attr id node
 
         Nothing ->
@@ -188,8 +188,8 @@ select id value attr =
         >> Html.select (attributes True id value attr)
 
 
-checkbox : Int -> String -> Parameters -> List String -> Html Msg
-checkbox id value _ =
+checkbox : Bool -> Int -> String -> Parameters -> List String -> Html Msg
+checkbox updateOnChange id value _ =
     let
         list =
             value
@@ -202,7 +202,7 @@ checkbox id value _ =
             , Html.input
                 [ Attr.value o
                 , Attr.type_ "checkbox"
-                , Event.onCheck (always (Checkbox id o))
+                , Event.onCheck (always (Checkbox id updateOnChange o))
                 , Attr.checked (List.member o list)
                 , onActivate False id
                 , Attr.autofocus True
@@ -217,15 +217,15 @@ checkbox id value _ =
         >> Html.span []
 
 
-radio : Int -> String -> Parameters -> List String -> Html Msg
-radio id value _ =
+radio : Bool -> Int -> String -> Parameters -> List String -> Html Msg
+radio updateOnChange id value _ =
     List.map
         (\o ->
             [ Html.text (" " ++ o ++ " ")
             , Html.input
                 [ Attr.value o
                 , Attr.type_ "radio"
-                , Event.onCheck (always (Radio id o))
+                , Event.onCheck (always (Radio id updateOnChange o))
                 , Attr.checked (o == value)
                 , onActivate False id
                 , Attr.autofocus True
@@ -240,9 +240,9 @@ radio id value _ =
         >> Html.span []
 
 
-textarea : Int -> String -> Parameters -> Html Msg
-textarea id value attr =
-    Html.textarea (attributes False id value attr) []
+textarea : Int -> String -> Parameters -> Bool -> Html Msg
+textarea id value attr updateOnChange =
+    Html.textarea (attributes updateOnChange id value attr) []
 
 
 attributes : Bool -> Int -> String -> Parameters -> List (Html.Attribute Msg)
@@ -279,17 +279,19 @@ reset id =
         [ Html.text "clear" ]
 
 
-base : Input.Type_ -> Int -> Parameters -> String -> Html Msg
-base type_ id attr value =
+base : Input -> Int -> Parameters -> String -> Html Msg
+base input_ id attr value =
     Html.span []
         [ Html.input
             (annotation "lia-script" attr
                 |> List.append
-                    [ type_
-                        |> Input.runnable
+                    [ input_.updateOnChange
                         |> Value id
                         |> Event.onInput
-                    , Attr.type_ <| Input.type_ type_
+                    , input_.type_
+                        |> Maybe.map Input.type_
+                        |> Maybe.withDefault "text"
+                        |> Attr.type_
                     , Attr.value value
                     , onActivate False id
                     , Attr.id "lia-focus"
