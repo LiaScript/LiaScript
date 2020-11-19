@@ -91,8 +91,6 @@ customElements.define('lia-chart', class extends HTMLElement {
   }
 
   updateChart () {
-    console.warn(this.option_)
-
     if (!this.chart || !this.option_) return
 
     // this.chart.clear();

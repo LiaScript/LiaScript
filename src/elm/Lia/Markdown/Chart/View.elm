@@ -7,14 +7,17 @@ module Lia.Markdown.Chart.View exposing
     , viewFunnel
     , viewGraph
     , viewHeatMap
+    , viewLines
     , viewMapChart
     , viewParallel
     , viewPieChart
+    , viewPoints
     , viewRadarChart
     , viewSankey
     )
 
 import Char exposing (toLower)
+import Conditional.List as CList
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -32,6 +35,30 @@ view attr light =
 viewChart : Parameters -> Bool -> Chart -> Html msg
 viewChart attr light =
     encode False >> eCharts attr light Nothing
+
+
+viewLines :
+    Parameters
+    -> Bool
+    -> Labels
+    -> List String
+    -> List ( String, List (Maybe Float) )
+    -> Html msg
+viewLines attr light labels category data =
+    encodeBasic "line" labels category data
+        |> eCharts attr light Nothing
+
+
+viewPoints :
+    Parameters
+    -> Bool
+    -> Labels
+    -> List String
+    -> List ( String, List (Maybe Float) )
+    -> Html msg
+viewPoints attr light labels category data =
+    encodeBasic "scatter" labels category data
+        |> eCharts attr light Nothing
 
 
 viewBarChart :
@@ -538,6 +565,34 @@ encodeBarChart labels category data =
         , ( "tooltip", JE.object [] )
         , ( "series", bars )
         ]
+
+
+encodeBasic : String -> Labels -> List String -> List ( String, List (Maybe Float) ) -> JE.Value
+encodeBasic type_ labels category data =
+    [ xAxis Nothing "category" labels.x category
+    , yAxis "value" labels.y []
+    , data
+        |> List.map Tuple.first
+        |> encodeLegend [ ( "top", JE.string "30px" ) ]
+    , ( "tooltip", JE.object [] )
+    , toolbox Nothing { saveAsImage = True, dataView = True, dataZoom = True, magicType = True }
+    , ( "series"
+      , data
+            |> JE.list
+                (\( name_, values ) ->
+                    JE.object
+                        [ ( "name", JE.string name_ )
+                        , ( "type", JE.string type_ )
+                        , ( "data"
+                          , values
+                                |> JE.list (Maybe.map JE.float >> Maybe.withDefault JE.null)
+                          )
+                        ]
+                )
+      )
+    ]
+        |> add (encodeTitle Nothing) labels.main
+        |> JE.object
 
 
 encodeParallel : Labels -> List String -> List (List (Maybe Float)) -> JE.Value
