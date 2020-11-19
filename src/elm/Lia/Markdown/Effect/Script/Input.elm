@@ -33,6 +33,7 @@ type Type_
 
 type alias Input =
     { active : Bool
+    , alwaysActive : Bool
     , value : String
     , default : String
     , updateOnChange : Bool
@@ -52,8 +53,17 @@ from params =
             params
                 |> Attr.get "input"
                 |> Maybe.map (parseType_ params)
+
+        alwaysActive =
+            Attr.isSet "input-always-active" params
     in
-    { active = False
+    { active =
+        if alwaysActive then
+            True
+
+        else
+            Attr.isSet "input-active" params
+    , alwaysActive = alwaysActive
     , value = val
     , default = val
     , updateOnChange =
@@ -253,7 +263,14 @@ options =
 
 active : Bool -> Input -> Input
 active bool i =
-    { i | active = bool }
+    { i
+        | active =
+            if i.alwaysActive then
+                True
+
+            else
+                bool
+    }
 
 
 value : String -> Input -> Input
