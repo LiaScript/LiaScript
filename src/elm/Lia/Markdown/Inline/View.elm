@@ -54,7 +54,7 @@ view config element =
             reference config e attr
 
         Formula mode_ e [] ->
-            Html.node "katex-formula"
+            Html.node "lia-formula"
                 [ Attr.attribute "displayMode" mode_
                 , e
                     |> JE.string
