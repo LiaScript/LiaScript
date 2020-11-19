@@ -1014,6 +1014,7 @@ encodeFunnel width labels subtitle data =
                 , ( "center", JE.string "50%" )
                 , ( "selectedMode", JE.string "single" )
                 , ( "data", pieces )
+                , ( "sort", JE.string "none" )
                 ]
             ]
                 |> JE.list identity
@@ -1058,15 +1059,7 @@ encodeFunnels : Int -> Maybe String -> Maybe (List String) -> List (List ( Strin
 encodeFunnels width title subtitle data =
     let
         relWidth =
-            (toFloat width
-                / (6.1 * toFloat (List.length data))
-                |> (\w ->
-                        if w > 70 then
-                            70
-
-                        else
-                            w
-                   )
+            ((100 / (toFloat <| List.length data))
                 |> String.fromFloat
             )
                 ++ "%"
@@ -1086,15 +1079,12 @@ encodeFunnels width title subtitle data =
                     (\i x ->
                         JE.object
                             [ ( "type", JE.string "funnel" )
-                            , ( "radius"
-                              , JE.string relWidth
-                              )
-                            , ( "center"
-                              , [ String.fromFloat (toFloat (2 * i) * step + step)
+                            , ( "width", JE.string relWidth )
+                            , ( "sort", JE.string "none" )
+                            , ( "left"
+                              , String.fromFloat (toFloat (2 * i) * step)
                                     ++ "%"
-                                , "50%"
-                                ]
-                                    |> JE.list JE.string
+                                    |> JE.string
                               )
                             , ( "label"
                               , JE.object
