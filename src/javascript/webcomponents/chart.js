@@ -2,7 +2,7 @@ import echarts from 'echarts'
 
 var style = 'width: 100%; height: 400px; margin-top: -0.2em;'
 
-customElements.define('e-charts', class extends HTMLElement {
+customElements.define('lia-chart', class extends HTMLElement {
   static get observedAttributes () {
     return ['style', 'mode', 'json']
   }

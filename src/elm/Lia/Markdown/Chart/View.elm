@@ -147,7 +147,7 @@ viewHeatMap attr light labels x y data =
 
 eCharts : Parameters -> Bool -> Maybe String -> JE.Value -> Html msg
 eCharts attr light json option =
-    Html.node "e-charts"
+    Html.node "lia-chart"
         (List.append
             [ Attr.attribute "mode" <|
                 if light then
