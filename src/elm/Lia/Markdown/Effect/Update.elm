@@ -19,7 +19,6 @@ import Lia.Markdown.Effect.Model
         , current_comment
         )
 import Lia.Markdown.Effect.Script.Update as Script
-import Port.Eval as Eval
 import Port.Event exposing (Event)
 import Port.TTS as TTS
 import Task

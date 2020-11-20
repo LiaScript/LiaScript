@@ -17,7 +17,6 @@ module Lia.Markdown.Chart.View exposing
     )
 
 import Char exposing (toLower)
-import Conditional.List as CList
 import Dict exposing (Dict)
 import FStatistics
 import Html exposing (Html)
@@ -154,8 +153,8 @@ viewFunnel :
     -> Maybe (List String)
     -> List (List ( String, Float ))
     -> Html msg
-viewFunnel width attr light labels subtitle data =
-    encodeFunnel width labels subtitle data
+viewFunnel _ attr light labels subtitle data =
+    encodeFunnel labels subtitle data
         |> eCharts attr light Nothing
 
 
@@ -660,7 +659,7 @@ encodeMapChart labels data json =
                                         |> JE.object
                                         |> Just
 
-                                Nothing ->
+                                _ ->
                                     Nothing
                         )
                     |> JE.list identity
@@ -1014,8 +1013,8 @@ encodePieChart width labels subtitle data =
         encodePieCharts width labels.main subtitle data
 
 
-encodeFunnel : Int -> Labels -> Maybe (List String) -> List (List ( String, Float )) -> JE.Value
-encodeFunnel width labels subtitle data =
+encodeFunnel : Labels -> Maybe (List String) -> List (List ( String, Float )) -> JE.Value
+encodeFunnel labels subtitle data =
     if List.length data == 1 then
         let
             pieces =
@@ -1107,11 +1106,11 @@ encodeFunnel width labels subtitle data =
             |> JE.object
 
     else
-        encodeFunnels width labels.main subtitle data
+        encodeFunnels labels.main subtitle data
 
 
-encodeFunnels : Int -> Maybe String -> Maybe (List String) -> List (List ( String, Float )) -> JE.Value
-encodeFunnels width title subtitle data =
+encodeFunnels : Maybe String -> Maybe (List String) -> List (List ( String, Float )) -> JE.Value
+encodeFunnels title subtitle data =
     let
         relWidth =
             ((100 / (toFloat <| List.length data))

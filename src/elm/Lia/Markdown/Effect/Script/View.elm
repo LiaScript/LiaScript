@@ -174,7 +174,7 @@ input attr id node =
             textarea id node.input.value attr node.input.updateOnChange
                 |> span attr id node
 
-        Just type_ ->
+        Just _ ->
             base node.input id attr node.input.value
                 |> span attr id node
 

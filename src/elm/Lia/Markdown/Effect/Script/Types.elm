@@ -1,4 +1,19 @@
-module Lia.Markdown.Effect.Script.Types exposing (..)
+module Lia.Markdown.Effect.Script.Types exposing
+    ( Script
+    , Scripts
+    , Stdout(..)
+    , count
+    , filterMap
+    , get
+    , isError
+    , outputs
+    , push
+    , replaceInputs
+    , scriptChildren
+    , set
+    , text
+    , updateChildren
+    )
 
 import Array exposing (Array)
 import Lia.Markdown.Effect.Script.Input as Input exposing (Input)
@@ -92,11 +107,6 @@ push lang id params script javascript =
         javascript
 
 
-setRunning : Int -> Bool -> Array Script -> Array Script
-setRunning id state javascript =
-    set id (\js -> { js | running = state }) javascript
-
-
 count : Array Script -> Int
 count =
     Array.length >> (+) -1
@@ -171,40 +181,11 @@ get fn id =
     Array.get id >> Maybe.map fn
 
 
-getResult : Int -> Array Script -> Maybe Stdout
-getResult id =
-    get .result id
-        >> Maybe.withDefault Nothing
-
-
 set : Int -> (Script -> Script) -> Array Script -> Array Script
 set idx fn javascript =
     case Array.get idx javascript of
         Just js ->
             Array.set idx (fn js) javascript
-
-        _ ->
-            javascript
-
-
-setResult : Int -> Array Script -> Stdout -> Array Script
-setResult id javascript result =
-    set id (\js -> { js | result = Just result }) javascript
-
-
-publish : Int -> Array Script -> Array Script
-publish id javascript =
-    case Array.get id javascript |> Maybe.andThen .output of
-        Just output ->
-            javascript
-                |> Array.map
-                    (\node ->
-                        if List.member output node.inputs then
-                            { node | update = True }
-
-                        else
-                            node
-                    )
 
         _ ->
             javascript
