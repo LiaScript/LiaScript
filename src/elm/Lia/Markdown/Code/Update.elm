@@ -12,7 +12,7 @@ import Lia.Markdown.Code.Json as Json
 import Lia.Markdown.Code.Log as Log
 import Lia.Markdown.Code.Terminal as Terminal
 import Lia.Markdown.Code.Types exposing (Code(..), File, Project, Vector, loadVersion, updateVersion)
-import Lia.Markdown.Effect.Script.Types exposing (Scripts, outputs)
+import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Port.Eval exposing (Eval)
 import Port.Event exposing (Event)
 

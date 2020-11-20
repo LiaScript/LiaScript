@@ -7,21 +7,23 @@ module Lia.Markdown.Chart.View exposing
     , viewFunnel
     , viewGraph
     , viewHeatMap
+    , viewLines
     , viewMapChart
     , viewParallel
     , viewPieChart
+    , viewPoints
     , viewRadarChart
     , viewSankey
     )
 
 import Char exposing (toLower)
 import Dict exposing (Dict)
+import FStatistics
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Encode as JE
 import Lia.Markdown.Chart.Types exposing (Chart, Diagram(..), Labels)
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
-import Statistics
 
 
 view : Parameters -> Bool -> Chart -> Html msg
@@ -32,6 +34,30 @@ view attr light =
 viewChart : Parameters -> Bool -> Chart -> Html msg
 viewChart attr light =
     encode False >> eCharts attr light Nothing
+
+
+viewLines :
+    Parameters
+    -> Bool
+    -> Labels
+    -> List String
+    -> List ( String, List (Maybe Float) )
+    -> Html msg
+viewLines attr light labels category data =
+    encodeBasic "line" labels category data
+        |> eCharts attr light Nothing
+
+
+viewPoints :
+    Parameters
+    -> Bool
+    -> Labels
+    -> List String
+    -> List ( String, List (Maybe Float) )
+    -> Html msg
+viewPoints attr light labels category data =
+    encodeBasic "scatter" labels category data
+        |> eCharts attr light Nothing
 
 
 viewBarChart :
@@ -127,8 +153,8 @@ viewFunnel :
     -> Maybe (List String)
     -> List (List ( String, Float ))
     -> Html msg
-viewFunnel width attr light labels subtitle data =
-    encodeFunnel width labels subtitle data
+viewFunnel _ attr light labels subtitle data =
+    encodeFunnel labels subtitle data
         |> eCharts attr light Nothing
 
 
@@ -147,7 +173,7 @@ viewHeatMap attr light labels x y data =
 
 eCharts : Parameters -> Bool -> Maybe String -> JE.Value -> Html msg
 eCharts attr light json option =
-    Html.node "e-charts"
+    Html.node "lia-chart"
         (List.append
             [ Attr.attribute "mode" <|
                 if light then
@@ -367,16 +393,16 @@ encodeBoxPlot labels category data =
                 |> List.map2
                     (\c data_ ->
                         case
-                            ( Statistics.percentile 0.25 data_
-                            , Statistics.median data_
-                            , Statistics.percentile 0.75 data_
+                            ( FStatistics.percentile 0.25 data_
+                            , FStatistics.median data_
+                            , FStatistics.percentile 0.75 data_
                             )
                         of
                             ( Just q1, Just q2, Just q3 ) ->
                                 let
                                     ( min, max ) =
                                         data_
-                                            |> Statistics.minmax
+                                            |> FStatistics.minmax
                                             |> Maybe.map
                                                 (\( min_, max_ ) ->
                                                     let
@@ -540,6 +566,34 @@ encodeBarChart labels category data =
         ]
 
 
+encodeBasic : String -> Labels -> List String -> List ( String, List (Maybe Float) ) -> JE.Value
+encodeBasic type_ labels category data =
+    [ xAxis Nothing "category" labels.x category
+    , yAxis "value" labels.y []
+    , data
+        |> List.map Tuple.first
+        |> encodeLegend [ ( "top", JE.string "30px" ) ]
+    , ( "tooltip", JE.object [] )
+    , toolbox Nothing { saveAsImage = True, dataView = True, dataZoom = True, magicType = True }
+    , ( "series"
+      , data
+            |> JE.list
+                (\( name_, values ) ->
+                    JE.object
+                        [ ( "name", JE.string name_ )
+                        , ( "type", JE.string type_ )
+                        , ( "data"
+                          , values
+                                |> JE.list (Maybe.map JE.float >> Maybe.withDefault JE.null)
+                          )
+                        ]
+                )
+      )
+    ]
+        |> add (encodeTitle Nothing) labels.main
+        |> JE.object
+
+
 encodeParallel : Labels -> List String -> List (List (Maybe Float)) -> JE.Value
 encodeParallel labels category data =
     [ ( "parallelAxis"
@@ -605,7 +659,7 @@ encodeMapChart labels data json =
                                         |> JE.object
                                         |> Just
 
-                                Nothing ->
+                                _ ->
                                     Nothing
                         )
                     |> JE.list identity
@@ -959,8 +1013,8 @@ encodePieChart width labels subtitle data =
         encodePieCharts width labels.main subtitle data
 
 
-encodeFunnel : Int -> Labels -> Maybe (List String) -> List (List ( String, Float )) -> JE.Value
-encodeFunnel width labels subtitle data =
+encodeFunnel : Labels -> Maybe (List String) -> List (List ( String, Float )) -> JE.Value
+encodeFunnel labels subtitle data =
     if List.length data == 1 then
         let
             pieces =
@@ -1014,6 +1068,7 @@ encodeFunnel width labels subtitle data =
                 , ( "center", JE.string "50%" )
                 , ( "selectedMode", JE.string "single" )
                 , ( "data", pieces )
+                , ( "sort", JE.string "none" )
                 ]
             ]
                 |> JE.list identity
@@ -1051,22 +1106,14 @@ encodeFunnel width labels subtitle data =
             |> JE.object
 
     else
-        encodeFunnels width labels.main subtitle data
+        encodeFunnels labels.main subtitle data
 
 
-encodeFunnels : Int -> Maybe String -> Maybe (List String) -> List (List ( String, Float )) -> JE.Value
-encodeFunnels width title subtitle data =
+encodeFunnels : Maybe String -> Maybe (List String) -> List (List ( String, Float )) -> JE.Value
+encodeFunnels title subtitle data =
     let
         relWidth =
-            (toFloat width
-                / (6.1 * toFloat (List.length data))
-                |> (\w ->
-                        if w > 70 then
-                            70
-
-                        else
-                            w
-                   )
+            ((100 / (toFloat <| List.length data))
                 |> String.fromFloat
             )
                 ++ "%"
@@ -1086,15 +1133,12 @@ encodeFunnels width title subtitle data =
                     (\i x ->
                         JE.object
                             [ ( "type", JE.string "funnel" )
-                            , ( "radius"
-                              , JE.string relWidth
-                              )
-                            , ( "center"
-                              , [ String.fromFloat (toFloat (2 * i) * step + step)
+                            , ( "width", JE.string relWidth )
+                            , ( "sort", JE.string "none" )
+                            , ( "left"
+                              , String.fromFloat (toFloat (2 * i) * step)
                                     ++ "%"
-                                , "50%"
-                                ]
-                                    |> JE.list JE.string
+                                    |> JE.string
                               )
                             , ( "label"
                               , JE.object

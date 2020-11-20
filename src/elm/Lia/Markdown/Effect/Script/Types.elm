@@ -1,4 +1,19 @@
-module Lia.Markdown.Effect.Script.Types exposing (..)
+module Lia.Markdown.Effect.Script.Types exposing
+    ( Script
+    , Scripts
+    , Stdout(..)
+    , count
+    , filterMap
+    , get
+    , isError
+    , outputs
+    , push
+    , replaceInputs
+    , scriptChildren
+    , set
+    , text
+    , updateChildren
+    )
 
 import Array exposing (Array)
 import Lia.Markdown.Effect.Script.Input as Input exposing (Input)
@@ -12,6 +27,33 @@ type alias Scripts =
     Array Script
 
 
+type Stdout
+    = Error String
+    | Text String
+    | HTML String
+    | LIASCRIPT String
+
+
+isError : Stdout -> Bool
+isError stdout =
+    case stdout of
+        Error _ ->
+            True
+
+        _ ->
+            False
+
+
+text : Stdout -> Maybe String
+text stdout =
+    case stdout of
+        Text str ->
+            Just str
+
+        _ ->
+            Nothing
+
+
 type alias Script =
     { effect_id : Int
     , script : String
@@ -21,7 +63,7 @@ type alias Script =
     , runOnce : Bool
     , modify : Bool
     , edit : Bool
-    , result : Maybe (Result String String)
+    , result : Maybe Stdout
     , output : Maybe String
     , inputs : List String
     , counter : Int
@@ -36,40 +78,33 @@ input =
         Regex.fromString "@input\\(`([^`]+)`\\)"
 
 
-push : String -> Int -> Parameters -> String -> Array Script -> Array Script
+push : String -> Int -> Parameters -> String -> Scripts -> Scripts
 push lang id params script javascript =
     Array.push
-        (Script id
-            script
-            False
-            False
-            False
-            (Attr.isSet "run-once" params)
-            (Attr.isNotSet "modify" params)
-            False
-            (params
+        { effect_id = id
+        , script = script
+        , updated = False -- use this for preventing closing
+        , running = False
+        , update = False
+        , runOnce = Attr.isSet "run-once" params
+        , modify = Attr.isNotSet "modify" params
+        , edit = False
+        , result =
+            params
                 |> Attr.get "default"
-                |> Maybe.map Ok
-            )
-            (params
-                |> Attr.get "output"
-            )
-            (script
+                |> Maybe.map Text
+        , output = Attr.get "output" params
+        , inputs =
+            script
                 |> Regex.find input
                 |> List.map .submatches
                 |> List.concat
                 |> List.filterMap identity
-            )
-            0
-            (Input.from params)
-            (Intl.from lang params)
-        )
+        , counter = 0
+        , input = Input.from params
+        , intl = Intl.from lang params
+        }
         javascript
-
-
-setRunning : Int -> Bool -> Array Script -> Array Script
-setRunning id state javascript =
-    set id (\js -> { js | running = state }) javascript
 
 
 count : Array Script -> Int
@@ -90,7 +125,7 @@ outputs =
         >> List.filterMap
             (\js ->
                 case ( js.output, js.result ) of
-                    ( Just output, Just (Ok result) ) ->
+                    ( Just output, Just (Text result) ) ->
                         Just ( output, result )
 
                     _ ->
@@ -146,41 +181,11 @@ get fn id =
     Array.get id >> Maybe.map fn
 
 
-getResult : Int -> Array Script -> Maybe String
-getResult id =
-    get .result id
-        >> Maybe.withDefault Nothing
-        >> Maybe.andThen Result.toMaybe
-
-
 set : Int -> (Script -> Script) -> Array Script -> Array Script
 set idx fn javascript =
     case Array.get idx javascript of
         Just js ->
             Array.set idx (fn js) javascript
-
-        _ ->
-            javascript
-
-
-setResult : Int -> Array Script -> String -> Array Script
-setResult id javascript result =
-    set id (\js -> { js | result = Just (Ok result) }) javascript
-
-
-publish : Int -> Array Script -> Array Script
-publish id javascript =
-    case Array.get id javascript |> Maybe.andThen .output of
-        Just output ->
-            javascript
-                |> Array.map
-                    (\node ->
-                        if List.member output node.inputs then
-                            { node | update = True }
-
-                        else
-                            node
-                    )
 
         _ ->
             javascript

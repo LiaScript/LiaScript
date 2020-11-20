@@ -1,7 +1,7 @@
 // import 'katex/dist/katex.min.css';
 import katex from 'katex'
 
-customElements.define('katex-formula', class extends HTMLElement {
+customElements.define('lia-formula', class extends HTMLElement {
   constructor () {
     super()
   }

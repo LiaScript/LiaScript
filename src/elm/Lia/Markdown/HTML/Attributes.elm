@@ -5,6 +5,7 @@ module Lia.Markdown.HTML.Attributes exposing
     , get
     , isNotSet
     , isSet
+    , isSetMaybe
     , parse
     , toAttribute
     )
@@ -68,16 +69,18 @@ filter_ names ( name, _ ) =
 
 isSet : String -> Parameters -> Bool
 isSet name =
+    isSetMaybe name >> Maybe.withDefault False
+
+
+isSetMaybe : String -> Parameters -> Maybe Bool
+isSetMaybe name =
     get name
         >> Maybe.map (String.trim >> String.toLower >> isTrue)
-        >> Maybe.withDefault False
 
 
 isNotSet : String -> Parameters -> Bool
 isNotSet name =
-    get name
-        >> Maybe.map (String.trim >> String.toLower >> isTrue)
-        >> Maybe.withDefault True
+    isSetMaybe name >> Maybe.withDefault True
 
 
 isTrue : String -> Bool

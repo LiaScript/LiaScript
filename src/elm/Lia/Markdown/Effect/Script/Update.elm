@@ -12,7 +12,7 @@ import Array
 import Browser.Dom as Dom
 import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Input as Input
-import Lia.Markdown.Effect.Script.Types as Script exposing (Script, Scripts)
+import Lia.Markdown.Effect.Script.Types as Script exposing (Script, Scripts, Stdout(..))
 import Port.Eval as Eval exposing (Eval)
 import Port.Event exposing (Event)
 import Process
@@ -24,8 +24,8 @@ type Msg
     | Reset Int
     | Activate Bool Int
     | Value Int Bool String
-    | Radio Int String
-    | Checkbox Int String
+    | Radio Int Bool String
+    | Checkbox Int Bool String
     | Edit Bool Int
     | EditCode Int String
     | NoOp
@@ -39,13 +39,7 @@ update msg scripts =
         Activate active id ->
             case Array.get id scripts of
                 Just node ->
-                    if
-                        not active
-                            && (node.input.type_
-                                    |> Maybe.map (Input.runnable >> not)
-                                    |> Maybe.withDefault False
-                               )
-                    then
+                    if not active && node.input.updateOnChange then
                         reRun
                             (\js ->
                                 { js
@@ -96,11 +90,27 @@ update msg scripts =
                 , []
                 )
 
-        Checkbox id str ->
-            reRun (\js -> { js | input = Input.toggle str js.input, updated = True }) Cmd.none id scripts
+        Checkbox id exec str ->
+            if exec then
+                reRun (\js -> { js | input = Input.toggle str js.input, updated = True }) Cmd.none id scripts
 
-        Radio id str ->
-            reRun (\js -> { js | input = Input.value str js.input, updated = True }) Cmd.none id scripts
+            else
+                ( scripts
+                    |> Script.set id (\js -> { js | input = Input.toggle str js.input, updated = True })
+                , Cmd.none
+                , []
+                )
+
+        Radio id exec str ->
+            if exec then
+                reRun (\js -> { js | input = Input.value str js.input, updated = True }) Cmd.none id scripts
+
+            else
+                ( scripts
+                    |> Script.set id (\js -> { js | input = Input.value str js.input, updated = True })
+                , Cmd.none
+                , []
+                )
 
         Click id ->
             reRun identity Cmd.none id scripts
@@ -315,10 +325,21 @@ eval_ e js =
             else
                 Just <|
                     if e.ok then
-                        Ok e.result
+                        if String.startsWith "HTML: " e.result then
+                            e.result
+                                |> String.dropLeft 5
+                                |> HTML
+
+                        else if String.startsWith "LIASCRIPT: " e.result then
+                            e.result
+                                |> String.dropLeft 10
+                                |> LIASCRIPT
+
+                        else
+                            Text e.result
 
                     else
-                        Err e.result
+                        Error e.result
     }
 
 

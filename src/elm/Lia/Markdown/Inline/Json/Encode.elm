@@ -135,6 +135,9 @@ encReference ref =
         Preview_Link url ->
             encRef "Preview_Link" [] url Nothing
 
+        QR_Link url ->
+            encRef "QR_Link" [] url Nothing
+
 
 encRef : String -> Inlines -> String -> Maybe Inlines -> JE.Value
 encRef class list url title =

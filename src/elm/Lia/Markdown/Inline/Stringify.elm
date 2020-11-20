@@ -4,7 +4,7 @@ module Lia.Markdown.Inline.Stringify exposing
     )
 
 import Array
-import Lia.Markdown.Effect.Script.Types exposing (Scripts)
+import Lia.Markdown.Effect.Script.Types exposing (Scripts, text)
 import Lia.Markdown.Effect.Types as Effect
 import Lia.Markdown.HTML.Types as HTML
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
@@ -65,7 +65,7 @@ inline2string effects id inline =
             effects
                 |> Array.get i
                 |> Maybe.andThen .result
-                |> Maybe.andThen Result.toMaybe
+                |> Maybe.andThen text
                 |> Maybe.withDefault ""
 
         Goto inlines _ ->
@@ -101,3 +101,6 @@ ref2string effects id ref =
 
         Preview_Link _ ->
             "preview-link"
+
+        QR_Link _ ->
+            "qr-code"

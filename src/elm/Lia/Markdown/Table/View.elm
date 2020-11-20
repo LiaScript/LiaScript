@@ -399,33 +399,70 @@ chart width isFormated attr mode class matrix =
                             |> List.tail
                             |> Maybe.withDefault []
                             |> List.map .string
-
-                    type_ name pts =
-                        if class == LinePlot then
-                            Lines pts (Just name)
-
-                        else
-                            Dots pts (Just name)
-
-                    diagrams =
-                        body
-                            |> Matrix.transpose
-                            |> Matrix.tail
-                            |> Matrix.map .float
-                            |> List.map
-                                (List.map2 (\x y -> Maybe.map2 Point x y) xs
-                                    >> List.filterMap identity
-                                )
-                            |> List.map2 type_ legend
-                            |> List.indexedMap (\i diagram -> ( Chart.getColor i, diagram ))
                 in
-                { title = labels.main |> Maybe.withDefault ""
-                , yLabel = labels.y |> Maybe.withDefault ""
-                , xLabel = labels.x |> Maybe.withDefault ""
-                , legend = legend
-                , diagrams = diagrams |> Dict.fromList
-                }
-                    |> Chart.viewChart attr mode
+                if
+                    xs
+                        |> List.filterMap identity
+                        |> List.length
+                        |> (==) (List.length xs)
+                then
+                    let
+                        type_ name pts =
+                            if class == LinePlot then
+                                Lines pts (Just name)
+
+                            else
+                                Dots pts (Just name)
+
+                        diagrams =
+                            body
+                                |> Matrix.transpose
+                                |> Matrix.tail
+                                |> Matrix.map .float
+                                |> List.map
+                                    (List.map2 (\x y -> Maybe.map2 Point x y) xs
+                                        >> List.filterMap identity
+                                    )
+                                |> List.map2 type_ legend
+                                |> List.indexedMap (\i diagram -> ( Chart.getColor i, diagram ))
+                    in
+                    { title = labels.main |> Maybe.withDefault ""
+                    , yLabel = labels.y |> Maybe.withDefault ""
+                    , xLabel = labels.x |> Maybe.withDefault ""
+                    , legend = legend
+                    , diagrams = diagrams |> Dict.fromList
+                    }
+                        |> Chart.viewChart attr mode
+
+                else
+                    let
+                        xvalues =
+                            body
+                                |> Matrix.column 0
+                                |> Maybe.withDefault []
+                                |> List.map .string
+
+                        xlabels =
+                            head
+                                |> List.tail
+                                |> Maybe.withDefault []
+                                |> List.map .string
+                    in
+                    body
+                        |> Matrix.transpose
+                        |> Matrix.tail
+                        |> Matrix.map .float
+                        |> List.map2 Tuple.pair xlabels
+                        |> (if class == LinePlot then
+                                Chart.viewLines
+
+                            else
+                                Chart.viewPoints
+                           )
+                            attr
+                            mode
+                            labels
+                            xvalues
         ]
 
 

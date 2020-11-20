@@ -1,4 +1,4 @@
-customElements.define('intl-format', class extends HTMLElement {
+customElements.define('lia-format', class extends HTMLElement {
   constructor () {
     super()
     this.span = document.createElement('span')

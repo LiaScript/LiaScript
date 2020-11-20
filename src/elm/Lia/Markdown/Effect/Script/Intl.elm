@@ -135,7 +135,7 @@ view intl =
 
 node : Parameters -> String -> Html msg
 node attr value =
-    Html.node "intl-format"
+    Html.node "lia-format"
         (attr
             |> Params.toAttribute
             |> (::) (Attr.property "value" (JE.string value))

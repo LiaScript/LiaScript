@@ -360,6 +360,14 @@ reference =
                 |> ignore ref_title
                 |> ignore (string ")")
 
+        qr =
+            regexWith True False "\\[\\w*qr-code\\w*]"
+                |> onsuccess QR_Link
+                |> ignore (string "(")
+                |> andMap ref_url_1
+                |> ignore ref_title
+                |> ignore (string ")")
+
         link =
             ref_pattern Link ref_info ref_url_1
 
@@ -379,7 +387,7 @@ reference =
             string "??"
                 |> keep (ref_pattern Embed ref_info ref_url_1)
     in
-    [ embed, movie, audio, image, mail_, preview, link ]
+    [ embed, movie, audio, image, mail_, preview, qr, link ]
         |> choice
         |> map Ref
 

@@ -1,4 +1,15 @@
-module Lia.Markdown.Effect.Script.Input exposing (..)
+module Lia.Markdown.Effect.Script.Input exposing
+    ( Input
+    , Type_(..)
+    , active
+    , decodeList
+    , default
+    , from
+    , isHidden
+    , toggle
+    , type_
+    , value
+    )
 
 import Json.Decode as JD
 import Json.Encode as JE
@@ -33,8 +44,10 @@ type Type_
 
 type alias Input =
     { active : Bool
+    , alwaysActive : Bool
     , value : String
     , default : String
+    , updateOnChange : Bool
     , type_ : Maybe Type_
     }
 
@@ -46,11 +59,30 @@ from params =
             params
                 |> Attr.get "value"
                 |> Maybe.withDefault ""
+
+        t_ =
+            params
+                |> Attr.get "input"
+                |> Maybe.map (parseType_ params)
+
+        alwaysActive =
+            Attr.isSet "input-always-active" params
     in
-    params
-        |> Attr.get "input"
-        |> Maybe.map (parseType_ params)
-        |> Input False val val
+    { active =
+        if alwaysActive then
+            True
+
+        else
+            Attr.isSet "input-active" params
+    , alwaysActive = alwaysActive
+    , value = val
+    , default = val
+    , updateOnChange =
+        params
+            |> Attr.isSetMaybe "update-on-change"
+            |> runnable t_
+    , type_ = t_
+    }
 
 
 type_ : Type_ -> String
@@ -198,29 +230,37 @@ parseType_ params input_ =
 
 {-| Defines if an input-type should be reevaluted on change.
 -}
-runnable : Type_ -> Bool
-runnable t =
-    case t of
-        Email_ ->
+runnable : Maybe Type_ -> Maybe Bool -> Bool
+runnable t_ updateOnChange =
+    case ( updateOnChange, t_ ) of
+        ( Nothing, Nothing ) ->
             False
 
-        Password_ ->
-            False
+        ( Just b, _ ) ->
+            b
 
-        Search_ ->
-            False
+        ( Nothing, Just t ) ->
+            case t of
+                Email_ ->
+                    False
 
-        Tel_ ->
-            False
+                Password_ ->
+                    False
 
-        Textarea_ ->
-            False
+                Search_ ->
+                    False
 
-        Url_ ->
-            False
+                Tel_ ->
+                    False
 
-        _ ->
-            True
+                Textarea_ ->
+                    False
+
+                Url_ ->
+                    False
+
+                _ ->
+                    True
 
 
 options : Parameters -> List String
@@ -234,7 +274,14 @@ options =
 
 active : Bool -> Input -> Input
 active bool i =
-    { i | active = bool }
+    { i
+        | active =
+            if i.alwaysActive then
+                True
+
+            else
+                bool
+    }
 
 
 value : String -> Input -> Input
