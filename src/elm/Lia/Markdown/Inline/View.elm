@@ -18,6 +18,7 @@ import Lia.Markdown.Inline.Stringify exposing (stringify_)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 import Lia.Settings.Model exposing (Mode(..))
 import Oembed
+import QRCode
 import Translations exposing (Lang)
 
 
@@ -211,6 +212,20 @@ reference config ref attr =
 
         Preview_Link url ->
             Html.node "preview-link" (Attr.attribute "src" url :: annotation "" attr) []
+
+        QR_Link url ->
+            Html.a
+                (Attr.href url
+                    :: Attr.style "width" "150px"
+                    :: Attr.style "display" "inline-block"
+                    :: Attr.style "background-color" "white"
+                    :: annotation "lia-link" attr
+                )
+                [ url
+                    |> QRCode.fromString
+                    |> Result.map (QRCode.toSvg [])
+                    |> Result.withDefault (Html.text "Error while encoding to QRCode.")
+                ]
 
 
 customProviders : List Oembed.Provider

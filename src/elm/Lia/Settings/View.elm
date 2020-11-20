@@ -11,6 +11,7 @@ import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Settings.Model exposing (Mode(..), Model)
 import Lia.Settings.Update exposing (Button(..), Msg(..), Toggle(..))
 import Port.Event exposing (Event)
+import QRCode
 import Translations as Trans exposing (Lang)
 
 
@@ -268,14 +269,18 @@ menu_style visible =
 
 qrCodeView : Bool -> String -> Html msg
 qrCodeView visible url =
-    Html.div (menu_style visible)
-        [ Html.img
-            [ Attr.src ("https://api.qrserver.com/v1/create-qr-code/?size=222x222&data=" ++ url)
-            , Attr.style "height" "240px"
-            , Attr.style "width" "100%"
-            , Attr.style "margin-top" "5px"
-            ]
-            []
+    Html.div (Attr.style "padding-top" "3px" :: Attr.style "overflow" "hidden" :: menu_style visible)
+        [ url
+            |> QRCode.fromString
+            |> Result.map (QRCode.toSvgWithoutQuietZone [])
+            |> Result.withDefault (Html.text "Error while encoding to QRCode.")
+
+        --Html.img
+        --    [ Attr.src ("https://api.qrserver.com/v1/create-qr-code/?size=222x222&data=" ++ url)
+        --    , Attr.style "height" "240px"
+        --    , Attr.style "width" "100%"
+        --    ]
+        --    []
         ]
 
 
