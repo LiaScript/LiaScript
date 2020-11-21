@@ -47,7 +47,7 @@ type Reference
     | Embed Inlines String (Maybe Inlines)
     | Preview_Lia String
     | Preview_Link String
-    | QR_Link String
+    | QR_Link String (Maybe Inlines)
 
 
 htmlBlock : Inline -> Maybe ( String, List ( String, String ), List Inline )

@@ -99,5 +99,5 @@ ref2string effects id ref =
         Preview_Link _ ->
             "preview-link"
 
-        QR_Link _ ->
+        QR_Link _ _ ->
             "qr-code"
