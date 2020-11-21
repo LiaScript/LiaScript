@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.6.2
+version:  0.6.3
 language: en
 narrator: UK English Male
 
@@ -222,6 +222,14 @@ __Badges:__
 
 
 ## Version-Changes
+
+__0.8.7__ (21/11/2020)
+
+* new funnel diagram type for tables
+* better support for lineplots and scatterplot for categories
+* new link type for qr-codes: `[qr-code](url)`
+* better integration of script with further configurations
+* fix in script formatting
 
 __0.8.6__ (18/11/2020)
 
