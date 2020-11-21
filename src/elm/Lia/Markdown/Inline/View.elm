@@ -214,20 +214,20 @@ reference config ref attr =
             Html.node "preview-link" (Attr.attribute "src" url :: annotation "" attr) []
 
         QR_Link url title_ ->
-            Html.a
-                (Attr.href url
-                    :: title config title_
-                    :: Attr.style "width" "300px"
-                    :: Attr.style "display" "inline-block"
-                    :: Attr.style "background-color" "white"
-                    :: annotation "lia-link" attr
-                )
-                [ url
-                    |> QRCode.fromString
-                    |> Result.map (QRCode.toSvg [])
-                    |> Result.withDefault (Html.text "Error while encoding to QRCode.")
-                    |> figure config title_
-                ]
+            [ url
+                |> QRCode.fromString
+                |> Result.map (QRCode.toSvg [])
+                |> Result.withDefault (Html.text "Error while encoding to QRCode.")
+            ]
+                |> Html.a
+                    (Attr.href url
+                        :: title config title_
+                        :: Attr.style "width" "300px"
+                        :: Attr.style "display" "inline-block"
+                        :: Attr.style "background-color" "white"
+                        :: annotation "lia-link" attr
+                    )
+                |> figure config title_
 
 
 customProviders : List Oembed.Provider
