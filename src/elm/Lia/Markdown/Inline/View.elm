@@ -231,10 +231,11 @@ reference config ref attr =
         Preview_Link url ->
             Html.node "preview-link" (Attr.attribute "src" url :: annotation "" attr) []
 
-        QR_Link url ->
+        QR_Link url title_ ->
             Html.a
                 (Attr.href url
-                    :: Attr.style "width" "150px"
+                    :: title config title_
+                    :: Attr.style "width" "300px"
                     :: Attr.style "display" "inline-block"
                     :: Attr.style "background-color" "white"
                     :: annotation "lia-link" attr
@@ -243,6 +244,7 @@ reference config ref attr =
                     |> QRCode.fromString
                     |> Result.map (QRCode.toSvg [])
                     |> Result.withDefault (Html.text "Error while encoding to QRCode.")
+                    |> figure config title_
                 ]
 
 

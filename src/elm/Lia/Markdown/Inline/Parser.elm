@@ -365,7 +365,7 @@ reference =
                 |> onsuccess QR_Link
                 |> ignore (string "(")
                 |> andMap ref_url_1
-                |> ignore ref_title
+                |> andMap ref_title
                 |> ignore (string ")")
 
         link =
