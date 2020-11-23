@@ -33,6 +33,7 @@
     "@babel/polyfill": "^7.12.1",
     "@babel/preset-env": "^7.12.11",
     "@babel/runtime": "^7.12.5",
+    "@types/echarts": "^4.9.1",
     "@types/katex": "^0.11.0",
     "@typescript-eslint/eslint-plugin": "^4.8.1",
     "@typescript-eslint/parser": "^4.8.1",
