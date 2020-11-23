@@ -269,7 +269,12 @@ menu_style visible =
 
 qrCodeView : Bool -> String -> Html msg
 qrCodeView visible url =
-    Html.div (Attr.style "padding-top" "3px" :: Attr.style "overflow" "hidden" :: menu_style visible)
+    Html.div
+        (Attr.style "padding-top" "3px"
+            :: Attr.style "background-color" "white"
+            :: Attr.style "overflow" "hidden"
+            :: menu_style visible
+        )
         [ url
             |> QRCode.fromString
             |> Result.map (QRCode.toSvgWithoutQuietZone [])
