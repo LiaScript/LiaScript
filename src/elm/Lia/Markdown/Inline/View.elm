@@ -136,7 +136,10 @@ figure config title_ element =
             element
 
         Just caption ->
-            Html.figure [ Attr.style "display" "inline-table" ]
+            Html.figure
+                [ Attr.style "margin" "0px"
+                , Attr.style "display" "inline-table"
+                ]
                 [ element
                 , Html.figcaption
                     [ Attr.style "display" "table-caption"
