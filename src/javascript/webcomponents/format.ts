@@ -1,4 +1,32 @@
+declare namespace Intl {
+    class RelativeTimeFormat {
+        constructor(locale: string, options: object);
+        format(value: string, unit: string|null): string;
+    }
+    class ListFormat {
+        constructor(locale: string, options: object);
+        format(value: string[]): string;
+    }
+}
+
+enum Format{
+  DateTime = 'datetime',
+  List = 'list',
+  Number = 'number',
+  PluralRules = 'pluralrules',
+  RelativeTime = 'relativetime'
+}
+
+
 customElements.define('lia-format', class extends HTMLElement {
+  private span: HTMLSpanElement
+
+  private value_: string
+  private locale: string | null
+  private format: string | null
+  private option: object
+  private unit: string | null
+
   constructor () {
     super()
     this.span = document.createElement('span')
@@ -101,7 +129,7 @@ customElements.define('lia-format', class extends HTMLElement {
   }
 
   view () {
-    let value
+    let value: string
     try {
       switch (this.format) {
         case 'number':
@@ -117,7 +145,7 @@ customElements.define('lia-format', class extends HTMLElement {
           value = new Intl.ListFormat(this.locale, this.option).format(JSON.parse(this.value_))
           break
         case 'pluralrules':
-          value = new Intl.PluralRules(this.locale, this.option).select(this.value_)
+          value = new Intl.PluralRules(this.locale, this.option).select(parseFloat(this.value_))
           break
       }
     } catch (e) {
@@ -127,12 +155,28 @@ customElements.define('lia-format', class extends HTMLElement {
     this.span.innerText = value || this.value_
   }
 
-  get (name) {
+  get (name: string) {
     return (this.getAttribute(name) || undefined)
   }
 
   get value () {
     return this.value_
+  }
+
+  getFormat (): Format|null {
+    switch (this.get('format')) {
+      case Format.DateTime:
+        return Format.DateTime
+      case Format.List:
+        return Format.List
+      case Format.Number:
+        return Format.Number
+      case Format.PluralRules:
+        return Format.PluralRules
+      case Format.RelativeTime:
+        return Format.RelativeTime
+    }
+    return null
   }
 
   set value (value) {
@@ -143,8 +187,5 @@ customElements.define('lia-format', class extends HTMLElement {
   }
 
   disconnectedCallback () {
-    if (super.disconnectedCallback) {
-      super.disconnectedCallback()
-    }
   }
 })
