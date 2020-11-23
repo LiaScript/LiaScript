@@ -2,6 +2,10 @@
 import katex from 'katex'
 
 customElements.define('lia-formula', class extends HTMLElement {
+  private span: HTMLSpanElement
+  private formula_: string
+  private displayMode: boolean
+
   constructor () {
     super()
   }
@@ -20,12 +24,12 @@ customElements.define('lia-formula', class extends HTMLElement {
     shadowRoot.appendChild(link)
     shadowRoot.appendChild(this.span)
 
-    this.displayMode = this.getAttribute('displayMode')
+    const mode = this.getAttribute('displayMode')
 
-    if (!this.displayMode) {
+    if (!mode) {
       this.displayMode = false
     } else {
-      this.displayMode = JSON.parse(this.displayMode)
+      this.displayMode = JSON.parse(mode)
     }
 
     this.render()
@@ -56,8 +60,6 @@ customElements.define('lia-formula', class extends HTMLElement {
   }
 
   disconnectedCallback () {
-    if (super.disconnectedCallback) {
-      super.disconnectedCallback()
-    }
+    this.span.innerHTML = ""
   }
 })
