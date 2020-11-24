@@ -5,7 +5,7 @@ const style = 'width: 100%; height: 400px; margin-top: -0.2em;'
 customElements.define('lia-chart', class extends HTMLElement {
   private container: HTMLDivElement
 
-  private chart: echarts.ECharts
+  private chart: null|echarts.ECharts
   private option_: object
   private geoJson: {url: string, data: null|object}
 
@@ -19,6 +19,8 @@ customElements.define('lia-chart', class extends HTMLElement {
       mode: 'open'
     })
 
+    this.option_ = {}
+    this.chart = null
     this.geoJson = {url:'', data:null}
     this.container = document.createElement('div')
     shadowRoot.appendChild(this.container)
@@ -32,15 +34,16 @@ customElements.define('lia-chart', class extends HTMLElement {
   connectedCallback () {
     if (!this.chart) {
       this.container.setAttribute('style', style)
-      this.chart = echarts.init(this.container, this.getAttribute('mode'))
-      this.option_ = JSON.parse(this.getAttribute('option')) || this.option_
+      this.chart = echarts.init(this.container, this.getAttribute('mode') || '')
+      this.option_ = JSON.parse(this.getAttribute('option') || 'null') || this.option_
       this.updateChart()
       this.resizeChart()
     }
   }
 
   disconnectedCallback () {
-    echarts.dispose(this.chart)
+    if(this.chart) echarts.dispose(this.chart)
+
     this.geoJson.data = {}
   }
 

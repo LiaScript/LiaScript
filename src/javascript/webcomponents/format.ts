@@ -1,10 +1,10 @@
 declare namespace Intl {
     class RelativeTimeFormat {
-        constructor(locale: string, options: object);
-        format(value: string, unit: string|null): string;
+        constructor(locale: string | undefined, options: object);
+        format(value: string, unit: string | undefined): string;
     }
     class ListFormat {
-        constructor(locale: string, options: object);
+        constructor(locale: string | undefined, options: object);
         format(value: string[]): string;
     }
 }
@@ -22,14 +22,19 @@ customElements.define('lia-format', class extends HTMLElement {
   private span: HTMLSpanElement
 
   private value_: string
-  private locale: string | null
-  private format: string | null
+  private locale: string | undefined
+  private format: string | undefined
   private option: object
-  private unit: string | null
+  private unit: string | undefined
 
   constructor () {
     super()
     this.span = document.createElement('span')
+    this.option = {}
+    this.value_ = ''
+    //this.unit
+    this.format
+    this.locale
   }
 
   connectedCallback () {
@@ -39,9 +44,9 @@ customElements.define('lia-format', class extends HTMLElement {
 
     shadowRoot.appendChild(this.span)
 
-    this.locale = this.get('locale')
+    this.locale = this.get('locale') || undefined
 
-    this.format = this.get('format')
+    this.format = this.get('format') || undefined
 
     switch (this.format) {
       case 'number':
@@ -93,7 +98,7 @@ customElements.define('lia-format', class extends HTMLElement {
         break
         // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/RelativeTimeFormat/RelativeTimeFormat
       case 'relativetime':
-        this.unit = this.get('unit')
+        this.unit = this.get('unit') || undefined
         this.option = {
           localeMatcher: this.get('localeMatcher'),
           numeric: this.get('numeric'),
@@ -123,28 +128,28 @@ customElements.define('lia-format', class extends HTMLElement {
         this.option = {}
     }
 
-    this.value_ = this.textContent
+    this.value_ = this.textContent || ''
 
     this.view()
   }
 
   view () {
-    let value: string
+    let value = ''
     try {
       switch (this.format) {
-        case 'number':
+        case Format.Number:
           value = new Intl.NumberFormat(this.locale, this.option).format(parseFloat(this.value_))
           break
-        case 'datetime':
+        case Format.DateTime:
           value = new Intl.DateTimeFormat(this.locale, this.option).format(Date.parse(this.value_))
           break
-        case 'relativetime':
+        case Format.RelativeTime:
           value = new Intl.RelativeTimeFormat(this.locale, this.option).format(this.value_, this.unit)
           break
-        case 'list':
+        case Format.List:
           value = new Intl.ListFormat(this.locale, this.option).format(JSON.parse(this.value_))
           break
-        case 'pluralrules':
+        case Format.PluralRules:
           value = new Intl.PluralRules(this.locale, this.option).select(parseFloat(this.value_))
           break
       }
@@ -156,7 +161,7 @@ customElements.define('lia-format', class extends HTMLElement {
   }
 
   get (name: string) {
-    return (this.getAttribute(name) || undefined)
+    return this.getAttribute(name)
   }
 
   get value () {
