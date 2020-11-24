@@ -35,11 +35,11 @@ type Msg
 
 update : Msg -> Scripts -> ( Scripts, Cmd Msg, List Event )
 update msg scripts =
-    case msg of
+    case msg |> Debug.log "---------------" of
         Activate active id ->
             case Array.get id scripts of
                 Just node ->
-                    if not active && node.input.updateOnChange then
+                    if not active then
                         reRun
                             (\js ->
                                 { js
