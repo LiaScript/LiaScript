@@ -35,7 +35,7 @@ type Msg
 
 update : Msg -> Scripts -> ( Scripts, Cmd Msg, List Event )
 update msg scripts =
-    case msg |> Debug.log "---------------" of
+    case msg of
         Activate active id ->
             case Array.get id scripts of
                 Just node ->
