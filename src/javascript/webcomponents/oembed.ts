@@ -1,7 +1,14 @@
+interface Response {
+  height?: number;
+  width?: number;
+  html: any;
+}
+
+
 customElements.define(
   'oembed-element',
   class extends HTMLElement {
-    connectedCallback () {
+    connectedCallback() {
       let shadow = this.attachShadow({
         mode: 'closed'
       })
@@ -14,7 +21,7 @@ customElements.define(
       } else {
         const discoverUrl = this.getAttribute('discover-url')
         if (discoverUrl) {
-          getDiscoverUrl(discoverUrl, function (discoveredUrl) {
+          getDiscoverUrl(discoverUrl, function(discoveredUrl: string | null) {
             if (discoveredUrl) {
               renderOembed(shadow, discoveredUrl, null)
             }
@@ -25,13 +32,10 @@ customElements.define(
   }
 )
 
-/**
- *
- * @param {ShadowRoot} shadow
- * @param {string} urlToEmbed
- * @param {{maxwidth: string?; maxheight: string?}?} options
- */
-function renderOembed (shadow, urlToEmbed, options) {
+function renderOembed(
+  shadow: ShadowRoot,
+  urlToEmbed: string,
+  options: { maxwidth?: string | null; maxheight?: string | null } | null) {
   let apiUrlBuilder = new URL(
     `https://cors-anywhere.herokuapp.com/${urlToEmbed}`
   )
@@ -42,7 +46,7 @@ function renderOembed (shadow, urlToEmbed, options) {
     apiUrlBuilder.searchParams.set('maxheight', options.maxheight)
   }
   const apiUrl = apiUrlBuilder.toString()
-  httpGetAsync(apiUrl, rawResponse => {
+  httpGetAsync(apiUrl, (rawResponse: string) => {
     const response = JSON.parse(rawResponse)
 
     switch (response.type) {
@@ -69,15 +73,10 @@ function renderOembed (shadow, urlToEmbed, options) {
   })
 }
 
-/**
- * @param {{
-    height: ?number;
-    width: ?number;
-    html: any;
-}} response
- * @param {ShadowRoot} shadow
- */
-function tryRenderingHtml (shadow, response) {
+function tryRenderingHtml(
+  shadow: ShadowRoot,
+  response: Response
+) {
   if (response && typeof response.html) {
     let iframe = createIframe(response)
     shadow.appendChild(iframe)
@@ -101,45 +100,33 @@ function tryRenderingHtml (shadow, response) {
   }
 }
 
-/**
- * @param {{ height: number?; width: number?; html: string; }} response
- * @returns {HTMLIFrameElement}
- */
-function createIframe (response) {
+function createIframe(response: Response): HTMLIFrameElement {
   let iframe = document.createElement('iframe')
-  iframe.setAttribute('border', '0')
-  iframe.setAttribute('frameborder', '0')
-  iframe.setAttribute('height', ((response.height || 500) + 20).toString())
-  iframe.setAttribute('width', ((response.width || 500) + 20).toString())
-  iframe.setAttribute('style', 'max-width: 100%;')
+  iframe.style.border = '0px'
+  //iframe.frameBorder = '0'
+  iframe.height = ((response.height || 500) + 20).toString()
+  iframe.width = ((response.width || 500) + 20).toString()
+  iframe.style.maxWidth = '100%'
   iframe.srcdoc = response.html
   return iframe
 }
 
-/**
- * @param {string} url
- * @param {{ (discoveredUrl: string?): void;}} callback
- */
-function getDiscoverUrl (url, callback) {
+function getDiscoverUrl(url: string, callback: (discoveredUrl: string | null) => void) {
   let apiUrl = new URL(`https://cors-anywhere.herokuapp.com/${url}`).toString()
-  httpGetAsync(apiUrl, function (response) {
+  httpGetAsync(apiUrl, function(response: string) {
     let dom = document.createElement('html')
     dom.innerHTML = response
-    /** @type {HTMLLinkElement | null} */
-    const oembedTag = dom.querySelector(
+    const oembedTag: HTMLLinkElement | null = dom.querySelector(
       'link[type="application/json+oembed"]'
     )
-    callback(oembedTag && oembedTag.href)
+    callback(oembedTag ? oembedTag.href : null)
   })
 }
 
-/**
- * @param {string} theUrl
- * @param {{ (rawResponse: string): void }} callback
- */
-function httpGetAsync (theUrl, callback) {
+
+function httpGetAsync(theUrl: string, callback: (rawResponse: string) => void) {
   let xmlHttp = new XMLHttpRequest()
-  xmlHttp.onreadystatechange = function () {
+  xmlHttp.onreadystatechange = function() {
     if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
       callback(xmlHttp.responseText)
     }
