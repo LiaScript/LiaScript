@@ -12,33 +12,36 @@ import Lia.Markdown.Effect.Script.Intl as Intl
 import Lia.Markdown.Effect.Script.Types exposing (Script, Scripts, Stdout(..), isError)
 import Lia.Markdown.Effect.Script.Update exposing (Msg(..))
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, get)
+import Lia.Markdown.Inline.Config as Config exposing (Config)
+import Lia.Markdown.Inline.Types exposing (Inlines)
+import Lia.Section exposing (SubSection(..))
 import Lia.Utils exposing (blockKeydown, onEnter)
 
 
-view : Maybe String -> Int -> Parameters -> Scripts -> Html Msg
-view theme id attr scripts =
-    case Array.get id scripts of
+view : (Inlines -> Html Msg) -> Config -> Int -> Parameters -> Html Msg
+view inline config id attr =
+    case Array.get id config.scripts of
         Just node ->
             case node.result of
                 Just _ ->
                     if node.edit then
                         Html.span []
-                            [ editor theme id node.script
+                            [ editor config.theme id node.script
                             , if Input.isHidden node.input then
                                 Html.text ""
 
                               else
-                                script True attr id node
+                                script inline config True attr id node
                             ]
 
                     else if Input.isHidden node.input then
                         Html.text ""
 
                     else if node.input.active then
-                        input attr id node
+                        input inline config attr id node
 
                     else
-                        script True attr id node
+                        script inline config True attr id node
 
                 Nothing ->
                     Html.text ""
@@ -47,7 +50,7 @@ view theme id attr scripts =
             Html.text ""
 
 
-class : Script -> String
+class : Script SubSection -> String
 class node =
     if node.input.type_ /= Nothing && node.modify then
         "lia-script-with-border"
@@ -62,8 +65,11 @@ class node =
         ""
 
 
-script : Bool -> Parameters -> Int -> Script -> Html Msg
-script withStyling attr id node =
+
+--script : Config -> Bool -> Parameters -> Int -> Script SubSection -> Html Msg
+
+
+script inline config withStyling attr id node =
     case node.result of
         Nothing ->
             Html.text ""
@@ -118,16 +124,19 @@ script withStyling attr id node =
                             ]
                             []
 
-                    LIASCRIPT str ->
-                        Html.text str
+                    IFrame (SubSubSection lia) ->
+                        inline lia.body
+
+                    IFrame (SubSection lia) ->
+                        lia.body |> Debug.toString |> Html.text
                 ]
 
 
-input : Parameters -> Int -> Script -> Html Msg
-input attr id node =
+input : (Inlines -> Html Msg) -> Config -> Parameters -> Int -> Script SubSection -> Html Msg
+input inline config attr id node =
     case node.input.type_ of
         Just Input.Button_ ->
-            script True attr id node
+            script inline config True attr id node
 
         Just (Input.Checkbox_ []) ->
             [ Html.input
@@ -153,33 +162,33 @@ input attr id node =
                 [ Html.text "check" ]
             ]
                 |> Html.span []
-                |> span attr id node
+                |> span inline config attr id node
 
         Just (Input.Checkbox_ options) ->
             options
                 |> checkbox node.input.updateOnChange id node.input.value attr
-                |> span attr id node
+                |> span inline config attr id node
 
         Just (Input.Radio_ options) ->
             options
                 |> radio node.input.updateOnChange id node.input.value attr
-                |> span attr id node
+                |> span inline config attr id node
 
         Just (Input.Select_ options) ->
             options
                 |> select id node.input.value attr
-                |> span attr id node
+                |> span inline config attr id node
 
         Just Input.Textarea_ ->
             textarea id node.input.value attr node.input.updateOnChange
-                |> span attr id node
+                |> span inline config attr id node
 
         Just _ ->
             base node.input id attr node.input.value
-                |> span attr id node
+                |> span inline config attr id node
 
         Nothing ->
-            script True attr id node
+            script inline config True attr id node
 
 
 select : Int -> String -> Parameters -> List String -> Html Msg
@@ -257,14 +266,14 @@ attributes updateOnChange id value =
             ]
 
 
-span : Parameters -> Int -> Script -> Html Msg -> Html Msg
-span attr id node control =
+span : (Inlines -> Html Msg) -> Config -> Parameters -> Int -> Script SubSection -> Html Msg -> Html Msg
+span inline config attr id node control =
     Html.span
         [ Attr.class (class node)
         ]
         [ reset id
         , control
-        , script False attr id node
+        , script inline config False attr id node
         ]
 
 

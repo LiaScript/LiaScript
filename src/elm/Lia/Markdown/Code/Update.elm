@@ -59,7 +59,7 @@ restore json model =
             ( model, [] )
 
 
-update : Scripts -> Msg -> Vector -> ( Vector, List Event )
+update : Scripts a -> Msg -> Vector -> ( Vector, List Event )
 update scripts msg model =
     case msg of
         Eval idx ->
@@ -220,7 +220,7 @@ update_terminal f msg project =
             ( project, [] )
 
 
-eval : Scripts -> Int -> Project -> ( Project, List Event )
+eval : Scripts a -> Int -> Project -> ( Project, List Event )
 eval scripts idx project =
     ( { project | running = True }, Event.eval scripts idx project )
 

@@ -34,7 +34,7 @@ circle_ idx =
         |> Html.span [ Attr.class "lia-effect-circle-inline" ]
 
 
-block : Config -> Model -> Parameters -> Effect Markdown -> List (Html Msg) -> Html Msg
+block : Config -> Model a -> Parameters -> Effect Markdown -> List (Html Msg) -> Html Msg
 block config model attr e body =
     if contradiction e.begin e.end then
         Html.text ""
@@ -308,7 +308,7 @@ responsive lang sound msg =
         ]
 
 
-state : Model -> String
+state : Model a -> String
 state model =
     if model.effects == 0 then
         ""

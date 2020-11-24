@@ -17,6 +17,7 @@ import Lia.Markdown.Footnote.Model as Footnote
 import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Markdown.Survey.Types as Survey
 import Lia.Markdown.Table.Types as Table
+import Lia.Section exposing (Section, SubSection)
 
 
 type alias Context =
@@ -26,7 +27,7 @@ type alias Context =
     , quiz_vector : Quiz.Vector
     , survey_vector : Survey.Vector
     , table_vector : Table.Vector
-    , effect_model : Effect.Model
+    , effect_model : Effect.Model SubSection
     , effect_number : List Int
     , effect_id : Int
     , defines : Definition

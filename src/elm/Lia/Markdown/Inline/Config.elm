@@ -4,6 +4,7 @@ module Lia.Markdown.Inline.Config exposing
     )
 
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
+import Lia.Section exposing (SubSection)
 import Lia.Settings.Model exposing (Mode(..))
 import Translations exposing (Lang)
 
@@ -14,7 +15,7 @@ type alias Config =
     , speaking : Maybe Int
     , lang : Lang
     , theme : Maybe String
-    , scripts : Scripts
+    , scripts : Scripts SubSection
     }
 
 
@@ -23,7 +24,7 @@ init :
     -> Mode
     -> Int
     -> Maybe Int
-    -> Scripts
+    -> Scripts SubSection
     -> Lang
     -> Maybe String
     -> Config

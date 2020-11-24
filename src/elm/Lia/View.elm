@@ -12,6 +12,7 @@ import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model)
+import Lia.Section exposing (SubSection)
 import Lia.Settings.Model exposing (Mode(..))
 import Lia.Settings.Update exposing (toggle_sound)
 import Lia.Settings.View as Settings
@@ -105,7 +106,7 @@ view_article screen hasIndex model =
             Html.text "no content"
 
 
-view_footer : Lang -> Bool -> Mode -> Int -> Lia.Markdown.Effect.Model.Model -> Html Msg
+view_footer : Lang -> Bool -> Mode -> Int -> Lia.Markdown.Effect.Model.Model SubSection -> Html Msg
 view_footer lang sound mode slide effects =
     case mode of
         Slides ->

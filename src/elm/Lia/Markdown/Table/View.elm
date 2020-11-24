@@ -58,7 +58,7 @@ view config attr table =
             |> toTable table.id attr table.class
 
 
-viewDiagram : Table -> State -> Scripts -> Maybe Int -> Int -> Bool -> Parameters -> Html Msg
+viewDiagram : Table -> State -> Scripts a -> Maybe Int -> Int -> Bool -> Parameters -> Html Msg
 viewDiagram table state effects visible width light attr =
     Html.div
         [ blockKeydown (UpdateTable Sub.NoOp)

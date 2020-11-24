@@ -19,6 +19,7 @@ import Lia.Markdown.Effect.Model
         , current_comment
         )
 import Lia.Markdown.Effect.Script.Update as Script
+import Lia.Section exposing (SubSection)
 import Port.Event exposing (Event)
 import Port.TTS as TTS
 import Task
@@ -36,12 +37,12 @@ type Msg
     | Script Script.Msg
 
 
-updateSub : Script.Msg -> Model -> ( Model, Cmd Msg, List Event )
+updateSub : Script.Msg -> Model SubSection -> ( Model SubSection, Cmd Msg, List Event )
 updateSub msg =
     update True (Script msg)
 
 
-update : Bool -> Msg -> Model -> ( Model, Cmd Msg, List Event )
+update : Bool -> Msg -> Model SubSection -> ( Model SubSection, Cmd Msg, List Event )
 update sound msg model =
     markRunning <|
         case msg of
@@ -129,7 +130,7 @@ update sound msg model =
                         ( { model | javascript = scripts }, Cmd.map Script cmd, events )
 
 
-markRunning : ( Model, Cmd Msg, List Event ) -> ( Model, Cmd Msg, List Event )
+markRunning : ( Model a, Cmd Msg, List Event ) -> ( Model a, Cmd Msg, List Event )
 markRunning ( model, cmd, events ) =
     ( { model
         | javascript =
@@ -149,7 +150,7 @@ markRunning ( model, cmd, events ) =
     )
 
 
-execute : Bool -> Bool -> Int -> Model -> ( Model, Cmd Msg, List Event )
+execute : Bool -> Bool -> Int -> Model SubSection -> ( Model SubSection, Cmd Msg, List Event )
 execute sound run_all delay model =
     let
         javascript =
@@ -168,12 +169,12 @@ execute sound run_all delay model =
         model
 
 
-has_next : Model -> Bool
+has_next : Model a -> Bool
 has_next model =
     model.visible < model.effects
 
 
-has_previous : Model -> Bool
+has_previous : Model a -> Bool
 has_previous model =
     model.visible > 0
 

@@ -24,7 +24,7 @@ type Msg
     | Script Script.Msg
 
 
-update : Scripts -> Msg -> Vector -> ( Vector, List Event, Maybe Script.Msg )
+update : Scripts a -> Msg -> Vector -> ( Vector, List Event, Maybe Script.Msg )
 update scripts msg vector =
     case msg of
         Block_Update id _ ->

@@ -1,6 +1,7 @@
 module Lia.Parser.Parser exposing
     ( parse_defintion
     , parse_section
+    , parse_subsection
     , parse_titles
     )
 
@@ -17,11 +18,11 @@ import Combine
 import Lia.Definition.Parser
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Parser as Markdown
-import Lia.Markdown.Types exposing (Markdown)
+import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.Parser.Context exposing (Context, init)
 import Lia.Parser.Helper exposing (stringTill)
 import Lia.Parser.Preprocessor as Preprocessor
-import Lia.Section as Section exposing (Section)
+import Lia.Section as Section exposing (Section, SubSection(..))
 
 
 parse_defintion : String -> String -> Result String ( Definition, String )
@@ -66,24 +67,65 @@ parse_section :
     -> Definition
     -> Section
     -> Result String Section
-parse_section search_index global section =
+parse_section search_index global sec =
     case
         Combine.runParser
             (Lia.Definition.Parser.parse |> keep Markdown.run)
-            (init search_index { global | section = section.idx })
-            section.code
+            (init search_index { global | section = sec.idx })
+            sec.code
     of
         Ok ( state, _, es ) ->
-            return section state es
+            return sec state es
+
+        Err ( _, stream, ms ) ->
+            formatError ms stream |> Err
+
+
+parse_subsection : String -> Result String SubSection
+parse_subsection code =
+    let
+        _ =
+            Debug.log "wwwwwwwwww" code
+    in
+    case
+        Combine.runParser
+            (Lia.Definition.Parser.parse |> keep Markdown.run)
+            (init identity (Lia.Definition.Types.default ""))
+            (code ++ "\n")
+    of
+        Ok ( state, _, es ) ->
+            Ok <|
+                case es of
+                    [ Paragraph [] sub ] ->
+                        SubSubSection
+                            { visible = True
+                            , body = sub
+                            , error = Nothing
+                            , effect_model = state.effect_model
+                            }
+
+                    _ ->
+                        SubSection
+                            { visible = True
+                            , body = es
+                            , error = Nothing
+                            , code_vector = state.code_vector
+                            , quiz_vector = state.quiz_vector
+                            , survey_vector = state.survey_vector
+                            , table_vector = state.table_vector
+                            , effect_model = state.effect_model
+                            , footnotes = state.footnotes
+                            , footnote2show = Nothing
+                            }
 
         Err ( _, stream, ms ) ->
             formatError ms stream |> Err
 
 
 return : Section -> Context -> List Markdown -> Result String Section
-return section state es =
+return sec state es =
     Ok
-        { section
+        { sec
             | body = es
             , error = Nothing
             , visited = True

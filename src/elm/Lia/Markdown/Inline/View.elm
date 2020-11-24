@@ -16,6 +16,7 @@ import Lia.Markdown.HTML.View as HTML
 import Lia.Markdown.Inline.Config as Config exposing (Config)
 import Lia.Markdown.Inline.Stringify exposing (stringify_)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
+import Lia.Section exposing (SubSection)
 import Lia.Settings.Model exposing (Mode(..))
 import Oembed
 import QRCode
@@ -85,7 +86,7 @@ view config element =
                 |> Effect.inline config attr e
 
         Script id attr ->
-            JS.view config.theme id attr config.scripts
+            JS.view (List.map (view config) >> Html.span []) config id attr
 
         Symbol e attr ->
             view config (Container [ Symbol e [] ] attr)
@@ -97,7 +98,7 @@ view config element =
             view config (Container [ Formula mode_ e [] ] attr)
 
 
-view_inf : Scripts -> Lang -> Inline -> Html Msg
+view_inf : Scripts SubSection -> Lang -> Inline -> Html Msg
 view_inf scripts lang =
     Config.init -1 Textbook 0 Nothing scripts lang Nothing |> view
 

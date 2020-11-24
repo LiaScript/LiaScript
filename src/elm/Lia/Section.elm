@@ -2,6 +2,7 @@ module Lia.Section exposing
     ( Base
     , Section
     , Sections
+    , SubSection(..)
     , init
     )
 
@@ -31,11 +32,32 @@ type alias Section =
     , quiz_vector : Quiz.Vector
     , survey_vector : Survey.Vector
     , table_vector : Table.Vector
-    , effect_model : Effect.Model
+    , effect_model : Effect.Model SubSection
     , definition : Maybe Definition
     , footnotes : Footnote.Model
     , footnote2show : Maybe String
     }
+
+
+type SubSection
+    = SubSection
+        { visible : Bool
+        , body : List Markdown
+        , error : Maybe String
+        , code_vector : Code.Vector
+        , quiz_vector : Quiz.Vector
+        , survey_vector : Survey.Vector
+        , table_vector : Table.Vector
+        , effect_model : Effect.Model SubSection
+        , footnotes : Footnote.Model
+        , footnote2show : Maybe String
+        }
+    | SubSubSection
+        { visible : Bool
+        , body : Inlines
+        , error : Maybe String
+        , effect_model : Effect.Model SubSection
+        }
 
 
 type alias Sections =
