@@ -8,6 +8,7 @@ import Lia.Markdown.Chart.View as Charts
 import Lia.Markdown.Code.View as Codes
 import Lia.Markdown.Config as Config exposing (Config)
 import Lia.Markdown.Effect.Model as Comments
+import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.Model as Footnotes
 import Lia.Markdown.Footnote.View as Footnote
@@ -36,21 +37,22 @@ view config =
 
         Nothing ->
             view_body
-                ( Config.setSubViewer (subView config) config
+                ( Config.setSubViewer (subView (config.view >> List.map (Html.map Script.Sub))) config
                 , config.section.footnote2show
                 , config.section.footnotes
                 )
                 config.section.body
 
 
-subView : Config Msg -> SubSection -> List (Html Msg)
-subView config sub =
+subView : (Inlines -> List (Html (Script.Msg Msg))) -> SubSection -> List (Html (Script.Msg Msg))
+subView viewer sub =
     case sub of
         SubSection x ->
-            List.map (view_block config) x.body
+            --List.map (view_block config) x.body
+            [ Html.text "wwww" ]
 
         SubSubSection x ->
-            config.view x.body
+            viewer x.body
 
 
 view_body : ( Config Msg, Maybe String, Footnotes.Model ) -> List Markdown -> Html Msg

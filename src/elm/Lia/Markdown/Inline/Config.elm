@@ -8,6 +8,7 @@ import Html exposing (Html)
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.Effect.Script.Update exposing (Msg)
 import Lia.Markdown.Inline.Types exposing (Inlines)
+import Lia.Markdown.Update as Sub
 import Lia.Section exposing (SubSection)
 import Lia.Settings.Model exposing (Mode(..))
 import Translations exposing (Lang)

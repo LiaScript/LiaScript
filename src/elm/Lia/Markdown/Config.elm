@@ -1,6 +1,7 @@
 module Lia.Markdown.Config exposing (Config, init, setSubViewer)
 
 import Html exposing (Html)
+import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Inline.Config as Inline
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
@@ -42,10 +43,6 @@ init mode section id ace_theme lang light screen =
         config
 
 
-setSubViewer : (SubSection -> List (Html Msg)) -> Config sub -> Config sub
+setSubViewer : (SubSection -> List (Html (Script.Msg Msg))) -> Config Msg -> Config Msg
 setSubViewer function config =
-    config
-
-
-
---{ config | main = Inline.setViewer (function >> List.map (Html.map Script)) config.main }
+    { config | main = Inline.setViewer function config.main }
