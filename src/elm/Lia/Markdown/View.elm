@@ -37,26 +37,30 @@ view config =
 
         Nothing ->
             view_body
-                ( Config.setSubViewer (subView (config.view >> List.map (Html.map Script.Sub))) config
+                ( Config.setSubViewer (subView config) config
                 , config.section.footnote2show
                 , config.section.footnotes
                 )
                 config.section.body
 
 
-subView : (Inlines -> List (Html (Script.Msg Msg))) -> SubSection -> List (Html (Script.Msg Msg))
-subView viewer sub =
-    case sub of
-        SubSection x ->
-            --List.map (view_block config) x.body
-            [ Html.text "wwww" ]
+subView : Config Msg -> SubSection -> List (Html (Script.Msg Msg))
+subView config sub =
+    List.map (Html.map Script.Sub) <|
+        case sub of
+            SubSection x ->
+                List.map (view_block config) x.body
 
-        SubSubSection x ->
-            viewer x.body
+            SubSubSection x ->
+                config.view x.body
 
 
 view_body : ( Config Msg, Maybe String, Footnotes.Model ) -> List Markdown -> Html Msg
 view_body ( config, footnote2show, footnotes ) =
+    let
+        _ =
+            Debug.log "---------" config.main.view
+    in
     List.map (view_block config)
         >> (::) (view_footnote (view_block config) footnote2show footnotes)
         >> (::) (view_header config)

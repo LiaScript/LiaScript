@@ -18,8 +18,8 @@ import Lia.Section exposing (SubSection(..))
 import Lia.Utils exposing (blockKeydown, onEnter)
 
 
-view : (Inlines -> Html (Msg sub)) -> Config sub -> Int -> Parameters -> Html (Msg sub)
-view inline config id attr =
+view : Config sub -> Int -> Parameters -> Html (Msg sub)
+view config id attr =
     case Array.get id config.scripts of
         Just node ->
             case node.result of
@@ -31,17 +31,17 @@ view inline config id attr =
                                 Html.text ""
 
                               else
-                                script inline config True attr id node
+                                script config True attr id node
                             ]
 
                     else if Input.isHidden node.input then
                         Html.text ""
 
                     else if node.input.active then
-                        input inline config attr id node
+                        input config attr id node
 
                     else
-                        script inline config True attr id node
+                        script config True attr id node
 
                 Nothing ->
                     Html.text ""
@@ -65,11 +65,8 @@ class node =
         ""
 
 
-
---script : Config -> Bool -> Parameters -> Int -> Script SubSection -> Html Msg
-
-
-script inline config withStyling attr id node =
+script : Config sub -> Bool -> Parameters -> Int -> Script SubSection -> Html (Msg sub)
+script config withStyling attr id node =
     case node.result of
         Nothing ->
             Html.text ""
@@ -124,19 +121,22 @@ script inline config withStyling attr id node =
                             ]
                             []
 
-                    IFrame (SubSubSection lia) ->
-                        inline lia.body
+                    IFrame lia ->
+                        case config.view of
+                            Just inline ->
+                                inline lia
+                                    |> Html.span []
 
-                    IFrame (SubSection lia) ->
-                        lia.body |> Debug.toString |> Html.text
+                            Nothing ->
+                                Html.text "todo"
                 ]
 
 
-input : (Inlines -> Html (Msg sub)) -> Config sub -> Parameters -> Int -> Script SubSection -> Html (Msg sub)
-input inline config attr id node =
+input : Config sub -> Parameters -> Int -> Script SubSection -> Html (Msg sub)
+input config attr id node =
     case node.input.type_ of
         Just Input.Button_ ->
-            script inline config True attr id node
+            script config True attr id node
 
         Just (Input.Checkbox_ []) ->
             [ Html.input
@@ -162,33 +162,33 @@ input inline config attr id node =
                 [ Html.text "check" ]
             ]
                 |> Html.span []
-                |> span inline config attr id node
+                |> span config attr id node
 
         Just (Input.Checkbox_ options) ->
             options
                 |> checkbox node.input.updateOnChange id node.input.value attr
-                |> span inline config attr id node
+                |> span config attr id node
 
         Just (Input.Radio_ options) ->
             options
                 |> radio node.input.updateOnChange id node.input.value attr
-                |> span inline config attr id node
+                |> span config attr id node
 
         Just (Input.Select_ options) ->
             options
                 |> select id node.input.value attr
-                |> span inline config attr id node
+                |> span config attr id node
 
         Just Input.Textarea_ ->
             textarea id node.input.value attr node.input.updateOnChange
-                |> span inline config attr id node
+                |> span config attr id node
 
         Just _ ->
             base node.input id attr node.input.value
-                |> span inline config attr id node
+                |> span config attr id node
 
         Nothing ->
-            script inline config True attr id node
+            script config True attr id node
 
 
 select : Int -> String -> Parameters -> List String -> Html (Msg sub)
@@ -266,14 +266,14 @@ attributes updateOnChange id value =
             ]
 
 
-span : (Inlines -> Html (Msg sub)) -> Config sub -> Parameters -> Int -> Script SubSection -> Html (Msg sub) -> Html (Msg sub)
-span inline config attr id node control =
+span : Config sub -> Parameters -> Int -> Script SubSection -> Html (Msg sub) -> Html (Msg sub)
+span config attr id node control =
     Html.span
         [ Attr.class (class node)
         ]
         [ reset id
         , control
-        , script inline config False attr id node
+        , script config False attr id node
         ]
 
 

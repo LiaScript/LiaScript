@@ -86,7 +86,11 @@ view config element =
                 |> Effect.inline config attr e
 
         Script id attr ->
-            JS.view (List.map (view config) >> Html.span []) config id attr
+            let
+                _ =
+                    Debug.log "wwwwwwwwww" config.view
+            in
+            JS.view config id attr
 
         Symbol e attr ->
             view config (Container [ Symbol e [] ] attr)
