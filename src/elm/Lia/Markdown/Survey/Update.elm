@@ -10,7 +10,7 @@ import Port.Eval as Eval
 import Port.Event as Event exposing (Event)
 
 
-type Msg
+type Msg sub
     = TextUpdate Int String
     | SelectUpdate Int Int
     | SelectChose Int
@@ -18,10 +18,10 @@ type Msg
     | MatrixUpdate Int Int String
     | Submit Int (Maybe String)
     | Handle Event
-    | Script Script.Msg
+    | Script (Script.Msg sub)
 
 
-update : Scripts a -> Msg -> Vector -> ( Vector, List Event, Maybe Script.Msg )
+update : Scripts a -> Msg sub -> Vector -> ( Vector, List Event, Maybe (Script.Msg sub) )
 update scripts msg vector =
     case msg of
         TextUpdate idx str ->
@@ -222,6 +222,6 @@ submitable vector idx =
             False
 
 
-handle : Event -> Msg
+handle : Event -> Msg sub
 handle =
     Handle

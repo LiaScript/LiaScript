@@ -25,7 +25,7 @@ import Port.TTS as TTS
 import Task
 
 
-type Msg
+type Msg sub
     = Init Bool
     | Next
     | Previous
@@ -34,15 +34,15 @@ type Msg
     | Mute Int
     | Rendered Bool Dom.Viewport
     | Handle Event
-    | Script Script.Msg
+    | Script (Script.Msg sub)
 
 
-updateSub : Script.Msg -> Model SubSection -> ( Model SubSection, Cmd Msg, List Event )
+updateSub : Script.Msg sub -> Model SubSection -> ( Model SubSection, Cmd (Msg sub), List Event )
 updateSub msg =
     update True (Script msg)
 
 
-update : Bool -> Msg -> Model SubSection -> ( Model SubSection, Cmd Msg, List Event )
+update : Bool -> Msg sub -> Model SubSection -> ( Model SubSection, Cmd (Msg sub), List Event )
 update sound msg model =
     markRunning <|
         case msg of
@@ -130,7 +130,7 @@ update sound msg model =
                         ( { model | javascript = scripts }, Cmd.map Script cmd, events )
 
 
-markRunning : ( Model a, Cmd Msg, List Event ) -> ( Model a, Cmd Msg, List Event )
+markRunning : ( Model a, Cmd (Msg sub), List Event ) -> ( Model a, Cmd (Msg sub), List Event )
 markRunning ( model, cmd, events ) =
     ( { model
         | javascript =
@@ -150,7 +150,7 @@ markRunning ( model, cmd, events ) =
     )
 
 
-execute : Bool -> Bool -> Int -> Model SubSection -> ( Model SubSection, Cmd Msg, List Event )
+execute : Bool -> Bool -> Int -> Model SubSection -> ( Model SubSection, Cmd (Msg sub), List Event )
 execute sound run_all delay model =
     let
         javascript =
@@ -179,21 +179,21 @@ has_previous model =
     model.visible > 0
 
 
-init : Bool -> Msg
+init : Bool -> Msg sub
 init run_all_javascript =
     Init run_all_javascript
 
 
-next : Msg
+next : Msg sub
 next =
     Next
 
 
-previous : Msg
+previous : Msg sub
 previous =
     Previous
 
 
-handle : Event -> Msg
+handle : Event -> Msg sub
 handle =
     Handle

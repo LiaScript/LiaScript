@@ -18,7 +18,7 @@ import Lia.Section exposing (SubSection(..))
 import Lia.Utils exposing (blockKeydown, onEnter)
 
 
-view : (Inlines -> Html Msg) -> Config -> Int -> Parameters -> Html Msg
+view : (Inlines -> Html (Msg sub)) -> Config sub -> Int -> Parameters -> Html (Msg sub)
 view inline config id attr =
     case Array.get id config.scripts of
         Just node ->
@@ -132,7 +132,7 @@ script inline config withStyling attr id node =
                 ]
 
 
-input : (Inlines -> Html Msg) -> Config -> Parameters -> Int -> Script SubSection -> Html Msg
+input : (Inlines -> Html (Msg sub)) -> Config sub -> Parameters -> Int -> Script SubSection -> Html (Msg sub)
 input inline config attr id node =
     case node.input.type_ of
         Just Input.Button_ ->
@@ -191,13 +191,13 @@ input inline config attr id node =
             script inline config True attr id node
 
 
-select : Int -> String -> Parameters -> List String -> Html Msg
+select : Int -> String -> Parameters -> List String -> Html (Msg sub)
 select id value attr =
     List.map (\o -> Html.option [ Attr.value o ] [ Html.text o ])
         >> Html.select (attributes True id value attr)
 
 
-checkbox : Bool -> Int -> String -> Parameters -> List String -> Html Msg
+checkbox : Bool -> Int -> String -> Parameters -> List String -> Html (Msg sub)
 checkbox updateOnChange id value _ =
     let
         list =
@@ -226,7 +226,7 @@ checkbox updateOnChange id value _ =
         >> Html.span []
 
 
-radio : Bool -> Int -> String -> Parameters -> List String -> Html Msg
+radio : Bool -> Int -> String -> Parameters -> List String -> Html (Msg sub)
 radio updateOnChange id value _ =
     List.map
         (\o ->
@@ -249,12 +249,12 @@ radio updateOnChange id value _ =
         >> Html.span []
 
 
-textarea : Int -> String -> Parameters -> Bool -> Html Msg
+textarea : Int -> String -> Parameters -> Bool -> Html (Msg sub)
 textarea id value attr updateOnChange =
     Html.textarea (attributes updateOnChange id value attr) []
 
 
-attributes : Bool -> Int -> String -> Parameters -> List (Html.Attribute Msg)
+attributes : Bool -> Int -> String -> Parameters -> List (Html.Attribute (Msg sub))
 attributes updateOnChange id value =
     annotation ""
         >> List.append
@@ -266,7 +266,7 @@ attributes updateOnChange id value =
             ]
 
 
-span : (Inlines -> Html Msg) -> Config -> Parameters -> Int -> Script SubSection -> Html Msg -> Html Msg
+span : (Inlines -> Html (Msg sub)) -> Config sub -> Parameters -> Int -> Script SubSection -> Html (Msg sub) -> Html (Msg sub)
 span inline config attr id node control =
     Html.span
         [ Attr.class (class node)
@@ -277,7 +277,7 @@ span inline config attr id node control =
         ]
 
 
-reset : Int -> Html Msg
+reset : Int -> Html (Msg sub)
 reset id =
     Html.span
         [ Attr.class "lia-hint-btn"
@@ -288,7 +288,7 @@ reset id =
         [ Html.text "clear" ]
 
 
-base : Input -> Int -> Parameters -> String -> Html Msg
+base : Input -> Int -> Parameters -> String -> Html (Msg sub)
 base input_ id attr value =
     Html.span []
         [ Html.input
@@ -313,7 +313,7 @@ base input_ id attr value =
         ]
 
 
-onActivate : Bool -> Int -> Html.Attribute Msg
+onActivate : Bool -> Int -> Html.Attribute (Msg sub)
 onActivate bool =
     Activate bool
         >> Delay 200
@@ -326,7 +326,7 @@ onActivate bool =
            )
 
 
-onEdit : Bool -> Int -> Html.Attribute Msg
+onEdit : Bool -> Int -> Html.Attribute (Msg sub)
 onEdit bool =
     Edit bool
         >> (if bool then
@@ -337,7 +337,7 @@ onEdit bool =
            )
 
 
-editor : Maybe String -> Int -> String -> Html Msg
+editor : Maybe String -> Int -> String -> Html (Msg sub)
 editor theme id code =
     Html.div
         [ Attr.style "position" "fixed"

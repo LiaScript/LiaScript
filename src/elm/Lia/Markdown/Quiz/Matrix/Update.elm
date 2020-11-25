@@ -6,12 +6,12 @@ import Lia.Markdown.Quiz.Matrix.Types exposing (State)
 import Lia.Markdown.Quiz.Vector.Update as Vector
 
 
-type Msg
+type Msg sub
     = Toggle Int Int
-    | Script Script.Msg
+    | Script (Script.Msg sub)
 
 
-update : Msg -> State -> ( State, Maybe Script.Msg )
+update : Msg sub -> State -> ( State, Maybe (Script.Msg sub) )
 update msg state =
     case msg of
         Toggle row_id column_id ->

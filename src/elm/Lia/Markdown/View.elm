@@ -25,7 +25,7 @@ import Lia.Settings.Model exposing (Mode(..))
 import SvgBob
 
 
-view : Config -> Html Msg
+view : Config Msg -> Html Msg
 view config =
     case config.section.error of
         Just msg ->
@@ -43,7 +43,7 @@ view config =
                 config.section.body
 
 
-subView : Config -> SubSection -> List (Html Msg)
+subView : Config Msg -> SubSection -> List (Html Msg)
 subView config sub =
     case sub of
         SubSection x ->
@@ -53,7 +53,7 @@ subView config sub =
             config.view x.body
 
 
-view_body : ( Config, Maybe String, Footnotes.Model ) -> List Markdown -> Html Msg
+view_body : ( Config Msg, Maybe String, Footnotes.Model ) -> List Markdown -> Html Msg
 view_body ( config, footnote2show, footnotes ) =
     List.map (view_block config)
         >> (::) (view_footnote (view_block config) footnote2show footnotes)
@@ -103,7 +103,7 @@ view_footnote viewer key footnotes =
             Html.text ""
 
 
-view_header : Config -> Html Msg
+view_header : Config Msg -> Html Msg
 view_header config =
     [ header config
         config.section.indentation
@@ -113,7 +113,7 @@ view_header config =
         |> Html.header []
 
 
-header : Config -> Int -> Parameters -> Inlines -> Html Msg
+header : Config Msg -> Int -> Parameters -> Inlines -> Html Msg
 header config i attr =
     config.view
         >> (case i of
@@ -137,7 +137,7 @@ header config i attr =
            )
 
 
-view_block : Config -> Markdown -> Html Msg
+view_block : Config Msg -> Markdown -> Html Msg
 view_block config block =
     case block of
         HLine attr ->
@@ -272,7 +272,7 @@ view_ascii attr light =
            )
 
 
-view_list : Config -> List ( String, List Markdown ) -> List (Html Msg)
+view_list : Config Msg -> List ( String, List Markdown ) -> List (Html Msg)
 view_list config =
     let
         viewer ( value, sub_list ) =
@@ -282,7 +282,7 @@ view_list config =
     List.map viewer
 
 
-view_bulletlist : Config -> List (List Markdown) -> List (Html Msg)
+view_bulletlist : Config Msg -> List (List Markdown) -> List (Html Msg)
 view_bulletlist config =
     let
         viewer =

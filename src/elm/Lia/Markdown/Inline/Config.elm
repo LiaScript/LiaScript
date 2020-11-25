@@ -13,8 +13,8 @@ import Lia.Settings.Model exposing (Mode(..))
 import Translations exposing (Lang)
 
 
-type alias Config =
-    { view : Maybe (SubSection -> List (Html Msg))
+type alias Config sub =
+    { view : Maybe (SubSection -> List (Html (Msg sub)))
     , slide : Int
     , visible : Maybe Int
     , speaking : Maybe Int
@@ -32,7 +32,7 @@ init :
     -> Scripts SubSection
     -> Lang
     -> Maybe String
-    -> Config
+    -> Config sub
 init slide mode visible speaking effects theme lang =
     Config
         Nothing
@@ -49,6 +49,6 @@ init slide mode visible speaking effects theme lang =
         effects
 
 
-setViewer : (SubSection -> List (Html Msg)) -> Config -> Config
+setViewer : (SubSection -> List (Html (Msg sub))) -> Config sub -> Config sub
 setViewer fn config =
     { config | view = Just fn }

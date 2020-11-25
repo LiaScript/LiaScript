@@ -11,17 +11,17 @@ import Session exposing (Screen)
 import Translations exposing (Lang)
 
 
-type alias Config =
+type alias Config sub =
     { view : Inlines -> List (Html Msg)
     , section : Section
     , ace_theme : String
     , light : Bool
     , screen : Screen
-    , main : Inline.Config
+    , main : Inline.Config sub
     }
 
 
-init : Mode -> Section -> Int -> String -> Lang -> Bool -> Screen -> Config
+init : Mode -> Section -> Int -> String -> Lang -> Bool -> Screen -> Config sub
 init mode section id ace_theme lang light screen =
     let
         config =
@@ -42,7 +42,7 @@ init mode section id ace_theme lang light screen =
         config
 
 
-setSubViewer : (SubSection -> List (Html Msg)) -> Config -> Config
+setSubViewer : (SubSection -> List (Html Msg)) -> Config sub -> Config sub
 setSubViewer function config =
     config
 

@@ -63,7 +63,7 @@ view_search lang model =
         ]
 
 
-view : Lang -> Int -> Sections -> Html ( Int, Script.Msg )
+view : Lang -> Int -> Sections -> Html ( Int, Script.Msg sub )
 view lang active sections =
     let
         toc_ =
@@ -75,7 +75,7 @@ view lang active sections =
         |> Html.div [ Attr.class "lia-content" ]
 
 
-toc : Lang -> Int -> Section -> Html ( Int, Script.Msg )
+toc : Lang -> Int -> Section -> Html ( Int, Script.Msg sub )
 toc lang active section =
     if section.visible then
         Html.map (Tuple.pair section.idx) <|

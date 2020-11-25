@@ -46,7 +46,7 @@ type Msg
     | Handle Event
     | Home
     | KeyPressIgnored
-    | Script ( Int, Script.Msg )
+    | Script ( Int, Script.Msg Markdown.Msg )
 
 
 send : Int -> List ( String, JE.Value ) -> List Event

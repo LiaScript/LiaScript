@@ -31,7 +31,7 @@ import Lia.Utils exposing (blockKeydown)
 import Set
 
 
-view : Config -> Parameters -> Table -> Html Msg
+view : Config sub -> Parameters -> Table -> Html Msg
 view config attr table =
     let
         state =

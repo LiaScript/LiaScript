@@ -23,12 +23,12 @@ import QRCode
 import Translations exposing (Lang)
 
 
-viewer : Config -> Inlines -> List (Html Msg)
+viewer : Config sub -> Inlines -> List (Html (Msg sub))
 viewer config =
     List.map (view config)
 
 
-view : Config -> Inline -> Html Msg
+view : Config sub -> Inline -> Html (Msg sub)
 view config element =
     case element of
         Chars e [] ->
@@ -98,28 +98,28 @@ view config element =
             view config (Container [ Formula mode_ e [] ] attr)
 
 
-view_inf : Scripts SubSection -> Lang -> Inline -> Html Msg
+view_inf : Scripts SubSection -> Lang -> Inline -> Html (Msg sub)
 view_inf scripts lang =
     Config.init -1 Textbook 0 Nothing scripts lang Nothing |> view
 
 
-stringFrom : Config -> Maybe Inlines -> String
+stringFrom : Config sub -> Maybe Inlines -> String
 stringFrom config =
     Maybe.map (stringify_ config.scripts config.visible)
         >> Maybe.withDefault ""
 
 
-title : Config -> Maybe Inlines -> Html.Attribute msg
+title : Config sub -> Maybe Inlines -> Html.Attribute msg
 title config =
     stringFrom config >> Attr.title
 
 
-alt : Config -> Inlines -> Html.Attribute msg
+alt : Config sub -> Inlines -> Html.Attribute msg
 alt config =
     Just >> stringFrom config >> Attr.alt
 
 
-img : Config -> Parameters -> Inlines -> String -> Maybe Inlines -> Html msg
+img : Config sub -> Parameters -> Inlines -> String -> Maybe Inlines -> Html msg
 img config attr alt_ url_ title_ =
     Html.img
         (Attr.src url_
@@ -130,7 +130,7 @@ img config attr alt_ url_ title_ =
         []
 
 
-figure : Config -> Maybe Inlines -> Html Msg -> Html Msg
+figure : Config sub -> Maybe Inlines -> Html (Msg sub) -> Html (Msg sub)
 figure config title_ element =
     case title_ of
         Nothing ->
@@ -150,7 +150,7 @@ figure config title_ element =
                 ]
 
 
-reference : Config -> Reference -> Parameters -> Html Msg
+reference : Config sub -> Reference -> Parameters -> Html (Msg sub)
 reference config ref attr =
     case ref of
         Link alt_ url_ title_ ->
@@ -245,7 +245,7 @@ oembed options url =
         |> Maybe.withDefault (Html.text ("Couldn't find oembed provider for url " ++ url))
 
 
-view_url : Config -> Inlines -> String -> Maybe Inlines -> Parameters -> Html Msg
+view_url : Config sub -> Inlines -> String -> Maybe Inlines -> Parameters -> Html (Msg sub)
 view_url config alt_ url_ title_ attr =
     [ Attr.href url_, title config title_ ]
         |> List.append (annotation "lia-link" attr)

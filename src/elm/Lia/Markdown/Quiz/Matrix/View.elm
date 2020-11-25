@@ -12,7 +12,7 @@ import Lia.Markdown.Quiz.Matrix.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Vector.Types as Vector
 
 
-view : Config -> Bool -> Quiz -> State -> Html Msg
+view : Config sub -> Bool -> Quiz -> State -> Html (Msg sub)
 view config solved quiz state =
     state
         |> Array.toList
@@ -22,21 +22,21 @@ view config solved quiz state =
         |> Html.table [ Attr.class "lia-survey-matrix" ]
 
 
-header : Config -> List Inlines -> Html Msg
+header : Config sub -> List Inlines -> Html (Msg sub)
 header config inlines =
     inlines
         |> List.map (th config)
         |> Html.tr [ Attr.class "lia-label" ]
 
 
-th : Config -> Inlines -> Html Msg
+th : Config sub -> Inlines -> Html (Msg sub)
 th config =
     viewer config
         >> Html.th [ Attr.align "center" ]
         >> Html.map Script
 
 
-tr : Bool -> Int -> Vector.State -> List (Html Msg)
+tr : Bool -> Int -> Vector.State -> List (Html (Msg sub))
 tr solved id state =
     case state of
         Vector.SingleChoice list ->
@@ -46,7 +46,7 @@ tr solved id state =
             list |> List.indexedMap (check solved id)
 
 
-radio : Bool -> Int -> Int -> Bool -> Html Msg
+radio : Bool -> Int -> Int -> Bool -> Html (Msg sub)
 radio solved row_id column_id value =
     Html.td [ Attr.align "center" ]
         [ Html.span
@@ -69,7 +69,7 @@ radio solved row_id column_id value =
         ]
 
 
-check : Bool -> Int -> Int -> Bool -> Html Msg
+check : Bool -> Int -> Int -> Bool -> Html (Msg sub)
 check solved row_id column_id value =
     Html.td [ Attr.align "center" ]
         [ Html.span
@@ -92,7 +92,7 @@ check solved row_id column_id value =
         ]
 
 
-add_text : Config -> Inlines -> List (Html Msg) -> Html Msg
+add_text : Config sub -> Inlines -> List (Html (Msg sub)) -> Html (Msg sub)
 add_text config inline toRow =
     inline
         |> viewer config

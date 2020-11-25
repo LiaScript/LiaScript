@@ -10,7 +10,7 @@ import Lia.Markdown.Quiz.Vector.Types exposing (Quiz, State(..))
 import Lia.Markdown.Quiz.Vector.Update exposing (Msg(..))
 
 
-view : Config -> Bool -> Quiz -> State -> Html Msg
+view : Config sub -> Bool -> Quiz -> State -> Html (Msg sub)
 view config solved quiz state =
     case ( quiz.solution, state ) of
         ( SingleChoice _, SingleChoice list ) ->
@@ -23,7 +23,7 @@ view config solved quiz state =
             Html.text ""
 
 
-table : (Bool -> ( Int, Inlines ) -> Html Msg) -> List Inlines -> List Bool -> Html Msg
+table : (Bool -> ( Int, Inlines ) -> Html (Msg sub)) -> List Inlines -> List Bool -> Html (Msg sub)
 table fn inlines bools =
     inlines
         |> List.indexedMap Tuple.pair
@@ -31,7 +31,7 @@ table fn inlines bools =
         |> Html.table [ Attr.attribute "cellspacing" "8" ]
 
 
-check : Config -> Bool -> Bool -> ( Int, Inlines ) -> Html Msg
+check : Config sub -> Bool -> Bool -> ( Int, Inlines ) -> Html (Msg sub)
 check config solved checked ( id, line ) =
     Html.tr [ Attr.class "lia-check-item" ]
         [ Html.td
@@ -57,7 +57,7 @@ check config solved checked ( id, line ) =
         ]
 
 
-radio : Config -> Bool -> Bool -> ( Int, Inlines ) -> Html Msg
+radio : Config sub -> Bool -> Bool -> ( Int, Inlines ) -> Html (Msg sub)
 radio config solved checked ( id, line ) =
     Html.tr [ Attr.class "lia-radio-item" ]
         [ Html.td [ Attr.attribute "valign" "top", Attr.class "lia-label" ]

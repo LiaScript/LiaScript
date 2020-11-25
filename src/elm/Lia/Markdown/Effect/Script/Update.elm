@@ -21,7 +21,7 @@ import Process
 import Task
 
 
-type Msg
+type Msg sub
     = Click Int
     | Reset Int
     | Activate Bool Int
@@ -32,12 +32,16 @@ type Msg
     | EditCode Int String
     | NoOp
     | Handle Event
-    | Delay Float Msg
+    | Delay Float (Msg sub)
+    | Sub sub
 
 
-update : Msg -> Scripts SubSection -> ( Scripts SubSection, Cmd Msg, List Event )
+update : Msg sub -> Scripts SubSection -> ( Scripts SubSection, Cmd (Msg sub), List Event )
 update msg scripts =
     case msg of
+        Sub sub ->
+            ( scripts, Cmd.none, [] )
+
         Activate active id ->
             case Array.get id scripts of
                 Just node ->
@@ -250,7 +254,7 @@ update msg scripts =
                     ( scripts, Cmd.none, [] )
 
 
-reRun : (Script a -> Script a) -> Cmd Msg -> Int -> Scripts a -> ( Scripts a, Cmd Msg, List Event )
+reRun : (Script a -> Script a) -> Cmd (Msg sub) -> Int -> Scripts a -> ( Scripts a, Cmd (Msg sub), List Event )
 reRun fn cmd id scripts =
     let
         scripts_ =

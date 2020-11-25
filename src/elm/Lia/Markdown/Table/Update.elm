@@ -8,14 +8,14 @@ import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Table.Types exposing (Class(..), State, Vector)
 
 
-type Msg
+type Msg sub
     = Sort Int Int
     | Toggle Int
-    | Script Script.Msg
+    | Script (Script.Msg sub)
     | NoOp
 
 
-update : Msg -> Vector -> ( Vector, Maybe Script.Msg )
+update : Msg sub -> Vector -> ( Vector, Maybe (Script.Msg sub) )
 update msg vector =
     case msg of
         Sort id col ->

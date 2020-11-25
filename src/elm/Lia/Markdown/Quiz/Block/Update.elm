@@ -4,14 +4,14 @@ import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Quiz.Block.Types exposing (State(..))
 
 
-type Msg
+type Msg sub
     = Toggle
     | Choose Int
     | Input String
-    | Script Script.Msg
+    | Script (Script.Msg sub)
 
 
-update : Msg -> State -> ( State, Maybe Script.Msg )
+update : Msg sub -> State -> ( State, Maybe (Script.Msg sub) )
 update msg state =
     case ( msg, state ) of
         ( Choose option, Select _ _ ) ->

@@ -24,14 +24,14 @@ port footnote : (String -> msg) -> Sub msg
 
 
 type Msg
-    = UpdateEffect Bool Effect.Msg
+    = UpdateEffect Bool (Effect.Msg Msg)
     | UpdateCode Code.Msg
-    | UpdateQuiz Quiz.Msg
-    | UpdateSurvey Survey.Msg
-    | UpdateTable Table.Msg
+    | UpdateQuiz (Quiz.Msg Msg)
+    | UpdateSurvey (Survey.Msg Msg)
+    | UpdateTable (Table.Msg Msg)
     | FootnoteHide
     | FootnoteShow String
-    | Script Script.Msg
+    | Script (Script.Msg Msg)
 
 
 
@@ -123,7 +123,7 @@ update msg section =
             updateScript (Just childMsg) ( section, Cmd.none, [] )
 
 
-updateScript : Maybe Script.Msg -> ( Section, Cmd Msg, List ( String, JE.Value ) ) -> ( Section, Cmd Msg, List ( String, JE.Value ) )
+updateScript : Maybe (Script.Msg Msg) -> ( Section, Cmd Msg, List ( String, JE.Value ) ) -> ( Section, Cmd Msg, List ( String, JE.Value ) )
 updateScript msg ( section, cmd, events ) =
     case msg of
         Nothing ->
