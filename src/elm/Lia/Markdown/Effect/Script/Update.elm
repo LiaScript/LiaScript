@@ -327,12 +327,12 @@ eval_ e js =
             else
                 Just <|
                     if e.ok then
-                        if String.startsWith "HTML: " e.result then
+                        if String.startsWith "HTML:" e.result then
                             e.result
                                 |> String.dropLeft 5
                                 |> HTML
 
-                        else if String.startsWith "LIASCRIPT: " e.result then
+                        else if String.startsWith "LIASCRIPT:" e.result then
                             case e.result |> String.dropLeft 10 |> parse_subsection of
                                 Ok rslt ->
                                     IFrame rslt

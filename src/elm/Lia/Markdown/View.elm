@@ -6,7 +6,7 @@ import Html.Events exposing (onClick)
 import Html.Lazy as Lazy
 import Lia.Markdown.Chart.View as Charts
 import Lia.Markdown.Code.View as Codes
-import Lia.Markdown.Config exposing (Config)
+import Lia.Markdown.Config as Config exposing (Config)
 import Lia.Markdown.Effect.Model as Comments
 import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.Model as Footnotes
@@ -20,6 +20,7 @@ import Lia.Markdown.Survey.View as Surveys
 import Lia.Markdown.Table.View as Table
 import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.Markdown.Update exposing (Msg(..))
+import Lia.Section exposing (SubSection(..))
 import Lia.Settings.Model exposing (Mode(..))
 import SvgBob
 
@@ -34,7 +35,22 @@ view config =
                 ]
 
         Nothing ->
-            view_body ( config, config.section.footnote2show, config.section.footnotes ) config.section.body
+            view_body
+                ( Config.setSubViewer (subView config) config
+                , config.section.footnote2show
+                , config.section.footnotes
+                )
+                config.section.body
+
+
+subView : Config -> SubSection -> List (Html Msg)
+subView config sub =
+    case sub of
+        SubSection x ->
+            List.map (view_block config) x.body
+
+        SubSubSection x ->
+            config.view x.body
 
 
 view_body : ( Config, Maybe String, Footnotes.Model ) -> List Markdown -> Html Msg

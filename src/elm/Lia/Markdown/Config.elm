@@ -1,11 +1,11 @@
-module Lia.Markdown.Config exposing (Config, init)
+module Lia.Markdown.Config exposing (Config, init, setSubViewer)
 
 import Html exposing (Html)
 import Lia.Markdown.Inline.Config as Inline
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Update exposing (Msg(..))
-import Lia.Section exposing (Section)
+import Lia.Section exposing (Section, SubSection(..))
 import Lia.Settings.Model exposing (Mode(..))
 import Session exposing (Screen)
 import Translations exposing (Lang)
@@ -40,3 +40,12 @@ init mode section id ace_theme lang light screen =
         light
         screen
         config
+
+
+setSubViewer : (SubSection -> List (Html Msg)) -> Config -> Config
+setSubViewer function config =
+    config
+
+
+
+--{ config | main = Inline.setViewer (function >> List.map (Html.map Script)) config.main }

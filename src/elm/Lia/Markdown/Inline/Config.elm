@@ -1,16 +1,21 @@
 module Lia.Markdown.Inline.Config exposing
     ( Config
     , init
+    , setViewer
     )
 
+import Html exposing (Html)
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
+import Lia.Markdown.Effect.Script.Update exposing (Msg)
+import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Section exposing (SubSection)
 import Lia.Settings.Model exposing (Mode(..))
 import Translations exposing (Lang)
 
 
 type alias Config =
-    { slide : Int
+    { view : Maybe (SubSection -> List (Html Msg))
+    , slide : Int
     , visible : Maybe Int
     , speaking : Maybe Int
     , lang : Lang
@@ -30,6 +35,7 @@ init :
     -> Config
 init slide mode visible speaking effects theme lang =
     Config
+        Nothing
         slide
         (if mode == Textbook then
             Nothing
@@ -41,3 +47,8 @@ init slide mode visible speaking effects theme lang =
         theme
         lang
         effects
+
+
+setViewer : (SubSection -> List (Html Msg)) -> Config -> Config
+setViewer fn config =
+    { config | view = Just fn }

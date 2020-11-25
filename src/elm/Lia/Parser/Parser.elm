@@ -83,15 +83,11 @@ parse_section search_index global sec =
 
 parse_subsection : String -> Result String SubSection
 parse_subsection code =
-    let
-        _ =
-            Debug.log "wwwwwwwwww" code
-    in
     case
         Combine.runParser
             (Lia.Definition.Parser.parse |> keep Markdown.run)
             (init identity (Lia.Definition.Types.default ""))
-            (code ++ "\n")
+            (String.trim code ++ "\n")
     of
         Ok ( state, _, es ) ->
             Ok <|
