@@ -33,14 +33,34 @@ type Msg sub
     | NoOp
     | Handle Event
     | Delay Float (Msg sub)
-    | Sub sub
+    | Sub Int sub
 
 
-update : Msg sub -> Scripts SubSection -> ( Scripts SubSection, Cmd (Msg sub), List Event )
-update msg scripts =
+update :
+    (sub -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) ))
+    -> Msg sub
+    -> Scripts SubSection
+    -> ( Scripts SubSection, Cmd (Msg sub), List Event )
+update main msg scripts =
     case msg of
-        Sub sub ->
-            ( scripts, Cmd.none, [] )
+        Sub id sub ->
+            case scripts |> Array.get id |> Maybe.andThen .result of
+                Just (IFrame lia) ->
+                    let
+                        ( new, cmd, events ) =
+                            main sub lia
+                    in
+                    ( scripts
+                        |> Script.set id (\s -> { s | result = Just (IFrame new) })
+                    , Cmd.map (Sub id) cmd
+                    , []
+                    )
+
+                _ ->
+                    ( scripts
+                    , Cmd.none
+                    , []
+                    )
 
         Activate active id ->
             case Array.get id scripts of

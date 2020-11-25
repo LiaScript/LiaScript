@@ -37,13 +37,28 @@ type Msg sub
     | Script (Script.Msg sub)
 
 
-updateSub : Script.Msg sub -> Model SubSection -> ( Model SubSection, Cmd (Msg sub), List Event )
-updateSub msg =
-    update True (Script msg)
+updateSub :
+    (sub
+     -> SubSection
+     -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
+    )
+    -> Script.Msg sub
+    -> Model SubSection
+    -> ( Model SubSection, Cmd (Msg sub), List Event )
+updateSub main msg =
+    update main True (Script msg)
 
 
-update : Bool -> Msg sub -> Model SubSection -> ( Model SubSection, Cmd (Msg sub), List Event )
-update sound msg model =
+update :
+    (sub
+     -> SubSection
+     -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
+    )
+    -> Bool
+    -> Msg sub
+    -> Model SubSection
+    -> ( Model SubSection, Cmd (Msg sub), List Event )
+update main sound msg model =
     markRunning <|
         case msg of
             Init run_all_javascript ->
@@ -55,7 +70,7 @@ update sound msg model =
             Next ->
                 if has_next model then
                     { model | visible = model.visible + 1 }
-                        |> execute sound False 0
+                        |> execute main sound False 0
 
                 else
                     ( model, Cmd.none, [] )
@@ -63,7 +78,7 @@ update sound msg model =
             Previous ->
                 if has_previous model then
                     { model | visible = model.visible - 1 }
-                        |> execute sound False 0
+                        |> execute main sound False 0
 
                 else
                     ( model, Cmd.none, [] )
@@ -100,12 +115,12 @@ update sound msg model =
                 )
 
             Rendered run_all_javascript _ ->
-                execute sound run_all_javascript 0 model
+                execute main sound run_all_javascript 0 model
 
             Script childMsg ->
                 let
                     ( scripts, cmd, events ) =
-                        Script.update childMsg model.javascript
+                        Script.update main childMsg model.javascript
                 in
                 ( { model | javascript = scripts }, Cmd.map Script cmd, events )
 
@@ -125,7 +140,7 @@ update sound msg model =
                     _ ->
                         let
                             ( scripts, cmd, events ) =
-                                Script.update (Script.Handle event) model.javascript
+                                Script.update main (Script.Handle event) model.javascript
                         in
                         ( { model | javascript = scripts }, Cmd.map Script cmd, events )
 
@@ -150,8 +165,14 @@ markRunning ( model, cmd, events ) =
     )
 
 
-execute : Bool -> Bool -> Int -> Model SubSection -> ( Model SubSection, Cmd (Msg sub), List Event )
-execute sound run_all delay model =
+execute :
+    (sub -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) ))
+    -> Bool
+    -> Bool
+    -> Int
+    -> Model SubSection
+    -> ( Model SubSection, Cmd (Msg sub), List Event )
+execute main sound run_all delay model =
     let
         javascript =
             if run_all then
@@ -160,7 +181,8 @@ execute sound run_all delay model =
             else
                 Script.getVisible model.visible model.javascript
     in
-    update sound
+    update main
+        sound
         (javascript
             |> List.map (Script.execute delay)
             |> (::) (Event "persistent" -1 (JE.string "load"))

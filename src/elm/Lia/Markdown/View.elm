@@ -44,12 +44,25 @@ view config =
                 config.section.body
 
 
-subView : Config Msg -> SubSection -> List (Html (Script.Msg Msg))
-subView config sub =
-    List.map (Html.map Script.Sub) <|
+subView : Config Msg -> Int -> SubSection -> List (Html (Script.Msg Msg))
+subView config id sub =
+    List.map (Html.map (Script.Sub id)) <|
         case sub of
             SubSection x ->
-                List.map (view_block config) x.body
+                let
+                    section =
+                        config.section
+                in
+                List.map
+                    (view_block
+                        { config
+                            | section =
+                                { section
+                                    | table_vector = x.table_vector
+                                }
+                        }
+                    )
+                    x.body
 
             SubSubSection x ->
                 config.view x.body
@@ -57,10 +70,6 @@ subView config sub =
 
 view_body : ( Config Msg, Maybe String, Footnotes.Model ) -> List Markdown -> Html Msg
 view_body ( config, footnote2show, footnotes ) =
-    let
-        _ =
-            Debug.log "---------" config.main.view
-    in
     List.map (view_block config)
         >> (::) (view_footnote (view_block config) footnote2show footnotes)
         >> (::) (view_header config)

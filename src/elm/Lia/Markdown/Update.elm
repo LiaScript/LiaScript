@@ -16,7 +16,7 @@ import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Quiz.Update as Quiz
 import Lia.Markdown.Survey.Update as Survey
 import Lia.Markdown.Table.Update as Table
-import Lia.Section exposing (Section)
+import Lia.Section exposing (Section, SubSection(..))
 import Port.Event as Event exposing (Event)
 
 
@@ -54,7 +54,7 @@ update msg section =
         UpdateEffect sound childMsg ->
             let
                 ( effect_model, cmd, event ) =
-                    Effect.update sound childMsg section.effect_model
+                    Effect.update subUpdate sound childMsg section.effect_model
             in
             ( { section | effect_model = effect_model }
             , Cmd.map (UpdateEffect sound) cmd
@@ -123,6 +123,28 @@ update msg section =
             updateScript (Just childMsg) ( section, Cmd.none, [] )
 
 
+subUpdate : Msg -> SubSection -> ( SubSection, Cmd msg, List a )
+subUpdate msg section =
+    case section of
+        SubSection subsection ->
+            case msg of
+                UpdateTable childMsg ->
+                    let
+                        ( vector, sub ) =
+                            Table.update childMsg subsection.table_vector
+                    in
+                    ( SubSection { subsection | table_vector = vector }
+                    , Cmd.none
+                    , []
+                    )
+
+                _ ->
+                    ( section, Cmd.none, [] )
+
+        SubSubSection sub ->
+            ( section, Cmd.none, [] )
+
+
 updateScript : Maybe (Script.Msg Msg) -> ( Section, Cmd Msg, List ( String, JE.Value ) ) -> ( Section, Cmd Msg, List ( String, JE.Value ) )
 updateScript msg ( section, cmd, events ) =
     case msg of
@@ -132,7 +154,7 @@ updateScript msg ( section, cmd, events ) =
         Just sub ->
             let
                 ( effect_model, cmd2, event ) =
-                    Effect.updateSub sub section.effect_model
+                    Effect.updateSub subUpdate sub section.effect_model
             in
             ( { section | effect_model = effect_model }
             , Cmd.batch [ cmd, Cmd.map (UpdateEffect True) cmd2 ]

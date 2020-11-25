@@ -43,6 +43,6 @@ init mode section id ace_theme lang light screen =
         config
 
 
-setSubViewer : (SubSection -> List (Html (Script.Msg Msg))) -> Config Msg -> Config Msg
+setSubViewer : (Int -> SubSection -> List (Html (Script.Msg Msg))) -> Config Msg -> Config Msg
 setSubViewer function config =
     { config | view = viewer (Inline.setViewer function config.main) >> List.map (Html.map Script) }

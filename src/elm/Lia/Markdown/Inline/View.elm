@@ -86,10 +86,6 @@ view config element =
                 |> Effect.inline config attr e
 
         Script id attr ->
-            let
-                _ =
-                    Debug.log "wwwwwwwwww" config.view
-            in
             JS.view config id attr
 
         Symbol e attr ->
