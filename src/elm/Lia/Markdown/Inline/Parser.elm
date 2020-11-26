@@ -119,7 +119,28 @@ styling p =
 javascript : Parser s String
 javascript =
     regexWith True False "<script>"
-        |> keep (stringTill (regexWith True False "</script>"))
+        |> keep scriptBody
+
+
+
+-- TODO: update also for multiline-comments and escapes in strings
+
+
+scriptBody : Parser s String
+scriptBody =
+    regexWith True False "</script>"
+        |> manyTill
+            ([ regex "[ \t\n]+"
+             , regex "\"[^\"]*\""
+             , regex "'[^']*'"
+             , regex "`([^`]*|\n)+`"
+             , regex "[^\"'`</]+"
+             , regex "<(?!/)"
+             , regex "//[^\n]*"
+             ]
+                |> choice
+            )
+        |> map String.concat
 
 
 javascriptWithAttributes : Parser Context ( Parameters, String )
@@ -133,7 +154,7 @@ javascriptWithAttributes =
         |> keep (many (whitespace |> keep attr))
         |> ignore (string ">")
         |> map Tuple.pair
-        |> andMap (stringTill (regexWith True False "</script>"))
+        |> andMap scriptBody
 
 
 html : Parser Context Inline

@@ -11,6 +11,7 @@ port module Lia.Markdown.Update exposing
 
 import Json.Encode as JE
 import Lia.Markdown.Code.Update as Code
+import Lia.Markdown.Effect.Model as E
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Effect.Update as Effect
@@ -35,8 +36,8 @@ type Msg
     | Script (Script.Msg Msg)
 
 
-
---  | Speak String String
+type alias Model x =
+    { x | effect_model : E.Model x }
 
 
 subscriptions : Section -> Sub Msg
@@ -124,11 +125,27 @@ update msg section =
             updateScript (Just childMsg) ( section, Cmd.none, [] )
 
 
-subUpdate : Scripts SubSection -> Msg -> SubSection -> ( SubSection, Cmd msg, List ( String, JE.Value ) )
+subUpdate :
+    Scripts SubSection
+    -> Msg
+    -> SubSection
+    -> ( SubSection, Cmd Msg, List ( String, JE.Value ) )
 subUpdate js msg section =
     case section of
         SubSection subsection ->
             case msg of
+                UpdateEffect sound childMsg ->
+                    let
+                        ( effect_model, cmd, event ) =
+                            Effect.update subUpdate sound childMsg subsection.effect_model
+                    in
+                    ( SubSection { subsection | effect_model = effect_model }
+                    , Cmd.map (UpdateEffect sound) cmd
+                    , event
+                        |> List.map Event.encode
+                        |> send "effect"
+                    )
+
                 UpdateTable childMsg ->
                     let
                         ( vector, sub ) =
@@ -154,21 +171,45 @@ subUpdate js msg section =
 
                 UpdateQuiz childMsg ->
                     let
-                        ( vector, event, sub ) =
+                        ( vector, event, subCmd ) =
                             Quiz.update js childMsg subsection.quiz_vector
                     in
-                    ( SubSection { subsection | quiz_vector = vector }
-                    , Cmd.none
-                    , []
-                    )
+                    case subCmd of
+                        Just cmd ->
+                            { subsection | quiz_vector = vector }
+                                |> SubSection
+                                |> subUpdate js (UpdateQuiz childMsg)
+
+                        _ ->
+                            ( SubSection { subsection | quiz_vector = vector }
+                            , Cmd.none
+                            , []
+                            )
 
                 UpdateSurvey childMsg ->
                     let
-                        ( vector, event, sub ) =
+                        ( vector, event, subCmd ) =
                             Survey.update js childMsg subsection.survey_vector
                     in
-                    ( SubSection { subsection | survey_vector = vector }
-                    , Cmd.none
+                    case subCmd of
+                        Just cmd ->
+                            { subsection | survey_vector = vector }
+                                |> SubSection
+                                |> subUpdate js (UpdateSurvey childMsg)
+
+                        _ ->
+                            ( SubSection { subsection | survey_vector = vector }
+                            , Cmd.none
+                            , []
+                            )
+
+                Script childMsg ->
+                    let
+                        ( effect_model, cmd, event ) =
+                            Effect.updateSub subUpdate childMsg subsection.effect_model
+                    in
+                    ( SubSection { subsection | effect_model = effect_model }
+                    , Cmd.map (UpdateEffect True) cmd
                     , []
                     )
 
@@ -176,10 +217,37 @@ subUpdate js msg section =
                     ( section, Cmd.none, [] )
 
         SubSubSection sub ->
-            ( section, Cmd.none, [] )
+            case msg of
+                Script childMsg ->
+                    let
+                        ( effect_model, cmd, event ) =
+                            Effect.updateSub subUpdate childMsg sub.effect_model
+                    in
+                    ( SubSubSection { sub | effect_model = effect_model }
+                    , Cmd.map (UpdateEffect True) cmd
+                    , []
+                    )
+
+                UpdateEffect sound childMsg ->
+                    let
+                        ( effect_model, cmd, event ) =
+                            Effect.update subUpdate sound childMsg sub.effect_model
+                    in
+                    ( SubSubSection { sub | effect_model = effect_model }
+                    , Cmd.map (UpdateEffect sound) cmd
+                    , event
+                        |> List.map Event.encode
+                        |> send "effect"
+                    )
+
+                _ ->
+                    ( section, Cmd.none, [] )
 
 
-updateScript : Maybe (Script.Msg Msg) -> ( Section, Cmd Msg, List ( String, JE.Value ) ) -> ( Section, Cmd Msg, List ( String, JE.Value ) )
+updateScript :
+    Maybe (Script.Msg Msg)
+    -> ( { sec | effect_model : E.Model SubSection }, Cmd Msg, List ( String, JE.Value ) )
+    -> ( { sec | effect_model : E.Model SubSection }, Cmd Msg, List ( String, JE.Value ) )
 updateScript msg ( section, cmd, events ) =
     case msg of
         Nothing ->

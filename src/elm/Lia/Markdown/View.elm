@@ -16,6 +16,7 @@ import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribut
 import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Markdown.HTML.View as HTML
 import Lia.Markdown.Inline.Types exposing (Inlines, htmlBlock)
+import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Quiz.View as Quizzes
 import Lia.Markdown.Survey.View as Surveys
 import Lia.Markdown.Table.View as Table
@@ -76,7 +77,13 @@ subView config id sub =
                     x.body
 
             SubSubSection x ->
-                config.view x.body
+                let
+                    main =
+                        config.main
+                in
+                x.body
+                    |> viewer { main | scripts = x.effect_model.javascript }
+                    |> List.map (Html.map Script)
 
 
 view_body : ( Config Msg, Maybe String, Footnotes.Model ) -> List Markdown -> Html Msg

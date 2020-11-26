@@ -1,4 +1,9 @@
-module Lia.Markdown.Config exposing (Config, init, setSubViewer)
+module Lia.Markdown.Config exposing
+    ( Config
+    , init
+    , inline
+    , setSubViewer
+    )
 
 import Html exposing (Html)
 import Lia.Markdown.Effect.Script.Update as Script
@@ -26,13 +31,7 @@ init : Mode -> Section -> Int -> String -> Lang -> Bool -> Screen -> Config sub
 init mode section id ace_theme lang light screen =
     let
         config =
-            Inline.init id
-                mode
-                section.effect_model.visible
-                section.effect_model.speaking
-                section.effect_model.javascript
-                lang
-                (Just ace_theme)
+            inline mode section id ace_theme lang
     in
     Config
         (viewer config >> List.map (Html.map Script))
@@ -43,6 +42,21 @@ init mode section id ace_theme lang light screen =
         config
 
 
+inline : Mode -> Section -> Int -> String -> Lang -> Inline.Config sub
+inline mode section id ace_theme lang =
+    Inline.init id
+        mode
+        section.effect_model.visible
+        section.effect_model.speaking
+        section.effect_model.javascript
+        lang
+        (Just ace_theme)
+
+
 setSubViewer : (Int -> SubSection -> List (Html (Script.Msg Msg))) -> Config Msg -> Config Msg
 setSubViewer function config =
-    { config | view = viewer (Inline.setViewer function config.main) >> List.map (Html.map Script) }
+    { config
+        | view =
+            viewer (Inline.setViewer function config.main)
+                >> List.map (Html.map Script)
+    }
