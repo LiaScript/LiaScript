@@ -133,10 +133,11 @@ scriptBody =
             ([ regex "[ \t\n]+"
              , regex "\"[^\"]*\""
              , regex "'[^']*'"
-             , regex "`([^`]*|\n)+`"
-             , regex "[^\"'`</]+"
+             , regex "`([^`]|\n)*`"
+             , regex "[^\"'`</]+" --" this is only a comment for syntaxhighlighting ...
              , regex "<(?!/)"
              , regex "//[^\n]*"
+             , string "/"
              ]
                 |> choice
             )
