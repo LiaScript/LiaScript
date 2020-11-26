@@ -123,8 +123,11 @@ update msg section =
             updateScript (Just childMsg) ( section, Cmd.none, [] )
 
 
-subUpdate : Msg -> SubSection -> ( SubSection, Cmd msg, List a )
-subUpdate msg section =
+
+--subUpdate : Scripts Msg -> Msg -> SubSection -> ( SubSection, Cmd msg, List a )
+
+
+subUpdate js msg section =
     case section of
         SubSection subsection ->
             case msg of
@@ -134,6 +137,16 @@ subUpdate msg section =
                             Table.update childMsg subsection.table_vector
                     in
                     ( SubSection { subsection | table_vector = vector }
+                    , Cmd.none
+                    , []
+                    )
+
+                UpdateQuiz childMsg ->
+                    let
+                        ( vector, cmd, events ) =
+                            Quiz.update js childMsg subsection.quiz_vector
+                    in
+                    ( SubSection { subsection | quiz_vector = vector }
                     , Cmd.none
                     , []
                     )

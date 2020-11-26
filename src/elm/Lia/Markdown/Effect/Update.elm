@@ -18,6 +18,7 @@ import Lia.Markdown.Effect.Model
         ( Model
         , current_comment
         )
+import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Section exposing (SubSection)
 import Port.Event exposing (Event)
@@ -38,7 +39,8 @@ type Msg sub
 
 
 updateSub :
-    (sub
+    (Scripts SubSection
+     -> sub
      -> SubSection
      -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
     )
@@ -50,7 +52,8 @@ updateSub main msg =
 
 
 update :
-    (sub
+    (Scripts SubSection
+     -> sub
      -> SubSection
      -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
     )
@@ -166,7 +169,11 @@ markRunning ( model, cmd, events ) =
 
 
 execute :
-    (sub -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) ))
+    (Scripts SubSection
+     -> sub
+     -> SubSection
+     -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
+    )
     -> Bool
     -> Bool
     -> Int

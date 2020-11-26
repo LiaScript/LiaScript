@@ -37,7 +37,7 @@ type Msg sub
 
 
 update :
-    (sub -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) ))
+    (Scripts SubSection -> sub -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) ))
     -> Msg sub
     -> Scripts SubSection
     -> ( Scripts SubSection, Cmd (Msg sub), List Event )
@@ -48,7 +48,7 @@ update main msg scripts =
                 Just (IFrame lia) ->
                     let
                         ( new, cmd, events ) =
-                            main sub lia
+                            main scripts sub lia
                     in
                     ( scripts
                         |> Script.set id (\s -> { s | result = Just (IFrame new) })
