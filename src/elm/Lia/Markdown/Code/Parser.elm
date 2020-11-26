@@ -15,6 +15,7 @@ import Combine
         , modifyState
         , onsuccess
         , optional
+        , or
         , regex
         , sepBy1
         , string
@@ -80,11 +81,11 @@ title =
         |> ignore newline
 
 
-code_body : Int -> Parser Context String
-code_body len =
+code_body : String -> Int -> Parser Context String
+code_body char len =
     let
         control_frame =
-            "`{" ++ String.fromInt len ++ "}"
+            char ++ "{" ++ String.fromInt len ++ "}"
     in
     manyTill
         (maybe indentation |> keep (regex ("(?:.(?!" ++ control_frame ++ "))*\\n")))
@@ -99,7 +100,7 @@ listing attr =
             header
                 |> map (\h ( v, t ) c -> ( Snippet attr h (String.trim t) c, v ))
                 |> andMap title
-                |> andMap (code_body len)
+                |> andMap (or (code_body "`" len) (code_body "~" len))
     in
     c_frame |> andThen body
 

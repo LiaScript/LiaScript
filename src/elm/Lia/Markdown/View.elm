@@ -52,6 +52,9 @@ subView config id sub =
                 let
                     section =
                         config.section
+
+                    effects =
+                        config.section.effect_model
                 in
                 List.map
                     (view_block
@@ -61,6 +64,12 @@ subView config id sub =
                                     | table_vector = x.table_vector
                                     , quiz_vector = x.quiz_vector
                                     , survey_vector = x.survey_vector
+                                    , code_vector = x.code_vector
+                                    , effect_model =
+                                        { effects
+                                            | comments = x.effect_model.comments
+                                            , javascript = x.effect_model.javascript
+                                        }
                                 }
                         }
                     )

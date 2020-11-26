@@ -11,6 +11,7 @@ port module Lia.Markdown.Update exposing
 
 import Json.Encode as JE
 import Lia.Markdown.Code.Update as Code
+import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Quiz.Update as Quiz
@@ -123,10 +124,7 @@ update msg section =
             updateScript (Just childMsg) ( section, Cmd.none, [] )
 
 
-
---subUpdate : Scripts Msg -> Msg -> SubSection -> ( SubSection, Cmd msg, List a )
-
-
+subUpdate : Scripts SubSection -> Msg -> SubSection -> ( SubSection, Cmd msg, List ( String, JE.Value ) )
 subUpdate js msg section =
     case section of
         SubSection subsection ->
@@ -140,6 +138,19 @@ subUpdate js msg section =
                     , Cmd.none
                     , []
                     )
+
+                UpdateCode childMsg ->
+                    case Code.update js childMsg subsection.code_vector of
+                        ( vector, [] ) ->
+                            ( SubSection { subsection | code_vector = vector }, Cmd.none, [] )
+
+                        ( vector, events ) ->
+                            ( SubSection { subsection | code_vector = vector }
+                            , Cmd.none
+                            , events
+                                |> List.map Event.encode
+                                |> send "code"
+                            )
 
                 UpdateQuiz childMsg ->
                     let
