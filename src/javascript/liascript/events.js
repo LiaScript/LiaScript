@@ -263,6 +263,9 @@ function lia_execute_event (event, sender = null, section = null) {
       },
       html: (msg) => {
         (execute_response('code', event.id, sender, section))('HTML: ' + msg)
+      },
+      liascript: (msg) => {
+        (execute_response('code', event.id, sender, section))('LIASCRIPT: ' + msg)
       }
     }
 
