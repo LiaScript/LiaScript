@@ -223,6 +223,34 @@ __Badges:__
 
 ## Version-Changes
 
+__0.8.8__ (26/11/2020)
+
+* better script-tag parsing with comments and strings
+* scripts can now also produce LiaScript content via the result string:
+
+  ``` html
+  <script>`LIASCRIPT:
+  $$
+     \sum_{i=1}^\infty\frac{1}{n^2}
+          =\frac{\pi^2}{6}
+  $$
+  `</script>
+
+  or:
+
+  <script>
+  send.liascript(`
+    $$
+      \sum_{i=1}^\infty\frac{1}{n^2}
+          =\frac{\pi^2}{6}
+    $$
+  `)
+  </script>
+  ```
+
+* code-blocks can also be marked with `~~~`
+* fixes for qr-code background in dark mode and margin for figures with titles
+
 __0.8.7__ (21/11/2020)
 
 * new funnel diagram type for tables
