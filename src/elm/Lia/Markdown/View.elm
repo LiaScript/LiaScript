@@ -6,8 +6,9 @@ import Html.Events exposing (onClick)
 import Html.Lazy as Lazy
 import Lia.Markdown.Chart.View as Charts
 import Lia.Markdown.Code.View as Codes
-import Lia.Markdown.Config exposing (Config)
+import Lia.Markdown.Config as Config exposing (Config)
 import Lia.Markdown.Effect.Model as Comments
+import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.Model as Footnotes
 import Lia.Markdown.Footnote.View as Footnote
@@ -15,16 +16,18 @@ import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribut
 import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Markdown.HTML.View as HTML
 import Lia.Markdown.Inline.Types exposing (Inlines, htmlBlock)
+import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Quiz.View as Quizzes
 import Lia.Markdown.Survey.View as Surveys
 import Lia.Markdown.Table.View as Table
 import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.Markdown.Update exposing (Msg(..))
+import Lia.Section exposing (SubSection(..))
 import Lia.Settings.Model exposing (Mode(..))
 import SvgBob
 
 
-view : Config -> Html Msg
+view : Config Msg -> Html Msg
 view config =
     case config.section.error of
         Just msg ->
@@ -34,10 +37,56 @@ view config =
                 ]
 
         Nothing ->
-            view_body ( config, config.section.footnote2show, config.section.footnotes ) config.section.body
+            view_body
+                ( Config.setSubViewer (subView config) config
+                , config.section.footnote2show
+                , config.section.footnotes
+                )
+                config.section.body
 
 
-view_body : ( Config, Maybe String, Footnotes.Model ) -> List Markdown -> Html Msg
+subView : Config Msg -> Int -> SubSection -> List (Html (Script.Msg Msg))
+subView config id sub =
+    List.map (Html.map (Script.Sub id)) <|
+        case sub of
+            SubSection x ->
+                let
+                    section =
+                        config.section
+
+                    effects =
+                        config.section.effect_model
+                in
+                List.map
+                    (view_block
+                        { config
+                            | section =
+                                { section
+                                    | table_vector = x.table_vector
+                                    , quiz_vector = x.quiz_vector
+                                    , survey_vector = x.survey_vector
+                                    , code_vector = x.code_vector
+                                    , effect_model =
+                                        { effects
+                                            | comments = x.effect_model.comments
+                                            , javascript = x.effect_model.javascript
+                                        }
+                                }
+                        }
+                    )
+                    x.body
+
+            SubSubSection x ->
+                let
+                    main =
+                        config.main
+                in
+                x.body
+                    |> viewer { main | scripts = x.effect_model.javascript }
+                    |> List.map (Html.map Script)
+
+
+view_body : ( Config Msg, Maybe String, Footnotes.Model ) -> List Markdown -> Html Msg
 view_body ( config, footnote2show, footnotes ) =
     List.map (view_block config)
         >> (::) (view_footnote (view_block config) footnote2show footnotes)
@@ -87,7 +136,7 @@ view_footnote viewer key footnotes =
             Html.text ""
 
 
-view_header : Config -> Html Msg
+view_header : Config Msg -> Html Msg
 view_header config =
     [ header config
         config.section.indentation
@@ -97,7 +146,7 @@ view_header config =
         |> Html.header []
 
 
-header : Config -> Int -> Parameters -> Inlines -> Html Msg
+header : Config Msg -> Int -> Parameters -> Inlines -> Html Msg
 header config i attr =
     config.view
         >> (case i of
@@ -121,7 +170,7 @@ header config i attr =
            )
 
 
-view_block : Config -> Markdown -> Html Msg
+view_block : Config Msg -> Markdown -> Html Msg
 view_block config block =
     case block of
         HLine attr ->
@@ -256,7 +305,7 @@ view_ascii attr light =
            )
 
 
-view_list : Config -> List ( String, List Markdown ) -> List (Html Msg)
+view_list : Config Msg -> List ( String, List Markdown ) -> List (Html Msg)
 view_list config =
     let
         viewer ( value, sub_list ) =
@@ -266,7 +315,7 @@ view_list config =
     List.map viewer
 
 
-view_bulletlist : Config -> List (List Markdown) -> List (Html Msg)
+view_bulletlist : Config Msg -> List (List Markdown) -> List (Html Msg)
 view_bulletlist config =
     let
         viewer =

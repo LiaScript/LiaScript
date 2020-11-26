@@ -4,12 +4,12 @@ import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Quiz.Vector.Types exposing (State(..))
 
 
-type Msg
+type Msg sub
     = Toggle Int
-    | Script Script.Msg
+    | Script (Script.Msg sub)
 
 
-update : Msg -> State -> ( State, Maybe Script.Msg )
+update : Msg sub -> State -> ( State, Maybe (Script.Msg sub) )
 update msg state =
     case msg of
         Toggle id ->

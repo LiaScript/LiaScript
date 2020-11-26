@@ -34,7 +34,7 @@ circle_ idx =
         |> Html.span [ Attr.class "lia-effect-circle-inline" ]
 
 
-block : Config -> Model -> Parameters -> Effect Markdown -> List (Html Msg) -> Html Msg
+block : Config sub -> Model a -> Parameters -> Effect Markdown -> List (Html Msg) -> Html Msg
 block config model attr e body =
     if contradiction e.begin e.end then
         Html.text ""
@@ -116,7 +116,7 @@ contradiction begin end =
     False
 
 
-inline : Config -> Parameters -> Effect Inline -> List (Html msg) -> Html msg
+inline : Config sub -> Parameters -> Effect Inline -> List (Html msg) -> Html msg
 inline config attr e body =
     if contradiction e.begin e.end then
         Html.text ""
@@ -202,7 +202,7 @@ inline config attr e body =
                     ]
 
 
-block_playback : Config -> Effect Markdown -> Html Msg
+block_playback : Config sub -> Effect Markdown -> Html Msg
 block_playback config e =
     if config.speaking == Just e.id then
         Html.button
@@ -230,7 +230,7 @@ block_playback config e =
             [ Html.text "play_arrow" ]
 
 
-inline_playback : Config -> Effect Inline -> Html msg
+inline_playback : Config sub -> Effect Inline -> Html msg
 inline_playback config e =
     if config.speaking == Just e.id then
         Html.button
@@ -308,7 +308,7 @@ responsive lang sound msg =
         ]
 
 
-state : Model -> String
+state : Model a -> String
 state model =
     if model.effects == 0 then
         ""

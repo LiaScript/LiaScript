@@ -15,13 +15,13 @@ stringify =
     stringify_ Array.empty Nothing
 
 
-stringify_ : Scripts -> Maybe Int -> Inlines -> String
+stringify_ : Scripts a -> Maybe Int -> Inlines -> String
 stringify_ effects id =
     List.map (inline2string effects id)
         >> String.concat
 
 
-inline2string : Scripts -> Maybe Int -> Inline -> String
+inline2string : Scripts a -> Maybe Int -> Inline -> String
 inline2string effects id inline =
     case inline of
         Chars str _ ->
@@ -75,7 +75,7 @@ inline2string effects id inline =
             ""
 
 
-ref2string : Scripts -> Maybe Int -> Reference -> String
+ref2string : Scripts a -> Maybe Int -> Reference -> String
 ref2string effects id ref =
     case ref of
         Movie alt _ _ ->

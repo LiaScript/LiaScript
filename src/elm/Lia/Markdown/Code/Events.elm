@@ -20,7 +20,7 @@ input idx string =
     Event "input" idx <| JE.string string
 
 
-eval : Scripts -> Int -> Project -> List Event
+eval : Scripts a -> Int -> Project -> List Event
 eval scripts idx project =
     [ project.file
         |> Array.map .code

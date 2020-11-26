@@ -13,13 +13,15 @@ import Browser.Dom as Dom
 import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Input as Input
 import Lia.Markdown.Effect.Script.Types as Script exposing (Script, Scripts, Stdout(..))
+import Lia.Parser.Parser exposing (parse_subsection)
+import Lia.Section exposing (SubSection)
 import Port.Eval as Eval exposing (Eval)
 import Port.Event exposing (Event)
 import Process
 import Task
 
 
-type Msg
+type Msg sub
     = Click Int
     | Reset Int
     | Activate Bool Int
@@ -30,16 +32,40 @@ type Msg
     | EditCode Int String
     | NoOp
     | Handle Event
-    | Delay Float Msg
+    | Delay Float (Msg sub)
+    | Sub Int sub
 
 
-update : Msg -> Scripts -> ( Scripts, Cmd Msg, List Event )
-update msg scripts =
+update :
+    (Scripts SubSection -> sub -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) ))
+    -> Msg sub
+    -> Scripts SubSection
+    -> ( Scripts SubSection, Cmd (Msg sub), List Event )
+update main msg scripts =
     case msg of
+        Sub id sub ->
+            case scripts |> Array.get id |> Maybe.andThen .result of
+                Just (IFrame lia) ->
+                    let
+                        ( new, cmd, events ) =
+                            main scripts sub lia
+                    in
+                    ( scripts
+                        |> Script.set id (\s -> { s | result = Just (IFrame new) })
+                    , Cmd.map (Sub id) cmd
+                    , []
+                    )
+
+                _ ->
+                    ( scripts
+                    , Cmd.none
+                    , []
+                    )
+
         Activate active id ->
             case Array.get id scripts of
                 Just node ->
-                    if not active && node.input.updateOnChange then
+                    if not active then
                         reRun
                             (\js ->
                                 { js
@@ -248,7 +274,7 @@ update msg scripts =
                     ( scripts, Cmd.none, [] )
 
 
-reRun : (Script -> Script) -> Cmd Msg -> Int -> Scripts -> ( Scripts, Cmd Msg, List Event )
+reRun : (Script a -> Script a) -> Cmd (Msg sub) -> Int -> Scripts a -> ( Scripts a, Cmd (Msg sub), List Event )
 reRun fn cmd id scripts =
     let
         scripts_ =
@@ -290,7 +316,7 @@ execute delay ( id, code ) =
             ]
 
 
-update_ : Int -> JE.Value -> Scripts -> ( Bool, Scripts )
+update_ : Int -> JE.Value -> Scripts SubSection -> ( Bool, Scripts SubSection )
 update_ id e scripts =
     case Array.get id scripts of
         Just js ->
@@ -306,7 +332,7 @@ update_ id e scripts =
             ( False, scripts )
 
 
-eval_ : Eval -> Script -> Script
+eval_ : Eval -> Script SubSection -> Script SubSection
 eval_ e js =
     let
         waiting =
@@ -325,15 +351,18 @@ eval_ e js =
             else
                 Just <|
                     if e.ok then
-                        if String.startsWith "HTML: " e.result then
+                        if String.startsWith "HTML:" e.result then
                             e.result
                                 |> String.dropLeft 5
                                 |> HTML
 
-                        else if String.startsWith "LIASCRIPT: " e.result then
-                            e.result
-                                |> String.dropLeft 10
-                                |> LIASCRIPT
+                        else if String.startsWith "LIASCRIPT:" e.result then
+                            case e.result |> String.dropLeft 10 |> parse_subsection of
+                                Ok rslt ->
+                                    IFrame rslt
+
+                                Err info ->
+                                    Error info
 
                         else
                             Text e.result
@@ -343,12 +372,12 @@ eval_ e js =
     }
 
 
-setRunning : Int -> Bool -> Scripts -> Scripts
+setRunning : Int -> Bool -> Scripts a -> Scripts a
 setRunning id state javascript =
     Script.set id (\js -> { js | running = state }) javascript
 
 
-getIdle : (Script -> x) -> Scripts -> List ( Int, x )
+getIdle : (Script a -> x) -> Scripts a -> List ( Int, x )
 getIdle =
     Script.filterMap
         (\js ->
@@ -356,7 +385,7 @@ getIdle =
         )
 
 
-getAll : Scripts -> List ( Int, String )
+getAll : Scripts a -> List ( Int, String )
 getAll javascript =
     javascript
         |> getIdle identity
@@ -367,7 +396,7 @@ getAll javascript =
         |> Script.replaceInputs javascript
 
 
-getVisible : Int -> Scripts -> List ( Int, String )
+getVisible : Int -> Scripts a -> List ( Int, String )
 getVisible visible javascript =
     javascript
         |> getIdle identity

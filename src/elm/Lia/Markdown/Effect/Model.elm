@@ -15,11 +15,11 @@ import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 
 
-type alias Model =
+type alias Model a =
     { visible : Int
     , effects : Int
     , comments : Dict Int Element
-    , javascript : Scripts
+    , javascript : Scripts a
     , speaking : Maybe Int
     }
 
@@ -52,7 +52,7 @@ set_annotation id1 id2 m attr =
             m
 
 
-get_paragraph : Int -> Int -> Model -> Maybe ( Parameters, Inlines )
+get_paragraph : Int -> Int -> Model a -> Maybe ( Parameters, Inlines )
 get_paragraph id1 id2 model =
     case
         model.comments
@@ -67,7 +67,7 @@ get_paragraph id1 id2 model =
             Nothing
 
 
-current_paragraphs : Model -> List ( Parameters, Inlines )
+current_paragraphs : Model a -> List ( Parameters, Inlines )
 current_paragraphs model =
     case Dict.get model.visible model.comments of
         Just e ->
@@ -77,14 +77,14 @@ current_paragraphs model =
             []
 
 
-current_comment : Model -> Maybe ( String, String )
+current_comment : Model a -> Maybe ( String, String )
 current_comment model =
     model.comments
         |> Dict.get model.visible
         |> Maybe.map (\e -> ( e.comment, e.narrator ))
 
 
-init : Model
+init : Model a
 init =
     Model
         0

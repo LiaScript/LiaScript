@@ -14,6 +14,7 @@ import Combine
         , andMap
         , andThen
         , choice
+        , fail
         , ignore
         , keep
         , lazy
@@ -118,7 +119,28 @@ styling p =
 javascript : Parser s String
 javascript =
     regexWith True False "<script>"
-        |> keep (stringTill (regexWith True False "</script>"))
+        |> keep scriptBody
+
+
+
+-- TODO: update also for multiline-comments and escapes in strings
+
+
+scriptBody : Parser s String
+scriptBody =
+    regexWith True False "</script>"
+        |> manyTill
+            ([ regex "[ \t\n]+"
+             , regex "\"[^\"]*\""
+             , regex "'[^']*'"
+             , regex "`([^`]*|\n)+`"
+             , regex "[^\"'`</]+"
+             , regex "<(?!/)"
+             , regex "//[^\n]*"
+             ]
+                |> choice
+            )
+        |> map String.concat
 
 
 javascriptWithAttributes : Parser Context ( Parameters, String )
@@ -132,7 +154,7 @@ javascriptWithAttributes =
         |> keep (many (whitespace |> keep attr))
         |> ignore (string ">")
         |> map Tuple.pair
-        |> andMap (stringTill (regexWith True False "</script>"))
+        |> andMap scriptBody
 
 
 html : Parser Context Inline
@@ -395,7 +417,7 @@ reference =
 between_ : String -> Parser Context Inline
 between_ str =
     string str
-        |> keep (manyTill inlines (string str))
+        |> keep (many1Till inlines (string str))
         |> map toContainer
 
 
@@ -407,6 +429,20 @@ toContainer inline_list =
 
         moreThanOne ->
             Container moreThanOne []
+
+
+many1Till : Parser s a -> Parser s end -> Parser s (List a)
+many1Till p =
+    manyTill p
+        >> andThen
+            (\result ->
+                case result of
+                    [] ->
+                        fail "not enough results"
+
+                    _ ->
+                        succeed result
+            )
 
 
 strings : Parser Context (Parameters -> Inline)

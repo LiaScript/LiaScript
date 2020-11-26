@@ -24,7 +24,7 @@ import Lia.Markdown.Quiz.Vector.View as Vector
 import Translations exposing (quizCheck, quizChecked, quizResolved, quizSolution)
 
 
-view : Config -> Quiz -> Vector -> Html Msg
+view : Config sub -> Quiz -> Vector -> Html (Msg sub)
 view config quiz vector =
     case getState vector quiz.id of
         Just elem ->
@@ -51,7 +51,7 @@ class id vector =
             "lia-quiz lia-card open"
 
 
-state_view : Config -> Bool -> State -> Quiz -> Html Msg
+state_view : Config sub -> Bool -> State -> Quiz -> Html (Msg sub)
 state_view config solved state quiz =
     case ( state, quiz.quiz ) of
         ( Block_State s, Block_Type q ) ->
@@ -73,7 +73,7 @@ state_view config solved state quiz =
             Html.text ""
 
 
-view_quiz : Config -> Element -> Quiz -> Html Msg -> Html Msg
+view_quiz : Config sub -> Element -> Quiz -> Html (Msg sub) -> Html (Msg sub)
 view_quiz config state quiz fn =
     Html.p []
         [ if state.error_msg == "" then
@@ -93,7 +93,7 @@ view_quiz config state quiz fn =
         ]
 
 
-view_button_solution : Config -> Solution -> Msg -> Html Msg
+view_button_solution : Config sub -> Solution -> Msg sub -> Html (Msg sub)
 view_button_solution config solution msg =
     if solution == Open then
         Html.span
@@ -108,7 +108,7 @@ view_button_solution config solution msg =
         Html.text ""
 
 
-view_button : Config -> Int -> Solution -> Msg -> Html Msg
+view_button : Config sub -> Int -> Solution -> Msg sub -> Html (Msg sub)
 view_button config trials solved msg =
     case solved of
         Open ->
@@ -133,7 +133,7 @@ view_button config trials solved msg =
                 [ Html.text (quizResolved config.lang) ]
 
 
-view_hints : Config -> Int -> Int -> MultInlines -> Html Msg
+view_hints : Config sub -> Int -> Int -> MultInlines -> Html (Msg sub)
 view_hints config idx counter hints =
     let
         v_hints h c =

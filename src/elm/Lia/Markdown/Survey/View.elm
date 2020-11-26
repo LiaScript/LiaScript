@@ -14,7 +14,7 @@ import Lia.Utils exposing (blockKeydown)
 import Translations exposing (surveySubmit, surveySubmitted, surveyText)
 
 
-view : Config -> Parameters -> Survey -> Vector -> Html Msg
+view : Config sub -> Parameters -> Survey -> Vector -> Html (Msg sub)
 view config attr survey model =
     Html.p (annotation "lia-quiz lia-card" attr) <|
         case survey.survey of
@@ -37,7 +37,7 @@ view config attr survey model =
                     |> view_survey config model survey.id survey.javascript
 
 
-view_survey : Config -> Vector -> Int -> Maybe String -> (Bool -> Html Msg) -> List (Html Msg)
+view_survey : Config sub -> Vector -> Int -> Maybe String -> (Bool -> Html (Msg sub)) -> List (Html (Msg sub))
 view_survey config model idx javascript fn =
     let
         submitted =
@@ -46,7 +46,7 @@ view_survey config model idx javascript fn =
     [ fn submitted, submit_button config submitted idx javascript ]
 
 
-submit_button : Config -> Bool -> Int -> Maybe String -> Html Msg
+submit_button : Config sub -> Bool -> Int -> Maybe String -> Html (Msg sub)
 submit_button config submitted idx javascript =
     Html.div []
         [ if submitted then
@@ -61,7 +61,7 @@ submit_button config submitted idx javascript =
         ]
 
 
-view_select : Config -> List Inlines -> ( Bool, Int ) -> Int -> Bool -> Html Msg
+view_select : Config sub -> List Inlines -> ( Bool, Int ) -> Int -> Bool -> Html (Msg sub)
 view_select config options ( open, value ) id submitted =
     Html.span
         []
@@ -99,7 +99,7 @@ view_select config options ( open, value ) id submitted =
         ]
 
 
-option : Config -> Int -> Int -> Inlines -> Html Msg
+option : Config sub -> Int -> Int -> Inlines -> Html (Msg sub)
 option config id1 id2 opt =
     opt
         |> (viewer config >> List.map (Html.map Script))
@@ -110,7 +110,7 @@ option config id1 id2 opt =
             ]
 
 
-get_option : Config -> Int -> List Inlines -> Html Msg
+get_option : Config sub -> Int -> List Inlines -> Html (Msg sub)
 get_option config id list =
     case ( id, list ) of
         ( 0, x :: _ ) ->
@@ -123,7 +123,7 @@ get_option config id list =
             Html.text "choose"
 
 
-view_text : Config -> String -> Int -> Int -> Bool -> Html Msg
+view_text : Config sub -> String -> Int -> Int -> Bool -> Html (Msg sub)
 view_text config str lines idx submitted =
     let
         attr =
@@ -143,7 +143,7 @@ view_text config str lines idx submitted =
             Html.textarea (Attr.rows lines :: attr) []
 
 
-view_vector : List ( String, Inlines ) -> (Bool -> ( String, Inlines ) -> Html Msg) -> Bool -> Html Msg
+view_vector : List ( String, Inlines ) -> (Bool -> ( String, Inlines ) -> Html (Msg sub)) -> Bool -> Html (Msg sub)
 view_vector questions fn submitted =
     let
         fnX =
@@ -152,7 +152,14 @@ view_vector questions fn submitted =
     Html.div [] <| List.map fnX questions
 
 
-view_matrix : Config -> List Inlines -> List String -> List Inlines -> (Bool -> ( Int, Inlines ) -> Html Msg) -> Bool -> Html Msg
+view_matrix :
+    Config sub
+    -> List Inlines
+    -> List String
+    -> List Inlines
+    -> (Bool -> ( Int, Inlines ) -> Html (Msg sub))
+    -> Bool
+    -> Html (Msg sub)
 view_matrix config header vars questions fn submitted =
     let
         th =
@@ -170,7 +177,7 @@ view_matrix config header vars questions fn submitted =
         |> Html.table [ Attr.class "lia-survey-matrix" ]
 
 
-vector : Config -> Bool -> (String -> Msg) -> (String -> Bool) -> Bool -> ( String, Inlines ) -> Html Msg
+vector : Config sub -> Bool -> (String -> Msg sub) -> (String -> Bool) -> Bool -> ( String, Inlines ) -> Html (Msg sub)
 vector config button msg fn submitted ( var, elements ) =
     Html.table [ Attr.attribute "cellspacing" "8" ]
         [ Html.td [ Attr.attribute "valign" "top", Attr.class "lia-label" ]
@@ -180,7 +187,15 @@ vector config button msg fn submitted ( var, elements ) =
         ]
 
 
-matrix : Config -> Bool -> (Int -> String -> Msg) -> (Int -> String -> Bool) -> List String -> Bool -> ( Int, Inlines ) -> Html Msg
+matrix :
+    Config sub
+    -> Bool
+    -> (Int -> String -> Msg sub)
+    -> (Int -> String -> Bool)
+    -> List String
+    -> Bool
+    -> ( Int, Inlines )
+    -> Html (Msg sub)
 matrix config button msg fn vars submitted ( row, elements ) =
     let
         msgX =
@@ -201,7 +216,7 @@ matrix config button msg fn vars submitted ( row, elements ) =
             [ Html.td [] [ inline config elements ] ]
 
 
-input : Bool -> Msg -> Bool -> Bool -> Html Msg
+input : Bool -> Msg sub -> Bool -> Bool -> Html (Msg sub)
 input button msg checked submitted =
     -- FIXME: lia-label MUST be placed in here and not outside the lia-*-item
     -- !!! convert the lia-*-item span to a p element when lia-label is included here
@@ -246,6 +261,6 @@ input button msg checked submitted =
         ]
 
 
-inline : Config -> Inlines -> Html Msg
+inline : Config sub -> Inlines -> Html (Msg sub)
 inline config elements =
     Html.span [] <| (viewer config >> List.map (Html.map Script)) elements

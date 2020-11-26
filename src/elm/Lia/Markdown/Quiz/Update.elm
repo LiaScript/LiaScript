@@ -13,18 +13,18 @@ import Port.Eval as Eval
 import Port.Event as Event exposing (Event)
 
 
-type Msg
-    = Block_Update Int Block.Msg
-    | Vector_Update Int Vector.Msg
-    | Matrix_Update Int Matrix.Msg
+type Msg sub
+    = Block_Update Int (Block.Msg sub)
+    | Vector_Update Int (Vector.Msg sub)
+    | Matrix_Update Int (Matrix.Msg sub)
     | Check Int Type (Maybe String)
     | ShowHint Int
     | ShowSolution Int Type
     | Handle Event
-    | Script Script.Msg
+    | Script (Script.Msg sub)
 
 
-update : Scripts -> Msg -> Vector -> ( Vector, List Event, Maybe Script.Msg )
+update : Scripts a -> Msg sub -> Vector -> ( Vector, List Event, Maybe (Script.Msg sub) )
 update scripts msg vector =
     case msg of
         Block_Update id _ ->
@@ -120,8 +120,8 @@ get idx vector =
 update_ :
     Int
     -> Vector
-    -> (Element -> ( Element, Maybe Script.Msg ))
-    -> ( Vector, List Event, Maybe Script.Msg )
+    -> (Element -> ( Element, Maybe (Script.Msg sub) ))
+    -> ( Vector, List Event, Maybe (Script.Msg sub) )
 update_ idx vector fn =
     case get idx vector |> Maybe.map fn of
         Just ( elem, sub ) ->
@@ -131,7 +131,7 @@ update_ idx vector fn =
             ( vector, [], Nothing )
 
 
-state_ : Msg -> Element -> ( Element, Maybe Script.Msg )
+state_ : Msg sub -> Element -> ( Element, Maybe (Script.Msg sub) )
 state_ msg e =
     case ( msg, e.state ) of
         ( Block_Update _ m, Block_State s ) ->
@@ -157,7 +157,7 @@ setState e fn state =
     { e | state = fn state }
 
 
-handle : Event -> Msg
+handle : Event -> Msg sub
 handle =
     Handle
 
@@ -193,7 +193,7 @@ evalEventDecoder json =
         \e -> ( { e | error_msg = eval.result }, Nothing )
 
 
-store : ( Vector, List Event, Maybe Script.Msg ) -> ( Vector, List Event, Maybe Script.Msg )
+store : ( Vector, List Event, Maybe (Script.Msg sub) ) -> ( Vector, List Event, Maybe (Script.Msg sub) )
 store ( vector, events, sub ) =
     ( vector
     , (vector
@@ -205,7 +205,7 @@ store ( vector, events, sub ) =
     )
 
 
-check : Type -> Element -> ( Element, Maybe Script.Msg )
+check : Type -> Element -> ( Element, Maybe (Script.Msg sub) )
 check solution e =
     ( { e
         | trial = e.trial + 1

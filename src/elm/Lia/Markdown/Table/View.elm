@@ -31,7 +31,7 @@ import Lia.Utils exposing (blockKeydown)
 import Set
 
 
-view : Config -> Parameters -> Table -> Html Msg
+view : Config sub -> Parameters -> Table -> Html Msg
 view config attr table =
     let
         state =
@@ -58,7 +58,7 @@ view config attr table =
             |> toTable table.id attr table.class
 
 
-viewDiagram : Table -> State -> Scripts -> Maybe Int -> Int -> Bool -> Parameters -> Html Msg
+viewDiagram : Table -> State -> Scripts a -> Maybe Int -> Int -> Bool -> Parameters -> Html Msg
 viewDiagram table state effects visible width light attr =
     Html.div
         [ blockKeydown (UpdateTable Sub.NoOp)

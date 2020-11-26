@@ -11,7 +11,7 @@ import Lia.Markdown.Quiz.Block.Update exposing (Msg(..))
 import Lia.Utils exposing (blockKeydown)
 
 
-view : Config -> Bool -> Quiz -> State -> Html Msg
+view : Config sub -> Bool -> Quiz -> State -> Html (Msg sub)
 view config solved quiz state =
     case state of
         Text str ->
@@ -24,7 +24,7 @@ view config solved quiz state =
                 |> select config solved open quiz.options
 
 
-text : Bool -> String -> Html Msg
+text : Bool -> String -> Html (Msg sub)
 text solved state =
     Html.input
         [ Attr.type_ "input"
@@ -37,7 +37,7 @@ text solved state =
         []
 
 
-select : Config -> Bool -> Bool -> List Inlines -> Int -> Html Msg
+select : Config sub -> Bool -> Bool -> List Inlines -> Int -> Html (Msg sub)
 select config solved open options i =
     Html.span
         []
@@ -75,7 +75,7 @@ select config solved open options i =
         ]
 
 
-option : Config -> Int -> Inlines -> Html Msg
+option : Config sub -> Int -> Inlines -> Html (Msg sub)
 option config id =
     viewer config
         >> Html.div []
@@ -89,7 +89,7 @@ option config id =
             ]
 
 
-get_option : Config -> Int -> List Inlines -> Html Msg
+get_option : Config sub -> Int -> List Inlines -> Html (Msg sub)
 get_option config id list =
     case ( id, list ) of
         ( 0, x :: _ ) ->

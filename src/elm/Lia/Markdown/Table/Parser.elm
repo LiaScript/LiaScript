@@ -21,7 +21,7 @@ import Combine
         , succeed
         , withState
         )
-import Lia.Markdown.Effect.Script.Types exposing (Script)
+import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.HTML.Attributes as Param exposing (Parameters)
 import Lia.Markdown.Inline.Parser exposing (line)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
@@ -47,7 +47,7 @@ parse =
         |> modify_State
 
 
-classify : Parameters -> Table -> Array Script -> Table
+classify : Parameters -> Table -> Scripts a -> Table
 classify attr table js =
     { table
         | class =
