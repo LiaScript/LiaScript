@@ -143,10 +143,20 @@ subUpdate js msg section =
 
                 UpdateQuiz childMsg ->
                     let
-                        ( vector, cmd, events ) =
+                        ( vector, event, sub ) =
                             Quiz.update js childMsg subsection.quiz_vector
                     in
                     ( SubSection { subsection | quiz_vector = vector }
+                    , Cmd.none
+                    , []
+                    )
+
+                UpdateSurvey childMsg ->
+                    let
+                        ( vector, event, sub ) =
+                            Survey.update js childMsg subsection.survey_vector
+                    in
+                    ( SubSection { subsection | survey_vector = vector }
                     , Cmd.none
                     , []
                     )

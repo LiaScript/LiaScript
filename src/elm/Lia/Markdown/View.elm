@@ -60,6 +60,7 @@ subView config id sub =
                                 { section
                                     | table_vector = x.table_vector
                                     , quiz_vector = x.quiz_vector
+                                    , survey_vector = x.survey_vector
                                 }
                         }
                     )
