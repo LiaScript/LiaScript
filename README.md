@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.6.3
+version:  0.6.4
 language: en
 narrator: UK English Male
 
@@ -222,6 +222,10 @@ __Badges:__
 
 
 ## Version-Changes
+
+__0.8.9__ (29/11/2020)
+
+* better JavaScript & HTML & inline code parsing with string escapes
 
 __0.8.8__ (26/11/2020)
 
