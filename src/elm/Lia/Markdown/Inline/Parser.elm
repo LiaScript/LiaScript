@@ -130,11 +130,11 @@ scriptBody : Parser s String
 scriptBody =
     regexWith True False "</script>"
         |> manyTill
-            ([ regex "[ \t\n]+"
-             , regex "\"[^\"]*\""
-             , regex "'[^']*'"
-             , regex "`([^`]|\n)*`"
-             , regex "[^\"'`</]+" --" this is only a comment for syntaxhighlighting ...
+            ([ regex "[^\"'`</]+" --" this is only a comment for syntaxhighlighting ...
+             , regex "[ \t\n]+"
+             , regex "\"([^\"]*|(?<=\\\\)\")*\""
+             , regex "'([^']*|(?<=\\\\)')*'"
+             , regex "`([^`]*|\n|(?<=\\\\)`)*`"
              , regex "<(?!/)"
              , regex "//[^\n]*"
              , string "/"
@@ -513,6 +513,6 @@ strings =
 code : Parser s (Parameters -> Inline)
 code =
     string "`"
-        |> keep (regex "[^`\\n]+")
+        |> keep (regex "([^`\\n]*|(?<=\\\\)`)+")
         |> ignore (string "`")
-        |> map Verbatim
+        |> map (String.replace "\\`" "`" >> Verbatim)

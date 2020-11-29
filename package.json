@@ -1,6 +1,6 @@
 {
   "name": "LiaScript",
-  "version": "0.8.8",
+  "version": "0.8.9",
   "description": "An extended Markdown parser for the creation of online courses.",
   "main": "index.js",
   "scripts": {
@@ -11,7 +11,7 @@
     "watch": "npm run watch:app",
     "build": "npm run build:app",
     "build:app": "npm run init && npx parcel build --experimental-scope-hoisting --no-source-maps --public-url ./ src/entry/app/index.html && npm run sw",
-    "watch:app": "npm run init && npx parcel serve src/entry/app/index.html",
+    "watch:app": "npm run init && npx parcel serve src/entry/app/index.html --open",
     "build:base": "npm run init && npx parcel build --no-source-maps --public-url ./ src/entry/base/index.html",
     "watch:base": "npm run init && npx parcel serve src/entry/base/index.html",
     "build:scorm1.2": "npm run init && npx parcel build --no-source-maps --public-url ./ src/entry/scorm1.2/index.html",

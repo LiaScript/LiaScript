@@ -162,7 +162,9 @@ tagAttributeQuotedValue quote =
     string quote
         |> keep
             (choice
-                [ regex <| "[^" ++ quote ++ "]*"
+                [ ("([^" ++ quote ++ "]*|(?<=\\\\)" ++ quote ++ ")*")
+                    |> regex
+                    |> map (String.replace ("\\" ++ quote) quote)
                 , characterReference
                 ]
                 |> many
