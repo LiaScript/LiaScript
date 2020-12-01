@@ -102,11 +102,11 @@ blocks =
                             |> map BulletList
                             |> andMap unordered_list
                         , md_annotations
-                            |> map HTML
-                            |> andMap (HTML.parse blocks)
-                        , md_annotations
                             |> map Paragraph
                             |> andMap paragraph
+                        , md_annotations
+                            |> map HTML
+                            |> andMap (HTML.parse blocks)
                         , md_annotations
                             |> map Paragraph
                             |> andMap problem
