@@ -220,7 +220,7 @@ solution =
 ident_blocks : Parser Context MarkdownS
 ident_blocks =
     blocks
-        |> ignore (regex "\\n?")
+        |> ignore (regex "\n?")
         |> many1
         |> ignore indentation_pop
 
@@ -229,8 +229,8 @@ unordered_list : Parser Context (List MarkdownS)
 unordered_list =
     indentation_append "  "
         |> keep
-            (regex "[ \\t]*[*+\\-][ \\t]+"
-                |> keep (sepBy1 (regex "\\n?") blocks)
+            (regex "[*+\\-][ \t]+"
+                |> keep (sepBy1 (regex "\n?") blocks)
                 |> many1
             )
         |> ignore indentation_pop
@@ -245,7 +245,7 @@ ordered_list =
             (regex "-?\\d+"
                 |> map Tuple.pair
                 |> ignore (string ". ")
-                |> andMap (sepBy1 (regex "\\n?") blocks)
+                |> andMap (sepBy1 (regex "\n?") blocks)
                 |> many1
             )
         |> ignore indentation_pop
@@ -282,11 +282,7 @@ quote =
             (string "> "
                 |> ignore (indentation_append "> ?")
                 |> keep
-                    (blocks
-                        |> ignore (maybe indentation)
-                        |> ignore (regex "\\n?")
-                        |> many1
-                    )
+                    (sepBy1 (maybe indentation |> ignore (regex "\n?")) blocks)
             )
         |> ignore indentation_pop
 
