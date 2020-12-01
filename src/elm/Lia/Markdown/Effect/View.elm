@@ -67,20 +67,24 @@ block config model attr e body =
         in
         case class e of
             Animation ->
-                Html.div [ Attr.hidden (not visible) ] <|
-                    [ circle e.begin
-                    , Html.div
-                        ((Attr.id <|
-                            if e.begin == model.visible then
-                                "focused"
+                if not visible then
+                    Html.text ""
 
-                            else
-                                String.fromInt e.begin
-                         )
-                            :: annotation "lia-effect" attr
-                        )
-                        body
-                    ]
+                else
+                    Html.div []
+                        [ circle e.begin
+                        , Html.div
+                            ((Attr.id <|
+                                if e.begin == model.visible then
+                                    "focused"
+
+                                else
+                                    String.fromInt e.begin
+                             )
+                                :: annotation "lia-effect" attr
+                            )
+                            body
+                        ]
 
             PlayBack ->
                 Html.div []
