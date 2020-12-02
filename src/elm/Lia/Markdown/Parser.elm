@@ -145,7 +145,7 @@ svgbody : Int -> Parser Context String
 svgbody len =
     let
         control_frame =
-            "(`|~){"
+            "(`){"
                 ++ String.fromInt len
                 ++ (if len <= 8 then
                         "}"
