@@ -223,10 +223,12 @@ __Badges:__
 
 ## Version-Changes
 
-__0.8.9__ (29/11/2020)
+__0.8.9__ (02/12/2020)
 
 * better JavaScript & HTML & inline code parsing with string escapes
 * fix: problem with HTML and JavaScript within block-effects
+* removed `~~~` for now ...
+* fix: parsing block-html und loading order of js
 
 __0.8.8__ (26/11/2020)
 
