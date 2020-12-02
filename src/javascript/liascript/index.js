@@ -318,6 +318,7 @@ class LiaScript {
 
               tag.src = url
               tag.async = false
+              tag.defer = true
               tag.onload = function (e) {
                 window.event_semaphore--
                 lia.log('successfully loaded :', url)
