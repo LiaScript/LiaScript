@@ -435,7 +435,7 @@ strings =
         \() ->
             let
                 base =
-                    regex "[^@*_~:;`!\\^\\[\\]\\(\\)|{}\\\\\\n\\-<>=$ \"+]+"
+                    regex "[^@*_~:;`!\\^\\[\\]\\(\\)|{}\\\\\\n<>=$ \"]+"
                         |> map Chars
 
                 escape =
@@ -464,7 +464,7 @@ strings =
                         |> map Superscript
 
                 characters =
-                    regex "[~:_;\\-=${}\\[\\]\\(\\)]"
+                    regex "[~:_;\\-=${}\\[\\]\\(\\)<>]"
                         |> map Chars
 
                 spaces =

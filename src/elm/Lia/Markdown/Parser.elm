@@ -102,11 +102,12 @@ blocks =
                             |> map BulletList
                             |> andMap unordered_list
                         , md_annotations
-                            |> map Paragraph
-                            |> andMap paragraph
-                        , md_annotations
                             |> map HTML
                             |> andMap (HTML.parse blocks)
+                            |> ignore (regex "[ \t]*\n\n")
+                        , md_annotations
+                            |> map Paragraph
+                            |> andMap paragraph
                         , md_annotations
                             |> map Paragraph
                             |> andMap problem
@@ -229,7 +230,7 @@ unordered_list : Parser Context (List MarkdownS)
 unordered_list =
     indentation_append "  "
         |> keep
-            (regex "[*+\\-][ \t]+"
+            (regex "[ \t]*[*+-][ \t]+"
                 |> keep (sepBy1 (regex "\n?") blocks)
                 |> many1
             )
