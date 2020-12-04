@@ -683,7 +683,7 @@
 
       //todo add shadow with changeing colors according to dark and light...
       border-radius: 5px;
-      box-shadow: 8px 7px 0px #eee;
+      box-shadow: 8px 7px 0px mix($fg, $bg, 20%);
       //display: inline-block;
     }
 
