@@ -230,7 +230,7 @@ unordered_list : Parser Context (List MarkdownS)
 unordered_list =
     indentation_append "  "
         |> keep
-            (regex "[*+-][ \t]+"
+            (regex "[ \t]*[*+-][ \t]+"
                 |> keep (sepBy1 (regex "\n?") blocks)
                 |> many1
             )
@@ -245,15 +245,13 @@ ordered_list : Parser Context (List ( String, MarkdownS ))
 ordered_list =
     indentation_append "   "
         |> keep
-            (regex "-?\\d+"
+            (regex "[ \t]*-?\\d+"
                 |> map Tuple.pair
                 |> ignore (string ". ")
                 |> andMap (sepBy1 (regex "\n?") blocks)
                 |> many1
             )
         |> ignore indentation_pop
-        |> many1
-        |> map List.concat
 
 
 horizontal_line : Parser Context Markdown
