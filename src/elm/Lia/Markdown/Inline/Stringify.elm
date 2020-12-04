@@ -54,6 +54,9 @@ inline2string effects id inline =
         IHTML (HTML.Node _ _ x) _ ->
             stringify_ effects id x
 
+        Container x _ ->
+            stringify_ effects id x
+
         EInline e _ ->
             if Effect.isIn id e then
                 stringify_ effects id e.content
