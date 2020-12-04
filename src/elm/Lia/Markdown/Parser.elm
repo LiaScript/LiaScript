@@ -94,13 +94,13 @@ blocks =
                             |> map Quiz
                             |> andMap Quiz.parse
                             |> andMap solution
+                        , quote
                         , md_annotations
                             |> map OrderedList
                             |> andMap ordered_list
                         , md_annotations
                             |> map BulletList
                             |> andMap unordered_list
-                        , quote
                         , md_annotations
                             |> map HTML
                             |> andMap (HTML.parse blocks)
@@ -231,10 +231,14 @@ unordered_list =
     indentation_append "  "
         |> keep
             (regex "[ \t]*[*+-][ \t]+"
-                |> keep (sepBy1 (maybe newlineWithIndentation) blocks)
-                |> many1
+                |> keep (sepBy1 (maybe (many newlineWithIndentation)) blocks)
             )
         |> ignore indentation_pop
+        |> sepBy1
+            (maybe indentation
+                |> ignore (maybe newline)
+                |> ignore indentation
+            )
 
 
 ordered_list : Parser Context (List ( String, MarkdownS ))
@@ -243,11 +247,15 @@ ordered_list =
         |> keep
             (regex "[ \t]*-?\\d+"
                 |> map Tuple.pair
-                |> ignore (string ". ")
-                |> andMap (sepBy1 (maybe newlineWithIndentation) blocks)
-                |> many1
+                |> ignore (regex "\\.[ \t]*")
+                |> andMap (sepBy1 (maybe (many newlineWithIndentation)) blocks)
             )
         |> ignore indentation_pop
+        |> sepBy1
+            (maybe indentation
+                |> ignore (maybe newline)
+                |> ignore indentation
+            )
 
 
 newlineWithIndentation =
