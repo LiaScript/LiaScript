@@ -83,7 +83,6 @@ blocks =
                             |> andMap (withState (.effect_model >> .javascript >> succeed))
                         , svgbob
                         , map Code (Code.parse md_annotations)
-                        , quote
                         , md_annotations
                             |> map Header
                             |> andMap subHeader
@@ -95,6 +94,7 @@ blocks =
                             |> map Quiz
                             |> andMap Quiz.parse
                             |> andMap solution
+                        , quote
                         , md_annotations
                             |> map OrderedList
                             |> andMap ordered_list
@@ -231,27 +231,49 @@ unordered_list =
     indentation_append "  "
         |> keep
             (regex "[ \t]*[*+-][ \t]+"
-                |> keep (sepBy1 (regex "\n?") blocks)
-                |> many1
+                |> keep (sepBy1 (maybe (many newlineWithIndentation)) blocks)
             )
         |> ignore indentation_pop
-        |> many1
-        |> map List.concat
+        |> sepBy1
+            (maybe indentation
+                |> ignore (maybe newline)
+                |> ignore indentation
+            )
 
 
 ordered_list : Parser Context (List ( String, MarkdownS ))
 ordered_list =
     indentation_append "   "
         |> keep
-            (regex "-?\\d+"
+            (regex "[ \t]*-?\\d+"
                 |> map Tuple.pair
-                |> ignore (string ". ")
-                |> andMap (sepBy1 (regex "\n?") blocks)
-                |> many1
+                |> ignore (regex "\\.[ \t]*")
+                |> andMap (sepBy1 (maybe (many newlineWithIndentation)) blocks)
             )
         |> ignore indentation_pop
-        |> many1
-        |> map List.concat
+        |> sepBy1
+            (maybe indentation
+                |> ignore (maybe newline)
+                |> ignore indentation
+            )
+
+
+newlineWithIndentation =
+    maybe indentation
+        |> ignore (string "\n")
+
+
+quote : Parser Context Markdown
+quote =
+    indentation_append "> ?"
+        |> ignore (regex "> ?")
+        |> keep
+            (map Quote md_annotations
+                |> andMap
+                    --sepBy1 (regex "(>[ \t]*\n)+") blocks
+                    (sepBy1 (many (indentation |> ignore (string "\n"))) blocks)
+            )
+        |> ignore indentation_pop
 
 
 horizontal_line : Parser Context Markdown
@@ -274,18 +296,6 @@ problem =
         |> ignore indentation
         |> keep lineWithProblems
         |> ignore newline
-
-
-quote : Parser Context Markdown
-quote =
-    map Quote md_annotations
-        |> andMap
-            (string "> "
-                |> ignore (indentation_append "> ?")
-                |> keep
-                    (sepBy1 (maybe indentation |> ignore (regex "\n?")) blocks)
-            )
-        |> ignore indentation_pop
 
 
 md_annotations : Parser Context Parameters

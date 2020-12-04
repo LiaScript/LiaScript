@@ -36,6 +36,7 @@ __Extension:__
 * Mixing HTML with Markdown
 * Extentendability due to Macros
 * Internal event system
+* Literal programming
 * ...
 
 Furthermore, this project is a
@@ -222,6 +223,10 @@ __Badges:__
 
 
 ## Version-Changes
+
+__0.8.10__ (04/12/2020)
+
+* fixed issues with ordered and unordered lists, as well as quotes...
 
 __0.8.9__ (02/12/2020)
 
