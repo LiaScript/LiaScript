@@ -464,7 +464,7 @@ strings =
                         |> map Superscript
 
                 characters =
-                    regex "[~:_;=${}\\[\\]\\(\\)<>\\-]"
+                    regex "[~:_;=${}\\[\\]\\(\\)<>\\-+]"
                         |> map Chars
 
                 spaces =
