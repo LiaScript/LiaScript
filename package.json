@@ -42,7 +42,7 @@
     "node-elm-compiler": "^5.0.5",
     "parcel": "^1.12.4",
     "parcel-plugin-static-files-copy": "^2.5.0",
-    "sass": "^1.29.0",
+    "sass": "^1.30.0",
     "workbox-cli": "^5.1.4"
   },
   "dependencies": {
