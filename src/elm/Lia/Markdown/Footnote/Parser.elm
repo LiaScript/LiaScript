@@ -35,7 +35,7 @@ block p =
     string "[^"
         |> keep (stringTill (string "]:"))
         |> map Tuple.pair
-        |> ignore (indentation_append "   ")
+        |> ignore (indentation_append "[ ]{3,}")
         |> andMap p
         |> andThen add_footnote
 

@@ -19,6 +19,7 @@ import Combine
         , optional
         , or
         , regex
+        , sepBy
         , sepBy1
         , skip
         , string
@@ -231,7 +232,7 @@ unordered_list =
     indentation_append "  "
         |> keep
             (regex "[ \t]*[*+-][ \t]+"
-                |> keep (sepBy1 (maybe (many newlineWithIndentation)) blocks)
+                |> keep (sepBy1 (maybe newlineWithIndentation) blocks)
             )
         |> ignore indentation_pop
         |> sepBy1
@@ -248,7 +249,7 @@ ordered_list =
             (regex "[ \t]*-?\\d+"
                 |> map Tuple.pair
                 |> ignore (regex "\\.[ \t]*")
-                |> andMap (sepBy1 (maybe (many newlineWithIndentation)) blocks)
+                |> andMap (sepBy1 (maybe newlineWithIndentation) blocks)
             )
         |> ignore indentation_pop
         |> sepBy1
@@ -265,15 +266,28 @@ newlineWithIndentation =
 
 quote : Parser Context Markdown
 quote =
-    indentation_append "> ?"
+    map Quote md_annotations
         |> ignore (regex "> ?")
-        |> keep
-            (map Quote md_annotations
-                |> andMap
-                    --sepBy1 (regex "(>[ \t]*\n)+") blocks
-                    (sepBy1 (many (indentation |> ignore (string "\n"))) blocks)
-            )
+        |> ignore (indentation_append "> ?")
+        |> andMap (sepBy (many (indentation |> ignore (string "\n"))) blocks)
         |> ignore indentation_pop
+
+
+
+--quote : Parser Context Markdown
+--quote =
+--    map Quote md_annotations
+--        |> ignore (indentation_append "> ?")
+--        |> andMap
+--            (regex "> ?"
+--                |> keep
+--                    (blocks
+--                        |> ignore (maybe indentation)
+--                        |> ignore (regex "\\n?")
+--                        |> many1
+--                    )
+--            )
+--        |> ignore indentation_pop
 
 
 horizontal_line : Parser Context Markdown

@@ -174,6 +174,8 @@ class LiaScript {
       handleEffects(event.message, sender, event.section)
     }
 
+    window.showFootnote = this.app.ports.footnote.send
+
     setTimeout(function () {
       firstSpeak = false
     }, 1000)
