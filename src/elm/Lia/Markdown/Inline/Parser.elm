@@ -440,7 +440,7 @@ strings =
 
                 escape =
                     string "\\"
-                        |> keep (regex "[@\\^*_+~`\\\\${}\\[\\]|#-]")
+                        |> keep (regex "[@\\^*_+~`\\\\${}\\[\\]|#\\-]")
                         |> map Chars
 
                 italic =
@@ -464,7 +464,7 @@ strings =
                         |> map Superscript
 
                 characters =
-                    regex "[~:_;=${}\\[\\]\\(\\)<>]"
+                    regex "[~:_;=${}\\[\\]\\(\\)<>\\-]"
                         |> map Chars
 
                 spaces =
@@ -472,7 +472,7 @@ strings =
                         |> map Chars
 
                 base2 =
-                    regex "[^\n*|+<>-]+"
+                    regex "[^\n*|<>+\\-]+"
                         |> map Chars
             in
             choice
