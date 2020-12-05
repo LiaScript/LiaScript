@@ -224,6 +224,12 @@ __Badges:__
 
 ## Version-Changes
 
+__0.8.11__ (05/12/2020)
+
+* parsing everything can be difficult, fixed issues with + and - that resulted
+  from the last list updates.
+* footnotes are clickable again and with multiline support
+
 __0.8.10__ (04/12/2020)
 
 * fixed issues with ordered and unordered lists, as well as quotes...
