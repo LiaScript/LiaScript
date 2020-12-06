@@ -112,6 +112,9 @@ view config element =
                 IHTML node attr ->
                     HTML.view Html.span (view config) attr node
 
+                Chars " " _ ->
+                    Html.text ""
+
                 _ ->
                     Html.span [ goto line ] [ view config e ]
 

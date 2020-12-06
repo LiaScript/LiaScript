@@ -486,7 +486,7 @@ strings =
 
                 spaces =
                     regex "[ \\t]+"
-                        |> map Chars
+                        |> onsuccess (Chars " ")
 
                 base2 =
                     regex "[^\n*|<>+\\-]+"
