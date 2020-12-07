@@ -14,6 +14,7 @@ import Combine
         , map
         , modifyState
         , onsuccess
+        , optional
         , or
         , regex
         , sepEndBy
@@ -25,6 +26,7 @@ import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.HTML.Attributes as Param exposing (Parameters)
 import Lia.Markdown.Inline.Parser exposing (annotations, line)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
+import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Table.Matrix as Matrix exposing (Matrix)
 import Lia.Markdown.Table.Types
     exposing
@@ -37,6 +39,7 @@ import Lia.Markdown.Table.Types
         , toMatrix
         )
 import Lia.Parser.Context exposing (Context, indentation, indentation_skip)
+import Lia.Parser.Helper exposing (spaces)
 import Set
 
 
@@ -288,9 +291,12 @@ row =
         |> keep
             (manyTill
                 (string "|"
+                    |> ignore spaces
+                    |> ignore macro
                     |> keep annotations
                     |> map Tuple.pair
-                    |> andMap line
+                    -- maybe empty cell
+                    |> andMap (optional [] line)
                 )
                 (regex "\\|[\t ]*\\n")
             )

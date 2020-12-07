@@ -173,7 +173,6 @@ inject_macro ( ( name, escape ), params ) =
                                )
                         )
                         |> modifyInput
-                        |> ignore (Combine.currentStream |> Debug.log "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW")
                         |> keep (putState new_state)
                         |> keep (succeed ())
 
