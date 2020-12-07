@@ -12,6 +12,7 @@ module Lia.Markdown.Table.Types exposing
 
 import Array exposing (Array)
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
+import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.Inline.Stringify exposing (stringify_)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Table.Matrix as Matrix exposing (Matrix)
@@ -19,9 +20,9 @@ import Lia.Markdown.Table.Matrix as Matrix exposing (Matrix)
 
 type alias Table =
     { class : Class
-    , head : List Inlines
+    , head : List ( Parameters, Inlines )
     , format : List String
-    , body : List (List Inlines)
+    , body : List (List ( Parameters, Inlines ))
     , id : Int
     }
 
@@ -54,19 +55,20 @@ type alias State =
 
 
 type alias Cell =
-    { inlines : Inlines
+    { attr : Parameters
+    , inlines : Inlines
     , string : String
     , float : Maybe Float
     }
 
 
-toMatrix : Scripts a -> Maybe Int -> Matrix Inlines -> Matrix Cell
+toMatrix : Scripts a -> Maybe Int -> Matrix ( Parameters, Inlines ) -> Matrix Cell
 toMatrix effects id =
     Matrix.map (toCell effects id)
 
 
-toCell : Scripts a -> Maybe Int -> Inlines -> Cell
-toCell effects effectId data =
+toCell : Scripts a -> Maybe Int -> ( Parameters, Inlines ) -> Cell
+toCell effects effectId ( attr, data ) =
     let
         str =
             data
@@ -75,7 +77,7 @@ toCell effects effectId data =
     in
     str
         |> float
-        |> Cell data str
+        |> Cell attr data str
 
 
 float : String -> Maybe Float

@@ -23,7 +23,7 @@ import Combine
         )
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.HTML.Attributes as Param exposing (Parameters)
-import Lia.Markdown.Inline.Parser exposing (line)
+import Lia.Markdown.Inline.Parser exposing (annotations, line)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
 import Lia.Markdown.Table.Matrix as Matrix exposing (Matrix)
 import Lia.Markdown.Table.Types
@@ -282,12 +282,16 @@ checkDiagram headLine rows =
         None
 
 
-row : Parser Context (List Inlines)
+row : Parser Context (List ( Parameters, Inlines ))
 row =
     indentation
         |> keep
             (manyTill
-                (string "|" |> keep line)
+                (string "|"
+                    |> keep annotations
+                    |> map Tuple.pair
+                    |> andMap line
+                )
                 (regex "\\|[\t ]*\\n")
             )
 
