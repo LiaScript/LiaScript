@@ -113,7 +113,7 @@ view config element =
                     HTML.view Html.span (view config) attr node
 
                 Chars " " _ ->
-                    Html.text ""
+                    Html.text " "
 
                 _ ->
                     Html.span [ goto line ] [ view config e ]
