@@ -37,12 +37,12 @@ stringify effects id markdown =
             let
                 head =
                     table.head
-                        |> List.map (Inline.stringify_ effects id)
+                        |> List.map (Tuple.second >> Inline.stringify_ effects id)
                         |> String.concat
 
                 body =
                     table.body
-                        |> List.map (List.map (Inline.stringify_ effects id) >> String.concat)
+                        |> List.map (List.map (Tuple.second >> Inline.stringify_ effects id) >> String.concat)
                         |> String.concat
             in
             head ++ " " ++ body

@@ -1,5 +1,6 @@
 module Lia.Markdown.Inline.Parser exposing
-    ( combine
+    ( annotations
+    , combine
     , comment
     , inlines
     , javascript
@@ -88,7 +89,7 @@ annotations =
     in
     spaces
         |> keep (comment attr)
-        |> map styling
+        --|> map styling
         |> maybe
         |> map (Maybe.withDefault [])
         |> ignore comments
@@ -105,7 +106,8 @@ styling p =
                 (\( key, value ) ->
                     ( key
                     , if key == "style" then
-                        "display: inline-block; " ++ value
+                        --"display: inline-block; " ++ value
+                        value
 
                       else
                         value

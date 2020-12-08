@@ -14,6 +14,7 @@ import Combine
         , map
         , modifyState
         , onsuccess
+        , optional
         , or
         , regex
         , sepEndBy
@@ -23,8 +24,9 @@ import Combine
         )
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.HTML.Attributes as Param exposing (Parameters)
-import Lia.Markdown.Inline.Parser exposing (line)
+import Lia.Markdown.Inline.Parser exposing (annotations, line)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
+import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Table.Matrix as Matrix exposing (Matrix)
 import Lia.Markdown.Table.Types
     exposing
@@ -37,6 +39,7 @@ import Lia.Markdown.Table.Types
         , toMatrix
         )
 import Lia.Parser.Context exposing (Context, indentation, indentation_skip)
+import Lia.Parser.Helper exposing (spaces)
 import Set
 
 
@@ -282,12 +285,19 @@ checkDiagram headLine rows =
         None
 
 
-row : Parser Context (List Inlines)
+row : Parser Context (List ( Parameters, Inlines ))
 row =
     indentation
         |> keep
             (manyTill
-                (string "|" |> keep line)
+                (string "|"
+                    |> ignore spaces
+                    |> ignore macro
+                    |> keep annotations
+                    |> map Tuple.pair
+                    -- maybe empty cell
+                    |> andMap (optional [] line)
+                )
                 (regex "\\|[\t ]*\\n")
             )
 

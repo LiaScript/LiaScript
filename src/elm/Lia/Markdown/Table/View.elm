@@ -557,7 +557,7 @@ unformatted viewer rows id state =
         head :: tail ->
             tail
                 |> List.map
-                    (List.map (.inlines >> viewer >> Html.td [ Attr.align "left" ])
+                    (List.map (\e -> Html.td (Attr.align "left" :: Param.toAttribute e.attr) (viewer e.inlines))
                         >> Html.tr [ Attr.class "lia-inline lia-table-row" ]
                     )
                 |> (::)
@@ -570,12 +570,12 @@ unformatted viewer rows id state =
             []
 
 
-formatted : (Inlines -> List (Html Msg)) -> MultInlines -> List String -> Matrix Cell -> Int -> State -> List (Html Msg)
+formatted : (Inlines -> List (Html Msg)) -> List ( Parameters, Inlines ) -> List String -> Matrix Cell -> Int -> State -> List (Html Msg)
 formatted viewer head format rows id state =
     rows
         |> sort state
         |> List.map
-            (List.map2 (\f -> .inlines >> viewer >> Html.td [ Attr.align f ]) format
+            (List.map2 (\f e -> Html.td (Attr.align f :: Param.toAttribute e.attr) (viewer e.inlines)) format
                 >> Html.tr [ Attr.class "lia-inline lia-table-row" ]
             )
         |> (::)
@@ -630,17 +630,17 @@ view_head1 viewer id state =
     List.indexedMap
         (\i r ->
             header viewer id "left" state i r.inlines
-                |> Html.td [ Attr.align "left" ]
+                |> Html.td (Attr.align "left" :: Param.toAttribute r.attr)
         )
 
 
-view_head2 : (Inlines -> List (Html Msg)) -> Int -> List String -> State -> List Inlines -> List (Html Msg)
+view_head2 : (Inlines -> List (Html Msg)) -> Int -> List String -> State -> List ( Parameters, Inlines ) -> List (Html Msg)
 view_head2 viewer id format state =
     List.map2 Tuple.pair format
         >> List.indexedMap
-            (\i ( f, r ) ->
+            (\i ( f, ( a, r ) ) ->
                 header viewer id f state i r
-                    |> Html.th [ Attr.align f, Attr.style "height" "100%" ]
+                    |> Html.th (Attr.align f :: Attr.style "height" "100%" :: Param.toAttribute a)
             )
 
 

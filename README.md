@@ -224,6 +224,13 @@ __Badges:__
 
 ## Version-Changes
 
+
+__0.8.12__ (08/12/2020)
+
+* better handling of incorrect and incomplete HTML-comments
+* inline code does now preserve whitespaces
+* table-cells can now also be styled with a starting HTML comment
+
 __0.8.11__ (05/12/2020)
 
 * parsing everything can be difficult, fixed issues with + and - that resulted
