@@ -68,8 +68,8 @@
         font-size: map-get($config, code-size);
         overflow-x: auto;
         margin: 0px;
-        transition: max-height 0.5s ease-out;
-        white-space: pre;
+        //transition: max-height 0.5s ease-out;
+        white-space: pre-wrap;
     }
 
     .lia-script {
