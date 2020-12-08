@@ -45,7 +45,7 @@ title_str =
 
 body : Parser Context String
 body =
-    [ regex "(?:[^#`<]+|[\\x0D\n]+|<!--[\\S\\s]{0,10000}?-->)" -- comment
+    [ regex "(?:[^#`<]+|[\\x0D\n]+|<!--[\\S\\s]{0,1000}?-->)" -- comment
     , regex "(`{3,})[\\S\\s]*?\\1" -- code_block or ascii art
     , regex "`.+?`" -- code_block or ascii art
     , regex "(?:<([\\w+\\-]+)[\\S\\s]*?</\\2>|`|<)"
