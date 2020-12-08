@@ -483,11 +483,11 @@ strings =
                         |> map Superscript
 
                 characters =
-                    regex "[~:_;=${}\\[\\]\\(\\)<>\\-+]"
+                    regex "[~:_;=${}\\[\\]\\(\\)\\-+]"
                         |> map Chars
 
                 spaces =
-                    regex "[ \\t]+"
+                    regex "[ \t]+"
                         |> onsuccess (Chars " ")
 
                 base2 =

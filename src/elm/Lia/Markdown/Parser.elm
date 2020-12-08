@@ -105,7 +105,7 @@ blocks =
                         , md_annotations
                             |> map HTML
                             |> andMap (HTML.parse blocks)
-                            |> ignore (regex "[ \t]*\n\n")
+                            |> ignore (regex "[ \t]*\n")
                         , md_annotations
                             |> map Paragraph
                             |> andMap paragraph
