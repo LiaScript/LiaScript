@@ -122,6 +122,8 @@ customElements.define('lia-editor', class extends HTMLElement {
 
     this._editor.setAutoScrollEditorIntoView(true)
 
+
+
     if (!this.model.readOnly) {
       const runDispatch = debounce(() => {
         this.model.value = this._editor.getValue()
@@ -147,6 +149,8 @@ customElements.define('lia-editor', class extends HTMLElement {
     if (this.focus_) {
       this.setFocus()
     }
+
+    console.warn(this._editor)
   }
 
   disconnectedCallback () {

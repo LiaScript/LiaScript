@@ -1,5 +1,6 @@
 module Lia.Utils exposing
-    ( blockKeydown
+    ( avoidColumn
+    , blockKeydown
     , get
     , onEnter
     , toEscapeString
@@ -7,6 +8,7 @@ module Lia.Utils exposing
     )
 
 import Html
+import Html.Attributes as Attr
 import Html.Events as Events
 import Json.Decode as JD
 
@@ -72,3 +74,12 @@ onEnter : msg -> Html.Attribute msg
 onEnter msg =
     JD.andThen (isEnter msg) Events.keyCode
         |> Events.on "keyup"
+
+
+avoidColumn : List (Html.Attribute msg) -> List (Html.Attribute msg)
+avoidColumn =
+    List.append
+        [ Attr.style "-webkit-column-break-inside" "avoid-column"
+        , Attr.style "page-break-inside" "avoid-column"
+        , Attr.style "break-inside" "avoid-column"
+        ]

@@ -18,7 +18,8 @@ import Translations exposing (Lang)
 
 
 type alias Config sub =
-    { view : Inlines -> List (Html Msg)
+    { mode : Mode
+    , view : Inlines -> List (Html Msg)
     , section : Section
     , ace_theme : String
     , light : Bool
@@ -34,6 +35,7 @@ init mode section id ace_theme lang light screen =
             inline mode section id ace_theme lang
     in
     Config
+        mode
         (viewer config >> List.map (Html.map Script))
         section
         ace_theme

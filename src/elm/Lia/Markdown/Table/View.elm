@@ -61,8 +61,7 @@ view config attr table =
 viewDiagram : Table -> State -> Scripts a -> Maybe Int -> Int -> Bool -> Parameters -> Html Msg
 viewDiagram table state effects visible width light attr =
     Html.div
-        [ blockKeydown (UpdateTable Sub.NoOp)
-        ]
+        (Lia.Utils.avoidColumn [ blockKeydown (UpdateTable Sub.NoOp) ])
         [ toggleBtn table.id "table"
         , table.body
             |> toMatrix effects visible
@@ -492,10 +491,14 @@ getState id =
 toTable : Int -> Parameters -> Class -> List (Html Msg) -> Html Msg
 toTable id attr class body =
     if class == None then
-        Html.table (Param.annotation "lia-table" attr) body
+        Html.table
+            (Param.annotation "lia-table" attr
+                |> Lia.Utils.avoidColumn
+            )
+            body
 
     else
-        Html.div []
+        Html.div (Lia.Utils.avoidColumn [])
             [ toggleBtn id <|
                 case class of
                     BarChart ->
@@ -536,7 +539,9 @@ toTable id attr class body =
 
                     None ->
                         ""
-            , Html.table (Attr.style "margin-top" "-0.2em" :: Param.annotation "lia-table" attr) body
+            , Html.table
+                (Attr.style "margin-top" "-0.2em" :: Param.annotation "lia-table" attr)
+                body
             ]
 
 
@@ -545,8 +550,12 @@ toggleBtn id icon =
     Html.img
         [ Attr.style "cursor" "pointer"
         , Attr.style "height" "16px"
+        , Attr.height 16
+        , Attr.width 16
+        , Attr.style "width" "16px"
         , onClick <| UpdateTable <| Sub.Toggle id
         , Attr.src <| "img/" ++ icon ++ ".png"
+        , Attr.style "z-index" "100"
         ]
         []
 

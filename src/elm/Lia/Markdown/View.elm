@@ -4,6 +4,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Html.Lazy as Lazy
+import Json.Encode as JE
 import Lia.Markdown.Chart.View as Charts
 import Lia.Markdown.Code.View as Codes
 import Lia.Markdown.Config as Config exposing (Config)
@@ -24,25 +25,64 @@ import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Section exposing (SubSection(..))
 import Lia.Settings.Model exposing (Mode(..))
+import Lia.Utils as Utils
 import SvgBob
 
 
 view : Config Msg -> Html Msg
 view config =
     case config.section.error of
+        Nothing ->
+            if config.mode == Newspaper then
+                config.section.body
+                    |> List.map (view_block config)
+                    |> List.foldl
+                        (\a ( b, bs ) ->
+                            if List.length b > 12 then
+                                ( [ a ], List.append bs [ b ] )
+
+                            else
+                                ( List.append b [ a ], bs )
+                        )
+                        ( [], [] )
+                    |> (\( b, bs ) ->
+                            List.append bs [ b ]
+                       )
+                    |> List.map
+                        (Html.div
+                            [ Attr.style "display" "block"
+                            , Attr.style "column-count" "3"
+                            , Attr.style "column-width" "600px"
+                            , Attr.style "column-fill" "auto"
+                            , Attr.style "column-gap" "40px"
+                            , Attr.style "column-rule" "1px dotted #ddd"
+                            ]
+                        )
+                    |> List.intersperse
+                        (Html.hr
+                            [ Attr.style "border" "2px inset"
+                            , Attr.style "margin" "30px"
+                            ]
+                            []
+                        )
+                    |> (::) (view_header config)
+                    |> Html.section
+                        [ Attr.class "lia-content"
+                        ]
+
+            else
+                view_body
+                    ( Config.setSubViewer (subView config) config
+                    , config.section.footnote2show
+                    , config.section.footnotes
+                    )
+                    config.section.body
+
         Just msg ->
             Html.section [ Attr.class "lia-content" ]
                 [ view_header config
                 , Html.text msg
                 ]
-
-        Nothing ->
-            view_body
-                ( Config.setSubViewer (subView config) config
-                , config.section.footnote2show
-                , config.section.footnotes
-                )
-                config.section.body
 
 
 subView : Config Msg -> Int -> SubSection -> List (Html (Script.Msg Msg))
@@ -190,10 +230,14 @@ view_block config block =
                         (Node name attributes [ inlines ])
 
                 Nothing ->
-                    Html.p (annotation "lia-paragraph" attr) (config.view [ element ])
+                    Html.p (annotation "lia-paragraph" attr |> Utils.avoidColumn) (config.view [ element ])
 
         Paragraph attr elements ->
-            Html.p (annotation "lia-paragraph" attr) (config.view elements)
+            Html.p
+                (annotation "lia-paragraph" attr
+                    |> Utils.avoidColumn
+                )
+                (config.view elements)
 
         Effect attr e ->
             e.content
@@ -203,12 +247,18 @@ view_block config block =
         BulletList attr list ->
             list
                 |> view_bulletlist config
-                |> Html.ul (annotation "lia-list lia-unordered" attr)
+                |> Html.ul
+                    (annotation "lia-list lia-unordered" attr
+                        |> Utils.avoidColumn
+                    )
 
         OrderedList attr list ->
             list
                 |> view_list config
-                |> Html.ol (annotation "lia-list lia-ordered" attr)
+                |> Html.ol
+                    (annotation "lia-list lia-ordered" attr
+                        |> Utils.avoidColumn
+                    )
 
         Table attr table ->
             Table.view

@@ -12,6 +12,7 @@ import Lia.Markdown.Code.Terminal as Terminal
 import Lia.Markdown.Code.Types exposing (Code(..), File, Snippet, Vector)
 import Lia.Markdown.Code.Update exposing (Msg(..))
 import Lia.Markdown.HTML.Attributes as Params exposing (Parameters)
+import Lia.Utils as Utils
 import Translations exposing (Lang, codeExecute, codeFirst, codeLast, codeMaximize, codeMinimize, codeNext, codePrev, codeRunning)
 
 
@@ -81,9 +82,11 @@ list_get idx list =
 div_ : List (Html msg) -> Html msg
 div_ =
     Html.div
-        [ Attr.style "margin-top" "16px"
-        , Attr.style "margin-bottom" "16px"
-        ]
+        (Utils.avoidColumn
+            [ Attr.style "margin-top" "16px"
+            , Attr.style "margin-bottom" "16px"
+            ]
+        )
 
 
 view_code : String -> Snippet -> Html Msg
@@ -92,7 +95,7 @@ view_code theme snippet =
         headless =
             snippet.name == ""
     in
-    Html.div []
+    Html.div (Utils.avoidColumn [])
         [ if headless then
             Html.text ""
 
@@ -111,7 +114,7 @@ view_eval lang theme running errors id_1 id_2 file attr =
         headless =
             file.name == ""
     in
-    Html.div (Params.annotation "" attr)
+    Html.div (Params.toAttribute attr)
         [ if headless then
             Html.text ""
 
@@ -401,6 +404,7 @@ view_control lang idx version_active version_count running terminal =
                     , Attr.style "margin-left" "0px"
                     , Attr.title (codeRunning lang)
                     , Attr.disabled True
+                    , Attr.style "zIndex" "100"
                     ]
                     [ Html.span
                         [ Attr.class "lia-icon rotating"
@@ -414,6 +418,7 @@ view_control lang idx version_active version_count running terminal =
                     , Attr.style "margin-left" "0px"
                     , Attr.title (codeRunning lang)
                     , onClick (Stop idx)
+                    , Attr.style "zIndex" "100"
                     ]
                     [ Html.text "stop" ]
 
@@ -423,6 +428,7 @@ view_control lang idx version_active version_count running terminal =
                     , onClick (Eval idx)
                     , Attr.style "margin-left" "0px"
                     , Attr.title (codeExecute lang)
+                    , Attr.style "zIndex" "100"
                     ]
                     [ Html.text "play_circle_filled" ]
         , Html.button

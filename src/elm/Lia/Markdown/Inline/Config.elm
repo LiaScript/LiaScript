@@ -38,7 +38,7 @@ init slide mode visible speaking effects theme lang =
     Config
         Nothing
         slide
-        (if mode == Textbook then
+        (if mode == Textbook || mode == Newspaper then
             Nothing
 
          else

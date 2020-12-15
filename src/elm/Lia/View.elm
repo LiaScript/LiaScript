@@ -127,6 +127,9 @@ view_footer lang sound mode slide effects =
         Textbook ->
             Html.text ""
 
+        Newspaper ->
+            Html.text ""
+
 
 navButton : String -> String -> String -> msg -> Html msg
 navButton str title id msg =
@@ -167,6 +170,9 @@ view_nav section_active hasIndex mode lang base speaking state =
                 , Html.text <|
                     case mode of
                         Textbook ->
+                            ""
+
+                        Newspaper ->
                             ""
 
                         _ ->
