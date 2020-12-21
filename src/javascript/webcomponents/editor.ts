@@ -54,9 +54,10 @@ function addMarker(color: string, name?: string | undefined) {
 
   if (!document.head.querySelector('style#'+id)) {
     let node = document.createElement('style')
+    // node.type ='text/css'
     node.id = id
     node.appendChild(document.createTextNode(
-      `.${name} {
+      `.${id} {
         position:absolute;
         background:${color};
         z-index:20
@@ -131,8 +132,8 @@ customElements.define('lia-editor', class extends HTMLElement {
 
     try {
       Object.entries(markers).forEach(entry => {
-        const [key, value] = entry;
-        addMarker(value, key)
+        const [name, color] = entry;
+        addMarker(color, name)
       });
     } catch (e) {
       console.warn('ace.js => ', e)
@@ -193,8 +194,6 @@ customElements.define('lia-editor', class extends HTMLElement {
     if (this._focus) {
       this.setFocus()
     }
-
-    console.warn(this._editor)
   }
 
   disconnectedCallback() {
@@ -281,10 +280,14 @@ customElements.define('lia-editor', class extends HTMLElement {
 
   setMarker() {
     let Range = ace.require('ace/range').Range
-    let value = this.model.marker.split(';')
+    let value = this.model.marker.replace('\n','').split(';').filter(e => e !== '')
 
     for (let i = 0; i < value.length; i++) {
-      let m = value[i].split(' ').filter(e => e !== '')
+      let m = value[i]
+              .trim()
+              .split(' ')
+              .map(e => e.trim())
+              .filter(e => e !== '')
 
       addMarker(m[4])
 
