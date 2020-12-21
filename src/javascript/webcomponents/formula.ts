@@ -8,6 +8,9 @@ customElements.define('lia-formula', class extends HTMLElement {
 
   constructor () {
     super()
+    this.span = document.createElement('span')
+    this.formula_ = ''
+    this.displayMode = false
   }
 
   connectedCallback () {
@@ -19,16 +22,12 @@ customElements.define('lia-formula', class extends HTMLElement {
     link.rel = 'stylesheet'
     link.href = 'katex.min.css'
 
-    this.span = document.createElement('span')
-
     shadowRoot.appendChild(link)
     shadowRoot.appendChild(this.span)
 
     const mode = this.getAttribute('displayMode')
 
-    if (!mode) {
-      this.displayMode = false
-    } else {
+    if (mode) {
       this.displayMode = JSON.parse(mode)
     }
 
