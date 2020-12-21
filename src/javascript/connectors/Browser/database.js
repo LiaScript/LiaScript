@@ -1,8 +1,6 @@
 import Dexie from 'dexie'
 
-import {
-  lia
-} from '../../liascript/logger'
+import log from '../../liascript/log.ts'
 
 if (process.env.NODE_ENV === 'development') {
   Dexie.debug = true
@@ -54,7 +52,7 @@ class LiaDB {
   async store (event, versionDB = null) {
     if (!this.db || this.version === 0) return
 
-    lia.warn(`liaDB: event(store), table(${event.topic}), id(${event.section}), data(${event.message})`)
+    log.warn(`liaDB: event(store), table(${event.topic}), id(${event.section}), data(${event.message})`)
 
     await this.db[event.topic].put({
       id: event.section,
@@ -67,7 +65,7 @@ class LiaDB {
   async load (event, versionDB = null) {
     if (!this.db) return
 
-    lia.log('loading => ', event.topic, event.section)
+    log.info('loading => ', event.topic, event.section)
 
     const item = await this.db[event.topic].get({
       id: event.section,
@@ -75,7 +73,7 @@ class LiaDB {
     })
 
     if (item) {
-      lia.log('restore table', event.topic) //, e._value.data)
+      log.info('restore table', event.topic) //, e._value.data)
       event.message = {
         topic: 'restore',
         section: -1,
@@ -99,10 +97,10 @@ class LiaDB {
 
     this.db.delete()
       .then(() => {
-        lia.log('database deleted: ', name)
+        log.info('database deleted: ', name)
       })
       .catch((err) => {
-        lia.error('error deleting database: ', name)
+        log.error('error deleting database: ', name, err)
       })
   }
 
@@ -168,7 +166,7 @@ class LiaDB {
             break
           }
           default: {
-            lia.warn('unknown update cmd: ', event)
+            log.warn('unknown update cmd: ', event)
           }
         }
 
@@ -252,7 +250,7 @@ class LiaDB {
       item.data[data.version] = data.definition
       item.data[data.version]['title'] = data.title
 
-      lia.log('storing new version to index', item)
+      log.info('storing new version to index', item)
 
       await this.db.offline.put({
         id: 0,
@@ -264,7 +262,7 @@ class LiaDB {
       item.data[data.version] = data.definition
       item.data[data.version]['title'] = data.title
 
-      lia.log('storing new version to index', item)
+      log.info('storing new version to index', item)
 
       let db = this.open_(data.readme)
       await db.open()

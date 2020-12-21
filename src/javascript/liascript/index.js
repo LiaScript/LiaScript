@@ -9,9 +9,7 @@ import {
 import {
   persistent
 } from './persistent'
-import {
-  lia
-} from './logger'
+import log from './log.ts'
 import {
   swipedetect
 } from './swipe'
@@ -114,7 +112,7 @@ function handleEffects (event, elmSend, section) {
       break
     }
     default:
-      lia.warn('effect missed', event)
+      log.warn('effect missed', event)
   }
 };
 
@@ -159,7 +157,7 @@ class LiaScript {
     const sendTo = this.app.ports.event2elm.send
 
     const sender = function (msg) {
-      lia.log('event2elm => ', msg)
+      log.info('event2elm => ', msg)
       sendTo(msg)
     }
 
@@ -189,7 +187,7 @@ class LiaScript {
   }
 
   initEventSystem (elem, jsSubscribe, elmSend) {
-    lia.log('initEventSystem')
+    log.info('initEventSystem')
 
     let self = this
 
@@ -202,7 +200,7 @@ class LiaScript {
     })
 
     jsSubscribe(function (event) {
-      lia.log('elm2js => ', event)
+      log.info('elm2js => ', event)
 
       switch (event.topic) {
         case 'slide': {
@@ -297,7 +295,7 @@ class LiaScript {
           let elem = event.message[0]
           let url = event.message[1]
 
-          lia.log('loading resource => ', elem, ':', url)
+          log.info('loading resource => ', elem, ':', url)
 
           try {
             let tag = document.createElement(elem)
@@ -312,16 +310,16 @@ class LiaScript {
               tag.defer = true
               tag.onload = function (e) {
                 window.event_semaphore--
-                lia.log('successfully loaded :', url)
+                log.info('successfully loaded :', url)
               }
               tag.onerror = function (e) {
                 window.event_semaphore--
-                lia.error('could not load :', url)
+                log.error('could not load :', url)
               }
             }
             document.head.appendChild(tag)
           } catch (e) {
-            lia.error('loading resource => ', e)
+            log.error('loading resource => ', e)
           }
 
           break
@@ -394,7 +392,7 @@ class LiaScript {
               break
             }
             default:
-              lia.error('Command  not found => ', event.message)
+              log.error('Command  not found => ', event.message)
           }
           break
         }
@@ -404,7 +402,7 @@ class LiaScript {
               navigator.share(event.message.message)
             }
           } catch (e) {
-            lia.error('sharing was not possible => ', event.message, e)
+            log.error('sharing was not possible => ', event.message, e)
           }
 
           break
@@ -415,7 +413,7 @@ class LiaScript {
           break
         }
         default:
-          lia.error('Command not found => ', event)
+          log.error('Command not found => ', event)
       }
     })
   }

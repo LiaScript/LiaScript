@@ -1,6 +1,4 @@
-import {
-  lia
-} from './logger'
+import log from './log.ts'
 
 window.event_semaphore = 0
 let lia_queue = []
@@ -80,7 +78,7 @@ class LiaEvents {
     try {
       this.input[event.section][event.message.section][event.message.topic](event.message.message)
     } catch (e) {
-      lia.error('unable to dispatch message', event.message)
+      log.error('unable to dispatch message', event.message)
     }
   }
 
@@ -129,7 +127,7 @@ function lia_wait () {
       } else if (event.type === 'exec') {
         lia_execute_event(event.event, event.send, event.section)
       } else {
-        lia.warn('lia_queue => unknown event => ', JSON.stringify(event))
+        log.warn('lia_queue => unknown event => ', JSON.stringify(event))
       }
     }
   }
@@ -275,7 +273,7 @@ function lia_execute_event (event, sender = null, section = null) {
         send.lia(result === undefined ? 'LIA: stop' : result)
       }
     } catch (e) {
-      lia.error('exec => ', e.message)
+      log.error('exec => ', e.message)
       send.lia(e.message, false)
     }
   }, event.delay)
