@@ -2,10 +2,10 @@ import {
   Elm
 } from '../../elm/Worker.elm'
 
-function fetch (self) {
+function fetch (self : PreviewLia) {
   let http = new XMLHttpRequest()
 
-  http.open('GET', self._src, true)
+  http.open('GET', self.source_url, true)
 
   http.onload = function (_e) {
     if (http.readyState === 4 && http.status === 200) {
@@ -15,15 +15,19 @@ function fetch (self) {
         console.warn('fetching', e)
       }
     }
-    http = null
   }
   http.send()
 }
 
-customElements.define('preview-lia', class extends HTMLElement {
+class PreviewLia extends HTMLElement {
+  private lia : any
+  public container : ShadowRoot
+  public source_url : string
+
   constructor () {
     super()
 
+    this.source_url = ''
     this.lia = Elm.Worker.init({
       flags: {
         cmd: ''
@@ -215,99 +219,99 @@ customElements.define('preview-lia', class extends HTMLElement {
     <div id="container" style="display: inline"></div>
     `
 
-    this._shadowRoot = this.attachShadow({
-      mode: 'closed'
-    })
-    this._shadowRoot.appendChild(template.content.cloneNode(true))
+    this.container = this.attachShadow({ mode: 'open' })
+    this.container.appendChild(template.content.cloneNode(true))
   }
 
   connectedCallback () {
-    const urls = this.getAttribute('src').split('/course/?')
+    const url = this.getAttribute('src')
+    const div = this.container.getElementById('container')
+
+    if (!url) return
+
+    const urls = url.split('/course/?')
 
     if (urls.length === 2) {
-      this._src = urls[1]
+      this.source_url = urls[1]
     } else {
-      this._src = urls[0]
+      this.source_url = urls[0]
     }
 
-    let link = this.getAttribute('link')
+    const link = this.getAttribute('link') || ('https://LiaScript.github.io/course/?' + this.source_url)
 
-    if (!link) {
-      link = 'https://LiaScript.github.io/course/?' + this._src
+    if (div) {
+      div.innerHTML = `<a href="${url}">preview-lia</a>`
+
+      let self = this
+
+      this.lia.ports.output.subscribe(function (event : [boolean, any]) {
+        let [ok, json] = event
+
+        if (ok) {
+          json = JSON.parse(json)
+
+          let tag
+
+          try {
+            tag = json.definition.macro.tags.split(',').map((e : string) => e.trim())
+          } catch (e) {
+            tag = []
+          }
+
+          let logo = json.definition.logo
+
+          if (!logo.startsWith('http')) {
+            let base = self.source_url.split('/')
+            base.pop()
+            logo = base.join('/') + '/' + logo
+          }
+
+          if (json.sections.length !== 0) {
+            div.className = 'blog-card'
+            div.style.all = ''
+            div.innerHTML = `<div class="meta">
+              <div class="photo" style="background-image: url(${logo})"></div>
+              <ul class="details">
+                <li class="author">${json.definition.author}</li>
+                <li class="date"><a href="mailto:${json.definition.email}">${json.definition.email}</a></li>
+                <li class="tags">
+                  <ul>
+                    <li>${!tag[0] ? '' : tag[0]}</li>
+                    <li>${!tag[1] ? '' : tag[1]}</li>
+                    <li>${!tag[2] ? '' : tag[2]}</li>
+                    <li>${!tag[3] ? '' : '...'}</li>
+                  </ul>
+                </li>
+              </ul>
+            </div>
+            <div class="description">
+              <h1>${json.str_title}</h1>
+              <h2>Version: ${json.definition.version}</h2>
+              <p> ${json.comment} </p>
+              <p class="read-more">
+                <a href="${link}">Open</a>
+              </p>
+            </div>`
+          }
+
+          // `${json.str_title} <br>  <img style="width: 90px" src="${json.definition.logo}">`
+        } else {
+          console.warn('could not load course ...')
+        }
+      })
+      fetch(self)
     }
 
-    let div = this._shadowRoot.getElementById('container')
-
-    div.innerHTML = `<a href="${this.getAttribute('src')}">preview-lia</a>`
-
-    let self = this
-
-    this.lia.ports.output.subscribe(function (event) {
-      let [ok, json] = event
-
-      if (ok) {
-        json = JSON.parse(json)
-
-        let tag
-
-        try {
-          tag = json.definition.macro.tags.split(',').map(e => e.trim())
-        } catch (e) {
-          tag = []
-        }
-
-        let logo = json.definition.logo
-
-        if (!logo.startsWith('http')) {
-          let base = self._src.split('/')
-          base.pop()
-          logo = base.join('/') + '/' + logo
-        }
-
-        if (json.sections.length !== 0) {
-          div.className = 'blog-card'
-          div.style = ''
-          div.innerHTML = `<div class="meta">
-            <div class="photo" style="background-image: url(${logo})"></div>
-            <ul class="details">
-              <li class="author">${json.definition.author}</li>
-              <li class="date"><a href="mailto:${json.definition.email}">${json.definition.email}</a></li>
-              <li class="tags">
-                <ul>
-                  <li>${!tag[0] ? '' : tag[0]}</li>
-                  <li>${!tag[1] ? '' : tag[1]}</li>
-                  <li>${!tag[2] ? '' : tag[2]}</li>
-                  <li>${!tag[3] ? '' : '...'}</li>
-                </ul>
-              </li>
-            </ul>
-          </div>
-          <div class="description">
-            <h1>${json.str_title}</h1>
-            <h2>Version: ${json.definition.version}</h2>
-            <p> ${json.comment} </p>
-            <p class="read-more">
-              <a href="${link}">Open</a>
-            </p>
-          </div>`
-        }
-
-        // `${json.str_title} <br>  <img style="width: 90px" src="${json.definition.logo}">`
-      } else {
-        console.warn('could not load course ...')
-      }
-    })
-
-    fetch(self)
   }
 
   disconnectedCallback () {
-    if (super.disconnectedCallback) {
-      super.disconnectedCallback()
-    }
+    // todo
   }
 
-  parse (course) {
+  parse (course: string) {
     this.lia.ports.input.send(['defines', course])
   }
-})
+}
+
+
+customElements.define('preview-lia', PreviewLia)
