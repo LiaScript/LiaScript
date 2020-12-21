@@ -6,7 +6,7 @@ module Lia.Markdown.Code.Editor exposing
     , enableSnippets
     , extensions
     , firstLineNumber
-    , focus
+    , focusing
     , fontSize
     , highlightActiveLine
     , marker
@@ -52,7 +52,7 @@ onChange msg =
 onFocus : msg -> Html.Attribute msg
 onFocus msg =
     JD.bool
-        |> JD.at [ "target", "focus" ]
+        |> JD.at [ "target", "focusing" ]
         |> JD.andThen
             (\b ->
                 if b then
@@ -67,7 +67,7 @@ onFocus msg =
 onBlur : msg -> Html.Attribute msg
 onBlur msg =
     JD.bool
-        |> JD.at [ "target", "focus" ]
+        |> JD.at [ "target", "focusing" ]
         |> JD.andThen
             (\b ->
                 if b then
@@ -184,6 +184,6 @@ boolean prop =
     JE.bool >> Attr.property prop
 
 
-focus : Html.Attribute msg
-focus =
-    boolean "focus" True
+focusing : Html.Attribute msg
+focusing =
+    boolean "focusing" True

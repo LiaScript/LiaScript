@@ -369,7 +369,7 @@ editor theme id code =
                     |> Maybe.withDefault "crimson_editor"
                     |> Editor.theme
                 , Editor.onBlur (Edit False id)
-                , Editor.focus
+                , Editor.focusing
                 , Editor.mode "javascript"
                 , Editor.maxLines 16
                 , Editor.showGutter True

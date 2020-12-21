@@ -5,15 +5,15 @@ const style = 'width: 100%; height: 400px; margin-top: -0.2em;'
 customElements.define('lia-chart', class extends HTMLElement {
   private container: HTMLDivElement
 
-  private chart: null|echarts.ECharts
+  private chart: null | echarts.ECharts
   private option_: object
-  private geoJson: {url: string, data: null|object}
+  private geoJson: { url: string, data: null | object }
 
-  static get observedAttributes () {
+  static get observedAttributes() {
     return ['style', 'mode', 'json']
   }
 
-  constructor () {
+  constructor() {
     super()
     const shadowRoot = this.attachShadow({
       mode: 'open'
@@ -21,17 +21,17 @@ customElements.define('lia-chart', class extends HTMLElement {
 
     this.option_ = {}
     this.chart = null
-    this.geoJson = {url:'', data:null}
+    this.geoJson = { url: '', data: null }
     this.container = document.createElement('div')
     shadowRoot.appendChild(this.container)
 
     let self = this
-    window.addEventListener('resize', function () {
+    window.addEventListener('resize', function() {
       self.resizeChart()
     })
   }
 
-  connectedCallback () {
+  connectedCallback() {
     if (!this.chart) {
       this.container.setAttribute('style', style)
       this.chart = echarts.init(this.container, this.getAttribute('mode') || '')
@@ -41,16 +41,16 @@ customElements.define('lia-chart', class extends HTMLElement {
     }
   }
 
-  disconnectedCallback () {
-    if(this.chart) echarts.dispose(this.chart)
+  disconnectedCallback() {
+    if (this.chart) echarts.dispose(this.chart)
 
     this.geoJson.data = {}
   }
 
-  attributeChangedCallback (name:string, oldValue:string, newValue:string) {
+  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
     if (oldValue === newValue) return
 
-    switch(name) {
+    switch (name) {
       case 'style': {
         this.container.setAttribute('style', style + newValue)
         this.resizeChart()
@@ -58,7 +58,7 @@ customElements.define('lia-chart', class extends HTMLElement {
       }
 
       case 'mode': {
-        if(this.chart) {
+        if (this.chart) {
           echarts.dispose(this.chart)
           this.chart = echarts.init(this.container, newValue)
           this.updateChart()
@@ -70,13 +70,13 @@ customElements.define('lia-chart', class extends HTMLElement {
         this.geoJson.url = newValue
         this.geoJson.data = null
 
-        if(this.geoJson.url.startsWith('http')) {
+        if (this.geoJson.url.startsWith('http')) {
           let xmlHttp = new XMLHttpRequest()
           let self = this
-          xmlHttp.onreadystatechange = function () {
+          xmlHttp.onreadystatechange = function() {
             if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
               try {
-                if(xmlHttp.responseText) {
+                if (xmlHttp.responseText) {
                   self.geoJson.data = JSON.parse(xmlHttp.responseText)
                   self.updateChart()
                 }
@@ -95,7 +95,7 @@ customElements.define('lia-chart', class extends HTMLElement {
     }
   }
 
-  updateChart () {
+  updateChart() {
     if (!this.chart || !this.option_) return
 
     // this.chart.clear();
@@ -107,15 +107,15 @@ customElements.define('lia-chart', class extends HTMLElement {
     this.chart.setOption(this.option_, true)
   }
 
-  resizeChart () {
+  resizeChart() {
     if (this.chart) this.chart.resize()
   }
 
-  get option () {
+  get option() {
     return this.option_
   }
 
-  set option (val) {
+  set option(val) {
     if (val) {
       if (JSON.stringify(val) !== JSON.stringify(this.option_)) {
         this.option_ = val
