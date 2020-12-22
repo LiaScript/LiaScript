@@ -2,12 +2,12 @@ import {
   Elm
 } from '../../elm/Worker.elm'
 
-function fetch (self : PreviewLia) {
+function fetch(self: PreviewLia) {
   let http = new XMLHttpRequest()
 
   http.open('GET', self.source_url, true)
 
-  http.onload = function (_e) {
+  http.onload = function(_e) {
     if (http.readyState === 4 && http.status === 200) {
       try {
         self.parse(http.responseText)
@@ -20,11 +20,11 @@ function fetch (self : PreviewLia) {
 }
 
 class PreviewLia extends HTMLElement {
-  private lia : any
-  public container : ShadowRoot
-  public source_url : string
+  private lia: any
+  public container: ShadowRoot
+  public source_url: string
 
-  constructor () {
+  constructor() {
     super()
 
     this.source_url = ''
@@ -223,7 +223,7 @@ class PreviewLia extends HTMLElement {
     this.container.appendChild(template.content.cloneNode(true))
   }
 
-  connectedCallback () {
+  connectedCallback() {
     const url = this.getAttribute('src')
     const div = this.container.getElementById('container')
 
@@ -244,7 +244,7 @@ class PreviewLia extends HTMLElement {
 
       let self = this
 
-      this.lia.ports.output.subscribe(function (event : [boolean, any]) {
+      this.lia.ports.output.subscribe(function(event: [boolean, any]) {
         let [ok, json] = event
 
         if (ok) {
@@ -253,7 +253,7 @@ class PreviewLia extends HTMLElement {
           let tag
 
           try {
-            tag = json.definition.macro.tags.split(',').map((e : string) => e.trim())
+            tag = json.definition.macro.tags.split(',').map((e: string) => e.trim())
           } catch (e) {
             tag = []
           }
@@ -304,11 +304,11 @@ class PreviewLia extends HTMLElement {
 
   }
 
-  disconnectedCallback () {
+  disconnectedCallback() {
     // todo
   }
 
-  parse (course: string) {
+  parse(course: string) {
     this.lia.ports.input.send(['defines', course])
   }
 }

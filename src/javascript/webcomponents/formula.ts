@@ -6,14 +6,14 @@ customElements.define('lia-formula', class extends HTMLElement {
   private formula_: string
   private displayMode: boolean
 
-  constructor () {
+  constructor() {
     super()
     this.span = document.createElement('span')
     this.formula_ = ''
     this.displayMode = false
   }
 
-  connectedCallback () {
+  connectedCallback() {
     const shadowRoot = this.attachShadow({
       mode: 'open'
     })
@@ -34,7 +34,7 @@ customElements.define('lia-formula', class extends HTMLElement {
     this.render()
   }
 
-  render () {
+  render() {
     if (this.formula_ && this.span) {
       try {
         katex.render(this.formula_, this.span, {
@@ -47,18 +47,18 @@ customElements.define('lia-formula', class extends HTMLElement {
     }
   }
 
-  get formula () {
+  get formula() {
     return this.formula_
   }
 
-  set formula (value) {
+  set formula(value) {
     if (this.formula_ !== value) {
       this.formula_ = value
       this.render()
     }
   }
 
-  disconnectedCallback () {
+  disconnectedCallback() {
     this.span.innerHTML = ""
   }
 })

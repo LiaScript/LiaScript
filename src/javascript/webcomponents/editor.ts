@@ -52,7 +52,7 @@ function addMarker(color: string, name?: string | undefined) {
 
   const id = markerStyle(name || color)
 
-  if (!document.head.querySelector('style#'+id)) {
+  if (!document.head.querySelector('style#' + id)) {
     let node = document.createElement('style')
     // node.type ='text/css'
     node.id = id
@@ -280,14 +280,14 @@ customElements.define('lia-editor', class extends HTMLElement {
 
   setMarker() {
     let Range = ace.require('ace/range').Range
-    let value = this.model.marker.replace('\n','').split(';').filter(e => e !== '')
+    let value = this.model.marker.replace('\n', '').split(';').filter(e => e !== '')
 
     for (let i = 0; i < value.length; i++) {
       let m = value[i]
-              .trim()
-              .split(' ')
-              .map(e => e.trim())
-              .filter(e => e !== '')
+        .trim()
+        .split(' ')
+        .map(e => e.trim())
+        .filter(e => e !== '')
 
       addMarker(m[4])
 

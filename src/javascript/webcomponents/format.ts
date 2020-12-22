@@ -1,15 +1,15 @@
 declare namespace Intl {
-    class RelativeTimeFormat {
-        constructor(locale: string | undefined, options: object);
-        format(value: string, unit: string | undefined): string;
-    }
-    class ListFormat {
-        constructor(locale: string | undefined, options: object);
-        format(value: string[]): string;
-    }
+  class RelativeTimeFormat {
+    constructor(locale: string | undefined, options: object);
+    format(value: string, unit: string | undefined): string;
+  }
+  class ListFormat {
+    constructor(locale: string | undefined, options: object);
+    format(value: string[]): string;
+  }
 }
 
-enum Format{
+enum Format {
   DateTime = 'datetime',
   List = 'list',
   Number = 'number',
@@ -27,7 +27,7 @@ customElements.define('lia-format', class extends HTMLElement {
   private option: object
   private unit: string | undefined
 
-  constructor () {
+  constructor() {
     super()
     this.span = document.createElement('span')
     this.option = {}
@@ -37,7 +37,7 @@ customElements.define('lia-format', class extends HTMLElement {
     this.locale
   }
 
-  connectedCallback () {
+  connectedCallback() {
     const shadowRoot = this.attachShadow({
       mode: 'open'
     })
@@ -96,7 +96,7 @@ customElements.define('lia-format', class extends HTMLElement {
           year: this.get('year')
         }
         break
-        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/RelativeTimeFormat/RelativeTimeFormat
+      // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/RelativeTimeFormat/RelativeTimeFormat
       case 'relativetime':
         this.unit = this.get('unit') || undefined
         this.option = {
@@ -133,7 +133,7 @@ customElements.define('lia-format', class extends HTMLElement {
     this.view()
   }
 
-  view () {
+  view() {
     let value = ''
     try {
       switch (this.format) {
@@ -160,15 +160,15 @@ customElements.define('lia-format', class extends HTMLElement {
     this.span.innerText = value || this.value_
   }
 
-  get (name: string) {
+  get(name: string) {
     return this.getAttribute(name)
   }
 
-  get value () {
+  get value() {
     return this.value_
   }
 
-  getFormat (): Format|null {
+  getFormat(): Format | null {
     switch (this.get('format')) {
       case Format.DateTime:
         return Format.DateTime
@@ -184,13 +184,13 @@ customElements.define('lia-format', class extends HTMLElement {
     return null
   }
 
-  set value (value) {
+  set value(value) {
     if (this.value_ !== value) {
       this.value_ = value
       this.view()
     }
   }
 
-  disconnectedCallback () {
+  disconnectedCallback() {
   }
 })

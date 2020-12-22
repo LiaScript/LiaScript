@@ -1,4 +1,4 @@
-function getMode (name: string) : string {
+function getMode(name: string): string {
   return 'ace/mode/' + (modes[name] || 'text')
 };
 
