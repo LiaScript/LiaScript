@@ -5,15 +5,15 @@ declare global {
 }
 
 const log = {
-  info: function () {
+  info: function() {
     if (window.debug__) console.log('LiaInfo: ', ...arguments)
   },
 
-  warn: function () {
+  warn: function() {
     if (window.debug__) console.warn('LiaWarn: ', ...arguments)
   },
 
-  error: function () {
+  error: function() {
     console.error('LiaError: ', ...arguments)
   }
 }

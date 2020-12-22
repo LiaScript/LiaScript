@@ -1,18 +1,12 @@
-import {
-  Elm
-} from '../../elm/Main.elm'
+import { Elm } from '../../elm/Main.elm'
 import {
   LiaEvents,
   lia_execute_event,
   lia_eval_event
 } from './events'
-import {
-  persistent
-} from './persistent'
+// import persistent from './persistent.ts'
 import log from './log.ts'
-import {
-  swipedetect
-} from './swipe'
+import { swipedetect } from './swipe'
 
 function isInViewport (elem) {
   const bounding = elem.getBoundingClientRect()
