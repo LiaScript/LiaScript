@@ -3,7 +3,7 @@ import {
   LiaEvents,
   lia_execute_event,
   lia_eval_event
-} from './events'
+} from './events.ts'
 // import persistent from './persistent.ts'
 import log from './log.ts'
 import swipedetect from './swipe.ts'

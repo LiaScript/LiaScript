@@ -1,5 +1,11 @@
 import log from './log'
 
+declare global {
+  interface Window {
+    event_semaphore: number;
+  }
+}
+
 enum ErrType {
   error = 'error',
   warning = 'warning',
@@ -13,8 +19,36 @@ type ErrMessage = {
   type: ErrType
 }
 
+type Event = {
+  topic: string,
+  section: number,
+  message: Event | any
+}
+
+enum JS {
+  exec = 'exec',
+  eval = 'eval'
+}
+
+type JSEvent = {
+  type: JS,
+  code: string,
+  event: Event,
+  section: number,
+  send: Send,
+}
+
+type Send = {
+  lia: (result: string, details?: ErrMessage [] [], ok?: boolean) => void,
+  log: (topic: string, sep: string, ...args:any) => void,
+  handle: (name: string, fn: any) => void,
+  register: (name: string, fn: any) => void,
+  dispatch: (name: string, data: any) => void
+}
+
+
 window.event_semaphore = 0
-let lia_queue = []
+let lia_queue: JSEvent [] = []
 
 // Basic class for handline Code-Errors
 class LiaError extends Error {
@@ -68,17 +102,20 @@ class LiaError extends Error {
   }
 };
 
-class LiaEvents {
+export class LiaEvents {
+  private event: { [key: string]: any }
+  private input: { [key: number]: { [key: number]: any } }
+
   constructor () {
     this.event = {}
     this.input = {}
   }
 
-  register (name, fn) {
+  register (name: string, fn: any) {
     this.event[name] = fn
   }
 
-  register_input (id1, id2, name, fn) {
+  register_input (id1: number, id2: number, name: string, fn: any) {
     if (this.input[id1] === undefined) {
       this.input[id1] = {}
     }
@@ -89,7 +126,7 @@ class LiaEvents {
     this.input[id1][id2][name] = fn
   }
 
-  dispatch_input (event) { // id1, id2, name, msg) {
+  dispatch_input (event: Event) { // id1, id2, name, msg) {
     try {
       this.input[event.section][event.message.section][event.message.topic](event.message.message)
     } catch (e) {
@@ -97,16 +134,17 @@ class LiaEvents {
     }
   }
 
-  dispatch (name, data) {
+  dispatch (name: string, data: any) {
     if (this.event.hasOwnProperty(name)) {
       this.event[name](data)
     }
   }
 
-  remove (name) {
+  remove (name: string) {
     delete this.event[name]
   }
 };
+
 
 function getLineNumber (error: Error) : number | null {
   if (error.stack) {
@@ -132,12 +170,11 @@ function lia_wait () {
   if (window.event_semaphore > 0) {
     setTimeout(lia_wait, 100)
   } else {
-    while (lia_queue.length) {
-      let event = lia_queue.pop()
-
-      if (event.type === 'eval') {
+    let event
+    while (event = lia_queue.pop()) {
+      if (event.type === JS.eval) {
         lia_eval(event.code, event.send)
-      } else if (event.type === 'exec') {
+      } else if (event.type === JS.exec) {
         lia_execute_event(event.event, event.send, event.section)
       } else {
         log.warn('lia_queue => unknown event => ', JSON.stringify(event))
@@ -146,10 +183,10 @@ function lia_wait () {
   }
 }
 
-function lia_eval (code, send) {
+function lia_eval (code: string, send: Send) {
   if (window.event_semaphore > 0) {
     lia_queue.push({
-      type: 'eval',
+      type: JS.eval,
       code: code,
       send: send
     })
@@ -162,11 +199,21 @@ function lia_eval (code, send) {
 
   try {
     const console = {
-      debug: (...args) => send.log('debug', '\n', args),
-      log: (...args) => send.log('info', '\n', args),
-      warn: (...args) => send.log('warn', '\n', args),
-      error: (...args) => send.log('error', '\n', args),
-      html: (...args) => send.log('html', '\n', args),
+      debug: (...args: any) => {
+        return send.log('debug', '\n', args)
+      },
+      log: (...args: any) => {
+        return send.log('info', '\n', args)
+      },
+      warn: (...args: any) => {
+        return send.log('warn', '\n', args)
+      },
+      error: (...args: any) => {
+        return send.log('error', '\n', args)
+      },
+      html: (...args: any) => {
+        return send.log('html', '\n', args)
+      },
       clear: () => send.lia('LIA: clear')
     }
 
@@ -182,10 +229,10 @@ function lia_eval (code, send) {
   }
 };
 
-function lia_eval_event (send, handler, event) {
+export function lia_eval_event (send: (_:Event) => void, handler: LiaEvents, event: Event) {
   lia_eval(
     event.message.message, {
-      lia: (result, details = [], ok = true) => {
+      lia: (result: string, details = [], ok = true) => {
         event.message.topic = 'eval'
         event.message.message = {
           result: result,
@@ -194,28 +241,28 @@ function lia_eval_event (send, handler, event) {
         }
         send(event)
       },
-      log: (topic, sep, ...args) => {
+      log: (topic: string, sep: string, ...args:any) => {
         event.message.topic = topic
         event.message.message = list_to_string(sep, args)
         send(event)
       },
       // service: websocket(channel),
-      handle: (name, fn) => {
+      handle: (name: string, fn: any) => {
         const e1 = event.section
         const e2 = event.message.section
         handler.register_input(e1, e2, name, fn)
       },
-      register: (name, fn) => {
+      register: (name: string, fn: any) => {
         handler.register(name, fn)
       },
-      dispatch: (name, data) => {
+      dispatch: (name: string, data: any) => {
         handler.dispatch(name, data)
       }
     }
   )
 };
 
-function list_to_string (sep, list) {
+function list_to_string (sep: string, list: any) {
   let str = ''
 
   for (let i = 0; i < list[0].length; i++) {
@@ -225,15 +272,15 @@ function list_to_string (sep, list) {
   return str + sep
 };
 
-function execute_response (topic, event_id, sender, section) {
-  return (msg, ok = true) => {
+function execute_response (topic: string, event_id: number, send: (_:Event) => void, section?: number) {
+  return (msg: any, ok = true) => {
     if (typeof msg !== 'string') {
       msg = JSON.stringify(msg)
     }
 
-    sender({
+    send({
       topic: 'effect',
-      section: section,
+      section: section || -1,
       message: {
         topic: topic,
         section: event_id,
@@ -247,13 +294,13 @@ function execute_response (topic, event_id, sender, section) {
   }
 }
 
-function lia_execute_event (event, sender = null, section = null) {
+export function lia_execute_event (event: Event, sender: Send, section?: number) {
   if (window.event_semaphore > 0) {
     lia_queue.push({
-      type: 'exec',
+      type: JS.exec,
       event: event,
       send: sender,
-      section: section
+      section: section || -1
     })
 
     if (lia_queue.length === 1) {
@@ -272,10 +319,10 @@ function lia_execute_event (event, sender = null, section = null) {
       stop: () => {
         (execute_response('code', event.id, sender, section))('LIA: stop')
       },
-      html: (msg) => {
+      html: (msg: string) => {
         (execute_response('code', event.id, sender, section))('HTML: ' + msg)
       },
-      liascript: (msg) => {
+      liascript: (msg: string) => {
         (execute_response('code', event.id, sender, section))('LIASCRIPT: ' + msg)
       }
     }
@@ -294,7 +341,7 @@ function lia_execute_event (event, sender = null, section = null) {
 
 function websocket (channel = null) {
   if (channel) {
-    return function (eventID, message) {
+    return function (eventID: string, message: string) {
       return channel.push('lia', {
         event_id: eventID,
         message: message
@@ -302,9 +349,3 @@ function websocket (channel = null) {
     }
   }
 };
-
-export {
-  LiaEvents,
-  lia_execute_event,
-  lia_eval_event
-}
