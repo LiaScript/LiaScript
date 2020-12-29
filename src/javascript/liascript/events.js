@@ -115,9 +115,7 @@ function getLineNumber (error) {
 
 function lia_wait () {
   if (window.event_semaphore > 0) {
-    setTimeout(function (e) {
-      lia_wait()
-    }, 100)
+    setTimeout(lia_wait, 100)
   } else {
     while (lia_queue.length) {
       let event = lia_queue.pop()
