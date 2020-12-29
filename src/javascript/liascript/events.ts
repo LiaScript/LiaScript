@@ -1,11 +1,26 @@
-import log from './log.ts'
+import log from './log'
+
+enum ErrType {
+  error = 'error',
+  warning = 'warning',
+  info = 'info'
+}
+
+type ErrMessage = {
+  row: number,
+  column?: number,
+  text: string,
+  type: ErrType
+}
 
 window.event_semaphore = 0
 let lia_queue = []
 
 // Basic class for handline Code-Errors
 class LiaError extends Error {
-  constructor (message, files, ...params) {
+  public details : ErrMessage [] []
+
+  constructor (message: string, files: number, ...params: any) {
     super(...params)
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, LiaError)
@@ -19,7 +34,7 @@ class LiaError extends Error {
     }
   }
 
-  add_detail (fileId, msg, type, line, column) {
+  add_detail (fileId: number, msg: string, type: ErrType, line: number, column?: number) {
     this.details[fileId].push({
       row: line,
       column: column,
@@ -28,7 +43,7 @@ class LiaError extends Error {
     })
   }
 
-  get_detail (msg, type, line, column = 0) {
+  get_detail (msg: string, type: ErrType, line: number, column = 0) {
     return {
       row: line,
       column: column,
@@ -40,14 +55,14 @@ class LiaError extends Error {
   // sometimes you need to adjust the compile messages to fit into the
   // editor ... use this function to adapt the row parameters ...
   // file_id with 0 will apply the correction value to all files
-  correct_lines (fileId, by) {
+  correct_lines (fileId: number, by: number) {
     if (fileId == null) {
       for (let i = 0; i < this.details.length; i++) {
         this.correct_lines(i, by)
       }
     } else {
-      this.details[fileId] = this.details[fileId].map((e) => {
-        e.line = e.line + by
+      this.details[fileId].map((e) => {
+        e.row = e.row + by
       })
     }
   }
@@ -93,24 +108,24 @@ class LiaEvents {
   }
 };
 
-function getLineNumber (error) {
-  try {
+function getLineNumber (error: Error) : number | null {
+  if (error.stack) {
     // firefox
     const firefoxRegex = /<anonymous>:(\d+):\d+/
     if (error.stack.match(firefoxRegex)) {
       const res = error.stack.match(firefoxRegex)
-      return parseInt(res[1], 10)
+      return res ? parseInt(res[1], 10) : null
     }
 
     // chrome
     const chromeRegex = /<anonymous>.+:(\d+):\d+/
-    if (error.stack.match(chromeRegex)) {
+    if (error.stack && error.stack.match(chromeRegex)) {
       const res = error.stack.match(chromeRegex)
-      return parseInt(res[1], 10)
+      return res ? parseInt(res[1], 10) : null
     }
-  } catch (e) {
-
   }
+
+  return null
 };
 
 function lia_wait () {
