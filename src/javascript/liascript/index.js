@@ -6,7 +6,7 @@ import {
 } from './events'
 // import persistent from './persistent.ts'
 import log from './log.ts'
-import { swipedetect } from './swipe'
+import swipedetect from './swipe.ts'
 
 function isInViewport (elem) {
   const bounding = elem.getBoundingClientRect()

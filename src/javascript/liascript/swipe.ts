@@ -6,7 +6,7 @@ enum Dir {
   down = 'down'
 }
 
-function swipedetect(el, callback) {
+function swipedetect(el: HTMLElement, callback: (_: Dir) => void) {
   let touchsurface = el
   let swipedir: Dir
   let startX: number
@@ -78,7 +78,7 @@ function swipedetect(el, callback) {
       }
     }
     // check that elapsed time is within specified, horizontal dist traveled >= threshold, and vertical dist traveled <= 100
-    if (swipedir !== 'none') handleswipe(swipedir)
+    if (swipedir !== Dir.none) handleswipe(swipedir)
     e.preventDefault()
   }, { passive: true })
 
