@@ -8,7 +8,7 @@ import {
 import log from './log'
 import swipedetect from './swipe'
 
-function isInViewport (elem) {
+function isInViewport (elem: HTMLElement) {
   const bounding = elem.getBoundingClientRect()
   return (
     bounding.top >= 20 &&
@@ -18,13 +18,13 @@ function isInViewport (elem) {
   )
 };
 
-function scrollIntoView (id, delay) {
+function scrollIntoView (id: string, delay: number) {
   setTimeout(function () {
-    try {
-      document.getElementById(id).scrollIntoView({
-        behavior: 'smooth'
-      })
-    } catch (e) {}
+    const elem = document.getElementById(id)
+
+    if (elem) {
+      elem.scrollIntoView({ behavior: 'smooth' })
+    }
   }, delay)
 };
 
@@ -110,7 +110,7 @@ function handleEffects (event, elmSend, section) {
   }
 };
 
-function meta (name, content) {
+function meta (name: string, content: string) {
   if (content !== '') {
     let meta = document.createElement('meta')
     meta.name = name
