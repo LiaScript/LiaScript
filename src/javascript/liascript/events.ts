@@ -30,13 +30,21 @@ enum JS {
   eval = 'eval'
 }
 
-type JSEvent = {
-  type: JS,
+
+type JSEval = {
+  type: JS.eval,
   code: string,
-  event: Event,
-  section: number,
-  send: Send,
+  send: Send
 }
+
+type JSExec = {
+  type: JS.exec,
+  section: number,
+  event: Event,
+  send: (_:Event) => void
+}
+
+type JSEvent = JSEval | JSExec
 
 type Send = {
   lia: (result: string, details?: ErrMessage [] [], ok?: boolean) => void,
@@ -126,7 +134,7 @@ export class LiaEvents {
     this.input[id1][id2][name] = fn
   }
 
-  dispatch_input (event: Event) { // id1, id2, name, msg) {
+  dispatch_input (event: Event) {
     try {
       this.input[event.section][event.message.section][event.message.topic](event.message.message)
     } catch (e) {
@@ -172,12 +180,17 @@ function lia_wait () {
   } else {
     let event
     while (event = lia_queue.pop()) {
-      if (event.type === JS.eval) {
-        lia_eval(event.code, event.send)
-      } else if (event.type === JS.exec) {
-        lia_execute_event(event.event, event.send, event.section)
-      } else {
-        log.warn('lia_queue => unknown event => ', JSON.stringify(event))
+      switch(event.type) {
+        case JS.eval: {
+          lia_eval(event.code, event.send)
+          break
+        }
+        case JS.exec: {
+          lia_execute_event(event.event, event.send, event.section)
+          break
+        }
+        default:
+          log.warn('lia_queue => unknown event => ', JSON.stringify(event))
       }
     }
   }
@@ -199,27 +212,17 @@ function lia_eval (code: string, send: Send) {
 
   try {
     const console = {
-      debug: (...args: any) => {
-        return send.log('debug', '\n', args)
-      },
-      log: (...args: any) => {
-        return send.log('info', '\n', args)
-      },
-      warn: (...args: any) => {
-        return send.log('warn', '\n', args)
-      },
-      error: (...args: any) => {
-        return send.log('error', '\n', args)
-      },
-      html: (...args: any) => {
-        return send.log('html', '\n', args)
-      },
-      clear: () => send.lia('LIA: clear')
+      debug:  (...args: any) => { return send.log('debug', '\n', args) },
+      log:    (...args: any) => { return send.log('info', '\n', args) },
+      warn:   (...args: any) => { return send.log('warn', '\n', args) },
+      error:  (...args: any) => { return send.log('error', '\n', args) },
+      html:   (...args: any) => { return send.log('html', '\n', args) },
+      clear:  () => send.lia('LIA: clear')
     }
 
     console.clear()
 
-    send.lia(String(eval(code + '\n', send, console)))
+    send.lia(String(eval(code + '\n')))//, send, console)))
   } catch (e) {
     if (e instanceof LiaError) {
       send.lia(e.message, e.details, false)
@@ -233,7 +236,7 @@ export function lia_eval_event (send: (_:Event) => void, handler: LiaEvents, eve
   lia_eval(
     event.message.message, {
       lia: (result: string, details = [], ok = true) => {
-        event.message.topic = 'eval'
+        event.message.topic = JS.eval
         event.message.message = {
           result: result,
           details: details,
@@ -294,7 +297,7 @@ function execute_response (topic: string, event_id: number, send: (_:Event) => v
   }
 }
 
-export function lia_execute_event (event: Event, sender: Send, section?: number) {
+export function lia_execute_event (event: Event, sender: (_:Event) => void, section?: number) {
   if (window.event_semaphore > 0) {
     lia_queue.push({
       type: JS.exec,
@@ -339,7 +342,7 @@ export function lia_execute_event (event: Event, sender: Send, section?: number)
   }, event.delay)
 };
 
-function websocket (channel = null) {
+function websocket (channel?: any []) {
   if (channel) {
     return function (eventID: string, message: string) {
       return channel.push('lia', {
