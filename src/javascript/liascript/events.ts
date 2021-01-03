@@ -1,22 +1,10 @@
 import log from './log'
+import Lia from './types.d'
 
 declare global {
   interface Window {
     event_semaphore: number;
   }
-}
-
-enum ErrType {
-  error = 'error',
-  warning = 'warning',
-  info = 'info'
-}
-
-type ErrMessage = {
-  row: number,
-  column?: number,
-  text: string,
-  type: ErrType
 }
 
 type Event = {
@@ -47,7 +35,7 @@ type JSExec = {
 type JSEvent = JSEval | JSExec
 
 type Send = {
-  lia: (result: string, details?: ErrMessage [] [], ok?: boolean) => void,
+  lia: (result: string, details?: Lia.ErrMessage [] [], ok?: boolean) => void,
   log: (topic: string, sep: string, ...args:any) => void,
   handle: (name: string, fn: any) => void,
   register: (name: string, fn: any) => void,
@@ -60,7 +48,7 @@ let lia_queue: JSEvent [] = []
 
 // Basic class for handline Code-Errors
 class LiaError extends Error {
-  public details : ErrMessage [] []
+  public details : Lia.ErrMessage [] []
 
   constructor (message: string, files: number, ...params: any) {
     super(...params)
@@ -76,7 +64,7 @@ class LiaError extends Error {
     }
   }
 
-  add_detail (fileId: number, msg: string, type: ErrType, line: number, column?: number) {
+  add_detail (fileId: number, msg: string, type: Lia.ErrType, line: number, column?: number) {
     this.details[fileId].push({
       row: line,
       column: column,
@@ -85,7 +73,7 @@ class LiaError extends Error {
     })
   }
 
-  get_detail (msg: string, type: ErrType, line: number, column = 0) {
+  get_detail (msg: string, type: Lia.ErrType, line: number, column = 0) {
     return {
       row: line,
       column: column,
