@@ -9,7 +9,7 @@ import log from './log'
 import swipedetect from './swipe'
 
 import Lia from './types/lia.d'
-//import './responsiveVoice.d'
+import './types/responsiveVoice'
 
 
 function isInViewport (elem: HTMLElement) {
@@ -84,22 +84,26 @@ function handleEffects (event: Lia.Event, elmSend: Lia.Send, section?: number) {
         } else {
           ttsBackup = event.message
           if (event.message[2] === 'true') {
+            console.warn("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
             responsiveVoice.speak(
               event.message[1],
               event.message[0], {
                 onstart: (e) => {
-                  console.warn("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", e)
                   msg.message.message = 'start'
 
                   elmSend(msg)
+
+                  console.warn("1XXXXXXXXXXXXXXXXXXXXXXXXXX", e)
                 },
-                onend: (e) => {
+                onend: () => {
                   msg.message.message = 'stop'
                   elmSend(msg)
+                  console.warn("2XXXXXXXXXXXXXXXXXXXXXXXXXX")
                 },
-                onerror: (e) => {
+                onerror: (e:any) => {
                   msg.message.message = e.toString()
                   elmSend(msg)
+                  console.warn("3XXXXXXXXXXXXXXXXXXXXXXXXXX")
                 }
               })
           }
