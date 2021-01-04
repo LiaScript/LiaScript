@@ -1,4 +1,4 @@
-import Lia from '../../liascript/types.d'
+import Lia from '../../liascript/types/lia.d'
 
 import { LiaStorage } from './storage'
 import { SETTINGS, initSettings, defaultSettings } from './settings'

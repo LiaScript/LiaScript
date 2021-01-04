@@ -1,4 +1,4 @@
-import Lia from './types.d'
+import Lia from './types/lia.d'
 
 const log = {
   info: function(...args: any) {

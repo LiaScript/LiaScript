@@ -1,5 +1,5 @@
 import log from './log'
-import Lia from './types.d'
+import Lia from './types/lia.d'
 
 enum JS {
   exec = 'exec',

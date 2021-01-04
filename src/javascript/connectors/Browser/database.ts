@@ -1,7 +1,8 @@
-import Lia from '../../liascript/types.d'
+import Dexie from 'dexie'
+
+import Lia from '../../liascript/types/lia.d'
 import log from '../../liascript/log'
 
-import Dexie from 'dexie'
 
 if (process.env.NODE_ENV === 'development') {
   Dexie.debug = true

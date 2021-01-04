@@ -8,6 +8,10 @@ import {
 import log from './log'
 import swipedetect from './swipe'
 
+import Lia from './types/lia.d'
+//import './responsiveVoice.d'
+
+
 function isInViewport (elem: HTMLElement) {
   const bounding = elem.getBoundingClientRect()
   return (
@@ -28,7 +32,7 @@ function scrollIntoView (id: string, delay: number) {
   }, delay)
 };
 
-function handleEffects (event, elmSend, section) {
+function handleEffects (event: Lia.Event, elmSend: Lia.Send, section?: number) {
   switch (event.topic) {
     case 'scrollTo':
       scrollIntoView(event.message, 350)
@@ -84,6 +88,7 @@ function handleEffects (event, elmSend, section) {
               event.message[1],
               event.message[0], {
                 onstart: (e) => {
+                  console.warn("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", e)
                   msg.message.message = 'start'
 
                   elmSend(msg)
@@ -120,13 +125,24 @@ function meta (name: string, content: string) {
 }
 // -----------------------------------------------------------------------------
 
-var eventHandler
+var eventHandler:
 var liaStorage
 var ttsBackup
 var firstSpeak = true
 
 class LiaScript {
-  constructor (elem, connector, debug = false, course = null, script = null, url = '', slide = 0, spa = true) {
+  private app: any
+
+  constructor (
+    elem: Element,
+    connector: any,
+    debug:boolean = false,
+    course: string | null = null,
+    script: string | null = null,
+    url: string = '',
+    slide: number = 0,
+    spa: boolean = true
+  ) {
     if (debug) window.debug__ = true
 
     eventHandler = new LiaEvents()

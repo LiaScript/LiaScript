@@ -1,4 +1,4 @@
-import Lia from '../../liascript/types.d'
+import Lia from '../../liascript/types/lia.d'
 
 import { LiaDB } from './database'
 import { Connector as Base } from '../Base/index'

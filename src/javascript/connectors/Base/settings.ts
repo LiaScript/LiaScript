@@ -1,4 +1,4 @@
-import Lia from '../../liascript/types.d'
+import Lia from '../../liascript/types/lia.d'
 
 export const SETTINGS = 'settings'
 
