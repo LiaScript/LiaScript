@@ -1,7 +1,7 @@
 import "@babel/polyfill"
 
 import LiaScript from '../../javascript/liascript/index.ts'
-import { Connector } from '../../javascript/connectors/Browser/index.js'
+import { Connector } from '../../javascript/connectors/Browser/index.ts'
 
 const ua = window.navigator.userAgent
 

@@ -1,71 +1,88 @@
-import {
-  LiaDB
-} from './database'
-import { Connector as Base } from '../Base/index.ts'
+import Lia from '../../liascript/types.d'
+
+import { LiaDB } from './database'
+import { Connector as Base } from '../Base/index'
 
 class Connector extends Base {
+
+  private database?: LiaDB
+
   hasIndex () {
     return true
   }
 
-  connect (send = null) {
-    this.send = send
-    this.database = new LiaDB(send)
+  connect (send: Lia.Send | null) {
+    if (send) {
+      this.send = send
+    }
+
+    this.database = new LiaDB(this.send)
     this.initSettings(this.getSettings(), true)
   }
 
-  open (uidDB, versionDB, slide, data = null) {
-    this.database.open(
-      uidDB,
-      versionDB, {
-        topic: 'code',
-        section: slide,
-        message: {
-          topic: 'restore',
-          section: -1,
-          message: null
-        }
-      })
+  open (uidDB: string, versionDB: number, slide: number, _data?: Lia.Event) {
+    if (this.database)
+      this.database.open(
+        uidDB,
+        versionDB, {
+          topic: 'code',
+          section: slide,
+          message: {
+            topic: 'restore',
+            section: -1,
+            message: null
+          }
+        })
   }
 
-  load (event) {
-    this.database.load(event)
+  load (event: Lia.Event) {
+    if (this.database)
+      this.database.load(event)
   }
 
-  store (event) {
-    this.database.store(event)
+  store (event: Lia.Event) {
+    if (this.database)
+      this.database.store(event)
   }
 
-  update (event, id) {
-    this.database.update(event, id)
+  update (event: Lia.Event, id: number) {
+    if (this.database)
+      this.database.update(event, id)
   }
 
-  slide (id) {
-    this.database.slide(id)
+  slide (id: number) {
+    if (this.database)
+      this.database.slide(id)
   }
 
   getIndex () {
-    this.database.listIndex()
+    if (this.database)
+      this.database.listIndex()
   }
 
-  deleteFromIndex (msg) {
-    this.database.deleteIndex(msg)
+  deleteFromIndex (uidDB: string) {
+    if (this.database)
+      this.database.deleteIndex(uidDB)
   }
 
-  storeToIndex (json) {
-    this.database.storeIndex(json)
+  storeToIndex (json: any) {
+    if (this.database)
+      this.database.storeIndex(json)
   }
 
-  restoreFromIndex (uidDB, versionDB = null) {
-    this.database.restore(uidDB, versionDB)
+  restoreFromIndex (uidDB: string, versionDB?: number) {
+    if (this.database)
+      this.database.restore(uidDB, versionDB)
   }
 
-  reset (uidDB, versionDB = null) {
-    this.database.reset(uidDB, versionDB)
+  reset (uidDB: string, versionDB: number) {
+    if (this.database)
+      this.database.reset(uidDB, versionDB)
   }
 
-  getFromIndex (uidDB) {
-    this.database.getIndex(uidDB)
+  getFromIndex (uidDB: string) {
+    if (this.database)
+      this.database.getIndex(uidDB)
   }
 }
 

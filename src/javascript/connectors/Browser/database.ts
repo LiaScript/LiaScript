@@ -1,22 +1,31 @@
-import Dexie from 'dexie'
+import Lia from '../../liascript/types.d'
+import log from '../../liascript/log'
 
-import log from '../../liascript/log.ts'
+import Dexie from 'dexie'
 
 if (process.env.NODE_ENV === 'development') {
   Dexie.debug = true
 }
 
 class LiaDB {
-  constructor (send = null) {
+  private send: Lia.Send
+  private dbIndex: Dexie
+
+  private db: any
+  private version: number
+
+  constructor (send: Lia.Send) {
     this.send = send
 
     this.dbIndex = new Dexie('Index')
     this.dbIndex.version(1).stores({
       courses: '&id,updated,author,created,title'
     })
+
+    this.version = 0
   }
 
-  open_ (uidDB) {
+  open_ (uidDB: string) {
     let db = new Dexie(uidDB)
 
     db.version(1).stores({
@@ -29,7 +38,7 @@ class LiaDB {
     return db
   }
 
-  async open (uidDB, versionDB, init) {
+  async open (uidDB: string, versionDB: number, init?: Lia.Event) {
     this.version = versionDB
     this.db = this.open_(uidDB)
     await this.db.open()
@@ -49,7 +58,7 @@ class LiaDB {
     }
   }
 
-  async store (event, versionDB = null) {
+  async store (event: Lia.Event, versionDB?: number) {
     if (!this.db || this.version === 0) return
 
     log.warn(`liaDB: event(store), table(${event.topic}), id(${event.section}), data(${event.message})`)
@@ -62,14 +71,14 @@ class LiaDB {
     })
   }
 
-  async load (event, versionDB = null) {
+  async load (event: Lia.Event, versionDB?: number) {
     if (!this.db) return
 
     log.info('loading => ', event.topic, event.section)
 
     const item = await this.db[event.topic].get({
       id: event.section,
-      version: versionDB != null ? versionDB : this.version
+      version: versionDB != undefined ? versionDB : this.version
     })
 
     if (item) {
@@ -99,25 +108,25 @@ class LiaDB {
       .then(() => {
         log.info('database deleted: ', name)
       })
-      .catch((err) => {
+      .catch((err: Error) => {
         log.error('error deleting database: ', name, err)
       })
   }
 
-  async slide (idx) {
+  async slide (id: number) {
     try {
       let data = await this.db.offline.get({
         id: 0,
         version: this.version
       })
 
-      data.data.section_active = idx
+      data.data.section_active = id
 
       await this.db.offline.put(data)
     } catch (e) {}
   }
 
-  async update (event, slide) {
+  async update (event: Lia.Event, slide: number) {
     if (!this.db || this.version === 0) return
 
     let db = this.db
@@ -177,11 +186,11 @@ class LiaDB {
     })
   }
 
-  async restore (uidDB, versionDB = null) {
+  async restore (uidDB: string, versionDB?: number) {
     const course = await this.dbIndex.courses.get(uidDB)
 
     if (course) {
-      let latest = parseInt(Object.keys(course.data).sort().reverse())
+      // let latest = parseInt(Object.keys(course.data).sort().reverse())
 
       let db = this.open_(uidDB)
 
@@ -198,7 +207,7 @@ class LiaDB {
     }
   }
 
-  async getIndex (uidDB) {
+  async getIndex (uidDB: string) {
     const course = await this.dbIndex.courses.get(uidDB)
 
     this.send({
@@ -227,7 +236,7 @@ class LiaDB {
     })
   }
 
-  async storeIndex (data) {
+  async storeIndex (data: any) {
     let date = new Date()
     let item = await this.dbIndex.courses.get(data.readme)
 
@@ -278,14 +287,14 @@ class LiaDB {
     this.dbIndex.courses.put(item)
   }
 
-  async deleteIndex (uidDB) {
+  async deleteIndex (uidDB: string) {
     await Promise.all([
       this.dbIndex.courses.delete(uidDB),
       Dexie.delete(uidDB)
     ])
   }
 
-  async reset (uidDB, versionDB) {
+  async reset (uidDB: string, versionDB: number) {
     let db = this.open_(uidDB)
     await db.open()
 

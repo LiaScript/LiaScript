@@ -5,7 +5,7 @@ import { SETTINGS, initSettings, defaultSettings } from './settings'
 
 export class Connector {
 
-  private send: Lia.Send
+  protected send: Lia.Send
 
   constructor () {
     this.send = (_) => null
@@ -24,8 +24,8 @@ export class Connector {
     return new LiaStorage()
   }
 
-  initSettings (data?: Lia.Settings, local = false) {
-    initSettings(this.send, data, local)
+  initSettings (data: Lia.Settings | null, local = false) {
+    initSettings(this.send, data ? data : undefined, local)
   }
 
   setSettings (data: Lia.Settings) {
@@ -67,14 +67,14 @@ export class Connector {
 
   getIndex () {}
 
-  deleteFromIndex (_msg: Lia.Event) {}
+  deleteFromIndex (_uidDB: string) {}
 
   storeToIndex (_json: any) {}
 
   restoreFromIndex (_uidDB: string, _versionDB?: number) {}
 
   reset (_uidDB: string, _versionDB?: number) {
-    this.initSettings(undefined, true)
+    this.initSettings(null, true)
   }
 
   getFromIndex (_uidDB: string) {
