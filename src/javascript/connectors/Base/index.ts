@@ -1,78 +1,85 @@
-import { LiaStorage } from './storage' 
-import { SETTINGS, initSettings } from './settings'
+import Lia from '../../liascript/types.d'
 
-class Connector {
-  constructor () {}
+import { LiaStorage } from './storage'
+import { SETTINGS, initSettings, defaultSettings } from './settings'
+
+export class Connector {
+  private send: Lia.Send
+  constructor () {
+    this.send = (_) => null
+  }
 
   hasIndex () {
     return false
   }
 
-  connect (send = null) {
-    this.send = send
+  connect (send: Lia.Send | null) {
+    if (send)
+      this.send = send
   }
 
   storage () {
     return new LiaStorage()
   }
 
-  initSettings (data = null, local = false) {
+  initSettings (data?: Lia.Settings, local = false) {
     initSettings(this.send, data, local)
   }
 
-  setSettings (data) {
+  setSettings (data: Lia.Settings) {
     localStorage.setItem(SETTINGS, JSON.stringify(data))
   }
 
   getSettings () {
-    if (window.innerWidth <= 620) {
-      let data
+    const data = localStorage.getItem(SETTINGS)
+    let json: Lia.Settings | null = null
 
+    if(typeof data === 'string') {
       try {
-        data = JSON.parse(localStorage.getItem(SETTINGS))
-        data.table_of_contents = false
-        this.setSettings(data)
-      } catch (e) {
-
+        json = JSON.parse(data)
+      } catch(e) {
+        console.warn('getSettings =>', e)
       }
 
-      return data
-    } else {
-      return JSON.parse(localStorage.getItem(SETTINGS))
+      if (!json) {
+        json = defaultSettings
+      }
+
+      if (window.innerWidth <= 620) {
+        json.table_of_contents = false
+      }
     }
+
+    return json
   }
 
-  open (uidDB, versionDB, slide, data = null) {}
+  open (uidDB: string, versionDB: number, slide: number, data?: Lia.Event) {}
 
-  load (event) {}
+  load (event: Lia.Event) {}
 
-  store (event) {}
+  store (event: Lia.Event) {}
 
-  update (event, id) {}
+  update (event: Lia.Event, id: number) {}
 
-  slide (id) {}
+  slide (id: number) {}
 
   getIndex () {}
 
-  deleteFromIndex (msg) {}
+  deleteFromIndex (msg: Lia.Event) {}
 
-  storeToIndex (json) {}
+  storeToIndex (json: any) {}
 
-  restoreFromIndex (uidDB, versionDB = null) {}
+  restoreFromIndex (uidDB: string, versionDB?: number) {}
 
-  reset (uidDB, versionDB = null) {
-    this.initSettings(null, true)
+  reset (uidDB: string, versionDB?: number) {
+    this.initSettings(undefined, true)
   }
 
-  getFromIndex (uidDB) {
+  getFromIndex (uidDB: string) {
     this.send({
       topic: 'restore',
       message: null,
       section: -1
     })
   }
-}
-
-export {
-  Connector
 }
