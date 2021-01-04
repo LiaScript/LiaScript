@@ -10,24 +10,37 @@ enum JS {
 type JSEval = {
   type: JS.eval,
   code: string,
-  send: Send
+  send: SendEval
 }
 
 type JSExec = {
   type: JS.exec,
   section: number,
-  event: Lia.Event,
+  event: {
+    code: string,
+    delay: number
+    id?: number,
+  },
   send?: Lia.Send
 }
 
 type JSEvent = JSEval | JSExec
 
-type Send = {
+type SendEval = {
   lia: (result: string, details?: Lia.ErrMessage [] [], ok?: boolean) => void,
   log: (topic: string, sep: string, ...args:any) => void,
   handle: (name: string, fn: any) => void,
   register: (name: string, fn: any) => void,
   dispatch: (name: string, data: any) => void
+}
+
+type SendExec = {
+  lia: (result: string, details?: Lia.ErrMessage [] [], ok?: boolean) => void,
+  output: (result: string, details?: Lia.ErrMessage [] [], ok?: boolean) => void,
+  wait: () => void,
+  stop: () => void,
+  html: (msg: string) => void,
+  liascript: (msg: string) => void
 }
 
 
@@ -172,7 +185,7 @@ function lia_wait () {
   }
 }
 
-function lia_eval (code: string, send: Send) {
+function lia_eval (code: string, send: SendEval) {
   if (window.event_semaphore > 0) {
     lia_queue.push({
       type: JS.eval,
@@ -273,13 +286,13 @@ function execute_response (topic: string, event_id: number, send: Lia.Send, sect
   }
 }
 
-export function lia_execute_event (event: Lia.Event, sender?: Lia.Send, section?: number) {
+export function lia_execute_event (event: {code: string, delay: number, id?: number}, sender?: Lia.Send, section: number = -1) {
   if (window.event_semaphore > 0) {
     lia_queue.push({
       type: JS.exec,
       event: event,
       send: sender,
-      section: section || -1
+      section: section
     })
 
     if (lia_queue.length === 1) {
@@ -289,24 +302,25 @@ export function lia_execute_event (event: Lia.Event, sender?: Lia.Send, section?
   }
 
   setTimeout(() => {
-    let send: Send | undefined
+    let send: SendExec | undefined
 
 
-    if (sender) {
+    if (sender && !!event.id && section >= 0) {
+      const id = event.id
       send = {
-        lia: execute_response('code', event.id, sender, section),
-        output: execute_response('codeX', event.id, sender, section),
+        lia: execute_response('code', id, sender, section),
+        output: execute_response('codeX', id, sender, section),
         wait: () => {
-          (execute_response('code', event.id, sender, section))('LIA: wait')
+          (execute_response('code', id, sender, section))('LIA: wait')
         },
         stop: () => {
-          (execute_response('code', event.id, sender, section))('LIA: stop')
+          (execute_response('code', id, sender, section))('LIA: stop')
         },
         html: (msg: string) => {
-          (execute_response('code', event.id, sender, section))('HTML: ' + msg)
+          (execute_response('code', id, sender, section))('HTML: ' + msg)
         },
         liascript: (msg: string) => {
-          (execute_response('code', event.id, sender, section))('LIASCRIPT: ' + msg)
+          (execute_response('code', id, sender, section))('LIASCRIPT: ' + msg)
         }
       }
     }
