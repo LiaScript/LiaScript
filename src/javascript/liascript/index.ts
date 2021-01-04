@@ -33,7 +33,7 @@ function scrollIntoView (id: string, delay: number) {
   }, delay)
 };
 
-function handleEffects (event: Lia.Event, elmSend: Lia.Send, section?: number) {
+function handleEffects (event: Lia.Event, elmSend: Lia.Send, section: number = -1) {
   switch (event.topic) {
     case 'scrollTo':
       scrollIntoView(event.message, 350)
@@ -70,7 +70,7 @@ function handleEffects (event: Lia.Event, elmSend: Lia.Send, section?: number) {
 
       try {
         if (event.message === 'cancel') {
-          responsiveVoice.cancel()
+          window.responsiveVoice.cancel()
           msg.message.message = 'stop'
           elmSend(msg)
         } else if (event.message === 'repeat') {
@@ -85,26 +85,21 @@ function handleEffects (event: Lia.Event, elmSend: Lia.Send, section?: number) {
         } else {
           ttsBackup = event.message
           if (event.message[2] === 'true') {
-            console.warn("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
-            responsiveVoice.speak(
+            window.responsiveVoice.speak(
               event.message[1],
               event.message[0], {
-                onstart: (e) => {
+                onstart: () => {
                   msg.message.message = 'start'
 
                   elmSend(msg)
-
-                  console.warn("1XXXXXXXXXXXXXXXXXXXXXXXXXX", e)
                 },
                 onend: () => {
                   msg.message.message = 'stop'
                   elmSend(msg)
-                  console.warn("2XXXXXXXXXXXXXXXXXXXXXXXXXX")
                 },
                 onerror: (e:any) => {
                   msg.message.message = e.toString()
                   elmSend(msg)
-                  console.warn("3XXXXXXXXXXXXXXXXXXXXXXXXXX")
                 }
               })
           }
@@ -130,16 +125,17 @@ function meta (name: string, content: string) {
 }
 // -----------------------------------------------------------------------------
 
-var eventHandler:
-var liaStorage
-var ttsBackup
+var eventHandler: LiaEvents
+var liaStorage: any
+var ttsBackup: [string, string]
 var firstSpeak = true
 
 class LiaScript {
   private app: any
+  private connector: any
 
   constructor (
-    elem: Element,
+    elem: HTMLElement,
     connector: any,
     debug:boolean = false,
     course: string | null = null,
@@ -171,7 +167,7 @@ class LiaScript {
 
     const sendTo = this.app.ports.event2elm.send
 
-    const sender = function (msg) {
+    const sender = function (msg: Lia.Event) {
       log.info('event2elm => ', msg)
       sendTo(msg)
     }
@@ -201,7 +197,7 @@ class LiaScript {
     })
   }
 
-  initEventSystem (elem, jsSubscribe, elmSend) {
+  initEventSystem (elem: HTMLElement, jsSubscribe: (fn: (_: Lia.Event) => void) => void , elmSend: Lia.Send) {
     log.info('initEventSystem')
 
     let self = this
@@ -214,7 +210,7 @@ class LiaScript {
       })
     })
 
-    jsSubscribe(function (event) {
+    jsSubscribe((event: Lia.Event) => {
       log.info('elm2js => ', event)
 
       switch (event.topic) {
@@ -323,13 +319,13 @@ class LiaScript {
               tag.src = url
               tag.async = false
               tag.defer = true
-              tag.onload = function (e) {
+              tag.onload = function () {
                 window.event_semaphore--
-                log.info('successfully loaded :', url)
+                log.info('successfully loaded =>', url)
               }
-              tag.onerror = function (e) {
+              tag.onerror = function (e: Error) {
                 window.event_semaphore--
-                log.error('could not load :', url)
+                log.warn('could not load =>', url, e)
               }
             }
             document.head.appendChild(tag)
@@ -385,7 +381,7 @@ class LiaScript {
           switch (event.message.topic) {
             case 'list': {
               try {
-                responsiveVoice.cancel()
+                window.responsiveVoice.cancel()
               } catch (e) {}
               self.connector.getIndex()
               break

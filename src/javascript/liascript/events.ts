@@ -17,7 +17,7 @@ type JSExec = {
   type: JS.exec,
   section: number,
   event: Lia.Event,
-  send: Lia.Send
+  send?: Lia.Send
 }
 
 type JSEvent = JSEval | JSExec
@@ -252,7 +252,7 @@ function list_to_string (sep: string, list: any) {
 };
 
 function execute_response (topic: string, event_id: number, send: Lia.Send, section?: number) {
-  return (msg: any, ok = true) => {
+  return (msg: any, details: Lia.ErrMessage [] [] = [], ok = true) => {
     if (typeof msg !== 'string') {
       msg = JSON.stringify(msg)
     }
@@ -266,14 +266,14 @@ function execute_response (topic: string, event_id: number, send: Lia.Send, sect
         message: {
           ok: ok,
           result: msg,
-          details: []
+          details: details
         }
       }
     })
   }
 }
 
-export function lia_execute_event (event: Lia.Event, sender: Lia.Send, section?: number) {
+export function lia_execute_event (event: Lia.Event, sender?: Lia.Send, section?: number) {
   if (window.event_semaphore > 0) {
     lia_queue.push({
       type: JS.exec,
@@ -289,31 +289,37 @@ export function lia_execute_event (event: Lia.Event, sender: Lia.Send, section?:
   }
 
   setTimeout(() => {
-    let send = {
-      lia: execute_response('code', event.id, sender, section),
-      output: execute_response('codeX', event.id, sender, section),
-      wait: () => {
-        (execute_response('code', event.id, sender, section))('LIA: wait')
-      },
-      stop: () => {
-        (execute_response('code', event.id, sender, section))('LIA: stop')
-      },
-      html: (msg: string) => {
-        (execute_response('code', event.id, sender, section))('HTML: ' + msg)
-      },
-      liascript: (msg: string) => {
-        (execute_response('code', event.id, sender, section))('LIASCRIPT: ' + msg)
+    let send: Send | undefined
+
+
+    if (sender) {
+      send = {
+        lia: execute_response('code', event.id, sender, section),
+        output: execute_response('codeX', event.id, sender, section),
+        wait: () => {
+          (execute_response('code', event.id, sender, section))('LIA: wait')
+        },
+        stop: () => {
+          (execute_response('code', event.id, sender, section))('LIA: stop')
+        },
+        html: (msg: string) => {
+          (execute_response('code', event.id, sender, section))('HTML: ' + msg)
+        },
+        liascript: (msg: string) => {
+          (execute_response('code', event.id, sender, section))('LIASCRIPT: ' + msg)
+        }
       }
     }
 
     try {
       const result = eval(event.code)
-      if (section != null && typeof event.id === 'number') {
+      if (!!send && section != null && typeof event.id === 'number') {
         send.lia(result === undefined ? 'LIA: stop' : result)
       }
     } catch (e) {
       log.error('exec => ', e.message)
-      send.lia(e.message, false)
+      if(!!send)
+        send.lia(e.message, [], false)
     }
   }, event.delay)
 };

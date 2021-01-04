@@ -1,23 +1,4 @@
 // taken from: https://responsivevoice.org/api/
-declare global {
-  interface responsiveVoice {
-    speak: (_text: string, _voice?: string, _cb?: Options) => void;
-    cancel: () => void;
-    voiceSupport: () => boolean;
-    getVoices: () => string[];
-    setDefaultVoice: (_: string) => void;
-    setDefaultRate: (_: number) => void;
-    isPlaying: () => boolean;
-    pause: () => void;
-    resume: () => void;
-
-    setTextReplacements: (_: Replacement[]) => void;
-
-    enableWindowClickHook: () => void;
-
-    enableEstimationTimeout: boolean;
-  }
-}
 
 type Options = {
   pitch?: number,
@@ -35,6 +16,29 @@ type Replacement = {
   newvalue: string,
   collectionvoices? : string | string[],
   systemvoices? : string | string[]
+}
+
+
+declare global {
+  interface Window {
+    responsiveVoice: {
+      speak: (_text: string, _voice?: string, _cb?: Options) => void;
+      cancel: () => void;
+      voiceSupport: () => boolean;
+      getVoices: () => string[];
+      setDefaultVoice: (_: string) => void;
+      setDefaultRate: (_: number) => void;
+      isPlaying: () => boolean;
+      pause: () => void;
+      resume: () => void;
+
+      setTextReplacements: (_: Replacement[]) => void;
+
+      enableWindowClickHook: () => void;
+
+      enableEstimationTimeout: boolean;
+    }
+  }
 }
 
 export {}
