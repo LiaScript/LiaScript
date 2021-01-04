@@ -1,14 +1,24 @@
 export as namespace Lia;
 
-export enum ErrType {
-  error = 'error',
-  warning = 'warning',
-  info = 'info'
+declare global {
+  interface Window {
+    debug__?: boolean;
+    event_semaphore: number;
+  }
 }
+
+export type ErrType = 'error' | 'warning' | 'info'
 
 export type ErrMessage = {
   row: number,
   column?: number,
   text: string,
-  type: Lia.ErrType
+  type: ErrType
+}
+
+
+export type Event = {
+  topic: string,
+  section: number,
+  message: Event | any
 }

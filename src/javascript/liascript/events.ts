@@ -1,23 +1,10 @@
 import log from './log'
 import Lia from './types.d'
 
-declare global {
-  interface Window {
-    event_semaphore: number;
-  }
-}
-
-type Event = {
-  topic: string,
-  section: number,
-  message: Event | any
-}
-
 enum JS {
   exec = 'exec',
   eval = 'eval'
 }
-
 
 type JSEval = {
   type: JS.eval,
@@ -28,8 +15,8 @@ type JSEval = {
 type JSExec = {
   type: JS.exec,
   section: number,
-  event: Event,
-  send: (_:Event) => void
+  event: Lia.Event,
+  send: (_:Lia.Event) => void
 }
 
 type JSEvent = JSEval | JSExec
@@ -122,7 +109,7 @@ export class LiaEvents {
     this.input[id1][id2][name] = fn
   }
 
-  dispatch_input (event: Event) {
+  dispatch_input (event: Lia.Event) {
     try {
       this.input[event.section][event.message.section][event.message.topic](event.message.message)
     } catch (e) {
@@ -220,7 +207,7 @@ function lia_eval (code: string, send: Send) {
   }
 };
 
-export function lia_eval_event (send: (_:Event) => void, handler: LiaEvents, event: Event) {
+export function lia_eval_event (send: (_:Lia.Event) => void, handler: LiaEvents, event: Lia.Event) {
   lia_eval(
     event.message.message, {
       lia: (result: string, details = [], ok = true) => {
@@ -263,7 +250,7 @@ function list_to_string (sep: string, list: any) {
   return str + sep
 };
 
-function execute_response (topic: string, event_id: number, send: (_:Event) => void, section?: number) {
+function execute_response (topic: string, event_id: number, send: (_:Lia.Event) => void, section?: number) {
   return (msg: any, ok = true) => {
     if (typeof msg !== 'string') {
       msg = JSON.stringify(msg)
@@ -285,7 +272,7 @@ function execute_response (topic: string, event_id: number, send: (_:Event) => v
   }
 }
 
-export function lia_execute_event (event: Event, sender: (_:Event) => void, section?: number) {
+export function lia_execute_event (event: Lia.Event, sender: (_:Lia.Event) => void, section?: number) {
   if (window.event_semaphore > 0) {
     lia_queue.push({
       type: JS.exec,

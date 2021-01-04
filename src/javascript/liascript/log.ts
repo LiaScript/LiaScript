@@ -1,8 +1,4 @@
-declare global {
-  interface Window {
-    debug__?: boolean;
-  }
-}
+import Lia from './types.d'
 
 const log = {
   info: function(...args: any) {
