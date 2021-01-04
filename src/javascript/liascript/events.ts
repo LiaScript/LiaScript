@@ -16,7 +16,7 @@ type JSExec = {
   type: JS.exec,
   section: number,
   event: Lia.Event,
-  send: (_:Lia.Event) => void
+  send: Lia.Send
 }
 
 type JSEvent = JSEval | JSExec
@@ -207,7 +207,7 @@ function lia_eval (code: string, send: Send) {
   }
 };
 
-export function lia_eval_event (send: (_:Lia.Event) => void, handler: LiaEvents, event: Lia.Event) {
+export function lia_eval_event (send: Lia.Send, handler: LiaEvents, event: Lia.Event) {
   lia_eval(
     event.message.message, {
       lia: (result: string, details = [], ok = true) => {
@@ -250,7 +250,7 @@ function list_to_string (sep: string, list: any) {
   return str + sep
 };
 
-function execute_response (topic: string, event_id: number, send: (_:Lia.Event) => void, section?: number) {
+function execute_response (topic: string, event_id: number, send: Lia.Send, section?: number) {
   return (msg: any, ok = true) => {
     if (typeof msg !== 'string') {
       msg = JSON.stringify(msg)
@@ -272,7 +272,7 @@ function execute_response (topic: string, event_id: number, send: (_:Lia.Event) 
   }
 }
 
-export function lia_execute_event (event: Lia.Event, sender: (_:Lia.Event) => void, section?: number) {
+export function lia_execute_event (event: Lia.Event, sender: Lia.Send, section?: number) {
   if (window.event_semaphore > 0) {
     lia_queue.push({
       type: JS.exec,

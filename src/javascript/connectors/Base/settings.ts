@@ -1,8 +1,8 @@
-const SETTINGS = 'settings'
+import Lia from '../../liascript/types.d'
 
-function initSettings (send, data, local = false) {
-  if (data == null) {
-    data = {
+export const SETTINGS = 'settings'
+
+export const defaultSettings: Lia.Settings = {
       table_of_contents: true,
       mode: 'Slides',
       theme: 'default',
@@ -10,26 +10,23 @@ function initSettings (send, data, local = false) {
       editor: 'dreamweaver',
       font_size: 100,
       sound: true,
-      land: 'en'
+      lang: 'en'
     }
-  }
 
+export function initSettings (send: Lia.Send | null, data: Lia.Settings = defaultSettings, local = false) {
   if (local) {
     localStorage.setItem(SETTINGS, JSON.stringify(data))
   }
 
-  send({
-    topic: SETTINGS,
-    section: -1,
-    message: {
-      topic: 'init',
+  if (send) {
+    send({
+      topic: SETTINGS,
       section: -1,
-      message: data
-    }
-  })
+      message: {
+        topic: 'init',
+        section: -1,
+        message: data
+      }
+    })
+  }
 };
-
-export {
-  initSettings,
-  SETTINGS
-}
