@@ -1,6 +1,6 @@
 import {
   Connector as Base
-} from '../Base/index'
+} from '../Base/index.ts'
 
 const SCORM = require('simplify-scorm/src/scormAPI')
 

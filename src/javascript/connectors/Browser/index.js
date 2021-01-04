@@ -1,9 +1,7 @@
 import {
   LiaDB
 } from './database'
-import {
-  Connector as Base
-} from '../Base/index'
+import { Connector as Base } from '../Base/index.ts'
 
 class Connector extends Base {
   hasIndex () {

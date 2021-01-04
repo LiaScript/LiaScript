@@ -1,7 +1,5 @@
-import {
-  LiaStorage
-} from './storage'
-import { SETTINGS, initSettings } from './settings.ts'
+import { LiaStorage } from './storage' 
+import { SETTINGS, initSettings } from './settings'
 
 class Connector {
   constructor () {}
