@@ -4,7 +4,9 @@ import { LiaStorage } from './storage'
 import { SETTINGS, initSettings, defaultSettings } from './settings'
 
 export class Connector {
+
   private send: Lia.Send
+
   constructor () {
     this.send = (_) => null
   }
@@ -53,29 +55,29 @@ export class Connector {
     return json
   }
 
-  open (uidDB: string, versionDB: number, slide: number, data?: Lia.Event) {}
+  open (_uidDB: string, _versionDB: number, _slide: number, _data?: Lia.Event) {}
 
-  load (event: Lia.Event) {}
+  load (_event: Lia.Event) {}
 
-  store (event: Lia.Event) {}
+  store (_event: Lia.Event) {}
 
-  update (event: Lia.Event, id: number) {}
+  update (_event: Lia.Event, _id: number) {}
 
-  slide (id: number) {}
+  slide (_id: number) {}
 
   getIndex () {}
 
-  deleteFromIndex (msg: Lia.Event) {}
+  deleteFromIndex (_msg: Lia.Event) {}
 
-  storeToIndex (json: any) {}
+  storeToIndex (_json: any) {}
 
-  restoreFromIndex (uidDB: string, versionDB?: number) {}
+  restoreFromIndex (_uidDB: string, _versionDB?: number) {}
 
-  reset (uidDB: string, versionDB?: number) {
+  reset (_uidDB: string, _versionDB?: number) {
     this.initSettings(undefined, true)
   }
 
-  getFromIndex (uidDB: string) {
+  getFromIndex (_uidDB: string) {
     this.send({
       topic: 'restore',
       message: null,
