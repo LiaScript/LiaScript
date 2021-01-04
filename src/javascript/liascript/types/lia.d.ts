@@ -1,12 +1,5 @@
 export as namespace Lia;
 
-declare global {
-  interface Window {
-    debug__?: boolean;
-    event_semaphore: number;
-  }
-}
-
 export type Send = (_:Event) => void
 
 export type ErrType = 'error' | 'warning' | 'info'

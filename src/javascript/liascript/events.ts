@@ -1,4 +1,5 @@
 import log from './log'
+import './types/globals'
 import Lia from './types/lia.d'
 
 enum JS {

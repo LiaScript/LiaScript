@@ -8,8 +8,9 @@ import {
 import log from './log'
 import swipedetect from './swipe'
 
-import Lia from './types/lia.d'
+import './types/globals'
 import './types/responsiveVoice'
+import Lia from './types/lia.d'
 
 
 function isInViewport (elem: HTMLElement) {
