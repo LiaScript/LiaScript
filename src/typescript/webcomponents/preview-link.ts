@@ -2,7 +2,7 @@ function fetch(self: PreviewLink, trial = 0) {
   if (self.sourceUrl) {
     let http = new XMLHttpRequest()
     http.open('GET', self.sourceUrl, true)
-    http.setRequestHeader('User-Agent', 'bla')
+    //http.setRequestHeader('User-Agent', 'bla')
 
     http.onload = function(_e) {
       if (http.readyState === 4 && http.status === 200) {
