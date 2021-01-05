@@ -76,8 +76,8 @@ class Connector extends Base {
       this.database.restore(uidDB, versionDB)
   }
 
-  reset (uidDB: string, versionDB: number) {
-    if (this.database)
+  reset (uidDB?: string, versionDB?: number) {
+    if (this.database && uidDB && versionDB)
       this.database.reset(uidDB, versionDB)
   }
 

@@ -75,7 +75,7 @@ export class Connector {
 
   restoreFromIndex (_uidDB: string, _versionDB?: number) {}
 
-  reset (_uidDB: string, _versionDB?: number) {
+  reset (_uidDB?: string, _versionDB?: number) {
     this.initSettings(null, true)
   }
 
