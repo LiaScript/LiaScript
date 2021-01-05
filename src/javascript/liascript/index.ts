@@ -13,6 +13,7 @@ import './types/responsiveVoice'
 import Lia from './types/lia.d'
 import Port from './types/ports'
 
+import { Connector } from '../connectors/Base/index'
 
 function isInViewport (elem: HTMLElement) {
   const bounding = elem.getBoundingClientRect()
@@ -133,11 +134,11 @@ var firstSpeak = true
 
 class LiaScript {
   private app: any
-  private connector: any
+  private connector: Connector
 
   constructor (
     elem: HTMLElement,
-    connector: any,
+    connector: Connector,
     debug:boolean = false,
     course: string | null = null,
     script: string | null = null,
