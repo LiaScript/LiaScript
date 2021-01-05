@@ -1,7 +1,9 @@
 import Lia from '../../liascript/types/lia.d'
+import Port from '../../liascript/types/ports'
 
 import { LiaStorage } from './storage'
-import { SETTINGS, initSettings, defaultSettings } from './settings'
+import { initSettings, defaultSettings } from './settings'
+
 
 export class Connector {
 
@@ -29,11 +31,11 @@ export class Connector {
   }
 
   setSettings (data: Lia.Settings) {
-    localStorage.setItem(SETTINGS, JSON.stringify(data))
+    localStorage.setItem(Port.SETTINGS, JSON.stringify(data))
   }
 
   getSettings () {
-    const data = localStorage.getItem(SETTINGS)
+    const data = localStorage.getItem(Port.SETTINGS)
     let json: Lia.Settings | null = null
 
     if(typeof data === 'string') {
@@ -79,7 +81,7 @@ export class Connector {
 
   getFromIndex (_uidDB: string) {
     this.send({
-      topic: 'restore',
+      topic: Port.RESTORE,
       message: null,
       section: -1
     })

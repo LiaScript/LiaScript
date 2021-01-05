@@ -1,4 +1,5 @@
 import Lia from '../../liascript/types/lia.d'
+import Port from '../../liascript/types/ports'
 
 import { LiaDB } from './database'
 import { Connector as Base } from '../Base/index'
@@ -25,10 +26,10 @@ class Connector extends Base {
       this.database.open(
         uidDB,
         versionDB, {
-          topic: 'code',
+          topic: Port.CODE,
           section: slide,
           message: {
-            topic: 'restore',
+            topic: Port.RESTORE,
             section: -1,
             message: null
           }

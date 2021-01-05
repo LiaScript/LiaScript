@@ -11,6 +11,7 @@ import swipedetect from './swipe'
 import './types/globals'
 import './types/responsiveVoice'
 import Lia from './types/lia.d'
+import Port from './types/ports'
 
 
 function isInViewport (elem: HTMLElement) {
@@ -47,7 +48,7 @@ function handleEffects (event: Lia.Event, elmSend: Lia.Send, section: number = -
       break
     case 'speak': {
       let msg = {
-        topic: 'settings',
+        topic: Port.SETTINGS,
         section: -1,
         message: {
           topic: 'speak',
@@ -58,7 +59,7 @@ function handleEffects (event: Lia.Event, elmSend: Lia.Send, section: number = -
 
       if (section >= 0) {
         msg = {
-          topic: 'effect',
+          topic: Port.EFFECT,
           section: section,
           message: {
             topic: 'speak',
@@ -191,7 +192,7 @@ class LiaScript {
 
   reset () {
     this.app.ports.event2elm.send({
-      topic: 'reset',
+      topic: Port.RESET,
       section: -1,
       message: null
     })
@@ -204,7 +205,7 @@ class LiaScript {
 
     swipedetect(elem, function (swipedir) {
       elmSend({
-        topic: 'swipe',
+        topic: Port.SWIPE,
         section: -1,
         message: swipedir
       })
@@ -214,7 +215,7 @@ class LiaScript {
       log.info('elm2js => ', event)
 
       switch (event.topic) {
-        case 'slide': {
+        case Port.SLIDE: {
           self.connector.slide(event.section)
 
           let sec = document.getElementsByTagName('section')[0]
@@ -233,7 +234,7 @@ class LiaScript {
 
           break
         }
-        case 'load': {
+        case Port.LOAD: {
           self.connector.load({
             topic: event.message,
             section: event.section,
@@ -241,7 +242,7 @@ class LiaScript {
           })
           break
         }
-        case 'code': {
+        case Port.CODE: {
           switch (event.message.topic) {
             case 'eval':
               lia_eval_event(elmSend, eventHandler, event)
@@ -262,7 +263,7 @@ class LiaScript {
           }
           break
         }
-        case 'quiz': {
+        case Port.QUIZ: {
           if (event.message.topic === 'store') {
             event.message = event.message.message
             self.connector.store(event)
@@ -272,7 +273,7 @@ class LiaScript {
 
           break
         }
-        case 'survey': {
+        case Port.SURVEY: {
           if (event.message.topic === 'store') {
             event.message = event.message.message
             self.connector.store(event)
@@ -281,10 +282,10 @@ class LiaScript {
           }
           break
         }
-        case 'effect':
+        case Port.EFFECT:
           handleEffects(event.message, elmSend, event.section)
           break
-        case 'settings': {
+        case Port.SETTINGS: {
           // if (self.channel) {
           //  self.channel.push('lia', {settings: event.message});
           // } else {
@@ -302,7 +303,7 @@ class LiaScript {
 
           break
         }
-        case 'resource': {
+        case Port.RESOURCE: {
           let elem = event.message[0]
           let url = event.message[1]
 
@@ -335,12 +336,12 @@ class LiaScript {
 
           break
         }
-        case 'persistent': {
+        case Port.RESOURCE: {
           if (event.message === 'store') {
             // todo, needs to be moved back
             // persistent.store(event.section)
             elmSend({
-              topic: 'load',
+              topic: Port.LOAD,
               section: -1,
               message: null
             })
@@ -348,7 +349,7 @@ class LiaScript {
 
           break
         }
-        case 'init': {
+        case Port.INIT: {
           let data = event.message
 
           self.connector.open(
@@ -377,7 +378,7 @@ class LiaScript {
 
           break
         }
-        case 'index': {
+        case Port.INDEX: {
           switch (event.message.topic) {
             case 'list': {
               try {
@@ -407,7 +408,7 @@ class LiaScript {
           }
           break
         }
-        case 'share': {
+        case Port.SHARE: {
           try {
             if (navigator.share) {
               navigator.share(event.message.message)
@@ -418,7 +419,7 @@ class LiaScript {
 
           break
         }
-        case 'reset': {
+        case Port.RESET: {
           self.connector.reset()
           window.location.reload()
           break

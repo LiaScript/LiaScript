@@ -1,6 +1,7 @@
 import Dexie from 'dexie'
 
 import Lia from '../../liascript/types/lia.d'
+import Port from '../../liascript/types/ports'
 import log from '../../liascript/log'
 
 
@@ -85,14 +86,14 @@ class LiaDB {
     if (item) {
       log.info('restore table', event.topic) //, e._value.data)
       event.message = {
-        topic: 'restore',
+        topic: Port.RESTORE,
         section: -1,
         message: item.data
       }
       this.send(event)
-    } else if (event.topic === 'code') {
+    } else if (event.topic === Port.CODE) {
       event.message = {
-        topic: 'restore',
+        topic: Port.RESTORE,
         section: -1,
         message: null
       }
@@ -201,7 +202,7 @@ class LiaDB {
       })
 
       this.send({
-        topic: 'restore',
+        topic: Port.RESTORE,
         message: offline === undefined ? null : offline.data,
         section: -1
       })
@@ -229,7 +230,7 @@ class LiaDB {
     }
 
     this.send({
-      topic: 'index',
+      topic: Port.INDEX,
       section: -1,
       message: {
         list: courses

@@ -1,6 +1,7 @@
 import log from './log'
 import './types/globals'
 import Lia from './types/lia.d'
+import Port from './types/ports'
 
 enum JS {
   exec = 'exec',
@@ -271,7 +272,7 @@ function execute_response (topic: string, event_id: number, send: Lia.Send, sect
     }
 
     send({
-      topic: 'effect',
+      topic: Port.EFFECT,
       section: section || -1,
       message: {
         topic: topic,

@@ -1,6 +1,6 @@
 import Lia from '../../liascript/types/lia.d'
+import Port from '../../liascript/types/ports'
 
-export const SETTINGS = 'settings'
 
 export const defaultSettings: Lia.Settings = {
       table_of_contents: true,
@@ -15,12 +15,12 @@ export const defaultSettings: Lia.Settings = {
 
 export function initSettings (send: Lia.Send | null, data: Lia.Settings = defaultSettings, local = false) {
   if (local) {
-    localStorage.setItem(SETTINGS, JSON.stringify(data))
+    localStorage.setItem(Port.SETTINGS, JSON.stringify(data))
   }
 
   if (send) {
     send({
-      topic: SETTINGS,
+      topic: Port.SETTINGS,
       section: -1,
       message: {
         topic: 'init',
