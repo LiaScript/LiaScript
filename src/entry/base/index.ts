@@ -1,7 +1,7 @@
 import '@babel/polyfill'
 
-import LiaScript from '../../javascript/liascript/index.ts'
-import { Connector } from '../../javascript/connectors/Base/index.ts'
+import LiaScript from '../../javascript/liascript/index'
+import { Connector } from '../../javascript/connectors/Base/index'
 
 let debug = false
 
