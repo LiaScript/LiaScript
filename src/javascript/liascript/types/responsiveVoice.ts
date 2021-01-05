@@ -5,17 +5,17 @@ type Options = {
   rate?: number,
   volume?: number,
 
-  onstart?: (_: () => void ) => void,
+  onstart?: (_: () => void) => void,
   onend?: (_: () => void) => void,
-  onerror?: (_: (e:any) => void) => void,
+  onerror?: (_: (e: any) => void) => void,
 };
 
 
 type Replacement = {
   searchvalue: string,
   newvalue: string,
-  collectionvoices? : string | string[],
-  systemvoices? : string | string[]
+  collectionvoices?: string | string[],
+  systemvoices?: string | string[]
 }
 
 
@@ -41,4 +41,4 @@ declare global {
   }
 }
 
-export {}
+export { }

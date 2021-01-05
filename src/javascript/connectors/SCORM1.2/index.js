@@ -7,7 +7,7 @@ const SCORM = require('simplify-scorm/src/scormAPI')
 SCORM.scormAPIFunc()
 
 class Connector extends Base {
-  constructor () {
+  constructor() {
     super()
     this.scorm = window.top.API
     // window.top.API = null
@@ -30,7 +30,7 @@ class Connector extends Base {
     this.restore()
   }
 
-  restore () {
+  restore() {
     this.quiz = window.config_.quiz.map((e) => e.map(_ => null))
     this.survey = window.config_.survey.map((e) => e.map(_ => null))
 
@@ -55,26 +55,26 @@ class Connector extends Base {
     this.score()
   }
 
-  connect (send = null) {
+  connect(send = null) {
     this.send = send
   }
 
-  score () {
+  score() {
     let total =
       this.quiz.reduce((a, b) => a + b.length, 0) +
       this.survey.reduce((a, b) => a + b.length, 0)
 
     let solved =
       this.quiz.map((e) => e.filter((f) => f === true))
-        .reduce((a, b) => a + b.length, 0) +
+      .reduce((a, b) => a + b.length, 0) +
       this.survey.map((e) => e.filter((f) => f === true))
-        .reduce((a, b) => a + b.length, 0)
+      .reduce((a, b) => a + b.length, 0)
 
     let finished =
       this.quiz.map((e) => e.filter((f) => f != null))
-        .reduce((a, b) => a + b.length, 0) +
+      .reduce((a, b) => a + b.length, 0) +
       this.survey.map((e) => e.filter((f) => f != null))
-        .reduce((a, b) => a + b.length, 0)
+      .reduce((a, b) => a + b.length, 0)
 
     let score = solved === 0 ? 0 : (solved * 100 / total)
 
@@ -93,7 +93,7 @@ class Connector extends Base {
     this.scorm.LMSCommit('')
   }
 
-  slide (id) {
+  slide(id) {
     if (!this.scorm) return
 
     let location = this.scorm.LMSGetValue('cmi.core.lesson_location')
@@ -111,7 +111,7 @@ class Connector extends Base {
     }
   }
 
-  open (uidDB, versionDB, slide, data) {
+  open(uidDB, versionDB, slide, data) {
     if (!this.scorm) return
 
     let location = null
@@ -137,20 +137,20 @@ class Connector extends Base {
     }
   }
 
-  countObjectives () {
+  countObjectives() {
     return this.scorm.LMSGetValue('cmi.objectives._count')
   }
 
-  countInteractions () {
+  countInteractions() {
     return parseInt(this.scorm.LMSGetValue('cmi.interactions._count'))
   }
 
   // generates a unique id to be used in interactions and objectives
-  label (obj) {
+  label(obj) {
     return [obj.type, obj.sec + 1, obj.i].join('/')
   }
 
-  getObjective (id) {
+  getObjective(id) {
     let val = null
 
     try {
@@ -179,7 +179,7 @@ class Connector extends Base {
     }
   }
 
-  setObjective (id, obj) {
+  setObjective(id, obj) {
     let blob = this.label(obj)
 
     if (obj.type === 'survey') {
@@ -206,7 +206,7 @@ class Connector extends Base {
     this.score()
   }
 
-  logInteraction (obj) {
+  logInteraction(obj) {
     let id = this.countInteractions()
 
     let label = this.label(obj)
@@ -224,12 +224,12 @@ class Connector extends Base {
       case 'quiz': {
         this.scorm.LMSSetValue(
           'cmi.interactions.' + id + '.result',
-          obj.data.solved === 0
-            ? 'neutral'
-            : (obj.data.solved === 1
-                ? 'correct'
-                : 'wrong'
-              )
+          obj.data.solved === 0 ?
+          'neutral' :
+          (obj.data.solved === 1 ?
+            'correct' :
+            'wrong'
+          )
         )
 
         this.scorm.LMSSetValue(
@@ -260,7 +260,7 @@ class Connector extends Base {
     this.scorm.LMSCommit('')
   }
 
-  store (event) {
+  store(event) {
     if (!this.scorm || !this.active) return
 
     if (event.topic === 'code') {
@@ -309,7 +309,7 @@ class Connector extends Base {
     this.score()
   }
 
-  load (event) {
+  load(event) {
     if (!this.scorm) return
 
     if (event.topic === 'code') {

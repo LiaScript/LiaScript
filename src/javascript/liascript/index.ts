@@ -15,7 +15,7 @@ import Port from './types/ports'
 
 import { Connector } from '../connectors/Base/index'
 
-function isInViewport (elem: HTMLElement) {
+function isInViewport(elem: HTMLElement) {
   const bounding = elem.getBoundingClientRect()
   return (
     bounding.top >= 20 &&
@@ -25,8 +25,8 @@ function isInViewport (elem: HTMLElement) {
   )
 };
 
-function scrollIntoView (id: string, delay: number) {
-  setTimeout(function () {
+function scrollIntoView(id: string, delay: number) {
+  setTimeout(function() {
     const elem = document.getElementById(id)
 
     if (elem) {
@@ -35,7 +35,7 @@ function scrollIntoView (id: string, delay: number) {
   }, delay)
 };
 
-function handleEffects (event: Lia.Event, elmSend: Lia.Send, section: number = -1) {
+function handleEffects(event: Lia.Event, elmSend: Lia.Send, section: number = -1) {
   switch (event.topic) {
     case 'scrollTo':
       scrollIntoView(event.message, 350)
@@ -81,7 +81,7 @@ function handleEffects (event: Lia.Event, elmSend: Lia.Send, section: number = -
         } else if (firstSpeak) {
           // this is a hack to deal with the delay in responsivevoice
           firstSpeak = false
-          setTimeout(function () {
+          setTimeout(function() {
             handleEffects(event, elmSend)
           }, 1000)
         } else {
@@ -99,7 +99,7 @@ function handleEffects (event: Lia.Event, elmSend: Lia.Send, section: number = -
                   msg.message.message = 'stop'
                   elmSend(msg)
                 },
-                onerror: (e:any) => {
+                onerror: (e: any) => {
                   msg.message.message = e.toString()
                   elmSend(msg)
                 }
@@ -117,7 +117,7 @@ function handleEffects (event: Lia.Event, elmSend: Lia.Send, section: number = -
   }
 };
 
-function meta (name: string, content: string) {
+function meta(name: string, content: string) {
   if (content !== '') {
     let meta = document.createElement('meta')
     meta.name = name
@@ -136,10 +136,10 @@ class LiaScript {
   private app: any
   private connector: Connector
 
-  constructor (
+  constructor(
     elem: HTMLElement,
     connector: Connector,
-    debug:boolean = false,
+    debug: boolean = false,
     course: string | null = null,
     script: string | null = null,
     url: string = '',
@@ -169,7 +169,7 @@ class LiaScript {
 
     const sendTo = this.app.ports.event2elm.send
 
-    const sender = function (msg: Lia.Event) {
+    const sender = function(msg: Lia.Event) {
       log.info('event2elm => ', msg)
       sendTo(msg)
     }
@@ -180,18 +180,18 @@ class LiaScript {
 
     liaStorage = this.connector.storage()
 
-    window.playback = function (event) {
+    window.playback = function(event) {
       handleEffects(event.message, sender, event.section)
     }
 
     window.showFootnote = this.app.ports.footnote.send
 
-    setTimeout(function () {
+    setTimeout(function() {
       firstSpeak = false
     }, 1000)
   }
 
-  reset () {
+  reset() {
     this.app.ports.event2elm.send({
       topic: Port.RESET,
       section: -1,
@@ -199,12 +199,12 @@ class LiaScript {
     })
   }
 
-  initEventSystem (elem: HTMLElement, jsSubscribe: (fn: (_: Lia.Event) => void) => void , elmSend: Lia.Send) {
+  initEventSystem(elem: HTMLElement, jsSubscribe: (fn: (_: Lia.Event) => void) => void, elmSend: Lia.Send) {
     log.info('initEventSystem')
 
     let self = this
 
-    swipedetect(elem, function (swipedir) {
+    swipedetect(elem, function(swipedir) {
       elmSend({
         topic: Port.SWIPE,
         section: -1,
@@ -294,11 +294,11 @@ class LiaScript {
           try {
             let conf = self.connector.getSettings()
             if (conf.table_of_contents !== event.message.table_of_contents) {
-              setTimeout(function () {
+              setTimeout(function() {
                 window.dispatchEvent(new Event('resize'))
               }, 200)
             }
-          } catch (e) {}
+          } catch (e) { }
 
           self.connector.setSettings(event.message)
 
@@ -321,11 +321,11 @@ class LiaScript {
               tag.src = url
               tag.async = false
               tag.defer = true
-              tag.onload = function () {
+              tag.onload = function() {
                 window.event_semaphore--
                 log.info('successfully loaded =>', url)
               }
-              tag.onerror = function (e: Error) {
+              tag.onerror = function(e: Error) {
                 window.event_semaphore--
                 log.warn('could not load =>', url, e)
               }
@@ -384,7 +384,7 @@ class LiaScript {
             case 'list': {
               try {
                 window.responsiveVoice.cancel()
-              } catch (e) {}
+              } catch (e) { }
               self.connector.getIndex()
               break
             }

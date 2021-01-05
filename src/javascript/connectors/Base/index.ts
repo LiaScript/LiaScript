@@ -9,39 +9,39 @@ export class Connector {
 
   protected send: Lia.Send
 
-  constructor () {
+  constructor() {
     this.send = (_) => null
   }
 
-  hasIndex () {
+  hasIndex() {
     return false
   }
 
-  connect (send: Lia.Send | null) {
+  connect(send: Lia.Send | null) {
     if (send)
       this.send = send
   }
 
-  storage () {
+  storage() {
     return new LiaStorage()
   }
 
-  initSettings (data: Lia.Settings | null, local = false) {
+  initSettings(data: Lia.Settings | null, local = false) {
     initSettings(this.send, data ? data : undefined, local)
   }
 
-  setSettings (data: Lia.Settings) {
+  setSettings(data: Lia.Settings) {
     localStorage.setItem(Port.SETTINGS, JSON.stringify(data))
   }
 
-  getSettings () {
+  getSettings() {
     const data = localStorage.getItem(Port.SETTINGS)
     let json: Lia.Settings | null = null
 
-    if(typeof data === 'string') {
+    if (typeof data === 'string') {
       try {
         json = JSON.parse(data)
-      } catch(e) {
+      } catch (e) {
         console.warn('getSettings =>', e)
       }
 
@@ -57,29 +57,29 @@ export class Connector {
     return json
   }
 
-  open (_uidDB: string, _versionDB: number, _slide: number, _data?: Lia.Event) {}
+  open(_uidDB: string, _versionDB: number, _slide: number, _data?: Lia.Event) { }
 
-  load (_event: Lia.Event) {}
+  load(_event: Lia.Event) { }
 
-  store (_event: Lia.Event) {}
+  store(_event: Lia.Event) { }
 
-  update (_event: Lia.Event, _id: number) {}
+  update(_event: Lia.Event, _id: number) { }
 
-  slide (_id: number) {}
+  slide(_id: number) { }
 
-  getIndex () {}
+  getIndex() { }
 
-  deleteFromIndex (_uidDB: string) {}
+  deleteFromIndex(_uidDB: string) { }
 
-  storeToIndex (_json: any) {}
+  storeToIndex(_json: any) { }
 
-  restoreFromIndex (_uidDB: string, _versionDB?: number) {}
+  restoreFromIndex(_uidDB: string, _versionDB?: number) { }
 
-  reset (_uidDB?: string, _versionDB?: number) {
+  reset(_uidDB?: string, _versionDB?: number) {
     this.initSettings(null, true)
   }
 
-  getFromIndex (_uidDB: string) {
+  getFromIndex(_uidDB: string) {
     this.send({
       topic: Port.RESTORE,
       message: null,

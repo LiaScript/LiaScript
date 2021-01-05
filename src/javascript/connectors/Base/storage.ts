@@ -1,8 +1,8 @@
 export class LiaStorage {
-  constructor () {
+  constructor() {
   }
 
-  getItems (key: string | string[] = []) {
+  getItems(key: string | string[] = []) {
     if (typeof key === 'string') key = [key]
 
     let rslt: { [key: string]: any } = {}
@@ -16,11 +16,11 @@ export class LiaStorage {
     return rslt
   }
 
-  setItems (dict: object) {
+  setItems(dict: object) {
     this._setLocal(dict)
   }
 
-  _setLocal (dict: object) {
+  _setLocal(dict: object) {
     if (typeof dict === 'object') {
       for (const [key, value] of Object.entries(dict)) {
         localStorage.setItem(key, JSON.stringify(value))

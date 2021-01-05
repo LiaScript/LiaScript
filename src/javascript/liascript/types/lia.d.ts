@@ -1,6 +1,6 @@
 export as namespace Lia;
 
-export type Send = (_:Event) => void
+export type Send = (_: Event) => void
 
 export type ErrType = 'error' | 'warning' | 'info'
 

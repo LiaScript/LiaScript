@@ -8,11 +8,11 @@ class Connector extends Base {
 
   private database?: LiaDB
 
-  hasIndex () {
+  hasIndex() {
     return true
   }
 
-  connect (send: Lia.Send | null) {
+  connect(send: Lia.Send | null) {
     if (send) {
       this.send = send
     }
@@ -21,7 +21,7 @@ class Connector extends Base {
     this.initSettings(this.getSettings(), true)
   }
 
-  open (uidDB: string, versionDB: number, slide: number, _data?: Lia.Event) {
+  open(uidDB: string, versionDB: number, slide: number, _data?: Lia.Event) {
     if (this.database)
       this.database.open(
         uidDB,
@@ -36,52 +36,52 @@ class Connector extends Base {
         })
   }
 
-  load (event: Lia.Event) {
+  load(event: Lia.Event) {
     if (this.database)
       this.database.load(event)
   }
 
-  store (event: Lia.Event) {
+  store(event: Lia.Event) {
     if (this.database)
       this.database.store(event)
   }
 
-  update (event: Lia.Event, id: number) {
+  update(event: Lia.Event, id: number) {
     if (this.database)
       this.database.update(event, id)
   }
 
-  slide (id: number) {
+  slide(id: number) {
     if (this.database)
       this.database.slide(id)
   }
 
-  getIndex () {
+  getIndex() {
     if (this.database)
       this.database.listIndex()
   }
 
-  deleteFromIndex (uidDB: string) {
+  deleteFromIndex(uidDB: string) {
     if (this.database)
       this.database.deleteIndex(uidDB)
   }
 
-  storeToIndex (json: any) {
+  storeToIndex(json: any) {
     if (this.database)
       this.database.storeIndex(json)
   }
 
-  restoreFromIndex (uidDB: string, versionDB?: number) {
+  restoreFromIndex(uidDB: string, versionDB?: number) {
     if (this.database)
       this.database.restore(uidDB, versionDB)
   }
 
-  reset (uidDB?: string, versionDB?: number) {
+  reset(uidDB?: string, versionDB?: number) {
     if (this.database && uidDB && versionDB)
       this.database.reset(uidDB, versionDB)
   }
 
-  getFromIndex (uidDB: string) {
+  getFromIndex(uidDB: string) {
     if (this.database)
       this.database.getIndex(uidDB)
   }
