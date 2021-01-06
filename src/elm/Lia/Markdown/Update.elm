@@ -56,7 +56,13 @@ update msg section =
         UpdateEffect sound childMsg ->
             let
                 ( effect_model, cmd, event ) =
-                    Effect.update subUpdate sound childMsg section.effect_model
+                    Effect.update
+                        { update = subUpdate
+                        , handle = subHandle
+                        }
+                        sound
+                        childMsg
+                        section.effect_model
             in
             ( { section | effect_model = effect_model }
             , Cmd.map (UpdateEffect sound) cmd
@@ -137,7 +143,7 @@ subUpdate js msg section =
                 UpdateEffect sound childMsg ->
                     let
                         ( effect_model, cmd, event ) =
-                            Effect.update subUpdate sound childMsg subsection.effect_model
+                            Effect.update { update = subUpdate, handle = subHandle } sound childMsg subsection.effect_model
                     in
                     ( SubSection { subsection | effect_model = effect_model }
                     , Cmd.map (UpdateEffect sound) cmd
@@ -171,7 +177,7 @@ subUpdate js msg section =
 
                 UpdateQuiz childMsg ->
                     let
-                        ( vector, event, subCmd ) =
+                        ( vector, events, subCmd ) =
                             Quiz.update js childMsg subsection.quiz_vector
                     in
                     case subCmd of
@@ -183,12 +189,14 @@ subUpdate js msg section =
                         _ ->
                             ( SubSection { subsection | quiz_vector = vector }
                             , Cmd.none
-                            , []
+                            , events
+                                |> List.map Event.encode
+                                |> send "quiz"
                             )
 
                 UpdateSurvey childMsg ->
                     let
-                        ( vector, event, subCmd ) =
+                        ( vector, events, subCmd ) =
                             Survey.update js childMsg subsection.survey_vector
                     in
                     case subCmd of
@@ -200,13 +208,15 @@ subUpdate js msg section =
                         _ ->
                             ( SubSection { subsection | survey_vector = vector }
                             , Cmd.none
-                            , []
+                            , events
+                                |> List.map Event.encode
+                                |> send "survey"
                             )
 
                 Script childMsg ->
                     let
                         ( effect_model, cmd, event ) =
-                            Effect.updateSub subUpdate childMsg subsection.effect_model
+                            Effect.updateSub { update = subUpdate, handle = subHandle } childMsg subsection.effect_model
                     in
                     ( SubSection { subsection | effect_model = effect_model }
                     , Cmd.map (UpdateEffect True) cmd
@@ -221,7 +231,7 @@ subUpdate js msg section =
                 Script childMsg ->
                     let
                         ( effect_model, cmd, event ) =
-                            Effect.updateSub subUpdate childMsg sub.effect_model
+                            Effect.updateSub { update = subUpdate, handle = subHandle } childMsg sub.effect_model
                     in
                     ( SubSubSection { sub | effect_model = effect_model }
                     , Cmd.map (UpdateEffect True) cmd
@@ -231,7 +241,7 @@ subUpdate js msg section =
                 UpdateEffect sound childMsg ->
                     let
                         ( effect_model, cmd, event ) =
-                            Effect.update subUpdate sound childMsg sub.effect_model
+                            Effect.update { update = subUpdate, handle = subHandle } sound childMsg sub.effect_model
                     in
                     ( SubSubSection { sub | effect_model = effect_model }
                     , Cmd.map (UpdateEffect sound) cmd
@@ -256,7 +266,7 @@ updateScript msg ( section, cmd, events ) =
         Just sub ->
             let
                 ( effect_model, cmd2, event ) =
-                    Effect.updateSub subUpdate sub section.effect_model
+                    Effect.updateSub { update = subUpdate, handle = subHandle } sub section.effect_model
             in
             ( { section | effect_model = effect_model }
             , Cmd.batch [ cmd, Cmd.map (UpdateEffect True) cmd2 ]
@@ -279,6 +289,35 @@ previousEffect sound =
 initEffect : Bool -> Bool -> Section -> ( Section, Cmd Msg, List ( String, JE.Value ) )
 initEffect run_all_javascript sound =
     update (UpdateEffect sound (Effect.init run_all_javascript))
+
+
+subHandle : Scripts SubSection -> JE.Value -> SubSection -> ( SubSection, Cmd Msg, List ( String, JE.Value ) )
+subHandle js json section =
+    case Event.decode json of
+        Ok event ->
+            case Event.decode event.message of
+                Ok message ->
+                    case event.topic of
+                        "code" ->
+                            subUpdate js (UpdateCode (Code.handle message)) section
+
+                        "quiz" ->
+                            subUpdate js (UpdateQuiz (Quiz.handle message)) section
+
+                        "survey" ->
+                            subUpdate js (UpdateSurvey (Survey.handle message)) section
+
+                        "effect" ->
+                            subUpdate js (UpdateEffect True (Effect.handle message)) section
+
+                        _ ->
+                            ( section, Cmd.none, [] )
+
+                _ ->
+                    ( section, Cmd.none, [] )
+
+        _ ->
+            ( section, Cmd.none, [] )
 
 
 handle : String -> Event -> Section -> ( Section, Cmd Msg, List ( String, JE.Value ) )

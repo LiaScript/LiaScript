@@ -16,7 +16,7 @@ import Lia.Markdown.Effect.Script.Types as Script exposing (Script, Scripts, Std
 import Lia.Parser.Parser exposing (parse_subsection)
 import Lia.Section exposing (SubSection)
 import Port.Eval as Eval exposing (Eval)
-import Port.Event exposing (Event)
+import Port.Event as Event exposing (Event)
 import Process
 import Task
 
@@ -37,7 +37,9 @@ type Msg sub
 
 
 update :
-    (Scripts SubSection -> sub -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) ))
+    { update : Scripts SubSection -> sub -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
+    , handle : Scripts SubSection -> JE.Value -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
+    }
     -> Msg sub
     -> Scripts SubSection
     -> ( Scripts SubSection, Cmd (Msg sub), List Event )
@@ -48,12 +50,13 @@ update main msg scripts =
                 Just (IFrame lia) ->
                     let
                         ( new, cmd, events ) =
-                            main scripts sub lia
+                            main.update scripts sub lia
                     in
-                    ( scripts
-                        |> Script.set id (\s -> { s | result = Just (IFrame new) })
+                    ( Script.set id (\s -> { s | result = Just (IFrame new) }) scripts
                     , Cmd.map (Sub id) cmd
-                    , []
+                    , events
+                        |> List.map (\( name, json ) -> Event name id json |> Event.encode)
+                        |> List.map (Event "sub" id)
                     )
 
                 _ ->
@@ -269,6 +272,23 @@ update main msg scripts =
                               else
                                 []
                             )
+
+                "sub" ->
+                    case scripts |> Array.get event.section |> Maybe.andThen .result of
+                        Just (IFrame lia) ->
+                            let
+                                ( new, cmd, events ) =
+                                    main.handle scripts event.message lia
+                            in
+                            ( Script.set event.section (\s -> { s | result = Just (IFrame new) }) scripts
+                            , Cmd.map (Sub event.section) cmd
+                            , events
+                                |> List.map (\( name, json ) -> Event name event.section json |> Event.encode)
+                                |> List.map (Event "sub" event.section)
+                            )
+
+                        _ ->
+                            ( scripts, Cmd.none, [] )
 
                 _ ->
                     ( scripts, Cmd.none, [] )
