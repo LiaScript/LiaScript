@@ -273,7 +273,7 @@ function execute_response(topic: string, event_id: number, send: Lia.Send, secti
 
     send({
       topic: Port.EFFECT,
-      section: section || -1,
+      section: section === undefined ? -1 : section,
       message: {
         topic: topic,
         section: event_id,
@@ -305,8 +305,10 @@ export function lia_execute_event(event: { code: string, delay: number, id?: num
   setTimeout(() => {
     let send: SendExec | undefined
 
+    if (sender && event.id != null && section >= 0) {
 
-    if (sender && !!event.id && section >= 0) {
+      console.warn("sssssssssssssssssssssssssssssssssssssss", section, event.id)
+
       const id = event.id
       send = {
         lia: execute_response('code', id, sender, section),
@@ -328,7 +330,9 @@ export function lia_execute_event(event: { code: string, delay: number, id?: num
 
     try {
       const result = eval(event.code)
-      if (!!send && section != null && typeof event.id === 'number') {
+
+      if (send != undefined && section != null && typeof event.id === 'number') {
+        console.warn("--------------------------------------------------", result)
         send.lia(result === undefined ? 'LIA: stop' : result)
       }
     } catch (e) {
