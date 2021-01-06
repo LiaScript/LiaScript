@@ -219,12 +219,12 @@ class LiaScript {
         case Port.SLIDE: {
           self.connector.slide(event.section)
 
-          let sec = document.getElementsByTagName('section')[0]
+          const sec = document.getElementsByTagName('section')[0]
           if (sec) {
             sec.scrollTo(0, 0)
           }
 
-          let elem = document.getElementById('focusedToc')
+          const elem = document.getElementById('focusedToc')
           if (elem) {
             if (!isInViewport(elem)) {
               elem.scrollIntoView({
@@ -292,8 +292,8 @@ class LiaScript {
           // } else {
 
           try {
-            let conf = self.connector.getSettings()
-            if (conf.table_of_contents !== event.message.table_of_contents) {
+            const conf = self.connector.getSettings()
+            if (conf?.table_of_contents !== event.message.table_of_contents) {
               setTimeout(function() {
                 window.dispatchEvent(new Event('resize'))
               }, 200)
