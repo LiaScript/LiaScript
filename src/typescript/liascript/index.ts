@@ -337,7 +337,7 @@ class LiaScript {
 
           break
         }
-        case Port.RESOURCE: {
+        case Port.PERSISTENT: {
           if (event.message === 'store') {
             // todo, needs to be moved back
             // persistent.store(event.section)
