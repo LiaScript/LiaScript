@@ -126,7 +126,7 @@ function handleEffects(event: Lia.Event, elmSend: Lia.Send, section: number = -1
           })
         }
 
-        process(self, newSend, event.message)
+        process(false, self, newSend, event.message)
       }
       break
     }
@@ -232,12 +232,12 @@ class LiaScript {
       })
     })
 
-    jsSubscribe((event: Lia.Event) => { process(self, elmSend, event) })
+    jsSubscribe((event: Lia.Event) => { process(true, self, elmSend, event) })
   }
 };
 
 
-function process(self:LiaScript, elmSend: Lia.Send, event: Lia.Event) {
+function process(isConnected: boolean, self:LiaScript, elmSend: Lia.Send, event: Lia.Event) {
   log.info(`LIA >>> (${event.topic}:${event.section})`, event.message)
 
   switch (event.topic) {
@@ -274,8 +274,10 @@ function process(self:LiaScript, elmSend: Lia.Send, event: Lia.Event) {
           lia_eval_event(elmSend, eventHandler, event)
           break
         case 'store':
-          event.message = event.message.message
-          self.connector.store(event)
+          if( isConnected ) {
+            event.message = event.message.message
+            self.connector.store(event)
+          }
           break
         case 'input':
           eventHandler.dispatch_input(event)
@@ -284,13 +286,15 @@ function process(self:LiaScript, elmSend: Lia.Send, event: Lia.Event) {
           eventHandler.dispatch_input(event)
           break
         default: {
-          self.connector.update(event.message, event.section)
+          if( isConnected ) {
+            self.connector.update(event.message, event.section)
+          }
         }
       }
       break
     }
     case Port.QUIZ: {
-      if (event.message.topic === 'store') {
+      if (isConnected && event.message.topic === 'store') {
         event.message = event.message.message
         self.connector.store(event)
       } else if (event.message.topic === 'eval') {
@@ -300,7 +304,7 @@ function process(self:LiaScript, elmSend: Lia.Send, event: Lia.Event) {
       break
     }
     case Port.SURVEY: {
-      if (event.message.topic === 'store') {
+      if (isConnected && event.message.topic === 'store') {
         event.message = event.message.message
         self.connector.store(event)
       } else if (event.message.topic === 'eval') {
@@ -325,7 +329,9 @@ function process(self:LiaScript, elmSend: Lia.Send, event: Lia.Event) {
         }
       } catch (e) { }
 
-      self.connector.setSettings(event.message)
+      if( isConnected ) {
+        self.connector.setSettings(event.message)
+      }
 
       break
     }
@@ -378,12 +384,14 @@ function process(self:LiaScript, elmSend: Lia.Send, event: Lia.Event) {
     case Port.INIT: {
       let data = event.message
 
-      self.connector.open(
-        data.readme,
-        data.version,
-        data.section_active,
-        data
-      )
+      if (isConnected) {
+        self.connector.open(
+          data.readme,
+          data.version,
+          data.section_active,
+          data
+        )
+      }
 
       if (data.definition.onload !== '') {
         lia_execute_event({
@@ -400,11 +408,15 @@ function process(self:LiaScript, elmSend: Lia.Send, event: Lia.Event) {
       meta('og:image', data.definition.logo)
 
       // store the basic info in the offline-repositories
-      self.connector.storeToIndex(data)
+      if (isConnected) {
+        self.connector.storeToIndex(data)
+      }
 
       break
     }
     case Port.INDEX: {
+      if (!isConnected) break
+
       switch (event.message.topic) {
         case 'list': {
           try {
