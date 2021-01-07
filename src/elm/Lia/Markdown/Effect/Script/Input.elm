@@ -287,7 +287,7 @@ active bool i =
 
 getValue : Input -> Maybe String
 getValue i =
-    if i.type_ /= Nothing then
+    if i.type_ /= Nothing && i.type_ /= Just Button_ then
         Just i.value
 
     else
