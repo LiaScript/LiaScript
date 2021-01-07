@@ -5,6 +5,7 @@ module Lia.Markdown.Effect.Script.Input exposing
     , decodeList
     , default
     , from
+    , getValue
     , isHidden
     , toggle
     , type_
@@ -282,6 +283,15 @@ active bool i =
             else
                 bool
     }
+
+
+getValue : Input -> Maybe String
+getValue i =
+    if i.type_ /= Nothing then
+        Just i.value
+
+    else
+        Nothing
 
 
 value : String -> Input -> Input

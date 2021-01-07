@@ -212,7 +212,7 @@ update main msg scripts =
                                     |> Maybe.withDefault False
                             then
                                 node
-                                    |> Maybe.map (\n -> [ ( event.section, n.script, n.input.value ) ])
+                                    |> Maybe.map (\n -> [ ( event.section, n.script, Input.getValue n.input ) ])
                                     |> Maybe.withDefault []
                                     |> Script.replaceInputs javascript
 
@@ -317,7 +317,7 @@ reRun fn cmd id scripts =
                 []
 
               else
-                [ ( id, node.script, node.input.value ) ]
+                [ ( id, node.script, Input.getValue node.input ) ]
                     |> Script.replaceInputs scripts
                     |> List.map (execute 0)
             )
@@ -411,7 +411,7 @@ getAll javascript =
         |> getIdle identity
         |> List.map
             (\( id, node ) ->
-                ( id, node.script, node.input.value )
+                ( id, node.script, Input.getValue node.input )
             )
         |> Script.replaceInputs javascript
 
@@ -423,7 +423,7 @@ getVisible visible javascript =
         |> List.filterMap
             (\( id, node ) ->
                 if node.effect_id == visible then
-                    Just ( id, node.script, node.input.value )
+                    Just ( id, node.script, Input.getValue node.input )
 
                 else
                     Nothing
