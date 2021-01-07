@@ -224,6 +224,13 @@ __Badges:__
 
 ## Version-Changes
 
+__0.9.0__ (//2021)
+
+* Moved from JavaScript to Typescript
+* Optimized internal message-handling
+* Scripts can now also create Quizzes, Code, Surveys, etc.
+  (scripts cannot create scripts)
+* Updated debug-information
 
 __0.8.12__ (08/12/2020)
 
