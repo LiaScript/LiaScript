@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Lia</title>
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!--script src="https://code.responsivevoice.org/responsivevoice.js"></script-->
+
+  <link rel="shortcut icon" sizes="192x192" href="../../assets/logo_192.png">
+
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="Lia">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="LiaScript">
+  <meta name="msapplication-TileImage" content="../../assets/logo_192.png">
+  <meta name="msapplication-TileColor" content="#0071c5">
+  <meta name="msapplication-tap-highlight" content="no">
+  <meta name="theme-color" content="#000000">
+
+  <link rel="manifest" href="../app/manifest.webmanifest">
+
+  <!-- Fonts -->
+  <link rel="stylesheet" href="../../../vendor/roboto/roboto.css">
+
+  <!-- Favicons -->
+  <link rel="apple-touch-icon" href="../../assets/logo.png">
+  <link rel="icon" href="../../assets/logo.png" type="image/png">
+
+  <style>
+    .lds-dual-ring {
+      display: inline-block;
+      width: 150px;
+      height: 150px;
+    }
+
+    .lds-dual-ring:after {
+      content: " ";
+      display: block;
+      width: 128px;
+      height: 128px;
+      margin: 1px;
+      border-radius: 50%;
+      border: 5px solid #fff;
+      border-color: #000 transparent #000 transparent;
+      animation: lds-dual-ring 1.2s linear infinite;
+    }
+
+    @keyframes lds-dual-ring {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+
+  <link rel="stylesheet" href="../../scss/main.scss">
+  <link rel="stylesheet" href="../../../node_modules/material-icons/iconfont/material-icons.scss">
+</head>
+
+<body>
+  <noscript>
+    This page requires JavaScript to be enabled!
+  </noscript>
+
+  <div id="IE-message" hidden="true">
+    <h1>LiaScript - Problem</h1>
+    <p>
+      Hello! Welcome to LiaScript. This site is not fully supported in
+      Internet Explorer 11 (and earlier) versions.
+    </p>
+    <p>
+      As an alternative, you can use either of the options below to browse the
+      site:
+    </p>
+    <ol>
+      <li>Use Firefox browser. Here is the <a href="http://www.mozilla.org/en-US/firefox/new/">download link.</a></li>
+      <li>Use Google Chrome browser. Here is the <a href="https://support.google.com/chrome/answer/95346?hl=en">download link.</a></li>
+    </ol>
+    <p>
+      Thanks.
+    </p>
+  </div>
+
+  <script src="../app/index.ts"></script>
+  <script src="../../typescript/webcomponents/editor.ts"></script>
+  <script src="../../typescript/webcomponents/formula.ts"></script>
+  <script src="../../typescript/webcomponents/oembed.ts"></script>
+  <script src="../../typescript/webcomponents/chart.ts"></script>
+  <script src="../../typescript/webcomponents/preview-lia.ts"></script>
+  <script src="../../typescript/webcomponents/preview-link.ts"></script>
+  <script src="../../typescript/webcomponents/format.ts"></script>
+  <script>
+    if (process.env.NODE_ENV !== 'development') {
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          let sw = "./sw.js"
+          try {
+            navigator.serviceWorker.register(sw).then(console.log).catch(console.error);
+          } catch (e) {
+            console.warn("sw: ", e);
+          }
+        })
+      }
+    }
+  </script>
+</body>
+
+</html>
