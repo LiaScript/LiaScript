@@ -1,16 +1,12 @@
-class LiaStorage {
-  constructor () {
-    this._init()
+export class LiaStorage {
+  constructor() {
   }
 
-  _init () {
-    let store = this._setLocal
-  }
-
-  getItems (key = []) {
+  getItems(key: string | string[] = []) {
     if (typeof key === 'string') key = [key]
 
-    let rslt = {}
+    let rslt: { [key: string]: any } = {}
+
     for (let i = 0; i < key.length; i++) {
       let value = localStorage.getItem(key[i])
 
@@ -20,11 +16,11 @@ class LiaStorage {
     return rslt
   }
 
-  setItems (dict) {
+  setItems(dict: object) {
     this._setLocal(dict)
   }
 
-  _setLocal (dict) {
+  _setLocal(dict: object) {
     if (typeof dict === 'object') {
       for (const [key, value] of Object.entries(dict)) {
         localStorage.setItem(key, JSON.stringify(value))
@@ -32,7 +28,3 @@ class LiaStorage {
     }
   }
 };
-
-export {
-  LiaStorage
-}

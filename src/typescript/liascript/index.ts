@@ -1,22 +1,21 @@
-import {
-  Elm
-} from '../../elm/Main.elm'
+import { Elm } from '../../elm/Main.elm'
 import {
   LiaEvents,
   lia_execute_event,
   lia_eval_event
 } from './events'
-import {
-  persistent
-} from './persistent'
-import {
-  lia
-} from './logger'
-import {
-  swipedetect
-} from './swipe'
+// import persistent from './persistent.ts'
+import log from './log'
+import swipedetect from './swipe'
 
-function isInViewport (elem) {
+import './types/globals'
+import './types/responsiveVoice'
+import Lia from './types/lia.d'
+import Port from './types/ports'
+
+import { Connector } from '../connectors/Base/index'
+
+function isInViewport(elem: HTMLElement) {
   const bounding = elem.getBoundingClientRect()
   return (
     bounding.top >= 20 &&
@@ -26,17 +25,17 @@ function isInViewport (elem) {
   )
 };
 
-function scrollIntoView (id, delay) {
-  setTimeout(function () {
-    try {
-      document.getElementById(id).scrollIntoView({
-        behavior: 'smooth'
-      })
-    } catch (e) {}
+function scrollIntoView(id: string, delay: number) {
+  setTimeout(function() {
+    const elem = document.getElementById(id)
+
+    if (elem) {
+      elem.scrollIntoView({ behavior: 'smooth' })
+    }
   }, delay)
 };
 
-function handleEffects (event, elmSend, section) {
+function handleEffects(event: Lia.Event, elmSend: Lia.Send, section: number = -1) {
   switch (event.topic) {
     case 'scrollTo':
       scrollIntoView(event.message, 350)
@@ -50,7 +49,7 @@ function handleEffects (event, elmSend, section) {
       break
     case 'speak': {
       let msg = {
-        topic: 'settings',
+        topic: Port.SETTINGS,
         section: -1,
         message: {
           topic: 'speak',
@@ -61,7 +60,7 @@ function handleEffects (event, elmSend, section) {
 
       if (section >= 0) {
         msg = {
-          topic: 'effect',
+          topic: Port.EFFECT,
           section: section,
           message: {
             topic: 'speak',
@@ -73,7 +72,7 @@ function handleEffects (event, elmSend, section) {
 
       try {
         if (event.message === 'cancel') {
-          responsiveVoice.cancel()
+          window.responsiveVoice.cancel()
           msg.message.message = 'stop'
           elmSend(msg)
         } else if (event.message === 'repeat') {
@@ -82,25 +81,25 @@ function handleEffects (event, elmSend, section) {
         } else if (firstSpeak) {
           // this is a hack to deal with the delay in responsivevoice
           firstSpeak = false
-          setTimeout(function () {
+          setTimeout(function() {
             handleEffects(event, elmSend)
           }, 1000)
         } else {
           ttsBackup = event.message
           if (event.message[2] === 'true') {
-            responsiveVoice.speak(
+            window.responsiveVoice.speak(
               event.message[1],
               event.message[0], {
-                onstart: (e) => {
+                onstart: () => {
                   msg.message.message = 'start'
 
                   elmSend(msg)
                 },
-                onend: (e) => {
+                onend: () => {
                   msg.message.message = 'stop'
                   elmSend(msg)
                 },
-                onerror: (e) => {
+                onerror: (e: any) => {
                   msg.message.message = e.toString()
                   elmSend(msg)
                 }
@@ -114,11 +113,11 @@ function handleEffects (event, elmSend, section) {
       break
     }
     default:
-      lia.warn('effect missed', event)
+      log.warn('effect missed', event)
   }
 };
 
-function meta (name, content) {
+function meta(name: string, content: string) {
   if (content !== '') {
     let meta = document.createElement('meta')
     meta.name = name
@@ -128,13 +127,25 @@ function meta (name, content) {
 }
 // -----------------------------------------------------------------------------
 
-var eventHandler
-var liaStorage
-var ttsBackup
+var eventHandler: LiaEvents
+var liaStorage: any
+var ttsBackup: [string, string]
 var firstSpeak = true
 
 class LiaScript {
-  constructor (elem, connector, debug = false, course = null, script = null, url = '', slide = 0, spa = true) {
+  private app: any
+  private connector: Connector
+
+  constructor(
+    elem: HTMLElement,
+    connector: Connector,
+    debug: boolean = false,
+    course: string | null = null,
+    script: string | null = null,
+    url: string = '',
+    slide: number = 0,
+    spa: boolean = true
+  ) {
     if (debug) window.debug__ = true
 
     eventHandler = new LiaEvents()
@@ -158,8 +169,8 @@ class LiaScript {
 
     const sendTo = this.app.ports.event2elm.send
 
-    const sender = function (msg) {
-      lia.log('event2elm => ', msg)
+    const sender = function(msg: Lia.Event) {
+      log.info('event2elm => ', msg)
       sendTo(msg)
     }
 
@@ -169,51 +180,51 @@ class LiaScript {
 
     liaStorage = this.connector.storage()
 
-    window.playback = function (event) {
+    window.playback = function(event) {
       handleEffects(event.message, sender, event.section)
     }
 
     window.showFootnote = this.app.ports.footnote.send
 
-    setTimeout(function () {
+    setTimeout(function() {
       firstSpeak = false
     }, 1000)
   }
 
-  reset () {
+  reset() {
     this.app.ports.event2elm.send({
-      topic: 'reset',
+      topic: Port.RESET,
       section: -1,
       message: null
     })
   }
 
-  initEventSystem (elem, jsSubscribe, elmSend) {
-    lia.log('initEventSystem')
+  initEventSystem(elem: HTMLElement, jsSubscribe: (fn: (_: Lia.Event) => void) => void, elmSend: Lia.Send) {
+    log.info('initEventSystem')
 
     let self = this
 
-    swipedetect(elem, function (swipedir) {
+    swipedetect(elem, function(swipedir) {
       elmSend({
-        topic: 'swipe',
+        topic: Port.SWIPE,
         section: -1,
         message: swipedir
       })
     })
 
-    jsSubscribe(function (event) {
-      lia.log('elm2js => ', event)
+    jsSubscribe((event: Lia.Event) => {
+      log.info('elm2js => ', event)
 
       switch (event.topic) {
-        case 'slide': {
+        case Port.SLIDE: {
           self.connector.slide(event.section)
 
-          let sec = document.getElementsByTagName('section')[0]
+          const sec = document.getElementsByTagName('section')[0]
           if (sec) {
             sec.scrollTo(0, 0)
           }
 
-          let elem = document.getElementById('focusedToc')
+          const elem = document.getElementById('focusedToc')
           if (elem) {
             if (!isInViewport(elem)) {
               elem.scrollIntoView({
@@ -224,7 +235,7 @@ class LiaScript {
 
           break
         }
-        case 'load': {
+        case Port.LOAD: {
           self.connector.load({
             topic: event.message,
             section: event.section,
@@ -232,7 +243,7 @@ class LiaScript {
           })
           break
         }
-        case 'code': {
+        case Port.CODE: {
           switch (event.message.topic) {
             case 'eval':
               lia_eval_event(elmSend, eventHandler, event)
@@ -253,7 +264,7 @@ class LiaScript {
           }
           break
         }
-        case 'quiz': {
+        case Port.QUIZ: {
           if (event.message.topic === 'store') {
             event.message = event.message.message
             self.connector.store(event)
@@ -263,7 +274,7 @@ class LiaScript {
 
           break
         }
-        case 'survey': {
+        case Port.SURVEY: {
           if (event.message.topic === 'store') {
             event.message = event.message.message
             self.connector.store(event)
@@ -272,32 +283,32 @@ class LiaScript {
           }
           break
         }
-        case 'effect':
+        case Port.EFFECT:
           handleEffects(event.message, elmSend, event.section)
           break
-        case 'settings': {
+        case Port.SETTINGS: {
           // if (self.channel) {
           //  self.channel.push('lia', {settings: event.message});
           // } else {
 
           try {
-            let conf = self.connector.getSettings()
-            if (conf.table_of_contents !== event.message.table_of_contents) {
-              setTimeout(function () {
+            const conf = self.connector.getSettings()
+            if (conf?.table_of_contents !== event.message.table_of_contents) {
+              setTimeout(function() {
                 window.dispatchEvent(new Event('resize'))
               }, 200)
             }
-          } catch (e) {}
+          } catch (e) { }
 
           self.connector.setSettings(event.message)
 
           break
         }
-        case 'resource': {
+        case Port.RESOURCE: {
           let elem = event.message[0]
           let url = event.message[1]
 
-          lia.log('loading resource => ', elem, ':', url)
+          log.info('loading resource => ', elem, ':', url)
 
           try {
             let tag = document.createElement(elem)
@@ -310,28 +321,28 @@ class LiaScript {
               tag.src = url
               tag.async = false
               tag.defer = true
-              tag.onload = function (e) {
+              tag.onload = function() {
                 window.event_semaphore--
-                lia.log('successfully loaded :', url)
+                log.info('successfully loaded =>', url)
               }
-              tag.onerror = function (e) {
+              tag.onerror = function(e: Error) {
                 window.event_semaphore--
-                lia.error('could not load :', url)
+                log.warn('could not load =>', url, e)
               }
             }
             document.head.appendChild(tag)
           } catch (e) {
-            lia.error('loading resource => ', e)
+            log.error('loading resource => ', e)
           }
 
           break
         }
-        case 'persistent': {
+        case Port.PERSISTENT: {
           if (event.message === 'store') {
             // todo, needs to be moved back
             // persistent.store(event.section)
             elmSend({
-              topic: 'load',
+              topic: Port.LOAD,
               section: -1,
               message: null
             })
@@ -339,7 +350,7 @@ class LiaScript {
 
           break
         }
-        case 'init': {
+        case Port.INIT: {
           let data = event.message
 
           self.connector.open(
@@ -368,12 +379,12 @@ class LiaScript {
 
           break
         }
-        case 'index': {
+        case Port.INDEX: {
           switch (event.message.topic) {
             case 'list': {
               try {
-                responsiveVoice.cancel()
-              } catch (e) {}
+                window.responsiveVoice.cancel()
+              } catch (e) { }
               self.connector.getIndex()
               break
             }
@@ -394,33 +405,31 @@ class LiaScript {
               break
             }
             default:
-              lia.error('Command  not found => ', event.message)
+              log.error('Command  not found => ', event.message)
           }
           break
         }
-        case 'share': {
+        case Port.SHARE: {
           try {
             if (navigator.share) {
               navigator.share(event.message.message)
             }
           } catch (e) {
-            lia.error('sharing was not possible => ', event.message, e)
+            log.error('sharing was not possible => ', event.message, e)
           }
 
           break
         }
-        case 'reset': {
+        case Port.RESET: {
           self.connector.reset()
           window.location.reload()
           break
         }
         default:
-          lia.error('Command not found => ', event)
+          log.error('Command not found => ', event)
       }
     })
   }
 };
 
-export {
-  LiaScript
-}
+export default LiaScript

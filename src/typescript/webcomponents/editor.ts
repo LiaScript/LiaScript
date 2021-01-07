@@ -1,19 +1,42 @@
 import ace from 'ace-builds/src-noconflict/ace'
 import getMode from './editor-modes'
 
-const debounce = (func) => {
-  let token
-  return function () {
+
+type RequestIdleCallbackHandle = any;
+type RequestIdleCallbackOptions = {
+  timeout: number;
+};
+type RequestIdleCallbackDeadline = {
+  readonly didTimeout: boolean;
+  timeRemaining: (() => number);
+};
+
+declare global {
+  interface Window {
+    requestIdleCallback: ((
+      callback: ((deadline: RequestIdleCallbackDeadline) => void),
+      opts?: RequestIdleCallbackOptions,
+    ) => RequestIdleCallbackHandle);
+    cancelIdleCallback: ((handle: RequestIdleCallbackHandle) => void);
+  }
+}
+
+function debounce(func: any) {
+  // this is required since, safari and opera do not provide this interfaces ...
+  if (!window.cancelIdleCallback || !window.requestIdleCallback) return func
+
+  let token: any
+  return function() {
     const later = () => {
       token = null
       func.apply(null, arguments)
     }
-    cancelIdleCallback(token)
-    token = requestIdleCallback(later)
+    window.cancelIdleCallback(token)
+    token = window.requestIdleCallback(later)
   }
 }
 
-function markerStyle (name) {
+function markerStyle(name: string): string {
   if (typeof name === 'string') {
     name = 'ace_color_' + name.replace(/ /g, '')
       .replace(/\./g, '')
@@ -24,17 +47,17 @@ function markerStyle (name) {
   return name
 }
 
-function addMarker (color, name = null) {
+function addMarker(color: string, name?: string | undefined) {
   if (!color) return
 
-  name = markerStyle(name || color)
+  const id = markerStyle(name || color)
 
-  if (!document.head.getElementsByTagName('style')[name]) {
+  if (!document.head.querySelector('style#' + id)) {
     let node = document.createElement('style')
-    node.type = 'text/css'
-    node.id = name
+    // node.type ='text/css'
+    node.id = id
     node.appendChild(document.createTextNode(
-      `.${name} {
+      `.${id} {
         position:absolute;
         background:${color};
         z-index:20
@@ -45,15 +68,42 @@ function addMarker (color, name = null) {
 }
 
 customElements.define('lia-editor', class extends HTMLElement {
-  constructor () {
+
+  private _editor: any
+  private _focus: boolean
+  private model: {
+    value: string,
+    theme: string,
+    mode: string,
+    shared: null | string,
+    showPrintMargin: boolean,
+    highlightActiveLine: boolean,
+    firstLineNumber: number,
+    tabSize: number,
+    useSoftTabs: boolean,
+    useWrapMode: boolean,
+    readOnly: boolean,
+    showCursor: boolean,
+    showGutter: boolean,
+    extensions: string[],
+    maxLines: number,
+    marker: string,
+    minLines: number,
+    annotations: string[],
+    fontSize: string
+  }
+
+  constructor() {
     super()
 
     ace.config.set('basePath', 'editor/')
 
+    this._focus = false
+
     this.model = {
-      value: null,
-      theme: null,
-      mode: null,
+      value: '',
+      theme: '',
+      mode: 'text',
       shared: null,
       showPrintMargin: true,
       highlightActiveLine: true,
@@ -81,19 +131,16 @@ customElements.define('lia-editor', class extends HTMLElement {
     }
 
     try {
-      let keys = Object.keys(markers)
-
-      for (let i = 0; i < keys.length; i++) {
-        addMarker(markers[keys[i]], keys[i])
-      }
+      Object.entries(markers).forEach(entry => {
+        const [name, color] = entry;
+        addMarker(color, name)
+      });
     } catch (e) {
       console.warn('ace.js => ', e)
     }
-
-    this.focus_ = false
   }
 
-  connectedCallback () {
+  connectedCallback() {
     this.setExtension()
 
     this._editor = ace.edit(this, {
@@ -122,8 +169,6 @@ customElements.define('lia-editor', class extends HTMLElement {
 
     this._editor.setAutoScrollEditorIntoView(true)
 
-
-
     if (!this.model.readOnly) {
       const runDispatch = debounce(() => {
         this.model.value = this._editor.getValue()
@@ -134,55 +179,51 @@ customElements.define('lia-editor', class extends HTMLElement {
     }
 
     let self = this
-    this._editor.on('focus', function () {
-      self.focus_ = true
+    this._editor.on('focus', function() {
+      self._focus = true
       self.dispatchEvent(new CustomEvent('editorFocus'))
     })
 
-    this._editor.on('blur', function () {
-      self.focus_ = false
+    this._editor.on('blur', function() {
+      self._focus = false
       self.dispatchEvent(new CustomEvent('editorFocus'))
     })
 
     this.setMarker()
 
-    if (this.focus_) {
+    if (this._focus) {
       this.setFocus()
     }
-
-    console.warn(this._editor)
   }
 
-  disconnectedCallback () {
-    if (super.disconnectedCallback) {
-      super.disconnectedCallback()
-    }
+  disconnectedCallback() {
+    // todo
   }
 
-  setOption (option, value) {
-    if (this.model[option] === value) return
+  setOption(option: string, value: any) {
+    /*if ((this.model[option] as any) == value) return
 
     this.model[option] = value
-
-    if (!this._editor) return
-
-    try {
-      this._editor.setOption(option, value)
-    } catch (e) {
-      console.log(
-        'Problem Ace: setOption ',
-        option,
-        value,
-        ' => ',
-        e.toString())
+    */
+    if (this._editor) {
+      try {
+        this._editor.setOption(option, value)
+      } catch (e) {
+        console.log(
+          'Problem Ace: setOption ',
+          option,
+          value,
+          ' => ',
+          e.toString())
+      }
     }
   }
 
-  get annotations () {
+  get annotations() {
     return this.model.annotations
   }
 
-  set annotations (list) {
+  set annotations(list) {
     if (this.model.annotations === list) return
 
     if (list == null) this.model.annotations = []
@@ -202,11 +243,11 @@ customElements.define('lia-editor', class extends HTMLElement {
     }
   }
 
-  get extensions () {
+  get extensions() {
     return this.model.extensions
   }
 
-  set extensions (values) {
+  set extensions(values) {
     if (this.model.extensions === values) return
 
     this.model.extensions = values
@@ -216,7 +257,7 @@ customElements.define('lia-editor', class extends HTMLElement {
     this.setExtension()
   }
 
-  setExtension () {
+  setExtension() {
     for (const ext in this.model.extensions) {
       try {
         ace.require('ace/ext/' + ext)
@@ -226,20 +267,27 @@ customElements.define('lia-editor', class extends HTMLElement {
     }
   }
 
-  get fontSize () {
+  get fontSize() {
     return this.model.fontSize
   }
 
-  set fontSize (value) {
-    this.setOption('fontSize', value)
+  set fontSize(value: string) {
+    if (this.model.fontSize !== value) {
+      this.model.fontSize = value
+      this.setOption('fontSize', value)
+    }
   }
 
-  setMarker () {
+  setMarker() {
     let Range = ace.require('ace/range').Range
-    let value = this.model.marker.split(';')
+    let value = this.model.marker.replace('\n', '').split(';').filter(e => e !== '')
 
     for (let i = 0; i < value.length; i++) {
-      let m = value[i].split(' ').filter(e => e !== '')
+      let m = value[i]
+        .trim()
+        .split(' ')
+        .map(e => e.trim())
+        .filter(e => e !== '')
 
       addMarker(m[4])
 
@@ -256,51 +304,65 @@ customElements.define('lia-editor', class extends HTMLElement {
     }
   }
 
-  get marker () {
+  get marker() {
     return this.model.marker
   }
 
-  set marker (value) {
+  set marker(value) {
     this.model.marker = value
   }
 
-  get firstLineNumber () {
+  get firstLineNumber() {
     return this.model.firstLineNumber
   }
 
-  set firstLineNumber (value) {
-    this.setOption('firstLineNumber', value)
+  set firstLineNumber(value: number) {
+    if (this.model.firstLineNumber !== value) {
+      this.model.firstLineNumber = value
+      this.setOption('firstLineNumber', value)
+    }
   }
 
-  get highlightActiveLine () {
+  get highlightActiveLine() {
     return this.model.highlightActiveLine
   }
 
-  set highlightActiveLine (value) {
-    this.setOption('highlightActiveLine', value)
+  set highlightActiveLine(value) {
+    if (this.model.highlightActiveLine !== value) {
+      this.model.highlightActiveLine = value
+      this.setOption('highlightActiveLine', value)
+    }
   }
 
-  get maxLines () {
+  get maxLines() {
     return this.model.maxLines
   }
 
-  set maxLines (value) {
-    this.setOption('maxLines', value < 0 ? Infinity : value)
+  set maxLines(value: number) {
+    value = value < 0 ? Infinity : value
+    if (this.model.maxLines !== value) {
+      this.model.maxLines = value
+      this.setOption('maxLines', value)
+    }
   }
 
-  get minLines () {
+  get minLines() {
     return this.model.minLines
   }
 
-  set minLines (value) {
-    this.setOption('minLines', value < 0 ? 1 : value)
+  set minLines(value: number) {
+    value = value < 0 ? 1 : value
+    if (this.model.minLines !== value) {
+      this.model.minLines = value
+      this.setOption('minLines', value)
+    }
   }
 
-  get mode () {
+  get mode() {
     return this.model.mode
   }
 
-  set mode (mode) {
+  set mode(mode) {
     if (this.model.mode === mode) return
 
     this.model.mode = mode
@@ -314,51 +376,66 @@ customElements.define('lia-editor', class extends HTMLElement {
     }
   }
 
-  get readOnly () {
+  get readOnly() {
     return this.model.readOnly
   }
 
-  set readOnly (value) {
-    this.setOption('readOnly', value)
+  set readOnly(value: boolean) {
+    if (this.model.readOnly !== value) {
+      this.model.readOnly = value
+      this.setOption('readOnly', value)
+    }
   }
 
-  get showCursor () {
+  get showCursor() {
     return this.model.showCursor
   }
 
-  set showCursor (value) {
-    this.setOption('showCursor', value)
+  set showCursor(value: boolean) {
+    if (this.model.showCursor !== value) {
+      this.model.showCursor = value
+      this.setOption('showCursor', value)
+    }
   }
 
-  get showGutter () {
+  get showGutter() {
     return this.model.showGutter
   }
 
-  set showGutter (value) {
-    this.setOption('showGutter', value)
+  set showGutter(value: boolean) {
+    if (this.model.showGutter !== value) {
+      this.model.showGutter = value
+      this.setOption('showGutter', value)
+    }
   }
 
-  get showPrintMargin () {
+  get showPrintMargin() {
     return this.model.showPrintMargin
   }
 
-  set showPrintMargin (value) {
-    this.setOption('showPrintMargin', value)
+  set showPrintMargin(value: boolean) {
+    if (this.model.showPrintMargin !== value) {
+      this.model.showPrintMargin = value
+      this.setOption('showPrintMargin', value)
+    }
   }
 
-  get tabSize () {
+  get tabSize() {
     return this.model.tabSize
   }
 
-  set tabSize (value) {
-    this.setOption('tabSize', value)
+  set tabSize(value: number) {
+    if (this.model.tabSize !== value) {
+      this.model.tabSize = value
+      this.setOption('tabSize', value)
+    }
   }
 
-  get theme () {
+  get theme() {
     return this.model.theme
   }
 
-  set theme (theme) {
+  set theme(theme: string) {
     if (this.model.theme === theme) return
 
     this.model.theme = theme
@@ -368,43 +445,52 @@ customElements.define('lia-editor', class extends HTMLElement {
     this._editor.setTheme('ace/theme/' + theme)
   }
 
-  get useSoftTabs () {
+  get useSoftTabs() {
     return this.model.useSoftTabs
   }
 
-  set useSoftTabs (value) {
-    this.setOption('useSoftTabs', value)
+  set useSoftTabs(value: boolean) {
+    if (this.model.useSoftTabs !== value) {
+      this.model.useSoftTabs = value
+      this.setOption('useSoftTabs', value)
+    }
   }
 
-  get useWrapMode () {
+  get useWrapMode() {
     return this.model.useWrapMode
   }
 
-  set useWrapMode (value) {
-    this.setOption('useWrapMode', value)
+  set useWrapMode(value) {
+    if (this.model.useWrapMode !== value) {
+      this.model.useWrapMode = value
+      this.setOption('useWrapMode', value)
+    }
   }
 
-  get value () {
+  get value() {
     return this.model.value
   }
 
-  set value (value) {
-    this.setOption('value', value)
+  set value(value: string) {
+    if (this.model.value !== value) {
+      this.model.value = value
+      this.setOption('value', value)
+    }
   }
 
-  get focus () {
-    return this.focus_
+  get focusing() {
+    return this._focus
   }
 
-  set focus (value) {
-    this.focus_ = value
+  set focusing(value) {
+    this._focus = value
 
     if (value) {
       this.setFocus()
     }
   }
 
-  setFocus () {
+  setFocus() {
     if (!this._editor) return
 
     try {

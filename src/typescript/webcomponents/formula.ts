@@ -2,11 +2,18 @@
 import katex from 'katex'
 
 customElements.define('lia-formula', class extends HTMLElement {
-  constructor () {
+  private span: HTMLSpanElement
+  private formula_: string
+  private displayMode: boolean
+
+  constructor() {
     super()
+    this.span = document.createElement('span')
+    this.formula_ = ''
+    this.displayMode = false
   }
 
-  connectedCallback () {
+  connectedCallback() {
     const shadowRoot = this.attachShadow({
       mode: 'open'
     })
@@ -15,23 +22,19 @@ customElements.define('lia-formula', class extends HTMLElement {
     link.rel = 'stylesheet'
     link.href = 'katex.min.css'
 
-    this.span = document.createElement('span')
-
     shadowRoot.appendChild(link)
     shadowRoot.appendChild(this.span)
 
-    this.displayMode = this.getAttribute('displayMode')
+    const mode = this.getAttribute('displayMode')
 
-    if (!this.displayMode) {
-      this.displayMode = false
-    } else {
-      this.displayMode = JSON.parse(this.displayMode)
+    if (mode) {
+      this.displayMode = JSON.parse(mode)
     }
 
     this.render()
   }
 
-  render () {
+  render() {
     if (this.formula_ && this.span) {
       try {
         katex.render(this.formula_, this.span, {
@@ -44,20 +47,18 @@ customElements.define('lia-formula', class extends HTMLElement {
     }
   }
 
-  get formula () {
+  get formula() {
     return this.formula_
   }
 
-  set formula (value) {
+  set formula(value) {
     if (this.formula_ !== value) {
       this.formula_ = value
       this.render()
     }
   }
 
-  disconnectedCallback () {
-    if (super.disconnectedCallback) {
-      super.disconnectedCallback()
-    }
+  disconnectedCallback() {
+    this.span.innerHTML = ""
   }
 })

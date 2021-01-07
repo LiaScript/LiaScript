@@ -1,19 +1,52 @@
+declare namespace Intl {
+  class RelativeTimeFormat {
+    constructor(locale: string | undefined, options: object);
+    format(value: string, unit: string | undefined): string;
+  }
+  class ListFormat {
+    constructor(locale: string | undefined, options: object);
+    format(value: string[]): string;
+  }
+}
+
+enum Format {
+  DateTime = 'datetime',
+  List = 'list',
+  Number = 'number',
+  PluralRules = 'pluralrules',
+  RelativeTime = 'relativetime'
+}
+
+
 customElements.define('lia-format', class extends HTMLElement {
-  constructor () {
+  private span: HTMLSpanElement
+
+  private value_: string
+  private locale: string | undefined
+  private format: string | undefined
+  private option: object
+  private unit: string | undefined
+
+  constructor() {
     super()
     this.span = document.createElement('span')
+    this.option = {}
+    this.value_ = ''
+    //this.unit
+    this.format
+    this.locale
   }
 
-  connectedCallback () {
+  connectedCallback() {
     const shadowRoot = this.attachShadow({
       mode: 'open'
     })
 
     shadowRoot.appendChild(this.span)
 
-    this.locale = this.get('locale')
+    this.locale = this.get('locale') || undefined
 
-    this.format = this.get('format')
+    this.format = this.get('format') || undefined
 
     switch (this.format) {
       case 'number':
@@ -63,9 +96,9 @@ customElements.define('lia-format', class extends HTMLElement {
           year: this.get('year')
         }
         break
-        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/RelativeTimeFormat/RelativeTimeFormat
+      // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/RelativeTimeFormat/RelativeTimeFormat
       case 'relativetime':
-        this.unit = this.get('unit')
+        this.unit = this.get('unit') || undefined
         this.option = {
           localeMatcher: this.get('localeMatcher'),
           numeric: this.get('numeric'),
@@ -95,29 +128,29 @@ customElements.define('lia-format', class extends HTMLElement {
         this.option = {}
     }
 
-    this.value_ = this.textContent
+    this.value_ = this.textContent || ''
 
     this.view()
   }
 
-  view () {
-    let value
+  view() {
+    let value = ''
     try {
       switch (this.format) {
-        case 'number':
+        case Format.Number:
           value = new Intl.NumberFormat(this.locale, this.option).format(parseFloat(this.value_))
           break
-        case 'datetime':
+        case Format.DateTime:
           value = new Intl.DateTimeFormat(this.locale, this.option).format(Date.parse(this.value_))
           break
-        case 'relativetime':
+        case Format.RelativeTime:
           value = new Intl.RelativeTimeFormat(this.locale, this.option).format(this.value_, this.unit)
           break
-        case 'list':
+        case Format.List:
           value = new Intl.ListFormat(this.locale, this.option).format(JSON.parse(this.value_))
           break
-        case 'pluralrules':
-          value = new Intl.PluralRules(this.locale, this.option).select(this.value_)
+        case Format.PluralRules:
+          value = new Intl.PluralRules(this.locale, this.option).select(parseFloat(this.value_))
           break
       }
     } catch (e) {
@@ -127,24 +160,37 @@ customElements.define('lia-format', class extends HTMLElement {
     this.span.innerText = value || this.value_
   }
 
-  get (name) {
-    return (this.getAttribute(name) || undefined)
+  get(name: string) {
+    return this.getAttribute(name)
   }
 
-  get value () {
+  get value() {
     return this.value_
   }
 
-  set value (value) {
+  getFormat(): Format | null {
+    switch (this.get('format')) {
+      case Format.DateTime:
+        return Format.DateTime
+      case Format.List:
+        return Format.List
+      case Format.Number:
+        return Format.Number
+      case Format.PluralRules:
+        return Format.PluralRules
+      case Format.RelativeTime:
+        return Format.RelativeTime
+    }
+    return null
+  }
+
+  set value(value) {
     if (this.value_ !== value) {
       this.value_ = value
       this.view()
     }
   }
 
-  disconnectedCallback () {
-    if (super.disconnectedCallback) {
-      super.disconnectedCallback()
-    }
+  disconnectedCallback() {
   }
 })
