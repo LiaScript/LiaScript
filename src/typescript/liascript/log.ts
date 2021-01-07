@@ -2,15 +2,15 @@ import './types/globals'
 
 const log = {
   info: function(...args: any) {
-    if (window.debug__) console.log('LiaInfo: ', ...args)
+    if (window.debug__) console.log('⭐', ...args)
   },
 
   warn: function(...args: any) {
-    if (window.debug__) console.warn('LiaWarn: ', ...args)
+    if (window.debug__) console.warn('⭐', ...args)
   },
 
   error: function(...args: any) {
-    console.error('LiaError: ', ...args)
+    console.error('⭐', ...args)
   }
 }
 

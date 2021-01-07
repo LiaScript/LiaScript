@@ -190,7 +190,7 @@ class LiaScript {
     const sendTo = this.app.ports.event2elm.send
 
     const sender = function(msg: Lia.Event) {
-      log.info('event2elm => ', msg)
+      log.info(`LIA <<< (${msg.topic}:${msg.section})`, msg.message)
       sendTo(msg)
     }
 
@@ -238,7 +238,7 @@ class LiaScript {
 
 
 function process(self:LiaScript, elmSend: Lia.Send, event: Lia.Event) {
-  log.info('elm2js => ', event)
+  log.info(`LIA >>> (${event.topic}:${event.section})`, event.message)
 
   switch (event.topic) {
     case Port.SLIDE: {
