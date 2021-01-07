@@ -133,7 +133,7 @@ outputs =
             )
 
 
-replaceInputs : Scripts a -> List ( Int, String, String ) -> List ( Int, String )
+replaceInputs : Scripts a -> List ( Int, String, Maybe String ) -> List ( Int, String )
 replaceInputs javascript =
     let
         inputs =
@@ -144,7 +144,14 @@ replaceInputs javascript =
             ( id
             , inputs
                 |> List.foldl Eval.replace_input script
-                |> Eval.replace_0 input_
+                |> (\code ->
+                        case input_ of
+                            Just str ->
+                                Eval.replace_0 str code
+
+                            Nothing ->
+                                code
+                   )
             )
         )
 
@@ -168,7 +175,11 @@ scriptChildren output javascript =
         |> List.filterMap
             (\( i, js ) ->
                 if not js.running && List.member output js.inputs then
-                    Just ( i, js.script, js.input.value )
+                    Just
+                        ( i
+                        , js.script
+                        , Input.getValue js.input
+                        )
 
                 else
                     Nothing

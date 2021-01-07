@@ -96,11 +96,15 @@ subView config id sub =
 
                     effects =
                         config.section.effect_model
+
+                    main =
+                        config.main
                 in
                 List.map
                     (view_block
                         { config
-                            | section =
+                            | main = { main | scripts = x.effect_model.javascript }
+                            , section =
                                 { section
                                     | table_vector = x.table_vector
                                     , quiz_vector = x.quiz_vector

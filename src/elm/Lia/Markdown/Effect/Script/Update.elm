@@ -16,7 +16,7 @@ import Lia.Markdown.Effect.Script.Types as Script exposing (Script, Scripts, Std
 import Lia.Parser.Parser exposing (parse_subsection)
 import Lia.Section exposing (SubSection)
 import Port.Eval as Eval exposing (Eval)
-import Port.Event exposing (Event)
+import Port.Event as Event exposing (Event)
 import Process
 import Task
 
@@ -37,7 +37,9 @@ type Msg sub
 
 
 update :
-    (Scripts SubSection -> sub -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) ))
+    { update : Scripts SubSection -> sub -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
+    , handle : Scripts SubSection -> JE.Value -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
+    }
     -> Msg sub
     -> Scripts SubSection
     -> ( Scripts SubSection, Cmd (Msg sub), List Event )
@@ -48,12 +50,13 @@ update main msg scripts =
                 Just (IFrame lia) ->
                     let
                         ( new, cmd, events ) =
-                            main scripts sub lia
+                            main.update scripts sub lia
                     in
-                    ( scripts
-                        |> Script.set id (\s -> { s | result = Just (IFrame new) })
+                    ( Script.set id (\s -> { s | result = Just (IFrame new) }) scripts
                     , Cmd.map (Sub id) cmd
-                    , []
+                    , events
+                        |> List.map (\( name, json ) -> Event name id json |> Event.encode)
+                        |> List.map (Event "sub" id)
                     )
 
                 _ ->
@@ -209,7 +212,7 @@ update main msg scripts =
                                     |> Maybe.withDefault False
                             then
                                 node
-                                    |> Maybe.map (\n -> [ ( event.section, n.script, n.input.value ) ])
+                                    |> Maybe.map (\n -> [ ( event.section, n.script, Input.getValue n.input ) ])
                                     |> Maybe.withDefault []
                                     |> Script.replaceInputs javascript
 
@@ -270,6 +273,23 @@ update main msg scripts =
                                 []
                             )
 
+                "sub" ->
+                    case scripts |> Array.get event.section |> Maybe.andThen .result of
+                        Just (IFrame lia) ->
+                            let
+                                ( new, cmd, events ) =
+                                    main.handle scripts event.message lia
+                            in
+                            ( Script.set event.section (\s -> { s | result = Just (IFrame new) }) scripts
+                            , Cmd.map (Sub event.section) cmd
+                            , events
+                                |> List.map (\( name, json ) -> Event name event.section json |> Event.encode)
+                                |> List.map (Event "sub" event.section)
+                            )
+
+                        _ ->
+                            ( scripts, Cmd.none, [] )
+
                 _ ->
                     ( scripts, Cmd.none, [] )
 
@@ -297,7 +317,7 @@ reRun fn cmd id scripts =
                 []
 
               else
-                [ ( id, node.script, node.input.value ) ]
+                [ ( id, node.script, Input.getValue node.input ) ]
                     |> Script.replaceInputs scripts
                     |> List.map (execute 0)
             )
@@ -391,7 +411,7 @@ getAll javascript =
         |> getIdle identity
         |> List.map
             (\( id, node ) ->
-                ( id, node.script, node.input.value )
+                ( id, node.script, Input.getValue node.input )
             )
         |> Script.replaceInputs javascript
 
@@ -403,7 +423,7 @@ getVisible visible javascript =
         |> List.filterMap
             (\( id, node ) ->
                 if node.effect_id == visible then
-                    Just ( id, node.script, node.input.value )
+                    Just ( id, node.script, Input.getValue node.input )
 
                 else
                     Nothing
