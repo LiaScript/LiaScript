@@ -17,7 +17,7 @@ import Lia.Markdown.Footnote.Model as Footnote
 import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Markdown.Survey.Types as Survey
 import Lia.Markdown.Table.Types as Table
-import Lia.Section exposing (Section, SubSection)
+import Lia.Section exposing (SubSection)
 
 
 type alias Context =

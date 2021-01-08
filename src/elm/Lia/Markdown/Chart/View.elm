@@ -24,7 +24,6 @@ import Html.Attributes as Attr
 import Json.Encode as JE
 import Lia.Markdown.Chart.Types exposing (Chart, Diagram(..), Labels)
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
-import Lia.Utils as Utils
 
 
 view : Parameters -> Bool -> Chart -> Html msg

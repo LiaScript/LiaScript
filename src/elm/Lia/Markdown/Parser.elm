@@ -259,6 +259,7 @@ ordered_list =
             )
 
 
+newlineWithIndentation : Parser Context (Maybe ())
 newlineWithIndentation =
     maybe indentation
         |> ignore (string "\n")

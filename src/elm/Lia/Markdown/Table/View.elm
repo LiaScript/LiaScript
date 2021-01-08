@@ -11,7 +11,7 @@ import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.Config exposing (Config)
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.HTML.Attributes as Param exposing (Parameters)
-import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
+import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Table.Matrix as Matrix exposing (Matrix, Row)
 import Lia.Markdown.Table.Types
     exposing

@@ -48,7 +48,7 @@ import Lia.Markdown.Inline.Parser.Symbol exposing (arrows, smileys)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 import Lia.Markdown.Macro.Parser as Macro
 import Lia.Parser.Context exposing (Context, searchIndex)
-import Lia.Parser.Helper exposing (spaces, stringTill)
+import Lia.Parser.Helper exposing (spaces)
 
 
 parse_inlines : Context -> String -> Inlines
@@ -89,33 +89,9 @@ annotations =
     in
     spaces
         |> keep (comment attr)
-        --|> map styling
         |> maybe
         |> map (Maybe.withDefault [])
         |> ignore comments
-
-
-styling : Parameters -> Parameters
-styling p =
-    if p == [] then
-        []
-
-    else if List.any (Tuple.first >> (==) "style") p then
-        p
-            |> List.map
-                (\( key, value ) ->
-                    ( key
-                    , if key == "style" then
-                        --"display: inline-block; " ++ value
-                        value
-
-                      else
-                        value
-                    )
-                )
-
-    else
-        ( "style", "display: inline-block;" ) :: p
 
 
 javascript : Parser s String
