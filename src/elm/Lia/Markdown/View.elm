@@ -328,19 +328,33 @@ view_block config block =
         Chart attr chart ->
             Lazy.lazy3 Charts.view attr config.light chart
 
-        ASCII attr txt ->
-            Lazy.lazy3 view_ascii attr config.light txt
+        ASCII attr bob ->
+            view_ascii config attr bob
 
         Skip ->
             Html.text ""
 
 
-view_ascii : Parameters -> Bool -> String -> Html Msg
-view_ascii attr light =
-    SvgBob.init SvgBob.default
-        >> SvgBob.getSvg (toAttribute attr)
+view_ascii : Config Msg -> Parameters -> SvgBob.Configuration (List Markdown) -> Html Msg
+view_ascii config attr =
+    SvgBob.drawElements (toAttribute attr)
+        (\list ->
+            Html.div [] <|
+                case list of
+                    [ Paragraph [] content ] ->
+                        config.view content
+
+                    -- TODO: remove after styling
+                    (Code _) :: _ ->
+                        [ List.map (view_block config) list
+                            |> Html.div [ Attr.style "margin-top" "-16px" ]
+                        ]
+
+                    _ ->
+                        List.map (view_block config) list
+        )
         >> (\svg ->
-                if light then
+                if config.light then
                     svg
 
                 else
