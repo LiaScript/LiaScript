@@ -11,7 +11,7 @@ import Lia.Markdown.Effect.Script.Input as Input exposing (Input)
 import Lia.Markdown.Effect.Script.Intl as Intl
 import Lia.Markdown.Effect.Script.Types exposing (Script, Stdout(..), isError)
 import Lia.Markdown.Effect.Script.Update exposing (Msg(..))
-import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, get)
+import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Section exposing (SubSection(..))
 import Lia.Utils exposing (blockKeydown, onEnter)

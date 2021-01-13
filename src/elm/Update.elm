@@ -253,10 +253,6 @@ start model =
 
         ( parsed, cmd, events ) =
             Lia.Script.load_first_slide session { lia | section_active = slide }
-
-        resources =
-            model.preload
-                |> Maybe.map (.versions >> Dict.get "0")
     in
     ( { model | state = Running, lia = parsed, session = session }
     , events

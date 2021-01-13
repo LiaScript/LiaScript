@@ -28,7 +28,6 @@ type Markdown
     | ASCII Parameters (SvgBob.Configuration (List Markdown))
     | HTML Parameters (Node Markdown)
     | Header Parameters ( Inlines, Int )
-    | Skip
 
 
 type alias MarkdownS =

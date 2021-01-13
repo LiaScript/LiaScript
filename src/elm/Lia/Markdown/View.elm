@@ -331,9 +331,6 @@ view_block config block =
         ASCII attr bob ->
             view_ascii config attr bob
 
-        Skip ->
-            Html.text ""
-
 
 view_ascii : Config Msg -> Parameters -> SvgBob.Configuration (List Markdown) -> Html Msg
 view_ascii config attr =

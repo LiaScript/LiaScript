@@ -1,7 +1,6 @@
 module Lia.Markdown.Config exposing
     ( Config
     , init
-    , inline
     , setSubViewer
     )
 

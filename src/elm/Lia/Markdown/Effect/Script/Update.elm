@@ -3,7 +3,6 @@ module Lia.Markdown.Effect.Script.Update exposing
     , execute
     , getAll
     , getVisible
-    , none
     , setRunning
     , update
     )
@@ -429,8 +428,3 @@ getVisible visible javascript =
                     Nothing
             )
         |> Script.replaceInputs javascript
-
-
-none : x -> ( x, Maybe y )
-none x =
-    ( x, Nothing )

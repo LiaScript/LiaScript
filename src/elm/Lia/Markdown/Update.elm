@@ -36,10 +36,6 @@ type Msg
     | Script (Script.Msg Msg)
 
 
-type alias Model x =
-    { x | effect_model : E.Model x }
-
-
 subscriptions : Section -> Sub Msg
 subscriptions _ =
     footnote FootnoteShow
@@ -112,14 +108,13 @@ update msg section =
 
         UpdateTable childMsg ->
             let
-                ( vector, sub ) =
+                vector =
                     Table.update childMsg section.table_vector
             in
             ( { section | table_vector = vector }
             , Cmd.none
             , []
             )
-                |> updateScript sub
 
         FootnoteShow key ->
             ( { section | footnote2show = Just key }, Cmd.none, [] )
@@ -154,7 +149,7 @@ subUpdate js msg section =
 
                 UpdateTable childMsg ->
                     let
-                        ( vector, sub ) =
+                        vector =
                             Table.update childMsg subsection.table_vector
                     in
                     ( SubSection { subsection | table_vector = vector }
