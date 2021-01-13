@@ -9,6 +9,7 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Types exposing (Quiz)
 import Lia.Markdown.Survey.Types exposing (Survey)
 import Lia.Markdown.Table.Types exposing (Table)
+import SvgBob
 
 
 type Markdown
@@ -24,7 +25,7 @@ type Markdown
     | Survey Parameters Survey
     | Chart Parameters Chart
     | Code Code
-    | ASCII Parameters String
+    | ASCII Parameters (SvgBob.Configuration (List Markdown))
     | HTML Parameters (Node Markdown)
     | Header Parameters ( Inlines, Int )
     | Skip
