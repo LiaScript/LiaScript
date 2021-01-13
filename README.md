@@ -224,13 +224,33 @@ __Badges:__
 
 ## Version-Changes
 
-__0.9.0__ (//2021)
-
 * Moved from JavaScript to Typescript
 * Optimized internal message-handling
 * Scripts can now also create Quizzes, Code, Surveys, etc.
   (scripts cannot create scripts)
 * Updated debug-information
+* ASCII-art blocks now have a verbatim environment, that is surrounded by either
+  single or double quotation marks:
+
+  ````
+  ``` ascii
+  +------------------------------------+
+  |"$$                                "|   Single
+  |"   \sum_{i=1}^\infty\frac{1}{n^2} "|   quote
+  |"        =\frac{\pi^2}{6}          "|   verbatim
+  |"$$                                "|   block
+  +------------------------------------+
+                   |
+                   V
+  +------------------------------------+
+  |""```js                           ""|   Double quoute
+  |""let str = "Hello World!         ""|   verbatim block
+  |""alert(str)                      ""|   -
+  |""```                             ""|   can contain
+  |""<script>@input</script>         ""|   single quotes
+  +------------------------------------+
+  ```
+  ````
 
 __0.8.12__ (08/12/2020)
 
