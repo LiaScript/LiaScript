@@ -1,8 +1,8 @@
 module Lia.Markdown.Quiz.Vector.Parser exposing
-    ( choices
-    , multiple
+    ( checkButton
+    , group
     , parse
-    , single
+    , radioButton
     )
 
 import Combine
@@ -16,6 +16,7 @@ import Combine
         , maybe
         , onsuccess
         , or
+        , regex
         , string
         )
 import Lia.Markdown.Inline.Parser exposing (line)
@@ -28,28 +29,28 @@ import Lia.Parser.Helper exposing (newline, spaces)
 parse : Parser Context Quiz
 parse =
     or
-        (single
-            |> choices
+        (radioButton
+            |> group
             |> map (toQuiz SingleChoice)
         )
-        (multiple
-            |> choices
+        (checkButton
+            |> group
             |> map (toQuiz MultipleChoice)
         )
 
 
-single : Parser Context Bool
-single =
-    elements "(X)" "( )"
+radioButton : Parser Context Bool
+radioButton =
+    elements "\\([xX]\\)" "( )"
 
 
-multiple : Parser Context Bool
-multiple =
-    elements "[X]" "[ ]"
+checkButton : Parser Context Bool
+checkButton =
+    elements "\\[[xX]\\]" "[ ]"
 
 
-choices : Parser Context a -> Parser Context ( List a, List Inlines )
-choices parser =
+group : Parser Context a -> Parser Context ( List a, List Inlines )
+group parser =
     maybe indentation
         |> ignore spaces
         |> ignore (string "[")
@@ -65,8 +66,8 @@ choices parser =
 elements : String -> String -> Parser Context Bool
 elements true false =
     or
-        (string true |> onsuccess True)
         (string false |> onsuccess False)
+        (regex true |> onsuccess True)
 
 
 toQuiz : (List Bool -> State) -> ( List Bool, List Inlines ) -> Quiz

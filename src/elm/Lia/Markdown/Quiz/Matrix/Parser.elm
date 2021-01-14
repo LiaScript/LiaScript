@@ -18,7 +18,7 @@ import Combine
 import Lia.Markdown.Inline.Parser exposing (inlines)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Matrix.Types exposing (Quiz)
-import Lia.Markdown.Quiz.Vector.Parser as Vector
+import Lia.Markdown.Quiz.Vector.Parser exposing (checkButton, group, radioButton)
 import Lia.Markdown.Quiz.Vector.Types exposing (State(..))
 import Lia.Parser.Context exposing (Context, indentation)
 import Lia.Parser.Helper exposing (newline, spaces)
@@ -68,7 +68,7 @@ inBrackets =
 single : Parser Context State
 single =
     spaces
-        |> keep Vector.single
+        |> keep radioButton
         |> ignore spaces
         |> many1
         |> map SingleChoice
@@ -77,7 +77,7 @@ single =
 multiple : Parser Context State
 multiple =
     spaces
-        |> keep Vector.multiple
+        |> keep checkButton
         |> ignore spaces
         |> many1
         |> map MultipleChoice
@@ -86,4 +86,4 @@ multiple =
 rows : Parser Context ( List State, List Inlines )
 rows =
     or single multiple
-        |> Vector.choices
+        |> group
