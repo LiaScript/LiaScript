@@ -97,8 +97,7 @@ push lang id params script javascript =
         , inputs =
             script
                 |> Regex.find input
-                |> List.map .submatches
-                |> List.concat
+                |> List.concatMap .submatches
                 |> List.filterMap identity
         , counter = 0
         , input = Input.from params

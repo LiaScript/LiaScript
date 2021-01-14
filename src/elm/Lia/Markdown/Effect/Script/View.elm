@@ -204,7 +204,7 @@ checkbox updateOnChange id value _ =
                 |> Input.decodeList
                 |> Maybe.withDefault []
     in
-    List.map
+    List.concatMap
         (\o ->
             [ Html.text (" " ++ o ++ " ")
             , Html.input
@@ -221,13 +221,12 @@ checkbox updateOnChange id value _ =
                 [ Html.text "check" ]
             ]
         )
-        >> List.concat
         >> Html.span []
 
 
 radio : Bool -> Int -> String -> Parameters -> List String -> Html (Msg sub)
 radio updateOnChange id value _ =
-    List.map
+    List.concatMap
         (\o ->
             [ Html.text (" " ++ o ++ " ")
             , Html.input
@@ -244,7 +243,6 @@ radio updateOnChange id value _ =
                 []
             ]
         )
-        >> List.concat
         >> Html.span []
 
 

@@ -1379,7 +1379,7 @@ encode withColor chart =
             chart.diagrams
                 |> Dict.toList
                 |> List.map Tuple.second
-                |> List.map
+                |> List.concatMap
                     (\diagram ->
                         List.map .x <|
                             case diagram of
@@ -1389,7 +1389,6 @@ encode withColor chart =
                                 Dots points _ ->
                                     points
                     )
-                |> List.concat
                 |> minMax
                 |> Maybe.withDefault ( 0, 0 )
     in

@@ -277,7 +277,7 @@ chart width isFormated attr mode class matrix =
                             |> List.filter ((/=) "")
                 in
                 body
-                    |> List.map
+                    |> List.concatMap
                         (\row ->
                             case row of
                                 [] ->
@@ -300,7 +300,6 @@ chart width isFormated attr mode class matrix =
                                             )
                                             nodesA
                         )
-                    |> List.concat
                     |> List.filterMap identity
                     |> List.filter (\( a, b, _ ) -> a /= "" || b /= "")
                     |> Chart.viewGraph attr mode labels nodes
@@ -327,7 +326,7 @@ chart width isFormated attr mode class matrix =
                             |> List.filter ((/=) "")
                 in
                 body
-                    |> List.map
+                    |> List.concatMap
                         (\row ->
                             case row of
                                 [] ->
@@ -350,7 +349,6 @@ chart width isFormated attr mode class matrix =
                                             )
                                             nodesA
                         )
-                    |> List.concat
                     |> List.filterMap identity
                     |> List.filter (\( a, b, _ ) -> a /= "" || b /= "")
                     |> Chart.viewSankey attr mode labels nodes
