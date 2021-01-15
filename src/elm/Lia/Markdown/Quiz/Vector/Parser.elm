@@ -1,5 +1,6 @@
 module Lia.Markdown.Quiz.Vector.Parser exposing
     ( checkButton
+    , either
     , group
     , groupBy
     , parse

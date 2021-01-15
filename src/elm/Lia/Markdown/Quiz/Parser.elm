@@ -20,7 +20,7 @@ import Combine
         , withState
         )
 import Lia.Markdown.Inline.Parser exposing (javascript, line)
-import Lia.Markdown.Inline.Types exposing (MultInlines)
+import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Block.Parser as Block
 import Lia.Markdown.Quiz.Matrix.Parser as Matrix
@@ -84,14 +84,11 @@ generic =
         |> skip
 
 
-hints : Parser Context MultInlines
+hints : Parser Context (List Inlines)
 hints =
-    maybe indentation
-        |> ignore spaces
-        |> ignore (string "[[?]]")
-        |> keep line
-        |> ignore newline
-        |> many
+    string "[?]"
+        |> Vector.group
+        |> map Tuple.second
 
 
 modify_State : Quiz -> Parser Context Quiz
