@@ -35,9 +35,6 @@ fromMode mode =
             Slides ->
                 "Slides"
 
-            Newspaper ->
-                "Newspaper"
-
 
 settings : Model -> Bool -> Mode -> String -> Bool -> String -> Int -> Bool -> String -> Model
 settings model toc mode theme light editor font_size sound lang =

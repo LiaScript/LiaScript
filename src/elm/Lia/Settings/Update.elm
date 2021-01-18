@@ -93,9 +93,6 @@ update msg model =
                     ( new_model, TTS.event new_model.sound :: events )
 
                 Textbook ->
-                    log { model | mode = Newspaper }
-
-                Newspaper ->
                     let
                         ( new_model, events ) =
                             log { model | sound = True, mode = Presentation }

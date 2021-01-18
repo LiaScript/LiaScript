@@ -203,7 +203,6 @@ update session msg model =
                 ( NextSection, Just sec ) ->
                     if
                         (model.settings.mode == Textbook)
-                            || (model.settings.mode == Newspaper)
                             || not (Effect.has_next sec.effect_model)
                     then
                         update session (Load (model.section_active + 1)) model

@@ -396,9 +396,6 @@ switch_button_mode lang mode =
 
                 Textbook ->
                     Trans.modeTextbook lang
-
-                Newspaper ->
-                    "newspaper"
         ]
         [ Html.text <|
             case mode of
@@ -410,7 +407,4 @@ switch_button_mode lang mode =
 
                 Textbook ->
                     "book"
-
-                Newspaper ->
-                    "view_column"
         ]

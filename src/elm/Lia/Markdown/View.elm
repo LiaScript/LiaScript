@@ -33,50 +33,12 @@ view : Config Msg -> Html Msg
 view config =
     case config.section.error of
         Nothing ->
-            if config.mode == Newspaper then
+            view_body
+                ( Config.setSubViewer (subView config) config
+                , config.section.footnote2show
+                , config.section.footnotes
+                )
                 config.section.body
-                    |> List.map (view_block config)
-                    |> List.foldl
-                        (\a ( b, bs ) ->
-                            if List.length b > 12 then
-                                ( [ a ], List.append bs [ b ] )
-
-                            else
-                                ( List.append b [ a ], bs )
-                        )
-                        ( [], [] )
-                    |> (\( b, bs ) ->
-                            List.append bs [ b ]
-                       )
-                    |> List.map
-                        (Html.div
-                            [ Attr.style "display" "block"
-                            , Attr.style "column-count" "3"
-                            , Attr.style "column-width" "600px"
-                            , Attr.style "column-fill" "auto"
-                            , Attr.style "column-gap" "40px"
-                            , Attr.style "column-rule" "1px dotted #ddd"
-                            ]
-                        )
-                    |> List.intersperse
-                        (Html.hr
-                            [ Attr.style "border" "2px inset"
-                            , Attr.style "margin" "30px"
-                            ]
-                            []
-                        )
-                    |> (::) (view_header config)
-                    |> Html.section
-                        [ Attr.class "lia-content"
-                        ]
-
-            else
-                view_body
-                    ( Config.setSubViewer (subView config) config
-                    , config.section.footnote2show
-                    , config.section.footnotes
-                    )
-                    config.section.body
 
         Just msg ->
             Html.section [ Attr.class "lia-content" ]

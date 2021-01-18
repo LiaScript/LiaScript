@@ -28,7 +28,6 @@ type Mode
     = Slides -- Underline Comments and Effects
     | Presentation -- Only effects
     | Textbook -- Render Comments and Effects at ones
-    | Newspaper -- Multi-Columns
 
 
 init : Int -> Mode -> Model
