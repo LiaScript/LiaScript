@@ -115,6 +115,20 @@ proxy =
     "https://cors-anywhere.herokuapp.com/"
 
 
+{-| **@private:** Combine commands and events to one command output.
+-}
+batch : (a -> msg) -> Cmd a -> List Event -> Cmd msg
+batch map cmd events =
+    if List.isEmpty events then
+        Cmd.map map cmd
+
+    else
+        events
+            |> List.map event2js
+            |> (::) (Cmd.map map cmd)
+            |> Cmd.batch
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -124,10 +138,7 @@ update msg model =
                     Lia.Script.update model.session childMsg model.lia
             in
             ( { model | lia = lia }
-            , events
-                |> List.map event2js
-                |> (::) (Cmd.map LiaScript cmd)
-                |> Cmd.batch
+            , batch LiaScript cmd events
             )
 
         Handle event ->
@@ -178,10 +189,7 @@ update msg model =
                     Index.update childMsg model.index
             in
             ( { model | index = index }
-            , events
-                |> List.map event2js
-                |> (::) (Cmd.map UpdateIndex cmd)
-                |> Cmd.batch
+            , batch UpdateIndex cmd events
             )
 
         LinkClicked urlRequest ->
@@ -222,10 +230,7 @@ update msg model =
                             | lia = lia
                             , session = session
                           }
-                        , events
-                            |> List.map event2js
-                            |> (::) (Cmd.map LiaScript cmd)
-                            |> Cmd.batch
+                        , batch LiaScript cmd events
                         )
 
             else
@@ -304,10 +309,7 @@ start model =
             Lia.Script.load_first_slide session { lia | section_active = slide }
     in
     ( { model | state = Running, lia = parsed, session = session }
-    , events
-        |> List.map event2js
-        |> (::) (Cmd.map LiaScript cmd)
-        |> Cmd.batch
+    , batch LiaScript cmd events
     )
 
 
