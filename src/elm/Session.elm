@@ -8,6 +8,7 @@ module Session exposing
     , navToHome
     , navToSlide
     , setQuery
+    , setScreen
     , setUrl
     )
 
@@ -135,3 +136,10 @@ getType url =
 
         Nothing ->
             Index
+
+
+{-| Update the screen size.
+-}
+setScreen : Screen -> Session -> Session
+setScreen size session =
+    { session | screen = size }

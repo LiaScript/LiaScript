@@ -161,7 +161,7 @@ update msg model =
                     )
 
                 "restore" ->
-                    case Lia.Json.Decode.decode model.session.screen.width event.message of
+                    case Lia.Json.Decode.decode event.message of
                         Ok lia ->
                             start
                                 { model
@@ -237,11 +237,9 @@ update msg model =
                 ( model, Cmd.none )
 
         Resize screen ->
-            let
-                session =
-                    model.session
-            in
-            ( { model | session = { session | screen = screen } }, Cmd.none )
+            ( { model | session = Session.setScreen screen model.session }
+            , Cmd.none
+            )
 
         LiaParse ->
             parsing model
