@@ -38,10 +38,6 @@ main =
 
   - `script`: pass the entire content of a Markdown document
 
-  - `spa`: single-page-application (**not applied at the moment**)
-
-  - `debug`: run in debug-mode (**not applied on the elm-side atm.**)
-
   - `settings`: passes general rendering settings (style, mode, etc.)
     see `Lia/Settings/Model.elm` for more information
 
@@ -58,8 +54,6 @@ main =
 type alias Flags =
     { course : Maybe String
     , script : Maybe String
-    , spa : Bool
-    , debug : Bool
     , settings : JE.Value
     , screen : Screen
     , share : Bool
@@ -171,7 +165,3 @@ get_origin query =
 get_base : Url.Url -> String
 get_base url =
     Url.toString { url | fragment = Nothing }
-
-
-
--- TODO: remove debug & spa parameters

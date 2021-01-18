@@ -162,9 +162,7 @@ class LiaScript {
     debug: boolean = false,
     course: string | null = null,
     script: string | null = null,
-    url: string = '',
-    slide: number = 0,
-    spa: boolean = true
+    url: string = ''
   ) {
     if (debug) window.debug__ = true
 
@@ -175,8 +173,6 @@ class LiaScript {
       flags: {
         course: course,
         script: script,
-        debug: debug,
-        spa: spa,
         settings: connector.getSettings(),
         screen: {
           width: window.innerWidth,
