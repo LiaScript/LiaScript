@@ -15,6 +15,7 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Markdown.Survey.Types as Survey
 import Lia.Markdown.Table.Types as Table
+import Lia.Markdown.Task.Types as Task
 import Lia.Markdown.Types exposing (Markdown)
 
 
@@ -29,6 +30,7 @@ type alias Section =
     , parsed : Bool
     , error : Maybe String
     , code_vector : Code.Vector
+    , task_vector : Task.Vector
     , quiz_vector : Quiz.Vector
     , survey_vector : Survey.Vector
     , table_vector : Table.Vector
@@ -45,6 +47,7 @@ type SubSection
         , body : List Markdown
         , error : Maybe String
         , code_vector : Code.Vector
+        , task_vector : Task.Vector
         , quiz_vector : Quiz.Vector
         , survey_vector : Survey.Vector
         , table_vector : Table.Vector
@@ -83,6 +86,7 @@ init idx base =
     , body = []
     , error = Nothing
     , code_vector = Array.empty
+    , task_vector = Array.empty
     , quiz_vector = Array.empty
     , survey_vector = Array.empty
     , table_vector = Array.empty

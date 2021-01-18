@@ -34,6 +34,7 @@ class LiaDB {
       code: '[id+version], version',
       quiz: '[id+version], version',
       survey: '[id+version], version',
+      task: '[id+version], version',
       offline: '[id+version], version'
     })
 

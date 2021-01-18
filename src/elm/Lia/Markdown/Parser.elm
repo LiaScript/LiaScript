@@ -42,6 +42,7 @@ import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Parser as Quiz
 import Lia.Markdown.Survey.Parser as Survey
 import Lia.Markdown.Table.Parser as Table
+import Lia.Markdown.Task.Parser as Task
 import Lia.Markdown.Types exposing (Markdown(..), MarkdownS)
 import Lia.Parser.Context exposing (Context, indentation, indentation_append, indentation_pop, indentation_skip)
 import Lia.Parser.Helper exposing (c_frame, newline, newlines, spaces)
@@ -98,6 +99,9 @@ blocks =
                             |> map Quiz
                             |> andMap Quiz.parse
                             |> andMap solution
+                        , md_annotations
+                            |> map Task
+                            |> andMap Task.parse
                         , quote
                         , md_annotations
                             |> map OrderedList
