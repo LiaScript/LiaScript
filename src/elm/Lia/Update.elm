@@ -312,6 +312,7 @@ generate model =
                             |> add_load (Array.length section.quiz_vector) model.section_active "quiz"
                             |> add_load (Array.length section.code_vector) model.section_active "code"
                             |> add_load (Array.length section.survey_vector) model.section_active "survey"
+                            |> add_load (Array.length section.task_vector) model.section_active "task"
                 }
                 section
 

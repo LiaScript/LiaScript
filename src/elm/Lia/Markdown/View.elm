@@ -20,6 +20,7 @@ import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Quiz.View as Quizzes
 import Lia.Markdown.Survey.View as Surveys
 import Lia.Markdown.Table.View as Table
+import Lia.Markdown.Task.View as Task
 import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Section exposing (SubSection(..))
@@ -330,6 +331,10 @@ view_block config block =
 
         ASCII attr bob ->
             view_ascii config attr bob
+
+        Task attr list ->
+            Task.view config.main config.section.task_vector attr list
+                |> Html.map UpdateTask
 
 
 view_ascii : Config Msg -> Parameters -> SvgBob.Configuration (List Markdown) -> Html Msg

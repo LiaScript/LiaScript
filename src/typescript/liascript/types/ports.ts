@@ -14,6 +14,7 @@ enum Port {
   SLIDE = 'slide',
   SURVEY = 'survey',
   SWIPE = 'swipe',
+  TASK = 'task'
 }
 
 export default Port

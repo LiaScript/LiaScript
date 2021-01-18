@@ -18,6 +18,7 @@ import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Quiz.Update as Quiz
 import Lia.Markdown.Survey.Update as Survey
 import Lia.Markdown.Table.Update as Table
+import Lia.Markdown.Task.Update as Task
 import Lia.Section exposing (Section, SubSection(..))
 import Port.Event as Event exposing (Event)
 
@@ -31,6 +32,7 @@ type Msg
     | UpdateQuiz (Quiz.Msg Msg)
     | UpdateSurvey (Survey.Msg Msg)
     | UpdateTable (Table.Msg Msg)
+    | UpdateTask (Task.Msg Msg)
     | FootnoteHide
     | FootnoteShow String
     | Script (Script.Msg Msg)
@@ -90,6 +92,19 @@ update msg section =
             , event
                 |> List.map Event.encode
                 |> send "quiz"
+            )
+                |> updateScript sub
+
+        UpdateTask childMsg ->
+            let
+                ( vector, event, sub ) =
+                    Task.update section.effect_model.javascript childMsg section.task_vector
+            in
+            ( { section | task_vector = vector }
+            , Cmd.none
+            , event
+                |> List.map Event.encode
+                |> send "task"
             )
                 |> updateScript sub
 
@@ -208,6 +223,25 @@ subUpdate js msg section =
                                 |> send "survey"
                             )
 
+                UpdateTask childMsg ->
+                    let
+                        ( vector, events, subCmd ) =
+                            Task.update js childMsg subsection.task_vector
+                    in
+                    case subCmd of
+                        Just cmd ->
+                            { subsection | task_vector = vector }
+                                |> SubSection
+                                |> subUpdate js (UpdateTask childMsg)
+
+                        _ ->
+                            ( SubSection { subsection | task_vector = vector }
+                            , Cmd.none
+                            , events
+                                |> List.map Event.encode
+                                |> send "task"
+                            )
+
                 Script childMsg ->
                     let
                         ( effect_model, cmd, event ) =
@@ -305,6 +339,9 @@ subHandle js json section =
                         "effect" ->
                             subUpdate js (UpdateEffect True (Effect.handle message)) section
 
+                        "task" ->
+                            subUpdate js (UpdateTask (Task.handle message)) section
+
                         _ ->
                             ( section, Cmd.none, [] )
 
@@ -329,6 +366,9 @@ handle topic event section =
 
         "effect" ->
             update (UpdateEffect True (Effect.handle event)) section
+
+        "task" ->
+            update (UpdateTask (Task.handle event)) section
 
         _ ->
             ( section, Cmd.none, [] )

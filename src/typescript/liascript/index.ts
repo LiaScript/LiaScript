@@ -312,6 +312,15 @@ function process(isConnected: boolean, self:LiaScript, elmSend: Lia.Send, event:
       }
       break
     }
+    case Port.TASK: {
+      if (isConnected && event.message.topic === 'store') {
+        event.message = event.message.message
+        self.connector.store(event)
+      } else if (event.message.topic === 'eval') {
+        lia_eval_event(elmSend, eventHandler, event)
+      }
+      break
+    }
     case Port.EFFECT:
       handleEffects(event.message, elmSend, event.section, self)
       break
