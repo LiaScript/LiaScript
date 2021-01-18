@@ -20,10 +20,6 @@ import Url
 import View exposing (view)
 
 
-
--- MAIN
-
-
 main : Program Flags Model Msg
 main =
     Browser.application
@@ -36,6 +32,29 @@ main =
         }
 
 
+{-| Basic init information, that are passed to the init function at start-time:
+
+  - `course`: define a fixed course-url that needs to be downloaded
+
+  - `script`: pass the entire content of a Markdown document
+
+  - `spa`: single-page-application (**not applied at the moment**)
+
+  - `debug`: run in debug-mode (**not applied on the elm-side atm.**)
+
+  - `settings`: passes general rendering settings (style, mode, etc.)
+    see `Lia/Settings/Model.elm` for more information
+
+  - `screen`: initial screen-size passed from JavaScript, later it is updated by
+    subscribing to `Browser.Events.onResize` in the main Update function
+
+  - `share`: defines if the `navigation.share` API is present
+
+  - `hasIndex`: does the "backend" provides an interface to store and thus to
+    restore courses from an index? If this is the case, the home-button will be
+    visible and an Index will be visualized.
+
+-}
 type alias Flags =
     { course : Maybe String
     , script : Maybe String
@@ -48,6 +67,21 @@ type alias Flags =
     }
 
 
+{-| Course content can be passed in three ways:
+
+1.  If the URL contains a parameter `.../?https://.../README.md`, then this
+    parameter is used as a resource to load and parse course content.
+
+2.  If a course url has been passed via the Flags, this one defines the course
+    content.
+
+3.  The course content can also be directly passed as a string, using the
+    `Flag.script` attribute.
+
+4.  If none of these values is passed, the app will be in idle state, which
+    means it will depict an index of all previously loaded documents.
+
+-}
 init : Flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
     let
@@ -107,6 +141,13 @@ init flags url key =
                 |> Update.initIndex
 
 
+{-| Cut of the file from an URL-string and return only the base:
+
+    get_origin (Just "http://xy.com/path/file.me") == "http://xy.com/path/"
+
+    get_origin Nothing == ""
+
+-}
 get_origin : Maybe String -> String
 get_origin query =
     case query of
@@ -127,3 +168,7 @@ get_origin query =
 get_base : Url.Url -> String
 get_base url =
     Url.toString { url | fragment = Nothing }
+
+
+
+-- TODO: remove debug & spa parameters

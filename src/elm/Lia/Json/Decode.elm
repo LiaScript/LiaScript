@@ -12,6 +12,14 @@ import Lia.Settings.Model as Settings
 import Translations
 
 
+
+-- TODO: remove width from the decode function!
+
+
+{-| Decode the entire structure of a preparsed LiaScript course. The additional
+screen `width` is only used to render the course with an opened or closed table
+of contents.
+-}
 decode : Int -> JD.Value -> Result JD.Error Model
 decode width =
     JD.decodeValue (toModel width)
@@ -39,10 +47,6 @@ toModel width =
         |> JD.map2 (|>) (JD.succeed [])
         |> andMap "translation" (JD.string |> JD.map Translations.getLnFromCode)
         |> JD.map2 (|>) (JD.succeed identity)
-
-
-
---|> JD.map2 (|>) (JD.succeed True)
 
 
 toSectionBase : JD.Decoder Section.Base
