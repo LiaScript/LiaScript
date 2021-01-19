@@ -202,7 +202,7 @@ searchIndex index str =
             str
 
 
-init : Int -> JE.Value -> String -> String -> String -> Maybe Int -> Model
+init : Bool -> JE.Value -> String -> String -> String -> Maybe Int -> Model
 init =
     Lia.Model.init
 

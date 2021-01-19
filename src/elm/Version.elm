@@ -1,6 +1,46 @@
 module Version exposing (getMajor, toInt)
 
+{-| Only for LiaScript-internal usage to handle and compare semantic versioning.
 
+Versions are used to indicate, if something has changed. If the version-number
+of a course did not change, then the preprocessed content can also be loaded
+from the backend, if this is supported. (cf.: `hasIndex` in `src/elm/Main.elm`).
+
+It is assumed that:
+
+  - **Patch**: is updated if some typos have been corrected or the text and
+    images have changed a littlebit
+
+  - **Minor**: content has been added to the end of the document
+
+  - **Major**: the structure of a document has changed entirely or
+    segments, quizzes, surveys, and tasks have been moved around. In the
+    browser, this will add a new "layer/version" to IndexedDB, since
+    slide-numbers are used as primary keys.
+
+> **Note:** If no version is defined, then `0` is used as default. A major
+> version of `0` is treated as a LiaScript **development** version, which means,
+> their updates are not stored permanently within the backend and that it gets
+> parsed on every load.
+
+-}
+
+
+{-| Convert a semantic-version string (Major.Minor.Patch) to an integer, in
+order to compare it with other versions.
+
+Major numbers are multiplied with `10000`, Minor with `100` and Patch with `1`.
+
+    toInt "1.1.1" =
+        10101
+    toInt "2.2" =
+        20200
+    toInt "3" =
+        30000
+    toInt "none" =
+        0
+
+-}
 toInt : String -> Int
 toInt str =
     case str |> String.split "." |> List.map String.toInt of
@@ -17,6 +57,19 @@ toInt str =
             0
 
 
+{-| Return only the Major version number, if no one is defined `0` is returned.
+
+    getMajor "1.1.1" =
+        1
+    getMajor "2.2" =
+        2
+    getMajor "3" =
+        3
+
+    toInt "none" =
+        0
+
+-}
 getMajor : String -> Int
 getMajor ver =
     case ver |> String.split "." |> List.map String.toInt of

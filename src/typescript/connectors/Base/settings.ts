@@ -3,7 +3,7 @@ import Port from '../../liascript/types/ports'
 
 
 export const defaultSettings: Lia.Settings = {
-  table_of_contents: true,
+  table_of_contents: window.innerWidth > 620,
   mode: 'Slides',
   theme: 'default',
   light: true,

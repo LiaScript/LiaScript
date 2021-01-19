@@ -12,9 +12,13 @@ import Lia.Settings.Model as Settings
 import Translations
 
 
-decode : Int -> JD.Value -> Result JD.Error Model
-decode width =
-    JD.decodeValue (toModel width)
+{-| Decode the entire structure of a preparsed LiaScript course. The additional
+screen `width` is only used to render the course with an opened or closed table
+of contents.
+-}
+decode : JD.Value -> Result JD.Error Model
+decode =
+    JD.decodeValue toModel
 
 
 andMap : String -> JD.Decoder a -> JD.Decoder (a -> value) -> JD.Decoder value
@@ -22,14 +26,14 @@ andMap key dec =
     JD.map2 (|>) (JD.field key dec)
 
 
-toModel : Int -> JD.Decoder Model
-toModel width =
+toModel : JD.Decoder Model
+toModel =
     JD.succeed Model
         |> andMap "url" JD.string
         |> andMap "readme" JD.string
         |> andMap "origin" JD.string
         |> andMap "str_title" JD.string
-        |> JD.map2 (|>) (JD.succeed (Settings.init width Settings.Slides))
+        |> JD.map2 (|>) (JD.succeed (Settings.init Settings.Slides))
         |> JD.map2 (|>) (JD.succeed Nothing)
         |> andMap "sections" (JD.array toSectionBase |> JD.map (Array.indexedMap Section.init))
         |> andMap "section_active" JD.int
@@ -39,10 +43,6 @@ toModel width =
         |> JD.map2 (|>) (JD.succeed [])
         |> andMap "translation" (JD.string |> JD.map Translations.getLnFromCode)
         |> JD.map2 (|>) (JD.succeed identity)
-
-
-
---|> JD.map2 (|>) (JD.succeed True)
 
 
 toSectionBase : JD.Decoder Section.Base

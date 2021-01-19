@@ -27,12 +27,47 @@ import Url
 import Version
 
 
+{-| **@private:** For most cases there will be only one outgoing port to
+JavaScript. All events make use of the basic Event-structure:
+
+    { topic = String, section = Int, message = JE.Value }
+
+A message can also be of type `Event` or of something else. The JavaScript part
+will handle these events accoring to the topic value...
+
+-}
 port event2js : Event -> Cmd msg
 
 
+{-| **@private:** Incoming events are mostly of type `Event`. `Event.topic` and
+`Event.section` are used to provide the correct path through the internal
+LiaScript implementation and thus modules and submodules. In most cases it is
+actually a nesting of messages like within the IP-stack
+-}
 port event2elm : (Event -> msg) -> Sub msg
 
 
+{-| Base message structure for Lia
+
+  - `LiaScript`: if a course has been successfully parsed, all communication is
+    handled via this nested message
+  - `Handle`: external events received via port `event2elm` are handled by this
+    option, the Event.topic defines the next route of the message
+  - `UpdateIndex`: if the backend offers an Index, all communication to the
+    course overview is handled here
+  - `Resize`: handle screen resizing
+  - `LiaParse`: parse the document in chunks, so that the view can be updated.
+    This message is called repetitive until the app/parsing process reches
+    `State` `Parsing False 0`.
+  - `LinkClicked`
+  - `UrlChanged`
+  - `Load_ReadMe_Result`: message for handling the course download, it also
+    starts the parsing process
+  - `Load_Template_Result`: similar to `Load_ReadMe_Result`, but it downloads
+    all referenced templates and parses only the main header of these documents,
+    content gets ignored
+
+-}
 type Msg
     = LiaScript Lia.Script.Msg
     | Handle Event
@@ -54,6 +89,10 @@ subscriptions model =
         ]
 
 
+{-| **@private:** This is only used internally during parsing (`Msg.LiaParse`).
+This way the process does not block the app entirely, but instead it is cut into
+pieces so that the view can update a progress-bar.
+-}
 message : msg -> Cmd msg
 message msg =
     Process.sleep 0
@@ -61,9 +100,33 @@ message msg =
         |> Task.perform identity
 
 
+{-| **@private:** If a Markdown-file cannot be downloaded, for some reasons
+(presumable due to some [CORS][cors] restrictions), this will be used as an
+intermediate proxy. This means, there will be a second trial to download the
+file, but not with the URL:
+
+    "https://cors-anywhere.herokuapp.com/" ++ "https://.../README.md"
+
+[cors]: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
+
+-}
 proxy : String
 proxy =
     "https://cors-anywhere.herokuapp.com/"
+
+
+{-| **@private:** Combine commands and events to one command output.
+-}
+batch : (a -> msg) -> Cmd a -> List Event -> Cmd msg
+batch map cmd events =
+    if List.isEmpty events then
+        Cmd.map map cmd
+
+    else
+        events
+            |> List.map event2js
+            |> (::) (Cmd.map map cmd)
+            |> Cmd.batch
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -75,10 +138,7 @@ update msg model =
                     Lia.Script.update model.session childMsg model.lia
             in
             ( { model | lia = lia }
-            , events
-                |> List.map event2js
-                |> (::) (Cmd.map LiaScript cmd)
-                |> Cmd.batch
+            , batch LiaScript cmd events
             )
 
         Handle event ->
@@ -101,7 +161,7 @@ update msg model =
                     )
 
                 "restore" ->
-                    case Lia.Json.Decode.decode model.session.screen.width event.message of
+                    case Lia.Json.Decode.decode event.message of
                         Ok lia ->
                             start
                                 { model
@@ -129,10 +189,7 @@ update msg model =
                     Index.update childMsg model.index
             in
             ( { model | index = index }
-            , events
-                |> List.map event2js
-                |> (::) (Cmd.map UpdateIndex cmd)
-                |> Cmd.batch
+            , batch UpdateIndex cmd events
             )
 
         LinkClicked urlRequest ->
@@ -173,21 +230,16 @@ update msg model =
                             | lia = lia
                             , session = session
                           }
-                        , events
-                            |> List.map event2js
-                            |> (::) (Cmd.map LiaScript cmd)
-                            |> Cmd.batch
+                        , batch LiaScript cmd events
                         )
 
             else
                 ( model, Cmd.none )
 
         Resize screen ->
-            let
-                session =
-                    model.session
-            in
-            ( { model | session = { session | screen = screen } }, Cmd.none )
+            ( { model | session = Session.setScreen screen model.session }
+            , Cmd.none
+            )
 
         LiaParse ->
             parsing model
@@ -255,10 +307,7 @@ start model =
             Lia.Script.load_first_slide session { lia | section_active = slide }
     in
     ( { model | state = Running, lia = parsed, session = session }
-    , events
-        |> List.map event2js
-        |> (::) (Cmd.map LiaScript cmd)
-        |> Cmd.batch
+    , batch LiaScript cmd events
     )
 
 
@@ -367,6 +416,8 @@ load model lia code templates =
             )
 
 
+{-| **@private:** Turns an Http.Error into a string message.
+-}
 parse_error : Http.Error -> String
 parse_error msg =
     case msg of
@@ -386,6 +437,8 @@ parse_error msg =
             "Bad body " ++ body
 
 
+{-| **@private:** Used by multiple times to connect a download with a message.
+-}
 download : (String -> Result Http.Error String -> Msg) -> String -> Cmd Msg
 download msg url =
     Http.get

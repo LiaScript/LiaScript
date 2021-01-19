@@ -14,6 +14,7 @@ import Combine
         , maybe
         , modifyState
         , onsuccess
+        , optional
         , skip
         , string
         , succeed
@@ -72,7 +73,7 @@ maybeJS =
 
 get_counter : Parser Context Int
 get_counter =
-    withState (\s -> succeed (Array.length s.quiz_vector))
+    withState (.quiz_vector >> Array.length >> succeed)
 
 
 generic : Parser Context ()
@@ -89,6 +90,7 @@ hints =
     string "[?]"
         |> Vector.group
         |> map Tuple.second
+        |> optional []
 
 
 modify_State : Quiz -> Parser Context Quiz

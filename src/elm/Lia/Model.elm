@@ -33,11 +33,11 @@ type alias Model =
     }
 
 
-init : Int -> JE.Value -> String -> String -> String -> Maybe Int -> Model
-init width settings url readme origin slide_number =
+init : Bool -> JE.Value -> String -> String -> String -> Maybe Int -> Model
+init openTOC settings url readme origin slide_number =
     let
         default =
-            Settings.init width Settings.Presentation
+            Settings.init Settings.Presentation
     in
     { url = url
     , readme = readme
@@ -47,16 +47,7 @@ init width settings url readme origin slide_number =
         settings
             |> Lia.Settings.Json.toModel default
             |> Result.withDefault default
-            |> (\set ->
-                    { set
-                        | table_of_contents =
-                            if width > 620 then
-                                set.table_of_contents
-
-                            else
-                                False
-                    }
-               )
+            |> (\set -> { set | table_of_contents = openTOC })
     , error = Nothing
     , sections = Array.empty
     , section_active =
