@@ -1,4 +1,4 @@
-module Version exposing (getMajor, max, min, sort, toInt)
+module Index.Version exposing (getMajor, max, min, sort, toInt)
 
 {-| Only for LiaScript-internal usage to handle and compare semantic versioning.
 

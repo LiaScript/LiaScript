@@ -24,7 +24,6 @@ import Process
 import Session exposing (Screen)
 import Task
 import Url
-import Version
 
 
 {-| **@private:** For most cases there will be only one outgoing port to
@@ -268,7 +267,7 @@ update msg model =
                 { model
                     | lia =
                         template
-                            |> String.replace "\u{000D}" ""
+                            |> removeCR
                             |> Lia.Script.add_imports model.lia
                     , state =
                         case model.state of
@@ -287,6 +286,9 @@ update msg model =
                 ( model, download Load_Template_Result (proxy ++ url) )
 
 
+{-| **@private:** Parsing has been finished, initialize lia, update the url and
+switch to the LiaScript state `RUNNING`.
+-}
 start : Model -> ( Model, Cmd Msg )
 start model =
     let
@@ -311,17 +313,23 @@ start model =
     )
 
 
+{-| **@private:** General parsing procedure, thus the course is still parsed.
+-}
 parsing : Model -> ( Model, Cmd Msg )
 parsing model =
     case model.state of
+        -- parsing done
         Parsing False 0 ->
             start model
 
+        -- still parsing
         Parsing True templates_to_load ->
             case model.code of
+                -- stop parsing, but there might still be some templates to load
                 Nothing ->
                     parsing { model | state = Parsing False templates_to_load }
 
+                -- go on with parsing
                 Just code ->
                     let
                         ( lia, remaining_code ) =
@@ -330,6 +338,7 @@ parsing model =
                         new_model =
                             { model | lia = lia, code = remaining_code }
                     in
+                    -- stop after 4 iterations to update the view
                     if modBy 4 (Lia.Script.pages lia) == 0 then
                         ( new_model, message LiaParse )
 
@@ -340,63 +349,48 @@ parsing model =
             ( model, Cmd.none )
 
 
+{-| This function is called if the README was downloaded successfully. If there
+is a version that has been parsed earlier, and stored in `model.preload`, the
+versions of both are compared.
+
+  - major 0 versions will be interpreted immediately
+  - if cached and downloaded versions are equal, the cached gets loaded
+  - otherwise the newly downloaded is interpreted
+
+-}
 load_readme : String -> Model -> ( Model, Cmd Msg )
 load_readme readme model =
     let
         ( lia, code, templates ) =
             readme
-                |> String.replace "\u{000D}" ""
+                |> removeCR
                 |> Lia.Script.init_script model.lia
     in
-    case model.preload of
-        Nothing ->
-            load model lia code templates
+    if
+        model.preload
+            |> Maybe.map (Index.inCache lia.definition.version)
+            |> Maybe.withDefault False
+    then
+        ( model
+        , lia.readme
+            |> Index.restore lia.definition.version
+            |> event2js
+        )
 
-        Just course ->
-            let
-                latest =
-                    course.versions
-                        |> Dict.values
-                        |> List.map (.definition >> .version >> Version.toInt)
-                        |> List.sort
-                        |> List.reverse
-                        |> List.head
-                        |> Maybe.withDefault -1
-            in
-            if
-                latest
-                    /= Version.toInt lia.definition.version
-                    || Version.getMajor lia.definition.version
-                    == 0
-            then
-                load model lia code templates
-
-            else
-                ( model
-                , course.id
-                    |> Index.restore (Version.getMajor lia.definition.version)
-                    |> event2js
-                )
+    else
+        load model lia code templates
 
 
+{-| Start parsing and download external imports (templates).
+-}
 load : Model -> Lia.Script.Model -> Maybe String -> List String -> ( Model, Cmd Msg )
 load model lia code templates =
-    case ( code, templates ) of
-        ( Just code_, [] ) ->
+    case code of
+        Just code_ ->
             ( { model
                 | lia = lia
-                , state = Parsing True 0
-                , code = Just code_
-                , size = String.length code_ |> toFloat
-              }
-            , message LiaParse
-            )
-
-        ( Just code_, templates_ ) ->
-            ( { model
-                | lia = lia
-                , state = Parsing True <| List.length templates_
-                , code = Just code_
+                , state = Parsing True <| List.length templates
+                , code = code
                 , size = String.length code_ |> toFloat
               }
             , templates
@@ -405,7 +399,7 @@ load model lia code templates =
                 |> Cmd.batch
             )
 
-        ( Nothing, _ ) ->
+        Nothing ->
             ( { model
                 | state =
                     lia.error
@@ -414,6 +408,17 @@ load model lia code templates =
               }
             , Cmd.none
             )
+
+
+{-| **@private:** purge the "Windows" carriage return.
+
+> Since all following grammers in parsing use only `\n` as newline instead of
+> `\r\n`, this char needs to be purged entirely.
+
+-}
+removeCR : String -> String
+removeCR =
+    String.replace "\u{000D}" ""
 
 
 {-| **@private:** Turns an Http.Error into a string message.

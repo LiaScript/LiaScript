@@ -3,6 +3,7 @@ module Index.Update exposing
     , decodeGet
     , get
     , handle
+    , inCache
     , init
     , restore
     , update
@@ -10,13 +11,13 @@ module Index.Update exposing
 
 import Dict
 import Index.Model exposing (Course, Model, Release)
+import Index.Version as Version
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Definition.Json.Decode as Definition
 import Lia.Markdown.Inline.Json.Decode as Inline
 import Port.Event as Event exposing (Event)
 import Port.Share exposing (share)
-import Version
 
 
 type Msg
@@ -58,10 +59,10 @@ get =
         >> index
 
 
-restore : Int -> String -> Event
+restore : String -> String -> Event
 restore version =
     JE.string
-        >> Event "restore" version
+        >> Event "restore" (Version.getMajor version)
         >> index
 
 
@@ -153,13 +154,7 @@ update msg model =
         Restore course version ->
             ( model
             , Cmd.none
-            , [ course
-                    |> restore
-                        (version
-                            |> Maybe.map Version.getMajor
-                            |> Maybe.withDefault 3
-                        )
-              ]
+            , [ restore (Maybe.withDefault "0.0.0" version) course ]
             )
 
         Activate course version ->
@@ -239,3 +234,19 @@ decRelease =
     JD.map2 Release
         (JD.field "title" Inline.decode)
         Definition.decode
+
+
+{-| Check if the current passed version string is allso available as accessible
+from the local cache. Major verions of `0` are not stored permanently.
+-}
+inCache : String -> Course -> Bool
+inCache version course =
+    (Version.getMajor version /= 0)
+        && (course.versions
+                |> Dict.values
+                |> List.map (.definition >> .version)
+                |> Version.max
+                |> Maybe.map Version.toInt
+                |> Maybe.withDefault -1
+                |> (==) (Version.toInt version)
+           )
