@@ -1,4 +1,4 @@
-module Version exposing (getMajor, toInt)
+module Version exposing (getMajor, max, min, sort, toInt)
 
 {-| Only for LiaScript-internal usage to handle and compare semantic versioning.
 
@@ -78,3 +78,36 @@ getMajor ver =
 
         _ ->
             0
+
+
+{-| Sort a list of semantic version strings:
+
+    sort [ "1.3.2", "33.1.1", "1.3.1" ]
+        == [ "1.3.1", "1.3.2", "33.1.1" ]
+
+-}
+sort : List String -> List String
+sort =
+    List.sortBy toInt
+
+
+{-| Get the minimal semantic version string:
+
+    min [ "1.3.2", "33.1.1", "1.3.1" ]
+        == Just "1.3.1"
+
+-}
+min : List String -> Maybe String
+min =
+    sort >> List.head
+
+
+{-| Get the minimal semantic version string:
+
+    max [ "1.3.2", "33.1.1", "1.3.1" ]
+        == Just "33.1.1"
+
+-}
+max : List String -> Maybe String
+max =
+    sort >> List.reverse >> List.head
