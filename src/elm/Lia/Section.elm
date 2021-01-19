@@ -25,7 +25,7 @@ type alias Section =
     , visited : Bool
     , indentation : Int
     , visible : Bool
-    , idx : Int
+    , id : Int
     , body : List Markdown
     , parsed : Bool
     , error : Maybe String
@@ -75,13 +75,13 @@ type alias Base =
 
 
 init : Int -> Base -> Section
-init idx base =
+init id base =
     { code = base.code
     , title = base.title
     , visited = True
     , indentation = base.identation
     , visible = True
-    , idx = idx
+    , id = id
     , parsed = False
     , body = []
     , error = Nothing

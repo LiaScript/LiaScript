@@ -71,7 +71,7 @@ parse_section search_index global sec =
     case
         Combine.runParser
             (Lia.Definition.Parser.parse |> keep Markdown.run)
-            (init search_index { global | section = sec.idx })
+            (init search_index { global | section = sec.id })
             sec.code
     of
         Ok ( state, _, es ) ->
