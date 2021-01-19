@@ -27,7 +27,7 @@ import Element.Font as Font
 import Element.Input as Input
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Index.Model exposing (Course, Model, Version)
+import Index.Model exposing (Course, Model, Release)
 import Index.Update exposing (Msg(..))
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
@@ -453,7 +453,7 @@ viewVersions scale course =
         |> row [ scale 10 |> spacing, Element.scrollbarX, height fill, width fill ]
 
 
-get_active : Course -> Maybe Version
+get_active : Course -> Maybe Release
 get_active course =
     case course.active of
         Nothing ->

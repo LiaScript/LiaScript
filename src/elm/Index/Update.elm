@@ -9,7 +9,7 @@ module Index.Update exposing
     )
 
 import Dict
-import Index.Model exposing (Course, Model, Version)
+import Index.Model exposing (Course, Model, Release)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Definition.Json.Decode as Definition
@@ -229,13 +229,13 @@ decCourse : JD.Decoder Course
 decCourse =
     JD.map4 Course
         (JD.field "id" JD.string)
-        (JD.field "data" (JD.dict decVersion))
+        (JD.field "data" (JD.dict decRelease))
         (JD.succeed Nothing)
         (JD.field "updated_str" JD.string)
 
 
-decVersion : JD.Decoder Version
-decVersion =
-    JD.map2 Version
+decRelease : JD.Decoder Release
+decRelease =
+    JD.map2 Release
         (JD.field "title" Inline.decode)
         Definition.decode
