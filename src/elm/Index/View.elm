@@ -326,7 +326,7 @@ card scale share course =
                                 (Element.alignRight :: btn)
                                 { url = href course.id, label = text "Open" }
 
-                        Just ver ->
+                        Just _ ->
                             Input.button
                                 (Element.alignRight :: btn)
                                 { onPress = Just <| Restore course.id course.active

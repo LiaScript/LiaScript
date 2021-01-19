@@ -12,7 +12,6 @@ port module Update exposing
 import Browser
 import Browser.Events
 import Browser.Navigation as Navigation
-import Dict
 import Http
 import Index.Update as Index
 import Json.Encode as JE
@@ -169,7 +168,7 @@ update msg model =
                                             { lia | settings = model.lia.settings }
                                 }
 
-                        Err info ->
+                        Err _ ->
                             ( { model | preload = Nothing }
                             , download Load_ReadMe_Result model.lia.readme
                             )
@@ -217,7 +216,7 @@ update msg model =
                                 , session = Session.setUrl url model.session
                             }
 
-                    Session.Course uri slide ->
+                    Session.Course _ slide ->
                         let
                             session =
                                 Session.setUrl url model.session
@@ -243,7 +242,7 @@ update msg model =
         LiaParse ->
             parsing model
 
-        Load_ReadMe_Result url (Ok readme) ->
+        Load_ReadMe_Result _ (Ok readme) ->
             load_readme readme model
 
         Load_ReadMe_Result url (Err info) ->
@@ -262,7 +261,7 @@ update msg model =
                     |> Session.load
                 )
 
-        Load_Template_Result url (Ok template) ->
+        Load_Template_Result _ (Ok template) ->
             parsing
                 { model
                     | lia =

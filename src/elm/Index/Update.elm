@@ -209,7 +209,7 @@ decode json =
         Ok rslt ->
             rslt
 
-        Err todo ->
+        Err _ ->
             IndexError "decode"
 
 

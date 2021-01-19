@@ -13,7 +13,7 @@ import Lia.Markdown.Task.Update exposing (Msg(..))
 
 
 view : Config sub -> Vector -> Parameters -> Task -> Html (Msg sub)
-view config vector attr task =
+view config vector _ task =
     case Array.get task.id vector of
         Just states ->
             states

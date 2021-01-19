@@ -33,7 +33,7 @@ view config attr survey model =
 
             Matrix button header vars questions ->
                 matrix config button (MatrixUpdate survey.id) (get_matrix_state model survey.id) vars
-                    |> view_matrix config header vars questions
+                    |> view_matrix config header questions
                     |> view_survey config model survey.id survey.javascript
 
 
@@ -155,12 +155,11 @@ view_vector questions fn submitted =
 view_matrix :
     Config sub
     -> List Inlines
-    -> List String
     -> List Inlines
     -> (Bool -> ( Int, Inlines ) -> Html (Msg sub))
     -> Bool
     -> Html (Msg sub)
-view_matrix config header vars questions fn submitted =
+view_matrix config header questions fn submitted =
     let
         th =
             header

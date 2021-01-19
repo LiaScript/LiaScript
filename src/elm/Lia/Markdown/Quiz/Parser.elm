@@ -9,7 +9,6 @@ import Combine
         , choice
         , ignore
         , keep
-        , many
         , map
         , maybe
         , modifyState
@@ -20,7 +19,7 @@ import Combine
         , succeed
         , withState
         )
-import Lia.Markdown.Inline.Parser exposing (javascript, line)
+import Lia.Markdown.Inline.Parser exposing (javascript)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Block.Parser as Block

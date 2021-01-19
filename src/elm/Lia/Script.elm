@@ -46,8 +46,8 @@ pages =
 
 
 load_slide : Session -> Int -> Model -> ( Model, Cmd Msg, List Event )
-load_slide session idx =
-    Lia.Update.update session (Load idx)
+load_slide session =
+    Load >> Lia.Update.update session
 
 
 load_first_slide : Session -> Model -> ( Model, Cmd Msg, List Event )
@@ -173,12 +173,11 @@ parse_section model code =
 
 
 get_title : Sections -> String
-get_title sections =
-    sections
-        |> Array.get 0
-        |> Maybe.map .title
-        |> Maybe.map (stringify >> String.trim)
-        |> Maybe.withDefault "Lia"
+get_title =
+    Array.get 0
+        >> Maybe.map .title
+        >> Maybe.map (stringify >> String.trim)
+        >> Maybe.withDefault "Lia"
 
 
 filterIndex : String -> ( String, String ) -> Bool
