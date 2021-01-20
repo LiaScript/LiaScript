@@ -58,14 +58,6 @@ encode model =
                 |> Maybe.withDefault 0
                 |> JE.int
           )
-        , ( "error"
-          , case model.error of
-                Just str ->
-                    JE.string str
-
-                _ ->
-                    JE.null
-          )
         , ( "translation"
           , model.translation
                 |> getCodeFromLn

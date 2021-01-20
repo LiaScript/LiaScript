@@ -89,9 +89,6 @@ toc lang active section =
                             else if active == section.id then
                                 " lia-active"
 
-                            else if section.visited then
-                                ""
-
                             else
                                 " lia-not-visited"
                            )
