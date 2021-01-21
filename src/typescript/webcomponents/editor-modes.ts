@@ -1,8 +1,8 @@
-function getMode (name) {
+function getMode(name: string): string {
   return 'ace/mode/' + (modes[name] || 'text')
 };
 
-const modes = {
+const modes: { [key: string]: string } = {
   // A
   'abap': 'abap',
   'abc': 'abc',

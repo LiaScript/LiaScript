@@ -31,12 +31,14 @@ import Lia.Markdown.Footnote.Model as Footnote
 import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Markdown.Survey.Types as Survey
 import Lia.Markdown.Table.Types as Table
-import Lia.Section exposing (Section, SubSection)
+import Lia.Markdown.Task.Types as Task
+import Lia.Section exposing (SubSection)
 
 
 type alias Context =
     { identation : List String
     , identation_skip : Bool
+    , task_vector : Task.Vector
     , code_vector : Code.Vector
     , quiz_vector : Quiz.Vector
     , survey_vector : Survey.Vector
@@ -57,6 +59,7 @@ init : Dict String String -> (String -> String) -> Int -> Definition -> Context
 init backup search_index editor_line global =
     { identation = []
     , identation_skip = False
+    , task_vector = Array.empty
     , code_vector = Array.empty
     , quiz_vector = Array.empty
     , survey_vector = Array.empty

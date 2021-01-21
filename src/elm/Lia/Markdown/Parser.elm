@@ -18,7 +18,9 @@ import Combine
         , onsuccess
         , optional
         , or
+        , putState
         , regex
+        , runParser
         , sepBy
         , sepBy1
         , skip
@@ -40,9 +42,11 @@ import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Parser as Quiz
 import Lia.Markdown.Survey.Parser as Survey
 import Lia.Markdown.Table.Parser as Table
+import Lia.Markdown.Task.Parser as Task
 import Lia.Markdown.Types exposing (Markdown(..), MarkdownS)
 import Lia.Parser.Context exposing (Context, indentation, indentation_append, indentation_pop, indentation_skip)
 import Lia.Parser.Helper exposing (c_frame, newline, newlines, spaces)
+import SvgBob
 
 
 run : Parser Context (List Markdown)
@@ -95,6 +99,9 @@ blocks =
                             |> map Quiz
                             |> andMap Quiz.parse
                             |> andMap solution
+                        , md_annotations
+                            |> map Task
+                            |> andMap Task.parse
                         , quote
                         , md_annotations
                             |> map OrderedList
@@ -179,7 +186,60 @@ svgbob : Parser Context Markdown
 svgbob =
     md_annotations
         |> map ASCII
-        |> andMap (c_frame |> andThen svgbody)
+        |> andMap
+            (c_frame
+                |> andThen svgbody
+                |> andThen svgbobSub
+            )
+
+
+svgbobSub : String -> Parser Context (SvgBob.Configuration (List Markdown))
+svgbobSub str =
+    let
+        svg =
+            SvgBob.getElements
+                { fontSize = 14.0
+                , lineWidth = 1.0
+                , textWidth = 8.0
+                , textHeight = 16.0
+                , arcRadius = 4.0
+                , strokeColor = "black"
+                , textColor = "black"
+                , backgroundColor = "white"
+                , verbatim = '"'
+                , multilineVerbatim = True
+                , heightVerbatim = Just "100%"
+                , widthVerbatim = Nothing
+                }
+                str
+
+        fn context =
+            let
+                ( newContext, foreign ) =
+                    svg.foreign
+                        |> List.foldl
+                            (\( code, pos ) ( c, list ) ->
+                                case runParser run c (code ++ "\n") of
+                                    Ok ( state, _, md ) ->
+                                        ( state, ( md, pos ) :: list )
+
+                                    Err _ ->
+                                        ( c, list )
+                            )
+                            ( context, [] )
+            in
+            putState newContext
+                |> keep
+                    (succeed
+                        { svg = svg.svg
+                        , foreign = foreign
+                        , settings = svg.settings
+                        , columns = svg.columns
+                        , rows = svg.rows
+                        }
+                    )
+    in
+    withState fn
 
 
 subHeader : Parser Context ( Inlines, Int )
@@ -259,6 +319,7 @@ ordered_list =
             )
 
 
+newlineWithIndentation : Parser Context (Maybe ())
 newlineWithIndentation =
     maybe indentation
         |> ignore (string "\n")

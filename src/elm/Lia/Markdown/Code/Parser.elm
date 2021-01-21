@@ -89,7 +89,7 @@ code_body char len =
     in
     manyTill
         (maybe indentation |> keep (regex ("(?:.(?!" ++ control_frame ++ "))*\\n")))
-        (indentation |> keep (regex control_frame))
+        (indentation |> keep (regex control_frame |> ignore spaces))
         |> map (String.concat >> String.dropRight 1)
 
 

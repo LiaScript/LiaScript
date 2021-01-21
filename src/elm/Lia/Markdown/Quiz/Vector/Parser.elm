@@ -1,8 +1,10 @@
 module Lia.Markdown.Quiz.Vector.Parser exposing
-    ( choices
-    , multiple
+    ( checkButton
+    , either
+    , group
+    , groupBy
     , parse
-    , single
+    , radioButton
     )
 
 import Combine
@@ -16,6 +18,7 @@ import Combine
         , maybe
         , onsuccess
         , or
+        , regex
         , string
         )
 import Lia.Markdown.Inline.Parser exposing (line)
@@ -25,50 +28,138 @@ import Lia.Parser.Context exposing (Context, indentation)
 import Lia.Parser.Helper exposing (newline, spaces)
 
 
+{-| Identify Quiz-Vectors that can either be `SingleChoice` or `MultipleChoice`.
+Both types of quizzes are identified by starting **brackets**, that either
+contain a `radioButton` or `checkButton` notation:
+
+    """ -- SingleChoice
+    [( )] some Markdown text
+    [(X)] this is **checked** radio-button
+    [(x)] this one is also checked
+    """
+
+    """ -- MultipleChoice
+    [[ ]] some Markdown text
+    [[X]] this is a **checked** check-box
+    [[x]] this one is also checked
+    """"
+
+-}
 parse : Parser Context Quiz
 parse =
     or
-        (single
-            |> choices
+        (radioButton
+            |> group
             |> map (toQuiz SingleChoice)
         )
-        (multiple
-            |> choices
+        (checkButton
+            |> group
             |> map (toQuiz MultipleChoice)
         )
 
 
-single : Parser Context Bool
-single =
-    elements "(X)" "( )"
+{-| Parse an ASCII like radio-button "(X|x)" | "[ ]". The result is either
+`True` or `False`, if the button is checked or not.
+
+    parse (checkButton "(X)") == Ok True
+
+    parse (checkButton "(x)") == Ok True
+
+    parse (checkButton "( )") == Ok False
+
+-}
+radioButton : Parser Context Bool
+radioButton =
+    either "\\([xX]\\)" "( )"
 
 
-multiple : Parser Context Bool
-multiple =
-    elements "[X]" "[ ]"
+{-| Parse an ASCII like check-button "[X|x]" | "[ ]". The result is either `True` or `False`, if the button is checked or not.
+
+    parse (checkButton "[X]") == Ok True
+
+    parse (checkButton "[x]") == Ok True
+
+    parse (checkButton "[ ]") == Ok False
+
+-}
+checkButton : Parser Context Bool
+checkButton =
+    either "\\[[xX]\\]" "[ ]"
 
 
-choices : Parser Context a -> Parser Context ( List a, List Inlines )
-choices parser =
+{-| This parser can be used for some kind of enumerations that start with a
+certain pattern (i.e. `[X]` or `[ ]`), which is then followed by a `Inlines`:
+
+    parse
+        (groupBy (string "- [")
+            (string "]")
+            (or
+                (string "X" |> onsuccess True)
+                (string " " |> onsuccess False)
+            )
+        )
+        """- [ ] task not checked
+        - [X] task checked
+        """
+    == Ok [(False, [...]), (True, [...])]
+
+-}
+groupBy : Parser Context x -> Parser Context y -> Parser Context a -> Parser Context (List ( a, Inlines ))
+groupBy begin end parser =
     maybe indentation
         |> ignore spaces
-        |> ignore (string "[")
+        |> ignore begin
         |> keep parser
         |> map Tuple.pair
-        |> ignore (string "]")
+        |> ignore end
         |> andMap line
         |> ignore newline
         |> many1
-        |> map List.unzip
 
 
-elements : String -> String -> Parser Context Bool
-elements true false =
+{-| This defines the basic Quiz-group, that are identified by starting brackets
+that are followed by some Markdown inline elements. The provided
+parser-parameter is used to parse the part within the starting brackets.
+
+    parse (group checkButton)
+        """[[X]] is __checked__
+        [[ ]] **not checked**
+        """
+    == Ok [(True, [...]), (False, [...])]
+
+-}
+group : Parser Context a -> Parser Context ( List a, List Inlines )
+group =
+    groupBy (string "[") (string "]")
+        >> map List.unzip
+
+
+{-| This parser requires two patterns that in either `True` or `False`. The
+first true-pattern requires a regex-string, while the second false-pattern is
+parsed as an normal string.
+
+    parse (either "[xX]" " ") "x" == Ok True
+
+    parse (either "[xX]" " ") "X" == Ok True
+
+    parse (either "[xX]" " ") " " == Ok False
+
+This comes handy for checked representations like `radioButton` or `checkButton`.
+
+**Note:** The first paremeter is a regex, which comes handy if you want to allow
+multiple options, such as upper- and lowercase or different "strings" that will
+return `True`.
+
+-}
+either : String -> String -> Parser Context Bool
+either true false =
     or
-        (string true |> onsuccess True)
         (string false |> onsuccess False)
+        (regex true |> onsuccess True)
 
 
+{-| Transforms a list of options `(List Bool, List Inlines)` into a Vector-Quiz.
+-}
 toQuiz : (List Bool -> State) -> ( List Bool, List Inlines ) -> Quiz
 toQuiz fn ( bools, inlines ) =
     fn bools

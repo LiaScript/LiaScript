@@ -30,9 +30,9 @@ type Mode
     | Textbook -- Render Comments and Effects at ones
 
 
-init : Int -> Mode -> Model
-init width mode =
-    { table_of_contents = width > 620
+init : Mode -> Model
+init mode =
+    { table_of_contents = True
     , mode = mode
     , theme = "default"
     , light = True

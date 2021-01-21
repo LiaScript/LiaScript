@@ -26,15 +26,50 @@ import Task
 import Url
 
 
+{-| **@private:** For most cases there will be only one outgoing port to
+JavaScript. All events make use of the basic Event-structure:
+
+    { topic = String, section = Int, message = JE.Value }
+
+A message can also be of type `Event` or of something else. The JavaScript part
+will handle these events accoring to the topic value...
+
+-}
 port event2js : Event -> Cmd msg
 
 
+{-| **@private:** Incoming events are mostly of type `Event`. `Event.topic` and
+`Event.section` are used to provide the correct path through the internal
+LiaScript implementation and thus modules and submodules. In most cases it is
+actually a nesting of messages like within the IP-stack
+-}
 port event2elm : (Event -> msg) -> Sub msg
 
 
 port jit : (String -> msg) -> Sub msg
 
 
+{-| Base message structure for Lia
+
+  - `LiaScript`: if a course has been successfully parsed, all communication is
+    handled via this nested message
+  - `Handle`: external events received via port `event2elm` are handled by this
+    option, the Event.topic defines the next route of the message
+  - `UpdateIndex`: if the backend offers an Index, all communication to the
+    course overview is handled here
+  - `Resize`: handle screen resizing
+  - `LiaParse`: parse the document in chunks, so that the view can be updated.
+    This message is called repetitive until the app/parsing process reches
+    `State` `Parsing False 0`.
+  - `LinkClicked`
+  - `UrlChanged`
+  - `Load_ReadMe_Result`: message for handling the course download, it also
+    starts the parsing process
+  - `Load_Template_Result`: similar to `Load_ReadMe_Result`, but it downloads
+    all referenced templates and parses only the main header of these documents,
+    content gets ignored
+
+-}
 type Msg
     = LiaScript Lia.Script.Msg
     | Handle Event
@@ -58,6 +93,10 @@ subscriptions model =
         ]
 
 
+{-| **@private:** This is only used internally during parsing (`Msg.LiaParse`).
+This way the process does not block the app entirely, but instead it is cut into
+pieces so that the view can update a progress-bar.
+-}
 message : msg -> Cmd msg
 message msg =
     Process.sleep 0
@@ -65,9 +104,33 @@ message msg =
         |> Task.perform identity
 
 
+{-| **@private:** If a Markdown-file cannot be downloaded, for some reasons
+(presumable due to some [CORS][cors] restrictions), this will be used as an
+intermediate proxy. This means, there will be a second trial to download the
+file, but not with the URL:
+
+    "https://cors-anywhere.herokuapp.com/" ++ "https://.../README.md"
+
+[cors]: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
+
+-}
 proxy : String
 proxy =
     "https://cors-anywhere.herokuapp.com/"
+
+
+{-| **@private:** Combine commands and events to one command output.
+-}
+batch : (a -> msg) -> Cmd a -> List Event -> Cmd msg
+batch map cmd events =
+    if List.isEmpty events then
+        Cmd.map map cmd
+
+    else
+        events
+            |> List.map event2js
+            |> (::) (Cmd.map map cmd)
+            |> Cmd.batch
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -75,12 +138,12 @@ update msg model =
     case msg of
         JIT code ->
             load_readme
+                (code ++ "\n")
                 { model
                     | parse_steps = 1
                     , lia = model.lia |> Lia.Script.backup
                     , lia_ = model.lia
                 }
-                (code ++ "\n")
 
         LiaScript childMsg ->
             let
@@ -88,10 +151,7 @@ update msg model =
                     Lia.Script.update model.session childMsg model.lia
             in
             ( { model | lia = lia }
-            , events
-                |> List.map event2js
-                |> (::) (Cmd.map LiaScript cmd)
-                |> Cmd.batch
+            , batch LiaScript cmd events
             )
 
         Handle event ->
@@ -114,7 +174,7 @@ update msg model =
                     )
 
                 "restore" ->
-                    case Lia.Json.Decode.decode model.session.screen.width event.message of
+                    case Lia.Json.Decode.decode event.message of
                         Ok lia ->
                             start
                                 { model
@@ -142,10 +202,7 @@ update msg model =
                     Index.update childMsg model.index
             in
             ( { model | index = index }
-            , events
-                |> List.map event2js
-                |> (::) (Cmd.map UpdateIndex cmd)
-                |> Cmd.batch
+            , batch UpdateIndex cmd events
             )
 
         LinkClicked urlRequest ->
@@ -174,7 +231,7 @@ update msg model =
                                 , session = Session.setUrl url model.session
                             }
 
-                    Session.Course uri slide ->
+                    Session.Course _ slide ->
                         let
                             session =
                                 Session.setUrl url model.session
@@ -186,27 +243,22 @@ update msg model =
                             | lia = lia
                             , session = session
                           }
-                        , events
-                            |> List.map event2js
-                            |> (::) (Cmd.map LiaScript cmd)
-                            |> Cmd.batch
+                        , batch LiaScript cmd events
                         )
 
             else
                 ( model, Cmd.none )
 
         Resize screen ->
-            let
-                session =
-                    model.session
-            in
-            ( { model | session = { session | screen = screen } }, Cmd.none )
+            ( { model | session = Session.setScreen screen model.session }
+            , Cmd.none
+            )
 
         LiaParse ->
             parsing model
 
-        Load_ReadMe_Result url (Ok readme) ->
-            load_readme model readme
+        Load_ReadMe_Result _ (Ok readme) ->
+            load_readme readme model
 
         Load_ReadMe_Result url (Err info) ->
             if String.startsWith proxy url then
@@ -229,7 +281,7 @@ update msg model =
                 { model
                     | lia =
                         template
-                            |> String.replace "\u{000D}" ""
+                            |> removeCR
                             |> Lia.Script.add_imports model.lia
                     , state =
                         case model.state of
@@ -249,6 +301,9 @@ update msg model =
                 ( model, download Load_Template_Result (proxy ++ url) )
 
 
+{-| **@private:** Parsing has been finished, initialize lia, update the url and
+switch to the LiaScript state `RUNNING`.
+-}
 start : Model -> ( Model, Cmd Msg )
 start model =
     let
@@ -267,30 +322,29 @@ start model =
 
         ( parsed, cmd, events ) =
             Lia.Script.load_first_slide session { lia | section_active = slide }
-
-        resources =
-            model.preload
-                |> Maybe.map (.versions >> Dict.get "0")
     in
     ( { model | state = Running, lia = parsed, session = session }
-    , events
-        |> List.map event2js
-        |> (::) (Cmd.map LiaScript cmd)
-        |> Cmd.batch
+    , batch LiaScript cmd events
     )
 
 
+{-| **@private:** General parsing procedure, thus the course is still parsed.
+-}
 parsing : Model -> ( Model, Cmd Msg )
 parsing model =
     case model.state of
+        -- parsing done
         Parsing False 0 ->
             start model
 
+        -- still parsing
         Parsing True templates_to_load ->
             case model.code of
+                -- stop parsing, but there might still be some templates to load
                 Nothing ->
                     parsing { model | state = Parsing False templates_to_load }
 
+                -- go on with parsing
                 Just code ->
                     let
                         ( lia, remaining_code ) =
@@ -309,144 +363,48 @@ parsing model =
             ( model, Cmd.none )
 
 
-load_readme : Model -> String -> ( Model, Cmd Msg )
-load_readme model readme =
-    case
-        readme
-            |> String.replace "\u{000D}" ""
-            |> Lia.Script.init_script model.lia
-    of
-        ( lia, Just ( code, line ), [] ) ->
-            ( { model
-                | lia = lia
-                , state = Parsing True 0
-                , code = Just ( code, line )
-                , size = String.length code |> toFloat
-              }
-            , message LiaParse
-            )
+{-| This function is called if the README was downloaded successfully. If there
+is a version that has been parsed earlier, and stored in `model.preload`, the
+versions of both are compared.
 
-        ( lia, Just ( code, line ), templates ) ->
-            ( { model
-                | lia = lia
-                , state = Parsing True <| List.length templates
-                , code = Just ( code, line )
-                , size = String.length code |> toFloat
-              }
-            , templates
-                |> List.map (\t -> download Load_Template_Result t)
-                |> (::) (message LiaParse)
-                |> Cmd.batch
-            )
+  - major 0 versions will be interpreted immediately
+  - if cached and downloaded versions are equal, the cached gets loaded
+  - otherwise the newly downloaded is interpreted
 
-        ( lia, Nothing, _ ) ->
-            ( { model
-                | state =
-                    lia.error
-                        |> Maybe.withDefault ""
-                        |> Error
-              }
-            , Cmd.none
-            )
-
-
-update_readme : Model -> String -> ( Model, Cmd Msg )
-update_readme model readme =
-    case
-        readme
-            |> String.replace "\u{000D}" ""
-            |> Lia.Script.init_script model.lia
-    of
-        ( lia, Just ( code, line ), [] ) ->
-            ( { model
-                | lia = lia
-                , state = Parsing True 0
-                , code = Just ( code, line )
-                , size = String.length code |> toFloat
-              }
-            , message LiaParse
-            )
-
-        ( lia, Just ( code, line ), templates ) ->
-            ( { model
-                | lia = lia
-                , state = Parsing True <| List.length templates
-                , code = Just ( code, line )
-                , size = String.length code |> toFloat
-              }
-            , templates
-                |> List.map (\t -> download Load_Template_Result t)
-                |> (::) (message LiaParse)
-                |> Cmd.batch
-            )
-
-        ( lia, Nothing, _ ) ->
-            ( { model
-                | state =
-                    lia.error
-                        |> Maybe.withDefault ""
-                        |> Error
-              }
-            , Cmd.none
-            )
-
-
-
-{-
-
-   load_readme : String -> Model -> ( Model, Cmd Msg )
-   load_readme readme model =
-       let
-           ( lia, code, templates ) =
-               readme
-                   |> String.replace "\u{000D}" ""
-                   |> Lia.Script.init_script model.lia
-       in
-       case model.preload of
-           Nothing ->
-               load model lia code templates
-
-           Just course ->
-               let
-                   latest =
-                       course.versions
-                           |> Dict.values
-                           |> List.map (.definition >> .version >> Version.toInt)
-                           |> List.sort
-                           |> List.reverse
-                           |> List.head
-                           |> Maybe.withDefault -1
-               in
-               if latest == Version.toInt lia.definition.version then
-                   ( model
-                   , course.id
-                       |> Index.restore (Version.getMajor lia.definition.version)
-                       |> event2js
-                   )
-
-               else
-                   load model lia code templates
 -}
+load_readme : String -> Model -> ( Model, Cmd Msg )
+load_readme readme model =
+    let
+        ( lia, code, templates ) =
+            readme
+                |> removeCR
+                |> Lia.Script.init_script model.lia
+    in
+    if
+        model.preload
+            |> Maybe.map (Index.inCache lia.definition.version)
+            |> Maybe.withDefault False
+    then
+        ( model
+        , lia.readme
+            |> Index.restore lia.definition.version
+            |> event2js
+        )
+
+    else
+        load model lia code templates
 
 
+{-| Start parsing and download external imports (templates).
+-}
 load : Model -> Lia.Script.Model -> Maybe ( String, Int ) -> List String -> ( Model, Cmd Msg )
 load model lia code templates =
-    case ( code, templates ) of
-        ( Just code_, [] ) ->
+    case code of
+        Just code_ ->
             ( { model
                 | lia = lia
-                , state = Parsing True 0
-                , code = Just code_
-                , size = code_ |> Tuple.first >> String.length >> toFloat
-              }
-            , message LiaParse
-            )
-
-        ( Just code_, templates_ ) ->
-            ( { model
-                | lia = lia
-                , state = Parsing True <| List.length templates_
-                , code = Just code_
+                , state = Parsing True <| List.length templates
+                , code = code
                 , size = code_ |> Tuple.first >> String.length >> toFloat
               }
             , templates
@@ -455,7 +413,7 @@ load model lia code templates =
                 |> Cmd.batch
             )
 
-        ( Nothing, _ ) ->
+        Nothing ->
             ( { model
                 | state =
                     lia.error
@@ -466,6 +424,19 @@ load model lia code templates =
             )
 
 
+{-| **@private:** purge the "Windows" carriage return.
+
+> Since all following grammers in parsing use only `\n` as newline instead of
+> `\r\n`, this char needs to be purged entirely.
+
+-}
+removeCR : String -> String
+removeCR =
+    String.replace "\u{000D}" ""
+
+
+{-| **@private:** Turns an Http.Error into a string message.
+-}
 parse_error : Http.Error -> String
 parse_error msg =
     case msg of
@@ -485,6 +456,8 @@ parse_error msg =
             "Bad body " ++ body
 
 
+{-| **@private:** Used by multiple times to connect a download with a message.
+-}
 download : (String -> Result Http.Error String -> Msg) -> String -> Cmd Msg
 download msg url =
     Http.get

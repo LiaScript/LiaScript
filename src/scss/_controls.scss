@@ -27,6 +27,8 @@
     }
 
     .lia-link {
+        word-break: break-word;
+
         &:link {
             color: map-get($theme, primary);
 

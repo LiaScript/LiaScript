@@ -153,6 +153,7 @@ state_ msg e =
             ( e, Nothing )
 
 
+setState : Element -> (s -> State) -> s -> Element
 setState e fn state =
     { e | state = fn state }
 

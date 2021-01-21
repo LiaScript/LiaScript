@@ -18,6 +18,7 @@ import Lia.Markdown.Inline.Stringify exposing (stringify_)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 import Lia.Section exposing (SubSection)
 import Lia.Settings.Model exposing (Mode(..))
+import Lia.Utils as Utils
 import Oembed
 import QRCode
 import Translations exposing (Lang)
@@ -233,10 +234,20 @@ reference config ref attr =
             oembed Nothing url
 
         Preview_Lia url ->
-            Html.node "preview-lia" (Attr.attribute "src" url :: annotation "" attr) []
+            Html.node "preview-lia"
+                (Attr.attribute "src" url
+                    :: annotation "" attr
+                    |> Utils.avoidColumn
+                )
+                []
 
         Preview_Link url ->
-            Html.node "preview-link" (Attr.attribute "src" url :: annotation "" attr) []
+            Html.node "preview-link"
+                (Attr.attribute "src" url
+                    :: annotation "" attr
+                    |> Utils.avoidColumn
+                )
+                []
 
         QR_Link url title_ ->
             [ url

@@ -2,8 +2,7 @@
   "short_name": "Lia",
   "name": "LiaScript Open-courSe",
   "description": "An interpreter for interactive online courses developed in LiaScript.",
-  "icons": [
-    {
+  "icons": [{
       "src": "../../assets/logo_192.png",
       "type": "image/png",
       "sizes": "192x192"

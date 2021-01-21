@@ -77,7 +77,7 @@ parse_section search_index global sec =
     case
         Combine.runParser
             (Lia.Definition.Parser.parse |> keep Markdown.run)
-            (init Dict.empty search_index sec.editor_line { global | section = sec.idx })
+            (init Dict.empty search_index sec.editor_line { global | section = sec.id })
             sec.code
     of
         Ok ( state, _, es ) ->
@@ -100,18 +100,17 @@ parse_subsection code =
                 case es of
                     [ Paragraph [] sub ] ->
                         SubSubSection
-                            { visible = True
-                            , body = sub
+                            { body = sub
                             , error = Nothing
                             , effect_model = state.effect_model
                             }
 
                     _ ->
                         SubSection
-                            { visible = True
-                            , body = es
+                            { body = es
                             , error = Nothing
                             , code_vector = state.code_vector
+                            , task_vector = state.task_vector
                             , quiz_vector = state.quiz_vector
                             , survey_vector = state.survey_vector
                             , table_vector = state.table_vector
@@ -130,8 +129,8 @@ return sec state es =
         { sec
             | body = es
             , error = Nothing
-            , visited = True
             , code_vector = state.code_vector
+            , task_vector = state.task_vector
             , quiz_vector = state.quiz_vector
             , survey_vector = state.survey_vector
             , table_vector = state.table_vector

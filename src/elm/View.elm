@@ -9,6 +9,13 @@ import Model exposing (Model, State(..))
 import Update exposing (Msg(..))
 
 
+{-| The current view is defined by the current state of the App. See
+`src/elm/Model.elm` for more information about states.
+
+> `Running` means that a course has been parsed and rendered, that is now in
+> total control of the view.
+
+-}
 view : Model -> Browser.Document Msg
 view model =
     { title = model.lia.title

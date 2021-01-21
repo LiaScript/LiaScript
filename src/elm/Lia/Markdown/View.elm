@@ -20,22 +20,18 @@ import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Quiz.View as Quizzes
 import Lia.Markdown.Survey.View as Surveys
 import Lia.Markdown.Table.View as Table
+import Lia.Markdown.Task.View as Task
 import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Section exposing (SubSection(..))
 import Lia.Settings.Model exposing (Mode(..))
+import Lia.Utils as Utils
 import SvgBob
 
 
 view : Config Msg -> Html Msg
 view config =
     case config.section.error of
-        Just msg ->
-            Html.section [ Attr.class "lia-content" ]
-                [ view_header config
-                , Html.text msg
-                ]
-
         Nothing ->
             view_body
                 ( Config.setSubViewer (subView config) config
@@ -43,6 +39,12 @@ view config =
                 , config.section.footnotes
                 )
                 config.section.body
+
+        Just msg ->
+            Html.section [ Attr.class "lia-content" ]
+                [ view_header config
+                , Html.text msg
+                ]
 
 
 subView : Config Msg -> Int -> SubSection -> List (Html (Script.Msg Msg))
@@ -56,11 +58,15 @@ subView config id sub =
 
                     effects =
                         config.section.effect_model
+
+                    main =
+                        config.main
                 in
                 List.map
                     (view_block
                         { config
-                            | section =
+                            | main = { main | scripts = x.effect_model.javascript }
+                            , section =
                                 { section
                                     | table_vector = x.table_vector
                                     , quiz_vector = x.quiz_vector
@@ -190,10 +196,14 @@ view_block config block =
                         (Node name attributes [ inlines ])
 
                 Nothing ->
-                    Html.p (annotation "lia-paragraph" attr) (config.view [ element ])
+                    Html.p (annotation "lia-paragraph" attr |> Utils.avoidColumn) (config.view [ element ])
 
         Paragraph attr elements ->
-            Html.p (annotation "lia-paragraph" attr) (config.view elements)
+            Html.p
+                (annotation "lia-paragraph" attr
+                    |> Utils.avoidColumn
+                )
+                (config.view elements)
 
         Effect attr e ->
             e.content
@@ -203,12 +213,18 @@ view_block config block =
         BulletList attr list ->
             list
                 |> view_bulletlist config
-                |> Html.ul (annotation "lia-list lia-unordered" attr)
+                |> Html.ul
+                    (annotation "lia-list lia-unordered" attr
+                        |> Utils.avoidColumn
+                    )
 
         OrderedList attr list ->
             list
                 |> view_list config
-                |> Html.ol (annotation "lia-list lia-ordered" attr)
+                |> Html.ol
+                    (annotation "lia-list lia-ordered" attr
+                        |> Utils.avoidColumn
+                    )
 
         Table attr table ->
             Table.view
@@ -275,19 +291,34 @@ view_block config block =
         Chart attr chart ->
             Lazy.lazy3 Charts.view attr config.light chart
 
-        ASCII attr txt ->
-            Lazy.lazy3 view_ascii attr config.light txt
+        ASCII attr bob ->
+            view_ascii config attr bob
 
-        Skip ->
-            Html.text ""
+        Task attr list ->
+            Task.view config.main config.section.task_vector attr list
+                |> Html.map UpdateTask
 
 
-view_ascii : Parameters -> Bool -> String -> Html Msg
-view_ascii attr light =
-    SvgBob.init SvgBob.default
-        >> SvgBob.getSvg (toAttribute attr)
+view_ascii : Config Msg -> Parameters -> SvgBob.Configuration (List Markdown) -> Html Msg
+view_ascii config attr =
+    SvgBob.drawElements (toAttribute attr)
+        (\list ->
+            Html.div [] <|
+                case list of
+                    [ Paragraph [] content ] ->
+                        config.view content
+
+                    -- TODO: remove after styling
+                    (Code _) :: _ ->
+                        [ List.map (view_block config) list
+                            |> Html.div [ Attr.style "margin-top" "-16px" ]
+                        ]
+
+                    _ ->
+                        List.map (view_block config) list
+        )
         >> (\svg ->
-                if light then
+                if config.light then
                     svg
 
                 else

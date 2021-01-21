@@ -39,11 +39,9 @@ type Msg sub
 
 
 updateSub :
-    (Scripts SubSection
-     -> sub
-     -> SubSection
-     -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
-    )
+    { update : Scripts SubSection -> sub -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
+    , handle : Scripts SubSection -> JE.Value -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
+    }
     -> Script.Msg sub
     -> Model SubSection
     -> ( Model SubSection, Cmd (Msg sub), List Event )
@@ -52,11 +50,9 @@ updateSub main msg =
 
 
 update :
-    (Scripts SubSection
-     -> sub
-     -> SubSection
-     -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
-    )
+    { update : Scripts SubSection -> sub -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
+    , handle : Scripts SubSection -> JE.Value -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
+    }
     -> Bool
     -> Msg sub
     -> Model SubSection
@@ -169,11 +165,9 @@ markRunning ( model, cmd, events ) =
 
 
 execute :
-    (Scripts SubSection
-     -> sub
-     -> SubSection
-     -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
-    )
+    { update : Scripts SubSection -> sub -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
+    , handle : Scripts SubSection -> JE.Value -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
+    }
     -> Bool
     -> Bool
     -> Int

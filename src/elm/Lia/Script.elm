@@ -16,6 +16,11 @@ module Lia.Script exposing
     , view
     )
 
+{-| This module defines the basic interface to LiaScript. In order to implement
+parsing and interpreting LiaScript courses, this module contains all messages,
+the Model, update and view functions.
+-}
+
 import Array
 import Dict
 import Html exposing (Html)
@@ -23,7 +28,7 @@ import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition, add_macros)
 import Lia.Json.Encode as Json
 import Lia.Markdown.Inline.Stringify exposing (stringify)
-import Lia.Model exposing (load_src)
+import Lia.Model exposing (loadResource)
 import Lia.Parser.Parser as Parser
 import Lia.Section as Section exposing (Section, Sections)
 import Lia.Settings.Model exposing (Mode(..))
@@ -34,10 +39,14 @@ import Session exposing (Screen, Session)
 import Translations
 
 
+{-| Alias for the model defined by `Lia.Model.Model`
+-}
 type alias Model =
     Lia.Model.Model
 
 
+{-| Alias for the messages defined in `Lia.Update.Msg`
+-}
 type alias Msg =
     Lia.Update.Msg
 
@@ -59,16 +68,27 @@ entry sec =
     ( stringify sec.title, sec.code )
 
 
+{-| Return the number of sections
+-}
 pages : Model -> Int
 pages =
     .sections >> Array.length
 
 
+{-| Release a section load. To be used if the course has been already loaded. If
+this is the first load, then some more initialization has to be done, so use
+`load_first_slide` in this case.
+-}
 load_slide : Session -> Int -> Model -> ( Model, Cmd Msg, List Event )
-load_slide session idx =
-    Lia.Update.update session (Load idx)
+load_slide session =
+    Load >> Lia.Update.update session
 
 
+{-| To be called if the course is has been downloaded and preprocessed, and should
+now be displayed for the first time. It determines the active section, creates
+a `search_index` for local referenced links, and creates connector event, that
+passes a preprocessed version of the course, to the cache used by the backend.
+-}
 load_first_slide : Session -> Model -> ( Model, Cmd Msg, List Event )
 load_first_slide session model =
     load_slide
@@ -95,6 +115,10 @@ load_first_slide session model =
         }
 
 
+{-| Parse the main definitions of Markdown document and add it to todos...
+This is only used to add imports, which might require to load additional
+resources and to add additional macros.
+-}
 add_imports : Model -> String -> Model
 add_imports model course_url =
     case Parser.parse_defintion model.url course_url of
@@ -105,16 +129,30 @@ add_imports model course_url =
             model
 
 
+{-| Convenience function for basic event routing. All events in all modules are
+handled by a `Handle` message and this is simply a translation:
+
+    handle
+      { topic: "..."
+      , section: 1
+      , message: ...
+      } -> Handle {topic: ...
+
+-}
 handle : Event -> Msg
 handle =
     Handle
 
 
+{-| Add parsed definitions from the main header of imports. This adds additional
+resources to be loaded and merges the defined macros with those that are already
+accessible.
+-}
 add_todos : Definition -> Model -> Model
 add_todos definition model =
     let
         ( res, events ) =
-            load_src model.resource definition.resources
+            loadResource model.resource definition.resources
     in
     { model
         | definition = add_macros model.definition definition
@@ -126,6 +164,12 @@ add_todos definition model =
     }
 
 
+{-| **@private**: Process a title-string, so that it can be easily compared with
+realtive links. Incorporates string lowercase, replacement of " " by "-", etc.
+
+    generateIndex 1 "The Main  Title" == ( "#the-main-title", "#2" )
+
+-}
 generateIndex : Int -> String -> ( String, String )
 generateIndex id title =
     ( title
@@ -140,6 +184,19 @@ generateIndex id title =
     )
 
 
+{-| Initalize a LiaScript Model with the code of a course. The header of this
+course is parsed as a definition, that contains `@authors`, `@import`, etc. The
+result is a:
+
+1.  `Model` that is preconfigured
+2.  `String` that only contains the document code without header definitions
+3.  `List String` of templates that have to be downloaded and parsed
+
+**Note:** This function is intended to be used to initialize sequential parsing,
+thus one section at a time. After the model has been initialized the function
+`parse_section` should be called.
+
+-}
 init_script : Model -> String -> ( Model, Maybe ( String, Int ), List String )
 init_script model script =
     case Parser.parse_defintion model.origin script of
@@ -170,6 +227,16 @@ init_script model script =
             ( { model | error = Just msg }, Nothing, [] )
 
 
+{-| Successively parse section after section. Every thime this function is
+called a new section is added to the section array in the model and the
+remainder of the code gets returned. If there is no more code to parse,
+`Nothing` gets returned.
+
+This successive preparsing is intended to minimize blocking time, since parsing
+very large documents might take some time. Parsing this it is possible to
+present some progress to the user as well as do other stuff in the background.
+
+-}
 parse_section : Model -> ( String, Int ) -> ( Model, Maybe ( String, Int ) )
 parse_section model ( code, line ) =
     case Parser.parse_titles line model.backup model.definition code of
@@ -191,20 +258,28 @@ parse_section model ( code, line ) =
             ( { model | error = Just msg }, Nothing )
 
 
+{-| Get a stringified version of the first title:
+
+    `# **Main Title**` -> "Main Title"
+
+-}
 get_title : Sections -> String
-get_title sections =
-    sections
-        |> Array.get 0
-        |> Maybe.map .title
-        |> Maybe.map (stringify >> String.trim)
-        |> Maybe.withDefault "Lia"
+get_title =
+    Array.get 0
+        >> Maybe.map (.title >> stringify >> String.trim)
+        >> Maybe.withDefault "Lia"
 
 
+{-| **@private:** Used by the index-title search to identfy the section number
+that matches the relative Markdown link.
+-}
 filterIndex : String -> ( String, String ) -> Bool
 filterIndex str ( key, _ ) =
     str == key
 
 
+{-| **@private:** Search the index on titles for matching relative links.
+-}
 searchIndex : List ( String, String ) -> String -> String
 searchIndex index str =
     let
@@ -221,21 +296,29 @@ searchIndex index str =
             str
 
 
-init : Int -> JE.Value -> String -> String -> String -> Maybe Int -> Model
+{-| Alias for model initialization defined by `Lia.Model.int`
+-}
+init : Bool -> JE.Value -> String -> String -> String -> Maybe Int -> Model
 init =
     Lia.Model.init
 
 
+{-| Alias for global LiaScript view defined in `Lia.View.view`
+-}
 view : Screen -> Bool -> Bool -> Model -> Html Msg
 view =
     Lia.View.view
 
 
+{-| Alias LiaScript subscriptions defined by `Lia.Update.subscriptions`
+-}
 subscriptions : Model -> Sub Msg
 subscriptions =
     Lia.Update.subscriptions
 
 
+{-| Alias for LiaScript update `Lia.Update.update`
+-}
 update : Session -> Msg -> Model -> ( Model, Cmd Msg, List Event )
 update =
     Lia.Update.update

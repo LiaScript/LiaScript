@@ -1,23 +1,26 @@
-function swapElements (obj1, obj2) {
+function swapElements(obj1: Element, obj2: Element) {
   // create marker element and insert it where obj1 is
   const temp = document.createElement('div')
-  obj1.parentNode.insertBefore(temp, obj1)
+
+  if (obj1.parentNode) obj1.parentNode.insertBefore(temp, obj1)
 
   // move obj1 to right before obj2
-  obj2.parentNode.insertBefore(obj1, obj2)
+  if (obj2.parentNode) obj2.parentNode.insertBefore(obj1, obj2)
 
   // move obj2 to right before where obj1 used to be
-  temp.parentNode.insertBefore(obj2, temp)
+  if (temp.parentNode) {
+    temp.parentNode.insertBefore(obj2, temp)
 
-  // remove temporary marker node
-  temp.parentNode.removeChild(temp)
+    // remove temporary marker node
+    temp.parentNode.removeChild(temp)
+  }
 }
 
 const persistent = {
   bag: document.createElement('div'),
   section: -1,
 
-  store: function (section) {
+  store: function(section: number) {
     if (section === this.section) return
 
     this.section = section
@@ -29,11 +32,13 @@ const persistent = {
     }
   },
 
-  load: function (section) {
+  load: function() {
     const elements = document.getElementsByClassName('persistent')
 
     for (const e of elements) {
-      for (const b of this.bag.childNodes) {
+      // TODO: check for correctness ... removed because of ts warning
+      // for (const b of this.bag.childNodes) {
+      for (const b of this.bag.children) {
         if (b.id === e.id) {
           e.replaceWith(b)
           break
@@ -43,6 +48,4 @@ const persistent = {
   }
 }
 
-export {
-  persistent
-}
+export default persistent

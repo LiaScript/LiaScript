@@ -1,6 +1,6 @@
 module Lia.Markdown.Table.Parser exposing (classify, parse)
 
-import Array exposing (Array)
+import Array
 import Combine
     exposing
         ( Parser

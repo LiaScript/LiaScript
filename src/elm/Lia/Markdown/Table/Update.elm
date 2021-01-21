@@ -4,18 +4,16 @@ module Lia.Markdown.Table.Update exposing
     )
 
 import Array
-import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Table.Types exposing (Class(..), State, Vector)
 
 
 type Msg sub
     = Sort Int Int
     | Toggle Int
-    | Script (Script.Msg sub)
     | NoOp
 
 
-update : Msg sub -> Vector -> ( Vector, Maybe (Script.Msg sub) )
+update : Msg sub -> Vector -> Vector
 update msg vector =
     case msg of
         Sort id col ->
@@ -23,20 +21,15 @@ update msg vector =
                 |> Array.get id
                 |> Maybe.map (\state -> Array.set id (updateSort col state) vector)
                 |> Maybe.withDefault vector
-                |> Script.none
 
         Toggle id ->
             vector
                 |> Array.get id
                 |> Maybe.map (\state -> Array.set id { state | diagram = not state.diagram } vector)
                 |> Maybe.withDefault vector
-                |> Script.none
-
-        Script sub ->
-            ( vector, Just sub )
 
         NoOp ->
-            Script.none vector
+            vector
 
 
 
