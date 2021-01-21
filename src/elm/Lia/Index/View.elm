@@ -90,7 +90,7 @@ toc lang active section =
                                 " lia-active"
 
                             else
-                                " lia-not-visited"
+                                " lia-visited"
                            )
                     )
                 , Attr.href ("#" ++ String.fromInt (section.id + 1))
