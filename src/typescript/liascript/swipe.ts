@@ -58,11 +58,11 @@ function swipedetect(el: HTMLElement, callback: (_: Dir) => void) {
     startX = touchobj.pageX
     startY = touchobj.pageY
     startTime = new Date().getTime() // record time when finger first makes contact with surface
-    e.preventDefault()
+    // e.preventDefault()
   }, { passive: true })
 
-  touchsurface.addEventListener('touchmove', function(e: TouchEvent) {
-    e.preventDefault() // prevent scrolling when inside DIV
+  touchsurface.addEventListener('touchmove', function(_: TouchEvent) {
+    // e.preventDefault() // prevent scrolling when inside DIV
   }, { passive: true })
 
   touchsurface.addEventListener('touchend', function(e: TouchEvent) {
@@ -79,7 +79,7 @@ function swipedetect(el: HTMLElement, callback: (_: Dir) => void) {
     }
     // check that elapsed time is within specified, horizontal dist traveled >= threshold, and vertical dist traveled <= 100
     if (swipedir !== Dir.none) handleswipe(swipedir)
-    e.preventDefault()
+    // e.preventDefault()
   }, { passive: true })
 
   if (!detecttouch) {
