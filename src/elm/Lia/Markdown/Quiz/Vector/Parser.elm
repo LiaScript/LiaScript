@@ -61,11 +61,11 @@ parse =
 {-| Parse an ASCII like radio-button "(X|x)" | "[ ]". The result is either
 `True` or `False`, if the button is checked or not.
 
-    parse (checkButton "(X)") == Ok True
+    parse checkButton "(X)" == Ok True
 
-    parse (checkButton "(x)") == Ok True
+    parse checkButton "(x)" == Ok True
 
-    parse (checkButton "( )") == Ok False
+    parse checkButton "( )" == Ok False
 
 -}
 radioButton : Parser Context Bool
@@ -75,11 +75,11 @@ radioButton =
 
 {-| Parse an ASCII like check-button "[X|x]" | "[ ]". The result is either `True` or `False`, if the button is checked or not.
 
-    parse (checkButton "[X]") == Ok True
+    parse checkButton "[X]" == Ok True
 
-    parse (checkButton "[x]") == Ok True
+    parse checkButton "[x]" == Ok True
 
-    parse (checkButton "[ ]") == Ok False
+    parse checkButton "[ ]" == Ok False
 
 -}
 checkButton : Parser Context Bool
