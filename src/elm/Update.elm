@@ -216,10 +216,17 @@ update msg model =
                                 , session = Session.setUrl url model.session
                             }
 
-                    Session.Course _ slide ->
+                    Session.Course _ fragment ->
                         let
+                            slide =
+                                fragment
+                                    |> Maybe.andThen (Lia.Script.getSectionNumberFrom model.lia.search_index)
+                                    |> Maybe.withDefault 0
+
                             session =
-                                Session.setUrl url model.session
+                                model.session
+                                    |> Session.setUrl url
+                                    |> Session.setFragment (slide + 1)
 
                             ( lia, cmd, events ) =
                                 Lia.Script.load_slide session slide model.lia
