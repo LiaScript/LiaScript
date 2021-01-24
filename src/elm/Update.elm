@@ -194,13 +194,9 @@ update msg model =
             case urlRequest of
                 Browser.Internal url ->
                     ( model
-                    , if url.query == model.session.url.query then
-                        Session.navTo model.session url
-
-                      else
-                        url
-                            |> Url.toString
-                            |> Navigation.load
+                    , url
+                        |> Url.toString
+                        |> Navigation.load
                     )
 
                 Browser.External href ->
@@ -229,7 +225,7 @@ update msg model =
                                     |> Session.setFragment (slide + 1)
 
                             ( lia, cmd, events ) =
-                                Lia.Script.load_slide session slide model.lia
+                                Lia.Script.load_slide session True slide model.lia
                         in
                         ( { model
                             | lia = lia

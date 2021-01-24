@@ -61,9 +61,9 @@ pages =
 this is the first load, then some more initialization has to be done, so use
 `load_first_slide` in this case.
 -}
-load_slide : Session -> Int -> Model -> ( Model, Cmd Msg, List Event )
-load_slide session =
-    Load >> Lia.Update.update session
+load_slide : Session -> Bool -> Int -> Model -> ( Model, Cmd Msg, List Event )
+load_slide session force =
+    Load force >> Lia.Update.update session
 
 
 {-| To be called if the course is has been downloaded and preprocessed, and should
@@ -88,6 +88,7 @@ load_first_slide session model =
     in
     load_slide
         session
+        False
         (if slide >= pages model then
             pages model - 1
 
