@@ -83,11 +83,29 @@ send sectionID =
     List.map (\( name, json ) -> Event name sectionID json)
 
 
+{-| **@private:** Check if the current slide is also the activate one, if so,
+check if the page has already been parsed.
+-}
+isActive : Int -> Model -> Bool
+isActive slide model =
+    slide
+        == model.section_active
+        && (model
+                |> get_active_section
+                |> Maybe.map .parsed
+                |> Maybe.withDefault True
+           )
+
+
 update : Session -> Msg -> Model -> ( Model, Cmd Msg, List Event )
 update session msg model =
     case msg of
         Load idx ->
-            if (-1 < idx) && (idx < Array.length model.sections) then
+            if
+                not (isActive idx model)
+                    && (-1 < idx)
+                    && (idx < Array.length model.sections)
+            then
                 ( { model | section_active = idx }
                 , Session.navToSlide session idx
                 , [ Event "persistent" idx <| JE.string "store" ]
