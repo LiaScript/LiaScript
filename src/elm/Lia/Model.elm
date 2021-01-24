@@ -36,6 +36,10 @@ import Translations
 
   - `section_active`: the currently visible section id
 
+  - `anchor`: is used to store the initial URL fragment, which might be a
+    section number or a title string, this is used on the first load to identify
+    the section to be shown
+
   - `definition`: all elements (configurations) that are defined in the main
     header of the document, covering `@author`, `@email`, `@import`, `@script`,
     etc.
@@ -66,6 +70,7 @@ type alias Model =
     , error : Maybe String
     , sections : Sections
     , section_active : Int
+    , anchor : Maybe String
     , definition : Definition
     , index_model : Index.Model
     , resource : List Resource
@@ -91,8 +96,8 @@ type alias Model =
     active section (defaults to 1)
 
 -}
-init : Bool -> JE.Value -> String -> String -> String -> Maybe Int -> Model
-init openTOC settings url readme origin slide_number =
+init : Bool -> JE.Value -> String -> String -> String -> Maybe String -> Model
+init openTOC settings url readme origin anchor =
     let
         default =
             Settings.init Settings.Presentation
@@ -108,17 +113,8 @@ init openTOC settings url readme origin slide_number =
             |> (\set -> { set | table_of_contents = openTOC })
     , error = Nothing
     , sections = Array.empty
-    , section_active =
-        case slide_number of
-            Nothing ->
-                0
-
-            Just idx ->
-                if (idx - 1) > 0 then
-                    idx - 1
-
-                else
-                    0
+    , section_active = 0
+    , anchor = anchor
     , definition = Definition.default url
     , index_model = Index.init
     , resource = []
