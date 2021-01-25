@@ -70,65 +70,66 @@ blocks : Parser Context Markdown
 blocks =
     lazy <|
         \() ->
-            let
-                b =
-                    choice
-                        [ md_annotations
-                            |> map Effect
-                            |> andMap (Effect.markdown blocks)
-                        , md_annotations
-                            |> map Tuple.pair
-                            |> andMap (Effect.comment paragraph)
-                            |> andThen to_comment
-                        , md_annotations
-                            |> map Chart
-                            |> andMap Chart.parse
-                        , md_annotations
-                            |> map (\attr tab -> Table.classify attr tab >> Table attr)
-                            |> andMap Table.parse
-                            |> andMap (withState (.effect_model >> .javascript >> succeed))
-                        , svgbob
-                        , map Code (Code.parse md_annotations)
-                        , md_annotations
-                            |> map Header
-                            |> andMap subHeader
-                        , horizontal_line
-                        , md_annotations
-                            |> map Survey
-                            |> andMap Survey.parse
-                        , md_annotations
-                            |> map Quiz
-                            |> andMap Quiz.parse
-                            |> andMap solution
-                        , md_annotations
-                            |> map Task
-                            |> andMap Task.parse
-                        , quote
-                        , md_annotations
-                            |> map OrderedList
-                            |> andMap ordered_list
-                        , md_annotations
-                            |> map BulletList
-                            |> andMap unordered_list
-                        , md_annotations
-                            |> map HTML
-                            |> andMap (HTML.parse blocks)
-                            |> ignore (regex "[ \t]*\n")
-                        , md_annotations
-                            |> map Paragraph
-                            |> andMap paragraph
-                        , md_annotations
-                            |> map Paragraph
-                            |> andMap problem
-
-                        --, comments
-                        --    |> onsuccess Skip
-                        ]
-            in
             Indent.check
                 |> keep macro
-                |> keep b
+                |> keep elements
                 |> ignore (maybe (whitespace |> keep Effect.hidden_comment))
+
+
+elements : Parser Context Markdown
+elements =
+    choice
+        [ md_annotations
+            |> map Effect
+            |> andMap (Effect.markdown blocks)
+        , md_annotations
+            |> map Tuple.pair
+            |> andMap (Effect.comment paragraph)
+            |> andThen to_comment
+        , md_annotations
+            |> map Chart
+            |> andMap Chart.parse
+        , md_annotations
+            |> map (\attr tab -> Table.classify attr tab >> Table attr)
+            |> andMap Table.parse
+            |> andMap (withState (.effect_model >> .javascript >> succeed))
+        , svgbob
+        , map Code (Code.parse md_annotations)
+        , md_annotations
+            |> map Header
+            |> andMap subHeader
+        , horizontal_line
+        , md_annotations
+            |> map Survey
+            |> andMap Survey.parse
+        , md_annotations
+            |> map Quiz
+            |> andMap Quiz.parse
+            |> andMap solution
+        , md_annotations
+            |> map Task
+            |> andMap Task.parse
+        , quote
+        , md_annotations
+            |> map OrderedList
+            |> andMap ordered_list
+        , md_annotations
+            |> map BulletList
+            |> andMap unordered_list
+        , md_annotations
+            |> map HTML
+            |> andMap (HTML.parse blocks)
+            |> ignore (regex "[ \t]*\n")
+        , md_annotations
+            |> map Paragraph
+            |> andMap paragraph
+        , md_annotations
+            |> map Paragraph
+            |> andMap problem
+
+        --, comments
+        --    |> onsuccess Skip
+        ]
 
 
 to_comment : ( Parameters, ( Int, Int ) ) -> Parser Context Markdown
