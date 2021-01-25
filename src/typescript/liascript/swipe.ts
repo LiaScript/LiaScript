@@ -91,12 +91,12 @@ function detect(el: HTMLElement, callback: (_: Dir) => void) {
         startY = touchobj.pageY
         startTime = new Date().getTime() // record time when finger first makes contact with surface
         ismousedown = true
-        e.preventDefault()
+        // e.preventDefault()
       }
     }, { passive: true })
 
-    document.body.addEventListener('mousemove', function(e: MouseEvent) {
-      e.preventDefault() // prevent scrolling when inside DIV
+    document.body.addEventListener('mousemove', function(_e: MouseEvent) {
+      // e.preventDefault() // prevent scrolling when inside DIV
     }, { passive: true })
 
     document.body.addEventListener('mouseup', function(e: MouseEvent) {
@@ -116,10 +116,10 @@ function detect(el: HTMLElement, callback: (_: Dir) => void) {
         if (swipedir !== Dir.none) handleswipe(swipedir)
         ismousedown = false
 
-        e.preventDefault()
+        // e.preventDefault()
       }
     }, { passive: true })
   }
 };
 
-export {detect, Dir}
+export { detect, Dir }
