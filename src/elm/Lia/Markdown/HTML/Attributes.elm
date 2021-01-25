@@ -8,6 +8,7 @@ module Lia.Markdown.HTML.Attributes exposing
     , isSetMaybe
     , parse
     , toAttribute
+    , toURL
     )
 
 import Combine
