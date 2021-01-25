@@ -38,14 +38,15 @@ import Lia.Markdown.Table.Types
         , toCell
         , toMatrix
         )
-import Lia.Parser.Context exposing (Context, indentation, indentation_skip)
+import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (spaces)
+import Lia.Parser.Indentation as Indent
 import Set
 
 
 parse : Parser Context Table
 parse =
-    indentation_skip
+    Indent.skip
         |> keep (or formated simple)
         |> modify_State
 
@@ -287,7 +288,7 @@ checkDiagram headLine rows =
 
 row : Parser Context (List ( Parameters, Inlines ))
 row =
-    indentation
+    Indent.check
         |> keep
             (manyTill
                 (string "|"
@@ -319,7 +320,7 @@ formated =
 
 format : Parser Context (List String)
 format =
-    indentation
+    Indent.check
         |> ignore (string "|")
         |> keep
             (sepEndBy (string "|")

@@ -54,7 +54,7 @@ inline_parser defines str =
     case
         str
             |> String.replace "\n" " "
-            |> Combine.runParser line (init identity defines)
+            |> Combine.runParser line (init Nothing defines)
     of
         Ok ( _, _, rslt ) ->
             rslt
