@@ -6,7 +6,7 @@ enum Dir {
   down = 'down'
 }
 
-function swipedetect(el: HTMLElement, callback: (_: Dir) => void) {
+function detect(el: HTMLElement, callback: (_: Dir) => void) {
   let touchsurface = el
   let swipedir: Dir
   let startX: number
@@ -122,4 +122,4 @@ function swipedetect(el: HTMLElement, callback: (_: Dir) => void) {
   }
 };
 
-export default swipedetect
+export {detect, Dir}
