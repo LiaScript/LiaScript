@@ -7,7 +7,6 @@ module Lia.Utils exposing
     )
 
 import Html
-import Html.Attributes as Attr
 import Html.Events as Events
 import Json.Decode as JD
 
