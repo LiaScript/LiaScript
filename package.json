@@ -43,6 +43,7 @@
     "elm-hot": "^1.1.5",
     "elm-review": "^2.4.0",
     "elm-test": "^0.19.1-revision4",
+    "eslint": "^7.18.0",
     "node-elm-compiler": "^5.0.5",
     "parcel": "^1.12.4",
     "parcel-plugin-static-files-copy": "^2.5.0",
@@ -73,5 +74,9 @@
       }
     ],
     "watcherGlob": "**/*.md"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/liascript/liascript.git"
   }
 }
