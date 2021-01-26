@@ -100,28 +100,6 @@ javascript =
         |> keep scriptBody
 
 
-
--- TODO: update also for multiline-comments and escapes in strings
-
-
-scriptBody : Parser s String
-scriptBody =
-    regexWith True False "</script>"
-        |> manyTill
-            ([ regex "[^\"'`</]+" --" this is only a comment for syntaxhighlighting ...
-             , regex "[ \t\n]+"
-             , regex "\"([^\"]*|(?<=\\\\)\")*\""
-             , regex "'([^']*|(?<=\\\\)')*'"
-             , regex "`([^`]*|\n|(?<=\\\\)`)*`"
-             , regex "<(?!/)"
-             , regex "//[^\n]*"
-             , string "/"
-             ]
-                |> choice
-            )
-        |> map String.concat
-
-
 javascriptWithAttributes : Parser Context ( Parameters, String )
 javascriptWithAttributes =
     let
@@ -519,3 +497,25 @@ code =
         |> keep (regex "([^`\\n]*|(?<=\\\\)`)+")
         |> ignore (string "`")
         |> map (String.replace "\\`" "`" >> Verbatim)
+
+
+
+-- TODO: update also for multiline-comments and escapes in strings
+
+
+scriptBody : Parser s String
+scriptBody =
+    regexWith True False "</script>"
+        |> manyTill
+            ([ regex "[^\"'`</]+" --" this is only a comment for syntaxhighlighting ...
+             , regex "[ \t\n]+"
+             , regex "\"([^\"]*|(?<=\\\\)\")*\""
+             , regex "'([^']*|(?<=\\\\)')*'"
+             , regex "`([^`]*|\n|(?<=\\\\)`)*`"
+             , regex "<(?!/)"
+             , regex "//[^\n]*"
+             , string "/"
+             ]
+                |> choice
+            )
+        |> map String.concat
