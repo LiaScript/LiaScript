@@ -4,6 +4,7 @@ module Lia.Script exposing
     , add_imports
     , add_todos
     , backup
+    , getSectionNumberFrom
     , handle
     , init
     , init_script
@@ -79,9 +80,9 @@ pages =
 this is the first load, then some more initialization has to be done, so use
 `load_first_slide` in this case.
 -}
-load_slide : Session -> Int -> Model -> ( Model, Cmd Msg, List Event )
-load_slide session =
-    Load >> Lia.Update.update session
+load_slide : Session -> Bool -> Int -> Model -> ( Model, Cmd Msg, List Event )
+load_slide session force =
+    Load force >> Lia.Update.update session
 
 
 {-| To be called if the course is has been downloaded and preprocessed, and should
@@ -91,28 +92,73 @@ passes a preprocessed version of the course, to the cache used by the backend.
 -}
 load_first_slide : Session -> Model -> ( Model, Cmd Msg, List Event )
 load_first_slide session model =
+    let
+        search_index =
+            model.sections
+                |> Array.map (.title >> stringify >> String.trim)
+                |> Array.toList
+                |> List.indexedMap generateIndex
+                |> searchIndex
+
+        slide =
+            model.anchor
+                |> Maybe.andThen (getSectionNumberFrom search_index)
+                |> Maybe.withDefault model.section_active
+    in
     load_slide
         session
-        (if model.section_active >= pages model then
+        False
+        (if slide >= pages model then
             pages model - 1
 
          else
-            model.section_active
+            slide
         )
         { model
             | title = get_title model.sections
-            , search_index =
-                model.sections
-                    |> Array.map (.title >> stringify >> String.trim)
-                    |> Array.toList
-                    |> List.indexedMap generateIndex
-                    |> searchIndex
+            , search_index = search_index
             , to_do =
                 (Json.encode model
                     |> Event "init" model.section_active
                 )
                     :: model.to_do
         }
+
+
+{-| This function is used to analyse URL fragments based on a given
+index-function. It the given String can be parsed as a number, this value is
+returned (minus one), since url fragments start with 1. Otherwise, the section
+number is determined by the order of the document (matching the section title):
+
+    getSectionNumberFrom index "12" == Just 11
+
+    getSectionNumberFrom index "0" == Nothing
+
+    getSectionNumberFrom index "some-title" == Just 14
+
+-}
+getSectionNumberFrom : (String -> String) -> String -> Maybe Int
+getSectionNumberFrom index fragment =
+    let
+        slide =
+            case fragment |> String.toInt of
+                Just number ->
+                    number - 1
+
+                Nothing ->
+                    "#"
+                        ++ fragment
+                        |> index
+                        |> String.dropLeft 1
+                        |> String.toInt
+                        |> Maybe.map ((+) -1)
+                        |> Maybe.withDefault -1
+    in
+    if slide < 0 then
+        Nothing
+
+    else
+        Just slide
 
 
 {-| Parse the main definitions of Markdown document and add it to todos...
@@ -298,7 +344,7 @@ searchIndex index str =
 
 {-| Alias for model initialization defined by `Lia.Model.int`
 -}
-init : Bool -> JE.Value -> String -> String -> String -> Maybe Int -> Model
+init : Bool -> JE.Value -> String -> String -> String -> Maybe String -> Model
 init =
     Lia.Model.init
 

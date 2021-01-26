@@ -38,6 +38,7 @@ toModel =
         |> JD.map2 (|>) (JD.succeed Nothing)
         |> andMap "sections" (JD.array toSectionBase |> JD.map (Array.indexedMap Section.init))
         |> andMap "section_active" JD.int
+        |> JD.map2 (|>) (JD.succeed Nothing)
         |> andMap "definition" Definition.decode
         |> JD.map2 (|>) (JD.succeed Index.init)
         |> JD.map2 (|>) (JD.succeed [])

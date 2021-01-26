@@ -1,4 +1,4 @@
-import echarts from 'echarts'
+import * as echarts from 'echarts'
 
 const style = 'width: 100%; height: 400px; margin-top: -0.2em;'
 

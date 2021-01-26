@@ -44,7 +44,6 @@ search pattern section =
                 |> String.toLower
                 |> search_
                     (pattern
-                        |> String.toLower
                         |> String.split " "
                         |> List.filter ((/=) "")
                     )

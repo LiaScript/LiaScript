@@ -20,8 +20,9 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Matrix.Types exposing (Quiz)
 import Lia.Markdown.Quiz.Vector.Parser exposing (checkButton, group, radioButton)
 import Lia.Markdown.Quiz.Vector.Types exposing (State(..))
-import Lia.Parser.Context exposing (Context, indentation)
+import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (newline, spaces)
+import Lia.Parser.Indentation as Indent
 
 
 parse : Parser Context Quiz
@@ -40,7 +41,7 @@ quiz main ( vector, inline ) =
 
 header : Parser Context (List Inlines)
 header =
-    maybe indentation
+    maybe Indent.check
         |> ignore spaces
         |> ignore (string "[")
         |> keep (many1 options)

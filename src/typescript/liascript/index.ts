@@ -6,7 +6,7 @@ import {
 } from './events'
 // import persistent from './persistent.ts'
 import log from './log'
-import swipedetect from './swipe'
+import * as Swipe from './swipe'
 
 import './types/globals'
 import './types/responsiveVoice'
@@ -217,6 +217,37 @@ class LiaScript {
       this.app.ports.jit.send(code)
   }
 
+  initNaviation(elem: HTMLElement, elmSend: Lia.Send) {
+    Swipe.detect(elem, function(swipedir) {
+      elmSend({
+        topic: Port.SWIPE,
+        section: -1,
+        message: swipedir
+      })
+    })
+
+    elem.addEventListener('keydown', (e) => {
+      switch (e.key) {
+        case "ArrowRight": {
+          elmSend({
+            topic: Port.SWIPE,
+            section: -1,
+            message: Swipe.Dir.left
+          })
+          break;
+        }
+        case "ArrowLeft": {
+          elmSend({
+            topic: Port.SWIPE,
+            section: -1,
+            message: Swipe.Dir.right
+          })
+          break;
+        }
+      }
+    }, false)
+  }
+
   reset() {
     this.app.ports.event2elm.send({
       topic: Port.RESET,
@@ -230,13 +261,7 @@ class LiaScript {
 
     let self = this
 
-    swipedetect(elem, function(swipedir) {
-      elmSend({
-        topic: Port.SWIPE,
-        section: -1,
-        message: swipedir
-      })
-    })
+    this.initNaviation(elem, elmSend)
 
     jsSubscribe((event: Lia.Event) => { process(true, self, elmSend, event) })
   }

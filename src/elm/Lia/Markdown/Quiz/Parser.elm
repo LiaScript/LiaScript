@@ -34,8 +34,9 @@ import Lia.Markdown.Quiz.Types
         , initState
         )
 import Lia.Markdown.Quiz.Vector.Parser as Vector
-import Lia.Parser.Context exposing (Context, indentation)
+import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (newline, spaces)
+import Lia.Parser.Indentation as Indent
 
 
 parse : Parser Context Quiz
@@ -60,7 +61,7 @@ adds type_ =
 maybeJS : Parser Context (Maybe String)
 maybeJS =
     macro
-        |> ignore (maybe indentation)
+        |> ignore (maybe Indent.check)
         |> keep
             (maybe
                 (spaces
@@ -77,7 +78,7 @@ get_counter =
 
 generic : Parser Context ()
 generic =
-    maybe indentation
+    maybe Indent.check
         |> ignore spaces
         |> ignore (string "[[!]]")
         |> ignore newline

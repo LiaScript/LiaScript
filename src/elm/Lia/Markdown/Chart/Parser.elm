@@ -77,7 +77,7 @@ parse =
                     x_label
                     (Dict.values labels)
     in
-    optional "" (regex "[\t ]*[a-zA-Z0-9 .\\\\()\\-]+\\n")
+    optional "" (regex "[\t ]*[^\n\\|`]*\n")
         |> map (String.trim >> chart)
         |> andMap (regex "[\t ]*" |> keep number |> optional 1.0)
         |> andMap (many1 row)

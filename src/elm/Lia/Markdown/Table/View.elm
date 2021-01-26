@@ -61,7 +61,7 @@ view config attr table =
 viewDiagram : Table -> State -> Scripts a -> Maybe Int -> Int -> Bool -> Parameters -> Html Msg
 viewDiagram table state effects visible width light attr =
     Html.div
-        (Lia.Utils.avoidColumn [ blockKeydown (UpdateTable Sub.NoOp) ])
+        [ blockKeydown (UpdateTable Sub.NoOp) ]
         [ toggleBtn table.id "table"
         , table.body
             |> toMatrix effects visible
@@ -489,14 +489,10 @@ getState id =
 toTable : Int -> Parameters -> Class -> List (Html Msg) -> Html Msg
 toTable id attr class body =
     if class == None then
-        Html.table
-            (Param.annotation "lia-table" attr
-                |> Lia.Utils.avoidColumn
-            )
-            body
+        Html.table (Param.annotation "lia-table" attr) body
 
     else
-        Html.div (Lia.Utils.avoidColumn [])
+        Html.div []
             [ toggleBtn id <|
                 case class of
                     BarChart ->

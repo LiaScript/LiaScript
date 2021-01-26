@@ -209,13 +209,9 @@ update msg model =
             case urlRequest of
                 Browser.Internal url ->
                     ( model
-                    , if url.query == model.session.url.query then
-                        Session.navTo model.session url
-
-                      else
-                        url
-                            |> Url.toString
-                            |> Navigation.load
+                    , url
+                        |> Url.toString
+                        |> Navigation.load
                     )
 
                 Browser.External href ->
@@ -231,13 +227,20 @@ update msg model =
                                 , session = Session.setUrl url model.session
                             }
 
-                    Session.Course _ slide ->
+                    Session.Course _ fragment ->
                         let
+                            slide =
+                                fragment
+                                    |> Maybe.andThen (Lia.Script.getSectionNumberFrom model.lia.search_index)
+                                    |> Maybe.withDefault 0
+
                             session =
-                                Session.setUrl url model.session
+                                model.session
+                                    |> Session.setUrl url
+                                    |> Session.setFragment (slide + 1)
 
                             ( lia, cmd, events ) =
-                                Lia.Script.load_slide session slide model.lia
+                                Lia.Script.load_slide session True slide model.lia
                         in
                         ( { model
                             | lia = lia

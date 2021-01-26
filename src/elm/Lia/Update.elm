@@ -39,9 +39,7 @@ subscriptions model =
 
 {-| Main LiaScript messages:
 
-  - `Load`: load a specific section, this means send an activation event to js
-    and wait for a response (this was used to store elements marked with class
-    "persistent").
+  - `Load`: load a specific section if it is not loaded yet or force a loading
   - `InitSection`: if the `Load` response is received, this message is called to
     perform parsing, if necessary, and initialize all section base settings
   - `PrevSection`: go to next anaimation fragment or section, this depends on
@@ -60,7 +58,7 @@ subscriptions model =
 
 -}
 type Msg
-    = Load Int
+    = Load Bool Int
     | InitSection
     | PrevSection
     | NextSection
@@ -86,12 +84,18 @@ send sectionID =
 update : Session -> Msg -> Model -> ( Model, Cmd Msg, List Event )
 update session msg model =
     case msg of
-        Load idx ->
+        Load force idx ->
             if (-1 < idx) && (idx < Array.length model.sections) then
-                ( { model | section_active = idx }
-                , Session.navToSlide session idx
-                , [ Event "persistent" idx <| JE.string "store" ]
-                )
+                if idx == model.section_active || force then
+                    { model | section_active = idx }
+                        |> generate
+                        |> update session InitSection
+
+                else
+                    ( { model | section_active = idx }
+                    , Session.navToSlide session idx
+                    , []
+                    )
 
             else
                 ( model, Cmd.none, [] )
@@ -161,7 +165,7 @@ update session msg model =
                                 )
                             |> List.head
                             |> Maybe.withDefault (Array.length model.sections - 1)
-                            |> Load
+                            |> Load True
                         )
                         model
 
@@ -227,7 +231,7 @@ update session msg model =
                         (model.settings.mode == Textbook)
                             || not (Effect.has_next sec.effect_model)
                     then
-                        update session (Load (model.section_active + 1)) model
+                        update session (Load False (model.section_active + 1)) model
 
                     else
                         let
@@ -241,7 +245,7 @@ update session msg model =
 
                 ( PrevSection, Just sec ) ->
                     if (model.settings.mode == Textbook) || not (Effect.has_previous sec.effect_model) then
-                        update session (Load (model.section_active - 1)) model
+                        update session (Load False (model.section_active - 1)) model
 
                     else
                         let

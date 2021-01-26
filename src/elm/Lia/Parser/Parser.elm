@@ -38,7 +38,7 @@ parse_defintion base code =
             )
             (base
                 |> Lia.Definition.Types.default
-                |> init Dict.empty identity 0
+                |> init Dict.empty Nothing 0
             )
             (code ++ "\n")
     of
@@ -60,7 +60,7 @@ parse_titles :
     -> String
     -> Result String ( Section.Base, ( String, Int ) )
 parse_titles editor_line dict defines code =
-    case Combine.runParser Preprocessor.section (init dict identity editor_line defines) code of
+    case Combine.runParser Preprocessor.section (init dict Nothing editor_line defines) code of
         Ok ( _, data, ( rslt, line ) ) ->
             Ok ( rslt, ( data.input, line ) )
 
@@ -77,7 +77,7 @@ parse_section search_index global sec =
     case
         Combine.runParser
             (Lia.Definition.Parser.parse |> keep Markdown.run)
-            (init Dict.empty search_index sec.editor_line { global | section = sec.id })
+            (init Dict.empty (Just search_index) sec.editor_line { global | section = sec.id })
             sec.code
     of
         Ok ( state, _, es ) ->
@@ -92,7 +92,7 @@ parse_subsection code =
     case
         Combine.runParser
             (Lia.Definition.Parser.parse |> keep Markdown.run)
-            (init Dict.empty identity 0 (Lia.Definition.Types.default ""))
+            (init Dict.empty Nothing 0 (Lia.Definition.Types.default ""))
             (String.trim code ++ "\n")
     of
         Ok ( state, _, es ) ->

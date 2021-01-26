@@ -12,7 +12,6 @@ import Lia.Markdown.Code.Terminal as Terminal
 import Lia.Markdown.Code.Types exposing (Code(..), File, Snippet, Vector)
 import Lia.Markdown.Code.Update exposing (Msg(..))
 import Lia.Markdown.HTML.Attributes as Params exposing (Parameters)
-import Lia.Utils as Utils
 import Translations exposing (Lang, codeExecute, codeFirst, codeLast, codeMaximize, codeMinimize, codeNext, codePrev, codeRunning)
 
 
@@ -82,11 +81,9 @@ list_get idx list =
 div_ : List (Html msg) -> Html msg
 div_ =
     Html.div
-        (Utils.avoidColumn
-            [ Attr.style "margin-top" "16px"
-            , Attr.style "margin-bottom" "16px"
-            ]
-        )
+        [ Attr.style "margin-top" "16px"
+        , Attr.style "margin-bottom" "16px"
+        ]
 
 
 view_code : String -> Snippet -> Html Msg
@@ -95,7 +92,7 @@ view_code theme snippet =
         headless =
             snippet.name == ""
     in
-    Html.div (Utils.avoidColumn [])
+    Html.div []
         [ if headless then
             Html.text ""
 

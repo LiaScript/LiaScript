@@ -37,8 +37,9 @@ import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Types exposing (Markdown(..))
-import Lia.Parser.Context exposing (Context, indentation, indentation_skip)
+import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (newlines, newlines1, spaces1)
+import Lia.Parser.Indentation as Indent
 
 
 markdown : Parser Context Markdown -> Parser Context (Effect Markdown)
@@ -47,7 +48,7 @@ markdown blocks =
         |> keep definition
         |> map (\e b c -> { e | content = b, id = c })
         |> ignore (regex "}}[\t ]*")
-        |> ignore (or (skip (string "\n")) indentation_skip)
+        |> ignore (or (skip (string "\n")) Indent.skip)
         |> andMap (or (multi blocks) (single blocks))
         |> ignore reset_effect_number
         |> andMap effect_id
@@ -60,7 +61,7 @@ single =
 
 multi : Parser Context Markdown -> Parser Context (List Markdown)
 multi blocks =
-    indentation
+    Indent.check
         |> ignore (regex "[\t ]*\\*{3,}\\n+")
         |> keep
             (manyTill
@@ -192,8 +193,8 @@ comment paragraph =
                 )
             )
         |> ignore (regex "}}--[\t ]*")
-        |> ignore (maybe (newlines1 |> ignore indentation_skip))
-        |> andMap (indentation |> keep paragraph)
+        |> ignore (maybe (newlines1 |> ignore Indent.skip))
+        |> andMap (Indent.check |> keep paragraph)
         |> andThen (add_comment True)
         |> ignore reset_effect_number
 

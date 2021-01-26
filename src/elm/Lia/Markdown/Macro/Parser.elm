@@ -31,8 +31,9 @@ import Combine
         )
 import Dict
 import Lia.Definition.Types exposing (Definition)
-import Lia.Parser.Context exposing (Context, indentation)
+import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (c_frame)
+import Lia.Parser.Indentation as Indent
 import Lia.Utils exposing (toEscapeString, toJSstring)
 import Regex
 
@@ -107,10 +108,10 @@ simple_macro =
 code_block : Parser Context (List String)
 code_block =
     manyTill
-        (maybe indentation
+        (maybe Indent.check
             |> keep (regex "(.(?!```))*\\n?")
         )
-        (maybe indentation
+        (maybe Indent.check
             |> keep c_frame
         )
         |> map (String.concat >> List.singleton)
@@ -141,14 +142,14 @@ inject_macro ( ( name, escape ), params ) =
                 Just ( isDebug, deepDebug, code ) ->
                     let
                         code_ =
-                            if state.identation == [] then
+                            if state.indentation == [] then
                                 code
 
                             else
                                 code
                                     |> String.lines
                                     |> String.join
-                                        (state.identation
+                                        (state.indentation
                                             |> String.concat
                                             |> (++) "\n"
                                         )

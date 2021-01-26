@@ -3,8 +3,7 @@ module Lia.View exposing (view)
 import Flip exposing (flip)
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Html.Events exposing (onClick, preventDefaultOn)
-import Json.Decode as JD
+import Html.Events exposing (onClick)
 import Lia.Index.View as Index
 import Lia.Markdown.Config as Config
 import Lia.Markdown.Effect.Model exposing (current_paragraphs)
@@ -35,33 +34,10 @@ import Translations as Trans exposing (Lang)
 view : Screen -> Bool -> Bool -> Model -> Html Msg
 view screen hasShareAPI hasIndex model =
     Html.div
-        (onNavigationKey :: Settings.design model.settings)
+        (Settings.design model.settings)
         [ view_aside hasShareAPI model
         , view_article screen hasIndex model
         ]
-
-
-{-| **@private:** release a navigation event, if the arrow key left or right had
-been pressed.
--}
-onNavigationKey : Html.Attribute Msg
-onNavigationKey =
-    JD.field "key" JD.string
-        |> JD.andThen decodeNavigationKey
-        |> preventDefaultOn "keydown"
-
-
-decodeNavigationKey : String -> JD.Decoder ( Msg, Bool )
-decodeNavigationKey s =
-    case s of
-        "ArrowLeft" ->
-            JD.succeed ( PrevSection, True )
-
-        "ArrowRight" ->
-            JD.succeed ( NextSection, True )
-
-        _ ->
-            JD.fail "no arrow key"
 
 
 {-| **@private:** Display the aside section that contains the document search,

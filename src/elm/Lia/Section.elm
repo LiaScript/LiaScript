@@ -120,7 +120,7 @@ type alias Sections =
 code. The code gets only parsed, if the user visits this section.
 -}
 type alias Base =
-    { identation : Int
+    { indentation : Int
     , editor_line : Int
     , title : Inlines
     , code : String
@@ -134,7 +134,7 @@ init : Int -> Base -> Section
 init id base =
     { code = base.code
     , title = base.title
-    , indentation = base.identation
+    , indentation = base.indentation
     , visible = True
     , id = id
     , parsed = False

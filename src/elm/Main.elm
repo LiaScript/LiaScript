@@ -80,9 +80,6 @@ type alias Flags =
 init : Flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
     let
-        slide =
-            url.fragment |> Maybe.andThen String.toInt
-
         model u s m =
             Model 4
                 0
@@ -110,7 +107,7 @@ init flags url key =
                 (get_base courseUrl)
                 query
                 (get_origin courseUrl.query)
-                slide
+                url.fragment
                 |> model courseUrl Loading
                 |> getIndex query
 
@@ -121,7 +118,7 @@ init flags url key =
                 (get_base courseUrl)
                 query
                 (get_origin courseUrl.query)
-                slide
+                url.fragment
                 |> model { courseUrl | query = Just query } Loading
                 |> getIndex query
 
@@ -132,7 +129,7 @@ init flags url key =
                 ""
                 ""
                 ""
-                slide
+                url.fragment
                 |> model courseUrl Idle
                 |> load_readme script
 
@@ -143,7 +140,7 @@ init flags url key =
                 ""
                 ""
                 ""
-                slide
+                url.fragment
                 |> model courseUrl Idle
                 |> Update.initIndex
 

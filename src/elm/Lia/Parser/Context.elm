@@ -1,24 +1,21 @@
 module Lia.Parser.Context exposing
     ( Context
     , getLine
-    , indentation
-    , indentation_append
-    , indentation_pop
-    , indentation_skip
     , init
     , searchIndex
     )
+
+{-| This module defines everything that is necessary to deal with the state of
+the parser. This state is called `Context` and might have an influence on the
+parsing. It is passed to all successively applied parser.
+-}
 
 import Array
 import Combine
     exposing
         ( Parser
         , andMap
-        , ignore
         , map
-        , modifyState
-        , regex
-        , skip
         , succeed
         , withLine
         , withState
@@ -35,9 +32,35 @@ import Lia.Markdown.Task.Types as Task
 import Lia.Section exposing (SubSection)
 
 
+{-| The `Context` defines the current state of the parser. It keeps track of the
+current indentation as well as on all identfied elements that might require state
+control:
+
+  - `indentation`: a list of `["  ", "> "]`, elements are pushed on and poppend
+    off this stack, to check the currently defined indentation.
+  - `indentation_skip`: defines if the indentation should be skipped within the
+    next step
+  - `****_vector`: any kind of state to preserve for the applied sub-modules.
+    Normaly new states are pushed on this stack/array and their position (id) is
+    later used to identfy the required element from within the views.
+  - `effect_model` & `effect_number` are specific, the `effect_number` is a
+    stack of Int that is required to keep the current animation-id, if for
+    example `<script>` are used within a effect or to deal with nested effects.
+  - `defines`: is a set of macros and other definitions, that are normaly
+    defined within the head of every LiaScript document
+  - `footnotes`
+  - `defines_updated`:
+  - `search_index`: a function, that translates a string title into a section
+    number
+
+> Context is commonly used per section, since sections are preparsed at first
+> and afterwards only the current section is parsed, in order to speed up
+> execution.
+
+-}
 type alias Context =
-    { identation : List String
-    , identation_skip : Bool
+    { indentation : List String
+    , indentation_skip : Bool
     , task_vector : Task.Vector
     , code_vector : Code.Vector
     , quiz_vector : Quiz.Vector
@@ -55,10 +78,10 @@ type alias Context =
     }
 
 
-init : Dict String String -> (String -> String) -> Int -> Definition -> Context
+init : Dict String String -> Maybe (String -> String) -> Int -> Definition -> Context
 init backup search_index editor_line global =
-    { identation = []
-    , identation_skip = False
+    { indentation = []
+    , indentation_skip = False
     , task_vector = Array.empty
     , code_vector = Array.empty
     , quiz_vector = Array.empty
@@ -70,71 +93,17 @@ init backup search_index editor_line global =
     , defines = global
     , footnotes = Footnote.init
     , defines_updated = False
-    , search_index = search_index
+    , search_index = Maybe.withDefault identity search_index
     , editor_line = editor_line
     , backup = backup
     }
 
 
+{-| Put the search\_index from the context into the parser-pipeline.
+-}
 searchIndex : Parser Context (String -> String)
 searchIndex =
-    withState (\state -> state.search_index |> succeed)
-
-
-par_ : Context -> Parser Context ()
-par_ s =
-    if s.identation == [] then
-        succeed ()
-
-    else if s.identation_skip then
-        skip (succeed ())
-
-    else
-        String.concat s.identation
-            |> regex
-            |> skip
-
-
-indentation : Parser Context ()
-indentation =
-    withState par_
-        |> ignore (modifyState (skip_ False))
-
-
-indentation_append : String -> Parser Context ()
-indentation_append str =
-    modifyState
-        (\state ->
-            { state
-                | identation_skip = True
-                , identation = List.append state.identation [ str ]
-            }
-        )
-
-
-indentation_pop : Parser Context ()
-indentation_pop =
-    modifyState
-        (\state ->
-            { state
-                | identation_skip = False
-                , identation =
-                    state.identation
-                        |> List.reverse
-                        |> List.drop 1
-                        |> List.reverse
-            }
-        )
-
-
-indentation_skip : Parser Context ()
-indentation_skip =
-    modifyState (skip_ True)
-
-
-skip_ : Bool -> Context -> Context
-skip_ bool state =
-    { state | identation_skip = bool }
+    withState (.search_index >> succeed)
 
 
 getLine : Parser Context Int
