@@ -201,11 +201,16 @@ class LiaScript {
       handleEffects(event.message, sender, event.section)
     }
 
-    window.showFootnote = this.app.ports.footnote.send
+    let self = this
+    window.showFootnote = (key) => { self.footnote(key) }
 
     setTimeout(function() {
       firstSpeak = false
     }, 1000)
+  }
+
+  footnote(key: string) {
+    this.app.ports.footnote.send(key)
   }
 
   goto(line: number) {
