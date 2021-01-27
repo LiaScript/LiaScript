@@ -1,10 +1,10 @@
 {
-  "name": "LiaScript",
+  "name": "lia-script",
   "version": "0.8.12",
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
   "description": "An extended Markdown interpreter for the creation of interactive online courses.",
-  "main": "index.js",
+  "main": "dist/index.js",
   "repository": {
     "type": "git",
     "url": "git://github.com/liascript/liascript.git"
@@ -36,7 +36,12 @@
     "watch:dev": "npm run init && npx parcel serve src/entry/dev/index.html --open",
     "build:scorm1.2": "npm run init && npx parcel build --no-source-maps --public-url ./ src/entry/scorm1.2/index.html",
     "watch:scorm1.2": "npm run init && npx parcel serve src/entry/scorm1.2/index.html",
-    "build:worker": "npm run init && npx parcel build --no-source-maps --target node --public-url ./ src/entry/worker/index.js"
+    "build:worker": "npm run init && npx parcel build --no-source-maps --target node --public-url ./ src/entry/worker/index.js",
+
+    "watch:webcomponent": "npm run init && npx parcel serve src/entry/webcomponent/index.html --open",
+    "build:webcomponent": "npm run init && npx parcel build --no-source-maps src/entry/webcomponent/index.ts && rm dist/README.md",
+
+    "build:webcomponentPublic": "npm run init && npx parcel build --no-source-maps --public-url https://liascript.github.io/webcomponent/ src/entry/webcomponent/index.ts && rm dist/README.md"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",
@@ -85,5 +90,10 @@
       }
     ],
     "watcherGlob": "**/*.md"
-  }
+  },
+  "presets": ["@babel/preset-env"],
+    "plugins": [
+        ["@babel/plugin-proposal-decorators", { "legacy": true }],
+        ["@babel/plugin-proposal-class-properties", { "loose": true }]
+    ]
 }

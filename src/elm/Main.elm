@@ -100,6 +100,41 @@ init flags url key =
             flags.screen.width > 620
     in
     case ( courseUrl.query, flags.course, flags.script ) of
+        -- directly parse the scirpt
+        ( _, _, Just script ) ->
+            let
+                subURL =
+                    { courseUrl | query = Just "README.md" }
+            in
+            Lia.Script.init
+                openTableOfContents
+                flags.settings
+                (get_base subURL)
+                "README.md"
+                ""
+                Nothing
+                |> model subURL Idle
+                |> load_readme script
+                |> navToFirstSlide
+
+        -- Check if a URL was passed as a parameter
+        ( _, Just query, _ ) ->
+            Lia.Script.init
+                openTableOfContents
+                flags.settings
+                (query
+                    |> Url.fromString
+                    |> Maybe.withDefault { courseUrl | query = Just query }
+                    |> get_base
+                )
+                query
+                (get_origin (Just query))
+                url.fragment
+                |> model { courseUrl | query = Just query } Loading
+                |> getIndex query
+                |> navToFirstSlide
+
+        -- Use the url query-parameter as the course-url
         ( Just query, _, _ ) ->
             Lia.Script.init
                 openTableOfContents
@@ -110,28 +145,6 @@ init flags url key =
                 url.fragment
                 |> model courseUrl Loading
                 |> getIndex query
-
-        ( _, Just query, _ ) ->
-            Lia.Script.init
-                openTableOfContents
-                flags.settings
-                (get_base courseUrl)
-                query
-                (get_origin courseUrl.query)
-                url.fragment
-                |> model { courseUrl | query = Just query } Loading
-                |> getIndex query
-
-        ( _, _, Just script ) ->
-            Lia.Script.init
-                openTableOfContents
-                flags.settings
-                ""
-                ""
-                ""
-                url.fragment
-                |> model courseUrl Idle
-                |> load_readme script
 
         _ ->
             Lia.Script.init
@@ -167,6 +180,18 @@ get_origin query =
 
         Nothing ->
             ""
+
+
+{-| **@private:** Make sure that the URL is modified accordingly.
+-}
+navToFirstSlide : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+navToFirstSlide ( model, cmd ) =
+    ( model
+    , Cmd.batch
+        [ Session.update model.session
+        , cmd
+        ]
+    )
 
 
 get_base : Url.Url -> String
