@@ -11,6 +11,7 @@ module Session exposing
     , setQuery
     , setScreen
     , setUrl
+    , update
     )
 
 {-| This module covers all relevant session functions/data that deal with
@@ -101,6 +102,16 @@ setFragment slide session =
 navTo : Session -> Url -> Cmd msg
 navTo session =
     Url.toString >> Navigation.pushUrl session.key
+
+
+{-| Use this to replace the current URL, with the settings define by session.
+This will only replace the URL does not add an entry to the browser history.
+-}
+update : Session -> Cmd msg
+update session =
+    session.url
+        |> Url.toString
+        |> Navigation.replaceUrl session.key
 
 
 load : Url -> Cmd msg
