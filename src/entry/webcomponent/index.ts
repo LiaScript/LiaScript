@@ -43,29 +43,30 @@ customElements.define('lia-script', class extends HTMLElement {
 
     shadowRoot.appendChild(this.container)
 
-    this.initResponsiveVoice()
     this.initLia()
+    this.initResponsiveVoice()
   }
 
   initLia() {
     this.courseURL = this.getAttribute("src")
 
+    // Load the Markdown document defined by the src attribute
     if (typeof this.courseURL === "string") {
-      // Load the Markdown document defined by the src attribute
       this.app = new LiaScript(
         this.container,
         new Connector(),
         this.debug,
         this.courseURL,
+        null
       )
-    } else {
-      // Load the Content from within the web component
+    } // Load the Content from within the web component
+    else {
       this.app = new LiaScript(
         this.container,
         new Connector(),
         this.debug,
         null,
-        this.innerText
+        this.innerHTML
       )
     }
 
@@ -84,7 +85,6 @@ customElements.define('lia-script', class extends HTMLElement {
       document.head.appendChild(tag)
     }
   }
-
 
   disconnectedCallback() {
     delete this.app
