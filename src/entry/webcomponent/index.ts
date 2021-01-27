@@ -71,8 +71,8 @@ customElements.define('lia-script', class extends HTMLElement {
     }
 
     window.showFootnote = (key) => this.app.footnote(key);
-    //window.gotoLia = (line: number) => this.app.goto(line);
-    //window.jitLia = (code: string) => this.app.jit(code);
+    window.gotoLia = (line: number) => this.app.goto(line);
+    window.jitLia = (code: string) => this.app.jit(code);
   }
 
   initResponsiveVoice() {
