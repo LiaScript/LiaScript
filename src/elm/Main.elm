@@ -35,7 +35,7 @@ main =
 
 {-| Basic init information, that are passed to the init function at start-time:
 
-  - `course`: define a fixed course-url that needs to be downloaded
+  - `courseUrl`: define a fixed course-url that needs to be downloaded
 
   - `script`: pass the entire content of a Markdown document
 
@@ -53,7 +53,7 @@ main =
 
 -}
 type alias Flags =
-    { course : Maybe String
+    { courseUrl : Maybe String
     , script : Maybe String
     , settings : JE.Value
     , screen : Screen
@@ -99,7 +99,7 @@ init flags url key =
         openTableOfContents =
             flags.screen.width > 620
     in
-    case ( courseUrl.query, flags.course, flags.script ) of
+    case ( courseUrl.query, flags.courseUrl, flags.script ) of
         -- directly parse the scirpt
         ( _, _, Just script ) ->
             let
