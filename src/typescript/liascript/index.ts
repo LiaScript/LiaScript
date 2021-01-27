@@ -160,9 +160,8 @@ class LiaScript {
     elem: HTMLElement,
     connector: Connector,
     debug: boolean = false,
-    course: string | null = null,
-    script: string | null = null,
-    url: string = ''
+    courseUrl: string | null = null,
+    script: string | null = null
   ) {
     if (debug) window.debug__ = true
 
@@ -171,7 +170,7 @@ class LiaScript {
     this.app = Elm.Main.init({
       node: elem,
       flags: {
-        course: course,
+        courseUrl: courseUrl,
         script: script,
         settings: connector.getSettings(),
         screen: {
