@@ -242,8 +242,8 @@
         color: #333;
       }
       .blue {
-        background-color: #2196f3;
-        color: #333;
+        background-color: $color-blue-1;
+        color: #fff;
       }
       .green {
         background-color: #4caf50;
@@ -256,6 +256,18 @@
       .purple {
         background-color: #673ab7;
         color: #333;
+      }
+      .turquoise {
+        background-color: $color-turquoise-1;
+        color: #fff;
+      }
+      .red {
+        background-color: $color-red-1;
+        color: #fff;
+      }
+      .yellow {
+        background-color: $color-yellow-1;
+        color: #fff;
       }
     }
 
