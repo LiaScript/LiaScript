@@ -3,6 +3,19 @@ import '@babel/polyfill'
 import LiaScript from '../../typescript/liascript/index'
 import { Connector } from '../../typescript/connectors/Base/index'
 
+function setResponsiveVoiceKey (key: string) {
+  if (typeof key === "string") {
+    let tag = document.createElement("script")
+
+    tag.src = "https://code.responsivevoice.org/responsivevoice.js?key=" + key
+    document.body.appendChild(tag)
+
+    tag.onload = () => {
+      window.responsiveVoice.init()
+    }
+  }
+}
+
 let debug = false
 
 if (process.env.NODE_ENV === 'development') {
@@ -15,15 +28,7 @@ window.showFootnote = (key) => app.footnote(key);
 window.gotoLia = (line) => app.goto(line);
 window.jitLia = (code) => app.jit(code);
 
-/*
-window.liaGoto = function(line) {
-  window.top.postMessage({cmd: "goto", param: line});
-}
-
-window.liaLog = function(e) {
-  window.top.postMessage({cmd: "log", param: e});
-}
-*/
+window.setResponsiveVoiceKey = setResponsiveVoiceKey
 
 window.addEventListener('message', event => {
     // IMPORTANT: check the origin of the data!
@@ -36,6 +41,9 @@ window.addEventListener('message', event => {
         break;
       case "reload":
         window.location.reload()
+        break
+      case "responsivevoice":
+        setResponsiveVoiceKey(event.data.param)
         break
       default:
         console.warn("could not handle event: ", event);
