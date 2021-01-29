@@ -82,7 +82,7 @@ function handleEffects(event: Lia.Event, elmSend: Lia.Send, section: number = -1
           firstSpeak = false
           setTimeout(function() {
             handleEffects(event, elmSend)
-          }, 1000)
+          }, 200)
         } else {
           ttsBackup = event.message
           if (event.message[2] === 'true') {
