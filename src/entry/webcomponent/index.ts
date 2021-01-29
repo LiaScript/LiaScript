@@ -7,13 +7,13 @@ import TTS from '../../typescript/liascript/tts'
 import "../../scss/main.scss"
 import "../../../node_modules/material-icons/iconfont/material-icons.scss"
 
-import "../../typescript/webcomponents/editor.ts"
-import "../../typescript/webcomponents/formula.ts"
-import "../../typescript/webcomponents/oembed.ts"
-import "../../typescript/webcomponents/chart.ts"
-import "../../typescript/webcomponents/preview-lia.ts"
-import "../../typescript/webcomponents/preview-link.ts"
-import "../../typescript/webcomponents/format.ts"
+import "../../typescript/webcomponents/editor"
+import "../../typescript/webcomponents/formula"
+import "../../typescript/webcomponents/oembed"
+import "../../typescript/webcomponents/chart"
+import "../../typescript/webcomponents/preview-lia"
+import "../../typescript/webcomponents/preview-link"
+import "../../typescript/webcomponents/format"
 
 
 customElements.define('lia-script', class extends HTMLElement {
@@ -68,7 +68,7 @@ customElements.define('lia-script', class extends HTMLElement {
         new Connector(),
         this.debug,
         null,
-        this.innerHTML
+        this.textContent
       )
     }
 
