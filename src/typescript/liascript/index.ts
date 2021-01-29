@@ -9,10 +9,9 @@ import log from './log'
 import * as Swipe from './swipe'
 
 import './types/globals'
-import './types/responsiveVoice'
 import Lia from './types/lia.d'
 import Port from './types/ports'
-
+import TTS from './tts'
 import { Connector } from '../connectors/Base/index'
 
 function isInViewport(elem: HTMLElement) {
@@ -72,7 +71,7 @@ function handleEffects(event: Lia.Event, elmSend: Lia.Send, section: number = -1
 
       try {
         if (event.message === 'cancel') {
-          window.responsiveVoice.cancel()
+          TTS.cancel()
           msg.message.message = 'stop'
           elmSend(msg)
         } else if (event.message === 'repeat') {
@@ -87,23 +86,22 @@ function handleEffects(event: Lia.Event, elmSend: Lia.Send, section: number = -1
         } else {
           ttsBackup = event.message
           if (event.message[2] === 'true') {
-            window.responsiveVoice.speak(
+            TTS.speak(
               event.message[1],
-              event.message[0], {
-                onstart: () => {
-                  msg.message.message = 'start'
-
-                  elmSend(msg)
-                },
-                onend: () => {
-                  msg.message.message = 'stop'
-                  elmSend(msg)
-                },
-                onerror: (e: any) => {
-                  msg.message.message = e.toString()
-                  elmSend(msg)
-                }
-              })
+              event.message[0],
+              function() {
+                msg.message.message = 'start'
+                elmSend(msg)
+              },
+              function() {
+                msg.message.message = 'stop'
+                elmSend(msg)
+              },
+              function(e: any) {
+                msg.message.message = e.toString()
+                elmSend(msg)
+              }
+            )
           }
         }
       } catch (e) {
@@ -113,8 +111,8 @@ function handleEffects(event: Lia.Event, elmSend: Lia.Send, section: number = -1
       break
     }
     case "sub": {
-      if ( self != undefined && event.message != null ) {
-        const newSend = function (subEvent: Lia.Event) {
+      if (self != undefined && event.message != null) {
+        const newSend = function(subEvent: Lia.Event) {
           elmSend({
             topic: Port.EFFECT,
             section: section,
@@ -262,7 +260,7 @@ class LiaScript {
 };
 
 
-function process(isConnected: boolean, self:LiaScript, elmSend: Lia.Send, event: Lia.Event) {
+function process(isConnected: boolean, self: LiaScript, elmSend: Lia.Send, event: Lia.Event) {
   log.info(`LIA >>> (${event.topic}:${event.section})`, event.message)
 
   switch (event.topic) {
@@ -299,7 +297,7 @@ function process(isConnected: boolean, self:LiaScript, elmSend: Lia.Send, event:
           lia_eval_event(elmSend, eventHandler, event)
           break
         case 'store':
-          if( isConnected ) {
+          if (isConnected) {
             event.message = event.message.message
             self.connector.store(event)
           }
@@ -311,7 +309,7 @@ function process(isConnected: boolean, self:LiaScript, elmSend: Lia.Send, event:
           eventHandler.dispatch_input(event)
           break
         default: {
-          if( isConnected ) {
+          if (isConnected) {
             self.connector.update(event.message, event.section)
           }
         }
@@ -356,14 +354,14 @@ function process(isConnected: boolean, self:LiaScript, elmSend: Lia.Send, event:
 
       try {
         const conf = self.connector.getSettings()
-        if (conf?.table_of_contents !== event.message.table_of_contents) {
+        if (conf ?.table_of_contents !== event.message.table_of_contents) {
           setTimeout(function() {
             window.dispatchEvent(new Event('resize'))
           }, 200)
         }
       } catch (e) { }
 
-      if( isConnected ) {
+      if (isConnected) {
         self.connector.setSettings(event.message)
       }
 
@@ -454,7 +452,7 @@ function process(isConnected: boolean, self:LiaScript, elmSend: Lia.Send, event:
       switch (event.message.topic) {
         case 'list': {
           try {
-            window.responsiveVoice.cancel()
+            TTS.cancel()
           } catch (e) { }
           self.connector.getIndex()
           break

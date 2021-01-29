@@ -2,6 +2,7 @@ import '@babel/polyfill'
 
 import LiaScript from '../../typescript/liascript/index'
 import { Connector } from '../../typescript/connectors/Base/index'
+import TTS from '../../typescript/liascript/tts'
 
 import "../../scss/main.scss"
 import "../../../node_modules/material-icons/iconfont/material-icons.scss"
@@ -13,6 +14,7 @@ import "../../typescript/webcomponents/chart.ts"
 import "../../typescript/webcomponents/preview-lia.ts"
 import "../../typescript/webcomponents/preview-link.ts"
 import "../../typescript/webcomponents/format.ts"
+
 
 customElements.define('lia-script', class extends HTMLElement {
   private container: HTMLDivElement
@@ -79,10 +81,7 @@ customElements.define('lia-script', class extends HTMLElement {
     this.responsiveVoiceKey = this.getAttribute("responsiveVoiceKey")
 
     if (typeof this.responsiveVoiceKey === "string") {
-      let tag = document.createElement("script")
-
-      tag.src = "https://code.responsivevoice.org/responsivevoice.js?key=" + this.responsiveVoiceKey
-      document.head.appendChild(tag)
+      TTS.inject(this.responsiveVoiceKey)
     }
   }
 
