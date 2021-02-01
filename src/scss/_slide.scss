@@ -1,4 +1,3 @@
-@import "config";
 
 @mixin slide($theme) {
     .lia-slide {
@@ -29,7 +28,7 @@
         .lia-footer {
             $bg: map-get($theme, background);
             $fg: color-contrast($bg);
-            $horiz: map-get($config, spacing-normal);
+            $horiz: map-get($global-spacing, spacing-normal);
 
             //background-color: $bg;
             background: mix($bg, $fg, 95%);
@@ -39,11 +38,11 @@
             min-height: 52px;
             min-width: 320px;
             overflow: auto;
-            border-top: map-get($config, spacing-small) solid mix($fg, $bg, 20%);
+            border-top: map-get($global-spacing, spacing-small) solid mix($fg, $bg, 20%);
         }
 
         .lia-svg {
-            $horiz: map-get($config, spacing-normal);
+            $horiz: map-get($global-spacing, spacing-normal);
 
             background-color: white;
             padding-left: $horiz;
@@ -52,8 +51,8 @@
         }
 
         .lia-content {
-            $horiz: map-get($config, spacing-huge);
-            $vert: map-get($config, spacing-large);
+            $horiz: map-get($global-spacing, spacing-huge);
+            $vert: map-get($global-spacing, spacing-large);
 
             position: relative;
             flex: 1 1 auto;
@@ -86,7 +85,7 @@
             }
 
             .lia-effect-circle {
-                $effect-circle-size: 1 + map-get($config, spacing-normal);
+                $effect-circle-size: 1 + map-get($global-spacing, spacing-normal);
                 $bg: mix(map-get($theme, background), map-get($theme, background-inv), 80%);
 
                 position: absolute;
@@ -100,7 +99,7 @@
                 color: color-contrast($bg);
                 text-align: center;
                 vertical-align: middle;
-                padding: map-get($config, spacing-tiny);
+                padding: map-get($global-spacing, spacing-tiny);
 
                 &.animated {
                   left: $effect-circle-size * -1.5;
@@ -108,7 +107,7 @@
             }
 
             .lia-effect-circle-inline {
-                $effect-circle-size: 1 + map-get($config, spacing-small);
+                $effect-circle-size: 1 + map-get($global-spacing, spacing-small);
                 $bg: mix(map-get($theme, background), map-get($theme, background-inv), 80%);
 
                 font-size: 75%;
@@ -120,23 +119,23 @@
                 color: color-contrast($bg);
                 text-align: center;
                 vertical-align: middle;
-                padding: map-get($config, spacing-tiny);
+                padding: map-get($global-spacing, spacing-tiny);
 
                 &.animated {
                   left: $effect-circle-size * -1.5;
                 }
             }
 
-            .lia-hint-btn {
-                @include material-icon;
-                text-decoration: none;
-                color: map-get($theme, text);
-                vertical-align: middle;
-            }
+            //.lia-hint-btn {
+            //    @include material-icon;
+            //    text-decoration: none;
+            //    color: map-get($theme, text);
+            //    vertical-align: middle;
+            //}
 
             .lia-quiz {
-              margin-top: map-get($config, spacing-large);
-              margin-bottom: map-get($config, spacing-large);
+              margin-top: map-get($global-spacing, spacing-large);
+              margin-bottom: map-get($global-spacing, spacing-large);
               border: 3px solid map-get($theme, primary);
               padding: 10px;
               border-radius: 10px;

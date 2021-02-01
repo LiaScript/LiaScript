@@ -1,0 +1,143 @@
+@mixin toc($theme) {
+  .lia-toc {
+    $bg: map-get($theme, background);
+    $fg: color-contrast($bg);
+
+    background: mix($bg, $fg, 95%);
+
+    transition: max-width 0.2s ease-out;
+
+    &::after {
+      content: "";
+      position: absolute;
+      display: block;
+      width: map-get($global-spacing, spacing-small);
+      top: map-get($global-spacing, toolbar-height);
+      bottom: 0;
+      right: 0;
+      //cursor: ew-resize;
+      background: mix($bg, $fg, 80%);
+    }
+
+    .lia-settings {
+      border-top: map-get($global-spacing, spacing-small) solid mix($fg, $bg, 20%);
+    }
+
+    .lia-toolbar {
+      $bg: map-get($theme, primary);
+      $fg: color-contrast($bg);
+
+      input.lia-search {
+        $placeholder: mix($bg, $fg, 40%);
+      }
+
+    }
+
+    .lia-content {
+      $_bg: map-get($theme, background);
+      $fg: color-contrast($_bg);
+      $bg: mix($bg, $fg, 95%);
+
+
+      a {
+        width: 100%;
+        //white-space: nowrap;
+        //overflow: hidden;
+        //text-overflow: ellipsis;
+        margin-top: map-get($global-spacing, spacing-small);
+        margin-bottom: map-get($global-spacing, spacing-small);
+        text-decoration: none;
+        padding: map-get($global-spacing, spacing-small) map-get($global-spacing, spacing-normal);
+        //word-wrap: normal;
+        //word-break: keep-all;
+
+
+        &:link {
+          $col: mix($fg, $bg, 80%);
+          color: $col;
+
+          &:hover {
+            color: lighten($col, 20%);
+          }
+
+          &:active {
+            color: darken($col, 20%);
+          }
+        }
+
+        &:visited {
+          $col: $fg;
+          color: $col;
+
+          &:hover {
+            color: lighten($col, 20%);
+          }
+
+          &:active {
+            color: darken($col, 20%);
+          }
+        }
+
+        &.lia-active {
+          $col: map-get($theme, primary);
+          $fg: color-contrast($col);
+          font-weight: map-get($theme, highlight-weight);
+          color: $fg;
+          background: $col;
+
+          &:hover {
+            color: lighten($fg, 20%);
+          }
+
+          &:active {
+            color: darken($fg, 20%);
+          }
+        }
+
+        &.lia-not-visited {
+          color: darken($fg, 30%);
+        }
+
+        &.lia-error {
+          color: rgb(1, 0, 0);
+          background: rgb(1, 0, 0);
+        }
+
+        &.lia-toc-l {
+          &1 {
+            padding-left: 0 * map-get($global-spacing, spacing-large) + map-get($global-spacing, spacing-normal);
+          }
+
+          &2 {
+            padding-left: 1 * map-get($global-spacing, spacing-large) + map-get($global-spacing, spacing-normal);
+          }
+
+          &3 {
+            padding-left: 2 * map-get($global-spacing, spacing-large) + map-get($global-spacing, spacing-normal);
+          }
+
+          &4 {
+            padding-left: 3 * map-get($global-spacing, spacing-large) + map-get($global-spacing, spacing-normal);
+          }
+
+          &5 {
+            padding-left: 4 * map-get($global-spacing, spacing-large) + map-get($global-spacing, spacing-normal);
+          }
+
+          &6 {
+            padding-left: 5 * map-get($global-spacing, spacing-large) + map-get($global-spacing, spacing-normal);
+          }
+        }
+      }
+    }
+  }
+
+  .lia-slide-animation {
+    margin-left: 4px;
+    padding-left: 5px;
+    margin-right: 4px;
+    padding-right: 5px;
+    overflow-y: auto;
+    transition: max-height 0.2s ease-out;
+  }
+}

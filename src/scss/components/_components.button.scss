@@ -1,0 +1,8 @@
+
+
+.lia-hint-btn {
+  @include material-icon;
+  text-decoration: none;
+  color: map-get($theme, text);
+  vertical-align: middle;
+}

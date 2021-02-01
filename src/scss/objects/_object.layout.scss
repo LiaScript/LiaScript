@@ -1,0 +1,45 @@
+.lia-canvas {
+  @include flex(row, nowrap, flex-start, stretch, stretch);
+
+  width: 100%;
+  height: 100%;
+
+  .lia-toc {
+    order: 1;
+  }
+
+  .lia-slide,
+  .lia-plain {
+    order: 2;
+    flex: 1 1 auto;
+  }
+
+}
+
+.lia-toc {
+  @include flex(column, nowrap, flex-start, stretch, stretch);
+  width: map-get($global-spacing, toc-width);
+  position: relative;
+
+
+  .lia-content {
+    @include flex(column, nowrap);
+    overflow: auto;
+    margin-right: map-get($global-spacing, spacing-small);
+    padding: map-get($global-spacing, spacing-normal) 0;
+    flex: 1 1 auto;
+  }
+
+}
+
+.lia-toolbar {
+  @include flex(column, nowrap, flex-start, stretch, stretch);
+
+  input.lia-search {
+    flex: 1 1 auto;
+  }
+}
+
+
+
+

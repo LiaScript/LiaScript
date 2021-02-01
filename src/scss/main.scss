@@ -1,9 +1,32 @@
-@import "_themes/default";
-@import "_themes/amber";
-@import "_themes/green";
-@import "_themes/purple";
-@import "_themes/grey";
-@import "_themes/blue";
-@import "_themes/turquoise";
-@import "_themes/red";
-@import "_themes/yellow";
+// Settings
+@import "settings/settings.base";
+@import "settings/settings.colors";
+@import "settings/settings.fonts";
+@import "settings/settings.animations";
+
+
+// Tools
+@import "tools/tools.color";
+@import "tools/tools.flex";
+
+
+
+@import "settings/settings.theme";
+
+
+
+// Generics
+@import "generic/generic.reset";
+
+// Elements
+
+// Objects
+@import "objects/object.layout";
+
+// Components
+@import "components/components.button";
+@import "components/components.toc";
+
+// Utilities
+
+
