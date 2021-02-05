@@ -4,6 +4,9 @@
 
   padding: $vert 0;
   margin: $marg;
+  word-wrap: normal;
+  word-break: keep-all;
+  white-space: pre-wrap;
 }
 
 .lia-labeled {
