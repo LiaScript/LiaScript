@@ -8,21 +8,19 @@
 @import "tools/tools.color";
 @import "tools/tools.flex";
 
-// Generics
+// Generic
 @import "generic/generic.reset";
 
 // Elements
 @import "elements/elements.button";
 @import "elements/elements.code";
+@import "elements/elements.headline";
 @import "elements/elements.input";
 @import "elements/elements.label";
 @import "elements/elements.link";
 @import "elements/elements.select";
 @import "elements/elements.table";
 @import "elements/elements.textarea";
-
-@import "elements/element.html";
-@import "elements/element.headline";
 
 // Objects
 @import "objects/object.layout";
@@ -33,13 +31,15 @@
 @import "components/components.dropdown";
 @import "components/components.quote";
 @import "components/components.script";
-@import "components/components.toolbar";
-@import "components/components.toc";
 @import "components/components.slide";
 @import "components/components.slide-animation";
+@import "components/components.toolbar";
+@import "components/components.tooltip";
+@import "components/components.toc";
 
 // Utilities
 @import "utilities/utilities.headless";
+@import "utilities/utilities.hidden";
 
 // Themes
 @import "themes";
