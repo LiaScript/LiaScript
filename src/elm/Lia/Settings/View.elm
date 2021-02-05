@@ -133,7 +133,7 @@ design_theme lang theme =
     , ( "purple", "left", Trans.cPurple lang )
     ]
         |> List.map (\( c, b, text ) -> check_list (c == theme) c text b)
-        |> Html.div [ Attr.class "lia-color" ]
+        |> Html.div [ Attr.class "lia-settings__theme-colors" ]
 
 
 span_block : List (Html msg) -> Html msg

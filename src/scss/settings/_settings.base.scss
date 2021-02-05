@@ -1,21 +1,17 @@
 $global-spacing: (
-    spacing-huge: 2em,
-    spacing-large: 1em,
-    spacing-normal: 0.5em,
-    spacing-icon: 0.4em,
-    spacing-small: 0.25em,
-    spacing-smaller: 0.125em,
-    spacing-tiny: 0.075em,
-    toolbar-height: 3em,
-    toc-width: 16.5em,
-    code-size: 0.9em,
+  spacing-huge: 2rem,
+  spacing-large: 1rem,
+  spacing-normal: 0.5rem,
+  spacing-icon: 0.4rem,
+  spacing-small: 0.25rem,
+  spacing-smaller: 0.125rem,
+  spacing-tiny: 0.075rem,
+  toolbar-height: 3rem,
+  toc-width: 16.5rem,
+  code-size: 0.9rem,
 );
 
+$global-font: "Roboto", sans-serif;
+$global-font-mono: "Roboto Mono", monospace;
 
-html, body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
+$global-outline: 2.5px;

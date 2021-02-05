@@ -1,0 +1,69 @@
+.lia-accordion {
+  $rd: map-get($global-spacing, spacing-small);
+
+  cursor: pointer;
+  padding: 6px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+  border-top-left-radius: $rd;
+  border-top-right-radius: $rd;
+  font-family: $global-font-mono;
+  font-size: map-get($global-spacing, code-size);
+
+  .lia-accordion-min-max {
+    padding-right: 3px;
+    padding-left: 3px;
+  }
+}
+
+.lia-accordion-dummy {
+  $rd: map-get($global-spacing, spacing-small);
+
+  cursor: auto;
+  padding: 6px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+  border-top-left-radius: $rd;
+  border-top-right-radius: $rd;
+  transition: 0.4s;
+  font-family: $global-font-mono;
+  font-size: map-get($global-spacing, code-size);
+}
+
+@mixin style-accordion($theme) {
+  .lia-accordion {
+    $bg: map-get($theme, primary);
+    $fg: map-get($theme, background);
+    $rd: map-get($global-spacing, spacing-small);
+
+    background-color: $bg;
+    color: $fg;
+
+    .lia-accordion-min-max {
+      .active,
+      &:hover {
+        background-color: mix($bg, $fg, 50%);
+      }
+    }
+
+    .active,
+    &:hover {
+      background-color: mix($bg, $fg, 80%);
+    }
+  }
+
+  .lia-accordion-dummy {
+    $bg: map-get($theme, primary);
+    $fg: map-get($theme, background);
+    $rd: map-get($global-spacing, spacing-small);
+
+    background-color: $bg;
+    color: $fg;
+  }
+}

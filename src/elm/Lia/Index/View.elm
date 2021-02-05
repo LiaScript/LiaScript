@@ -16,7 +16,7 @@ import Translations exposing (Lang, baseSearch)
 
 view_search : Lang -> Model -> Html Msg
 view_search lang model =
-    Html.div [ Attr.class "lia-toolbar", Attr.id "lia-toolbar-index" ]
+    Html.div [ Attr.class "lia-toolbar lia-toolbar--toc", Attr.id "lia-toolbar-index" ]
         -- [ Html.span [ Attr.class "lia-icon", Attr.style [ ( "float", "left" ), ( "font-size", "16px" ) ] ] [ Html.text "search" ]
         --, Html.span [ Attr.style [ ( "float", "right" ), ( "max-width", "100px" ), ( "position", "relative" ) ] ]
         [ Html.span [ Attr.style "width" "100%", Attr.style "height" "100%" ]
