@@ -3,6 +3,6 @@ node_modules
 *.tgz
 *~
 dist
-.cache
+.parcel-cache
 static/README.md
 backup/**

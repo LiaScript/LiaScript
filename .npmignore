@@ -7,7 +7,7 @@ build
 scss
 *.tgz
 *~
-.cache
+.parcel-cache
 static
 vendor
 src
