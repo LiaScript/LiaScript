@@ -86,7 +86,6 @@
 
       position: absolute;
       left: 0.2em;
-      font-size: 90%;
       display: inline-block;
       width: $effect-circle-size;
       height: $effect-circle-size;
@@ -103,7 +102,6 @@
     .lia-effect-circle-inline {
       $effect-circle-size: 1 + map-get($global-spacing, spacing-small);
 
-      font-size: 75%;
       display: inline-block;
       width: $effect-circle-size;
       height: $effect-circle-size;

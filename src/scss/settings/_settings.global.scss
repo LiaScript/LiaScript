@@ -1,0 +1,26 @@
+$global-spacing: (
+  spacing-huge: 2rem,
+  spacing-large: 1rem,
+  spacing-normal: 0.5rem,
+  spacing-icon: 0.4rem,
+  spacing-small: 0.25rem,
+  spacing-smaller: 0.125rem,
+  spacing-tiny: 0.075rem,
+  toolbar-height: 3rem,
+  toc-width: 16.5rem,
+);
+
+$global-outline: 2.5px !default;
+
+/* --------------------------------------------------
+   Fonts
+   -------------------------------------------------- */
+
+// Basis (HTML) font-size: 62.5% (von 100% (default: 16px)) entspricht 10px
+// 1.5rem sind demnach 15px
+$global-font-size: 1.5rem !default; // 15px
+$global-line-height: 1.47 !default;
+
+$global-font-text: "LiaSourceSansPro";
+$global-font-mono: "LiaSourceCodePro";
+$global-font-headline: "LiaSourceSerifPro";
