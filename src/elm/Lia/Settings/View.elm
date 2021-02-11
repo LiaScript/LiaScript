@@ -27,13 +27,7 @@ view model url origin lang share defines =
             [ dropdown model.buttons.settings "settings" (Trans.confSettings lang) (Toggle <| Button Settings)
             , dropdown model.buttons.informations "info" (Trans.confInformation lang) (Toggle <| Button Informations)
             , dropdown model.buttons.translations "translate" (Trans.confTranslations lang) (Toggle <| Button Translations)
-            , dropdown model.buttons.share
-                "share"
-                (Trans.confShare lang)
-                (share
-                    |> Maybe.map ShareCourse
-                    |> Maybe.withDefault (Toggle <| Button Share)
-                )
+            , dropdown model.buttons.share "share" (Trans.confShare lang) (share |> Maybe.map ShareCourse |> Maybe.withDefault (Toggle <| Button Share))
             ]
         ]
 
@@ -129,14 +123,17 @@ inc_font_size lang int =
 design_theme : Lang -> String -> Html Msg
 design_theme lang theme =
     [ ( "default", "left", Trans.cDefault lang )
-    , ( "amber", "right", Trans.cAmber lang )
+    , ( "turquoise", "right", "Türkis" )
     , ( "blue", "left", Trans.cBlue lang )
-    , ( "green", "right", Trans.cGreen lang )
+    , ( "red", "right", "Rot" )
+    , ( "yellow", "left", "Gelb" )
+    , ( "amber", "right", Trans.cAmber lang )
     , ( "grey", "left", Trans.cGray lang )
-    , ( "purple", "right", Trans.cPurple lang )
+    , ( "green", "right", Trans.cGreen lang )
+    , ( "purple", "left", Trans.cPurple lang )
     ]
         |> List.map (\( c, b, text ) -> check_list (c == theme) c text b)
-        |> Html.div [ Attr.class "lia-color" ]
+        |> Html.div [ Attr.class "lia-settings__theme-colors" ]
 
 
 span_block : List (Html msg) -> Html msg

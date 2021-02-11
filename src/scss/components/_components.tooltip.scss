@@ -1,0 +1,24 @@
+.lia-tooltip {
+  position: relative;
+  display: inline-block;
+
+  .lia-tooltiptext {
+    visibility: hidden;
+    //width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: left;
+    border-radius: 6px;
+    padding: 15px;
+    /* Position the tooltip */
+    position: absolute;
+    z-index: 1;
+    top: 100%;
+    left: 50%;
+    margin-left: -60px;
+  }
+
+  &:hover .lia-tooltiptext {
+    visibility: visible;
+  }
+}

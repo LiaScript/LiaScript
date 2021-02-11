@@ -1,0 +1,171 @@
+.lia-slide {
+  @include flex(column, nowrap, flex-start, stretch, stretch);
+  overflow: auto;
+  min-width: 320px;
+
+  .lia-paragraph {
+    text-align: justify;
+    @media (max-width: 360px) {
+      text-align: left;
+    }
+  }
+
+  .lia-footer {
+    $horiz: map-get($global-spacing, spacing-normal);
+    padding-left: $horiz;
+    padding-right: $horiz;
+    max-height: 40%;
+    min-height: 52px;
+    min-width: 320px;
+    overflow: auto;
+    border-top: map-get($global-spacing, spacing-small) solid;
+  }
+
+  .lia-svg {
+    $horiz: map-get($global-spacing, spacing-normal);
+    padding-left: $horiz;
+    padding-right: $horiz;
+    overflow: auto;
+  }
+
+  .lia-content {
+    $horiz: map-get($global-spacing, spacing-huge);
+    $vert: map-get($global-spacing, spacing-large);
+
+    position: relative;
+    flex: 1 1 auto;
+    padding: $vert $horiz;
+    overflow: auto;
+    min-width: 320px;
+
+    .lia-effect {
+      animation: fadein 2s;
+      -moz-animation: fadein 2s; /* Firefox */
+      -webkit-animation: fadein 2s; /* Safari and Chrome */
+      -o-animation: fadein 2s; /* Opera */
+
+      @keyframes fadein {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      @-moz-keyframes fadein {
+        /* Firefox */
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      @-webkit-keyframes fadein {
+        /* Safari and Chrome */
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      @-o-keyframes fadein {
+        /* Opera */
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+    }
+
+    .lia-effect-circle {
+      $effect-circle-size: 1 + map-get($global-spacing, spacing-normal);
+
+      position: absolute;
+      left: 0.2em;
+      font-size: 90%;
+      display: inline-block;
+      width: $effect-circle-size;
+      height: $effect-circle-size;
+      border-radius: $effect-circle-size;
+      text-align: center;
+      vertical-align: middle;
+      padding: map-get($global-spacing, spacing-tiny);
+
+      &.animated {
+        left: $effect-circle-size * -1.5;
+      }
+    }
+
+    .lia-effect-circle-inline {
+      $effect-circle-size: 1 + map-get($global-spacing, spacing-small);
+
+      font-size: 75%;
+      display: inline-block;
+      width: $effect-circle-size;
+      height: $effect-circle-size;
+      border-radius: $effect-circle-size;
+      text-align: center;
+      vertical-align: middle;
+      padding: map-get($global-spacing, spacing-tiny);
+
+      &.animated {
+        left: $effect-circle-size * -1.5;
+      }
+    }
+
+    .lia-quiz {
+      margin-top: map-get($global-spacing, spacing-large);
+      margin-bottom: map-get($global-spacing, spacing-large);
+      border: 3px solid;
+      padding: 10px;
+      border-radius: 10px;
+    }
+  }
+}
+
+@mixin style-slide($theme) {
+  .lia-slide {
+    .lia-footer {
+      $bg: map-get($theme, background);
+      $fg: color-contrast($bg);
+      $horiz: map-get($global-spacing, spacing-normal);
+
+      background: mix($bg, $fg, 95%);
+      border-top-color: mix($fg, $bg, 20%);
+    }
+
+    .lia-svg {
+      background-color: white;
+    }
+
+    .lia-content {
+      .lia-effect-circle {
+        $bg: mix(
+          map-get($theme, background),
+          map-get($theme, background-inv),
+          80%
+        );
+        background: $bg;
+        color: color-contrast($bg);
+      }
+
+      .lia-effect-circle-inline {
+        $bg: mix(
+          map-get($theme, background),
+          map-get($theme, background-inv),
+          80%
+        );
+        background: $bg;
+        color: color-contrast($bg);
+      }
+
+      .lia-quiz {
+        border-color: map-get($theme, primary);
+      }
+    }
+  }
+}

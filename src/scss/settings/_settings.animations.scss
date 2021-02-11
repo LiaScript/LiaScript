@@ -1,0 +1,21 @@
+@keyframes spin {
+  100% {
+    -webkit-transform: rotate(-360deg);
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes show-comment {
+  $left: map-get($global-spacing, spacing-huge) +
+    map-get($global-spacing, toc-width);
+  $right: map-get($global-spacing, spacing-huge);
+
+  from {
+    left: calc(100% + #{$left});
+    right: calc(#{$right} - 100%);
+  }
+  to {
+    left: $left;
+    right: $right;
+  }
+}

@@ -1,0 +1,16 @@
+.lia-canvas {
+  @include flex(row, nowrap, flex-start, stretch, stretch);
+
+  width: 100%;
+  height: 100%;
+
+  .lia-toc {
+    order: 1;
+  }
+
+  .lia-slide,
+  .lia-plain {
+    order: 2;
+    flex: 1 1 auto;
+  }
+}

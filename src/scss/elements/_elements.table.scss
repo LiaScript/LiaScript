@@ -1,0 +1,91 @@
+.lia-table {
+  margin-top: map-get($global-spacing, spacing-large);
+  margin-bottom: map-get($global-spacing, spacing-large);
+  border-collapse: collapse;
+  overflow-x: auto;
+  display: block;
+
+  .lia-table-head {
+    th {
+      padding: map-get($global-spacing, spacing-normal)
+        map-get($global-spacing, spacing-large);
+      border: 1px solid;
+    }
+  }
+
+  .lia-table-row {
+    td {
+      padding: map-get($global-spacing, spacing-normal)
+        map-get($global-spacing, spacing-large);
+      border: 1px solid;
+    }
+  }
+}
+
+.lia-survey-matrix {
+  border-spacing: 0 map-get($global-spacing, spacing-large);
+
+  :not(:first-child) {
+    td:last-child {
+      padding: map-get($global-spacing, spacing-normal)
+        map-get($global-spacing, spacing-large);
+    }
+
+    td:not(:last-child) {
+      padding: map-get($global-spacing, spacing-normal);
+    }
+  }
+
+  :first-child td {
+    padding: 0 map-get($global-spacing, spacing-normal);
+  }
+}
+
+@mixin style-table($theme) {
+  .lia-table {
+    $bg: map-get($theme, background);
+    $fg: color-contrast($bg);
+    $head-bg: mix($bg, $fg, 100%);
+    $row-even-bg: mix($bg, $fg, 95%);
+    $row-odd-bg: mix($bg, $fg, 100%);
+    $head-fg: color-contrast($head-bg);
+    $row-even-fg: color-contrast($row-even-bg);
+    $row-odd-fg: color-contrast($row-odd-bg);
+    $border-color: mix($bg, $fg, 75%);
+
+    .lia-table-head {
+      th {
+        border-color: $border-color !important;
+      }
+
+      background: $head-bg;
+      color: $head-fg;
+    }
+
+    .lia-table-row {
+      td {
+        border-color: $border-color;
+      }
+
+      &:nth-child(even) {
+        background: $row-even-bg;
+        color: $row-even-fg;
+      }
+
+      &:nth-child(odd) {
+        background: $row-odd-bg;
+        color: $row-odd-fg;
+      }
+    }
+  }
+
+  .lia-survey-matrix {
+    :not(:first-child) {
+      td:not(:last-child) {
+        $bg: map-get($theme, background);
+        $fg: color-contrast($bg);
+        background: mix($bg, $fg, 95%);
+      }
+    }
+  }
+}

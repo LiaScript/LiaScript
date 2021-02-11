@@ -1,0 +1,23 @@
+@import "toc.items";
+
+@mixin toc-content {
+  .lia-content {
+    @include flex(column, nowrap);
+    overflow: auto;
+    margin-right: map-get($global-spacing, spacing-small);
+    padding: map-get($global-spacing, spacing-normal) 0;
+    flex: 1 1 auto;
+
+    @include toc-items;
+  }
+}
+
+@mixin style-toc-content {
+  .lia-content {
+    $_bg: map-get($theme, background);
+    $fg: color-contrast($_bg);
+    $bg: mix($bg, $fg, 95%);
+
+    @include style-toc-items;
+  }
+}

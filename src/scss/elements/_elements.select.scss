@@ -1,0 +1,42 @@
+.lia-select {
+  $vert: map-get($global-spacing, spacing-small);
+  $marg: map-get($global-spacing, spacing-normal);
+
+  padding: $vert 0;
+  margin: $marg;
+
+  border: none;
+  outline: none;
+  transition: border-bottom-color 0.5s ease-out 0s;
+
+  &:not([disabled]) {
+    border-bottom: 1.5px solid;
+  }
+
+  &[disabled] {
+    border-bottom: 1.5px dotted;
+  }
+}
+
+@mixin style-select($theme) {
+  .lia-select {
+    $bg: map-get($theme, background);
+    $fg: color-contrast($bg);
+
+    background: $bg;
+
+    &:not([disabled]) {
+      color: $fg;
+      border-bottom-color: mix($bg, $fg, 50%);
+    }
+
+    &[disabled] {
+      color: rgba($fg, 0.38);
+      border-bottom-color: mix($bg, $fg, 50%);
+    }
+
+    &:focus {
+      border-bottom-color: map-get($theme, primary);
+    }
+  }
+}
