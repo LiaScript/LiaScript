@@ -27,8 +27,9 @@ import Lia.Markdown.Code.Types exposing (Code(..), Snippet, initProject)
 import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.Inline.Parser exposing (javascript)
 import Lia.Markdown.Macro.Parser exposing (macro)
-import Lia.Parser.Context exposing (Context, indentation)
+import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (c_frame, newline, spaces)
+import Lia.Parser.Indentation as Indent
 import Port.Eval exposing (Eval)
 
 
@@ -38,7 +39,7 @@ parse attr =
         |> map Tuple.pair
         |> andMap
             (regex "[ \n]?"
-                |> ignore (maybe indentation)
+                |> ignore (maybe Indent.check)
                 |> keep macro
                 |> keep javascript
                 |> maybe
@@ -88,8 +89,8 @@ code_body char len =
             char ++ "{" ++ String.fromInt len ++ "}"
     in
     manyTill
-        (maybe indentation |> keep (regex ("(?:.(?!" ++ control_frame ++ "))*\\n")))
-        (indentation |> keep (regex control_frame |> ignore spaces))
+        (maybe Indent.check |> keep (regex ("(?:.(?!" ++ control_frame ++ "))*\\n")))
+        (Indent.check |> keep (regex control_frame |> ignore spaces))
         |> map (String.concat >> String.dropRight 1)
 
 

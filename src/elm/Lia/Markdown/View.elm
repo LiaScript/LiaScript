@@ -25,7 +25,6 @@ import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Section exposing (SubSection(..))
 import Lia.Settings.Model exposing (Mode(..))
-import Lia.Utils as Utils
 import SvgBob
 
 
@@ -196,13 +195,11 @@ view_block config block =
                         (Node name attributes [ inlines ])
 
                 Nothing ->
-                    Html.p (annotation "lia-paragraph" attr |> Utils.avoidColumn) (config.view [ element ])
+                    Html.p (annotation "lia-paragraph" attr) (config.view [ element ])
 
         Paragraph attr elements ->
             Html.p
-                (annotation "lia-paragraph" attr
-                    |> Utils.avoidColumn
-                )
+                (annotation "lia-paragraph" attr)
                 (config.view elements)
 
         Effect attr e ->
@@ -213,18 +210,12 @@ view_block config block =
         BulletList attr list ->
             list
                 |> view_bulletlist config
-                |> Html.ul
-                    (annotation "lia-list lia-unordered" attr
-                        |> Utils.avoidColumn
-                    )
+                |> Html.ul (annotation "lia-list lia-unordered" attr)
 
         OrderedList attr list ->
             list
                 |> view_list config
-                |> Html.ol
-                    (annotation "lia-list lia-ordered" attr
-                        |> Utils.avoidColumn
-                    )
+                |> Html.ol (annotation "lia-list lia-ordered" attr)
 
         Table attr table ->
             Table.view

@@ -5,9 +5,9 @@ type Options = {
   rate?: number,
   volume?: number,
 
-  onstart?: (_: () => void) => void,
-  onend?: (_: () => void) => void,
-  onerror?: (_: (e: any) => void) => void,
+  onstart?: () => void,
+  onend?: () => void,
+  onerror?: (e: any) => void,
 };
 
 
@@ -37,6 +37,8 @@ declare global {
       enableWindowClickHook: () => void;
 
       enableEstimationTimeout: boolean;
+
+      init: () => void;
     }
   }
 }

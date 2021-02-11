@@ -100,28 +100,6 @@ javascript =
         |> keep scriptBody
 
 
-
--- TODO: update also for multiline-comments and escapes in strings
-
-
-scriptBody : Parser s String
-scriptBody =
-    regexWith True False "</script>"
-        |> manyTill
-            ([ regex "[^\"'`</]+" --" this is only a comment for syntaxhighlighting ...
-             , regex "[ \t\n]+"
-             , regex "\"([^\"]*|(?<=\\\\)\")*\""
-             , regex "'([^']*|(?<=\\\\)')*'"
-             , regex "`([^`]*|\n|(?<=\\\\)`)*`"
-             , regex "<(?!/)"
-             , regex "//[^\n]*"
-             , string "/"
-             ]
-                |> choice
-            )
-        |> map String.concat
-
-
 javascriptWithAttributes : Parser Context ( Parameters, String )
 javascriptWithAttributes =
     let
@@ -324,56 +302,79 @@ ref_video =
 
 reference : Parser Context (Parameters -> Inline)
 reference =
-    let
-        mail_ =
-            ref_pattern Mail ref_info email
-
-        preview =
-            regexWith True False "\\[\\w*preview-"
-                |> keep
-                    (choice
-                        [ regexWith True False "lia"
-                            |> onsuccess Preview_Lia
-                        , regexWith True False "link"
-                            |> onsuccess Preview_Link
-                        ]
-                    )
-                |> ignore (regex "\\w*]")
-                |> ignore (string "(")
-                |> andMap ref_url_1
-                |> ignore ref_title
-                |> ignore (string ")")
-
-        qr =
-            regexWith True False "\\[\\w*qr-code\\w*]"
-                |> onsuccess QR_Link
-                |> ignore (string "(")
-                |> andMap ref_url_1
-                |> andMap ref_title
-                |> ignore (string ")")
-
-        link =
-            ref_pattern Link ref_info ref_url_1
-
-        image =
-            string "!"
-                |> keep (ref_pattern Image ref_info ref_url_2)
-
-        audio =
-            string "?"
-                |> keep ref_audio
-
-        movie =
-            string "!?"
-                |> keep ref_video
-
-        embed =
-            string "??"
-                |> keep (ref_pattern Embed ref_info ref_url_1)
-    in
-    [ embed, movie, audio, image, mail_, preview, qr, link ]
+    [ refEmbed
+    , refMovie
+    , refAudio
+    , refImage
+    , refMail
+    , refPreview
+    , refQr
+    , refLink
+    ]
         |> choice
         |> map Ref
+
+
+refMail : Parser Context Reference
+refMail =
+    ref_pattern Mail ref_info email
+
+
+refPreview : Parser Context Reference
+refPreview =
+    regexWith True False "\\[\\w*preview-"
+        |> keep
+            (choice
+                [ regexWith True False "lia"
+                    |> onsuccess Preview_Lia
+                , regexWith True False "link"
+                    |> onsuccess Preview_Link
+                ]
+            )
+        |> ignore (regex "\\w*]")
+        |> ignore (string "(")
+        |> andMap ref_url_1
+        |> ignore ref_title
+        |> ignore (string ")")
+
+
+refQr : Parser Context Reference
+refQr =
+    regexWith True False "\\[\\w*qr-code\\w*]"
+        |> onsuccess QR_Link
+        |> ignore (string "(")
+        |> andMap ref_url_1
+        |> andMap ref_title
+        |> ignore (string ")")
+
+
+refLink : Parser Context Reference
+refLink =
+    ref_pattern Link ref_info ref_url_1
+
+
+refImage : Parser Context Reference
+refImage =
+    string "!"
+        |> keep (ref_pattern Image ref_info ref_url_2)
+
+
+refAudio : Parser Context Reference
+refAudio =
+    string "?"
+        |> keep ref_audio
+
+
+refMovie : Parser Context Reference
+refMovie =
+    string "!?"
+        |> keep ref_video
+
+
+refEmbed : Parser Context Reference
+refEmbed =
+    string "??"
+        |> keep (ref_pattern Embed ref_info ref_url_1)
 
 
 between_ : String -> Parser Context Inline
@@ -411,64 +412,83 @@ strings : Parser Context (Parameters -> Inline)
 strings =
     lazy <|
         \() ->
-            let
-                base =
-                    regex "[^@*+_~:;`\\^\\[\\]\\(\\)|{}\\\\\\n<>=$ \"\\-]+"
-                        |> map Chars
-
-                escape =
-                    string "\\"
-                        |> keep (regex "[@\\^*_+~`\\\\${}\\[\\]|#\\-]")
-                        |> map Chars
-
-                italic =
-                    or (between_ "*") (between_ "_")
-                        |> map Italic
-
-                bold =
-                    or (between_ "**") (between_ "__")
-                        |> map Bold
-
-                strike =
-                    between_ "~"
-                        |> map Strike
-
-                underline =
-                    between_ "~~"
-                        |> map Underline
-
-                superscript =
-                    between_ "^"
-                        |> map Superscript
-
-                characters =
-                    regex "[~:_;=${}\\[\\]\\(\\)\\-+]"
-                        |> map Chars
-
-                spaces =
-                    regex "[ \t]+"
-                        |> map Chars
-
-                base2 =
-                    regex "[^\n*|<>+\\-]+"
-                        |> map Chars
-            in
             choice
                 [ inline_url
-                , base
+                , stringBase
                 , arrows
                 , smileys
-                , escape
-                , bold
-                , italic
-                , underline
-                , strike
-                , superscript
-                , spaces
+                , stringEscape
+                , stringBold
+                , stringItalic
+                , stringUnderline
+                , stringStrike
+                , stringSuperscript
+                , stringSpaces
                 , HTML.parse inlines |> map IHTML
-                , characters
-                , base2
+                , stringCharacters
+                , stringBase2
                 ]
+
+
+stringBase : Parser s (Parameters -> Inline)
+stringBase =
+    regex "[^@*+_~:;`\\^\\[\\]\\(\\)|{}\\\\\\n<>=$ \"\\-]+"
+        |> map Chars
+
+
+stringEscape : Parser s (Parameters -> Inline)
+stringEscape =
+    string "\\"
+        |> keep (regex "[@\\^*_+~`\\\\${}\\[\\]|#\\-]")
+        |> map Chars
+
+
+stringItalic : Parser Context (Parameters -> Inline)
+stringItalic =
+    or (between_ "*") (between_ "_")
+        |> map Italic
+
+
+stringBold : Parser Context (Parameters -> Inline)
+stringBold =
+    or (between_ "**") (between_ "__")
+        |> map Bold
+
+
+stringStrike : Parser Context (Parameters -> Inline)
+stringStrike =
+    between_ "~"
+        |> map Strike
+
+
+stringUnderline : Parser Context (Parameters -> Inline)
+stringUnderline =
+    between_ "~~"
+        |> map Underline
+
+
+stringSuperscript : Parser Context (Parameters -> Inline)
+stringSuperscript =
+    between_ "^"
+        |> map Superscript
+
+
+stringCharacters : Parser s (Parameters -> Inline)
+stringCharacters =
+    regex "[~:_;=${}\\[\\]\\(\\)\\-+]"
+        |> map Chars
+
+
+stringSpaces : Parser s (Parameters -> Inline)
+stringSpaces =
+    regex "[ \t]+"
+        |> map Chars
+
+
+stringBase2 : Parser s (Parameters -> Inline)
+stringBase2 =
+    regex "[^\n*|<>+\\-]+"
+        |> map Chars
 
 
 code : Parser s (Parameters -> Inline)
@@ -477,3 +497,25 @@ code =
         |> keep (regex "([^`\\n]*|(?<=\\\\)`)+")
         |> ignore (string "`")
         |> map (String.replace "\\`" "`" >> Verbatim)
+
+
+
+-- TODO: update also for multiline-comments and escapes in strings
+
+
+scriptBody : Parser s String
+scriptBody =
+    regexWith True False "</script>"
+        |> manyTill
+            ([ regex "[^\"'`</]+" --" this is only a comment for syntaxhighlighting ...
+             , regex "[ \t\n]+"
+             , regex "\"([^\"]*|(?<=\\\\)\")*\""
+             , regex "'([^']*|(?<=\\\\)')*'"
+             , regex "`([^`]*|\n|(?<=\\\\)`)*`"
+             , regex "<(?!/)"
+             , regex "//[^\n]*"
+             , string "/"
+             ]
+                |> choice
+            )
+        |> map String.concat

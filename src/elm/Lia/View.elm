@@ -3,7 +3,7 @@ module Lia.View exposing (view)
 import Flip exposing (flip)
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Html.Events exposing (onClick, preventDefaultOn)
+import Html.Events exposing (onClick)
 import Lia.Index.View as Index
 import Lia.Markdown.Config as Config
 import Lia.Markdown.Effect.Model exposing (current_paragraphs)
@@ -16,21 +16,33 @@ import Lia.Section exposing (SubSection)
 import Lia.Settings.Model exposing (Mode(..))
 import Lia.Settings.Update exposing (toggle_sound)
 import Lia.Settings.View as Settings
-import Lia.Update exposing (Msg(..), get_active_section, key_decoder)
+import Lia.Update exposing (Msg(..), get_active_section)
 import Port.Share exposing (share)
 import Session exposing (Screen)
 import Translations as Trans exposing (Lang)
 
 
+{-| Main view for the entire LiaScript model with the parameters:
+
+1.  `screen`: width and heigth of the window
+2.  `hasShareAPI`: will enable sharing vie the `navigation.share` api, otherwise
+    create an QR-code with the entire course-URL
+3.  `hasIndex`: display a home-button or not
+4.  `model`: the preprocessed LiaScript Model
+
+-}
 view : Screen -> Bool -> Bool -> Model -> Html Msg
 view screen hasShareAPI hasIndex model =
     Html.div
-        (preventDefaultOn "keydown" key_decoder :: Settings.design model.settings)
+        (Settings.design model.settings)
         [ view_aside hasShareAPI model
         , view_article screen hasIndex model
         ]
 
 
+{-| **@private:** Display the aside section that contains the document search,
+table of contents and settings.
+-}
 view_aside : Bool -> Model -> Html Msg
 view_aside hasShareAPI model =
     Html.aside
@@ -64,6 +76,9 @@ view_aside hasShareAPI model =
         ]
 
 
+{-| **@private:** show the current section, with navigation on top as well as a
+footer, if it is required by the current display mode.
+-}
 view_article : Screen -> Bool -> Model -> Html Msg
 view_article screen hasIndex model =
     case get_active_section model of
@@ -77,7 +92,6 @@ view_article screen hasIndex model =
                         hasIndex
                         model.settings.mode
                         model.translation
-                        model.url
                         model.settings.speaking
                 , Config.init
                     model.settings.mode
@@ -106,6 +120,9 @@ view_article screen hasIndex model =
             Html.text "no content"
 
 
+{-| **@private:** used to diplay the text2speech output settings and spoken
+comments in text, depending on the currently applied rendering mode.
+-}
 view_footer : Lang -> Bool -> Mode -> Int -> Lia.Markdown.Effect.Model.Model SubSection -> Html Msg
 view_footer lang sound mode slide effects =
     case mode of
@@ -128,23 +145,38 @@ view_footer lang sound mode slide effects =
             Html.text ""
 
 
+{-| **@private:** create a navigation button with:
+
+1.  `str`: string to be displayed in the body
+2.  `title`: attribute
+3.  `id`: so that it can be identfied by external css
+4.  `msg`: to release if pressed
+
+-}
 navButton : String -> String -> String -> msg -> Html msg
 navButton str title id msg =
     Html.button
         [ onClick msg
         , Attr.title title
         , Attr.class "lia-btn lia-control lia-slide-control lia-left"
-
-        --, Attr.style "padding-left" padding
-        --, Attr.style "margin-left" margin
-        --, Attr.style "padding" "0px 8px"
         , Attr.id id
         ]
         [ Html.text str ]
 
 
-view_nav : Int -> Bool -> Mode -> Lang -> String -> Bool -> String -> Html Msg
-view_nav section_active hasIndex mode lang base speaking state =
+{-| **@private:** the navigation abr:
+
+1.  `section_active`: section id to display
+2.  `hasIndex`: display home/index button
+3.  `mode`: to define the rendering type
+4.  `lang`: used for translations
+5.  `speaking`: underlines the section number, to indicate if the text2speech
+    output is currently active
+6.  `state`: fragments, if animations are active, not visible in textbook mode
+
+-}
+view_nav : Int -> Bool -> Mode -> Lang -> Bool -> String -> Html Msg
+view_nav section_active hasIndex mode lang speaking state =
     Html.nav [ Attr.class "lia-toolbar", Attr.id "lia-toolbar-nav" ]
         [ Html.map UpdateSettings <| Settings.toggle_button_toc lang
         , if hasIndex then

@@ -1,6 +1,5 @@
 module Lia.Utils exposing
-    ( avoidColumn
-    , blockKeydown
+    ( blockKeydown
     , get
     , onEnter
     , toEscapeString
@@ -8,26 +7,25 @@ module Lia.Utils exposing
     )
 
 import Html
-import Html.Attributes as Attr
 import Html.Events as Events
 import Json.Decode as JD
 
 
+{-| Convert JavaScript string escapes for backspace to elm escaped strings:
 
-{-
-   string_replace : ( String, String ) -> String -> String
-   string_replace ( search, replace ) string =
-       string
-           |> String.split search
-           |> String.join replace
+    toJSstring "javascript \\ escape" == "javascript \\\\ escape"
+
 -}
-
-
 toJSstring : String -> String
 toJSstring =
     String.split "\\" >> String.join "\\\\"
 
 
+{-| Convert common JavaScript string escapes elm escapes:
+
+    toEscapeString "javascript \" \n" == "javascript \\\" \\n"
+
+-}
 toEscapeString : String -> String
 toEscapeString str =
     str
@@ -37,6 +35,11 @@ toEscapeString str =
         |> String.replace "\n" "\\n"
 
 
+{-| Avoid event bubbling. Especially key-press left or right should be handled
+by some elements itself and not result in a section-switch. Thus, on global
+scale the left and right arrow keys should be used in slide-navigation, but
+locally it must be surpressed in text inputs, search fields, etc.
+-}
 blockKeydown : msg -> Html.Attribute msg
 blockKeydown =
     stopPropagationOn "keydown"
@@ -47,6 +50,11 @@ stopPropagationOn name msg =
     Events.stopPropagationOn name (JD.succeed ( msg, True ))
 
 
+{-| Get the ith element of a list:
+
+    get 2 [ 1, 2, 3, 4, 5 ] == Just 3
+
+-}
 get : Int -> List x -> Maybe x
 get i list =
     case list of
@@ -70,16 +78,9 @@ isEnter msg code =
         JD.fail "not ENTER"
 
 
+{-| Release a message if the user hits enter.
+-}
 onEnter : msg -> Html.Attribute msg
 onEnter msg =
     JD.andThen (isEnter msg) Events.keyCode
         |> Events.on "keyup"
-
-
-avoidColumn : List (Html.Attribute msg) -> List (Html.Attribute msg)
-avoidColumn =
-    List.append
-        [ Attr.style "-webkit-column-break-inside" "avoid-column"
-        , Attr.style "page-break-inside" "avoid-column"
-        , Attr.style "break-inside" "avoid-column"
-        ]

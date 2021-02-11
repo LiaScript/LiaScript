@@ -37,7 +37,7 @@ parse_defintion base code =
             )
             (base
                 |> Lia.Definition.Types.default
-                |> init identity
+                |> init Nothing
             )
             (code ++ "\n")
     of
@@ -54,7 +54,7 @@ parse_defintion base code =
 
 parse_titles : Definition -> String -> Result String ( Section.Base, String )
 parse_titles defines code =
-    case Combine.runParser Preprocessor.section (init identity defines) code of
+    case Combine.runParser Preprocessor.section (init Nothing defines) code of
         Ok ( _, data, rslt ) ->
             Ok ( rslt, data.input )
 
@@ -71,7 +71,7 @@ parse_section search_index global sec =
     case
         Combine.runParser
             (Lia.Definition.Parser.parse |> keep Markdown.run)
-            (init search_index { global | section = sec.idx })
+            (init (Just search_index) { global | section = sec.id })
             sec.code
     of
         Ok ( state, _, es ) ->
@@ -86,7 +86,7 @@ parse_subsection code =
     case
         Combine.runParser
             (Lia.Definition.Parser.parse |> keep Markdown.run)
-            (init identity (Lia.Definition.Types.default ""))
+            (init Nothing (Lia.Definition.Types.default ""))
             (String.trim code ++ "\n")
     of
         Ok ( state, _, es ) ->
@@ -94,16 +94,14 @@ parse_subsection code =
                 case es of
                     [ Paragraph [] sub ] ->
                         SubSubSection
-                            { visible = True
-                            , body = sub
+                            { body = sub
                             , error = Nothing
                             , effect_model = state.effect_model
                             }
 
                     _ ->
                         SubSection
-                            { visible = True
-                            , body = es
+                            { body = es
                             , error = Nothing
                             , code_vector = state.code_vector
                             , task_vector = state.task_vector
@@ -125,7 +123,6 @@ return sec state es =
         { sec
             | body = es
             , error = Nothing
-            , visited = True
             , code_vector = state.code_vector
             , task_vector = state.task_vector
             , quiz_vector = state.quiz_vector

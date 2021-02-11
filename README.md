@@ -229,6 +229,7 @@ __Badges:__
 * Scripts can now also create Quizzes, Code, Surveys, etc.
   (scripts cannot create scripts)
 * Updated debug-information
+* Updated to eCharts 5
 * ASCII-art blocks now have a verbatim environment, that is surrounded by either
   single or double quotation marks:
 

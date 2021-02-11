@@ -44,8 +44,9 @@ import Lia.Markdown.Survey.Parser as Survey
 import Lia.Markdown.Table.Parser as Table
 import Lia.Markdown.Task.Parser as Task
 import Lia.Markdown.Types exposing (Markdown(..), MarkdownS)
-import Lia.Parser.Context exposing (Context, indentation, indentation_append, indentation_pop, indentation_skip)
+import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (c_frame, newline, newlines, spaces)
+import Lia.Parser.Indentation as Indent
 import SvgBob
 
 
@@ -69,65 +70,66 @@ blocks : Parser Context Markdown
 blocks =
     lazy <|
         \() ->
-            let
-                b =
-                    choice
-                        [ md_annotations
-                            |> map Effect
-                            |> andMap (Effect.markdown blocks)
-                        , md_annotations
-                            |> map Tuple.pair
-                            |> andMap (Effect.comment paragraph)
-                            |> andThen to_comment
-                        , md_annotations
-                            |> map Chart
-                            |> andMap Chart.parse
-                        , md_annotations
-                            |> map (\attr tab -> Table.classify attr tab >> Table attr)
-                            |> andMap Table.parse
-                            |> andMap (withState (.effect_model >> .javascript >> succeed))
-                        , svgbob
-                        , map Code (Code.parse md_annotations)
-                        , md_annotations
-                            |> map Header
-                            |> andMap subHeader
-                        , horizontal_line
-                        , md_annotations
-                            |> map Survey
-                            |> andMap Survey.parse
-                        , md_annotations
-                            |> map Quiz
-                            |> andMap Quiz.parse
-                            |> andMap solution
-                        , md_annotations
-                            |> map Task
-                            |> andMap Task.parse
-                        , quote
-                        , md_annotations
-                            |> map OrderedList
-                            |> andMap ordered_list
-                        , md_annotations
-                            |> map BulletList
-                            |> andMap unordered_list
-                        , md_annotations
-                            |> map HTML
-                            |> andMap (HTML.parse blocks)
-                            |> ignore (regex "[ \t]*\n")
-                        , md_annotations
-                            |> map Paragraph
-                            |> andMap paragraph
-                        , md_annotations
-                            |> map Paragraph
-                            |> andMap problem
-
-                        --, comments
-                        --    |> onsuccess Skip
-                        ]
-            in
-            indentation
+            Indent.check
                 |> keep macro
-                |> keep b
+                |> keep elements
                 |> ignore (maybe (whitespace |> keep Effect.hidden_comment))
+
+
+elements : Parser Context Markdown
+elements =
+    choice
+        [ md_annotations
+            |> map Effect
+            |> andMap (Effect.markdown blocks)
+        , md_annotations
+            |> map Tuple.pair
+            |> andMap (Effect.comment paragraph)
+            |> andThen to_comment
+        , md_annotations
+            |> map Chart
+            |> andMap Chart.parse
+        , md_annotations
+            |> map (\attr tab -> Table.classify attr tab >> Table attr)
+            |> andMap Table.parse
+            |> andMap (withState (.effect_model >> .javascript >> succeed))
+        , svgbob
+        , map Code (Code.parse md_annotations)
+        , md_annotations
+            |> map Header
+            |> andMap subHeader
+        , horizontal_line
+        , md_annotations
+            |> map Survey
+            |> andMap Survey.parse
+        , md_annotations
+            |> map Quiz
+            |> andMap Quiz.parse
+            |> andMap solution
+        , md_annotations
+            |> map Task
+            |> andMap Task.parse
+        , quote
+        , md_annotations
+            |> map OrderedList
+            |> andMap ordered_list
+        , md_annotations
+            |> map BulletList
+            |> andMap unordered_list
+        , md_annotations
+            |> map HTML
+            |> andMap (HTML.parse blocks)
+            |> ignore (regex "[ \t]*\n")
+        , md_annotations
+            |> map Paragraph
+            |> andMap paragraph
+        , md_annotations
+            |> map Paragraph
+            |> andMap problem
+
+        --, comments
+        --    |> onsuccess Skip
+        ]
 
 
 to_comment : ( Parameters, ( Int, Int ) ) -> Parser Context Markdown
@@ -172,10 +174,10 @@ svgbody len =
     ascii
         |> keep
             (manyTill
-                (maybe indentation
+                (maybe Indent.check
                     |> keep (regex ("(?:.(?!" ++ control_frame ++ "))*\\n"))
                 )
-                (indentation
+                (Indent.check
                     |> keep (regex control_frame)
                 )
                 |> map (String.concat >> String.dropRight 1)
@@ -284,44 +286,44 @@ ident_blocks =
     blocks
         |> ignore (regex "\n?")
         |> many1
-        |> ignore indentation_pop
+        |> ignore Indent.pop
 
 
 unordered_list : Parser Context (List MarkdownS)
 unordered_list =
-    indentation_append "  "
+    Indent.push "  "
         |> keep
             (regex "[ \t]*[*+-][ \t]+"
                 |> keep (sepBy1 (maybe newlineWithIndentation) blocks)
             )
-        |> ignore indentation_pop
+        |> ignore Indent.pop
         |> sepBy1
-            (maybe indentation
+            (maybe Indent.check
                 |> ignore (maybe newline)
-                |> ignore indentation
+                |> ignore Indent.check
             )
 
 
 ordered_list : Parser Context (List ( String, MarkdownS ))
 ordered_list =
-    indentation_append "   "
+    Indent.push "   "
         |> keep
             (regex "[ \t]*-?\\d+"
                 |> map Tuple.pair
                 |> ignore (regex "\\.[ \t]*")
                 |> andMap (sepBy1 (maybe newlineWithIndentation) blocks)
             )
-        |> ignore indentation_pop
+        |> ignore Indent.pop
         |> sepBy1
-            (maybe indentation
+            (maybe Indent.check
                 |> ignore (maybe newline)
-                |> ignore indentation
+                |> ignore Indent.check
             )
 
 
 newlineWithIndentation : Parser Context (Maybe ())
 newlineWithIndentation =
-    maybe indentation
+    maybe Indent.check
         |> ignore (string "\n")
 
 
@@ -329,9 +331,9 @@ quote : Parser Context Markdown
 quote =
     map Quote md_annotations
         |> ignore (regex "> ?")
-        |> ignore (indentation_append "> ?")
-        |> andMap (sepBy (many (indentation |> ignore (string "\n"))) blocks)
-        |> ignore indentation_pop
+        |> ignore (Indent.push "> ?")
+        |> andMap (sepBy (many (Indent.check |> ignore (string "\n"))) blocks)
+        |> ignore Indent.pop
 
 
 
@@ -360,15 +362,15 @@ horizontal_line =
 
 paragraph : Parser Context Inlines
 paragraph =
-    indentation_skip
-        |> keep (many1 (indentation |> keep line |> ignore newline))
+    Indent.skip
+        |> keep (many1 (Indent.check |> keep line |> ignore newline))
         |> map (List.intersperse [ Chars " " [] ] >> List.concat >> combine)
 
 
 problem : Parser Context Inlines
 problem =
-    indentation_skip
-        |> ignore indentation
+    Indent.skip
+        |> ignore Indent.check
         |> keep lineWithProblems
         |> ignore newline
 
@@ -385,7 +387,7 @@ md_annotations =
         |> keep (comment attr)
         |> ignore
             (regex "[\t ]*\\n"
-                |> ignore indentation
+                |> ignore Indent.check
                 |> maybe
             )
         |> optional []

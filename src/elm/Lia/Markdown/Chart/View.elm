@@ -17,6 +17,7 @@ module Lia.Markdown.Chart.View exposing
     )
 
 import Char exposing (toLower)
+import Conditional.List as CList
 import Dict exposing (Dict)
 import FStatistics
 import Html exposing (Html)
@@ -240,7 +241,13 @@ encodeGraph labels nodes edges =
                 |> Dict.values
                 |> List.all identity
     in
-    [ toolbox Nothing { saveAsImage = True, dataView = False, dataZoom = False, magicType = False }
+    [ toolbox Nothing
+        { saveAsImage = True
+        , dataView = False
+        , dataZoom = False
+        , magicType = False
+        , restore = False
+        }
     , ( "tooltip", JE.object [] )
     , ( "series"
       , [ ( "type", JE.string "graph" )
@@ -348,7 +355,13 @@ encodeSankey labels nodes edges =
                     dict
                 |> Dict.toList
     in
-    [ toolbox Nothing { saveAsImage = True, dataView = False, dataZoom = False, magicType = False }
+    [ toolbox Nothing
+        { saveAsImage = True
+        , dataView = False
+        , dataZoom = False
+        , magicType = False
+        , restore = False
+        }
     , ( "tooltip", JE.object [] )
     , ( "height", JE.string "80%" )
     , ( "width", JE.string "90%" )
@@ -462,7 +475,14 @@ encodeBoxPlot labels category data =
             )
       )
     , yAxis "value" labels.y []
-    , toolbox Nothing { saveAsImage = True, dataView = True, dataZoom = True, magicType = False }
+    , toolbox Nothing
+        { saveAsImage = True
+        , dataView = True
+        , dataZoom = True
+        , magicType = False
+        , restore = False
+        }
+    , grid
 
     --  , brush
     , ( "tooltip", JE.object [] )
@@ -545,6 +565,7 @@ encodeBarChart labels category data =
                 )
           )
         , yAxis "value" labels.y []
+        , grid
 
         --, ( "title", JE.object [ ( "text", JE.string chart.title ) ] )
         , ( "legend"
@@ -558,7 +579,13 @@ encodeBarChart labels category data =
                   )
                 ]
           )
-        , toolbox Nothing { saveAsImage = True, dataView = True, dataZoom = True, magicType = True }
+        , toolbox Nothing
+            { saveAsImage = True
+            , dataView = True
+            , dataZoom = True
+            , magicType = True
+            , restore = False
+            }
 
         --  , brush
         , ( "tooltip", JE.object [] )
@@ -566,15 +593,34 @@ encodeBarChart labels category data =
         ]
 
 
+grid : ( String, JE.Value )
+grid =
+    ( "grid"
+    , JE.object
+        [ ( "left", JE.string "1%" )
+        , ( "right", JE.string "1%" )
+        , ( "bottom", JE.string "12%" )
+        , ( "containLabel", JE.bool True )
+        ]
+    )
+
+
 encodeBasic : String -> Labels -> List String -> List ( String, List (Maybe Float) ) -> JE.Value
 encodeBasic type_ labels category data =
     [ xAxis Nothing "category" labels.x category
     , yAxis "value" labels.y []
+    , grid
     , data
         |> List.map Tuple.first
         |> encodeLegend [ ( "top", JE.string "30px" ) ]
     , ( "tooltip", JE.object [] )
-    , toolbox Nothing { saveAsImage = True, dataView = True, dataZoom = True, magicType = True }
+    , toolbox Nothing
+        { saveAsImage = True
+        , dataView = True
+        , dataZoom = True
+        , magicType = True
+        , restore = False
+        }
     , ( "series"
       , data
             |> JE.list
@@ -621,7 +667,13 @@ encodeParallel labels category data =
         ]
             |> JE.object
       )
-    , toolbox Nothing { saveAsImage = True, dataView = True, dataZoom = False, magicType = False }
+    , toolbox Nothing
+        { saveAsImage = True
+        , dataView = True
+        , dataZoom = False
+        , magicType = False
+        , restore = False
+        }
 
     --  , brush
     , ( "tooltip", JE.object [] )
@@ -645,6 +697,12 @@ encodeMapChart labels data json =
             , ( "map"
               , json
                     |> Maybe.withDefault ""
+                    |> JE.string
+              )
+            , ( "roam", JE.bool True ) -- allow zooming
+            , ( "name"
+              , labels.y
+                    |> Maybe.withDefault "data"
                     |> JE.string
               )
             , ( "data"
@@ -679,7 +737,14 @@ encodeMapChart labels data json =
             , ( "orient", JE.string "vertical" )
             ]
       )
-    , toolbox Nothing { saveAsImage = True, dataView = True, dataZoom = False, magicType = False }
+    , grid
+    , toolbox Nothing
+        { saveAsImage = True
+        , dataView = True
+        , dataZoom = False
+        , magicType = False
+        , restore = True
+        }
     , ( "tooltip", JE.object [] )
     ]
         |> add (encodeTitle Nothing) labels.main
@@ -749,38 +814,39 @@ encodeRadarChart labels category data =
     [ ( "radar"
       , JE.object
             [ ( "indicator", indicator )
-            , ( "name"
+            , ( "axisName"
               , JE.object
-                    [ ( "textStyle"
-                      , JE.object
-                            [ ( "color", JE.string "#fff" )
-                            , ( "backgroundColor", JE.string "#999" )
-                            , ( "borderRadius", JE.int 3 )
-                            , ( "padding", JE.list JE.int [ 3, 5 ] )
-                            ]
-                      )
+                    [ ( "color", JE.string "#fff" )
+                    , ( "backgroundColor", JE.string "#999" )
+                    , ( "borderRadius", JE.int 3 )
+                    , ( "padding", JE.list JE.int [ 3, 5 ] )
                     ]
               )
             ]
       )
-    , toolbox Nothing { saveAsImage = True, dataView = True, dataZoom = False, magicType = False }
+    , toolbox Nothing
+        { saveAsImage = True
+        , dataView = True
+        , dataZoom = False
+        , magicType = False
+        , restore = False
+        }
     , ( "tooltip", JE.object [] )
     , ( "series"
-      , [ JE.object
-            [ ( "type", JE.string "radar" )
-            , ( "data", values )
-            , ( "emphasis"
-              , JE.object
-                    [ ( "lineStyle"
-                      , JE.object
-                            [ ( "width", JE.int 4 )
-                            ]
-                      )
-                    ]
-              )
-            ]
+      , [ [ ( "type", JE.string "radar" )
+          , ( "data", values )
+          , ( "emphasis"
+            , JE.object
+                [ ( "lineStyle"
+                  , JE.object
+                        [ ( "width", JE.int 4 )
+                        ]
+                  )
+                ]
+            )
+          ]
         ]
-            |> JE.list identity
+            |> JE.list JE.object
       )
     ]
         |> add (encodeTitle Nothing) labels.main
@@ -849,7 +915,13 @@ encodeHeatMap labels xLabels yLabels data =
                 |> minMax
                 |> Maybe.withDefault ( 0, 0 )
     in
-    [ toolbox (Just "7%") { saveAsImage = True, dataView = True, dataZoom = False, magicType = False }
+    [ toolbox (Just "7%")
+        { saveAsImage = True
+        , dataView = True
+        , dataZoom = False
+        , magicType = False
+        , restore = False
+        }
     , ( "tooltip", JE.object [] )
     , ( "grid"
       , JE.object <|
@@ -857,14 +929,14 @@ encodeHeatMap labels xLabels yLabels data =
                 [ ( "height", JE.string "82%" )
                 , ( "top", JE.string "0%" )
 
-                --, ( "width", JE.string "100%" )
+                --, ( "right", JE.string "0%" )
                 ]
 
             else
                 [ ( "height", JE.string "74%" )
                 , ( "top", JE.string "7%" )
 
-                --, ( "width", JE.string "100%" )
+                --, ( "right", JE.string "0%" )
                 ]
       )
     , xAxis Nothing "category" labels.x xLabels
@@ -982,6 +1054,7 @@ encodePieChart width labels subtitle data =
             , dataView = True
             , dataZoom = False
             , magicType = False
+            , restore = False
             }
 
         --, ( "legend"
@@ -1078,6 +1151,7 @@ encodeFunnel labels subtitle data =
             , dataView = True
             , dataZoom = False
             , magicType = False
+            , restore = False
             }
 
         --, ( "legend"
@@ -1199,7 +1273,13 @@ encodeFunnels title subtitle data =
                 []
     in
     [ ( "series", JE.list identity pieces )
-    , toolbox Nothing { saveAsImage = True, dataView = True, dataZoom = False, magicType = False }
+    , toolbox Nothing
+        { saveAsImage = True
+        , dataView = True
+        , dataZoom = False
+        , magicType = False
+        , restore = False
+        }
 
     --, ( "legend"
     --  , JE.object
@@ -1329,7 +1409,7 @@ encodePieCharts width title subtitle data =
                 []
     in
     [ ( "series", JE.list identity pieces )
-    , toolbox Nothing { saveAsImage = True, dataView = True, dataZoom = False, magicType = False }
+    , toolbox Nothing { saveAsImage = True, dataView = True, dataZoom = False, magicType = False, restore = False }
 
     --, ( "legend"
     --  , JE.object
@@ -1409,7 +1489,13 @@ encode withColor chart =
                 , ( "top", JE.int 28 )
                 ]
           )
-        , toolbox Nothing { saveAsImage = True, dataView = True, dataZoom = True, magicType = True }
+        , toolbox Nothing
+            { saveAsImage = True
+            , dataView = True
+            , dataZoom = True
+            , magicType = True
+            , restore = False
+            }
 
         --  , brush
         , ( "tooltip", JE.object [] )
@@ -1440,7 +1526,16 @@ encode withColor chart =
 --     )
 
 
-toolbox : Maybe String -> { saveAsImage : Bool, dataView : Bool, dataZoom : Bool, magicType : Bool } -> ( String, JE.Value )
+toolbox :
+    Maybe String
+    ->
+        { saveAsImage : Bool
+        , dataView : Bool
+        , dataZoom : Bool
+        , magicType : Bool
+        , restore : Bool
+        }
+    -> ( String, JE.Value )
 toolbox position config =
     ( "toolbox"
     , JE.object
@@ -1452,68 +1547,49 @@ toolbox position config =
           )
         , ( "feature"
           , []
-                |> List.append
-                    (if config.saveAsImage then
-                        [ ( "saveAsImage", JE.object [ ( "title", JE.string "store" ) ] ) ]
-
-                     else
-                        []
+                |> CList.addIf config.saveAsImage
+                    ( "saveAsImage"
+                    , JE.object [ ( "title", JE.string "store" ) ]
                     )
-                |> List.append
-                    (if config.dataView then
-                        [ ( "dataView"
+                |> CList.addIf config.restore
+                    ( "restore", JE.object [] )
+                |> CList.addIf config.dataView
+                    ( "dataView"
+                    , JE.object
+                        [ ( "title", JE.string "edit" )
+                        , ( "lang", JE.list JE.string [ "data view", "turn off", "refresh" ] )
+                        ]
+                    )
+                |> CList.addIf config.dataZoom
+                    ( "dataZoom"
+                    , JE.object
+                        [ ( "title"
                           , JE.object
-                                [ ( "title", JE.string "edit" )
-                                , ( "lang", JE.list JE.string [ "data view", "turn off", "refresh" ] )
+                                [ ( "zoom", JE.string "zoom" )
+                                , ( "back", JE.string "back" )
                                 ]
                           )
                         ]
-
-                     else
-                        []
                     )
-                |> List.append
-                    (if config.dataZoom then
-                        [ ( "dataZoom"
+                |> CList.addIf config.magicType
+                    ( "magicType"
+                    , JE.object
+                        [ ( "type"
+                          , JE.list JE.string
+                                [ "tiled"
+                                , "line"
+                                , "bar"
+                                ]
+                          )
+                        , ( "title"
                           , JE.object
-                                [ ( "title"
-                                  , JE.object
-                                        [ ( "zoom", JE.string "zoom" )
-                                        , ( "back", JE.string "back" )
-                                        ]
-                                  )
+                                [ ( "stack", JE.string "stack" )
+                                , ( "tiled", JE.string "tiled" )
+                                , ( "line", JE.string "line" )
+                                , ( "bar", JE.string "bar" )
                                 ]
                           )
                         ]
-
-                     else
-                        []
-                    )
-                |> List.append
-                    (if config.magicType then
-                        [ ( "magicType"
-                          , JE.object
-                                [ ( "type"
-                                  , JE.list JE.string
-                                        [ "tiled"
-                                        , "line"
-                                        , "bar"
-                                        ]
-                                  )
-                                , ( "title"
-                                  , JE.object
-                                        [ ( "stack", JE.string "stack" )
-                                        , ( "tiled", JE.string "tiled" )
-                                        , ( "line", JE.string "line" )
-                                        , ( "bar", JE.string "bar" )
-                                        ]
-                                  )
-                                ]
-                          )
-                        ]
-
-                     else
-                        []
                     )
                 |> JE.object
           )
@@ -1525,16 +1601,12 @@ series : Bool -> ( Char, Diagram ) -> JE.Value
 series withColor ( char, diagram ) =
     JE.object <|
         List.append
-            ([ symbol char
-             , symbolSize char
-             , label
-             ]
-                ++ (if withColor then
-                        [ color char ]
-
-                    else
-                        []
-                   )
+            (CList.addIf withColor
+                (color char)
+                [ symbol char
+                , symbolSize char
+                , label
+                ]
             )
         <|
             case diagram of
@@ -1554,8 +1626,8 @@ series withColor ( char, diagram ) =
                 Dots list label_ ->
                     [ ( "data"
                       , list
-                            |> List.map (\point -> JE.list JE.float [ point.x, point.y ])
-                            |> JE.list identity
+                            |> List.map (\point -> [ point.x, point.y ])
+                            |> JE.list (JE.list JE.float)
                       )
                     , ( "barGap", JE.int 0 )
                     , ( "type", JE.string "scatter" )

@@ -2,19 +2,18 @@ module Lia.Update exposing
     ( Msg(..)
     , generate
     , get_active_section
-    , key_decoder
     , subscriptions
     , update
     )
 
-import Array
+import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Index.Update as Index
 import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Update as Markdown
-import Lia.Model exposing (Model, load_src)
+import Lia.Model exposing (Model, loadResource)
 import Lia.Parser.Parser exposing (parse_section)
 import Lia.Section exposing (Section)
 import Lia.Settings.Model exposing (Mode(..))
@@ -23,6 +22,9 @@ import Port.Event as Event exposing (Event)
 import Session exposing (Session)
 
 
+{-| If the model has an activated section, then all subscriptions will be passed
+to this section, otherwise everything is blocked.
+-}
 subscriptions : Model -> Sub Msg
 subscriptions model =
     case get_active_section model of
@@ -35,8 +37,28 @@ subscriptions model =
             Sub.none
 
 
+{-| Main LiaScript messages:
+
+  - `Load`: load a specific section if it is not loaded yet or force a loading
+  - `InitSection`: if the `Load` response is received, this message is called to
+    perform parsing, if necessary, and initialize all section base settings
+  - `PrevSection`: go to next anaimation fragment or section, this depends on
+    the currently applied presentation mode
+  - `NextSection`: like `PrevSection` but go back
+  - `UpdateIndex`: encapsulates all searching related issues
+  - `UpdateSettings`: encapsulates all settings messages
+  - `UpdateMarkdown`: encapsulates all Section related stuff
+  - `Handle`: handle all received external events and pass them to the
+    appropriate instance
+  - `Home`: go to the main index page
+  - `KeyPressIgnored`: skip event
+  - `Script`: every update function handles a Script message, this is used to
+    pass messages that relate to `Lia.Markdown.Effect.Script`, that means
+    javascript elements can be everywhere
+
+-}
 type Msg
-    = Load Int
+    = Load Bool Int
     | InitSection
     | PrevSection
     | NextSection
@@ -45,43 +67,35 @@ type Msg
     | UpdateMarkdown Markdown.Msg
     | Handle Event
     | Home
-    | KeyPressIgnored
     | Script ( Int, Script.Msg Markdown.Msg )
 
 
+{-| **@private:** shortcut for generating events for a specific section:
+
+1.  id of the active section
+2.  a list of (`String` topics, `Event` messages)
+
+-}
 send : Int -> List ( String, JE.Value ) -> List Event
-send idx =
-    List.map (\( name, json ) -> Event name idx json)
-
-
-key_to_message : String -> ( Msg, Bool )
-key_to_message s =
-    case s of
-        "ArrowLeft" ->
-            ( PrevSection, True )
-
-        "ArrowRight" ->
-            ( NextSection, True )
-
-        _ ->
-            ( KeyPressIgnored, False )
-
-
-key_decoder : JD.Decoder ( Msg, Bool )
-key_decoder =
-    JD.field "key" JD.string
-        |> JD.map key_to_message
+send sectionID =
+    List.map (\( name, json ) -> Event name sectionID json)
 
 
 update : Session -> Msg -> Model -> ( Model, Cmd Msg, List Event )
 update session msg model =
     case msg of
-        Load idx ->
+        Load force idx ->
             if (-1 < idx) && (idx < Array.length model.sections) then
-                ( { model | section_active = idx }
-                , Session.navToSlide session idx
-                , [ Event "persistent" idx <| JE.string "store" ]
-                )
+                if idx == model.section_active || force then
+                    { model | section_active = idx }
+                        |> generate
+                        |> update session InitSection
+
+                else
+                    ( { model | section_active = idx }
+                    , Session.navToSlide session idx
+                    , []
+                    )
 
             else
                 ( model, Cmd.none, [] )
@@ -138,7 +152,7 @@ update session msg model =
                     )
 
                 "goto" ->
-                    update session (Load event.section) model
+                    update session (Load True event.section) model
 
                 "swipe" ->
                     case JD.decodeValue JD.string event.message of
@@ -169,9 +183,6 @@ update session msg model =
 
                         _ ->
                             ( model, Cmd.none, [] )
-
-        KeyPressIgnored ->
-            ( model, Cmd.none, [] )
 
         Script ( id, sub ) ->
             case Array.get id model.sections of
@@ -205,7 +216,7 @@ update session msg model =
                         (model.settings.mode == Textbook)
                             || not (Effect.has_next sec.effect_model)
                     then
-                        update session (Load (model.section_active + 1)) model
+                        update session (Load False (model.section_active + 1)) model
 
                     else
                         let
@@ -219,7 +230,7 @@ update session msg model =
 
                 ( PrevSection, Just sec ) ->
                     if (model.settings.mode == Textbook) || not (Effect.has_previous sec.effect_model) then
-                        update session (Load (model.section_active - 1)) model
+                        update session (Load False (model.section_active - 1)) model
 
                     else
                         let
@@ -252,25 +263,54 @@ update session msg model =
                     ( model, Cmd.none, [] )
 
 
-add_load : Int -> Int -> String -> List Event -> List Event
-add_load length idx vector logs =
-    if length == 0 then
+{-| **@private:** shortcut for creating load events for quiz-, survey-, task-,
+and code-vectors and adding it to an existing event list. If the vector is empty
+no element is added.
+-}
+add_load : Array a -> Int -> String -> List Event -> List Event
+add_load vector sectionID name logs =
+    if Array.isEmpty vector then
         logs
 
     else
-        (Event "load" idx <| JE.string vector) :: logs
+        (Event "load" sectionID <| JE.string name) :: logs
 
 
+{-| **@private:** shortcut for returning the active section in from the model.
+-}
 get_active_section : Model -> Maybe Section
 get_active_section model =
     Array.get model.section_active model.sections
 
 
+{-| **@private:** update the currently active section with one, where something
+has changed (`effect_model`, `quiz_vector`, etc.).
+-}
 set_active_section : Model -> Section -> Model
 set_active_section model section =
     { model | sections = Array.set model.section_active section model.sections }
 
 
+{-| Initialize the active section if it has not been parsed so far, which means:
+
+1.  parse the section code
+
+2.  try to load existing vectors/states from the backend
+
+3.  load additional resources or macros that might be defined in the
+    section-head:
+
+    ```Mardown
+    <!- -
+    author: someone
+
+    @some_macro: Hello world
+
+    script: https://...
+    - ->
+    ```
+
+-}
 generate : Model -> Model
 generate model =
     case get_active_section model of
@@ -300,7 +340,7 @@ generate model =
                         |> .definition
                         |> Maybe.map .resources
                         |> Maybe.withDefault []
-                        |> load_src model.resource
+                        |> loadResource model.resource
             in
             set_active_section
                 { model
@@ -308,10 +348,10 @@ generate model =
                     , to_do =
                         model.to_do
                             |> List.append logs
-                            |> add_load (Array.length section.quiz_vector) model.section_active "quiz"
-                            |> add_load (Array.length section.code_vector) model.section_active "code"
-                            |> add_load (Array.length section.survey_vector) model.section_active "survey"
-                            |> add_load (Array.length section.task_vector) model.section_active "task"
+                            |> add_load section.quiz_vector model.section_active "quiz"
+                            |> add_load section.code_vector model.section_active "code"
+                            |> add_load section.survey_vector model.section_active "survey"
+                            |> add_load section.task_vector model.section_active "task"
                 }
                 section
 

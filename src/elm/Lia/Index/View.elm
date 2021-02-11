@@ -78,7 +78,7 @@ view lang active sections =
 toc : Lang -> Int -> Section -> Html ( Int, Script.Msg sub )
 toc lang active section =
     if section.visible then
-        Html.map (Tuple.pair section.idx) <|
+        Html.map (Tuple.pair section.id) <|
             Html.a
                 [ Attr.class
                     ("lia-toc-l"
@@ -86,19 +86,16 @@ toc lang active section =
                         ++ (if section.error /= Nothing then
                                 " lia-error"
 
-                            else if active == section.idx then
+                            else if active == section.id then
                                 " lia-active"
 
-                            else if section.visited then
-                                ""
-
                             else
-                                " lia-not-visited"
+                                " lia-visited"
                            )
                     )
-                , Attr.href ("#" ++ String.fromInt (section.idx + 1))
+                , Attr.href ("#" ++ String.fromInt (section.id + 1))
                 , Attr.id <|
-                    if active == section.idx then
+                    if active == section.id then
                         "focusedToc"
 
                     else

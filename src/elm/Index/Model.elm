@@ -1,4 +1,4 @@
-module Index.Model exposing (Course, Model, Version, init)
+module Index.Model exposing (Course, Model, Release, init)
 
 import Dict exposing (Dict)
 import Lia.Definition.Types exposing (Definition)
@@ -19,13 +19,13 @@ init =
 
 type alias Course =
     { id : String
-    , versions : Dict String Version
+    , versions : Dict String Release
     , active : Maybe String
     , last_visit : String
     }
 
 
-type alias Version =
+type alias Release =
     { title : Inlines
     , definition : Definition
     }
