@@ -4,7 +4,6 @@
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
   "description": "An extended Markdown interpreter for the creation of interactive online courses.",
-  
   "repository": {
     "type": "git",
     "url": "git://github.com/liascript/liascript.git"
@@ -24,12 +23,12 @@
     "https://github.com/LiaScript/docs/README.md"
   ],
   "scripts": {
-    "init": "rm -rf dist && mkdir dist",
+    "init": "rimraf -rf dist && mkdirp dist",
     "init:app": "npm run init && npm run cp",
     "cp": "npm run cp:static && npm run cp:ace && npm run cp:katex",
-    "cp:ace": "cp -r node_modules/ace-builds/src-min-noconflict dist/editor",
-    "cp:katex": "cp -r node_modules/katex/dist/katex.min.css dist/",
-    "cp:static": "cp -r static/* dist/",
+    "cp:ace": "ncp -r node_modules/ace-builds/src-min-noconflict dist/editor",
+    "cp:katex": "ncp -r node_modules/katex/dist/katex.min.css dist/",
+    "cp:static": "ncp -r static/* dist/",
     "sw": "npx workbox injectManifest workbox-config.js",
     "translate": "elm-i18n-gen lia-localization/locale src/elm/Translations.elm",
     "test": "npx elm-test",
@@ -71,8 +70,11 @@
     "katex": "^0.12.0",
     "logger.ts": "^1.0.5",
     "material-icons": "^0.3.1",
+    "mkdirp": "^1.0.4",
+    "ncp": "^2.0.0",
     "node-elm-compiler": "^5.0.5",
     "parcel": "^2.0.0-beta.1",
+    "rimraf": "^3.0.2",
     "sass": "^1.32.6",
     "sass-material-colors": "0.0.5",
     "simplify-scorm": "0.0.1",
