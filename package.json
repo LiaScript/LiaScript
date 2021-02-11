@@ -45,7 +45,8 @@
     "build:worker": "npm run init && npx parcel build --no-source-maps --target node --public-url ./ src/entry/worker/index.js",
     "watch:webcomponent": "npm run init && npx parcel serve src/entry/webcomponent/index.html --open",
     "build:webcomponent": "npm run init && npx parcel build --no-source-maps src/entry/webcomponent/index.ts && rm dist/README.md",
-    "build:webcomponentPublic": "npm run init && npx parcel build --no-source-maps --public-url https://liascript.github.io/webcomponent/ src/entry/webcomponent/index.ts && rm dist/README.md"
+    "build:webcomponentPublic": "npm run init && npx parcel build --no-source-maps --public-url https://liascript.github.io/webcomponent/ src/entry/webcomponent/index.ts",
+    "build:preview-lia": "npx parcel build --no-source-maps src/typescript/webcomponents/preview-lia.ts"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",
