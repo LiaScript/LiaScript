@@ -33,3 +33,5 @@ dist
 .cache
 .coverage
 static/README.md
+
+src/.DS_Store
