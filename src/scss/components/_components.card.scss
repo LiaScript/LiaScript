@@ -1,0 +1,20 @@
+.lia-card {
+  padding: map-get($global-spacing, spacing-normal);
+  border-radius: 2px;
+
+  min-width: 80%;
+
+  .lia-check-item,
+  .lia-radio-item,
+  .lia-survey-matrix {
+    padding: map-get($global-spacing, spacing-normal);
+  }
+
+  display: inline-block;
+}
+
+@mixin style-card($theme) {
+  .lia-card {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  }
+}

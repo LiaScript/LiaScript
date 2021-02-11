@@ -1,0 +1,20 @@
+.lia-quote {
+  border-left: map-get($global-spacing, spacing-normal) solid;
+  border-radius: 5px;
+  margin: map-get($global-spacing, spacing-huge)
+    map-get($global-spacing, spacing-normal);
+  padding: map-get($global-spacing, spacing-large);
+}
+
+@mixin style-quote($theme) {
+  .lia-quote {
+    $info: map-get($theme, primary);
+    $bg: mix(map-get($theme, background), $info, 90%);
+    $fg: color-contrast($bg);
+
+    border-left-color: $info;
+    background: $bg;
+    color: $fg;
+    box-shadow: 8px 7px 0px mix($fg, $bg, 20%);
+  }
+}

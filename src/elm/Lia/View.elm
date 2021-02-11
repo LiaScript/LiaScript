@@ -145,7 +145,7 @@ navButton str title id msg =
 
 view_nav : Int -> Bool -> Mode -> Lang -> String -> Bool -> String -> Html Msg
 view_nav section_active hasIndex mode lang base speaking state =
-    Html.nav [ Attr.class "lia-toolbar", Attr.id "lia-toolbar-nav" ]
+    Html.nav [ Attr.class "lia-toolbar lia-toolbar--slide", Attr.id "lia-toolbar-nav" ]
         [ Html.map UpdateSettings <| Settings.toggle_button_toc lang
         , if hasIndex then
             navButton "home" "index" "lia-btn-home" Home

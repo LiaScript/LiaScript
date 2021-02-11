@@ -277,7 +277,7 @@ span config attr id node control =
 reset : Int -> Html (Msg sub)
 reset id =
     Html.span
-        [ Attr.class "lia-hint-btn"
+        [ Attr.class "lia-btn--hint"
         , Attr.style "position" "relative"
         , Attr.style "cursor" "pointer"
         , Event.onClick (Reset id)

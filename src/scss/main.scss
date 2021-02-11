@@ -1,6 +1,45 @@
-@import "_themes/default";
-@import "_themes/amber";
-@import "_themes/green";
-@import "_themes/purple";
-@import "_themes/grey";
-@import "_themes/blue";
+// Settings
+@import "settings/settings.base";
+@import "settings/settings.colors";
+@import "settings/settings.fonts";
+@import "settings/settings.animations";
+
+// Tools
+@import "tools/tools.color";
+@import "tools/tools.flex";
+
+// Generic
+@import "generic/generic.reset";
+
+// Elements
+@import "elements/elements.button";
+@import "elements/elements.code";
+@import "elements/elements.headline";
+@import "elements/elements.input";
+@import "elements/elements.label";
+@import "elements/elements.link";
+@import "elements/elements.select";
+@import "elements/elements.table";
+@import "elements/elements.textarea";
+
+// Objects
+@import "objects/object.canvas";
+
+// Components
+@import "components/components.accordion";
+@import "components/components.card";
+@import "components/components.dropdown";
+@import "components/components.quote";
+@import "components/components.script";
+@import "components/components.slide";
+@import "components/components.slide-animation";
+@import "components/components.toolbar";
+@import "components/components.tooltip";
+@import "components/components.toc";
+
+// Utilities
+@import "utilities/utilities.headless";
+@import "utilities/utilities.hidden";
+
+// Themes
+@import "themes";

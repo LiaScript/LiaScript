@@ -1,14 +1,14 @@
 
-$fg: material-color('blue-grey', '900');
-$bg: material-color('blue-grey', '50');
+$fg: material-color('grey', '900');
+$bg: material-color('grey', '50');
 
 $theme: (
     text: $fg,
     text-inv: $bg,
     background: $bg,
     background-inv: $fg,
-    primary: $color-blue-1,
-    secondary: $color-blue-2,
+    primary: $color-turquoise-1,
+    secondary: $color-turquoise-2,
     success: $color-success,
     info: material-color('blue', '500'),
     warning: $color-warning,
@@ -16,4 +16,4 @@ $theme: (
     highlight-weight: normal,
 );
 
-@include create-theme($theme, blue);
+@include create-theme($theme, turquoise);
