@@ -4,7 +4,6 @@
   "author": "André Dietrich",
   "license": "BSD-3-Clause",
   "description": "An extended Markdown interpreter for the creation of interactive online courses.",
-  
   "repository": {
     "type": "git",
     "url": "git://github.com/liascript/liascript.git"
