@@ -17,8 +17,9 @@ import Lia.Markdown.Footnote.Model as Model
 import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.Inline.Types exposing (Inline(..))
 import Lia.Markdown.Types exposing (Markdown(..))
-import Lia.Parser.Context exposing (Context, indentation_append)
+import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (stringTill)
+import Lia.Parser.Indentation as Indent
 
 
 inline : Parser Context (Parameters -> Inline)
@@ -35,7 +36,7 @@ block p =
     string "[^"
         |> keep (stringTill (string "]:"))
         |> map Tuple.pair
-        |> ignore (indentation_append "[ ]{3,}")
+        |> ignore (Indent.push "[ ]{3,}")
         |> andMap p
         |> andThen add_footnote
 

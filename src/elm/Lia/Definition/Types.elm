@@ -7,10 +7,10 @@ module Lia.Definition.Types exposing
     , add_translation
     , default
     , get_translations
-    , toURL
     )
 
 import Dict exposing (Dict)
+import Lia.Markdown.HTML.Attributes exposing (toURL)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Parser.PatReplace exposing (link)
 import Lia.Settings.Model exposing (Mode)
@@ -101,23 +101,6 @@ add_macros orig temp =
 add_imports : String -> Definition -> Definition
 add_imports url def =
     { def | imports = append link def.base url def.imports }
-
-
-
---            url
---                |> String.words
---                |> List.map (toURL def.base >> link)
---                |> List.append def.imports
---    }
-
-
-toURL : String -> String -> String
-toURL basis url =
-    if String.startsWith "http" url then
-        url
-
-    else
-        basis ++ url
 
 
 addToResources : (String -> Resource) -> String -> Definition -> Definition

@@ -1,0 +1,46 @@
+/* --------------------------------------------------
+   Font Size
+   -------------------------------------------------- */
+// @include font-size(18px);
+//
+// mit custom line-height
+// @include font-size(16px, 1);
+
+@mixin font-size($font-size, $line-height: auto, $important: false) {
+  @if (type-of($font-size) == number) {
+    @if (unit($font-size) != "px") {
+      @error "`#{$font-size}` needs to be a pixel value.";
+    }
+  } @else {
+    @error "`#{$font-size}` needs to be a number.";
+  }
+
+  @if ($important == true) {
+    $important: !important;
+  } @else if ($important == false) {
+    $important: null;
+  } @else {
+    @error "`#{$important}` needs to be `true` or `false`.";
+  }
+
+  // `px` fallback für IE Support
+  font-size: $font-size $important;
+  font-size: ($font-size / $global-font-size) * 1rem $important;
+
+  @if ($line-height == "auto") {
+    line-height: $line-height $important;
+  } @else {
+    @if (
+      type-of($line-height) ==
+        number or
+        $line-height ==
+        "inherit" or
+        $line-height ==
+        "normal"
+    ) {
+      line-height: $line-height $important;
+    } @else if ($line-height != "none" and $line-height != false) {
+      @error "D’oh! `#{$line-height}` is not a valid value for `$line-height`.";
+    }
+  }
+}

@@ -34,7 +34,7 @@ main =
 
 {-| Basic init information, that are passed to the init function at start-time:
 
-  - `course`: define a fixed course-url that needs to be downloaded
+  - `courseUrl`: define a fixed course-url that needs to be downloaded
 
   - `script`: pass the entire content of a Markdown document
 
@@ -52,7 +52,7 @@ main =
 
 -}
 type alias Flags =
-    { course : Maybe String
+    { courseUrl : Maybe String
     , script : Maybe String
     , settings : JE.Value
     , screen : Screen
@@ -79,9 +79,6 @@ type alias Flags =
 init : Flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
     let
-        slide =
-            url.fragment |> Maybe.andThen String.toInt
-
         model =
             Session flags.share key flags.screen
                 >> Model 0 flags.hasIndex Nothing Index.init Nothing
@@ -92,7 +89,42 @@ init flags url key =
         openTableOfContents =
             flags.screen.width > 620
     in
-    case ( courseUrl.query, flags.course, flags.script ) of
+    case ( courseUrl.query, flags.courseUrl, flags.script ) of
+        -- directly parse the scirpt
+        ( _, _, Just script ) ->
+            let
+                subURL =
+                    { courseUrl | query = Just "README.md" }
+            in
+            Lia.Script.init
+                openTableOfContents
+                flags.settings
+                (get_base subURL)
+                "README.md"
+                ""
+                Nothing
+                |> model subURL Idle
+                |> load_readme script
+                |> navToFirstSlide
+
+        -- Check if a URL was passed as a parameter
+        ( _, Just query, _ ) ->
+            Lia.Script.init
+                openTableOfContents
+                flags.settings
+                (query
+                    |> Url.fromString
+                    |> Maybe.withDefault { courseUrl | query = Just query }
+                    |> get_base
+                )
+                query
+                (get_origin (Just query))
+                url.fragment
+                |> model { courseUrl | query = Just query } Loading
+                |> getIndex query
+                |> navToFirstSlide
+
+        -- Use the url query-parameter as the course-url
         ( Just query, _, _ ) ->
             Lia.Script.init
                 openTableOfContents
@@ -100,31 +132,9 @@ init flags url key =
                 (get_base courseUrl)
                 query
                 (get_origin courseUrl.query)
-                slide
+                url.fragment
                 |> model courseUrl Loading
                 |> getIndex query
-
-        ( _, Just query, _ ) ->
-            Lia.Script.init
-                openTableOfContents
-                flags.settings
-                (get_base courseUrl)
-                query
-                (get_origin courseUrl.query)
-                slide
-                |> model { courseUrl | query = Just query } Loading
-                |> getIndex query
-
-        ( _, _, Just script ) ->
-            Lia.Script.init
-                openTableOfContents
-                flags.settings
-                ""
-                ""
-                ""
-                slide
-                |> model courseUrl Idle
-                |> load_readme script
 
         _ ->
             Lia.Script.init
@@ -133,7 +143,7 @@ init flags url key =
                 ""
                 ""
                 ""
-                slide
+                url.fragment
                 |> model courseUrl Idle
                 |> Update.initIndex
 
@@ -160,6 +170,18 @@ get_origin query =
 
         Nothing ->
             ""
+
+
+{-| **@private:** Make sure that the URL is modified accordingly.
+-}
+navToFirstSlide : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+navToFirstSlide ( model, cmd ) =
+    ( model
+    , Cmd.batch
+        [ Session.update model.session
+        , cmd
+        ]
+    )
 
 
 get_base : Url.Url -> String

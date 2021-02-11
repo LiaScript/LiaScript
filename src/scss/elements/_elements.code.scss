@@ -6,7 +6,6 @@
   border-bottom-left-radius: map-get($global-spacing, spacing-small);
   border-bottom-right-radius: map-get($global-spacing, spacing-small);
   padding: $vert $horiz;
-  font-size: map-get($global-spacing, code-size);
   overflow-x: auto;
   margin: 0px;
   white-space: pre-wrap;
@@ -15,7 +14,6 @@
   &:not(.lia-inline) {
     font-family: $global-font-mono;
     padding: map-get($global-spacing, spacing-normal);
-    font-size: map-get($global-spacing, code-size);
     overflow-x: auto;
   }
 
@@ -23,7 +21,6 @@
     font-family: $global-font-mono;
     padding: map-get($global-spacing, spacing-normal);
     margin-top: 0px;
-    font-size: map-get($global-spacing, code-size);
     overflow-y: auto;
     max-height: 250px;
     border-radius: map-get($global-spacing, spacing-small);

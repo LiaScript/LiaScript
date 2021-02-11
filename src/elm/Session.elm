@@ -7,9 +7,11 @@ module Session exposing
     , navTo
     , navToHome
     , navToSlide
+    , setFragment
     , setQuery
     , setScreen
     , setUrl
+    , update
     )
 
 {-| This module covers all relevant session functions/data that deal with
@@ -60,7 +62,7 @@ If this information is present, then it is a course otherwise the index.
 -}
 type Type
     = Index
-    | Course String Int
+    | Course String (Maybe String)
 
 
 {-| Update the entire session-URL.
@@ -85,9 +87,31 @@ setQuery query session =
     { session | url = { url | query = Just query } }
 
 
+{-| Update the fragment and thus, the current slide number
+`?course-URL#fragment`.
+-}
+setFragment : Int -> Session -> Session
+setFragment slide session =
+    let
+        url =
+            session.url
+    in
+    { session | url = { url | fragment = Just (String.fromInt slide) } }
+
+
 navTo : Session -> Url -> Cmd msg
 navTo session =
     Url.toString >> Navigation.pushUrl session.key
+
+
+{-| Use this to replace the current URL, with the settings define by session.
+This will only replace the URL does not add an entry to the browser history.
+-}
+update : Session -> Cmd msg
+update session =
+    session.url
+        |> Url.toString
+        |> Navigation.replaceUrl session.key
 
 
 load : Url -> Cmd msg
@@ -128,11 +152,7 @@ getType : Url -> Type
 getType url =
     case url.query of
         Just str ->
-            url.fragment
-                |> Maybe.andThen String.toInt
-                |> Maybe.withDefault 1
-                |> (+) -1
-                |> Course str
+            Course str url.fragment
 
         Nothing ->
             Index

@@ -24,8 +24,9 @@ import Combine
 import Lia.Markdown.Inline.Parser exposing (line)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Vector.Types exposing (Quiz, State(..))
-import Lia.Parser.Context exposing (Context, indentation)
+import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (newline, spaces)
+import Lia.Parser.Indentation as Indent
 
 
 {-| Identify Quiz-Vectors that can either be `SingleChoice` or `MultipleChoice`.
@@ -61,11 +62,11 @@ parse =
 {-| Parse an ASCII like radio-button "(X|x)" | "[ ]". The result is either
 `True` or `False`, if the button is checked or not.
 
-    parse (checkButton "(X)") == Ok True
+    parse checkButton "(X)" == Ok True
 
-    parse (checkButton "(x)") == Ok True
+    parse checkButton "(x)" == Ok True
 
-    parse (checkButton "( )") == Ok False
+    parse checkButton "( )" == Ok False
 
 -}
 radioButton : Parser Context Bool
@@ -75,11 +76,11 @@ radioButton =
 
 {-| Parse an ASCII like check-button "[X|x]" | "[ ]". The result is either `True` or `False`, if the button is checked or not.
 
-    parse (checkButton "[X]") == Ok True
+    parse checkButton "[X]" == Ok True
 
-    parse (checkButton "[x]") == Ok True
+    parse checkButton "[x]" == Ok True
 
-    parse (checkButton "[ ]") == Ok False
+    parse checkButton "[ ]" == Ok False
 
 -}
 checkButton : Parser Context Bool
@@ -106,7 +107,7 @@ certain pattern (i.e. `[X]` or `[ ]`), which is then followed by a `Inlines`:
 -}
 groupBy : Parser Context x -> Parser Context y -> Parser Context a -> Parser Context (List ( a, Inlines ))
 groupBy begin end parser =
-    maybe indentation
+    maybe Indent.check
         |> ignore spaces
         |> ignore begin
         |> keep parser

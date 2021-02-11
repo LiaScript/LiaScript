@@ -18,7 +18,6 @@ import Lia.Markdown.Inline.Stringify exposing (stringify_)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 import Lia.Section exposing (SubSection)
 import Lia.Settings.Model exposing (Mode(..))
-import Lia.Utils as Utils
 import Oembed
 import QRCode
 import Translations exposing (Lang)
@@ -51,7 +50,7 @@ view config element =
             Html.sup (annotation "lia-superscript" attr) [ view config e ]
 
         Verbatim e attr ->
-            Html.code (annotation "lia-code" attr) [ Html.text e ]
+            Html.code (annotation "lia-code lia-inline" attr) [ Html.text e ]
 
         Ref e attr ->
             reference config e attr
@@ -214,18 +213,12 @@ reference config ref attr =
 
         Preview_Lia url ->
             Html.node "preview-lia"
-                (Attr.attribute "src" url
-                    :: annotation "" attr
-                    |> Utils.avoidColumn
-                )
+                (Attr.attribute "src" url :: annotation "" attr)
                 []
 
         Preview_Link url ->
             Html.node "preview-link"
-                (Attr.attribute "src" url
-                    :: annotation "" attr
-                    |> Utils.avoidColumn
-                )
+                (Attr.attribute "src" url :: annotation "" attr)
                 []
 
         QR_Link url title_ ->

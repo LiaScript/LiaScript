@@ -30,8 +30,9 @@ import Lia.Markdown.Quiz.Block.Parser as Block
 import Lia.Markdown.Quiz.Block.Types as BlockTypes
 import Lia.Markdown.Quiz.Parser exposing (maybeJS)
 import Lia.Markdown.Survey.Types exposing (State(..), Survey, Type(..))
-import Lia.Parser.Context exposing (Context, indentation)
+import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (newline, spaces)
+import Lia.Parser.Indentation as Indent
 
 
 parse : Parser Context Survey
@@ -63,7 +64,7 @@ toMatrix bool ids =
 
 text_lines : Parser Context Int
 text_lines =
-    maybe indentation
+    maybe Indent.check
         |> ignore spaces
         |> ignore (string "[")
         |> keep (many1 (regex "_{3,}[\t ]*"))
@@ -85,7 +86,7 @@ toSelect quiz =
 
 pattern : Parser Context a -> Parser Context a
 pattern p =
-    maybe indentation
+    maybe Indent.check
         |> ignore (regex "[\t ]*\\[")
         |> keep p
         |> ignore (regex "][\t ]*")
@@ -124,7 +125,7 @@ header begin end =
 
 questions : Parser Context (List Inlines)
 questions =
-    maybe indentation
+    maybe Indent.check
         |> ignore (regex "[\t ]*\\[[\t ]+\\]")
         |> keep line
         |> ignore newline
