@@ -1,0 +1,42 @@
+.lia-dropdown {
+  padding: map-get($global-spacing, spacing-small);
+  border-radius: 2px;
+  min-width: 70px;
+  display: inline-block;
+  cursor: pointer;
+  border-width: 0.5px;
+  border-style: solid;
+
+  &-options {
+    position: absolute;
+    overflow: auto;
+    transition: all 0.1s ease 0s;
+    cursor: pointer;
+    border-radius: 2px;
+    z-index: 1;
+  }
+
+  &-option {
+    padding: map-get($global-spacing, spacing-small);
+    min-width: 70px;
+    border-width: 0.5px;
+    border-style: solid;
+  }
+}
+
+@mixin style-dropdown($theme) {
+  .lia-dropdown {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    border-color: map-get($theme, primary);
+
+    &-options {
+      border-radius: 2px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    }
+
+    &-option {
+      border-color: map-get($theme, primary);
+      background-color: map-get($theme, background);
+    }
+  }
+}

@@ -6,3 +6,5 @@ dist
 .parcel-cache
 static/README.md
 backup/**
+
+src/.DS_Store

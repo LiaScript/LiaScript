@@ -97,7 +97,7 @@ view_button_solution : Config sub -> Solution -> Msg sub -> Html (Msg sub)
 view_button_solution config solution msg =
     if solution == Open then
         Html.span
-            [ Attr.class "lia-hint-btn"
+            [ Attr.class "lia-btn--hint"
             , onClick msg
             , Attr.title (quizSolution config.lang)
             , Attr.style "cursor" "pointer"
@@ -155,7 +155,7 @@ view_hints config idx counter hints =
         Html.span []
             [ Html.text " "
             , Html.span
-                [ Attr.class "lia-hint-btn"
+                [ Attr.class "lia-btn--hint"
                 , onClick (ShowHint idx)
                 , Attr.title "show hint"
                 , Attr.style "cursor" "pointer"

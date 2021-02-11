@@ -1,0 +1,97 @@
+@mixin toc-items {
+  a {
+    width: 100%;
+    margin-top: map-get($global-spacing, spacing-small);
+    margin-bottom: map-get($global-spacing, spacing-small);
+    text-decoration: none;
+    padding: map-get($global-spacing, spacing-small)
+      map-get($global-spacing, spacing-normal);
+
+    &.lia-toc-l {
+      &1 {
+        padding-left: 0 * map-get($global-spacing, spacing-large) +
+          map-get($global-spacing, spacing-normal);
+      }
+
+      &2 {
+        padding-left: 1 * map-get($global-spacing, spacing-large) +
+          map-get($global-spacing, spacing-normal);
+      }
+
+      &3 {
+        padding-left: 2 * map-get($global-spacing, spacing-large) +
+          map-get($global-spacing, spacing-normal);
+      }
+
+      &4 {
+        padding-left: 3 * map-get($global-spacing, spacing-large) +
+          map-get($global-spacing, spacing-normal);
+      }
+
+      &5 {
+        padding-left: 4 * map-get($global-spacing, spacing-large) +
+          map-get($global-spacing, spacing-normal);
+      }
+
+      &6 {
+        padding-left: 5 * map-get($global-spacing, spacing-large) +
+          map-get($global-spacing, spacing-normal);
+      }
+    }
+  }
+}
+
+@mixin style-toc-items {
+  a {
+    &:link {
+      $col: mix($fg, $bg, 80%);
+      color: $col;
+
+      &:hover {
+        color: lighten($col, 20%);
+      }
+
+      &:active {
+        color: darken($col, 20%);
+      }
+    }
+
+    &:visited {
+      $col: $fg;
+      color: $col;
+
+      &:hover {
+        color: lighten($col, 20%);
+      }
+
+      &:active {
+        color: darken($col, 20%);
+      }
+    }
+
+    &.lia-active {
+      $col: map-get($theme, primary);
+      $fg: color-contrast($col);
+      font-weight: map-get($theme, highlight-weight);
+      color: $fg;
+      background: $col;
+
+      &:hover {
+        color: lighten($fg, 20%);
+      }
+
+      &:active {
+        color: darken($fg, 20%);
+      }
+    }
+
+    &.lia-not-visited {
+      color: darken($fg, 30%);
+    }
+
+    &.lia-error {
+      color: rgb(1, 0, 0);
+      background: rgb(1, 0, 0);
+    }
+  }
+}
