@@ -1,12 +1,14 @@
 // Settings
-@import "settings/settings.base";
 @import "settings/settings.colors";
 @import "settings/settings.fonts";
+@import "settings/settings.global";
 @import "settings/settings.animations";
 
 // Tools
+@import "tools/tools.breakpoints";
 @import "tools/tools.color";
 @import "tools/tools.flex";
+@import "tools/tools.font-size";
 
 // Generic
 @import "generic/generic.reset";
@@ -18,8 +20,10 @@
 @import "elements/elements.input";
 @import "elements/elements.label";
 @import "elements/elements.link";
+@import "elements/elements.page";
 @import "elements/elements.select";
 @import "elements/elements.table";
+@import "elements/elements.text";
 @import "elements/elements.textarea";
 
 // Objects
