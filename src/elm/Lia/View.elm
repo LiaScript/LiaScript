@@ -187,7 +187,35 @@ slideTopBar lang settings =
         [ Settings.toggle_button_toc lang
             |> Html.map UpdateSettings
         , Html.span [] [ Html.text "icon" ]
-        , Html.span [ Attr.style "float" "right" ] [ Html.text "   ..." ]
+        , Html.nav
+            [ Attr.class "navbar"
+            , Attr.style "float" "right"
+            ]
+            [ Html.button
+                [ Attr.class "navbar-toggler"
+                , Attr.type_ "button"
+                ]
+                [ Html.text "..." ]
+            , Html.div [ Attr.class "navbar-collapse" ]
+                [ Html.ul [ Attr.class "navbar-nav" ]
+                    [ Html.li [ Attr.class "nav-item" ]
+                        [ Html.text "Mode"
+                        ]
+                    , Html.li [ Attr.class "nav-item" ]
+                        [ Html.text "Settings"
+                        ]
+                    , Html.li [ Attr.class "nav-item" ]
+                        [ Html.text "Translations"
+                        ]
+                    , Html.li [ Attr.class "nav-item" ]
+                        [ Html.text "Share"
+                        ]
+                    , Html.li [ Attr.class "nav-item" ]
+                        [ Html.text "Information"
+                        ]
+                    ]
+                ]
+            ]
         ]
 
 
