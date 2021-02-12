@@ -8,7 +8,7 @@ import Lia.Markdown.Inline.Json.Decode as Inline
 import Lia.Markdown.Inline.Types exposing (Inline(..))
 import Lia.Model exposing (Model)
 import Lia.Section as Section
-import Lia.Settings.Model as Settings
+import Lia.Settings.Types as Settings
 import Translations
 
 

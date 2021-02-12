@@ -9,7 +9,7 @@ module Lia.Settings.Update exposing
 
 import Json.Encode as JE
 import Lia.Settings.Json as Json
-import Lia.Settings.Model exposing (Buttons, Mode(..), Model, init_buttons)
+import Lia.Settings.Types exposing (Buttons, Mode(..), Settings, initButtons)
 import Port.Event exposing (Event)
 import Port.TTS as TTS
 
@@ -35,13 +35,13 @@ type Toggle
 
 
 type Button
-    = Settings
-    | Translations
-    | Informations
-    | Share
+    = BtnSettings
+    | BtnTranslations
+    | BtnInformations
+    | BtnShare
 
 
-update : Msg -> Model -> ( Model, List Event )
+update : Msg -> Settings -> ( Settings, List Event )
 update msg model =
     case msg of
         Handle event ->
@@ -64,7 +64,7 @@ update msg model =
             log
                 { model
                     | table_of_contents = not model.table_of_contents
-                    , buttons = init_buttons
+                    , buttons = initButtons
                 }
 
         Toggle Sound ->
@@ -140,11 +140,10 @@ handle =
     Handle
 
 
-load : Model -> JE.Value -> Model
-load model json =
-    json
-        |> Json.toModel model
-        |> Result.withDefault model
+load : Settings -> JE.Value -> Settings
+load model =
+    Json.toModel model
+        >> Result.withDefault model
 
 
 toggle_sound : Msg
@@ -156,27 +155,32 @@ toggle : Button -> Buttons -> Buttons
 toggle toggle_button buttons =
     let
         new_buttons =
-            init_buttons
+            initButtons
     in
     case toggle_button of
-        Settings ->
+        BtnSettings ->
             { new_buttons | settings = not buttons.settings }
 
-        Translations ->
+        BtnTranslations ->
             { new_buttons | translations = not buttons.translations }
 
-        Informations ->
+        BtnInformations ->
             { new_buttons | informations = not buttons.informations }
 
-        Share ->
+        BtnShare ->
             { new_buttons | share = not buttons.share }
 
 
-log : Model -> ( Model, List Event )
-log model =
-    ( model, [ Event "settings" -1 <| Json.fromModel model ] )
+log : Settings -> ( Settings, List Event )
+log settings =
+    ( settings
+    , [ settings
+            |> Json.fromModel
+            |> Event "settings" -1
+      ]
+    )
 
 
-no_log : Model -> ( Model, List Event )
+no_log : Settings -> ( Settings, List Event )
 no_log model =
     ( model, [] )

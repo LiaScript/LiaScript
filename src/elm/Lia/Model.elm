@@ -10,7 +10,7 @@ import Lia.Definition.Types as Definition exposing (Definition, Resource(..))
 import Lia.Index.Model as Index
 import Lia.Section exposing (Sections)
 import Lia.Settings.Json
-import Lia.Settings.Model as Settings
+import Lia.Settings.Types as Settings exposing (Settings)
 import Port.Event exposing (Event)
 import Translations
 
@@ -66,7 +66,7 @@ type alias Model =
     , readme : String
     , origin : String
     , title : String
-    , settings : Settings.Model
+    , settings : Settings
     , error : Maybe String
     , sections : Sections
     , section_active : Int

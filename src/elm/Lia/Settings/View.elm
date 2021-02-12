@@ -8,14 +8,14 @@ import Html.Lazy as Lazy
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (view_inf)
-import Lia.Settings.Model exposing (Mode(..), Model)
+import Lia.Settings.Types exposing (Mode(..), Settings)
 import Lia.Settings.Update exposing (Button(..), Msg(..), Toggle(..))
 import Port.Event exposing (Event)
 import QRCode
 import Translations as Trans exposing (Lang)
 
 
-view : Model -> String -> String -> Lang -> Maybe Event -> Definition -> Html Msg
+view : Settings -> String -> String -> Lang -> Maybe Event -> Definition -> Html Msg
 view model url origin lang share defines =
     Html.div []
         [ Lazy.lazy2 view_settings model lang
@@ -24,15 +24,15 @@ view model url origin lang share defines =
         , qrCodeView model.buttons.share url
         , Html.div
             [ Attr.class "lia-settings", Attr.style "display" "inline-flex", Attr.style "width" "99%" ]
-            [ dropdown model.buttons.settings "settings" (Trans.confSettings lang) (Toggle <| Button Settings)
-            , dropdown model.buttons.informations "info" (Trans.confInformation lang) (Toggle <| Button Informations)
-            , dropdown model.buttons.translations "translate" (Trans.confTranslations lang) (Toggle <| Button Translations)
-            , dropdown model.buttons.share "share" (Trans.confShare lang) (share |> Maybe.map ShareCourse |> Maybe.withDefault (Toggle <| Button Share))
+            [ dropdown model.buttons.settings "settings" (Trans.confSettings lang) (Toggle <| Button BtnSettings)
+            , dropdown model.buttons.informations "info" (Trans.confInformation lang) (Toggle <| Button BtnInformations)
+            , dropdown model.buttons.translations "translate" (Trans.confTranslations lang) (Toggle <| Button BtnTranslations)
+            , dropdown model.buttons.share "share" (Trans.confShare lang) (share |> Maybe.map ShareCourse |> Maybe.withDefault (Toggle <| Button BtnShare))
             ]
         ]
 
 
-design : Model -> List (Html.Attribute msg)
+design : Settings -> List (Html.Attribute msg)
 design model =
     let
         float =
@@ -81,7 +81,7 @@ dropdown active name alt msg =
         [ Html.text name ]
 
 
-view_settings : Model -> Lang -> Html Msg
+view_settings : Settings -> Lang -> Html Msg
 view_settings model lang =
     Html.div (menu_style model.buttons.settings)
         [ Html.p []

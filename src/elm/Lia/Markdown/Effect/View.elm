@@ -19,7 +19,7 @@ import Lia.Markdown.Inline.Types exposing (Inline)
 import Lia.Markdown.Stringify exposing (stringify)
 import Lia.Markdown.Types exposing (Markdown)
 import Lia.Markdown.Update exposing (Msg(..))
-import Lia.Settings.Model exposing (Mode(..))
+import Lia.Settings.Types exposing (Mode(..))
 import Port.Event as Event exposing (Event)
 import Port.TTS
 import Translations exposing (Lang, soundOff, soundOn)
@@ -109,9 +109,6 @@ block config model attr e body =
                             body
                         ]
                     ]
-
-
-
 
 
 inline : Config sub -> Parameters -> Effect Inline -> List (Html msg) -> Html msg

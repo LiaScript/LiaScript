@@ -1,7 +1,13 @@
-module Lia.Settings.Model exposing (Buttons, Mode(..), Model, init, init_buttons)
+module Lia.Settings.Types exposing
+    ( Buttons
+    , Mode(..)
+    , Settings
+    , init
+    , initButtons
+    )
 
 
-type alias Model =
+type alias Settings =
     { table_of_contents : Bool
     , mode : Mode
     , theme : String
@@ -30,7 +36,7 @@ type Mode
     | Textbook -- Render Comments and Effects at ones
 
 
-init : Mode -> Model
+init : Mode -> Settings
 init mode =
     { table_of_contents = True
     , mode = mode
@@ -40,12 +46,12 @@ init mode =
     , font_size = 100
     , sound = True
     , lang = "default"
-    , buttons = init_buttons
+    , buttons = initButtons
     , speaking = False
     , initialized = False
     }
 
 
-init_buttons : Buttons
-init_buttons =
+initButtons : Buttons
+initButtons =
     Buttons False False False False

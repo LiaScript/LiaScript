@@ -5,13 +5,14 @@ module Lia.Markdown.Config exposing
     )
 
 import Html exposing (Html)
+import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Inline.Config as Inline
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Section exposing (Section, SubSection(..))
-import Lia.Settings.Model exposing (Mode(..))
+import Lia.Settings.Types exposing (Mode(..), Settings)
 import Session exposing (Screen)
 import Translations exposing (Lang)
 
@@ -27,31 +28,36 @@ type alias Config sub =
     }
 
 
-init : Mode -> Section -> Int -> String -> Lang -> Bool -> Screen -> Config sub
-init mode section id ace_theme lang light screen =
+init : Lang -> Settings -> Screen -> Section -> Int -> Config sub
+init lang settings screen section id =
     let
         config =
-            inline mode section id ace_theme lang
+            inline lang settings section.effect_model id
     in
     Config
-        mode
+        settings.mode
         (viewer config >> List.map (Html.map Script))
         section
-        ace_theme
-        light
-        screen
+        settings.theme
+        settings.light
+        (if settings.table_of_contents then
+            { screen | width = screen.width - 260 }
+
+         else
+            screen
+        )
         config
 
 
-inline : Mode -> Section -> Int -> String -> Lang -> Inline.Config sub
-inline mode section id ace_theme lang =
+inline : Lang -> Settings -> Effect.Model SubSection -> Int -> Inline.Config sub
+inline lang settings effect id =
     Inline.init id
-        mode
-        section.effect_model.visible
-        section.effect_model.speaking
-        section.effect_model.javascript
+        settings.mode
+        effect.visible
+        effect.speaking
+        effect.javascript
         lang
-        (Just ace_theme)
+        (Just settings.theme)
 
 
 setSubViewer : (Int -> SubSection -> List (Html (Script.Msg Msg))) -> Config Msg -> Config Msg

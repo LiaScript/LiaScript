@@ -24,7 +24,7 @@ import Lia.Markdown.Task.View as Task
 import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Section exposing (SubSection(..))
-import Lia.Settings.Model exposing (Mode(..))
+import Lia.Settings.Types exposing (Mode(..))
 import SvgBob
 
 
@@ -40,7 +40,7 @@ view config =
                 config.section.body
 
         Just msg ->
-            Html.section [ Attr.class "lia-content" ]
+            Html.main_ [ Attr.class "lia-content" ]
                 [ view_header config
                 , Html.text msg
                 ]

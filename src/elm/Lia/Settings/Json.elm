@@ -5,10 +5,10 @@ module Lia.Settings.Json exposing
 
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Settings.Model exposing (Mode(..), Model)
+import Lia.Settings.Types exposing (Mode(..), Settings)
 
 
-fromModel : Model -> JE.Value
+fromModel : Settings -> JE.Value
 fromModel model =
     JE.object
         [ ( "table_of_contents", JE.bool model.table_of_contents )
@@ -36,7 +36,7 @@ fromMode mode =
                 "Slides"
 
 
-settings : Model -> Bool -> Mode -> String -> Bool -> String -> Int -> Bool -> String -> Model
+settings : Settings -> Bool -> Mode -> String -> Bool -> String -> Int -> Bool -> String -> Settings
 settings model toc mode theme light editor font_size sound lang =
     { model
         | table_of_contents = toc
@@ -50,7 +50,7 @@ settings model toc mode theme light editor font_size sound lang =
     }
 
 
-toModel : Model -> JD.Value -> Result JD.Error Model
+toModel : Settings -> JD.Value -> Result JD.Error Settings
 toModel model =
     JD.decodeValue
         (JD.map8 (settings model)

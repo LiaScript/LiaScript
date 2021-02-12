@@ -28,7 +28,7 @@
     "cp": "npm run cp:static && npm run cp:ace && npm run cp:katex",
     "cp:ace": "npx ncp node_modules/ace-builds/src-min-noconflict dist/editor",
     "cp:katex": "npx ncp node_modules/katex/dist/katex.min.css dist/",
-    "cp:static": "npx ncp static/* dist/",
+    "cp:static": "npx ncp static dist/",
     "sw": "npx workbox injectManifest workbox-config.js",
     "translate": "elm-i18n-gen lia-localization/locale src/elm/Translations.elm",
     "test": "npx elm-test",
