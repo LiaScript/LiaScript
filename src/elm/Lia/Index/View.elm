@@ -58,11 +58,11 @@ search lang model =
     ]
 
 
-content : Lang -> Int -> Sections -> List (Html ( Int, Script.Msg sub ))
-content lang active =
+content : Lang -> Int -> (( Int, Script.Msg sub ) -> msg) -> Sections -> List (Html msg)
+content lang active msg =
     let
         toc_ =
-            toc lang active
+            toc lang active msg
     in
     Array.toList
         >> List.map toc_
@@ -81,33 +81,34 @@ bottom msg =
         ]
 
 
-toc : Lang -> Int -> Section -> Html ( Int, Script.Msg sub )
-toc lang active section =
+toc : Lang -> Int -> (( Int, Script.Msg sub ) -> msg) -> Section -> Html msg
+toc lang active msg section =
     if section.visible then
-        Html.map (Tuple.pair section.id) <|
-            Html.a
-                [ Attr.class
-                    ("lia-toc-l"
-                        ++ String.fromInt section.indentation
-                        ++ (if section.error /= Nothing then
-                                " lia-error"
+        Html.map msg <|
+            Html.map (Tuple.pair section.id) <|
+                Html.a
+                    [ Attr.class
+                        ("lia-toc-l"
+                            ++ String.fromInt section.indentation
+                            ++ (if section.error /= Nothing then
+                                    " lia-error"
 
-                            else if active == section.id then
-                                " lia-active"
+                                else if active == section.id then
+                                    " lia-active"
 
-                            else
-                                " lia-visited"
-                           )
-                    )
-                , Attr.href ("#" ++ String.fromInt (section.id + 1))
-                , Attr.id <|
-                    if active == section.id then
-                        "focusedToc"
+                                else
+                                    " lia-visited"
+                               )
+                        )
+                    , Attr.href ("#" ++ String.fromInt (section.id + 1))
+                    , Attr.id <|
+                        if active == section.id then
+                            "focusedToc"
 
-                    else
-                        ""
-                ]
-                (List.map (view_inf Array.empty lang) section.title)
+                        else
+                            ""
+                    ]
+                    (List.map (view_inf Array.empty lang) section.title)
 
     else
         Html.text ""

@@ -63,9 +63,10 @@ viewIndex hasIndex model =
             |> Html.span [ Attr.style "width" "100%", Attr.style "height" "100%" ]
             |> Html.map UpdateIndex
         , model.sections
-            |> Index.content model.translation model.section_active
+            |> Index.content model.translation model.section_active Script
             |> Html.nav [ Attr.class "lia-content" ]
-            |> Html.map Script
+
+        --|> Html.map Script
         , if hasIndex then
             Index.bottom Home
 
