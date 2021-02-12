@@ -267,7 +267,20 @@ circle id =
 responsive : Lang -> Bool -> msg -> Html msg
 responsive lang sound msg =
     Html.span [ Attr.id "lia-span-responsive" ]
-        [ Html.button
+        [ Html.a [ Attr.href "https://responsivevoice.org" ] [ Html.text "ResponsiveVoice-NonCommercial" ]
+        , Html.text " licensed under "
+        , Html.a
+            [ Attr.href "https://creativecommons.org/licenses/by-nc-nd/4.0/" ]
+            [ Html.img
+                [ Attr.title "ResponsiveVoice Text To Speech"
+                , Attr.src "https://responsivevoice.org/wp-content/uploads/2014/08/95x15.png"
+                , Attr.alt "95x15"
+                , Attr.width 95
+                , Attr.height 15
+                ]
+                []
+            ]
+        , Html.button
             [ Attr.class "lia-btn lia-icon"
             , Attr.id "lia-btn-sound"
             , onClick msg
@@ -283,19 +296,6 @@ responsive lang sound msg =
 
               else
                 Html.text "volume_off"
-            ]
-        , Html.a [ Attr.href "https://responsivevoice.org" ] [ Html.text "ResponsiveVoice-NonCommercial" ]
-        , Html.text " licensed under "
-        , Html.a
-            [ Attr.href "https://creativecommons.org/licenses/by-nc-nd/4.0/" ]
-            [ Html.img
-                [ Attr.title "ResponsiveVoice Text To Speech"
-                , Attr.src "https://responsivevoice.org/wp-content/uploads/2014/08/95x15.png"
-                , Attr.alt "95x15"
-                , Attr.width 95
-                , Attr.height 15
-                ]
-                []
             ]
         ]
 

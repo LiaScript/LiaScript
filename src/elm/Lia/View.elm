@@ -119,7 +119,16 @@ slideBottom lang settings slide effects =
                 Html.text ""
 
             _ ->
-                responsive lang settings.sound (UpdateSettings toggle_sound)
+                Html.span []
+                    [ Html.button [ Attr.class "lia-btn lia-icon" ]
+                        [ if settings.speaking then
+                            Html.text "pan_tool"
+
+                          else
+                            Html.text "play_circle_outline"
+                        ]
+                    , responsive lang settings.sound (UpdateSettings toggle_sound)
+                    ]
         ]
 
 
