@@ -6,7 +6,8 @@ import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Lia.Index.View as Index
 import Lia.Markdown.Config as Config
-import Lia.Markdown.Effect.Model exposing (current_paragraphs)
+import Lia.Markdown.Effect.Model as Effect
+import Lia.Markdown.Effect.Types exposing (Effect)
 import Lia.Markdown.Effect.View exposing (responsive, state)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.View exposing (view_inf)
@@ -101,31 +102,36 @@ viewSlide screen lang settings id section =
                 |> Html.map UpdateMarkdown
             , slideBottom lang settings id section.effect_model
             ]
-        , slideA11y lang settings section.effect_model id
+        , slideA11y lang settings.mode section.effect_model id
         ]
 
 
 {-| **@private:** used to diplay the text2speech output settings and spoken
 comments in text, depending on the currently applied rendering mode.
 -}
-slideBottom : Lang -> Settings -> Int -> Lia.Markdown.Effect.Model.Model SubSection -> Html Msg
+slideBottom : Lang -> Settings -> Int -> Effect.Model SubSection -> Html Msg
 slideBottom lang settings slide effects =
-    case settings.mode of
-        Textbook ->
-            Html.text ""
+    Html.footer
+        [ Attr.class "lia-footer" ]
+        [ slideNavigation lang settings.mode slide effects
+        , case settings.mode of
+            Textbook ->
+                Html.text ""
 
-        _ ->
-            Html.footer [ Attr.class "lia-footer" ] [ responsive lang settings.sound (UpdateSettings toggle_sound) ]
+            _ ->
+                responsive lang settings.sound (UpdateSettings toggle_sound)
+        ]
 
 
-slideA11y lang settings effect_model id =
-    case settings.mode of
+slideA11y : Lang -> Mode -> Effect.Model SubSection -> Int -> Html Msg
+slideA11y lang mode effect id =
+    case mode of
         Slides ->
-            effect_model
-                |> current_paragraphs
+            effect
+                |> Effect.current_paragraphs
                 |> List.map
                     (Tuple.second
-                        >> List.map (view_inf effect_model.javascript lang)
+                        >> List.map (view_inf effect.javascript lang)
                         >> Html.p []
                         >> Html.map (Tuple.pair id >> Script)
                     )
@@ -170,7 +176,27 @@ slideTopBar lang settings =
     Html.header [ Attr.class "lia-toolbar", Attr.id "lia-toolbar-nav" ]
         [ Settings.toggle_button_toc lang
             |> Html.map UpdateSettings
-        , Html.text "todo: settings"
+        , Html.span [] [ Html.text "icon" ]
+        , Html.span [ Attr.style "float" "right" ] [ Html.text "   ..." ]
+        ]
+
+
+slideNavigation : Lang -> Mode -> Int -> Effect.Model SubSection -> Html Msg
+slideNavigation lang mode slide effect =
+    Html.span []
+        [ navButton "navigate_before" (Trans.basePrev lang) "lia-btn-prev" PrevSection
+        , Html.span
+            []
+            [ Html.text (String.fromInt (slide + 1))
+            , Html.text <|
+                case mode of
+                    Textbook ->
+                        ""
+
+                    _ ->
+                        state effect
+            ]
+        , navButton "navigate_next" (Trans.baseNext lang) "lia-btn-next" NextSection
         ]
 
 
