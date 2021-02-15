@@ -145,7 +145,7 @@ slideBottom lang settings slide effects =
                 Html.text ""
 
             _ ->
-                Html.span []
+                Html.div []
                     [ Html.button [ Attr.class "lia-btn lia-icon" ]
                         [ if settings.speaking then
                             Html.text "pan_tool"
@@ -249,9 +249,9 @@ navItem =
 
 slideNavigation : Lang -> Mode -> Int -> Effect.Model SubSection -> Html Msg
 slideNavigation lang mode slide effect =
-    Html.span []
+    Html.div []
         [ navButton "navigate_before" (Trans.basePrev lang) "lia-btn-prev" PrevSection
-        , Html.span
+        , Html.div
             []
             [ Html.text (String.fromInt (slide + 1))
             , Html.text <|
