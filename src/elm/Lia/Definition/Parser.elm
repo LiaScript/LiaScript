@@ -37,7 +37,7 @@ import Lia.Parser.Context
         , init
         )
 import Lia.Parser.Helper exposing (stringTill)
-import Lia.Settings.Model exposing (Mode(..))
+import Lia.Settings.Types exposing (Mode(..))
 
 
 parse : Parser Context ()

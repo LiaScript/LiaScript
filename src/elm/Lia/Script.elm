@@ -30,7 +30,7 @@ import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Model exposing (loadResource)
 import Lia.Parser.Parser as Parser
 import Lia.Section as Section exposing (Sections)
-import Lia.Settings.Model exposing (Mode(..))
+import Lia.Settings.Types exposing (Mode(..))
 import Lia.Update exposing (Msg(..))
 import Lia.View
 import Port.Event exposing (Event)
@@ -325,14 +325,14 @@ searchIndex index str =
 
 {-| Alias for model initialization defined by `Lia.Model.int`
 -}
-init : Bool -> JE.Value -> String -> String -> String -> Maybe String -> Model
+init : Bool -> Bool -> JE.Value -> String -> String -> String -> Maybe String -> Model
 init =
     Lia.Model.init
 
 
 {-| Alias for global LiaScript view defined in `Lia.View.view`
 -}
-view : Screen -> Bool -> Bool -> Model -> Html Msg
+view : Screen -> Bool -> Model -> Html Msg
 view =
     Lia.View.view
 

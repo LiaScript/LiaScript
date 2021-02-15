@@ -1,6 +1,5 @@
 module Lia.Settings.Update exposing
-    ( Button(..)
-    , Msg(..)
+    ( Msg(..)
     , Toggle(..)
     , handle
     , toggle_sound
@@ -9,7 +8,7 @@ module Lia.Settings.Update exposing
 
 import Json.Encode as JE
 import Lia.Settings.Json as Json
-import Lia.Settings.Model exposing (Buttons, Mode(..), Model, init_buttons)
+import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
 import Port.Event exposing (Event)
 import Port.TTS as TTS
 
@@ -20,7 +19,7 @@ type Msg
     | ChangeEditor String
     | ChangeLang String
     | ChangeFontSize Bool
-    | SwitchMode
+    | SwitchMode Mode
     | Reset
     | Handle Event
     | ShareCourse Event
@@ -31,17 +30,10 @@ type Toggle
     = TableOfContents
     | Sound
     | Light
-    | Button Button
+    | Action Action
 
 
-type Button
-    = Settings
-    | Translations
-    | Informations
-    | Share
-
-
-update : Msg -> Model -> ( Model, List Event )
+update : Msg -> Settings -> ( Settings, List Event )
 update msg model =
     case msg of
         Handle event ->
@@ -64,7 +56,7 @@ update msg model =
             log
                 { model
                     | table_of_contents = not model.table_of_contents
-                    , buttons = init_buttons
+                    , action = Nothing
                 }
 
         Toggle Sound ->
@@ -77,27 +69,28 @@ update msg model =
         Toggle Light ->
             log { model | light = not model.light }
 
-        Toggle (Button button) ->
-            no_log { model | buttons = toggle button model.buttons }
+        Toggle (Action action) ->
+            no_log
+                { model
+                    | action =
+                        if model.action /= Just action then
+                            Just action
 
-        SwitchMode ->
-            case model.mode of
-                Presentation ->
-                    log { model | mode = Slides }
+                        else
+                            Nothing
+                }
 
-                Slides ->
+        SwitchMode mode ->
+            case mode of
+                Textbook ->
                     let
                         ( new_model, events ) =
                             log { model | sound = False, mode = Textbook }
                     in
                     ( new_model, TTS.event new_model.sound :: events )
 
-                Textbook ->
-                    let
-                        ( new_model, events ) =
-                            log { model | sound = True, mode = Presentation }
-                    in
-                    ( new_model, TTS.event new_model.sound :: events )
+                _ ->
+                    log { model | mode = mode }
 
         ChangeTheme theme ->
             log { model | theme = theme }
@@ -140,11 +133,10 @@ handle =
     Handle
 
 
-load : Model -> JE.Value -> Model
-load model json =
-    json
-        |> Json.toModel model
-        |> Result.withDefault model
+load : Settings -> JE.Value -> Settings
+load model =
+    Json.toModel model
+        >> Result.withDefault model
 
 
 toggle_sound : Msg
@@ -152,31 +144,16 @@ toggle_sound =
     Toggle Sound
 
 
-toggle : Button -> Buttons -> Buttons
-toggle toggle_button buttons =
-    let
-        new_buttons =
-            init_buttons
-    in
-    case toggle_button of
-        Settings ->
-            { new_buttons | settings = not buttons.settings }
-
-        Translations ->
-            { new_buttons | translations = not buttons.translations }
-
-        Informations ->
-            { new_buttons | informations = not buttons.informations }
-
-        Share ->
-            { new_buttons | share = not buttons.share }
+log : Settings -> ( Settings, List Event )
+log settings =
+    ( settings
+    , [ settings
+            |> Json.fromModel
+            |> Event "settings" -1
+      ]
+    )
 
 
-log : Model -> ( Model, List Event )
-log model =
-    ( model, [ Event "settings" -1 <| Json.fromModel model ] )
-
-
-no_log : Model -> ( Model, List Event )
+no_log : Settings -> ( Settings, List Event )
 no_log model =
     ( model, [] )

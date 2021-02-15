@@ -17,7 +17,7 @@ import Lia.Markdown.Inline.Config as Config exposing (Config)
 import Lia.Markdown.Inline.Stringify exposing (stringify_)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 import Lia.Section exposing (SubSection)
-import Lia.Settings.Model exposing (Mode(..))
+import Lia.Settings.Types exposing (Mode(..))
 import Oembed
 import QRCode
 import Translations exposing (Lang)
