@@ -5,6 +5,7 @@ module Lia.Index.View exposing
     )
 
 import Array
+import Conditional.List as CList
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
@@ -60,55 +61,36 @@ search lang model =
 
 content : Lang -> Int -> (( Int, Script.Msg sub ) -> msg) -> Sections -> List (Html msg)
 content lang active msg =
-    let
-        toc_ =
-            toc lang active msg
-    in
     Array.toList
-        >> List.map toc_
+        >> List.filterMap (item lang active msg)
 
 
 bottom : msg -> Html msg
 bottom msg =
-    Html.div []
-        [ Html.button
-            [ onClick msg
-            , Attr.title "home"
-            , Attr.class "lia-btn lia-control lia-slide-control lia-left"
-            , Attr.id "lia-btn-home"
-            ]
-            [ Html.text "home" ]
+    Html.button
+        [ onClick msg
+        , Attr.title "home"
+        , Attr.class "lia-btn lia-control lia-slide-control lia-left"
+        , Attr.id "lia-btn-home"
         ]
+        [ Html.text "home" ]
 
 
-toc : Lang -> Int -> (( Int, Script.Msg sub ) -> msg) -> Section -> Html msg
-toc lang active msg section =
+item : Lang -> Int -> (( Int, Script.Msg sub ) -> msg) -> Section -> Maybe (Html msg)
+item lang active msg section =
     if section.visible then
-        Html.map msg <|
-            Html.map (Tuple.pair section.id) <|
-                Html.a
-                    [ Attr.class
-                        ("lia-toc-l"
-                            ++ String.fromInt section.indentation
-                            ++ (if section.error /= Nothing then
-                                    " lia-error"
-
-                                else if active == section.id then
-                                    " lia-active"
-
-                                else
-                                    " lia-visited"
-                               )
-                        )
-                    , Attr.href ("#" ++ String.fromInt (section.id + 1))
-                    , Attr.id <|
-                        if active == section.id then
-                            "focusedToc"
-
-                        else
-                            ""
-                    ]
-                    (List.map (view_inf Array.empty lang) section.title)
+        section.title
+            |> List.map (view_inf Array.empty lang)
+            |> itemLink active section.id
+            |> Html.map (Tuple.pair section.id >> msg)
+            |> Just
 
     else
-        Html.text ""
+        Nothing
+
+
+itemLink : Int -> Int -> List (Html msg) -> Html msg
+itemLink active id =
+    [ Attr.href ("#" ++ String.fromInt (id + 1)) ]
+        |> CList.appendIf (active == id) [ Attr.id "focusedToc", Attr.class "lia-active" ]
+        |> Html.a
