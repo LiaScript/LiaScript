@@ -90,6 +90,8 @@ viewSettings lang settings =
     , viewTheme lang settings.theme
     , Html.hr [] []
     , viewEditorTheme lang settings.editor
+    , Html.hr [] []
+    , viewSizing lang settings.font_size
     ]
         |> Html.div
             [ Attr.style "position" "absolute"
@@ -211,24 +213,24 @@ reset =
     Html.button [ onClick Reset ] [ Html.text "reset course" ]
 
 
-navButton : String -> String -> msg -> Html msg
-navButton str title msg =
+viewSizing : Lang -> Int -> Html Msg
+viewSizing lang int =
+    Html.div []
+        [ Html.text <| Trans.baseFont lang ++ ":"
+        , btnFont "-" (Trans.baseDec lang) (ChangeFontSize False)
+        , Html.text (String.fromInt int ++ "%")
+        , btnFont "+" (Trans.baseInc lang) (ChangeFontSize True)
+        ]
+
+
+btnFont : String -> String -> msg -> Html msg
+btnFont str title msg =
     Html.button
         [ onClick msg
         , Attr.title title
         , Attr.class "lia-btn lia-slide-control lia-left"
         ]
         [ Html.text str ]
-
-
-inc_font_size : Lang -> Int -> Html Msg
-inc_font_size lang int =
-    Html.div []
-        [ Html.text <| Trans.baseFont lang ++ ":"
-        , navButton "-" (Trans.baseDec lang) (ChangeFontSize False)
-        , Html.text (String.fromInt int ++ "%")
-        , navButton "+" (Trans.baseInc lang) (ChangeFontSize True)
-        ]
 
 
 span_block : List (Html msg) -> Html msg
@@ -388,7 +390,8 @@ viewEditorTheme lang theme =
             option theme
     in
     Html.div [ Attr.style "display" "inline-flex", Attr.style "width" "99%" ]
-        [ Html.select [ onInput ChangeEditor ]
+        [ Html.text "Editor"
+        , Html.select [ onInput ChangeEditor ]
             [ [ ( "chrome", "Chrome" )
               , ( "clouds", "Clouds" )
               , ( "crimson_editor", "Crimson Editor" )
