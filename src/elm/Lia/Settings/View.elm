@@ -20,7 +20,6 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
 import Lia.Settings.Update exposing (Msg(..), Toggle(..))
-import Port.Event exposing (Event)
 import QRCode
 import Translations as Trans exposing (Lang)
 
@@ -32,7 +31,6 @@ view :
     -> Settings
     -> Html Msg -- String -> String -> Maybe Event -> Definition -> Html Msg
 view lang url definition settings =
-    --url origin share defines =
     case settings.action of
         Nothing ->
             Html.text ""
@@ -189,7 +187,9 @@ modeToString show =
 
 reset : Html Msg
 reset =
-    Html.button [ onClick Reset ] [ Html.text "reset course" ]
+    Html.button
+        [ onClick Reset ]
+        [ Html.text "reset course" ]
 
 
 viewSizing : Lang -> Int -> Html Msg
@@ -368,52 +368,44 @@ btnIndex lang =
 
 btnMode : Lang -> Html Msg
 btnMode _ =
-    Html.span
-        [ action ShowModes
-        ]
-        [ Html.text "Mode"
-        ]
+    actionBtn ShowModes "Mode"
 
 
 btnSettings : Lang -> Html Msg
-btnSettings _ =
-    Html.span
-        [ action ShowSettings
-        ]
-        [ Html.text "Settings"
-        ]
+btnSettings =
+    Trans.confSettings
+        >> actionBtn ShowSettings
 
 
 btnTranslations : Lang -> Bool -> Html Msg
-btnTranslations _ hide =
+btnTranslations lang hide =
     if hide then
         Html.text ""
 
     else
-        Html.span
-            [ action ShowTranslations
-            ]
-            [ Html.text "Translations"
-            ]
+        lang
+            |> Trans.confTranslations
+            |> actionBtn ShowTranslations
 
 
 btnShare : Lang -> Html Msg
-btnShare _ =
-    Html.span
-        [ action Share
-        ]
-        [ Html.text "Share"
-        ]
+btnShare =
+    Trans.confShare
+        >> actionBtn Share
 
 
 btnInformation : Lang -> Html Msg
-btnInformation _ =
-    Html.span
-        [ action ShowInformation
-        ]
-        [ Html.text "Information"
-        ]
+btnInformation =
+    Trans.confInformation
+        >> actionBtn ShowInformation
 
 
-action =
+actionBtn : Action -> String -> Html Msg
+actionBtn msg title =
+    Html.span [ doAction msg ]
+        [ Html.text title ]
+
+
+doAction : Action -> Html.Attribute Msg
+doAction =
     Action >> Toggle >> onClick
