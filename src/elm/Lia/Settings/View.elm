@@ -24,9 +24,10 @@ import Translations as Trans exposing (Lang)
 
 view :
     Lang
+    -> String
     -> Settings
     -> Html Msg -- String -> String -> Maybe Event -> Definition -> Html Msg
-view lang settings =
+view lang url settings =
     --url origin share defines =
     case settings.action of
         Nothing ->
@@ -37,6 +38,9 @@ view lang settings =
 
         Just ShowSettings ->
             viewSettings lang settings
+
+        Just Share ->
+            qrCodeView url
 
         Just a ->
             Html.div []
@@ -188,26 +192,6 @@ modeToString show =
             Trans.modeTextbook
 
 
-dropdown : Bool -> String -> String -> Msg -> Html Msg
-dropdown active name alt msg =
-    Html.button
-        [ onClick msg
-        , Attr.id <| "lia-btn-" ++ name
-        , Attr.class <|
-            "lia-btn lia-icon"
-                ++ (if active then
-                        " lia-selected"
-
-                    else
-                        ""
-                   )
-        , Attr.title alt
-        , Attr.style "width" "56px"
-        , Attr.style "padding" "0px"
-        ]
-        [ Html.text name ]
-
-
 reset : Html Msg
 reset =
     Html.button [ onClick Reset ] [ Html.text "reset course" ]
@@ -325,23 +309,6 @@ view_translations lang visible base list =
                     )
 
 
-check_list : Bool -> String -> String -> String -> Html Msg
-check_list checked label text dir =
-    Html.label
-        [ Attr.class label, Attr.style "float" dir, Attr.style "overflow" "hidden", Attr.style "width" "42%" ]
-        [ Html.input
-            [ Attr.type_ "radio"
-            , Attr.name "toggle"
-            , Attr.checked checked
-            , onClick (ChangeTheme label)
-            ]
-            []
-        , Html.span
-            []
-            [ Html.text text ]
-        ]
-
-
 menu_style : Bool -> List (Html.Attribute msg)
 menu_style visible =
     [ Attr.class <|
@@ -361,26 +328,13 @@ menu_style visible =
     ]
 
 
-qrCodeView : Bool -> String -> Html msg
-qrCodeView visible url =
-    Html.div
-        (Attr.style "padding-top" "3px"
-            :: Attr.style "background-color" "white"
-            :: Attr.style "overflow" "hidden"
-            :: menu_style visible
-        )
-        [ url
-            |> QRCode.fromString
-            |> Result.map (QRCode.toSvgWithoutQuietZone [])
-            |> Result.withDefault (Html.text "Error while encoding to QRCode.")
-
-        --Html.img
-        --    [ Attr.src ("https://api.qrserver.com/v1/create-qr-code/?size=222x222&data=" ++ url)
-        --    , Attr.style "height" "240px"
-        --    , Attr.style "width" "100%"
-        --    ]
-        --    []
-        ]
+qrCodeView : String -> Html msg
+qrCodeView =
+    QRCode.fromString
+        >> Result.map (QRCode.toSvgWithoutQuietZone [])
+        >> Result.withDefault (Html.text "Error while encoding to QRCode.")
+        >> List.singleton
+        >> Html.div []
 
 
 viewEditorTheme : Lang -> String -> Html Msg
@@ -440,21 +394,6 @@ viewEditorTheme lang theme =
         ]
 
 
-view_light : Bool -> Html Msg
-view_light light =
-    Html.span
-        [ Attr.class "lia-btn"
-        , onClick <| Toggle Light
-        , Attr.style "text-align" "right"
-        ]
-        [ if light then
-            Html.text "🌞"
-
-          else
-            Html.text "🌘"
-        ]
-
-
 option : String -> ( String, String ) -> Html Msg
 option current ( val, text ) =
     Html.option
@@ -498,7 +437,7 @@ btnTranslations _ =
     Html.span
         [ toggle ShowTranslations
         ]
-        [ Html.text "Settings"
+        [ Html.text "Translations"
         ]
 
 
@@ -507,7 +446,7 @@ btnShare _ =
     Html.span
         [ toggle Share
         ]
-        [ Html.text "Settings"
+        [ Html.text "Share"
         ]
 
 

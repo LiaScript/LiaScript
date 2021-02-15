@@ -39,7 +39,7 @@ view screen hasIndex model =
         [ viewIndex hasIndex model
         , model
             |> get_active_section
-            |> Maybe.map (viewSlide screen model.translation model.settings model.section_active)
+            |> Maybe.map (viewSlide screen model.translation model.url model.settings model.section_active)
             |> Maybe.withDefault (Html.text "No content")
         ]
 
@@ -93,11 +93,11 @@ viewIndex hasIndex model =
 {-| **@private:** show the current section, with navigation on top as well as a
 footer, if it is required by the current display mode.
 -}
-viewSlide : Screen -> Lang -> Settings -> Int -> Section -> Html Msg
-viewSlide screen lang settings id section =
+viewSlide : Screen -> Lang -> String -> Settings -> Int -> Section -> Html Msg
+viewSlide screen lang url settings id section =
     Html.div []
         [ Html.div [ Attr.class "lia-slide" ]
-            [ slideTopBar lang settings
+            [ slideTopBar lang url settings
             , Config.init lang settings screen section id
                 |> Markdown.view
                 |> Html.map UpdateMarkdown
@@ -181,8 +181,8 @@ navButton str title id msg =
 6.  `state`: fragments, if animations are active, not visible in textbook mode
 
 -}
-slideTopBar : Lang -> Settings -> Html Msg
-slideTopBar lang settings =
+slideTopBar : Lang -> String -> Settings -> Html Msg
+slideTopBar lang url settings =
     [ Settings.btnIndex lang
     , Html.span [] [ Html.text "icon" ]
     , Html.nav
@@ -199,15 +199,13 @@ slideTopBar lang settings =
               , Settings.btnSettings lang
               , Settings.btnTranslations lang
               , Settings.btnShare lang
-
-              --, Html.text "Share - "
               , Html.text "Information"
               ]
                 |> List.map navItem
                 |> Html.ul [ Attr.class "navbar-nav", Attr.style "display" "inline" ]
             ]
         , settings
-            |> Settings.view lang
+            |> Settings.view lang url
         ]
     ]
         |> Html.header [ Attr.class "lia-toolbar", Attr.id "lia-toolbar-nav" ]
