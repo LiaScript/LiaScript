@@ -226,13 +226,13 @@ slideTopBar lang url settings def =
                     |> Dict.isEmpty
                     |> Settings.btnTranslations lang
               , Settings.btnShare lang
-              , Html.text "Information"
+              , Settings.btnInformation lang
               ]
                 |> List.map navItem
                 |> Html.ul [ Attr.class "navbar-nav", Attr.style "display" "inline" ]
             ]
         , settings
-            |> Settings.view lang url def.translation
+            |> Settings.view lang url def
         ]
     ]
         |> Html.header [ Attr.class "lia-toolbar", Attr.id "lia-toolbar-nav" ]

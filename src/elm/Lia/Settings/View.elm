@@ -1,5 +1,6 @@
 module Lia.Settings.View exposing
     ( btnIndex
+    , btnInformation
     , btnMode
     , btnSettings
     , btnShare
@@ -9,6 +10,7 @@ module Lia.Settings.View exposing
     )
 
 import Array
+import Conditional.List as CList
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -26,10 +28,10 @@ import Translations as Trans exposing (Lang)
 view :
     Lang
     -> String
-    -> Dict String String
+    -> Definition
     -> Settings
     -> Html Msg -- String -> String -> Maybe Event -> Definition -> Html Msg
-view lang url translations settings =
+view lang url definition settings =
     --url origin share defines =
     case settings.action of
         Nothing ->
@@ -45,22 +47,10 @@ view lang url translations settings =
             qrCodeView url
 
         Just ShowTranslations ->
-            viewTranslations translations
+            viewTranslations definition.translation
 
-        Just a ->
-            Html.div []
-                [ --Lazy.lazy2 view_settings settings lang
-                  --, Lazy.lazy3 view_information lang settings.buttons.informations defines
-                  -- , view_translations lang settings.buttons.translations (origin ++ "?") (Lia.Definition.Types.get_translations defines)
-                  -- , qrCodeView settings.buttons.share url
-                  Html.div
-                    [ Attr.class "lia-settings", Attr.style "display" "inline-flex", Attr.style "width" "99%" ]
-                    [-- dropdown model.buttons.settings "settings" (Trans.confSettings lang) (Toggle <| Button BtnSettings)
-                     --, dropdown model.buttons.informations "info" (Trans.confInformation lang) (Toggle <| Button BtnInformations)
-                     --, dropdown model.buttons.translations "translate" (Trans.confTranslations lang) (Toggle <| Button BtnTranslations)
-                     --, dropdown model.buttons.share "share" (Trans.confShare lang) (share |> Maybe.map ShareCourse |> Maybe.withDefault (Toggle <| Button BtnShare))
-                    ]
-                ]
+        Just ShowInformation ->
+            viewInformation lang definition
 
 
 design : Settings -> List (Html.Attribute msg)
@@ -222,69 +212,49 @@ btnFont str title msg =
         [ Html.text str ]
 
 
-span_block : List (Html msg) -> Html msg
-span_block =
-    Html.span [ Attr.style "display" "block" ]
-
-
 bold : String -> Html msg
 bold =
     Html.text >> List.singleton >> Html.b []
 
 
-view_information : Lang -> Bool -> Definition -> Html Msg
-view_information lang visible definition =
-    Html.div (menu_style visible)
-        [ if String.isEmpty definition.author then
-            Html.text ""
-
-          else
-            span_block
-                [ bold <| Trans.infoAuthor lang
-                , Html.text definition.author
-                ]
-        , if String.isEmpty definition.email then
-            Html.text ""
-
-          else
-            span_block
-                [ bold <| Trans.infoEmail lang
-                , Html.a
-                    [ Attr.href definition.email, Attr.class "lia-link" ]
-                    [ Html.text definition.email ]
-                ]
-        , if String.isEmpty definition.version then
-            Html.text ""
-
-          else
-            span_block
-                [ bold <| Trans.infoVersion lang
-                , Html.text definition.version
-                ]
-        , if String.isEmpty definition.date then
-            Html.text ""
-
-          else
-            span_block
-                [ bold <| Trans.infoDate lang
-                , Html.text definition.date
-                ]
-        , if List.isEmpty definition.attributes then
-            Html.text ""
-
-          else
-            span_block
-                [ bold "Attributes:"
-                , Html.br [] []
-                , view_attributes lang definition.attributes
-                ]
-        ]
+viewInformation : Lang -> Definition -> Html Msg
+viewInformation lang definition =
+    []
+        |> CList.addIf (definition.attributes /= [])
+            [ bold "Attributes:"
+            , Html.br [] []
+            , viewAttributes lang definition.attributes
+            ]
+        |> CList.addIf (definition.date /= "")
+            [ bold <| Trans.infoDate lang
+            , Html.text definition.date
+            ]
+        |> CList.addIf (definition.version /= "")
+            [ bold <| Trans.infoVersion lang
+            , Html.text definition.version
+            ]
+        |> CList.addIf (definition.email /= "")
+            [ bold <| Trans.infoEmail lang
+            , Html.a
+                [ Attr.href definition.email, Attr.class "lia-link" ]
+                [ Html.text definition.email ]
+            ]
+        |> CList.addIf (definition.author /= "")
+            [ bold <| Trans.infoAuthor lang
+            , Html.text definition.author
+            ]
+        |> List.map (Html.div [])
+        |> Html.div
+            [ Attr.style "position" "absolute"
+            , Attr.style "top" "50px"
+            , Attr.style "zIndex" "1000"
+            , Attr.style "color" "red"
+            ]
 
 
-view_attributes : Lang -> List Inlines -> Html Msg
-view_attributes lang =
-    List.map (thanks lang)
-        >> Html.span []
+viewAttributes : Lang -> List Inlines -> Html Msg
+viewAttributes lang =
+    List.map (thanks lang) >> Html.span []
 
 
 thanks : Lang -> Inlines -> Html Msg
@@ -293,7 +263,7 @@ thanks lang to =
         [ Html.hr [] []
         , to
             |> List.map (view_inf Array.empty lang)
-            |> span_block
+            |> Html.div []
         ]
         |> Html.map (\_ -> Ignore)
 
@@ -308,25 +278,6 @@ viewTranslations =
                     [ Html.text title, Html.br [] [] ]
             )
         >> Html.div []
-
-
-menu_style : Bool -> List (Html.Attribute msg)
-menu_style visible =
-    [ Attr.class <|
-        "lia-slide-animation"
-            ++ (if visible then
-                    " lia-settings"
-
-                else
-                    ""
-               )
-    , Attr.style "max-height" <|
-        if visible then
-            "256px"
-
-        else
-            "0px"
-    ]
 
 
 qrCodeView : String -> Html msg
@@ -418,7 +369,7 @@ btnIndex lang =
 btnMode : Lang -> Html Msg
 btnMode _ =
     Html.span
-        [ toggle ShowModes
+        [ action ShowModes
         ]
         [ Html.text "Mode"
         ]
@@ -427,7 +378,7 @@ btnMode _ =
 btnSettings : Lang -> Html Msg
 btnSettings _ =
     Html.span
-        [ toggle ShowSettings
+        [ action ShowSettings
         ]
         [ Html.text "Settings"
         ]
@@ -440,7 +391,7 @@ btnTranslations _ hide =
 
     else
         Html.span
-            [ toggle ShowTranslations
+            [ action ShowTranslations
             ]
             [ Html.text "Translations"
             ]
@@ -449,11 +400,20 @@ btnTranslations _ hide =
 btnShare : Lang -> Html Msg
 btnShare _ =
     Html.span
-        [ toggle Share
+        [ action Share
         ]
         [ Html.text "Share"
         ]
 
 
-toggle =
+btnInformation : Lang -> Html Msg
+btnInformation _ =
+    Html.span
+        [ action ShowInformation
+        ]
+        [ Html.text "Information"
+        ]
+
+
+action =
     Action >> Toggle >> onClick
