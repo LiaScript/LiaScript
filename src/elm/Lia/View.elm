@@ -219,7 +219,7 @@ slideTopBar lang url settings def =
             , Attr.type_ "button"
             ]
             [ Html.text "..." ]
-        , Html.div [ Attr.class "navbar-collapse" ]
+        , Html.span [ Attr.class "navbar-collapse" ]
             [ [ Settings.btnMode lang
               , Settings.btnSettings lang
               , def.translation
