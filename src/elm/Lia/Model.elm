@@ -96,11 +96,11 @@ type alias Model =
     active section (defaults to 1)
 
 -}
-init : Bool -> JE.Value -> String -> String -> String -> Maybe String -> Model
-init openTOC settings url readme origin anchor =
+init : Bool -> Bool -> JE.Value -> String -> String -> String -> Maybe String -> Model
+init hasShareApi openTOC settings url readme origin anchor =
     let
         default =
-            Settings.init Settings.Presentation
+            Settings.init hasShareApi Settings.Presentation
     in
     { url = url
     , readme = readme

@@ -32,8 +32,8 @@ import Translations as Trans exposing (Lang)
 4.  `model`: the preprocessed LiaScript Model
 
 -}
-view : Screen -> Bool -> Bool -> Model -> Html Msg
-view screen hasShareAPI hasIndex model =
+view : Screen -> Bool -> Model -> Html Msg
+view screen hasIndex model =
     Html.div
         (Settings.design model.settings)
         [ viewIndex hasIndex model
@@ -183,40 +183,43 @@ navButton str title id msg =
 -}
 slideTopBar : Lang -> Settings -> Html Msg
 slideTopBar lang settings =
-    Html.header [ Attr.class "lia-toolbar", Attr.id "lia-toolbar-nav" ]
-        [ Settings.toggle_button_toc lang
-            |> Html.map UpdateSettings
-        , Html.span [] [ Html.text "icon" ]
-        , Html.nav
-            [ Attr.class "navbar"
-            , Attr.style "float" "right"
-            ]
-            [ Html.button
-                [ Attr.class "navbar-toggler"
-                , Attr.type_ "button"
-                ]
-                [ Html.text "..." ]
-            , Html.div [ Attr.class "navbar-collapse" ]
-                [ Html.ul [ Attr.class "navbar-nav" ]
-                    [ Html.li [ Attr.class "nav-item" ]
-                        [ Html.text "Mode"
-                        ]
-                    , Html.li [ Attr.class "nav-item" ]
-                        [ Html.text "Settings"
-                        ]
-                    , Html.li [ Attr.class "nav-item" ]
-                        [ Html.text "Translations"
-                        ]
-                    , Html.li [ Attr.class "nav-item" ]
-                        [ Html.text "Share"
-                        ]
-                    , Html.li [ Attr.class "nav-item" ]
-                        [ Html.text "Information"
-                        ]
-                    ]
-                ]
-            ]
+    [ Settings.btnIndex lang
+    , Html.span [] [ Html.text "icon" ]
+    , Html.nav
+        [ Attr.class "navbar"
+        , Attr.style "float" "right"
         ]
+        [ Html.button
+            [ Attr.class "navbar-toggler"
+            , Attr.type_ "button"
+            ]
+            [ Html.text "..." ]
+        , Html.div [ Attr.class "navbar-collapse" ]
+            [ [ Settings.btnMode lang
+              , Settings.btnSettings lang
+              , Settings.btnTranslations lang
+              , Settings.btnShare lang
+
+              --, Html.text "Share - "
+              , Html.text "Information"
+              ]
+                |> List.map navItem
+                |> Html.ul [ Attr.class "navbar-nav", Attr.style "display" "inline" ]
+            ]
+        , settings
+            |> Settings.view lang
+        ]
+    ]
+        |> Html.header [ Attr.class "lia-toolbar", Attr.id "lia-toolbar-nav" ]
+        |> Html.map UpdateSettings
+
+
+navItem =
+    List.singleton
+        >> Html.li
+            [ Attr.class "nav-item"
+            , Attr.style "display" "inline"
+            ]
 
 
 slideNavigation : Lang -> Mode -> Int -> Effect.Model SubSection -> Html Msg

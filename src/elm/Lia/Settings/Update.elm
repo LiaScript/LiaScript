@@ -1,6 +1,5 @@
 module Lia.Settings.Update exposing
-    ( Button(..)
-    , Msg(..)
+    ( Msg(..)
     , Toggle(..)
     , handle
     , toggle_sound
@@ -9,7 +8,7 @@ module Lia.Settings.Update exposing
 
 import Json.Encode as JE
 import Lia.Settings.Json as Json
-import Lia.Settings.Types exposing (Buttons, Mode(..), Settings, initButtons)
+import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
 import Port.Event exposing (Event)
 import Port.TTS as TTS
 
@@ -20,7 +19,7 @@ type Msg
     | ChangeEditor String
     | ChangeLang String
     | ChangeFontSize Bool
-    | SwitchMode
+    | SwitchMode Mode
     | Reset
     | Handle Event
     | ShareCourse Event
@@ -31,14 +30,7 @@ type Toggle
     = TableOfContents
     | Sound
     | Light
-    | Button Button
-
-
-type Button
-    = BtnSettings
-    | BtnTranslations
-    | BtnInformations
-    | BtnShare
+    | Action Action
 
 
 update : Msg -> Settings -> ( Settings, List Event )
@@ -64,7 +56,7 @@ update msg model =
             log
                 { model
                     | table_of_contents = not model.table_of_contents
-                    , buttons = initButtons
+                    , action = Nothing
                 }
 
         Toggle Sound ->
@@ -77,27 +69,28 @@ update msg model =
         Toggle Light ->
             log { model | light = not model.light }
 
-        Toggle (Button button) ->
-            no_log { model | buttons = toggle button model.buttons }
+        Toggle (Action action) ->
+            no_log
+                { model
+                    | action =
+                        if model.action /= Just action then
+                            Just action
 
-        SwitchMode ->
-            case model.mode of
-                Presentation ->
-                    log { model | mode = Slides }
+                        else
+                            Nothing
+                }
 
-                Slides ->
+        SwitchMode mode ->
+            case mode of
+                Textbook ->
                     let
                         ( new_model, events ) =
                             log { model | sound = False, mode = Textbook }
                     in
                     ( new_model, TTS.event new_model.sound :: events )
 
-                Textbook ->
-                    let
-                        ( new_model, events ) =
-                            log { model | sound = True, mode = Presentation }
-                    in
-                    ( new_model, TTS.event new_model.sound :: events )
+                _ ->
+                    log { model | mode = mode }
 
         ChangeTheme theme ->
             log { model | theme = theme }
@@ -149,26 +142,6 @@ load model =
 toggle_sound : Msg
 toggle_sound =
     Toggle Sound
-
-
-toggle : Button -> Buttons -> Buttons
-toggle toggle_button buttons =
-    let
-        new_buttons =
-            initButtons
-    in
-    case toggle_button of
-        BtnSettings ->
-            { new_buttons | settings = not buttons.settings }
-
-        BtnTranslations ->
-            { new_buttons | translations = not buttons.translations }
-
-        BtnInformations ->
-            { new_buttons | informations = not buttons.informations }
-
-        BtnShare ->
-            { new_buttons | share = not buttons.share }
 
 
 log : Settings -> ( Settings, List Event )

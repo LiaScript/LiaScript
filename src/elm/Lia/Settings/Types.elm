@@ -1,9 +1,8 @@
 module Lia.Settings.Types exposing
-    ( Buttons
+    ( Action(..)
     , Mode(..)
     , Settings
     , init
-    , initButtons
     )
 
 
@@ -16,18 +15,19 @@ type alias Settings =
     , font_size : Int
     , sound : Bool
     , lang : String
-    , buttons : Buttons
+    , action : Maybe Action
     , speaking : Bool
     , initialized : Bool
+    , hasShareApi : Bool
     }
 
 
-type alias Buttons =
-    { settings : Bool
-    , informations : Bool
-    , translations : Bool
-    , share : Bool
-    }
+type Action
+    = ShowInformation
+    | ShowTranslations
+    | ShowSettings
+    | ShowModes
+    | Share
 
 
 type Mode
@@ -36,8 +36,8 @@ type Mode
     | Textbook -- Render Comments and Effects at ones
 
 
-init : Mode -> Settings
-init mode =
+init : Bool -> Mode -> Settings
+init hasShareApi mode =
     { table_of_contents = True
     , mode = mode
     , theme = "default"
@@ -46,12 +46,8 @@ init mode =
     , font_size = 100
     , sound = True
     , lang = "default"
-    , buttons = initButtons
+    , action = Nothing
     , speaking = False
     , initialized = False
+    , hasShareApi = hasShareApi
     }
-
-
-initButtons : Buttons
-initButtons =
-    Buttons False False False False

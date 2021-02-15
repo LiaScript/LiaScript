@@ -33,7 +33,7 @@ toModel =
         |> andMap "readme" JD.string
         |> andMap "origin" JD.string
         |> andMap "str_title" JD.string
-        |> JD.map2 (|>) (JD.succeed (Settings.init Settings.Slides))
+        |> JD.map2 (|>) (JD.succeed (Settings.init False Settings.Slides))
         |> JD.map2 (|>) (JD.succeed Nothing)
         |> andMap "sections" (JD.array toSectionBase |> JD.map (Array.indexedMap Section.init))
         |> andMap "section_active" JD.int

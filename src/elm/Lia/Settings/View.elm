@@ -1,35 +1,57 @@
-module Lia.Settings.View exposing (design, switch_button_mode, toggle_button_toc, view)
+module Lia.Settings.View exposing
+    ( btnIndex
+    , btnMode
+    , btnSettings
+    , btnShare
+    , btnTranslations
+    , design
+    , view
+    )
 
 import Array
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
-import Html.Lazy as Lazy
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (view_inf)
-import Lia.Settings.Types exposing (Mode(..), Settings)
-import Lia.Settings.Update exposing (Button(..), Msg(..), Toggle(..))
+import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
+import Lia.Settings.Update exposing (Msg(..), Toggle(..))
 import Port.Event exposing (Event)
 import QRCode
 import Translations as Trans exposing (Lang)
 
 
-view : Settings -> String -> String -> Lang -> Maybe Event -> Definition -> Html Msg
-view model url origin lang share defines =
-    Html.div []
-        [ Lazy.lazy2 view_settings model lang
-        , Lazy.lazy3 view_information lang model.buttons.informations defines
-        , view_translations lang model.buttons.translations (origin ++ "?") (Lia.Definition.Types.get_translations defines)
-        , qrCodeView model.buttons.share url
-        , Html.div
-            [ Attr.class "lia-settings", Attr.style "display" "inline-flex", Attr.style "width" "99%" ]
-            [ dropdown model.buttons.settings "settings" (Trans.confSettings lang) (Toggle <| Button BtnSettings)
-            , dropdown model.buttons.informations "info" (Trans.confInformation lang) (Toggle <| Button BtnInformations)
-            , dropdown model.buttons.translations "translate" (Trans.confTranslations lang) (Toggle <| Button BtnTranslations)
-            , dropdown model.buttons.share "share" (Trans.confShare lang) (share |> Maybe.map ShareCourse |> Maybe.withDefault (Toggle <| Button BtnShare))
-            ]
-        ]
+view :
+    Lang
+    -> Settings
+    -> Html Msg -- String -> String -> Maybe Event -> Definition -> Html Msg
+view lang settings =
+    --url origin share defines =
+    case settings.action of
+        Nothing ->
+            Html.text ""
+
+        Just ShowModes ->
+            viewModes lang settings
+
+        Just ShowSettings ->
+            viewSettings lang settings
+
+        Just a ->
+            Html.div []
+                [ --Lazy.lazy2 view_settings settings lang
+                  --, Lazy.lazy3 view_information lang settings.buttons.informations defines
+                  -- , view_translations lang settings.buttons.translations (origin ++ "?") (Lia.Definition.Types.get_translations defines)
+                  -- , qrCodeView settings.buttons.share url
+                  Html.div
+                    [ Attr.class "lia-settings", Attr.style "display" "inline-flex", Attr.style "width" "99%" ]
+                    [-- dropdown model.buttons.settings "settings" (Trans.confSettings lang) (Toggle <| Button BtnSettings)
+                     --, dropdown model.buttons.informations "info" (Trans.confInformation lang) (Toggle <| Button BtnInformations)
+                     --, dropdown model.buttons.translations "translate" (Trans.confTranslations lang) (Toggle <| Button BtnTranslations)
+                     --, dropdown model.buttons.share "share" (Trans.confShare lang) (share |> Maybe.map ShareCourse |> Maybe.withDefault (Toggle <| Button BtnShare))
+                    ]
+                ]
 
 
 design : Settings -> List (Html.Attribute msg)
@@ -61,6 +83,109 @@ design model =
     ]
 
 
+viewSettings : Lang -> Settings -> Html Msg
+viewSettings lang settings =
+    [ viewLightMode lang settings.light
+    , Html.hr [] []
+    , viewTheme lang settings.theme
+    , Html.hr [] []
+    , viewEditorTheme lang settings.editor
+    ]
+        |> Html.div
+            [ Attr.style "position" "absolute"
+            , Attr.style "top" "50px"
+            , Attr.style "zIndex" "1000"
+            , Attr.style "color" "red"
+            ]
+
+
+viewLightMode : Lang -> Bool -> Html Msg
+viewLightMode _ isLight =
+    Html.span []
+        [ Html.input
+            [ Attr.type_ "checkbox"
+            , Attr.checked isLight
+            , onClick (Toggle Light)
+            ]
+            []
+        , Html.label []
+            [ Html.text <|
+                if isLight then
+                    "Dark-Mode"
+
+                else
+                    "Light-Mode"
+            ]
+        ]
+
+
+viewTheme : Lang -> String -> Html Msg
+viewTheme lang theme =
+    [ ( "turquoise", "Türkis" )
+    , ( "blue", Trans.cBlue lang )
+    , ( "red", "Rot" )
+    , ( "yellow", "Gelb" )
+    ]
+        |> List.map
+            (\( color, name ) ->
+                [ Html.input
+                    [ Attr.type_ "radio"
+                    , Attr.checked (theme == color)
+                    , onClick (ChangeTheme color)
+                    ]
+                    []
+                , Html.label [] [ Html.text name ]
+                ]
+            )
+        |> List.concat
+        |> Html.span [ Attr.class "lia-settings__theme-colors" ]
+
+
+viewModes : Lang -> Settings -> Html Msg
+viewModes lang settings =
+    [ viewMode lang Textbook settings.mode
+    , Html.hr [] []
+    , viewMode lang Presentation settings.mode
+    , Html.hr [] []
+    , viewMode lang Slides settings.mode
+    ]
+        |> Html.div
+            [ Attr.style "position" "absolute"
+            , Attr.style "top" "50px"
+            , Attr.style "zIndex" "1000"
+            , Attr.style "color" "red"
+            ]
+
+
+viewMode : Lang -> Mode -> Mode -> Html Msg
+viewMode lang mode activeMode =
+    Html.div []
+        [ Html.input
+            [ Attr.type_ "radio"
+            , Attr.checked (mode == activeMode)
+            , onClick (SwitchMode mode)
+            ]
+            []
+        , Html.label []
+            [ modeToString mode lang
+                |> Html.text
+            ]
+        ]
+
+
+modeToString : Mode -> Lang -> String
+modeToString show =
+    case show of
+        Presentation ->
+            Trans.modePresentation
+
+        Slides ->
+            Trans.modeSlides
+
+        Textbook ->
+            Trans.modeTextbook
+
+
 dropdown : Bool -> String -> String -> Msg -> Html Msg
 dropdown active name alt msg =
     Html.button
@@ -79,20 +204,6 @@ dropdown active name alt msg =
         , Attr.style "padding" "0px"
         ]
         [ Html.text name ]
-
-
-view_settings : Settings -> Lang -> Html Msg
-view_settings model lang =
-    Html.div (menu_style model.buttons.settings)
-        [ Html.p []
-            [ Html.text <| Trans.cColor lang
-            , view_light model.light
-            , design_theme lang model.theme
-            , view_ace lang model.editor
-            , inc_font_size lang model.font_size
-            , reset
-            ]
-        ]
 
 
 reset : Html Msg
@@ -118,22 +229,6 @@ inc_font_size lang int =
         , Html.text (String.fromInt int ++ "%")
         , navButton "+" (Trans.baseInc lang) (ChangeFontSize True)
         ]
-
-
-design_theme : Lang -> String -> Html Msg
-design_theme lang theme =
-    [ ( "default", "left", Trans.cDefault lang )
-    , ( "turquoise", "right", "Türkis" )
-    , ( "blue", "left", Trans.cBlue lang )
-    , ( "red", "right", "Rot" )
-    , ( "yellow", "left", "Gelb" )
-    , ( "amber", "right", Trans.cAmber lang )
-    , ( "grey", "left", Trans.cGray lang )
-    , ( "green", "right", Trans.cGreen lang )
-    , ( "purple", "left", Trans.cPurple lang )
-    ]
-        |> List.map (\( c, b, text ) -> check_list (c == theme) c text b)
-        |> Html.div [ Attr.class "lia-settings__theme-colors" ]
 
 
 span_block : List (Html msg) -> Html msg
@@ -286,8 +381,8 @@ qrCodeView visible url =
         ]
 
 
-view_ace : Lang -> String -> Html Msg
-view_ace lang theme =
+viewEditorTheme : Lang -> String -> Html Msg
+viewEditorTheme lang theme =
     let
         op =
             option theme
@@ -366,8 +461,8 @@ option current ( val, text ) =
         [ Html.text text ]
 
 
-toggle_button_toc : Lang -> Html Msg
-toggle_button_toc lang =
+btnIndex : Lang -> Html Msg
+btnIndex lang =
     Html.button
         [ onClick <| Toggle TableOfContents
         , Attr.title (Trans.baseToc lang)
@@ -377,31 +472,41 @@ toggle_button_toc lang =
         [ Html.text "toc" ]
 
 
-switch_button_mode : Lang -> Mode -> Html Msg
-switch_button_mode lang mode =
-    Html.button
-        [ Attr.class "lia-btn lia-right"
-        , onClick SwitchMode
-        , Attr.id "lia-btn-mode"
-        , Attr.title <|
-            case mode of
-                Slides ->
-                    Trans.modeSlides lang
-
-                Presentation ->
-                    Trans.modePresentation lang
-
-                Textbook ->
-                    Trans.modeTextbook lang
+btnMode : Lang -> Html Msg
+btnMode _ =
+    Html.span
+        [ toggle ShowModes
         ]
-        [ Html.text <|
-            case mode of
-                Slides ->
-                    "visibility"
-
-                Presentation ->
-                    "hearing"
-
-                Textbook ->
-                    "book"
+        [ Html.text "Mode"
         ]
+
+
+btnSettings : Lang -> Html Msg
+btnSettings _ =
+    Html.span
+        [ toggle ShowSettings
+        ]
+        [ Html.text "Settings"
+        ]
+
+
+btnTranslations : Lang -> Html Msg
+btnTranslations _ =
+    Html.span
+        [ toggle ShowTranslations
+        ]
+        [ Html.text "Settings"
+        ]
+
+
+btnShare : Lang -> Html Msg
+btnShare _ =
+    Html.span
+        [ toggle Share
+        ]
+        [ Html.text "Settings"
+        ]
+
+
+toggle =
+    Action >> Toggle >> onClick
