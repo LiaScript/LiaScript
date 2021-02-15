@@ -9,6 +9,7 @@ module Lia.Settings.View exposing
     )
 
 import Array
+import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
@@ -25,9 +26,10 @@ import Translations as Trans exposing (Lang)
 view :
     Lang
     -> String
+    -> Dict String String
     -> Settings
     -> Html Msg -- String -> String -> Maybe Event -> Definition -> Html Msg
-view lang url settings =
+view lang url translations settings =
     --url origin share defines =
     case settings.action of
         Nothing ->
@@ -41,6 +43,9 @@ view lang url settings =
 
         Just Share ->
             qrCodeView url
+
+        Just ShowTranslations ->
+            viewTranslations translations
 
         Just a ->
             Html.div []
@@ -293,20 +298,16 @@ thanks lang to =
         |> Html.map (\_ -> Ignore)
 
 
-view_translations : Lang -> Bool -> String -> List ( String, String ) -> Html Msg
-view_translations lang visible base list =
-    Html.div (menu_style visible) <|
-        if List.isEmpty list then
-            [ Html.text (Trans.no_translation lang) ]
-
-        else
-            list
-                |> List.map
-                    (\( lang_, url ) ->
-                        Html.a
-                            [ Attr.href (base ++ url), Attr.class "lia-link" ]
-                            [ Html.text lang_, Html.br [] [] ]
-                    )
+viewTranslations : Dict String String -> Html Msg
+viewTranslations =
+    Dict.toList
+        >> List.map
+            (\( title, url ) ->
+                Html.a
+                    [ Attr.href url, Attr.class "lia-link" ]
+                    [ Html.text title, Html.br [] [] ]
+            )
+        >> Html.div []
 
 
 menu_style : Bool -> List (Html.Attribute msg)
@@ -432,13 +433,17 @@ btnSettings _ =
         ]
 
 
-btnTranslations : Lang -> Html Msg
-btnTranslations _ =
-    Html.span
-        [ toggle ShowTranslations
-        ]
-        [ Html.text "Translations"
-        ]
+btnTranslations : Lang -> Bool -> Html Msg
+btnTranslations _ hide =
+    if hide then
+        Html.text ""
+
+    else
+        Html.span
+            [ toggle ShowTranslations
+            ]
+            [ Html.text "Translations"
+            ]
 
 
 btnShare : Lang -> Html Msg

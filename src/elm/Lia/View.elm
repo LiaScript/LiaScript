@@ -1,9 +1,11 @@
 module Lia.View exposing (view)
 
+import Dict
 import Flip exposing (flip)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
+import Lia.Definition.Types exposing (Definition)
 import Lia.Index.View as Index
 import Lia.Markdown.Config as Config
 import Lia.Markdown.Effect.Model as Effect
@@ -37,10 +39,7 @@ view screen hasIndex model =
     Html.div
         (Settings.design model.settings)
         [ viewIndex hasIndex model
-        , model
-            |> get_active_section
-            |> Maybe.map (viewSlide screen model.translation model.url model.settings model.section_active)
-            |> Maybe.withDefault (Html.text "No content")
+        , viewSlide screen model
         ]
 
 
@@ -93,18 +92,44 @@ viewIndex hasIndex model =
 {-| **@private:** show the current section, with navigation on top as well as a
 footer, if it is required by the current display mode.
 -}
-viewSlide : Screen -> Lang -> String -> Settings -> Int -> Section -> Html Msg
-viewSlide screen lang url settings id section =
-    Html.div []
-        [ Html.div [ Attr.class "lia-slide" ]
-            [ slideTopBar lang url settings
-            , Config.init lang settings screen section id
-                |> Markdown.view
-                |> Html.map UpdateMarkdown
-            , slideBottom lang settings id section.effect_model
-            ]
-        , slideA11y lang settings.mode section.effect_model id
-        ]
+viewSlide : Screen -> Model -> Html Msg
+viewSlide screen model =
+    Html.div [] <|
+        case get_active_section model of
+            Just section ->
+                [ Html.div [ Attr.class "lia-slide" ]
+                    [ slideTopBar model.translation model.url model.settings model.definition
+                    , Config.init
+                        model.translation
+                        model.settings
+                        screen
+                        section
+                        model.section_active
+                        |> Markdown.view
+                        |> Html.map UpdateMarkdown
+                    , slideBottom
+                        model.translation
+                        model.settings
+                        model.section_active
+                        section.effect_model
+                    ]
+                , slideA11y
+                    model.translation
+                    model.settings.mode
+                    section.effect_model
+                    model.section_active
+                ]
+
+            Nothing ->
+                [ Html.div [ Attr.class "lia-slide" ]
+                    [ slideTopBar
+                        model.translation
+                        model.url
+                        model.settings
+                        model.definition
+                    , Html.text "Ups, something went wrong"
+                    ]
+                ]
 
 
 {-| **@private:** used to diplay the text2speech output settings and spoken
@@ -181,8 +206,8 @@ navButton str title id msg =
 6.  `state`: fragments, if animations are active, not visible in textbook mode
 
 -}
-slideTopBar : Lang -> String -> Settings -> Html Msg
-slideTopBar lang url settings =
+slideTopBar : Lang -> String -> Settings -> Definition -> Html Msg
+slideTopBar lang url settings def =
     [ Settings.btnIndex lang
     , Html.span [] [ Html.text "icon" ]
     , Html.nav
@@ -197,7 +222,9 @@ slideTopBar lang url settings =
         , Html.div [ Attr.class "navbar-collapse" ]
             [ [ Settings.btnMode lang
               , Settings.btnSettings lang
-              , Settings.btnTranslations lang
+              , def.translation
+                    |> Dict.isEmpty
+                    |> Settings.btnTranslations lang
               , Settings.btnShare lang
               , Html.text "Information"
               ]
@@ -205,7 +232,7 @@ slideTopBar lang url settings =
                 |> Html.ul [ Attr.class "navbar-nav", Attr.style "display" "inline" ]
             ]
         , settings
-            |> Settings.view lang url
+            |> Settings.view lang url def.translation
         ]
     ]
         |> Html.header [ Attr.class "lia-toolbar", Attr.id "lia-toolbar-nav" ]
