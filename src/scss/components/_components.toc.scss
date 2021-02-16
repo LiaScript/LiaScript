@@ -2,22 +2,10 @@
 @import "toc/toc.content";
 
 .lia-toc {
-  @include flex(column, nowrap, flex-start, stretch, stretch);
-  width: map-get($global-spacing, toc-width);
-  position: relative;
-
-  transition: max-width 0.2s ease-out;
-
-  &::after {
-    content: "";
-    position: absolute;
-    display: block;
-    width: map-get($global-spacing, spacing-small);
-    top: map-get($global-spacing, toolbar-height);
-    bottom: 0;
-    right: 0;
-    //cursor: ew-resize;
-  }
+  display: flex;
+  flex-direction: column;
+  padding: 3rem 3rem 1rem;
+  width: 315px;
 
   @include toc-settings;
 

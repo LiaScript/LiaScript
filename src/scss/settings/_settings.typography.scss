@@ -1,0 +1,24 @@
+html {
+  font-size: 62.5%;
+}
+
+body {
+  font-size: $global-font-size;
+  font-weight: 400;
+  line-height: $global-line-height;
+  color: #4b4b4b;
+}
+
+body,
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: $global-font-text;
+}
+
+a,
+button {
+  cursor: pointer;
+}

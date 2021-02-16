@@ -7,7 +7,7 @@
     padding: map-get($global-spacing, spacing-small)
       map-get($global-spacing, spacing-normal);
 
-    &.lia-toc-l {
+    &.lia-toc__link--is-lvl- {
       &1 {
         padding-left: 0 * map-get($global-spacing, spacing-large) +
           map-get($global-spacing, spacing-normal);

@@ -81,16 +81,26 @@ item lang active msg section =
     if section.visible then
         section.title
             |> List.map (view_inf Array.empty lang)
-            |> itemLink active section.id
+            |> itemLink active section.indentation section.id
             |> Html.map (Tuple.pair section.id >> msg)
             |> Just
+
+ 
 
     else
         Nothing
 
-
-itemLink : Int -> Int -> List (Html msg) -> Html msg
-itemLink active id =
-    [ Attr.href ("#" ++ String.fromInt (id + 1)) ]
+itemLink : Int -> Int -> Int -> List (Html msg) -> Html msg
+itemLink active indentation id =
+    [ indentation
+        |> String.fromInt
+        |> (++) "lia-toc__link lia-toc__link--is-lvl-"
+        |> Attr.class
+    , id
+        + 1
+        |> String.fromInt
+        |> (++) "#"
+        |> Attr.href
+    ]
         |> CList.appendIf (active == id) [ Attr.id "focusedToc", Attr.class "lia-active" ]
         |> Html.a

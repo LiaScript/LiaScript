@@ -68,15 +68,6 @@ design model =
                     "dark"
                )
         )
-    , Attr.style "height" <| "calc(100vh / " ++ float ++ ")"
-    , Attr.style "width" <| "calc(100vw / " ++ float ++ ")"
-    , Attr.style "transform" <| "scale(" ++ float ++ ")"
-    , Attr.style "-webkit-transform-origin" "top left"
-    , Attr.style "-moz-transform-origin" "top left"
-
-    --, Attr.style "transform-origin" "bottom left"
-    , Attr.style "transform-origin" "top left"
-    , Attr.style "position" "absolute"
     ]
 
 

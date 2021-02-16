@@ -1,7 +1,7 @@
 @import "toc.items";
 
 @mixin toc-content {
-  .lia-content {
+  .lia-toc__content {
     @include flex(column, nowrap);
     overflow: auto;
     margin-right: map-get($global-spacing, spacing-small);
@@ -13,7 +13,7 @@
 }
 
 @mixin style-toc-content {
-  .lia-content {
+  .lia-toc__content {
     $_bg: map-get($theme, background);
     $fg: color-contrast($_bg);
     $bg: mix($bg, $fg, 95%);

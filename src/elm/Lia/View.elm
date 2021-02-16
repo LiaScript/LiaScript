@@ -38,9 +38,7 @@ view : Screen -> Bool -> Model -> Html Msg
 view screen hasIndex model =
     Html.div
         (Settings.design model.settings)
-        [ viewIndex hasIndex model
-        , viewSlide screen model
-        ]
+        (viewIndex hasIndex model :: viewSlide screen model)
 
 
 {-| **@private:** Display the side section that contains the document search,
@@ -50,20 +48,20 @@ viewIndex : Bool -> Model -> Html Msg
 viewIndex hasIndex model =
     Html.div
         [ Attr.class "lia-toc"
-        , Attr.style "max-width" <|
+        , Attr.class <|
             if model.settings.table_of_contents then
-                "280px"
+                "lia-toc--closed"
 
             else
-                "0px"
+                "lia-toc--open"
         ]
         [ model.index_model
             |> Index.search model.translation
-            |> Html.span [ Attr.style "width" "100%", Attr.style "height" "100%" ]
+            |> Html.div [ Attr.class "lia-toc__search" ]
             |> Html.map UpdateIndex
         , model.sections
             |> Index.content model.translation model.section_active Script
-            |> Html.nav [ Attr.class "lia-content" ]
+            |> Html.nav [ Attr.class "lia-toc__content" ]
 
         --|> Html.map Script
         , if hasIndex then
@@ -92,44 +90,43 @@ viewIndex hasIndex model =
 {-| **@private:** show the current section, with navigation on top as well as a
 footer, if it is required by the current display mode.
 -}
-viewSlide : Screen -> Model -> Html Msg
+viewSlide : Screen -> Model -> List (Html Msg)
 viewSlide screen model =
-    Html.div [] <|
-        case get_active_section model of
-            Just section ->
-                [ Html.div [ Attr.class "lia-slide" ]
-                    [ slideTopBar model.translation model.url model.settings model.definition
-                    , Config.init
-                        model.translation
-                        model.settings
-                        screen
-                        section
-                        model.section_active
-                        |> Markdown.view
-                        |> Html.map UpdateMarkdown
-                    , slideBottom
-                        model.translation
-                        model.settings
-                        model.section_active
-                        section.effect_model
-                    ]
-                , slideA11y
+    case get_active_section model of
+        Just section ->
+            [ Html.div [ Attr.class "lia-slide" ]
+                [ slideTopBar model.translation model.url model.settings model.definition
+                , Config.init
                     model.translation
-                    model.settings.mode
-                    section.effect_model
+                    model.settings
+                    screen
+                    section
                     model.section_active
+                    |> Markdown.view
+                    |> Html.map UpdateMarkdown
+                , slideBottom
+                    model.translation
+                    model.settings
+                    model.section_active
+                    section.effect_model
                 ]
+            , slideA11y
+                model.translation
+                model.settings.mode
+                section.effect_model
+                model.section_active
+            ]
 
-            Nothing ->
-                [ Html.div [ Attr.class "lia-slide" ]
-                    [ slideTopBar
-                        model.translation
-                        model.url
-                        model.settings
-                        model.definition
-                    , Html.text "Ups, something went wrong"
-                    ]
+        Nothing ->
+            [ Html.div [ Attr.class "lia-slide" ]
+                [ slideTopBar
+                    model.translation
+                    model.url
+                    model.settings
+                    model.definition
+                , Html.text "Ups, something went wrong"
                 ]
+            ]
 
 
 {-| **@private:** used to diplay the text2speech output settings and spoken
@@ -189,7 +186,7 @@ navButton str title id msg =
     Html.button
         [ onClick msg
         , Attr.title title
-        , Attr.class "lia-btn lia-control lia-slide-control lia-left"
+        , Attr.class "lia-btn lia-btn--rounded lia-btn--outline"
         , Attr.id id
         ]
         [ Html.text str ]

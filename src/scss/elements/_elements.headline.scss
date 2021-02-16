@@ -27,7 +27,7 @@ h1,
 h2,
 h3 {
   font-family: $global-font-headline;
-  line-height: normal;
+  line-height: $global-line-height;
 }
 
 h4 {

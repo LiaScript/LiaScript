@@ -1,14 +1,7 @@
 .lia-slide {
   @include flex(column, nowrap, flex-start, stretch, stretch);
-  overflow: auto;
-  min-width: 320px;
-
-  .lia-paragraph {
-    text-align: justify;
-    @media (max-width: 360px) {
-      text-align: left;
-    }
-  }
+  padding: 3rem;
+  width: 100%;
 
   .lia-footer {
     $horiz: map-get($global-spacing, spacing-normal);

@@ -1,3 +1,7 @@
+/* --------------------------------------------------
+   Spacing
+   -------------------------------------------------- */
+
 $global-spacing: (
   spacing-huge: 2rem,
   spacing-large: 1rem,
@@ -6,11 +10,15 @@ $global-spacing: (
   spacing-small: 0.25rem,
   spacing-smaller: 0.125rem,
   spacing-tiny: 0.075rem,
-  toolbar-height: 3rem,
-  toc-width: 16.5rem,
 );
 
-$global-outline: 2.5px !default;
+/* --------------------------------------------------
+   UI treatments
+   -------------------------------------------------- */
+
+$global-radius: 8px !default;
+$global-outline: 3px !default;
+$global-transition: all 300ms ease-in-out !default;
 
 /* --------------------------------------------------
    Fonts
