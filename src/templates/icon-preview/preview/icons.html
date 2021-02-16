@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title><%= fontName %></title>
+	<style>
+		body {
+			font-family: sans-serif;
+			font-size: 14px;
+			line-height: 21px;
+			margin: 0;
+			padding: 0;
+			background: #f8f9fa;
+		}
+		.wrapper {
+			max-width: 920px;
+			padding: 2em 0;
+			margin: auto;
+		}
+		h1, h2, h3, h4, h5, h6 {
+			margin: 0 0 2em 0;
+			padding: 0;
+		}
+		hr {
+			padding: 0;
+			margin: 2em 0 3em 0;
+		}
+
+		nav {
+			margin: 0 0 2em 0;
+			padding: 0;
+		}
+		nav ul {
+			list-style: none;
+		}
+		nav ul li {
+
+		}
+		nav ul li a {
+
+		}
+
+		.row {
+			display: -ms-flexbox;
+			display: flex;
+			-ms-flex: 1 0 100%;
+			flex: 1 0 100%;
+			-ms-flex-wrap: wrap;
+			flex-wrap: wrap;
+			margin-right: -15px;
+			margin-left: -15px;
+		}
+		.row .col {
+			margin: 0 15px 15px 15px;
+			padding: 0;
+			-ms-flex-preferred-size: 0;
+			flex-basis: 0;
+			-ms-flex-positive: 1;
+			flex-grow: 0;
+			max-width: 100%;
+		}
+
+		.preview {
+			width: 105px;
+			display: inline-block;
+			margin: 0;
+			padding: 0;
+			text-align: center;
+			border-radius: 10px;
+			overflow: hidden;
+		}
+		.preview .inner {
+			display: inline-block;
+			width: 100%;
+			text-align: center;
+			background: #bfbfbf;
+		}
+		.preview .inner i {
+			line-height: 85px;
+			font-size: 40px;
+			color: #333;
+		}
+		.preview .label {
+			display: inline-block;
+			width: 100%;
+			box-sizing: border-box;
+			padding: 5px;
+			font-size: 10px;
+			font-family: Monaco, monospace;
+			color: #666;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			background: #ddd;
+			float: left;
+		}
+		.preview .glyph {
+			font-size: 14px;
+			color: #666;
+			background: #ddd;
+			display: block;
+			padding: 5px;
+		}
+
+		.section {
+			margin: 0 0 2em 0;
+			padding: 0;
+		}
+
+		table {
+			width: 100%;
+			display: table;
+			border-collapse: collapse;
+			border-spacing: 0;
+			background: #fff;
+		}
+		tr {
+			text-align: left;
+		}
+		th {
+			border-style: solid;
+			border-width: 1px;
+			border-color: #f1f3f5;
+			padding: 1rem;
+			font-weight: bold;
+		}
+		td {
+			border-style: solid;
+			border-width: 1px;
+			border-color: #f1f3f5;
+			padding: 1rem;
+		}
+
+		.example {
+			margin: 0 0 2em 0;
+			padding: 0;
+		}
+		.example .show {
+			margin: 0;
+			padding: 1em;
+			background: #fff;
+			border-radius: 10px 10px 0 0;
+			border: 1px solid #e6e6e6;
+		}
+		.example .code {
+			margin: 0;
+			padding: 1em;
+			color: #fff;
+			background: #343a40;
+			border-radius: 0 0 10px 10px;
+		}
+
+	</style>
+	<link rel="stylesheet" type="text/css" href="icons.css"/>
+</head>
+<body>
+
+<div class="wrapper">
+
+	<h1><%= fontName %></h1>
+
+	<nav>
+		<ul>
+			<li><a href="#preview">Preview</a></li>
+			<li><a href="#basicusage">Basic usage</a></li>
+			<li><a href="#sizingicons">Sizing Icons</a>
+				<ul>
+					<li><a href="#relativesizing">Relative sizing</a></li>
+					<li><a href="#sizingscaledetails">Sizing Scale Details</a></li>
+				</ul>
+			</li>
+			<li><a href="#fixedwidthicons">Fixed Width Icons</a></li>
+			<li><a href="#iconsinalist">Icons in a List</a></li>
+			<li><a href="#rotatingicons">Rotating Icons</a>
+				<ul>
+					<li><a href="#rotateclasses">Rotate Classes</a></li>
+				</ul>
+			</li>
+			<li><a href="#animating">Animating</a></li>
+			<li><a href="#borderedandpulledicons">Bordered + Pulled Icons</a></li>
+			<li><a href="#stackedicons">Stacked Icons</a>
+				<ul>
+					<li><a href="#aligningstackedandregularicons">Aligning Stacked and Regular Icons</a></li>
+				</ul>
+			</li>
+		</ul>
+	</nav>
+
+	<h2 id="preview">Preview</h2>
+
+	<div class="row">
+		<% _.each(glyphs, function(glyph) { %>
+		<div class="col">
+			<div class="preview">
+				<div class="inner">
+					<i class="<%= className %> <%= className %>-<%= glyph.name %> <%= className %>-4x"></i>
+				</div>
+				<span class='glyph'>\<%= glyph.codepoint.toString(16).toUpperCase() %></span>
+				<span class='label'><%= className %>-<%= glyph.name %></span>
+			</div>
+		</div>
+		<% }); %>
+	</div>
+
+	<hr/>
+
+	<h2>Helper Classes</h2>
+
+	<div class="content">
+
+		<div class="section">
+			<h3 id="basicusage">Basic usage</h3>
+
+			<div class="example">
+				<div class="show">
+					<i class="<%= className %> <%= className %>-home <%= className %>-3x"></i>
+					<span class="<%= className %> <%= className %>-reload <%= className %>-3x"></span>
+				</div>
+				<pre class="code">
+					<code>
+&lt;i class="<%= className %> <%= className %>-home <%= className %>-3x"&gt;&lt;/i&gt; &lt;!-- using an &lt;i&gt; element to reference the icon --&gt;
+&lt;span class="<%= className %> <%= className %>-reload <%= className %>-3x"&gt;&lt;/span&gt; &lt;!-- using a &lt;span&gt; element to reference the icon --&gt;
+					</code>
+				</pre>
+			</div>
+		</div>
+
+		<div class="section">
+			<h3 id="sizingicons">Sizing Icons</h3>
+			<p>Our Web Fonts + CSS include some basic controls for sizing icons in the context of your page’s UI.</p>
+
+			<h4 id="relativesizing">Relative sizing</h4>
+			<p>Icons inherit the font-size of their parent container which allow them to match any text you might use with them. With the following classes, we can increase or decrease the size of icons relative to that inherited font-size.</p>
+
+			<div class="example">
+				<div class="show">
+					<i class="<%= className %> <%= className %>-home <%= className %>-xs"></i>
+					<i class="<%= className %> <%= className %>-home <%= className %>-sm"></i>
+					<i class="<%= className %> <%= className %>-home <%= className %>-lg"></i>
+					<i class="<%= className %> <%= className %>-home <%= className %>-2x"></i>
+					<i class="<%= className %> <%= className %>-home <%= className %>-3x"></i>
+					<i class="<%= className %> <%= className %>-home <%= className %>-5x"></i>
+					<i class="<%= className %> <%= className %>-home <%= className %>-7x"></i>
+					<i class="<%= className %> <%= className %>-home <%= className %>-10x"></i>
+				</div>
+				<pre class="code">
+					<code>
+&lt;i class="<%= className %> <%= className %>-home <%= className %>-xs"&gt;&lt;/i&gt;
+&lt;i class="<%= className %> <%= className %>-home <%= className %>-sm"&gt;&lt;/i&gt;
+&lt;i class="<%= className %> <%= className %>-home <%= className %>-lg"&gt;&lt;/i&gt;
+&lt;i class="<%= className %> <%= className %>-home <%= className %>-2x"&gt;&lt;/i&gt;
+&lt;i class="<%= className %> <%= className %>-home <%= className %>-3x"&gt;&lt;/i&gt;
+&lt;i class="<%= className %> <%= className %>-home <%= className %>-5x"&gt;&lt;/i&gt;
+&lt;i class="<%= className %> <%= className %>-home <%= className %>-7x"&gt;&lt;/i&gt;
+&lt;i class="<%= className %> <%= className %>-home <%= className %>-10x"&gt;&lt;/i&gt;
+					</code>
+				</pre>
+			</div>
+
+			<h4 id="sizingscaledetails">Sizing Scale Details</h4>
+
+			<table>
+				<thead>
+				<tr>
+					<th style="text-align: left;">Class</th>
+					<th style="text-align: left;">Size</th>
+					<th style="text-align: left;">Other Notes</th>
+				</tr>
+				</thead>
+				<tbody>
+				<tr>
+					<td style="text-align: left;"><code class="inline"><%= className %>-xs</code></td>
+					<td style="text-align: left;">.75em</td>
+					<td style="text-align: left;"></td>
+				</tr>
+				<tr>
+					<td style="text-align: left;"><code class="inline"><%= className %>-sm</code></td>
+					<td style="text-align: left;">.875em</td>
+					<td style="text-align: left;"></td>
+				</tr>
+				<tr>
+					<td style="text-align: left;"><code class="inline"><%= className %>-lg</code></td>
+					<td style="text-align: left;">1.33em</td>
+					<td style="text-align: left;">Also applies <code class="inline">vertical-align: -25%</code></td>
+				</tr>
+				<tr>
+					<td style="text-align: left;"><code class="inline"><%= className %>-2x</code></td>
+					<td style="text-align: left;">2em</td>
+					<td style="text-align: left;"></td>
+				</tr>
+				<tr>
+					<td style="text-align: left;"><code class="inline"><%= className %>-3x</code></td>
+					<td style="text-align: left;">3em</td>
+					<td style="text-align: left;"></td>
+				</tr>
+				<tr>
+					<td style="text-align: left;"><code class="inline"><%= className %>-4x</code></td>
+					<td style="text-align: left;">4em</td>
+					<td style="text-align: left;"></td>
+				</tr>
+				<tr>
+					<td style="text-align: left;"><code class="inline"><%= className %>-5x</code></td>
+					<td style="text-align: left;">5em</td>
+					<td style="text-align: left;"></td>
+				</tr>
+				<tr>
+					<td style="text-align: left;"><code class="inline"><%= className %>-6x</code></td>
+					<td style="text-align: left;">6em</td>
+					<td style="text-align: left;"></td>
+				</tr>
+				<tr>
+					<td style="text-align: left;"><code class="inline"><%= className %>-7x</code></td>
+					<td style="text-align: left;">7em</td>
+					<td style="text-align: left;"></td>
+				</tr>
+				<tr>
+					<td style="text-align: left;"><code class="inline"><%= className %>-8x</code></td>
+					<td style="text-align: left;">8em</td>
+					<td style="text-align: left;"></td>
+				</tr>
+				<tr>
+					<td style="text-align: left;"><code class="inline"><%= className %>-9x</code></td>
+					<td style="text-align: left;">9em</td>
+					<td style="text-align: left;"></td>
+				</tr>
+				<tr>
+					<td style="text-align: left;"><code class="inline"><%= className %>-10x</code></td>
+					<td style="text-align: left;">10em</td>
+					<td style="text-align: left;"></td>
+				</tr>
+				</tbody>
+			</table>
+
+		</div>
+
+		<div class="section">
+			<h3 id="fixedwidthicons">Fixed Width Icons</h3>
+			<p>Need to vertically align a series of icons, like in a list or navigation menu? We’ve included a fixed-width support styling for just those cases.</p>
+			<p>Add a class of <%= className %>-fw on the HTML element referencing your icon to set one or more icons to the same fixed width. This is great to use when varying icon widths (e.g. a tall but skinny icon atop a wide but short icon) would throw off vertical alignment. For clarity in the following example, we’ve added a background color on the icon so you can see the fixed width and also bumped up the font-size of the parent element.</p>
+
+			<div class="example">
+				<div class="show">
+					<div><i class="<%= className %> <%= className %>-home <%= className %>-fw" style="background:DodgerBlue"></i> Home</div>
+					<div><i class="<%= className %> <%= className %>-gear <%= className %>-fw" style="background:SkyBlue"></i> Gear</div>
+					<div><i class="<%= className %> <%= className %>-reload <%= className %>-fw" style="background:DodgerBlue"></i> Reload</div>
+					<div><i class="<%= className %> <%= className %>-arrow-left <%= className %>-fw" style="background:SkyBlue"></i> Arrow Left</div>
+					<div><i class="<%= className %> <%= className %>-arrow-up <%= className %>-fw" style="background:DodgerBlue"></i> Arrow Up</div>
+				</div>
+				<pre class="code">
+					<code>
+&lt;div&gt;&lt;i class="<%= className %> <%= className %>-home <%= className %>-fw" style="background:DodgerBlue">&lt;/i&gt; Home&lt;/div&gt;
+&lt;div&gt;&lt;i class="<%= className %> <%= className %>-gear <%= className %>-fw" style="background:SkyBlue">&lt;/i&gt; Gear&lt;/div&gt;
+&lt;div&gt;&lt;i class="<%= className %> <%= className %>-reload <%= className %>-fw" style="background:DodgerBlue">&lt;/i&gt; Reload&lt;/div&gt;
+&lt;div&gt;&lt;i class="<%= className %> <%= className %>-arrow-left <%= className %>-fw" style="background:SkyBlue">&lt;/i&gt; Arrow Left&lt;/div&gt;
+&lt;div&gt;&lt;i class="<%= className %> <%= className %>-arrow-up <%= className %>-fw" style="background:DodgerBlue">&lt;/i&gt; Arrow Up&lt;/div&gt;
+					</code>
+				</pre>
+			</div>
+		</div>
+
+		<div class="section">
+			<h3 id="iconsinalist">Icons in a List</h3>
+			<p>Building off of the vertical alignment in our fixed-width styling, we added some utility styling to handle HTML lists with icons used as decorative bullets.</p>
+			<p>Use <%= className %>-ul and <%= className %>-li to replace default bullets in unordered lists.</p>
+
+			<div class="example">
+				<div class="show">
+					<ul class="<%= className %>-ul">
+						<li><span class="<%= className %>-li"><i class="<%= className %> <%= className %>-home"></i></span>List icons can</li>
+						<li><span class="<%= className %>-li"><i class="<%= className %> <%= className %>-gear"></i></span>be used to</li>
+						<li><span class="<%= className %>-li"><i class="<%= className %> <%= className %>-reload <%= className %>-pulse"></i></span>replace bullets</li>
+						<li><span class="<%= className %>-li"><i class="<%= className %> <%= className %>-arrow-left"></i></span>in lists</li>
+					</ul>
+				</div>
+				<pre class="code">
+					<code>
+&lt;ul class="<%= className %>-ul"&gt;
+	&lt;li&gt;&lt;span class="<%= className %>-li"&gt;&lt;i class="<%= className %> <%= className %>-home"&gt;&lt;/i&gt;&lt;/span&gt;List icons can&lt;/li&gt;
+	&lt;li&gt;&lt;span class="<%= className %>-li"&gt;&lt;i class="<%= className %> <%= className %>-gear"&gt;&lt;/i&gt;&lt;/span&gt;be used to&lt;/li&gt;
+	&lt;li&gt;&lt;span class="<%= className %>-li"&gt;&lt;i class="<%= className %> <%= className %>-reload <%= className %>-pulse"&gt;&lt;/i&gt;&lt;/span&gt;replace bullets&lt;/li&gt;
+	&lt;li&gt;&lt;span class="<%= className %>-li"&gt;&lt;i class="<%= className %> <%= className %>-arrow-left"&gt;&lt;/i&gt;&lt;/span&gt;in lists&lt;/li&gt;
+&lt;/ul&gt;
+					</code>
+				</pre>
+			</div>
+		</div>
+
+		<div class="section">
+			<h3 id="rotatingicons">Rotating Icons</h3>
+			<p>Sometimes you need to rotate, flip, or mirror an icon for it to work in your project or design. We’ve included some quick utilities to help with that.</p>
+			<p>To arbitrarily rotate and flip icons, use the <%= className %>-rotate-* and <%= className %>-flip-* classes when you reference an icon.</p>
+
+			<div class="example">
+				<div class="show">
+					<div class="<%= className %>-4x">
+						<i class="<%= className %> <%= className %>-home"></i>
+						<i class="<%= className %> <%= className %>-home <%= className %>-rotate-90"></i>
+						<i class="<%= className %> <%= className %>-home <%= className %>-rotate-180"></i>
+						<i class="<%= className %> <%= className %>-home <%= className %>-rotate-270"></i>
+						<i class="<%= className %> <%= className %>-home <%= className %>-flip-horizontal"></i>
+						<i class="<%= className %> <%= className %>-home <%= className %>-flip-vertical"></i>
+						<i class="<%= className %> <%= className %>-home <%= className %>-flip-both"></i>
+					</div>
+				</div>
+				<pre class="code">
+					<code>
+&lt;div class="<%= className %>-4x"&gt;
+	&lt;i class="<%= className %> <%= className %>-home">&lt;/i&gt;
+	&lt;i class="<%= className %> <%= className %>-home <%= className %>-rotate-90">&lt;/i&gt;
+	&lt;i class="<%= className %> <%= className %>-home <%= className %>-rotate-180">&lt;/i&gt;
+	&lt;i class="<%= className %> <%= className %>-home <%= className %>-rotate-270">&lt;/i&gt;
+	&lt;i class="<%= className %> <%= className %>-home <%= className %>-flip-horizontal">&lt;/i&gt;
+	&lt;i class="<%= className %> <%= className %>-home <%= className %>-flip-vertical">&lt;/i&gt;
+	&lt;i class="<%= className %> <%= className %>-home <%= className %>-flip-both">&lt;/i&gt;
+&lt;/div&gt;
+					</code>
+				</pre>
+			</div>
+
+			<h4 id="rotateclasses">Rotate Classes</h4>
+
+			<table>
+				<thead>
+				<tr>
+					<th style="text-align: left;">Class</th>
+					<th style="text-align: left;">Rotation Amount</th>
+				</tr>
+				</thead>
+				<tbody>
+				<tr>
+					<td style="text-align: left;"><code class="inline">fa-rotate-90</code></td>
+					<td style="text-align: left;">90°</td>
+				</tr>
+				<tr>
+					<td style="text-align: left;"><code class="inline">fa-rotate-180</code></td>
+					<td style="text-align: left;">180°</td>
+				</tr>
+				<tr>
+					<td style="text-align: left;"><code class="inline">fa-rotate-270</code></td>
+					<td style="text-align: left;">270°</td>
+				</tr>
+				<tr>
+					<td style="text-align: left;"><code class="inline">fa-flip-horizontal</code></td>
+					<td style="text-align: left;">mirrors icon horizontally</td>
+				</tr>
+				<tr>
+					<td style="text-align: left;"><code class="inline">fa-flip-vertical</code></td>
+					<td style="text-align: left;">mirrors icon vertically</td>
+				</tr>
+				<tr>
+					<td style="text-align: left;"><code class="inline">fa-flip-both</code></td>
+					<td style="text-align: left;">mirrors icon vertically and horizontally (requires 5.7.0 or greater)</td>
+				</tr>
+				</tbody>
+			</table>
+
+		</div>
+
+		<div class="section">
+			<h3 id="animating">Animating</h3>
+			<p>Need a loading or status communicating-icon to spin? You’ve come to the right place. We’ve included some basic animations in our support styling for you to use.</p>
+			<p>Use the <%= className %>-spin class to get any icon to rotate, and use <%= className %>-pulse to have it rotate with eight steps.</p>
+
+			<div class="example">
+				<div class="show">
+					<i class="<%= className %> <%= className %>-home <%= className %>-3x <%= className %>-spin"></i>
+					<i class="<%= className %> <%= className %>-gear <%= className %>-3x <%= className %>-spin"></i>
+					<i class="<%= className %> <%= className %>-reload <%= className %>-3x <%= className %>-pulse"></i>
+					<i class="<%= className %> <%= className %>-arrow-left <%= className %>-3x <%= className %>-pulse"></i>
+				</div>
+				<pre class="code">
+					<code>
+&lt;i class="<%= className %> <%= className %>-home <%= className %>-3x <%= className %>-spin"&gt;&lt;/i&gt;
+&lt;i class="<%= className %> <%= className %>-gear <%= className %>-3x <%= className %>-spin"&gt;&lt;/i&gt;
+&lt;i class="<%= className %> <%= className %>-reload <%= className %>-3x <%= className %>-pulse"&gt;&lt;/i&gt;
+&lt;i class="<%= className %> <%= className %>-arrow-left <%= className %>-3x <%= className %>-pulse"&gt;&lt;/i&gt;
+					</code>
+				</pre>
+			</div>
+		</div>
+
+		<div class="section">
+			<h3 id="borderedandpulledicons">Bordered + Pulled Icons</h3>
+			<p>Occasionally you might want to wrap text around an icon or give it some visual distinction with a border. Here’s how with the support styling we’ve included.</p>
+			<p>Use <%= className %>-border and <%= className %>-pull-right or <%= className %>-pull-left for easy pull quotes or article icons.</p>
+
+			<div class="example">
+				<div class="show">
+					<i class="<%= className %> <%= className %>-arrow-right <%= className %>-2x <%= className %>-pull-left"></i>
+					Gatsby believed in the green light, the orgastic future that year by year recedes before us.
+					It eluded us then, but that’s no matter — tomorrow we will run faster, stretch our arms further...
+					And one fine morning — So we beat on, boats against the current, borne back ceaselessly into the past.
+				</div>
+				<pre class="code">
+					<code>
+&lt;i class="<%= className %> <%= className %>-arrow-right <%= className %>-2x <%= className %>-pull-left"&gt;&lt;/i&gt;
+Gatsby believed in the green light, the orgastic future that year by year recedes before us.
+It eluded us then, but that’s no matter — tomorrow we will run faster, stretch our arms further...
+And one fine morning — So we beat on, boats against the current, borne back ceaselessly into the past.
+					</code>
+				</pre>
+			</div>
+
+			<p>Use <%= className %>-border in combination with pulled icon styles for more visual separation.</p>
+
+			<div class="example">
+				<div class="show">
+					<i class="<%= className %> <%= className %>-arrow-right <%= className %>-2x <%= className %>-pull-right <%= className %>-border"></i>
+					Gatsby believed in the green light, the orgastic future that year by year recedes before us.
+					It eluded us then, but that’s no matter — tomorrow we will run faster, stretch our arms further...
+					And one fine morning — So we beat on, boats against the current, borne back ceaselessly into the past.
+				</div>
+				<pre class="code">
+					<code>
+&lt;i class="<%= className %> <%= className %>-arrow-right <%= className %>-2x <%= className %>-pull-right <%= className %>-border"&gt;&lt;/i&gt;
+Gatsby believed in the green light, the orgastic future that year by year recedes before us.
+It eluded us then, but that’s no matter — tomorrow we will run faster, stretch our arms further...
+And one fine morning — So we beat on, boats against the current, borne back ceaselessly into the past.
+					</code>
+				</pre>
+			</div>
+		</div>
+
+		<div class="section">
+			<h3 id="stackedicons">Stacked Icons</h3>
+			<p>You can stack our icons easily with the support styling bundled with this font.</p>
+			<p>To stack multiple icons, use the <%= className %>-stack class on the parent HTML element of the 2 icons you want to stack. Then add the <%= className %>-stack-1x class for the regularly sized icon and add the <%= className %>-stack-2x class for the larger icon. <%= className %>-inverse can be added to the icon with the <%= className %>-stack-1x to help with a knock-out looking effect. You can even throw larger icon classes on the parent to get further control of sizing.</p>
+
+			<div class="example">
+				<div class="show">
+					<span class="<%= className %>-stack <%= className %>-2x">
+						<i class="<%= className %> <%= className %>-stack-2x <%= className %>-circle"></i>
+						<i class="<%= className %> <%= className %>-stack-1x <%= className %>-twitter"></i>
+					</span>
+					<span class="<%= className %>-stack <%= className %>-2x">
+						<i class="<%= className %> <%= className %>-stack-2x <%= className %>-ban"></i>
+						<i class="<%= className %> <%= className %>-stack-1x <%= className %>-facebook"></i>
+					</span>
+				</div>
+				<pre class="code">
+					<code>
+&lt;span class="<%= className %>-stack <%= className %>-2x"&gt;
+	&lt;i class="<%= className %> <%= className %>-stack-2x <%= className %>-circle"&gt;&lt;/i&gt;
+	&lt;i class="<%= className %> <%= className %>-stack-1x <%= className %>-twitter"&gt;&lt;/i&gt;
+&lt;/span&gt;
+&lt;span class="<%= className %>-stack <%= className %>-2x"&gt;
+	&lt;i class="<%= className %> <%= className %>-stack-2x <%= className %>-ban"&gt;&lt;/i&gt;
+	&lt;i class="<%= className %> <%= className %>-stack-1x <%= className %>-facebook"&gt;&lt;/i&gt;
+&lt;/span&gt;
+					</code>
+				</pre>
+			</div>
+
+			<h4 id="aligningstackedandregularicons">Aligning Stacked and Regular Icons</h4>
+			<p>You can use stacked icons right alongside single icons. Since stacked icons are styled by our framework’s included CSS to be twice the size of single icons, you’ll need to either size down the stacked icon or size up the single icons.</p>
+
+			<div class="example">
+				<div class="show">
+					<i class="<%= className %> <%= className %>-circle <%= className %>-2x"></i>
+					<span class="<%= className %>-stack" style="vertical-align: top;">
+						<i class="<%= className %> <%= className %>-circle <%= className %>-stack-2x"></i>
+						<i class="<%= className %> <%= className %>-twitter <%= className %>-stack-1x"></i>
+					</span>
+					<span class="<%= className %>-stack" style="vertical-align: top;">
+						<i class="<%= className %> <%= className %>-circle-solid <%= className %>-stack-2x"></i>
+						<i class="<%= className %> <%= className %>-twitter <%= className %>-stack-1x <%= className %>-inverse"></i>
+					</span>
+					<i class="<%= className %> <%= className %>-circle <%= className %>-2x"></i>
+				</div>
+				<pre class="code">
+					<code>
+&lt;i class="<%= className %> <%= className %>-circle <%= className %>-2x"&gt;&lt;/i&gt;
+&lt;span class="<%= className %>-stack" style="vertical-align: top;"&gt;
+	&lt;i class="<%= className %> <%= className %>-circle <%= className %>-stack-2x"&gt;&lt;/i&gt;
+	&lt;i class="<%= className %> <%= className %>-twitter <%= className %>-stack-1x"&gt;&lt;/i&gt;
+&lt;/span&gt;
+&lt;span class="<%= className %>-stack" style="vertical-align: top;"&gt;
+	&lt;i class="<%= className %> <%= className %>-circle-solid <%= className %>-stack-2x"&gt;&lt;/i&gt;
+	&lt;i class="<%= className %> <%= className %>-twitter <%= className %>-stack-1x <%= className %>-inverse"&gt;&lt;/i&gt;
+&lt;/span&gt;
+&lt;i class="<%= className %> <%= className %>-circle <%= className %>-2x"&gt;&lt;/i&gt;
+					</code>
+				</pre>
+			</div>
+		</div>
+
+	</div>
+</div>
+
+</body>
+</html>
