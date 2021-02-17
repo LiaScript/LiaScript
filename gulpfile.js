@@ -94,7 +94,7 @@ gulp.task('iconfont', (done) => {
             let targetPath = outputPath + "/" + fontName
             iconStream.on('glyphs', (glyphs, options) => {
                 gulp.src(paths.iconTemplatePath + '/icons.scss').pipe(consolidate('lodash', {
-                    fontPath: (targetPath + '/fonts/').replace('./', '/'),
+                    fontPath: ('../..' + (targetPath + '/fonts/').replace('./', '/')),
                     fontName: fontName,
                     className: 'icon',
                     glyphs: glyphs,
@@ -107,7 +107,7 @@ gulp.task('iconfont', (done) => {
             let targetPath = outputPath + "/" + fontName
             iconStream.on('glyphs', (glyphs, options) => {
                 gulp.src(paths.iconTemplatePath + '/icons.css').pipe(consolidate('lodash', {
-                    fontPath: (targetPath + '/fonts/').replace('./', '/'),
+                    fontPath: ('../..' + (targetPath + '/fonts/').replace('./', '/')),
                     fontName: fontName,
                     className: 'icon',
                     glyphs: glyphs,

@@ -4,17 +4,29 @@
   line-height: $global-line-height;
   padding: 0.5rem 1rem;
 
-  &--rounded {
-    border-radius: $global-radius;
+  &--tag{
+    border-radius: 0;
   }
 
   &--outline {
     background-color: transparent;
+    border: $global-border;
+  }
+
+  &--transparent {
+    background-color: transparent;
+    border: none;
   }
 
   &--hint {
     @include material-icon;
     text-decoration: none;
+    vertical-align: middle;
+  }
+
+  > .icon {
+    font-size: 1.6rem;
+    line-height: inherit;
     vertical-align: middle;
   }
 

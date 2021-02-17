@@ -68,6 +68,12 @@ design model =
                     "dark"
                )
         )
+    , Attr.class <|
+        if model.table_of_contents then
+            "lia-toc--hidden"
+
+        else
+            "lia-toc--visible"
     ]
 
 

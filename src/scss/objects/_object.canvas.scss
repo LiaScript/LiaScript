@@ -1,7 +1,23 @@
+/* --------------------------------------------------
+   Layout Settings
+   -------------------------------------------------- */
+
+$toc-width: 315px !default;
+
+/* --------------------------------------------------
+   Canvas
+   -------------------------------------------------- */   
 .lia-canvas {
   display: flex;
   height: 100vh;
+  left: 0;
+  position: relative;
+  transition: $global-transition;
   width: 100vw;
-  max-width: 2560px;
-  margin: 0 auto;
+  overflow-x: hidden;
+
+  &.lia-toc--visible {
+    left: $toc-width;
+    width: calc(100% - #{$toc-width});
+  }
 }

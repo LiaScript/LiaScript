@@ -1,0 +1,13 @@
+.lia-btn, .lia-input, .lia-select select, .lia-textarea {
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    align-items: center;
+    border-radius: $global-radius;
+    border: 1px solid transparent;
+    box-shadow: none;
+    display: inline-flex;
+    justify-content: flex-start;
+    padding: .7rem;
+    position: relative;
+    vertical-align: top;
+}

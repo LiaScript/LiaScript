@@ -1,28 +1,181 @@
-@import "toc/toc.settings";
-@import "toc/toc.content";
-
 .lia-toc {
   display: flex;
   flex-direction: column;
-  padding: 3rem 3rem 1rem;
-  width: 315px;
+  height: 100%;
+  left: 0;
+  padding: 3rem 3rem 1rem 0;
+  position: fixed;
+  transition: $global-transition;
+  width: $toc-width;
 
-  @include toc-settings;
+  &--closed {
+    left: -$toc-width;
+  }
 
-  @include toc-content;
+  &__search {
+    margin: 0 0 4.8rem 3rem;
+    position: relative;
+    display: inline-block;
+
+    input {
+      padding-left: 3rem;
+      padding-right: 3.75rem;
+      transition: $global-transition;
+    }
+
+    .icon-search {
+      position: absolute;
+      left: 0.5rem;
+      top: 50%;
+      transform-origin: center center;
+      transform: translate(0, -50%);
+      font-size: 2rem;
+    }
+
+    .lia-toc__clear-index {
+      position: absolute;
+      background: none;
+      border: 0;
+      height: 3rem;
+      right: .5rem;
+      top: 50%;
+      transform-origin: center center;
+      transform: translateY(-50%);
+      user-select: none;
+      width: 3rem;
+    }
+  }
+  
+  &__content {
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    margin-bottom: 1rem;
+
+    a {
+      width: 100%;
+      text-decoration: none;
+      padding: 0.8rem 0 .8rem 3rem;
+      position: relative;
+  
+      &.lia-toc__link--is-lvl- {
+        &1 {
+          font-size: 2rem;
+          font-weight: 700;
+        }
+  
+        &2 {
+          font-weight: 600;
+          font-size: 1.7rem;
+          padding-left: $global-font-size + 3rem;
+          position: relative;
+
+          &:after {
+            content: "";
+            background-color: #f0f0f0;
+            display: inline-block;
+            height: 1px;
+            left: 3rem;
+            position: absolute;
+            right: 3rem;
+            top: 0;
+          }
+        }
+  
+        &3 {
+          padding-left: 2 * $global-font-size + 3rem;
+        }
+  
+        &4 {
+          padding-left: 3 * $global-font-size + 3rem;
+        }
+  
+        &5 {
+          padding-left: 4 * $global-font-size + 3rem;
+        }
+      }
+    }
+  }
+
+  &__bottom {
+    border-top: $global-border;
+    padding: 1rem 0 1rem 3rem;
+  }
 }
 
 @mixin style-toc($theme) {
   .lia-toc {
-    $bg: map-get($theme, background);
-    $fg: color-contrast($bg);
-    background: mix($bg, $fg, 95%);
 
     &::after {
       background: mix($bg, $fg, 80%);
     }
 
-    @include style-toc-settings;
-    @include style-toc-content;
+    .lia-toc__content {
+      $_bg: map-get($theme, background);
+      $fg: color-contrast($_bg);
+      $bg: mix($bg, $fg, 95%);
+  
+      a {
+        &:link {
+          $col: mix($fg, $bg, 80%);
+          color: $col;
+    
+          &:hover {
+            color: lighten($col, 20%);
+          }
+    
+          &:active {
+            color: darken($col, 20%);
+          }
+        }
+    
+        &:visited {
+          $col: $fg;
+          color: $col;
+    
+          &:hover {
+            color: lighten($col, 20%);
+          }
+    
+          &:active {
+            color: darken($col, 20%);
+          }
+        }
+    
+        &.lia-active {
+          $col: map-get($theme, primary);
+          $fg: color-contrast($col);
+          
+          color: $col;
+
+          &:before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background-color: $color-turquoise-1;
+          }
+    
+          &:hover {
+            color: lighten($col, 20%);
+          }
+    
+          &:active {
+            color: darken($col, 20%);
+          }
+        }
+    
+        &.lia-not-visited {
+          color: darken($fg, 30%);
+        }
+    
+        &.lia-error {
+          color: rgb(1, 0, 0);
+          background: rgb(1, 0, 0);
+        }
+      }
+    }
   }
 }

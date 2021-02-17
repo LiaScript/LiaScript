@@ -1,22 +1,17 @@
 .lia-input {
-  $vert: map-get($global-spacing, spacing-small);
-  $marg: map-get($global-spacing, spacing-normal);
-
-  padding: $vert 0;
-  margin: $marg;
-
-  border: none;
-  outline: none;
-  transition: border-bottom-color 0.5s ease-out 0s;
-
-  &:not([disabled]) {
-    border-bottom: 1.5px solid;
-  }
-
-  &[disabled] {
-    border-bottom: 1.5px dotted;
-  }
+  max-width: 100%;
+  width: 100%;
 }
+
+/* clears the 'X' from Internet Explorer */
+input[type=search]::-ms-clear {  display: none; width : 0; height: 0; }
+input[type=search]::-ms-reveal {  display: none; width : 0; height: 0; }
+
+/* clears the 'X' from Chrome */
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration { display: none; }
 
 input[type="radio"],
 input[type="checkbox"] {
@@ -84,16 +79,13 @@ input[type="checkbox"] {
 
     &:not([disabled]) {
       color: $fg;
-      border-bottom-color: mix($bg, $fg, 50%);
     }
 
     &[disabled] {
       color: rgba($fg, 0.38);
-      border-bottom-color: mix($bg, $fg, 50%);
     }
 
     &:focus {
-      border-bottom-color: map-get($theme, primary);
     }
   }
 

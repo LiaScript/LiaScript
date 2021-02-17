@@ -2,6 +2,7 @@
 @import "settings/settings.colors";
 @import "settings/settings.fonts";
 @import "settings/settings.global";
+@import "settings/settings.iconfont";
 @import "settings/settings.typography";
 @import "settings/settings.animations";
 
@@ -13,6 +14,7 @@
 
 // Generic
 @import "generic/generic.reset";
+@import "generic/generic.shared";
 
 // Elements
 @import "elements/elements.button";
@@ -34,6 +36,7 @@
 @import "components/components.accordion";
 @import "components/components.card";
 @import "components/components.dropdown";
+@import "components/components.pagination";
 @import "components/components.quote";
 @import "components/components.script";
 @import "components/components.slide";

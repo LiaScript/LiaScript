@@ -65,7 +65,8 @@ viewIndex hasIndex model =
 
         --|> Html.map Script
         , if hasIndex then
-            Index.bottom Home
+            Html.div [ Attr.class "lia-toc__bottom" ]
+                [ Index.bottom Home ]
 
           else
             Html.text ""
@@ -181,15 +182,17 @@ slideA11y lang mode effect id =
 4.  `msg`: to release if pressed
 
 -}
-navButton : String -> String -> String -> msg -> Html msg
-navButton str title id msg =
+navButton : String -> String -> String -> String -> msg -> Html msg
+navButton str title id class msg =
     Html.button
         [ onClick msg
         , Attr.title title
-        , Attr.class "lia-btn lia-btn--rounded lia-btn--outline"
+        , Attr.class "lia-btn lia-btn--transparent"
         , Attr.id id
         ]
-        [ Html.text str ]
+        [ Html.i [ Attr.class class ]
+            []
+        ]
 
 
 {-| **@private:** the navigation abr:
@@ -246,20 +249,22 @@ navItem =
 
 slideNavigation : Lang -> Mode -> Int -> Effect.Model SubSection -> Html Msg
 slideNavigation lang mode slide effect =
-    Html.div []
-        [ navButton "navigate_before" (Trans.basePrev lang) "lia-btn-prev" PrevSection
-        , Html.div
-            []
-            [ Html.text (String.fromInt (slide + 1))
-            , Html.text <|
-                case mode of
-                    Textbook ->
-                        ""
+    Html.div [ Attr.class "lia-pagination" ]
+        [ Html.div [ Attr.class "lia-pagination__content" ]
+            [ navButton "navigate_before" (Trans.basePrev lang) "lia-btn-prev" "icon icon-arrow-left" PrevSection
+            , Html.span
+                [ Attr.class "lia-pagination__current" ]
+                [ Html.text (String.fromInt (slide + 1))
+                , Html.text <|
+                    case mode of
+                        Textbook ->
+                            ""
 
-                    _ ->
-                        state effect
+                        _ ->
+                            state effect
+                ]
+            , navButton "navigate_next" (Trans.baseNext lang) "lia-btn-next" "icon icon-arrow-right" NextSection
             ]
-        , navButton "navigate_next" (Trans.baseNext lang) "lia-btn-next" NextSection
         ]
 
 
