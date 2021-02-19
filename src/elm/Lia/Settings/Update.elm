@@ -64,6 +64,7 @@ update msg model =
             no_log
                 { model
                     | support_menu = not model.support_menu
+                    , action = Nothing
                 }
 
         Toggle Sound ->

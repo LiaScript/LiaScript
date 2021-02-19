@@ -231,31 +231,20 @@ slideTopBar lang url settings def =
                     else
                         "lia-support-menu__collapse--open"
                 ]
-                [ [ Settings.btnMode lang
-                  , Settings.btnSettings lang
-                  , def.translation
-                        |> Dict.isEmpty
-                        |> Settings.btnTranslations lang
-                  , Settings.btnShare lang
-                  , Settings.btnInformation lang
+                [ [ Settings.menuMode lang settings
+                  , Settings.menuSettings lang settings
+                  , Settings.menuTranslations lang def settings
+                  , Settings.menuShare lang url settings
+                  , Settings.menuInformation lang def settings
                   ]
-                    |> List.map navItem
+                    |> List.map (Html.li [ Attr.class "nav__item" ])
                     |> Html.ul [ Attr.class "lia-support-menu__nav" ]
                 ]
             ]
-        , settings
-            |> Settings.view lang url def
         ]
     ]
         |> Html.header [ Attr.class "lia-header", Attr.id "lia-toolbar-nav" ]
         |> Html.map UpdateSettings
-
-
-navItem =
-    List.singleton
-        >> Html.li
-            [ Attr.class "nav__item"
-            ]
 
 
 slideNavigation : Lang -> Mode -> Int -> Effect.Model SubSection -> Html Msg

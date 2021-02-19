@@ -1,13 +1,12 @@
 module Lia.Settings.View exposing
     ( btnIndex
-    , btnInformation
-    , btnMode
-    , btnSettings
-    , btnShare
     , btnSupport
-    , btnTranslations
     , design
-    , view
+    , menuInformation
+    , menuMode
+    , menuSettings
+    , menuShare
+    , menuTranslations
     )
 
 import Array
@@ -23,33 +22,6 @@ import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
 import Lia.Settings.Update exposing (Msg(..), Toggle(..))
 import QRCode
 import Translations as Trans exposing (Lang)
-
-
-view :
-    Lang
-    -> String
-    -> Definition
-    -> Settings
-    -> Html Msg -- String -> String -> Maybe Event -> Definition -> Html Msg
-view lang url definition settings =
-    case settings.action of
-        Nothing ->
-            Html.text ""
-
-        Just ShowModes ->
-            viewModes lang settings
-
-        Just ShowSettings ->
-            viewSettings lang settings
-
-        Just Share ->
-            qrCodeView url
-
-        Just ShowTranslations ->
-            viewTranslations definition.translation
-
-        Just ShowInformation ->
-            viewInformation lang definition
 
 
 design : Settings -> List (Html.Attribute msg)
@@ -84,7 +56,7 @@ design model =
     ]
 
 
-viewSettings : Lang -> Settings -> Html Msg
+viewSettings : Lang -> Settings -> List (Html Msg)
 viewSettings lang settings =
     [ viewLightMode lang settings.light
     , Html.hr [] []
@@ -94,9 +66,6 @@ viewSettings lang settings =
     , Html.hr [] []
     , viewSizing lang settings.font_size
     ]
-        |> Html.div
-            [ Attr.class "lia-support-menu__submenu"
-            ]
 
 
 viewLightMode : Lang -> Bool -> Html Msg
@@ -141,7 +110,7 @@ viewTheme lang theme =
         |> Html.span [ Attr.class "lia-settings__theme-colors" ]
 
 
-viewModes : Lang -> Settings -> Html Msg
+viewModes : Lang -> Settings -> List (Html Msg)
 viewModes lang settings =
     [ viewMode lang Textbook settings.mode
     , Html.hr [] []
@@ -149,9 +118,6 @@ viewModes lang settings =
     , Html.hr [] []
     , viewMode lang Slides settings.mode
     ]
-        |> Html.div
-            [ Attr.class "lia-support-menu__submenu"
-            ]
 
 
 viewMode : Lang -> Mode -> Mode -> Html Msg
@@ -219,7 +185,7 @@ bold =
     Html.text >> List.singleton >> Html.b []
 
 
-viewInformation : Lang -> Definition -> Html Msg
+viewInformation : Lang -> Definition -> List (Html Msg)
 viewInformation lang definition =
     []
         |> CList.addIf (definition.attributes /= [])
@@ -246,9 +212,6 @@ viewInformation lang definition =
             , Html.text definition.author
             ]
         |> List.map (Html.span [])
-        |> Html.div
-            [ Attr.class "lia-support-menu__submenu"
-            ]
 
 
 viewAttributes : Lang -> List Inlines -> Html Msg
@@ -267,7 +230,7 @@ thanks lang to =
         |> Html.map (\_ -> Ignore)
 
 
-viewTranslations : Dict String String -> Html Msg
+viewTranslations : Dict String String -> List (Html Msg)
 viewTranslations =
     Dict.toList
         >> List.map
@@ -276,7 +239,19 @@ viewTranslations =
                     [ Attr.href url, Attr.class "lia-link" ]
                     [ Html.text title, Html.br [] [] ]
             )
-        >> Html.div [ Attr.class "lia-support-menu__submenu" ]
+
+
+submenu : Bool -> List (Html Msg) -> Html Msg
+submenu isActive =
+    Html.div
+        [ Attr.class "lia-support-menu__submenu"
+        , Attr.class <|
+            if isActive then
+                "active"
+
+            else
+                ""
+        ]
 
 
 qrCodeView : String -> Html msg
@@ -284,8 +259,6 @@ qrCodeView =
     QRCode.fromString
         >> Result.map (QRCode.toSvgWithoutQuietZone [])
         >> Result.withDefault (Html.text "Error while encoding to QRCode.")
-        >> List.singleton
-        >> Html.div [ Attr.class "lia-support-menu__submenu" ]
 
 
 viewEditorTheme : Lang -> String -> Html Msg
@@ -367,6 +340,7 @@ btnIndex lang =
         ]
 
 
+btnSupport : Html Msg
 btnSupport =
     Html.button
         [ onClick <| Toggle SupportMenu
@@ -376,38 +350,53 @@ btnSupport =
         [ Html.i [ Attr.class "icon icon-more" ] [] ]
 
 
-btnMode : Lang -> Html Msg
-btnMode _ =
-    actionBtn ShowModes "Mode"
+menuMode : Lang -> Settings -> List (Html Msg)
+menuMode lang settings =
+    [ actionBtn ShowModes "Mode"
+    , viewModes lang settings
+        |> submenu (settings.action == Just ShowModes)
+    ]
 
 
-btnSettings : Lang -> Html Msg
-btnSettings =
-    Trans.confSettings
-        >> actionBtn ShowSettings
+menuSettings : Lang -> Settings -> List (Html Msg)
+menuSettings lang settings =
+    [ lang
+        |> Trans.confSettings
+        |> actionBtn ShowSettings
+    , viewSettings lang settings
+        |> submenu (settings.action == Just ShowSettings)
+    ]
 
 
-btnTranslations : Lang -> Bool -> Html Msg
-btnTranslations lang hide =
-    if hide then
-        Html.text ""
-
-    else
-        lang
-            |> Trans.confTranslations
-            |> actionBtn ShowTranslations
-
-
-btnShare : Lang -> Html Msg
-btnShare =
-    Trans.confShare
-        >> actionBtn Share
+menuTranslations : Lang -> Definition -> Settings -> List (Html Msg)
+menuTranslations lang defintion settings =
+    [ lang
+        |> Trans.confTranslations
+        |> actionBtn ShowTranslations
+    , defintion.translation
+        |> viewTranslations
+        |> submenu (settings.action == Just ShowTranslations)
+    ]
 
 
-btnInformation : Lang -> Html Msg
-btnInformation =
-    Trans.confInformation
-        >> actionBtn ShowInformation
+menuShare : Lang -> String -> Settings -> List (Html Msg)
+menuShare lang url settings =
+    [ lang
+        |> Trans.confShare
+        |> actionBtn Share
+    , [ qrCodeView url ]
+        |> submenu (settings.action == Just Share)
+    ]
+
+
+menuInformation : Lang -> Definition -> Settings -> List (Html Msg)
+menuInformation lang definition settings =
+    [ lang
+        |> Trans.confInformation
+        |> actionBtn ShowInformation
+    , viewInformation lang definition
+        |> submenu (settings.action == Just ShowInformation)
+    ]
 
 
 actionBtn : Action -> String -> Html Msg
