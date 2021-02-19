@@ -64,9 +64,9 @@ bottom msg =
         , Attr.class "lia-btn lia-btn--transparent"
         , Attr.id "lia-btn-home"
         ]
-        [ Html.i [ Attr.class "icon icon-grid" ]
+        [ Html.i [ Attr.class "lia-btn__icon icon icon-grid" ]
             []
-        , Html.text "home"
+        , Html.span [ Attr.class "lia-btn__text" ] [ Html.text "home" ]
         ]
 
 

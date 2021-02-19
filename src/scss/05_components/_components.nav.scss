@@ -5,8 +5,18 @@
     list-style-type: none;
 
     &__item {
-        display: inline;
-        padding: 0 .5rem;
+        align-items: center;
         cursor: pointer;
+        display: flex;
+        padding: 0 .5rem;
+        position: relative;
+
+        > .lia-btn__icon {
+            font-size: 2rem;
+        }
+    }
+
+    &__divider {
+        margin: 1rem 0;
     }
 }

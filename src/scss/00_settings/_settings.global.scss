@@ -2,14 +2,20 @@
    Spacing
    -------------------------------------------------- */
 
+// Baseline grid lines height.
+// Every spacing metric should be based on this.
+
+$global-baseline: 10px !default;
+
+// How many grid lines should our spacing unit variants span?
+// Each value should be an unitless integer.
+
 $global-spacing: (
-  spacing-huge: 2rem,
-  spacing-large: 1rem,
-  spacing-normal: 0.5rem,
-  spacing-icon: 0.4rem,
-  spacing-small: 0.25rem,
-  spacing-smaller: 0.125rem,
-  spacing-tiny: 0.075rem,
+  spacing-huge: 3rem,
+  spacing-large: 2rem,
+  spacing-normal: 1rem,
+  spacing-small: 0.5rem,
+  spacing-tiny: 0.25rem
 );
 
 /* --------------------------------------------------

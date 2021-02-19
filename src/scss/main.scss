@@ -10,9 +10,11 @@
 @import "01_tools/tools.breakpoints";
 @import "01_tools/tools.flex";
 @import "01_tools/tools.font-size";
+@import "01_tools/tools.spacings";
 
 // Generic
 @import "02_generic/generic.reset";
+@import "02_generic/generic.normalize";
 @import "02_generic/generic.shared";
 
 // Elements

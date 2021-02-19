@@ -99,11 +99,15 @@ viewTheme lang theme =
             (\( color, name ) ->
                 [ Html.input
                     [ Attr.type_ "radio"
+                    , Attr.id <| "lia-theme-color-" ++ color
                     , Attr.checked (theme == color)
                     , onClick (ChangeTheme color)
                     ]
                     []
-                , Html.label [] [ Html.text name ]
+                , Html.label
+                    [ Attr.for <| "lia-theme-color-" ++ color
+                    ]
+                    [ Html.text name ]
                 ]
             )
         |> List.concat
@@ -112,31 +116,21 @@ viewTheme lang theme =
 
 viewModes : Lang -> Settings -> List (Html Msg)
 viewModes lang settings =
-    [ viewMode lang Textbook settings.mode
-    , Html.hr [] []
-    , viewMode lang Presentation settings.mode
-    , Html.hr [] []
-    , viewMode lang Slides settings.mode
+    [ viewMode lang Textbook settings.mode "lia-mode-textbook" "icon-book"
+    , viewMode lang Presentation settings.mode "lia-mode-presentation" "icon-presentation"
+    , viewMode lang Slides settings.mode "lia-mode-slides" "icon-slides"
     ]
 
 
-viewMode : Lang -> Mode -> Mode -> Html Msg
-viewMode lang mode activeMode =
-    Html.div []
-        [ Html.input
-            [ Attr.type_ "radio"
-            , Attr.id <| modeToString mode lang
-            , Attr.checked (mode == activeMode)
-            , onClick (SwitchMode mode)
-            ]
-            []
-        , Html.label
-            [ Attr.for <| modeToString mode lang
-            , Attr.class "lia-radio-btn"
-            ]
-            [ modeToString mode lang
-                |> Html.text
-            ]
+viewMode : Lang -> Mode -> Mode -> String -> String -> Html Msg
+viewMode lang mode activeMode id iconName =
+    Html.button
+        [ Attr.id id
+        , Attr.class "lia-btn lia-btn--tranparent lia-btn--icon "
+        , onClick (SwitchMode mode)
+        ]
+        [ Html.i [ Attr.class <| "lia-btn__icon icon " ++ iconName ] []
+        , Html.span [ Attr.class "lia-btn__text" ] [ modeToString mode lang |> Html.text ]
         ]
 
 
@@ -336,7 +330,7 @@ btnIndex lang =
             , Attr.class "lia-btn lia-btn--transparent"
             , Attr.id "lia-btn-toc"
             ]
-            [ Html.i [ Attr.class "icon icon-close" ] [] ]
+            [ Html.i [ Attr.class "lia-btn__icon icon icon-close" ] [] ]
         ]
 
 
@@ -352,7 +346,7 @@ btnSupport =
 
 menuMode : Lang -> Settings -> List (Html Msg)
 menuMode lang settings =
-    [ actionBtn ShowModes "Mode"
+    [ actionBtn ShowModes "icon-presentation" "Mode"
     , viewModes lang settings
         |> submenu (settings.action == Just ShowModes)
     ]
@@ -362,7 +356,7 @@ menuSettings : Lang -> Settings -> List (Html Msg)
 menuSettings lang settings =
     [ lang
         |> Trans.confSettings
-        |> actionBtn ShowSettings
+        |> actionBtn ShowSettings "icon-settings"
     , viewSettings lang settings
         |> submenu (settings.action == Just ShowSettings)
     ]
@@ -370,9 +364,14 @@ menuSettings lang settings =
 
 menuTranslations : Lang -> Definition -> Settings -> List (Html Msg)
 menuTranslations lang defintion settings =
-    [ lang
-        |> Trans.confTranslations
-        |> actionBtn ShowTranslations
+    [ Html.span
+        [ lang
+            |> Trans.confTranslations
+            |> Attr.title
+        , doAction ShowTranslations
+        ]
+        [ Html.text <| String.toUpper defintion.language
+        ]
     , defintion.translation
         |> viewTranslations
         |> submenu (settings.action == Just ShowTranslations)
@@ -383,7 +382,7 @@ menuShare : Lang -> String -> Settings -> List (Html Msg)
 menuShare lang url settings =
     [ lang
         |> Trans.confShare
-        |> actionBtn Share
+        |> actionBtn Share "icon-social"
     , [ qrCodeView url ]
         |> submenu (settings.action == Just Share)
     ]
@@ -393,16 +392,16 @@ menuInformation : Lang -> Definition -> Settings -> List (Html Msg)
 menuInformation lang definition settings =
     [ lang
         |> Trans.confInformation
-        |> actionBtn ShowInformation
+        |> actionBtn ShowInformation "icon-info"
     , viewInformation lang definition
         |> submenu (settings.action == Just ShowInformation)
     ]
 
 
-actionBtn : Action -> String -> Html Msg
-actionBtn msg title =
-    Html.span [ doAction msg ]
-        [ Html.text title ]
+actionBtn : Action -> String -> String -> Html Msg
+actionBtn msg iconName title =
+    Html.i [ Attr.class <| "icon " ++ iconName, Attr.title title, doAction msg ]
+        []
 
 
 doAction : Action -> Html.Attribute Msg

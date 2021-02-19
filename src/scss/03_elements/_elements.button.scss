@@ -24,10 +24,15 @@
     vertical-align: middle;
   }
 
-  > .icon {
+  > .lia-btn__icon {
     font-size: 1.6rem;
     line-height: inherit;
     vertical-align: middle;
+    display: inline;
+
+    & + .lia-btn__text {
+      margin-left: 1rem;
+    }
   }
 
 /*   .lia-ripple {

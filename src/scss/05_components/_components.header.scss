@@ -1,7 +1,9 @@
 .lia-header {
   align-items: center;
+  border-bottom: $global-border;
   display: flex;
   flex-direction: row;
+  padding: 1.7rem 0;
   width: 100%;
 
   > * {
@@ -28,51 +30,6 @@
 
 @mixin style-header($theme) {
   .lia-header {
-    $bg: map-get($theme, primary);
-    $fg: color-contrast($bg);
 
-    background: $bg;
-    color: $fg;
-
-    .lia-btn {
-      box-shadow: none;
-      background: transparent;
-      color: $fg;
-
-      &:hover {
-        background: mix(transparent, $fg, 80%);
-      }
-
-      .lia-ripple {
-        background: $fg;
-      }
-    }
-
-    .lia-input,
-    .lia-select {
-      background: $bg;
-      border-bottom-color: mix($bg, $fg, 50%);
-
-      &:not([disabled]) {
-        color: $fg;
-      }
-
-      &[disabled] {
-        color: rgba($fg, 0.38);
-      }
-
-      &:focus {
-        border-bottom-color: $fg;
-      }
-    }
-
-    &--toc {
-      $bg: map-get($theme, primary);
-      $fg: color-contrast($bg);
-
-      input.lia-search {
-        $placeholder: mix($bg, $fg, 40%);
-      }
-    }
   }
 }

@@ -1,11 +1,66 @@
-html,
+/* ==========================================================================
+   #RESET
+   ========================================================================== */
+
+/**
+ * A very simple reset that sits on top of Normalize.css.
+ */
+
+ body,
+ h1, h2, h3, h4, h5, h6,
+ blockquote, p, pre,
+ dl, dd, ol, ul,
+ figure,
+ hr,
+ fieldset, legend {
+   margin:  0;
+   padding: 0;
+ }
+ 
+ 
+ 
+ /**
+  * Remove trailing margins from nested lists.
+  */
+ 
+ li > {
+ 
+   ol,
+   ul {
+     margin-bottom: 0;
+   }
+ 
+ }
+ 
+ 
+ 
+ /**
+  * Remove default table spacing.
+  */
+ 
+ table {
+   border-collapse: collapse;
+   border-spacing: 0;
+ }
+ 
+ 
+ 
+ /**
+  * 1. Reset Chrome and Firefox behaviour which sets a `min-width: min-content;`
+  *    on fieldsets.
+  */
+ 
+ fieldset {
+   min-width: 0; /* [1] */
+   border: 0;
+ }
+
+/* html,
 body {
-  margin: 0;
-  padding: 0;
   width: 100%;
   height: 100%;
   overflow: hidden;
-}
+} */
 
 body {
   box-sizing: border-box;
@@ -18,6 +73,7 @@ body {
 span {
   font-style: inherit;
   font-weight: inherit;
+  vertical-align: middle;
 }
 
 /* clears the 'X' from Internet Explorer */

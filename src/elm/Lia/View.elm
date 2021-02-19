@@ -211,7 +211,7 @@ slideTopBar lang url settings def =
     [ Settings.btnIndex lang
     , Html.div [ Attr.class "lia-header__middle" ]
         [ Html.img
-            [ -- Attr.src "src/assets/logo.png"
+            [ -- Attr.src def.logo TODO
               Attr.class "lia_header__logo"
             , Attr.alt "LiaScript"
             ]
@@ -238,7 +238,7 @@ slideTopBar lang url settings def =
                   , Settings.menuInformation lang def settings
                   ]
                     |> List.map (Html.li [ Attr.class "nav__item" ])
-                    |> Html.ul [ Attr.class "lia-support-menu__nav" ]
+                    |> Html.ul [ Attr.class "lia-support-menu__nav nav" ]
                 ]
             ]
         ]
@@ -251,7 +251,7 @@ slideNavigation : Lang -> Mode -> Int -> Effect.Model SubSection -> Html Msg
 slideNavigation lang mode slide effect =
     Html.div [ Attr.class "lia-pagination" ]
         [ Html.div [ Attr.class "lia-pagination__content" ]
-            [ navButton "navigate_before" (Trans.basePrev lang) "lia-btn-prev" "icon icon-arrow-left" PrevSection
+            [ navButton "navigate_before" (Trans.basePrev lang) "lia-btn-prev" "lia-btn__icon icon icon-arrow-left" PrevSection
             , Html.span
                 [ Attr.class "lia-pagination__current" ]
                 [ Html.text (String.fromInt (slide + 1))
@@ -263,7 +263,7 @@ slideNavigation lang mode slide effect =
                         _ ->
                             state effect
                 ]
-            , navButton "navigate_next" (Trans.baseNext lang) "lia-btn-next" "icon icon-arrow-right" NextSection
+            , navButton "navigate_next" (Trans.baseNext lang) "lia-btn-next" "lia-btn__icon icon icon-arrow-right" NextSection
             ]
         ]
 
