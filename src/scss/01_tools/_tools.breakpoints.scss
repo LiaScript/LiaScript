@@ -19,21 +19,20 @@ $breakpoints: (
    Breakpoint Mixin
    -------------------------------------------------- */
 
-// anstelle von 'xs', 's', 'm', 'l', 'xl' kann man auch einfach einen Wert eintragen (für spezielle Anwendungen)
+// use 'xs', 's', 'm', 'l', 'xl' or a custom value
 @mixin breakpoint($breakpoint, $direction: $media-direction) {
-  // Check ob Wert in Sass Map vorhanden
+  // check if value is a preconfigured breakpoint
   @if map-has-key($breakpoints, $breakpoint) {
-    // Ausgabe
+
     @media (#{$direction}-width: #{map-get($breakpoints, $breakpoint)}) {
       @content;
     }
   }
 
-  // Prüfung der Einheit falls Wert eingegeben wurde. Fallback: px.
+  // check unit of value, fallback pixel
   @else if unitless($breakpoint) {
     $breakpoint: $breakpoint + 0px;
 
-    // Ausgabe
     @media (#{$direction}-width: $breakpoint) {
       @content;
     }

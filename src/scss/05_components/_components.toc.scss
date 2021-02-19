@@ -20,7 +20,7 @@
     input {
       padding-left: 3rem;
       padding-right: 3.75rem;
-      transition: $global-transition;
+      transition: left 250ms ease-in-out;
     }
 
     .icon-search {
@@ -55,7 +55,7 @@
     a {
       width: 100%;
       text-decoration: none;
-      padding: 0.8rem 0 .8rem 3rem;
+      padding: .8rem .8rem .8rem 3rem;
       position: relative;
   
       &.lia-toc__link--is-lvl- {
@@ -98,8 +98,19 @@
   }
 
   &__bottom {
-    border-top: $global-border;
-    padding: 1rem 0 1rem 3rem;
+    padding: 1rem 0 0 3rem;
+    position: relative;
+
+    &:after {
+      content: "";
+      background-color: $color-lightgrey;
+      display: inline-block;
+      height: 1px;
+      left: 3rem;
+      position: absolute;
+      right: 3rem;
+      top: 0;
+    }
   }
 }
 
@@ -154,7 +165,7 @@
             left: 0;
             top: 0;
             height: 100%;
-            width: 3px;
+            width: 5px;
             background-color: $color-turquoise-1;
           }
     

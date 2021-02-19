@@ -31,6 +31,7 @@ type Toggle
     | Sound
     | Light
     | Action Action
+    | SupportMenu
 
 
 update : Msg -> Settings -> ( Settings, List Event )
@@ -57,6 +58,12 @@ update msg model =
                 { model
                     | table_of_contents = not model.table_of_contents
                     , action = Nothing
+                }
+
+        Toggle SupportMenu ->
+            no_log
+                { model
+                    | support_menu = not model.support_menu
                 }
 
         Toggle Sound ->

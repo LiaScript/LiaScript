@@ -18,14 +18,12 @@
     // components
     @include style-accordion($theme);
     @include style-dropdown($theme);
+    @include style-effect-circle($theme);
+    @include style-header($theme);
     @include style-quote($theme);
     @include style-script($theme);
     @include style-table($theme);
-    @include style-toolbar($theme);
     @include style-toc($theme);
-    @include style-slide($theme);
-
-    //@include style-plain($theme); TODO
   }
 }
 

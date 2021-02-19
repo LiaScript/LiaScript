@@ -4,6 +4,7 @@ module Lia.Settings.View exposing
     , btnMode
     , btnSettings
     , btnShare
+    , btnSupport
     , btnTranslations
     , design
     , view
@@ -74,6 +75,12 @@ design model =
 
         else
             "lia-toc--visible"
+    , Attr.class <|
+        if model.support_menu then
+            "lia-support--hidden"
+
+        else
+            "lia-support--visible"
     ]
 
 
@@ -88,10 +95,7 @@ viewSettings lang settings =
     , viewSizing lang settings.font_size
     ]
         |> Html.div
-            [ Attr.style "position" "absolute"
-            , Attr.style "top" "50px"
-            , Attr.style "zIndex" "1000"
-            , Attr.style "color" "red"
+            [ Attr.class "lia-support-menu__submenu"
             ]
 
 
@@ -146,10 +150,7 @@ viewModes lang settings =
     , viewMode lang Slides settings.mode
     ]
         |> Html.div
-            [ Attr.style "position" "absolute"
-            , Attr.style "top" "50px"
-            , Attr.style "zIndex" "1000"
-            , Attr.style "color" "red"
+            [ Attr.class "lia-support-menu__submenu"
             ]
 
 
@@ -158,11 +159,15 @@ viewMode lang mode activeMode =
     Html.div []
         [ Html.input
             [ Attr.type_ "radio"
+            , Attr.id <| modeToString mode lang
             , Attr.checked (mode == activeMode)
             , onClick (SwitchMode mode)
             ]
             []
-        , Html.label []
+        , Html.label
+            [ Attr.for <| modeToString mode lang
+            , Attr.class "lia-radio-btn"
+            ]
             [ modeToString mode lang
                 |> Html.text
             ]
@@ -240,12 +245,9 @@ viewInformation lang definition =
             [ bold <| Trans.infoAuthor lang
             , Html.text definition.author
             ]
-        |> List.map (Html.div [])
+        |> List.map (Html.span [])
         |> Html.div
-            [ Attr.style "position" "absolute"
-            , Attr.style "top" "50px"
-            , Attr.style "zIndex" "1000"
-            , Attr.style "color" "red"
+            [ Attr.class "lia-support-menu__submenu"
             ]
 
 
@@ -274,7 +276,7 @@ viewTranslations =
                     [ Attr.href url, Attr.class "lia-link" ]
                     [ Html.text title, Html.br [] [] ]
             )
-        >> Html.div []
+        >> Html.div [ Attr.class "lia-support-menu__submenu" ]
 
 
 qrCodeView : String -> Html msg
@@ -283,7 +285,7 @@ qrCodeView =
         >> Result.map (QRCode.toSvgWithoutQuietZone [])
         >> Result.withDefault (Html.text "Error while encoding to QRCode.")
         >> List.singleton
-        >> Html.div []
+        >> Html.div [ Attr.class "lia-support-menu__submenu" ]
 
 
 viewEditorTheme : Lang -> String -> Html Msg
@@ -354,13 +356,24 @@ option current ( val, text ) =
 
 btnIndex : Lang -> Html Msg
 btnIndex lang =
-    Html.button
-        [ onClick <| Toggle TableOfContents
-        , Attr.title (Trans.baseToc lang)
-        , Attr.class "lia-btn lia-toc-control lia-left"
-        , Attr.id "lia-btn-toc"
+    Html.div [ Attr.class "lia-header__left" ]
+        [ Html.button
+            [ onClick <| Toggle TableOfContents
+            , Attr.title (Trans.baseToc lang)
+            , Attr.class "lia-btn lia-btn--transparent"
+            , Attr.id "lia-btn-toc"
+            ]
+            [ Html.i [ Attr.class "icon icon-close" ] [] ]
         ]
-        [ Html.text "toc" ]
+
+
+btnSupport =
+    Html.button
+        [ onClick <| Toggle SupportMenu
+        , Attr.class "lia-btn lia-btn--transparent lia-support-menu__toggler"
+        , Attr.type_ "button"
+        ]
+        [ Html.i [ Attr.class "icon icon-more" ] [] ]
 
 
 btnMode : Lang -> Html Msg

@@ -17,7 +17,7 @@ import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model)
 import Lia.Section exposing (Section, SubSection)
 import Lia.Settings.Types exposing (Mode(..), Settings)
-import Lia.Settings.Update exposing (toggle_sound)
+import Lia.Settings.Update exposing (Toggle(..), toggle_sound)
 import Lia.Settings.View as Settings
 import Lia.Update exposing (Msg(..), get_active_section)
 import Port.Share exposing (share)
@@ -136,20 +136,20 @@ comments in text, depending on the currently applied rendering mode.
 slideBottom : Lang -> Settings -> Int -> Effect.Model SubSection -> Html Msg
 slideBottom lang settings slide effects =
     Html.footer
-        [ Attr.class "lia-footer" ]
+        [ Attr.class "lia-slide__footer" ]
         [ slideNavigation lang settings.mode slide effects
         , case settings.mode of
             Textbook ->
                 Html.text ""
 
             _ ->
-                Html.div []
-                    [ Html.button [ Attr.class "lia-btn lia-icon" ]
+                Html.div [ Attr.class "lia-responsive-voice" ]
+                    [ Html.button [ Attr.class "lia-btn lia-responsive-voice__play" ]
                         [ if settings.speaking then
                             Html.text "pan_tool"
 
                           else
-                            Html.text "play_circle_outline"
+                            Html.i [ Attr.class "icon icon-play-circle" ] []
                         ]
                     , responsive lang settings.sound (UpdateSettings toggle_sound)
                     ]
@@ -209,41 +209,52 @@ navButton str title id class msg =
 slideTopBar : Lang -> String -> Settings -> Definition -> Html Msg
 slideTopBar lang url settings def =
     [ Settings.btnIndex lang
-    , Html.span [] [ Html.text "icon" ]
-    , Html.nav
-        [ Attr.class "navbar"
-        , Attr.style "float" "right"
-        ]
-        [ Html.button
-            [ Attr.class "navbar-toggler"
-            , Attr.type_ "button"
+    , Html.div [ Attr.class "lia-header__middle" ]
+        [ Html.img
+            [ -- Attr.src "src/assets/logo.png"
+              Attr.class "lia_header__logo"
+            , Attr.alt "LiaScript"
             ]
-            [ Html.text "..." ]
-        , Html.span [ Attr.class "navbar-collapse" ]
-            [ [ Settings.btnMode lang
-              , Settings.btnSettings lang
-              , def.translation
-                    |> Dict.isEmpty
-                    |> Settings.btnTranslations lang
-              , Settings.btnShare lang
-              , Settings.btnInformation lang
-              ]
-                |> List.map navItem
-                |> Html.ul [ Attr.class "navbar-nav", Attr.style "display" "inline" ]
+            []
+        ]
+    , Html.div [ Attr.class "lia-header__right" ]
+        [ Html.nav
+            [ Attr.class "lia-support-menu"
+            ]
+            [ Settings.btnSupport
+            , Html.div
+                [ Attr.class "lia-support-menu__collapse"
+                , Attr.class <|
+                    if settings.support_menu then
+                        "lia-support-menu__collapse--closed"
+
+                    else
+                        "lia-support-menu__collapse--open"
+                ]
+                [ [ Settings.btnMode lang
+                  , Settings.btnSettings lang
+                  , def.translation
+                        |> Dict.isEmpty
+                        |> Settings.btnTranslations lang
+                  , Settings.btnShare lang
+                  , Settings.btnInformation lang
+                  ]
+                    |> List.map navItem
+                    |> Html.ul [ Attr.class "lia-support-menu__nav" ]
+                ]
             ]
         , settings
             |> Settings.view lang url def
         ]
     ]
-        |> Html.header [ Attr.class "lia-toolbar", Attr.id "lia-toolbar-nav" ]
+        |> Html.header [ Attr.class "lia-header", Attr.id "lia-toolbar-nav" ]
         |> Html.map UpdateSettings
 
 
 navItem =
     List.singleton
         >> Html.li
-            [ Attr.class "nav-item"
-            , Attr.style "display" "inline"
+            [ Attr.class "nav__item"
             ]
 
 

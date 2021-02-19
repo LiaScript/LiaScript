@@ -1,45 +1,33 @@
-.lia-toolbar {
-  z-index: 1;
-  flex: 0 0 auto;
-  height: map-get($global-spacing, toolbar-height);
+.lia-header {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
 
-  .lia-left {
-    order: 1;
+  > * {
+    flex: 1;
   }
 
-  .lia-spacer {
-    order: 1;
-    flex: 1 1 auto;
+  &__logo {
+    //
   }
 
-  .lia-right {
-    order: 2;
+  &__left {
+    //
   }
 
-  &--slide {
-    @include flex(row, nowrap, flex-start, stretch, stretch);
-    overflow-x: auto;
-
-    & > * {
-      flex-shrink: 0;
-    }
-
-    .lia-btn {
-      @include material-icon("", 1em);
-    }
+  &__middle {
+    display: flex;
+    justify-content: center;
   }
 
-  &--toc {
-    @include flex(column, nowrap, flex-start, stretch, stretch);
-
-    input.lia-search {
-      flex: 1 1 auto;
-    }
+  &__right {
+    position: relative;
   }
 }
 
-@mixin style-toolbar($theme) {
-  .lia-toolbar {
+@mixin style-header($theme) {
+  .lia-header {
     $bg: map-get($theme, primary);
     $fg: color-contrast($bg);
 

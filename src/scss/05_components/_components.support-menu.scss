@@ -1,0 +1,65 @@
+.lia-support-menu {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    &__toggler {
+        display: block;
+        visibility: visible;
+
+        @include breakpoint("m") {
+            display: none;
+            visibility: hidden;
+        }
+    }
+
+    &__collapse {
+        border-left: $global-border;
+        height: 100vh;
+        position: fixed;
+        right: 0;
+        top: 0;
+        transition: right 250ms ease-in-out;
+        width: 315px;
+
+        @include breakpoint("m", "max"){
+            &--closed {
+                right: -315px;
+            }
+        }
+
+        @include breakpoint("m") {
+            border: none;
+            height: 100%;
+            position: relative;
+            width: 100%;
+        }
+    }
+
+    &__nav {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    &__submenu {
+        background-color: white;
+        border-radius: $global-radius;
+        box-shadow: 0 0 1rem rgba(0,0,0,.1);
+        color: $color-text;
+        display: inline-block;
+        max-width: 30rem;
+        padding: 1rem;
+        position: absolute;
+        right: 0;
+        top: 5.25rem;
+        z-index: 100;
+
+        > * {
+            display: block;
+        }
+
+        svg {
+            width: 100%;
+        }
+    }
+}

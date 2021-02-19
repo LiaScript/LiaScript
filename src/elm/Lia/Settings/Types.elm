@@ -8,6 +8,7 @@ module Lia.Settings.Types exposing
 
 type alias Settings =
     { table_of_contents : Bool
+    , support_menu : Bool
     , mode : Mode
     , theme : String
     , light : Bool
@@ -39,6 +40,7 @@ type Mode
 init : Bool -> Mode -> Settings
 init hasShareApi mode =
     { table_of_contents = True
+    , support_menu = True
     , mode = mode
     , theme = "default"
     , light = True
