@@ -5,6 +5,7 @@ port module Lia.Markdown.Update exposing
     , nextEffect
     , previousEffect
     , subscriptions
+    , ttsReplay
     , update
     , updateScript
     )
@@ -14,7 +15,7 @@ import Lia.Markdown.Code.Update as Code
 import Lia.Markdown.Effect.Model as E
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.Effect.Script.Update as Script
-import Lia.Markdown.Effect.Update as Effect
+import Lia.Markdown.Effect.Update as Effect exposing (ttsReplay)
 import Lia.Markdown.Quiz.Update as Quiz
 import Lia.Markdown.Survey.Update as Survey
 import Lia.Markdown.Table.Update as Table
@@ -372,3 +373,19 @@ handle topic event section =
 
         _ ->
             ( section, Cmd.none, [] )
+
+
+ttsReplay : Bool -> Bool -> Maybe Section -> List Event
+ttsReplay sound true section =
+    -- replay if possible
+    if sound then
+        if true then
+            section
+                |> Maybe.map (.effect_model >> Effect.ttsReplay sound)
+                |> Maybe.withDefault []
+
+        else
+            Effect.ttsCancel
+
+    else
+        []

@@ -6,6 +6,8 @@ module Lia.Markdown.Effect.Update exposing
     , init
     , next
     , previous
+    , ttsCancel
+    , ttsReplay
     , update
     , updateSub
     )
@@ -22,7 +24,7 @@ import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Section exposing (SubSection)
 import Port.Event exposing (Event)
-import Port.TTS as TTS
+import Port.TTS as TTS exposing (cancel)
 import Task
 
 
@@ -220,3 +222,21 @@ previous =
 handle : Event -> Msg sub
 handle =
     Handle
+
+
+ttsReplay :
+    Bool
+    -> Model SubSection
+    -> List Event
+ttsReplay sound model =
+    case current_comment model of
+        Just ( comment, narrator ) ->
+            [ TTS.speak sound narrator comment ]
+
+        _ ->
+            []
+
+
+ttsCancel : List Event
+ttsCancel =
+    [ TTS.cancel ]

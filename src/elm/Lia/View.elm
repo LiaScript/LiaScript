@@ -146,12 +146,16 @@ slideBottom lang settings slide effects =
 
             _ ->
                 Html.div []
-                    [ Html.button [ Attr.class "lia-btn lia-icon" ]
+                    [ Html.button
+                        [ Attr.class "lia-btn lia-icon"
+                        , onClick <| TTSReplay (not settings.speaking)
+                        , Attr.disabled (not settings.sound)
+                        ]
                         [ if settings.speaking then
-                            Html.text "pan_tool"
+                            Html.text "stop"
 
                           else
-                            Html.text "play_circle_outline"
+                            Html.text "play"
                         ]
                     , responsive lang settings.sound (UpdateSettings toggle_sound)
                     ]
