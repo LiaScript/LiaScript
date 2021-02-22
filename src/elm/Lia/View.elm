@@ -5,7 +5,7 @@ import Flip exposing (flip)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
-import Lia.Definition.Types exposing (Definition)
+import Lia.Definition.Types as Definition exposing (Definition)
 import Lia.Index.View as Index
 import Lia.Markdown.Config as Config
 import Lia.Markdown.Effect.Model as Effect
@@ -209,7 +209,12 @@ navButton str title id msg =
 slideTopBar : Lang -> String -> Settings -> Definition -> Html Msg
 slideTopBar lang url settings def =
     [ Settings.btnIndex lang
-    , Html.span [] [ Html.text "icon" ]
+    , Html.img
+        [ def
+            |> Definition.getIcon
+            |> Attr.src
+        ]
+        []
     , Html.nav
         [ Attr.class "navbar"
         , Attr.style "float" "right"
