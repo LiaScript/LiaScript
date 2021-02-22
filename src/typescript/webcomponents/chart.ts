@@ -34,7 +34,7 @@ customElements.define('lia-chart', class extends HTMLElement {
   connectedCallback() {
     if (!this.chart) {
       this.container.setAttribute('style', style)
-      this.chart = echarts.init(this.container, this.getAttribute('mode') || '')
+      this.chart = echarts.init(this.container, this.getAttribute('mode') || '', {renderer: 'svg'})
       this.option_ = JSON.parse(this.getAttribute('option') || 'null') || this.option_
       this.updateChart()
       this.resizeChart()
