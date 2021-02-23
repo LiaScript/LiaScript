@@ -101,6 +101,7 @@ viewSlide screen model =
                     [ slideTopBar model.translation model.url model.settings model.definition
                     , Config.init
                         model.translation
+                        ( model.langCodeOriginal, model.langCode )
                         model.settings
                         screen
                         section

@@ -192,6 +192,7 @@ update msg model =
 
                                             else
                                                 lia.translation
+                                        , langCode = str
                                     }
                               }
                             , Cmd.none

@@ -24,7 +24,7 @@ import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Section exposing (SubSection)
 import Port.Event exposing (Event)
-import Port.TTS as TTS exposing (cancel)
+import Port.TTS as TTS
 import Task
 
 
@@ -87,7 +87,7 @@ update main sound msg model =
             Speak id voice text ->
                 ( { model | speaking = Just id }
                 , Cmd.none
-                , [ TTS.playback id voice text ]
+                , [ TTS.readFrom -1 id ]
                 )
 
             Mute id ->
@@ -108,8 +108,12 @@ update main sound msg model =
                 ( model
                 , Cmd.none
                 , case current_comment model of
-                    Just ( comment, narrator ) ->
-                        TTS.speak sound narrator comment :: events
+                    Just ( id, comment, narrator ) ->
+                        if sound then
+                            TTS.readFrom -1 id :: events
+
+                        else
+                            events
 
                     _ ->
                         TTS.cancel :: events
@@ -229,9 +233,9 @@ ttsReplay :
     -> Model SubSection
     -> List Event
 ttsReplay sound model =
-    case current_comment model of
-        Just ( comment, narrator ) ->
-            [ TTS.speak sound narrator comment ]
+    case ( sound, current_comment model ) of
+        ( True, Just ( id, comment, narrator ) ) ->
+            [ TTS.readFrom -1 id ]
 
         _ ->
             []

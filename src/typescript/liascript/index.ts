@@ -78,6 +78,35 @@ function handleEffects(event: Lia.Event, elmSend: Lia.Send, section: number = -1
         } else if (event.message === 'repeat') {
           event.message = [ttsBackup[0], ttsBackup[1], 'true']
           handleEffects(event, elmSend)
+        } else if (typeof event.message === 'string' && event.message.startsWith("lia-tts-")) {
+          let element = document.getElementsByClassName(event.message)
+        
+          let text = ""
+
+          for (let i=0; i<element.length; i++) {
+            text += element[i].innerText || element[i].textContent;
+          }
+
+          if (text !== "") {
+            TTS.speak(
+              text,
+              element[0].getAttribute("data-voice"),
+              function() {
+                msg.message.message = 'start'
+                elmSend(msg)
+              },
+              function() {
+                msg.message.message = 'stop'
+                elmSend(msg)
+              },
+              function(e: any) {
+                msg.message.message = e.toString()
+                elmSend(msg)
+              }
+            )  
+          }
+
+          
         } else if (firstSpeak) {
           // this is a hack to deal with the delay in responsivevoice
           firstSpeak = false
