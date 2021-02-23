@@ -198,8 +198,7 @@ block_playback : Config sub -> Effect Markdown -> Html Msg
 block_playback config e =
     if config.speaking == Just e.id then
         Html.button
-            [ Attr.class "lia-btn lia-icon"
-            , Attr.style "margin-left" "49%"
+            [ Attr.class "lia-btn"
             , e.id
                 |> E.Mute
                 |> UpdateEffect True
@@ -209,8 +208,7 @@ block_playback config e =
 
     else
         Html.button
-            [ Attr.class "lia-btn lia-icon"
-            , Attr.style "margin-left" "49%"
+            [ Attr.class "lia-btn"
             , e.content
                 |> List.map (stringify config.scripts config.visible)
                 |> List.intersperse "\n"
@@ -226,9 +224,7 @@ inline_playback : Config sub -> Effect Inline -> Html msg
 inline_playback config e =
     if config.speaking == Just e.id then
         Html.button
-            [ Attr.class "lia-btn lia-icon"
-            , Attr.style "scale" "0.65"
-            , Attr.style "margin" "0px"
+            [ Attr.class "lia-btn"
             , Port.TTS.mute e.id
                 |> Event.encode
                 |> Event "effect" config.slide
@@ -241,9 +237,7 @@ inline_playback config e =
 
     else
         Html.button
-            [ Attr.class "lia-btn lia-icon"
-            , Attr.style "scale" "0.65"
-            , Attr.style "margin" "0px"
+            [ Attr.class "lia-btn"
             , e.content
                 |> I.stringify
                 |> Port.TTS.playback e.id e.voice
@@ -266,7 +260,7 @@ circle id =
 
 responsive : Lang -> Bool -> msg -> Html msg
 responsive lang sound msg =
-    Html.span [ Attr.id "lia-span-responsive" ]
+    Html.div [ Attr.class "lia-responsive-voice__info" ]
         [ Html.a [ Attr.href "https://responsivevoice.org" ] [ Html.text "ResponsiveVoice-NonCommercial" ]
         , Html.text " licensed under "
         , Html.a
@@ -281,7 +275,7 @@ responsive lang sound msg =
                 []
             ]
         , Html.button
-            [ Attr.class "lia-btn lia-icon"
+            [ Attr.class "lia-btn"
             , Attr.id "lia-btn-sound"
             , onClick msg
             , Attr.title <|

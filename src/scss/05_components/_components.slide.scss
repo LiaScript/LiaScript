@@ -1,0 +1,30 @@
+.lia-slide {
+  display: flex;
+  flex-direction: column;
+  padding: 0 3rem;
+  position: relative;
+  width: 100%;
+
+  &__footer {
+    align-items: flex-start;
+    bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 0;
+    position: absolute;
+  }
+
+  &__content {
+    height: 75vh;
+    margin-top: 7.5rem;
+    max-width: 1200px;
+    overflow: auto;
+    padding-right: 1rem;
+    position: relative;
+    width: 100%;
+
+    @include breakpoint("lg") {
+      //max-width: ;
+    }
+  }
+}

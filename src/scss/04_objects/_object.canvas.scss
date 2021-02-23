@@ -1,0 +1,35 @@
+/* --------------------------------------------------
+   Layout Settings
+   -------------------------------------------------- */
+
+$toc-width: 315px !default;
+$support-width: 315px !default;
+
+/* --------------------------------------------------
+   Canvas
+   -------------------------------------------------- */
+.lia-canvas {
+  display: flex;
+  height: 100vh;
+  left: 0;
+  position: relative;
+  transition: $global-transition;
+  width: 100vw;
+  overflow-x: hidden;
+
+  &.lia-toc--visible {
+    left: $toc-width;
+    width: calc(100% - #{$toc-width});
+  }
+
+  @include breakpoint("md", "max") {
+    &.lia-support--visible {
+      right: $support-width;
+      width: calc(100% - #{$support-width});
+    }
+
+    &.lia-toc--visible.lia-support--visible {
+      width: calc(100% - #{$toc-width} - #{$support-width});
+    }
+  }
+}

@@ -1,0 +1,455 @@
+@charset "UTF-8";
+
+.icon {
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  display: inline-block;
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: auto;
+  line-height: 1
+}
+
+.icon-lg {
+  font-size: 1.33333em;
+  line-height: .75em;
+  vertical-align: -.0667em
+}
+
+.icon-xs {
+  font-size: .75em
+}
+
+.icon-sm {
+  font-size: .875em
+}
+
+.icon-1x {
+  font-size: 1em
+}
+
+.icon-2x {
+  font-size: 2em
+}
+
+.icon-3x {
+  font-size: 3em
+}
+
+.icon-4x {
+  font-size: 4em
+}
+
+.icon-5x {
+  font-size: 5em
+}
+
+.icon-6x {
+  font-size: 6em
+}
+
+.icon-7x {
+  font-size: 7em
+}
+
+.icon-8x {
+  font-size: 8em
+}
+
+.icon-9x {
+  font-size: 9em
+}
+
+.icon-10x {
+  font-size: 10em
+}
+
+.icon-fw {
+  text-align: center;
+  width: 1.25em
+}
+
+.icon-ul {
+  list-style-type: none;
+  margin-left: 2.5em;
+  padding-left: 0
+}
+
+.icon-ul>li {
+  position: relative
+}
+
+.icon-li {
+  left: -2em;
+  position: absolute;
+  text-align: center;
+  width: 2em;
+  line-height: inherit
+}
+
+.icon-border {
+  border: .08em solid #eee;
+  border-radius: .1em;
+  padding: .2em .25em .15em
+}
+
+.icon-pull-left {
+  float: left
+}
+
+.icon-pull-right {
+  float: right
+}
+
+.icon.icon-pull-left {
+  margin-right: .3em
+}
+
+.icon.icon-pull-right {
+  margin-left: .3em
+}
+
+.icon-spin {
+  -webkit-animation: icon-spin 2s linear infinite;
+  animation: icon-spin 2s linear infinite
+}
+
+.icon-pulse {
+  -webkit-animation: icon-spin 1s steps(8) infinite;
+  animation: icon-spin 1s steps(8) infinite
+}
+
+@-webkit-keyframes icon-spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg)
+  }
+
+  to {
+    -webkit-transform: rotate(1turn);
+    transform: rotate(1turn)
+  }
+}
+
+@keyframes icon-spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg)
+  }
+
+  to {
+    -webkit-transform: rotate(1turn);
+    transform: rotate(1turn)
+  }
+}
+
+.icon-rotate-90 {
+  -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=1)";
+  -webkit-transform: rotate(90deg);
+  transform: rotate(90deg)
+}
+
+.icon-rotate-180 {
+  -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=2)";
+  -webkit-transform: rotate(180deg);
+  transform: rotate(180deg)
+}
+
+.icon-rotate-270 {
+  -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=3)";
+  -webkit-transform: rotate(270deg);
+  transform: rotate(270deg)
+}
+
+.icon-flip-horizontal {
+  -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=0, mirror=1)";
+  -webkit-transform: scaleX(-1);
+  transform: scaleX(-1)
+}
+
+.icon-flip-vertical {
+  -webkit-transform: scaleY(-1);
+  transform: scaleY(-1)
+}
+
+.icon-flip-both, .icon-flip-horizontal.icon-flip-vertical, .icon-flip-vertical {
+  -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1)"
+}
+
+.icon-flip-both, .icon-flip-horizontal.icon-flip-vertical {
+  -webkit-transform: scale(-1);
+  transform: scale(-1)
+}
+
+:root .icon-flip-both, :root .icon-flip-horizontal, :root .icon-flip-vertical, :root .icon-rotate-90, :root .icon-rotate-180, :root .icon-rotate-270 {
+  -webkit-filter: none;
+  filter: none
+}
+
+.icon-stack {
+  display: inline-block;
+  height: 2em;
+  line-height: 2em;
+  position: relative;
+  vertical-align: middle;
+  width: 2.5em
+}
+
+.icon-stack-1x, .icon-stack-2x {
+  left: 0;
+  position: absolute;
+  text-align: center;
+  width: 100%
+}
+
+.icon-stack-1x {
+  line-height: inherit
+}
+
+.icon-stack-2x {
+  font-size: 2em
+}
+
+.icon-inverse {
+  color: #fff
+}
+
+
+.icon-arrow-down:before {
+  content: "\EA01"
+}
+
+.icon-arrow-left:before {
+  content: "\EA02"
+}
+
+.icon-arrow-right:before {
+  content: "\EA03"
+}
+
+.icon-arrow-up:before {
+  content: "\EA04"
+}
+
+.icon-barchart:before {
+  content: "\EA05"
+}
+
+.icon-book:before {
+  content: "\EA06"
+}
+
+.icon-boxplot:before {
+  content: "\EA07"
+}
+
+.icon-check:before {
+  content: "\EA08"
+}
+
+.icon-chevron-double-left:before {
+  content: "\EA09"
+}
+
+.icon-chevron-double-right:before {
+  content: "\EA0A"
+}
+
+.icon-chevron-down:before {
+  content: "\EA0B"
+}
+
+.icon-chevron-left:before {
+  content: "\EA0C"
+}
+
+.icon-chevron-right:before {
+  content: "\EA0D"
+}
+
+.icon-chevron-up:before {
+  content: "\EA0E"
+}
+
+.icon-clock:before {
+  content: "\EA0F"
+}
+
+.icon-close:before {
+  content: "\EA10"
+}
+
+.icon-code:before {
+  content: "\EA11"
+}
+
+.icon-compile-circle:before {
+  content: "\EA12"
+}
+
+.icon-darkmode:before {
+  content: "\EA13"
+}
+
+.icon-download:before {
+  content: "\EA14"
+}
+
+.icon-end-left:before {
+  content: "\EA15"
+}
+
+.icon-end-right:before {
+  content: "\EA16"
+}
+
+.icon-funnel:before {
+  content: "\EA17"
+}
+
+.icon-graph:before {
+  content: "\EA18"
+}
+
+.icon-grid:before {
+  content: "\EA19"
+}
+
+.icon-heatmap:before {
+  content: "\EA1A"
+}
+
+.icon-hint:before {
+  content: "\EA1B"
+}
+
+.icon-info:before {
+  content: "\EA1C"
+}
+
+.icon-lightmode:before {
+  content: "\EA1D"
+}
+
+.icon-lineplot:before {
+  content: "\EA1E"
+}
+
+.icon-mail:before {
+  content: "\EA1F"
+}
+
+.icon-map:before {
+  content: "\EA20"
+}
+
+.icon-minus:before {
+  content: "\EA21"
+}
+
+.icon-more:before {
+  content: "\EA22"
+}
+
+.icon-pencil:before {
+  content: "\EA23"
+}
+
+.icon-piechart:before {
+  content: "\EA24"
+}
+
+.icon-play-circle:before {
+  content: "\EA25"
+}
+
+.icon-plus:before {
+  content: "\EA26"
+}
+
+.icon-presentation:before {
+  content: "\EA27"
+}
+
+.icon-radar:before {
+  content: "\EA28"
+}
+
+.icon-refresh:before {
+  content: "\EA29"
+}
+
+.icon-resolve:before {
+  content: "\EA2A"
+}
+
+.icon-scatterplot:before {
+  content: "\EA2B"
+}
+
+.icon-search:before {
+  content: "\EA2C"
+}
+
+.icon-settings:before {
+  content: "\EA2D"
+}
+
+.icon-slides:before {
+  content: "\EA2E"
+}
+
+.icon-social:before {
+  content: "\EA2F"
+}
+
+.icon-sorting_ascending:before {
+  content: "\EA30"
+}
+
+.icon-sorting_descending:before {
+  content: "\EA31"
+}
+
+.icon-sound-off:before {
+  content: "\EA32"
+}
+
+.icon-stop-circle:before {
+  content: "\EA33"
+}
+
+.icon-table:before {
+  content: "\EA34"
+}
+
+.icon-warning:before {
+  content: "\EA35"
+}
+
+.icon-zoom-out:before {
+  content: "\EA36"
+}
+
+.icon-zoom:before {
+  content: "\EA37"
+}
+
+
+@font-face {
+  font-family: "icon";
+  font-style: normal;
+  font-weight: 900;
+  font-display: block;
+  src: url(../../src/assets/fonts/icon/fonts/icon.eot);
+  src: url(../../src/assets/fonts/icon/fonts/icon.eot?#iefix) format("embedded-opentype"),
+  url(../../src/assets/fonts/icon/fonts/icon.woff2) format("woff2"),
+  url(../../src/assets/fonts/icon/fonts/icon.woff) format("woff"),
+  url(../../src/assets/fonts/icon/fonts/icon.ttf) format("truetype"),
+  url(../../src/assets/fonts/icon/fonts/icon.svg#icon) format("svg")
+}
+
+.icon {
+  font-family: "icon";
+  font-weight: 900
+}
