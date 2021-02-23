@@ -31,7 +31,7 @@ h3 {
 }
 
 h4 {
-  font-family: $global-font-text;
+  font-family: $global-font-family;
   line-height: 1.38;
 }
 
@@ -39,7 +39,7 @@ h1,
 .u-h1 {
   font-size: $h1-mobile;
 
-  @include breakpoint("m") {
+  @include breakpoint("md") {
     font-size: $h1-desktop-presentation;
   }
 }
@@ -48,7 +48,7 @@ h2,
 .u-h2 {
   font-size: $h2-mobile;
 
-  @include breakpoint("m") {
+  @include breakpoint("md") {
     font-size: $h2-desktop;
   }
 }
@@ -57,7 +57,7 @@ h3,
 .u-h3 {
   font-size: $h3-mobile;
 
-  @include breakpoint("m") {
+  @include breakpoint("md") {
     font-size: $h3-desktop;
   }
 }
@@ -66,7 +66,7 @@ h4,
 .u-h4 {
   font-size: $h4-mobile;
 
-  @include breakpoint("m") {
+  @include breakpoint("md") {
     font-size: $h4-desktop;
   }
 }

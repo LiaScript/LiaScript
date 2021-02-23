@@ -208,7 +208,7 @@ navButton str title id class msg =
 -}
 slideTopBar : Lang -> String -> Settings -> Definition -> Html Msg
 slideTopBar lang url settings def =
-    [ Settings.btnIndex lang
+    [ Settings.btnIndex lang settings.table_of_contents
     , Html.div [ Attr.class "lia-header__middle" ]
         [ Html.img
             [ -- Attr.src def.logo TODO
@@ -231,14 +231,14 @@ slideTopBar lang url settings def =
                     else
                         "lia-support-menu__collapse--open"
                 ]
-                [ [ Settings.menuMode lang settings
-                  , Settings.menuSettings lang settings
-                  , Settings.menuTranslations lang def settings
-                  , Settings.menuShare lang url settings
-                  , Settings.menuInformation lang def settings
+                [ [ ( Settings.menuMode lang settings, "mode" )
+                  , ( Settings.menuSettings lang settings, "settings" )
+                  , ( Settings.menuTranslations lang def settings, "lang" )
+                  , ( Settings.menuShare lang url settings, "share" )
+                  , ( Settings.menuInformation lang def settings, "info" )
                   ]
-                    |> List.map (Html.li [ Attr.class "nav__item" ])
-                    |> Html.ul [ Attr.class "lia-support-menu__nav nav" ]
+                    |> List.map (\( body, class ) -> Html.li [ Attr.class <| "nav__item lia-support-menu__item lia-support-menu__item--" ++ class ] body)
+                    |> Html.ul [ Attr.class "nav lia-support-menu__nav" ]
                 ]
             ]
         ]

@@ -6,7 +6,7 @@ body {
   font-size: $global-font-size;
   font-weight: 400;
   line-height: $global-line-height;
-  color: $color-text;
+  color: var(--color-text);
 }
 
 body,
@@ -15,7 +15,7 @@ input,
 optgroup,
 select,
 textarea {
-  font-family: $global-font-text;
+  font-family: $global-font-family;
 }
 
 a,

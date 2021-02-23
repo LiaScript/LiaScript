@@ -1,0 +1,9 @@
+:root {
+  // map $global-colors and define global color variables with prefix "lia"
+  @each $color, $hex in $global-colors {
+    --lia-#{$color}: #{$hex};
+  }
+
+  --color-text: var(--lia-anthracite);
+  --color-background: var(--lia-turquoise);
+}

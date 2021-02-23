@@ -1,24 +1,43 @@
 address,
-h1, h2, h3, h4, h5, h6,
-blockquote, p, pre,
-dl, ol, ul,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+blockquote,
+p,
+pre,
+dl,
+ol,
+ul,
 figure,
-hr,
 table,
 fieldset {
-  margin-bottom: map-get($global-spacing, spacing-normal);;
+  margin-bottom: map-get($global-spacing, spacing-normal);
 }
 
-.lia-btn, .lia-input, .lia-select select, .lia-textarea {
-    -moz-appearance: none;
-    -webkit-appearance: none;
-    align-items: center;
-    border-radius: $global-radius;
-    border: 1px solid transparent;
-    box-shadow: none;
-    display: inline-flex;
-    justify-content: flex-start;
-    padding: .7rem;
-    position: relative;
-    vertical-align: top;
+input,
+button {
+  &:focus {
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba($color-turquoise-1, 0.25);
+  }
+}
+
+.lia-btn,
+.lia-input,
+.lia-select select,
+.lia-textarea {
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  align-items: center;
+  border-radius: $global-radius;
+  border: 1px solid transparent;
+  box-shadow: none;
+  display: inline-flex;
+  justify-content: flex-start;
+  padding: 0.7rem;
+  position: relative;
+  vertical-align: top;
 }

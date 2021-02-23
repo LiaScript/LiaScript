@@ -1,73 +1,104 @@
 .lia-support-menu {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  &__toggler {
+    display: block;
+    visibility: visible;
+
+    @include breakpoint("md") {
+      display: none;
+      visibility: hidden;
+    }
+  }
+
+  &__collapse {
+    border-left: $global-border;
+    height: 100vh;
+    position: fixed;
+    right: 0;
+    top: 0;
+    transition: right 250ms ease-in-out;
+    width: 315px;
+
+    @include breakpoint("md", "max") {
+      &--closed {
+        right: -315px;
+      }
+    }
+
+    @include breakpoint("md") {
+      border: none;
+      height: 100%;
+      position: relative;
+      width: 100%;
+    }
+  }
+
+  &__nav {
     display: flex;
-    align-items: center;
     justify-content: flex-end;
 
-    &__toggler {
-        display: block;
-        visibility: visible;
+    @include breakpoint("md", "max") {
+      display: block;
+      flex-direction: column;
+      height: 100%;
+      padding: 1.7rem 3rem;
+      overflow: auto;
+    }
+  }
 
-        @include breakpoint("m") {
-            display: none;
-            visibility: hidden;
-        }
+  &__item {
+    @include breakpoint("md", "max") {
+      align-items: flex-start;
+      display: flex;
+      flex-direction: column;
+      padding: 1.8rem 0;
+
+      &:not(:first-child) {
+        border-top: $global-border;
+      }
+
+      > .icon {
+        font-size: 2rem;
+        margin-bottom: 1.8rem;
+      }
+    }
+  }
+
+  &__submenu {
+    align-items: flex-start;
+    background-color: white;
+    border-radius: $global-radius;
+    box-shadow: 0 0 1rem rgba(0, 0, 0, 0.1);
+    color: $color-text;
+    display: none;
+    flex-direction: column;
+    max-width: 30rem;
+    padding: 1rem;
+    position: absolute;
+    right: 0;
+    top: 4.5rem;
+    width: max-content;
+    z-index: 100;
+
+    &.active {
+      display: flex;
     }
 
-    &__collapse {
-        border-left: $global-border;
-        height: 100vh;
-        position: fixed;
-        right: 0;
-        top: 0;
-        transition: right 250ms ease-in-out;
-        width: 315px;
-
-        @include breakpoint("m", "max"){
-            &--closed {
-                right: -315px;
-            }
-        }
-
-        @include breakpoint("m") {
-            border: none;
-            height: 100%;
-            position: relative;
-            width: 100%;
-        }
+    svg {
+      height: 15rem;
     }
 
-    &__nav {
-        display: flex;
-        justify-content: flex-end;
+    @include breakpoint("md", "max") {
+      box-shadow: none;
+      display: flex;
+      max-width: 100%;
+      padding: 0;
+      position: relative;
+      top: 0;
+      width: 100%;
     }
-
-    &__submenu {
-        background-color: white;
-        border-radius: $global-radius;
-        box-shadow: 0 0 1rem rgba(0,0,0,.1);
-        color: $color-text;
-        display: none;
-        max-width: 30rem;
-        padding: 1rem;
-        position: absolute;
-        right: 0;
-        top: 4.5rem;
-        z-index: 100;
-
-        &.active {
-            display: inline-block;
-        }
-
-        > * {
-            display: block;
-
-            &:not(:last-child) {
-                margin-bottom: 1rem;
-            }
-        }
-
-        svg {
-            height: 15rem;
-        }
-    }
+  }
 }

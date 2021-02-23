@@ -15,14 +15,14 @@ $global-spacing: (
   spacing-large: 2rem,
   spacing-normal: 1rem,
   spacing-small: 0.5rem,
-  spacing-tiny: 0.25rem
+  spacing-tiny: 0.25rem,
 );
 
 /* --------------------------------------------------
    UI treatments
    -------------------------------------------------- */
 
-$global-border: 1px solid $color-lightgrey;
+$global-border: 1px solid var(--lia-grey-light) !default;
 $global-radius: 8px !default;
 $global-outline: 3px !default;
 $global-transition: all 250ms ease-in-out !default;
@@ -36,7 +36,6 @@ $global-transition: all 250ms ease-in-out !default;
 $global-font-size: 1.5rem !default; // 15px
 $global-line-height: 1.47 !default;
 
-$global-font-text: "LiaSourceSansPro";
+$global-font-family: "LiaSourceSansPro";
 $global-font-mono: "LiaSourceCodePro";
 $global-font-headline: "LiaSourceSerifPro";
-

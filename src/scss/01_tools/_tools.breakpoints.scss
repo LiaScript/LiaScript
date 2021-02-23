@@ -9,9 +9,9 @@ $media-direction: min; // min / max — default is min (mobile first)
 $breakpoints: (
   "default": "",
   "xs": 480px,
-  "s": 768px,
-  "m": 1024px,
-  "l": 1440px,
+  "sm": 768px,
+  "md": 1024px,
+  "lg": 1440px,
   "xl": 1680px,
 );
 
@@ -23,7 +23,6 @@ $breakpoints: (
 @mixin breakpoint($breakpoint, $direction: $media-direction) {
   // check if value is a preconfigured breakpoint
   @if map-has-key($breakpoints, $breakpoint) {
-
     @media (#{$direction}-width: #{map-get($breakpoints, $breakpoint)}) {
       @content;
     }

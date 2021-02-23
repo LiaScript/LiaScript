@@ -59,25 +59,32 @@ design model =
 viewSettings : Lang -> Settings -> List (Html Msg)
 viewSettings lang settings =
     [ viewLightMode lang settings.light
-    , Html.hr [] []
+    , Html.hr [ Attr.class "nav__divider" ] []
     , viewTheme lang settings.theme
-    , Html.hr [] []
+    , Html.hr [ Attr.class "nav__divider" ] []
     , viewEditorTheme lang settings.editor
-    , Html.hr [] []
+    , Html.hr [ Attr.class "nav__divider" ] []
     , viewSizing lang settings.font_size
     ]
 
 
 viewLightMode : Lang -> Bool -> Html Msg
 viewLightMode _ isLight =
-    Html.span []
-        [ Html.input
-            [ Attr.type_ "checkbox"
-            , Attr.checked isLight
-            , onClick (Toggle Light)
+    Html.button
+        [ Attr.class "lia-btn lia-btn--transparent"
+        , onClick (Toggle Light)
+        ]
+        [ Html.i
+            [ Attr.class "lia-btn__icon icon"
+            , Attr.class <|
+                if isLight then
+                    "icon-darkmode"
+
+                else
+                    "icon-lightmode"
             ]
             []
-        , Html.label []
+        , Html.span [ Attr.class "lia-btn__text" ]
             [ Html.text <|
                 if isLight then
                     "Dark-Mode"
@@ -90,43 +97,41 @@ viewLightMode _ isLight =
 
 viewTheme : Lang -> String -> Html Msg
 viewTheme lang theme =
-    [ ( "turquoise", "Türkis" )
-    , ( "blue", Trans.cBlue lang )
-    , ( "red", "Rot" )
-    , ( "yellow", "Gelb" )
+    [ ( "turquoise", "Türkis", "is-turquoise mr-1" )
+    , ( "blue", Trans.cBlue lang, "is-blue mr-1" )
+    , ( "red", "Rot", "is-red mr-1" )
+    , ( "yellow", "Gelb", "is-yellow" )
     ]
         |> List.map
-            (\( color, name ) ->
+            (\( color, name, styleClass ) ->
                 [ Html.input
                     [ Attr.type_ "radio"
+                    , Attr.class <| "lia-radio " ++ styleClass
                     , Attr.id <| "lia-theme-color-" ++ color
+                    , Attr.name "lia-theme-color"
                     , Attr.checked (theme == color)
                     , onClick (ChangeTheme color)
                     ]
                     []
-                , Html.label
-                    [ Attr.for <| "lia-theme-color-" ++ color
-                    ]
-                    [ Html.text name ]
                 ]
             )
         |> List.concat
-        |> Html.span [ Attr.class "lia-settings__theme-colors" ]
+        |> Html.div [ Attr.class "lia-radio-group lia-settings-theme-colors" ]
 
 
 viewModes : Lang -> Settings -> List (Html Msg)
 viewModes lang settings =
-    [ viewMode lang Textbook settings.mode "lia-mode-textbook" "icon-book"
-    , viewMode lang Presentation settings.mode "lia-mode-presentation" "icon-presentation"
-    , viewMode lang Slides settings.mode "lia-mode-slides" "icon-slides"
+    [ viewMode lang Textbook settings.mode "lia-mode-textbook" "icon-book" "mb-1"
+    , viewMode lang Presentation settings.mode "lia-mode-presentation" "icon-presentation" "mb-1"
+    , viewMode lang Slides settings.mode "lia-mode-slides" "icon-slides" ""
     ]
 
 
-viewMode : Lang -> Mode -> Mode -> String -> String -> Html Msg
-viewMode lang mode activeMode id iconName =
+viewMode : Lang -> Mode -> Mode -> String -> String -> String -> Html Msg
+viewMode lang mode activeMode id iconName additionalCSSClass =
     Html.button
         [ Attr.id id
-        , Attr.class "lia-btn lia-btn--tranparent lia-btn--icon "
+        , Attr.class <| "lia-btn lia-btn--transparent lia-btn--icon " ++ additionalCSSClass
         , onClick (SwitchMode mode)
         ]
         [ Html.i [ Attr.class <| "lia-btn__icon icon " ++ iconName ] []
@@ -224,8 +229,8 @@ thanks lang to =
         |> Html.map (\_ -> Ignore)
 
 
-viewTranslations : Dict String String -> List (Html Msg)
-viewTranslations =
+viewTranslations : Lang -> Dict String String -> List (Html Msg)
+viewTranslations lang =
     Dict.toList
         >> List.map
             (\( title, url ) ->
@@ -233,6 +238,7 @@ viewTranslations =
                     [ Attr.href url, Attr.class "lia-link" ]
                     [ Html.text title, Html.br [] [] ]
             )
+        >> (::) (Html.a [ Attr.href "#", Attr.class "lia-link active" ] [ Html.text "TODO" ])
 
 
 submenu : Bool -> List (Html Msg) -> Html Msg
@@ -321,8 +327,8 @@ option current ( val, text ) =
         [ Html.text text ]
 
 
-btnIndex : Lang -> Html Msg
-btnIndex lang =
+btnIndex : Lang -> Bool -> Html Msg
+btnIndex lang open =
     Html.div [ Attr.class "lia-header__left" ]
         [ Html.button
             [ onClick <| Toggle TableOfContents
@@ -330,7 +336,17 @@ btnIndex lang =
             , Attr.class "lia-btn lia-btn--transparent"
             , Attr.id "lia-btn-toc"
             ]
-            [ Html.i [ Attr.class "lia-btn__icon icon icon-close" ] [] ]
+            [ Html.i
+                [ Attr.class "lia-btn__icon icon"
+                , Attr.class <|
+                    if open then
+                        "icon-table"
+
+                    else
+                        "icon-close"
+                ]
+                []
+            ]
         ]
 
 
@@ -346,7 +362,7 @@ btnSupport =
 
 menuMode : Lang -> Settings -> List (Html Msg)
 menuMode lang settings =
-    [ actionBtn ShowModes "icon-presentation" "Mode"
+    [ actionBtn ShowModes "icon-presentation hide-md-down" "Mode"
     , viewModes lang settings
         |> submenu (settings.action == Just ShowModes)
     ]
@@ -356,7 +372,7 @@ menuSettings : Lang -> Settings -> List (Html Msg)
 menuSettings lang settings =
     [ lang
         |> Trans.confSettings
-        |> actionBtn ShowSettings "icon-settings"
+        |> actionBtn ShowSettings "icon-settings hide-md-down"
     , viewSettings lang settings
         |> submenu (settings.action == Just ShowSettings)
     ]
@@ -365,7 +381,8 @@ menuSettings lang settings =
 menuTranslations : Lang -> Definition -> Settings -> List (Html Msg)
 menuTranslations lang defintion settings =
     [ Html.span
-        [ lang
+        [ Attr.class "hide-md-down"
+        , lang
             |> Trans.confTranslations
             |> Attr.title
         , doAction ShowTranslations
@@ -373,7 +390,7 @@ menuTranslations lang defintion settings =
         [ Html.text <| String.toUpper defintion.language
         ]
     , defintion.translation
-        |> viewTranslations
+        |> viewTranslations lang
         |> submenu (settings.action == Just ShowTranslations)
     ]
 

@@ -23,7 +23,7 @@
     position: relative;
     width: 100%;
 
-    @include breakpoint("l") {
+    @include breakpoint("lg") {
       //max-width: ;
     }
   }

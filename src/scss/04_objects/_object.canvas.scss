@@ -7,7 +7,7 @@ $support-width: 315px !default;
 
 /* --------------------------------------------------
    Canvas
-   -------------------------------------------------- */   
+   -------------------------------------------------- */
 .lia-canvas {
   display: flex;
   height: 100vh;
@@ -22,12 +22,12 @@ $support-width: 315px !default;
     width: calc(100% - #{$toc-width});
   }
 
-  &.lia-support--visible {
-    right: $support-width;
-    width: calc(100% - #{$support-width});
-  }
+  @include breakpoint("md", "max") {
+    &.lia-support--visible {
+      right: $support-width;
+      width: calc(100% - #{$support-width});
+    }
 
-  @include breakpoint("m", "max") {
     &.lia-toc--visible.lia-support--visible {
       width: calc(100% - #{$toc-width} - #{$support-width});
     }

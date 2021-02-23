@@ -10,7 +10,8 @@
 @import "01_tools/tools.breakpoints";
 @import "01_tools/tools.flex";
 @import "01_tools/tools.font-size";
-@import "01_tools/tools.spacings";
+@import "01_tools/tools.hidden-visually";
+@import "01_tools/tools.str-replace";
 
 // Generic
 @import "02_generic/generic.reset";
@@ -55,6 +56,7 @@
 // Utilities
 @import "06_utilities/utilities.headless";
 @import "06_utilities/utilities.hidden";
+@import "06_utilities/utilities.spacings";
 
 // Themes
 @import "themes";
