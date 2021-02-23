@@ -212,11 +212,14 @@ navButton str title id class msg =
 -}
 slideTopBar : Lang -> String -> Settings -> Definition -> Html Msg
 slideTopBar lang url settings def =
-    [ Settings.btnIndex lang
-    , Html.span [] [ Html.text "icon" ]
-    , Html.nav
-        [ Attr.class "navbar"
-        , Attr.style "float" "right"
+    [ Settings.btnIndex lang settings.table_of_contents
+    , Html.div [ Attr.class "lia-header__middle" ]
+        [ Html.img
+            [ -- Attr.src def.logo TODO
+              Attr.class "lia_header__logo"
+            , Attr.alt "LiaScript"
+            ]
+            []
         ]
     , Html.div [ Attr.class "lia-header__right" ]
         [ Html.nav
