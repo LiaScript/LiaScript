@@ -7,9 +7,24 @@
   position: fixed;
   transition: $global-transition;
   width: $toc-width;
+  z-index: 1;
 
   &--closed {
     left: -$toc-width;
+  }
+
+  @include breakpoint("sm", "max") {
+    padding-top: 8rem;
+  }
+
+  #lia-btn-toc {
+    position: absolute;
+    right: -6.5rem;
+    top: 1.75rem;
+
+    @include breakpoint("sm", "max") {
+      right: 3rem;
+    }
   }
 
   &__search {
@@ -37,7 +52,7 @@
       background: none;
       border: 0;
       height: 3rem;
-      right: .5rem;
+      right: 0.5rem;
       top: 50%;
       transform-origin: center center;
       transform: translateY(-50%);
@@ -45,7 +60,7 @@
       width: 3rem;
     }
   }
-  
+
   &__content {
     display: flex;
     flex-direction: column;
@@ -55,15 +70,15 @@
     a {
       width: 100%;
       text-decoration: none;
-      padding: .8rem .8rem .8rem 3rem;
+      padding: 0.8rem 0.8rem 0.8rem 3rem;
       position: relative;
-  
+
       &.lia-toc__link--is-lvl- {
         &1 {
           font-size: 2rem;
           font-weight: 700;
         }
-  
+
         &2 {
           font-weight: 600;
           font-size: 1.7rem;
@@ -81,15 +96,15 @@
             top: 0;
           }
         }
-  
+
         &3 {
           padding-left: 2 * $global-font-size + 3rem;
         }
-  
+
         &4 {
           padding-left: 3 * $global-font-size + 3rem;
         }
-  
+
         &5 {
           padding-left: 4 * $global-font-size + 3rem;
         }
@@ -116,7 +131,6 @@
 
 @mixin style-toc($theme) {
   .lia-toc {
-
     &::after {
       background: mix($bg, $fg, 80%);
     }
@@ -125,38 +139,38 @@
       $_bg: map-get($theme, background);
       $fg: color-contrast($_bg);
       $bg: mix($bg, $fg, 95%);
-  
+
       a {
         &:link {
           $col: mix($fg, $bg, 80%);
           color: $col;
-    
+
           &:hover {
             color: lighten($col, 20%);
           }
-    
+
           &:active {
             color: darken($col, 20%);
           }
         }
-    
+
         &:visited {
           $col: $fg;
           color: $col;
-    
+
           &:hover {
             color: lighten($col, 20%);
           }
-    
+
           &:active {
             color: darken($col, 20%);
           }
         }
-    
+
         &.lia-active {
           $col: map-get($theme, primary);
           $fg: color-contrast($col);
-          
+
           color: $col;
 
           &:before {
@@ -168,20 +182,20 @@
             width: 5px;
             background-color: $color-turquoise-1;
           }
-    
+
           &:hover {
             color: lighten($col, 20%);
           }
-    
+
           &:active {
             color: darken($col, 20%);
           }
         }
-    
+
         &.lia-not-visited {
           color: darken($fg, 30%);
         }
-    
+
         &.lia-error {
           color: rgb(1, 0, 0);
           background: rgb(1, 0, 0);

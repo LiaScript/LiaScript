@@ -55,7 +55,9 @@ viewIndex hasIndex model =
             else
                 "lia-toc--open"
         ]
-        [ model.index_model
+        [ Settings.btnIndex model.translation model.settings.table_of_contents
+            |> Html.map UpdateSettings
+        , model.index_model
             |> Index.search model.translation
             |> Html.div [ Attr.class "lia-toc__search" ]
             |> Html.map UpdateIndex
@@ -212,7 +214,7 @@ navButton str title id class msg =
 -}
 slideTopBar : Lang -> String -> Settings -> Definition -> Html Msg
 slideTopBar lang url settings def =
-    [ Settings.btnIndex lang settings.table_of_contents
+    [ Html.div [ Attr.class "lia-header__left" ] []
     , Html.div [ Attr.class "lia-header__middle" ]
         [ Html.img
             [ -- Attr.src def.logo TODO
