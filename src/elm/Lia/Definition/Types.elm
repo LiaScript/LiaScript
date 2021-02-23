@@ -6,9 +6,11 @@ module Lia.Definition.Types exposing
     , add_macros
     , add_translation
     , default
+    , getIcon
     , get_translations
     )
 
+import Const
 import Dict exposing (Dict)
 import Lia.Markdown.HTML.Attributes exposing (toURL)
 import Lia.Markdown.Inline.Types exposing (Inlines)
@@ -114,3 +116,10 @@ append to base urls list =
         |> String.words
         |> List.map (toURL base >> to)
         |> List.append list
+
+
+getIcon : Definition -> String
+getIcon =
+    .macro
+        >> Dict.get "icon"
+        >> Maybe.withDefault Const.icon

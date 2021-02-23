@@ -329,24 +329,22 @@ option current ( val, text ) =
 
 btnIndex : Lang -> Bool -> Html Msg
 btnIndex lang open =
-    Html.div [ Attr.class "lia-header__left" ]
-        [ Html.button
-            [ onClick <| Toggle TableOfContents
-            , Attr.title (Trans.baseToc lang)
-            , Attr.class "lia-btn lia-btn--transparent"
-            , Attr.id "lia-btn-toc"
-            ]
-            [ Html.i
-                [ Attr.class "lia-btn__icon icon"
-                , Attr.class <|
-                    if open then
-                        "icon-table"
+    Html.button
+        [ onClick <| Toggle TableOfContents
+        , Attr.title (Trans.baseToc lang)
+        , Attr.class "lia-btn lia-btn--transparent"
+        , Attr.id "lia-btn-toc"
+        ]
+        [ Html.i
+            [ Attr.class "lia-btn__icon icon"
+            , Attr.class <|
+                if open then
+                    "icon-table"
 
-                    else
-                        "icon-close"
-                ]
-                []
+                else
+                    "icon-close"
             ]
+            []
         ]
 
 

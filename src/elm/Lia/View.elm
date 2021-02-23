@@ -5,7 +5,7 @@ import Flip exposing (flip)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
-import Lia.Definition.Types exposing (Definition)
+import Lia.Definition.Types as Definition exposing (Definition)
 import Lia.Index.View as Index
 import Lia.Markdown.Config as Config
 import Lia.Markdown.Effect.Model as Effect
@@ -55,7 +55,9 @@ viewIndex hasIndex model =
             else
                 "lia-toc--open"
         ]
-        [ model.index_model
+        [ Settings.btnIndex model.translation model.settings.table_of_contents
+            |> Html.map UpdateSettings
+        , model.index_model
             |> Index.search model.translation
             |> Html.div [ Attr.class "lia-toc__search" ]
             |> Html.map UpdateIndex
@@ -144,9 +146,13 @@ slideBottom lang settings slide effects =
 
             _ ->
                 Html.div [ Attr.class "lia-responsive-voice" ]
-                    [ Html.button [ Attr.class "lia-btn lia-responsive-voice__play" ]
+                    [ Html.button
+                        [ Attr.class "lia-btn lia-responsive-voice__play"
+                        , onClick <| TTSReplay (not settings.speaking)
+                        , Attr.disabled (not settings.sound)
+                        ]
                         [ if settings.speaking then
-                            Html.text "pan_tool"
+                            Html.text "stop"
 
                           else
                             Html.i [ Attr.class "icon icon-play-circle" ] []
@@ -208,11 +214,13 @@ navButton str title id class msg =
 -}
 slideTopBar : Lang -> String -> Settings -> Definition -> Html Msg
 slideTopBar lang url settings def =
-    [ Settings.btnIndex lang settings.table_of_contents
+    [ Html.div [ Attr.class "lia-header__left" ] []
     , Html.div [ Attr.class "lia-header__middle" ]
         [ Html.img
-            [ -- Attr.src def.logo TODO
-              Attr.class "lia_header__logo"
+            [ def
+                |> Definition.getIcon
+                |> Attr.src
+            , Attr.class "lia_header__logo"
             , Attr.alt "LiaScript"
             ]
             []
