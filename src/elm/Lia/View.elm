@@ -5,7 +5,7 @@ import Flip exposing (flip)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
-import Lia.Definition.Types exposing (Definition)
+import Lia.Definition.Types as Definition exposing (Definition)
 import Lia.Index.View as Index
 import Lia.Markdown.Config as Config
 import Lia.Markdown.Effect.Model as Effect
@@ -144,9 +144,13 @@ slideBottom lang settings slide effects =
 
             _ ->
                 Html.div [ Attr.class "lia-responsive-voice" ]
-                    [ Html.button [ Attr.class "lia-btn lia-responsive-voice__play" ]
+                    [ Html.button
+                        [ Attr.class "lia-btn lia-responsive-voice__play"
+                        , onClick <| TTSReplay (not settings.speaking)
+                        , Attr.disabled (not settings.sound)
+                        ]
                         [ if settings.speaking then
-                            Html.text "pan_tool"
+                            Html.text "stop"
 
                           else
                             Html.i [ Attr.class "icon icon-play-circle" ] []

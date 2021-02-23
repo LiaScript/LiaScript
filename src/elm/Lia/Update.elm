@@ -12,7 +12,7 @@ import Json.Encode as JE
 import Lia.Index.Update as Index
 import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Effect.Update as Effect
-import Lia.Markdown.Update as Markdown
+import Lia.Markdown.Update as Markdown exposing (ttsReplay)
 import Lia.Model exposing (Model, loadResource)
 import Lia.Parser.Parser exposing (parse_section)
 import Lia.Section exposing (Section)
@@ -68,6 +68,7 @@ type Msg
     | Handle Event
     | Home
     | Script ( Int, Script.Msg Markdown.Msg )
+    | TTSReplay Bool
 
 
 {-| **@private:** shortcut for generating events for a specific section:
@@ -257,6 +258,12 @@ update session msg model =
                     , model.to_do
                         |> List.append (send model.section_active log_)
                         |> (::) (Event "slide" model.section_active JE.null)
+                    )
+
+                ( TTSReplay bool, sec ) ->
+                    ( model
+                    , Cmd.none
+                    , Markdown.ttsReplay model.settings.sound bool sec
                     )
 
                 _ ->

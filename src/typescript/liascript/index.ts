@@ -13,6 +13,7 @@ import Lia from './types/lia.d'
 import Port from './types/ports'
 import TTS from './tts'
 import { Connector } from '../connectors/Base/index'
+import { updateClassName } from '../connectors/Base/settings'
 
 function isInViewport(elem: HTMLElement) {
   const bounding = elem.getBoundingClientRect()
@@ -353,6 +354,8 @@ function process(isConnected: boolean, self: LiaScript, elmSend: Lia.Send, event
       // } else {
 
       try {
+        updateClassName(event.message)
+
         const conf = self.connector.getSettings()
         if (conf ?.table_of_contents !== event.message.table_of_contents) {
           setTimeout(function() {
@@ -364,6 +367,8 @@ function process(isConnected: boolean, self: LiaScript, elmSend: Lia.Send, event
       if (isConnected) {
         self.connector.setSettings(event.message)
       }
+
+     
 
       break
     }
