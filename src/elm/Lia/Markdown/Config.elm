@@ -38,7 +38,7 @@ init lang settings screen section id =
         settings.mode
         (viewer config >> List.map (Html.map Script))
         section
-        settings.theme
+        settings.editor
         settings.light
         (if settings.table_of_contents then
             { screen | width = screen.width - 260 }
@@ -57,7 +57,7 @@ inline lang settings effect id =
         effect.speaking
         effect.javascript
         lang
-        (Just settings.theme)
+        (Just settings.editor)
 
 
 setSubViewer : (Int -> SubSection -> List (Html (Script.Msg Msg))) -> Config Msg -> Config Msg
