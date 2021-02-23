@@ -217,8 +217,10 @@ slideTopBar lang url settings def =
     [ Html.div [ Attr.class "lia-header__left" ] []
     , Html.div [ Attr.class "lia-header__middle" ]
         [ Html.img
-            [ -- Attr.src def.logo TODO
-              Attr.class "lia_header__logo"
+            [ def
+                |> Definition.getIcon
+                |> Attr.src
+            , Attr.class "lia_header__logo"
             , Attr.alt "LiaScript"
             ]
             []
