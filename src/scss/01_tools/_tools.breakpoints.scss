@@ -1,0 +1,39 @@
+/* --------------------------------------------------
+   Breakpoint Settings
+   -------------------------------------------------- */
+
+// min or max
+$media-direction: min; // min / max — default is min (mobile first)
+
+// Breakpoints
+$breakpoints: (
+  "default": "",
+  "xs": 480px,
+  "sm": 768px,
+  "md": 1024px,
+  "lg": 1440px,
+  "xl": 1680px,
+);
+
+/* --------------------------------------------------
+   Breakpoint Mixin
+   -------------------------------------------------- */
+
+// use 'xs', 's', 'm', 'l', 'xl' or a custom value
+@mixin breakpoint($breakpoint, $direction: $media-direction) {
+  // check if value is a preconfigured breakpoint
+  @if map-has-key($breakpoints, $breakpoint) {
+    @media (#{$direction}-width: #{map-get($breakpoints, $breakpoint)}) {
+      @content;
+    }
+  }
+
+  // check unit of value, fallback pixel
+  @else if unitless($breakpoint) {
+    $breakpoint: $breakpoint + 0px;
+
+    @media (#{$direction}-width: $breakpoint) {
+      @content;
+    }
+  }
+}

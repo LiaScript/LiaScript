@@ -1,0 +1,26 @@
+.nav {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+
+  &__item {
+    align-items: center;
+    cursor: pointer;
+    display: flex;
+    padding: 0 0.5rem;
+    position: relative;
+
+    > .lia-btn__icon {
+      font-size: 2rem;
+    }
+  }
+
+  &__divider {
+    background: var(--lia-grey-light);
+    border: none;
+    height: 1px;
+    margin: 1rem 0;
+    width: 100%;
+  }
+}

@@ -17,7 +17,7 @@ import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model)
 import Lia.Section exposing (Section, SubSection)
 import Lia.Settings.Types exposing (Mode(..), Settings)
-import Lia.Settings.Update exposing (toggle_sound)
+import Lia.Settings.Update exposing (Toggle(..), toggle_sound)
 import Lia.Settings.View as Settings
 import Lia.Update exposing (Msg(..), get_active_section)
 import Port.Share exposing (share)
@@ -38,9 +38,7 @@ view : Screen -> Bool -> Model -> Html Msg
 view screen hasIndex model =
     Html.div
         (Settings.design model.settings)
-        [ viewIndex hasIndex model
-        , viewSlide screen model
-        ]
+        (viewIndex hasIndex model :: viewSlide screen model)
 
 
 {-| **@private:** Display the side section that contains the document search,
@@ -50,24 +48,25 @@ viewIndex : Bool -> Model -> Html Msg
 viewIndex hasIndex model =
     Html.div
         [ Attr.class "lia-toc"
-        , Attr.style "max-width" <|
+        , Attr.class <|
             if model.settings.table_of_contents then
-                "280px"
+                "lia-toc--closed"
 
             else
-                "0px"
+                "lia-toc--open"
         ]
         [ model.index_model
             |> Index.search model.translation
-            |> Html.span [ Attr.style "width" "100%", Attr.style "height" "100%" ]
+            |> Html.div [ Attr.class "lia-toc__search" ]
             |> Html.map UpdateIndex
         , model.sections
             |> Index.content model.translation model.section_active Script
-            |> Html.nav [ Attr.class "lia-content" ]
+            |> Html.nav [ Attr.class "lia-toc__content" ]
 
         --|> Html.map Script
         , if hasIndex then
-            Index.bottom Home
+            Html.div [ Attr.class "lia-toc__bottom" ]
+                [ Index.bottom Home ]
 
           else
             Html.text ""
@@ -92,44 +91,43 @@ viewIndex hasIndex model =
 {-| **@private:** show the current section, with navigation on top as well as a
 footer, if it is required by the current display mode.
 -}
-viewSlide : Screen -> Model -> Html Msg
+viewSlide : Screen -> Model -> List (Html Msg)
 viewSlide screen model =
-    Html.div [] <|
-        case get_active_section model of
-            Just section ->
-                [ Html.div [ Attr.class "lia-slide" ]
-                    [ slideTopBar model.translation model.url model.settings model.definition
-                    , Config.init
-                        model.translation
-                        model.settings
-                        screen
-                        section
-                        model.section_active
-                        |> Markdown.view
-                        |> Html.map UpdateMarkdown
-                    , slideBottom
-                        model.translation
-                        model.settings
-                        model.section_active
-                        section.effect_model
-                    ]
-                , slideA11y
+    case get_active_section model of
+        Just section ->
+            [ Html.div [ Attr.class "lia-slide" ]
+                [ slideTopBar model.translation model.url model.settings model.definition
+                , Config.init
                     model.translation
-                    model.settings.mode
-                    section.effect_model
+                    model.settings
+                    screen
+                    section
                     model.section_active
+                    |> Markdown.view
+                    |> Html.map UpdateMarkdown
+                , slideBottom
+                    model.translation
+                    model.settings
+                    model.section_active
+                    section.effect_model
                 ]
+            , slideA11y
+                model.translation
+                model.settings.mode
+                section.effect_model
+                model.section_active
+            ]
 
-            Nothing ->
-                [ Html.div [ Attr.class "lia-slide" ]
-                    [ slideTopBar
-                        model.translation
-                        model.url
-                        model.settings
-                        model.definition
-                    , Html.text "Ups, something went wrong"
-                    ]
+        Nothing ->
+            [ Html.div [ Attr.class "lia-slide" ]
+                [ slideTopBar
+                    model.translation
+                    model.url
+                    model.settings
+                    model.definition
+                , Html.text "Ups, something went wrong"
                 ]
+            ]
 
 
 {-| **@private:** used to diplay the text2speech output settings and spoken
@@ -138,16 +136,16 @@ comments in text, depending on the currently applied rendering mode.
 slideBottom : Lang -> Settings -> Int -> Effect.Model SubSection -> Html Msg
 slideBottom lang settings slide effects =
     Html.footer
-        [ Attr.class "lia-footer" ]
+        [ Attr.class "lia-slide__footer" ]
         [ slideNavigation lang settings.mode slide effects
         , case settings.mode of
             Textbook ->
                 Html.text ""
 
             _ ->
-                Html.div []
+                Html.div [ Attr.class "lia-responsive-voice" ]
                     [ Html.button
-                        [ Attr.class "lia-btn lia-icon"
+                        [ Attr.class "lia-btn lia-responsive-voice__play"
                         , onClick <| TTSReplay (not settings.speaking)
                         , Attr.disabled (not settings.sound)
                         ]
@@ -155,7 +153,7 @@ slideBottom lang settings slide effects =
                             Html.text "stop"
 
                           else
-                            Html.text "play"
+                            Html.i [ Attr.class "icon icon-play-circle" ] []
                         ]
                     , responsive lang settings.sound (UpdateSettings toggle_sound)
                     ]
@@ -188,15 +186,17 @@ slideA11y lang mode effect id =
 4.  `msg`: to release if pressed
 
 -}
-navButton : String -> String -> String -> msg -> Html msg
-navButton str title id msg =
+navButton : String -> String -> String -> String -> msg -> Html msg
+navButton str title id class msg =
     Html.button
         [ onClick msg
         , Attr.title title
-        , Attr.class "lia-btn lia-control lia-slide-control lia-left"
+        , Attr.class "lia-btn lia-btn--transparent"
         , Attr.id id
         ]
-        [ Html.text str ]
+        [ Html.i [ Attr.class class ]
+            []
+        ]
 
 
 {-| **@private:** the navigation abr:
@@ -213,65 +213,59 @@ navButton str title id msg =
 slideTopBar : Lang -> String -> Settings -> Definition -> Html Msg
 slideTopBar lang url settings def =
     [ Settings.btnIndex lang
-    , Html.img
-        [ def
-            |> Definition.getIcon
-            |> Attr.src
-        ]
-        []
+    , Html.span [] [ Html.text "icon" ]
     , Html.nav
         [ Attr.class "navbar"
         , Attr.style "float" "right"
         ]
-        [ Html.button
-            [ Attr.class "navbar-toggler"
-            , Attr.type_ "button"
+    , Html.div [ Attr.class "lia-header__right" ]
+        [ Html.nav
+            [ Attr.class "lia-support-menu"
             ]
-            [ Html.text "..." ]
-        , Html.span [ Attr.class "navbar-collapse" ]
-            [ [ Settings.btnMode lang
-              , Settings.btnSettings lang
-              , def.translation
-                    |> Dict.isEmpty
-                    |> Settings.btnTranslations lang
-              , Settings.btnShare lang
-              , Settings.btnInformation lang
-              ]
-                |> List.map navItem
-                |> Html.ul [ Attr.class "navbar-nav", Attr.style "display" "inline" ]
+            [ Settings.btnSupport
+            , Html.div
+                [ Attr.class "lia-support-menu__collapse"
+                , Attr.class <|
+                    if settings.support_menu then
+                        "lia-support-menu__collapse--closed"
+
+                    else
+                        "lia-support-menu__collapse--open"
+                ]
+                [ [ ( Settings.menuMode lang settings, "mode" )
+                  , ( Settings.menuSettings lang settings, "settings" )
+                  , ( Settings.menuTranslations lang def settings, "lang" )
+                  , ( Settings.menuShare lang url settings, "share" )
+                  , ( Settings.menuInformation lang def settings, "info" )
+                  ]
+                    |> List.map (\( body, class ) -> Html.li [ Attr.class <| "nav__item lia-support-menu__item lia-support-menu__item--" ++ class ] body)
+                    |> Html.ul [ Attr.class "nav lia-support-menu__nav" ]
+                ]
             ]
-        , settings
-            |> Settings.view lang url def
         ]
     ]
-        |> Html.header [ Attr.class "lia-toolbar", Attr.id "lia-toolbar-nav" ]
+        |> Html.header [ Attr.class "lia-header", Attr.id "lia-toolbar-nav" ]
         |> Html.map UpdateSettings
-
-
-navItem =
-    List.singleton
-        >> Html.li
-            [ Attr.class "nav-item"
-            , Attr.style "display" "inline"
-            ]
 
 
 slideNavigation : Lang -> Mode -> Int -> Effect.Model SubSection -> Html Msg
 slideNavigation lang mode slide effect =
-    Html.div []
-        [ navButton "navigate_before" (Trans.basePrev lang) "lia-btn-prev" PrevSection
-        , Html.div
-            []
-            [ Html.text (String.fromInt (slide + 1))
-            , Html.text <|
-                case mode of
-                    Textbook ->
-                        ""
+    Html.div [ Attr.class "lia-pagination" ]
+        [ Html.div [ Attr.class "lia-pagination__content" ]
+            [ navButton "navigate_before" (Trans.basePrev lang) "lia-btn-prev" "lia-btn__icon icon icon-arrow-left" PrevSection
+            , Html.span
+                [ Attr.class "lia-pagination__current" ]
+                [ Html.text (String.fromInt (slide + 1))
+                , Html.text <|
+                    case mode of
+                        Textbook ->
+                            ""
 
-                    _ ->
-                        state effect
+                        _ ->
+                            state effect
+                ]
+            , navButton "navigate_next" (Trans.baseNext lang) "lia-btn-next" "lia-btn__icon icon icon-arrow-right" NextSection
             ]
-        , navButton "navigate_next" (Trans.baseNext lang) "lia-btn-next" NextSection
         ]
 
 

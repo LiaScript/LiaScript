@@ -1,12 +1,12 @@
 module Lia.Settings.View exposing
     ( btnIndex
-    , btnInformation
-    , btnMode
-    , btnSettings
-    , btnShare
-    , btnTranslations
+    , btnSupport
     , design
-    , view
+    , menuInformation
+    , menuMode
+    , menuSettings
+    , menuShare
+    , menuTranslations
     )
 
 import Array
@@ -22,33 +22,6 @@ import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
 import Lia.Settings.Update exposing (Msg(..), Toggle(..))
 import QRCode
 import Translations as Trans exposing (Lang)
-
-
-view :
-    Lang
-    -> String
-    -> Definition
-    -> Settings
-    -> Html Msg -- String -> String -> Maybe Event -> Definition -> Html Msg
-view lang url definition settings =
-    case settings.action of
-        Nothing ->
-            Html.text ""
-
-        Just ShowModes ->
-            viewModes lang settings
-
-        Just ShowSettings ->
-            viewSettings lang settings
-
-        Just Share ->
-            qrCodeView url
-
-        Just ShowTranslations ->
-            viewTranslations definition.translation
-
-        Just ShowInformation ->
-            viewInformation lang definition
 
 
 design : Settings -> List (Html.Attribute msg)
@@ -68,46 +41,50 @@ design model =
                     "dark"
                )
         )
-    , Attr.style "height" <| "calc(100vh / " ++ float ++ ")"
-    , Attr.style "width" <| "calc(100vw / " ++ float ++ ")"
-    , Attr.style "transform" <| "scale(" ++ float ++ ")"
-    , Attr.style "-webkit-transform-origin" "top left"
-    , Attr.style "-moz-transform-origin" "top left"
+    , Attr.class <|
+        if model.table_of_contents then
+            "lia-toc--hidden"
 
-    --, Attr.style "transform-origin" "bottom left"
-    , Attr.style "transform-origin" "top left"
-    , Attr.style "position" "absolute"
+        else
+            "lia-toc--visible"
+    , Attr.class <|
+        if model.support_menu then
+            "lia-support--hidden"
+
+        else
+            "lia-support--visible"
     ]
 
 
-viewSettings : Lang -> Settings -> Html Msg
+viewSettings : Lang -> Settings -> List (Html Msg)
 viewSettings lang settings =
     [ viewLightMode lang settings.light
-    , Html.hr [] []
+    , Html.hr [ Attr.class "nav__divider" ] []
     , viewTheme lang settings.theme
-    , Html.hr [] []
+    , Html.hr [ Attr.class "nav__divider" ] []
     , viewEditorTheme lang settings.editor
-    , Html.hr [] []
+    , Html.hr [ Attr.class "nav__divider" ] []
     , viewSizing lang settings.font_size
     ]
-        |> Html.div
-            [ Attr.style "position" "absolute"
-            , Attr.style "top" "50px"
-            , Attr.style "zIndex" "1000"
-            , Attr.style "color" "red"
-            ]
 
 
 viewLightMode : Lang -> Bool -> Html Msg
 viewLightMode _ isLight =
-    Html.span []
-        [ Html.input
-            [ Attr.type_ "checkbox"
-            , Attr.checked isLight
-            , onClick (Toggle Light)
+    Html.button
+        [ Attr.class "lia-btn lia-btn--transparent"
+        , onClick (Toggle Light)
+        ]
+        [ Html.i
+            [ Attr.class "lia-btn__icon icon"
+            , Attr.class <|
+                if isLight then
+                    "icon-darkmode"
+
+                else
+                    "icon-lightmode"
             ]
             []
-        , Html.label []
+        , Html.span [ Attr.class "lia-btn__text" ]
             [ Html.text <|
                 if isLight then
                     "Dark-Mode"
@@ -120,55 +97,45 @@ viewLightMode _ isLight =
 
 viewTheme : Lang -> String -> Html Msg
 viewTheme lang theme =
-    [ ( "turquoise", "Türkis" )
-    , ( "blue", Trans.cBlue lang )
-    , ( "red", "Rot" )
-    , ( "yellow", "Gelb" )
+    [ ( "turquoise", "Türkis", "is-turquoise mr-1" )
+    , ( "blue", Trans.cBlue lang, "is-blue mr-1" )
+    , ( "red", "Rot", "is-red mr-1" )
+    , ( "yellow", "Gelb", "is-yellow" )
     ]
         |> List.map
-            (\( color, name ) ->
+            (\( color, name, styleClass ) ->
                 [ Html.input
                     [ Attr.type_ "radio"
+                    , Attr.class <| "lia-radio " ++ styleClass
+                    , Attr.id <| "lia-theme-color-" ++ color
+                    , Attr.name "lia-theme-color"
                     , Attr.checked (theme == color)
                     , onClick (ChangeTheme color)
                     ]
                     []
-                , Html.label [] [ Html.text name ]
                 ]
             )
         |> List.concat
-        |> Html.span [ Attr.class "lia-settings__theme-colors" ]
+        |> Html.div [ Attr.class "lia-radio-group lia-settings-theme-colors" ]
 
 
-viewModes : Lang -> Settings -> Html Msg
+viewModes : Lang -> Settings -> List (Html Msg)
 viewModes lang settings =
-    [ viewMode lang Textbook settings.mode
-    , Html.hr [] []
-    , viewMode lang Presentation settings.mode
-    , Html.hr [] []
-    , viewMode lang Slides settings.mode
+    [ viewMode lang Textbook settings.mode "lia-mode-textbook" "icon-book" "mb-1"
+    , viewMode lang Presentation settings.mode "lia-mode-presentation" "icon-presentation" "mb-1"
+    , viewMode lang Slides settings.mode "lia-mode-slides" "icon-slides" ""
     ]
-        |> Html.div
-            [ Attr.style "position" "absolute"
-            , Attr.style "top" "50px"
-            , Attr.style "zIndex" "1000"
-            , Attr.style "color" "red"
-            ]
 
 
-viewMode : Lang -> Mode -> Mode -> Html Msg
-viewMode lang mode activeMode =
-    Html.div []
-        [ Html.input
-            [ Attr.type_ "radio"
-            , Attr.checked (mode == activeMode)
-            , onClick (SwitchMode mode)
-            ]
-            []
-        , Html.label []
-            [ modeToString mode lang
-                |> Html.text
-            ]
+viewMode : Lang -> Mode -> Mode -> String -> String -> String -> Html Msg
+viewMode lang mode activeMode id iconName additionalCSSClass =
+    Html.button
+        [ Attr.id id
+        , Attr.class <| "lia-btn lia-btn--transparent lia-btn--icon " ++ additionalCSSClass
+        , onClick (SwitchMode mode)
+        ]
+        [ Html.i [ Attr.class <| "lia-btn__icon icon " ++ iconName ] []
+        , Html.span [ Attr.class "lia-btn__text" ] [ modeToString mode lang |> Html.text ]
         ]
 
 
@@ -217,7 +184,7 @@ bold =
     Html.text >> List.singleton >> Html.b []
 
 
-viewInformation : Lang -> Definition -> Html Msg
+viewInformation : Lang -> Definition -> List (Html Msg)
 viewInformation lang definition =
     []
         |> CList.addIf (definition.attributes /= [])
@@ -243,13 +210,7 @@ viewInformation lang definition =
             [ bold <| Trans.infoAuthor lang
             , Html.text definition.author
             ]
-        |> List.map (Html.div [])
-        |> Html.div
-            [ Attr.style "position" "absolute"
-            , Attr.style "top" "50px"
-            , Attr.style "zIndex" "1000"
-            , Attr.style "color" "red"
-            ]
+        |> List.map (Html.span [])
 
 
 viewAttributes : Lang -> List Inlines -> Html Msg
@@ -268,8 +229,8 @@ thanks lang to =
         |> Html.map (\_ -> Ignore)
 
 
-viewTranslations : Dict String String -> Html Msg
-viewTranslations =
+viewTranslations : Lang -> Dict String String -> List (Html Msg)
+viewTranslations lang =
     Dict.toList
         >> List.map
             (\( title, url ) ->
@@ -277,7 +238,20 @@ viewTranslations =
                     [ Attr.href url, Attr.class "lia-link" ]
                     [ Html.text title, Html.br [] [] ]
             )
-        >> Html.div []
+        >> (::) (Html.a [ Attr.href "#", Attr.class "lia-link active" ] [ Html.text "TODO" ])
+
+
+submenu : Bool -> List (Html Msg) -> Html Msg
+submenu isActive =
+    Html.div
+        [ Attr.class "lia-support-menu__submenu"
+        , Attr.class <|
+            if isActive then
+                "active"
+
+            else
+                ""
+        ]
 
 
 qrCodeView : String -> Html msg
@@ -285,8 +259,6 @@ qrCodeView =
     QRCode.fromString
         >> Result.map (QRCode.toSvgWithoutQuietZone [])
         >> Result.withDefault (Html.text "Error while encoding to QRCode.")
-        >> List.singleton
-        >> Html.div []
 
 
 viewEditorTheme : Lang -> String -> Html Msg
@@ -355,55 +327,98 @@ option current ( val, text ) =
         [ Html.text text ]
 
 
-btnIndex : Lang -> Html Msg
-btnIndex lang =
-    Html.button
-        [ onClick <| Toggle TableOfContents
-        , Attr.title (Trans.baseToc lang)
-        , Attr.class "lia-btn lia-toc-control lia-left"
-        , Attr.id "lia-btn-toc"
+btnIndex : Lang -> Bool -> Html Msg
+btnIndex lang open =
+    Html.div [ Attr.class "lia-header__left" ]
+        [ Html.button
+            [ onClick <| Toggle TableOfContents
+            , Attr.title (Trans.baseToc lang)
+            , Attr.class "lia-btn lia-btn--transparent"
+            , Attr.id "lia-btn-toc"
+            ]
+            [ Html.i
+                [ Attr.class "lia-btn__icon icon"
+                , Attr.class <|
+                    if open then
+                        "icon-table"
+
+                    else
+                        "icon-close"
+                ]
+                []
+            ]
         ]
-        [ Html.text "toc" ]
 
 
-btnMode : Lang -> Html Msg
-btnMode _ =
-    actionBtn ShowModes "Mode"
+btnSupport : Html Msg
+btnSupport =
+    Html.button
+        [ onClick <| Toggle SupportMenu
+        , Attr.class "lia-btn lia-btn--transparent lia-support-menu__toggler"
+        , Attr.type_ "button"
+        ]
+        [ Html.i [ Attr.class "icon icon-more" ] [] ]
 
 
-btnSettings : Lang -> Html Msg
-btnSettings =
-    Trans.confSettings
-        >> actionBtn ShowSettings
+menuMode : Lang -> Settings -> List (Html Msg)
+menuMode lang settings =
+    [ actionBtn ShowModes "icon-presentation hide-md-down" "Mode"
+    , viewModes lang settings
+        |> submenu (settings.action == Just ShowModes)
+    ]
 
 
-btnTranslations : Lang -> Bool -> Html Msg
-btnTranslations lang hide =
-    if hide then
-        Html.text ""
+menuSettings : Lang -> Settings -> List (Html Msg)
+menuSettings lang settings =
+    [ lang
+        |> Trans.confSettings
+        |> actionBtn ShowSettings "icon-settings hide-md-down"
+    , viewSettings lang settings
+        |> submenu (settings.action == Just ShowSettings)
+    ]
 
-    else
-        lang
+
+menuTranslations : Lang -> Definition -> Settings -> List (Html Msg)
+menuTranslations lang defintion settings =
+    [ Html.span
+        [ Attr.class "hide-md-down"
+        , lang
             |> Trans.confTranslations
-            |> actionBtn ShowTranslations
+            |> Attr.title
+        , doAction ShowTranslations
+        ]
+        [ Html.text <| String.toUpper defintion.language
+        ]
+    , defintion.translation
+        |> viewTranslations lang
+        |> submenu (settings.action == Just ShowTranslations)
+    ]
 
 
-btnShare : Lang -> Html Msg
-btnShare =
-    Trans.confShare
-        >> actionBtn Share
+menuShare : Lang -> String -> Settings -> List (Html Msg)
+menuShare lang url settings =
+    [ lang
+        |> Trans.confShare
+        |> actionBtn Share "icon-social"
+    , [ qrCodeView url ]
+        |> submenu (settings.action == Just Share)
+    ]
 
 
-btnInformation : Lang -> Html Msg
-btnInformation =
-    Trans.confInformation
-        >> actionBtn ShowInformation
+menuInformation : Lang -> Definition -> Settings -> List (Html Msg)
+menuInformation lang definition settings =
+    [ lang
+        |> Trans.confInformation
+        |> actionBtn ShowInformation "icon-info"
+    , viewInformation lang definition
+        |> submenu (settings.action == Just ShowInformation)
+    ]
 
 
-actionBtn : Action -> String -> Html Msg
-actionBtn msg title =
-    Html.span [ doAction msg ]
-        [ Html.text title ]
+actionBtn : Action -> String -> String -> Html Msg
+actionBtn msg iconName title =
+    Html.i [ Attr.class <| "icon " ++ iconName, Attr.title title, doAction msg ]
+        []
 
 
 doAction : Action -> Html.Attribute Msg
