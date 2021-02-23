@@ -256,6 +256,24 @@ class LiaScript {
 
     this.initNaviation(elem, elmSend)
 
+    var observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        elmSend({
+          topic: "lang",
+          section: -1,
+          message: document.documentElement.lang
+        })
+      });
+    });
+
+    observer.observe(
+      document.documentElement,
+      { attributes: true,
+        childList: false,
+        characterData: false,
+        attributeFilter: ["lang"]
+      });
+
     jsSubscribe((event: Lia.Event) => { process(true, self, elmSend, event) })
   }
 };

@@ -14,14 +14,17 @@ import Browser.Events
 import Browser.Navigation as Navigation
 import Http
 import Index.Update as Index
+import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Json.Decode
 import Lia.Script
+import Lia.Utils exposing (langInTranslations)
 import Model exposing (Model, State(..))
 import Port.Event exposing (Event)
 import Process
 import Session exposing (Screen)
 import Task
+import Translations
 import Url
 
 
@@ -172,6 +175,30 @@ update msg model =
                             ( { model | preload = Nothing }
                             , download Load_ReadMe_Result model.lia.readme
                             )
+
+                "lang" ->
+                    case JD.decodeValue JD.string event.message of
+                        Ok str ->
+                            let
+                                lia =
+                                    model.lia
+                            in
+                            ( { model
+                                | lia =
+                                    { lia
+                                        | translation =
+                                            if langInTranslations str then
+                                                Translations.getLnFromCode str
+
+                                            else
+                                                lia.translation
+                                    }
+                              }
+                            , Cmd.none
+                            )
+
+                        _ ->
+                            ( model, Cmd.none )
 
                 _ ->
                     update
