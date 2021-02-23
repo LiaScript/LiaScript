@@ -1,4 +1,4 @@
-// import '@babel/polyfill'
+import '@babel/polyfill'
 
 import LiaScript from '../../typescript/liascript/index'
 import { Connector } from '../../typescript/connectors/Base/index'

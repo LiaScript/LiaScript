@@ -1,38 +1,30 @@
-module Lia.Settings.View exposing (design, switch_button_mode, toggle_button_toc, view)
+module Lia.Settings.View exposing
+    ( btnIndex
+    , btnSupport
+    , design
+    , menuInformation
+    , menuMode
+    , menuSettings
+    , menuShare
+    , menuTranslations
+    )
 
 import Array
+import Conditional.List as CList
+import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
-import Html.Lazy as Lazy
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (view_inf)
-import Lia.Settings.Model exposing (Mode(..), Model)
-import Lia.Settings.Update exposing (Button(..), Msg(..), Toggle(..))
-import Port.Event exposing (Event)
+import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
+import Lia.Settings.Update exposing (Msg(..), Toggle(..))
 import QRCode
 import Translations as Trans exposing (Lang)
 
 
-view : Model -> String -> String -> Lang -> Maybe Event -> Definition -> Html Msg
-view model url origin lang share defines =
-    Html.div []
-        [ Lazy.lazy2 view_settings model lang
-        , Lazy.lazy3 view_information lang model.buttons.informations defines
-        , view_translations lang model.buttons.translations (origin ++ "?") (Lia.Definition.Types.get_translations defines)
-        , qrCodeView model.buttons.share url
-        , Html.div
-            [ Attr.class "lia-settings", Attr.style "display" "inline-flex", Attr.style "width" "99%" ]
-            [ dropdown model.buttons.settings "settings" (Trans.confSettings lang) (Toggle <| Button Settings)
-            , dropdown model.buttons.informations "info" (Trans.confInformation lang) (Toggle <| Button Informations)
-            , dropdown model.buttons.translations "translate" (Trans.confTranslations lang) (Toggle <| Button Translations)
-            , dropdown model.buttons.share "share" (Trans.confShare lang) (share |> Maybe.map ShareCourse |> Maybe.withDefault (Toggle <| Button Share))
-            ]
-        ]
-
-
-design : Model -> List (Html.Attribute msg)
+design : Settings -> List (Html.Attribute msg)
 design model =
     let
         float =
@@ -49,59 +41,136 @@ design model =
                     "dark"
                )
         )
-    , Attr.style "height" <| "calc(100vh / " ++ float ++ ")"
-    , Attr.style "width" <| "calc(100vw / " ++ float ++ ")"
-    , Attr.style "transform" <| "scale(" ++ float ++ ")"
-    , Attr.style "-webkit-transform-origin" "top left"
-    , Attr.style "-moz-transform-origin" "top left"
+    , Attr.class <|
+        if model.table_of_contents then
+            "lia-toc--hidden"
 
-    --, Attr.style "transform-origin" "bottom left"
-    , Attr.style "transform-origin" "top left"
-    , Attr.style "position" "absolute"
+        else
+            "lia-toc--visible"
+    , Attr.class <|
+        if model.support_menu then
+            "lia-support--hidden"
+
+        else
+            "lia-support--visible"
     ]
 
 
-dropdown : Bool -> String -> String -> Msg -> Html Msg
-dropdown active name alt msg =
+viewSettings : Lang -> Settings -> List (Html Msg)
+viewSettings lang settings =
+    [ viewLightMode lang settings.light
+    , Html.hr [ Attr.class "nav__divider" ] []
+    , viewTheme lang settings.theme
+    , Html.hr [ Attr.class "nav__divider" ] []
+    , viewEditorTheme lang settings.editor
+    , Html.hr [ Attr.class "nav__divider" ] []
+    , viewSizing lang settings.font_size
+    ]
+
+
+viewLightMode : Lang -> Bool -> Html Msg
+viewLightMode _ isLight =
     Html.button
-        [ onClick msg
-        , Attr.id <| "lia-btn-" ++ name
-        , Attr.class <|
-            "lia-btn lia-icon"
-                ++ (if active then
-                        " lia-selected"
-
-                    else
-                        ""
-                   )
-        , Attr.title alt
-        , Attr.style "width" "56px"
-        , Attr.style "padding" "0px"
+        [ Attr.class "lia-btn lia-btn--transparent"
+        , onClick (Toggle Light)
         ]
-        [ Html.text name ]
+        [ Html.i
+            [ Attr.class "lia-btn__icon icon"
+            , Attr.class <|
+                if isLight then
+                    "icon-darkmode"
 
+                else
+                    "icon-lightmode"
+            ]
+            []
+        , Html.span [ Attr.class "lia-btn__text" ]
+            [ Html.text <|
+                if isLight then
+                    "Dark-Mode"
 
-view_settings : Model -> Lang -> Html Msg
-view_settings model lang =
-    Html.div (menu_style model.buttons.settings)
-        [ Html.p []
-            [ Html.text <| Trans.cColor lang
-            , view_light model.light
-            , design_theme lang model.theme
-            , view_ace lang model.editor
-            , inc_font_size lang model.font_size
-            , reset
+                else
+                    "Light-Mode"
             ]
         ]
 
 
+viewTheme : Lang -> String -> Html Msg
+viewTheme lang theme =
+    [ ( "turquoise", "Türkis", "is-turquoise mr-1" )
+    , ( "blue", Trans.cBlue lang, "is-blue mr-1" )
+    , ( "red", "Rot", "is-red mr-1" )
+    , ( "yellow", "Gelb", "is-yellow" )
+    ]
+        |> List.map
+            (\( color, name, styleClass ) ->
+                [ Html.input
+                    [ Attr.type_ "radio"
+                    , Attr.class <| "lia-radio " ++ styleClass
+                    , Attr.id <| "lia-theme-color-" ++ color
+                    , Attr.name "lia-theme-color"
+                    , Attr.checked (theme == color)
+                    , onClick (ChangeTheme color)
+                    ]
+                    []
+                ]
+            )
+        |> List.concat
+        |> Html.div [ Attr.class "lia-radio-group lia-settings-theme-colors" ]
+
+
+viewModes : Lang -> Settings -> List (Html Msg)
+viewModes lang settings =
+    [ viewMode lang Textbook settings.mode "lia-mode-textbook" "icon-book" "mb-1"
+    , viewMode lang Presentation settings.mode "lia-mode-presentation" "icon-presentation" "mb-1"
+    , viewMode lang Slides settings.mode "lia-mode-slides" "icon-slides" ""
+    ]
+
+
+viewMode : Lang -> Mode -> Mode -> String -> String -> String -> Html Msg
+viewMode lang mode activeMode id iconName additionalCSSClass =
+    Html.button
+        [ Attr.id id
+        , Attr.class <| "lia-btn lia-btn--transparent lia-btn--icon " ++ additionalCSSClass
+        , onClick (SwitchMode mode)
+        ]
+        [ Html.i [ Attr.class <| "lia-btn__icon icon " ++ iconName ] []
+        , Html.span [ Attr.class "lia-btn__text" ] [ modeToString mode lang |> Html.text ]
+        ]
+
+
+modeToString : Mode -> Lang -> String
+modeToString show =
+    case show of
+        Presentation ->
+            Trans.modePresentation
+
+        Slides ->
+            Trans.modeSlides
+
+        Textbook ->
+            Trans.modeTextbook
+
+
 reset : Html Msg
 reset =
-    Html.button [ onClick Reset ] [ Html.text "reset course" ]
+    Html.button
+        [ onClick Reset ]
+        [ Html.text "reset course" ]
 
 
-navButton : String -> String -> msg -> Html msg
-navButton str title msg =
+viewSizing : Lang -> Int -> Html Msg
+viewSizing lang int =
+    Html.div []
+        [ Html.text <| Trans.baseFont lang ++ ":"
+        , btnFont "-" (Trans.baseDec lang) (ChangeFontSize False)
+        , Html.text (String.fromInt int ++ "%")
+        , btnFont "+" (Trans.baseInc lang) (ChangeFontSize True)
+        ]
+
+
+btnFont : String -> String -> msg -> Html msg
+btnFont str title msg =
     Html.button
         [ onClick msg
         , Attr.title title
@@ -110,95 +179,43 @@ navButton str title msg =
         [ Html.text str ]
 
 
-inc_font_size : Lang -> Int -> Html Msg
-inc_font_size lang int =
-    Html.div []
-        [ Html.text <| Trans.baseFont lang ++ ":"
-        , navButton "-" (Trans.baseDec lang) (ChangeFontSize False)
-        , Html.text (String.fromInt int ++ "%")
-        , navButton "+" (Trans.baseInc lang) (ChangeFontSize True)
-        ]
-
-
-design_theme : Lang -> String -> Html Msg
-design_theme lang theme =
-    [ ( "default", "left", Trans.cDefault lang )
-    , ( "turquoise", "right", "Türkis" )
-    , ( "blue", "left", Trans.cBlue lang )
-    , ( "red", "right", "Rot" )
-    , ( "yellow", "left", "Gelb" )
-    , ( "amber", "right", Trans.cAmber lang )
-    , ( "grey", "left", Trans.cGray lang )
-    , ( "green", "right", Trans.cGreen lang )
-    , ( "purple", "left", Trans.cPurple lang )
-    ]
-        |> List.map (\( c, b, text ) -> check_list (c == theme) c text b)
-        |> Html.div [ Attr.class "lia-settings__theme-colors" ]
-
-
-span_block : List (Html msg) -> Html msg
-span_block =
-    Html.span [ Attr.style "display" "block" ]
-
-
 bold : String -> Html msg
 bold =
     Html.text >> List.singleton >> Html.b []
 
 
-view_information : Lang -> Bool -> Definition -> Html Msg
-view_information lang visible definition =
-    Html.div (menu_style visible)
-        [ if String.isEmpty definition.author then
-            Html.text ""
-
-          else
-            span_block
-                [ bold <| Trans.infoAuthor lang
-                , Html.text definition.author
-                ]
-        , if String.isEmpty definition.email then
-            Html.text ""
-
-          else
-            span_block
-                [ bold <| Trans.infoEmail lang
-                , Html.a
-                    [ Attr.href definition.email, Attr.class "lia-link" ]
-                    [ Html.text definition.email ]
-                ]
-        , if String.isEmpty definition.version then
-            Html.text ""
-
-          else
-            span_block
-                [ bold <| Trans.infoVersion lang
-                , Html.text definition.version
-                ]
-        , if String.isEmpty definition.date then
-            Html.text ""
-
-          else
-            span_block
-                [ bold <| Trans.infoDate lang
-                , Html.text definition.date
-                ]
-        , if List.isEmpty definition.attributes then
-            Html.text ""
-
-          else
-            span_block
-                [ bold "Attributes:"
-                , Html.br [] []
-                , view_attributes lang definition.attributes
-                ]
-        ]
+viewInformation : Lang -> Definition -> List (Html Msg)
+viewInformation lang definition =
+    []
+        |> CList.addIf (definition.attributes /= [])
+            [ bold "Attributes:"
+            , Html.br [] []
+            , viewAttributes lang definition.attributes
+            ]
+        |> CList.addIf (definition.date /= "")
+            [ bold <| Trans.infoDate lang
+            , Html.text definition.date
+            ]
+        |> CList.addIf (definition.version /= "")
+            [ bold <| Trans.infoVersion lang
+            , Html.text definition.version
+            ]
+        |> CList.addIf (definition.email /= "")
+            [ bold <| Trans.infoEmail lang
+            , Html.a
+                [ Attr.href definition.email, Attr.class "lia-link" ]
+                [ Html.text definition.email ]
+            ]
+        |> CList.addIf (definition.author /= "")
+            [ bold <| Trans.infoAuthor lang
+            , Html.text definition.author
+            ]
+        |> List.map (Html.span [])
 
 
-view_attributes : Lang -> List Inlines -> Html Msg
-view_attributes lang =
-    List.map (thanks lang)
-        >> Html.span []
+viewAttributes : Lang -> List Inlines -> Html Msg
+viewAttributes lang =
+    List.map (thanks lang) >> Html.span []
 
 
 thanks : Lang -> Inlines -> Html Msg
@@ -207,93 +224,52 @@ thanks lang to =
         [ Html.hr [] []
         , to
             |> List.map (view_inf Array.empty lang)
-            |> span_block
+            |> Html.div []
         ]
         |> Html.map (\_ -> Ignore)
 
 
-view_translations : Lang -> Bool -> String -> List ( String, String ) -> Html Msg
-view_translations lang visible base list =
-    Html.div (menu_style visible) <|
-        if List.isEmpty list then
-            [ Html.text (Trans.no_translation lang) ]
-
-        else
-            list
-                |> List.map
-                    (\( lang_, url ) ->
-                        Html.a
-                            [ Attr.href (base ++ url), Attr.class "lia-link" ]
-                            [ Html.text lang_, Html.br [] [] ]
-                    )
+viewTranslations : Lang -> Dict String String -> List (Html Msg)
+viewTranslations lang =
+    Dict.toList
+        >> List.map
+            (\( title, url ) ->
+                Html.a
+                    [ Attr.href url, Attr.class "lia-link" ]
+                    [ Html.text title, Html.br [] [] ]
+            )
+        >> (::) (Html.a [ Attr.href "#", Attr.class "lia-link active" ] [ Html.text "TODO" ])
 
 
-check_list : Bool -> String -> String -> String -> Html Msg
-check_list checked label text dir =
-    Html.label
-        [ Attr.class label, Attr.style "float" dir, Attr.style "overflow" "hidden", Attr.style "width" "42%" ]
-        [ Html.input
-            [ Attr.type_ "radio"
-            , Attr.name "toggle"
-            , Attr.checked checked
-            , onClick (ChangeTheme label)
-            ]
-            []
-        , Html.span
-            []
-            [ Html.text text ]
-        ]
-
-
-menu_style : Bool -> List (Html.Attribute msg)
-menu_style visible =
-    [ Attr.class <|
-        "lia-slide-animation"
-            ++ (if visible then
-                    " lia-settings"
-
-                else
-                    ""
-               )
-    , Attr.style "max-height" <|
-        if visible then
-            "256px"
-
-        else
-            "0px"
-    ]
-
-
-qrCodeView : Bool -> String -> Html msg
-qrCodeView visible url =
+submenu : Bool -> List (Html Msg) -> Html Msg
+submenu isActive =
     Html.div
-        (Attr.style "padding-top" "3px"
-            :: Attr.style "background-color" "white"
-            :: Attr.style "overflow" "hidden"
-            :: menu_style visible
-        )
-        [ url
-            |> QRCode.fromString
-            |> Result.map (QRCode.toSvgWithoutQuietZone [])
-            |> Result.withDefault (Html.text "Error while encoding to QRCode.")
+        [ Attr.class "lia-support-menu__submenu"
+        , Attr.class <|
+            if isActive then
+                "active"
 
-        --Html.img
-        --    [ Attr.src ("https://api.qrserver.com/v1/create-qr-code/?size=222x222&data=" ++ url)
-        --    , Attr.style "height" "240px"
-        --    , Attr.style "width" "100%"
-        --    ]
-        --    []
+            else
+                ""
         ]
 
 
-view_ace : Lang -> String -> Html Msg
-view_ace lang theme =
+qrCodeView : String -> Html msg
+qrCodeView =
+    QRCode.fromString
+        >> Result.map (QRCode.toSvgWithoutQuietZone [])
+        >> Result.withDefault (Html.text "Error while encoding to QRCode.")
+
+
+viewEditorTheme : Lang -> String -> Html Msg
+viewEditorTheme lang theme =
     let
         op =
             option theme
     in
     Html.div [ Attr.style "display" "inline-flex", Attr.style "width" "99%" ]
-        [ Html.select [ onInput ChangeEditor ]
+        [ Html.text "Editor"
+        , Html.select [ onInput ChangeEditor ]
             [ [ ( "chrome", "Chrome" )
               , ( "clouds", "Clouds" )
               , ( "crimson_editor", "Crimson Editor" )
@@ -342,21 +318,6 @@ view_ace lang theme =
         ]
 
 
-view_light : Bool -> Html Msg
-view_light light =
-    Html.span
-        [ Attr.class "lia-btn"
-        , onClick <| Toggle Light
-        , Attr.style "text-align" "right"
-        ]
-        [ if light then
-            Html.text "🌞"
-
-          else
-            Html.text "🌘"
-        ]
-
-
 option : String -> ( String, String ) -> Html Msg
 option current ( val, text ) =
     Html.option
@@ -366,42 +327,100 @@ option current ( val, text ) =
         [ Html.text text ]
 
 
-toggle_button_toc : Lang -> Html Msg
-toggle_button_toc lang =
+btnIndex : Lang -> Bool -> Html Msg
+btnIndex lang open =
+    Html.div [ Attr.class "lia-header__left" ]
+        [ Html.button
+            [ onClick <| Toggle TableOfContents
+            , Attr.title (Trans.baseToc lang)
+            , Attr.class "lia-btn lia-btn--transparent"
+            , Attr.id "lia-btn-toc"
+            ]
+            [ Html.i
+                [ Attr.class "lia-btn__icon icon"
+                , Attr.class <|
+                    if open then
+                        "icon-table"
+
+                    else
+                        "icon-close"
+                ]
+                []
+            ]
+        ]
+
+
+btnSupport : Html Msg
+btnSupport =
     Html.button
-        [ onClick <| Toggle TableOfContents
-        , Attr.title (Trans.baseToc lang)
-        , Attr.class "lia-btn lia-toc-control lia-left"
-        , Attr.id "lia-btn-toc"
+        [ onClick <| Toggle SupportMenu
+        , Attr.class "lia-btn lia-btn--transparent lia-support-menu__toggler"
+        , Attr.type_ "button"
         ]
-        [ Html.text "toc" ]
+        [ Html.i [ Attr.class "icon icon-more" ] [] ]
 
 
-switch_button_mode : Lang -> Mode -> Html Msg
-switch_button_mode lang mode =
-    Html.button
-        [ Attr.class "lia-btn lia-right"
-        , onClick SwitchMode
-        , Attr.id "lia-btn-mode"
-        , Attr.title <|
-            case mode of
-                Slides ->
-                    Trans.modeSlides lang
+menuMode : Lang -> Settings -> List (Html Msg)
+menuMode lang settings =
+    [ actionBtn ShowModes "icon-presentation hide-md-down" "Mode"
+    , viewModes lang settings
+        |> submenu (settings.action == Just ShowModes)
+    ]
 
-                Presentation ->
-                    Trans.modePresentation lang
 
-                Textbook ->
-                    Trans.modeTextbook lang
+menuSettings : Lang -> Settings -> List (Html Msg)
+menuSettings lang settings =
+    [ lang
+        |> Trans.confSettings
+        |> actionBtn ShowSettings "icon-settings hide-md-down"
+    , viewSettings lang settings
+        |> submenu (settings.action == Just ShowSettings)
+    ]
+
+
+menuTranslations : Lang -> Definition -> Settings -> List (Html Msg)
+menuTranslations lang defintion settings =
+    [ Html.span
+        [ Attr.class "hide-md-down"
+        , lang
+            |> Trans.confTranslations
+            |> Attr.title
+        , doAction ShowTranslations
         ]
-        [ Html.text <|
-            case mode of
-                Slides ->
-                    "visibility"
-
-                Presentation ->
-                    "hearing"
-
-                Textbook ->
-                    "book"
+        [ Html.text <| String.toUpper defintion.language
         ]
+    , defintion.translation
+        |> viewTranslations lang
+        |> submenu (settings.action == Just ShowTranslations)
+    ]
+
+
+menuShare : Lang -> String -> Settings -> List (Html Msg)
+menuShare lang url settings =
+    [ lang
+        |> Trans.confShare
+        |> actionBtn Share "icon-social"
+    , [ qrCodeView url ]
+        |> submenu (settings.action == Just Share)
+    ]
+
+
+menuInformation : Lang -> Definition -> Settings -> List (Html Msg)
+menuInformation lang definition settings =
+    [ lang
+        |> Trans.confInformation
+        |> actionBtn ShowInformation "icon-info"
+    , viewInformation lang definition
+        |> submenu (settings.action == Just ShowInformation)
+    ]
+
+
+actionBtn : Action -> String -> String -> Html Msg
+actionBtn msg iconName title =
+    Html.i [ Attr.class <| "icon " ++ iconName, Attr.title title, doAction msg ]
+        []
+
+
+doAction : Action -> Html.Attribute Msg
+doAction =
+    Action >> Toggle >> onClick

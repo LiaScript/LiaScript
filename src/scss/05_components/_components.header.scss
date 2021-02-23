@@ -1,0 +1,35 @@
+.lia-header {
+  align-items: center;
+  border-bottom: $global-border;
+  display: flex;
+  flex-direction: row;
+  padding: 1.7rem 0;
+  width: 100%;
+
+  > * {
+    flex: 1;
+  }
+
+  &__logo {
+    //
+  }
+
+  &__left {
+    //
+  }
+
+  &__middle {
+    display: flex;
+    justify-content: center;
+  }
+
+  &__right {
+    position: relative;
+  }
+}
+
+@mixin style-header($theme) {
+  .lia-header {
+
+  }
+}

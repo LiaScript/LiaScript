@@ -1,0 +1,41 @@
+/* --------------------------------------------------
+   Spacing
+   -------------------------------------------------- */
+
+// Baseline grid lines height.
+// Every spacing metric should be based on this.
+
+$global-baseline: 10px !default;
+
+// How many grid lines should our spacing unit variants span?
+// Each value should be an unitless integer.
+
+$global-spacing: (
+  spacing-huge: 3rem,
+  spacing-large: 2rem,
+  spacing-normal: 1rem,
+  spacing-small: 0.5rem,
+  spacing-tiny: 0.25rem,
+);
+
+/* --------------------------------------------------
+   UI treatments
+   -------------------------------------------------- */
+
+$global-border: 1px solid var(--lia-grey-light) !default;
+$global-radius: 8px !default;
+$global-outline: 3px !default;
+$global-transition: all 250ms ease-in-out !default;
+
+/* --------------------------------------------------
+   Fonts
+   -------------------------------------------------- */
+
+// Basis (HTML) font-size: 62.5% (von 100% (default: 16px)) entspricht 10px
+// 1.5rem sind demnach 15px
+$global-font-size: 1.5rem !default; // 15px
+$global-line-height: 1.47 !default;
+
+$global-font-family: "LiaSourceSansPro";
+$global-font-mono: "LiaSourceCodePro";
+$global-font-headline: "LiaSourceSerifPro";

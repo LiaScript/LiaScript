@@ -1,0 +1,17 @@
+.lia-pagination {
+    display: inline-block;
+ 
+    &__content {
+        align-items: center;
+        background: $color-turquoise-1;
+        color: white;
+        border-radius: $global-radius;
+        display: flex;
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    &__current {
+        margin: 0 1rem;
+    }
+}

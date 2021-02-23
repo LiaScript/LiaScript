@@ -19,7 +19,7 @@ import Lia.Markdown.Inline.Types exposing (Inline)
 import Lia.Markdown.Stringify exposing (stringify)
 import Lia.Markdown.Types exposing (Markdown)
 import Lia.Markdown.Update exposing (Msg(..))
-import Lia.Settings.Model exposing (Mode(..))
+import Lia.Settings.Types exposing (Mode(..))
 import Port.Event as Event exposing (Event)
 import Port.TTS
 import Translations exposing (Lang, soundOff, soundOn)
@@ -111,9 +111,6 @@ block config model attr e body =
                     ]
 
 
-
-
-
 inline : Config sub -> Parameters -> Effect Inline -> List (Html msg) -> Html msg
 inline config attr e body =
     if config.visible == Nothing then
@@ -201,8 +198,7 @@ block_playback : Config sub -> Effect Markdown -> Html Msg
 block_playback config e =
     if config.speaking == Just e.id then
         Html.button
-            [ Attr.class "lia-btn lia-icon"
-            , Attr.style "margin-left" "49%"
+            [ Attr.class "lia-btn"
             , e.id
                 |> E.Mute
                 |> UpdateEffect True
@@ -212,8 +208,7 @@ block_playback config e =
 
     else
         Html.button
-            [ Attr.class "lia-btn lia-icon"
-            , Attr.style "margin-left" "49%"
+            [ Attr.class "lia-btn"
             , e.content
                 |> List.map (stringify config.scripts config.visible)
                 |> List.intersperse "\n"
@@ -229,9 +224,7 @@ inline_playback : Config sub -> Effect Inline -> Html msg
 inline_playback config e =
     if config.speaking == Just e.id then
         Html.button
-            [ Attr.class "lia-btn lia-icon"
-            , Attr.style "scale" "0.65"
-            , Attr.style "margin" "0px"
+            [ Attr.class "lia-btn"
             , Port.TTS.mute e.id
                 |> Event.encode
                 |> Event "effect" config.slide
@@ -244,9 +237,7 @@ inline_playback config e =
 
     else
         Html.button
-            [ Attr.class "lia-btn lia-icon"
-            , Attr.style "scale" "0.65"
-            , Attr.style "margin" "0px"
+            [ Attr.class "lia-btn"
             , e.content
                 |> I.stringify
                 |> Port.TTS.playback e.id e.voice
@@ -269,9 +260,22 @@ circle id =
 
 responsive : Lang -> Bool -> msg -> Html msg
 responsive lang sound msg =
-    Html.span [ Attr.id "lia-span-responsive" ]
-        [ Html.button
-            [ Attr.class "lia-btn lia-icon"
+    Html.div [ Attr.class "lia-responsive-voice__info" ]
+        [ Html.a [ Attr.href "https://responsivevoice.org" ] [ Html.text "ResponsiveVoice-NonCommercial" ]
+        , Html.text " licensed under "
+        , Html.a
+            [ Attr.href "https://creativecommons.org/licenses/by-nc-nd/4.0/" ]
+            [ Html.img
+                [ Attr.title "ResponsiveVoice Text To Speech"
+                , Attr.src "https://responsivevoice.org/wp-content/uploads/2014/08/95x15.png"
+                , Attr.alt "95x15"
+                , Attr.width 95
+                , Attr.height 15
+                ]
+                []
+            ]
+        , Html.button
+            [ Attr.class "lia-btn"
             , Attr.id "lia-btn-sound"
             , onClick msg
             , Attr.title <|
@@ -286,19 +290,6 @@ responsive lang sound msg =
 
               else
                 Html.text "volume_off"
-            ]
-        , Html.a [ Attr.href "https://responsivevoice.org" ] [ Html.text "ResponsiveVoice-NonCommercial" ]
-        , Html.text " licensed under "
-        , Html.a
-            [ Attr.href "https://creativecommons.org/licenses/by-nc-nd/4.0/" ]
-            [ Html.img
-                [ Attr.title "ResponsiveVoice Text To Speech"
-                , Attr.src "https://responsivevoice.org/wp-content/uploads/2014/08/95x15.png"
-                , Attr.alt "95x15"
-                , Attr.width 95
-                , Attr.height 15
-                ]
-                []
             ]
         ]
 

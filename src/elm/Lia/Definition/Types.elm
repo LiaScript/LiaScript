@@ -13,7 +13,7 @@ import Dict exposing (Dict)
 import Lia.Markdown.HTML.Attributes exposing (toURL)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Parser.PatReplace exposing (link)
-import Lia.Settings.Model exposing (Mode)
+import Lia.Settings.Types exposing (Mode)
 
 
 type Resource

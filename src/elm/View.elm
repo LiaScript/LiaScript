@@ -25,7 +25,6 @@ view model =
                 [ model.lia
                     |> Lia.Script.view
                         model.session.screen
-                        model.session.share
                         model.hasIndex
                     |> Html.map LiaScript
                 ]

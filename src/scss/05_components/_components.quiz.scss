@@ -1,0 +1,13 @@
+.lia-quiz {
+    margin-top: map-get($global-spacing, spacing-large);
+    margin-bottom: map-get($global-spacing, spacing-large);
+    border: 3px solid;
+    padding: 10px;
+    border-radius: 10px;
+  }
+
+@mixin style-quiz($theme) {
+    .lia-quiz {
+        border-color: map-get($theme, primary);
+      }
+}
