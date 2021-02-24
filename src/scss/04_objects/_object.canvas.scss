@@ -5,7 +5,7 @@
 $toc-width-mobile: 100% !default;
 $toc-width-desktop: 31.5rem !default;
 $support-width-mobile: 100% !default;
-$support-width-desktop: 31.5rem !default;
+$support-width-desktop: 21.6rem !default;
 
 /* --------------------------------------------------
    Canvas
@@ -20,14 +20,20 @@ $support-width-desktop: 31.5rem !default;
   overflow-x: hidden;
 
   @include breakpoint("sm", "max") {
+    /* push support-menu-toggler to the right if toc is open,
+       prevent that buttons overlay each other */
     &.lia-toc--visible #lia-btn-support {
       transform: translate(0, -50%);
     }
 
+    /* push toc-menu-toggler to the left if support-menu is open,
+       prevent that buttons overlay each other */
     &.lia-support--visible #lia-btn-toc {
       transform: translate(0, -50%);
     }
 
+    /* in case both menus are visible on mobile screens, 
+       this pushes the buttons to their original positions */
     &.lia-toc--visible.lia-support--visible {
       #lia-btn-toc,
       #lia-btn-support {
@@ -41,7 +47,9 @@ $support-width-desktop: 31.5rem !default;
       left: $toc-width-desktop;
       width: calc(100% - #{$toc-width-desktop});
     }
+  }
 
+  @include breakpoint("sm", "max") {
     &.lia-support--visible {
       right: $support-width-desktop;
       width: calc(100% - #{$support-width-desktop});

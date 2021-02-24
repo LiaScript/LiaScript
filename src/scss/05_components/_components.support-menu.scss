@@ -66,18 +66,20 @@
   }
 
   &__collapse {
+    display: block;
+    height: 100%;
   }
 
   &__nav {
     display: flex;
+    flex-direction: row;
     justify-content: flex-end;
 
     @include breakpoint("md", "max") {
       display: block;
-      flex-direction: column;
       height: 100%;
-      padding: 1.7rem 3rem;
-      overflow: auto;
+      overflow: hidden auto;
+      padding: 1.7rem 2.1rem;
     }
   }
 
