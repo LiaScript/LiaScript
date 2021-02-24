@@ -348,15 +348,25 @@ btnIndex lang open =
         ]
 
 
-btnSupport : Html Msg
-btnSupport =
+btnSupport : Bool -> Html Msg
+btnSupport open =
     Html.button
         [ onClick <| Toggle SupportMenu
         , Attr.id "lia-btn-support"
         , Attr.class "lia-btn lia-btn--transparent lia-support-menu__toggler"
         , Attr.type_ "button"
         ]
-        [ Html.i [ Attr.class "icon icon-more" ] [] ]
+        [ Html.i
+            [ Attr.class "lia-btn__icon icon"
+            , Attr.class <|
+                if open then
+                    "icon-more"
+
+                else
+                    "icon-close"
+            ]
+            []
+        ]
 
 
 menuMode : Lang -> Settings -> List (Html Msg)

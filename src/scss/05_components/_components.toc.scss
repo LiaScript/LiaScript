@@ -8,7 +8,7 @@
   position: fixed;
   transition: $global-transition;
   width: $toc-width-mobile;
-  z-index: 1;
+  z-index: 200;
 
   #lia-btn-toc {
     position: absolute;

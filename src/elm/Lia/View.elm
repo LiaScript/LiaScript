@@ -166,15 +166,17 @@ slideA11y : Lang -> Mode -> Effect.Model SubSection -> Int -> Html Msg
 slideA11y lang mode effect id =
     case mode of
         Slides ->
-            effect
-                |> Effect.current_paragraphs
-                |> List.map
-                    (Tuple.second
-                        >> List.map (view_inf effect.javascript lang)
-                        >> Html.p []
-                        >> Html.map (Tuple.pair id >> Script)
-                    )
-                |> Html.aside [ Attr.class "lia-footer" ]
+            Html.aside [ Attr.class "lia-notes" ]
+                [ effect
+                    |> Effect.current_paragraphs
+                    |> List.map
+                        (Tuple.second
+                            >> List.map (view_inf effect.javascript lang)
+                            >> Html.p []
+                            >> Html.map (Tuple.pair id >> Script)
+                        )
+                    |> Html.div [ Attr.class "lia-notes__content" ]
+                ]
 
         _ ->
             Html.text ""
@@ -235,7 +237,7 @@ slideTopBar lang url settings def =
                 else
                     "lia-support-menu--open"
             ]
-            [ Settings.btnSupport
+            [ Settings.btnSupport settings.support_menu
             , Html.div
                 [ Attr.class "lia-support-menu__collapse"
                 ]
@@ -257,7 +259,7 @@ slideTopBar lang url settings def =
 
 slideNavigation : Lang -> Mode -> Int -> Effect.Model SubSection -> Html Msg
 slideNavigation lang mode slide effect =
-    Html.div [ Attr.class "lia-pagination" ]
+    Html.div [ Attr.class "lia-pagination mb-2" ]
         [ Html.div [ Attr.class "lia-pagination__content" ]
             [ navButton "navigate_before" (Trans.basePrev lang) "lia-btn-prev" "lia-btn__icon icon icon-arrow-left" PrevSection
             , Html.span

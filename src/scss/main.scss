@@ -7,6 +7,7 @@
 
 // Tools
 @import "01_tools/tools.color";
+@import "01_tools/tools.px-em-calc";
 @import "01_tools/tools.breakpoints";
 @import "01_tools/tools.flex";
 @import "01_tools/tools.font-size";
@@ -43,6 +44,7 @@
 @import "05_components/components.effect-circle";
 @import "05_components/components.header";
 @import "05_components/components.nav";
+@import "05_components/components.notes";
 @import "05_components/components.pagination";
 @import "05_components/components.quiz";
 @import "05_components/components.quote";
