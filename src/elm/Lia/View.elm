@@ -1,5 +1,6 @@
 module Lia.View exposing (view)
 
+import Accessibility.Aria as Aria
 import Flip exposing (flip)
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -47,6 +48,7 @@ viewIndex : Bool -> Model -> Html Msg
 viewIndex hasIndex model =
     Html.div
         [ Attr.class "lia-toc"
+        , Attr.id "lia-toc"
         , Attr.class <|
             if model.settings.table_of_contents then
                 "lia-toc--closed"
@@ -253,7 +255,13 @@ slideTopBar lang url settings def =
                   , ( Settings.menuShare lang url settings, "share" )
                   , ( Settings.menuInformation lang def settings, "info" )
                   ]
-                    |> List.map (\( body, class ) -> Html.li [ Attr.class <| "nav__item lia-support-menu__item lia-support-menu__item--" ++ class ] body)
+                    |> List.map
+                        (\( body, class ) ->
+                            Html.li
+                                [ Attr.class <| "nav__item lia-support-menu__item lia-support-menu__item--" ++ class
+                                ]
+                                body
+                        )
                     |> Html.ul [ Attr.class "nav lia-support-menu__nav" ]
                 ]
             ]

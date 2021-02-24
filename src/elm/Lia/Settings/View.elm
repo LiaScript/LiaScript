@@ -9,6 +9,9 @@ module Lia.Settings.View exposing
     , menuTranslations
     )
 
+import Accessibility.Aria as A11y_Aria
+import Accessibility.Key as A11y_Key
+import Accessibility.Role as A11y_Role
 import Array
 import Conditional.List as CList
 import Dict exposing (Dict)
@@ -111,6 +114,7 @@ viewTheme lang theme =
                     , Attr.name "lia-theme-color"
                     , Attr.checked (theme == color)
                     , onClick (ChangeTheme color)
+                    , Attr.title name
                     ]
                     []
                 ]
@@ -133,6 +137,7 @@ viewMode lang mode activeMode id iconName additionalCSSClass =
         [ Attr.id id
         , Attr.class <| "lia-btn lia-btn--transparent lia-btn--icon " ++ additionalCSSClass
         , onClick (SwitchMode mode)
+        , A11y_Key.onKeyDown [ A11y_Key.enter (SwitchMode mode) ]
         ]
         [ Html.i [ Attr.class <| "lia-btn__icon icon " ++ iconName ] []
         , Html.span [ Attr.class "lia-btn__text" ] [ modeToString mode lang |> Html.text ]
@@ -334,6 +339,7 @@ btnIndex lang open =
         , Attr.title (Trans.baseToc lang)
         , Attr.class "lia-btn lia-btn--transparent"
         , Attr.id "lia-btn-toc"
+        , A11y_Aria.controls "lia-toc"
         ]
         [ Html.i
             [ Attr.class "lia-btn__icon icon"
@@ -384,7 +390,7 @@ menuTranslations lang defintion settings =
         , lang
             |> Trans.confTranslations
             |> Attr.title
-        , doAction ShowTranslations
+        , onClick (doAction ShowTranslations)
         ]
         [ Html.text <| String.toUpper defintion.language
         ]
@@ -416,10 +422,20 @@ menuInformation lang definition settings =
 
 actionBtn : Action -> String -> String -> Html Msg
 actionBtn msg iconName title =
-    Html.i [ Attr.class <| "icon " ++ iconName, Attr.title title, doAction msg ]
+    Html.i
+        [ Attr.class <| "icon " ++ iconName
+        , Attr.title title
+        , onClick (doAction msg)
+        , A11y_Role.button
+        , A11y_Key.tabbable True
+        , A11y_Key.onKeyDown
+            [ A11y_Key.enter (doAction msg)
+            , A11y_Key.escape (doAction Close)
+            ]
+        ]
         []
 
 
-doAction : Action -> Html.Attribute Msg
+doAction : Action -> Msg
 doAction =
-    Action >> Toggle >> onClick
+    Action >> Toggle
