@@ -6,6 +6,7 @@ module Lia.Index.View exposing
 
 import Array
 import Conditional.List as CList
+import Conditional.String as CString
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
@@ -51,9 +52,9 @@ search lang model =
 
 
 content : Lang -> Int -> (( Int, Script.Msg sub ) -> msg) -> Sections -> List (Html msg)
-content lang active msg =
+content lang sectionId msg =
     Array.toList
-        >> List.filterMap (item lang active msg)
+        >> List.map (item lang sectionId msg)
 
 
 bottom : msg -> Html msg
@@ -70,30 +71,26 @@ bottom msg =
         ]
 
 
-item : Lang -> Int -> (( Int, Script.Msg sub ) -> msg) -> Section -> Maybe (Html msg)
-item lang active msg section =
-    if section.visible then
-        section.title
-            |> List.map (view_inf Array.empty lang)
-            |> itemLink active section.indentation section.id
-            |> Html.map (Tuple.pair section.id >> msg)
-            |> Just
-
-    else
-        Nothing
+item : Lang -> Int -> (( Int, Script.Msg sub ) -> msg) -> Section -> Html msg
+item lang sectionId msg section =
+    section.title
+        |> List.map (view_inf Array.empty lang)
+        |> itemLink sectionId section
+        |> Html.map (Tuple.pair section.id >> msg)
 
 
-itemLink : Int -> Int -> Int -> List (Html msg) -> Html msg
-itemLink active indentation id =
-    [ indentation
+itemLink : Int -> Section -> List (Html msg) -> Html msg
+itemLink sectionId section =
+    [ section.indentation
         |> String.fromInt
         |> (++) "lia-toc__link lia-toc__link--is-lvl-"
+        |> CString.attachIf (not section.visible) " hide"
         |> Attr.class
-    , id
+    , section.id
         + 1
         |> String.fromInt
         |> (++) "#"
         |> Attr.href
     ]
-        |> CList.appendIf (active == id) [ Attr.id "focusedToc", Attr.class "lia-active" ]
+        |> CList.appendIf (sectionId == section.id) [ Attr.id "focusedToc", Attr.class "lia-active" ]
         |> Html.a
