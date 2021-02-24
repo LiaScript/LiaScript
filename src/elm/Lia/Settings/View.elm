@@ -352,6 +352,7 @@ btnSupport : Html Msg
 btnSupport =
     Html.button
         [ onClick <| Toggle SupportMenu
+        , Attr.id "lia-btn-support"
         , Attr.class "lia-btn lia-btn--transparent lia-support-menu__toggler"
         , Attr.type_ "button"
         ]

@@ -1,4 +1,21 @@
-module Lia.Markdown.Quiz.View exposing (class, view, view_solution)
+module Lia.Markdown.Quiz.View exposing (class, showSolution, view)
+
+{-| This module defines the basic frame for all subsequent and specialized
+quizzes. It adds a common checkButton, hintButton, and resolveButton and shows
+hints.
+
+TODO:
+
+  - Add translations for web accessability also:
+    1.  check: check the solution of the current quiz
+    2.  reveal: reveal the solution of the quiz
+    3.  show hint: show an hint
+    4.  state:
+          - open: the quiz has not been touched yet
+          - resolved: resolved quiz
+          - solved: soved quiz
+
+-}
 
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -17,24 +34,28 @@ import Lia.Markdown.Quiz.Types
         , Type(..)
         , Vector
         , getState
-        , solved
+        , isSolved
         )
 import Lia.Markdown.Quiz.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Vector.View as Vector
 import Translations exposing (quizCheck, quizChecked, quizResolved, quizSolution)
 
 
-view : Config sub -> Quiz -> Vector -> Html (Msg sub)
+{-| Main Quiz view function.
+-}
+view : Config sub -> Quiz -> Vector -> List (Html (Msg sub))
 view config quiz vector =
     case getState vector quiz.id of
         Just elem ->
-            state_view config (solved elem) elem.state quiz
-                |> view_quiz config elem quiz
+            viewState config (isSolved elem) elem.state quiz
+                |> viewQuiz config elem quiz
 
         _ ->
-            Html.text ""
+            []
 
 
+{-| Determine the quiz class based on the current state
+-}
 class : Int -> Vector -> String
 class id vector =
     case
@@ -42,17 +63,20 @@ class id vector =
             |> Maybe.map .solved
     of
         Just Solved ->
-            "lia-quiz lia-card solved"
+            "lia-quiz solved"
 
         Just ReSolved ->
-            "lia-quiz lia-card resolved"
+            "lia-quiz resolved"
 
         _ ->
-            "lia-quiz lia-card open"
+            "lia-quiz open"
 
 
-state_view : Config sub -> Bool -> State -> Quiz -> Html (Msg sub)
-state_view config solved state quiz =
+{-| **private:** Simple router function that is used to match the current state
+of a quiz with its type.
+-}
+viewState : Config sub -> Bool -> State -> Quiz -> Html (Msg sub)
+viewState config solved state quiz =
     case ( state, quiz.quiz ) of
         ( Block_State s, Block_Type q ) ->
             s
@@ -73,34 +97,55 @@ state_view config solved state quiz =
             Html.text ""
 
 
-view_quiz : Config sub -> Element -> Quiz -> Html (Msg sub) -> Html (Msg sub)
-view_quiz config state quiz fn =
-    Html.p []
-        [ if state.error_msg == "" then
-            Html.text ""
+{-| **private:** Return the current quiz as List of elements that contains:
 
-          else
-            Html.br [] []
-        , if state.error_msg == "" then
-            Html.text ""
+1.  maybe an error message (that originates from the external application of
+    JavaScript)
+2.  the body of the quiz itself, which might be of type `Block`, `Vector`, or
+    `Matrix`
+3.  the main check-button
+4.  a button that reveals the solution 5 a hint section, that contains a hint
+    button and a list of already revealed hints
 
-          else
-            Html.text state.error_msg
-        , fn
-        , view_button config state.trial state.solved (Check quiz.id quiz.quiz quiz.javascript)
-        , view_button_solution config state.solved (ShowSolution quiz.id quiz.quiz)
-        , view_hints config quiz.id state.hint quiz.hints
+-}
+viewQuiz : Config sub -> Element -> Quiz -> Html (Msg sub) -> List (Html (Msg sub))
+viewQuiz config state quiz body =
+    List.append
+        [ viewErrorMessage state.error_msg
+        , body
+        , viewMainButton config state.trial state.solved (Check quiz.id quiz.quiz quiz.javascript)
+        , viewSolutionButton config state.solved (ShowSolution quiz.id quiz.quiz)
         ]
+        (viewHints config state.solved quiz.id state.hint quiz.hints)
 
 
-view_button_solution : Config sub -> Solution -> Msg sub -> Html (Msg sub)
-view_button_solution config solution msg =
+{-| **private:** Show an error-message, which results from the execution of an
+associated script-tag.
+
+TODO: needs to be styled appropriately
+
+-}
+viewErrorMessage : String -> Html msg
+viewErrorMessage str =
+    if str == "" then
+        Html.text ""
+
+    else
+        -- TODO: mark as error
+        Html.div [] [ Html.text str ]
+
+
+{-| **private:** Show the solution button only if the quiz has not been solved
+yet.
+-}
+viewSolutionButton : Config sub -> Solution -> Msg sub -> Html (Msg sub)
+viewSolutionButton config solution msg =
     if solution == Open then
-        Html.span
-            [ Attr.class "lia-btn--hint"
+        Html.button
+            [ Attr.class "lia-btn lia-btn--hint"
             , onClick msg
-            , Attr.title (quizSolution config.lang)
-            , Attr.style "cursor" "pointer"
+            , quizSolution config.lang
+                |> Attr.title
             ]
             [ Html.text "info" ]
 
@@ -108,9 +153,12 @@ view_button_solution config solution msg =
         Html.text ""
 
 
-view_button : Config sub -> Int -> Solution -> Msg sub -> Html (Msg sub)
-view_button config trials solved msg =
-    case solved of
+{-| **private:** Show the main check-button to compare the current state of the
+quiz with the solution state. The number of trials is automatically added.
+-}
+viewMainButton : Config sub -> Int -> Solution -> Msg sub -> Html (Msg sub)
+viewMainButton config trials solution msg =
+    case solution of
         Open ->
             if trials == 0 then
                 Html.button
@@ -119,62 +167,84 @@ view_button config trials solved msg =
 
             else
                 Html.button
-                    [ Attr.class "lia-btn", Attr.class "lia-failure", onClick msg ]
+                    [ Attr.class "lia-btn lia-failure", onClick msg ]
                     [ Html.text (quizCheck config.lang ++ " " ++ String.fromInt trials) ]
 
         Solved ->
             Html.button
-                [ Attr.class "lia-btn", Attr.class "lia-success", Attr.disabled True ]
+                [ Attr.class "lia-btn lia-success", Attr.disabled True ]
                 [ Html.text (quizChecked config.lang ++ " " ++ String.fromInt trials) ]
 
         ReSolved ->
             Html.button
-                [ Attr.class "lia-btn", Attr.class "lia-warning", Attr.disabled True ]
+                [ Attr.class "lia-btn lia-warning", Attr.disabled True ]
                 [ Html.text (quizResolved config.lang) ]
 
 
-view_hints : Config sub -> Int -> Int -> MultInlines -> Html (Msg sub)
-view_hints config idx counter hints =
-    let
-        v_hints h c =
-            case ( h, c ) of
-                ( [], _ ) ->
-                    []
-
-                ( _, 0 ) ->
-                    []
-
-                ( x :: xs, _ ) ->
-                    Html.p []
-                        (Html.span [ Attr.class "lia-icon" ] [ Html.text "lightbulb_outline" ]
-                            :: viewer config x
-                        )
-                        :: v_hints xs (c - 1)
-    in
-    if counter < List.length hints then
-        Html.span []
-            [ Html.text " "
-            , Html.span
-                [ Attr.class "lia-btn--hint"
-                , onClick (ShowHint idx)
-                , Attr.title "show hint"
-                , Attr.style "cursor" "pointer"
-                ]
-                [ Html.text "help" ]
-            , v_hints hints counter
-                |> Html.div [ Attr.class "lia-hints" ]
-                |> Html.map Script
-            ]
+{-| **private:** If hints have been added to the quiz by `[[?]]` these will
+shown within a list and an additional button will be diplayed to reveal more
+hints, if there are still hints not shown to the user and if the quiz has not
+been solved yet.
+-}
+viewHints : Config sub -> Solution -> Int -> Int -> MultInlines -> List (Html (Msg sub))
+viewHints config solution id counter hints =
+    if List.isEmpty hints then
+        []
 
     else
-        v_hints hints counter
-            |> Html.div [ Attr.class "lia-hints" ]
+        [ viewHintButton id (Open == solution && counter < List.length hints)
+        , hints
+            |> viewHintsWithCounter config counter
+            |> Html.ul [ Attr.class "lia-hints" ]
             |> Html.map Script
+        ]
 
 
-view_solution : Vector -> Quiz -> Bool
-view_solution vector quiz =
+{-| **private:** Show a generic hint button, every time it is clicked it will
+reveal another hint from the list.
+-}
+viewHintButton : Int -> Bool -> Html (Msg sub)
+viewHintButton id show =
+    if show then
+        Html.button
+            [ Attr.class "lia-btn lia-btn--hint"
+            , onClick (ShowHint id)
+            , Attr.title "show hint"
+            ]
+            [ Html.text "help" ]
+
+    else
+        Html.text ""
+
+
+{-| **private: ** Show all hints within the list based on the passed counter
+value.
+-}
+viewHintsWithCounter config counter hints =
+    case ( hints, counter ) of
+        ( [], _ ) ->
+            []
+
+        ( _, 0 ) ->
+            []
+
+        ( x :: xs, _ ) ->
+            Html.li [] (viewer config x)
+                :: viewHintsWithCounter config (counter - 1) xs
+
+
+{-| Check the state of quiz:
+
+    Open -> False
+
+    Solved -> True
+
+    Resolved -> True
+
+-}
+showSolution : Vector -> Quiz -> Bool
+showSolution vector quiz =
     quiz.id
         |> getState vector
-        |> Maybe.map solved
+        |> Maybe.map isSolved
         |> Maybe.withDefault False

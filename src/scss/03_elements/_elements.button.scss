@@ -1,10 +1,16 @@
+$btn-min-width: 3.6rem;
+$btn-height: 3.6rem;
+
 .lia-btn {
   border: none;
   display: inline-block;
   line-height: $global-line-height;
-  padding: 0.5rem 1rem;
+  min-height: $btn-height;
+  min-width: $btn-min-width;
+  padding: map-get($global-spacing, spacing-small)
+    map-get($global-spacing, spacing-normal);
 
-  &--tag{
+  &--tag {
     border-radius: 0;
   }
 
@@ -35,7 +41,7 @@
     }
   }
 
-/*   .lia-ripple {
+  /*   .lia-ripple {
     position: absolute;
     display: block;
     border-radius: 50%;‚
