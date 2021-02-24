@@ -218,6 +218,40 @@ directly point to any Markdown-file anywhere within the web.
 
   `[![LiaScript](https://raw.githubusercontent.com/LiaScript/LiaScript/master/badges/learn_more.svg)](https://LiaScript.github.io/course/?URL)`
 
+## Build
+
+```bash
+git clone https://github.com/liascript/liascript
+
+cd liascript
+
+npm i
+
+npm run watch  # develop in watch-mode
+
+npm run build  # build to dist
+```
+
+In order to fix some elm-issues you can also apply the included patches:
+
+```bash
+git submodule update --recursive
+
+cd patches
+
+make
+```
+
+This will apply the following three patches:
+
+- elm-break-dom: allows browser extensions such as screen-readers to change the
+  nodes of the app, without crashing the app
+
+- elm-patch/url: enables the file-protocol, which is only required when building
+  Desktop-apps
+
+- elm-patch/dom: enable onclick events as well as innerHTML
+
 ## Version-Changes
 
 - Moved from JavaScript to Typescript
@@ -229,7 +263,7 @@ directly point to any Markdown-file anywhere within the web.
 - ASCII-art blocks now have a verbatim environment, that is surrounded by either
   single or double quotation marks:
 
-  ````markdown
+  `````markdown
   ````ascii
   +------------------------------------+
   |"$$                                "|   Single
@@ -247,7 +281,11 @@ directly point to any Markdown-file anywhere within the web.
   |""<script>@input</script>         ""|   single quotes
   +------------------------------------+
   ````
-  ````
+  `````
+
+  ```
+
+  ```
 
 **0.8.12** (08/12/2020)
 
