@@ -545,17 +545,20 @@ toTable id attr class body =
 
 toggleBtn : Int -> String -> Html Msg
 toggleBtn id icon =
-    Html.img
+    Html.button
         [ Attr.style "cursor" "pointer"
-        , Attr.style "height" "16px"
-        , Attr.height 16
-        , Attr.width 16
-        , Attr.style "width" "16px"
         , onClick <| UpdateTable <| Sub.Toggle id
-        , Attr.src <| "img/" ++ icon ++ ".png"
         , Attr.style "z-index" "100"
         ]
-        []
+        [ Html.img
+            [ Attr.style "height" "16px"
+            , Attr.height 16
+            , Attr.width 16
+            , Attr.style "width" "16px"
+            , Attr.src <| "img/" ++ icon ++ ".png"
+            ]
+            []
+        ]
 
 
 unformatted : (Inlines -> List (Html Msg)) -> Matrix Cell -> Int -> State -> List (Html Msg)

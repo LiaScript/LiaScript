@@ -49,46 +49,32 @@ tr solved id state =
 radio : Bool -> Int -> Int -> Bool -> Html (Msg sub)
 radio solved row_id column_id value =
     Html.td [ Attr.align "center" ]
-        [ Html.span
-            [ Attr.class "lia-radio-item" ]
-            [ Html.input
-                [ Attr.type_ "radio"
-                , Attr.checked value
-                , if solved then
-                    Attr.disabled True
+        [ Html.input
+            [ Attr.type_ "radio"
+            , Attr.checked value
+            , if solved then
+                Attr.disabled True
 
-                  else
-                    onClick <| Toggle row_id column_id
-                ]
-                []
-            , Html.span
-                [ Attr.class "lia-radio-btn" ]
-                [ Html.text ""
-                ]
+              else
+                onClick <| Toggle row_id column_id
             ]
+            []
         ]
 
 
 check : Bool -> Int -> Int -> Bool -> Html (Msg sub)
 check solved row_id column_id value =
     Html.td [ Attr.align "center" ]
-        [ Html.span
-            [ Attr.class "lia-check-item" ]
-            [ Html.input
-                [ Attr.type_ "checkbox"
-                , Attr.checked value
-                , if solved then
-                    Attr.disabled True
+        [ Html.input
+            [ Attr.type_ "checkbox"
+            , Attr.checked value
+            , if solved then
+                Attr.disabled True
 
-                  else
-                    onClick <| Toggle row_id column_id
-                ]
-                []
-            , Html.span
-                [ Attr.class "lia-check-btn" ]
-                [ Html.text "check"
-                ]
+              else
+                onClick <| Toggle row_id column_id
             ]
+            []
         ]
 
 

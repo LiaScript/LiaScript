@@ -71,7 +71,7 @@ script config withStyling attr id node =
             Html.text ""
 
         Just result ->
-            Html.span
+            Html.button
                 (annotation
                     (if withStyling then
                         class node
@@ -154,11 +154,6 @@ input config attr id node =
                     )
                 ]
                 []
-            , Html.span
-                [ Attr.class "lia-check-btn"
-                , Attr.style "margin" "0px 4px 0px 4px"
-                ]
-                [ Html.text "check" ]
             ]
                 |> Html.span []
                 |> span config attr id node
@@ -204,44 +199,40 @@ checkbox updateOnChange id value _ =
                 |> Input.decodeList
                 |> Maybe.withDefault []
     in
-    List.concatMap
+    List.map
         (\o ->
-            [ Html.text (" " ++ o ++ " ")
-            , Html.input
-                [ Attr.value o
-                , Attr.type_ "checkbox"
-                , Event.onCheck (always (Checkbox id updateOnChange o))
-                , Attr.checked (List.member o list)
-                , onActivate False id
-                , Attr.autofocus True
+            Html.label []
+                [ Html.text o
+                , Html.input
+                    [ Attr.value o
+                    , Attr.type_ "checkbox"
+                    , Event.onCheck (always (Checkbox id updateOnChange o))
+                    , Attr.checked (List.member o list)
+                    , onActivate False id
+                    , Attr.autofocus True
+                    ]
+                    []
                 ]
-                []
-            , Html.span
-                [ Attr.class "lia-check-btn" ]
-                [ Html.text "check" ]
-            ]
         )
         >> Html.span []
 
 
 radio : Bool -> Int -> String -> Parameters -> List String -> Html (Msg sub)
 radio updateOnChange id value _ =
-    List.concatMap
+    List.map
         (\o ->
-            [ Html.text (" " ++ o ++ " ")
-            , Html.input
-                [ Attr.value o
-                , Attr.type_ "radio"
-                , Event.onCheck (always (Radio id updateOnChange o))
-                , Attr.checked (o == value)
-                , onActivate False id
-                , Attr.autofocus True
+            Html.label []
+                [ Html.text o
+                , Html.input
+                    [ Attr.value o
+                    , Attr.type_ "radio"
+                    , Event.onCheck (always (Radio id updateOnChange o))
+                    , Attr.checked (o == value)
+                    , onActivate False id
+                    , Attr.autofocus True
+                    ]
+                    []
                 ]
-                []
-            , Html.span
-                [ Attr.class "lia-radio-btn" ]
-                []
-            ]
         )
         >> Html.span []
 
