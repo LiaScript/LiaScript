@@ -1,11 +1,63 @@
 .lia-support-menu {
+  background-color: white;
+  border-left: $global-border;
   display: flex;
-  align-items: center;
-  justify-content: flex-end;
+  flex-direction: column;
+  height: 100%;
+  position: fixed;
+  right: 0;
+  transition: $global-transition;
+  top: 0;
+  width: $support-width-mobile;
+  z-index: 1;
+
+  @include breakpoint("sm") {
+    width: $support-width-desktop;
+  }
+
+  @include breakpoint("sm", "max") {
+    padding-top: 6rem;
+  }
+
+  @include breakpoint("md") {
+    border: none;
+    height: 100%;
+    position: relative;
+    width: 100%;
+  }
+
+  @include breakpoint("md", "max") {
+    &--closed {
+      transform: translateX(100%);
+
+      .lia-support-menu__toggler {
+        transform: translate(-6.5rem, -50%);
+      }
+    }
+  }
 
   &__toggler {
     display: block;
     visibility: visible;
+
+    position: absolute;
+    top: calc(
+      (#{$header-height-mobile} / 2) +
+        (2 * #{map-get($global-spacing, spacing-small)} - (#{$btn-height} / 4))
+    );
+    left: 0;
+    transform: translate(-6.5rem, -50%);
+    transition: $global-transition;
+
+    @include breakpoint("sm", "max") {
+      transform: translate(3rem, -50%);
+    }
+
+    @include breakpoint("md", "max") {
+      &--closed {
+        transform: translateX(100%);
+      }
+    }
 
     @include breakpoint("md") {
       display: none;
@@ -14,26 +66,6 @@
   }
 
   &__collapse {
-    border-left: $global-border;
-    height: 100vh;
-    position: fixed;
-    right: 0;
-    top: 0;
-    transition: right 250ms ease-in-out;
-    width: 315px;
-
-    @include breakpoint("md", "max") {
-      &--closed {
-        right: -315px;
-      }
-    }
-
-    @include breakpoint("md") {
-      border: none;
-      height: 100%;
-      position: relative;
-      width: 100%;
-    }
   }
 
   &__nav {

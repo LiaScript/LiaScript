@@ -2,8 +2,10 @@
    Layout Settings
    -------------------------------------------------- */
 
-$toc-width: 315px !default;
-$support-width: 315px !default;
+$toc-width-mobile: 100% !default;
+$toc-width-desktop: 31.5rem !default;
+$support-width-mobile: 100% !default;
+$support-width-desktop: 31.5rem !default;
 
 /* --------------------------------------------------
    Canvas
@@ -17,19 +19,38 @@ $support-width: 315px !default;
   width: 100vw;
   overflow-x: hidden;
 
-  &.lia-toc--visible {
-    left: $toc-width;
-    width: calc(100% - #{$toc-width});
-  }
+  @include breakpoint("sm", "max") {
+    &.lia-toc--visible #lia-btn-support {
+      transform: translate(0, -50%);
+    }
 
-  @include breakpoint("md", "max") {
-    &.lia-support--visible {
-      right: $support-width;
-      width: calc(100% - #{$support-width});
+    &.lia-support--visible #lia-btn-toc {
+      transform: translate(0, -50%);
     }
 
     &.lia-toc--visible.lia-support--visible {
-      width: calc(100% - #{$toc-width} - #{$support-width});
+      #lia-btn-toc,
+      #lia-btn-support {
+        transform: translate(3rem, -50%);
+      }
+    }
+  }
+
+  @include breakpoint("sm") {
+    &.lia-toc--visible {
+      left: $toc-width-desktop;
+      width: calc(100% - #{$toc-width-desktop});
+    }
+
+    &.lia-support--visible {
+      right: $support-width-desktop;
+      width: calc(100% - #{$support-width-desktop});
+    }
+  }
+
+  @include breakpoint("md", "max") {
+    &.lia-toc--visible.lia-support--visible {
+      width: calc(100% - #{$toc-width-desktop} - #{$support-width-desktop});
     }
   }
 }

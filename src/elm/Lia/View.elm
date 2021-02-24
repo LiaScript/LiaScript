@@ -228,16 +228,16 @@ slideTopBar lang url settings def =
     , Html.div [ Attr.class "lia-header__right" ]
         [ Html.nav
             [ Attr.class "lia-support-menu"
+            , Attr.class <|
+                if settings.support_menu then
+                    "lia-support-menu--closed"
+
+                else
+                    "lia-support-menu--open"
             ]
             [ Settings.btnSupport
             , Html.div
                 [ Attr.class "lia-support-menu__collapse"
-                , Attr.class <|
-                    if settings.support_menu then
-                        "lia-support-menu__collapse--closed"
-
-                    else
-                        "lia-support-menu__collapse--open"
                 ]
                 [ [ ( Settings.menuMode lang settings, "mode" )
                   , ( Settings.menuSettings lang settings, "settings" )
