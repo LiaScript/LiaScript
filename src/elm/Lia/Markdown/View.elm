@@ -256,18 +256,16 @@ view_block config block =
 
                 ( Just _, Just ( narrator, ( attr, par ) ) ) ->
                     let
-                        voice =
-                            Voice.getVoiceFor narrator config.translations
-
                         attributes =
-                            if voice == Nothing then
-                                []
+                            case Voice.getVoiceFor narrator config.translations of
+                                Nothing ->
+                                    []
 
-                            else
-                                [ ( "class", "lia-tts-" ++ String.fromInt id2 )
-                                , ( "style", "display: none;" )
-                                , ( "data-voice", Maybe.withDefault "" voice )
-                                ]
+                                Just voice ->
+                                    [ ( "class", "lia-tts-" ++ String.fromInt id2 )
+                                    , ( "class", "hide" )
+                                    , ( "data-voice", voice )
+                                    ]
                     in
                     par
                         |> Paragraph (List.append attributes attr)
