@@ -1,6 +1,5 @@
 module Lia.View exposing (view)
 
-import Dict
 import Flip exposing (flip)
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -55,20 +54,28 @@ viewIndex hasIndex model =
             else
                 "lia-toc--open"
         ]
-        [ Settings.btnIndex model.translation model.settings.table_of_contents
+        [ Settings.btnIndex
+            model.translation
+            model.settings.table_of_contents
             |> Html.map UpdateSettings
         , model.index_model
-            |> Index.search model.translation
+            |> Index.search
+                model.translation
+                (not model.settings.table_of_contents)
             |> Html.div [ Attr.class "lia-toc__search" ]
             |> Html.map UpdateIndex
         , model.sections
-            |> Index.content model.translation model.section_active Script
+            |> Index.content
+                model.translation
+                (not model.settings.table_of_contents)
+                model.section_active
+                Script
             |> Html.nav [ Attr.class "lia-toc__content" ]
 
         --|> Html.map Script
         , if hasIndex then
             Html.div [ Attr.class "lia-toc__bottom" ]
-                [ Index.bottom Home ]
+                [ Index.bottom (not model.settings.table_of_contents) Home ]
 
           else
             Html.text ""
