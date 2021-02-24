@@ -21,41 +21,32 @@ import Translations exposing (Lang, baseSearch)
 
 search : Lang -> Model -> List (Html Msg)
 search lang model =
-    [ Html.span
-        [ Attr.style "height" "100%"
+    [ Html.input
+        [ Attr.type_ "search"
+        , Attr.value model
+        , Attr.class "lia-input"
+        , Attr.placeholder (baseSearch lang)
+        , onInput ScanIndex
+        , blockKeydown (ScanIndex model)
+        , Attr.id "lia-input-search"
         ]
-        [ Html.input
-            [ Attr.type_ "search"
-            , Attr.value model
-            , Attr.class "lia-input lia-left"
-            , Attr.placeholder (baseSearch lang)
-            , Attr.style "width" "calc(100% - 35px)"
-            , onInput ScanIndex
-            , blockKeydown (ScanIndex model)
-            , Attr.id "lia-input-search"
-            ]
-            []
-        ]
+        []
     , Html.span
-        [ Attr.style "height" "100%"
+        [ Attr.class "icon icon-search"
         ]
-        [ if String.isEmpty model then
-            Html.span
-                [ Attr.class "lia-icon lia-right"
-                , Attr.style "padding" "16px 0px"
-                ]
-                [ Html.text "" ]
+        []
+    , if String.isEmpty model then
+        Html.text ""
 
-          else
-            Html.span
-                [ Attr.class "lia-icon lia-right"
-                , onClick <| ScanIndex ""
-                , Attr.style "padding" "16px 0px"
-                , Attr.style "cursor" "pointer"
-                , Attr.style "width" "5%"
-                ]
-                [ Html.text "close" ]
-        ]
+      else
+        Html.button
+            [ Attr.class "lia-toc__clear-index"
+            , onClick <| ScanIndex ""
+            ]
+            [ Html.i
+                [ Attr.class "icon icon-close" ]
+                []
+            ]
     ]
 
 
@@ -70,10 +61,13 @@ bottom msg =
     Html.button
         [ onClick msg
         , Attr.title "home"
-        , Attr.class "lia-btn lia-control lia-slide-control lia-left"
+        , Attr.class "lia-btn lia-btn--transparent"
         , Attr.id "lia-btn-home"
         ]
-        [ Html.text "home" ]
+        [ Html.i [ Attr.class "lia-btn__icon icon icon-grid" ]
+            []
+        , Html.span [ Attr.class "lia-btn__text" ] [ Html.text "home" ]
+        ]
 
 
 item : Lang -> Int -> (( Int, Script.Msg sub ) -> msg) -> Section -> Maybe (Html msg)
@@ -81,7 +75,7 @@ item lang active msg section =
     if section.visible then
         section.title
             |> List.map (view_inf Array.empty lang)
-            |> itemLink active section.id
+            |> itemLink active section.indentation section.id
             |> Html.map (Tuple.pair section.id >> msg)
             |> Just
 
@@ -89,8 +83,17 @@ item lang active msg section =
         Nothing
 
 
-itemLink : Int -> Int -> List (Html msg) -> Html msg
-itemLink active id =
-    [ Attr.href ("#" ++ String.fromInt (id + 1)) ]
+itemLink : Int -> Int -> Int -> List (Html msg) -> Html msg
+itemLink active indentation id =
+    [ indentation
+        |> String.fromInt
+        |> (++) "lia-toc__link lia-toc__link--is-lvl-"
+        |> Attr.class
+    , id
+        + 1
+        |> String.fromInt
+        |> (++) "#"
+        |> Attr.href
+    ]
         |> CList.appendIf (active == id) [ Attr.id "focusedToc", Attr.class "lia-active" ]
         |> Html.a

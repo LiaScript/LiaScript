@@ -25,7 +25,7 @@ let runTimestamp = Math.round(Date.now() / 1000)
 const paths = {
     iconSvgInputFolder: './src/assets/icons',
     iconFontOutputFolder: './src/assets/fonts',
-    iconFontCssFile: './src/scss/settings/_settings.iconfont.scss',
+    iconFontCssFile: './src/scss/00_settings/_settings.iconfont.scss',
     iconTemplatePath: './src/templates/icon-preview'
 }
 
@@ -94,7 +94,7 @@ gulp.task('iconfont', (done) => {
             let targetPath = outputPath + "/" + fontName
             iconStream.on('glyphs', (glyphs, options) => {
                 gulp.src(paths.iconTemplatePath + '/icons.scss').pipe(consolidate('lodash', {
-                    fontPath: (targetPath + '/fonts/').replace('./', '/'),
+                    fontPath: ('../..' + (targetPath + '/fonts/').replace('./', '/')),
                     fontName: fontName,
                     className: 'icon',
                     glyphs: glyphs,
@@ -107,7 +107,7 @@ gulp.task('iconfont', (done) => {
             let targetPath = outputPath + "/" + fontName
             iconStream.on('glyphs', (glyphs, options) => {
                 gulp.src(paths.iconTemplatePath + '/icons.css').pipe(consolidate('lodash', {
-                    fontPath: (targetPath + '/fonts/').replace('./', '/'),
+                    fontPath: ('../..' + (targetPath + '/fonts/').replace('./', '/')),
                     fontName: fontName,
                     className: 'icon',
                     glyphs: glyphs,

@@ -1,0 +1,38 @@
+/* ==========================================================================
+   #HIDE
+   ========================================================================== */
+
+/**
+ * Hide only visually, but have it available for screen readers:
+ * http://snook.ca/archives/html_and_css/hiding-content-for-accessibility
+ */
+
+.hidden-visually {
+  @include hidden-visually();
+}
+
+/**
+ * Hide visually and from screen readers.
+ */
+
+.hidden {
+  display: none !important;
+}
+
+/**
+ * Hide visually and from screen readers at different breakpoints.
+ */
+
+@each $bp-name, $bp in $breakpoints {
+  @media (min-width: $bp) {
+    .hide-#{$bp-name}-up {
+      display: none !important;
+    }
+  }
+
+  @media (max-width: $bp) {
+    .hide-#{$bp-name}-down {
+      display: none !important;
+    }
+  }
+}

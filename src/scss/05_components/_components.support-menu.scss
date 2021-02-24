@@ -1,0 +1,138 @@
+.lia-support-menu {
+  background-color: white;
+  border-left: $global-border;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: fixed;
+  right: 0;
+  transition: $global-transition;
+  top: 0;
+  width: $support-width-mobile;
+  z-index: 1;
+
+  @include breakpoint("sm") {
+    width: $support-width-desktop;
+  }
+
+  @include breakpoint("sm", "max") {
+    padding-top: 6rem;
+  }
+
+  @include breakpoint("md") {
+    border: none;
+    height: 100%;
+    position: relative;
+    width: 100%;
+  }
+
+  @include breakpoint("md", "max") {
+    &--closed {
+      transform: translateX(100%);
+
+      .lia-support-menu__toggler {
+        transform: translate(-6.5rem, -50%);
+      }
+    }
+  }
+
+  &__toggler {
+    display: block;
+    visibility: visible;
+
+    position: absolute;
+    top: calc(
+      (#{$header-height-mobile} / 2) +
+        (2 * #{map-get($global-spacing, spacing-small)} - (#{$btn-height} / 4))
+    );
+    left: 0;
+    transform: translate(-6.5rem, -50%);
+    transition: $global-transition;
+
+    @include breakpoint("sm", "max") {
+      transform: translate(3rem, -50%);
+    }
+
+    @include breakpoint("md", "max") {
+      &--closed {
+        transform: translateX(100%);
+      }
+    }
+
+    @include breakpoint("md") {
+      display: none;
+      visibility: hidden;
+    }
+  }
+
+  &__collapse {
+    display: block;
+    height: 100%;
+  }
+
+  &__nav {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+
+    @include breakpoint("md", "max") {
+      display: block;
+      height: 100%;
+      overflow: hidden auto;
+      padding: 1.7rem 2.1rem;
+    }
+  }
+
+  &__item {
+    @include breakpoint("md", "max") {
+      align-items: flex-start;
+      display: flex;
+      flex-direction: column;
+      padding: 1.8rem 0;
+
+      &:not(:first-child) {
+        border-top: $global-border;
+      }
+
+      > .icon {
+        font-size: 2rem;
+        margin-bottom: 1.8rem;
+      }
+    }
+  }
+
+  &__submenu {
+    align-items: flex-start;
+    background-color: white;
+    border-radius: $global-radius;
+    box-shadow: 0 0 1rem rgba(0, 0, 0, 0.1);
+    color: $color-text;
+    display: none;
+    flex-direction: column;
+    max-width: 30rem;
+    padding: 1rem;
+    position: absolute;
+    right: 0;
+    top: 4.5rem;
+    width: max-content;
+    z-index: 100;
+
+    &.active {
+      display: flex;
+    }
+
+    svg {
+      height: 15rem;
+    }
+
+    @include breakpoint("md", "max") {
+      box-shadow: none;
+      display: flex;
+      max-width: 100%;
+      padding: 0;
+      position: relative;
+      top: 0;
+      width: 100%;
+    }
+  }
+}

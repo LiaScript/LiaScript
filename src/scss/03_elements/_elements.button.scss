@@ -1,0 +1,84 @@
+$btn-min-width: 3.6rem;
+$btn-height: 3.6rem;
+
+.lia-btn {
+  border: none;
+  display: inline-block;
+  line-height: $global-line-height;
+  min-height: $btn-height;
+  min-width: $btn-min-width;
+  padding: map-get($global-spacing, spacing-small)
+    map-get($global-spacing, spacing-normal);
+
+  &--tag {
+    border-radius: 0;
+  }
+
+  &--outline {
+    background-color: transparent;
+    border: $global-border;
+  }
+
+  &--transparent {
+    background-color: transparent;
+    border: none;
+  }
+
+  &--hint {
+    @include material-icon;
+    text-decoration: none;
+    vertical-align: middle;
+  }
+
+  > .lia-btn__icon {
+    font-size: 1.6rem;
+    line-height: inherit;
+    vertical-align: middle;
+    display: inline;
+
+    & + .lia-btn__text {
+      margin-left: 1rem;
+    }
+  }
+
+  /*   .lia-ripple {
+    position: absolute;
+    display: block;
+    border-radius: 50%;‚
+    width: 0;
+    height: 0;
+    margin: 0;
+    opacity: 0;
+    transition-property: width, height, margin, opacity;
+    transition-duration: 0.5s;
+    transition-timing-function: ease-out;
+    transition-delay: 0s;
+  } */
+}
+
+@mixin style-btn($theme) {
+  .lia-btn {
+    $bg: map-get($theme, primary);
+    $fg: color-contrast($bg);
+
+    &:not([disabled]) {
+      background: $bg;
+      color: $fg;
+
+      &:hover {
+        background: mix($bg, $fg, 80%);
+      }
+    }
+
+    &--hint {
+      color: map-get($theme, text);
+    }
+
+    &[disabled] {
+      $fg: color-contrast(map-get($theme, background));
+
+      background: rgba($fg, 0.12);
+      color: rgba($fg, 0.38);
+    }
+  }
+}
