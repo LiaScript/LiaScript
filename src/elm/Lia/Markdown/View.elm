@@ -349,8 +349,10 @@ view_list : Config Msg -> List ( String, List Markdown ) -> List (Html Msg)
 view_list config =
     let
         viewer ( value, sub_list ) =
-            List.map (view_block config) sub_list
-                |> Html.li [ Attr.value value ]
+            Html.li [ Attr.value value ]
+                [ List.map (view_block config) sub_list
+                    |> Html.span []
+                ]
     in
     List.map viewer
 

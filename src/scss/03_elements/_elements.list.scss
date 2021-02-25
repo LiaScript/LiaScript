@@ -5,10 +5,6 @@
     padding-left: 2rem;
     margin-left: 2rem;
 
-    li {
-      list-style-type: none;
-    }
-
     ul,
     ol {
       margin-left: 0;
@@ -16,6 +12,8 @@
   }
 
   &--unordered {
+    list-style-type: none;
+
     > li {
       &:before {
         content: "\EA0D";
@@ -35,32 +33,14 @@
   }
 
   &--ordered {
-    counter-reset: counter;
-
     > li {
-      counter-increment: counter;
-
-      &:before {
-        content: counter(counter);
+      &::marker {
         color: var(--lia-turquoise);
-        position: absolute;
-        left: 0;
-      }
-    }
-
-    ol > li {
-      padding-left: 1.5rem;
-
-      &:before {
-        content: counters(counter, ".") ". ";
       }
 
-      ol > li {
-        padding-left: 2.5rem;
-
-        ol > li {
-          padding-left: 3.5rem;
-        }
+      span {
+        position: relative;
+        left: 1rem;
       }
     }
   }
