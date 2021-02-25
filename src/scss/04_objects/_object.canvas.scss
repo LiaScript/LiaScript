@@ -73,5 +73,9 @@ $notes-width-desktop: 31.5rem !default;
 
   @include breakpoint("lg") {
     flex-direction: row;
+
+    &.lia-mode--slides .lia-header {
+      right: $notes-width-desktop;
+    }
   }
 }

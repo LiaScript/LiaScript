@@ -212,12 +212,12 @@ view_block config block =
         BulletList attr list ->
             list
                 |> view_bulletlist config
-                |> Html.ul (annotation "lia-list lia-unordered" attr)
+                |> Html.ul (annotation "lia-list--unordered" attr)
 
         OrderedList attr list ->
             list
                 |> view_list config
-                |> Html.ol (annotation "lia-list lia-ordered" attr)
+                |> Html.ol (annotation "lia-list--ordered" attr)
 
         Table attr table ->
             Table.view config attr table

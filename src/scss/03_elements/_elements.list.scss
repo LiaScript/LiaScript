@@ -1,0 +1,67 @@
+.lia-list {
+  &--unordered,
+  &--ordered {
+    position: relative;
+    padding-left: 2rem;
+    margin-left: 2rem;
+
+    li {
+      list-style-type: none;
+    }
+
+    ul,
+    ol {
+      margin-left: 0;
+    }
+  }
+
+  &--unordered {
+    > li {
+      &:before {
+        content: "\EA0D";
+        font-family: "icon";
+        color: var(--lia-turquoise);
+        position: absolute;
+        left: 0;
+      }
+    }
+
+    ul li ul li {
+      padding-left: 1rem;
+      &:before {
+        content: "\EA21";
+      }
+    }
+  }
+
+  &--ordered {
+    counter-reset: counter;
+
+    > li {
+      counter-increment: counter;
+
+      &:before {
+        content: counter(counter);
+        color: var(--lia-turquoise);
+        position: absolute;
+        left: 0;
+      }
+    }
+
+    ol > li {
+      padding-left: 1.5rem;
+
+      &:before {
+        content: counters(counter, ".") ". ";
+      }
+
+      ol > li {
+        padding-left: 2.5rem;
+
+        ol > li {
+          padding-left: 3.5rem;
+        }
+      }
+    }
+  }
+}
