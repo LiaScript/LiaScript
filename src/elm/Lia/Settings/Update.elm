@@ -81,7 +81,10 @@ update msg model =
             no_log
                 { model
                     | action =
-                        if model.action /= Just action then
+                        if action == Close then
+                            Nothing
+
+                        else if model.action /= Just action then
                             Just action
 
                         else

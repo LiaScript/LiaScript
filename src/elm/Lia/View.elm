@@ -1,6 +1,6 @@
 module Lia.View exposing (view)
 
-import Dict
+import Accessibility.Aria as Aria
 import Flip exposing (flip)
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -48,6 +48,7 @@ viewIndex : Bool -> Model -> Html Msg
 viewIndex hasIndex model =
     Html.div
         [ Attr.class "lia-toc"
+        , Attr.id "lia-toc"
         , Attr.class <|
             if model.settings.table_of_contents then
                 "lia-toc--closed"
@@ -55,20 +56,28 @@ viewIndex hasIndex model =
             else
                 "lia-toc--open"
         ]
-        [ Settings.btnIndex model.translation model.settings.table_of_contents
+        [ Settings.btnIndex
+            model.translation
+            model.settings.table_of_contents
             |> Html.map UpdateSettings
         , model.index_model
-            |> Index.search model.translation
+            |> Index.search
+                model.translation
+                (not model.settings.table_of_contents)
             |> Html.div [ Attr.class "lia-toc__search" ]
             |> Html.map UpdateIndex
         , model.sections
-            |> Index.content model.translation model.section_active Script
+            |> Index.content
+                model.translation
+                (not model.settings.table_of_contents)
+                model.section_active
+                Script
             |> Html.nav [ Attr.class "lia-toc__content" ]
 
         --|> Html.map Script
         , if hasIndex then
             Html.div [ Attr.class "lia-toc__bottom" ]
-                [ Index.bottom Home ]
+                [ Index.bottom (not model.settings.table_of_contents) Home ]
 
           else
             Html.text ""
@@ -101,6 +110,7 @@ viewSlide screen model =
                 [ slideTopBar model.translation model.url model.settings model.definition
                 , Config.init
                     model.translation
+                    ( model.langCodeOriginal, model.langCode )
                     model.settings
                     screen
                     section
@@ -247,7 +257,13 @@ slideTopBar lang url settings def =
                   , ( Settings.menuShare lang url settings, "share" )
                   , ( Settings.menuInformation lang def settings, "info" )
                   ]
-                    |> List.map (\( body, class ) -> Html.li [ Attr.class <| "nav__item lia-support-menu__item lia-support-menu__item--" ++ class ] body)
+                    |> List.map
+                        (\( body, class ) ->
+                            Html.li
+                                [ Attr.class <| "nav__item lia-support-menu__item lia-support-menu__item--" ++ class
+                                ]
+                                body
+                        )
                     |> Html.ul [ Attr.class "nav lia-support-menu__nav" ]
                 ]
             ]

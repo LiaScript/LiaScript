@@ -4,8 +4,10 @@ module Lia.Index.View exposing
     , search
     )
 
+import Accessibility.Key exposing (tabbable)
 import Array
 import Conditional.List as CList
+import Conditional.String as CString
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
@@ -19,8 +21,8 @@ import Lia.Utils exposing (blockKeydown)
 import Translations exposing (Lang, baseSearch)
 
 
-search : Lang -> Model -> List (Html Msg)
-search lang model =
+search : Lang -> Bool -> Model -> List (Html Msg)
+search lang active model =
     [ Html.input
         [ Attr.type_ "search"
         , Attr.value model
@@ -29,6 +31,7 @@ search lang model =
         , onInput ScanIndex
         , blockKeydown (ScanIndex model)
         , Attr.id "lia-input-search"
+        , tabbable active
         ]
         []
     , Html.span
@@ -42,6 +45,7 @@ search lang model =
         Html.button
             [ Attr.class "lia-toc__clear-index"
             , onClick <| ScanIndex ""
+            , tabbable active
             ]
             [ Html.i
                 [ Attr.class "icon icon-close" ]
@@ -50,50 +54,47 @@ search lang model =
     ]
 
 
-content : Lang -> Int -> (( Int, Script.Msg sub ) -> msg) -> Sections -> List (Html msg)
-content lang active msg =
+content : Lang -> Bool -> Int -> (( Int, Script.Msg sub ) -> msg) -> Sections -> List (Html msg)
+content lang active sectionId msg =
     Array.toList
-        >> List.filterMap (item lang active msg)
+        >> List.map (item lang active sectionId msg)
 
 
-bottom : msg -> Html msg
-bottom msg =
+bottom : Bool -> msg -> Html msg
+bottom active msg =
     Html.button
         [ onClick msg
         , Attr.title "home"
         , Attr.class "lia-btn lia-btn--transparent"
         , Attr.id "lia-btn-home"
+        , tabbable active
         ]
-        [ Html.i [ Attr.class "lia-btn__icon icon icon-grid" ]
-            []
+        [ Html.i [ Attr.class "lia-btn__icon icon icon-grid" ] []
         , Html.span [ Attr.class "lia-btn__text" ] [ Html.text "home" ]
         ]
 
 
-item : Lang -> Int -> (( Int, Script.Msg sub ) -> msg) -> Section -> Maybe (Html msg)
-item lang active msg section =
-    if section.visible then
-        section.title
-            |> List.map (view_inf Array.empty lang)
-            |> itemLink active section.indentation section.id
-            |> Html.map (Tuple.pair section.id >> msg)
-            |> Just
-
-    else
-        Nothing
+item : Lang -> Bool -> Int -> (( Int, Script.Msg sub ) -> msg) -> Section -> Html msg
+item lang active sectionId msg section =
+    section.title
+        |> List.map (view_inf Array.empty lang)
+        |> itemLink active sectionId section
+        |> Html.map (Tuple.pair section.id >> msg)
 
 
-itemLink : Int -> Int -> Int -> List (Html msg) -> Html msg
-itemLink active indentation id =
-    [ indentation
+itemLink : Bool -> Int -> Section -> List (Html msg) -> Html msg
+itemLink active sectionId section =
+    [ tabbable active
+    , section.indentation
         |> String.fromInt
         |> (++) "lia-toc__link lia-toc__link--is-lvl-"
+        |> CString.attachIf (not section.visible) " hide"
         |> Attr.class
-    , id
+    , section.id
         + 1
         |> String.fromInt
         |> (++) "#"
         |> Attr.href
     ]
-        |> CList.appendIf (active == id) [ Attr.id "focusedToc", Attr.class "lia-active" ]
+        |> CList.appendIf (sectionId == section.id) [ Attr.id "focusedToc", Attr.class "lia-active" ]
         |> Html.a

@@ -1,7 +1,7 @@
 module Lia.Markdown.View exposing (view)
 
 import Html exposing (Html)
-import Html.Attributes as Attr
+import Html.Attributes as Attr exposing (attribute)
 import Html.Events exposing (onClick)
 import Html.Lazy as Lazy
 import Lia.Markdown.Chart.View as Charts
@@ -26,6 +26,7 @@ import Lia.Markdown.Types exposing (Markdown(..), MarkdownS)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Section exposing (SubSection(..))
 import Lia.Settings.Types exposing (Mode(..))
+import Lia.Voice as Voice
 import SvgBob
 
 
@@ -248,12 +249,29 @@ view_block config block =
                 , Comments.get_paragraph id1 id2 config.section.effect_model
                 )
             of
-                ( Nothing, Just ( attr, par ) ) ->
+                ( Nothing, Just ( _, ( attr, par ) ) ) ->
                     par
                         |> Paragraph attr
                         |> view_block config
 
-                _ ->
+                ( Just _, Just ( narrator, ( attr, par ) ) ) ->
+                    let
+                        attributes =
+                            case Voice.getVoiceFor narrator config.translations of
+                                Nothing ->
+                                    []
+
+                                Just voice ->
+                                    [ ( "class", "lia-tts-" ++ String.fromInt id2 )
+                                    , ( "class", "hide" )
+                                    , ( "data-voice", voice )
+                                    ]
+                    in
+                    par
+                        |> Paragraph (List.append attributes attr)
+                        |> view_block config
+
+                ( _, Nothing ) ->
                     Html.text ""
 
         Header attr ( elements, sub ) ->

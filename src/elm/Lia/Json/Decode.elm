@@ -43,6 +43,8 @@ toModel =
         |> JD.map2 (|>) (JD.succeed [])
         |> JD.map2 (|>) (JD.succeed [])
         |> andMap "translation" (JD.string |> JD.map Translations.getLnFromCode)
+        |> andMap "translation" JD.string
+        |> andMap "translation" JD.string
         |> JD.map2 (|>) (JD.succeed identity)
 
 

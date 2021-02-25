@@ -1,6 +1,7 @@
 module Lia.Utils exposing
     ( blockKeydown
     , get
+    , langInTranslations
     , langToString
     , onEnter
     , toEscapeString
@@ -126,3 +127,8 @@ langToString code =
 
         Zh ->
             "zh"
+
+
+langInTranslations : String -> Bool
+langInTranslations lang =
+    List.member lang [ "bg", "de", "en", "es", "fa", "hy", "nl", "ru", "tw", "ua", "zh" ]

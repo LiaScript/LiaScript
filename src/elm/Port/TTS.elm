@@ -5,12 +5,15 @@ module Port.TTS exposing
     , event
     , mute
     , playback
+    , readFrom
     , speak
     )
 
 import Json.Decode as JD
 import Json.Encode as JE
 import Port.Event as Event exposing (Event)
+import String
+import Translations exposing (Lang(..))
 
 
 type Msg
@@ -77,6 +80,14 @@ playback id voice text =
     , "true"
     ]
         |> JE.list JE.string
+        |> Event "speak" id
+
+
+readFrom : Int -> Int -> Event
+readFrom id effectID =
+    "lia-tts-"
+        ++ String.fromInt effectID
+        |> JE.string
         |> Event "speak" id
 
 

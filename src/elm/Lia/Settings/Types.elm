@@ -29,6 +29,7 @@ type Action
     | ShowSettings
     | ShowModes
     | Share
+    | Close
 
 
 type Mode

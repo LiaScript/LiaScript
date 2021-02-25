@@ -24,12 +24,13 @@ type alias Config sub =
     , ace_theme : String
     , light : Bool
     , screen : Screen
+    , translations : ( String, String )
     , main : Inline.Config sub
     }
 
 
-init : Lang -> Settings -> Screen -> Section -> Int -> Config sub
-init lang settings screen section id =
+init : Lang -> ( String, String ) -> Settings -> Screen -> Section -> Int -> Config sub
+init lang translations settings screen section id =
     let
         config =
             inline lang settings section.effect_model id
@@ -46,6 +47,7 @@ init lang settings screen section id =
          else
             screen
         )
+        translations
         config
 
 

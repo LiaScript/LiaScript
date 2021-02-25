@@ -24,28 +24,24 @@
     "https://github.com/LiaScript/docs/README.md"
   ],
   "scripts": {
-    "init": "npx rimraf -rf dist && npx mkdirp dist",
-    "init:app": "npm run init && npm run cp",
-    "cp": "npm run cp:ace && npm run cp:katex",
-    "cp:ace": "npx ncp node_modules/ace-builds/src-min-noconflict dist/editor",
-    "cp:katex": "npx ncp node_modules/katex/dist/katex.min.css dist/",
+    "init": "npm i && npx gulp iconfont",
     "sw": "npx workbox injectManifest workbox-config.js",
     "translate": "elm-i18n-gen lia-localization/locale src/elm/Translations.elm",
     "test": "npx elm-test",
     "watch": "npm run watch:dev",
     "build": "npm run build:app",
-    "build:app": "npm run init && npx parcel build --no-source-maps --public-url ./ src/entry/app/index.html && npm run sw",
-    "watch:app": "npm run init && npx parcel serve src/entry/app/index.html --open",
-    "watch:base": "npm run init && npx parcel serve src/entry/base/index.html",
-    "build:base": "npm run init && npx parcel build --no-source-maps --public-url ./ src/entry/base/index.html",
-    "build:dev": "npm run init && npx parcel build --no-source-maps --public-url ./ src/entry/dev/index.html && npm run sw",
-    "watch:dev": "npm run init && npx parcel serve src/entry/dev/index.html --open",
-    "build:scorm1.2": "npm run init && npx parcel build --no-source-maps --public-url ./ src/entry/scorm1.2/index.html",
-    "watch:scorm1.2": "npm run init && npx parcel serve src/entry/scorm1.2/index.html",
-    "build:worker": "npm run init && npx parcel build --no-source-maps --target node --public-url ./ src/entry/worker/index.js",
-    "watch:webcomponent": "npm run init && npx parcel serve src/entry/webcomponent/index.html --open",
-    "build:webcomponent": "npm run init && npx parcel build --no-source-maps src/entry/webcomponent/index.ts && rm dist/README.md",
-    "build:webcomponentPublic": "npm run init && npx parcel build --no-source-maps --public-url https://liascript.github.io/webcomponent/ src/entry/webcomponent/index.ts && rm dist/README.md"
+    "build:app": "npx parcel build --no-source-maps --public-url ./ src/entry/app/index.html && npm run sw",
+    "watch:app": "npx parcel serve src/entry/app/index.html --open",
+    "watch:base": "npx parcel serve src/entry/base/index.html",
+    "build:base": "npx parcel build --no-source-maps --public-url ./ src/entry/base/index.html",
+    "build:dev": "npx parcel build --no-source-maps --public-url ./ src/entry/dev/index.html && npm run sw",
+    "watch:dev": "npx parcel serve src/entry/dev/index.html --open",
+    "build:scorm1.2": "npx parcel build --no-source-maps --public-url ./ src/entry/scorm1.2/index.html",
+    "watch:scorm1.2": "npx parcel serve src/entry/scorm1.2/index.html",
+    "build:worker": "npx parcel build --no-source-maps --target node --public-url ./ src/entry/worker/index.js",
+    "watch:webcomponent": "npx parcel serve src/entry/webcomponent/index.html --open",
+    "build:webcomponent": "npx parcel build --no-source-maps src/entry/webcomponent/index.ts && rm dist/README.md",
+    "build:webcomponentPublic": "npx parcel build --no-source-maps --public-url https://liascript.github.io/webcomponent/ src/entry/webcomponent/index.ts && rm dist/README.md"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",
@@ -77,12 +73,9 @@
     "lodash": "^4.17.20",
     "logger.ts": "^1.0.5",
     "material-icons": "^0.3.1",
-    "mkdirp": "^1.0.4",
-    "ncp": "^2.0.0",
     "node-elm-compiler": "^5.0.5",
     "parcel": "^1.12.4",
     "parcel-plugin-static-files-copy": "^2.5.1",
-    "rimraf": "^3.0.2",
     "sass": "^1.32.6",
     "sass-material-colors": "0.0.5",
     "simplify-scorm": "0.0.1",
@@ -99,6 +92,9 @@
       {
         "staticPath": "node_modules/ace-builds/src-min-noconflict",
         "staticOutDir": "editor"
+      },
+      {
+        "staticPath": "node_modules/katex/dist/katex.min.css"
       }
     ],
     "watcherGlob": "**/*.md"

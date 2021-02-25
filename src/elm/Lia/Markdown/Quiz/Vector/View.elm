@@ -46,9 +46,6 @@ check config solved checked ( id, line ) =
                     onClick (Toggle id)
                 ]
                 []
-            , Html.span
-                [ Attr.class "lia-check-btn" ]
-                [ Html.text "check" ]
             ]
         , line
             |> viewer config
@@ -71,7 +68,6 @@ radio config solved checked ( id, line ) =
                     onClick (Toggle id)
                 ]
                 []
-            , Html.span [ Attr.class "lia-radio-btn" ] []
             ]
         , line
             |> viewer config
