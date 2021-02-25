@@ -194,7 +194,17 @@ slideA11y lang mode effect id =
                                             >> List.map (view_inf effect.javascript lang)
                                             >> Html.p []
                                         )
-                                    |> Html.div [Attr.class "lia-notes__content" ++ <| (if active then " active" else "")]
+                                    |> Html.div
+                                        [ Attr.class
+                                            ("lia-notes__content"
+                                                ++ (if active then
+                                                        " active"
+
+                                                    else
+                                                        ""
+                                                   )
+                                            )
+                                        ]
                             )
             in
             comments
