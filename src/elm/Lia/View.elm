@@ -1,6 +1,6 @@
 module Lia.View exposing (view)
 
-import Accessibility.Aria as Aria
+import Accessibility.Landmark as A11y_Landmark
 import Flip exposing (flip)
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -64,7 +64,10 @@ viewIndex hasIndex model =
             |> Index.search
                 model.translation
                 (not model.settings.table_of_contents)
-            |> Html.div [ Attr.class "lia-toc__search" ]
+            |> Html.div
+                [ Attr.class "lia-toc__search"
+                , A11y_Landmark.search
+                ]
             |> Html.map UpdateIndex
         , model.sections
             |> Index.content
@@ -72,7 +75,10 @@ viewIndex hasIndex model =
                 (not model.settings.table_of_contents)
                 model.section_active
                 Script
-            |> Html.nav [ Attr.class "lia-toc__content" ]
+            |> Html.nav
+                [ Attr.class "lia-toc__content"
+                , A11y_Landmark.navigation
+                ]
 
         --|> Html.map Script
         , if hasIndex then
@@ -176,15 +182,38 @@ slideA11y : Lang -> Mode -> Effect.Model SubSection -> Int -> Html Msg
 slideA11y lang mode effect id =
     case mode of
         Slides ->
-            effect
-                |> Effect.current_paragraphs
-                |> List.map
-                    (Tuple.second
-                        >> List.map (view_inf effect.javascript lang)
-                        >> Html.p []
-                        >> Html.map (Tuple.pair id >> Script)
-                    )
-                |> Html.aside [ Attr.class "lia-footer" ]
+            let
+                comments =
+                    effect
+                        |> Effect.current_paragraphs
+                        |> List.map
+                            (\( active, par ) ->
+                                par
+                                    |> List.map
+                                        (Tuple.second
+                                            >> List.map (view_inf effect.javascript lang)
+                                            >> Html.p []
+                                        )
+                                    |> Html.div
+                                        (if active then
+                                            [ Attr.class "active"
+                                            , Attr.style "color" "black"
+                                            ]
+
+                                         else
+                                            [ Attr.style "color" "lightgray"
+                                            ]
+                                        )
+                            )
+            in
+            comments
+                |> Html.aside
+                    [ Attr.classList
+                        [ ( "lia-footer", True )
+                        , ( "lia-hide-lg-less", List.isEmpty comments )
+                        ]
+                    ]
+                |> Html.map (Tuple.pair id >> Script)
 
         _ ->
             Html.text ""
@@ -267,7 +296,11 @@ slideTopBar lang url settings def =
             ]
         ]
     ]
-        |> Html.header [ Attr.class "lia-header", Attr.id "lia-toolbar-nav" ]
+        |> Html.header
+            [ Attr.class "lia-header"
+            , Attr.id "lia-toolbar-nav"
+            , A11y_Landmark.navigation
+            ]
         |> Html.map UpdateSettings
 
 

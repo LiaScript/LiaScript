@@ -64,14 +64,16 @@ get_paragraph id1 id2 model =
             Nothing
 
 
-current_paragraphs : Model a -> List ( Parameters, Inlines )
+current_paragraphs : Model a -> List ( Bool, List ( Parameters, Inlines ) )
 current_paragraphs model =
-    case Dict.get model.visible model.comments of
-        Just e ->
-            Array.toList e.paragraphs
-
-        Nothing ->
-            []
+    model.comments
+        |> Dict.toList
+        |> List.map
+            (\( key, value ) ->
+                ( key == model.visible
+                , Array.toList value.paragraphs
+                )
+            )
 
 
 current_comment : Model a -> Maybe ( Int, String, String )
