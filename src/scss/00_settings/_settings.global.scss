@@ -19,11 +19,33 @@ $global-spacing: (
 );
 
 /* --------------------------------------------------
+   Breakpoints
+   -------------------------------------------------- */
+
+// min or max
+$global-media-direction: min; // min / max — default is min (mobile first)
+
+// Breakpoints
+$global-breakpoints: (
+  "default": "",
+  // 480px
+  "xs": 30em,
+  // 768px
+  "sm": 48em,
+  // 1024px
+  "md": 64em,
+  // 1440px
+  "lg": 90em,
+  // 1680px
+  "xl": 105em,
+);
+
+/* --------------------------------------------------
    UI treatments
    -------------------------------------------------- */
 
 $global-border: 1px solid var(--lia-grey-light) !default;
-$global-radius: 8px !default;
+$global-radius: 0.8rem !default;
 $global-outline: 3px !default;
 $global-transition: all 250ms ease-in-out !default;
 

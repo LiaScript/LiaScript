@@ -24,12 +24,13 @@ type alias Config sub =
     , ace_theme : String
     , light : Bool
     , screen : Screen
+    , translations : ( String, String )
     , main : Inline.Config sub
     }
 
 
-init : Lang -> Settings -> Screen -> Section -> Int -> Config sub
-init lang settings screen section id =
+init : Lang -> ( String, String ) -> Settings -> Screen -> Section -> Int -> Config sub
+init lang translations settings screen section id =
     let
         config =
             inline lang settings section.effect_model id
@@ -38,7 +39,7 @@ init lang settings screen section id =
         settings.mode
         (viewer config >> List.map (Html.map Script))
         section
-        settings.theme
+        settings.editor
         settings.light
         (if settings.table_of_contents then
             { screen | width = screen.width - 260 }
@@ -46,6 +47,7 @@ init lang settings screen section id =
          else
             screen
         )
+        translations
         config
 
 
@@ -57,7 +59,7 @@ inline lang settings effect id =
         effect.speaking
         effect.javascript
         lang
-        (Just settings.theme)
+        (Just settings.editor)
 
 
 setSubViewer : (Int -> SubSection -> List (Html (Script.Msg Msg))) -> Config Msg -> Config Msg

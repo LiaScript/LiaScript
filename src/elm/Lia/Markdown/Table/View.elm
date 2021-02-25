@@ -29,6 +29,7 @@ import Lia.Markdown.Table.Update as Sub
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Utils exposing (blockKeydown)
 import Set
+import Translations exposing (Lang)
 
 
 view : Config sub -> Parameters -> Table -> Html Msg
@@ -38,7 +39,8 @@ view config attr table =
             getState table.id config.section.table_vector
     in
     if diagramShow attr state.diagram then
-        Lazy.lazy7 viewDiagram
+        Lazy.lazy8 viewDiagram
+            config.main.lang
             table
             state
             config.main.scripts
@@ -58,8 +60,8 @@ view config attr table =
             |> toTable table.id attr table.class
 
 
-viewDiagram : Table -> State -> Scripts a -> Maybe Int -> Int -> Bool -> Parameters -> Html Msg
-viewDiagram table state effects visible width light attr =
+viewDiagram : Lang -> Table -> State -> Scripts a -> Maybe Int -> Int -> Bool -> Parameters -> Html Msg
+viewDiagram lang table state effects visible width light attr =
     Html.div
         [ blockKeydown (UpdateTable Sub.NoOp) ]
         [ toggleBtn table.id "table"
@@ -68,7 +70,7 @@ viewDiagram table state effects visible width light attr =
             |> sort state
             |> (::) (List.map (toCell effects visible) table.head)
             |> diagramTranspose attr
-            |> chart width (table.format /= []) attr light table.class
+            |> chart lang width (table.format /= []) attr light table.class
         ]
 
 
@@ -90,8 +92,8 @@ diagramTranspose attr matrix =
         matrix
 
 
-chart : Int -> Bool -> Parameters -> Bool -> Class -> Matrix Cell -> Html Msg
-chart width isFormated attr mode class matrix =
+chart : Lang -> Int -> Bool -> Parameters -> Bool -> Class -> Matrix Cell -> Html Msg
+chart lang width isFormated attr mode class matrix =
     let
         ( head, body ) =
             Matrix.split matrix
@@ -116,7 +118,7 @@ chart width isFormated attr mode class matrix =
                             , row |> List.tail |> Maybe.map (List.map .float) |> Maybe.withDefault []
                             )
                         )
-                    |> Chart.viewBarChart attr mode labels category
+                    |> Chart.viewBarChart lang attr mode labels category
 
             PieChart ->
                 if
@@ -131,7 +133,7 @@ chart width isFormated attr mode class matrix =
                             (List.map2 (\category -> Maybe.map (Tuple.pair category.string)) head
                                 >> List.filterMap identity
                             )
-                        |> Chart.viewPieChart width attr mode labels Nothing
+                        |> Chart.viewPieChart lang width attr mode labels Nothing
 
                 else
                     let
@@ -153,7 +155,7 @@ chart width isFormated attr mode class matrix =
                     in
                     data
                         |> List.map (List.map2 (\c -> Maybe.map (Tuple.pair c)) category >> List.filterMap identity)
-                        |> Chart.viewPieChart width attr mode labels sub
+                        |> Chart.viewPieChart lang width attr mode labels sub
 
             Funnel ->
                 if
@@ -168,7 +170,7 @@ chart width isFormated attr mode class matrix =
                             (List.map2 (\category -> Maybe.map (Tuple.pair category.string)) head
                                 >> List.filterMap identity
                             )
-                        |> Chart.viewFunnel width attr mode labels Nothing
+                        |> Chart.viewFunnel lang width attr mode labels Nothing
 
                 else
                     let
@@ -190,7 +192,7 @@ chart width isFormated attr mode class matrix =
                     in
                     data
                         |> List.map (List.map2 (\c -> Maybe.map (Tuple.pair c)) category >> List.filterMap identity)
-                        |> Chart.viewFunnel width attr mode labels sub
+                        |> Chart.viewFunnel lang width attr mode labels sub
 
             HeatMap ->
                 let
@@ -215,7 +217,7 @@ chart width isFormated attr mode class matrix =
                             row
                                 |> List.indexedMap (\x_ cell -> ( x_, y_, cell.float ))
                         )
-                    |> Chart.viewHeatMap attr mode labels y x
+                    |> Chart.viewHeatMap lang attr mode labels y x
 
             Radar ->
                 let
@@ -232,7 +234,7 @@ chart width isFormated attr mode class matrix =
                             , row |> List.tail |> Maybe.map (List.map .float) |> Maybe.withDefault []
                             )
                         )
-                    |> Chart.viewRadarChart attr mode labels categories
+                    |> Chart.viewRadarChart lang attr mode labels categories
 
             Parallel ->
                 let
@@ -247,13 +249,13 @@ chart width isFormated attr mode class matrix =
                     |> Matrix.tail
                     |> Matrix.map .float
                     |> Matrix.transpose
-                    |> Chart.viewParallel attr mode labels category
+                    |> Chart.viewParallel lang attr mode labels category
 
             BoxPlot ->
                 body
                     |> Matrix.map .float
                     |> Matrix.transpose
-                    |> Chart.viewBoxPlot attr mode labels (List.map .string head)
+                    |> Chart.viewBoxPlot lang attr mode labels (List.map .string head)
 
             Graph ->
                 let
@@ -302,7 +304,7 @@ chart width isFormated attr mode class matrix =
                         )
                     |> List.filterMap identity
                     |> List.filter (\( a, b, _ ) -> a /= "" || b /= "")
-                    |> Chart.viewGraph attr mode labels nodes
+                    |> Chart.viewGraph lang attr mode labels nodes
 
             Sankey ->
                 let
@@ -351,7 +353,7 @@ chart width isFormated attr mode class matrix =
                         )
                     |> List.filterMap identity
                     |> List.filter (\( a, b, _ ) -> a /= "" || b /= "")
-                    |> Chart.viewSankey attr mode labels nodes
+                    |> Chart.viewSankey lang attr mode labels nodes
 
             Map ->
                 let
@@ -377,7 +379,8 @@ chart width isFormated attr mode class matrix =
                 in
                 attr
                     |> Param.get "data-src"
-                    |> Chart.viewMapChart attr
+                    |> Chart.viewMapChart lang
+                        attr
                         mode
                         labels
                         values
@@ -429,7 +432,7 @@ chart width isFormated attr mode class matrix =
                     , legend = legend
                     , diagrams = diagrams |> Dict.fromList
                     }
-                        |> Chart.viewChart attr mode
+                        |> Chart.viewChart lang attr mode
 
                 else
                     let
@@ -456,6 +459,7 @@ chart width isFormated attr mode class matrix =
                             else
                                 Chart.viewPoints
                            )
+                            lang
                             attr
                             mode
                             labels
@@ -541,17 +545,20 @@ toTable id attr class body =
 
 toggleBtn : Int -> String -> Html Msg
 toggleBtn id icon =
-    Html.img
+    Html.button
         [ Attr.style "cursor" "pointer"
-        , Attr.style "height" "16px"
-        , Attr.height 16
-        , Attr.width 16
-        , Attr.style "width" "16px"
         , onClick <| UpdateTable <| Sub.Toggle id
-        , Attr.src <| "img/" ++ icon ++ ".png"
         , Attr.style "z-index" "100"
         ]
-        []
+        [ Html.img
+            [ Attr.style "height" "16px"
+            , Attr.height 16
+            , Attr.width 16
+            , Attr.style "width" "16px"
+            , Attr.src <| "img/" ++ icon ++ ".png"
+            ]
+            []
+        ]
 
 
 unformatted : (Inlines -> List (Html Msg)) -> Matrix Cell -> Int -> State -> List (Html Msg)

@@ -235,6 +235,8 @@ init_script model script =
             ( { model
                 | definition = { definition | attributes = [] }
                 , translation = Translations.getLnFromCode definition.language
+                , langCode = definition.language
+                , langCodeOriginal = definition.language
                 , settings =
                     { settings
                         | light =

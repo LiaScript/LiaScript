@@ -9,7 +9,7 @@ module Lia.Markdown.Quiz.Types exposing
     , comp
     , getState
     , initState
-    , solved
+    , isSolved
     , toState
     )
 
@@ -131,6 +131,8 @@ comp quiz state =
         Open
 
 
-solved : Element -> Bool
-solved e =
+{-| Returns `True` if the quiz is in solved or resolved state.
+-}
+isSolved : Element -> Bool
+isSolved e =
     e.solved /= Open

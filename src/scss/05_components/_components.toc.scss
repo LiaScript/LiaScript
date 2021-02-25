@@ -1,4 +1,5 @@
 .lia-toc {
+  background-color: white;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -6,25 +7,47 @@
   padding: 3rem 3rem 1rem 0;
   position: fixed;
   transition: $global-transition;
-  width: $toc-width;
-  z-index: 1;
-
-  &--closed {
-    left: -$toc-width;
-  }
-
-  @include breakpoint("sm", "max") {
-    padding-top: 8rem;
-  }
+  width: $toc-width-mobile;
+  z-index: 200;
 
   #lia-btn-toc {
     position: absolute;
-    right: -6.5rem;
-    top: 1.75rem;
+    top: calc(
+      (#{$header-height-desktop} / 2) +
+        (2 * #{map-get($global-spacing, spacing-small)} - (#{$btn-height} / 4))
+    );
+    right: 0;
+    transform: translate(6.5rem, -50%);
+    transition: $global-transition;
 
     @include breakpoint("sm", "max") {
-      right: 3rem;
+      transform: translate(-3rem, -50%);
     }
+
+    @include breakpoint("md", "max") {
+      top: calc(
+        (#{$header-height-mobile} / 2) +
+          (
+            2 * #{map-get($global-spacing, spacing-small)} - (#{$btn-height} / 4)
+          )
+      );
+    }
+  }
+
+  @include breakpoint("sm") {
+    width: $toc-width-desktop;
+  }
+
+  &--closed {
+    transform: translateX(-100%);
+
+    #lia-btn-toc {
+      transform: translate(6.5rem, -50%);
+    }
+  }
+
+  @include breakpoint("sm", "max") {
+    padding-top: 6rem;
   }
 
   &__search {

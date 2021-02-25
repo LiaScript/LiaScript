@@ -15,7 +15,7 @@
  * Hide visually and from screen readers.
  */
 
-.hidden {
+.hide {
   display: none !important;
 }
 
@@ -23,14 +23,15 @@
  * Hide visually and from screen readers at different breakpoints.
  */
 
-@each $bp-name, $bp in $breakpoints {
+@each $bp-name, $bp in $global-breakpoints {
   @media (min-width: $bp) {
     .hide-#{$bp-name}-up {
       display: none !important;
     }
   }
 
-  @media (max-width: $bp) {
+  $bp-adj: $bp - calc-em(1, 16);
+  @media (max-width: $bp-adj) {
     .hide-#{$bp-name}-down {
       display: none !important;
     }

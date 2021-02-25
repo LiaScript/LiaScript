@@ -76,6 +76,8 @@ type alias Model =
     , resource : List Resource
     , to_do : List Event
     , translation : Translations.Lang
+    , langCode : String
+    , langCodeOriginal : String
     , search_index : String -> String
     }
 
@@ -120,6 +122,8 @@ init hasShareApi openTOC settings url readme origin anchor =
     , resource = []
     , to_do = []
     , translation = Translations.En
+    , langCode = "en"
+    , langCodeOriginal = "en"
     , search_index = identity
     }
 

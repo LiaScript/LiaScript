@@ -2,14 +2,21 @@
    Layout Settings
    -------------------------------------------------- */
 
-$toc-width: 315px !default;
-$support-width: 315px !default;
+$toc-width-mobile: 100% !default;
+$toc-width-desktop: 31.5rem !default;
+
+$support-width-mobile: 100% !default;
+$support-width-desktop: 21.6rem !default;
+
+$notes-width-mobile: 100% !default;
+$notes-width-desktop: 31.5rem !default;
 
 /* --------------------------------------------------
    Canvas
    -------------------------------------------------- */
 .lia-canvas {
   display: flex;
+  flex-direction: column;
   height: 100vh;
   left: 0;
   position: relative;
@@ -17,19 +24,58 @@ $support-width: 315px !default;
   width: 100vw;
   overflow-x: hidden;
 
-  &.lia-toc--visible {
-    left: $toc-width;
-    width: calc(100% - #{$toc-width});
+  @include breakpoint("sm", "max") {
+    /* push support-menu-toggler to the right if toc is open,
+       prevent that buttons overlay each other */
+    &.lia-toc--visible #lia-btn-support {
+      transform: translate(0, -50%);
+    }
+
+    /* push toc-menu-toggler to the left if support-menu is open,
+       prevent that buttons overlay each other */
+    &.lia-support--visible #lia-btn-toc {
+      transform: translate(0, -50%);
+    }
+
+    /* in case both menus are visible on mobile screens, 
+       this pushes the buttons to their original positions */
+    &.lia-toc--visible.lia-support--visible {
+      #lia-btn-toc,
+      #lia-btn-support {
+        transform: translate(-3rem, -50%);
+      }
+    }
   }
 
-  @include breakpoint("md", "max") {
+  @include breakpoint("sm") {
+    &.lia-toc--visible {
+      left: $toc-width-desktop;
+      width: calc(100% - #{$toc-width-desktop});
+
+      .lia-header {
+        left: #{$toc-width-desktop};
+      }
+    }
+
     &.lia-support--visible {
-      right: $support-width;
-      width: calc(100% - #{$support-width});
+      right: $support-width-desktop;
+      width: calc(100% - #{$support-width-desktop});
+
+      .lia-header {
+        right: #{$support-width-desktop};
+      }
     }
 
     &.lia-toc--visible.lia-support--visible {
-      width: calc(100% - #{$toc-width} - #{$support-width});
+      width: calc(100% - #{$toc-width-desktop} - #{$support-width-desktop});
+    }
+  }
+
+  @include breakpoint("lg") {
+    flex-direction: row;
+
+    &.lia-mode--slides .lia-header {
+      right: $notes-width-desktop;
     }
   }
 }

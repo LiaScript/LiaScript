@@ -1,11 +1,67 @@
 .lia-support-menu {
+  background-color: white;
+  border-left: $global-border;
   display: flex;
-  align-items: center;
-  justify-content: flex-end;
+  flex-direction: column;
+  height: 100%;
+  position: fixed;
+  right: 0;
+  transition: $global-transition;
+  top: 0;
+  width: $support-width-mobile;
+  z-index: 1;
+  padding-top: 6rem;
+
+  &--closed {
+    transform: translateX(100%);
+
+    .lia-support-menu__toggler {
+      transform: translate(-6.5rem, -50%);
+    }
+  }
+
+  @include breakpoint("sm") {
+    width: $support-width-desktop;
+    padding-top: 0rem;
+  }
+
+  @include breakpoint("md") {
+    border: none;
+    height: 100%;
+    position: relative;
+    width: 100%;
+
+    &--closed {
+      transform: translateX(0);
+
+      .lia-support-menu__toggler {
+        transform: translate(-6.5rem, -50%);
+      }
+    }
+  }
 
   &__toggler {
     display: block;
     visibility: visible;
+
+    position: absolute;
+    top: calc(
+      (#{$header-height-mobile} / 2) +
+        (2 * #{map-get($global-spacing, spacing-small)} - (#{$btn-height} / 4))
+    );
+    left: 0;
+    transform: translate(-6.5rem, -50%);
+    transition: $global-transition;
+
+    @include breakpoint("sm", "max") {
+      transform: translate(2.1rem, -50%);
+    }
+
+    @include breakpoint("md", "max") {
+      &--closed {
+        transform: translateX(100%);
+      }
+    }
 
     @include breakpoint("md") {
       display: none;
@@ -14,55 +70,53 @@
   }
 
   &__collapse {
-    border-left: $global-border;
-    height: 100vh;
-    position: fixed;
-    right: 0;
-    top: 0;
-    transition: right 250ms ease-in-out;
-    width: 315px;
-
-    @include breakpoint("md", "max") {
-      &--closed {
-        right: -315px;
-      }
-    }
-
-    @include breakpoint("md") {
-      border: none;
-      height: 100%;
-      position: relative;
-      width: 100%;
-    }
+    display: block;
+    height: 100%;
   }
 
   &__nav {
-    display: flex;
-    justify-content: flex-end;
+    display: block;
+    height: 100%;
+    overflow: hidden auto;
+    padding: 1.7rem 2.1rem;
 
-    @include breakpoint("md", "max") {
-      display: block;
-      flex-direction: column;
-      height: 100%;
-      padding: 1.7rem 3rem;
-      overflow: auto;
+    @include breakpoint("md") {
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-end;
+      padding: 0;
+      overflow: visible;
     }
   }
 
   &__item {
-    @include breakpoint("md", "max") {
-      align-items: flex-start;
-      display: flex;
-      flex-direction: column;
-      padding: 1.8rem 0;
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    padding: 1.8rem 0;
+
+    &:not(:first-child) {
+      border-top: $global-border;
+    }
+
+    > .icon {
+      font-size: 2rem;
+      margin-bottom: 1.8rem;
+    }
+
+    @include breakpoint("sm") {
+      padding: 1.8rem 0.75rem;
+    }
+
+    @include breakpoint("md") {
+      padding: 0 0.75rem;
 
       &:not(:first-child) {
-        border-top: $global-border;
+        border-top: none;
       }
 
       > .icon {
-        font-size: 2rem;
-        margin-bottom: 1.8rem;
+        margin-bottom: 0;
       }
     }
   }
@@ -71,34 +125,34 @@
     align-items: flex-start;
     background-color: white;
     border-radius: $global-radius;
-    box-shadow: 0 0 1rem rgba(0, 0, 0, 0.1);
+    box-shadow: none;
     color: $color-text;
-    display: none;
+    display: flex;
     flex-direction: column;
-    max-width: 30rem;
-    padding: 1rem;
-    position: absolute;
+    max-width: 100%;
+    padding: 0;
+    position: relative;
     right: 0;
-    top: 4.5rem;
-    width: max-content;
-    z-index: 100;
-
-    &.active {
-      display: flex;
-    }
+    top: 0;
+    width: 100%;
 
     svg {
       height: 15rem;
     }
 
-    @include breakpoint("md", "max") {
-      box-shadow: none;
-      display: flex;
-      max-width: 100%;
-      padding: 0;
-      position: relative;
-      top: 0;
-      width: 100%;
+    @include breakpoint("md") {
+      box-shadow: 0 0 1rem rgba(0, 0, 0, 0.1);
+      display: none;
+      max-width: 30rem;
+      padding: 1.4rem;
+      position: absolute;
+      top: 5rem;
+      width: max-content;
+      z-index: 10;
+
+      &.active {
+        display: flex;
+      }
     }
   }
 }

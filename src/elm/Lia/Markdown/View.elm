@@ -1,7 +1,7 @@
 module Lia.Markdown.View exposing (view)
 
 import Html exposing (Html)
-import Html.Attributes as Attr
+import Html.Attributes as Attr exposing (attribute)
 import Html.Events exposing (onClick)
 import Html.Lazy as Lazy
 import Lia.Markdown.Chart.View as Charts
@@ -17,14 +17,16 @@ import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Markdown.HTML.View as HTML
 import Lia.Markdown.Inline.Types exposing (Inlines, htmlBlock)
 import Lia.Markdown.Inline.View exposing (viewer)
+import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Markdown.Quiz.View as Quizzes
 import Lia.Markdown.Survey.View as Surveys
 import Lia.Markdown.Table.View as Table
 import Lia.Markdown.Task.View as Task
-import Lia.Markdown.Types exposing (Markdown(..))
+import Lia.Markdown.Types exposing (Markdown(..), MarkdownS)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Section exposing (SubSection(..))
 import Lia.Settings.Types exposing (Mode(..))
+import Lia.Voice as Voice
 import SvgBob
 
 
@@ -210,18 +212,15 @@ view_block config block =
         BulletList attr list ->
             list
                 |> view_bulletlist config
-                |> Html.ul (annotation "lia-list lia-unordered" attr)
+                |> Html.ul (annotation "lia-list--unordered" attr)
 
         OrderedList attr list ->
             list
                 |> view_list config
-                |> Html.ol (annotation "lia-list lia-ordered" attr)
+                |> Html.ol (annotation "lia-list--ordered" attr)
 
         Table attr table ->
-            Table.view
-                config
-                attr
-                table
+            Table.view config attr table
 
         Quote attr elements ->
             elements
@@ -236,23 +235,8 @@ view_block config block =
                 |> Codes.view config.main.lang config.ace_theme config.section.code_vector
                 |> Html.map UpdateCode
 
-        Quiz attr quiz Nothing ->
-            Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr)
-                [ Quizzes.view config.main quiz config.section.quiz_vector
-                    |> Html.map UpdateQuiz
-                ]
-
-        Quiz attr quiz (Just ( answer, hidden_effects )) ->
-            Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr) <|
-                if Quizzes.view_solution config.section.quiz_vector quiz then
-                    List.append
-                        [ Html.map UpdateQuiz <| Quizzes.view config.main quiz config.section.quiz_vector ]
-                        (Html.hr [] [] :: List.map (view_block config) answer)
-
-                else
-                    [ Quizzes.view config.main quiz config.section.quiz_vector
-                        |> Html.map UpdateQuiz
-                    ]
+        Quiz attr quiz solution ->
+            viewQuiz config attr quiz solution
 
         Survey attr survey ->
             config.section.survey_vector
@@ -265,12 +249,29 @@ view_block config block =
                 , Comments.get_paragraph id1 id2 config.section.effect_model
                 )
             of
-                ( Nothing, Just ( attr, par ) ) ->
+                ( Nothing, Just ( _, ( attr, par ) ) ) ->
                     par
                         |> Paragraph attr
                         |> view_block config
 
-                _ ->
+                ( Just _, Just ( narrator, ( attr, par ) ) ) ->
+                    let
+                        attributes =
+                            case Voice.getVoiceFor narrator config.translations of
+                                Nothing ->
+                                    []
+
+                                Just voice ->
+                                    [ ( "class", "lia-tts-" ++ String.fromInt id2 )
+                                    , ( "class", "hide" )
+                                    , ( "data-voice", voice )
+                                    ]
+                    in
+                    par
+                        |> Paragraph (List.append attributes attr)
+                        |> view_block config
+
+                ( _, Nothing ) ->
                     Html.text ""
 
         Header attr ( elements, sub ) ->
@@ -280,7 +281,7 @@ view_block config block =
                 elements
 
         Chart attr chart ->
-            Lazy.lazy3 Charts.view attr config.light chart
+            Lazy.lazy4 Charts.view config.main.lang attr config.light chart
 
         ASCII attr bob ->
             view_ascii config attr bob
@@ -321,12 +322,37 @@ view_ascii config attr =
            )
 
 
+viewQuiz : Config Msg -> Parameters -> Quiz.Quiz -> Maybe ( MarkdownS, Int ) -> Html Msg
+viewQuiz config attr quiz solution =
+    case solution of
+        Nothing ->
+            Quizzes.view config.main quiz config.section.quiz_vector
+                |> Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr)
+                |> Html.map UpdateQuiz
+
+        Just ( answer, hidden_effects ) ->
+            Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr) <|
+                if Quizzes.showSolution config.section.quiz_vector quiz then
+                    (config.section.quiz_vector
+                        |> Quizzes.view config.main quiz
+                        |> List.map (Html.map UpdateQuiz)
+                    )
+                        ++ (Html.hr [] [] :: List.map (view_block config) answer)
+
+                else
+                    config.section.quiz_vector
+                        |> Quizzes.view config.main quiz
+                        |> List.map (Html.map UpdateQuiz)
+
+
 view_list : Config Msg -> List ( String, List Markdown ) -> List (Html Msg)
 view_list config =
     let
         viewer ( value, sub_list ) =
-            List.map (view_block config) sub_list
-                |> Html.li [ Attr.value value ]
+            Html.li [ Attr.value value ]
+                [ List.map (view_block config) sub_list
+                    |> Html.span []
+                ]
     in
     List.map viewer
 

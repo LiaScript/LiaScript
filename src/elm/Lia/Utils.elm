@@ -1,6 +1,8 @@
 module Lia.Utils exposing
     ( blockKeydown
     , get
+    , langInTranslations
+    , langToString
     , onEnter
     , toEscapeString
     , toJSstring
@@ -9,6 +11,7 @@ module Lia.Utils exposing
 import Html
 import Html.Events as Events
 import Json.Decode as JD
+import Translations exposing (Lang(..))
 
 
 {-| Convert JavaScript string escapes for backspace to elm escaped strings:
@@ -84,3 +87,48 @@ onEnter : msg -> Html.Attribute msg
 onEnter msg =
     JD.andThen (isEnter msg) Events.keyCode
         |> Events.on "keyup"
+
+
+{-| Convenience function that returns the appropriate language string from the
+given code.
+-}
+langToString : Lang -> String
+langToString code =
+    case code of
+        Bg ->
+            "bg"
+
+        De ->
+            "de"
+
+        En ->
+            "en"
+
+        Es ->
+            "es"
+
+        Fa ->
+            "fa"
+
+        Hy ->
+            "hy"
+
+        Nl ->
+            "nl"
+
+        Ru ->
+            "ru"
+
+        Tw ->
+            "tw"
+
+        Ua ->
+            "ua"
+
+        Zh ->
+            "zh"
+
+
+langInTranslations : String -> Bool
+langInTranslations lang =
+    List.member lang [ "bg", "de", "en", "es", "fa", "hy", "nl", "ru", "tw", "ua", "zh" ]
