@@ -1,0 +1,19 @@
+.lia-notes {
+  width: $notes-width-mobile;
+  position: relative;
+
+  &__content {
+    background-color: var(--lia-grey-light);
+    padding: 2.3rem;
+  }
+
+  @include breakpoint("lg") {
+    border-left: $global-border;
+    max-width: $notes-width-desktop;
+
+    &__content {
+      position: absolute;
+      bottom: 0;
+    }
+  }
+}

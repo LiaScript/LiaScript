@@ -194,22 +194,13 @@ slideA11y lang mode effect id =
                                             >> List.map (view_inf effect.javascript lang)
                                             >> Html.p []
                                         )
-                                    |> Html.div
-                                        (if active then
-                                            [ Attr.class "active"
-                                            , Attr.style "color" "black"
-                                            ]
-
-                                         else
-                                            [ Attr.style "color" "lightgray"
-                                            ]
-                                        )
+                                    |> Html.div [Attr.class "lia-notes__content" ++ <| (if active then " active" else "")]
                             )
             in
             comments
                 |> Html.aside
                     [ Attr.classList
-                        [ ( "lia-footer", True )
+                        [ ( "lia-notes", True )
                         , ( "hide-lg-up", List.isEmpty comments )
                         ]
                     ]
@@ -274,7 +265,7 @@ slideTopBar lang url settings def =
                 else
                     "lia-support-menu--open"
             ]
-            [ Settings.btnSupport
+            [ Settings.btnSupport settings.support_menu
             , Html.div
                 [ Attr.class "lia-support-menu__collapse"
                 ]
@@ -306,7 +297,7 @@ slideTopBar lang url settings def =
 
 slideNavigation : Lang -> Mode -> Int -> Effect.Model SubSection -> Html Msg
 slideNavigation lang mode slide effect =
-    Html.div [ Attr.class "lia-pagination" ]
+    Html.div [ Attr.class "lia-pagination mb-2" ]
         [ Html.div [ Attr.class "lia-pagination__content" ]
             [ navButton "navigate_before" (Trans.basePrev lang) "lia-btn-prev" "lia-btn__icon icon icon-arrow-left" PrevSection
             , Html.span

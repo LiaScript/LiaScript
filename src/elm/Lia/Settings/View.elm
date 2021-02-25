@@ -33,17 +33,7 @@ design model =
         float =
             String.fromFloat (toFloat model.font_size / 100.0)
     in
-    [ Attr.class
-        ("lia-canvas lia-theme-"
-            ++ model.theme
-            ++ " lia-variant-"
-            ++ (if model.light then
-                    "light"
-
-                else
-                    "dark"
-               )
-        )
+    [ Attr.class "lia-canvas"
     , Attr.class <|
         if model.table_of_contents then
             "lia-toc--hidden"
@@ -56,6 +46,16 @@ design model =
 
         else
             "lia-support--visible"
+    , Attr.class <|
+        case model.mode of
+            Textbook ->
+                "lia-mode--textbook"
+
+            Presentation ->
+                "lia-mode--presentation"
+
+            Slides ->
+                "lia-mode--slides"
     ]
 
 
@@ -354,15 +354,25 @@ btnIndex lang open =
         ]
 
 
-btnSupport : Html Msg
-btnSupport =
+btnSupport : Bool -> Html Msg
+btnSupport open =
     Html.button
         [ onClick <| Toggle SupportMenu
         , Attr.id "lia-btn-support"
         , Attr.class "lia-btn lia-btn--transparent lia-support-menu__toggler"
         , Attr.type_ "button"
         ]
-        [ Html.i [ Attr.class "icon icon-more" ] [] ]
+        [ Html.i
+            [ Attr.class "lia-btn__icon icon"
+            , Attr.class <|
+                if open then
+                    "icon-more"
+
+                else
+                    "icon-close"
+            ]
+            []
+        ]
 
 
 menuMode : Lang -> Settings -> List (Html Msg)

@@ -1,0 +1,47 @@
+.lia-list {
+  &--unordered,
+  &--ordered {
+    position: relative;
+    padding-left: 2rem;
+    margin-left: 2rem;
+
+    ul,
+    ol {
+      margin-left: 0;
+    }
+  }
+
+  &--unordered {
+    list-style-type: none;
+
+    > li {
+      &:before {
+        content: "\EA0D";
+        font-family: "icon";
+        color: var(--lia-turquoise);
+        position: absolute;
+        left: 0;
+      }
+    }
+
+    ul li ul li {
+      padding-left: 1rem;
+      &:before {
+        content: "\EA21";
+      }
+    }
+  }
+
+  &--ordered {
+    > li {
+      &::marker {
+        color: var(--lia-turquoise);
+      }
+
+      span {
+        position: relative;
+        left: 1rem;
+      }
+    }
+  }
+}

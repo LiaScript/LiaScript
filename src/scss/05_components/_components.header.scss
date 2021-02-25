@@ -3,15 +3,22 @@ $header-height-mobile: 5.6rem;
 
 .lia-header {
   align-items: center;
+  background-color: white;
   border-bottom: $global-border;
   display: flex;
   flex-direction: row;
   height: $header-height-mobile;
   padding: 1rem 0;
-  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  transition: $global-transition;
+  z-index: 100;
 
   @include breakpoint("md") {
     height: $header-height-desktop;
+    margin: 0 3rem;
   }
 
   > * {

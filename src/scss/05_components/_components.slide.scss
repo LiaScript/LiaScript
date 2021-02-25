@@ -1,7 +1,7 @@
 .lia-slide {
   display: flex;
   flex-direction: column;
-  padding: 0 3rem;
+  height: 100%;
   position: relative;
   width: 100%;
 
@@ -10,21 +10,23 @@
     bottom: 1rem;
     display: flex;
     flex-direction: column;
-    padding: 1rem 0;
-    position: absolute;
+    margin: 3rem 0;
+    padding: 0 3rem;
+    position: relative;
   }
 
   &__content {
-    height: 75vh;
-    margin-top: 7.5rem;
+    height: 100%;
+    margin-top: $header-height-mobile;
+    max-height: 80vh;
     max-width: 1200px;
-    overflow: auto;
-    padding-right: 1rem;
+    overflow: hidden auto;
+    padding: 3rem;
     position: relative;
     width: 100%;
 
-    @include breakpoint("lg") {
-      //max-width: ;
+    @include breakpoint("md") {
+      margin-top: $header-height-desktop;
     }
   }
 }
