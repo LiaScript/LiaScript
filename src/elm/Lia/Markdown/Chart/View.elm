@@ -16,6 +16,7 @@ module Lia.Markdown.Chart.View exposing
     , viewSankey
     )
 
+import Accessibility.Aria as A11y_Aria
 import Char exposing (toLower)
 import Conditional.List as CList
 import Dict exposing (Dict)
