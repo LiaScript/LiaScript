@@ -425,7 +425,7 @@ menuShare lang url settings =
             (settings.action == Just Share)
             "icon-social"
     , Html.i
-        [ Attr.class "hide-md-up icon icon-social"
+        [ Attr.class "icon icon-social hide-md-up"
         , lang
             |> Trans.confInformation
             |> Attr.title
@@ -440,7 +440,7 @@ menuShare lang url settings =
 menuInformation : Lang -> Definition -> Settings -> List (Html Msg)
 menuInformation lang definition settings =
     [ Html.i
-        [ Attr.class "hide-md-up icon icon-info"
+        [ Attr.class "icon icon-info hide-md-up"
         , lang
             |> Trans.confInformation
             |> Attr.title
@@ -462,7 +462,7 @@ actionBtn msg open iconName title =
     Html.button
         (action msg
             open
-            [ Attr.class <| "icon " ++ iconName
+            [ Attr.class <| "lia-btn--icon icon " ++ iconName
             , Attr.title title
             ]
         )
@@ -474,7 +474,7 @@ action msg open =
     List.append
         [ onClick (doAction msg)
         , A11y_Key.onKeyDown [ A11y_Key.escape (doAction Close) ]
-        , Attr.class "hide-md-down"
+        , Attr.class "lia-btn lia-btn--transparent hide-md-down"
         , A11y_Widget.hasDialogPopUp
         , A11y_Widget.expanded open
         ]
