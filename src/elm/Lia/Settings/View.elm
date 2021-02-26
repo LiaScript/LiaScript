@@ -37,16 +37,16 @@ design model =
     [ Attr.class "lia-canvas"
     , Attr.class <|
         if model.table_of_contents then
-            "lia-toc--hidden"
+            "lia-toc--visible"
 
         else
-            "lia-toc--visible"
+            "lia-toc--hidden"
     , Attr.class <|
         if model.support_menu then
-            "lia-support--hidden"
+            "lia-support--visible"
 
         else
-            "lia-support--visible"
+            "lia-support--hidden"
     , Attr.class <|
         case model.mode of
             Textbook ->
@@ -104,7 +104,7 @@ viewTheme lang theme =
     [ ( "turquoise", Trans.cTurquoise lang, "is-turquoise mr-1" )
     , ( "blue", Trans.cBlue lang, "is-blue mr-1" )
     , ( "red", Trans.cRed lang, "is-red mr-1" )
-    , ( "yellow", Trans.cYellow lang, "is-yellow" ) -- TODO: missing mr-1?
+    , ( "yellow", Trans.cYellow lang, "is-yellow" )
     ]
         |> List.map
             (\( color, name, styleClass ) ->
@@ -347,15 +347,19 @@ btnIndex lang open =
         , Attr.class "lia-btn lia-btn--transparent"
         , Attr.id "lia-btn-toc"
         , A11y_Aria.controls "lia-toc"
+        , A11y_Widget.hasMenuPopUp
+        , A11y_Widget.expanded open
+
+        --, A11y_Widget.pressed (Just open)
         ]
         [ Html.i
             [ Attr.class "lia-btn__icon icon"
             , Attr.class <|
                 if open then
-                    "icon-table"
+                    "icon-close"
 
                 else
-                    "icon-close"
+                    "icon-table"
             ]
             []
         ]
@@ -373,10 +377,10 @@ btnSupport open =
             [ Attr.class "lia-btn__icon icon"
             , Attr.class <|
                 if open then
-                    "icon-more"
+                    "icon-close"
 
                 else
-                    "icon-close"
+                    "icon-more"
             ]
             []
         ]

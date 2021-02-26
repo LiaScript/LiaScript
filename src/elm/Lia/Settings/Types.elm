@@ -41,7 +41,7 @@ type Mode
 init : Bool -> Mode -> Settings
 init hasShareApi mode =
     { table_of_contents = True
-    , support_menu = True
+    , support_menu = False
     , mode = mode
     , theme = "default"
     , light = True
