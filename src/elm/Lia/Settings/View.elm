@@ -424,14 +424,14 @@ menuShare lang url settings =
         |> actionBtn Share
             (settings.action == Just Share)
             "icon-social"
-    , [ Html.i
-            [ Attr.class "hide-md-up icon icon-social"
-            , lang
-                |> Trans.confInformation
-                |> Attr.title
-            ]
-            []
-      , qrCodeView url
+    , Html.i
+        [ Attr.class "hide-md-up icon icon-social"
+        , lang
+            |> Trans.confInformation
+            |> Attr.title
+        ]
+        []
+    , [ qrCodeView url
       ]
         |> submenu (settings.action == Just Share)
     ]
