@@ -136,7 +136,7 @@ viewMode : Lang -> Mode -> Mode -> String -> String -> String -> Html Msg
 viewMode lang mode activeMode id iconName additionalCSSClass =
     Html.button
         [ Attr.id id
-        , Attr.class <| "lia-btn lia-btn--transparent lia-btn--icon " ++ additionalCSSClass
+        , Attr.class <| "lia-btn lia-btn--transparent " ++ additionalCSSClass
         , onClick (SwitchMode mode)
         , A11y_Key.onKeyDown [ A11y_Key.enter (SwitchMode mode) ]
         ]
@@ -169,9 +169,9 @@ viewSizing : Lang -> Int -> Html Msg
 viewSizing lang int =
     Html.div []
         [ Html.text <| Trans.baseFont lang ++ ":"
-        , btnFont "-" (Trans.baseDec lang) (ChangeFontSize False)
+        , btnFont "icon-minus" (Trans.baseDec lang) (ChangeFontSize False)
         , Html.text (String.fromInt int ++ "%")
-        , btnFont "+" (Trans.baseInc lang) (ChangeFontSize True)
+        , btnFont "icon-plus" (Trans.baseInc lang) (ChangeFontSize True)
         ]
 
 
@@ -180,9 +180,9 @@ btnFont str title msg =
     Html.button
         [ onClick msg
         , Attr.title title
-        , Attr.class "lia-btn lia-slide-control lia-left"
+        , Attr.class <| "lia-btn lia-btn--icon lia-btn--transparent " ++ str
         ]
-        [ Html.text str ]
+        []
 
 
 bold : String -> Html msg
@@ -344,23 +344,19 @@ btnIndex lang open =
     Html.button
         [ onClick <| Toggle TableOfContents
         , Attr.title (Trans.baseToc lang)
-        , Attr.class "lia-btn lia-btn--transparent"
+        , Attr.class "lia-btn lia-btn--icon lia-btn--transparent icon"
+        , Attr.class <|
+            if open then
+                "icon-close"
+
+            else
+                "icon-table"
         , Attr.id "lia-btn-toc"
         , A11y_Aria.controls "lia-toc"
         , A11y_Widget.hasMenuPopUp
         , A11y_Widget.expanded open
         ]
-        [ Html.i
-            [ Attr.class "lia-btn__icon icon"
-            , Attr.class <|
-                if open then
-                    "icon-close"
-
-                else
-                    "icon-table"
-            ]
-            []
-        ]
+        []
 
 
 btnSupport : Bool -> Html Msg
@@ -368,20 +364,16 @@ btnSupport open =
     Html.button
         [ onClick <| Toggle SupportMenu
         , Attr.id "lia-btn-support"
-        , Attr.class "lia-btn lia-btn--transparent lia-support-menu__toggler"
+        , Attr.class "lia-btn lia-btn--icon lia-btn--transparent lia-support-menu__toggler icon"
+        , Attr.class <|
+            if open then
+                "icon-close"
+
+            else
+                "icon-more"
         , Attr.type_ "button"
         ]
-        [ Html.i
-            [ Attr.class "lia-btn__icon icon"
-            , Attr.class <|
-                if open then
-                    "icon-close"
-
-                else
-                    "icon-more"
-            ]
-            []
-        ]
+        []
 
 
 menuMode : Lang -> Settings -> List (Html Msg)
