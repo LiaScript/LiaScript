@@ -30,6 +30,10 @@ $btn-height: 3.6rem;
     vertical-align: middle;
   }
 
+  &--icon {
+    font-family: "icon";
+  }
+
   > .lia-btn__icon {
     font-size: 1.6rem;
     line-height: inherit;
