@@ -101,10 +101,10 @@ viewLightMode _ isLight =
 
 viewTheme : Lang -> String -> Html Msg
 viewTheme lang theme =
-    [ ( "turquoise", "Türkis", "is-turquoise mr-1" )
+    [ ( "turquoise", Trans.cTurquoise lang, "is-turquoise mr-1" )
     , ( "blue", Trans.cBlue lang, "is-blue mr-1" )
-    , ( "red", "Rot", "is-red mr-1" )
-    , ( "yellow", "Gelb", "is-yellow" )
+    , ( "red", Trans.cRed lang, "is-red mr-1" )
+    , ( "yellow", Trans.cYellow lang, "is-yellow" ) -- TODO: missing mr-1?
     ]
         |> List.map
             (\( color, name, styleClass ) ->
@@ -245,7 +245,10 @@ viewTranslations lang =
                     [ Html.text title, Html.br [] [] ]
             )
         >> List.append
-            [ Html.span [ Attr.class "lia-link active" ] [ Html.text "TODO" ]
+            [ Html.span [ Attr.class "lia-link active" ]
+                [ Trans.baseLang lang
+                    |> Html.text
+                ]
             ]
 
 
