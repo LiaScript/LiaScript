@@ -64,13 +64,14 @@ get_paragraph id1 id2 model =
             Nothing
 
 
-current_paragraphs : Model a -> List ( Bool, List ( Parameters, Inlines ) )
+current_paragraphs : Model a -> List ( Bool, Int, List ( Parameters, Inlines ) )
 current_paragraphs model =
     model.comments
         |> Dict.toList
         |> List.map
             (\( key, value ) ->
                 ( key == model.visible
+                , key
                 , Array.toList value.paragraphs
                 )
             )

@@ -1,5 +1,6 @@
 module Lia.View exposing (view)
 
+import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
 import Accessibility.Role as A11y_Role
 import Accessibility.Widget as A11y_Widget
@@ -189,12 +190,20 @@ slideA11y lang mode effect id =
                     effect
                         |> Effect.current_paragraphs
                         |> List.map
-                            (\( active, par ) ->
+                            (\( active, counter, par ) ->
                                 par
                                     |> List.map
                                         (Tuple.second
                                             >> List.map (view_inf effect.javascript lang)
                                             >> Html.p []
+                                        )
+                                    |> (::)
+                                        (Html.small [ Attr.class "lia-notes__counter" ]
+                                            [ String.fromInt (1 + counter)
+                                                ++ "/"
+                                                ++ String.fromInt (effect.effects + 1)
+                                                |> Html.text
+                                            ]
                                         )
                                     |> Html.div
                                         [ Attr.class
