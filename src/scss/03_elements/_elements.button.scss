@@ -44,20 +44,6 @@ $btn-height: 3.6rem;
       margin-left: 1rem;
     }
   }
-
-  /*   .lia-ripple {
-    position: absolute;
-    display: block;
-    border-radius: 50%;‚
-    width: 0;
-    height: 0;
-    margin: 0;
-    opacity: 0;
-    transition-property: width, height, margin, opacity;
-    transition-duration: 0.5s;
-    transition-timing-function: ease-out;
-    transition-delay: 0s;
-  } */
 }
 
 @mixin style-btn($theme) {
