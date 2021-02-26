@@ -349,8 +349,6 @@ btnIndex lang open =
         , A11y_Aria.controls "lia-toc"
         , A11y_Widget.hasMenuPopUp
         , A11y_Widget.expanded open
-
-        --, A11y_Widget.pressed (Just open)
         ]
         [ Html.i
             [ Attr.class "lia-btn__icon icon"
@@ -388,7 +386,10 @@ btnSupport open =
 
 menuMode : Lang -> Settings -> List (Html Msg)
 menuMode lang settings =
-    [ actionBtn ShowModes "icon-presentation" "Mode"
+    [ actionBtn ShowModes
+        (settings.action == Just ShowModes)
+        "icon-presentation"
+        "Mode"
     , viewModes lang settings
         |> submenu (settings.action == Just ShowModes)
     ]
@@ -398,7 +399,9 @@ menuSettings : Lang -> Settings -> List (Html Msg)
 menuSettings lang settings =
     [ lang
         |> Trans.confSettings
-        |> actionBtn ShowSettings "icon-settings"
+        |> actionBtn ShowSettings
+            (settings.action == Just ShowSettings)
+            "icon-settings"
     , viewSettings lang settings
         |> submenu (settings.action == Just ShowSettings)
     ]
@@ -408,6 +411,7 @@ menuTranslations : Lang -> Definition -> Settings -> List (Html Msg)
 menuTranslations lang defintion settings =
     [ Html.button
         (action ShowTranslations
+            (settings.action == Just ShowTranslations)
             [ lang
                 |> Trans.confTranslations
                 |> Attr.title
@@ -425,26 +429,47 @@ menuShare : Lang -> String -> Settings -> List (Html Msg)
 menuShare lang url settings =
     [ lang
         |> Trans.confShare
-        |> actionBtn Share "icon-social"
-    , [ qrCodeView url ]
+        |> actionBtn Share
+            (settings.action == Just Share)
+            "icon-social"
+    , [ Html.i
+            [ Attr.class "hide-md-up icon icon-social"
+            , lang
+                |> Trans.confInformation
+                |> Attr.title
+            ]
+            []
+      , qrCodeView url
+      ]
         |> submenu (settings.action == Just Share)
     ]
 
 
 menuInformation : Lang -> Definition -> Settings -> List (Html Msg)
 menuInformation lang definition settings =
-    [ lang
+    [ Html.i
+        [ Attr.class "hide-md-up icon icon-info"
+        , lang
+            |> Trans.confInformation
+            |> Attr.title
+        ]
+        []
+    , lang
         |> Trans.confInformation
-        |> actionBtn ShowInformation "icon-info"
+        |> actionBtn
+            ShowInformation
+            (settings.action == Just ShowInformation)
+            "icon-info"
     , viewInformation lang definition
         |> submenu (settings.action == Just ShowInformation)
     ]
 
 
-actionBtn : Action -> String -> String -> Html Msg
-actionBtn msg iconName title =
+actionBtn : Action -> Bool -> String -> String -> Html Msg
+actionBtn msg open iconName title =
     Html.button
         (action msg
+            open
             [ Attr.class <| "icon " ++ iconName
             , Attr.title title
             ]
@@ -452,12 +477,14 @@ actionBtn msg iconName title =
         []
 
 
-action : Action -> (List (Html.Attribute Msg) -> List (Html.Attribute Msg))
-action msg =
+action : Action -> Bool -> (List (Html.Attribute Msg) -> List (Html.Attribute Msg))
+action msg open =
     List.append
         [ onClick (doAction msg)
         , A11y_Key.onKeyDown [ A11y_Key.escape (doAction Close) ]
         , Attr.class "hide-md-down"
+        , A11y_Widget.hasDialogPopUp
+        , A11y_Widget.expanded open
         ]
 
 
