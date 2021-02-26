@@ -12,6 +12,7 @@ module Lia.Settings.View exposing
 import Accessibility.Aria as A11y_Aria
 import Accessibility.Key as A11y_Key
 import Accessibility.Role as A11y_Role
+import Accessibility.Widget as A11y_Widget
 import Array
 import Conditional.List as CList
 import Dict exposing (Dict)
@@ -243,7 +244,9 @@ viewTranslations lang =
                     [ Attr.href url, Attr.class "lia-link" ]
                     [ Html.text title, Html.br [] [] ]
             )
-        >> (::) (Html.a [ Attr.href "#", Attr.class "lia-link active" ] [ Html.text "TODO" ])
+        >> List.append
+            [ Html.span [ Attr.class "lia-link active" ] [ Html.text "TODO" ]
+            ]
 
 
 submenu : Bool -> List (Html Msg) -> Html Msg
@@ -256,6 +259,7 @@ submenu isActive =
 
             else
                 ""
+        , A11y_Widget.checked (Just isActive)
         ]
 
 
@@ -377,7 +381,7 @@ btnSupport open =
 
 menuMode : Lang -> Settings -> List (Html Msg)
 menuMode lang settings =
-    [ actionBtn ShowModes "icon-presentation hide-md-down" "Mode"
+    [ actionBtn ShowModes "icon-presentation" "Mode"
     , viewModes lang settings
         |> submenu (settings.action == Just ShowModes)
     ]
@@ -387,7 +391,7 @@ menuSettings : Lang -> Settings -> List (Html Msg)
 menuSettings lang settings =
     [ lang
         |> Trans.confSettings
-        |> actionBtn ShowSettings "icon-settings hide-md-down"
+        |> actionBtn ShowSettings "icon-settings"
     , viewSettings lang settings
         |> submenu (settings.action == Just ShowSettings)
     ]
@@ -395,13 +399,13 @@ menuSettings lang settings =
 
 menuTranslations : Lang -> Definition -> Settings -> List (Html Msg)
 menuTranslations lang defintion settings =
-    [ Html.span
-        [ Attr.class "hide-md-down"
-        , lang
-            |> Trans.confTranslations
-            |> Attr.title
-        , onClick (doAction ShowTranslations)
-        ]
+    [ Html.button
+        (action ShowTranslations
+            [ lang
+                |> Trans.confTranslations
+                |> Attr.title
+            ]
+        )
         [ Html.text <| String.toUpper defintion.language
         ]
     , defintion.translation
@@ -432,18 +436,22 @@ menuInformation lang definition settings =
 
 actionBtn : Action -> String -> String -> Html Msg
 actionBtn msg iconName title =
-    Html.i
-        [ Attr.class <| "icon " ++ iconName
-        , Attr.title title
-        , onClick (doAction msg)
-        , A11y_Role.button
-        , A11y_Key.tabbable True
-        , A11y_Key.onKeyDown
-            [ A11y_Key.enter (doAction msg)
-            , A11y_Key.escape (doAction Close)
+    Html.button
+        (action msg
+            [ Attr.class <| "icon " ++ iconName
+            , Attr.title title
             ]
-        ]
+        )
         []
+
+
+action : Action -> (List (Html.Attribute Msg) -> List (Html.Attribute Msg))
+action msg =
+    List.append
+        [ onClick (doAction msg)
+        , A11y_Key.onKeyDown [ A11y_Key.escape (doAction Close) ]
+        , Attr.class "hide-md-down"
+        ]
 
 
 doAction : Action -> Msg

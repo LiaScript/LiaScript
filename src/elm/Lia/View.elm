@@ -1,6 +1,8 @@
 module Lia.View exposing (view)
 
 import Accessibility.Landmark as A11y_Landmark
+import Accessibility.Role as A11y_Role
+import Accessibility.Widget as A11y_Widget
 import Flip exposing (flip)
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -289,10 +291,15 @@ slideTopBar lang url settings def =
                         (\( body, class ) ->
                             Html.li
                                 [ Attr.class <| "nav__item lia-support-menu__item lia-support-menu__item--" ++ class
+                                , A11y_Role.menuItem
+                                , A11y_Widget.hasMenuPopUp
                                 ]
                                 body
                         )
-                    |> Html.ul [ Attr.class "nav lia-support-menu__nav" ]
+                    |> Html.ul
+                        [ Attr.class "nav lia-support-menu__nav"
+                        , A11y_Role.menuBar
+                        ]
                 ]
             ]
         ]
