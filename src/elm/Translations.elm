@@ -314,6 +314,43 @@ baseToc lang =
             "目錄(顯示/隱藏)"
 
 
+baseLang : Lang -> String
+baseLang lang =
+    case lang of
+        Bg ->
+            "български"
+
+        De ->
+            "Deutsch"
+
+        En ->
+            "English"
+
+        Es ->
+            "Español"
+
+        Fa ->
+            "فارسی"
+
+        Hy ->
+            "հայերեն"
+
+        Nl ->
+            "Nederlands"
+
+        Ru ->
+            "русский"
+
+        Tw ->
+            "中国人"
+
+        Ua ->
+            "Український"
+
+        Zh ->
+            "中国人"
+
+
 no_translation : Lang -> String
 no_translation lang =
     case lang of
@@ -684,6 +721,154 @@ cPurple lang =
             "紫色"
 
 
+cRed : Lang -> String
+cRed lang =
+    case lang of
+        Bg ->
+            "червен"
+
+        De ->
+            "Rot"
+
+        En ->
+            "Red"
+
+        Es ->
+            "rojo"
+
+        Fa ->
+            "قرمز"
+
+        Hy ->
+            "կարմիր"
+
+        Nl ->
+            "rood"
+
+        Ru ->
+            "красный"
+
+        Tw ->
+            "红色的"
+
+        Ua ->
+            "червоний"
+
+        Zh ->
+            "红色的"
+
+
+cYellow : Lang -> String
+cYellow lang =
+    case lang of
+        Bg ->
+            "жълт"
+
+        De ->
+            "Gelb"
+
+        En ->
+            "Yellow"
+
+        Es ->
+            "amarillo"
+
+        Fa ->
+            "رنگ زرد"
+
+        Hy ->
+            "դեղին"
+
+        Nl ->
+            "geel"
+
+        Ru ->
+            "желтый"
+
+        Tw ->
+            "黄色的"
+
+        Ua ->
+            "жовтий"
+
+        Zh ->
+            "黄色的"
+
+
+cTurquoise : Lang -> String
+cTurquoise lang =
+    case lang of
+        Bg ->
+            "тюркоаз"
+
+        De ->
+            "Türkis"
+
+        En ->
+            "Turquoise"
+
+        Es ->
+            "turquesa"
+
+        Fa ->
+            "فیروزه"
+
+        Hy ->
+            "փիրուզագույն"
+
+        Nl ->
+            "turkoois"
+
+        Ru ->
+            "бирюзовый"
+
+        Tw ->
+            "绿松石"
+
+        Ua ->
+            "бірюзовий"
+
+        Zh ->
+            "绿松石"
+
+
+modeMode : Lang -> String
+modeMode lang =
+    case lang of
+        Bg ->
+            "Режим"
+
+        De ->
+            "Modus"
+
+        En ->
+            "Mode"
+
+        Es ->
+            "Modo"
+
+        Fa ->
+            "سبک"
+
+        Hy ->
+            "կերպ"
+
+        Nl ->
+            "Modus"
+
+        Ru ->
+            "режим"
+
+        Tw ->
+            "模式"
+
+        Ua ->
+            "режим"
+
+        Zh ->
+            "模式"
+
+
 modeTextbook : Lang -> String
 modeTextbook lang =
     case lang of
@@ -789,7 +974,7 @@ modeSlides lang =
             "幻燈片"
 
         Ua ->
-            "лайди"
+            "слайди"
 
         Zh ->
             "幻燈片"

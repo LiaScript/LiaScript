@@ -39,11 +39,15 @@ customElements.define('lia-formula', class extends HTMLElement {
       try {
         katex.render(this.formula_, this.span, {
           throwOnError: false,
-          displayMode: this.displayMode
+          displayMode: this.displayMode,
+          trust: true // allow latex like \includegraphics
         })
       } catch (e) {
         console.warn('katex', e.message)
       }
+
+      this.setAttribute("role", "math")
+      this.setAttribute("aria-label", this.formula_)
     }
   }
 

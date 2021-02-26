@@ -1,6 +1,8 @@
 module Lia.View exposing (view)
 
-import Accessibility.Aria as Aria
+import Accessibility.Landmark as A11y_Landmark
+import Accessibility.Role as A11y_Role
+import Accessibility.Widget as A11y_Widget
 import Flip exposing (flip)
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -64,7 +66,10 @@ viewIndex hasIndex model =
             |> Index.search
                 model.translation
                 (not model.settings.table_of_contents)
-            |> Html.div [ Attr.class "lia-toc__search" ]
+            |> Html.div
+                [ Attr.class "lia-toc__search"
+                , A11y_Landmark.search
+                ]
             |> Html.map UpdateIndex
         , model.sections
             |> Index.content
@@ -72,7 +77,10 @@ viewIndex hasIndex model =
                 (not model.settings.table_of_contents)
                 model.section_active
                 Script
-            |> Html.nav [ Attr.class "lia-toc__content" ]
+            |> Html.nav
+                [ Attr.class "lia-toc__content"
+                , A11y_Landmark.navigation
+                ]
 
         --|> Html.map Script
         , if hasIndex then
@@ -176,17 +184,39 @@ slideA11y : Lang -> Mode -> Effect.Model SubSection -> Int -> Html Msg
 slideA11y lang mode effect id =
     case mode of
         Slides ->
-            Html.aside [ Attr.class "lia-notes" ]
-                [ effect
-                    |> Effect.current_paragraphs
-                    |> List.map
-                        (Tuple.second
-                            >> List.map (view_inf effect.javascript lang)
-                            >> Html.p []
-                            >> Html.map (Tuple.pair id >> Script)
-                        )
-                    |> Html.div [ Attr.class "lia-notes__content" ]
-                ]
+            let
+                comments =
+                    effect
+                        |> Effect.current_paragraphs
+                        |> List.map
+                            (\( active, par ) ->
+                                par
+                                    |> List.map
+                                        (Tuple.second
+                                            >> List.map (view_inf effect.javascript lang)
+                                            >> Html.p []
+                                        )
+                                    |> Html.div
+                                        [ Attr.class
+                                            ("lia-notes__content"
+                                                ++ (if active then
+                                                        " active"
+
+                                                    else
+                                                        ""
+                                                   )
+                                            )
+                                        ]
+                            )
+            in
+            comments
+                |> Html.aside
+                    [ Attr.classList
+                        [ ( "lia-notes", True )
+                        , ( "hide-lg-up", List.isEmpty comments )
+                        ]
+                    ]
+                |> Html.map (Tuple.pair id >> Script)
 
         _ ->
             Html.text ""
@@ -261,15 +291,24 @@ slideTopBar lang url settings def =
                         (\( body, class ) ->
                             Html.li
                                 [ Attr.class <| "nav__item lia-support-menu__item lia-support-menu__item--" ++ class
+                                , A11y_Role.menuItem
+                                , A11y_Widget.hasMenuPopUp
                                 ]
                                 body
                         )
-                    |> Html.ul [ Attr.class "nav lia-support-menu__nav" ]
+                    |> Html.ul
+                        [ Attr.class "nav lia-support-menu__nav"
+                        , A11y_Role.menuBar
+                        ]
                 ]
             ]
         ]
     ]
-        |> Html.header [ Attr.class "lia-header", Attr.id "lia-toolbar-nav" ]
+        |> Html.header
+            [ Attr.class "lia-header"
+            , Attr.id "lia-toolbar-nav"
+            , A11y_Landmark.navigation
+            ]
         |> Html.map UpdateSettings
 
 

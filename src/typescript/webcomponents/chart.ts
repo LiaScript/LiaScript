@@ -11,8 +11,19 @@ import 'echarts/i18n/langZH.js'
 
 const style = 'width: 100%; height: 400px; margin-top: -0.2em;'
 
-// TODO: Switching to dark-mode and then performing an external translation does
-// not reload the dark-mode properly.
+// TODO
+// - [ ] Switching to dark-mode and then performing an external translation does
+//       not reload the dark-mode properly.
+// - [ ] Let translator also translate the titles, xaxis, etc.
+// - [ ] Check for more appropriate aria labeling.
+// - [ ] Make buttons also accessible, no keyboard yet
+//
+// References:
+//
+// - ProjectWebsite:
+//      https://echarts.apache.org/en/index.html
+// - Information on Aria-Support:
+//      https://github.com/apache/echarts-doc/blob/master/en/tutorial/aria.md
 
 customElements.define('lia-chart', class extends HTMLElement {
   private container: HTMLDivElement
@@ -24,7 +35,7 @@ customElements.define('lia-chart', class extends HTMLElement {
   private mode: string
 
   static get observedAttributes() {
-    return ['style', 'mode', 'json', 'locale']
+    return ['style', 'mode', 'json', 'locale', 'aria-label']
   }
 
   constructor() {
@@ -45,6 +56,7 @@ customElements.define('lia-chart', class extends HTMLElement {
     window.addEventListener('resize', function() {
       self.resizeChart()
     })
+
   }
 
   connectedCallback() {
@@ -52,6 +64,15 @@ customElements.define('lia-chart', class extends HTMLElement {
       this.container.setAttribute('style', style)
       this.chart = echarts.init(this.container, this.mode || '', { renderer: 'svg', locale: this.locale})
       this.option_ = JSON.parse(this.getAttribute('option') || 'null') || this.option_
+      this.option_["aria"] = {show: true}
+
+      let self = this
+      this.chart.on('finished', function () {
+        self.setAttribute("aria-label", self.container.getAttribute("aria-label") || "")
+      });
+      // TODO: Check for more appropriate roles...
+      self.setAttribute("aria-role", "figure alert")
+      self.setAttribute("aria-relevant", "text")
       this.updateChart()
       this.resizeChart()
     }
@@ -120,6 +141,9 @@ customElements.define('lia-chart', class extends HTMLElement {
 
         break
       }
+      default: {
+        console.warn("charts: unknown attribute", name)
+      }
     }
   }
 
@@ -147,6 +171,7 @@ customElements.define('lia-chart', class extends HTMLElement {
     if (val) {
       if (JSON.stringify(val) !== JSON.stringify(this.option_)) {
         this.option_ = val
+        this.option_["aria"] = {show: true}
         this.updateChart()
       }
     }
