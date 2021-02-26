@@ -12,6 +12,7 @@ module Lia.Settings.View exposing
 import Accessibility.Aria as A11y_Aria
 import Accessibility.Key as A11y_Key
 import Accessibility.Role as A11y_Role
+import Accessibility.Widget as A11y_Widget
 import Array
 import Conditional.List as CList
 import Dict exposing (Dict)
@@ -36,16 +37,16 @@ design model =
     [ Attr.class "lia-canvas"
     , Attr.class <|
         if model.table_of_contents then
-            "lia-toc--hidden"
+            "lia-toc--visible"
 
         else
-            "lia-toc--visible"
+            "lia-toc--hidden"
     , Attr.class <|
         if model.support_menu then
-            "lia-support--hidden"
+            "lia-support--visible"
 
         else
-            "lia-support--visible"
+            "lia-support--hidden"
     , Attr.class <|
         case model.mode of
             Textbook ->
@@ -100,10 +101,10 @@ viewLightMode _ isLight =
 
 viewTheme : Lang -> String -> Html Msg
 viewTheme lang theme =
-    [ ( "turquoise", "Türkis", "is-turquoise mr-1" )
+    [ ( "turquoise", Trans.cTurquoise lang, "is-turquoise mr-1" )
     , ( "blue", Trans.cBlue lang, "is-blue mr-1" )
-    , ( "red", "Rot", "is-red mr-1" )
-    , ( "yellow", "Gelb", "is-yellow" )
+    , ( "red", Trans.cRed lang, "is-red mr-1" )
+    , ( "yellow", Trans.cYellow lang, "is-yellow" )
     ]
         |> List.map
             (\( color, name, styleClass ) ->
@@ -135,7 +136,7 @@ viewMode : Lang -> Mode -> Mode -> String -> String -> String -> Html Msg
 viewMode lang mode activeMode id iconName additionalCSSClass =
     Html.button
         [ Attr.id id
-        , Attr.class <| "lia-btn lia-btn--transparent lia-btn--icon " ++ additionalCSSClass
+        , Attr.class <| "lia-btn lia-btn--transparent " ++ additionalCSSClass
         , onClick (SwitchMode mode)
         , A11y_Key.onKeyDown [ A11y_Key.enter (SwitchMode mode) ]
         ]
@@ -168,9 +169,9 @@ viewSizing : Lang -> Int -> Html Msg
 viewSizing lang int =
     Html.div []
         [ Html.text <| Trans.baseFont lang ++ ":"
-        , btnFont "-" (Trans.baseDec lang) (ChangeFontSize False)
+        , btnFont "icon-minus" (Trans.baseDec lang) (ChangeFontSize False)
         , Html.text (String.fromInt int ++ "%")
-        , btnFont "+" (Trans.baseInc lang) (ChangeFontSize True)
+        , btnFont "icon-plus" (Trans.baseInc lang) (ChangeFontSize True)
         ]
 
 
@@ -179,9 +180,9 @@ btnFont str title msg =
     Html.button
         [ onClick msg
         , Attr.title title
-        , Attr.class "lia-btn lia-slide-control lia-left"
+        , Attr.class <| "lia-btn lia-btn--icon lia-btn--transparent " ++ str
         ]
-        [ Html.text str ]
+        []
 
 
 bold : String -> Html msg
@@ -243,7 +244,12 @@ viewTranslations lang =
                     [ Attr.href url, Attr.class "lia-link" ]
                     [ Html.text title, Html.br [] [] ]
             )
-        >> (::) (Html.a [ Attr.href "#", Attr.class "lia-link active" ] [ Html.text "TODO" ])
+        >> List.append
+            [ Html.span [ Attr.class "lia-link active" ]
+                [ Trans.baseLang lang
+                    |> Html.text
+                ]
+            ]
 
 
 submenu : Bool -> List (Html Msg) -> Html Msg
@@ -256,6 +262,7 @@ submenu isActive =
 
             else
                 ""
+        , A11y_Widget.checked (Just isActive)
         ]
 
 
@@ -337,21 +344,19 @@ btnIndex lang open =
     Html.button
         [ onClick <| Toggle TableOfContents
         , Attr.title (Trans.baseToc lang)
-        , Attr.class "lia-btn lia-btn--transparent"
+        , Attr.class "lia-btn lia-btn--icon lia-btn--transparent icon"
+        , Attr.class <|
+            if open then
+                "icon-close"
+
+            else
+                "icon-table"
         , Attr.id "lia-btn-toc"
         , A11y_Aria.controls "lia-toc"
+        , A11y_Widget.hasMenuPopUp
+        , A11y_Widget.expanded open
         ]
-        [ Html.i
-            [ Attr.class "lia-btn__icon icon"
-            , Attr.class <|
-                if open then
-                    "icon-table"
-
-                else
-                    "icon-close"
-            ]
-            []
-        ]
+        []
 
 
 btnSupport : Bool -> Html Msg
@@ -359,25 +364,24 @@ btnSupport open =
     Html.button
         [ onClick <| Toggle SupportMenu
         , Attr.id "lia-btn-support"
-        , Attr.class "lia-btn lia-btn--transparent lia-support-menu__toggler"
+        , Attr.class "lia-btn lia-btn--icon lia-btn--transparent lia-support-menu__toggler icon"
+        , Attr.class <|
+            if open then
+                "icon-close"
+
+            else
+                "icon-more"
         , Attr.type_ "button"
         ]
-        [ Html.i
-            [ Attr.class "lia-btn__icon icon"
-            , Attr.class <|
-                if open then
-                    "icon-more"
-
-                else
-                    "icon-close"
-            ]
-            []
-        ]
+        []
 
 
 menuMode : Lang -> Settings -> List (Html Msg)
 menuMode lang settings =
-    [ actionBtn ShowModes "icon-presentation hide-md-down" "Mode"
+    [ actionBtn ShowModes
+        (settings.action == Just ShowModes)
+        "icon-presentation"
+        "Mode"
     , viewModes lang settings
         |> submenu (settings.action == Just ShowModes)
     ]
@@ -387,7 +391,9 @@ menuSettings : Lang -> Settings -> List (Html Msg)
 menuSettings lang settings =
     [ lang
         |> Trans.confSettings
-        |> actionBtn ShowSettings "icon-settings hide-md-down"
+        |> actionBtn ShowSettings
+            (settings.action == Just ShowSettings)
+            "icon-settings"
     , viewSettings lang settings
         |> submenu (settings.action == Just ShowSettings)
     ]
@@ -395,13 +401,14 @@ menuSettings lang settings =
 
 menuTranslations : Lang -> Definition -> Settings -> List (Html Msg)
 menuTranslations lang defintion settings =
-    [ Html.span
-        [ Attr.class "hide-md-down"
-        , lang
-            |> Trans.confTranslations
-            |> Attr.title
-        , onClick (doAction ShowTranslations)
-        ]
+    [ Html.button
+        (action ShowTranslations
+            (settings.action == Just ShowTranslations)
+            [ lang
+                |> Trans.confTranslations
+                |> Attr.title
+            ]
+        )
         [ Html.text <| String.toUpper defintion.language
         ]
     , defintion.translation
@@ -414,36 +421,63 @@ menuShare : Lang -> String -> Settings -> List (Html Msg)
 menuShare lang url settings =
     [ lang
         |> Trans.confShare
-        |> actionBtn Share "icon-social"
-    , [ qrCodeView url ]
+        |> actionBtn Share
+            (settings.action == Just Share)
+            "icon-social"
+    , Html.i
+        [ Attr.class "icon icon-social hide-md-up"
+        , lang
+            |> Trans.confInformation
+            |> Attr.title
+        ]
+        []
+    , [ qrCodeView url
+      ]
         |> submenu (settings.action == Just Share)
     ]
 
 
 menuInformation : Lang -> Definition -> Settings -> List (Html Msg)
 menuInformation lang definition settings =
-    [ lang
+    [ Html.i
+        [ Attr.class "icon icon-info hide-md-up"
+        , lang
+            |> Trans.confInformation
+            |> Attr.title
+        ]
+        []
+    , lang
         |> Trans.confInformation
-        |> actionBtn ShowInformation "icon-info"
+        |> actionBtn
+            ShowInformation
+            (settings.action == Just ShowInformation)
+            "icon-info"
     , viewInformation lang definition
         |> submenu (settings.action == Just ShowInformation)
     ]
 
 
-actionBtn : Action -> String -> String -> Html Msg
-actionBtn msg iconName title =
-    Html.i
-        [ Attr.class <| "icon " ++ iconName
-        , Attr.title title
-        , onClick (doAction msg)
-        , A11y_Role.button
-        , A11y_Key.tabbable True
-        , A11y_Key.onKeyDown
-            [ A11y_Key.enter (doAction msg)
-            , A11y_Key.escape (doAction Close)
+actionBtn : Action -> Bool -> String -> String -> Html Msg
+actionBtn msg open iconName title =
+    Html.button
+        (action msg
+            open
+            [ Attr.class <| "lia-btn--icon icon " ++ iconName
+            , Attr.title title
             ]
-        ]
+        )
         []
+
+
+action : Action -> Bool -> (List (Html.Attribute Msg) -> List (Html.Attribute Msg))
+action msg open =
+    List.append
+        [ onClick (doAction msg)
+        , A11y_Key.onKeyDown [ A11y_Key.escape (doAction Close) ]
+        , Attr.class "lia-btn lia-btn--transparent hide-md-down"
+        , A11y_Widget.hasDialogPopUp
+        , A11y_Widget.expanded open
+        ]
 
 
 doAction : Action -> Msg

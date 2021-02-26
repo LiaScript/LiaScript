@@ -1,6 +1,8 @@
 module Lia.View exposing (view)
 
-import Accessibility.Aria as Aria
+import Accessibility.Landmark as A11y_Landmark
+import Accessibility.Role as A11y_Role
+import Accessibility.Widget as A11y_Widget
 import Flip exposing (flip)
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -51,10 +53,10 @@ viewIndex hasIndex model =
         , Attr.id "lia-toc"
         , Attr.class <|
             if model.settings.table_of_contents then
-                "lia-toc--closed"
+                "lia-toc--open"
 
             else
-                "lia-toc--open"
+                "lia-toc--closed"
         ]
         [ Settings.btnIndex
             model.translation
@@ -63,21 +65,27 @@ viewIndex hasIndex model =
         , model.index_model
             |> Index.search
                 model.translation
-                (not model.settings.table_of_contents)
-            |> Html.div [ Attr.class "lia-toc__search" ]
+                model.settings.table_of_contents
+            |> Html.div
+                [ Attr.class "lia-toc__search"
+                , A11y_Landmark.search
+                ]
             |> Html.map UpdateIndex
         , model.sections
             |> Index.content
                 model.translation
-                (not model.settings.table_of_contents)
+                model.settings.table_of_contents
                 model.section_active
                 Script
-            |> Html.nav [ Attr.class "lia-toc__content" ]
+            |> Html.nav
+                [ Attr.class "lia-toc__content"
+                , A11y_Landmark.navigation
+                ]
 
         --|> Html.map Script
         , if hasIndex then
             Html.div [ Attr.class "lia-toc__bottom" ]
-                [ Index.bottom (not model.settings.table_of_contents) Home ]
+                [ Index.bottom model.settings.table_of_contents Home ]
 
           else
             Html.text ""
@@ -176,17 +184,39 @@ slideA11y : Lang -> Mode -> Effect.Model SubSection -> Int -> Html Msg
 slideA11y lang mode effect id =
     case mode of
         Slides ->
-            Html.aside [ Attr.class "lia-notes" ]
-                [ effect
-                    |> Effect.current_paragraphs
-                    |> List.map
-                        (Tuple.second
-                            >> List.map (view_inf effect.javascript lang)
-                            >> Html.p []
-                            >> Html.map (Tuple.pair id >> Script)
-                        )
-                    |> Html.div [ Attr.class "lia-notes__content" ]
-                ]
+            let
+                comments =
+                    effect
+                        |> Effect.current_paragraphs
+                        |> List.map
+                            (\( active, par ) ->
+                                par
+                                    |> List.map
+                                        (Tuple.second
+                                            >> List.map (view_inf effect.javascript lang)
+                                            >> Html.p []
+                                        )
+                                    |> Html.div
+                                        [ Attr.class
+                                            ("lia-notes__content"
+                                                ++ (if active then
+                                                        " active"
+
+                                                    else
+                                                        ""
+                                                   )
+                                            )
+                                        ]
+                            )
+            in
+            comments
+                |> Html.aside
+                    [ Attr.classList
+                        [ ( "lia-notes", True )
+                        , ( "hide-lg-up", List.isEmpty comments )
+                        ]
+                    ]
+                |> Html.map (Tuple.pair id >> Script)
 
         _ ->
             Html.text ""
@@ -205,12 +235,10 @@ navButton str title id class msg =
     Html.button
         [ onClick msg
         , Attr.title title
-        , Attr.class "lia-btn lia-btn--transparent"
+        , Attr.class <| "lia-btn lia-btn--icon lia-btn--transparent icon " ++ class
         , Attr.id id
         ]
-        [ Html.i [ Attr.class class ]
-            []
-        ]
+        []
 
 
 {-| **@private:** the navigation abr:
@@ -242,10 +270,10 @@ slideTopBar lang url settings def =
             [ Attr.class "lia-support-menu"
             , Attr.class <|
                 if settings.support_menu then
-                    "lia-support-menu--closed"
+                    "lia-support-menu--open"
 
                 else
-                    "lia-support-menu--open"
+                    "lia-support-menu--closed"
             ]
             [ Settings.btnSupport settings.support_menu
             , Html.div
@@ -261,15 +289,24 @@ slideTopBar lang url settings def =
                         (\( body, class ) ->
                             Html.li
                                 [ Attr.class <| "nav__item lia-support-menu__item lia-support-menu__item--" ++ class
+                                , A11y_Role.menuItem
+                                , A11y_Widget.hasMenuPopUp
                                 ]
                                 body
                         )
-                    |> Html.ul [ Attr.class "nav lia-support-menu__nav" ]
+                    |> Html.ul
+                        [ Attr.class "nav lia-support-menu__nav"
+                        , A11y_Role.menuBar
+                        ]
                 ]
             ]
         ]
     ]
-        |> Html.header [ Attr.class "lia-header", Attr.id "lia-toolbar-nav" ]
+        |> Html.header
+            [ Attr.class "lia-header"
+            , Attr.id "lia-toolbar-nav"
+            , A11y_Landmark.navigation
+            ]
         |> Html.map UpdateSettings
 
 
@@ -277,7 +314,7 @@ slideNavigation : Lang -> Mode -> Int -> Effect.Model SubSection -> Html Msg
 slideNavigation lang mode slide effect =
     Html.div [ Attr.class "lia-pagination mb-2" ]
         [ Html.div [ Attr.class "lia-pagination__content" ]
-            [ navButton "navigate_before" (Trans.basePrev lang) "lia-btn-prev" "lia-btn__icon icon icon-arrow-left" PrevSection
+            [ navButton "navigate_before" (Trans.basePrev lang) "lia-btn-prev" "icon-arrow-left" PrevSection
             , Html.span
                 [ Attr.class "lia-pagination__current" ]
                 [ Html.text (String.fromInt (slide + 1))
@@ -289,7 +326,7 @@ slideNavigation lang mode slide effect =
                         _ ->
                             state effect
                 ]
-            , navButton "navigate_next" (Trans.baseNext lang) "lia-btn-next" "lia-btn__icon icon icon-arrow-right" NextSection
+            , navButton "navigate_next" (Trans.baseNext lang) "lia-btn-next" "icon-arrow-right" NextSection
             ]
         ]
 

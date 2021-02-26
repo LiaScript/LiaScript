@@ -538,23 +538,17 @@ toTable id attr class body =
                     None ->
                         ""
             , Html.table
-                (Attr.style "margin-top" "-0.2em" :: Param.annotation "lia-table" attr)
+                (Param.annotation "lia-table" attr)
                 body
             ]
 
 
 toggleBtn : Int -> String -> Html Msg
 toggleBtn id icon =
-    Html.button
-        [ Attr.style "cursor" "pointer"
-        , onClick <| UpdateTable <| Sub.Toggle id
-        , Attr.style "z-index" "100"
-        ]
+    Html.button [ onClick <| UpdateTable <| Sub.Toggle id ]
         [ Html.img
-            [ Attr.style "height" "16px"
-            , Attr.height 16
+            [ Attr.height 16
             , Attr.width 16
-            , Attr.style "width" "16px"
             , Attr.src <| "img/" ++ icon ++ ".png"
             ]
             []
