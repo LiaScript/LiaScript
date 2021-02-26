@@ -53,10 +53,10 @@ viewIndex hasIndex model =
         , Attr.id "lia-toc"
         , Attr.class <|
             if model.settings.table_of_contents then
-                "lia-toc--closed"
+                "lia-toc--open"
 
             else
-                "lia-toc--open"
+                "lia-toc--closed"
         ]
         [ Settings.btnIndex
             model.translation
@@ -65,7 +65,7 @@ viewIndex hasIndex model =
         , model.index_model
             |> Index.search
                 model.translation
-                (not model.settings.table_of_contents)
+                model.settings.table_of_contents
             |> Html.div
                 [ Attr.class "lia-toc__search"
                 , A11y_Landmark.search
@@ -74,7 +74,7 @@ viewIndex hasIndex model =
         , model.sections
             |> Index.content
                 model.translation
-                (not model.settings.table_of_contents)
+                model.settings.table_of_contents
                 model.section_active
                 Script
             |> Html.nav
@@ -85,7 +85,7 @@ viewIndex hasIndex model =
         --|> Html.map Script
         , if hasIndex then
             Html.div [ Attr.class "lia-toc__bottom" ]
-                [ Index.bottom (not model.settings.table_of_contents) Home ]
+                [ Index.bottom model.settings.table_of_contents Home ]
 
           else
             Html.text ""
@@ -272,10 +272,10 @@ slideTopBar lang url settings def =
             [ Attr.class "lia-support-menu"
             , Attr.class <|
                 if settings.support_menu then
-                    "lia-support-menu--closed"
+                    "lia-support-menu--open"
 
                 else
-                    "lia-support-menu--open"
+                    "lia-support-menu--closed"
             ]
             [ Settings.btnSupport settings.support_menu
             , Html.div
