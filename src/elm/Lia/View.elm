@@ -244,12 +244,10 @@ navButton str title id class msg =
     Html.button
         [ onClick msg
         , Attr.title title
-        , Attr.class "lia-btn lia-btn--transparent"
+        , Attr.class <| "lia-btn lia-btn--icon lia-btn--transparent icon " ++ class
         , Attr.id id
         ]
-        [ Html.i [ Attr.class class ]
-            []
-        ]
+        []
 
 
 {-| **@private:** the navigation abr:
@@ -325,7 +323,7 @@ slideNavigation : Lang -> Mode -> Int -> Effect.Model SubSection -> Html Msg
 slideNavigation lang mode slide effect =
     Html.div [ Attr.class "lia-pagination mb-2" ]
         [ Html.div [ Attr.class "lia-pagination__content" ]
-            [ navButton "navigate_before" (Trans.basePrev lang) "lia-btn-prev" "lia-btn__icon icon icon-arrow-left" PrevSection
+            [ navButton "navigate_before" (Trans.basePrev lang) "lia-btn-prev" "icon-arrow-left" PrevSection
             , Html.span
                 [ Attr.class "lia-pagination__current" ]
                 [ Html.text (String.fromInt (slide + 1))
@@ -337,7 +335,7 @@ slideNavigation lang mode slide effect =
                         _ ->
                             state effect
                 ]
-            , navButton "navigate_next" (Trans.baseNext lang) "lia-btn-next" "lia-btn__icon icon icon-arrow-right" NextSection
+            , navButton "navigate_next" (Trans.baseNext lang) "lia-btn-next" "icon-arrow-right" NextSection
             ]
         ]
 
