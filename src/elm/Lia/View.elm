@@ -220,11 +220,7 @@ slideA11y lang mode effect id =
             in
             comments
                 |> Html.aside
-                    [ Attr.classList
-                        [ ( "lia-notes", True )
-                        , ( "hide-lg-up", List.isEmpty comments )
-                        ]
-                    ]
+                    [ Attr.class "lia-notes" ]
                 |> Html.map (Tuple.pair id >> Script)
 
         _ ->
