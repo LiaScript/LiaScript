@@ -4,6 +4,7 @@ import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
 import Accessibility.Role as A11y_Role
 import Accessibility.Widget as A11y_Widget
+import Const
 import Flip exposing (flip)
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -116,7 +117,7 @@ viewSlide screen model =
     case get_active_section model of
         Just section ->
             [ Html.div [ Attr.class "lia-slide" ]
-                [ slideTopBar model.translation model.url model.settings model.definition
+                [ slideTopBar model.translation screen model.url model.settings model.definition
                 , Config.init
                     model.translation
                     ( model.langCodeOriginal, model.langCode )
@@ -143,6 +144,7 @@ viewSlide screen model =
             [ Html.div [ Attr.class "lia-slide" ]
                 [ slideTopBar
                     model.translation
+                    screen
                     model.url
                     model.settings
                     model.definition
@@ -257,8 +259,12 @@ navButton str title id class msg =
 6.  `state`: fragments, if animations are active, not visible in textbook mode
 
 -}
-slideTopBar : Lang -> String -> Settings -> Definition -> Html Msg
-slideTopBar lang url settings def =
+slideTopBar : Lang -> Screen -> String -> Settings -> Definition -> Html Msg
+slideTopBar lang screen url settings def =
+    let
+        tabbable =
+            screen.width >= Const.globalBreakpoints.sm && settings.support_menu
+    in
     [ Html.div [ Attr.class "lia-header__left" ] []
     , Html.div [ Attr.class "lia-header__middle" ]
         [ Html.img
@@ -284,24 +290,25 @@ slideTopBar lang url settings def =
             , Html.div
                 [ Attr.class "lia-support-menu__collapse"
                 ]
-                [ [ ( Settings.menuMode lang settings, "mode" )
-                  , ( Settings.menuSettings lang settings, "settings" )
-                  , ( Settings.menuTranslations lang def settings, "lang" )
-                  , ( Settings.menuShare lang url settings, "share" )
-                  , ( Settings.menuInformation lang def settings, "info" )
+                [ [ ( Settings.menuMode, "mode" )
+                  , ( Settings.menuSettings, "settings" )
+                  , ( Settings.menuTranslations def, "lang" )
+                  , ( Settings.menuShare url, "share" )
+                  , ( Settings.menuInformation def, "info" )
                   ]
                     |> List.map
-                        (\( body, class ) ->
+                        (\( fn, class ) ->
                             Html.li
                                 [ Attr.class <| "nav__item lia-support-menu__item lia-support-menu__item--" ++ class
                                 , A11y_Role.menuItem
                                 , A11y_Widget.hasMenuPopUp
                                 ]
-                                body
+                                (fn lang tabbable settings)
                         )
                     |> Html.ul
                         [ Attr.class "nav lia-support-menu__nav"
                         , A11y_Role.menuBar
+                        , A11y_Key.tabbable False
                         ]
                 ]
             ]

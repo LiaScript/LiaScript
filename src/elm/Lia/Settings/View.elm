@@ -60,23 +60,24 @@ design model =
     ]
 
 
-viewSettings : Lang -> Settings -> List (Html Msg)
-viewSettings lang settings =
-    [ viewLightMode lang settings.light
+viewSettings : Lang -> Bool -> Settings -> List (Html Msg)
+viewSettings lang tabbable settings =
+    [ viewLightMode lang tabbable settings.light
     , Html.hr [ Attr.class "nav__divider" ] []
-    , viewTheme lang settings.theme
+    , viewTheme lang tabbable settings.theme
     , Html.hr [ Attr.class "nav__divider" ] []
-    , viewEditorTheme lang settings.editor
+    , viewEditorTheme lang tabbable settings.editor
     , Html.hr [ Attr.class "nav__divider" ] []
-    , viewSizing lang settings.font_size
+    , viewSizing lang tabbable settings.font_size
     ]
 
 
-viewLightMode : Lang -> Bool -> Html Msg
-viewLightMode _ isLight =
+viewLightMode : Lang -> Bool -> Bool -> Html Msg
+viewLightMode _ tabbable isLight =
     Html.button
         [ Attr.class "lia-btn lia-btn--transparent"
         , onClick (Toggle Light)
+        , A11y_Key.tabbable tabbable
         ]
         [ Html.i
             [ Attr.class "lia-btn__icon icon"
@@ -99,8 +100,8 @@ viewLightMode _ isLight =
         ]
 
 
-viewTheme : Lang -> String -> Html Msg
-viewTheme lang theme =
+viewTheme : Lang -> Bool -> String -> Html Msg
+viewTheme lang tabbable theme =
     [ ( "turquoise", Trans.cTurquoise lang, "is-turquoise mr-1" )
     , ( "blue", Trans.cBlue lang, "is-blue mr-1" )
     , ( "red", Trans.cRed lang, "is-red mr-1" )
@@ -116,6 +117,7 @@ viewTheme lang theme =
                     , Attr.checked (theme == color)
                     , onClick (ChangeTheme color)
                     , Attr.title name
+                    , A11y_Key.tabbable tabbable
                     ]
                     []
                 ]
@@ -124,21 +126,22 @@ viewTheme lang theme =
         |> Html.div [ Attr.class "lia-radio-group lia-settings-theme-colors" ]
 
 
-viewModes : Lang -> Settings -> List (Html Msg)
-viewModes lang settings =
-    [ viewMode lang Textbook settings.mode "lia-mode-textbook" "icon-book" "mb-1"
-    , viewMode lang Presentation settings.mode "lia-mode-presentation" "icon-presentation" "mb-1"
-    , viewMode lang Slides settings.mode "lia-mode-slides" "icon-slides" ""
+viewModes : Lang -> Bool -> Settings -> List (Html Msg)
+viewModes lang tabbable settings =
+    [ viewMode lang tabbable Textbook settings.mode "lia-mode-textbook" "icon-book" "mb-1"
+    , viewMode lang tabbable Presentation settings.mode "lia-mode-presentation" "icon-presentation" "mb-1"
+    , viewMode lang tabbable Slides settings.mode "lia-mode-slides" "icon-slides" ""
     ]
 
 
-viewMode : Lang -> Mode -> Mode -> String -> String -> String -> Html Msg
-viewMode lang mode activeMode id iconName additionalCSSClass =
+viewMode : Lang -> Bool -> Mode -> Mode -> String -> String -> String -> Html Msg
+viewMode lang tabbable mode activeMode id iconName additionalCSSClass =
     Html.button
         [ Attr.id id
         , Attr.class <| "lia-btn lia-btn--transparent " ++ additionalCSSClass
         , onClick (SwitchMode mode)
         , A11y_Key.onKeyDown [ A11y_Key.enter (SwitchMode mode) ]
+        , A11y_Key.tabbable tabbable
         ]
         [ Html.i [ Attr.class <| "lia-btn__icon icon " ++ iconName ] []
         , Html.span [ Attr.class "lia-btn__text" ] [ modeToString mode lang |> Html.text ]
@@ -165,22 +168,23 @@ reset =
         [ Html.text "reset course" ]
 
 
-viewSizing : Lang -> Int -> Html Msg
-viewSizing lang int =
+viewSizing : Lang -> Bool -> Int -> Html Msg
+viewSizing lang tabbable int =
     Html.div []
         [ Html.text <| Trans.baseFont lang ++ ":"
-        , btnFont "icon-minus" (Trans.baseDec lang) (ChangeFontSize False)
+        , btnFont "icon-minus" tabbable (Trans.baseDec lang) (ChangeFontSize False)
         , Html.text (String.fromInt int ++ "%")
-        , btnFont "icon-plus" (Trans.baseInc lang) (ChangeFontSize True)
+        , btnFont "icon-plus" tabbable (Trans.baseInc lang) (ChangeFontSize True)
         ]
 
 
-btnFont : String -> String -> msg -> Html msg
-btnFont str title msg =
+btnFont : String -> Bool -> String -> msg -> Html msg
+btnFont str tabbable title msg =
     Html.button
         [ onClick msg
         , Attr.title title
         , Attr.class <| "lia-btn lia-btn--icon lia-btn--transparent " ++ str
+        , A11y_Key.tabbable tabbable
         ]
         []
 
@@ -190,13 +194,17 @@ bold =
     Html.text >> List.singleton >> Html.b []
 
 
-viewInformation : Lang -> Definition -> List (Html Msg)
-viewInformation lang definition =
+viewInformation : Lang -> Bool -> Definition -> List (Html Msg)
+viewInformation lang tabbable definition =
     []
         |> CList.addIf (definition.attributes /= [])
             [ bold "Attributes:"
             , Html.br [] []
-            , viewAttributes lang definition.attributes
+            , if tabbable then
+                viewAttributes lang definition.attributes
+
+              else
+                Html.text ""
             ]
         |> CList.addIf (definition.date /= "")
             [ bold <| Trans.infoDate lang
@@ -209,8 +217,21 @@ viewInformation lang definition =
         |> CList.addIf (definition.email /= "")
             [ bold <| Trans.infoEmail lang
             , Html.a
-                [ Attr.href definition.email, Attr.class "lia-link" ]
+                [ Attr.href definition.email
+                , Attr.class "lia-link"
+                , A11y_Key.tabbable tabbable
+                ]
                 [ Html.text definition.email ]
+            ]
+        |> CList.addIf (definition.comment /= [])
+            [ bold "Comment"
+            , Html.br [] []
+            , if tabbable then
+                definition.comment
+                    |> inlines lang
+
+              else
+                Html.text ""
             ]
         |> CList.addIf (definition.author /= "")
             [ bold <| Trans.infoAuthor lang
@@ -221,27 +242,34 @@ viewInformation lang definition =
 
 viewAttributes : Lang -> List Inlines -> Html Msg
 viewAttributes lang =
-    List.map (thanks lang) >> Html.span []
+    List.map (thanks lang) >> Html.div []
 
 
 thanks : Lang -> Inlines -> Html Msg
 thanks lang to =
     Html.span []
         [ Html.hr [] []
-        , to
-            |> List.map (view_inf Array.empty lang)
-            |> Html.div []
+        , inlines lang to
         ]
         |> Html.map (\_ -> Ignore)
 
 
-viewTranslations : Lang -> Dict String String -> List (Html Msg)
-viewTranslations lang =
+inlines lang =
+    List.map (view_inf Array.empty lang)
+        >> Html.div []
+        >> Html.map (always Ignore)
+
+
+viewTranslations : Lang -> Bool -> Dict String String -> List (Html Msg)
+viewTranslations lang tabbable =
     Dict.toList
         >> List.map
             (\( title, url ) ->
                 Html.a
-                    [ Attr.href url, Attr.class "lia-link" ]
+                    [ Attr.href url
+                    , Attr.class "lia-link"
+                    , A11y_Key.tabbable tabbable
+                    ]
                     [ Html.text title, Html.br [] [] ]
             )
         >> List.append
@@ -273,15 +301,18 @@ qrCodeView =
         >> Result.withDefault (Html.text "Error while encoding to QRCode.")
 
 
-viewEditorTheme : Lang -> String -> Html Msg
-viewEditorTheme lang theme =
+viewEditorTheme : Lang -> Bool -> String -> Html Msg
+viewEditorTheme lang tabbable theme =
     let
         op =
             option theme
     in
     Html.div [ Attr.style "display" "inline-flex", Attr.style "width" "99%" ]
         [ Html.text "Editor"
-        , Html.select [ onInput ChangeEditor ]
+        , Html.select
+            [ onInput ChangeEditor
+            , A11y_Key.tabbable tabbable
+            ]
             [ [ ( "chrome", "Chrome" )
               , ( "clouds", "Clouds" )
               , ( "crimson_editor", "Crimson Editor" )
@@ -376,31 +407,31 @@ btnSupport open =
         []
 
 
-menuMode : Lang -> Settings -> List (Html Msg)
-menuMode lang settings =
+menuMode : Lang -> Bool -> Settings -> List (Html Msg)
+menuMode lang tabbable settings =
     [ actionBtn ShowModes
         (settings.action == Just ShowModes)
         "icon-presentation"
         "Mode"
-    , viewModes lang settings
+    , viewModes lang tabbable settings
         |> submenu (settings.action == Just ShowModes)
     ]
 
 
-menuSettings : Lang -> Settings -> List (Html Msg)
-menuSettings lang settings =
+menuSettings : Lang -> Bool -> Settings -> List (Html Msg)
+menuSettings lang tabbable settings =
     [ lang
         |> Trans.confSettings
         |> actionBtn ShowSettings
             (settings.action == Just ShowSettings)
             "icon-settings"
-    , viewSettings lang settings
+    , viewSettings lang tabbable settings
         |> submenu (settings.action == Just ShowSettings)
     ]
 
 
-menuTranslations : Lang -> Definition -> Settings -> List (Html Msg)
-menuTranslations lang defintion settings =
+menuTranslations : Definition -> Lang -> Bool -> Settings -> List (Html Msg)
+menuTranslations defintion lang tabbable settings =
     [ Html.button
         (action ShowTranslations
             (settings.action == Just ShowTranslations)
@@ -412,13 +443,13 @@ menuTranslations lang defintion settings =
         [ Html.text <| String.toUpper defintion.language
         ]
     , defintion.translation
-        |> viewTranslations lang
+        |> viewTranslations lang tabbable
         |> submenu (settings.action == Just ShowTranslations)
     ]
 
 
-menuShare : Lang -> String -> Settings -> List (Html Msg)
-menuShare lang url settings =
+menuShare : String -> Lang -> Bool -> Settings -> List (Html Msg)
+menuShare url lang _ settings =
     [ lang
         |> Trans.confShare
         |> actionBtn Share
@@ -437,8 +468,8 @@ menuShare lang url settings =
     ]
 
 
-menuInformation : Lang -> Definition -> Settings -> List (Html Msg)
-menuInformation lang definition settings =
+menuInformation : Definition -> Lang -> Bool -> Settings -> List (Html Msg)
+menuInformation definition lang tabbable settings =
     [ Html.i
         [ Attr.class "icon icon-info hide-md-up"
         , lang
@@ -452,7 +483,7 @@ menuInformation lang definition settings =
             ShowInformation
             (settings.action == Just ShowInformation)
             "icon-info"
-    , viewInformation lang definition
+    , viewInformation lang tabbable definition
         |> submenu (settings.action == Just ShowInformation)
     ]
 
