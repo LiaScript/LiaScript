@@ -9,6 +9,7 @@ module Lia.Settings.View exposing
     , menuTranslations
     )
 
+import Accessibility as A11y
 import Accessibility.Aria as A11y_Aria
 import Accessibility.Key as A11y_Key
 import Accessibility.Role as A11y_Role
@@ -438,6 +439,9 @@ menuTranslations defintion lang tabbable settings =
             [ lang
                 |> Trans.confTranslations
                 |> Attr.title
+            , lang
+                |> Trans.confTranslations
+                |> A11y_Widget.label
             ]
         )
         [ Html.text <| String.toUpper defintion.language

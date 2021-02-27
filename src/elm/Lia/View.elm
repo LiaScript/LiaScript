@@ -68,6 +68,7 @@ viewIndex hasIndex model =
             |> Index.search
                 model.translation
                 model.settings.table_of_contents
+                model.sections
             |> Html.div
                 [ Attr.class "lia-toc__search"
                 , A11y_Landmark.search

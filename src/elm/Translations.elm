@@ -277,41 +277,263 @@ baseSearch lang =
             "搜尋"
 
 
+baseDelete : Lang -> String
+baseDelete lang =
+    case lang of
+        Bg ->
+            "търсене изтриване"
+
+        De ->
+            "Suche löschen"
+
+        En ->
+            "clear search"
+
+        Es ->
+            "eliminar búsqueda"
+
+        Fa ->
+            "جستجو را حذف کنید"
+
+        Hy ->
+            "ջնջել որոնումը"
+
+        Nl ->
+            "Duidelijke zoek"
+
+        Ru ->
+            "удалить поиск"
+
+        Tw ->
+            "删除搜寻"
+
+        Ua ->
+            "видалити пошук"
+
+        Zh ->
+            "删除搜寻"
+
+
+baseResults : Lang -> String
+baseResults lang =
+    case lang of
+        Bg ->
+            "Резултати"
+
+        De ->
+            "Ergebnisse"
+
+        En ->
+            "results"
+
+        Es ->
+            "Resultados"
+
+        Fa ->
+            "نتایج"
+
+        Hy ->
+            "արդյունքներ"
+
+        Nl ->
+            "Resultaten"
+
+        Ru ->
+            "результаты"
+
+        Tw ->
+            "结果"
+
+        Ua ->
+            "результати"
+
+        Zh ->
+            "结果"
+
+
+baseOneResult : Lang -> String
+baseOneResult lang =
+    case lang of
+        Bg ->
+            "един резултат"
+
+        De ->
+            "ein Ergebnis"
+
+        En ->
+            "one result"
+
+        Es ->
+            "un resultado"
+
+        Fa ->
+            "یک نتیجه"
+
+        Hy ->
+            "մեկ արդյունք"
+
+        Nl ->
+            "een resultaat"
+
+        Ru ->
+            "один результат"
+
+        Tw ->
+            "一个结果"
+
+        Ua ->
+            "один результат"
+
+        Zh ->
+            "一个结果"
+
+
+baseNoResult : Lang -> String
+baseNoResult lang =
+    case lang of
+        Bg ->
+            "няма резултати"
+
+        De ->
+            "kein Ergebnis"
+
+        En ->
+            "no results"
+
+        Es ->
+            "No hay resultados"
+
+        Fa ->
+            "هیچ نتیجه ای"
+
+        Hy ->
+            "արդյունք չկա"
+
+        Nl ->
+            "Geen resultaten"
+
+        Ru ->
+            "нет результатов"
+
+        Tw ->
+            "没有结果"
+
+        Ua ->
+            "немає результатів"
+
+        Zh ->
+            "没有结果"
+
+
 baseToc : Lang -> String
 baseToc lang =
     case lang of
         Bg ->
-            "Съдържание (показване/скриване)"
+            "Съдържание"
 
         De ->
-            "Inhaltsverzeichnis (zeigen/verbergen)"
+            "Inhaltsverzeichnis"
 
         En ->
-            "Table of Contents (show/hide)"
+            "Table of Contents"
 
         Es ->
-            "índice (mostrar/ocultar)"
+            "índice"
 
         Fa ->
-            "فهرست مطالب) نمایش/عدم نمایش)"
+            "فهرست مطالب"
 
         Hy ->
-            "բովանդակություն (ցույց տալ / թաքցնել)"
+            "բովանդակություն"
 
         Nl ->
-            "Inhoudsopgave (tonen/verbergen)"
+            "Inhoudsopgave"
 
         Ru ->
-            "оглавление (показать/скрыть)"
+            "оглавление"
 
         Tw ->
-            "目錄(顯示/隱藏)"
+            "目錄"
 
         Ua ->
-            "зміст (показати/приховати)"
+            "зміст"
 
         Zh ->
-            "目錄(顯示/隱藏)"
+            "目錄"
+
+
+baseShow : Lang -> String
+baseShow lang =
+    case lang of
+        Bg ->
+            "показване"
+
+        De ->
+            "zeigen"
+
+        En ->
+            "show"
+
+        Es ->
+            "mostrar"
+
+        Fa ->
+            "نشان دادن"
+
+        Hy ->
+            "ցույց տալ"
+
+        Nl ->
+            "tonen"
+
+        Ru ->
+            "показать"
+
+        Tw ->
+            "顯示"
+
+        Ua ->
+            "показати"
+
+        Zh ->
+            "顯示"
+
+
+baseHide : Lang -> String
+baseHide lang =
+    case lang of
+        Bg ->
+            "скриване"
+
+        De ->
+            "verberghen"
+
+        En ->
+            "hide"
+
+        Es ->
+            "ocultar"
+
+        Fa ->
+            "پنهان کردن"
+
+        Hy ->
+            "թաքցնել"
+
+        Nl ->
+            "verbergen"
+
+        Ru ->
+            "скрыть"
+
+        Tw ->
+            "隱藏"
+
+        Ua ->
+            "приховати"
+
+        Zh ->
+            "隱藏"
 
 
 baseLang : Lang -> String
@@ -836,37 +1058,37 @@ modeMode : Lang -> String
 modeMode lang =
     case lang of
         Bg ->
-            "Режим"
+            "Режим на презентация"
 
         De ->
-            "Modus"
+            "Präsentationsmodus"
 
         En ->
-            "Mode"
+            "Presentation mode"
 
         Es ->
-            "Modo"
+            "Modo presentación"
 
         Fa ->
-            "سبک"
+            "حالت ارائه"
 
         Hy ->
-            "կերպ"
+            "Ներկայացման ռեժիմ"
 
         Nl ->
-            "Modus"
+            "Presentatiemodus"
 
         Ru ->
-            "режим"
+            "режим презентации"
 
         Tw ->
-            "模式"
+            "简报模式"
 
         Ua ->
-            "режим"
+            "режим презентації"
 
         Zh ->
-            "模式"
+            "简报模式"
 
 
 modeTextbook : Lang -> String
