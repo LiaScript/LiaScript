@@ -191,7 +191,7 @@ btnFont str tabbable title msg =
 
 bold : String -> Html msg
 bold =
-    Html.text >> List.singleton >> Html.b []
+    Html.text >> List.singleton >> Html.strong []
 
 
 viewInformation : Lang -> Bool -> Definition -> List (Html Msg)
