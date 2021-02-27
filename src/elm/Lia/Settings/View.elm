@@ -410,10 +410,11 @@ btnSupport open =
 
 menuMode : Lang -> Bool -> Settings -> List (Html Msg)
 menuMode lang tabbable settings =
-    [ actionBtn ShowModes
-        (settings.action == Just ShowModes)
-        "icon-presentation"
-        "Mode"
+    [ lang
+        |> Trans.modeMode
+        |> actionBtn ShowModes
+            (settings.action == Just ShowModes)
+            "icon-presentation"
     , viewModes lang tabbable settings
         |> submenu (settings.action == Just ShowModes)
     ]

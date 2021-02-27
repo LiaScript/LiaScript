@@ -47,7 +47,7 @@ search lang active results model =
       else
         Html.button
             [ Attr.class "lia-toc__clear-index"
-            , onClick <| ScanIndex ""
+            , onClick DeleteSearch
             , A11y_Key.tabbable active
             , lang
                 |> Translations.baseDelete
