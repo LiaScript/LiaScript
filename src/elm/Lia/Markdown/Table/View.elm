@@ -561,13 +561,13 @@ unformatted viewer rows id state =
         head :: tail ->
             tail
                 |> List.map
-                    (List.map (\e -> Html.td (Attr.align "left" :: Param.toAttribute e.attr) (viewer e.inlines))
-                        >> Html.tr [ Attr.class "lia-inline lia-table-row" ]
+                    (List.map (\e -> Html.td (Attr.class "lia-table__data" :: Param.toAttribute e.attr) (viewer e.inlines))
+                        >> Html.tr [ Attr.class "lia-table__row" ]
                     )
                 |> (::)
                     (head
                         |> view_head1 viewer id state
-                        |> Html.tr [ Attr.class "lia-inline lia-table-row" ]
+                        |> Html.tr [ Attr.class "lia-table__row" ]
                     )
 
         [] ->
@@ -579,13 +579,13 @@ formatted viewer head format rows id state =
     rows
         |> sort state
         |> List.map
-            (List.map2 (\f e -> Html.td (Attr.align f :: Param.toAttribute e.attr) (viewer e.inlines)) format
-                >> Html.tr [ Attr.class "lia-inline lia-table-row" ]
+            (List.map2 (\f e -> Html.td (Attr.class "lia-table__data" :: Attr.class ("text-" ++ f) :: Param.toAttribute e.attr) (viewer e.inlines)) format
+                >> Html.tr [ Attr.class "lia-table__row" ]
             )
         |> (::)
             (head
                 |> view_head2 viewer id format state
-                |> Html.thead [ Attr.class "lia-inline lia-table-head" ]
+                |> Html.thead [ Attr.class "lia-table__head" ]
             )
 
 
@@ -634,7 +634,7 @@ view_head1 viewer id state =
     List.indexedMap
         (\i r ->
             header viewer id "left" state i r.inlines
-                |> Html.td (Attr.align "left" :: Param.toAttribute r.attr)
+                |> Html.td (Attr.class "text-left" :: Param.toAttribute r.attr)
         )
 
 
@@ -644,7 +644,7 @@ view_head2 viewer id format state =
         >> List.indexedMap
             (\i ( f, ( a, r ) ) ->
                 header viewer id f state i r
-                    |> Html.th (Attr.align f :: Attr.style "height" "100%" :: Param.toAttribute a)
+                    |> Html.th (Attr.class ("text-" ++ f) :: Param.toAttribute a)
             )
 
 
