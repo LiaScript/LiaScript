@@ -105,7 +105,7 @@ view_body ( config, footnote2show, footnotes ) =
                 else
                     s
            )
-        >> Html.section [ Attr.class "lia-slide__content" ]
+        >> Html.main_ [ Attr.class "lia-slide__content" ]
 
 
 view_footnote : (Markdown -> Html Msg) -> Maybe String -> Footnotes.Model -> Html Msg
