@@ -2162,3 +2162,352 @@ surveyText lang =
 
         Zh ->
             "輸入文字..."
+
+
+chartPie : Lang -> String
+chartPie lang =
+    case lang of
+        De ->
+            "Tortendiagramm"
+
+        Tw ->
+            "饼图"
+
+        Zh ->
+            "饼图"
+
+        _ ->
+            "Pie chart"
+
+
+chartBar : Lang -> String
+chartBar lang =
+    case lang of
+        De ->
+            "Balkendiagramm"
+
+        Tw ->
+            "柱状图"
+
+        Zh ->
+            "柱状图"
+
+        _ ->
+            "Bar chart"
+
+
+chartLine : Lang -> String
+chartLine lang =
+    case lang of
+        De ->
+            "Liniendiagramm"
+
+        Tw ->
+            "折线图"
+
+        Zh ->
+            "折线图"
+
+        _ ->
+            "Line chart"
+
+
+chartScatter : Lang -> String
+chartScatter lang =
+    case lang of
+        De ->
+            "Streudiagramm"
+
+        Tw ->
+            "散点图"
+
+        Zh ->
+            "散点图"
+
+        _ ->
+            "Scatter plot"
+
+
+chartEffectScatter : Lang -> String
+chartEffectScatter lang =
+    case lang of
+        De ->
+            "Welligkeits-Streudiagramm"
+
+        Tw ->
+            "涟漪散点图"
+
+        Zh ->
+            "涟漪散点图"
+
+        _ ->
+            "Ripple scatter plot"
+
+
+chartRadar : Lang -> String
+chartRadar lang =
+    case lang of
+        De ->
+            "Radar-Karte"
+
+        Tw ->
+            "雷达图"
+
+        Zh ->
+            "雷达图"
+
+        _ ->
+            "Radar chart"
+
+
+chartTree : Lang -> String
+chartTree lang =
+    case lang of
+        De ->
+            "Baum"
+
+        Tw ->
+            "树图"
+
+        Zh ->
+            "树图"
+
+        _ ->
+            "Tree"
+
+
+chartTreemap : Lang -> String
+chartTreemap lang =
+    case lang of
+        De ->
+            "Baumkarte"
+
+        Tw ->
+            "矩形树图"
+
+        Zh ->
+            "矩形树图"
+
+        _ ->
+            "Treemap"
+
+
+chartBoxplot : Lang -> String
+chartBoxplot lang =
+    case lang of
+        Tw ->
+            "箱型图"
+
+        Zh ->
+            "箱型图"
+
+        _ ->
+            "Boxplot"
+
+
+chartCandlestick : Lang -> String
+chartCandlestick lang =
+    case lang of
+        De ->
+            "Kerzenständer"
+
+        Tw ->
+            "K线图"
+
+        Zh ->
+            "K线图"
+
+        _ ->
+            "Candlestick"
+
+
+chartK : Lang -> String
+chartK lang =
+    case lang of
+        De ->
+            "K Liniendiagramm"
+
+        Tw ->
+            "K线图"
+
+        Zh ->
+            "K线图"
+
+        _ ->
+            "K line chart"
+
+
+chartHeatmap : Lang -> String
+chartHeatmap lang =
+    case lang of
+        De ->
+            "Heatmap"
+
+        Tw ->
+            "热力图"
+
+        Zh ->
+            "热力图"
+
+        _ ->
+            "Heat map"
+
+
+chartMap : Lang -> String
+chartMap lang =
+    case lang of
+        De ->
+            "Karte"
+
+        Tw ->
+            "地图"
+
+        Zh ->
+            "地图"
+
+        _ ->
+            "Map"
+
+
+chartParallel : Lang -> String
+chartParallel lang =
+    case lang of
+        De ->
+            "Parallele Koordinatenkarte"
+
+        Tw ->
+            "平行坐标图"
+
+        Zh ->
+            "平行坐标图"
+
+        _ ->
+            "Parallel coordinate map"
+
+
+chartLines : Lang -> String
+chartLines lang =
+    case lang of
+        De ->
+            "Liniendiagramm"
+
+        Tw ->
+            "线图"
+
+        Zh ->
+            "线图"
+
+        _ ->
+            "Line graph"
+
+
+chartGraph : Lang -> String
+chartGraph lang =
+    case lang of
+        De ->
+            "Beziehungsgrafik"
+
+        Tw ->
+            "关系图"
+
+        Zh ->
+            "关系图"
+
+        _ ->
+            "Relationship graph"
+
+
+chartSankey : Lang -> String
+chartSankey lang =
+    case lang of
+        De ->
+            "Sankey-Diagramm"
+
+        Tw ->
+            "桑基图"
+
+        Zh ->
+            "桑基图"
+
+        _ ->
+            "Sankey diagram"
+
+
+chartFunnel : Lang -> String
+chartFunnel lang =
+    case lang of
+        De ->
+            "Trichterdiagramm"
+
+        Tw ->
+            "漏斗图"
+
+        Zh ->
+            "漏斗图"
+
+        _ ->
+            "Funnel chart"
+
+
+chartGauge : Lang -> String
+chartGauge lang =
+    case lang of
+        De ->
+            "Meßanzeige"
+
+        Tw ->
+            "仪表盘图"
+
+        Zh ->
+            "仪表盘图"
+
+        _ ->
+            "Guage"
+
+
+chartPictorialBar : Lang -> String
+chartPictorialBar lang =
+    case lang of
+        De ->
+            "Bildlicher Balken"
+
+        Tw ->
+            "象形柱图"
+
+        Zh ->
+            "象形柱图"
+
+        _ ->
+            "Pictorial bar"
+
+
+chartThemeRiver : Lang -> String
+chartThemeRiver lang =
+    case lang of
+        De ->
+            "Thematische Flusskarte"
+
+        Tw ->
+            "主题河流图"
+
+        Zh ->
+            "主题河流图"
+
+        _ ->
+            "Theme River Map"
+
+
+chartSunburst : Lang -> String
+chartSunburst lang =
+    case lang of
+        De ->
+            "Sonnenausbruch"
+
+        Tw ->
+            "旭日图"
+
+        Zh ->
+            "旭日图"
+
+        _ ->
+            "Sunburst"
