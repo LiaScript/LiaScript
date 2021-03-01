@@ -1,24 +1,29 @@
 .lia-table {
-  margin-top: map-get($global-spacing, spacing-large);
-  margin-bottom: map-get($global-spacing, spacing-large);
   border-collapse: collapse;
-  overflow-x: auto;
-  display: block;
+  border-spacing: 0;
 
-  .lia-table-head {
-    th {
-      padding: map-get($global-spacing, spacing-normal)
-        map-get($global-spacing, spacing-large);
-      border: 1px solid;
-    }
+  &__head {
+    padding: 1.3rem 1.6rem;
   }
 
-  .lia-table-row {
-    td {
-      padding: map-get($global-spacing, spacing-normal)
-        map-get($global-spacing, spacing-large);
-      border: 1px solid;
-    }
+  &__row {
+    //
+  }
+
+  &__header {
+    //
+  }
+
+  &__data {
+    //
+  }
+
+  &__header,
+  &__data {
+    padding: 1rem 1.6rem;
+    border: $global-border;
+    border-width: 0 0 1px;
+    vertical-align: top;
   }
 }
 
