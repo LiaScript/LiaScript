@@ -300,4 +300,4 @@ state model =
         ""
 
     else
-        " (" ++ String.fromInt (model.visible + 1) ++ "/" ++ String.fromInt (model.effects + 1) ++ ")"
+        " (" ++ String.fromInt model.visible ++ "/" ++ String.fromInt model.effects ++ ")"

@@ -202,9 +202,9 @@ slideA11y lang mode effect id =
                                         )
                                     |> (::)
                                         (Html.small [ Attr.class "lia-notes__counter" ]
-                                            [ String.fromInt (1 + counter)
+                                            [ String.fromInt counter
                                                 ++ "/"
-                                                ++ String.fromInt (effect.effects + 1)
+                                                ++ String.fromInt effect.effects
                                                 |> Html.text
                                             ]
                                         )
@@ -217,6 +217,13 @@ slideA11y lang mode effect id =
                                                     else
                                                         ""
                                                    )
+                                            )
+                                        , Attr.id
+                                            (if active then
+                                                "lia-notes-active"
+
+                                             else
+                                                ""
                                             )
                                         ]
                             )

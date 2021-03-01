@@ -5,7 +5,6 @@ import Browser.Dom as Dom
 import Lia.Index.Model exposing (Model)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Section exposing (Section, Sections)
-import Process
 import Task
 
 
