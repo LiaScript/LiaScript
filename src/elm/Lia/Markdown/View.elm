@@ -327,11 +327,11 @@ viewQuiz config attr quiz solution =
     case solution of
         Nothing ->
             Quizzes.view config.main quiz config.section.quiz_vector
-                |> Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr)
+                |> Html.form (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr)
                 |> Html.map UpdateQuiz
 
         Just ( answer, hidden_effects ) ->
-            Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr) <|
+            Html.form (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr) <|
                 if Quizzes.showSolution config.section.quiz_vector quiz then
                     (config.section.quiz_vector
                         |> Quizzes.view config.main quiz
