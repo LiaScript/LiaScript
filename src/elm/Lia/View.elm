@@ -271,7 +271,7 @@ slideTopBar : Lang -> Screen -> String -> Settings -> Definition -> Html Msg
 slideTopBar lang screen url settings def =
     let
         tabbable =
-            screen.width >= Const.globalBreakpoints.sm && settings.support_menu
+            screen.width >= Const.globalBreakpoints.md || settings.support_menu
     in
     [ Html.div [ Attr.class "lia-header__left" ] []
     , Html.div [ Attr.class "lia-header__middle" ]
@@ -285,7 +285,7 @@ slideTopBar lang screen url settings def =
             []
         ]
     , Html.div [ Attr.class "lia-header__right" ]
-        [ Html.nav
+        [ Html.div
             [ Attr.class "lia-support-menu"
             , Attr.class <|
                 if settings.support_menu then
