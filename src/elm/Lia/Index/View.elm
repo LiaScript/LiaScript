@@ -4,8 +4,10 @@ module Lia.Index.View exposing
     , search
     )
 
-import Accessibility.Key exposing (tabbable)
-import Array
+import Accessibility.Key as A11y_Key
+import Accessibility.Live as A11y_Live
+import Accessibility.Widget as A11y_Widget
+import Array exposing (Array)
 import Conditional.List as CList
 import Conditional.String as CString
 import Html exposing (Html)
@@ -21,8 +23,8 @@ import Lia.Utils exposing (blockKeydown)
 import Translations exposing (Lang, baseSearch)
 
 
-search : Lang -> Bool -> Model -> List (Html Msg)
-search lang active model =
+search : Lang -> Bool -> Array { x | visible : Bool } -> Model -> List (Html Msg)
+search lang active results model =
     [ Html.input
         [ Attr.type_ "search"
         , Attr.value model
@@ -31,7 +33,8 @@ search lang active model =
         , onInput ScanIndex
         , blockKeydown (ScanIndex model)
         , Attr.id "lia-input-search"
-        , tabbable active
+        , A11y_Key.tabbable active
+        , A11y_Key.onKeyDown [ A11y_Key.enter (ScanIndex "") ]
         ]
         []
     , Html.span
@@ -44,12 +47,44 @@ search lang active model =
       else
         Html.button
             [ Attr.class "lia-toc__clear-index"
-            , onClick <| ScanIndex ""
-            , tabbable active
+            , onClick DeleteSearch
+            , A11y_Key.tabbable active
+            , lang
+                |> Translations.baseDelete
+                |> Attr.title
             ]
             [ Html.i
                 [ Attr.class "icon icon-close" ]
                 []
+            ]
+    , if String.isEmpty model then
+        Html.text ""
+
+      else
+        let
+            counts =
+                Array.foldl
+                    (\s c ->
+                        if s.visible then
+                            c + 1
+
+                        else
+                            c
+                    )
+                    0
+                    results
+        in
+        Html.span [ A11y_Live.liveAssertive, Attr.class "hidden-visually" ]
+            [ Html.text <|
+                case counts of
+                    0 ->
+                        Translations.baseNoResult lang
+
+                    1 ->
+                        Translations.baseOneResult lang
+
+                    _ ->
+                        String.fromInt counts ++ " " ++ Translations.baseResults lang
             ]
     ]
 
@@ -67,7 +102,7 @@ bottom active msg =
         , Attr.title "home"
         , Attr.class "lia-btn lia-btn--transparent"
         , Attr.id "lia-btn-home"
-        , tabbable active
+        , A11y_Key.tabbable active
         ]
         [ Html.i [ Attr.class "lia-btn__icon icon icon-grid" ] []
         , Html.span [ Attr.class "lia-btn__text" ] [ Html.text "home" ]
@@ -84,7 +119,7 @@ item lang active sectionId msg section =
 
 itemLink : Bool -> Int -> Section -> List (Html msg) -> Html msg
 itemLink active sectionId section =
-    [ tabbable active
+    [ A11y_Key.tabbable active
     , section.indentation
         |> String.fromInt
         |> (++) "lia-toc__link lia-toc__link--is-lvl-"

@@ -43,12 +43,14 @@
 @import "05_components/components.card";
 @import "05_components/components.dropdown";
 @import "05_components/components.effect";
+@import "05_components/components.gallery";
 @import "05_components/components.header";
 @import "05_components/components.nav";
 @import "05_components/components.notes";
 @import "05_components/components.pagination";
 @import "05_components/components.quiz";
 @import "05_components/components.quote";
+@import "05_components/components.responsive-voice";
 @import "05_components/components.script";
 @import "05_components/components.slide-animation";
 @import "05_components/components.slide";
@@ -57,6 +59,7 @@
 @import "05_components/components.tooltip";
 
 // Utilities
+@import "06_utilities/utilities.display";
 @import "06_utilities/utilities.headless";
 @import "06_utilities/utilities.hidden";
 @import "06_utilities/utilities.spacings";

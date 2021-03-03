@@ -319,7 +319,7 @@ function process(isConnected: boolean, self: LiaScript, elmSend: Lia.Send, event
       if (sec) {
         sec.scrollTo(0, 0)
       }
-
+      
       const elem = document.getElementById('focusedToc')
       if (elem) {
         if (!isInViewport(elem)) {

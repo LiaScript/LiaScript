@@ -8,7 +8,7 @@ $toc-width-desktop: 28.5rem !default;
 $support-width-mobile: 100% !default;
 $support-width-desktop: 21.6rem !default;
 
-$notes-width-mobile: 100% !default;
+$notes-width-mobile: auto !default;
 $notes-width-desktop: 31.5rem !default;
 
 /* --------------------------------------------------
@@ -68,6 +68,14 @@ $notes-width-desktop: 31.5rem !default;
 
     &.lia-toc--visible.lia-support--visible {
       width: calc(100% - #{$toc-width-desktop} - #{$support-width-desktop});
+    }
+  }
+
+  @include breakpoint("md") {
+    &.lia-mode--textbook {
+      .lia-pagination {
+        margin-bottom: 2rem;
+      }
     }
   }
 

@@ -127,7 +127,7 @@ view_eval lang theme running errors id_1 id_2 file attr =
                     , Attr.style "width" "calc(100% - 20px)"
                     , Attr.style "display" "inline-block"
                     ]
-                    [ Html.b []
+                    [ Html.strong []
                         [ if file.visible then
                             Html.text " + "
 
@@ -147,7 +147,7 @@ view_eval lang theme running errors id_1 id_2 file attr =
                             else
                                 codeMaximize lang
                         ]
-                        [ Html.b []
+                        [ Html.strong []
                             [ if file.fullscreen then
                                 Html.text "↥"
 

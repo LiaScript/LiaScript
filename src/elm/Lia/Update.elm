@@ -116,14 +116,14 @@ update session msg model =
 
         UpdateIndex childMsg ->
             let
-                ( index, sections ) =
-                    Index.update childMsg model.sections
+                ( index, sections, cmd ) =
+                    Index.update childMsg model.index_model model.sections
             in
             ( { model
                 | index_model = index
                 , sections = sections
               }
-            , Cmd.none
+            , Cmd.map UpdateIndex cmd
             , []
             )
 

@@ -4,6 +4,7 @@ import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
 import Accessibility.Role as A11y_Role
 import Accessibility.Widget as A11y_Widget
+import Const
 import Flip exposing (flip)
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -67,6 +68,7 @@ viewIndex hasIndex model =
             |> Index.search
                 model.translation
                 model.settings.table_of_contents
+                model.sections
             |> Html.div
                 [ Attr.class "lia-toc__search"
                 , A11y_Landmark.search
@@ -116,7 +118,7 @@ viewSlide screen model =
     case get_active_section model of
         Just section ->
             [ Html.div [ Attr.class "lia-slide" ]
-                [ slideTopBar model.translation model.url model.settings model.definition
+                [ slideTopBar model.translation screen model.url model.settings model.definition
                 , Config.init
                     model.translation
                     ( model.langCodeOriginal, model.langCode )
@@ -143,6 +145,7 @@ viewSlide screen model =
             [ Html.div [ Attr.class "lia-slide" ]
                 [ slideTopBar
                     model.translation
+                    screen
                     model.url
                     model.settings
                     model.definition
@@ -199,9 +202,9 @@ slideA11y lang mode effect id =
                                         )
                                     |> (::)
                                         (Html.small [ Attr.class "lia-notes__counter" ]
-                                            [ String.fromInt (1 + counter)
+                                            [ String.fromInt counter
                                                 ++ "/"
-                                                ++ String.fromInt (effect.effects + 1)
+                                                ++ String.fromInt effect.effects
                                                 |> Html.text
                                             ]
                                         )
@@ -214,6 +217,13 @@ slideA11y lang mode effect id =
                                                     else
                                                         ""
                                                    )
+                                            )
+                                        , Attr.id
+                                            (if active then
+                                                "lia-notes-active"
+
+                                             else
+                                                ""
                                             )
                                         ]
                             )
@@ -257,8 +267,12 @@ navButton str title id class msg =
 6.  `state`: fragments, if animations are active, not visible in textbook mode
 
 -}
-slideTopBar : Lang -> String -> Settings -> Definition -> Html Msg
-slideTopBar lang url settings def =
+slideTopBar : Lang -> Screen -> String -> Settings -> Definition -> Html Msg
+slideTopBar lang screen url settings def =
+    let
+        tabbable =
+            screen.width >= Const.globalBreakpoints.md || settings.support_menu
+    in
     [ Html.div [ Attr.class "lia-header__left" ] []
     , Html.div [ Attr.class "lia-header__middle" ]
         [ Html.img
@@ -271,7 +285,7 @@ slideTopBar lang url settings def =
             []
         ]
     , Html.div [ Attr.class "lia-header__right" ]
-        [ Html.nav
+        [ Html.div
             [ Attr.class "lia-support-menu"
             , Attr.class <|
                 if settings.support_menu then
@@ -284,24 +298,25 @@ slideTopBar lang url settings def =
             , Html.div
                 [ Attr.class "lia-support-menu__collapse"
                 ]
-                [ [ ( Settings.menuMode lang settings, "mode" )
-                  , ( Settings.menuSettings lang settings, "settings" )
-                  , ( Settings.menuTranslations lang def settings, "lang" )
-                  , ( Settings.menuShare lang url settings, "share" )
-                  , ( Settings.menuInformation lang def settings, "info" )
+                [ [ ( Settings.menuMode, "mode" )
+                  , ( Settings.menuSettings, "settings" )
+                  , ( Settings.menuTranslations def, "lang" )
+                  , ( Settings.menuShare url, "share" )
+                  , ( Settings.menuInformation def, "info" )
                   ]
                     |> List.map
-                        (\( body, class ) ->
+                        (\( fn, class ) ->
                             Html.li
                                 [ Attr.class <| "nav__item lia-support-menu__item lia-support-menu__item--" ++ class
                                 , A11y_Role.menuItem
                                 , A11y_Widget.hasMenuPopUp
                                 ]
-                                body
+                                (fn lang tabbable settings)
                         )
                     |> Html.ul
                         [ Attr.class "nav lia-support-menu__nav"
                         , A11y_Role.menuBar
+                        , A11y_Key.tabbable False
                         ]
                 ]
             ]
@@ -317,7 +332,7 @@ slideTopBar lang url settings def =
 
 slideNavigation : Lang -> Mode -> Int -> Effect.Model SubSection -> Html Msg
 slideNavigation lang mode slide effect =
-    Html.div [ Attr.class "lia-pagination mb-2" ]
+    Html.div [ Attr.class "lia-pagination" ]
         [ Html.div [ Attr.class "lia-pagination__content" ]
             [ navButton "navigate_before" (Trans.basePrev lang) "lia-btn-prev" "icon-arrow-left" PrevSection
             , Html.span

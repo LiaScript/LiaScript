@@ -234,7 +234,10 @@ init_script model script =
             in
             ( { model
                 | definition = { definition | attributes = [] }
-                , translation = Translations.getLnFromCode definition.language
+                , translation =
+                    definition.language
+                        |> Translations.getLnFromCode
+                        |> Maybe.withDefault Translations.En
                 , langCode = definition.language
                 , langCodeOriginal = definition.language
                 , settings =
