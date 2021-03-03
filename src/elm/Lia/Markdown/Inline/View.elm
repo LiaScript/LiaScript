@@ -35,7 +35,7 @@ view config element =
             Html.text e
 
         Bold e attr ->
-            Html.b (annotation "lia-bold" attr) [ view config e ]
+            Html.strong (annotation "lia-bold" attr) [ view config e ]
 
         Italic e attr ->
             Html.em (annotation "lia-italic" attr) [ view config e ]

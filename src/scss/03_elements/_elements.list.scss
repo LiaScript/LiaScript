@@ -18,7 +18,7 @@
       &:before {
         content: "\EA0D";
         font-family: "icon";
-        color: var(--lia-turquoise);
+        color: rgb(var(--lia-turquoise));
         position: absolute;
         left: 0;
       }
@@ -35,7 +35,7 @@
   &--ordered {
     > li {
       &::marker {
-        color: var(--lia-turquoise);
+        color: rgb(var(--lia-turquoise));
       }
 
       span {

@@ -1,0 +1,11 @@
+.lia-gallery {
+  overflow-x: auto;
+  overflow-y: hidden;
+  width: 100%;
+  display: flex;
+  scroll-snap-type: block;
+
+  > * {
+    margin-right: 1rem;
+  }
+}

@@ -2,3 +2,8 @@ b,
 strong {
   font-weight: 600;
 }
+
+p > div,
+em > div {
+  display: inline-block;
+}

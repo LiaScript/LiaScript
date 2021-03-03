@@ -99,10 +99,8 @@ update main sound msg model =
             Send event ->
                 let
                     events =
-                        ("focused"
-                            |> JE.string
-                            |> Event "scrollTo" -1
-                        )
+                        scrollTo True "focused"
+                            :: scrollTo False "lia-notes-active"
                             :: event
                 in
                 ( model
@@ -148,6 +146,17 @@ update main sound msg model =
                                 Script.update main (Script.Handle event) model.javascript
                         in
                         ( { model | javascript = scripts }, Cmd.map Script cmd, events )
+
+
+scrollTo force =
+    JE.string
+        >> Event "scrollTo"
+            (if force then
+                -1
+
+             else
+                0
+            )
 
 
 markRunning : ( Model a, Cmd (Msg sub), List Event ) -> ( Model a, Cmd (Msg sub), List Event )

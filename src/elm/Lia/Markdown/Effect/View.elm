@@ -5,6 +5,7 @@ module Lia.Markdown.Effect.View exposing
     , state
     )
 
+import Element exposing (Attr)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
@@ -31,13 +32,13 @@ circle_ idx =
         |> String.fromInt
         |> Html.text
         |> List.singleton
-        |> Html.span [ Attr.class "lia-effect-circle-inline" ]
+        |> Html.span [ Attr.class "lia-effect__circle lia-effect__circle--inline" ]
 
 
 block : Config sub -> Model a -> Parameters -> Effect Markdown -> List (Html Msg) -> Html Msg
 block config model attr e body =
     if config.visible == Nothing then
-        Html.div [] <|
+        Html.div [ Attr.class "lia-effect" ] <|
             case class e of
                 Animation ->
                     [ circle e.begin
@@ -68,7 +69,7 @@ block config model attr e body =
                     Html.text ""
 
                 else
-                    Html.div []
+                    Html.div [ Attr.class "lia-effect" ]
                         [ circle e.begin
                         , Html.div
                             ((Attr.id <|
@@ -78,7 +79,7 @@ block config model attr e body =
                                 else
                                     String.fromInt e.begin
                              )
-                                :: annotation "lia-effect" attr
+                                :: annotation "lia-effect__content" attr
                             )
                             body
                         ]
@@ -119,7 +120,7 @@ inline config attr e body =
                 circle_ e.begin
                     :: Html.text " "
                     :: body
-                    |> Html.span
+                    |> Html.div
                         (Attr.id (String.fromInt e.begin)
                             :: annotation "" []
                         )
@@ -127,13 +128,13 @@ inline config attr e body =
             PlayBack ->
                 inline_playback config e
                     :: body
-                    |> Html.span (annotation "" attr)
+                    |> Html.div (annotation "" attr)
 
             PlayBackAnimation ->
                 circle_ e.begin
                     :: inline_playback config e
                     :: body
-                    |> Html.span
+                    |> Html.div
                         (Attr.id (String.fromInt e.begin)
                             :: annotation "" []
                         )
@@ -141,7 +142,7 @@ inline config attr e body =
     else
         case class e of
             Animation ->
-                Html.span
+                Html.div
                     [ if isIn config.visible e then
                         Attr.hidden False
 
@@ -151,7 +152,7 @@ inline config attr e body =
                     [ circle_ e.begin
                         :: Html.text " "
                         :: body
-                        |> Html.span
+                        |> Html.div
                             (Attr.id (String.fromInt e.begin)
                                 :: annotation
                                     (if attr == [] then
@@ -167,10 +168,10 @@ inline config attr e body =
             PlayBack ->
                 inline_playback config e
                     :: body
-                    |> Html.span (annotation "" attr)
+                    |> Html.div (annotation "" attr)
 
             PlayBackAnimation ->
-                Html.span
+                Html.div
                     [ if isIn config.visible e then
                         Attr.hidden False
 
@@ -254,7 +255,7 @@ inline_playback config e =
 circle : Int -> Html msg
 circle id =
     Html.span
-        [ Attr.class "lia-effect-circle" ]
+        [ Attr.class "lia-effect__circle" ]
         [ Html.text (String.fromInt id) ]
 
 
@@ -300,4 +301,4 @@ state model =
         ""
 
     else
-        " (" ++ String.fromInt (model.visible + 1) ++ "/" ++ String.fromInt (model.effects + 1) ++ ")"
+        " (" ++ String.fromInt model.visible ++ "/" ++ String.fromInt model.effects ++ ")"

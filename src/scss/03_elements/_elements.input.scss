@@ -50,7 +50,7 @@ input[type="search"]::-webkit-search-results-decoration {
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
-  border: 1px solid var(--lia-turquoise);
+  border: 1px solid rgb(var(--lia-turquoise));
   color-adjust: exact;
   cursor: pointer;
   height: 2.4rem;
@@ -79,25 +79,25 @@ input[type="search"]::-webkit-search-results-decoration {
   }
 
   &:checked {
-    background-color: $color-turquoise-1;
+    background-color: rgb(var(--lia-turquoise));
     &:after {
       opacity: 1;
     }
   }
 
   &.is-red {
-    background-color: var(--lia-red);
-    border-color: var(--lia-red);
+    background-color: rgb(var(--lia-red));
+    border-color: rgb(var(--lia-red));
   }
 
   &.is-blue {
-    background-color: var(--lia-blue);
-    border-color: var(--lia-blue);
+    background-color: rgb(var(--lia-blue));
+    border-color: rgb(var(--lia-blue));
   }
 
   &.is-yellow {
-    background-color: var(--lia-yellow);
-    border-color: var(--lia-yellow);
+    background-color: rgb(var(--lia-yellow));
+    border-color: rgb(var(--lia-yellow));
   }
 }
 
@@ -109,30 +109,30 @@ input[type="search"]::-webkit-search-results-decoration {
   border-radius: 100%;
 
   &:checked {
-    border: 0.8rem solid var(--lia-turquoise);
+    border: 0.8rem solid rgb(var(--lia-turquoise));
   }
 
   &.is-red {
-    border-color: var(--lia-red);
+    border-color: rgb(var(--lia-red));
 
     &:checked {
-      border-color: var(--lia-red);
+      border-color: rgb(var(--lia-red));
     }
   }
 
   &.is-blue {
-    border-color: var(--lia-blue);
+    border-color: rgb(var(--lia-blue));
 
     &:checked {
-      border-color: var(--lia-blue);
+      border-color: rgb(var(--lia-blue));
     }
   }
 
   &.is-yellow {
-    border-color: var(--lia-yellow);
+    border-color: rgb(var(--lia-yellow));
 
     &:checked {
-      border-color: var(--lia-yellow);
+      border-color: rgb(var(--lia-yellow));
     }
   }
 }
@@ -151,18 +151,18 @@ input[type="search"]::-webkit-search-results-decoration {
       height: 1.8rem;
       width: 1.8rem;
       border: none;
-      background-color: var(--lia-turquoise);
+      background-color: rgb(var(--lia-turquoise));
 
       &.is-red {
-        background-color: var(--lia-red);
+        background-color: rgb(var(--lia-red));
       }
 
       &.is-blue {
-        background-color: var(--lia-blue);
+        background-color: rgb(var(--lia-blue));
       }
 
       &.is-yellow {
-        background-color: var(--lia-yellow);
+        background-color: rgb(var(--lia-yellow));
       }
 
       &:checked {
