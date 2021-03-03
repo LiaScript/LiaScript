@@ -110,7 +110,7 @@ viewTheme lang tabbable theme =
     ]
         |> List.map
             (\( color, name, styleClass ) ->
-                [ Html.input
+                Html.input
                     [ Attr.type_ "radio"
                     , Attr.class <| "lia-radio " ++ styleClass
                     , Attr.id <| "lia-theme-color-" ++ color
@@ -121,10 +121,12 @@ viewTheme lang tabbable theme =
                     , A11y_Key.tabbable tabbable
                     ]
                     []
-                ]
             )
-        |> List.concat
-        |> Html.div [ Attr.class "lia-radio-group lia-settings-theme-colors" ]
+        |> Html.div
+            [ Attr.class "lia-radio-group lia-settings-theme-colors"
+            , A11y_Role.radioGroup
+            , A11y_Widget.label "Theme color" -- todo
+            ]
 
 
 viewModes : Lang -> Bool -> Settings -> List (Html Msg)
@@ -143,6 +145,8 @@ viewMode lang tabbable mode activeMode id iconName additionalCSSClass =
         , onClick (SwitchMode mode)
         , A11y_Key.onKeyDown [ A11y_Key.enter (SwitchMode mode) ]
         , A11y_Key.tabbable tabbable
+        , A11y_Role.menuItem
+        , A11y_Widget.checked <| Just (mode == activeMode)
         ]
         [ Html.i [ Attr.class <| "lia-btn__icon icon " ++ iconName ] []
         , Html.span [ Attr.class "lia-btn__text" ] [ modeToString mode lang |> Html.text ]
@@ -292,6 +296,7 @@ submenu isActive =
             else
                 ""
         , A11y_Widget.checked (Just isActive)
+        , A11y_Role.menu
         ]
 
 
@@ -509,9 +514,12 @@ action : Action -> Bool -> (List (Html.Attribute Msg) -> List (Html.Attribute Ms
 action msg open =
     List.append
         [ onClick (doAction msg)
-        , A11y_Key.onKeyDown [ A11y_Key.escape (doAction Close) ]
+        , A11y_Key.onKeyDown
+            [ A11y_Key.escape (doAction Close)
+            , A11y_Key.down (doAction msg)
+            ]
         , Attr.class "lia-btn lia-btn--transparent hide-md-down"
-        , A11y_Widget.hasDialogPopUp
+        , A11y_Widget.hasMenuPopUp
         , A11y_Widget.expanded open
         ]
 

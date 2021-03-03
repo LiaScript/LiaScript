@@ -1,10 +1,16 @@
 module Translations exposing (..)
 
+{-| This file was automatically generated with elm-i18n-gen.
+For more in information visit:
+
+<https://github.com/ChristophP/elm-i18n-module-generator>
+
+-}
+
 
 type Lang
     = Bg
     | De
-    | En
     | Es
     | Fa
     | Hy
@@ -13,46 +19,89 @@ type Lang
     | Tw
     | Ua
     | Zh
+    | En
 
 
-getLnFromCode : String -> Lang
+{-| Pass a language code that will return a Lang-type, if it exists.
+Otherwise `Nothing` is returned.
+-}
+getLnFromCode : String -> Maybe Lang
 getLnFromCode code =
-    case code of
+    case String.toLower code of
         "bg" ->
-            Bg
+            Just Bg
 
         "de" ->
-            De
-
-        "en" ->
-            En
+            Just De
 
         "es" ->
-            Es
+            Just Es
 
         "fa" ->
-            Fa
+            Just Fa
 
         "hy" ->
-            Hy
+            Just Hy
 
         "nl" ->
-            Nl
+            Just Nl
 
         "ru" ->
-            Ru
+            Just Ru
 
         "tw" ->
-            Tw
+            Just Tw
 
         "ua" ->
-            Ua
+            Just Ua
 
         "zh" ->
-            Zh
+            Just Zh
+
+        "en" ->
+            Just En
 
         _ ->
-            En
+            Nothing
+
+
+{-| Return the lowerCase language code for the given Lang.
+-}
+getCodeFromLn : Lang -> String
+getCodeFromLn lang =
+    case lang of
+        Bg ->
+            "bg"
+
+        De ->
+            "de"
+
+        Es ->
+            "es"
+
+        Fa ->
+            "fa"
+
+        Hy ->
+            "hy"
+
+        Nl ->
+            "nl"
+
+        Ru ->
+            "ru"
+
+        Tw ->
+            "tw"
+
+        Ua ->
+            "ua"
+
+        Zh ->
+            "zh"
+
+        En ->
+            "en"
 
 
 baseNext : Lang -> String
@@ -63,9 +112,6 @@ baseNext lang =
 
         De ->
             "weiter"
-
-        En ->
-            "next"
 
         Es ->
             "siguente"
@@ -91,6 +137,9 @@ baseNext lang =
         Zh ->
             "繼續"
 
+        _ ->
+            "next"
+
 
 basePrev : Lang -> String
 basePrev lang =
@@ -100,9 +149,6 @@ basePrev lang =
 
         De ->
             "zurück"
-
-        En ->
-            "previous"
 
         Es ->
             "anterior"
@@ -128,6 +174,9 @@ basePrev lang =
         Zh ->
             "返回"
 
+        _ ->
+            "previous"
+
 
 baseFont : Lang -> String
 baseFont lang =
@@ -137,9 +186,6 @@ baseFont lang =
 
         De ->
             "Schrift"
-
-        En ->
-            "Font"
 
         Es ->
             "fuente"
@@ -165,6 +211,9 @@ baseFont lang =
         Zh ->
             "字體"
 
+        _ ->
+            "Font"
+
 
 baseDec : Lang -> String
 baseDec lang =
@@ -174,9 +223,6 @@ baseDec lang =
 
         De ->
             "verkleinern"
-
-        En ->
-            "decrease"
 
         Es ->
             "reducir"
@@ -202,6 +248,9 @@ baseDec lang =
         Zh ->
             "減少"
 
+        _ ->
+            "decrease"
+
 
 baseInc : Lang -> String
 baseInc lang =
@@ -211,9 +260,6 @@ baseInc lang =
 
         De ->
             "vergrößern"
-
-        En ->
-            "increase"
 
         Es ->
             "aumentar"
@@ -239,6 +285,9 @@ baseInc lang =
         Zh ->
             "增加"
 
+        _ ->
+            "increase"
+
 
 baseSearch : Lang -> String
 baseSearch lang =
@@ -248,9 +297,6 @@ baseSearch lang =
 
         De ->
             "Suche"
-
-        En ->
-            "Search"
 
         Es ->
             "buscar"
@@ -276,6 +322,9 @@ baseSearch lang =
         Zh ->
             "搜尋"
 
+        _ ->
+            "Search"
+
 
 baseDelete : Lang -> String
 baseDelete lang =
@@ -285,9 +334,6 @@ baseDelete lang =
 
         De ->
             "Suche löschen"
-
-        En ->
-            "clear search"
 
         Es ->
             "eliminar búsqueda"
@@ -313,6 +359,9 @@ baseDelete lang =
         Zh ->
             "删除搜寻"
 
+        _ ->
+            "clear search"
+
 
 baseResults : Lang -> String
 baseResults lang =
@@ -322,9 +371,6 @@ baseResults lang =
 
         De ->
             "Ergebnisse"
-
-        En ->
-            "results"
 
         Es ->
             "Resultados"
@@ -350,6 +396,9 @@ baseResults lang =
         Zh ->
             "结果"
 
+        _ ->
+            "results"
+
 
 baseOneResult : Lang -> String
 baseOneResult lang =
@@ -359,9 +408,6 @@ baseOneResult lang =
 
         De ->
             "ein Ergebnis"
-
-        En ->
-            "one result"
 
         Es ->
             "un resultado"
@@ -387,6 +433,9 @@ baseOneResult lang =
         Zh ->
             "一个结果"
 
+        _ ->
+            "one result"
+
 
 baseNoResult : Lang -> String
 baseNoResult lang =
@@ -396,9 +445,6 @@ baseNoResult lang =
 
         De ->
             "kein Ergebnis"
-
-        En ->
-            "no results"
 
         Es ->
             "No hay resultados"
@@ -424,6 +470,9 @@ baseNoResult lang =
         Zh ->
             "没有结果"
 
+        _ ->
+            "no results"
+
 
 baseToc : Lang -> String
 baseToc lang =
@@ -433,9 +482,6 @@ baseToc lang =
 
         De ->
             "Inhaltsverzeichnis"
-
-        En ->
-            "Table of Contents"
 
         Es ->
             "índice"
@@ -461,6 +507,9 @@ baseToc lang =
         Zh ->
             "目錄"
 
+        _ ->
+            "Table of Contents"
+
 
 baseShow : Lang -> String
 baseShow lang =
@@ -470,9 +519,6 @@ baseShow lang =
 
         De ->
             "zeigen"
-
-        En ->
-            "show"
 
         Es ->
             "mostrar"
@@ -498,6 +544,9 @@ baseShow lang =
         Zh ->
             "顯示"
 
+        _ ->
+            "show"
+
 
 baseHide : Lang -> String
 baseHide lang =
@@ -507,9 +556,6 @@ baseHide lang =
 
         De ->
             "verberghen"
-
-        En ->
-            "hide"
 
         Es ->
             "ocultar"
@@ -535,6 +581,9 @@ baseHide lang =
         Zh ->
             "隱藏"
 
+        _ ->
+            "hide"
+
 
 baseLang : Lang -> String
 baseLang lang =
@@ -544,9 +593,6 @@ baseLang lang =
 
         De ->
             "Deutsch"
-
-        En ->
-            "English"
 
         Es ->
             "Español"
@@ -572,6 +618,9 @@ baseLang lang =
         Zh ->
             "中国人"
 
+        _ ->
+            "English"
+
 
 no_translation : Lang -> String
 no_translation lang =
@@ -581,9 +630,6 @@ no_translation lang =
 
         De ->
             "noch keine Übersetzungen vorhanden"
-
-        En ->
-            "no translation yet"
 
         Es ->
             "aún sin traducción"
@@ -609,6 +655,9 @@ no_translation lang =
         Zh ->
             "尚未翻譯"
 
+        _ ->
+            "no translation yet"
+
 
 cColor : Lang -> String
 cColor lang =
@@ -618,9 +667,6 @@ cColor lang =
 
         De ->
             "Farbe"
-
-        En ->
-            "Color"
 
         Es ->
             "color"
@@ -646,6 +692,46 @@ cColor lang =
         Zh ->
             "顏色"
 
+        _ ->
+            "Color"
+
+
+cSchema : Lang -> String
+cSchema lang =
+    case lang of
+        Bg ->
+            "Цветова схема"
+
+        De ->
+            "Farbschema"
+
+        Es ->
+            "Esquema de colores"
+
+        Fa ->
+            "طرح رنگی"
+
+        Hy ->
+            "Գունային սխեման"
+
+        Nl ->
+            "Kleurenschema"
+
+        Ru ->
+            "Цветовая схема"
+
+        Tw ->
+            "配色方案"
+
+        Ua ->
+            "Кольорова схема"
+
+        Zh ->
+            "配色方案"
+
+        _ ->
+            "Color scheme"
+
 
 cDark : Lang -> String
 cDark lang =
@@ -655,9 +741,6 @@ cDark lang =
 
         De ->
             "Dunkel"
-
-        En ->
-            "Dark"
 
         Es ->
             "oscuro"
@@ -683,6 +766,9 @@ cDark lang =
         Zh ->
             "深"
 
+        _ ->
+            "Dark"
+
 
 cBright : Lang -> String
 cBright lang =
@@ -692,9 +778,6 @@ cBright lang =
 
         De ->
             "Hell"
-
-        En ->
-            "Bright"
 
         Es ->
             "luminoso"
@@ -720,6 +803,9 @@ cBright lang =
         Zh ->
             "淺"
 
+        _ ->
+            "Bright"
+
 
 cDefault : Lang -> String
 cDefault lang =
@@ -729,9 +815,6 @@ cDefault lang =
 
         De ->
             "Standard"
-
-        En ->
-            "Default"
 
         Es ->
             "defecto"
@@ -757,42 +840,8 @@ cDefault lang =
         Zh ->
             "預設"
 
-
-cAmber : Lang -> String
-cAmber lang =
-    case lang of
-        Bg ->
-            "Кехлибар"
-
-        De ->
-            "Bernstein"
-
-        En ->
-            "Amber"
-
-        Es ->
-            "ámbar"
-
-        Fa ->
-            "کهربایی"
-
-        Hy ->
-            "սաթագույն"
-
-        Nl ->
-            "amber"
-
-        Ru ->
-            "янтарный"
-
-        Tw ->
-            "琥珀色"
-
-        Ua ->
-            "бурштиновий"
-
-        Zh ->
-            "琥珀色"
+        _ ->
+            "Default"
 
 
 cBlue : Lang -> String
@@ -803,9 +852,6 @@ cBlue lang =
 
         De ->
             "Blau"
-
-        En ->
-            "Blue"
 
         Es ->
             "azul"
@@ -831,116 +877,8 @@ cBlue lang =
         Zh ->
             "藍色"
 
-
-cGray : Lang -> String
-cGray lang =
-    case lang of
-        Bg ->
-            "Сиво"
-
-        De ->
-            "Grau"
-
-        En ->
-            "Gray"
-
-        Es ->
-            "gris"
-
-        Fa ->
-            "خاکستری"
-
-        Hy ->
-            "մոխրագույն"
-
-        Nl ->
-            "grijs"
-
-        Ru ->
-            "серый"
-
-        Tw ->
-            "灰色"
-
-        Ua ->
-            "сірий"
-
-        Zh ->
-            "灰色"
-
-
-cGreen : Lang -> String
-cGreen lang =
-    case lang of
-        Bg ->
-            "Зелено"
-
-        De ->
-            "Grün"
-
-        En ->
-            "Green"
-
-        Es ->
-            "verde"
-
-        Fa ->
-            "سبز"
-
-        Hy ->
-            "կանաչ"
-
-        Nl ->
-            "groen"
-
-        Ru ->
-            "зелёный"
-
-        Tw ->
-            "綠色"
-
-        Ua ->
-            "зелений"
-
-        Zh ->
-            "綠色"
-
-
-cPurple : Lang -> String
-cPurple lang =
-    case lang of
-        Bg ->
-            "Лилаво"
-
-        De ->
-            "Violett"
-
-        En ->
-            "Purple"
-
-        Es ->
-            "púrpura"
-
-        Fa ->
-            "بنفش"
-
-        Hy ->
-            "մանուշակագույն"
-
-        Nl ->
-            "paars"
-
-        Ru ->
-            "фиолетовый"
-
-        Tw ->
-            "紫色"
-
-        Ua ->
-            "фіолетовий"
-
-        Zh ->
-            "紫色"
+        _ ->
+            "Blue"
 
 
 cRed : Lang -> String
@@ -951,9 +889,6 @@ cRed lang =
 
         De ->
             "Rot"
-
-        En ->
-            "Red"
 
         Es ->
             "rojo"
@@ -979,6 +914,9 @@ cRed lang =
         Zh ->
             "红色的"
 
+        _ ->
+            "Red"
+
 
 cYellow : Lang -> String
 cYellow lang =
@@ -988,9 +926,6 @@ cYellow lang =
 
         De ->
             "Gelb"
-
-        En ->
-            "Yellow"
 
         Es ->
             "amarillo"
@@ -1016,6 +951,9 @@ cYellow lang =
         Zh ->
             "黄色的"
 
+        _ ->
+            "Yellow"
+
 
 cTurquoise : Lang -> String
 cTurquoise lang =
@@ -1025,9 +963,6 @@ cTurquoise lang =
 
         De ->
             "Türkis"
-
-        En ->
-            "Turquoise"
 
         Es ->
             "turquesa"
@@ -1053,6 +988,9 @@ cTurquoise lang =
         Zh ->
             "绿松石"
 
+        _ ->
+            "Turquoise"
+
 
 modeMode : Lang -> String
 modeMode lang =
@@ -1062,9 +1000,6 @@ modeMode lang =
 
         De ->
             "Präsentationsmodus"
-
-        En ->
-            "Presentation mode"
 
         Es ->
             "Modo presentación"
@@ -1090,6 +1025,9 @@ modeMode lang =
         Zh ->
             "简报模式"
 
+        _ ->
+            "Presentation mode"
+
 
 modeTextbook : Lang -> String
 modeTextbook lang =
@@ -1099,9 +1037,6 @@ modeTextbook lang =
 
         De ->
             "Lehrbuch"
-
-        En ->
-            "Textbook"
 
         Es ->
             "Manual"
@@ -1127,6 +1062,9 @@ modeTextbook lang =
         Zh ->
             "教科書"
 
+        _ ->
+            "Textbook"
+
 
 modePresentation : Lang -> String
 modePresentation lang =
@@ -1136,9 +1074,6 @@ modePresentation lang =
 
         De ->
             "Präsentation"
-
-        En ->
-            "Presentation"
 
         Es ->
             "Presentación"
@@ -1164,6 +1099,9 @@ modePresentation lang =
         Zh ->
             "報告"
 
+        _ ->
+            "Presentation"
+
 
 modeSlides : Lang -> String
 modeSlides lang =
@@ -1173,9 +1111,6 @@ modeSlides lang =
 
         De ->
             "Folien"
-
-        En ->
-            "Slides"
 
         Es ->
             "Imagen"
@@ -1201,6 +1136,9 @@ modeSlides lang =
         Zh ->
             "幻燈片"
 
+        _ ->
+            "Slides"
+
 
 soundOn : Lang -> String
 soundOn lang =
@@ -1210,9 +1148,6 @@ soundOn lang =
 
         De ->
             "Sprecher an"
-
-        En ->
-            "Sound on"
 
         Es ->
             "Sonido encendido"
@@ -1238,6 +1173,9 @@ soundOn lang =
         Zh ->
             "聲音開啟"
 
+        _ ->
+            "Sound on"
+
 
 soundOff : Lang -> String
 soundOff lang =
@@ -1247,9 +1185,6 @@ soundOff lang =
 
         De ->
             "Sprecher aus"
-
-        En ->
-            "Sound off"
 
         Es ->
             "Sonido apagado"
@@ -1275,6 +1210,9 @@ soundOff lang =
         Zh ->
             "聲音關閉"
 
+        _ ->
+            "Sound off"
+
 
 infoAuthor : Lang -> String
 infoAuthor lang =
@@ -1284,9 +1222,6 @@ infoAuthor lang =
 
         De ->
             "Autor: "
-
-        En ->
-            "Author: "
 
         Es ->
             "Autor"
@@ -1312,6 +1247,9 @@ infoAuthor lang =
         Zh ->
             "作者: "
 
+        _ ->
+            "Author: "
+
 
 infoDate : Lang -> String
 infoDate lang =
@@ -1321,9 +1259,6 @@ infoDate lang =
 
         De ->
             "Datum: "
-
-        En ->
-            "Date: "
 
         Es ->
             "fecha"
@@ -1349,6 +1284,9 @@ infoDate lang =
         Zh ->
             "日期: "
 
+        _ ->
+            "Date: "
+
 
 infoEmail : Lang -> String
 infoEmail lang =
@@ -1358,9 +1296,6 @@ infoEmail lang =
 
         De ->
             "e-Mail: "
-
-        En ->
-            "eMail: "
 
         Es ->
             "email"
@@ -1386,6 +1321,9 @@ infoEmail lang =
         Zh ->
             "電郵: "
 
+        _ ->
+            "eMail: "
+
 
 infoVersion : Lang -> String
 infoVersion lang =
@@ -1394,9 +1332,6 @@ infoVersion lang =
             "Версия: "
 
         De ->
-            "Version: "
-
-        En ->
             "Version: "
 
         Es ->
@@ -1423,6 +1358,9 @@ infoVersion lang =
         Zh ->
             "版本: "
 
+        _ ->
+            "Version: "
+
 
 confInformation : Lang -> String
 confInformation lang =
@@ -1432,9 +1370,6 @@ confInformation lang =
 
         De ->
             "Informationen"
-
-        En ->
-            "Information"
 
         Es ->
             "informaciones"
@@ -1460,6 +1395,9 @@ confInformation lang =
         Zh ->
             "關於"
 
+        _ ->
+            "Information"
+
 
 confSettings : Lang -> String
 confSettings lang =
@@ -1469,9 +1407,6 @@ confSettings lang =
 
         De ->
             "Einstellungen"
-
-        En ->
-            "Settings"
 
         Es ->
             "configuración"
@@ -1497,6 +1432,9 @@ confSettings lang =
         Zh ->
             "設定"
 
+        _ ->
+            "Settings"
+
 
 confShare : Lang -> String
 confShare lang =
@@ -1506,9 +1444,6 @@ confShare lang =
 
         De ->
             "Teilen"
-
-        En ->
-            "Share"
 
         Es ->
             "compartir"
@@ -1534,6 +1469,9 @@ confShare lang =
         Zh ->
             "分享"
 
+        _ ->
+            "Share"
+
 
 confTranslations : Lang -> String
 confTranslations lang =
@@ -1543,9 +1481,6 @@ confTranslations lang =
 
         De ->
             "Übersetzungen"
-
-        En ->
-            "Translations"
 
         Es ->
             "traducciones"
@@ -1571,6 +1506,9 @@ confTranslations lang =
         Zh ->
             "翻譯"
 
+        _ ->
+            "Translations"
+
 
 codeExecute : Lang -> String
 codeExecute lang =
@@ -1580,9 +1518,6 @@ codeExecute lang =
 
         De ->
             "Ausführen"
-
-        En ->
-            "Execute"
 
         Es ->
             "ejecutar"
@@ -1608,6 +1543,9 @@ codeExecute lang =
         Zh ->
             "開始執行"
 
+        _ ->
+            "Execute"
+
 
 codeRunning : Lang -> String
 codeRunning lang =
@@ -1617,9 +1555,6 @@ codeRunning lang =
 
         De ->
             "wird ausgeführt"
-
-        En ->
-            "is running"
 
         Es ->
             "en funcionamiento"
@@ -1645,6 +1580,9 @@ codeRunning lang =
         Zh ->
             "執行中"
 
+        _ ->
+            "is running"
+
 
 codePrev : Lang -> String
 codePrev lang =
@@ -1654,9 +1592,6 @@ codePrev lang =
 
         De ->
             "eine Version zurück"
-
-        En ->
-            "previous version"
 
         Es ->
             "versión anterior"
@@ -1682,6 +1617,9 @@ codePrev lang =
         Zh ->
             "上一版"
 
+        _ ->
+            "previous version"
+
 
 codeNext : Lang -> String
 codeNext lang =
@@ -1691,9 +1629,6 @@ codeNext lang =
 
         De ->
             "eine Version vor"
-
-        En ->
-            "next version"
 
         Es ->
             "versión siguiente"
@@ -1719,6 +1654,9 @@ codeNext lang =
         Zh ->
             "下一版"
 
+        _ ->
+            "next version"
+
 
 codeFirst : Lang -> String
 codeFirst lang =
@@ -1728,9 +1666,6 @@ codeFirst lang =
 
         De ->
             "erste Version"
-
-        En ->
-            "first version"
 
         Es ->
             "primera versión"
@@ -1756,6 +1691,9 @@ codeFirst lang =
         Zh ->
             "最初版"
 
+        _ ->
+            "first version"
+
 
 codeLast : Lang -> String
 codeLast lang =
@@ -1765,9 +1703,6 @@ codeLast lang =
 
         De ->
             "letzte Version"
-
-        En ->
-            "last version"
 
         Es ->
             "última versión"
@@ -1793,6 +1728,9 @@ codeLast lang =
         Zh ->
             "最終版"
 
+        _ ->
+            "last version"
+
 
 codeMinimize : Lang -> String
 codeMinimize lang =
@@ -1802,9 +1740,6 @@ codeMinimize lang =
 
         De ->
             "Darstellung minimieren"
-
-        En ->
-            "minimize view"
 
         Es ->
             "minimizar vista"
@@ -1830,6 +1765,9 @@ codeMinimize lang =
         Zh ->
             "極小視窗"
 
+        _ ->
+            "minimize view"
+
 
 codeMaximize : Lang -> String
 codeMaximize lang =
@@ -1839,9 +1777,6 @@ codeMaximize lang =
 
         De ->
             "Darstellung maximieren"
-
-        En ->
-            "maximize view"
 
         Es ->
             "maximinzar vista"
@@ -1867,6 +1802,9 @@ codeMaximize lang =
         Zh ->
             "極大視窗"
 
+        _ ->
+            "maximize view"
+
 
 quizCheck : Lang -> String
 quizCheck lang =
@@ -1876,9 +1814,6 @@ quizCheck lang =
 
         De ->
             "Prüfen"
-
-        En ->
-            "Check"
 
         Es ->
             "verificar"
@@ -1904,6 +1839,9 @@ quizCheck lang =
         Zh ->
             "選取"
 
+        _ ->
+            "Check"
+
 
 quizChecked : Lang -> String
 quizChecked lang =
@@ -1913,9 +1851,6 @@ quizChecked lang =
 
         De ->
             "Gelöst"
-
-        En ->
-            "Checked"
 
         Es ->
             "verificado"
@@ -1941,6 +1876,9 @@ quizChecked lang =
         Zh ->
             "已選取"
 
+        _ ->
+            "Checked"
+
 
 quizSolution : Lang -> String
 quizSolution lang =
@@ -1950,9 +1888,6 @@ quizSolution lang =
 
         De ->
             "zeige Lösung"
-
-        En ->
-            "show solution"
 
         Es ->
             "mostrar solución"
@@ -1978,6 +1913,9 @@ quizSolution lang =
         Zh ->
             "顯示解答"
 
+        _ ->
+            "show solution"
+
 
 quizResolved : Lang -> String
 quizResolved lang =
@@ -1987,9 +1925,6 @@ quizResolved lang =
 
         De ->
             "Aufgelöst"
-
-        En ->
-            "Resolved"
 
         Es ->
             "resuelto"
@@ -2015,6 +1950,9 @@ quizResolved lang =
         Zh ->
             "以解答"
 
+        _ ->
+            "Resolved"
+
 
 quizHint : Lang -> String
 quizHint lang =
@@ -2024,9 +1962,6 @@ quizHint lang =
 
         De ->
             "zeige Hinweis"
-
-        En ->
-            "show hint"
 
         Es ->
             "mostrar indicio"
@@ -2052,6 +1987,9 @@ quizHint lang =
         Zh ->
             "暗示"
 
+        _ ->
+            "show hint"
+
 
 surveySubmit : Lang -> String
 surveySubmit lang =
@@ -2061,9 +1999,6 @@ surveySubmit lang =
 
         De ->
             "Abschicken"
-
-        En ->
-            "Submit"
 
         Es ->
             "enviar"
@@ -2089,6 +2024,9 @@ surveySubmit lang =
         Zh ->
             "遞交"
 
+        _ ->
+            "Submit"
+
 
 surveySubmitted : Lang -> String
 surveySubmitted lang =
@@ -2098,9 +2036,6 @@ surveySubmitted lang =
 
         De ->
             "Dankeshön"
-
-        En ->
-            "Thanks"
 
         Es ->
             "enviado"
@@ -2126,6 +2061,9 @@ surveySubmitted lang =
         Zh ->
             "感謝"
 
+        _ ->
+            "Thanks"
+
 
 surveyText : Lang -> String
 surveyText lang =
@@ -2135,9 +2073,6 @@ surveyText lang =
 
         De ->
             "Texteingabe ..."
-
-        En ->
-            "Enter some text..."
 
         Es ->
             "introducir texto"
@@ -2162,6 +2097,9 @@ surveyText lang =
 
         Zh ->
             "輸入文字..."
+
+        _ ->
+            "Enter some text..."
 
 
 chartPie : Lang -> String
@@ -2295,6 +2233,9 @@ chartTreemap lang =
 chartBoxplot : Lang -> String
 chartBoxplot lang =
     case lang of
+        De ->
+            "Boxplot"
+
         Tw ->
             "箱型图"
 
