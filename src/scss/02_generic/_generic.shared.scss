@@ -21,7 +21,7 @@ input,
 button {
   &:focus {
     outline: 0;
-    box-shadow: 0 0 0 0.25rem rgba($color-turquoise-1, 0.25);
+    box-shadow: 0 0 0 0.25rem rgba(var(--color-highlight), 0.15);
   }
 }
 

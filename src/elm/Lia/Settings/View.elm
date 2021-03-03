@@ -169,9 +169,9 @@ viewSizing : Lang -> Int -> Html Msg
 viewSizing lang int =
     Html.div []
         [ Html.text <| Trans.baseFont lang ++ ":"
-        , btnFont "icon-minus" (Trans.baseDec lang) (ChangeFontSize False)
+        , btnFont "icon icon-minus" (Trans.baseDec lang) (ChangeFontSize False)
         , Html.text (String.fromInt int ++ "%")
-        , btnFont "icon-plus" (Trans.baseInc lang) (ChangeFontSize True)
+        , btnFont "icon icon-plus" (Trans.baseInc lang) (ChangeFontSize True)
         ]
 
 

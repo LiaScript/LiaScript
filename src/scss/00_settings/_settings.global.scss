@@ -44,7 +44,7 @@ $global-breakpoints: (
    UI treatments
    -------------------------------------------------- */
 
-$global-border: 1px solid var(--lia-grey-light) !default;
+$global-border: 1px solid rgb(var(--lia-grey-light)) !default;
 $global-radius: 0.8rem !default;
 $global-outline: 3px !default;
 $global-transition: all 250ms ease-in-out !default;

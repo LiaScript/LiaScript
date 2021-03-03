@@ -6,7 +6,7 @@ body {
   font-size: $global-font-size;
   font-weight: 400;
   line-height: $global-line-height;
-  color: var(--color-text);
+  color: rgb(var(--color-text));
 }
 
 body,

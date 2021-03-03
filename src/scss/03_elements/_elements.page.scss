@@ -1,9 +1,26 @@
+// basic color definitions
 :root {
   // map $global-colors and define global color variables with prefix "lia"
-  @each $color, $hex in $global-colors {
-    --lia-#{$color}: #{$hex};
+  @each $color, $rgb in $global-colors {
+    --lia-#{$color}: #{$rgb};
+  }
+}
+
+// additional color definitions for default theme
+:root {
+  --color-text: var(--lia-anthracite);
+  --color-highlight: var(--lia-turquoise);
+  --color-background: var(--lia-white);
+
+  &.lia-theme-red {
+    --color-highlight: var(--lia-red);
   }
 
-  --color-text: var(--lia-anthracite);
-  --color-background: var(--lia-turquoise);
+  &.lia-theme-blue {
+    --color-highlight: var(--lia-blue);
+  }
+
+  &.lia-theme-yellow {
+    --color-highlight: var(--lia-yellow);
+  }
 }

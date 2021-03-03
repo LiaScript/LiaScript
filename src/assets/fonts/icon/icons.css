@@ -403,11 +403,11 @@
   content: "\EA2F"
 }
 
-.icon-sorting_ascending:before {
+.icon-sort-asc:before {
   content: "\EA30"
 }
 
-.icon-sorting_descending:before {
+.icon-sort-desc:before {
   content: "\EA31"
 }
 
