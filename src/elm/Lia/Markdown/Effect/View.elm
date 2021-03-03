@@ -143,7 +143,8 @@ inline config attr e body =
         case class e of
             Animation ->
                 Html.div
-                    [ if isIn config.visible e then
+                    [ Attr.class "d-inline-block"
+                    , if isIn config.visible e then
                         Attr.hidden False
 
                       else

@@ -4,6 +4,22 @@
   overflow: hidden auto;
   display: flex;
   flex-direction: column;
+  height: 14.2rem;
+  width: auto;
+  max-width: 144rem;
+
+  background-color: rgb(var(--lia-grey-light));
+
+  @include breakpoint("md") {
+    margin: 0 3rem;
+  }
+
+  @include breakpoint("lg") {
+    background-color: transparent;
+    height: auto;
+    margin: 0;
+    width: 100%;
+  }
 
   &__content {
     background-color: rgb(var(--lia-grey-light));
