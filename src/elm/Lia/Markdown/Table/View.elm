@@ -65,7 +65,7 @@ viewDiagram : Lang -> Table -> State -> Scripts a -> Maybe Int -> Int -> Bool ->
 viewDiagram lang table state effects visible width light attr =
     Html.div
         [ blockKeydown (UpdateTable Sub.NoOp) ]
-        [ toggleBtn lang table.id "table"
+        [ toggleBtn table.id ( "table", "Table" )
         , table.body
             |> toMatrix effects visible
             |> sort state
@@ -498,46 +498,46 @@ toTable lang id attr class body =
 
     else
         Html.div [ Attr.class "lia-plot" ]
-            [ toggleBtn lang id <|
+            [ toggleBtn id <|
                 case class of
                     BarChart ->
-                        "barchart"
+                        ( "barchart", Translations.chartBar lang )
 
                     PieChart ->
-                        "piechart"
+                        ( "piechart", Translations.chartPie lang )
 
                     LinePlot ->
-                        "lineplot"
+                        ( "lineplot", Translations.chartLine lang )
 
                     HeatMap ->
-                        "heatmap"
+                        ( "heatmap", Translations.chartHeatmap lang )
 
                     Radar ->
-                        "radar"
+                        ( "radar", Translations.chartRadar lang )
 
                     Parallel ->
-                        "parallel"
+                        ( "parallel", Translations.chartParallel lang )
 
                     Graph ->
-                        "graph"
+                        ( "graph", Translations.chartGraph lang )
 
                     Map ->
-                        "map"
+                        ( "map", Translations.chartMap lang )
 
                     Sankey ->
-                        "sankey"
+                        ( "sankey", Translations.chartSankey lang )
 
                     ScatterPlot ->
-                        "scatterplot"
+                        ( "scatterplot", Translations.chartScatter lang )
 
                     BoxPlot ->
-                        "boxplot"
+                        ( "boxplot", Translations.chartBoxplot lang )
 
                     Funnel ->
-                        "funnel"
+                        ( "funnel", Translations.chartFunnel lang )
 
                     None ->
-                        ""
+                        ( "", "" )
             , Html.div [ Attr.class "lia-table-responsive" ]
                 [ Html.table
                     (Param.annotation "lia-table" attr)
@@ -546,8 +546,8 @@ toTable lang id attr class body =
             ]
 
 
-toggleBtn : Lang -> Int -> String -> Html Msg
-toggleBtn lang id icon =
+toggleBtn : Int -> ( String, String ) -> Html Msg
+toggleBtn id ( icon, title ) =
     Html.button
         [ Attr.class "lia-btn lia-btn--outline lia-plot__switch mb-1"
         , onClick <| UpdateTable <| Sub.Toggle id
@@ -559,7 +559,7 @@ toggleBtn lang id icon =
             ]
             []
         , Html.span [ Attr.class "lia-btn__text" ]
-            [ Html.text "todo: title"
+            [ Html.text title
             ]
         ]
 
