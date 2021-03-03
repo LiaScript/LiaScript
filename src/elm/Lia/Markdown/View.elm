@@ -290,6 +290,11 @@ view_block config block =
             Task.view config.main config.section.task_vector attr list
                 |> Html.map UpdateTask
 
+        Gallery attr list ->
+            list
+                |> config.view
+                |> Html.div (annotation "lia-gallery" attr)
+
 
 view_ascii : Config Msg -> Parameters -> SvgBob.Configuration (List Markdown) -> Html Msg
 view_ascii config attr =
