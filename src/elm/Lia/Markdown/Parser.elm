@@ -150,7 +150,7 @@ gallery =
                     succeed list
 
                 else
-                    fail "not enough gallery images"
+                    fail "not a gallery"
             )
 
 
