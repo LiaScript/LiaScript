@@ -18,7 +18,6 @@ import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Json.Decode
 import Lia.Script
-import Lia.Utils exposing (langInTranslations)
 import Model exposing (Model, State(..))
 import Port.Event exposing (Event)
 import Process
@@ -187,11 +186,9 @@ update msg model =
                                 | lia =
                                     { lia
                                         | translation =
-                                            if langInTranslations str then
-                                                Translations.getLnFromCode str
-
-                                            else
-                                                lia.translation
+                                            str
+                                                |> Translations.getLnFromCode
+                                                |> Maybe.withDefault lia.translation
                                         , langCode = str
                                     }
                               }

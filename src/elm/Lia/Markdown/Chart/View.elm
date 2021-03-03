@@ -16,7 +16,6 @@ module Lia.Markdown.Chart.View exposing
     , viewSankey
     )
 
-import Accessibility.Aria as A11y_Aria
 import Char exposing (toLower)
 import Conditional.List as CList
 import Dict exposing (Dict)
@@ -26,8 +25,7 @@ import Html.Attributes as Attr
 import Json.Encode as JE
 import Lia.Markdown.Chart.Types exposing (Chart, Diagram(..), Labels)
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
-import Lia.Utils exposing (langToString)
-import Translations exposing (Lang)
+import Translations exposing (Lang, getCodeFromLn)
 
 
 view : Lang -> Parameters -> Bool -> Chart -> Html msg
@@ -195,7 +193,7 @@ eCharts lang attr light json option =
 
                 else
                     "dark"
-            , Attr.attribute "locale" (langToString lang)
+            , Attr.attribute "locale" (getCodeFromLn lang)
             , Attr.property "option" option
             , json
                 |> Maybe.withDefault ""
