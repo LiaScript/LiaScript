@@ -3,11 +3,11 @@
     $bg: map-get($theme, background);
     $fg: color-contrast($bg);
 
-    background: $bg;
-    color: $fg;
+    //background: $bg;
+    //color: $fg;
 
     // elements
-    @include style-btn($theme);
+    //@include style-btn($theme);
     @include style-card($theme);
     @include style-input($theme);
     @include style-code($theme);
@@ -18,11 +18,11 @@
     // components
     @include style-accordion($theme);
     @include style-dropdown($theme);
-    @include style-effect-circle($theme);
+    //@include style-effect-circle($theme);
     @include style-header($theme);
     @include style-quote($theme);
     @include style-script($theme);
-    @include style-table($theme);
+    //@include style-table($theme);
     @include style-toc($theme);
   }
 }

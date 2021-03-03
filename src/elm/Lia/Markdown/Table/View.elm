@@ -492,10 +492,12 @@ getState id =
 toTable : Lang -> Int -> Parameters -> Class -> List (Html Msg) -> Html Msg
 toTable lang id attr class body =
     if class == None then
-        Html.table (Param.annotation "lia-table" attr) body
+        Html.div [ Attr.class "lia-table-responsive" ]
+            [ Html.table (Param.annotation "lia-table" attr) body
+            ]
 
     else
-        Html.div []
+        Html.div [ Attr.class "lia-plot" ]
             [ toggleBtn lang id <|
                 case class of
                     BarChart ->
@@ -536,22 +538,29 @@ toTable lang id attr class body =
 
                     None ->
                         ""
-            , Html.table
-                (Param.annotation "lia-table" attr)
-                body
+            , Html.div [ Attr.class "lia-table-responsive" ]
+                [ Html.table
+                    (Param.annotation "lia-table" attr)
+                    body
+                ]
             ]
 
 
 toggleBtn : Lang -> Int -> String -> Html Msg
 toggleBtn lang id icon =
-    Html.button [ onClick <| UpdateTable <| Sub.Toggle id ]
+    Html.button
+        [ Attr.class "lia-btn lia-btn--outline lia-plot__switch mb-1"
+        , onClick <| UpdateTable <| Sub.Toggle id
+        ]
         [ Html.img
             [ Attr.height 16
             , Attr.width 16
             , Attr.src <| "img/" ++ icon ++ ".png"
             ]
             []
-        , Html.text "todo: title"
+        , Html.span [ Attr.class "lia-btn__text" ]
+            [ Html.text "todo: title"
+            ]
         ]
 
 
@@ -644,7 +653,7 @@ view_head2 viewer id format state =
         >> List.indexedMap
             (\i ( f, ( a, r ) ) ->
                 header viewer id f state i r
-                    |> Html.th (Attr.class f :: Param.toAttribute a)
+                    |> Html.th (Attr.class "lia-table__header" :: Attr.class f :: Param.toAttribute a)
             )
 
 
@@ -654,19 +663,17 @@ header viewer id format state i r =
         [ Attr.class format ]
         (viewer r)
     , Html.button
-        [ Attr.class "lia-icon"
+        [ Attr.class "lia-table__sort"
+        , Attr.class <|
+            if state.column == i && state.dir then
+                "lia-btn lia-btn--transparent icon icon-sort-asc active"
+
+            else if state.column == i && not state.dir then
+                "lia-btn lia-btn--transparent icon icon-sort-desc active"
+
+            else
+                "lia-btn lia-btn--transparent icon icon-sort-asc"
         , onClick <| UpdateTable <| Sub.Sort id i
         ]
-        [ Html.i []
-            [ Html.text <|
-                if state.column == i && state.dir then
-                    "sort up"
-
-                else if state.column == i && not state.dir then
-                    "sort down"
-
-                else
-                    "unsorted"
-            ]
-        ]
+        []
     ]

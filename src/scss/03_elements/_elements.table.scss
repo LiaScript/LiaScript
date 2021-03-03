@@ -1,29 +1,129 @@
 .lia-table {
-  border-collapse: collapse;
+  border-collapse: separate;
   border-spacing: 0;
 
+  &-responsive {
+    display: block;
+    max-height: 50vh;
+    overflow: auto;
+    width: 100%;
+  }
+
   &__head {
-    padding: 1.3rem 1.6rem;
+    display: flex;
+    position: sticky;
+    top: 0;
+    z-index: 3;
+
+    th {
+      background: white;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+
+      &:first-child {
+        left: 0;
+        position: sticky;
+        z-index: 2;
+      }
+    }
   }
 
   &__row {
-    //
+    display: block;
+
+    &:last-child {
+      border-bottom: $global-border;
+    }
+
+    &:hover {
+      background-color: rgba(var(--color-highlight), 0.05);
+
+      > td {
+        background-color: rgba(var(--color-highlight), 0.05);
+
+        &:first-child::before {
+          background-color: rgba(var(--color-highlight), 0.1);
+        }
+      }
+    }
   }
 
   &__header {
-    //
+    align-items: center;
+    display: flex;
+    border-top: $global-border;
+    border-left: 0;
+    border-bottom: 0;
+    border-right: $global-border;
+
+    &:first-child {
+      border-left: $global-border;
+      border-right: $global-border;
+    }
+
+    &:last-child {
+      border-right: $global-border;
+    }
   }
 
   &__data {
-    //
+    border: $global-border;
+    border-top: $global-border;
+    border-left: 0;
+    border-bottom: 0;
+    border-right: $global-border;
+
+    &:first-child {
+      border-left: $global-border;
+      border-right: $global-border;
+      background-color: white;
+      left: 0;
+      position: sticky;
+      z-index: 2;
+
+      /* 
+       * Fix layering and opacity problems if <tr> is hovered.
+       * Makes sure that any <td> is not visible (behind first, sticky <td>)
+       * if table is scrolled horizontally.
+       */
+
+      &:before,
+      &:after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background-color: white;
+        height: 100%;
+      }
+
+      &:before {
+        z-index: -1;
+      }
+
+      &:after {
+        z-index: -2;
+      }
+    }
   }
 
   &__header,
   &__data {
-    padding: 1rem 1.6rem;
-    border: $global-border;
-    border-width: 0 0 1px;
+    padding: 1rem 3.2rem 1rem 1.6rem;
     vertical-align: top;
+    width: 13.5rem;
+  }
+
+  &__sort {
+    margin-left: auto;
+    position: absolute;
+    right: 2px;
+
+    &.active {
+      color: rgb(var(--color-highlight));
+    }
   }
 }
 
