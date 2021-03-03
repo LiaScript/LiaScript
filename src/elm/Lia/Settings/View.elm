@@ -125,7 +125,9 @@ viewTheme lang tabbable theme =
         |> Html.div
             [ Attr.class "lia-radio-group lia-settings-theme-colors"
             , A11y_Role.radioGroup
-            , A11y_Widget.label "Theme color" -- todo
+            , lang
+                |> Trans.cSchema
+                |> A11y_Widget.label
             ]
 
 
