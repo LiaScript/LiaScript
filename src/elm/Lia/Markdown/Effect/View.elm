@@ -5,6 +5,7 @@ module Lia.Markdown.Effect.View exposing
     , state
     )
 
+import Element exposing (Attr)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
@@ -119,7 +120,7 @@ inline config attr e body =
                 circle_ e.begin
                     :: Html.text " "
                     :: body
-                    |> Html.span
+                    |> Html.div
                         (Attr.id (String.fromInt e.begin)
                             :: annotation "" []
                         )
@@ -127,13 +128,13 @@ inline config attr e body =
             PlayBack ->
                 inline_playback config e
                     :: body
-                    |> Html.span (annotation "" attr)
+                    |> Html.div (annotation "" attr)
 
             PlayBackAnimation ->
                 circle_ e.begin
                     :: inline_playback config e
                     :: body
-                    |> Html.span
+                    |> Html.div
                         (Attr.id (String.fromInt e.begin)
                             :: annotation "" []
                         )
@@ -141,7 +142,7 @@ inline config attr e body =
     else
         case class e of
             Animation ->
-                Html.span
+                Html.div
                     [ if isIn config.visible e then
                         Attr.hidden False
 
@@ -151,7 +152,7 @@ inline config attr e body =
                     [ circle_ e.begin
                         :: Html.text " "
                         :: body
-                        |> Html.span
+                        |> Html.div
                             (Attr.id (String.fromInt e.begin)
                                 :: annotation
                                     (if attr == [] then
@@ -167,10 +168,10 @@ inline config attr e body =
             PlayBack ->
                 inline_playback config e
                     :: body
-                    |> Html.span (annotation "" attr)
+                    |> Html.div (annotation "" attr)
 
             PlayBackAnimation ->
-                Html.span
+                Html.div
                     [ if isIn config.visible e then
                         Attr.hidden False
 
