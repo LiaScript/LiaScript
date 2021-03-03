@@ -1,10 +1,11 @@
 .lia-toc {
   background-color: white;
+  border-right: $global-border;
   display: flex;
   flex-direction: column;
   height: 100%;
   left: 0;
-  padding: 3rem 3rem 1rem 0;
+  padding: 3rem 0 1rem 0;
   position: fixed;
   transition: $global-transition;
   width: $toc-width-mobile;
@@ -51,7 +52,7 @@
   }
 
   &__search {
-    margin: 0 0 4.8rem 3rem;
+    margin: 0 3rem 4.8rem;
     position: relative;
     display: inline-block;
 
@@ -110,7 +111,7 @@
 
           &:after {
             content: "";
-            background-color: #f0f0f0;
+            background-color: rgb(var(--lia-grey-light));
             display: inline-block;
             height: 1px;
             left: 3rem;
@@ -141,7 +142,7 @@
 
     &:after {
       content: "";
-      background-color: $color-lightgrey;
+      background-color: rgb(var(--lia-grey-light));
       display: inline-block;
       height: 1px;
       left: 3rem;
@@ -203,7 +204,7 @@
             top: 0;
             height: 100%;
             width: 5px;
-            background-color: $color-turquoise-1;
+            background-color: rgb(var(--lia-turquoise));
           }
 
           &:hover {

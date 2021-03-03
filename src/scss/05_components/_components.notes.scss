@@ -6,7 +6,7 @@
   flex-direction: column;
 
   &__content {
-    background-color: var(--lia-grey-light);
+    background-color: rgb(var(--lia-grey-light));
     padding: 2.3rem;
 
     &:nth-child(2n) {
@@ -18,7 +18,7 @@
     }
 
     &.active {
-      color: var(--lia-turquoise);
+      color: rgb(var(--color-highlight));
     }
 
     > *:last-child {
@@ -27,8 +27,8 @@
   }
 
   &__counter {
-    border-bottom: 1px solid var(--lia-grey);
-    color: var(--lia-grey);
+    border-bottom: 1px solid rgb(var(--lia-grey));
+    color: rgb(var(--lia-grey));
     display: inline-block;
     margin-bottom: 0.5rem;
   }

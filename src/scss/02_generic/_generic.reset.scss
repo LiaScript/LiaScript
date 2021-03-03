@@ -6,54 +6,57 @@
  * A very simple reset that sits on top of Normalize.css.
  */
 
- body,
- h1, h2, h3, h4, h5, h6,
- blockquote, p, pre,
- dl, dd, ol, ul,
- figure,
- hr,
- fieldset, legend {
-   margin:  0;
-   padding: 0;
- }
- 
- 
- 
- /**
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+blockquote,
+p,
+pre,
+dl,
+dd,
+ol,
+ul,
+figure,
+hr,
+fieldset,
+legend {
+  margin: 0;
+  padding: 0;
+}
+
+/**
   * Remove trailing margins from nested lists.
   */
- 
- li > {
- 
-   ol,
-   ul {
-     margin-bottom: 0;
-   }
- 
- }
- 
- 
- 
- /**
+
+li > {
+  ol,
+  ul {
+    margin-bottom: 0;
+  }
+}
+
+/**
   * Remove default table spacing.
   */
- 
- table {
-   border-collapse: collapse;
-   border-spacing: 0;
- }
- 
- 
- 
- /**
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/**
   * 1. Reset Chrome and Firefox behaviour which sets a `min-width: min-content;`
   *    on fieldsets.
   */
- 
- fieldset {
-   min-width: 0; /* [1] */
-   border: 0;
- }
+
+fieldset {
+  min-width: 0; /* [1] */
+  border: 0;
+}
 
 /* html,
 body {
@@ -66,22 +69,33 @@ body {
   box-sizing: border-box;
 }
 
-*, *:after, *::before {
+*,
+*:after,
+*::before {
   box-sizing: inherit;
 }
 
 span {
   font-style: inherit;
   font-weight: inherit;
-  vertical-align: middle;
 }
 
 /* clears the 'X' from Internet Explorer */
-input[type=search]::-ms-clear {  display: none; width : 0; height: 0; }
-input[type=search]::-ms-reveal {  display: none; width : 0; height: 0; }
+input[type="search"]::-ms-clear {
+  display: none;
+  width: 0;
+  height: 0;
+}
+input[type="search"]::-ms-reveal {
+  display: none;
+  width: 0;
+  height: 0;
+}
 
 /* clears the 'X' from Chrome */
 input[type="search"]::-webkit-search-decoration,
 input[type="search"]::-webkit-search-cancel-button,
 input[type="search"]::-webkit-search-results-button,
-input[type="search"]::-webkit-search-results-decoration { display: none; }
+input[type="search"]::-webkit-search-results-decoration {
+  display: none;
+}

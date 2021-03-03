@@ -5,18 +5,16 @@ $btn-height: 3.6rem;
   border: none;
   display: inline-block;
   line-height: $global-line-height;
-  min-height: $btn-height;
-  min-width: $btn-min-width;
-  padding: map-get($global-spacing, spacing-small)
-    map-get($global-spacing, spacing-normal);
+  padding: 0.5rem 0.6rem 0.5rem 0.6rem;
 
   &--tag {
     border-radius: 0;
   }
 
   &--outline {
-    background-color: transparent;
-    border: $global-border;
+    color: rgb(var(--color-highlight));
+    background-color: rgb(var(--color-background));
+    border: 1px solid rgb(var(--color-highlight));
   }
 
   &--transparent {
@@ -30,19 +28,13 @@ $btn-height: 3.6rem;
     vertical-align: middle;
   }
 
-  &--icon {
-    font-family: "icon";
-  }
-
   > .lia-btn__icon {
-    font-size: 1.6rem;
     line-height: inherit;
     vertical-align: middle;
-    display: inline;
+  }
 
-    & + .lia-btn__text {
-      margin-left: 1rem;
-    }
+  > .lia-btn__text {
+    margin-left: 1rem;
   }
 }
 
