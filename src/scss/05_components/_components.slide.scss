@@ -2,27 +2,38 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding-left: 1rem;
   position: relative;
   width: 100%;
 
   &__footer {
     align-items: flex-start;
-    bottom: 1rem;
+    bottom: 0;
     display: flex;
     flex-direction: column;
-    margin: 3rem 0;
-    padding: 0 3rem;
-    position: relative;
+    max-width: 144rem;
+    position: absolute;
+    width: 100%;
+    z-index: 50;
+
+    @include breakpoint("md") {
+      padding: 0 3rem;
+      align-items: center;
+    }
+
+    @include breakpoint("lg") {
+      align-items: flex-start;
+      flex-direction: row;
+    }
   }
 
   &__content {
     height: 100%;
     margin-top: $header-height-mobile;
+    margin-bottom: 2rem;
     max-height: 80vh;
-    max-width: 1200px;
+    max-width: 144rem;
     overflow: hidden auto;
-    padding: 3rem;
+    padding: 3rem 3rem 0;
     position: relative;
     width: 100%;
 
