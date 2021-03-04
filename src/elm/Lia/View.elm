@@ -221,9 +221,10 @@ slideA11y lang mode effect id =
                                             >> Html.map (Tuple.pair id >> Script)
                                         )
                                     |> (::)
-                                        (Html.button
-                                            [ Attr.class "lia-btn hide-lg-down"
+                                        (Html.a
+                                            [ Attr.class "hide-lg-down"
                                             , counter |> JumpToFragment |> onClick
+                                            , Attr.href "#"
                                             ]
                                             [ Html.small
                                                 [ Attr.class "lia-notes__counter" ]
