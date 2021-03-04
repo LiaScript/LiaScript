@@ -9,11 +9,12 @@
     color: rgb(var(--color-highlight));
     display: inline-block;
     font-weight: 400;
-    height: 2.5rem;
-    left: 0;
+    height: 2rem;
+    transform: translateX(-124%);
     position: absolute;
     text-align: center;
-    width: 2.5rem;
+    line-height: 1.2;
+    width: 2rem;
 
     &.animated {
       left: 2.5rem * -1.5;
@@ -25,6 +26,7 @@
       height: 1.8rem;
       font-size: 1.2rem;
       line-height: initial;
+      transform: none;
 
       &.animated {
         left: 1.8rem * -1.5;

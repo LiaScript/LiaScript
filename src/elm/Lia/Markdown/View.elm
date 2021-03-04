@@ -105,7 +105,7 @@ view_body ( config, footnote2show, footnotes ) =
                 else
                     s
            )
-        >> Html.section [ Attr.class "lia-slide__content" ]
+        >> Html.main_ [ Attr.class "lia-slide__content" ]
 
 
 view_footnote : (Markdown -> Html Msg) -> Maybe String -> Footnotes.Model -> Html Msg
@@ -290,6 +290,11 @@ view_block config block =
             Task.view config.main config.section.task_vector attr list
                 |> Html.map UpdateTask
 
+        Gallery attr list ->
+            list
+                |> config.view
+                |> Html.div (annotation "lia-gallery" attr)
+
 
 view_ascii : Config Msg -> Parameters -> SvgBob.Configuration (List Markdown) -> Html Msg
 view_ascii config attr =
@@ -327,11 +332,11 @@ viewQuiz config attr quiz solution =
     case solution of
         Nothing ->
             Quizzes.view config.main quiz config.section.quiz_vector
-                |> Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr)
+                |> Html.form (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr)
                 |> Html.map UpdateQuiz
 
         Just ( answer, hidden_effects ) ->
-            Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr) <|
+            Html.form (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr) <|
                 if Quizzes.showSolution config.section.quiz_vector quiz then
                     (config.section.quiz_vector
                         |> Quizzes.view config.main quiz

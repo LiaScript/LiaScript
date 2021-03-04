@@ -1,9 +1,24 @@
 .lia-notes {
-  width: $notes-width-mobile;
-  position: relative;
-  overflow: hidden auto;
   display: flex;
   flex-direction: column;
+  height: 14.2rem;
+  max-width: 144rem;
+  overflow: hidden auto;
+  position: relative;
+  width: $notes-width-mobile;
+
+  background-color: rgb(var(--lia-grey-light));
+
+  @include breakpoint("md") {
+    margin: 0 3rem;
+  }
+
+  @include breakpoint("lg") {
+    background-color: transparent;
+    height: auto;
+    margin: 0;
+    width: 100%;
+  }
 
   &__content {
     background-color: rgb(var(--lia-grey-light));

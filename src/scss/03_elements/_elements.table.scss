@@ -4,12 +4,13 @@
 
   &-responsive {
     display: block;
-    max-height: 50vh;
+    max-height: 70vh;
     overflow: auto;
     width: 100%;
   }
 
   &__head {
+    border-bottom: $global-border;
     display: flex;
     position: sticky;
     top: 0;
@@ -32,12 +33,17 @@
   &__row {
     display: block;
 
+    &:first-of-type > td {
+      border-top: 0;
+    }
+
     &:last-child {
       border-bottom: $global-border;
     }
 
     &:hover {
       background-color: rgba(var(--color-highlight), 0.05);
+      cursor: pointer;
 
       > td {
         background-color: rgba(var(--color-highlight), 0.05);

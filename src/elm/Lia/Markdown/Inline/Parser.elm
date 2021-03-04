@@ -6,6 +6,7 @@ module Lia.Markdown.Inline.Parser exposing
     , javascript
     , line
     , lineWithProblems
+    , mediaReference
     , parse_inlines
     )
 
@@ -313,6 +314,17 @@ reference =
     ]
         |> choice
         |> map Ref
+
+
+mediaReference : Parser Context Inline
+mediaReference =
+    [ refMovie
+    , refImage
+    , refQr
+    ]
+        |> choice
+        |> map Ref
+        |> andMap (Macro.macro |> keep annotations)
 
 
 refMail : Parser Context Reference

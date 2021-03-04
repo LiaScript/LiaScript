@@ -1,0 +1,20 @@
+.lia-responsive-voice {
+  align-items: flex-start;
+  background-color: rgb(var(--lia-grey-light));
+  display: flex;
+  flex-direction: column;
+  min-height: 6rem;
+  justify-content: center;
+  padding: 2rem;
+  width: 100%;
+
+  @include breakpoint("sm") {
+    align-items: center;
+    flex-direction: row;
+  }
+
+  @include breakpoint("md") {
+    border-top-left-radius: $global-radius;
+    border-top-right-radius: $global-radius;
+  }
+}

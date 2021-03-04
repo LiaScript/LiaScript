@@ -75,26 +75,28 @@ class id vector =
 {-| **private:** Simple router function that is used to match the current state
 of a quiz with its type.
 -}
-viewState : Config sub -> Bool -> State -> Quiz -> Html (Msg sub)
+viewState : Config sub -> Bool -> State -> Quiz -> List (Html (Msg sub))
 viewState config solved state quiz =
     case ( state, quiz.quiz ) of
         ( Block_State s, Block_Type q ) ->
-            s
+            [ s
                 |> Block.view config solved q
                 |> Html.map (Block_Update quiz.id)
+            ]
 
         ( Vector_State s, Vector_Type q ) ->
             s
                 |> Vector.view config solved q
-                |> Html.map (Vector_Update quiz.id)
+                |> List.map (Html.map (Vector_Update quiz.id))
 
         ( Matrix_State s, Matrix_Type q ) ->
-            s
+            [ s
                 |> Matrix.view config solved q
                 |> Html.map (Matrix_Update quiz.id)
+            ]
 
         _ ->
-            Html.text ""
+            []
 
 
 {-| **private:** Return the current quiz as List of elements that contains:
@@ -108,15 +110,14 @@ viewState config solved state quiz =
     button and a list of already revealed hints
 
 -}
-viewQuiz : Config sub -> Element -> Quiz -> Html (Msg sub) -> List (Html (Msg sub))
+viewQuiz : Config sub -> Element -> Quiz -> List (Html (Msg sub)) -> List (Html (Msg sub))
 viewQuiz config state quiz body =
-    List.append
-        [ viewErrorMessage state.error_msg
-        , body
-        , viewMainButton config state.trial state.solved (Check quiz.id quiz.quiz quiz.javascript)
-        , viewSolutionButton config state.solved (ShowSolution quiz.id quiz.quiz)
-        ]
-        (viewHints config state.solved quiz.id state.hint quiz.hints)
+    viewErrorMessage state.error_msg
+        :: body
+        ++ [ viewMainButton config state.trial state.solved (Check quiz.id quiz.quiz quiz.javascript)
+           , viewSolutionButton config state.solved (ShowSolution quiz.id quiz.quiz)
+           ]
+        ++ viewHints config state.solved quiz.id state.hint quiz.hints
 
 
 {-| **private:** Show an error-message, which results from the execution of an

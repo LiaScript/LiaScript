@@ -8,7 +8,7 @@ $toc-width-desktop: 28.5rem !default;
 $support-width-mobile: 100% !default;
 $support-width-desktop: 21.6rem !default;
 
-$notes-width-mobile: 100% !default;
+$notes-width-mobile: auto !default;
 $notes-width-desktop: 31.5rem !default;
 
 /* --------------------------------------------------
@@ -71,11 +71,31 @@ $notes-width-desktop: 31.5rem !default;
     }
   }
 
+  &.lia-mode--slides {
+    .lia-slide {
+      height: calc(100vh - 14.2rem);
+    }
+  }
+
+  @include breakpoint("md") {
+    &.lia-mode--textbook {
+      .lia-pagination {
+        margin-bottom: 2rem;
+      }
+    }
+  }
+
   @include breakpoint("lg") {
     flex-direction: row;
 
-    &.lia-mode--slides .lia-header {
-      right: $notes-width-desktop;
+    &.lia-mode--slides {
+      .lia-header {
+        right: $notes-width-desktop;
+      }
+
+      .lia-slide {
+        height: 100vh;
+      }
     }
   }
 }
