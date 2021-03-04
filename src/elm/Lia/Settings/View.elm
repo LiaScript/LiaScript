@@ -421,7 +421,16 @@ menuMode lang tabbable settings =
         |> Trans.modeMode
         |> actionBtn ShowModes
             (settings.action == Just ShowModes)
-            "icon-presentation"
+            (case settings.mode of
+                Presentation ->
+                    "icon-presentation"
+
+                Slides ->
+                    "icon-slides"
+
+                Textbook ->
+                    "icon-book"
+            )
     , viewModes lang tabbable settings
         |> submenu (settings.action == Just ShowModes)
     ]
