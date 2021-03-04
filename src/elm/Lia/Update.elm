@@ -12,7 +12,7 @@ import Json.Encode as JE
 import Lia.Index.Update as Index
 import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Effect.Update as Effect
-import Lia.Markdown.Update as Markdown exposing (ttsReplay)
+import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (Model, loadResource)
 import Lia.Parser.Parser exposing (parse_section)
 import Lia.Section exposing (Section)

@@ -5,7 +5,6 @@ import Accessibility.Landmark as A11y_Landmark
 import Accessibility.Role as A11y_Role
 import Accessibility.Widget as A11y_Widget
 import Const
-import Flip exposing (flip)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
@@ -13,13 +12,11 @@ import Lia.Definition.Types as Definition exposing (Definition)
 import Lia.Index.View as Index
 import Lia.Markdown.Config as Config
 import Lia.Markdown.Effect.Model as Effect
-import Lia.Markdown.Effect.Types exposing (Effect)
 import Lia.Markdown.Effect.View exposing (state)
-import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model)
-import Lia.Section exposing (Section, SubSection)
+import Lia.Section exposing (SubSection)
 import Lia.Settings.Types exposing (Mode(..), Settings)
 import Lia.Settings.Update exposing (Toggle(..), toggle_sound)
 import Lia.Settings.View as Settings
@@ -267,8 +264,8 @@ slideA11y lang mode effect id =
 4.  `msg`: to release if pressed
 
 -}
-navButton : String -> String -> String -> String -> msg -> Html msg
-navButton str title id class msg =
+navButton : String -> String -> String -> msg -> Html msg
+navButton title id class msg =
     Html.button
         [ onClick msg
         , Attr.title title
@@ -356,7 +353,7 @@ slideNavigation : Lang -> Mode -> Int -> Effect.Model SubSection -> Html Msg
 slideNavigation lang mode slide effect =
     Html.div [ Attr.class "lia-pagination" ]
         [ Html.div [ Attr.class "lia-pagination__content" ]
-            [ navButton "navigate_before" (Trans.basePrev lang) "lia-btn-prev" "icon-arrow-left" PrevSection
+            [ navButton (Trans.basePrev lang) "lia-btn-prev" "icon-arrow-left" PrevSection
             , Html.span
                 [ Attr.class "lia-pagination__current" ]
                 [ Html.text (String.fromInt (slide + 1))
@@ -370,7 +367,7 @@ slideNavigation lang mode slide effect =
                                 state effect
                     ]
                 ]
-            , navButton "navigate_next" (Trans.baseNext lang) "lia-btn-next" "icon-arrow-right" NextSection
+            , navButton (Trans.baseNext lang) "lia-btn-next" "icon-arrow-right" NextSection
             ]
         ]
 

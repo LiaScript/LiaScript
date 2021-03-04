@@ -1,7 +1,7 @@
 module Lia.Markdown.View exposing (view)
 
 import Html exposing (Html)
-import Html.Attributes as Attr exposing (attribute)
+import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Html.Lazy as Lazy
 import Lia.Markdown.Chart.View as Charts
