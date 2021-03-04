@@ -1,17 +1,19 @@
 .lia-table {
   border-collapse: separate;
   border-spacing: 0;
+  table-layout: auto;
+  width: 100%;
 
   &-responsive {
     display: block;
-    max-height: 70vh;
+    margin-bottom: 3rem;
+    max-height: 80vh;
     overflow: auto;
     width: 100%;
   }
 
   &__head {
     border-bottom: $global-border;
-    display: flex;
     position: sticky;
     top: 0;
     z-index: 3;
@@ -31,8 +33,6 @@
   }
 
   &__row {
-    display: block;
-
     &:first-of-type > td {
       border-top: 0;
     }
@@ -56,11 +56,10 @@
   }
 
   &__header {
-    align-items: center;
-    display: flex;
+    position: relative;
     border-top: $global-border;
     border-left: 0;
-    border-bottom: 0;
+    border-bottom: $global-border;
     border-right: $global-border;
 
     &:first-child {
@@ -117,15 +116,18 @@
 
   &__header,
   &__data {
+    max-width: 50vw;
+    min-width: 13.5rem;
     padding: 1rem 3.2rem 1rem 1.6rem;
-    vertical-align: top;
-    width: 13.5rem;
+    word-wrap: break-word;
   }
 
   &__sort {
     margin-left: auto;
     position: absolute;
     right: 2px;
+    top: 50%;
+    transform: translateY(-50%);
 
     &.active {
       color: rgb(var(--color-highlight));
