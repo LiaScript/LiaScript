@@ -14,7 +14,7 @@ import Lia.Index.View as Index
 import Lia.Markdown.Config as Config
 import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Effect.Types exposing (Effect)
-import Lia.Markdown.Effect.View exposing (responsive, state)
+import Lia.Markdown.Effect.View exposing (state)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Markdown.View as Markdown
@@ -173,13 +173,35 @@ slideBottom lang settings slide effects =
                         , onClick <| TTSReplay (not settings.speaking)
                         , Attr.disabled (not settings.sound)
                         ]
-                        [ if settings.speaking then
-                            Html.text "stop"
+                        [ Html.i
+                            [ Attr.class <|
+                                if settings.speaking then
+                                    "icon icon-stop-circle"
 
-                          else
-                            Html.i [ Attr.class "icon icon-play-circle" ] []
+                                else
+                                    "icon icon-play-circle"
+                            ]
+                            []
                         ]
-                    , responsive lang settings.sound (UpdateSettings toggle_sound)
+                    , Html.button
+                        [ Attr.class "lia-btn"
+                        , Attr.id "lia-btn-sound"
+                        , onClick (UpdateSettings toggle_sound)
+                        , Attr.title <|
+                            if settings.sound then
+                                Trans.soundOn lang
+
+                            else
+                                Trans.soundOff lang
+                        ]
+                        [ Html.text <|
+                            if settings.sound then
+                                "volume_up"
+
+                            else
+                                "volume_off"
+                        ]
+                    , responsiveVoice
                     ]
         ]
 
@@ -377,3 +399,22 @@ slideNavigation lang mode slide effect =
 -- , Html.span [ Attr.class "lia-spacer", Attr.id "lia-spacer-right" ] []
 -- , Html.map UpdateSettings <| Settings.switch_button_mode lang mode
 -- ]
+
+
+responsiveVoice : Html msg
+responsiveVoice =
+    Html.small [ Attr.class "lia-responsive-voice__info" ]
+        [ Html.a [ Attr.href "https://responsivevoice.org" ] [ Html.text "ResponsiveVoice-NonCommercial" ]
+        , Html.text " licensed under "
+        , Html.a
+            [ Attr.href "https://creativecommons.org/licenses/by-nc-nd/4.0/" ]
+            [ Html.img
+                [ Attr.title "ResponsiveVoice Text To Speech"
+                , Attr.src "https://responsivevoice.org/wp-content/uploads/2014/08/95x15.png"
+                , Attr.alt "95x15"
+                , Attr.width 95
+                , Attr.height 15
+                ]
+                []
+            ]
+        ]

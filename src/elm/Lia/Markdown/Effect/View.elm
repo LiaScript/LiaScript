@@ -1,7 +1,6 @@
 module Lia.Markdown.Effect.View exposing
     ( block
     , inline
-    , responsive
     , state
     )
 
@@ -24,7 +23,6 @@ import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Settings.Types exposing (Mode(..))
 import Port.Event as Event exposing (Event)
 import Port.TTS
-import Translations exposing (Lang, soundOff, soundOn)
 
 
 circle_ : Int -> Html msg
@@ -208,42 +206,6 @@ circle id =
     Html.span
         [ Attr.class "lia-effect__circle" ]
         [ Html.text (String.fromInt id) ]
-
-
-responsive : Lang -> Bool -> msg -> Html msg
-responsive lang sound msg =
-    Html.div [ Attr.class "lia-responsive-voice__info" ]
-        [ Html.a [ Attr.href "https://responsivevoice.org" ] [ Html.text "ResponsiveVoice-NonCommercial" ]
-        , Html.text " licensed under "
-        , Html.a
-            [ Attr.href "https://creativecommons.org/licenses/by-nc-nd/4.0/" ]
-            [ Html.img
-                [ Attr.title "ResponsiveVoice Text To Speech"
-                , Attr.src "https://responsivevoice.org/wp-content/uploads/2014/08/95x15.png"
-                , Attr.alt "95x15"
-                , Attr.width 95
-                , Attr.height 15
-                ]
-                []
-            ]
-        , Html.button
-            [ Attr.class "lia-btn"
-            , Attr.id "lia-btn-sound"
-            , onClick msg
-            , Attr.title <|
-                if sound then
-                    soundOn lang
-
-                else
-                    soundOff lang
-            ]
-            [ if sound then
-                Html.text "volume_up"
-
-              else
-                Html.text "volume_off"
-            ]
-        ]
 
 
 state : Model a -> String
