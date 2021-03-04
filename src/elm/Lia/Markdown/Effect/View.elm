@@ -95,7 +95,7 @@ block config model attr e body =
             PlayBackAnimation ->
                 Html.div [ Attr.hidden (not visible) ] <|
                     [ block_playback config e
-                    , Html.div []
+                    , Html.div [ Attr.class "d-inline-block" ]
                         [ circle e.begin
                         , Html.div
                             ((Attr.id <|
@@ -173,7 +173,8 @@ inline config attr e body =
 
             PlayBackAnimation ->
                 Html.div
-                    [ if isIn config.visible e then
+                    [ Attr.class "d-inline-block"
+                    , if isIn config.visible e then
                         Attr.hidden False
 
                       else

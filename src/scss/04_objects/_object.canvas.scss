@@ -71,6 +71,12 @@ $notes-width-desktop: 31.5rem !default;
     }
   }
 
+  &.lia-mode--slides {
+    .lia-slide {
+      height: calc(100vh - 14.2rem);
+    }
+  }
+
   @include breakpoint("md") {
     &.lia-mode--textbook {
       .lia-pagination {
@@ -82,8 +88,14 @@ $notes-width-desktop: 31.5rem !default;
   @include breakpoint("lg") {
     flex-direction: row;
 
-    &.lia-mode--slides .lia-header {
-      right: $notes-width-desktop;
+    &.lia-mode--slides {
+      .lia-header {
+        right: $notes-width-desktop;
+      }
+
+      .lia-slide {
+        height: 100vh;
+      }
     }
   }
 }

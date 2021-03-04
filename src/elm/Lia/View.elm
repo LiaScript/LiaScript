@@ -338,13 +338,15 @@ slideNavigation lang mode slide effect =
             , Html.span
                 [ Attr.class "lia-pagination__current" ]
                 [ Html.text (String.fromInt (slide + 1))
-                , Html.text <|
-                    case mode of
-                        Textbook ->
-                            ""
+                , Html.span [ Attr.class "font-400" ]
+                    [ Html.text <|
+                        case mode of
+                            Textbook ->
+                                ""
 
-                        _ ->
-                            state effect
+                            _ ->
+                                state effect
+                    ]
                 ]
             , navButton "navigate_next" (Trans.baseNext lang) "lia-btn-next" "icon-arrow-right" NextSection
             ]
