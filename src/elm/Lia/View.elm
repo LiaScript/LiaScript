@@ -332,19 +332,21 @@ slideTopBar lang screen url settings def =
 
 slideNavigation : Lang -> Mode -> Int -> Effect.Model SubSection -> Html Msg
 slideNavigation lang mode slide effect =
-    Html.div [ Attr.class "lia-pagination mb-2" ]
+    Html.div [ Attr.class "lia-pagination" ]
         [ Html.div [ Attr.class "lia-pagination__content" ]
             [ navButton "navigate_before" (Trans.basePrev lang) "lia-btn-prev" "icon-arrow-left" PrevSection
             , Html.span
                 [ Attr.class "lia-pagination__current" ]
                 [ Html.text (String.fromInt (slide + 1))
-                , Html.text <|
-                    case mode of
-                        Textbook ->
-                            ""
+                , Html.span [ Attr.class "font-400" ]
+                    [ Html.text <|
+                        case mode of
+                            Textbook ->
+                                ""
 
-                        _ ->
-                            state effect
+                            _ ->
+                                state effect
+                    ]
                 ]
             , navButton "navigate_next" (Trans.baseNext lang) "lia-btn-next" "icon-arrow-right" NextSection
             ]
