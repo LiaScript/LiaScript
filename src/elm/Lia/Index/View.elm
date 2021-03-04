@@ -6,7 +6,6 @@ module Lia.Index.View exposing
 
 import Accessibility.Key as A11y_Key
 import Accessibility.Live as A11y_Live
-import Accessibility.Widget as A11y_Widget
 import Array exposing (Array)
 import Conditional.List as CList
 import Conditional.String as CString
