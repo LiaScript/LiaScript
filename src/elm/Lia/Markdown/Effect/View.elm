@@ -5,6 +5,7 @@ module Lia.Markdown.Effect.View exposing
     , state
     )
 
+import Conditional.List as CList
 import Element exposing (Attr)
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -13,7 +14,7 @@ import Json.Encode as JE
 import Lia.Markdown.Effect.Model exposing (Model)
 import Lia.Markdown.Effect.Types exposing (Class(..), Effect, class, isIn)
 import Lia.Markdown.Effect.Update as E
-import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
+import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Stringify as I
 import Lia.Markdown.Inline.Types exposing (Inline)
@@ -42,19 +43,19 @@ block config model attr e body =
             case class e of
                 Animation ->
                     [ circle e.begin
-                    , Html.div (annotation "" []) body
+                    , Html.div (toAttribute attr) body
                     ]
 
                 PlayBack ->
                     [ block_playback config e
-                    , Html.div (annotation "" []) body
+                    , Html.div (toAttribute attr) body
                     ]
 
                 PlayBackAnimation ->
                     [ block_playback config e
                     , Html.div []
                         [ circle e.begin
-                        , Html.div (annotation "" []) body
+                        , Html.div (toAttribute attr) body
                         ]
                     ]
 
@@ -72,14 +73,9 @@ block config model attr e body =
                     Html.div [ Attr.class "lia-effect" ]
                         [ circle e.begin
                         , Html.div
-                            ((Attr.id <|
-                                if e.begin == model.visible then
-                                    "focused"
-
-                                else
-                                    String.fromInt e.begin
-                             )
-                                :: annotation "lia-effect__content" attr
+                            (attr
+                                |> annotation "lia-effect__content"
+                                |> CList.addIf (e.begin == model.visible) (Attr.id "focused")
                             )
                             body
                         ]
@@ -87,25 +83,18 @@ block config model attr e body =
             PlayBack ->
                 Html.div []
                     [ block_playback config e
-                    , Html.div
-                        (annotation "" [])
-                        body
+                    , Html.div (toAttribute attr) body
                     ]
 
             PlayBackAnimation ->
                 Html.div [ Attr.hidden (not visible) ] <|
                     [ block_playback config e
-                    , Html.div []
+                    , Html.div [ Attr.class "lia-effect" ]
                         [ circle e.begin
                         , Html.div
-                            ((Attr.id <|
-                                if e.begin == model.visible then
-                                    "focused"
-
-                                else
-                                    String.fromInt e.begin
-                             )
-                                :: annotation "lia-effect" attr
+                            (attr
+                                |> annotation "lia-effect__content"
+                                |> CList.addIf (e.begin == model.visible) (Attr.id "focused")
                             )
                             body
                         ]
@@ -120,29 +109,23 @@ inline config attr e body =
                 circle_ e.begin
                     :: Html.text " "
                     :: body
-                    |> Html.div
-                        (Attr.id (String.fromInt e.begin)
-                            :: annotation "" []
-                        )
+                    |> Html.span (toAttribute attr)
 
             PlayBack ->
                 inline_playback config e
                     :: body
-                    |> Html.div (annotation "" attr)
+                    |> Html.span (toAttribute attr)
 
             PlayBackAnimation ->
                 circle_ e.begin
                     :: inline_playback config e
                     :: body
-                    |> Html.div
-                        (Attr.id (String.fromInt e.begin)
-                            :: annotation "" []
-                        )
+                    |> Html.span (toAttribute attr)
 
     else
         case class e of
             Animation ->
-                Html.div
+                Html.span
                     [ if isIn config.visible e then
                         Attr.hidden False
 
@@ -152,26 +135,16 @@ inline config attr e body =
                     [ circle_ e.begin
                         :: Html.text " "
                         :: body
-                        |> Html.div
-                            (Attr.id (String.fromInt e.begin)
-                                :: annotation
-                                    (if attr == [] then
-                                        "lia-effect"
-
-                                     else
-                                        ""
-                                    )
-                                    attr
-                            )
+                        |> Html.span (toAttribute attr)
                     ]
 
             PlayBack ->
                 inline_playback config e
                     :: body
-                    |> Html.div (annotation "" attr)
+                    |> Html.span (toAttribute attr)
 
             PlayBackAnimation ->
-                Html.div
+                Html.span
                     [ if isIn config.visible e then
                         Attr.hidden False
 
@@ -181,17 +154,7 @@ inline config attr e body =
                     [ circle_ e.begin
                         :: inline_playback config e
                         :: body
-                        |> Html.span
-                            (Attr.id (String.fromInt e.begin)
-                                :: annotation
-                                    (if attr == [] then
-                                        "lia-effect"
-
-                                     else
-                                        ""
-                                    )
-                                    attr
-                            )
+                        |> Html.span (toAttribute attr)
                     ]
 
 
