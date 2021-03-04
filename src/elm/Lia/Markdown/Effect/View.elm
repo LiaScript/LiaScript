@@ -28,12 +28,11 @@ import Translations exposing (Lang, soundOff, soundOn)
 
 
 circle_ : Int -> Html msg
-circle_ idx =
-    idx
-        |> String.fromInt
-        |> Html.text
-        |> List.singleton
-        |> Html.span [ Attr.class "lia-effect__circle lia-effect__circle--inline" ]
+circle_ =
+    String.fromInt
+        >> Html.text
+        >> List.singleton
+        >> Html.span [ Attr.class "lia-effect__circle lia-effect__circle--inline" ]
 
 
 block : Config sub -> Model a -> Parameters -> Effect Markdown -> List (Html Msg) -> Html Msg
@@ -104,58 +103,47 @@ block config model attr e body =
 inline : Config sub -> Parameters -> Effect Inline -> List (Html msg) -> Html msg
 inline config attr e body =
     if config.visible == Nothing then
+        hiddenSpan False attr <|
+            case class e of
+                Animation ->
+                    circle_ e.begin :: Html.text " " :: body
+
+                PlayBack ->
+                    inline_playback config e :: body
+
+                PlayBackAnimation ->
+                    circle_ e.begin :: inline_playback config e :: body
+
+    else
         case class e of
             Animation ->
                 circle_ e.begin
                     :: Html.text " "
                     :: body
-                    |> Html.span (toAttribute attr)
+                    |> hiddenSpan (not <| isIn config.visible e) attr
 
             PlayBack ->
                 inline_playback config e
                     :: body
-                    |> Html.span (toAttribute attr)
+                    |> hiddenSpan False attr
 
             PlayBackAnimation ->
                 circle_ e.begin
                     :: inline_playback config e
                     :: body
-                    |> Html.span (toAttribute attr)
+                    |> hiddenSpan (not <| isIn config.visible e) attr
 
-    else
-        case class e of
-            Animation ->
-                Html.span
-                    [ if isIn config.visible e then
-                        Attr.hidden False
 
-                      else
-                        Attr.hidden True
-                    ]
-                    [ circle_ e.begin
-                        :: Html.text " "
-                        :: body
-                        |> Html.span (toAttribute attr)
-                    ]
+hiddenSpan : Bool -> Parameters -> List (Html msg) -> Html msg
+hiddenSpan hide =
+    annotation
+        (if hide then
+            "lia-effect--inline hide"
 
-            PlayBack ->
-                inline_playback config e
-                    :: body
-                    |> Html.span (toAttribute attr)
-
-            PlayBackAnimation ->
-                Html.span
-                    [ if isIn config.visible e then
-                        Attr.hidden False
-
-                      else
-                        Attr.hidden True
-                    ]
-                    [ circle_ e.begin
-                        :: inline_playback config e
-                        :: body
-                        |> Html.span (toAttribute attr)
-                    ]
+         else
+            "lia-effect--inline"
+        )
+        >> Html.span
 
 
 block_playback : Config sub -> Effect Markdown -> Html Msg

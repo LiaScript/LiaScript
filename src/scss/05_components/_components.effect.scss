@@ -21,7 +21,6 @@
     }
 
     &--inline {
-      display: inline-block;
       position: relative;
       width: 1.8rem;
       height: 1.8rem;
@@ -33,6 +32,10 @@
         left: 1.8rem * -1.5;
       }
     }
+  }
+
+  &--inline {
+    display: inline-block;
   }
 }
 
