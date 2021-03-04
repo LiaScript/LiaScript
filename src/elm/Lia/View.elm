@@ -218,13 +218,20 @@ slideA11y lang mode effect id =
                                         (Tuple.second
                                             >> List.map (view_inf effect.javascript lang)
                                             >> Html.p []
+                                            >> Html.map (Tuple.pair id >> Script)
                                         )
                                     |> (::)
-                                        (Html.small [ Attr.class "lia-notes__counter" ]
-                                            [ String.fromInt counter
-                                                ++ "/"
-                                                ++ String.fromInt effect.effects
-                                                |> Html.text
+                                        (Html.button
+                                            [ Attr.class "lia-btn hide-lg-down"
+                                            , counter |> JumpToFragment |> onClick
+                                            ]
+                                            [ Html.small
+                                                [ Attr.class "lia-notes__counter" ]
+                                                [ String.fromInt counter
+                                                    ++ "/"
+                                                    ++ String.fromInt effect.effects
+                                                    |> Html.text
+                                                ]
                                             ]
                                         )
                                     |> Html.div
@@ -250,7 +257,6 @@ slideA11y lang mode effect id =
             comments
                 |> Html.aside
                     [ Attr.class "lia-notes" ]
-                |> Html.map (Tuple.pair id >> Script)
 
         _ ->
             Html.text ""

@@ -62,6 +62,7 @@ type Msg
     | InitSection
     | PrevSection
     | NextSection
+    | JumpToFragment Int
     | UpdateIndex Index.Msg
     | UpdateSettings Settings.Msg
     | UpdateMarkdown Markdown.Msg
@@ -259,6 +260,23 @@ update session msg model =
                         |> List.append (send model.section_active log_)
                         |> (::) (Event "slide" model.section_active JE.null)
                     )
+
+                ( JumpToFragment id, Just sec ) ->
+                    if (model.settings.mode == Textbook) || sec.effect_model.visible == id then
+                        ( model, Cmd.none, [] )
+
+                    else
+                        let
+                            effect =
+                                sec.effect_model
+
+                            ( sec_, cmd_, log_ ) =
+                                Markdown.nextEffect model.settings.sound { sec | effect_model = { effect | visible = id - 1 } }
+                        in
+                        ( set_active_section model sec_
+                        , Cmd.map UpdateMarkdown cmd_
+                        , send model.section_active log_
+                        )
 
                 ( TTSReplay bool, sec ) ->
                     ( model
