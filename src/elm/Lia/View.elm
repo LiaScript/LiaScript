@@ -237,7 +237,7 @@ slideA11y lang mode effect id =
                                                         " active"
 
                                                     else
-                                                        ""
+                                                        " hide-lg-down"
                                                    )
                                             )
                                         , Attr.id
