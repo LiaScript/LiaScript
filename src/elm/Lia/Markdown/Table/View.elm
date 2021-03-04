@@ -585,17 +585,17 @@ unformatted viewer rows id state =
 
 formatted : (Inlines -> List (Html Msg)) -> List ( Parameters, Inlines ) -> List String -> Matrix Cell -> Int -> State -> List (Html Msg)
 formatted viewer head format rows id state =
-    rows
+    [ head
+        |> view_head2 viewer id format state
+        |> Html.thead [ Attr.class "lia-table__head" ]
+    , rows
         |> sort state
         |> List.map
             (List.map2 (\f e -> Html.td (Attr.class "lia-table__data" :: Attr.class f :: Param.toAttribute e.attr) (viewer e.inlines)) format
                 >> Html.tr [ Attr.class "lia-table__row" ]
             )
-        |> (::)
-            (head
-                |> view_head2 viewer id format state
-                |> Html.thead [ Attr.class "lia-table__head" ]
-            )
+        |> Html.tbody []
+    ]
 
 
 get : Int -> List x -> Maybe x
