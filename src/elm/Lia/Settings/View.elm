@@ -102,7 +102,8 @@ viewLightMode _ tabbable isLight =
 
 viewTheme : Lang -> Bool -> String -> Html Msg
 viewTheme lang tabbable theme =
-    [ ( "turquoise", Trans.cTurquoise lang, "is-turquoise mr-1" )
+    [ ( "default", Trans.cDefault lang, "is-default mr-1" )
+    , ( "turquoise", Trans.cTurquoise lang, "is-turquoise mr-1" )
     , ( "blue", Trans.cBlue lang, "is-blue mr-1" )
     , ( "red", Trans.cRed lang, "is-red mr-1" )
     , ( "yellow", Trans.cYellow lang, "is-yellow" )
