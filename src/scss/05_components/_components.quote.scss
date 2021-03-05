@@ -1,9 +1,29 @@
 .lia-quote {
-  border-left: map-get($global-spacing, spacing-normal) solid;
-  border-radius: 5px;
-  margin: map-get($global-spacing, spacing-huge)
-    map-get($global-spacing, spacing-normal);
-  padding: map-get($global-spacing, spacing-large);
+  background-color: rgba(var(--color-highlight), 0.15);
+  padding: 2.4rem;
+
+  &[cite] {
+    padding: 2.4rem 4.8rem;
+  }
+
+  > *:last-child {
+    margin-bottom: 0;
+  }
+
+  &__text {
+    color: rgb(var(--color-highlight-dark));
+    font-family: "LiaSourceSerifPro";
+    font-weight: 600;
+    font-size: 1.6rem;
+    text-align: center;
+  }
+
+  &__cite {
+    display: block;
+    font-style: normal;
+    margin-top: 2rem;
+    text-align: center;
+  }
 }
 
 @mixin style-quote($theme) {
