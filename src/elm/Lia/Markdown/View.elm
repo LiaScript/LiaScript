@@ -1,7 +1,7 @@
 module Lia.Markdown.View exposing (view)
 
 import Html exposing (Html)
-import Html.Attributes as Attr exposing (attribute)
+import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Html.Lazy as Lazy
 import Lia.Markdown.Chart.View as Charts
@@ -15,6 +15,7 @@ import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Markdown.HTML.View as HTML
+import Lia.Markdown.Inline.Stringify exposing (stringify_)
 import Lia.Markdown.Inline.Types exposing (Inlines, htmlBlock)
 import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Quiz.Types as Quiz
@@ -222,10 +223,8 @@ view_block config block =
         Table attr table ->
             Table.view config attr table
 
-        Quote attr elements ->
-            elements
-                |> List.map (\e -> view_block config e)
-                |> Html.blockquote (annotation "lia-quote" attr)
+        Quote attr quote ->
+            viewQuote config attr quote
 
         HTML attr node ->
             HTML.view Html.div (view_block config) attr node
@@ -262,9 +261,11 @@ view_block config block =
                                     []
 
                                 Just voice ->
-                                    [ ( "class", "lia-tts-" ++ String.fromInt id2 )
-                                    , ( "class", "hide" )
+                                    [ ( "class", "lia-tts-" ++ String.fromInt id1 )
+                                    , ( "class", "hidden-visually translate" )
                                     , ( "data-voice", voice )
+                                    , ( "translate", "yes" )
+                                    , ( "aria-hidden", "true" )
                                     ]
                     in
                     par
@@ -294,6 +295,33 @@ view_block config block =
             list
                 |> config.view
                 |> Html.div (annotation "lia-gallery" attr)
+
+
+viewQuote : Config Msg -> Parameters -> ( List Markdown, Maybe ( Parameters, Inlines ) ) -> Html Msg
+viewQuote config attr ( elements, cite ) =
+    case cite of
+        Nothing ->
+            elements
+                |> List.map (view_block config)
+                |> Html.blockquote (annotation "lia-quote" attr)
+
+        Just ( cAttr, citation ) ->
+            [ elements
+                |> List.map (view_block config)
+                |> Html.em [ Attr.class "lia-quote__text" ]
+            , citation
+                |> config.view
+                |> (::) (Html.text "—")
+                |> Html.cite (annotation "lia-quote__cite" cAttr)
+            ]
+                |> Html.blockquote
+                    (Attr.cite
+                        (citation
+                            |> stringify_ config.main.scripts config.main.visible
+                            |> String.trim
+                        )
+                        :: annotation "lia-quote" attr
+                    )
 
 
 view_ascii : Config Msg -> Parameters -> SvgBob.Configuration (List Markdown) -> Html Msg

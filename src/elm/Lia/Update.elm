@@ -12,7 +12,7 @@ import Json.Encode as JE
 import Lia.Index.Update as Index
 import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Effect.Update as Effect
-import Lia.Markdown.Update as Markdown exposing (ttsReplay)
+import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (Model, loadResource)
 import Lia.Parser.Parser exposing (parse_section)
 import Lia.Section exposing (Section)
@@ -62,6 +62,7 @@ type Msg
     | InitSection
     | PrevSection
     | NextSection
+    | JumpToFragment Int
     | UpdateIndex Index.Msg
     | UpdateSettings Settings.Msg
     | UpdateMarkdown Markdown.Msg
@@ -260,10 +261,28 @@ update session msg model =
                         |> (::) (Event "slide" model.section_active JE.null)
                     )
 
+                ( JumpToFragment id, Just sec ) ->
+                    if (model.settings.mode == Textbook) || sec.effect_model.visible == id then
+                        ( model, Cmd.none, [] )
+
+                    else
+                        let
+                            effect =
+                                sec.effect_model
+
+                            ( sec_, cmd_, log_ ) =
+                                Markdown.nextEffect model.settings.sound { sec | effect_model = { effect | visible = id - 1 } }
+                        in
+                        ( set_active_section model sec_
+                        , Cmd.map UpdateMarkdown cmd_
+                        , send model.section_active log_
+                        )
+
                 ( TTSReplay bool, sec ) ->
                     ( model
                     , Cmd.none
                     , Markdown.ttsReplay model.settings.sound bool sec
+                        |> send -1
                     )
 
                 _ ->

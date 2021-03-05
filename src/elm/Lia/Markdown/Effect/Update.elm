@@ -84,7 +84,7 @@ update main sound msg model =
                 else
                     ( model, Cmd.none, [] )
 
-            Speak id voice text ->
+            Speak id _ _ ->
                 ( { model | speaking = Just id }
                 , Cmd.none
                 , [ TTS.readFrom -1 id ]
@@ -106,7 +106,7 @@ update main sound msg model =
                 ( model
                 , Cmd.none
                 , case current_comment model of
-                    Just ( id, comment, narrator ) ->
+                    Just ( id, _, _ ) ->
                         if sound then
                             TTS.readFrom -1 id :: events
 
@@ -240,16 +240,16 @@ handle =
 ttsReplay :
     Bool
     -> Model SubSection
-    -> List Event
+    -> Maybe Event
 ttsReplay sound model =
     case ( sound, current_comment model ) of
-        ( True, Just ( id, comment, narrator ) ) ->
-            [ TTS.readFrom -1 id ]
+        ( True, Just ( id, _, _ ) ) ->
+            Just <| TTS.readFrom -1 id
 
         _ ->
-            []
+            Nothing
 
 
-ttsCancel : List Event
+ttsCancel : Event
 ttsCancel =
-    [ TTS.cancel ]
+    TTS.cancel

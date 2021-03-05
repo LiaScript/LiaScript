@@ -1,6 +1,6 @@
 .lia-effect {
   &__content {
-    display: inline-block;
+    display: block;
   }
 
   &__circle {
@@ -32,6 +32,10 @@
         left: 1.8rem * -1.5;
       }
     }
+  }
+
+  &--inline {
+    display: inline-block;
   }
 }
 

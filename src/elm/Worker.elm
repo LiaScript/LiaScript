@@ -1,4 +1,4 @@
-port module Worker exposing (init)
+port module Worker exposing (init, main)
 
 import Array
 import Http
@@ -117,7 +117,7 @@ update msg model =
             ( { model | state = Error <| parse_error info }
             , info
                 |> parse_error
-                |> error "Load_ReadMe_Result"
+                |> error (url ++ " Load_ReadMe_Result")
             )
 
         Load_Template_Result (Ok template) ->
