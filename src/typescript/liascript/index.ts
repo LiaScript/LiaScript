@@ -92,10 +92,13 @@ function handleEffects(event: Lia.Event, elmSend: Lia.Send, section: number = -1
               text,
               element[0].getAttribute("data-voice"),
               function() {
+                msg.topic = Port.SETTINGS
                 msg.message.message = 'start'
+                
                 elmSend(msg)
               },
               function() {
+                msg.topic = Port.SETTINGS
                 msg.message.message = 'stop'
                 elmSend(msg)
               },

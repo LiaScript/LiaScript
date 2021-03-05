@@ -282,6 +282,7 @@ update session msg model =
                     ( model
                     , Cmd.none
                     , Markdown.ttsReplay model.settings.sound bool sec
+                        |> send -1
                     )
 
                 _ ->

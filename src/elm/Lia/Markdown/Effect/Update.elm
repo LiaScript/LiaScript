@@ -240,16 +240,16 @@ handle =
 ttsReplay :
     Bool
     -> Model SubSection
-    -> List Event
+    -> Maybe Event
 ttsReplay sound model =
     case ( sound, current_comment model ) of
         ( True, Just ( id, _, _ ) ) ->
-            [ TTS.readFrom -1 id ]
+            Just <| TTS.readFrom -1 id
 
         _ ->
-            []
+            Nothing
 
 
-ttsCancel : List Event
+ttsCancel : Event
 ttsCancel =
-    [ TTS.cancel ]
+    TTS.cancel

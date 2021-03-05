@@ -262,8 +262,10 @@ view_block config block =
 
                                 Just voice ->
                                     [ ( "class", "lia-tts-" ++ String.fromInt id1 )
-                                    , ( "class", "hide" )
+                                    , ( "class", "hidden-visually translate" )
                                     , ( "data-voice", voice )
+                                    , ( "translate", "yes" )
+                                    , ( "aria-hidden", "true" )
                                     ]
                     in
                     par

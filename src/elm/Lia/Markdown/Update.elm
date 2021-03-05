@@ -375,17 +375,26 @@ handle topic event section =
             ( section, Cmd.none, [] )
 
 
-ttsReplay : Bool -> Bool -> Maybe Section -> List Event
+ttsReplay : Bool -> Bool -> Maybe Section -> List ( String, JE.Value )
 ttsReplay sound true section =
     -- replay if possible
     if sound then
         if true then
             section
-                |> Maybe.map (.effect_model >> Effect.ttsReplay sound)
+                |> Maybe.andThen
+                    (.effect_model
+                        >> Effect.ttsReplay sound
+                        >> Maybe.map
+                            (Event.encode
+                                >> List.singleton
+                                >> send "effect"
+                            )
+                    )
                 |> Maybe.withDefault []
 
         else
-            Effect.ttsCancel
+            [ Event.encode Effect.ttsCancel ]
+                |> send "effect"
 
     else
         []
