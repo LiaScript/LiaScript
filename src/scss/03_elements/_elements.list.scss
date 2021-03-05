@@ -1,9 +1,9 @@
 .lia-list {
   &--unordered,
   &--ordered {
-    position: relative;
-    padding-left: 2rem;
     margin-left: 2rem;
+    padding-left: 2rem;
+    position: relative;
 
     ul,
     ol {
@@ -17,10 +17,10 @@
     > li {
       &:before {
         content: "\EA0D";
+        color: rgb(var(--color-highlight-dark));
         font-family: "icon";
-        color: rgb(var(--lia-turquoise));
-        position: absolute;
         left: 0;
+        position: absolute;
       }
     }
 
@@ -39,8 +39,9 @@
       }
 
       span {
-        position: relative;
+        display: block;
         left: 1rem;
+        position: relative;
       }
     }
   }

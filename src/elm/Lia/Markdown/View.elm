@@ -267,7 +267,7 @@ view_block config block =
                                             "hidden-visually translate"
 
                                         else
-                                            "hide"
+                                            "hide notranslate"
                                       )
                                     , ( "data-voice", voice )
                                     , ( "translate"

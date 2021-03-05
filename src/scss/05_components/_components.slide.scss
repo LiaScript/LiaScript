@@ -26,16 +26,16 @@
 
   &__content {
     height: 100%;
-    margin-top: $header-height-mobile;
+    margin-top: calc(#{$header-height-mobile} + 3rem);
     margin-bottom: 2rem;
     max-width: 144rem;
     overflow: hidden auto;
-    padding: 3rem 3rem 0;
+    padding: 0 3rem;
     position: relative;
     width: 100%;
 
     @include breakpoint("md") {
-      margin-top: $header-height-desktop;
+      margin-top: calc(#{$header-height-desktop} + 3rem);
     }
   }
 }
