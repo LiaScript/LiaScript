@@ -5,7 +5,6 @@ module Lia.Markdown.Effect.View exposing
     )
 
 import Conditional.List as CList
-import Element exposing (Attr)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)

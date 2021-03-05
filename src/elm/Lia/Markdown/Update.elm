@@ -15,7 +15,7 @@ import Lia.Markdown.Code.Update as Code
 import Lia.Markdown.Effect.Model as E
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.Effect.Script.Update as Script
-import Lia.Markdown.Effect.Update as Effect exposing (ttsReplay)
+import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Quiz.Update as Quiz
 import Lia.Markdown.Survey.Update as Survey
 import Lia.Markdown.Table.Update as Table
@@ -192,7 +192,7 @@ subUpdate js msg section =
                             Quiz.update js childMsg subsection.quiz_vector
                     in
                     case subCmd of
-                        Just cmd ->
+                        Just _ ->
                             { subsection | quiz_vector = vector }
                                 |> SubSection
                                 |> subUpdate js (UpdateQuiz childMsg)
@@ -211,7 +211,7 @@ subUpdate js msg section =
                             Survey.update js childMsg subsection.survey_vector
                     in
                     case subCmd of
-                        Just cmd ->
+                        Just _ ->
                             { subsection | survey_vector = vector }
                                 |> SubSection
                                 |> subUpdate js (UpdateSurvey childMsg)
@@ -230,7 +230,7 @@ subUpdate js msg section =
                             Task.update js childMsg subsection.task_vector
                     in
                     case subCmd of
-                        Just cmd ->
+                        Just _ ->
                             { subsection | task_vector = vector }
                                 |> SubSection
                                 |> subUpdate js (UpdateTask childMsg)
@@ -245,7 +245,7 @@ subUpdate js msg section =
 
                 Script childMsg ->
                     let
-                        ( effect_model, cmd, event ) =
+                        ( effect_model, cmd, _ ) =
                             Effect.updateSub { update = subUpdate, handle = subHandle } childMsg subsection.effect_model
                     in
                     ( SubSection { subsection | effect_model = effect_model }
@@ -260,7 +260,7 @@ subUpdate js msg section =
             case msg of
                 Script childMsg ->
                     let
-                        ( effect_model, cmd, event ) =
+                        ( effect_model, cmd, _ ) =
                             Effect.updateSub { update = subUpdate, handle = subHandle } childMsg sub.effect_model
                     in
                     ( SubSubSection { sub | effect_model = effect_model }
@@ -375,17 +375,26 @@ handle topic event section =
             ( section, Cmd.none, [] )
 
 
-ttsReplay : Bool -> Bool -> Maybe Section -> List Event
+ttsReplay : Bool -> Bool -> Maybe Section -> List ( String, JE.Value )
 ttsReplay sound true section =
     -- replay if possible
     if sound then
         if true then
             section
-                |> Maybe.map (.effect_model >> Effect.ttsReplay sound)
+                |> Maybe.andThen
+                    (.effect_model
+                        >> Effect.ttsReplay sound
+                        >> Maybe.map
+                            (Event.encode
+                                >> List.singleton
+                                >> send "effect"
+                            )
+                    )
                 |> Maybe.withDefault []
 
         else
-            Effect.ttsCancel
+            [ Event.encode Effect.ttsCancel ]
+                |> send "effect"
 
     else
         []
