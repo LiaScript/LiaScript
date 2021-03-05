@@ -261,7 +261,7 @@ view_block config block =
                                     []
 
                                 Just voice ->
-                                    [ ( "class", "lia-tts-" ++ String.fromInt id2 )
+                                    [ ( "class", "lia-tts-" ++ String.fromInt id1 )
                                     , ( "class", "hide" )
                                     , ( "data-voice", voice )
                                     ]
