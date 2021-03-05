@@ -9,7 +9,6 @@ module Lia.Settings.View exposing
     , menuTranslations
     )
 
-import Accessibility as A11y
 import Accessibility.Aria as A11y_Aria
 import Accessibility.Key as A11y_Key
 import Accessibility.Role as A11y_Role
@@ -31,10 +30,10 @@ import Translations as Trans exposing (Lang)
 
 design : Settings -> List (Html.Attribute msg)
 design model =
-    let
-        float =
-            String.fromFloat (toFloat model.font_size / 100.0)
-    in
+    -- let
+    --     float =
+    --         String.fromFloat (toFloat model.font_size / 100.0)
+    -- in
     [ Attr.class "lia-canvas"
     , Attr.class <|
         if model.table_of_contents then
@@ -168,11 +167,12 @@ modeToString show =
             Trans.modeTextbook
 
 
-reset : Html Msg
-reset =
-    Html.button
-        [ onClick Reset ]
-        [ Html.text "reset course" ]
+
+--reset : Html Msg
+--reset =
+--    Html.button
+--        [ onClick Reset ]
+--        [ Html.text "reset course" ]
 
 
 viewSizing : Lang -> Bool -> Int -> Html Msg
@@ -421,7 +421,16 @@ menuMode lang tabbable settings =
         |> Trans.modeMode
         |> actionBtn ShowModes
             (settings.action == Just ShowModes)
-            "icon-presentation"
+            (case settings.mode of
+                Presentation ->
+                    "icon-presentation"
+
+                Slides ->
+                    "icon-slides"
+
+                Textbook ->
+                    "icon-book"
+            )
     , viewModes lang tabbable settings
         |> submenu (settings.action == Just ShowModes)
     ]

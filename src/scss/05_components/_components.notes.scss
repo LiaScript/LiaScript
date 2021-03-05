@@ -1,12 +1,11 @@
 .lia-notes {
-  width: $notes-width-mobile;
-  position: relative;
-  overflow: hidden auto;
   display: flex;
   flex-direction: column;
   height: 14.2rem;
-  width: auto;
   max-width: 144rem;
+  overflow: hidden auto;
+  position: relative;
+  width: $notes-width-mobile;
 
   background-color: rgb(var(--lia-grey-light));
 

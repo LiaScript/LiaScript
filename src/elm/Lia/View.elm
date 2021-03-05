@@ -5,7 +5,6 @@ import Accessibility.Landmark as A11y_Landmark
 import Accessibility.Role as A11y_Role
 import Accessibility.Widget as A11y_Widget
 import Const
-import Flip exposing (flip)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
@@ -13,13 +12,11 @@ import Lia.Definition.Types as Definition exposing (Definition)
 import Lia.Index.View as Index
 import Lia.Markdown.Config as Config
 import Lia.Markdown.Effect.Model as Effect
-import Lia.Markdown.Effect.Types exposing (Effect)
-import Lia.Markdown.Effect.View exposing (responsive, state)
-import Lia.Markdown.Inline.Stringify exposing (stringify)
+import Lia.Markdown.Effect.View exposing (state)
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model)
-import Lia.Section exposing (Section, SubSection)
+import Lia.Section exposing (SubSection)
 import Lia.Settings.Types exposing (Mode(..), Settings)
 import Lia.Settings.Update exposing (Toggle(..), toggle_sound)
 import Lia.Settings.View as Settings
@@ -173,13 +170,35 @@ slideBottom lang settings slide effects =
                         , onClick <| TTSReplay (not settings.speaking)
                         , Attr.disabled (not settings.sound)
                         ]
-                        [ if settings.speaking then
-                            Html.text "stop"
+                        [ Html.i
+                            [ Attr.class <|
+                                if settings.speaking then
+                                    "icon icon-stop-circle"
 
-                          else
-                            Html.i [ Attr.class "icon icon-play-circle" ] []
+                                else
+                                    "icon icon-play-circle"
+                            ]
+                            []
                         ]
-                    , responsive lang settings.sound (UpdateSettings toggle_sound)
+                    , Html.button
+                        [ Attr.class "lia-btn"
+                        , Attr.id "lia-btn-sound"
+                        , onClick (UpdateSettings toggle_sound)
+                        , Attr.title <|
+                            if settings.sound then
+                                Trans.soundOn lang
+
+                            else
+                                Trans.soundOff lang
+                        ]
+                        [ Html.text <|
+                            if settings.sound then
+                                "volume_up"
+
+                            else
+                                "volume_off"
+                        ]
+                    , responsiveVoice
                     ]
         ]
 
@@ -199,13 +218,21 @@ slideA11y lang mode effect id =
                                         (Tuple.second
                                             >> List.map (view_inf effect.javascript lang)
                                             >> Html.p []
+                                            >> Html.map (Tuple.pair id >> Script)
                                         )
                                     |> (::)
-                                        (Html.small [ Attr.class "lia-notes__counter" ]
-                                            [ String.fromInt counter
-                                                ++ "/"
-                                                ++ String.fromInt effect.effects
-                                                |> Html.text
+                                        (Html.a
+                                            [ Attr.class "hide-lg-down"
+                                            , counter |> JumpToFragment |> onClick
+                                            , Attr.href "#"
+                                            ]
+                                            [ Html.small
+                                                [ Attr.class "lia-notes__counter" ]
+                                                [ String.fromInt counter
+                                                    ++ "/"
+                                                    ++ String.fromInt effect.effects
+                                                    |> Html.text
+                                                ]
                                             ]
                                         )
                                     |> Html.div
@@ -215,7 +242,7 @@ slideA11y lang mode effect id =
                                                         " active"
 
                                                     else
-                                                        ""
+                                                        " hide-lg-down"
                                                    )
                                             )
                                         , Attr.id
@@ -231,7 +258,6 @@ slideA11y lang mode effect id =
             comments
                 |> Html.aside
                     [ Attr.class "lia-notes" ]
-                |> Html.map (Tuple.pair id >> Script)
 
         _ ->
             Html.text ""
@@ -245,8 +271,8 @@ slideA11y lang mode effect id =
 4.  `msg`: to release if pressed
 
 -}
-navButton : String -> String -> String -> String -> msg -> Html msg
-navButton str title id class msg =
+navButton : String -> String -> String -> msg -> Html msg
+navButton title id class msg =
     Html.button
         [ onClick msg
         , Attr.title title
@@ -334,19 +360,21 @@ slideNavigation : Lang -> Mode -> Int -> Effect.Model SubSection -> Html Msg
 slideNavigation lang mode slide effect =
     Html.div [ Attr.class "lia-pagination" ]
         [ Html.div [ Attr.class "lia-pagination__content" ]
-            [ navButton "navigate_before" (Trans.basePrev lang) "lia-btn-prev" "icon-arrow-left" PrevSection
+            [ navButton (Trans.basePrev lang) "lia-btn-prev" "icon-arrow-left" PrevSection
             , Html.span
                 [ Attr.class "lia-pagination__current" ]
                 [ Html.text (String.fromInt (slide + 1))
-                , Html.text <|
-                    case mode of
-                        Textbook ->
-                            ""
+                , Html.span [ Attr.class "font-400" ]
+                    [ Html.text <|
+                        case mode of
+                            Textbook ->
+                                ""
 
-                        _ ->
-                            state effect
+                            _ ->
+                                state effect
+                    ]
                 ]
-            , navButton "navigate_next" (Trans.baseNext lang) "lia-btn-next" "icon-arrow-right" NextSection
+            , navButton (Trans.baseNext lang) "lia-btn-next" "icon-arrow-right" NextSection
             ]
         ]
 
@@ -375,3 +403,22 @@ slideNavigation lang mode slide effect =
 -- , Html.span [ Attr.class "lia-spacer", Attr.id "lia-spacer-right" ] []
 -- , Html.map UpdateSettings <| Settings.switch_button_mode lang mode
 -- ]
+
+
+responsiveVoice : Html msg
+responsiveVoice =
+    Html.small [ Attr.class "lia-responsive-voice__info" ]
+        [ Html.a [ Attr.href "https://responsivevoice.org" ] [ Html.text "ResponsiveVoice-NonCommercial" ]
+        , Html.text " licensed under "
+        , Html.a
+            [ Attr.href "https://creativecommons.org/licenses/by-nc-nd/4.0/" ]
+            [ Html.img
+                [ Attr.title "ResponsiveVoice Text To Speech"
+                , Attr.src "https://responsivevoice.org/wp-content/uploads/2014/08/95x15.png"
+                , Attr.alt "95x15"
+                , Attr.width 95
+                , Attr.height 15
+                ]
+                []
+            ]
+        ]

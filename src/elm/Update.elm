@@ -219,9 +219,13 @@ update msg model =
             case urlRequest of
                 Browser.Internal url ->
                     ( model
-                    , url
-                        |> Url.toString
-                        |> Navigation.load
+                    , if url.query /= model.session.url.query || url.fragment /= Just "" then
+                        url
+                            |> Url.toString
+                            |> Navigation.load
+
+                      else
+                        Cmd.none
                     )
 
                 Browser.External href ->

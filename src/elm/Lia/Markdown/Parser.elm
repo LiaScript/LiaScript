@@ -354,8 +354,28 @@ quote =
     map Quote md_annotations
         |> ignore (regex "> ?")
         |> ignore (Indent.push "> ?")
-        |> andMap (sepBy (many (Indent.check |> ignore (string "\n"))) blocks)
+        |> andMap
+            (sepBy (many (Indent.check |> ignore (string "\n"))) blocks
+                |> andThen checkCitation
+            )
         |> ignore Indent.pop
+
+
+checkCitation mds =
+    succeed <|
+        case List.reverse mds of
+            [ _ ] ->
+                ( mds, Nothing )
+
+            (Paragraph pAttr ((Chars chars cAttr) :: list)) :: tail ->
+                if String.startsWith "--" chars then
+                    ( List.reverse tail, Just <| ( pAttr, Chars (String.dropLeft 2 chars) cAttr :: list ) )
+
+                else
+                    ( mds, Nothing )
+
+            _ ->
+                ( mds, Nothing )
 
 
 

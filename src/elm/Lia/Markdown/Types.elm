@@ -5,7 +5,7 @@ import Lia.Markdown.Code.Types exposing (Code)
 import Lia.Markdown.Effect.Types exposing (Effect)
 import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.HTML.Types exposing (Node)
-import Lia.Markdown.Inline.Types as Inline exposing (Inlines)
+import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Types exposing (Quiz)
 import Lia.Markdown.Survey.Types exposing (Survey)
 import Lia.Markdown.Table.Types exposing (Table)
@@ -15,7 +15,7 @@ import SvgBob
 
 type Markdown
     = HLine Parameters
-    | Quote Parameters MarkdownS
+    | Quote Parameters ( MarkdownS, Maybe ( Parameters, Inlines ) )
     | Paragraph Parameters Inlines
     | BulletList Parameters (List MarkdownS)
     | OrderedList Parameters (List ( String, MarkdownS ))
