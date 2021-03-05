@@ -9,7 +9,7 @@
     // elements
     //@include style-btn($theme);
     @include style-card($theme);
-    @include style-input($theme);
+    //@include style-input($theme);
     @include style-code($theme);
     @include style-link($theme);
     @include style-select($theme);
@@ -23,7 +23,7 @@
     //@include style-quote($theme);
     @include style-script($theme);
     //@include style-table($theme);
-    @include style-toc($theme);
+    //@include style-toc($theme);
   }
 }
 

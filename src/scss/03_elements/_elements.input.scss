@@ -151,7 +151,11 @@ input[type="search"]::-webkit-search-results-decoration {
       height: 1.8rem;
       width: 1.8rem;
       border: none;
-      background-color: rgb(var(--lia-turquoise));
+      background-color: rgb(var(--lia-grey-light));
+
+      &.is-turquoise {
+        background-color: rgb(var(--lia-turquoise));
+      }
 
       &.is-red {
         background-color: rgb(var(--lia-red));

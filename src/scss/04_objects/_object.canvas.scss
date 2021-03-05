@@ -89,7 +89,7 @@ $slide-margin-left-textbook: 19rem !default;
   // mode: slides
   &.lia-mode--slides {
     .lia-slide {
-      height: calc(100vh - 14.2rem);
+      height: calc(100vh - 14.2rem + 7rem);
     }
 
     @include breakpoint("lg") {

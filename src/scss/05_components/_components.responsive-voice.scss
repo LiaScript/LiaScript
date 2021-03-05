@@ -10,7 +10,9 @@
 
   @include breakpoint("sm") {
     align-items: center;
+    height: 7rem;
     flex-direction: row;
+    padding: 0;
   }
 
   @include breakpoint("md") {
