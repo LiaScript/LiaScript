@@ -11,6 +11,9 @@ $support-width-desktop: 21.6rem !default;
 $notes-width-mobile: auto !default;
 $notes-width-desktop: 31.5rem !default;
 
+$slide-margin-left-presentation: 19rem !default;
+$slide-margin-left-textbook: 19rem !default;
+
 /* --------------------------------------------------
    Canvas
    -------------------------------------------------- */
@@ -71,30 +74,63 @@ $notes-width-desktop: 31.5rem !default;
     }
   }
 
-  &.lia-mode--slides {
-    .lia-slide {
-      height: calc(100vh - 14.2rem);
-    }
-  }
-
   @include breakpoint("md") {
-    &.lia-mode--textbook {
-      .lia-pagination {
-        margin-bottom: 2rem;
-      }
+    &.lia-toc--visible.lia-mode--presentation .lia-slide__content,
+    &.lia-toc--visible.lia-mode--textbook .lia-slide__content {
+      width: auto;
     }
   }
 
   @include breakpoint("lg") {
     flex-direction: row;
+  }
 
-    &.lia-mode--slides {
+  /* lia mode ui treatments */
+  // mode: slides
+  &.lia-mode--slides {
+    .lia-slide {
+      height: calc(100vh - 14.2rem);
+    }
+
+    @include breakpoint("lg") {
       .lia-header {
         right: $notes-width-desktop;
       }
 
       .lia-slide {
         height: 100vh;
+      }
+    }
+  }
+
+  // mode: textbook
+  &.lia-mode--textbook {
+    .lia-slide__content {
+      max-width: 70.2rem;
+    }
+
+    @include breakpoint("md") {
+      .lia-slide__content {
+        margin-left: $slide-margin-left-textbook;
+        padding-left: 0;
+      }
+
+      .lia-pagination {
+        margin-bottom: 2rem;
+      }
+    }
+  }
+
+  // mode: presentation
+  &.lia-mode--presentation {
+    .lia-slide__content {
+      max-width: 124.6rem;
+    }
+
+    @include breakpoint("lg") {
+      .lia-slide__content {
+        margin-left: $slide-margin-left-presentation;
+        padding-left: 0;
       }
     }
   }
