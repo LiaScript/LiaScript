@@ -24,6 +24,7 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
 import Lia.Settings.Update exposing (Msg(..), Toggle(..))
+import Lia.Utils exposing (blockKeydown)
 import QRCode
 import Translations as Trans exposing (Lang)
 
@@ -119,6 +120,7 @@ viewTheme lang tabbable theme =
                     , onClick (ChangeTheme color)
                     , Attr.title name
                     , A11y_Key.tabbable tabbable
+                    , blockKeydown Ignore
                     ]
                     []
             )
