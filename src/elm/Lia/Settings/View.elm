@@ -64,13 +64,18 @@ design model =
 viewSettings : Lang -> Bool -> Settings -> List (Html Msg)
 viewSettings lang tabbable settings =
     [ viewLightMode lang tabbable settings.light
-    , Html.hr [ Attr.class "nav__divider" ] []
+    , divider
     , viewTheme lang tabbable settings.theme
-    , Html.hr [ Attr.class "nav__divider" ] []
+    , divider
     , viewEditorTheme lang tabbable settings.editor
-    , Html.hr [ Attr.class "nav__divider" ] []
+    , divider
     , viewSizing lang tabbable settings.font_size
     ]
+
+
+divider : Html msg
+divider =
+    Html.hr [ Attr.class "nav__divider" ] []
 
 
 viewLightMode : Lang -> Bool -> Bool -> Html Msg
@@ -233,19 +238,17 @@ viewInformation lang tabbable definition =
                 ]
                 [ Html.text definition.email ]
             ]
+        |> CList.addIf (definition.author /= "")
+            [ bold <| Trans.infoAuthor lang
+            , Html.text definition.author
+            ]
         |> CList.addIf (definition.comment /= [])
-            [ bold "Comment"
-            , Html.br [] []
-            , if tabbable then
+            [ if tabbable then
                 definition.comment
                     |> inlines lang
 
               else
                 Html.text ""
-            ]
-        |> CList.addIf (definition.author /= "")
-            [ bold <| Trans.infoAuthor lang
-            , Html.text definition.author
             ]
         |> List.map (Html.span [])
 
@@ -257,10 +260,7 @@ viewAttributes lang =
 
 thanks : Lang -> Inlines -> Html Msg
 thanks lang to =
-    Html.span []
-        [ Html.hr [] []
-        , inlines lang to
-        ]
+    Html.span [] [ divider, inlines lang to ]
         |> Html.map (\_ -> Ignore)
 
 
@@ -282,12 +282,12 @@ viewTranslations lang tabbable =
                     ]
                     [ Html.text title, Html.br [] [] ]
             )
-        >> List.append
-            [ Html.span [ Attr.class "lia-link active" ]
+        >> (::)
+            (Html.span [ Attr.class "lia-link active" ]
                 [ Trans.baseLang lang
                     |> Html.text
                 ]
-            ]
+            )
 
 
 submenu : Bool -> List (Html Msg) -> Html Msg
@@ -318,7 +318,7 @@ viewEditorTheme lang tabbable theme =
         op =
             option theme
     in
-    Html.div [ Attr.style "display" "inline-flex", Attr.style "width" "99%" ]
+    Html.label []
         [ Html.text "Editor"
         , Html.select
             [ onInput ChangeEditor
@@ -468,7 +468,32 @@ menuTranslations defintion lang tabbable settings =
         ]
     , defintion.translation
         |> viewTranslations lang tabbable
+        |> (\l ->
+                settings.translateWithGoogle
+                    |> translateWithGoogle lang tabbable
+                    |> List.append l
+           )
         |> submenu (settings.action == Just ShowTranslations)
+    ]
+
+
+translateWithGoogle : Lang -> Bool -> Bool -> List (Html Msg)
+translateWithGoogle lang tabbable bool =
+    [ divider
+    , if not bool then
+        Html.label []
+            [ Html.input
+                [ Attr.type_ "checkbox"
+                , Attr.checked bool
+                , onClick (Toggle TranslateWithGoogle)
+                , A11y_Key.tabbable tabbable
+                ]
+                []
+            , Html.text "Translate with Google"
+            ]
+
+      else
+        Html.div [ Attr.id "google_translate_element" ] []
     ]
 
 
