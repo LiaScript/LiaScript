@@ -396,12 +396,10 @@ view_control lang idx version_active version_count running terminal =
     Html.div [ Attr.style "padding" "0px", Attr.style "width" "100%" ]
         [ case ( running, terminal ) of
             ( True, False ) ->
-                Html.span
+                Html.button
                     [ Attr.class "lia-btn lia-icon"
-                    , Attr.style "margin-left" "0px"
                     , Attr.title (codeRunning lang)
                     , Attr.disabled True
-                    , Attr.style "zIndex" "100"
                     ]
                     [ Html.span
                         [ Attr.class "lia-icon rotating"
@@ -410,22 +408,18 @@ view_control lang idx version_active version_count running terminal =
                     ]
 
             ( True, True ) ->
-                Html.span
+                Html.button
                     [ Attr.class "lia-btn lia-icon"
-                    , Attr.style "margin-left" "0px"
                     , Attr.title (codeRunning lang)
                     , onClick (Stop idx)
-                    , Attr.style "zIndex" "100"
                     ]
                     [ Html.text "stop" ]
 
             _ ->
-                Html.span
+                Html.button
                     [ Attr.class "lia-btn lia-icon"
                     , onClick (Eval idx)
-                    , Attr.style "margin-left" "0px"
                     , Attr.title (codeExecute lang)
-                    , Attr.style "zIndex" "100"
                     ]
                     [ Html.text "play_circle_filled" ]
         , Html.button
