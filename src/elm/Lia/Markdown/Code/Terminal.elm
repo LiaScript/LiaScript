@@ -56,17 +56,12 @@ view : Terminal -> Html Msg
 view terminal =
     Html.div
         [ Attr.class "lia-code-stdout"
-        , Attr.style "margin-top" "-10px"
         ]
         [ Html.code [] [ Html.text ">> " ]
         , Html.input
             [ onInput Input
             , onKeyDown KeyDown
             , Attr.value terminal.input
-            , Attr.style "background-color" "black"
-            , Attr.style "color" "white"
-            , Attr.style "border" "0"
-            , Attr.style "width" "calc(100% - 30px)"
             ]
             []
         ]

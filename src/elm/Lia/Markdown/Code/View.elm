@@ -21,7 +21,7 @@ view lang theme model code =
         Highlight lang_title_code ->
             lang_title_code
                 |> List.map (view_code theme)
-                |> div_
+                |> Html.div []
 
         Evaluate id_1 ->
             case Array.get id_1 model of
@@ -30,7 +30,7 @@ view lang theme model code =
                         errors =
                             get_annotations project.log
                     in
-                    div_
+                    Html.div []
                         [ project.file
                             |> Array.toList
                             |> List.indexedMap (view_eval lang theme project.running errors id_1)
@@ -78,14 +78,6 @@ list_get idx list =
                 list_get (idx - 1) xs
 
 
-div_ : List (Html msg) -> Html msg
-div_ =
-    Html.div
-        [ Attr.style "margin-top" "16px"
-        , Attr.style "margin-bottom" "16px"
-        ]
-
-
 view_code : String -> Snippet -> Html Msg
 view_code theme snippet =
     let
@@ -122,22 +114,18 @@ view_eval lang theme running errors id_1 id_2 file attr =
                     , ( "active", file.visible )
                     ]
                 ]
-                [ Html.span
+                [ Html.button
                     [ onClick <| FlipView id_1 id_2
-                    , Attr.style "width" "calc(100% - 20px)"
-                    , Attr.style "display" "inline-block"
                     ]
-                    [ Html.strong []
-                        [ if file.visible then
-                            Html.text " + "
+                    [ if file.visible then
+                        Html.text " + "
 
-                          else
-                            Html.text " - "
-                        ]
+                      else
+                        Html.text " - "
                     , Html.text file.name
                     ]
                 , if file.visible then
-                    Html.span
+                    Html.button
                         [ Attr.class "lia-accordion-min-max"
                         , onClick <| FlipFullscreen id_1 id_2
                         , Attr.title <|
@@ -147,13 +135,11 @@ view_eval lang theme running errors id_1 id_2 file attr =
                             else
                                 codeMaximize lang
                         ]
-                        [ Html.strong []
-                            [ if file.fullscreen then
-                                Html.text "↥"
+                        [ if file.fullscreen then
+                            Html.text "↥"
 
-                              else
-                                Html.text "↧"
-                            ]
+                          else
+                            Html.text "↧"
                         ]
 
                   else
@@ -181,11 +167,8 @@ toStyle visible headless pix =
             "0px"
         )
     , Attr.style "transition" "max-height 0.25s ease-out"
-    , Attr.style "border-bottom-left-radius" "4px"
-    , Attr.style "border-bottom-right-radius" "4px"
     , Attr.style "border-top-left-radius" top_border
     , Attr.style "border-top-right-radius" top_border
-    , Attr.style "border" "1px solid gray"
     ]
 
 
@@ -222,11 +205,8 @@ highlight theme attr lang code headless =
         (attr
             |> Params.toAttribute
             |> List.append
-                [ Attr.style "border-bottom-left-radius" "4px"
-                , Attr.style "border-bottom-right-radius" "4px"
-                , Attr.style "border-top-left-radius" top_border
+                [ Attr.style "border-top-left-radius" top_border
                 , Attr.style "border-top-right-radius" top_border
-                , Attr.style "border" "1px solid gray"
                 , Editor.value code
                 , Editor.mode lang
                 , attr
@@ -351,7 +331,7 @@ evaluate theme attr running ( id_1, id_2 ) file headless errors =
 view_result : Log -> Html msg
 view_result log =
     if Array.isEmpty log.messages then
-        Html.div [ Attr.style "margin-top" "8px" ] []
+        Html.div [] []
 
     else
         Log.view log
@@ -372,16 +352,6 @@ scroll_to_end lines_ =
         |> String.fromInt
         |> JE.string
         |> Attr.property "scrollTop"
-
-
-control_style : List (Html.Attribute msg)
-control_style =
-    [ Attr.style "padding-left" "5px"
-    , Attr.style "padding-right" "5px"
-    , Attr.style "float" "right"
-    , Attr.style "margin-right" "2px"
-    , Attr.style "margin-left" "2px"
-    ]
 
 
 view_control : Lang -> Int -> Int -> Int -> Bool -> Bool -> Html Msg
@@ -423,45 +393,35 @@ view_control lang idx version_active version_count running terminal =
                     ]
                     [ Html.text "play_circle_filled" ]
         , Html.button
-            (List.append control_style
-                [ Last idx |> onClick
-                , Attr.class "lia-btn lia-icon"
-                , Attr.title (codeLast lang)
-                , Attr.disabled backward
-                ]
-            )
+            [ Last idx |> onClick
+            , Attr.class "lia-btn lia-icon"
+            , Attr.title (codeLast lang)
+            , Attr.disabled backward
+            ]
             [ Html.text "last_page" ]
         , Html.button
-            (List.append control_style
-                [ (version_active + 1) |> Load idx |> onClick
-                , Attr.class "lia-btn lia-icon"
-                , Attr.title (codeNext lang)
-                , Attr.disabled backward
-                ]
-            )
+            [ (version_active + 1) |> Load idx |> onClick
+            , Attr.class "lia-btn lia-icon"
+            , Attr.title (codeNext lang)
+            , Attr.disabled backward
+            ]
             [ Html.text "navigate_next" ]
         , Html.span
             [ Attr.class "lia-label"
-            , Attr.style "float" "right"
-            , Attr.style "margin-top" "11px"
             ]
             [ Html.text (String.fromInt version_active) ]
         , Html.button
-            (List.append control_style
-                [ (version_active - 1) |> Load idx |> onClick
-                , Attr.class "lia-btn lia-icon"
-                , Attr.title (codePrev lang)
-                , Attr.disabled forward
-                ]
-            )
+            [ (version_active - 1) |> Load idx |> onClick
+            , Attr.class "lia-btn lia-icon"
+            , Attr.title (codePrev lang)
+            , Attr.disabled forward
+            ]
             [ Html.text "navigate_before" ]
         , Html.button
-            (List.append control_style
-                [ First idx |> onClick
-                , Attr.class "lia-btn lia-icon"
-                , Attr.title (codeFirst lang)
-                , Attr.disabled forward
-                ]
-            )
+            [ First idx |> onClick
+            , Attr.class "lia-btn lia-icon"
+            , Attr.title (codeFirst lang)
+            , Attr.disabled forward
+            ]
             [ Html.text "first_page" ]
         ]
