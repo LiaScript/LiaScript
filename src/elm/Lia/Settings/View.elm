@@ -489,7 +489,9 @@ translateWithGoogle lang tabbable bool =
                 , A11y_Key.tabbable tabbable
                 ]
                 []
-            , Html.text "Translate with Google"
+            , lang
+                |> Trans.translateWithGoogle
+                |> Html.text
             ]
 
       else
