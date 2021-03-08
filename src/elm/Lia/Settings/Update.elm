@@ -62,7 +62,7 @@ update msg model =
                 }
 
         Toggle SupportMenu ->
-            no_log
+            log
                 { model
                     | support_menu = not model.support_menu
                     , action = Nothing

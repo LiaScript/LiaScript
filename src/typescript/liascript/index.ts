@@ -407,11 +407,11 @@ function process(isConnected: boolean, self: LiaScript, elmSend: Lia.Send, event
         updateClassName(event.message)
 
         const conf = self.connector.getSettings()
-        if (conf ?.table_of_contents !== event.message.table_of_contents) {
-          setTimeout(function() {
-            window.dispatchEvent(new Event('resize'))
-          }, 200)
-        }
+        
+        setTimeout(function() {
+          window.dispatchEvent(new Event('resize'))
+        }, 333)
+        
       } catch (e) { }
 
       if (isConnected) {
