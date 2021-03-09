@@ -35,7 +35,7 @@ view lang theme model code =
                             |> Array.toList
                             |> List.indexedMap (view_eval lang theme project.running errors id_1)
                             |> List.map2 (\a e -> e a) project.attr
-                            |> Html.div [ Attr.class "lia-code__input-wrapper" ]
+                            |> Html.div [ Attr.class "lia-accordion" ]
                         , view_control lang
                             id_1
                             project.version_active
@@ -105,44 +105,42 @@ view_eval lang theme running errors id_1 id_2 file attr =
         headless =
             file.name == ""
     in
-    Html.div (Attr.class "lia-code__input" :: Params.toAttribute attr)
-        [ if headless then
-            Html.text ""
+    if file.name == "" then
+        evaluate theme attr running ( id_1, id_2 ) file headless (errors id_2)
 
-          else
-            Html.div
+    else
+        Html.div (Attr.class "lia-accordion__item" :: Params.toAttribute attr)
+            [ Html.div [ Attr.class "lia-accordion__header" ]
+                [ Html.h3 [ Attr.class "lia-accordion__headline" ] [ Html.text file.name ]
+                , Html.button
+                    [ Attr.class "lia-accordion__toggle lia-btn lia-btn--transparent"
+                    , Attr.class <|
+                        "icon"
+                            ++ (if file.visible then
+                                    " icon-minus"
+
+                                else
+                                    " icon-plus"
+                               )
+                    , onClick <| FlipView id_1 id_2
+                    ]
+                    []
+                ]
+            , Html.div
                 [ Attr.classList
-                    [ ( "lia-accordion__item", True )
+                    [ ( "lia-accordion__content", True )
                     , ( "active", file.visible )
                     ]
                 ]
-                [ Html.div [ Attr.class "lia-accordion__header" ]
-                    [ Html.h3 [ Attr.class "lia-accordion__headline" ] [ Html.text file.name ]
-                    , Html.button
-                        [ Attr.class "lia-btn lia-btn--transparent lia-accordion__toggle"
-                        , Attr.class <|
-                            "icon"
-                                ++ (if file.visible then
-                                        " icon-minus"
-
-                                    else
-                                        " icon-plus"
-                                   )
-                        , onClick <| FlipView id_1 id_2
-                        ]
-                        []
-                    ]
-                , if file.visible then
+                [ if file.visible then
                     Html.button
                         [ Attr.class "lia-btn lia-btn--transparent lia-code__min-max"
                         , Attr.class <|
-                            "icon"
-                                ++ (if file.fullscreen then
-                                        " icon-chevron-up"
+                            if file.fullscreen then
+                                "icon icon-chevron-up"
 
-                                    else
-                                        " icon-chevron-down"
-                                   )
+                            else
+                                "icon icon-chevron-down"
                         , onClick <| FlipFullscreen id_1 id_2
                         , Attr.title <|
                             if file.fullscreen then
@@ -155,9 +153,9 @@ view_eval lang theme running errors id_1 id_2 file attr =
 
                   else
                     Html.text ""
+                , evaluate theme attr running ( id_1, id_2 ) file headless (errors id_2)
                 ]
-        , evaluate theme attr running ( id_1, id_2 ) file headless (errors id_2)
-        ]
+            ]
 
 
 toStyle : Bool -> Bool -> Int -> List (Html.Attribute msg)
