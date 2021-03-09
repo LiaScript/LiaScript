@@ -18,9 +18,9 @@ import { updateClassName } from '../connectors/Base/settings'
 function isInViewport(elem: HTMLElement) {
   const bounding = elem.getBoundingClientRect()
   return (
-    bounding.top >= 20 &&
+    bounding.top >= 85 &&
     bounding.left >= 0 &&
-    bounding.bottom <= (window.innerHeight - 20 || document.documentElement.clientHeight - 20) &&
+    bounding.bottom <= (window.innerHeight - 40 || document.documentElement.clientHeight - 40) &&
     bounding.right <= (window.innerWidth || document.documentElement.clientWidth)
   )
 };
