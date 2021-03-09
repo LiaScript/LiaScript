@@ -1,32 +1,82 @@
 .lia-code {
-  $vert: map-get($global-spacing, spacing-smaller);
-  $horiz: map-get($global-spacing, spacing-small);
-
   font-family: $global-font-mono;
-  border-bottom-left-radius: map-get($global-spacing, spacing-small);
-  border-bottom-right-radius: map-get($global-spacing, spacing-small);
-  padding: $vert $horiz;
-  overflow-x: auto;
-  margin: 0px;
-  white-space: pre-wrap;
-  text-justify: none;
+  margin-bottom: 2rem;
 
-  &:not(.lia-inline) {
-    font-family: $global-font-mono;
-    padding: map-get($global-spacing, spacing-normal);
-    overflow-x: auto;
+  &--block {
+    > *:not(:last-child) {
+      margin-bottom: 1rem;
+    }
   }
 
-  &-stdout {
-    font-family: $global-font-mono;
-    padding: map-get($global-spacing, spacing-normal);
-    margin-top: 0px;
-    overflow-y: auto;
-    max-height: 250px;
-    border-radius: map-get($global-spacing, spacing-small);
-    word-wrap: normal;
-    word-break: keep-all;
-    white-space: pre-wrap;
+  &--inline {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid rgb(var(--color-highlight-dark));
+    color: rgb(var(--color-highlight-dark));
+  }
+
+  &-control {
+    align-items: center;
+    color: rgb(var(--color-highlight));
+    display: flex;
+    font-size: 1.8rem;
+
+    &__action {
+      margin-right: auto;
+    }
+
+    &__version {
+      display: flex;
+      align-items: center;
+
+      > *:not(:last-child) {
+        margin-right: 0.5rem;
+      }
+    }
+  }
+
+  &-terminal {
+    background-color: rgb(var(--lia-anthracite));
+    display: flex;
+    flex-direction: column;
+
+    &__input {
+      align-items: center;
+      background-color: rgba(var(--lia-white), 0.1);
+      border-radius: $global-radius;
+      border: 1px solid rgba(var(--lia-white), 0.5);
+      color: rgb(var(--lia-white));
+      display: flex;
+      padding: 0 0.8rem;
+      margin: 1rem 1.6rem;
+
+      input {
+        background-color: transparent;
+        border: 0;
+        color: rgb(var(--lia-white));
+        line-height: inherit;
+        width: 100%;
+      }
+    }
+
+    &__output {
+      background-color: rgb(var(--lia-anthracite));
+      padding: 1rem 1.6rem;
+      margin: 0;
+    }
+  }
+
+  &__input {
+    position: relative;
+    margin-bottom: 1rem;
+  }
+
+  &__min-max {
+    font-size: 2rem;
+    color: rgb(var(--color-highlight));
+    position: absolute;
+    bottom: 0;
+    right: 2rem;
+    z-index: 10;
   }
 }
 

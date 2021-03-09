@@ -17,3 +17,20 @@
 .font-400 {
   font-weight: 400;
 }
+
+/* Text-Color */
+.text-debug {
+  color: rgb(var(--lia-blue));
+}
+
+.text-info {
+  color: rgb(var(--lia-white));
+}
+
+.text-warning {
+  color: rgb(var(--lia-yellow));
+}
+
+.text-error {
+  color: rgb(var(--lia-red));
+}
