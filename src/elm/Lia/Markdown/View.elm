@@ -1,5 +1,7 @@
 module Lia.Markdown.View exposing (view)
 
+import Accessibility.Key as A11y_Key
+import Accessibility.Landmark as A11y_Landmark
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
@@ -43,7 +45,7 @@ view config =
                 config.section.body
 
         Just msg ->
-            Html.main_ [ Attr.class "lia-content" ]
+            viewMain
                 [ view_header config
                 , Html.text msg
                 ]
@@ -106,7 +108,15 @@ view_body ( config, footnote2show, footnotes ) =
                 else
                     s
            )
-        >> Html.main_ [ Attr.class "lia-slide__content" ]
+        >> viewMain
+
+
+viewMain : List (Html msg) -> Html msg
+viewMain =
+    Html.main_
+        [ Attr.class "lia-slide__content"
+        , A11y_Landmark.main_
+        ]
 
 
 view_footnote : (Markdown -> Html Msg) -> Maybe String -> Footnotes.Model -> Html Msg
@@ -151,7 +161,7 @@ view_header config =
         []
         config.section.title
     ]
-        |> Html.header []
+        |> Html.header [ A11y_Key.tabbable False ]
 
 
 header : Config Msg -> Int -> Parameters -> Inlines -> Html Msg

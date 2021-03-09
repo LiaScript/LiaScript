@@ -127,7 +127,6 @@ viewTheme lang tabbable theme =
                     , Attr.title name
                     , A11y_Key.tabbable tabbable
                     , blockKeydown Ignore
-                    , Attr.id "lia-color-settings"
                     ]
                     []
             )
@@ -187,10 +186,10 @@ modeToString show =
 
 viewSizing : Lang -> Bool -> Int -> Html Msg
 viewSizing lang tabbable int =
-    Html.div []
+    Html.div [ Attr.id "lia-font-sizing" ]
         [ Html.text <| Trans.baseFont lang ++ ":"
         , btnFont "icon icon-minus" tabbable (Trans.baseDec lang) (ChangeFontSize False)
-        , Html.text (String.fromInt int ++ "%")
+        , Html.text (String.fromInt int ++ " %")
         , btnFont "icon icon-plus" tabbable (Trans.baseInc lang) (ChangeFontSize True)
         ]
 
@@ -202,6 +201,8 @@ btnFont str tabbable title msg =
         , Attr.title title
         , Attr.class <| "lia-btn lia-btn--icon lia-btn--transparent " ++ str
         , A11y_Key.tabbable tabbable
+        , A11y_Widget.label title
+        , A11y_Aria.labeledBy "lia-font-sizing"
         ]
         []
 
@@ -403,8 +404,8 @@ btnIndex lang open =
         []
 
 
-btnSupport : Bool -> Html Msg
-btnSupport open =
+btnSupport : Lang -> Bool -> Html Msg
+btnSupport lang open =
     Html.button
         [ onClick <| Toggle SupportMenu
         , Attr.id "lia-btn-support"
@@ -416,6 +417,12 @@ btnSupport open =
             else
                 "icon-more"
         , Attr.type_ "button"
+        , lang
+            |> Trans.confSettings
+            |> Attr.title
+        , A11y_Aria.controls "lia-support-menu"
+        , A11y_Widget.hasMenuPopUp
+        , A11y_Widget.expanded open
         ]
         []
 

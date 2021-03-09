@@ -318,9 +318,13 @@ function process(isConnected: boolean, self: LiaScript, elmSend: Lia.Send, event
     case Port.SLIDE: {
       self.connector.slide(event.section)
 
-      const sec = document.getElementsByTagName('section')[0]
+      const sec = document.getElementsByTagName('main')[0]
       if (sec) {
         sec.scrollTo(0, 0)
+        
+        if(sec.children.length > 0) {
+          sec.children[0].focus()
+        }        
       }
       
       const elem = document.getElementById('focusedToc')
