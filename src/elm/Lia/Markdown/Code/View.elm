@@ -401,16 +401,16 @@ view_control lang idx version_active version_count running terminal =
             ]
         , Html.div [ Attr.class "lia-code-control__version" ]
             [ Html.button
-                [ (version_active - 1) |> Load idx |> onClick
+                [ First idx |> onClick
                 , Attr.class "lia-btn lia-btn--transparent icon icon-end-left"
-                , Attr.title (codePrev lang)
+                , Attr.title (codeFirst lang)
                 , Attr.disabled forward
                 ]
                 []
             , Html.button
-                [ First idx |> onClick
+                [ (version_active - 1) |> Load idx |> onClick
                 , Attr.class "lia-btn lia-btn--transparent icon icon-chevron-left"
-                , Attr.title (codeFirst lang)
+                , Attr.title (codePrev lang)
                 , Attr.disabled forward
                 ]
                 []
@@ -419,16 +419,16 @@ view_control lang idx version_active version_count running terminal =
                 ]
                 [ Html.text (String.fromInt version_active) ]
             , Html.button
-                [ Last idx |> onClick
+                [ (version_active + 1) |> Load idx |> onClick
                 , Attr.class "lia-btn lia-btn--transparent icon icon-chevron-right"
-                , Attr.title (codeLast lang)
+                , Attr.title (codeNext lang)
                 , Attr.disabled backward
                 ]
                 []
             , Html.button
-                [ (version_active + 1) |> Load idx |> onClick
+                [ Last idx |> onClick
                 , Attr.class "lia-btn lia-btn--transparent icon icon-end-right"
-                , Attr.title (codeNext lang)
+                , Attr.title (codeLast lang)
                 , Attr.disabled backward
                 ]
                 []
