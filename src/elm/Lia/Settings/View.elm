@@ -84,6 +84,7 @@ viewLightMode _ tabbable isLight =
         [ Attr.class "lia-btn lia-btn--transparent"
         , onClick (Toggle Light)
         , A11y_Key.tabbable tabbable
+        , Attr.id "lia-btn-light-mode"
         ]
         [ Html.i
             [ Attr.class "lia-btn__icon icon"
@@ -126,6 +127,7 @@ viewTheme lang tabbable theme =
                     , Attr.title name
                     , A11y_Key.tabbable tabbable
                     , blockKeydown Ignore
+                    , Attr.id "lia-color-settings"
                     ]
                     []
             )
