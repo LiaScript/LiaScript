@@ -16,6 +16,7 @@ import Accessibility.Widget as A11y_Widget
 import Array
 import Conditional.List as CList
 import Dict exposing (Dict)
+import Element exposing (Attr)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
@@ -333,10 +334,11 @@ viewEditorTheme lang tabbable theme =
         op =
             option theme
     in
-    Html.label [ A11y_Widget.hidden (not tabbable) ]
+    Html.label [ Attr.class "lia-label", A11y_Widget.hidden (not tabbable) ]
         [ Html.text "Editor"
         , Html.select
-            [ onInput ChangeEditor
+            [ Attr.class "lia-select d-block"
+            , onInput ChangeEditor
             , A11y_Key.tabbable tabbable
             ]
             [ [ ( "chrome", "Chrome" )

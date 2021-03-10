@@ -91,7 +91,8 @@ customElements.define('lia-editor', class extends HTMLElement {
     marker: string,
     minLines: number,
     annotations: string[],
-    fontSize: string
+    fontSize: string,
+    fontFamily: string
   }
 
   constructor() {
@@ -121,7 +122,8 @@ customElements.define('lia-editor', class extends HTMLElement {
       marker: '',
       minLines: 1,
       annotations: [],
-      fontSize: '12pt'
+      fontSize: '1.5rem',
+      fontFamily: 'LiaSourceCodePro'
     }
 
     let markers = {
@@ -158,7 +160,8 @@ customElements.define('lia-editor', class extends HTMLElement {
       showGutter: this.model.showGutter,
       minLines: this.model.minLines,
       maxLines: this.model.maxLines,
-      fontSize: this.model.fontSize
+      fontSize: this.model.fontSize,
+      fontFamily: this.model.fontFamily
     })
 
     if (!this.model.showCursor) {

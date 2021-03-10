@@ -55,9 +55,9 @@ update msg terminal =
 view : Terminal -> Html Msg
 view terminal =
     Html.div
-        [ Attr.class "lia-code-stdout"
+        [ Attr.class "lia-code-terminal__input"
         ]
-        [ Html.code [] [ Html.text ">> " ]
+        [ Html.i [ Attr.class "icon icon-chevron-double-right" ] []
         , Html.input
             [ onInput Input
             , onKeyDown KeyDown

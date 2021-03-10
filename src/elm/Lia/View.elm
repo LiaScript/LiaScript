@@ -168,7 +168,7 @@ slideBottom lang settings slide effects =
                 Html.div [ Attr.class "lia-responsive-voice" ]
                     [ Html.div [ Attr.class "lia-responsive-voice__control" ]
                         [ Html.button
-                            [ Attr.class "lia-btn lia-responsive-voice__play"
+                            [ Attr.class "lia-btn lia-btn--transparent lia-responsive-voice__play"
                             , onClick <| TTSReplay (not settings.speaking)
                             , Attr.disabled (not settings.sound)
                             , Attr.title <|
@@ -182,15 +182,15 @@ slideBottom lang settings slide effects =
                                 [ A11y_Widget.hidden True
                                 , Attr.class <|
                                     if settings.speaking then
-                                        "icon icon-stop-circle"
+                                        "lia-btn__icon icon icon-stop-circle"
 
                                     else
-                                        "icon icon-play-circle"
+                                        "lia-btn__icon icon icon-play-circle"
                                 ]
                                 []
                             ]
                         , Html.button
-                            [ Attr.class "lia-btn"
+                            [ Attr.class "lia-btn lia-btn--transparent"
                             , Attr.id "lia-btn-sound"
                             , onClick (UpdateSettings toggle_sound)
                             , Attr.title <|
@@ -204,10 +204,10 @@ slideBottom lang settings slide effects =
                                 [ A11y_Widget.hidden True
                                 , Attr.class <|
                                     if settings.sound then
-                                        "icon icon-sound-on"
+                                        "lia-btn__icon icon icon-sound-on"
 
                                     else
-                                        "icon icon-sound-off"
+                                        "lia-btn__icon icon icon-sound-off"
                                 ]
                                 []
                             ]
@@ -425,7 +425,7 @@ slideNavigation lang mode slide effect =
 responsiveVoice : Html msg
 responsiveVoice =
     Html.small [ Attr.class "lia-responsive-voice__info" ]
-        [ Html.a [ Attr.href "https://responsivevoice.org" ] [ Html.text "ResponsiveVoice-NonCommercial" ]
+        [ Html.a [ Attr.class "lia-link", Attr.href "https://responsivevoice.org" ] [ Html.text "ResponsiveVoice-NonCommercial" ]
         , Html.text " licensed under "
         , Html.a
             [ Attr.href "https://creativecommons.org/licenses/by-nc-nd/4.0/" ]

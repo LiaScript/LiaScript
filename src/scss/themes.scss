@@ -10,18 +10,18 @@
     //@include style-btn($theme);
     @include style-card($theme);
     //@include style-input($theme);
-    @include style-code($theme);
-    @include style-link($theme);
-    @include style-select($theme);
+    //@include style-code($theme);
+    //@include style-link($theme);
+    //@include style-select($theme);
     @include style-textarea($theme);
 
     // components
-    @include style-accordion($theme);
+    //@include style-accordion($theme);
     @include style-dropdown($theme);
     //@include style-effect-circle($theme);
     @include style-header($theme);
     //@include style-quote($theme);
-    @include style-script($theme);
+    //@include style-script($theme);
     //@include style-table($theme);
     //@include style-toc($theme);
   }
@@ -52,10 +52,6 @@
 
   .lia-icon {
     @include material-icon("", inherit);
-
-    &.rotating {
-      animation: spin 1s linear infinite;
-    }
   }
 }
 

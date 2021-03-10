@@ -21,7 +21,7 @@ view lang theme model code =
         Highlight lang_title_code ->
             lang_title_code
                 |> List.map (view_code theme)
-                |> Html.div []
+                |> Html.div [ Attr.class "lia-code lia-code--block" ]
 
         Evaluate id_1 ->
             case Array.get id_1 model of
@@ -30,28 +30,32 @@ view lang theme model code =
                         errors =
                             get_annotations project.log
                     in
-                    Html.div []
-                        [ project.file
-                            |> Array.toList
-                            |> List.indexedMap (view_eval lang theme project.running errors id_1)
-                            |> List.map2 (\a e -> e a) project.attr
-                            |> Html.div []
-                        , view_control lang
-                            id_1
-                            project.version_active
-                            (Array.length project.version)
-                            project.running
-                            (project.terminal /= Nothing)
-                        , view_result project.log
-                        , case project.terminal of
-                            Nothing ->
-                                Html.text ""
+                    Html.div [ Attr.class "lia-code lia-code--block" ]
+                        (List.append
+                            (project.file
+                                |> Array.toList
+                                |> List.indexedMap (view_eval lang theme project.running errors id_1)
+                                |> List.map2 (\a e -> e a) project.attr
+                            )
+                            [ view_control lang
+                                id_1
+                                project.version_active
+                                (Array.length project.version)
+                                project.running
+                                (project.terminal /= Nothing)
+                            , Html.div [ Attr.class "lia-code-terminal" ]
+                                [ view_result project.log
+                                , case project.terminal of
+                                    Nothing ->
+                                        Html.text ""
 
-                            Just term ->
-                                term
-                                    |> Terminal.view
-                                    |> Html.map (UpdateTerminal id_1)
-                        ]
+                                    Just term ->
+                                        term
+                                            |> Terminal.view
+                                            |> Html.map (UpdateTerminal id_1)
+                                ]
+                            ]
+                        )
 
                 Nothing ->
                     Html.text ""
@@ -80,85 +84,100 @@ list_get idx list =
 
 view_code : String -> Snippet -> Html Msg
 view_code theme snippet =
-    let
-        headless =
-            snippet.name == ""
-    in
-    Html.div []
-        [ if headless then
-            Html.text ""
+    Html.div [ Attr.class "lia-accordion" ]
+        [ Html.div [ Attr.class "lia-accordion__item" ]
+            [ if snippet.name == "" then
+                Html.text ""
 
-          else
-            Html.button
-                [ Attr.class "lia-accordion-dummy" ]
-                [ Html.text snippet.name
+              else
+                Html.div [ Attr.class "lia-accordion__header" ]
+                    [ Html.h3
+                        [ Attr.class "lia-accordion__headline" ]
+                        [ Html.text snippet.name
+                        ]
+                    , Html.button
+                        [ Attr.class "lia-accordion__toggle lia-btn lia-btn--transparent"
+                        , Attr.class <|
+                            "icon"
+                                ++ (if True then
+                                        " icon-minus"
+
+                                    else
+                                        " icon-plus"
+                                   )
+
+                        --, onClick <| FlipView id_1 id_2
+                        ]
+                        []
+                    ]
+            , Html.div [ Attr.class "lia-accordion__content" ]
+                [ Html.div [ Attr.class "lia-code__input" ] [ highlight theme snippet.attr snippet.lang snippet.code ]
                 ]
-        , highlight theme snippet.attr snippet.lang snippet.code headless
+            ]
         ]
 
 
 view_eval : Lang -> String -> Bool -> (Int -> JE.Value) -> Int -> Int -> File -> Parameters -> Html Msg
 view_eval lang theme running errors id_1 id_2 file attr =
-    let
-        headless =
-            file.name == ""
-    in
-    Html.div (Params.toAttribute attr)
-        [ if headless then
-            Html.text ""
+    if file.name == "" then
+        Html.div [ Attr.class "lia-code__input" ] [ evaluate theme attr running ( id_1, id_2 ) file (errors id_2) ]
 
-          else
-            Html.div
-                [ Attr.classList
-                    [ ( "lia-accordion", True )
-                    , ( "active", file.visible )
-                    ]
-                ]
-                [ Html.button
-                    [ onClick <| FlipView id_1 id_2
-                    ]
-                    [ if file.visible then
-                        Html.text " + "
+    else
+        Html.div [ Attr.class "lia-accordion" ]
+            [ Html.div (Attr.class "lia-accordion__item" :: Params.toAttribute attr)
+                [ Html.div [ Attr.class "lia-accordion__header" ]
+                    [ Html.h3 [ Attr.class "lia-accordion__headline" ] [ Html.text file.name ]
+                    , Html.button
+                        [ Attr.class "lia-accordion__toggle lia-btn lia-btn--transparent"
+                        , Attr.class <|
+                            "icon"
+                                ++ (if file.visible then
+                                        " icon-minus"
 
-                      else
-                        Html.text " - "
-                    , Html.text file.name
-                    ]
-                , if file.visible then
-                    Html.button
-                        [ Attr.class "lia-accordion-min-max"
-                        , onClick <| FlipFullscreen id_1 id_2
-                        , Attr.title <|
-                            if file.fullscreen then
-                                codeMinimize lang
-
-                            else
-                                codeMaximize lang
+                                    else
+                                        " icon-plus"
+                                   )
+                        , onClick <| FlipView id_1 id_2
                         ]
-                        [ if file.fullscreen then
-                            Html.text "↥"
+                        []
+                    ]
+                , Html.div
+                    [ Attr.classList
+                        [ ( "lia-accordion__content", True )
+                        , ( "active", file.visible )
+                        ]
+                    ]
+                    [ Html.div [ Attr.class "lia-code__input" ]
+                        [ if file.visible then
+                            Html.button
+                                [ Attr.class "lia-btn lia-btn--transparent lia-code__min-max"
+                                , Attr.class <|
+                                    if file.fullscreen then
+                                        "icon icon-chevron-up"
+
+                                    else
+                                        "icon icon-chevron-down"
+                                , onClick <| FlipFullscreen id_1 id_2
+                                , Attr.title <|
+                                    if file.fullscreen then
+                                        codeMinimize lang
+
+                                    else
+                                        codeMaximize lang
+                                ]
+                                []
 
                           else
-                            Html.text "↧"
+                            Html.text ""
+                        , evaluate theme attr running ( id_1, id_2 ) file (errors id_2)
                         ]
-
-                  else
-                    Html.text ""
+                    ]
                 ]
-        , evaluate theme attr running ( id_1, id_2 ) file headless (errors id_2)
-        ]
+            ]
 
 
-toStyle : Bool -> Bool -> Int -> List (Html.Attribute msg)
-toStyle visible headless pix =
-    let
-        top_border =
-            if headless then
-                "4px"
-
-            else
-                "0px"
-    in
+toStyle : Bool -> Int -> List (Html.Attribute msg)
+toStyle visible pix =
     [ Attr.style "max-height"
         (if visible then
             String.fromInt pix ++ "px"
@@ -167,8 +186,6 @@ toStyle visible headless pix =
             "0px"
         )
     , Attr.style "transition" "max-height 0.25s ease-out"
-    , Attr.style "border-top-left-radius" top_border
-    , Attr.style "border-top-right-radius" top_border
     ]
 
 
@@ -184,16 +201,9 @@ pixel from_lines =
     from_lines * 21 + 16
 
 
-highlight : String -> Parameters -> String -> String -> Bool -> Html Msg
-highlight theme attr lang code headless =
+highlight : String -> Parameters -> String -> String -> Html Msg
+highlight theme attr lang code =
     let
-        top_border =
-            if headless then
-                "4px"
-
-            else
-                "0px"
-
         readOnly =
             if Params.get "data-readonly" attr == Nothing then
                 True
@@ -205,9 +215,7 @@ highlight theme attr lang code headless =
         (attr
             |> Params.toAttribute
             |> List.append
-                [ Attr.style "border-top-left-radius" top_border
-                , Attr.style "border-top-right-radius" top_border
-                , Editor.value code
+                [ Editor.value code
                 , Editor.mode lang
                 , attr
                     |> Params.get "data-theme"
@@ -237,15 +245,15 @@ highlight theme attr lang code headless =
                 , Editor.showPrintMargin False
                 , attr
                     |> Params.get "data-fontsize"
-                    |> Maybe.withDefault "12pt"
+                    |> Maybe.withDefault "1.5rem"
                     |> Editor.fontSize
                 ]
         )
         []
 
 
-evaluate : String -> Parameters -> Bool -> ( Int, Int ) -> File -> Bool -> JE.Value -> Html Msg
-evaluate theme attr running ( id_1, id_2 ) file headless errors =
+evaluate : String -> Parameters -> Bool -> ( Int, Int ) -> File -> JE.Value -> Html Msg
+evaluate theme attr running ( id_1, id_2 ) file errors =
     let
         total_lines =
             lines file.code
@@ -274,7 +282,7 @@ evaluate theme attr running ( id_1, id_2 ) file headless errors =
             |> List.append
                 (max_lines
                     |> pixel
-                    |> toStyle file.visible headless
+                    |> toStyle file.visible
                 )
             |> List.append
                 [ Editor.onChange <| Update id_1 id_2
@@ -299,7 +307,7 @@ evaluate theme attr running ( id_1, id_2 ) file headless errors =
                     |> Editor.tabSize
                 , attr
                     |> Params.get "data-fontsize"
-                    |> Maybe.withDefault "12pt"
+                    |> Maybe.withDefault "1.5rem"
                     |> Editor.fontSize
                 , attr
                     |> Params.get "data-marker"
@@ -331,12 +339,12 @@ evaluate theme attr running ( id_1, id_2 ) file headless errors =
 view_result : Log -> Html msg
 view_result log =
     if Array.isEmpty log.messages then
-        Html.div [] []
+        Html.text ""
 
     else
         Log.view log
             |> Keyed.node "pre"
-                [ Attr.class "lia-code-stdout"
+                [ Attr.class "lia-code-terminal__output"
                 , log.messages
                     |> Log.length
                     |> (*) 2
@@ -363,65 +371,66 @@ view_control lang idx version_active version_count running terminal =
         backward =
             running || (version_active == (version_count - 1))
     in
-    Html.div [ Attr.style "padding" "0px", Attr.style "width" "100%" ]
-        [ case ( running, terminal ) of
-            ( True, False ) ->
-                Html.button
-                    [ Attr.class "lia-btn lia-icon"
-                    , Attr.title (codeRunning lang)
-                    , Attr.disabled True
-                    ]
-                    [ Html.span
-                        [ Attr.class "lia-icon rotating"
+    Html.div [ Attr.class "lia-code-control" ]
+        [ Html.div [ Attr.class "lia-code-control__action" ]
+            [ case ( running, terminal ) of
+                ( True, False ) ->
+                    Html.button
+                        [ Attr.class "lia-btn lia-btn--transparent is-disabled"
+                        , Attr.title (codeRunning lang)
+                        , Attr.disabled True
                         ]
-                        [ Html.text "sync" ]
-                    ]
+                        [ Html.i [ Attr.class "icon icon-refresh rotating" ] []
+                        ]
 
-            ( True, True ) ->
-                Html.button
-                    [ Attr.class "lia-btn lia-icon"
-                    , Attr.title (codeRunning lang)
-                    , onClick (Stop idx)
-                    ]
-                    [ Html.text "stop" ]
+                ( True, True ) ->
+                    Html.button
+                        [ Attr.class "lia-btn lia-btn--transparent icon icon-stop-circle"
+                        , Attr.title (codeRunning lang)
+                        , onClick (Stop idx)
+                        ]
+                        []
 
-            _ ->
-                Html.button
-                    [ Attr.class "lia-btn lia-icon"
-                    , onClick (Eval idx)
-                    , Attr.title (codeExecute lang)
-                    ]
-                    [ Html.text "play_circle_filled" ]
-        , Html.button
-            [ Last idx |> onClick
-            , Attr.class "lia-btn lia-icon"
-            , Attr.title (codeLast lang)
-            , Attr.disabled backward
+                _ ->
+                    Html.button
+                        [ Attr.class "lia-btn lia-btn--transparent icon icon-compile-circle"
+                        , onClick (Eval idx)
+                        , Attr.title (codeExecute lang)
+                        ]
+                        []
             ]
-            [ Html.text "last_page" ]
-        , Html.button
-            [ (version_active + 1) |> Load idx |> onClick
-            , Attr.class "lia-btn lia-icon"
-            , Attr.title (codeNext lang)
-            , Attr.disabled backward
+        , Html.div [ Attr.class "lia-code-control__version" ]
+            [ Html.button
+                [ First idx |> onClick
+                , Attr.class "lia-btn lia-btn--transparent icon icon-end-left"
+                , Attr.title (codeFirst lang)
+                , Attr.disabled forward
+                ]
+                []
+            , Html.button
+                [ (version_active - 1) |> Load idx |> onClick
+                , Attr.class "lia-btn lia-btn--transparent icon icon-chevron-left"
+                , Attr.title (codePrev lang)
+                , Attr.disabled forward
+                ]
+                []
+            , Html.span
+                [ Attr.class "lia-label"
+                ]
+                [ Html.text (String.fromInt version_active) ]
+            , Html.button
+                [ (version_active + 1) |> Load idx |> onClick
+                , Attr.class "lia-btn lia-btn--transparent icon icon-chevron-right"
+                , Attr.title (codeNext lang)
+                , Attr.disabled backward
+                ]
+                []
+            , Html.button
+                [ Last idx |> onClick
+                , Attr.class "lia-btn lia-btn--transparent icon icon-end-right"
+                , Attr.title (codeLast lang)
+                , Attr.disabled backward
+                ]
+                []
             ]
-            [ Html.text "navigate_next" ]
-        , Html.span
-            [ Attr.class "lia-label"
-            ]
-            [ Html.text (String.fromInt version_active) ]
-        , Html.button
-            [ (version_active - 1) |> Load idx |> onClick
-            , Attr.class "lia-btn lia-icon"
-            , Attr.title (codePrev lang)
-            , Attr.disabled forward
-            ]
-            [ Html.text "navigate_before" ]
-        , Html.button
-            [ First idx |> onClick
-            , Attr.class "lia-btn lia-icon"
-            , Attr.title (codeFirst lang)
-            , Attr.disabled forward
-            ]
-            [ Html.text "first_page" ]
         ]
