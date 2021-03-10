@@ -11,8 +11,8 @@
     @include style-card($theme);
     //@include style-input($theme);
     //@include style-code($theme);
-    @include style-link($theme);
-    @include style-select($theme);
+    //@include style-link($theme);
+    //@include style-select($theme);
     @include style-textarea($theme);
 
     // components
@@ -21,7 +21,7 @@
     //@include style-effect-circle($theme);
     @include style-header($theme);
     //@include style-quote($theme);
-    @include style-script($theme);
+    //@include style-script($theme);
     //@include style-table($theme);
     //@include style-toc($theme);
   }

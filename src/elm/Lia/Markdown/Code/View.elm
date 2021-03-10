@@ -314,7 +314,7 @@ evaluate theme attr running ( id_1, id_2 ) file headless errors =
                     |> Editor.tabSize
                 , attr
                     |> Params.get "data-fontsize"
-                    |> Maybe.withDefault "12pt"
+                    |> Maybe.withDefault "1.5rem"
                     |> Editor.fontSize
                 , attr
                     |> Params.get "data-marker"

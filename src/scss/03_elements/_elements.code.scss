@@ -9,9 +9,9 @@
   }
 
   &--inline {
-    padding: 0.25rem 0.5rem;
     border: 1px solid rgb(var(--color-highlight-dark));
     color: rgb(var(--color-highlight-dark));
+    padding: 0 0.5rem;
   }
 
   &-control {
@@ -19,6 +19,7 @@
     color: rgb(var(--color-highlight));
     display: flex;
     font-size: 1.8rem;
+    padding: 0 0.5rem;
 
     &__action {
       margin-right: auto;
@@ -46,8 +47,8 @@
       border: 1px solid rgba(var(--lia-white), 0.5);
       color: rgb(var(--lia-white));
       display: flex;
-      padding: 0 0.8rem;
       margin: 1rem 1.6rem;
+      padding: 0 0.8rem;
 
       input {
         background-color: transparent;
@@ -60,21 +61,21 @@
 
     &__output {
       background-color: rgb(var(--lia-anthracite));
-      padding: 1rem 1.6rem;
       margin: 0;
+      padding: 1rem 1.6rem;
     }
   }
 
   &__input {
+    border: 1px solid rgb(var(--color-highlight));
     position: relative;
-    margin-bottom: 1rem;
   }
 
   &__min-max {
-    font-size: 2rem;
-    color: rgb(var(--color-highlight));
-    position: absolute;
     bottom: 0;
+    color: rgb(var(--color-highlight));
+    font-size: 2rem;
+    position: absolute;
     right: 2rem;
     z-index: 10;
   }
