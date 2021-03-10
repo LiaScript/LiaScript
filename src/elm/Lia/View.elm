@@ -56,6 +56,7 @@ viewIndex hasIndex model =
 
             else
                 "lia-toc--closed"
+        , A11y_Landmark.navigation
         ]
         [ Settings.btnIndex
             model.translation
@@ -77,9 +78,9 @@ viewIndex hasIndex model =
                 model.settings.table_of_contents
                 model.section_active
                 Script
-            |> Html.nav
+            |> Html.div
                 [ Attr.class "lia-toc__content"
-                , A11y_Landmark.navigation
+                , A11y_Key.tabbable False
                 ]
 
         --|> Html.map Script
@@ -178,7 +179,8 @@ slideBottom lang settings slide effects =
                                     "todo: replay"
                             ]
                             [ Html.i
-                                [ Attr.class <|
+                                [ A11y_Widget.hidden True
+                                , Attr.class <|
                                     if settings.speaking then
                                         "icon icon-stop-circle"
 
@@ -199,7 +201,8 @@ slideBottom lang settings slide effects =
                                     Trans.soundOff lang
                             ]
                             [ Html.i
-                                [ Attr.class <|
+                                [ A11y_Widget.hidden True
+                                , Attr.class <|
                                     if settings.sound then
                                         "icon icon-sound-on"
 
@@ -287,11 +290,13 @@ navButton title id class msg =
     Html.button
         [ onClick msg
         , Attr.title title
-        , Attr.class <| "lia-btn lia-btn--icon lia-btn--transparent icon " ++ class
+        , Attr.class <| "lia-btn lia-btn--icon lia-btn--transparent"
         , Attr.id id
         , A11y_Key.tabbable True
         ]
-        []
+        [ Html.i [ A11y_Widget.hidden True, Attr.class <| "icon " ++ class ]
+            []
+        ]
 
 
 {-| **@private:** the navigation abr:
