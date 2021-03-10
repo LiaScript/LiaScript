@@ -11,20 +11,30 @@
   --color-text: var(--lia-anthracite);
   --color-highlight: var(--lia-turquoise);
   --color-highlight-dark: var(--lia-turquoise-dark);
+  --color-highlight-menu: var(--lia-turquoise);
   --color-background: var(--lia-white);
+
+  &.lia-theme-turquoise {
+    --color-highlight: var(--lia-turquoise);
+    --color-highlight-dark: var(--lia-turquoise-dark);
+    --color-highlight-menu: var(--lia-turquoise-darker);
+  }
 
   &.lia-theme-red {
     --color-highlight: var(--lia-red);
     --color-highlight-dark: var(--lia-red-dark);
+    --color-highlight-menu: var(--lia-red-darker);
   }
 
   &.lia-theme-blue {
     --color-highlight: var(--lia-blue);
     --color-highlight-dark: var(--lia-blue-dark);
+    --color-highlight-menu: var(--lia-blue-darker);
   }
 
   &.lia-theme-yellow {
     --color-highlight: var(--lia-yellow);
     --color-highlight-dark: var(--lia-yellow-dark);
+    --color-highlight-menu: var(--lia-yellow-darker);
   }
 }

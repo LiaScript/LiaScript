@@ -4,7 +4,6 @@ import Lia from '../../liascript/types/lia.d'
 import Port from '../../liascript/types/ports'
 import log from '../../liascript/log'
 
-
 if (process.env.NODE_ENV === 'development') {
   Dexie.debug = true
 }
@@ -29,7 +28,7 @@ class LiaDB {
 
   open_(uidDB: string) {
     let db = new Dexie(uidDB)
-
+    
     db.version(1).stores({
       code: '[id+version], version',
       quiz: '[id+version], version',
@@ -42,15 +41,22 @@ class LiaDB {
   }
 
   async open(uidDB: string, versionDB: number, init?: Lia.Event) {
+    
     this.version = versionDB
     this.db = this.open_(uidDB)
-    await this.db.open()
 
-    if (init) {
+    try {
+      await this.db.open()
+    } catch(e) {
+      log.warn("DB: open -> ", e.message);
+      this.db = null
+    }
+    
+    if (init && this.db) {
       const item = await this.db[init.topic].get({
         id: init.section,
         version: versionDB
-      })
+      })      
 
       if (!!item) {
         if (item.data) {
@@ -211,16 +217,30 @@ class LiaDB {
   }
 
   async getIndex(uidDB: string) {
-    const course = await this.dbIndex.courses.get(uidDB)
+    
+    try {
+      const course = await this.dbIndex.courses.get(uidDB)
 
-    this.send({
-      topic: 'getIndex',
-      message: {
-        id: uidDB,
-        course: course
-      },
-      section: -1
-    })
+      this.send({
+        topic: 'getIndex',
+        message: {
+          id: uidDB,
+          course: course
+        },
+        section: -1
+      })
+    } catch(e) {
+      log.warn("DB: getIndex -> ", e.message)
+
+      this.send({
+        topic: 'getIndex',
+        message: {
+          id: uidDB,
+          course: null
+        },
+        section: -1
+      })
+    }
   }
 
   async listIndex(order = 'updated', desc = false) {
@@ -240,6 +260,10 @@ class LiaDB {
   }
 
   async storeIndex(data: any) {
+    if (!this.dbIndex.isOpen()) {
+      log.warn("DB: storeIndex ... db is closed")
+      return
+    }
     let date = new Date()
     let item = await this.dbIndex.courses.get(data.readme)
 
@@ -288,6 +312,9 @@ class LiaDB {
     }
 
     this.dbIndex.courses.put(item)
+    .then(function (result: any) {
+      log.info("DB: storeIndex", result)
+    })
   }
 
   async deleteIndex(uidDB: string) {

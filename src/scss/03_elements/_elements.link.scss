@@ -1,31 +1,13 @@
 .lia-link {
+  color: rgb(var(--color-highlight));
   word-break: break-word;
-}
 
-@mixin style-link($theme) {
-  .lia-link {
-    &:link {
-      color: map-get($theme, primary);
+  &:link,
+  &:visited {
+    color: rgb(var(--color-highlight));
+  }
 
-      &:hover {
-        color: lighten(map-get($theme, primary), 20%);
-      }
-
-      &:active {
-        color: darken(map-get($theme, primary), 20%);
-      }
-    }
-
-    &:visited {
-      color: map-get($theme, secondary);
-
-      &:hover {
-        color: lighten(map-get($theme, secondary), 20%);
-      }
-
-      &:active {
-        color: darken(map-get($theme, secondary), 20%);
-      }
-    }
+  &:hover {
+    color: rgb(var(--color-highlight-dark));
   }
 }

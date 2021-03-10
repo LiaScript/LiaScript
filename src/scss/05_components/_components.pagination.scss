@@ -19,11 +19,12 @@
     display: flex;
     flex-wrap: wrap;
     font-weight: 700;
+    font-size: 1.8rem;
     justify-content: space-between;
 
     @include breakpoint("md") {
       border-radius: $global-radius;
-      width: 13rem;
+      width: 15rem;
     }
   }
 

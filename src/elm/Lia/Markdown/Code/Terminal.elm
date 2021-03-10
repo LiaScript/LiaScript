@@ -55,18 +55,13 @@ update msg terminal =
 view : Terminal -> Html Msg
 view terminal =
     Html.div
-        [ Attr.class "lia-code-stdout"
-        , Attr.style "margin-top" "-10px"
+        [ Attr.class "lia-code-terminal__input"
         ]
-        [ Html.code [] [ Html.text ">> " ]
+        [ Html.i [ Attr.class "icon icon-chevron-double-right" ] []
         , Html.input
             [ onInput Input
             , onKeyDown KeyDown
             , Attr.value terminal.input
-            , Attr.style "background-color" "black"
-            , Attr.style "color" "white"
-            , Attr.style "border" "0"
-            , Attr.style "width" "calc(100% - 30px)"
             ]
             []
         ]

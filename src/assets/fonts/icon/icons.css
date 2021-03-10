@@ -415,24 +415,28 @@
   content: "\EA32"
 }
 
-.icon-stop-circle:before {
+.icon-sound-on:before {
   content: "\EA33"
 }
 
-.icon-table:before {
+.icon-stop-circle:before {
   content: "\EA34"
 }
 
-.icon-warning:before {
+.icon-table:before {
   content: "\EA35"
 }
 
-.icon-zoom-out:before {
+.icon-warning:before {
   content: "\EA36"
 }
 
-.icon-zoom:before {
+.icon-zoom-out:before {
   content: "\EA37"
+}
+
+.icon-zoom:before {
+  content: "\EA38"
 }
 
 

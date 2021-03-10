@@ -1,12 +1,12 @@
-@keyframes spin {
+@keyframes rotating {
   100% {
-    -webkit-transform: rotate(-360deg);
-    transform: rotate(-360deg);
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
   }
 }
 
-.spin {
-  animation: spin;
+.rotating {
+  animation: rotating 1s linear infinite;
 }
 
 @keyframes show-comment {

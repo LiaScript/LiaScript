@@ -27,7 +27,7 @@ Otherwise `Nothing` is returned.
 -}
 getLnFromCode : String -> Maybe Lang
 getLnFromCode code =
-    case String.toLower code of
+    case String.toLower code of 
         "bg" ->
             Just Bg
 
@@ -69,7 +69,7 @@ getLnFromCode code =
 -}
 getCodeFromLn : Lang -> String
 getCodeFromLn lang =
-    case lang of
+    case lang of 
         Bg ->
             "bg"
 
@@ -106,7 +106,7 @@ getCodeFromLn lang =
 
 baseNext : Lang -> String
 baseNext lang =
-    case lang of
+    case lang of 
         Bg ->
             "Следващ"
 
@@ -143,7 +143,7 @@ baseNext lang =
 
 basePrev : Lang -> String
 basePrev lang =
-    case lang of
+    case lang of 
         Bg ->
             "Предишен"
 
@@ -180,7 +180,7 @@ basePrev lang =
 
 baseFont : Lang -> String
 baseFont lang =
-    case lang of
+    case lang of 
         Bg ->
             "Шрифт"
 
@@ -217,7 +217,7 @@ baseFont lang =
 
 baseDec : Lang -> String
 baseDec lang =
-    case lang of
+    case lang of 
         Bg ->
             "Увеличаване"
 
@@ -254,7 +254,7 @@ baseDec lang =
 
 baseInc : Lang -> String
 baseInc lang =
-    case lang of
+    case lang of 
         Bg ->
             "Намаляване"
 
@@ -291,7 +291,7 @@ baseInc lang =
 
 baseSearch : Lang -> String
 baseSearch lang =
-    case lang of
+    case lang of 
         Bg ->
             "Търсене"
 
@@ -328,7 +328,7 @@ baseSearch lang =
 
 baseDelete : Lang -> String
 baseDelete lang =
-    case lang of
+    case lang of 
         Bg ->
             "търсене изтриване"
 
@@ -365,7 +365,7 @@ baseDelete lang =
 
 baseResults : Lang -> String
 baseResults lang =
-    case lang of
+    case lang of 
         Bg ->
             "Резултати"
 
@@ -402,7 +402,7 @@ baseResults lang =
 
 baseOneResult : Lang -> String
 baseOneResult lang =
-    case lang of
+    case lang of 
         Bg ->
             "един резултат"
 
@@ -439,7 +439,7 @@ baseOneResult lang =
 
 baseNoResult : Lang -> String
 baseNoResult lang =
-    case lang of
+    case lang of 
         Bg ->
             "няма резултати"
 
@@ -476,7 +476,7 @@ baseNoResult lang =
 
 baseToc : Lang -> String
 baseToc lang =
-    case lang of
+    case lang of 
         Bg ->
             "Съдържание"
 
@@ -513,7 +513,7 @@ baseToc lang =
 
 baseShow : Lang -> String
 baseShow lang =
-    case lang of
+    case lang of 
         Bg ->
             "показване"
 
@@ -550,7 +550,7 @@ baseShow lang =
 
 baseHide : Lang -> String
 baseHide lang =
-    case lang of
+    case lang of 
         Bg ->
             "скриване"
 
@@ -587,7 +587,7 @@ baseHide lang =
 
 baseLang : Lang -> String
 baseLang lang =
-    case lang of
+    case lang of 
         Bg ->
             "български"
 
@@ -624,7 +624,7 @@ baseLang lang =
 
 no_translation : Lang -> String
 no_translation lang =
-    case lang of
+    case lang of 
         Bg ->
             "Без превод"
 
@@ -659,9 +659,46 @@ no_translation lang =
             "no translation yet"
 
 
+translateWithGoogle : Lang -> String
+translateWithGoogle lang =
+    case lang of 
+        Bg ->
+            "Превод с Google (експериментално)"
+
+        De ->
+            "Mit Google übersetzen (experimentell)"
+
+        Es ->
+            "Traducir con Google (experimental)"
+
+        Fa ->
+            "ترجمه با Google (آزمایشی)"
+
+        Hy ->
+            "Թարգմանեք Google- ի միջոցով (փորձնական)"
+
+        Nl ->
+            "Vertalen met Google (experimenteel)"
+
+        Ru ->
+            "Перевести с Google (экспериментально)"
+
+        Tw ->
+            "与Google进行翻译（实验性）"
+
+        Ua ->
+            "Перекласти за допомогою Google (експериментально)"
+
+        Zh ->
+            "与Google进行翻译（实验性）"
+
+        _ ->
+            "Translate with Google (experimental)"
+
+
 cColor : Lang -> String
 cColor lang =
-    case lang of
+    case lang of 
         Bg ->
             "Цвят"
 
@@ -698,7 +735,7 @@ cColor lang =
 
 cSchema : Lang -> String
 cSchema lang =
-    case lang of
+    case lang of 
         Bg ->
             "Цветова схема"
 
@@ -735,7 +772,7 @@ cSchema lang =
 
 cDark : Lang -> String
 cDark lang =
-    case lang of
+    case lang of 
         Bg ->
             "Тъмно"
 
@@ -772,7 +809,7 @@ cDark lang =
 
 cBright : Lang -> String
 cBright lang =
-    case lang of
+    case lang of 
         Bg ->
             "Светло"
 
@@ -809,7 +846,7 @@ cBright lang =
 
 cDefault : Lang -> String
 cDefault lang =
-    case lang of
+    case lang of 
         Bg ->
             "Подразбиране"
 
@@ -846,7 +883,7 @@ cDefault lang =
 
 cBlue : Lang -> String
 cBlue lang =
-    case lang of
+    case lang of 
         Bg ->
             "Синьо"
 
@@ -883,7 +920,7 @@ cBlue lang =
 
 cRed : Lang -> String
 cRed lang =
-    case lang of
+    case lang of 
         Bg ->
             "червен"
 
@@ -920,7 +957,7 @@ cRed lang =
 
 cYellow : Lang -> String
 cYellow lang =
-    case lang of
+    case lang of 
         Bg ->
             "жълт"
 
@@ -957,7 +994,7 @@ cYellow lang =
 
 cTurquoise : Lang -> String
 cTurquoise lang =
-    case lang of
+    case lang of 
         Bg ->
             "тюркоаз"
 
@@ -994,7 +1031,7 @@ cTurquoise lang =
 
 modeMode : Lang -> String
 modeMode lang =
-    case lang of
+    case lang of 
         Bg ->
             "Режим на презентация"
 
@@ -1031,7 +1068,7 @@ modeMode lang =
 
 modeTextbook : Lang -> String
 modeTextbook lang =
-    case lang of
+    case lang of 
         Bg ->
             "Текст"
 
@@ -1068,7 +1105,7 @@ modeTextbook lang =
 
 modePresentation : Lang -> String
 modePresentation lang =
-    case lang of
+    case lang of 
         Bg ->
             "Презентация"
 
@@ -1105,7 +1142,7 @@ modePresentation lang =
 
 modeSlides : Lang -> String
 modeSlides lang =
-    case lang of
+    case lang of 
         Bg ->
             "Слайдове"
 
@@ -1142,7 +1179,7 @@ modeSlides lang =
 
 soundOn : Lang -> String
 soundOn lang =
-    case lang of
+    case lang of 
         Bg ->
             "Звук изкл."
 
@@ -1179,7 +1216,7 @@ soundOn lang =
 
 soundOff : Lang -> String
 soundOff lang =
-    case lang of
+    case lang of 
         Bg ->
             "Звук вкл."
 
@@ -1216,7 +1253,7 @@ soundOff lang =
 
 infoAuthor : Lang -> String
 infoAuthor lang =
-    case lang of
+    case lang of 
         Bg ->
             "Автор: "
 
@@ -1253,7 +1290,7 @@ infoAuthor lang =
 
 infoDate : Lang -> String
 infoDate lang =
-    case lang of
+    case lang of 
         Bg ->
             "Дата: "
 
@@ -1290,7 +1327,7 @@ infoDate lang =
 
 infoEmail : Lang -> String
 infoEmail lang =
-    case lang of
+    case lang of 
         Bg ->
             "eMail: "
 
@@ -1327,7 +1364,7 @@ infoEmail lang =
 
 infoVersion : Lang -> String
 infoVersion lang =
-    case lang of
+    case lang of 
         Bg ->
             "Версия: "
 
@@ -1364,7 +1401,7 @@ infoVersion lang =
 
 confInformation : Lang -> String
 confInformation lang =
-    case lang of
+    case lang of 
         Bg ->
             "Информация"
 
@@ -1401,7 +1438,7 @@ confInformation lang =
 
 confSettings : Lang -> String
 confSettings lang =
-    case lang of
+    case lang of 
         Bg ->
             "Настройки"
 
@@ -1438,7 +1475,7 @@ confSettings lang =
 
 confShare : Lang -> String
 confShare lang =
-    case lang of
+    case lang of 
         Bg ->
             "Споделяне"
 
@@ -1475,7 +1512,7 @@ confShare lang =
 
 confTranslations : Lang -> String
 confTranslations lang =
-    case lang of
+    case lang of 
         Bg ->
             "Транслации"
 
@@ -1512,7 +1549,7 @@ confTranslations lang =
 
 codeExecute : Lang -> String
 codeExecute lang =
-    case lang of
+    case lang of 
         Bg ->
             "Изпълни"
 
@@ -1549,7 +1586,7 @@ codeExecute lang =
 
 codeRunning : Lang -> String
 codeRunning lang =
-    case lang of
+    case lang of 
         Bg ->
             "Работещ"
 
@@ -1586,7 +1623,7 @@ codeRunning lang =
 
 codePrev : Lang -> String
 codePrev lang =
-    case lang of
+    case lang of 
         Bg ->
             "Предишна версия"
 
@@ -1623,7 +1660,7 @@ codePrev lang =
 
 codeNext : Lang -> String
 codeNext lang =
-    case lang of
+    case lang of 
         Bg ->
             "следваща версия"
 
@@ -1660,7 +1697,7 @@ codeNext lang =
 
 codeFirst : Lang -> String
 codeFirst lang =
-    case lang of
+    case lang of 
         Bg ->
             "Първа версия"
 
@@ -1697,7 +1734,7 @@ codeFirst lang =
 
 codeLast : Lang -> String
 codeLast lang =
-    case lang of
+    case lang of 
         Bg ->
             "Последна версия"
 
@@ -1734,7 +1771,7 @@ codeLast lang =
 
 codeMinimize : Lang -> String
 codeMinimize lang =
-    case lang of
+    case lang of 
         Bg ->
             "Минимизиране"
 
@@ -1771,7 +1808,7 @@ codeMinimize lang =
 
 codeMaximize : Lang -> String
 codeMaximize lang =
-    case lang of
+    case lang of 
         Bg ->
             "Максимизиране"
 
@@ -1808,7 +1845,7 @@ codeMaximize lang =
 
 quizCheck : Lang -> String
 quizCheck lang =
-    case lang of
+    case lang of 
         Bg ->
             "Проверка"
 
@@ -1845,7 +1882,7 @@ quizCheck lang =
 
 quizChecked : Lang -> String
 quizChecked lang =
-    case lang of
+    case lang of 
         Bg ->
             "Проверено"
 
@@ -1882,7 +1919,7 @@ quizChecked lang =
 
 quizSolution : Lang -> String
 quizSolution lang =
-    case lang of
+    case lang of 
         Bg ->
             "Отговор"
 
@@ -1919,7 +1956,7 @@ quizSolution lang =
 
 quizResolved : Lang -> String
 quizResolved lang =
-    case lang of
+    case lang of 
         Bg ->
             "Решено"
 
@@ -1956,7 +1993,7 @@ quizResolved lang =
 
 quizHint : Lang -> String
 quizHint lang =
-    case lang of
+    case lang of 
         Bg ->
             "Подсказване"
 
@@ -1993,7 +2030,7 @@ quizHint lang =
 
 surveySubmit : Lang -> String
 surveySubmit lang =
-    case lang of
+    case lang of 
         Bg ->
             "Изпрати"
 
@@ -2030,7 +2067,7 @@ surveySubmit lang =
 
 surveySubmitted : Lang -> String
 surveySubmitted lang =
-    case lang of
+    case lang of 
         Bg ->
             "Благодаря"
 
@@ -2067,7 +2104,7 @@ surveySubmitted lang =
 
 surveyText : Lang -> String
 surveyText lang =
-    case lang of
+    case lang of 
         Bg ->
             "Въведете текст..."
 
@@ -2104,7 +2141,7 @@ surveyText lang =
 
 chartPie : Lang -> String
 chartPie lang =
-    case lang of
+    case lang of 
         De ->
             "Tortendiagramm"
 
@@ -2120,7 +2157,7 @@ chartPie lang =
 
 chartBar : Lang -> String
 chartBar lang =
-    case lang of
+    case lang of 
         De ->
             "Balkendiagramm"
 
@@ -2136,7 +2173,7 @@ chartBar lang =
 
 chartLine : Lang -> String
 chartLine lang =
-    case lang of
+    case lang of 
         De ->
             "Liniendiagramm"
 
@@ -2152,7 +2189,7 @@ chartLine lang =
 
 chartScatter : Lang -> String
 chartScatter lang =
-    case lang of
+    case lang of 
         De ->
             "Streudiagramm"
 
@@ -2168,7 +2205,7 @@ chartScatter lang =
 
 chartEffectScatter : Lang -> String
 chartEffectScatter lang =
-    case lang of
+    case lang of 
         De ->
             "Welligkeits-Streudiagramm"
 
@@ -2184,7 +2221,7 @@ chartEffectScatter lang =
 
 chartRadar : Lang -> String
 chartRadar lang =
-    case lang of
+    case lang of 
         De ->
             "Radar-Karte"
 
@@ -2200,7 +2237,7 @@ chartRadar lang =
 
 chartTree : Lang -> String
 chartTree lang =
-    case lang of
+    case lang of 
         De ->
             "Baum"
 
@@ -2216,7 +2253,7 @@ chartTree lang =
 
 chartTreemap : Lang -> String
 chartTreemap lang =
-    case lang of
+    case lang of 
         De ->
             "Baumkarte"
 
@@ -2232,7 +2269,7 @@ chartTreemap lang =
 
 chartBoxplot : Lang -> String
 chartBoxplot lang =
-    case lang of
+    case lang of 
         De ->
             "Boxplot"
 
@@ -2248,7 +2285,7 @@ chartBoxplot lang =
 
 chartCandlestick : Lang -> String
 chartCandlestick lang =
-    case lang of
+    case lang of 
         De ->
             "Kerzenständer"
 
@@ -2264,7 +2301,7 @@ chartCandlestick lang =
 
 chartK : Lang -> String
 chartK lang =
-    case lang of
+    case lang of 
         De ->
             "K Liniendiagramm"
 
@@ -2280,7 +2317,7 @@ chartK lang =
 
 chartHeatmap : Lang -> String
 chartHeatmap lang =
-    case lang of
+    case lang of 
         De ->
             "Heatmap"
 
@@ -2296,7 +2333,7 @@ chartHeatmap lang =
 
 chartMap : Lang -> String
 chartMap lang =
-    case lang of
+    case lang of 
         De ->
             "Karte"
 
@@ -2312,7 +2349,7 @@ chartMap lang =
 
 chartParallel : Lang -> String
 chartParallel lang =
-    case lang of
+    case lang of 
         De ->
             "Parallele Koordinatenkarte"
 
@@ -2328,7 +2365,7 @@ chartParallel lang =
 
 chartLines : Lang -> String
 chartLines lang =
-    case lang of
+    case lang of 
         De ->
             "Liniendiagramm"
 
@@ -2344,7 +2381,7 @@ chartLines lang =
 
 chartGraph : Lang -> String
 chartGraph lang =
-    case lang of
+    case lang of 
         De ->
             "Beziehungsgrafik"
 
@@ -2360,7 +2397,7 @@ chartGraph lang =
 
 chartSankey : Lang -> String
 chartSankey lang =
-    case lang of
+    case lang of 
         De ->
             "Sankey-Diagramm"
 
@@ -2376,7 +2413,7 @@ chartSankey lang =
 
 chartFunnel : Lang -> String
 chartFunnel lang =
-    case lang of
+    case lang of 
         De ->
             "Trichterdiagramm"
 
@@ -2392,7 +2429,7 @@ chartFunnel lang =
 
 chartGauge : Lang -> String
 chartGauge lang =
-    case lang of
+    case lang of 
         De ->
             "Meßanzeige"
 
@@ -2408,7 +2445,7 @@ chartGauge lang =
 
 chartPictorialBar : Lang -> String
 chartPictorialBar lang =
-    case lang of
+    case lang of 
         De ->
             "Bildlicher Balken"
 
@@ -2424,7 +2461,7 @@ chartPictorialBar lang =
 
 chartThemeRiver : Lang -> String
 chartThemeRiver lang =
-    case lang of
+    case lang of 
         De ->
             "Thematische Flusskarte"
 
@@ -2440,7 +2477,7 @@ chartThemeRiver lang =
 
 chartSunburst : Lang -> String
 chartSunburst lang =
-    case lang of
+    case lang of 
         De ->
             "Sonnenausbruch"
 
@@ -2452,3 +2489,4 @@ chartSunburst lang =
 
         _ ->
             "Sunburst"
+

@@ -32,6 +32,7 @@ type Toggle
     | Light
     | Action Action
     | SupportMenu
+    | TranslateWithGoogle
 
 
 update : Msg -> Settings -> ( Settings, List Event )
@@ -61,7 +62,7 @@ update msg model =
                 }
 
         Toggle SupportMenu ->
-            no_log
+            log
                 { model
                     | support_menu = not model.support_menu
                     , action = Nothing
@@ -134,6 +135,11 @@ update msg model =
 
         ShareCourse event ->
             ( model, [ event ] )
+
+        Toggle TranslateWithGoogle ->
+            ( { model | translateWithGoogle = True }
+            , [ Event "googleTranslate" -1 JE.null ]
+            )
 
         Ignore ->
             ( model, [] )

@@ -7,76 +7,76 @@
   font-style: normal;
   font-variant: normal;
   text-rendering: auto;
-  line-height: 1;
+  line-height: 1
 }
 
 .icon-lg {
   font-size: 1.33333em;
-  line-height: 0.75em;
-  vertical-align: -0.0667em;
+  line-height: .75em;
+  vertical-align: -.0667em
 }
 
 .icon-xs {
-  font-size: 0.75em;
+  font-size: .75em
 }
 
 .icon-sm {
-  font-size: 0.875em;
+  font-size: .875em
 }
 
 .icon-1x {
-  font-size: 1em;
+  font-size: 1em
 }
 
 .icon-2x {
-  font-size: 2em;
+  font-size: 2em
 }
 
 .icon-3x {
-  font-size: 3em;
+  font-size: 3em
 }
 
 .icon-4x {
-  font-size: 4em;
+  font-size: 4em
 }
 
 .icon-5x {
-  font-size: 5em;
+  font-size: 5em
 }
 
 .icon-6x {
-  font-size: 6em;
+  font-size: 6em
 }
 
 .icon-7x {
-  font-size: 7em;
+  font-size: 7em
 }
 
 .icon-8x {
-  font-size: 8em;
+  font-size: 8em
 }
 
 .icon-9x {
-  font-size: 9em;
+  font-size: 9em
 }
 
 .icon-10x {
-  font-size: 10em;
+  font-size: 10em
 }
 
 .icon-fw {
   text-align: center;
-  width: 1.25em;
+  width: 1.25em
 }
 
 .icon-ul {
   list-style-type: none;
   margin-left: 2.5em;
-  padding-left: 0;
+  padding-left: 0
 }
 
-.icon-ul > li {
-  position: relative;
+.icon-ul>li {
+  position: relative
 }
 
 .icon-li {
@@ -84,114 +84,106 @@
   position: absolute;
   text-align: center;
   width: 2em;
-  line-height: inherit;
+  line-height: inherit
 }
 
 .icon-border {
-  border: 0.08em solid #eee;
-  border-radius: 0.1em;
-  padding: 0.2em 0.25em 0.15em;
+  border: .08em solid #eee;
+  border-radius: .1em;
+  padding: .2em .25em .15em
 }
 
 .icon-pull-left {
-  float: left;
+  float: left
 }
 
 .icon-pull-right {
-  float: right;
+  float: right
 }
 
 .icon.icon-pull-left {
-  margin-right: 0.3em;
+  margin-right: .3em
 }
 
 .icon.icon-pull-right {
-  margin-left: 0.3em;
+  margin-left: .3em
 }
 
 .icon-spin {
   -webkit-animation: icon-spin 2s linear infinite;
-  animation: icon-spin 2s linear infinite;
+  animation: icon-spin 2s linear infinite
 }
 
 .icon-pulse {
   -webkit-animation: icon-spin 1s steps(8) infinite;
-  animation: icon-spin 1s steps(8) infinite;
+  animation: icon-spin 1s steps(8) infinite
 }
 
 @-webkit-keyframes icon-spin {
   0% {
     -webkit-transform: rotate(0deg);
-    transform: rotate(0deg);
+    transform: rotate(0deg)
   }
 
   to {
     -webkit-transform: rotate(1turn);
-    transform: rotate(1turn);
+    transform: rotate(1turn)
   }
 }
 
 @keyframes icon-spin {
   0% {
     -webkit-transform: rotate(0deg);
-    transform: rotate(0deg);
+    transform: rotate(0deg)
   }
 
   to {
     -webkit-transform: rotate(1turn);
-    transform: rotate(1turn);
+    transform: rotate(1turn)
   }
 }
 
 .icon-rotate-90 {
   -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=1)";
   -webkit-transform: rotate(90deg);
-  transform: rotate(90deg);
+  transform: rotate(90deg)
 }
 
 .icon-rotate-180 {
   -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=2)";
   -webkit-transform: rotate(180deg);
-  transform: rotate(180deg);
+  transform: rotate(180deg)
 }
 
 .icon-rotate-270 {
   -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=3)";
   -webkit-transform: rotate(270deg);
-  transform: rotate(270deg);
+  transform: rotate(270deg)
 }
 
 .icon-flip-horizontal {
   -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=0, mirror=1)";
   -webkit-transform: scaleX(-1);
-  transform: scaleX(-1);
+  transform: scaleX(-1)
 }
 
 .icon-flip-vertical {
   -webkit-transform: scaleY(-1);
-  transform: scaleY(-1);
+  transform: scaleY(-1)
 }
 
-.icon-flip-both,
-.icon-flip-horizontal.icon-flip-vertical,
-.icon-flip-vertical {
-  -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1)";
+.icon-flip-both, .icon-flip-horizontal.icon-flip-vertical, .icon-flip-vertical {
+  -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1)"
 }
 
-.icon-flip-both,
-.icon-flip-horizontal.icon-flip-vertical {
+.icon-flip-both, .icon-flip-horizontal.icon-flip-vertical {
   -webkit-transform: scale(-1);
-  transform: scale(-1);
+  transform: scale(-1)
 }
 
-:root .icon-flip-both,
-:root .icon-flip-horizontal,
-:root .icon-flip-vertical,
-:root .icon-rotate-90,
-:root .icon-rotate-180,
-:root .icon-rotate-270 {
+:root .icon-flip-both, :root .icon-flip-horizontal, :root .icon-flip-vertical, :root .icon-rotate-90, :root .icon-rotate-180, :root .icon-rotate-270 {
   -webkit-filter: none;
-  filter: none;
+  filter: none
 }
 
 .icon-stack {
@@ -200,303 +192,309 @@
   line-height: 2em;
   position: relative;
   vertical-align: middle;
-  width: 2.5em;
+  width: 2.5em
 }
 
-.icon-stack-1x,
-.icon-stack-2x {
+.icon-stack-1x, .icon-stack-2x {
   left: 0;
   position: absolute;
   text-align: center;
-  width: 100%;
+  width: 100%
 }
 
 .icon-stack-1x {
-  line-height: inherit;
+  line-height: inherit
 }
 
 .icon-stack-2x {
-  font-size: 2em;
+  font-size: 2em
 }
 
 .icon-inverse {
-  color: #fff;
+  color: #fff
 }
+
 
 $icon-arrow-down: "\EA01";
 .icon-arrow-down:before {
-  content: $icon-arrow-down;
+  content: $icon-arrow-down
 }
 
 $icon-arrow-left: "\EA02";
 .icon-arrow-left:before {
-  content: $icon-arrow-left;
+  content: $icon-arrow-left
 }
 
 $icon-arrow-right: "\EA03";
 .icon-arrow-right:before {
-  content: $icon-arrow-right;
+  content: $icon-arrow-right
 }
 
 $icon-arrow-up: "\EA04";
 .icon-arrow-up:before {
-  content: $icon-arrow-up;
+  content: $icon-arrow-up
 }
 
 $icon-barchart: "\EA05";
 .icon-barchart:before {
-  content: $icon-barchart;
+  content: $icon-barchart
 }
 
 $icon-book: "\EA06";
 .icon-book:before {
-  content: $icon-book;
+  content: $icon-book
 }
 
 $icon-boxplot: "\EA07";
 .icon-boxplot:before {
-  content: $icon-boxplot;
+  content: $icon-boxplot
 }
 
 $icon-check: "\EA08";
 .icon-check:before {
-  content: $icon-check;
+  content: $icon-check
 }
 
 $icon-chevron-double-left: "\EA09";
 .icon-chevron-double-left:before {
-  content: $icon-chevron-double-left;
+  content: $icon-chevron-double-left
 }
 
 $icon-chevron-double-right: "\EA0A";
 .icon-chevron-double-right:before {
-  content: $icon-chevron-double-right;
+  content: $icon-chevron-double-right
 }
 
 $icon-chevron-down: "\EA0B";
 .icon-chevron-down:before {
-  content: $icon-chevron-down;
+  content: $icon-chevron-down
 }
 
 $icon-chevron-left: "\EA0C";
 .icon-chevron-left:before {
-  content: $icon-chevron-left;
+  content: $icon-chevron-left
 }
 
 $icon-chevron-right: "\EA0D";
 .icon-chevron-right:before {
-  content: $icon-chevron-right;
+  content: $icon-chevron-right
 }
 
 $icon-chevron-up: "\EA0E";
 .icon-chevron-up:before {
-  content: $icon-chevron-up;
+  content: $icon-chevron-up
 }
 
 $icon-clock: "\EA0F";
 .icon-clock:before {
-  content: $icon-clock;
+  content: $icon-clock
 }
 
 $icon-close: "\EA10";
 .icon-close:before {
-  content: $icon-close;
+  content: $icon-close
 }
 
 $icon-code: "\EA11";
 .icon-code:before {
-  content: $icon-code;
+  content: $icon-code
 }
 
 $icon-compile-circle: "\EA12";
 .icon-compile-circle:before {
-  content: $icon-compile-circle;
+  content: $icon-compile-circle
 }
 
 $icon-darkmode: "\EA13";
 .icon-darkmode:before {
-  content: $icon-darkmode;
+  content: $icon-darkmode
 }
 
 $icon-download: "\EA14";
 .icon-download:before {
-  content: $icon-download;
+  content: $icon-download
 }
 
 $icon-end-left: "\EA15";
 .icon-end-left:before {
-  content: $icon-end-left;
+  content: $icon-end-left
 }
 
 $icon-end-right: "\EA16";
 .icon-end-right:before {
-  content: $icon-end-right;
+  content: $icon-end-right
 }
 
 $icon-funnel: "\EA17";
 .icon-funnel:before {
-  content: $icon-funnel;
+  content: $icon-funnel
 }
 
 $icon-graph: "\EA18";
 .icon-graph:before {
-  content: $icon-graph;
+  content: $icon-graph
 }
 
 $icon-grid: "\EA19";
 .icon-grid:before {
-  content: $icon-grid;
+  content: $icon-grid
 }
 
 $icon-heatmap: "\EA1A";
 .icon-heatmap:before {
-  content: $icon-heatmap;
+  content: $icon-heatmap
 }
 
 $icon-hint: "\EA1B";
 .icon-hint:before {
-  content: $icon-hint;
+  content: $icon-hint
 }
 
 $icon-info: "\EA1C";
 .icon-info:before {
-  content: $icon-info;
+  content: $icon-info
 }
 
 $icon-lightmode: "\EA1D";
 .icon-lightmode:before {
-  content: $icon-lightmode;
+  content: $icon-lightmode
 }
 
 $icon-lineplot: "\EA1E";
 .icon-lineplot:before {
-  content: $icon-lineplot;
+  content: $icon-lineplot
 }
 
 $icon-mail: "\EA1F";
 .icon-mail:before {
-  content: $icon-mail;
+  content: $icon-mail
 }
 
 $icon-map: "\EA20";
 .icon-map:before {
-  content: $icon-map;
+  content: $icon-map
 }
 
 $icon-minus: "\EA21";
 .icon-minus:before {
-  content: $icon-minus;
+  content: $icon-minus
 }
 
 $icon-more: "\EA22";
 .icon-more:before {
-  content: $icon-more;
+  content: $icon-more
 }
 
 $icon-pencil: "\EA23";
 .icon-pencil:before {
-  content: $icon-pencil;
+  content: $icon-pencil
 }
 
 $icon-piechart: "\EA24";
 .icon-piechart:before {
-  content: $icon-piechart;
+  content: $icon-piechart
 }
 
 $icon-play-circle: "\EA25";
 .icon-play-circle:before {
-  content: $icon-play-circle;
+  content: $icon-play-circle
 }
 
 $icon-plus: "\EA26";
 .icon-plus:before {
-  content: $icon-plus;
+  content: $icon-plus
 }
 
 $icon-presentation: "\EA27";
 .icon-presentation:before {
-  content: $icon-presentation;
+  content: $icon-presentation
 }
 
 $icon-radar: "\EA28";
 .icon-radar:before {
-  content: $icon-radar;
+  content: $icon-radar
 }
 
 $icon-refresh: "\EA29";
 .icon-refresh:before {
-  content: $icon-refresh;
+  content: $icon-refresh
 }
 
 $icon-resolve: "\EA2A";
 .icon-resolve:before {
-  content: $icon-resolve;
+  content: $icon-resolve
 }
 
 $icon-scatterplot: "\EA2B";
 .icon-scatterplot:before {
-  content: $icon-scatterplot;
+  content: $icon-scatterplot
 }
 
 $icon-search: "\EA2C";
 .icon-search:before {
-  content: $icon-search;
+  content: $icon-search
 }
 
 $icon-settings: "\EA2D";
 .icon-settings:before {
-  content: $icon-settings;
+  content: $icon-settings
 }
 
 $icon-slides: "\EA2E";
 .icon-slides:before {
-  content: $icon-slides;
+  content: $icon-slides
 }
 
 $icon-social: "\EA2F";
 .icon-social:before {
-  content: $icon-social;
+  content: $icon-social
 }
 
 $icon-sort-asc: "\EA30";
 .icon-sort-asc:before {
-  content: $icon-sort-asc;
+  content: $icon-sort-asc
 }
 
 $icon-sort-desc: "\EA31";
 .icon-sort-desc:before {
-  content: $icon-sort-desc;
+  content: $icon-sort-desc
 }
 
 $icon-sound-off: "\EA32";
 .icon-sound-off:before {
-  content: $icon-sound-off;
+  content: $icon-sound-off
 }
 
-$icon-stop-circle: "\EA33";
+$icon-sound-on: "\EA33";
+.icon-sound-on:before {
+  content: $icon-sound-on
+}
+
+$icon-stop-circle: "\EA34";
 .icon-stop-circle:before {
-  content: $icon-stop-circle;
+  content: $icon-stop-circle
 }
 
-$icon-table: "\EA34";
+$icon-table: "\EA35";
 .icon-table:before {
-  content: $icon-table;
+  content: $icon-table
 }
 
-$icon-warning: "\EA35";
+$icon-warning: "\EA36";
 .icon-warning:before {
-  content: $icon-warning;
+  content: $icon-warning
 }
 
-$icon-zoom-out: "\EA36";
+$icon-zoom-out: "\EA37";
 .icon-zoom-out:before {
-  content: $icon-zoom-out;
+  content: $icon-zoom-out
 }
 
-$icon-zoom: "\EA37";
+$icon-zoom: "\EA38";
 .icon-zoom:before {
-  content: $icon-zoom;
+  content: $icon-zoom
 }
+
 
 @font-face {
   font-family: "icon";
@@ -504,16 +502,15 @@ $icon-zoom: "\EA37";
   font-weight: 900;
   font-display: block;
   src: url(../../src/assets/fonts/icon/fonts/icon.eot);
-  src: url(../../src/assets/fonts/icon/fonts/icon.eot?#iefix)
-      format("embedded-opentype"),
-    url(../../src/assets/fonts/icon/fonts/icon.woff2) format("woff2"),
-    url(../../src/assets/fonts/icon/fonts/icon.woff) format("woff"),
-    url(../../src/assets/fonts/icon/fonts/icon.ttf) format("truetype"),
-    url(../../src/assets/fonts/icon/fonts/icon.svg#icon) format("svg");
+  src: url(../../src/assets/fonts/icon/fonts/icon.eot?#iefix) format("embedded-opentype"),
+  url(../../src/assets/fonts/icon/fonts/icon.woff2) format("woff2"),
+  url(../../src/assets/fonts/icon/fonts/icon.woff) format("woff"),
+  url(../../src/assets/fonts/icon/fonts/icon.ttf) format("truetype"),
+  url(../../src/assets/fonts/icon/fonts/icon.svg#icon) format("svg")
 }
 
 $font-icon: "icon";
 .icon {
   font-family: $font-icon;
-  font-weight: 900;
+  font-weight: 900
 }

@@ -12,6 +12,7 @@
   z-index: 200;
 
   #lia-btn-toc {
+    color: rgb(var(--color-highlight));
     position: absolute;
     top: calc(
       (#{$header-height-desktop} / 2) +
@@ -57,6 +58,7 @@
     display: inline-block;
 
     input {
+      background-color: rgba(var(--lia-white), 0.1);
       padding-left: 3rem;
       padding-right: 3.75rem;
       transition: left 250ms ease-in-out;
@@ -96,6 +98,21 @@
       text-decoration: none;
       padding: 0.8rem 0.8rem 0.8rem 3rem;
       position: relative;
+      color: inherit;
+
+      &.lia-active {
+        color: rgb(var(--color-highlight));
+
+        &:before {
+          bottom: 0.5rem;
+          content: "";
+          position: absolute;
+          left: 0;
+          top: 0.5rem;
+          width: 5px;
+          background-color: rgb(var(--color-highlight));
+        }
+      }
 
       &.lia-toc__link--is-lvl- {
         &1 {
@@ -140,6 +157,10 @@
     padding: 1rem 0 0 3rem;
     position: relative;
 
+    > * {
+      font-weight: 600;
+    }
+
     &:after {
       content: "";
       background-color: rgb(var(--lia-grey-light));
@@ -153,76 +174,42 @@
   }
 }
 
-@mixin style-toc($theme) {
+/* Theming */
+
+html:not([class*="lia-theme-default"]) {
   .lia-toc {
-    &::after {
-      background: mix($bg, $fg, 80%);
+    background-color: rgb(var(--color-highlight));
+    color: rgb(var(--lia-white));
+
+    &__search {
+      input,
+      input::placeholder,
+      .lia-toc__clear-index {
+        color: rgb(var(--lia-white));
+      }
     }
 
-    .lia-toc__content {
-      $_bg: map-get($theme, background);
-      $fg: color-contrast($_bg);
-      $bg: mix($bg, $fg, 95%);
-
+    &__content {
       a {
-        &:link {
-          $col: mix($fg, $bg, 80%);
-          color: $col;
-
-          &:hover {
-            color: lighten($col, 20%);
-          }
-
-          &:active {
-            color: darken($col, 20%);
-          }
+        * {
+          color: rgb(var(--lia-white));
+          border-color: rgb(var(--lia-white));
         }
 
-        &:visited {
-          $col: $fg;
-          color: $col;
-
-          &:hover {
-            color: lighten($col, 20%);
-          }
-
-          &:active {
-            color: darken($col, 20%);
-          }
+        &.lia-toc__link--is-lvl-2:after {
+          background-color: rgb(var(--lia-white));
         }
 
         &.lia-active {
-          $col: map-get($theme, primary);
-          $fg: color-contrast($col);
-
-          color: $col;
+          color: rgb(var(--color-highlight-menu));
 
           &:before {
-            content: "";
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 5px;
-            background-color: rgb(var(--color-highlight));
-          }
-
-          &:hover {
-            color: lighten($col, 20%);
-          }
-
-          &:active {
-            color: darken($col, 20%);
+            background-color: rgb(var(--color-highlight-menu));
           }
         }
 
-        &.lia-not-visited {
-          color: darken($fg, 30%);
-        }
-
-        &.lia-error {
-          color: rgb(1, 0, 0);
-          background: rgb(1, 0, 0);
+        &__bottom {
+          color: rgb(var(--color-highlight-menu));
         }
       }
     }

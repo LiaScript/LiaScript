@@ -407,11 +407,11 @@ function process(isConnected: boolean, self: LiaScript, elmSend: Lia.Send, event
         updateClassName(event.message)
 
         const conf = self.connector.getSettings()
-        if (conf ?.table_of_contents !== event.message.table_of_contents) {
-          setTimeout(function() {
-            window.dispatchEvent(new Event('resize'))
-          }, 200)
-        }
+        
+        setTimeout(function() {
+          window.dispatchEvent(new Event('resize'))
+        }, 333)
+        
       } catch (e) { }
 
       if (isConnected) {
@@ -549,10 +549,36 @@ function process(isConnected: boolean, self: LiaScript, elmSend: Lia.Send, event
       window.location.reload()
       break
     }
+
+    case Port.TRANSLATE : {      
+      injectGoogleTranslate()
+      break;
+    }
     default:
       log.error('Command not found => ', event)
   }
 }
 
+var googleTranslate = false
+function injectGoogleTranslate(){  
+  // inject the google translator
+  if (!googleTranslate) {
+    let tag = document.createElement("script")
+    tag.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
+    tag.type = "text/javascript"
+    document.head.appendChild(tag)
+
+    window.googleTranslateElementInit = function() {
+      new google.translate.TranslateElement(
+        { pageLanguage: 'en', 
+          // includedLanguages: 'ar,en,es,jv,ko,pa,pt,ru,zh-CN',
+          layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+          autoDisplay: false
+        },
+        'google_translate_element');
+    }
+    googleTranslate = true  
+  }
+}
 
 export default LiaScript

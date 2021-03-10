@@ -4,13 +4,14 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  padding-top: 6rem;
   position: fixed;
   right: 0;
-  transition: $global-transition;
   top: 0;
+  transition: $global-transition;
+  user-select: none;
   width: $support-width-mobile;
   z-index: 1;
-  padding-top: 6rem;
 
   &--closed {
     transform: translateX(100%);
@@ -41,6 +42,7 @@
   }
 
   &__toggler {
+    color: rgb(var(--color-highlight));
     display: block;
     visibility: visible;
 
@@ -80,6 +82,10 @@
     overflow: hidden auto;
     padding: 1.7rem 2.1rem;
 
+    &:focus {
+      box-shadow: none !important;
+    }
+
     @include breakpoint("md") {
       display: flex;
       flex-direction: row;
@@ -91,6 +97,7 @@
 
   &__item {
     align-items: flex-start;
+    color: rgb(var(--color-highlight));
     display: flex;
     flex-direction: column;
     padding: 1.8rem 0;
@@ -134,6 +141,18 @@
     right: 0;
     top: 0;
     width: 100%;
+
+    .lia-link {
+      text-decoration: none;
+
+      &:not(.active) {
+        color: rgb(var(--color-text));
+      }
+    }
+
+    .lia-btn[aria-checked="true"] {
+      color: rgb(var(--color-highlight));
+    }
 
     svg {
       height: 15rem;
