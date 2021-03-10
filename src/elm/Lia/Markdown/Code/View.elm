@@ -132,28 +132,30 @@ view_eval lang theme running errors id_1 id_2 file attr =
                     , ( "active", file.visible )
                     ]
                 ]
-                [ if file.visible then
-                    Html.button
-                        [ Attr.class "lia-btn lia-btn--transparent lia-code__min-max"
-                        , Attr.class <|
-                            if file.fullscreen then
-                                "icon icon-chevron-up"
+                [ Html.div [ Attr.class "lia-code__input" ]
+                    [ if file.visible then
+                        Html.button
+                            [ Attr.class "lia-btn lia-btn--transparent lia-code__min-max"
+                            , Attr.class <|
+                                if file.fullscreen then
+                                    "icon icon-chevron-up"
 
-                            else
-                                "icon icon-chevron-down"
-                        , onClick <| FlipFullscreen id_1 id_2
-                        , Attr.title <|
-                            if file.fullscreen then
-                                codeMinimize lang
+                                else
+                                    "icon icon-chevron-down"
+                            , onClick <| FlipFullscreen id_1 id_2
+                            , Attr.title <|
+                                if file.fullscreen then
+                                    codeMinimize lang
 
-                            else
-                                codeMaximize lang
-                        ]
-                        []
+                                else
+                                    codeMaximize lang
+                            ]
+                            []
 
-                  else
-                    Html.text ""
-                , evaluate theme attr running ( id_1, id_2 ) file headless (errors id_2)
+                      else
+                        Html.text ""
+                    , evaluate theme attr running ( id_1, id_2 ) file headless (errors id_2)
+                    ]
                 ]
             ]
 
