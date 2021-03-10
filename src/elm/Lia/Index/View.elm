@@ -5,6 +5,7 @@ module Lia.Index.View exposing
     )
 
 import Accessibility.Key as A11y_Key
+import Accessibility.Landmark as A11y_Landmark
 import Accessibility.Live as A11y_Live
 import Array exposing (Array)
 import Conditional.List as CList
@@ -34,6 +35,7 @@ search lang active results model =
         , Attr.id "lia-input-search"
         , A11y_Key.tabbable active
         , A11y_Key.onKeyDown [ A11y_Key.enter (ScanIndex "") ]
+        , A11y_Landmark.search
         ]
         []
     , Html.span
