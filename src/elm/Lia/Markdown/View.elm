@@ -158,34 +158,39 @@ view_header : Config Msg -> Html Msg
 view_header config =
     [ header config
         config.section.indentation
+        0
         []
         config.section.title
     ]
         |> Html.header [ A11y_Key.tabbable False ]
 
 
-header : Config Msg -> Int -> Parameters -> Inlines -> Html Msg
-header config i attr =
+header : Config Msg -> Int -> Int -> Parameters -> Inlines -> Html Msg
+header config main sub attr =
     config.view
-        >> (case i of
+        >> (case sub of
+                0 ->
+                    Html.h1 (headerStyle (main + sub) attr)
+
                 1 ->
-                    Html.h1 (annotation "lia-inline lia-h1" attr)
+                    Html.h2 (headerStyle (main + sub) attr)
 
                 2 ->
-                    Html.h2 (annotation "lia-inline lia-h2" attr)
+                    Html.h3 (headerStyle (main + sub) attr)
 
                 3 ->
-                    Html.h3 (annotation "lia-inline lia-h3" attr)
+                    Html.h4 (headerStyle (main + sub) attr)
 
                 4 ->
-                    Html.h4 (annotation "lia-inline lia-h4" attr)
-
-                5 ->
-                    Html.h5 (annotation "lia-inline lia-h5" attr)
+                    Html.h5 (headerStyle (main + sub) attr)
 
                 _ ->
-                    Html.h6 (annotation "lia-inline lia-h6" attr)
+                    Html.h6 (headerStyle (main + sub) attr)
            )
+
+
+headerStyle i =
+    annotation ("u-h" ++ String.fromInt i)
 
 
 view_block : Config Msg -> Markdown -> Html Msg
@@ -299,7 +304,8 @@ view_block config block =
 
         Header attr ( elements, sub ) ->
             header config
-                (config.section.indentation + sub)
+                config.section.indentation
+                sub
                 attr
                 elements
 
