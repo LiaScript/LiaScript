@@ -1,35 +1,29 @@
 .lia-accordion {
-  $rd: map-get($global-spacing, spacing-small);
-
-  cursor: pointer;
-  padding: 6px;
-  width: 100%;
-  border: none;
-  text-align: left;
-  outline: none;
-  border-top-left-radius: $rd;
-  border-top-right-radius: $rd;
-  font-family: $global-font-mono;
-
-  .lia-accordion-min-max {
-    padding-right: 3px;
-    padding-left: 3px;
+  &__item {
   }
-}
 
-.lia-accordion-dummy {
-  $rd: map-get($global-spacing, spacing-small);
+  &__header {
+    background-color: rgb(var(--color-highlight));
+    display: flex;
+    align-items: center;
+    padding-left: 1.6rem;
+  }
 
-  cursor: auto;
-  padding: 6px;
-  width: 100%;
-  border: none;
-  text-align: left;
-  outline: none;
-  border-top-left-radius: $rd;
-  border-top-right-radius: $rd;
-  transition: 0.4s;
-  font-family: $global-font-mono;
+  &__headline {
+    color: rgb(var(--lia-white));
+    margin: 0 auto 0 0;
+    font-size: 1.5rem;
+    font-family: $global-font-family;
+  }
+
+  &__content {
+    //
+  }
+
+  &__toggle {
+    color: rgb(var(--lia-white));
+    font-size: 2rem;
+  }
 }
 
 @mixin style-accordion($theme) {

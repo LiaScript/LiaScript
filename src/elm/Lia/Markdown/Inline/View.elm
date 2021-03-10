@@ -50,7 +50,7 @@ view config element =
             Html.sup (annotation "lia-superscript" attr) [ view config e ]
 
         Verbatim e attr ->
-            Html.code (annotation "lia-code lia-inline" attr) [ Html.text e ]
+            Html.code (annotation "lia-code lia-code--inline" attr) [ Html.text e ]
 
         Ref e attr ->
             reference config e attr

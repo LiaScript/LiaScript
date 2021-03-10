@@ -12,7 +12,7 @@
   z-index: 200;
 
   #lia-btn-toc {
-    color: rgb(var(--color-text));
+    color: rgb(var(--color-highlight));
     position: absolute;
     top: calc(
       (#{$header-height-desktop} / 2) +
@@ -191,6 +191,11 @@ html:not([class*="lia-theme-default"]) {
 
     &__content {
       a {
+        * {
+          color: rgb(var(--lia-white));
+          border-color: rgb(var(--lia-white));
+        }
+
         &.lia-toc__link--is-lvl-2:after {
           background-color: rgb(var(--lia-white));
         }
