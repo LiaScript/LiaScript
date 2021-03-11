@@ -33,6 +33,7 @@ import Lia.Markdown.Quiz.Types
         , State(..)
         , Type(..)
         , Vector
+        , getClass
         , getState
         , isSolved
         )
@@ -58,18 +59,23 @@ view config quiz vector =
 -}
 class : Int -> Vector -> String
 class id vector =
-    case
-        getState vector id
-            |> Maybe.map .solved
-    of
-        Just Solved ->
-            "lia-quiz solved"
+    getState vector id
+        |> Maybe.map (\s -> "lia-quiz-" ++ getClass s.state ++ getSolutionState s.solved)
+        |> Maybe.withDefault ""
+        |> (++) "lia-quiz "
 
-        Just ReSolved ->
-            "lia-quiz resolved"
+
+getSolutionState : Solution -> String
+getSolutionState s =
+    case s of
+        Solved ->
+            " solved"
+
+        ReSolved ->
+            " resolved"
 
         _ ->
-            "lia-quiz open"
+            " open"
 
 
 {-| **private:** Simple router function that is used to match the current state

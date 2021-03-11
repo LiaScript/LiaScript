@@ -1,13 +1,17 @@
 module Lia.Utils exposing
     ( blockKeydown
+    , btnIcon
     , get
     , onEnter
     , toEscapeString
     , toJSstring
     )
 
-import Html
-import Html.Events as Events
+import Accessibility.Key as A11y_Key
+import Accessibility.Widget as A11y_Widget
+import Html exposing (Html)
+import Html.Attributes as Attr
+import Html.Events as Event
 import Json.Decode as JD
 import Translations exposing (Lang(..))
 
@@ -48,7 +52,7 @@ blockKeydown =
 
 stopPropagationOn : String -> msg -> Html.Attribute msg
 stopPropagationOn name msg =
-    Events.stopPropagationOn name (JD.succeed ( msg, True ))
+    Event.stopPropagationOn name (JD.succeed ( msg, True ))
 
 
 {-| Get the ith element of a list:
@@ -83,5 +87,28 @@ isEnter msg code =
 -}
 onEnter : msg -> Html.Attribute msg
 onEnter msg =
-    JD.andThen (isEnter msg) Events.keyCode
-        |> Events.on "keyup"
+    JD.andThen (isEnter msg) Event.keyCode
+        |> Event.on "keyup"
+
+
+{-| Render a transparent button with an icon that complies with a11y standards.
+-}
+btnIcon : List (Html.Attribute msg) -> String -> String -> Bool -> msg -> Html msg
+btnIcon attributes icon title tabbable msg =
+    Html.button
+        (List.append
+            [ Attr.class "lia-btn lia-btn--transparent"
+            , Event.onClick msg
+            , A11y_Key.tabbable tabbable
+            , A11y_Widget.hidden (not tabbable)
+            , Attr.title title
+            ]
+            attributes
+        )
+        [ Html.i
+            [ A11y_Widget.hidden True
+            , Attr.class "lia-btn__icon icon"
+            , Attr.class icon
+            ]
+            []
+        ]
