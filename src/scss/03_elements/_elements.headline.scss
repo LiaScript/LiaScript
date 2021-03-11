@@ -30,13 +30,13 @@ h3 {
   line-height: $global-line-height;
 }
 
-h4 {
+h4,
+h5 {
   font-family: $global-font-family;
   line-height: 1.38;
 }
 
-h1,
-.u-h1 {
+h1 {
   font-size: $h1-mobile;
 
   @include breakpoint("md") {
@@ -44,8 +44,7 @@ h1,
   }
 }
 
-h2,
-.u-h2 {
+h2 {
   font-size: $h2-mobile;
 
   @include breakpoint("md") {
@@ -53,8 +52,7 @@ h2,
   }
 }
 
-h3,
-.u-h3 {
+h3 {
   font-size: $h3-mobile;
 
   @include breakpoint("md") {
@@ -63,10 +61,6 @@ h3,
 }
 
 h4,
-.u-h4 {
+h5 {
   font-size: $h4-mobile;
-
-  @include breakpoint("md") {
-    font-size: $h4-desktop;
-  }
 }

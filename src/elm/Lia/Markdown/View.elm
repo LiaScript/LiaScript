@@ -190,7 +190,16 @@ header config main sub attr =
 
 
 headerStyle i =
-    annotation ("u-h" ++ String.fromInt i)
+    annotation
+        ("h"
+            ++ (String.fromInt <|
+                    if i > 4 then
+                        4
+
+                    else
+                        i
+               )
+        )
 
 
 view_block : Config Msg -> Markdown -> Html Msg
