@@ -55,7 +55,7 @@ search lang active results model =
                 |> Attr.title
             ]
             [ Html.i
-                [ Attr.class "icon icon-close" ]
+                [ Attr.class "lia-btn__icon icon icon-close" ]
                 []
             ]
     , if String.isEmpty model then

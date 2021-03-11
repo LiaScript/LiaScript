@@ -380,7 +380,7 @@ view_control lang idx version_active version_count running terminal =
                         , Attr.title (codeRunning lang)
                         , Attr.disabled True
                         ]
-                        [ Html.i [ Attr.class "icon icon-refresh rotating" ] []
+                        [ Html.i [ Attr.class "lia-btn__icon icon icon-refresh rotating" ] []
                         ]
 
                 ( True, True ) ->

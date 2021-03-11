@@ -412,11 +412,13 @@ btnIndex lang open =
         [ Html.i
             [ A11y_Widget.hidden True
             , Attr.class <|
-                if open then
-                    "icon icon-close"
+                "lia-btn__icon icon"
+                    ++ (if open then
+                            " icon-close"
 
-                else
-                    "icon icon-table"
+                        else
+                            " icon-table"
+                       )
             ]
             []
         ]

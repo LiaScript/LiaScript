@@ -294,7 +294,7 @@ navButton title id class msg =
         , Attr.id id
         , A11y_Key.tabbable True
         ]
-        [ Html.i [ A11y_Widget.hidden True, Attr.class <| "icon " ++ class ]
+        [ Html.i [ A11y_Widget.hidden True, Attr.class <| "lia-btn__icon icon " ++ class ]
             []
         ]
 
