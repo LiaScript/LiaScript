@@ -11,32 +11,53 @@ import Lia.Markdown.Quiz.Block.Update exposing (Msg(..))
 import Lia.Utils exposing (blockKeydown)
 
 
-view : Config sub -> Bool -> Quiz -> State -> Html (Msg sub)
-view config solved quiz state =
+view : Config sub -> ( Maybe Bool, String ) -> Quiz -> State -> List (Html (Msg sub))
+view config ( solved, textClass ) quiz state =
     case state of
         Text str ->
-            text solved str
+            [ text solved textClass str
+            , case solved of
+                Nothing ->
+                    Html.text ""
+
+                Just success ->
+                    Html.i
+                        [ Attr.class "icon"
+                        , Attr.class <|
+                            if success then
+                                "icon-check text-success"
+
+                            else
+                                "icon-check text-success"
+                        , Attr.style "position" "absolute"
+                        , Attr.style "top" "1rem"
+                        , Attr.style "right" "1rem"
+                        ]
+                        []
+            ]
 
         Select open value ->
-            value
+            [ value
                 |> List.head
                 |> Maybe.withDefault -1
-                |> select config solved open quiz.options
+                |> select config (solved /= Nothing) open quiz.options
+            ]
 
 
-text : Bool -> String -> Html (Msg sub)
-text solved state =
+text : Maybe Bool -> String -> String -> Html (Msg sub)
+text solved textClass state =
     Html.input
         [ Attr.type_ "input"
         , Attr.class "lia-input lia-quiz__input"
         , Attr.class <|
-            if solved then
+            if solved /= Nothing then
                 "lia-input--disabled"
 
             else
                 ""
+        , Attr.class textClass
         , Attr.value state
-        , Attr.disabled solved
+        , Attr.disabled (solved /= Nothing)
         , onInput Input
         , blockKeydown (Input state)
         ]
