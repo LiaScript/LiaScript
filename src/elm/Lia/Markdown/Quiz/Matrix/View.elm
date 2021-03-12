@@ -10,29 +10,33 @@ import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Quiz.Matrix.Types exposing (Quiz, State)
 import Lia.Markdown.Quiz.Matrix.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Vector.Types as Vector
+import List
 
 
 view : Config sub -> Bool -> Quiz -> State -> Html (Msg sub)
 view config solved quiz state =
-    state
-        |> Array.toList
-        |> List.indexedMap (tr solved)
-        |> List.map2 (add_text config) quiz.options
-        |> (::) (header config quiz.headers)
-        |> Html.table [ Attr.class "lia-survey-matrix" ]
+    Html.div [ Attr.class "lia-table-responsive has-thead-sticky has-last-col-sticky" ]
+        [ Html.table [ Attr.class "lia-table lia-survey-matrix is-alternating" ]
+            [ header config quiz.headers
+            , state
+                |> Array.toList
+                |> List.indexedMap (tr solved)
+                |> List.map2 (add_text config) quiz.options
+                |> Html.tbody [ Attr.class "lia-table__body lia-survey-matrix__body" ]
+            ]
+        ]
 
 
 header : Config sub -> List Inlines -> Html (Msg sub)
 header config inlines =
-    inlines
-        |> List.map (th config)
-        |> Html.tr [ Attr.class "lia-label" ]
+    List.append (List.map (th config) inlines) [ Html.th [ Attr.class "lia-table__header lia-survey-matrix__header" ] [] ]
+        |> Html.thead [ Attr.class "lia-table__head lia-survey-matrix__head" ]
 
 
 th : Config sub -> Inlines -> Html (Msg sub)
 th config =
     viewer config
-        >> Html.th [ Attr.align "center" ]
+        >> Html.th [ Attr.class "lia-table__header lia-survey-matrix__header" ]
         >> Html.map Script
 
 
@@ -48,9 +52,10 @@ tr solved id state =
 
 radio : Bool -> Int -> Int -> Bool -> Html (Msg sub)
 radio solved row_id column_id value =
-    Html.td [ Attr.align "center" ]
+    Html.td [ Attr.class "lia-table__data lia-survey-matrix__data" ]
         [ Html.input
-            [ Attr.type_ "radio"
+            [ Attr.class "lia-radio"
+            , Attr.type_ "radio"
             , Attr.checked value
             , if solved then
                 Attr.disabled True
@@ -64,9 +69,10 @@ radio solved row_id column_id value =
 
 check : Bool -> Int -> Int -> Bool -> Html (Msg sub)
 check solved row_id column_id value =
-    Html.td [ Attr.align "center" ]
+    Html.td [ Attr.class "lia-table__data lia-survey-matrix__data" ]
         [ Html.input
-            [ Attr.type_ "checkbox"
+            [ Attr.class "lia-checkbox"
+            , Attr.type_ "checkbox"
             , Attr.checked value
             , if solved then
                 Attr.disabled True
@@ -82,8 +88,8 @@ add_text : Config sub -> Inlines -> List (Html (Msg sub)) -> Html (Msg sub)
 add_text config inline toRow =
     inline
         |> viewer config
-        |> Html.td []
+        |> Html.td [ Attr.class "lia-table__data lia-survey-matrix__data" ]
         |> Html.map Script
         |> List.singleton
         |> List.append toRow
-        |> Html.tr []
+        |> Html.tr [ Attr.class "lia-table__row lia-survey-matrix__row" ]
