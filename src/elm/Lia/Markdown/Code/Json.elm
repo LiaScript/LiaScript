@@ -53,7 +53,6 @@ fromProject p =
         , ( "version_active", JE.int p.version_active )
         , ( "log", Log.encode p.log )
         , ( "repository", JE.dict identity JE.string p.repository )
-        , ( "compact_view", JE.bool p.compact_view )
         ]
 
 
@@ -63,21 +62,19 @@ project :
     -> Int
     -> Log.Log
     -> Repo
-    -> Bool
     -> (List Parameters -> Project)
-project files version active log repository compact =
-    Project files -1 version active repository "" log False Nothing compact
+project files version active log repository =
+    Project files -1 version active repository "" log False Nothing
 
 
 toProject : JD.Decoder (List Parameters -> Project)
 toProject =
-    JD.map6 project
+    JD.map5 project
         (JD.field "file" (JD.array toFile))
         (JD.field "version" (JD.array toVersion))
         (JD.field "version_active" JD.int)
         (JD.field "log" Log.decoder)
         (JD.field "repository" (JD.dict JD.string))
-        (JD.field "compact_view" JD.bool)
 
 
 fromFile : File -> JE.Value
