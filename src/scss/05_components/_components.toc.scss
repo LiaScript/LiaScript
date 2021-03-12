@@ -58,7 +58,7 @@
     display: inline-block;
 
     input {
-      background-color: rgba(var(--lia-white), 0.1);
+      background-color: rgb(var(--lia-grey-light));
       padding-left: 3rem;
       padding-right: 3.75rem;
       transition: left 250ms ease-in-out;
@@ -149,6 +149,10 @@
         &5 {
           padding-left: 4 * $global-font-size + 3rem;
         }
+
+        &6 {
+          padding-left: 5 * $global-font-size + 3rem;
+        }
       }
     }
   }
@@ -182,6 +186,10 @@ html:not([class*="lia-theme-default"]) {
     color: rgb(var(--lia-white));
 
     &__search {
+      input {
+        background-color: rgba(var(--lia-grey-light), 0.1);
+      }
+
       input,
       input::placeholder,
       .lia-toc__clear-index {

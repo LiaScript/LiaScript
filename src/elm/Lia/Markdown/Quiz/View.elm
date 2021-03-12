@@ -33,6 +33,7 @@ import Lia.Markdown.Quiz.Types
         , State(..)
         , Type(..)
         , Vector
+        , getClass
         , getState
         , isSolved
         )
@@ -58,18 +59,23 @@ view config quiz vector =
 -}
 class : Int -> Vector -> String
 class id vector =
-    case
-        getState vector id
-            |> Maybe.map .solved
-    of
-        Just Solved ->
-            "lia-quiz solved"
+    getState vector id
+        |> Maybe.map (\s -> "lia-quiz-" ++ getClass s.state ++ getSolutionState s.solved)
+        |> Maybe.withDefault ""
+        |> (++) "lia-quiz "
 
-        Just ReSolved ->
-            "lia-quiz resolved"
+
+getSolutionState : Solution -> String
+getSolutionState s =
+    case s of
+        Solved ->
+            " solved"
+
+        ReSolved ->
+            " resolved"
 
         _ ->
-            "lia-quiz open"
+            " open"
 
 
 {-| **private:** Simple router function that is used to match the current state
@@ -112,12 +118,33 @@ viewState config solved state quiz =
 -}
 viewQuiz : Config sub -> Element -> Quiz -> List (Html (Msg sub)) -> List (Html (Msg sub))
 viewQuiz config state quiz body =
-    viewErrorMessage state.error_msg
-        :: body
-        ++ [ viewMainButton config state.trial state.solved (Check quiz.id quiz.quiz quiz.javascript)
-           , viewSolutionButton config state.solved (ShowSolution quiz.id quiz.quiz)
-           ]
-        ++ viewHints config state.solved quiz.id state.hint quiz.hints
+    [ viewErrorMessage state.error_msg
+    , Html.div [ Attr.class "lia-quiz__answers" ] body
+    , Html.div [ Attr.class "lia-quiz__control" ]
+        [ viewMainButton config state.trial state.solved (Check quiz.id quiz.quiz quiz.javascript)
+        , viewSolutionButton config state.solved (ShowSolution quiz.id quiz.quiz)
+        , viewHintButton quiz.id (Open == state.solved && state.hint < List.length quiz.hints)
+        ]
+    , viewFeedback state
+    , viewHints config state.hint quiz.hints
+    ]
+
+
+viewFeedback : Element -> Html msg
+viewFeedback state =
+    case state.solved of
+        Solved ->
+            Html.div [ Attr.class "lia-quiz__feedback text-success" ] [ Html.text "Congratiulations this was the right answer" ]
+
+        ReSolved ->
+            Html.div [ Attr.class "lia-quiz__feedback text-disabled" ] [ Html.text "Resolved Anwser." ]
+
+        Open ->
+            if state.trial == 0 then
+                Html.text ""
+
+            else
+                Html.div [ Attr.class "lia-quiz__feedback text-error" ] [ Html.text "That's not the right answer" ]
 
 
 {-| **private:** Show an error-message, which results from the execution of an
@@ -143,12 +170,12 @@ viewSolutionButton : Config sub -> Solution -> Msg sub -> Html (Msg sub)
 viewSolutionButton config solution msg =
     if solution == Open then
         Html.button
-            [ Attr.class "lia-btn lia-btn--hint"
+            [ Attr.class "lia-btn lia-btn--transparent lia-quiz__resolve"
             , onClick msg
             , quizSolution config.lang
                 |> Attr.title
             ]
-            [ Html.text "info" ]
+            [ Html.i [ Attr.class "lia-btn__icon icon icon-resolve" ] [] ]
 
     else
         Html.text ""
@@ -163,23 +190,18 @@ viewMainButton config trials solution msg =
         Open ->
             if trials == 0 then
                 Html.button
-                    [ Attr.class "lia-btn", onClick msg ]
+                    [ Attr.class "lia-btn lia-btn--outline lia-quiz__check", onClick msg ]
                     [ Html.text (quizCheck config.lang) ]
 
             else
                 Html.button
-                    [ Attr.class "lia-btn lia-failure", onClick msg ]
+                    [ Attr.class "lia-btn lia-btn--outline lia-quiz__check", onClick msg ]
                     [ Html.text (quizCheck config.lang ++ " " ++ String.fromInt trials) ]
 
-        Solved ->
+        _ ->
             Html.button
-                [ Attr.class "lia-btn lia-success", Attr.disabled True ]
-                [ Html.text (quizChecked config.lang ++ " " ++ String.fromInt trials) ]
-
-        ReSolved ->
-            Html.button
-                [ Attr.class "lia-btn lia-warning", Attr.disabled True ]
-                [ Html.text (quizResolved config.lang) ]
+                [ Attr.class "lia-btn lia-btn--outline lia-quiz__check", Attr.disabled True ]
+                [ Html.text (quizCheck config.lang ++ " " ++ String.fromInt trials) ]
 
 
 {-| **private:** If hints have been added to the quiz by `[[?]]` these will
@@ -187,18 +209,16 @@ shown within a list and an additional button will be diplayed to reveal more
 hints, if there are still hints not shown to the user and if the quiz has not
 been solved yet.
 -}
-viewHints : Config sub -> Solution -> Int -> Int -> MultInlines -> List (Html (Msg sub))
-viewHints config solution id counter hints =
+viewHints : Config sub -> Int -> MultInlines -> Html (Msg sub)
+viewHints config counter hints =
     if List.isEmpty hints then
-        []
+        Html.text ""
 
     else
-        [ viewHintButton id (Open == solution && counter < List.length hints)
-        , hints
+        hints
             |> viewHintsWithCounter config counter
-            |> Html.ul [ Attr.class "lia-hints" ]
+            |> Html.ul [ Attr.class "lia-list--unordered lia-quiz__hints" ]
             |> Html.map Script
-        ]
 
 
 {-| **private:** Show a generic hint button, every time it is clicked it will
@@ -208,11 +228,11 @@ viewHintButton : Int -> Bool -> Html (Msg sub)
 viewHintButton id show =
     if show then
         Html.button
-            [ Attr.class "lia-btn lia-btn--hint"
+            [ Attr.class "lia-btn lia-btn--transparent lia-quiz__hint"
             , onClick (ShowHint id)
             , Attr.title "show hint"
             ]
-            [ Html.text "help" ]
+            [ Html.i [ Attr.class "lia-btn__icon icon icon-hint" ] [] ]
 
     else
         Html.text ""

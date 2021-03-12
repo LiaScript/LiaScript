@@ -56,6 +56,7 @@ viewIndex hasIndex model =
 
             else
                 "lia-toc--closed"
+        , A11y_Landmark.navigation
         ]
         [ Settings.btnIndex
             model.translation
@@ -77,9 +78,9 @@ viewIndex hasIndex model =
                 model.settings.table_of_contents
                 model.section_active
                 Script
-            |> Html.nav
+            |> Html.div
                 [ Attr.class "lia-toc__content"
-                , A11y_Landmark.navigation
+                , A11y_Key.tabbable False
                 ]
 
         --|> Html.map Script
@@ -170,9 +171,16 @@ slideBottom lang settings slide effects =
                             [ Attr.class "lia-btn lia-btn--transparent lia-responsive-voice__play"
                             , onClick <| TTSReplay (not settings.speaking)
                             , Attr.disabled (not settings.sound)
+                            , Attr.title <|
+                                if settings.speaking then
+                                    "todo: stop"
+
+                                else
+                                    "todo: replay"
                             ]
                             [ Html.i
-                                [ Attr.class <|
+                                [ A11y_Widget.hidden True
+                                , Attr.class <|
                                     if settings.speaking then
                                         "lia-btn__icon icon icon-stop-circle"
 
@@ -193,7 +201,8 @@ slideBottom lang settings slide effects =
                                     Trans.soundOff lang
                             ]
                             [ Html.i
-                                [ Attr.class <|
+                                [ A11y_Widget.hidden True
+                                , Attr.class <|
                                     if settings.sound then
                                         "lia-btn__icon icon icon-sound-on"
 
@@ -281,10 +290,13 @@ navButton title id class msg =
     Html.button
         [ onClick msg
         , Attr.title title
-        , Attr.class <| "lia-btn lia-btn--icon lia-btn--transparent icon " ++ class
+        , Attr.class <| "lia-btn lia-btn--icon lia-btn--transparent"
         , Attr.id id
+        , A11y_Key.tabbable True
         ]
-        []
+        [ Html.i [ A11y_Widget.hidden True, Attr.class <| "lia-btn__icon icon " ++ class ]
+            []
+        ]
 
 
 {-| **@private:** the navigation abr:
@@ -318,6 +330,7 @@ slideTopBar lang screen url settings def =
     , Html.div [ Attr.class "lia-header__right" ]
         [ Html.div
             [ Attr.class "lia-support-menu"
+            , Attr.id "lia-support-menu"
             , Attr.class <|
                 if settings.support_menu then
                     "lia-support-menu--open"
@@ -325,7 +338,7 @@ slideTopBar lang screen url settings def =
                 else
                     "lia-support-menu--closed"
             ]
-            [ Settings.btnSupport settings.support_menu
+            [ Settings.btnSupport lang settings.support_menu
             , Html.div
                 [ Attr.class "lia-support-menu__collapse"
                 ]
@@ -356,7 +369,6 @@ slideTopBar lang screen url settings def =
         |> Html.header
             [ Attr.class "lia-header"
             , Attr.id "lia-toolbar-nav"
-            , A11y_Landmark.navigation
             ]
         |> Html.map UpdateSettings
 

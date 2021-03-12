@@ -1,0 +1,37 @@
+.h1,
+.h2,
+.h3 {
+  font-family: $global-font-headline;
+  line-height: $global-line-height;
+}
+
+.h1 {
+  font-size: $h1-mobile;
+
+  @include breakpoint("md") {
+    font-size: $h1-desktop-presentation;
+  }
+}
+
+.h2 {
+  font-size: $h2-mobile;
+
+  @include breakpoint("md") {
+    font-size: $h2-desktop;
+  }
+}
+
+.h3 {
+  font-size: $h3-mobile;
+
+  @include breakpoint("md") {
+    font-size: $h3-desktop;
+  }
+}
+
+.h4,
+.h5 {
+  font-family: $global-font-family;
+  font-size: $h4-mobile;
+  line-height: 1.38;
+}

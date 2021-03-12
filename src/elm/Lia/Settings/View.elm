@@ -25,7 +25,7 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
 import Lia.Settings.Update exposing (Msg(..), Toggle(..))
-import Lia.Utils exposing (blockKeydown)
+import Lia.Utils exposing (blockKeydown, btnIcon)
 import QRCode
 import Translations as Trans exposing (Lang)
 
@@ -85,9 +85,12 @@ viewLightMode _ tabbable isLight =
         [ Attr.class "lia-btn lia-btn--transparent"
         , onClick (Toggle Light)
         , A11y_Key.tabbable tabbable
+        , A11y_Widget.hidden (not tabbable)
+        , Attr.id "lia-btn-light-mode"
         ]
         [ Html.i
-            [ Attr.class "lia-btn__icon icon"
+            [ A11y_Widget.hidden True
+            , Attr.class "lia-btn__icon icon"
             , Attr.class <|
                 if isLight then
                     "icon-darkmode"
@@ -126,6 +129,7 @@ viewTheme lang tabbable theme =
                     , onClick (ChangeTheme color)
                     , Attr.title name
                     , A11y_Key.tabbable tabbable
+                    , A11y_Widget.hidden (not tabbable)
                     , blockKeydown Ignore
                     ]
                     []
@@ -155,10 +159,11 @@ viewMode lang tabbable mode activeMode id iconName additionalCSSClass =
         , onClick (SwitchMode mode)
         , A11y_Key.onKeyDown [ A11y_Key.enter (SwitchMode mode) ]
         , A11y_Key.tabbable tabbable
+        , A11y_Widget.hidden (not tabbable)
         , A11y_Role.menuItem
         , A11y_Widget.checked <| Just (mode == activeMode)
         ]
-        [ Html.i [ Attr.class <| "lia-btn__icon icon " ++ iconName ] []
+        [ Html.i [ A11y_Widget.hidden True, Attr.class <| "lia-btn__icon icon " ++ iconName ] []
         , Html.span [ Attr.class "lia-btn__text" ] [ modeToString mode lang |> Html.text ]
         ]
 
@@ -186,23 +191,17 @@ modeToString show =
 
 viewSizing : Lang -> Bool -> Int -> Html Msg
 viewSizing lang tabbable int =
-    Html.div []
+    Html.div [ Attr.id "lia-font-sizing" ]
         [ Html.text <| Trans.baseFont lang ++ ":"
-        , btnFont "icon icon-minus" tabbable (Trans.baseDec lang) (ChangeFontSize False)
-        , Html.text (String.fromInt int ++ "%")
-        , btnFont "icon icon-plus" tabbable (Trans.baseInc lang) (ChangeFontSize True)
+        , btnFont "icon-minus" (Trans.baseDec lang) tabbable (ChangeFontSize False)
+        , Html.text (String.fromInt int ++ " %")
+        , btnFont "icon-plus" (Trans.baseInc lang) tabbable (ChangeFontSize True)
         ]
 
 
-btnFont : String -> Bool -> String -> msg -> Html msg
-btnFont str tabbable title msg =
-    Html.button
-        [ onClick msg
-        , Attr.title title
-        , Attr.class <| "lia-btn lia-btn--icon lia-btn--transparent " ++ str
-        , A11y_Key.tabbable tabbable
-        ]
-        []
+btnFont : String -> String -> Bool -> msg -> Html msg
+btnFont =
+    btnIcon [ A11y_Aria.labeledBy "lia-font-sizing" ]
 
 
 bold : String -> Html msg
@@ -236,6 +235,7 @@ viewInformation lang tabbable definition =
                 [ Attr.href definition.email
                 , Attr.class "lia-link"
                 , A11y_Key.tabbable tabbable
+                , A11y_Widget.hidden (not tabbable)
                 ]
                 [ Html.text definition.email ]
             ]
@@ -280,6 +280,7 @@ viewTranslations lang tabbable =
                     [ Attr.href url
                     , Attr.class "lia-link"
                     , A11y_Key.tabbable tabbable
+                    , A11y_Widget.hidden (not tabbable)
                     ]
                     [ Html.text title, Html.br [] [] ]
             )
@@ -319,7 +320,7 @@ viewEditorTheme lang tabbable theme =
         op =
             option theme
     in
-    Html.label [ Attr.class "lia-label" ]
+    Html.label [ Attr.class "lia-label", A11y_Widget.hidden (not tabbable) ]
         [ Html.text "Editor"
         , Html.select
             [ Attr.class "lia-select d-block"
@@ -343,7 +344,7 @@ viewEditorTheme lang tabbable theme =
               , ( "xcode", "XCode" )
               ]
                 |> List.map op
-                |> Html.optgroup [ Attr.attribute "label" (Trans.cBright lang) ]
+                |> Html.optgroup [ Attr.attribute "label" (Trans.cBright lang), A11y_Widget.hidden True ]
             , [ ( "ambiance", "Ambiance" )
               , ( "chaos", "Chaos" )
               , ( "clouds_midnight", "Clouds Midnight" )
@@ -369,7 +370,7 @@ viewEditorTheme lang tabbable theme =
               , ( "vibrant_ink", "Vibrant Ink" )
               ]
                 |> List.map op
-                |> Html.optgroup [ Attr.attribute "label" (Trans.cDark lang) ]
+                |> Html.optgroup [ Attr.attribute "label" (Trans.cDark lang), A11y_Widget.hidden True ]
             ]
         ]
 
@@ -385,39 +386,41 @@ option current ( val, text ) =
 
 btnIndex : Lang -> Bool -> Html Msg
 btnIndex lang open =
-    Html.button
-        [ onClick <| Toggle TableOfContents
-        , Attr.title (Trans.baseToc lang)
-        , Attr.class "lia-btn lia-btn--icon lia-btn--transparent icon"
-        , Attr.class <|
-            if open then
-                "icon-close"
-
-            else
-                "icon-table"
-        , Attr.id "lia-btn-toc"
+    btnIcon
+        [ Attr.id "lia-btn-toc"
         , A11y_Aria.controls "lia-toc"
         , A11y_Widget.hasMenuPopUp
         , A11y_Widget.expanded open
         ]
-        []
+        (if open then
+            "icon-close"
+
+         else
+            "icon-table"
+        )
+        (Trans.baseToc lang)
+        True
+        (Toggle TableOfContents)
 
 
-btnSupport : Bool -> Html Msg
-btnSupport open =
-    Html.button
-        [ onClick <| Toggle SupportMenu
+btnSupport : Lang -> Bool -> Html Msg
+btnSupport lang open =
+    btnIcon
+        [ Attr.class "lia-support-menu__toggler"
+        , A11y_Aria.controls "lia-support-menu"
         , Attr.id "lia-btn-support"
-        , Attr.class "lia-btn lia-btn--icon lia-btn--transparent lia-support-menu__toggler icon"
-        , Attr.class <|
-            if open then
-                "icon-close"
-
-            else
-                "icon-more"
-        , Attr.type_ "button"
+        , A11y_Widget.hasMenuPopUp
+        , A11y_Widget.expanded open
         ]
-        []
+        (if open then
+            "icon-close"
+
+         else
+            "icon-more"
+        )
+        (Trans.confSettings lang)
+        True
+        (Toggle SupportMenu)
 
 
 menuMode : Lang -> Bool -> Settings -> List (Html Msg)
@@ -483,7 +486,7 @@ translateWithGoogle : Lang -> Bool -> Bool -> List (Html Msg)
 translateWithGoogle lang tabbable bool =
     [ divider
     , if not bool then
-        Html.label []
+        Html.label [ A11y_Widget.hidden (not tabbable) ]
             [ Html.input
                 [ Attr.type_ "checkbox"
                 , Attr.checked bool

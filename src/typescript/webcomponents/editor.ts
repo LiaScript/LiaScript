@@ -71,6 +71,7 @@ customElements.define('lia-editor', class extends HTMLElement {
 
   private _editor: any
   private _focus: boolean
+  private _ariaLabel: string
   private model: {
     value: string,
     theme: string,
@@ -100,6 +101,7 @@ customElements.define('lia-editor', class extends HTMLElement {
     ace.config.set('basePath', 'editor/')
 
     this._focus = false
+    this._ariaLabel = "editor"
 
     this.model = {
       value: '',
@@ -179,6 +181,9 @@ customElements.define('lia-editor', class extends HTMLElement {
       })
 
       this._editor.on('change', runDispatch)
+      this._editor.textInput.getElement().setAttribute("aria-label", "Code-editor in " + this.model.mode + " mode" )
+    } else {
+      this._editor.textInput.getElement().setAttribute("aria-label", "Code-block in " + this.model.mode + " mode" )
     }
 
     let self = this

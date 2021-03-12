@@ -107,11 +107,11 @@ update session msg model =
 
         UpdateSettings childMsg ->
             let
-                ( settings, events ) =
+                ( settings, cmd, events ) =
                     Settings.update childMsg model.settings
             in
             ( { model | settings = settings }
-            , Cmd.none
+            , Cmd.map UpdateSettings cmd
             , events
             )
 

@@ -25,6 +25,7 @@ import Html.Attributes as Attr
 import Json.Encode as JE
 import Lia.Markdown.Chart.Types exposing (Chart, Diagram(..), Labels)
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
+import Maybe
 import Translations exposing (Lang, getCodeFromLn)
 
 
@@ -561,50 +562,42 @@ encodeBarChart labels category data =
                     []
                 |> JE.list identity
     in
-    JE.object
-        [ ( "xAxis"
-          , JE.object
-                ([ ( "type", JE.string "category" )
-
-                 --, ( "name", JE.string xLabel )
-                 , ( "data"
-                   , category
-                        |> JE.list JE.string
-                   )
-                 ]
-                    ++ (labels.x
-                            |> Maybe.map (\title -> [ ( "name", JE.string title ) ])
-                            |> Maybe.withDefault []
-                       )
-                )
+    [ ( "xAxis"
+      , JE.object
+            ([ ( "type", JE.string "category" )
+             , ( "data", category |> JE.list JE.string )
+             ]
+                |> CList.addWhen (labels.x |> Maybe.map (\title -> ( "name", JE.string title )))
+            )
+      )
+    , yAxis "value" labels.y []
+    , grid
+    , ( "legend"
+      , [ ( "data"
+          , data
+                |> List.unzip
+                |> Tuple.first
+                |> List.filterMap identity
+                |> JE.list JE.string
           )
-        , yAxis "value" labels.y []
-        , grid
-
-        --, ( "title", JE.object [ ( "text", JE.string chart.title ) ] )
-        , ( "legend"
-          , JE.object
-                [ ( "data"
-                  , data
-                        |> List.unzip
-                        |> Tuple.first
-                        |> List.filterMap identity
-                        |> JE.list JE.string
-                  )
-                ]
-          )
-        , toolbox Nothing
-            { saveAsImage = True
-            , dataView = True
-            , dataZoom = True
-            , magicType = True
-            , restore = False
-            }
-
-        --  , brush
-        , ( "tooltip", JE.object [] )
-        , ( "series", bars )
         ]
+            |> CList.addIf (labels.main /= Nothing) ( "top", JE.string "30px" )
+            |> JE.object
+      )
+    , toolbox Nothing
+        { saveAsImage = True
+        , dataView = True
+        , dataZoom = True
+        , magicType = True
+        , restore = False
+        }
+
+    --  , brush
+    , ( "tooltip", JE.object [] )
+    , ( "series", bars )
+    ]
+        |> add (encodeTitle Nothing) labels.main
+        |> JE.object
 
 
 grid : ( String, JE.Value )

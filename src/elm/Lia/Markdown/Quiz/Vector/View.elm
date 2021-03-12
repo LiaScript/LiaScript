@@ -32,9 +32,11 @@ table fn inlines bools =
 
 check : Config sub -> Bool -> Bool -> ( Int, Inlines ) -> Html (Msg sub)
 check config solved checked ( id, line ) =
-    Html.label [ Attr.style "display" "block" ]
+    Html.label [ Attr.class "lia-label" ]
         [ Html.input
-            [ Attr.type_ "checkbox"
+            [ Attr.class "lia-checkbox"
+            , Attr.type_
+                "checkbox"
             , Attr.checked checked
             , if solved then
                 Attr.disabled True
@@ -45,16 +47,17 @@ check config solved checked ( id, line ) =
             []
         , line
             |> viewer config
-            |> Html.td [ Attr.class "lia-label" ]
+            |> Html.span []
             |> Html.map Script
         ]
 
 
 radio : Config sub -> Bool -> Bool -> ( Int, Inlines ) -> Html (Msg sub)
 radio config solved checked ( id, line ) =
-    Html.label [ Attr.style "display" "block" ]
+    Html.label [ Attr.class "lia-label" ]
         [ Html.input
-            [ Attr.type_ "radio"
+            [ Attr.class "lia-radio"
+            , Attr.type_ "radio"
             , Attr.checked checked
             , if solved then
                 Attr.disabled True
@@ -65,6 +68,6 @@ radio config solved checked ( id, line ) =
             []
         , line
             |> viewer config
-            |> Html.td [ Attr.class "lia-label" ]
+            |> Html.span []
             |> Html.map Script
         ]

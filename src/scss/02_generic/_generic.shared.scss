@@ -23,7 +23,7 @@ fieldset {
 
 .lia-btn,
 .lia-input,
-.lia-select select,
+.lia-select,
 .lia-textarea {
   -moz-appearance: none;
   -webkit-appearance: none;
@@ -36,4 +36,9 @@ fieldset {
   padding: 0.8rem;
   position: relative;
   vertical-align: top;
+
+  &[disabled],
+  &--disabled {
+    cursor: not-allowed;
+  }
 }

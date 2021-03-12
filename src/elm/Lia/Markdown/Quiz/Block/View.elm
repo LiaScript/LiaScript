@@ -28,7 +28,13 @@ text : Bool -> String -> Html (Msg sub)
 text solved state =
     Html.input
         [ Attr.type_ "input"
-        , Attr.class "lia-input"
+        , Attr.class "lia-input lia-quiz__input"
+        , Attr.class <|
+            if solved then
+                "lia-input--disabled"
+
+            else
+                ""
         , Attr.value state
         , Attr.disabled solved
         , onInput Input

@@ -113,6 +113,7 @@ groupBy begin end parser =
         |> keep parser
         |> map Tuple.pair
         |> ignore end
+        |> ignore spaces
         |> andMap line
         |> ignore newline
         |> many1

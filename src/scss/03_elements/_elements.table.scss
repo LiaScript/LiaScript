@@ -10,25 +10,157 @@
     max-height: 80vh;
     overflow: auto;
     width: 100%;
+
+    &.has-thead-sticky {
+      .lia-table__head {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+
+        th {
+          position: sticky;
+          top: 0;
+          z-index: 1;
+        }
+      }
+
+      &.has-first-col-sticky {
+        .lia-table__head th:first-child {
+          left: 0;
+          position: sticky;
+          z-index: 2;
+        }
+
+        .is-alternating {
+          .lia-table__row:nth-child(2n) {
+            td:first-child:before {
+              background-color: rgba(var(--lia-grey-light), 0.3);
+            }
+
+            &:hover {
+              td:first-child:before {
+                background-color: rgba(var(--color-highlight), 0.05);
+              }
+            }
+          }
+        }
+      }
+
+      &.has-last-col-sticky {
+        .lia-table__head th:last-child {
+          right: 0;
+          position: sticky;
+          z-index: 2;
+        }
+
+        .is-alternating {
+          .lia-table__row:nth-child(2n) {
+            td:last-child:before {
+              background-color: rgba(var(--lia-grey-light), 0.3);
+            }
+
+            &:hover {
+              td:last-child:before {
+                background-color: rgba(var(--color-highlight), 0.05);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    &.has-first-col-sticky {
+      .lia-table__data {
+        &:first-child {
+          border-left: $global-border;
+          border-right: $global-border;
+          left: 0;
+          position: sticky;
+          z-index: 2;
+
+          /* 
+           * Fix layering and opacity problems if <tr> is hovered.
+           * Makes sure that any <td> is not visible (behind first, sticky <td>)
+           * if table is scrolled horizontally.
+           */
+
+          &:before,
+          &:after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: white;
+            height: 100%;
+          }
+
+          &:before {
+            z-index: -1;
+          }
+
+          &:after {
+            z-index: -2;
+          }
+        }
+      }
+
+      .lia-table__row:hover > td:first-child::before {
+        background-color: rgba(var(--color-highlight), 0.1);
+      }
+    }
+
+    &.has-last-col-sticky {
+      .lia-table__data {
+        &:first-child {
+          border-right: $global-border;
+        }
+
+        &:last-child {
+          border-left: $global-border;
+          border-right: $global-border;
+          right: 0;
+          position: sticky;
+          z-index: 2;
+
+          /* 
+           * Fix layering and opacity problems if <tr> is hovered.
+           * Makes sure that any <td> is not visible (behind first, sticky <td>)
+           * if table is scrolled horizontally.
+           */
+
+          &:before,
+          &:after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: white;
+            height: 100%;
+          }
+
+          &:before {
+            z-index: -1;
+          }
+
+          &:after {
+            z-index: -2;
+          }
+        }
+      }
+
+      .lia-table__row:hover > td:last-child::before {
+        background-color: rgba(var(--color-highlight), 0.1);
+      }
+    }
   }
 
   &__head {
     border-bottom: $global-border;
-    position: sticky;
-    top: 0;
-    z-index: 3;
 
     th {
       background: white;
-      position: sticky;
-      top: 0;
-      z-index: 1;
-
-      &:first-child {
-        left: 0;
-        position: sticky;
-        z-index: 2;
-      }
     }
   }
 
@@ -46,10 +178,6 @@
 
       > td {
         background-color: rgba(var(--color-highlight), 0.05);
-
-        &:first-child::before {
-          background-color: rgba(var(--color-highlight), 0.1);
-        }
       }
     }
   }
@@ -57,14 +185,18 @@
   &__header {
     position: relative;
     border-top: $global-border;
-    border-left: 0;
+    border-left: $global-border;
     border-bottom: $global-border;
-    border-right: $global-border;
+    border-right: 0;
     padding: 1.3rem 3.2rem 1.3rem 1.6rem;
 
     &:first-child {
       border-left: $global-border;
       border-right: $global-border;
+    }
+
+    &:nth-child(2) {
+      border-left: 0;
     }
 
     &:last-child {
@@ -73,45 +205,18 @@
   }
 
   &__data {
-    border: $global-border;
     border-top: $global-border;
-    border-left: 0;
+    border-left: $global-border;
     border-bottom: 0;
-    border-right: $global-border;
+    border-right: 0;
     padding: 1rem 3.2rem 1rem 1.6rem;
 
-    &:first-child {
-      border-left: $global-border;
+    &:last-child {
       border-right: $global-border;
-      background-color: white;
-      left: 0;
-      position: sticky;
-      z-index: 2;
+    }
 
-      /* 
-       * Fix layering and opacity problems if <tr> is hovered.
-       * Makes sure that any <td> is not visible (behind first, sticky <td>)
-       * if table is scrolled horizontally.
-       */
-
-      &:before,
-      &:after {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        background-color: white;
-        height: 100%;
-      }
-
-      &:before {
-        z-index: -1;
-      }
-
-      &:after {
-        z-index: -2;
-      }
+    &:nth-child(2) {
+      border-left: 0;
     }
   }
 
@@ -133,71 +238,19 @@
       color: rgb(var(--color-highlight));
     }
   }
-}
 
-.lia-survey-matrix {
-  border-spacing: 0 map-get($global-spacing, spacing-large);
+  &.is-alternating {
+    .lia-table__row:nth-child(2n) {
+      background-color: rgba(var(--lia-grey-light), 0.3);
 
-  :not(:first-child) {
-    td:last-child {
-      padding: map-get($global-spacing, spacing-normal)
-        map-get($global-spacing, spacing-large);
-    }
-
-    td:not(:last-child) {
-      padding: map-get($global-spacing, spacing-normal);
-    }
-  }
-
-  :first-child td {
-    padding: 0 map-get($global-spacing, spacing-normal);
-  }
-}
-
-@mixin style-table($theme) {
-  .lia-table {
-    $bg: map-get($theme, background);
-    $fg: color-contrast($bg);
-    $head-bg: mix($bg, $fg, 100%);
-    $row-even-bg: mix($bg, $fg, 95%);
-    $row-odd-bg: mix($bg, $fg, 100%);
-    $head-fg: color-contrast($head-bg);
-    $row-even-fg: color-contrast($row-even-bg);
-    $row-odd-fg: color-contrast($row-odd-bg);
-    $border-color: mix($bg, $fg, 75%);
-
-    .lia-table-head {
-      th {
-        border-color: $border-color !important;
+      td:last-child:before {
+        background-color: rgba(var(--lia-grey-light), 0.3);
       }
 
-      background: $head-bg;
-      color: $head-fg;
-    }
-
-    .lia-table-row {
-      td {
-        border-color: $border-color;
-      }
-
-      &:nth-child(even) {
-        background: $row-even-bg;
-        color: $row-even-fg;
-      }
-
-      &:nth-child(odd) {
-        background: $row-odd-bg;
-        color: $row-odd-fg;
-      }
-    }
-  }
-
-  .lia-survey-matrix {
-    :not(:first-child) {
-      td:not(:last-child) {
-        $bg: map-get($theme, background);
-        $fg: color-contrast($bg);
-        background: mix($bg, $fg, 95%);
+      &:hover {
+        td:last-child:before {
+          background-color: rgba(var(--color-highlight), 0.05);
+        }
       }
     }
   }

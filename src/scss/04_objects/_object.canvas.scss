@@ -111,8 +111,7 @@ $slide-margin-left-textbook: 19rem !default;
 
     @include breakpoint("md") {
       .lia-slide__content {
-        margin-left: $slide-margin-left-textbook;
-        padding-left: 0;
+        margin-left: calc(#{$slide-margin-left-textbook} - 3rem);
       }
 
       .lia-pagination {
@@ -129,8 +128,7 @@ $slide-margin-left-textbook: 19rem !default;
 
     @include breakpoint("lg") {
       .lia-slide__content {
-        margin-left: $slide-margin-left-presentation;
-        padding-left: 0;
+        margin-left: calc(#{$slide-margin-left-presentation} - 3rem);
       }
     }
   }

@@ -6,6 +6,7 @@ module Lia.Index.View exposing
 
 import Accessibility.Key as A11y_Key
 import Accessibility.Live as A11y_Live
+import Accessibility.Widget as A11y_Widget
 import Array exposing (Array)
 import Conditional.List as CList
 import Conditional.String as CString
@@ -33,6 +34,7 @@ search lang active results model =
         , blockKeydown (ScanIndex model)
         , Attr.id "lia-input-search"
         , A11y_Key.tabbable active
+        , A11y_Widget.hidden (not active)
         , A11y_Key.onKeyDown [ A11y_Key.enter (ScanIndex "") ]
         ]
         []
@@ -53,7 +55,7 @@ search lang active results model =
                 |> Attr.title
             ]
             [ Html.i
-                [ Attr.class "icon icon-close" ]
+                [ Attr.class "lia-btn__icon icon icon-close" ]
                 []
             ]
     , if String.isEmpty model then
@@ -102,8 +104,9 @@ bottom active msg =
         , Attr.class "lia-btn lia-btn--transparent"
         , Attr.id "lia-btn-home"
         , A11y_Key.tabbable active
+        , A11y_Widget.hidden (not active)
         ]
-        [ Html.i [ Attr.class "lia-btn__icon icon icon-grid" ] []
+        [ Html.i [ A11y_Widget.hidden True, Attr.class "lia-btn__icon icon icon-grid" ] []
         , Html.span [ Attr.class "lia-btn__text" ] [ Html.text "home" ]
         ]
 
@@ -119,6 +122,7 @@ item lang active sectionId msg section =
 itemLink : Bool -> Int -> Section -> List (Html msg) -> Html msg
 itemLink active sectionId section =
     [ A11y_Key.tabbable active
+    , A11y_Widget.hidden (not active)
     , section.indentation
         |> String.fromInt
         |> (++) "lia-toc__link lia-toc__link--is-lvl-"

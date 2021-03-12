@@ -18,9 +18,9 @@ import { updateClassName } from '../connectors/Base/settings'
 function isInViewport(elem: HTMLElement) {
   const bounding = elem.getBoundingClientRect()
   return (
-    bounding.top >= 20 &&
+    bounding.top >= 85 &&
     bounding.left >= 0 &&
-    bounding.bottom <= (window.innerHeight - 20 || document.documentElement.clientHeight - 20) &&
+    bounding.bottom <= (window.innerHeight - 40 || document.documentElement.clientHeight - 40) &&
     bounding.right <= (window.innerWidth || document.documentElement.clientWidth)
   )
 };
@@ -318,9 +318,13 @@ function process(isConnected: boolean, self: LiaScript, elmSend: Lia.Send, event
     case Port.SLIDE: {
       self.connector.slide(event.section)
 
-      const sec = document.getElementsByTagName('section')[0]
+      const sec = document.getElementsByTagName('main')[0]
       if (sec) {
         sec.scrollTo(0, 0)
+        
+        if(sec.children.length > 0) {
+          sec.children[0].focus()
+        }        
       }
       
       const elem = document.getElementById('focusedToc')

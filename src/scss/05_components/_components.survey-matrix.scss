@@ -1,0 +1,42 @@
+.lia-survey-matrix {
+  &__header {
+    padding: 1.3rem 1.6rem;
+    border-top: 0;
+
+    &:last-child {
+      border-right: 0;
+    }
+
+    &:first-child {
+      border-left: 0;
+    }
+  }
+
+  &__data {
+    padding: 1rem;
+    border-top: 0;
+    border-bottom: 0;
+
+    &:not(:last-child) {
+      padding: 2rem;
+      text-align: center;
+      max-width: 5rem;
+    }
+  }
+
+  &__row {
+    &:last-child > td {
+      border-bottom: 0;
+    }
+
+    td:first-child {
+      border-left: 0 !important;
+    }
+
+    td:last-child {
+      max-width: 50rem;
+      min-width: 20rem;
+      border-right: 0 !important;
+    }
+  }
+}
