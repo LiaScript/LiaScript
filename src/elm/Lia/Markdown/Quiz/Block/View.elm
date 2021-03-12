@@ -1,5 +1,6 @@
 module Lia.Markdown.Quiz.Block.View exposing (view)
 
+import Accessibility.Widget as A11y_Widget
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
@@ -32,6 +33,7 @@ view config ( solved, textClass ) quiz state =
                         , Attr.style "position" "absolute"
                         , Attr.style "top" "1rem"
                         , Attr.style "right" "1rem"
+                        , A11y_Widget.hidden True
                         ]
                         []
             ]

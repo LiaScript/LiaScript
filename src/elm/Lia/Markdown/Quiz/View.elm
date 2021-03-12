@@ -92,7 +92,7 @@ viewState config elem quiz =
                             ( Just True, "is-green" )
 
                         ReSolved ->
-                            ( Just False, "is-yellow" )
+                            ( Just False, "" )
 
                         Open ->
                             ( Nothing
