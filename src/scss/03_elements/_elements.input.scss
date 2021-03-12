@@ -1,6 +1,18 @@
 .lia-input {
   max-width: 100%;
   width: 100%;
+
+  &.is-error {
+    border-color: rgb(var(--lia-red));
+  }
+
+  &.is-warning {
+    border-color: rgb(var(--lia-yellow));
+  }
+
+  &.is-success {
+    border-color: rgb(var(--lia-success));
+  }
 }
 
 /* clears the 'X' from Internet Explorer */
@@ -50,7 +62,7 @@ input[type="search"]::-webkit-search-results-decoration {
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
-  border: 1px solid rgb(var(--lia-turquoise));
+  border: 1px solid rgb(var(--color-highlight));
   color-adjust: exact;
   cursor: pointer;
   height: 2.4rem;
@@ -79,10 +91,15 @@ input[type="search"]::-webkit-search-results-decoration {
   }
 
   &:checked {
-    background-color: rgb(var(--lia-turquoise));
+    background-color: rgb(var(--color-highlight));
     &:after {
       opacity: 1;
     }
+  }
+
+  &.is-turquoise {
+    background-color: rgb(var(--lia-turquoise));
+    border-color: rgb(var(--lia-turquoise));
   }
 
   &.is-red {
@@ -109,14 +126,14 @@ input[type="search"]::-webkit-search-results-decoration {
   border-radius: 100%;
 
   &:checked {
-    border: 0.8rem solid rgb(var(--lia-turquoise));
+    border: 0.8rem solid rgb(var(--color-highlight));
   }
 
   &.is-red {
-    border-color: rgb(var(--lia-red));
+    border-color: rgb(var(--lia-turquoise));
 
     &:checked {
-      border-color: rgb(var(--lia-red));
+      border-color: rgb(var(--lia-turquoise));
     }
   }
 
