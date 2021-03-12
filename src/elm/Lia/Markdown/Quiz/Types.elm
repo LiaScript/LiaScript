@@ -7,6 +7,7 @@ module Lia.Markdown.Quiz.Types exposing
     , Type(..)
     , Vector
     , comp
+    , getClass
     , getState
     , initState
     , isSolved
@@ -136,3 +137,19 @@ comp quiz state =
 isSolved : Element -> Bool
 isSolved e =
     e.solved /= Open
+
+
+getClass : State -> String
+getClass state =
+    case state of
+        Block_State s ->
+            Block.getClass s
+
+        Vector_State s ->
+            Vector.getClass s
+
+        Matrix_State s ->
+            Matrix.getClass s
+
+        Generic_State ->
+            "generic"

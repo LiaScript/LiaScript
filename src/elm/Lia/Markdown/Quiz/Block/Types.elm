@@ -2,6 +2,7 @@ module Lia.Markdown.Quiz.Block.Types exposing
     ( Quiz
     , State(..)
     , comp
+    , getClass
     , initState
     )
 
@@ -43,3 +44,13 @@ comp quiz state =
 
         _ ->
             False
+
+
+getClass : State -> String
+getClass state =
+    case state of
+        Text _ ->
+            "text"
+
+        Select _ _ ->
+            "select"

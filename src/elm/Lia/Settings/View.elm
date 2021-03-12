@@ -25,7 +25,7 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
 import Lia.Settings.Update exposing (Msg(..), Toggle(..))
-import Lia.Utils exposing (blockKeydown)
+import Lia.Utils exposing (blockKeydown, btnIcon)
 import QRCode
 import Translations as Trans exposing (Lang)
 
@@ -193,29 +193,15 @@ viewSizing : Lang -> Bool -> Int -> Html Msg
 viewSizing lang tabbable int =
     Html.div [ Attr.id "lia-font-sizing" ]
         [ Html.text <| Trans.baseFont lang ++ ":"
-        , btnFont "icon icon-minus" tabbable (Trans.baseDec lang) (ChangeFontSize False)
+        , btnFont "icon-minus" (Trans.baseDec lang) tabbable (ChangeFontSize False)
         , Html.text (String.fromInt int ++ " %")
-        , btnFont "icon icon-plus" tabbable (Trans.baseInc lang) (ChangeFontSize True)
+        , btnFont "icon-plus" (Trans.baseInc lang) tabbable (ChangeFontSize True)
         ]
 
 
-btnFont : String -> Bool -> String -> msg -> Html msg
-btnFont str tabbable title msg =
-    Html.button
-        [ onClick msg
-        , Attr.title title
-        , Attr.class <| "lia-btn lia-btn--icon lia-btn--transparent"
-        , A11y_Key.tabbable tabbable
-        , A11y_Widget.hidden (not tabbable)
-        , A11y_Widget.label title
-        , A11y_Aria.labeledBy "lia-font-sizing"
-        ]
-        [ Html.i
-            [ A11y_Widget.hidden True
-            , Attr.class str
-            ]
-            []
-        ]
+btnFont : String -> String -> Bool -> msg -> Html msg
+btnFont =
+    btnIcon [ A11y_Aria.labeledBy "lia-font-sizing" ]
 
 
 bold : String -> Html msg
@@ -400,55 +386,41 @@ option current ( val, text ) =
 
 btnIndex : Lang -> Bool -> Html Msg
 btnIndex lang open =
-    Html.button
-        [ onClick <| Toggle TableOfContents
-        , Attr.title (Trans.baseToc lang)
-        , Attr.class "lia-btn lia-btn--icon lia-btn--transparent"
-        , Attr.id "lia-btn-toc"
+    btnIcon
+        [ Attr.id "lia-btn-toc"
         , A11y_Aria.controls "lia-toc"
         , A11y_Widget.hasMenuPopUp
         , A11y_Widget.expanded open
         ]
-        [ Html.i
-            [ A11y_Widget.hidden True
-            , Attr.class <|
-                "lia-btn__icon icon"
-                    ++ (if open then
-                            " icon-close"
+        (if open then
+            "icon-close"
 
-                        else
-                            " icon-table"
-                       )
-            ]
-            []
-        ]
+         else
+            "icon-table"
+        )
+        (Trans.baseToc lang)
+        True
+        (Toggle TableOfContents)
 
 
 btnSupport : Lang -> Bool -> Html Msg
 btnSupport lang open =
-    Html.button
-        [ onClick <| Toggle SupportMenu
-        , Attr.id "lia-btn-support"
-        , Attr.class "lia-btn lia-btn--icon lia-btn--transparent lia-support-menu__toggler"
-        , Attr.type_ "button"
-        , lang
-            |> Trans.confSettings
-            |> Attr.title
+    btnIcon
+        [ Attr.class "lia-support-menu__toggler"
         , A11y_Aria.controls "lia-support-menu"
+        , Attr.id "lia-btn-support"
         , A11y_Widget.hasMenuPopUp
         , A11y_Widget.expanded open
         ]
-        [ Html.i
-            [ A11y_Widget.hidden True
-            , Attr.class <|
-                if open then
-                    "icon icon-close"
+        (if open then
+            "icon-close"
 
-                else
-                    "icon icon-more"
-            ]
-            []
-        ]
+         else
+            "icon-more"
+        )
+        (Trans.confSettings lang)
+        True
+        (Toggle SupportMenu)
 
 
 menuMode : Lang -> Bool -> Settings -> List (Html Msg)
