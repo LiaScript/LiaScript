@@ -492,7 +492,7 @@ getState id =
 toTable : Lang -> Int -> Parameters -> Class -> List (Html Msg) -> Html Msg
 toTable lang id attr class body =
     if class == None then
-        Html.div [ Attr.class "lia-table-responsive" ]
+        Html.div [ Attr.class "lia-table-responsive has-thead-sticky has-first-col-sticky" ]
             [ Html.table (Param.annotation "lia-table" attr) body
             ]
 
@@ -538,7 +538,7 @@ toTable lang id attr class body =
 
                     None ->
                         ( "", "" )
-            , Html.div [ Attr.class "lia-table-responsive" ]
+            , Html.div [ Attr.class "lia-table-responsive has-thead-sticky has-first-col-sticky" ]
                 [ Html.table
                     (Param.annotation "lia-table" attr)
                     body

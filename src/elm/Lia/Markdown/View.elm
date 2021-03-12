@@ -397,17 +397,17 @@ viewQuiz config attr quiz solution =
     case solution of
         Nothing ->
             Quizzes.view config.main quiz config.section.quiz_vector
-                |> Html.form (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr)
+                |> Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr)
                 |> Html.map UpdateQuiz
 
         Just ( answer, hidden_effects ) ->
-            Html.form (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr) <|
+            Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr) <|
                 if Quizzes.showSolution config.section.quiz_vector quiz then
                     (config.section.quiz_vector
                         |> Quizzes.view config.main quiz
                         |> List.map (Html.map UpdateQuiz)
                     )
-                        ++ (Html.hr [] [] :: List.map (view_block config) answer)
+                        ++ [Html.div [Attr.class "lia-quiz__solution"] <| List.map (view_block config) answer]
 
                 else
                     config.section.quiz_vector

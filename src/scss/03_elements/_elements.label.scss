@@ -1,3 +1,9 @@
 .lia-label {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+
+  > .lia-radio,
+  > .lia-checkbox {
+    margin-right: 1rem;
+  }
 }
