@@ -193,15 +193,22 @@ viewSizing : Lang -> Bool -> Int -> Html Msg
 viewSizing lang tabbable int =
     Html.div [ Attr.id "lia-font-sizing" ]
         [ Html.text <| Trans.baseFont lang ++ ":"
-        , btnFont "icon-minus" (Trans.baseDec lang) tabbable (ChangeFontSize False)
+        , btnIcon
+            { title = Trans.baseDec lang
+            , tabbable = tabbable
+            , msg = Just (ChangeFontSize False)
+            , icon = "icon-minus"
+            }
+            [ A11y_Aria.labeledBy "lia-font-sizing" ]
         , Html.text (String.fromInt int ++ " %")
-        , btnFont "icon-plus" (Trans.baseInc lang) tabbable (ChangeFontSize True)
+        , btnIcon
+            { title = Trans.baseInc lang
+            , tabbable = tabbable
+            , msg = Just (ChangeFontSize True)
+            , icon = "icon-plus"
+            }
+            [ A11y_Aria.labeledBy "lia-font-sizing" ]
         ]
-
-
-btnFont : String -> String -> Bool -> msg -> Html msg
-btnFont =
-    btnIcon [ A11y_Aria.labeledBy "lia-font-sizing" ]
 
 
 bold : String -> Html msg
@@ -387,40 +394,42 @@ option current ( val, text ) =
 btnIndex : Lang -> Bool -> Html Msg
 btnIndex lang open =
     btnIcon
+        { title = Trans.baseToc lang
+        , tabbable = True
+        , msg = Just (Toggle TableOfContents)
+        , icon =
+            if open then
+                "icon-close"
+
+            else
+                "icon-table"
+        }
         [ Attr.id "lia-btn-toc"
         , A11y_Aria.controls "lia-toc"
         , A11y_Widget.hasMenuPopUp
         , A11y_Widget.expanded open
         ]
-        (if open then
-            "icon-close"
-
-         else
-            "icon-table"
-        )
-        (Trans.baseToc lang)
-        True
-        (Toggle TableOfContents)
 
 
 btnSupport : Lang -> Bool -> Html Msg
 btnSupport lang open =
     btnIcon
+        { title = Trans.confSettings lang
+        , tabbable = True
+        , msg = Just (Toggle SupportMenu)
+        , icon =
+            if open then
+                "icon-close"
+
+            else
+                "icon-more"
+        }
         [ Attr.class "lia-support-menu__toggler"
         , A11y_Aria.controls "lia-support-menu"
         , Attr.id "lia-btn-support"
         , A11y_Widget.hasMenuPopUp
         , A11y_Widget.expanded open
         ]
-        (if open then
-            "icon-close"
-
-         else
-            "icon-more"
-        )
-        (Trans.confSettings lang)
-        True
-        (Toggle SupportMenu)
 
 
 menuMode : Lang -> Bool -> Settings -> List (Html Msg)
