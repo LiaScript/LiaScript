@@ -35,7 +35,7 @@
   &--ordered {
     > li {
       &::marker {
-        color: rgb(var(--lia-turquoise));
+        color: rgb(var(--color-highlight-dark));
       }
 
       span {

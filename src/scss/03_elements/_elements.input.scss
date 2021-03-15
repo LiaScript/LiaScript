@@ -2,7 +2,7 @@
   max-width: 100%;
   width: 100%;
 
-  &.is-error {
+  &.is-failure {
     border-color: rgb(var(--lia-red));
   }
 
@@ -12,6 +12,10 @@
 
   &.is-success {
     border-color: rgb(var(--lia-success));
+  }
+
+  &.is-disabled {
+    border-color: rgb(var(--lia-grey));
   }
 }
 
@@ -58,7 +62,6 @@ input[type="search"]::-webkit-search-results-decoration {
   -webkit-appearance: none;
   -webkit-print-color-adjust: exact;
   appearance: none;
-  background-color: #fff;
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
@@ -116,6 +119,15 @@ input[type="search"]::-webkit-search-results-decoration {
     background-color: rgb(var(--lia-yellow));
     border-color: rgb(var(--lia-yellow));
   }
+
+  &[disabled] {
+    border-color: rgb(var(--lia-grey));
+
+    &:checked {
+      background-color: rgb(var(--lia-grey));
+      border-color: rgb(var(--lia-grey));
+    }
+  }
 }
 
 /* --------------------------------------------------
@@ -150,6 +162,14 @@ input[type="search"]::-webkit-search-results-decoration {
 
     &:checked {
       border-color: rgb(var(--lia-yellow));
+    }
+  }
+
+  &[disabled] {
+    border-color: rgb(var(--lia-grey));
+
+    &:checked {
+      border-color: rgb(var(--lia-grey));
     }
   }
 }
@@ -197,6 +217,10 @@ input[type="search"]::-webkit-search-results-decoration {
           top: 50%;
           transform: translate(-50%, -50%);
           width: 2.4rem;
+
+          @at-root html.lia-variant-dark & {
+            border-color: rgb(var(--lia-white));
+          }
         }
       }
     }

@@ -594,7 +594,7 @@ formatted viewer head format rows id state =
             (List.map2 (\f e -> Html.td (Attr.class "lia-table__data" :: Attr.class f :: Param.toAttribute e.attr) (viewer e.inlines)) format
                 >> Html.tr [ Attr.class "lia-table__row" ]
             )
-        |> Html.tbody []
+        |> Html.tbody [ Attr.class "lia-table__body" ]
     ]
 
 

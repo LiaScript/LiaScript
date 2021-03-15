@@ -89,10 +89,10 @@ viewState config elem quiz =
                 |> Block.view config
                     (case elem.solved of
                         Solved ->
-                            ( Just True, "is-green" )
+                            ( Just True, "is-success" )
 
                         ReSolved ->
-                            ( Just False, "" )
+                            ( Just False, "is-disabled" )
 
                         Open ->
                             ( Nothing
@@ -100,7 +100,7 @@ viewState config elem quiz =
                                 ""
 
                               else
-                                "is-red"
+                                "is-failure"
                             )
                     )
                     q

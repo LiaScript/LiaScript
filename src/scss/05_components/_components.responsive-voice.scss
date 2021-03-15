@@ -9,6 +9,10 @@
   padding: 2rem;
   width: 100%;
 
+  @at-root html.lia-variant-dark & {
+    background-color: rgb(var(--lia-anthracite));
+  }
+
   @include breakpoint("sm") {
     align-items: center;
     height: 7rem;

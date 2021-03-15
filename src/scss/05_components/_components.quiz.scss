@@ -53,10 +53,6 @@
     display: grid;
     grid-gap: 2rem;
     grid-template-columns: 1fr;
-
-    @include breakpoint("md") {
-      grid-template-columns: repeat(2, 1fr);
-    }
   }
 
   &-single-choice {
