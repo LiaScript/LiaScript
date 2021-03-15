@@ -48,7 +48,7 @@ view : Config sub -> Quiz -> Vector -> List (Html (Msg sub))
 view config quiz vector =
     case getState vector quiz.id of
         Just elem ->
-            viewState config (isSolved elem) elem.state quiz
+            viewState config elem quiz
                 |> viewQuiz config elem quiz
 
         _ ->
@@ -81,23 +81,39 @@ getSolutionState s =
 {-| **private:** Simple router function that is used to match the current state
 of a quiz with its type.
 -}
-viewState : Config sub -> Bool -> State -> Quiz -> List (Html (Msg sub))
-viewState config solved state quiz =
-    case ( state, quiz.quiz ) of
+viewState : Config sub -> Element -> Quiz -> List (Html (Msg sub))
+viewState config elem quiz =
+    case ( elem.state, quiz.quiz ) of
         ( Block_State s, Block_Type q ) ->
-            [ s
-                |> Block.view config solved q
-                |> Html.map (Block_Update quiz.id)
-            ]
+            s
+                |> Block.view config
+                    (case elem.solved of
+                        Solved ->
+                            ( Just True, "is-green" )
+
+                        ReSolved ->
+                            ( Just False, "" )
+
+                        Open ->
+                            ( Nothing
+                            , if elem.trial == 0 then
+                                ""
+
+                              else
+                                "is-red"
+                            )
+                    )
+                    q
+                |> List.map (Html.map (Block_Update quiz.id))
 
         ( Vector_State s, Vector_Type q ) ->
             s
-                |> Vector.view config solved q
+                |> Vector.view config (isSolved elem) q
                 |> List.map (Html.map (Vector_Update quiz.id))
 
         ( Matrix_State s, Matrix_Type q ) ->
             [ s
-                |> Matrix.view config solved q
+                |> Matrix.view config (isSolved elem) q
                 |> Html.map (Matrix_Update quiz.id)
             ]
 
@@ -186,22 +202,19 @@ quiz with the solution state. The number of trials is automatically added.
 -}
 viewMainButton : Config sub -> Int -> Solution -> Msg sub -> Html (Msg sub)
 viewMainButton config trials solution msg =
-    case solution of
-        Open ->
-            if trials == 0 then
-                Html.button
-                    [ Attr.class "lia-btn lia-btn--outline lia-quiz__check", onClick msg ]
-                    [ Html.text (quizCheck config.lang) ]
+    Html.button
+        [ Attr.class "lia-btn lia-btn--outline lia-quiz__check"
+        , onClick msg
+        , Attr.disabled (solution /= Open)
+        ]
+        [ Html.text (quizCheck config.lang)
+        , Html.text <|
+            if trials > 0 then
+                " " ++ String.fromInt trials
 
             else
-                Html.button
-                    [ Attr.class "lia-btn lia-btn--outline lia-quiz__check", onClick msg ]
-                    [ Html.text (quizCheck config.lang ++ " " ++ String.fromInt trials) ]
-
-        _ ->
-            Html.button
-                [ Attr.class "lia-btn lia-btn--outline lia-quiz__check", Attr.disabled True ]
-                [ Html.text (quizCheck config.lang ++ " " ++ String.fromInt trials) ]
+                ""
+        ]
 
 
 {-| **private:** If hints have been added to the quiz by `[[?]]` these will
