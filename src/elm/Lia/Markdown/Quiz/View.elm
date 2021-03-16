@@ -19,7 +19,6 @@ TODO:
 
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Html.Events exposing (onClick)
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (MultInlines)
 import Lia.Markdown.Inline.View exposing (viewer)
@@ -40,7 +39,15 @@ import Lia.Markdown.Quiz.Types
 import Lia.Markdown.Quiz.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Vector.View as Vector
 import Lia.Utils exposing (btn, btnIcon)
-import Translations exposing (quizCheck, quizSolution)
+import Translations
+    exposing
+        ( Lang
+        , quizAnswerError
+        , quizAnswerResolved
+        , quizAnswerSuccess
+        , quizCheck
+        , quizSolution
+        )
 
 
 {-| Main Quiz view function.
@@ -119,26 +126,38 @@ viewQuiz config state quiz body =
         , Translations.quizHint config.lang
             |> viewHintButton quiz.id (quiz.hints /= []) (Solution.Open == state.solved && state.hint < List.length quiz.hints)
         ]
-    , viewFeedback state
+    , viewFeedback config.lang state
     , viewHints config state.hint quiz.hints
     ]
 
 
-viewFeedback : Element -> Html msg
-viewFeedback state =
+viewFeedback : Lang -> Element -> Html msg
+viewFeedback lang state =
     case state.solved of
         Solution.Solved ->
-            Html.div [ Attr.class "lia-quiz__feedback text-success" ] [ Html.text "Congratiulations this was the right answer" ]
+            Html.div [ Attr.class "lia-quiz__feedback text-success" ]
+                [ lang
+                    |> quizAnswerSuccess
+                    |> Html.text
+                ]
 
         Solution.ReSolved ->
-            Html.div [ Attr.class "lia-quiz__feedback text-disabled" ] [ Html.text "Resolved Anwser." ]
+            Html.div [ Attr.class "lia-quiz__feedback text-disabled" ]
+                [ lang
+                    |> quizAnswerResolved
+                    |> Html.text
+                ]
 
         Solution.Open ->
             if state.trial == 0 then
                 Html.text ""
 
             else
-                Html.div [ Attr.class "lia-quiz__feedback text-error" ] [ Html.text "That's not the right answer" ]
+                Html.div [ Attr.class "lia-quiz__feedback text-error" ]
+                    [ lang
+                        |> quizAnswerError
+                        |> Html.text
+                    ]
 
 
 {-| **private:** Show an error-message, which results from the execution of an

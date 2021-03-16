@@ -1880,43 +1880,6 @@ quizCheck lang =
             "Check"
 
 
-quizChecked : Lang -> String
-quizChecked lang =
-    case lang of 
-        Bg ->
-            "Проверено"
-
-        De ->
-            "Gelöst"
-
-        Es ->
-            "verificado"
-
-        Fa ->
-            "بررسی شده"
-
-        Hy ->
-            "ստուգված"
-
-        Nl ->
-            "bekeken"
-
-        Ru ->
-            "проверено"
-
-        Tw ->
-            "已選取"
-
-        Ua ->
-            "перевірено"
-
-        Zh ->
-            "已選取"
-
-        _ ->
-            "Checked"
-
-
 quizSolution : Lang -> String
 quizSolution lang =
     case lang of 
@@ -1954,43 +1917,6 @@ quizSolution lang =
             "show solution"
 
 
-quizResolved : Lang -> String
-quizResolved lang =
-    case lang of 
-        Bg ->
-            "Решено"
-
-        De ->
-            "Aufgelöst"
-
-        Es ->
-            "resuelto"
-
-        Fa ->
-            "حل شده"
-
-        Hy ->
-            "լուծված է "
-
-        Nl ->
-            "opgelost"
-
-        Ru ->
-            "решено"
-
-        Tw ->
-            "以解答"
-
-        Ua ->
-            "розв'язано"
-
-        Zh ->
-            "以解答"
-
-        _ ->
-            "Resolved"
-
-
 quizHint : Lang -> String
 quizHint lang =
     case lang of 
@@ -1998,7 +1924,7 @@ quizHint lang =
             "Подсказване"
 
         De ->
-            "zeige Hinweis"
+            "Hinweis anzeigen"
 
         Es ->
             "mostrar indicio"
@@ -2026,6 +1952,117 @@ quizHint lang =
 
         _ ->
             "show hint"
+
+
+quizAnswerSuccess : Lang -> String
+quizAnswerSuccess lang =
+    case lang of 
+        Bg ->
+            "Поздравления, това беше правилният отговор"
+
+        De ->
+            "Herzlichen Glückwunsch, das war die richtige Antwort"
+
+        Es ->
+            "Felicitaciones, esa fue la respuesta correcta"
+
+        Fa ->
+            "تبریک می گویم ، جواب صحیحی بود"
+
+        Hy ->
+            "Շնորհավորում եմ, դա ճիշտ պատասխանն էր"
+
+        Nl ->
+            "Gefeliciteerd, dat was het juiste antwoord"
+
+        Ru ->
+            "Поздравляю, это был правильный ответ"
+
+        Tw ->
+            "恭喜，那是正确的答案"
+
+        Ua ->
+            "Вітаю, це була правильна відповідь"
+
+        Zh ->
+            "恭喜，那是正确的答案"
+
+        _ ->
+            "Congratiulations, that was the right answer"
+
+
+quizAnswerError : Lang -> String
+quizAnswerError lang =
+    case lang of 
+        Bg ->
+            "Това не е верният отговор"
+
+        De ->
+            "Das ist nicht die richtige Antwort"
+
+        Es ->
+            "Esa no es la respuesta correcta"
+
+        Fa ->
+            "پاسخ درستی نیست"
+
+        Hy ->
+            "Դա ճիշտ պատասխան չէ"
+
+        Nl ->
+            "Dat is niet het juiste antwoord"
+
+        Ru ->
+            "Это не правильный ответ"
+
+        Tw ->
+            "那不是正确的答案"
+
+        Ua ->
+            "Це не правильна відповідь"
+
+        Zh ->
+            "那不是正确的答案"
+
+        _ ->
+            "That's not the right answer"
+
+
+quizAnswerResolved : Lang -> String
+quizAnswerResolved lang =
+    case lang of 
+        Bg ->
+            "Решен отговор"
+
+        De ->
+            "Aufgelöste Antwort"
+
+        Es ->
+            "Respuesta resuelta"
+
+        Fa ->
+            "پاسخ حل شده"
+
+        Hy ->
+            "Լուծված պատասխան"
+
+        Nl ->
+            "Opgelost antwoord"
+
+        Ru ->
+            "Решенный ответ"
+
+        Tw ->
+            "解决的答案"
+
+        Ua ->
+            "Вирішена відповідь"
+
+        Zh ->
+            "解决的答案"
+
+        _ ->
+            "Resolved answer"
 
 
 surveySubmit : Lang -> String
