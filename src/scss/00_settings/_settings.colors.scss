@@ -5,6 +5,7 @@ $global-colors: (
   "blue": "15,147,209",
   "grey-dark": "50,50,50",
   "grey-light": "240,240,240",
+  "grey-lighter": "249,249,249",
   "grey": "174,174,174",
   "red-darker": "104,0,0",
   "red-dark": "185,75,60",
@@ -19,72 +20,3 @@ $global-colors: (
   "yellow-dark": "189,125,32",
   "yellow": "227,151,38",
 );
-
-/* *************************
- *   MAIN COLORS
- * *************************
-  - colors for the main themes
-  - each theme has some colors
-     - color-1: main color for controls (text, borders,...) and / or backgrounds in light themes and colored
-     - color-2: same as color-1 but for dark mode
-     - color-label: for highlighting text in menus
-     - color-menu-bg: for colored menus
- */
-
-/* color-1 #399193 RGB(57, 145, 147) */
-$color-turquoise-1: rgb(57, 145, 147);
-/* color-2 #2a6d6f RGB(42, 109, 111) */
-$color-turquoise-2: rgb(42, 109, 111);
-/* color-label #0f3645*/
-$color-turquoise-label: rgb(15, 54, 69);
-/* color-menu-bg */
-$color-turquoise-menu-bg: $color-turquoise-1;
-
-/* ui-red-1 #dd5746 RGB(221, 87, 70) */
-$color-red-1: rgb(221, 87, 70);
-/* ui-red-2 #b94b3c RGB(185, 75, 60) */
-$color-red-2: rgb(185, 75, 60);
-/* color-label #680000*/
-$color-red-label: rgb(104, 0, 0);
-/* color-menu-bg */
-$color-red-menu-bg: $color-red-1;
-
-/* ui-yellow-1 #e39726 RGB(189, 125, 32) */
-$color-yellow-1: rgb(189, 125, 32);
-/* ui-yellow-2 #bd7d20 RGB(227, 151, 38) */
-$color-yellow-2: rgb(227, 151, 38);
-/* color-label #7c3c00*/
-$color-yellow-label: rgb(124, 60, 0);
-/* color-menu-bg */
-$color-yellow-menu-bg: $color-yellow-1;
-
-/* ui-blue-1 #0f93d1 RGB(15, 147, 209)*/
-$color-blue-1: rgb(15, 147, 209);
-/* ui-blue-2 #0c78ab RGB(12, 120, 171) */
-$color-blue-2: rgb(12, 120, 171);
-/* color-label #004871*/
-$color-blue-label: rgb(0, 72, 113);
-/* color-menu-bg */
-$color-turquoise-menu-bg: $color-blue-1;
-
-/* *************************
- *   OTHER COLORS
- * ************************* */
-// menu-color
-$color-menu: #fff;
-// greys
-$color-lightgrey: #f0f0f0;
-$color-grey: #aeaeae;
-$color-anthracite: #4b4b4b;
-$color-darkmode: #323232;
-// transparent
-$color-transparent-turquoise-5: rgba(57, 146, 148, 0.05);
-$color-transparent-lightgrey-30: rgba(235, 235, 235, 0.3);
-// warning
-$color-yellow: #f4c343;
-$color-warning: $color-yellow;
-// success
-$color-green: #8cc96f;
-$color-success: $color-green;
-
-$color-text: $color-anthracite;

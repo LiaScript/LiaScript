@@ -34,12 +34,20 @@
         .is-alternating {
           .lia-table__row:nth-child(2n) {
             td:first-child:before {
-              background-color: rgba(var(--lia-grey-light), 0.3);
+              background-color: rgb(var(--lia-grey-lighter));
+
+              @at-root html.lia-variant-dark & {
+                background-color: rgba(var(--lia-grey), 0.3);
+              }
             }
 
             &:hover {
               td:first-child:before {
-                background-color: rgba(var(--color-highlight), 0.05);
+                background-color: rgba(var(--color-highlight), 0.1);
+
+                @at-root html.lia-variant-dark & {
+                  background-color: rgba(var(--color-highlight), 0.15);
+                }
               }
             }
           }
@@ -56,12 +64,20 @@
         .is-alternating {
           .lia-table__row:nth-child(2n) {
             td:last-child:before {
-              background-color: rgba(var(--lia-grey-light), 0.3);
+              background-color: rgb(var(--lia-grey-lighter));
+
+              @at-root html.lia-variant-dark & {
+                background-color: rgba(var(--lia-grey), 0.3);
+              }
             }
 
             &:hover {
               td:last-child:before {
-                background-color: rgba(var(--color-highlight), 0.05);
+                background-color: rgba(var(--color-highlight), 0.1);
+
+                @at-root html.lia-variant-dark & {
+                  background-color: rgba(var(--color-highlight), 0.15);
+                }
               }
             }
           }
@@ -165,6 +181,8 @@
   }
 
   &__row {
+    background-color: rgb(var(--color-background));
+
     &:first-of-type > td {
       border-top: 0;
     }
@@ -241,15 +259,22 @@
 
   &.is-alternating {
     .lia-table__row:nth-child(2n) {
-      background-color: rgba(var(--lia-grey-light), 0.3);
+      td {
+        background-color: rgba(var(--lia-grey-lighter));
 
-      td:last-child:before {
-        background-color: rgba(var(--lia-grey-light), 0.3);
+        @at-root html.lia-variant-dark & {
+          background-color: rgba(var(--lia-grey), 0.3);
+        }
       }
 
       &:hover {
+        td,
         td:last-child:before {
           background-color: rgba(var(--color-highlight), 0.05);
+
+          @at-root html.lia-variant-dark & {
+            background-color: rgba(var(--color-highlight), 0.1);
+          }
         }
       }
     }

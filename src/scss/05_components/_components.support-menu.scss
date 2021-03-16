@@ -113,6 +113,10 @@
 
     > button {
       font-size: 2rem;
+
+      &.icon:before {
+        vertical-align: middle;
+      }
     }
 
     @include breakpoint("sm") {
@@ -134,7 +138,7 @@
 
   &__submenu {
     align-items: flex-start;
-    background-color: rgb(var(--color-background));
+    background-color: rgb(var(--lia-white));
     box-shadow: none;
     color: rgb(var(--color-text));
     display: flex;
@@ -146,6 +150,10 @@
     transition: $global-transition;
     top: 0;
     width: 100%;
+
+    @at-root html.lia-variant-dark & {
+      background-color: rgb(var(--lia-anthracite));
+    }
 
     .lia-link {
       text-decoration: none;
@@ -174,7 +182,7 @@
       max-width: 30rem;
       padding: 1.4rem;
       position: absolute;
-      top: 6rem;
+      top: 5.9rem;
       width: max-content;
       z-index: 10;
 
