@@ -28,7 +28,7 @@ view config solution quiz state =
 
                 ( Solution.Open, trials ) ->
                     if trials > 0 then
-                        icon "icon-close text-success"
+                        icon "icon-close text-error"
                             [ Attr.style "position" "absolute"
                             , Attr.style "top" "1rem"
                             , Attr.style "right" "1rem"
