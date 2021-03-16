@@ -12,6 +12,7 @@ import Lia.Markdown.Code.Terminal as Terminal
 import Lia.Markdown.Code.Types exposing (Code(..), File, Snippet, Vector)
 import Lia.Markdown.Code.Update exposing (Msg(..))
 import Lia.Markdown.HTML.Attributes as Params exposing (Parameters)
+import Lia.Utils exposing (btnIcon)
 import Translations exposing (Lang, codeExecute, codeFirst, codeLast, codeMaximize, codeMinimize, codeNext, codePrev, codeRunning)
 
 
@@ -20,7 +21,7 @@ view lang theme model code =
     case code of
         Highlight lang_title_code ->
             lang_title_code
-                |> List.map (view_code theme)
+                |> List.map (view_code lang theme)
                 |> Html.div [ Attr.class "lia-code lia-code--block" ]
 
         Evaluate id_1 ->
@@ -82,8 +83,8 @@ list_get idx list =
                 list_get (idx - 1) xs
 
 
-view_code : String -> Snippet -> Html Msg
-view_code theme snippet =
+view_code : Lang -> String -> Snippet -> Html Msg
+view_code lang theme snippet =
     Html.div [ Attr.class "lia-accordion" ]
         [ Html.div [ Attr.class "lia-accordion__item" ]
             [ if snippet.name == "" then
@@ -95,20 +96,14 @@ view_code theme snippet =
                         [ Attr.class "lia-accordion__headline" ]
                         [ Html.text snippet.name
                         ]
-                    , Html.button
-                        [ Attr.class "lia-accordion__toggle lia-btn lia-btn--transparent"
-                        , Attr.class <|
-                            "icon"
-                                ++ (if True then
-                                        " icon-minus"
-
-                                    else
-                                        " icon-plus"
-                                   )
-
-                        --, onClick <| FlipView id_1 id_2
+                    , btnIcon
+                        { title = codeMaximize lang
+                        , icon = "icon-minus"
+                        , msg = Nothing
+                        , tabbable = False
+                        }
+                        [ Attr.class "lia-accordion__toggle"
                         ]
-                        []
                     ]
             , Html.div [ Attr.class "lia-accordion__content" ]
                 [ Html.div [ Attr.class "lia-code__input" ] [ highlight theme snippet.attr snippet.lang snippet.code ]
@@ -127,19 +122,23 @@ view_eval lang theme running errors id_1 id_2 file attr =
             [ Html.div (Attr.class "lia-accordion__item" :: Params.toAttribute attr)
                 [ Html.div [ Attr.class "lia-accordion__header" ]
                     [ Html.h3 [ Attr.class "lia-accordion__headline" ] [ Html.text file.name ]
-                    , Html.button
-                        [ Attr.class "lia-accordion__toggle lia-btn lia-btn--transparent"
-                        , Attr.class <|
-                            "icon"
-                                ++ (if file.visible then
-                                        " icon-minus"
+                    , btnIcon
+                        { title =
+                            if file.visible then
+                                codeMaximize lang
 
-                                    else
-                                        " icon-plus"
-                                   )
-                        , onClick <| FlipView id_1 id_2
-                        ]
-                        []
+                            else
+                                codeMaximize lang
+                        , msg = Just <| FlipView id_1 id_2
+                        , icon =
+                            if file.visible then
+                                "icon-minus"
+
+                            else
+                                "icon-plus"
+                        , tabbable = True
+                        }
+                        [ Attr.class "lia-accordion__toggle" ]
                     ]
                 , Html.div
                     [ Attr.classList
@@ -149,23 +148,23 @@ view_eval lang theme running errors id_1 id_2 file attr =
                     ]
                     [ Html.div [ Attr.class "lia-code__input" ]
                         [ if file.visible then
-                            Html.button
-                                [ Attr.class "lia-btn lia-btn--transparent lia-code__min-max"
-                                , Attr.class <|
+                            btnIcon
+                                { title =
                                     if file.fullscreen then
-                                        "icon icon-chevron-up"
-
-                                    else
-                                        "icon icon-chevron-down"
-                                , onClick <| FlipFullscreen id_1 id_2
-                                , Attr.title <|
-                                    if file.fullscreen then
-                                        codeMinimize lang
+                                        codeMaximize lang
 
                                     else
                                         codeMaximize lang
-                                ]
-                                []
+                                , msg = Just <| FlipFullscreen id_1 id_2
+                                , icon =
+                                    if file.fullscreen then
+                                        "icon-chevron-up"
+
+                                    else
+                                        "icon-chevron-down"
+                                , tabbable = True
+                                }
+                                [ Attr.class "lia-code__min-max" ]
 
                           else
                             Html.text ""
@@ -375,62 +374,84 @@ view_control lang idx version_active version_count running terminal =
         [ Html.div [ Attr.class "lia-code-control__action" ]
             [ case ( running, terminal ) of
                 ( True, False ) ->
-                    Html.button
-                        [ Attr.class "lia-btn lia-btn--transparent is-disabled"
-                        , Attr.title (codeRunning lang)
-                        , Attr.disabled True
-                        ]
-                        [ Html.i [ Attr.class "lia-btn__icon icon icon-refresh rotating" ] []
-                        ]
+                    btnIcon
+                        { title = codeRunning lang
+                        , msg = Nothing
+                        , tabbable = False
+                        , icon = "icon-refresh rotating"
+                        }
+                        [ Attr.class "is-disabled" ]
 
                 ( True, True ) ->
-                    Html.button
-                        [ Attr.class "lia-btn lia-btn--transparent icon icon-stop-circle"
-                        , Attr.title (codeRunning lang)
-                        , onClick (Stop idx)
-                        ]
+                    btnIcon
+                        { title = codeRunning lang
+                        , msg = Just <| Stop idx
+                        , tabbable = True
+                        , icon = "icon-stop-circle"
+                        }
                         []
 
                 _ ->
-                    Html.button
-                        [ Attr.class "lia-btn lia-btn--transparent icon icon-compile-circle"
-                        , onClick (Eval idx)
-                        , Attr.title (codeExecute lang)
-                        ]
+                    btnIcon
+                        { title = codeExecute lang
+                        , msg = Just <| Eval idx
+                        , tabbable = True
+                        , icon = "icon-compile-circle"
+                        }
                         []
             ]
         , Html.div [ Attr.class "lia-code-control__version" ]
-            [ Html.button
-                [ First idx |> onClick
-                , Attr.class "lia-btn lia-btn--transparent icon icon-end-left"
-                , Attr.title (codeFirst lang)
-                , Attr.disabled forward
-                ]
+            [ btnIcon
+                { title = codeFirst lang
+                , tabbable = not forward
+                , msg =
+                    if not forward then
+                        Just <| First idx
+
+                    else
+                        Nothing
+                , icon = "icon-end-left"
+                }
                 []
-            , Html.button
-                [ (version_active - 1) |> Load idx |> onClick
-                , Attr.class "lia-btn lia-btn--transparent icon icon-chevron-left"
-                , Attr.title (codePrev lang)
-                , Attr.disabled forward
-                ]
+            , btnIcon
+                { title = codePrev lang
+                , tabbable = not forward
+                , msg =
+                    if not forward then
+                        Just <| Load idx (version_active - 1)
+
+                    else
+                        Nothing
+                , icon = "icon-chevron-left"
+                }
                 []
             , Html.span
                 [ Attr.class "lia-label"
                 ]
                 [ Html.text (String.fromInt version_active) ]
-            , Html.button
-                [ (version_active + 1) |> Load idx |> onClick
-                , Attr.class "lia-btn lia-btn--transparent icon icon-chevron-right"
-                , Attr.title (codeNext lang)
-                , Attr.disabled backward
-                ]
+            , btnIcon
+                { title = codeNext lang
+                , tabbable = not backward
+                , msg =
+                    if not backward then
+                        Just <| Load idx (version_active + 1)
+
+                    else
+                        Nothing
+                , icon = "icon-chevron-right"
+                }
                 []
-            , Html.button
-                [ Last idx |> onClick
-                , Attr.class "lia-btn lia-btn--transparent icon icon-end-right"
-                , Attr.title (codeLast lang)
-                , Attr.disabled backward
-                ]
+            , btnIcon
+                { title = codeLast lang
+                , tabbable = not backward
+                , msg =
+                    if not backward then
+                        Just <| Last idx
+
+                    else
+                        Nothing
+                , icon = "icon-end-right"
+                }
                 []
             ]
         ]

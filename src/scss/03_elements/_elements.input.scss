@@ -73,6 +73,23 @@ input[type="search"]::-webkit-search-results-decoration {
   transition: all 125ms ease-in-out;
   vertical-align: middle;
   width: 2.4rem;
+
+  &.is-failure {
+    border-color: rgb(var(--lia-red));
+  }
+
+  &.is-warning {
+    border-color: rgb(var(--lia-yellow));
+  }
+
+  &.is-success,
+  &.is-success[disabled]:checked {
+    border-color: rgb(var(--lia-success));
+  }
+
+  &.is-disabled {
+    border-color: rgb(var(--lia-grey));
+  }
 }
 
 /* --------------------------------------------------
@@ -128,6 +145,14 @@ input[type="search"]::-webkit-search-results-decoration {
       border-color: rgb(var(--lia-grey));
     }
   }
+
+  &.is-success[disabled]:checked {
+    background-color: rgb(var(--lia-success));
+  }
+
+  &.is-failure:checked {
+    background-color: rgb(var(--lia-red));
+  }
 }
 
 /* --------------------------------------------------
@@ -171,6 +196,10 @@ input[type="search"]::-webkit-search-results-decoration {
     &:checked {
       border-color: rgb(var(--lia-grey));
     }
+  }
+
+  &.is-failure:checked {
+    border-color: rgb(var(--lia-red));
   }
 }
 
