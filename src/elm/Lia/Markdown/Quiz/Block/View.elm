@@ -1,5 +1,6 @@
 module Lia.Markdown.Quiz.Block.View exposing (view)
 
+import Accessibility.Widget as A11y_Widget
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
@@ -11,42 +12,64 @@ import Lia.Markdown.Quiz.Block.Update exposing (Msg(..))
 import Lia.Utils exposing (blockKeydown)
 
 
-view : Config sub -> Bool -> Quiz -> State -> Html (Msg sub)
-view config solved quiz state =
+view : Config sub -> ( Maybe Bool, String ) -> Quiz -> State -> List (Html (Msg sub))
+view config ( solved, colorClass ) quiz state =
     case state of
         Text str ->
-            text solved str
+            [ text solved colorClass str
+            , case solved of
+                Nothing ->
+                    Html.text ""
+
+                Just success ->
+                    Html.i
+                        [ Attr.class "icon"
+                        , Attr.class <|
+                            if success then
+                                "icon-check text-success"
+
+                            else
+                                "icon-check text-success"
+                        , Attr.style "position" "absolute"
+                        , Attr.style "top" "1rem"
+                        , Attr.style "right" "1rem"
+                        , A11y_Widget.hidden True
+                        ]
+                        []
+            ]
 
         Select open value ->
-            value
+            [ value
                 |> List.head
                 |> Maybe.withDefault -1
-                |> select config solved open quiz.options
+                |> select config (solved /= Nothing) colorClass open quiz.options
+            ]
 
 
-text : Bool -> String -> Html (Msg sub)
-text solved state =
+text : Maybe Bool -> String -> String -> Html (Msg sub)
+text solved colorClass state =
     Html.input
         [ Attr.type_ "input"
         , Attr.class "lia-input lia-quiz__input"
         , Attr.class <|
-            if solved then
+            if solved /= Nothing then
                 "lia-input--disabled"
 
             else
                 ""
+        , Attr.class colorClass
         , Attr.value state
-        , Attr.disabled solved
+        , Attr.disabled (solved /= Nothing)
         , onInput Input
         , blockKeydown (Input state)
         ]
         []
 
 
-select : Config sub -> Bool -> Bool -> List Inlines -> Int -> Html (Msg sub)
-select config solved open options i =
+select : Config sub -> Bool -> String -> Bool -> List Inlines -> Int -> Html (Msg sub)
+select config solved colorClass open options i =
     Html.span
-        []
+        [ Attr.class colorClass ]
         [ Html.span
             [ Attr.class "lia-dropdown"
             , if solved then

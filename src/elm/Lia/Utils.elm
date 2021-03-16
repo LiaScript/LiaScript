@@ -1,15 +1,17 @@
 module Lia.Utils exposing
     ( blockKeydown
+    , btn
     , btnIcon
     , get
+    , icon
     , onEnter
     , toEscapeString
     , toJSstring
     )
 
-import Accessibility.Key as A11y_Key
+import Accessibility.Key as A11y_Key exposing (tabbable)
 import Accessibility.Widget as A11y_Widget
-import Html exposing (Html)
+import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Html.Events as Event
 import Json.Decode as JD
@@ -93,22 +95,50 @@ onEnter msg =
 
 {-| Render a transparent button with an icon that complies with a11y standards.
 -}
-btnIcon : List (Html.Attribute msg) -> String -> String -> Bool -> msg -> Html msg
-btnIcon attributes icon title tabbable msg =
-    Html.button
-        (List.append
-            [ Attr.class "lia-btn lia-btn--transparent"
-            , Event.onClick msg
-            , A11y_Key.tabbable tabbable
-            , A11y_Widget.hidden (not tabbable)
-            , Attr.title title
-            ]
-            attributes
-        )
-        [ Html.i
-            [ A11y_Widget.hidden True
-            , Attr.class "lia-btn__icon icon"
-            , Attr.class icon
-            ]
-            []
+btnIcon :
+    { title : String
+    , tabbable : Bool
+    , msg : Maybe msg
+    , icon : String
+    }
+    -> List (Html.Attribute msg)
+    -> Html msg
+btnIcon config attr =
+    btn config attr [ icon config.icon ]
+
+
+{-| Render a button that must at least have a title, an onClick event and be tabbable.
+If there is no message defined, then the key is disabled.
+-}
+btn :
+    { config
+        | title : String
+        , tabbable : Bool
+        , msg : Maybe msg
+    }
+    -> List (Attribute msg)
+    -> List (Html msg)
+    -> Html msg
+btn { title, tabbable, msg } =
+    List.append
+        [ Attr.class "lia-btn lia-btn--transparent"
+        , msg
+            |> Maybe.map Event.onClick
+            |> Maybe.withDefault (Attr.disabled True)
+        , A11y_Key.tabbable tabbable
+        , A11y_Widget.hidden (not tabbable)
+        , Attr.title title
         ]
+        >> Html.button
+
+
+{-| To be used for button icons ...
+-}
+icon : String -> Html msg
+icon class =
+    Html.i
+        [ A11y_Widget.hidden True
+        , Attr.class "lia-btn__icon icon"
+        , Attr.class class
+        ]
+        []

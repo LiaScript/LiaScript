@@ -3,9 +3,13 @@
    or meaning. Should be either refactored or trashed.
    -------------------------------------------------- */
 
-   .lia-svg {
-    $horiz: map-get($global-spacing, spacing-normal);
-    padding-left: $horiz;
-    padding-right: $horiz;
-    overflow: auto;
-  }
+.lia-svg {
+  $horiz: map-get($global-spacing, spacing-normal);
+  padding-left: $horiz;
+  padding-right: $horiz;
+  overflow: auto;
+}
+
+.lia-icon {
+  @include material-icon("", inherit);
+}

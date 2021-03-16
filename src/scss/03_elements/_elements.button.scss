@@ -4,7 +4,7 @@ $btn-height: 3.6rem;
 .lia-btn {
   background-color: rgb(var(--color-highlight));
   border: none;
-  color: rgb(var(--lia-white));
+  color: rgb(var(--color-text));
   display: inline-block;
   line-height: $global-line-height;
   padding: 0.5rem 0.6rem 0.5rem 0.6rem;
@@ -70,7 +70,7 @@ $btn-height: 3.6rem;
   }
 
   &--transparent {
-    background-color: transparent;
+    background-color: transparent !important;
     border: none;
     color: currentColor;
   }

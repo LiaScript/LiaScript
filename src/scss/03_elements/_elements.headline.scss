@@ -41,6 +41,10 @@ h1 {
 
   @include breakpoint("md") {
     font-size: $h1-desktop-presentation;
+
+    @at-root .lia-mode--textbook & {
+      font-size: $h1-desktop-textbook;
+    }
   }
 }
 

@@ -8,33 +8,41 @@
 
 // additional color definitions for default theme
 :root {
-  --color-text: var(--lia-anthracite);
-  --color-highlight: var(--lia-turquoise);
+  --color-background: var(--lia-white);
+  --color-border: var(--lia-grey-light);
   --color-highlight-dark: var(--lia-turquoise-dark);
   --color-highlight-menu: var(--lia-turquoise);
-  --color-background: var(--lia-white);
+  --color-highlight: var(--lia-turquoise);
+  --color-text: var(--lia-anthracite);
 
   &.lia-theme-turquoise {
-    --color-highlight: var(--lia-turquoise);
     --color-highlight-dark: var(--lia-turquoise-dark);
     --color-highlight-menu: var(--lia-turquoise-darker);
+    --color-highlight: var(--lia-turquoise);
   }
 
   &.lia-theme-red {
-    --color-highlight: var(--lia-red);
     --color-highlight-dark: var(--lia-red-dark);
     --color-highlight-menu: var(--lia-red-darker);
+    --color-highlight: var(--lia-red);
   }
 
   &.lia-theme-blue {
-    --color-highlight: var(--lia-blue);
     --color-highlight-dark: var(--lia-blue-dark);
     --color-highlight-menu: var(--lia-blue-darker);
+    --color-highlight: var(--lia-blue);
   }
 
   &.lia-theme-yellow {
-    --color-highlight: var(--lia-yellow);
     --color-highlight-dark: var(--lia-yellow-dark);
     --color-highlight-menu: var(--lia-yellow-darker);
+    --color-highlight: var(--lia-yellow);
+  }
+
+  // dark theme
+  &.lia-variant-dark {
+    --color-background: var(--lia-grey-dark);
+    --color-border: var(--lia-anthracite);
+    --color-text: var(--lia-white);
   }
 }

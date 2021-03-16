@@ -18,6 +18,7 @@ $slide-margin-left-textbook: 19rem !default;
    Canvas
    -------------------------------------------------- */
 .lia-canvas {
+  background-color: rgb(var(--color-background));
   display: flex;
   flex-direction: column;
   height: 100vh;

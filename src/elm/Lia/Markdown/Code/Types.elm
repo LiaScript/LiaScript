@@ -45,7 +45,6 @@ type alias Project =
     , log : Log
     , running : Bool
     , terminal : Maybe Terminal
-    , compact_view : Bool
     , attr : List Parameters
     }
 
@@ -109,7 +108,6 @@ initProject array comment output =
     , running = False
     , terminal = Nothing
     , repository = Dict.fromList repository
-    , compact_view = False
     }
 
 
