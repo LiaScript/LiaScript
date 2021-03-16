@@ -87,7 +87,7 @@ viewState config elem quiz =
         solved =
             case elem.solved of
                 Solved ->
-                    ( Just True, "is-green" )
+                    ( Just True, "is-success" )
 
                 ReSolved ->
                     ( Just False, "" )
@@ -98,7 +98,7 @@ viewState config elem quiz =
                         ""
 
                       else
-                        "is-red"
+                        "is-failure"
                     )
     in
     case ( elem.state, quiz.quiz ) of
