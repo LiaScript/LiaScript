@@ -31,11 +31,31 @@ fieldset {
   border-radius: $global-radius;
   border: 1px solid transparent;
   box-shadow: none;
+  color: currentColor;
   display: inline-flex;
   justify-content: flex-start;
   padding: 0.8rem;
   position: relative;
   vertical-align: top;
+}
+
+button,
+input,
+select,
+textarea {
+  &[disabled],
+  &--disabled {
+    cursor: not-allowed;
+  }
+}
+
+button.lia-btn,
+input.lia-input,
+input.lia-radio,
+input.lia-checkbox,
+select.lia-select,
+textarea.lia-textarea {
+  background-color: transparent;
 
   &[disabled],
   &--disabled {

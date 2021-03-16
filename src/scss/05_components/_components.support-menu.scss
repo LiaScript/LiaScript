@@ -1,5 +1,5 @@
 .lia-support-menu {
-  background-color: white;
+  background-color: rgb(var(--color-background));
   border-left: $global-border;
   display: flex;
   flex-direction: column;
@@ -87,6 +87,7 @@
     }
 
     @include breakpoint("md") {
+      align-items: center;
       display: flex;
       flex-direction: row;
       justify-content: flex-end;
@@ -110,6 +111,14 @@
       margin-bottom: 1.8rem;
     }
 
+    > button {
+      font-size: 2rem;
+
+      &.icon:before {
+        vertical-align: middle;
+      }
+    }
+
     @include breakpoint("sm") {
       padding: 1.8rem 0.75rem;
     }
@@ -129,18 +138,22 @@
 
   &__submenu {
     align-items: flex-start;
-    background-color: white;
-    border-radius: $global-radius;
+    background-color: rgb(var(--lia-white));
     box-shadow: none;
-    color: $color-text;
+    color: rgb(var(--color-text));
     display: flex;
     flex-direction: column;
     max-width: 100%;
     padding: 0;
     position: relative;
     right: 0;
+    transition: $global-transition;
     top: 0;
     width: 100%;
+
+    @at-root html.lia-variant-dark & {
+      background-color: rgb(var(--lia-anthracite));
+    }
 
     .lia-link {
       text-decoration: none;
@@ -158,13 +171,18 @@
       height: 15rem;
     }
 
+    i {
+      font-size: 2rem;
+    }
+
     @include breakpoint("md") {
+      border-radius: $global-radius;
       box-shadow: 0 0 1rem rgba(0, 0, 0, 0.1);
       display: none;
       max-width: 30rem;
       padding: 1.4rem;
       position: absolute;
-      top: 5rem;
+      top: 5.9rem;
       width: max-content;
       z-index: 10;
 

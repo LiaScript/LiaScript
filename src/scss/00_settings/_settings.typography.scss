@@ -3,10 +3,11 @@ html {
 }
 
 body {
+  background-color: rgb(var(--color-background));
+  color: rgb(var(--color-text));
   font-size: $global-font-size;
   font-weight: 400;
   line-height: $global-line-height;
-  color: rgb(var(--color-text));
 }
 
 body,

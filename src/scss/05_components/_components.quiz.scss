@@ -1,7 +1,10 @@
 .lia-quiz {
+  /* quiz elements */
+
   &__answers {
     display: flex;
     flex-direction: column;
+    position: relative;
 
     > *:not(:last-child) {
       margin-bottom: 1rem;
@@ -49,24 +52,17 @@
     align-items: center;
   }
 
+  /* quiz components */
+
   &-text {
     display: grid;
     grid-gap: 2rem;
     grid-template-columns: 1fr;
-
-    @include breakpoint("md") {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  &-single-choice {
-    display: flex;
   }
 
   &-single-choice,
-  &-multiple-choice {
-    flex-direction: column;
-
+  &-multiple-choice,
+  &-select {
     > *:not(:last-child) {
       margin-bottom: 2rem;
     }
