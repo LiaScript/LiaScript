@@ -104,7 +104,11 @@ btnIcon :
     -> List (Html.Attribute msg)
     -> Html msg
 btnIcon config attr =
-    btn config attr [ icon config.icon [ Attr.class "lia-btn__icon" ] ]
+    btn config
+        attr
+        [ icon config.icon
+            [ Attr.class " lia-btn--transparent lia-btn__icon" ]
+        ]
 
 
 {-| Render a button that must at least have a title, an onClick event and be tabbable.
@@ -121,7 +125,7 @@ btn :
     -> Html msg
 btn { title, tabbable, msg } =
     List.append
-        [ Attr.class "lia-btn lia-btn--transparent"
+        [ Attr.class "lia-btn"
         , msg
             |> Maybe.map Event.onClick
             |> Maybe.withDefault (Attr.disabled True)

@@ -39,6 +39,7 @@ import Lia.Markdown.Quiz.Types
         )
 import Lia.Markdown.Quiz.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Vector.View as Vector
+import Lia.Utils exposing (btn, btnIcon)
 import Translations exposing (quizCheck, quizSolution)
 
 
@@ -115,7 +116,8 @@ viewQuiz config state quiz body =
     , Html.div [ Attr.class "lia-quiz__control" ]
         [ viewMainButton config state.trial state.solved (Check quiz.id quiz.quiz quiz.javascript)
         , viewSolutionButton config state.solved (ShowSolution quiz.id quiz.quiz)
-        , viewHintButton quiz.id (Solution.Open == state.solved && state.hint < List.length quiz.hints)
+        , Translations.quizHint config.lang
+            |> viewHintButton quiz.id (quiz.hints /= []) (Solution.Open == state.solved && state.hint < List.length quiz.hints)
         ]
     , viewFeedback state
     , viewHints config state.hint quiz.hints
@@ -160,17 +162,18 @@ yet.
 -}
 viewSolutionButton : Config sub -> Solution -> Msg sub -> Html (Msg sub)
 viewSolutionButton config solution msg =
-    if solution == Solution.Open then
-        Html.button
-            [ Attr.class "lia-btn lia-btn--transparent lia-quiz__resolve"
-            , onClick msg
-            , quizSolution config.lang
-                |> Attr.title
-            ]
-            [ Html.i [ Attr.class "lia-btn__icon icon icon-resolve" ] [] ]
+    btnIcon
+        { title = quizSolution config.lang
+        , msg =
+            if solution == Solution.Open then
+                Just msg
 
-    else
-        Html.text ""
+            else
+                Nothing
+        , tabbable = True
+        , icon = "icon-resolve"
+        }
+        [ Attr.class "lia-quiz__resolve" ]
 
 
 {-| **private:** Show the main check-button to compare the current state of the
@@ -178,11 +181,17 @@ quiz with the solution state. The number of trials is automatically added.
 -}
 viewMainButton : Config sub -> Int -> Solution -> Msg sub -> Html (Msg sub)
 viewMainButton config trials solution msg =
-    Html.button
-        [ Attr.class "lia-btn lia-btn--outline lia-quiz__check"
-        , onClick msg
-        , Attr.disabled (solution /= Solution.Open)
-        ]
+    btn
+        { title = "check your solution"
+        , msg =
+            if solution == Solution.Open then
+                Just msg
+
+            else
+                Nothing
+        , tabbable = solution == Solution.Open
+        }
+        [ Attr.class "lia-btn--outline lia-quiz__check" ]
         [ Html.text (quizCheck config.lang)
         , Html.text <|
             if trials > 0 then
@@ -205,7 +214,8 @@ viewHints config counter hints =
 
     else
         hints
-            |> viewHintsWithCounter config counter
+            |> List.take counter
+            |> List.map (viewer config >> Html.li [])
             |> Html.ul [ Attr.class "lia-list--unordered lia-quiz__hints" ]
             |> Html.map Script
 
@@ -213,34 +223,24 @@ viewHints config counter hints =
 {-| **private:** Show a generic hint button, every time it is clicked it will
 reveal another hint from the list.
 -}
-viewHintButton : Int -> Bool -> Html (Msg sub)
-viewHintButton id show =
+viewHintButton : Int -> Bool -> Bool -> String -> Html (Msg sub)
+viewHintButton id show active title =
     if show then
-        Html.button
-            [ Attr.class "lia-btn lia-btn--transparent lia-quiz__hint"
-            , onClick (ShowHint id)
-            , Attr.title "show hint"
-            ]
-            [ Html.i [ Attr.class "lia-btn__icon icon icon-hint" ] [] ]
+        btnIcon
+            { title = title
+            , msg =
+                if active then
+                    Just (ShowHint id)
+
+                else
+                    Nothing
+            , icon = "icon-hint"
+            , tabbable = True
+            }
+            [ Attr.class "lia-quiz__hint" ]
 
     else
         Html.text ""
-
-
-{-| **private: ** Show all hints within the list based on the passed counter
-value.
--}
-viewHintsWithCounter config counter hints =
-    case ( hints, counter ) of
-        ( [], _ ) ->
-            []
-
-        ( _, 0 ) ->
-            []
-
-        ( x :: xs, _ ) ->
-            Html.li [] (viewer config x)
-                :: viewHintsWithCounter config (counter - 1) xs
 
 
 {-| Check the state of quiz:
