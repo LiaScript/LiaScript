@@ -2176,6 +2176,72 @@ surveyText lang =
             "Enter some text..."
 
 
+sortAsc : Lang -> String
+sortAsc lang =
+    case lang of 
+        De ->
+            "aufsteigend sortieren"
+
+        Es ->
+            "orden ascendente"
+
+        Nl ->
+            "oplopend sorteren"
+
+        Ru ->
+            "сортировать по возрастанию"
+
+        Ua ->
+            "сортування за зростанням"
+
+        _ ->
+            "sort ascending"
+
+
+sortDesc : Lang -> String
+sortDesc lang =
+    case lang of 
+        De ->
+            "absteigend sortieren"
+
+        Es ->
+            "orden descendiente"
+
+        Nl ->
+            "sorteer aflopend"
+
+        Ru ->
+            "сортировка по убыванию"
+
+        Ua ->
+            "сортувати за спаданням"
+
+        _ ->
+            "sort descending"
+
+
+sortNot : Lang -> String
+sortNot lang =
+    case lang of 
+        De ->
+            "nicht sortiert"
+
+        Es ->
+            "no ordenado"
+
+        Nl ->
+            "niet gesorteerd"
+
+        Ru ->
+            "не отсортировано"
+
+        Ua ->
+            "не сортується"
+
+        _ ->
+            "not sorted"
+
+
 chartPie : Lang -> String
 chartPie lang =
     case lang of 
