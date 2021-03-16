@@ -2,7 +2,6 @@ module Lia.Markdown.Quiz.Types exposing
     ( Element
     , Hints
     , Quiz
-    , Solution(..)
     , State(..)
     , Type(..)
     , Vector
@@ -18,6 +17,7 @@ import Array exposing (Array)
 import Lia.Markdown.Inline.Types exposing (MultInlines)
 import Lia.Markdown.Quiz.Block.Types as Block
 import Lia.Markdown.Quiz.Matrix.Types as Matrix
+import Lia.Markdown.Quiz.Solution as Solution exposing (Solution)
 import Lia.Markdown.Quiz.Vector.Types as Vector
 
 
@@ -27,12 +27,6 @@ type alias Vector =
 
 type alias Hints =
     MultInlines
-
-
-type Solution
-    = Open
-    | Solved
-    | ReSolved
 
 
 type alias Element =
@@ -126,17 +120,17 @@ comp quiz state =
             _ ->
                 False
     then
-        Solved
+        Solution.Solved
 
     else
-        Open
+        Solution.Open
 
 
 {-| Returns `True` if the quiz is in solved or resolved state.
 -}
 isSolved : Element -> Bool
 isSolved e =
-    e.solved /= Open
+    e.solved /= Solution.Open
 
 
 getClass : State -> String

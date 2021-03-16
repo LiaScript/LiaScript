@@ -25,11 +25,11 @@ import Lia.Markdown.Inline.Types exposing (MultInlines)
 import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Quiz.Block.View as Block
 import Lia.Markdown.Quiz.Matrix.View as Matrix
+import Lia.Markdown.Quiz.Solution as Solution exposing (Solution)
 import Lia.Markdown.Quiz.Types
     exposing
         ( Element
         , Quiz
-        , Solution(..)
         , State(..)
         , Type(..)
         , Vector
@@ -39,7 +39,7 @@ import Lia.Markdown.Quiz.Types
         )
 import Lia.Markdown.Quiz.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Vector.View as Vector
-import Translations exposing (quizCheck, quizChecked, quizResolved, quizSolution)
+import Translations exposing (quizCheck, quizSolution)
 
 
 {-| Main Quiz view function.
@@ -60,22 +60,9 @@ view config quiz vector =
 class : Int -> Vector -> String
 class id vector =
     getState vector id
-        |> Maybe.map (\s -> "lia-quiz-" ++ getClass s.state ++ getSolutionState s.solved)
+        |> Maybe.map (\s -> "lia-quiz-" ++ getClass s.state ++ " " ++ Solution.toString s.solved)
         |> Maybe.withDefault ""
         |> (++) "lia-quiz "
-
-
-getSolutionState : Solution -> String
-getSolutionState s =
-    case s of
-        Solved ->
-            " solved"
-
-        ReSolved ->
-            " resolved"
-
-        _ ->
-            " open"
 
 
 {-| **private:** Simple router function that is used to match the current state
@@ -83,38 +70,26 @@ of a quiz with its type.
 -}
 viewState : Config sub -> Element -> Quiz -> List (Html (Msg sub))
 viewState config elem quiz =
-    let
-        solved =
-            case elem.solved of
-                Solved ->
-                    ( Just True, "is-success" )
-
-                ReSolved ->
-                    ( Just False, "is-disabled" )
-
-                Open ->
-                    ( Nothing
-                    , if elem.trial == 0 then
-                        ""
-
-                      else
-                        "is-failure"
-                    )
-    in
     case ( elem.state, quiz.quiz ) of
         ( Block_State s, Block_Type q ) ->
             s
-                |> Block.view config solved q
+                |> Block.view config ( elem.solved, elem.trial ) q
                 |> List.map (Html.map (Block_Update quiz.id))
 
         ( Vector_State s, Vector_Type q ) ->
             s
-                |> Vector.view config (Tuple.mapFirst ((/=) Nothing) solved) q
+                |> Vector.view config
+                    (elem.solved == Solution.Open)
+                    (Solution.toClass ( elem.solved, elem.trial ))
+                    q
                 |> List.map (Html.map (Vector_Update quiz.id))
 
         ( Matrix_State s, Matrix_Type q ) ->
             [ s
-                |> Matrix.view config (Tuple.mapFirst ((/=) Nothing) solved) q
+                |> Matrix.view config
+                    (elem.solved == Solution.Open)
+                    (Solution.toClass ( elem.solved, elem.trial ))
+                    q
                 |> Html.map (Matrix_Update quiz.id)
             ]
 
@@ -140,7 +115,7 @@ viewQuiz config state quiz body =
     , Html.div [ Attr.class "lia-quiz__control" ]
         [ viewMainButton config state.trial state.solved (Check quiz.id quiz.quiz quiz.javascript)
         , viewSolutionButton config state.solved (ShowSolution quiz.id quiz.quiz)
-        , viewHintButton quiz.id (Open == state.solved && state.hint < List.length quiz.hints)
+        , viewHintButton quiz.id (Solution.Open == state.solved && state.hint < List.length quiz.hints)
         ]
     , viewFeedback state
     , viewHints config state.hint quiz.hints
@@ -150,13 +125,13 @@ viewQuiz config state quiz body =
 viewFeedback : Element -> Html msg
 viewFeedback state =
     case state.solved of
-        Solved ->
+        Solution.Solved ->
             Html.div [ Attr.class "lia-quiz__feedback text-success" ] [ Html.text "Congratiulations this was the right answer" ]
 
-        ReSolved ->
+        Solution.ReSolved ->
             Html.div [ Attr.class "lia-quiz__feedback text-disabled" ] [ Html.text "Resolved Anwser." ]
 
-        Open ->
+        Solution.Open ->
             if state.trial == 0 then
                 Html.text ""
 
@@ -185,7 +160,7 @@ yet.
 -}
 viewSolutionButton : Config sub -> Solution -> Msg sub -> Html (Msg sub)
 viewSolutionButton config solution msg =
-    if solution == Open then
+    if solution == Solution.Open then
         Html.button
             [ Attr.class "lia-btn lia-btn--transparent lia-quiz__resolve"
             , onClick msg
@@ -206,7 +181,7 @@ viewMainButton config trials solution msg =
     Html.button
         [ Attr.class "lia-btn lia-btn--outline lia-quiz__check"
         , onClick msg
-        , Attr.disabled (solution /= Open)
+        , Attr.disabled (solution /= Solution.Open)
         ]
         [ Html.text (quizCheck config.lang)
         , Html.text <|

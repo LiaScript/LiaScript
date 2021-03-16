@@ -13,14 +13,14 @@ import Lia.Markdown.Quiz.Vector.Types as Vector
 import List
 
 
-view : Config sub -> ( Bool, String ) -> Quiz -> State -> Html (Msg sub)
-view config solved quiz state =
+view : Config sub -> Bool -> String -> Quiz -> State -> Html (Msg sub)
+view config solved class quiz state =
     Html.div [ Attr.class "lia-table-responsive has-thead-sticky has-last-col-sticky" ]
         [ Html.table [ Attr.class "lia-table lia-survey-matrix is-alternating" ]
             [ header config quiz.headers
             , state
                 |> Array.toList
-                |> List.indexedMap (tr solved)
+                |> List.indexedMap (tr solved class)
                 |> List.map2 (add_text config) quiz.options
                 |> Html.tbody [ Attr.class "lia-table__body lia-survey-matrix__body" ]
             ]
@@ -40,18 +40,18 @@ th config =
         >> Html.map Script
 
 
-tr : ( Bool, String ) -> Int -> Vector.State -> List (Html (Msg sub))
-tr solved id state =
+tr : Bool -> String -> Int -> Vector.State -> List (Html (Msg sub))
+tr solved class id state =
     case state of
         Vector.SingleChoice list ->
-            list |> List.indexedMap (radio solved id)
+            list |> List.indexedMap (radio solved class id)
 
         Vector.MultipleChoice list ->
-            list |> List.indexedMap (check solved id)
+            list |> List.indexedMap (check solved class id)
 
 
-radio : ( Bool, String ) -> Int -> Int -> Bool -> Html (Msg sub)
-radio ( solved, colorClass ) row_id column_id value =
+radio : Bool -> String -> Int -> Int -> Bool -> Html (Msg sub)
+radio solved colorClass row_id column_id value =
     Html.td [ Attr.class "lia-table__data lia-survey-matrix__data" ]
         [ Html.input
             [ Attr.class "lia-radio"
@@ -68,8 +68,8 @@ radio ( solved, colorClass ) row_id column_id value =
         ]
 
 
-check : ( Bool, String ) -> Int -> Int -> Bool -> Html (Msg sub)
-check ( solved, colorClass ) row_id column_id value =
+check : Bool -> String -> Int -> Int -> Bool -> Html (Msg sub)
+check solved colorClass row_id column_id value =
     Html.td [ Attr.class "lia-table__data lia-survey-matrix__data" ]
         [ Html.input
             [ Attr.class "lia-checkbox"

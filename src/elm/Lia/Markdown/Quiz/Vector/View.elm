@@ -10,14 +10,14 @@ import Lia.Markdown.Quiz.Vector.Types exposing (Quiz, State(..))
 import Lia.Markdown.Quiz.Vector.Update exposing (Msg(..))
 
 
-view : Config sub -> ( Bool, String ) -> Quiz -> State -> List (Html (Msg sub))
-view config ( solved, colorClass ) quiz state =
+view : Config sub -> Bool -> String -> Quiz -> State -> List (Html (Msg sub))
+view config solved class quiz state =
     case ( quiz.solution, state ) of
         ( SingleChoice _, SingleChoice list ) ->
-            table (radio config solved colorClass) quiz.options list
+            table (radio config solved class) quiz.options list
 
         ( MultipleChoice _, MultipleChoice list ) ->
-            table (check config solved colorClass) quiz.options list
+            table (check config solved class) quiz.options list
 
         _ ->
             []

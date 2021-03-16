@@ -7,7 +7,8 @@ import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Quiz.Block.Json as Block
 import Lia.Markdown.Quiz.Matrix.Json as Matrix
-import Lia.Markdown.Quiz.Types exposing (Element, Solution(..), State(..), Vector)
+import Lia.Markdown.Quiz.Solution as Solution
+import Lia.Markdown.Quiz.Types exposing (Element, State(..), Vector)
 import Lia.Markdown.Quiz.Vector.Json as Vector
 
 
@@ -22,13 +23,13 @@ fromElement element =
         [ ( "solved"
           , JE.int
                 (case element.solved of
-                    Open ->
+                    Solution.Open ->
                         0
 
-                    Solved ->
+                    Solution.Solved ->
                         1
 
-                    ReSolved ->
+                    Solution.ReSolved ->
                         -1
                 )
           )
@@ -66,13 +67,13 @@ toElement =
         solved_decoder i =
             case i of
                 0 ->
-                    JD.succeed Open
+                    JD.succeed Solution.Open
 
                 1 ->
-                    JD.succeed Solved
+                    JD.succeed Solution.Solved
 
                 _ ->
-                    JD.succeed ReSolved
+                    JD.succeed Solution.ReSolved
     in
     JD.map5 Element
         (JD.field "solved" JD.int |> JD.andThen solved_decoder)

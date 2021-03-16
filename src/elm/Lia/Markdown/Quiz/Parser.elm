@@ -24,11 +24,11 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Block.Parser as Block
 import Lia.Markdown.Quiz.Matrix.Parser as Matrix
+import Lia.Markdown.Quiz.Solution as Solution
 import Lia.Markdown.Quiz.Types
     exposing
         ( Element
         , Quiz
-        , Solution(..)
         , State(..)
         , Type(..)
         , initState
@@ -100,7 +100,7 @@ modify_State q =
             { s
                 | quiz_vector =
                     Array.push
-                        (Element Open e 0 0 "")
+                        (Element Solution.Open e 0 0 "")
                         s.quiz_vector
             }
     in
