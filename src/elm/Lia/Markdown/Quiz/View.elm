@@ -83,37 +83,38 @@ of a quiz with its type.
 -}
 viewState : Config sub -> Element -> Quiz -> List (Html (Msg sub))
 viewState config elem quiz =
+    let
+        solved =
+            case elem.solved of
+                Solved ->
+                    ( Just True, "is-green" )
+
+                ReSolved ->
+                    ( Just False, "" )
+
+                Open ->
+                    ( Nothing
+                    , if elem.trial == 0 then
+                        ""
+
+                      else
+                        "is-red"
+                    )
+    in
     case ( elem.state, quiz.quiz ) of
         ( Block_State s, Block_Type q ) ->
             s
-                |> Block.view config
-                    (case elem.solved of
-                        Solved ->
-                            ( Just True, "is-green" )
-
-                        ReSolved ->
-                            ( Just False, "" )
-
-                        Open ->
-                            ( Nothing
-                            , if elem.trial == 0 then
-                                ""
-
-                              else
-                                "is-red"
-                            )
-                    )
-                    q
+                |> Block.view config solved q
                 |> List.map (Html.map (Block_Update quiz.id))
 
         ( Vector_State s, Vector_Type q ) ->
             s
-                |> Vector.view config (isSolved elem) q
+                |> Vector.view config (Tuple.mapFirst ((/=) Nothing) solved) q
                 |> List.map (Html.map (Vector_Update quiz.id))
 
         ( Matrix_State s, Matrix_Type q ) ->
             [ s
-                |> Matrix.view config (isSolved elem) q
+                |> Matrix.view config (Tuple.mapFirst ((/=) Nothing) solved) q
                 |> Html.map (Matrix_Update quiz.id)
             ]
 

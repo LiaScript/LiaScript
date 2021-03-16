@@ -13,10 +13,10 @@ import Lia.Utils exposing (blockKeydown)
 
 
 view : Config sub -> ( Maybe Bool, String ) -> Quiz -> State -> List (Html (Msg sub))
-view config ( solved, textClass ) quiz state =
+view config ( solved, colorClass ) quiz state =
     case state of
         Text str ->
-            [ text solved textClass str
+            [ text solved colorClass str
             , case solved of
                 Nothing ->
                     Html.text ""
@@ -42,12 +42,12 @@ view config ( solved, textClass ) quiz state =
             [ value
                 |> List.head
                 |> Maybe.withDefault -1
-                |> select config (solved /= Nothing) open quiz.options
+                |> select config (solved /= Nothing) colorClass open quiz.options
             ]
 
 
 text : Maybe Bool -> String -> String -> Html (Msg sub)
-text solved textClass state =
+text solved colorClass state =
     Html.input
         [ Attr.type_ "input"
         , Attr.class "lia-input lia-quiz__input"
@@ -57,7 +57,7 @@ text solved textClass state =
 
             else
                 ""
-        , Attr.class textClass
+        , Attr.class colorClass
         , Attr.value state
         , Attr.disabled (solved /= Nothing)
         , onInput Input
@@ -66,10 +66,10 @@ text solved textClass state =
         []
 
 
-select : Config sub -> Bool -> Bool -> List Inlines -> Int -> Html (Msg sub)
-select config solved open options i =
+select : Config sub -> Bool -> String -> Bool -> List Inlines -> Int -> Html (Msg sub)
+select config solved colorClass open options i =
     Html.span
-        []
+        [ Attr.class colorClass ]
         [ Html.span
             [ Attr.class "lia-dropdown"
             , if solved then

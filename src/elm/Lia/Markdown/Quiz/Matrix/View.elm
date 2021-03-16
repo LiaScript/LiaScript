@@ -13,7 +13,7 @@ import Lia.Markdown.Quiz.Vector.Types as Vector
 import List
 
 
-view : Config sub -> Bool -> Quiz -> State -> Html (Msg sub)
+view : Config sub -> ( Bool, String ) -> Quiz -> State -> Html (Msg sub)
 view config solved quiz state =
     Html.div [ Attr.class "lia-table-responsive has-thead-sticky has-last-col-sticky" ]
         [ Html.table [ Attr.class "lia-table lia-survey-matrix is-alternating" ]
@@ -40,7 +40,7 @@ th config =
         >> Html.map Script
 
 
-tr : Bool -> Int -> Vector.State -> List (Html (Msg sub))
+tr : ( Bool, String ) -> Int -> Vector.State -> List (Html (Msg sub))
 tr solved id state =
     case state of
         Vector.SingleChoice list ->
@@ -50,11 +50,12 @@ tr solved id state =
             list |> List.indexedMap (check solved id)
 
 
-radio : Bool -> Int -> Int -> Bool -> Html (Msg sub)
-radio solved row_id column_id value =
+radio : ( Bool, String ) -> Int -> Int -> Bool -> Html (Msg sub)
+radio ( solved, colorClass ) row_id column_id value =
     Html.td [ Attr.class "lia-table__data lia-survey-matrix__data" ]
         [ Html.input
             [ Attr.class "lia-radio"
+            , Attr.class colorClass
             , Attr.type_ "radio"
             , Attr.checked value
             , if solved then
@@ -67,11 +68,12 @@ radio solved row_id column_id value =
         ]
 
 
-check : Bool -> Int -> Int -> Bool -> Html (Msg sub)
-check solved row_id column_id value =
+check : ( Bool, String ) -> Int -> Int -> Bool -> Html (Msg sub)
+check ( solved, colorClass ) row_id column_id value =
     Html.td [ Attr.class "lia-table__data lia-survey-matrix__data" ]
         [ Html.input
             [ Attr.class "lia-checkbox"
+            , Attr.class colorClass
             , Attr.type_ "checkbox"
             , Attr.checked value
             , if solved then

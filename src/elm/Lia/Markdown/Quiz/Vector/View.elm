@@ -10,14 +10,14 @@ import Lia.Markdown.Quiz.Vector.Types exposing (Quiz, State(..))
 import Lia.Markdown.Quiz.Vector.Update exposing (Msg(..))
 
 
-view : Config sub -> Bool -> Quiz -> State -> List (Html (Msg sub))
-view config solved quiz state =
+view : Config sub -> ( Bool, String ) -> Quiz -> State -> List (Html (Msg sub))
+view config ( solved, colorClass ) quiz state =
     case ( quiz.solution, state ) of
         ( SingleChoice _, SingleChoice list ) ->
-            table (radio config solved) quiz.options list
+            table (radio config solved colorClass) quiz.options list
 
         ( MultipleChoice _, MultipleChoice list ) ->
-            table (check config solved) quiz.options list
+            table (check config solved colorClass) quiz.options list
 
         _ ->
             []
@@ -30,13 +30,13 @@ table fn inlines bools =
         |> List.map2 fn bools
 
 
-check : Config sub -> Bool -> Bool -> ( Int, Inlines ) -> Html (Msg sub)
-check config solved checked ( id, line ) =
+check : Config sub -> Bool -> String -> Bool -> ( Int, Inlines ) -> Html (Msg sub)
+check config solved colorClass checked ( id, line ) =
     Html.label [ Attr.class "lia-label" ]
         [ Html.input
             [ Attr.class "lia-checkbox"
-            , Attr.type_
-                "checkbox"
+            , Attr.class colorClass
+            , Attr.type_ "checkbox"
             , Attr.checked checked
             , if solved then
                 Attr.disabled True
@@ -52,11 +52,12 @@ check config solved checked ( id, line ) =
         ]
 
 
-radio : Config sub -> Bool -> Bool -> ( Int, Inlines ) -> Html (Msg sub)
-radio config solved checked ( id, line ) =
+radio : Config sub -> Bool -> String -> Bool -> ( Int, Inlines ) -> Html (Msg sub)
+radio config solved colorClass checked ( id, line ) =
     Html.label [ Attr.class "lia-label" ]
         [ Html.input
             [ Attr.class "lia-radio"
+            , Attr.class colorClass
             , Attr.type_ "radio"
             , Attr.checked checked
             , if solved then
