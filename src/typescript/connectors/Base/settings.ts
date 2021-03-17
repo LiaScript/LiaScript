@@ -33,7 +33,7 @@ export function initSettings(send: Lia.Send | null, data: Lia.Settings = default
   }
 };
 
-export function updateClassName(data) {
+export function updateClassName(data: Lia.Settings) {
   try {
     let className = `lia-theme-${data.theme} lia-variant-${data.light ? "light" : "dark"}`
 

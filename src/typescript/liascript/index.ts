@@ -408,7 +408,7 @@ function process(isConnected: boolean, self: LiaScript, elmSend: Lia.Send, event
       // } else {
 
       try {
-        updateClassName(event.message)
+        updateClassName(event.message[0])        
 
         const conf = self.connector.getSettings()
         
@@ -416,10 +416,24 @@ function process(isConnected: boolean, self: LiaScript, elmSend: Lia.Send, event
           window.dispatchEvent(new Event('resize'))
         }, 333)
         
+        let style = document.getElementById("lia-custom-style")
+
+        if (typeof event.message[1] === 'string') {
+          if (style == null) {
+            style = document.createElement("style")
+            style.id = "lia-custom-style"
+            document.head.appendChild (style)
+          }
+
+          style.innerHTML = ":root {" + event.message[1] + "}"
+        } else if (style !== null) {
+          style.innerHTML = ''
+        }
+
       } catch (e) { }
 
       if (isConnected) {
-        self.connector.setSettings(event.message)
+        self.connector.setSettings(event.message[0])
       }
 
      
