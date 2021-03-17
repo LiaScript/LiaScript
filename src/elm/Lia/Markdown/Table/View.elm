@@ -1,5 +1,9 @@
 module Lia.Markdown.Table.View exposing (view)
 
+{- Example of a accessible table:
+   <https://dequeuniversity.com/library/aria/table-sortable>
+-}
+
 import Accessibility.Role as A11y_Role
 import Accessibility.Widget as A11y_Widget
 import Array
@@ -493,9 +497,7 @@ getState id =
 toTable : Lang -> Int -> Parameters -> Class -> List (Html Msg) -> Html Msg
 toTable lang id attr class body =
     if class == None then
-        Html.div [ Attr.class "lia-table-responsive has-thead-sticky has-first-col-sticky" ]
-            [ Html.table (A11y_Role.grid :: Param.annotation "lia-table" attr) body
-            ]
+        viewTable attr body
 
     else
         Html.div [ Attr.class "lia-plot" ]
@@ -539,12 +541,17 @@ toTable lang id attr class body =
 
                     None ->
                         ( "", "" )
-            , Html.div [ Attr.class "lia-table-responsive has-thead-sticky has-first-col-sticky" ]
-                [ Html.table
-                    (A11y_Role.grid :: Param.annotation "lia-table" attr)
-                    body
-                ]
+            , viewTable attr body
             ]
+
+
+viewTable : Parameters -> List (Html msg) -> Html msg
+viewTable attr body =
+    Html.div [ Attr.class "lia-table-responsive has-thead-sticky has-first-col-sticky" ]
+        [ Html.table
+            (A11y_Role.grid :: A11y_Widget.readOnly True :: Param.annotation "lia-table" attr)
+            body
+        ]
 
 
 toggleBtn : Int -> ( String, String ) -> Html Msg
