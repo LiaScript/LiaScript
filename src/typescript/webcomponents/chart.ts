@@ -24,6 +24,8 @@ const style = 'width: 100%; height: 400px; margin-top: -0.2em;'
 //      https://echarts.apache.org/en/index.html
 // - Information on Aria-Support:
 //      https://github.com/apache/echarts-doc/blob/master/en/tutorial/aria.md
+// - Decals:
+//      https://echarts.apache.org/en/option.html#aria.decal.show
 
 customElements.define('lia-chart', class extends HTMLElement {
   private container: HTMLDivElement
@@ -64,7 +66,7 @@ customElements.define('lia-chart', class extends HTMLElement {
       this.container.setAttribute('style', style)
       this.chart = echarts.init(this.container, this.mode || '', { renderer: 'svg', locale: this.locale})
       this.option_ = JSON.parse(this.getAttribute('option') || 'null') || this.option_
-      this.option_["aria"] = {show: true}
+      this.option_["aria"] = {show: true, decal: { show: true }}
 
       let self = this
       this.chart.on('finished', function () {
@@ -171,7 +173,7 @@ customElements.define('lia-chart', class extends HTMLElement {
     if (val) {
       if (JSON.stringify(val) !== JSON.stringify(this.option_)) {
         this.option_ = val
-        this.option_["aria"] = {show: true}
+        this.option_["aria"] = {show: true, decal: { show: true }}
         this.updateChart()
       }
     }
