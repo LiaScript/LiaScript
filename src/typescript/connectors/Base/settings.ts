@@ -4,7 +4,7 @@ import Port from '../../liascript/types/ports'
 
 export const defaultSettings: Lia.Settings = {
   table_of_contents: window.innerWidth > 620,
-  mode: 'Slides',
+  mode: 'Textbook',
   theme: 'default',
   light: true,
   editor: 'dreamweaver',
