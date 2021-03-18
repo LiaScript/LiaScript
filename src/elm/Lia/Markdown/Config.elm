@@ -4,6 +4,7 @@ module Lia.Markdown.Config exposing
     , setSubViewer
     )
 
+import Dict exposing (Dict)
 import Html exposing (Html)
 import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Effect.Script.Update as Script
@@ -29,11 +30,11 @@ type alias Config sub =
     }
 
 
-init : Lang -> ( String, String ) -> Settings -> Screen -> Section -> Int -> Config sub
-init lang translations settings screen section id =
+init : Lang -> ( String, String ) -> Settings -> Screen -> Section -> Int -> Dict String ( Int, Int ) -> Config sub
+init lang translations settings screen section id media =
     let
         config =
-            inline lang settings section.effect_model id
+            inline lang settings section.effect_model id media
     in
     Config
         settings.mode
@@ -51,8 +52,8 @@ init lang translations settings screen section id =
         config
 
 
-inline : Lang -> Settings -> Effect.Model SubSection -> Int -> Inline.Config sub
-inline lang settings effect id =
+inline : Lang -> Settings -> Effect.Model SubSection -> Int -> Dict String ( Int, Int ) -> Inline.Config sub
+inline lang settings effect id media =
     Inline.init id
         settings.mode
         effect.visible
@@ -60,6 +61,7 @@ inline lang settings effect id =
         effect.javascript
         lang
         (Just settings.editor)
+        media
 
 
 setSubViewer : (Int -> SubSection -> List (Html (Script.Msg Msg))) -> Config Msg -> Config Msg

@@ -5,6 +5,7 @@ module Lia.Model exposing
     )
 
 import Array
+import Dict exposing (Dict)
 import Json.Encode as JE
 import Lia.Definition.Types as Definition exposing (Definition, Resource(..))
 import Lia.Index.Model as Index
@@ -79,6 +80,7 @@ type alias Model =
     , langCode : String
     , langCodeOriginal : String
     , search_index : String -> String
+    , media : Dict String ( Int, Int )
     }
 
 
@@ -125,6 +127,7 @@ init hasShareApi openTOC settings url readme origin anchor =
     , langCode = "en"
     , langCodeOriginal = "en"
     , search_index = identity
+    , media = Dict.empty
     }
 
 

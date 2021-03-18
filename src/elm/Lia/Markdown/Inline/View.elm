@@ -3,11 +3,11 @@ module Lia.Markdown.Inline.View exposing
     , viewer
     )
 
-import Accessibility.Aria as A11y_Aria
 import Accessibility.Widget as A11y_Widget
 import Conditional.List as CList
-import Html exposing (Html)
-import Html.Attributes as Attr
+import Dict exposing (Dict)
+import Html exposing (Attribute, Html)
+import Html.Attributes as Attr exposing (width)
 import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.Effect.Script.Update exposing (Msg)
@@ -101,9 +101,9 @@ view config element =
             view config (Container [ Formula mode_ e [] ] attr)
 
 
-view_inf : Scripts SubSection -> Lang -> Inline -> Html (Msg sub)
-view_inf scripts lang =
-    Config.init -1 Textbook 0 Nothing scripts lang Nothing |> view
+view_inf : Scripts SubSection -> Lang -> Maybe (Dict String ( Int, Int )) -> Inline -> Html (Msg sub)
+view_inf scripts lang media =
+    Config.init -1 Textbook 0 Nothing scripts lang Nothing (media |> Maybe.withDefault Dict.empty) |> view
 
 
 stringFrom : Config sub -> Maybe Inlines -> Maybe String
@@ -126,21 +126,29 @@ alt config =
     Just >> stringFrom config >> Maybe.map Attr.alt
 
 
-img : Config sub -> Parameters -> Inlines -> String -> Maybe Inlines -> Html msg
-img config attr alt_ url_ title_ =
+img : Config sub -> Parameters -> Inlines -> String -> Maybe Inlines -> Maybe Int -> Html msg
+img config attr alt_ url_ title_ width =
     Html.img
         (Attr.src url_
             :: annotation "lia-image" attr
+            |> CList.addIf (width == Nothing) (load url_)
             |> CList.addWhen (title config title_)
             |> CList.addWhen (alt config alt_)
         )
         []
 
 
-figure : Config sub -> Maybe Inlines -> Html (Msg sub) -> Html (Msg sub)
-figure config title_ element =
+load : String -> Attribute msg
+load url =
+    Attr.attribute "onload" ("img_('" ++ url ++ "',this.width,this.height)")
+
+
+figure : Config sub -> Maybe Inlines -> Maybe Int -> Html (Msg sub) -> Html (Msg sub)
+figure config title_ width element =
     Html.figure
-        [ Attr.class "lia-figure" ]
+        ([ Attr.class "lia-figure" ]
+            |> CList.addWhen (Maybe.map Attr.width width)
+        )
         [ Html.div [ Attr.class "lia-figure__media" ]
             [ element
             ]
@@ -160,11 +168,17 @@ reference config ref attr =
             view_url config alt_ url_ title_ attr
 
         Image alt_ url_ title_ ->
-            img config attr alt_ url_ title_
-                |> figure config title_
+            let
+                width =
+                    config.media
+                        |> Dict.get url_
+                        |> Maybe.map Tuple.first
+            in
+            img config attr alt_ url_ title_ width
+                |> figure config title_ width
 
         Audio alt_ ( tube, url_ ) title_ ->
-            figure config title_ <|
+            figure config title_ Nothing <|
                 if tube then
                     Html.iframe
                         (Attr.src url_
@@ -187,7 +201,7 @@ reference config ref attr =
                         [ Html.source [ Attr.src url_ ] [] ]
 
         Movie alt_ ( tube, url_ ) title_ ->
-            figure config title_ <|
+            figure config title_ Nothing <|
                 if tube then
                     Html.div [ Attr.class "lia-iframe-wrapper" ]
                         [ Html.iframe
@@ -237,7 +251,7 @@ reference config ref attr =
                         :: annotation "lia-link" attr
                         |> CList.addWhen (title config title_)
                     )
-                |> figure config title_
+                |> figure config title_ (Just 300)
 
 
 customProviders : List Oembed.Provider

@@ -232,6 +232,7 @@ class LiaScript {
 
     let self = this
     window.showFootnote = (key) => { self.footnote(key) }
+    window.img_ = (src: string, width: number, height: number) => { self.img_(src, width, height) }
 
     setTimeout(function() {
       firstSpeak = false
@@ -240,6 +241,10 @@ class LiaScript {
 
   footnote(key: string) {
     this.app.ports.footnote.send(key)
+  }
+
+  img_(src: string, width: number, height: number) {
+    this.app.ports.media.send([src, width, height])
   }
 
   initNaviation(elem: HTMLElement, elmSend: Lia.Send) {

@@ -470,4 +470,4 @@ get_active course =
 
 inlines : Inlines -> List (Html Msg)
 inlines =
-    List.map (Inline.view_inf Array.empty En >> Html.map (always NoOp))
+    List.map (Inline.view_inf Array.empty En Nothing >> Html.map (always NoOp))

@@ -1,4 +1,4 @@
-module Lia.Update exposing
+port module Lia.Update exposing
     ( Msg(..)
     , generate
     , get_active_section
@@ -7,6 +7,7 @@ module Lia.Update exposing
     )
 
 import Array exposing (Array)
+import Dict
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Index.Update as Index
@@ -22,6 +23,9 @@ import Port.Event as Event exposing (Event)
 import Session exposing (Session)
 
 
+port media : (( String, Int, Int ) -> msg) -> Sub msg
+
+
 {-| If the model has an activated section, then all subscriptions will be passed
 to this section, otherwise everything is blocked.
 -}
@@ -29,12 +33,15 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     case get_active_section model of
         Just section ->
-            section
-                |> Markdown.subscriptions
-                |> Sub.map UpdateMarkdown
+            Sub.batch
+                [ section
+                    |> Markdown.subscriptions
+                    |> Sub.map UpdateMarkdown
+                , media Media
+                ]
 
         Nothing ->
-            Sub.none
+            media Media
 
 
 {-| Main LiaScript messages:
@@ -70,6 +77,7 @@ type Msg
     | Home
     | Script ( Int, Script.Msg Markdown.Msg )
     | TTSReplay Bool
+    | Media ( String, Int, Int )
 
 
 {-| **@private:** shortcut for generating events for a specific section:
@@ -200,6 +208,14 @@ update session msg model =
 
                 _ ->
                     ( model, Cmd.none, [] )
+
+        Media ( url, width, height ) ->
+            ( { model
+                | media = Dict.insert url ( width, height ) model.media
+              }
+            , Cmd.none
+            , []
+            )
 
         _ ->
             case ( msg, get_active_section model ) of

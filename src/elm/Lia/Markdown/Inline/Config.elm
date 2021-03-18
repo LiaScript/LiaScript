@@ -4,6 +4,7 @@ module Lia.Markdown.Inline.Config exposing
     , setViewer
     )
 
+import Dict exposing (Dict)
 import Html exposing (Html)
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.Effect.Script.Update exposing (Msg)
@@ -19,6 +20,7 @@ type alias Config sub =
     , speaking : Maybe Int
     , lang : Lang
     , theme : Maybe String
+    , media : Dict String ( Int, Int )
     , scripts : Scripts SubSection
     }
 
@@ -31,8 +33,9 @@ init :
     -> Scripts SubSection
     -> Lang
     -> Maybe String
+    -> Dict String ( Int, Int )
     -> Config sub
-init slide mode visible speaking effects theme lang =
+init slide mode visible speaking effects theme lang media =
     Config
         Nothing
         slide
@@ -45,6 +48,7 @@ init slide mode visible speaking effects theme lang =
         speaking
         theme
         lang
+        media
         effects
 
 

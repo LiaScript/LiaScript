@@ -5,6 +5,7 @@ import Accessibility.Landmark as A11y_Landmark
 import Accessibility.Role as A11y_Role
 import Accessibility.Widget as A11y_Widget
 import Const
+import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
@@ -124,6 +125,7 @@ viewSlide screen model =
                     screen
                     section
                     model.section_active
+                    model.media
                     |> Markdown.view
                     |> Html.map UpdateMarkdown
                 , slideBottom
@@ -135,6 +137,7 @@ viewSlide screen model =
             , slideA11y
                 model.translation
                 model.settings.mode
+                model.media
                 section.effect_model
                 model.section_active
             ]
@@ -217,8 +220,8 @@ slideBottom lang settings slide effects =
         ]
 
 
-slideA11y : Lang -> Mode -> Effect.Model SubSection -> Int -> Html Msg
-slideA11y lang mode effect id =
+slideA11y : Lang -> Mode -> Dict String ( Int, Int ) -> Effect.Model SubSection -> Int -> Html Msg
+slideA11y lang mode media effect id =
     case mode of
         Slides ->
             let
@@ -230,7 +233,7 @@ slideA11y lang mode effect id =
                                 par
                                     |> List.map
                                         (Tuple.second
-                                            >> List.map (view_inf effect.javascript lang)
+                                            >> List.map (view_inf effect.javascript lang (Just media))
                                             >> Html.p []
                                             >> Html.map (Tuple.pair id >> Script)
                                         )

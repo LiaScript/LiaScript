@@ -283,7 +283,7 @@ thanks lang to =
 
 
 inlines lang =
-    List.map (view_inf Array.empty lang)
+    List.map (view_inf Array.empty lang Nothing)
         >> Html.div []
         >> Html.map (always Ignore)
 
