@@ -206,7 +206,7 @@ view_block : Config Msg -> Markdown -> Html Msg
 view_block config block =
     case block of
         HLine attr ->
-            Html.hr (annotation "lia-horiz-line" attr) []
+            Html.hr (annotation "lia-divider" attr) []
 
         Paragraph attr [ element ] ->
             case htmlBlock element of

@@ -71,38 +71,40 @@ text solution state =
 
 select : Config sub -> Solution.State -> Bool -> List Inlines -> Int -> Html (Msg sub)
 select config solution open options i =
-    Html.span
-        [ Attr.class <| Solution.toClass solution ]
+    Html.div
+        [ Attr.class "lia-dropdown"
+        , Attr.class <| Solution.toClass solution
+        , if Solution.isOpen solution then
+            onClick Toggle
+
+          else
+            Attr.disabled True
+        ]
         [ Html.span
-            [ Attr.class "lia-dropdown"
-            , if Solution.isOpen solution then
-                onClick Toggle
-
-              else
-                Attr.disabled True
-            ]
+            [ Attr.class "lia-dropdown__selected" ]
             [ get_option config i options
-            , Html.span
-                [ Attr.class "lia-icon"
-                , Attr.style "float" "right"
-                ]
-                [ if open then
-                    Html.text "arrow_drop_down"
+            , Html.i
+                [ Attr.class <|
+                    "icon"
+                        ++ (if open then
+                                " icon-chevron-up"
 
-                  else
-                    Html.text "arrow_drop_up"
+                            else
+                                " icon-chevron-down"
+                           )
                 ]
+                []
             ]
         , options
             |> List.indexedMap (option config)
             |> Html.div
-                [ Attr.class "lia-dropdown-options"
-                , Attr.style "max-height" <|
+                [ Attr.class "lia-dropdown__options"
+                , Attr.class <|
                     if open then
-                        "2000px"
+                        "is-visible"
 
                     else
-                        "0px"
+                        "is-hidden"
                 ]
         ]
 
@@ -114,7 +116,7 @@ option config id =
         >> Html.map Script
         >> List.singleton
         >> Html.div
-            [ Attr.class "lia-dropdown-option"
+            [ Attr.class "lia-dropdown__option"
             , id
                 |> Choose
                 |> onClick
@@ -135,4 +137,4 @@ get_option config id list =
                 |> get_option config (i - 1)
 
         ( _, [] ) ->
-            Html.text "choose"
+            Html.span [] [ Html.text "choose" ]

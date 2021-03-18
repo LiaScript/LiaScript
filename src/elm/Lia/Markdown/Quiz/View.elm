@@ -192,7 +192,7 @@ viewSolutionButton config solution msg =
         , tabbable = True
         , icon = "icon-resolve"
         }
-        [ Attr.class "lia-quiz__resolve" ]
+        [ Attr.class "lia-btn--transparent lia-quiz__resolve" ]
 
 
 {-| **private:** Show the main check-button to compare the current state of the

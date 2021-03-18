@@ -115,7 +115,7 @@ viewLightMode _ tabbable isLight =
 viewTheme : Lang -> Bool -> String -> Bool -> Html Msg
 viewTheme lang tabbable theme hasCustom =
     (if hasCustom then
-        [ ( "yellow", Trans.cYellow lang, "is-yellow mr-1" )
+        [ ( "yellow", Trans.cYellow lang, "is-yellow" )
         , ( "custom", Trans.cDefault lang, "is-custom" )
         ]
 
@@ -123,10 +123,10 @@ viewTheme lang tabbable theme hasCustom =
         [ ( "yellow", Trans.cYellow lang, "is-yellow" ) ]
     )
         |> List.append
-            [ ( "default", Trans.cDefault lang, "is-default mr-1" )
-            , ( "turquoise", Trans.cTurquoise lang, "is-turquoise mr-1" )
-            , ( "blue", Trans.cBlue lang, "is-blue mr-1" )
-            , ( "red", Trans.cRed lang, "is-red mr-1" )
+            [ ( "default", Trans.cDefault lang, "is-default" )
+            , ( "turquoise", Trans.cTurquoise lang, "is-turquoise" )
+            , ( "blue", Trans.cBlue lang, "is-blue" )
+            , ( "red", Trans.cRed lang, "is-red" )
             ]
         |> List.map
             (\( color, name, styleClass ) ->
@@ -209,7 +209,7 @@ viewSizing lang tabbable int =
             , msg = Just (ChangeFontSize False)
             , icon = "icon-minus"
             }
-            [ A11y_Aria.labeledBy "lia-font-sizing" ]
+            [ A11y_Aria.labeledBy "lia-font-sizing", Attr.class "lia-btn--transparent" ]
         , Html.text (String.fromInt int ++ " %")
         , btnIcon
             { title = Trans.baseInc lang
@@ -217,7 +217,7 @@ viewSizing lang tabbable int =
             , msg = Just (ChangeFontSize True)
             , icon = "icon-plus"
             }
-            [ A11y_Aria.labeledBy "lia-font-sizing" ]
+            [ A11y_Aria.labeledBy "lia-font-sizing", Attr.class "lia-btn--transparent" ]
         ]
 
 
@@ -415,6 +415,7 @@ btnIndex lang open =
                 "icon-table"
         }
         [ Attr.id "lia-btn-toc"
+        , Attr.class "lia-btn lia-btn--transparent"
         , A11y_Aria.controls "lia-toc"
         , A11y_Widget.hasMenuPopUp
         , A11y_Widget.expanded open
@@ -434,7 +435,7 @@ btnSupport lang open =
             else
                 "icon-more"
         }
-        [ Attr.class "lia-support-menu__toggler"
+        [ Attr.class "lia-btn lia-btn--transparent lia-support-menu__toggler"
         , A11y_Aria.controls "lia-support-menu"
         , Attr.id "lia-btn-support"
         , A11y_Widget.hasMenuPopUp

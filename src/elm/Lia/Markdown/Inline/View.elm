@@ -140,10 +140,12 @@ img config attr alt_ url_ title_ =
 figure : Config sub -> Maybe Inlines -> Html (Msg sub) -> Html (Msg sub)
 figure config title_ element =
     Html.figure
-        []
-        [ element
+        [ Attr.class "lia-figure" ]
+        [ Html.div [ Attr.class "lia-figure__media" ]
+            [ element
+            ]
         , title_
-            |> Maybe.map (viewer config >> Html.figcaption [])
+            |> Maybe.map (viewer config >> Html.figcaption [ Attr.class "lia-figure__caption" ])
             |> Maybe.withDefault (Html.text "")
         ]
 
@@ -187,15 +189,17 @@ reference config ref attr =
         Movie alt_ ( tube, url_ ) title_ ->
             figure config title_ <|
                 if tube then
-                    Html.iframe
-                        (Attr.src url_
-                            :: Attr.attribute "allowfullscreen" ""
-                            :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                            :: annotation "lia-movie" attr
-                            |> CList.addWhen (title config title_)
-                            |> CList.addWhen (alt config alt_)
-                        )
-                        (viewer config alt_)
+                    Html.div [ Attr.class "lia-iframe-wrapper" ]
+                        [ Html.iframe
+                            (Attr.src url_
+                                :: Attr.attribute "allowfullscreen" ""
+                                :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                                :: annotation "lia-movie" attr
+                                |> CList.addWhen (title config title_)
+                                |> CList.addWhen (alt config alt_)
+                            )
+                            (viewer config alt_)
+                        ]
 
                 else
                     Html.video
