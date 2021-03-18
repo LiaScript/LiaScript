@@ -66,7 +66,9 @@ viewSettings : Lang -> Bool -> Settings -> List (Html Msg)
 viewSettings lang tabbable settings =
     [ viewLightMode lang tabbable settings.light
     , divider
-    , viewTheme lang tabbable settings.theme
+    , settings.customTheme
+        /= Nothing
+        |> viewTheme lang tabbable settings.theme
     , divider
     , viewEditorTheme lang tabbable settings.editor
     , divider
@@ -110,14 +112,22 @@ viewLightMode _ tabbable isLight =
         ]
 
 
-viewTheme : Lang -> Bool -> String -> Html Msg
-viewTheme lang tabbable theme =
-    [ ( "default", Trans.cDefault lang, "is-default mr-1" )
-    , ( "turquoise", Trans.cTurquoise lang, "is-turquoise mr-1" )
-    , ( "blue", Trans.cBlue lang, "is-blue mr-1" )
-    , ( "red", Trans.cRed lang, "is-red mr-1" )
-    , ( "yellow", Trans.cYellow lang, "is-yellow" )
-    ]
+viewTheme : Lang -> Bool -> String -> Bool -> Html Msg
+viewTheme lang tabbable theme hasCustom =
+    (if hasCustom then
+        [ ( "yellow", Trans.cYellow lang, "is-yellow" )
+        , ( "custom", Trans.cDefault lang, "is-custom" )
+        ]
+
+     else
+        [ ( "yellow", Trans.cYellow lang, "is-yellow" ) ]
+    )
+        |> List.append
+            [ ( "default", Trans.cDefault lang, "is-default" )
+            , ( "turquoise", Trans.cTurquoise lang, "is-turquoise" )
+            , ( "blue", Trans.cBlue lang, "is-blue" )
+            , ( "red", Trans.cRed lang, "is-red" )
+            ]
         |> List.map
             (\( color, name, styleClass ) ->
                 Html.input
@@ -199,7 +209,7 @@ viewSizing lang tabbable int =
             , msg = Just (ChangeFontSize False)
             , icon = "icon-minus"
             }
-            [ A11y_Aria.labeledBy "lia-font-sizing" ]
+            [ A11y_Aria.labeledBy "lia-font-sizing", Attr.class "lia-btn--transparent" ]
         , Html.text (String.fromInt int ++ " %")
         , btnIcon
             { title = Trans.baseInc lang
@@ -207,7 +217,7 @@ viewSizing lang tabbable int =
             , msg = Just (ChangeFontSize True)
             , icon = "icon-plus"
             }
-            [ A11y_Aria.labeledBy "lia-font-sizing" ]
+            [ A11y_Aria.labeledBy "lia-font-sizing", Attr.class "lia-btn--transparent" ]
         ]
 
 
@@ -405,6 +415,7 @@ btnIndex lang open =
                 "icon-table"
         }
         [ Attr.id "lia-btn-toc"
+        , Attr.class "lia-btn lia-btn--transparent"
         , A11y_Aria.controls "lia-toc"
         , A11y_Widget.hasMenuPopUp
         , A11y_Widget.expanded open
@@ -424,7 +435,7 @@ btnSupport lang open =
             else
                 "icon-more"
         }
-        [ Attr.class "lia-support-menu__toggler"
+        [ Attr.class "lia-btn lia-btn--transparent lia-support-menu__toggler"
         , A11y_Aria.controls "lia-support-menu"
         , Attr.id "lia-btn-support"
         , A11y_Widget.hasMenuPopUp
@@ -555,14 +566,17 @@ menuInformation definition lang tabbable settings =
 
 actionBtn : Action -> Bool -> String -> String -> Html Msg
 actionBtn msg open iconName title =
-    Html.button
-        (action msg
-            open
-            [ Attr.class <| "lia-btn--icon icon " ++ iconName
-            , Attr.title title
-            ]
-        )
-        []
+    btnIcon
+        { title = title
+        , icon = iconName
+        , tabbable = True
+        , msg = Just <| doAction msg
+        }
+        [ A11y_Widget.hasMenuPopUp
+        , A11y_Widget.expanded open
+        , A11y_Key.onKeyDown [ A11y_Key.escape (doAction Close) ]
+        , Attr.class "lia-btn--transparent hide-md-down"
+        ]
 
 
 action : Action -> Bool -> (List (Html.Attribute Msg) -> List (Html.Attribute Msg))

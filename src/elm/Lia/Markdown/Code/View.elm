@@ -99,7 +99,7 @@ view_code lang theme snippet =
                     , btnIcon
                         { title = codeMaximize lang
                         , icon = "icon-minus"
-                        , msg = Nothing
+                        , msg = Just <| FlipView -1 -1
                         , tabbable = False
                         }
                         [ Attr.class "lia-accordion__toggle"

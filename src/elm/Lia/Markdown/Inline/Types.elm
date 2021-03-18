@@ -4,6 +4,7 @@ module Lia.Markdown.Inline.Types exposing
     , MultInlines
     , Reference(..)
     , htmlBlock
+    , mediaBlock
     )
 
 import Lia.Markdown.Effect.Types exposing (Effect)
@@ -58,3 +59,21 @@ htmlBlock inline =
 
         _ ->
             Nothing
+
+
+mediaBlock : Inline -> Bool
+mediaBlock inline =
+    case inline of
+        Ref ref _ ->
+            case ref of
+                Image _ _ _ ->
+                    True
+
+                Movie _ _ _ ->
+                    True
+
+                _ ->
+                    False
+
+        _ ->
+            False

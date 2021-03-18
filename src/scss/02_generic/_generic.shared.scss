@@ -11,7 +11,6 @@ pre,
 dl,
 ol,
 ul,
-figure,
 fieldset {
   margin-bottom: map-get($global-spacing, spacing-normal);
 }
@@ -24,7 +23,8 @@ fieldset {
 .lia-btn,
 .lia-input,
 .lia-select,
-.lia-textarea {
+.lia-textarea,
+.lia-dropdown {
   -moz-appearance: none;
   -webkit-appearance: none;
   align-items: center;
@@ -49,16 +49,18 @@ textarea {
   }
 }
 
-button.lia-btn,
-input.lia-input,
-input.lia-radio,
-input.lia-checkbox,
-select.lia-select,
-textarea.lia-textarea {
+.lia-btn,
+.lia-input,
+.lia-radio,
+.lia-checkbox,
+.lia-select,
+.lia-textarea,
+.lia-dropdown {
   background-color: transparent;
 
   &[disabled],
-  &--disabled {
+  &--disabled,
+  &.is-disabled {
     cursor: not-allowed;
   }
 }

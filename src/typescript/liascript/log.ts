@@ -2,7 +2,7 @@ import './types/globals'
 
 const log = {
   info: function(...args: any) {
-    if (window.debug__) console.log('⭐', ...args)
+    if (window.debug__) console.info('⭐', ...args)
   },
 
   warn: function(...args: any) {

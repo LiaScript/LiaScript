@@ -1,6 +1,7 @@
 module Lia.Settings.Update exposing
     ( Msg(..)
     , Toggle(..)
+    , customizeEvent
     , handle
     , toggle_sound
     , update
@@ -42,20 +43,21 @@ update : Msg -> Settings -> ( Settings, Cmd Msg, List Event )
 update msg model =
     case msg of
         Handle event ->
-            no_log Nothing <|
-                case event.topic of
-                    "init" ->
-                        event.message
-                            |> load { model | initialized = True }
+            case event.topic of
+                "init" ->
+                    event.message
+                        |> load { model | initialized = True }
+                        |> no_log Nothing
 
-                    "speak" ->
+                "speak" ->
+                    no_log Nothing
                         { model
                             | speaking =
                                 TTS.decode event.message == TTS.Start
                         }
 
-                    _ ->
-                        model
+                _ ->
+                    log Nothing model
 
         Toggle TableOfContents ->
             log Nothing
@@ -118,7 +120,15 @@ update msg model =
                     log Nothing { model | mode = mode }
 
         ChangeTheme theme ->
-            log Nothing { model | theme = theme }
+            log Nothing
+                { model
+                    | theme =
+                        if theme == "custom" && model.customTheme /= Nothing then
+                            theme
+
+                        else
+                            theme
+                }
 
         ChangeEditor theme ->
             log Nothing { model | editor = theme }
@@ -182,11 +192,23 @@ log : Maybe String -> Settings -> ( Settings, Cmd Msg, List Event )
 log elementID settings =
     ( settings
     , maybeFocus elementID
-    , [ settings
-            |> Json.fromModel
-            |> Event "settings" -1
-      ]
+    , [ customizeEvent settings ]
     )
+
+
+customizeEvent settings =
+    [ settings
+        |> Json.fromModel
+    , if settings.theme == "custom" then
+        settings.customTheme
+            |> Maybe.map JE.string
+            |> Maybe.withDefault JE.null
+
+      else
+        JE.null
+    ]
+        |> JE.list identity
+        |> Event "settings" -1
 
 
 no_log : Maybe String -> Settings -> ( Settings, Cmd Msg, List Event )

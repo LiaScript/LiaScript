@@ -181,6 +181,16 @@
 /* Theming */
 
 html:not([class*="lia-theme-default"]) {
+  .lia-toc--visible {
+    #lia-btn-toc {
+      color: rgb(var(--lia-white));
+
+      @include breakpoint("sm") {
+        color: rgb(var(--color-highlight));
+      }
+    }
+  }
+
   .lia-toc {
     background-color: rgb(var(--color-highlight));
     color: rgb(var(--lia-white));

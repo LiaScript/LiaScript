@@ -3,6 +3,9 @@ module Lia.Markdown.Inline.View exposing
     , viewer
     )
 
+import Accessibility.Aria as A11y_Aria
+import Accessibility.Widget as A11y_Widget
+import Conditional.List as CList
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Encode as JE
@@ -103,51 +106,48 @@ view_inf scripts lang =
     Config.init -1 Textbook 0 Nothing scripts lang Nothing |> view
 
 
-stringFrom : Config sub -> Maybe Inlines -> String
-stringFrom config =
-    Maybe.map (stringify_ config.scripts config.visible)
-        >> Maybe.withDefault ""
+stringFrom : Config sub -> Maybe Inlines -> Maybe String
+stringFrom config el =
+    case el |> Maybe.map (stringify_ config.scripts config.visible >> String.trim) of
+        Just "" ->
+            Nothing
+
+        str ->
+            str
 
 
-title : Config sub -> Maybe Inlines -> Html.Attribute msg
+title : Config sub -> Maybe Inlines -> Maybe (Html.Attribute msg)
 title config =
-    stringFrom config >> Attr.title
+    stringFrom config >> Maybe.map Attr.title
 
 
-alt : Config sub -> Inlines -> Html.Attribute msg
+alt : Config sub -> Inlines -> Maybe (Html.Attribute msg)
 alt config =
-    Just >> stringFrom config >> Attr.alt
+    Just >> stringFrom config >> Maybe.map Attr.alt
 
 
 img : Config sub -> Parameters -> Inlines -> String -> Maybe Inlines -> Html msg
 img config attr alt_ url_ title_ =
     Html.img
         (Attr.src url_
-            :: title config title_
-            :: alt config alt_
             :: annotation "lia-image" attr
+            |> CList.addWhen (title config title_)
+            |> CList.addWhen (alt config alt_)
         )
         []
 
 
 figure : Config sub -> Maybe Inlines -> Html (Msg sub) -> Html (Msg sub)
 figure config title_ element =
-    case title_ of
-        Nothing ->
-            element
-
-        Just caption ->
-            Html.figure
-                [ Attr.style "margin" "0px"
-                , Attr.style "display" "inline-table"
-                ]
-                [ element
-                , Html.figcaption
-                    [ Attr.style "display" "table-caption"
-                    , Attr.style "caption-side" "bottom"
-                    ]
-                    (viewer config caption)
-                ]
+    Html.figure
+        [ Attr.class "lia-figure" ]
+        [ Html.div [ Attr.class "lia-figure__media" ]
+            [ element
+            ]
+        , title_
+            |> Maybe.map (viewer config >> Html.figcaption [ Attr.class "lia-figure__caption" ])
+            |> Maybe.withDefault (Html.text "")
+        ]
 
 
 reference : Config sub -> Reference -> Parameters -> Html (Msg sub)
@@ -169,42 +169,44 @@ reference config ref attr =
                     Html.iframe
                         (Attr.src url_
                             :: Attr.attribute "allowfullscreen" ""
-                            :: alt config alt_
                             :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                            :: title config title_
                             :: Attr.style "width" "100%"
                             :: annotation "lia-audio" attr
+                            |> CList.addWhen (title config title_)
+                            |> CList.addWhen (alt config alt_)
                         )
                         []
 
                 else
                     Html.audio
                         (Attr.controls True
-                            :: title config title_
-                            :: alt config alt_
                             :: annotation "lia-audio" attr
+                            |> CList.addWhen (title config title_)
+                            |> CList.addWhen (alt config alt_)
                         )
                         [ Html.source [ Attr.src url_ ] [] ]
 
         Movie alt_ ( tube, url_ ) title_ ->
             figure config title_ <|
                 if tube then
-                    Html.iframe
-                        (Attr.src url_
-                            :: Attr.attribute "allowfullscreen" ""
-                            :: alt config alt_
-                            :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                            :: title config title_
-                            :: annotation "lia-movie" attr
-                        )
-                        (viewer config alt_)
+                    Html.div [ Attr.class "lia-iframe-wrapper" ]
+                        [ Html.iframe
+                            (Attr.src url_
+                                :: Attr.attribute "allowfullscreen" ""
+                                :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                                :: annotation "lia-movie" attr
+                                |> CList.addWhen (title config title_)
+                                |> CList.addWhen (alt config alt_)
+                            )
+                            (viewer config alt_)
+                        ]
 
                 else
                     Html.video
                         (Attr.controls True
-                            :: alt config alt_
-                            :: title config title_
                             :: annotation "lia-movie" attr
+                            |> CList.addWhen (title config title_)
+                            |> CList.addWhen (alt config alt_)
                         )
                         [ Html.source [ Attr.src url_ ] [] ]
 
@@ -224,16 +226,16 @@ reference config ref attr =
         QR_Link url title_ ->
             [ url
                 |> QRCode.fromString
-                |> Result.map (QRCode.toSvg [])
+                |> Result.map (QRCode.toSvg [ A11y_Widget.label <| "QR-Code for website: " ++ url ])
                 |> Result.withDefault (Html.text "Error while encoding to QRCode.")
             ]
                 |> Html.a
                     (Attr.href url
-                        :: title config title_
                         :: Attr.style "width" "300px"
                         :: Attr.style "display" "inline-block"
                         :: Attr.style "background-color" "white"
                         :: annotation "lia-link" attr
+                        |> CList.addWhen (title config title_)
                     )
                 |> figure config title_
 
@@ -251,7 +253,8 @@ oembed options url =
 
 view_url : Config sub -> Inlines -> String -> Maybe Inlines -> Parameters -> Html (Msg sub)
 view_url config alt_ url_ title_ attr =
-    [ Attr.href url_, title config title_ ]
-        |> List.append (annotation "lia-link" attr)
+    Attr.href url_
+        :: annotation "lia-link" attr
+        |> CList.addWhen (title config title_)
         |> Html.a
         |> (\a -> a (viewer config alt_))

@@ -4,7 +4,7 @@ import Port from '../../liascript/types/ports'
 
 export const defaultSettings: Lia.Settings = {
   table_of_contents: window.innerWidth > 620,
-  mode: 'Slides',
+  mode: 'Textbook',
   theme: 'default',
   light: true,
   editor: 'dreamweaver',
@@ -33,7 +33,7 @@ export function initSettings(send: Lia.Send | null, data: Lia.Settings = default
   }
 };
 
-export function updateClassName(data) {
+export function updateClassName(data: Lia.Settings) {
   try {
     let className = `lia-theme-${data.theme} lia-variant-${data.light ? "light" : "dark"}`
 

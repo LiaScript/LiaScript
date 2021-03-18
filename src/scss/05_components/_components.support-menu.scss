@@ -138,7 +138,7 @@
 
   &__submenu {
     align-items: flex-start;
-    background-color: rgb(var(--lia-white));
+    background-color: rgb(var(--color-background));
     box-shadow: none;
     color: rgb(var(--color-text));
     display: flex;
@@ -152,7 +152,7 @@
     width: 100%;
 
     @at-root html.lia-variant-dark & {
-      background-color: rgb(var(--lia-anthracite));
+      background-color: rgb(var(--lia-grey-dark));
     }
 
     .lia-link {
