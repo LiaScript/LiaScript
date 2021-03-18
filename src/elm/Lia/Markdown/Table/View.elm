@@ -723,8 +723,12 @@ header lang viewer id format state i r =
         , msg = Just <| UpdateTable <| Sub.Sort id i
         , tabbable = True
         , icon =
-            if state.dir then
-                "icon-sort-asc"
+            if state.column == i then
+                if state.dir then
+                    "icon-sort-asc"
+
+                else
+                    "icon-sort-desc"
 
             else
                 "icon-sort-desc"

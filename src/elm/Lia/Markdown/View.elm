@@ -18,7 +18,7 @@ import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribut
 import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Markdown.HTML.View as HTML
 import Lia.Markdown.Inline.Stringify exposing (stringify_)
-import Lia.Markdown.Inline.Types exposing (Inlines, htmlBlock)
+import Lia.Markdown.Inline.Types exposing (Inlines, htmlBlock, mediaBlock)
 import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Markdown.Quiz.View as Quizzes
@@ -222,7 +222,13 @@ view_block config block =
                         (Node name attributes [ inlines ])
 
                 Nothing ->
-                    Html.p (annotation "lia-paragraph" attr) (config.view [ element ])
+                    if mediaBlock element && attr == [] then
+                        config.view [ element ]
+                            |> List.head
+                            |> Maybe.withDefault (Html.text "")
+
+                    else
+                        Html.p (annotation "lia-paragraph" attr) (config.view [ element ])
 
         Paragraph attr elements ->
             Html.p
@@ -407,7 +413,7 @@ viewQuiz config attr quiz solution =
                         |> Quizzes.view config.main quiz
                         |> List.map (Html.map UpdateQuiz)
                     )
-                        ++ [Html.div [Attr.class "lia-quiz__solution"] <| List.map (view_block config) answer]
+                        ++ [ Html.div [ Attr.class "lia-quiz__solution" ] <| List.map (view_block config) answer ]
 
                 else
                     config.section.quiz_vector
