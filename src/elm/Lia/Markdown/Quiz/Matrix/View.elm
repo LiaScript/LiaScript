@@ -14,13 +14,13 @@ import List
 
 
 view : Config sub -> Bool -> String -> Quiz -> State -> Html (Msg sub)
-view config solved class quiz state =
+view config open class quiz state =
     Html.div [ Attr.class "lia-table-responsive has-thead-sticky has-last-col-sticky" ]
         [ Html.table [ Attr.class "lia-table lia-survey-matrix is-alternating" ]
             [ header config quiz.headers
             , state
                 |> Array.toList
-                |> List.indexedMap (tr solved class)
+                |> List.indexedMap (tr open class)
                 |> List.map2 (add_text config) quiz.options
                 |> Html.tbody [ Attr.class "lia-table__body lia-survey-matrix__body" ]
             ]
@@ -41,46 +41,46 @@ th config =
 
 
 tr : Bool -> String -> Int -> Vector.State -> List (Html (Msg sub))
-tr solved class id state =
+tr open class id state =
     case state of
         Vector.SingleChoice list ->
-            list |> List.indexedMap (radio solved class id)
+            list |> List.indexedMap (radio open class id)
 
         Vector.MultipleChoice list ->
-            list |> List.indexedMap (check solved class id)
+            list |> List.indexedMap (check open class id)
 
 
 radio : Bool -> String -> Int -> Int -> Bool -> Html (Msg sub)
-radio solved colorClass row_id column_id value =
+radio open colorClass row_id column_id value =
     Html.td [ Attr.class "lia-table__data lia-survey-matrix__data" ]
         [ Html.input
             [ Attr.class "lia-radio"
             , Attr.class colorClass
             , Attr.type_ "radio"
             , Attr.checked value
-            , if solved then
-                Attr.disabled True
+            , if open then
+                onClick <| Toggle row_id column_id
 
               else
-                onClick <| Toggle row_id column_id
+                Attr.disabled True
             ]
             []
         ]
 
 
 check : Bool -> String -> Int -> Int -> Bool -> Html (Msg sub)
-check solved colorClass row_id column_id value =
+check open colorClass row_id column_id value =
     Html.td [ Attr.class "lia-table__data lia-survey-matrix__data" ]
         [ Html.input
             [ Attr.class "lia-checkbox"
             , Attr.class colorClass
             , Attr.type_ "checkbox"
             , Attr.checked value
-            , if solved then
-                Attr.disabled True
+            , if open then
+                onClick <| Toggle row_id column_id
 
               else
-                onClick <| Toggle row_id column_id
+                Attr.disabled True
             ]
             []
         ]
