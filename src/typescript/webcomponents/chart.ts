@@ -66,7 +66,7 @@ customElements.define('lia-chart', class extends HTMLElement {
       this.container.setAttribute('style', style)
       this.chart = echarts.init(this.container, this.mode || '', { renderer: 'svg', locale: this.locale})
       this.option_ = JSON.parse(this.getAttribute('option') || 'null') || this.option_
-      this.option_["aria"] = {show: true, decal: { show: true }}
+      this.option_["aria"] = {show: true} //, decal: { show: true }}
 
       let self = this
       this.chart.on('finished', function () {
@@ -173,7 +173,7 @@ customElements.define('lia-chart', class extends HTMLElement {
     if (val) {
       if (JSON.stringify(val) !== JSON.stringify(this.option_)) {
         this.option_ = val
-        this.option_["aria"] = {show: true, decal: { show: true }}
+        this.option_["aria"] = {show: true} //, decal: { show: true }}
         this.updateChart()
       }
     }
