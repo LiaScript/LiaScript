@@ -733,7 +733,7 @@ header lang viewer id format state i r =
             else
                 "icon-sort-desc"
         }
-        [ Attr.class "lia-table__sort"
+        [ Attr.class "lia-btn--transparent lia-table__sort"
         , Attr.class <|
             if state.column == i then
                 "active"

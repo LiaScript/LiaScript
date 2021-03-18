@@ -164,7 +164,7 @@ view_eval lang theme running errors id_1 id_2 file attr =
                                         "icon-chevron-down"
                                 , tabbable = True
                                 }
-                                [ Attr.class "lia-code__min-max" ]
+                                [ Attr.class "lia-code__min-max lia-btn--transparent" ]
 
                           else
                             Html.text ""
@@ -380,7 +380,7 @@ view_control lang idx version_active version_count running terminal =
                         , tabbable = False
                         , icon = "icon-refresh rotating"
                         }
-                        [ Attr.class "is-disabled" ]
+                        [ Attr.class "is-disabled lia-btn--transparent" ]
 
                 ( True, True ) ->
                     btnIcon
@@ -389,7 +389,7 @@ view_control lang idx version_active version_count running terminal =
                         , tabbable = True
                         , icon = "icon-stop-circle"
                         }
-                        []
+                        [ Attr.class "lia-btn--transparent" ]
 
                 _ ->
                     btnIcon
@@ -398,7 +398,7 @@ view_control lang idx version_active version_count running terminal =
                         , tabbable = True
                         , icon = "icon-compile-circle"
                         }
-                        []
+                        [ Attr.class "lia-btn--transparent" ]
             ]
         , Html.div [ Attr.class "lia-code-control__version" ]
             [ btnIcon
