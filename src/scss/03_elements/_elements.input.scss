@@ -213,6 +213,10 @@ input[type="search"]::-webkit-search-results-decoration {
     display: flex;
     padding: 0.4rem 0;
 
+    > *:not(:last-child) {
+      margin-right: 0.75rem;
+    }
+
     .lia-radio[type="radio"] {
       height: 1.8rem;
       width: 1.8rem;
@@ -233,6 +237,14 @@ input[type="search"]::-webkit-search-results-decoration {
 
       &.is-yellow {
         background-color: rgb(var(--lia-yellow));
+      }
+
+      &.is-custom {
+        background: linear-gradient(
+          to right,
+          rgb(var(--lia-blue)),
+          rgb(var(--lia-red))
+        );
       }
 
       &:checked {

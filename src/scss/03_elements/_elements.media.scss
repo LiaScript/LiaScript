@@ -1,6 +1,29 @@
 img {
-    font-style: italic;
-    height: auto;
-    max-width: 100%;
-    vertical-align: middle;
+  font-style: italic;
+  height: auto;
+  max-width: 100%;
+  vertical-align: middle;
+  max-height: 80vh;
+}
+
+figure {
+  margin-bottom: 2rem;
+
+  figcaption {
+    margin: 1rem 0;
+  }
+}
+
+.lia-iframe-wrapper {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+
+  iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
 }

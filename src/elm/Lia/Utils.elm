@@ -107,7 +107,7 @@ btnIcon config attr =
     btn config
         attr
         [ icon config.icon
-            [ Attr.class " lia-btn--transparent lia-btn__icon" ]
+            [ Attr.class "lia-btn__icon" ]
         ]
 
 
