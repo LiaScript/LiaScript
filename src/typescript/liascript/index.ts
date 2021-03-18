@@ -510,6 +510,8 @@ function process(isConnected: boolean, self: LiaScript, elmSend: Lia.Send, event
         })
       }
 
+      document.documentElement.lang = data.definition.language
+
       meta('author', data.definition.author)
       meta('og:description', data.comment)
       meta('og:title', data.str_title)
@@ -593,7 +595,7 @@ function injectGoogleTranslate(){
 
     window.googleTranslateElementInit = function() {
       new google.translate.TranslateElement(
-        { pageLanguage: 'en', 
+        { pageLanguage: document.documentElement.lang, 
           // includedLanguages: 'ar,en,es,jv,ko,pa,pt,ru,zh-CN',
           layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
           autoDisplay: false
