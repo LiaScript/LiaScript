@@ -412,7 +412,7 @@ view_control lang idx version_active version_count running terminal =
                         Nothing
                 , icon = "icon-end-left"
                 }
-                []
+                [ Attr.class "lia-btn--transparent" ]
             , btnIcon
                 { title = codePrev lang
                 , tabbable = not forward
@@ -424,7 +424,7 @@ view_control lang idx version_active version_count running terminal =
                         Nothing
                 , icon = "icon-chevron-left"
                 }
-                []
+                [ Attr.class "lia-btn--transparent" ]
             , Html.span
                 [ Attr.class "lia-label"
                 ]
@@ -440,7 +440,7 @@ view_control lang idx version_active version_count running terminal =
                         Nothing
                 , icon = "icon-chevron-right"
                 }
-                []
+                [ Attr.class "lia-btn--transparent" ]
             , btnIcon
                 { title = codeLast lang
                 , tabbable = not backward
@@ -452,6 +452,6 @@ view_control lang idx version_active version_count running terminal =
                         Nothing
                 , icon = "icon-end-right"
                 }
-                []
+                [ Attr.class "lia-btn--transparent" ]
             ]
         ]
