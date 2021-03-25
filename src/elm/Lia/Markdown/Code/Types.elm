@@ -1,11 +1,13 @@
 module Lia.Markdown.Code.Types exposing
     ( Code(..)
     , File
+    , Model
     , Project
     , Repo
     , Snippet
     , Vector
     , Version
+    , init
     , initProject
     , loadVersion
     , updateVersion
@@ -29,6 +31,12 @@ type alias Version =
 
 type alias Repo =
     Dict Hash String
+
+
+type alias Model =
+    { evaluate : Vector
+    , highlight : Vector
+    }
 
 
 type alias Vector =
@@ -69,6 +77,12 @@ type alias Snippet =
 type Code
     = Highlight (List Snippet)
     | Evaluate Int
+
+
+{-| Initialize an empty code model with two empty Arrays.
+-}
+init =
+    Model Array.empty Array.empty
 
 
 toFile : ( Snippet, Bool ) -> ( Parameters, File )

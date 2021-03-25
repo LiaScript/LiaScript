@@ -127,16 +127,20 @@ evaluate lang_title_code comment =
                     ( Log.empty, ar )
 
         add_state s =
+            let
+                model =
+                    s.code_model
+            in
             { s
-                | code_vector =
-                    Array.push (initProject array comment output) s.code_vector
+                | code_model =
+                    { model | evaluate = Array.push (initProject array comment output) model.evaluate }
             }
     in
-    (\s ->
-        s.code_vector
-            |> Array.length
-            |> Evaluate
-            |> succeed
+    (.code_model
+        >> .evaluate
+        >> Array.length
+        >> Evaluate
+        >> succeed
     )
         |> withState
         |> ignore (modifyState add_state)

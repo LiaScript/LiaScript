@@ -10,16 +10,19 @@ import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Code.Log as Log
-import Lia.Markdown.Code.Types exposing (File, Project, Repo, Vector, Version)
+import Lia.Markdown.Code.Types exposing (File, Model, Project, Repo, Vector, Version)
 import Lia.Markdown.HTML.Attributes exposing (Parameters)
 
 
-merge : Vector -> Vector -> Vector
+merge : Model -> Vector -> Model
 merge old new =
-    new
-        |> Array.toList
-        |> List.map2 copy (Array.toList old)
-        |> Array.fromList
+    { old
+        | evaluate =
+            new
+                |> Array.toList
+                |> List.map2 copy (Array.toList old.evaluate)
+                |> Array.fromList
+    }
 
 
 copy : Project -> Project -> Project
@@ -28,8 +31,8 @@ copy old new =
 
 
 fromVector : Vector -> JE.Value
-fromVector vector =
-    JE.array fromProject vector
+fromVector =
+    JE.array fromProject
 
 
 toVector : JD.Value -> List (List Parameters) -> Result JD.Error (Maybe Vector)

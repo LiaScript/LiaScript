@@ -71,12 +71,12 @@ update msg section =
             )
 
         UpdateCode childMsg ->
-            case Code.update section.effect_model.javascript childMsg section.code_vector of
-                ( vector, [] ) ->
-                    ( { section | code_vector = vector }, Cmd.none, [] )
+            case Code.update section.effect_model.javascript childMsg section.code_model of
+                ( code_model, [] ) ->
+                    ( { section | code_model = code_model }, Cmd.none, [] )
 
-                ( vector, events ) ->
-                    ( { section | code_vector = vector }
+                ( code_model, events ) ->
+                    ( { section | code_model = code_model }
                     , Cmd.none
                     , events
                         |> List.map Event.encode
@@ -174,12 +174,12 @@ subUpdate js msg section =
                     )
 
                 UpdateCode childMsg ->
-                    case Code.update js childMsg subsection.code_vector of
-                        ( vector, [] ) ->
-                            ( SubSection { subsection | code_vector = vector }, Cmd.none, [] )
+                    case Code.update js childMsg subsection.code_model of
+                        ( code_model, [] ) ->
+                            ( SubSection { subsection | code_model = code_model }, Cmd.none, [] )
 
-                        ( vector, events ) ->
-                            ( SubSection { subsection | code_vector = vector }
+                        ( code_model, events ) ->
+                            ( SubSection { subsection | code_model = code_model }
                             , Cmd.none
                             , events
                                 |> List.map Event.encode

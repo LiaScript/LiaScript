@@ -75,7 +75,7 @@ subView config id sub =
                                     | table_vector = x.table_vector
                                     , quiz_vector = x.quiz_vector
                                     , survey_vector = x.survey_vector
-                                    , code_vector = x.code_vector
+                                    , code_model = x.code_model
                                     , effect_model =
                                         { effects
                                             | comments = x.effect_model.comments
@@ -261,7 +261,7 @@ view_block config block =
 
         Code code ->
             code
-                |> Codes.view config.main.lang config.ace_theme config.section.code_vector
+                |> Codes.view config.main.lang config.ace_theme config.section.code_model
                 |> Html.map UpdateCode
 
         Quiz attr quiz solution ->

@@ -9,14 +9,14 @@ import Json.Encode as JE
 import Lia.Markdown.Code.Editor as Editor
 import Lia.Markdown.Code.Log as Log exposing (Log)
 import Lia.Markdown.Code.Terminal as Terminal
-import Lia.Markdown.Code.Types exposing (Code(..), File, Snippet, Vector)
+import Lia.Markdown.Code.Types exposing (Code(..), File, Model, Snippet, Vector)
 import Lia.Markdown.Code.Update exposing (Msg(..))
 import Lia.Markdown.HTML.Attributes as Params exposing (Parameters)
 import Lia.Utils exposing (btnIcon)
 import Translations exposing (Lang, codeExecute, codeFirst, codeLast, codeMaximize, codeMinimize, codeNext, codePrev, codeRunning)
 
 
-view : Lang -> String -> Vector -> Code -> Html Msg
+view : Lang -> String -> Model -> Code -> Html Msg
 view lang theme model code =
     case code of
         Highlight lang_title_code ->
@@ -25,7 +25,7 @@ view lang theme model code =
                 |> Html.div [ Attr.class "lia-code lia-code--block" ]
 
         Evaluate id_1 ->
-            case Array.get id_1 model of
+            case Array.get id_1 model.evaluate of
                 Just project ->
                     let
                         errors =

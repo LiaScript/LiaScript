@@ -391,7 +391,7 @@ generate model =
                         model.to_do
                             |> List.append logs
                             |> add_load section.quiz_vector model.section_active "quiz"
-                            |> add_load section.code_vector model.section_active "code"
+                            |> add_load section.code_model.evaluate model.section_active "code"
                             |> add_load section.survey_vector model.section_active "survey"
                             |> add_load section.task_vector model.section_active "task"
                 }
