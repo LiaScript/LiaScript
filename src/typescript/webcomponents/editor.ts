@@ -174,6 +174,9 @@ customElements.define('lia-editor', class extends HTMLElement {
 
     this._editor.setAutoScrollEditorIntoView(true)
 
+    const input = this._editor.textInput.getElement()
+
+    input.setAttribute("role", "application" )
     if (!this.model.readOnly) {
       const runDispatch = debounce(() => {
         this.model.value = this._editor.getValue()
@@ -181,9 +184,9 @@ customElements.define('lia-editor', class extends HTMLElement {
       })
 
       this._editor.on('change', runDispatch)
-      this._editor.textInput.getElement().setAttribute("aria-label", "Code-editor in " + this.model.mode + " mode" )
+      input.setAttribute("aria-label", "Code-editor in " + this.model.mode + " mode" )
     } else {
-      this._editor.textInput.getElement().setAttribute("aria-label", "Code-block in " + this.model.mode + " mode" )
+      input.setAttribute("aria-label", "Code-block in " + this.model.mode + " mode" )
     }
 
     let self = this

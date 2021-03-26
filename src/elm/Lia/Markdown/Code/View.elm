@@ -344,9 +344,9 @@ evaluate executable theme attr running ( id_1, id_2 ) file errors =
                         executable
                 , Editor.useSoftTabs False
                 , Editor.annotations errors
-                , Editor.enableBasicAutocompletion True
-                , Editor.enableLiveAutocompletion True
-                , Editor.enableSnippets True
+                , Editor.enableBasicAutocompletion executable
+                , Editor.enableLiveAutocompletion executable
+                , Editor.enableSnippets executable
                 , Editor.extensions [ "language_tools" ]
                 ]
         )
