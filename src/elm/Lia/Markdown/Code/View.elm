@@ -1,5 +1,6 @@
 module Lia.Markdown.Code.View exposing (view)
 
+import Accessibility.Widget as A11y_Widget
 import Array
 import Conditional.List as CList
 import Html exposing (Html)
@@ -102,15 +103,25 @@ viewCode executable lang theme running errors id_1 id_2 file attr =
     else
         Html.div [ Attr.class "lia-accordion" ]
             [ Html.div (Attr.class "lia-accordion__item" :: Params.toAttribute attr)
-                [ Html.div [ Attr.class "lia-accordion__header" ]
-                    [ Html.h3 [ Attr.class "lia-accordion__headline" ] [ Html.text file.name ]
-                    , btnIcon
+                [ Html.label
+                    [ Attr.class "lia-accordion__header"
+                    , A11y_Widget.label <|
+                        file.name
+                            ++ " "
+                            ++ (if file.visible then
+                                    codeMinimize lang
+
+                                else
+                                    codeMaximize lang
+                               )
+                    ]
+                    [ btnIcon
                         { title =
                             if file.visible then
-                                codeMaximize lang
+                                codeMinimize lang
 
                             else
-                                codeMinimize lang
+                                codeMaximize lang
                         , msg =
                             Just <|
                                 FlipView
@@ -130,6 +141,7 @@ viewCode executable lang theme running errors id_1 id_2 file attr =
                         , tabbable = True
                         }
                         [ Attr.class "lia-accordion__toggle" ]
+                    , Html.h3 [ Attr.class "lia-accordion__headline" ] [ Html.text file.name ]
                     ]
                 , Html.div
                     [ Attr.classList
