@@ -10,9 +10,9 @@ if (process.env.NODE_ENV === 'development') {
   debug = true
 }
 
-var app = new LiaScript( document.body, new Connector(), debug )
+var app = new LiaScript(document.body, new Connector(), debug)
 
-window.showFootnote = (key) => app.footnote(key);
+window.showFootnote = (key) => app.footnote(key)
 //window.gotoLia = (line) => app.goto(line);
 //window.jitLia = (code) => app.jit(code);
 

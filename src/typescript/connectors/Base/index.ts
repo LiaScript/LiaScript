@@ -4,9 +4,7 @@ import Port from '../../liascript/types/ports'
 import { LiaStorage } from './storage'
 import { initSettings, defaultSettings } from './settings'
 
-
 export class Connector {
-
   protected send: Lia.Send
 
   constructor() {
@@ -18,8 +16,7 @@ export class Connector {
   }
 
   connect(send: Lia.Send | null) {
-    if (send)
-      this.send = send
+    if (send) this.send = send
   }
 
   storage() {
@@ -57,23 +54,23 @@ export class Connector {
     return json
   }
 
-  open(_uidDB: string, _versionDB: number, _slide: number, _data?: Lia.Event) { }
+  open(_uidDB: string, _versionDB: number, _slide: number, _data?: Lia.Event) {}
 
-  load(_event: Lia.Event) { }
+  load(_event: Lia.Event) {}
 
-  store(_event: Lia.Event) { }
+  store(_event: Lia.Event) {}
 
-  update(_event: Lia.Event, _id: number) { }
+  update(_event: Lia.Event, _id: number) {}
 
-  slide(_id: number) { }
+  slide(_id: number) {}
 
-  getIndex() { }
+  getIndex() {}
 
-  deleteFromIndex(_uidDB: string) { }
+  deleteFromIndex(_uidDB: string) {}
 
-  storeToIndex(_json: any) { }
+  storeToIndex(_json: any) {}
 
-  restoreFromIndex(_uidDB: string, _versionDB?: number) { }
+  restoreFromIndex(_uidDB: string, _versionDB?: number) {}
 
   reset(_uidDB?: string, _versionDB?: number) {
     this.initSettings(null, true)
@@ -83,7 +80,7 @@ export class Connector {
     this.send({
       topic: Port.RESTORE,
       message: null,
-      section: -1
+      section: -1,
     })
   }
 }

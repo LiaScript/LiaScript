@@ -6,7 +6,7 @@ function fetch(self: PreviewLia) {
 
   http.open('GET', self.source_url, true)
 
-  http.onload = function(_e) {
+  http.onload = function (_e) {
     if (http.readyState === 4 && http.status === 200) {
       try {
         self.parse(http.responseText)
@@ -29,8 +29,8 @@ class PreviewLia extends HTMLElement {
     this.source_url = ''
     this.lia = Elm.Worker.init({
       flags: {
-        cmd: ''
-      }
+        cmd: '',
+      },
     })
 
     const template = document.createElement('template')
@@ -236,14 +236,16 @@ class PreviewLia extends HTMLElement {
       this.source_url = urls[0]
     }
 
-    const link = this.getAttribute('link') || ('https://LiaScript.github.io/course/?' + this.source_url)
+    const link =
+      this.getAttribute('link') ||
+      'https://LiaScript.github.io/course/?' + this.source_url
 
     if (div) {
       div.innerHTML = `<a href="${url}">preview-lia</a>`
 
       let self = this
 
-      this.lia.ports.output.subscribe(function(event: [boolean, any]) {
+      this.lia.ports.output.subscribe(function (event: [boolean, any]) {
         let [ok, json] = event
 
         if (ok) {
@@ -252,7 +254,9 @@ class PreviewLia extends HTMLElement {
           let tag
 
           try {
-            tag = json.definition.macro.tags.split(',').map((e: string) => e.trim())
+            tag = json.definition.macro.tags
+              .split(',')
+              .map((e: string) => e.trim())
           } catch (e) {
             tag = []
           }
@@ -272,7 +276,9 @@ class PreviewLia extends HTMLElement {
               <div class="photo" style="background-image: url(${logo})"></div>
               <ul class="details">
                 <li class="author">${json.definition.author}</li>
-                <li class="date"><a href="mailto:${json.definition.email}">${json.definition.email}</a></li>
+                <li class="date"><a href="mailto:${json.definition.email}">${
+              json.definition.email
+            }</a></li>
                 <li class="tags">
                   <ul>
                     <li>${!tag[0] ? '' : tag[0]}</li>
@@ -300,7 +306,6 @@ class PreviewLia extends HTMLElement {
       })
       fetch(self)
     }
-
   }
 
   disconnectedCallback() {
@@ -311,6 +316,5 @@ class PreviewLia extends HTMLElement {
     this.lia.ports.input.send(['defines', course])
   }
 }
-
 
 customElements.define('preview-lia', PreviewLia)

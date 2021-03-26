@@ -1,6 +1,4 @@
-import {
-  Connector as Base
-} from '../Base/index.ts'
+import { Connector as Base } from '../Base/index.ts'
 
 const SCORM = require('simplify-scorm/src/scormAPI')
 
@@ -31,8 +29,8 @@ class Connector extends Base {
   }
 
   restore() {
-    this.quiz = window.config_.quiz.map((e) => e.map(_ => null))
-    this.survey = window.config_.survey.map((e) => e.map(_ => null))
+    this.quiz = window.config_.quiz.map((e) => e.map((_) => null))
+    this.survey = window.config_.survey.map((e) => e.map((_) => null))
 
     let count = this.countObjectives()
 
@@ -65,22 +63,28 @@ class Connector extends Base {
       this.survey.reduce((a, b) => a + b.length, 0)
 
     let solved =
-      this.quiz.map((e) => e.filter((f) => f === true))
-      .reduce((a, b) => a + b.length, 0) +
-      this.survey.map((e) => e.filter((f) => f === true))
-      .reduce((a, b) => a + b.length, 0)
+      this.quiz
+        .map((e) => e.filter((f) => f === true))
+        .reduce((a, b) => a + b.length, 0) +
+      this.survey
+        .map((e) => e.filter((f) => f === true))
+        .reduce((a, b) => a + b.length, 0)
 
     let finished =
-      this.quiz.map((e) => e.filter((f) => f != null))
-      .reduce((a, b) => a + b.length, 0) +
-      this.survey.map((e) => e.filter((f) => f != null))
-      .reduce((a, b) => a + b.length, 0)
+      this.quiz
+        .map((e) => e.filter((f) => f != null))
+        .reduce((a, b) => a + b.length, 0) +
+      this.survey
+        .map((e) => e.filter((f) => f != null))
+        .reduce((a, b) => a + b.length, 0)
 
-    let score = solved === 0 ? 0 : (solved * 100 / total)
+    let score = solved === 0 ? 0 : (solved * 100) / total
 
     this.scorm.LMSSetValue('cmi.core.score.raw', score.toString())
 
-    let masteryScore = JSON.parse(this.scorm.LMSGetValue('cmi.student_data.mastery_score'))
+    let masteryScore = JSON.parse(
+      this.scorm.LMSGetValue('cmi.student_data.mastery_score'),
+    )
 
     if (score >= masteryScore && score < 100) {
       this.scorm.LMSSetValue('cmi.core.lesson_status', 'passed')
@@ -103,7 +107,10 @@ class Connector extends Base {
       location.slide = id
       location.visited[id] = true
 
-      this.scorm.LMSSetValue('cmi.core.lesson_location', JSON.stringify(location))
+      this.scorm.LMSSetValue(
+        'cmi.core.lesson_location',
+        JSON.stringify(location),
+      )
 
       this.scorm.LMSCommit('')
     } catch (e) {
@@ -121,17 +128,20 @@ class Connector extends Base {
       this.send({
         topic: 'goto',
         section: location.slide,
-        message: null
+        message: null,
       })
     } catch (e) {
       location = {
         slide: slide,
-        visited: Array(data.sections.length).fill(false)
+        visited: Array(data.sections.length).fill(false),
       }
 
       location.visited[slide] = true
 
-      this.scorm.LMSSetValue('cmi.core.lesson_location', JSON.stringify(location))
+      this.scorm.LMSSetValue(
+        'cmi.core.lesson_location',
+        JSON.stringify(location),
+      )
 
       this.scorm.LMSCommit('')
     }
@@ -163,7 +173,7 @@ class Connector extends Base {
       if (type === 'survey') {
         data = {
           submitted: true,
-          state: data
+          state: data,
         }
       }
 
@@ -171,7 +181,7 @@ class Connector extends Base {
         type: type,
         sec: parseInt(sec) - 1,
         i: parseInt(i),
-        data: data
+        data: data,
       }
     } catch (e) {
       console.warn('getObjective', val, id, e)
@@ -189,7 +199,10 @@ class Connector extends Base {
       blob = blob + '/' + encodeURI(JSON.stringify(obj.data))
     }
 
-    console.log('setObjective', this.scorm.LMSSetValue('cmi.objectives.' + id + '.id', blob))
+    console.log(
+      'setObjective',
+      this.scorm.LMSSetValue('cmi.objectives.' + id + '.id', blob),
+    )
     this.scorm.LMSCommit('')
 
     switch (obj.type) {
@@ -217,36 +230,32 @@ class Connector extends Base {
       case 'code': {
         this.scorm.LMSSetValue(
           'cmi.interactions.' + id + '.student_response',
-          JSON.stringify(obj.data).slice(0, 254)
+          JSON.stringify(obj.data).slice(0, 254),
         )
         break
       }
       case 'quiz': {
         this.scorm.LMSSetValue(
           'cmi.interactions.' + id + '.result',
-          obj.data.solved === 0 ?
-          'neutral' :
-          (obj.data.solved === 1 ?
-            'correct' :
-            'wrong'
-          )
+          obj.data.solved === 0
+            ? 'neutral'
+            : obj.data.solved === 1
+            ? 'correct'
+            : 'wrong',
         )
 
         this.scorm.LMSSetValue(
           'cmi.interactions.' + id + '.student_response',
-          JSON.stringify(obj.data).slice(0, 254)
+          JSON.stringify(obj.data).slice(0, 254),
         )
         break
       }
       case 'survey': {
         // this.scorm.LMSSetValue("cmi.interactions."+ id +".type", "fill-in")
-        this.scorm.LMSSetValue(
-          'cmi.interactions.' + id + '.result',
-          'neutral'
-        )
+        this.scorm.LMSSetValue('cmi.interactions.' + id + '.result', 'neutral')
         this.scorm.LMSSetValue(
           'cmi.interactions.' + id + '.student_response',
-          JSON.stringify(obj.data.state).slice(0, 254)
+          JSON.stringify(obj.data.state).slice(0, 254),
         )
         break
       }
@@ -254,7 +263,7 @@ class Connector extends Base {
 
     this.scorm.LMSSetValue(
       'cmi.interactions.' + id + '.time',
-      (new Date()).toISOString().split('T')[1].split('.')[0] // only hh:mm:ss are allowed in this version of scorm
+      new Date().toISOString().split('T')[1].split('.')[0], // only hh:mm:ss are allowed in this version of scorm
     )
 
     this.scorm.LMSCommit('')
@@ -269,7 +278,7 @@ class Connector extends Base {
           type: event.topic,
           sec: event.section,
           i: i,
-          data: event.message[i]
+          data: event.message[i],
         })
       }
 
@@ -294,7 +303,7 @@ class Connector extends Base {
       type: event.topic,
       sec: event.section,
       i: 0,
-      data: null
+      data: null,
     }
 
     for (let i = 0; i < event.message.length; i++) {
@@ -302,7 +311,10 @@ class Connector extends Base {
       obj.data = event.message[i]
 
       // insert as new or overwrite existing ones
-      this.setObjective(items.length === 0 ? this.countObjectives() : items[i], obj)
+      this.setObjective(
+        items.length === 0 ? this.countObjectives() : items[i],
+        obj,
+      )
       this.logInteraction(obj)
     }
 
@@ -316,7 +328,7 @@ class Connector extends Base {
       event.message = {
         topic: 'restore',
         section: -1,
-        message: null
+        message: null,
       }
       this.send(event)
       return
@@ -339,14 +351,11 @@ class Connector extends Base {
       event.message = {
         topic: 'restore',
         section: -1,
-        message: items.sort((a, b) => a.i - b.i)
-          .map(e => e.data)
+        message: items.sort((a, b) => a.i - b.i).map((e) => e.data),
       }
       this.send(event)
     }
   }
 }
 
-export {
-  Connector
-}
+export { Connector }

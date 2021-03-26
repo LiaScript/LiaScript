@@ -1,3 +1,4 @@
+// @ts-ignore
 import Dexie from 'dexie'
 
 import Lia from '../../liascript/types/lia.d'
@@ -20,7 +21,7 @@ class LiaDB {
 
     this.dbIndex = new Dexie('Index')
     this.dbIndex.version(1).stores({
-      courses: '&id,updated,author,created,title'
+      courses: '&id,updated,author,created,title',
     })
 
     this.version = 0
@@ -28,35 +29,34 @@ class LiaDB {
 
   open_(uidDB: string) {
     let db = new Dexie(uidDB)
-    
+
     db.version(1).stores({
       code: '[id+version], version',
       quiz: '[id+version], version',
       survey: '[id+version], version',
       task: '[id+version], version',
-      offline: '[id+version], version'
+      offline: '[id+version], version',
     })
 
     return db
   }
 
   async open(uidDB: string, versionDB: number, init?: Lia.Event) {
-    
     this.version = versionDB
     this.db = this.open_(uidDB)
 
     try {
       await this.db.open()
-    } catch(e) {
-      log.warn("DB: open -> ", e.message);
+    } catch (e) {
+      log.warn('DB: open -> ', e.message)
       this.db = null
     }
-    
+
     if (init && this.db) {
       const item = await this.db[init.topic].get({
         id: init.section,
-        version: versionDB
-      })      
+        version: versionDB,
+      })
 
       if (!!item) {
         if (item.data) {
@@ -70,13 +70,15 @@ class LiaDB {
   async store(event: Lia.Event, versionDB?: number) {
     if (!this.db || this.version === 0) return
 
-    log.warn(`liaDB: event(store), table(${event.topic}), id(${event.section}), data(${event.message})`)
+    log.warn(
+      `liaDB: event(store), table(${event.topic}), id(${event.section}), data(${event.message})`,
+    )
 
     await this.db[event.topic].put({
       id: event.section,
       version: versionDB != null ? versionDB : this.version,
       data: event.message,
-      created: new Date().getTime()
+      created: new Date().getTime(),
     })
   }
 
@@ -87,7 +89,7 @@ class LiaDB {
 
     const item = await this.db[event.topic].get({
       id: event.section,
-      version: versionDB != undefined ? versionDB : this.version
+      version: versionDB != undefined ? versionDB : this.version,
     })
 
     if (item) {
@@ -95,14 +97,14 @@ class LiaDB {
       event.message = {
         topic: Port.RESTORE,
         section: -1,
-        message: item.data
+        message: item.data,
       }
       this.send(event)
     } else if (event.topic === Port.CODE) {
       event.message = {
         topic: Port.RESTORE,
         section: -1,
-        message: null
+        message: null,
       }
       this.send(event)
     }
@@ -113,7 +115,8 @@ class LiaDB {
 
     const name = this.db.name
 
-    this.db.delete()
+    this.db
+      .delete()
       .then(() => {
         log.info('database deleted: ', name)
       })
@@ -126,13 +129,13 @@ class LiaDB {
     try {
       let data = await this.db.offline.get({
         id: 0,
-        version: this.version
+        version: this.version,
       })
 
       data.data.section_active = id
 
       await this.db.offline.put(data)
-    } catch (e) { }
+    } catch (e) {}
   }
 
   async update(event: Lia.Event, slide: number) {
@@ -142,7 +145,7 @@ class LiaDB {
     await db.transaction('rw', db.code, async () => {
       const vector = await db.code.get({
         id: slide,
-        version: this.version
+        version: this.version,
       })
 
       if (vector.data) {
@@ -151,9 +154,11 @@ class LiaDB {
         switch (event.topic) {
           case 'flip': {
             if (event.message.topic === 'view') {
-              project.file[event.message.section].visible = event.message.message
+              project.file[event.message.section].visible =
+                event.message.message
             } else if (event.message.topic === 'fullscreen') {
-              project.file[event.message.section].fullscreen = event.message.message
+              project.file[event.message.section].fullscreen =
+                event.message.message
             }
             break
           }
@@ -179,7 +184,7 @@ class LiaDB {
             project.version.push(e_.version)
             project.repository = {
               ...project.repository,
-              ...e_.repository
+              ...e_.repository,
             }
             break
           }
@@ -190,7 +195,7 @@ class LiaDB {
 
         vector.data[event.section] = project
 
-        await (db.code.put(vector))
+        await db.code.put(vector)
       }
     })
   }
@@ -205,19 +210,18 @@ class LiaDB {
 
       const offline = await db.offline.get({
         id: 0,
-        version: versionDB != null ? versionDB : this.version
+        version: versionDB != null ? versionDB : this.version,
       })
 
       this.send({
         topic: Port.RESTORE,
         message: offline === undefined ? null : offline.data,
-        section: -1
+        section: -1,
       })
     }
   }
 
   async getIndex(uidDB: string) {
-    
     try {
       const course = await this.dbIndex.courses.get(uidDB)
 
@@ -225,20 +229,20 @@ class LiaDB {
         topic: 'getIndex',
         message: {
           id: uidDB,
-          course: course
+          course: course,
         },
-        section: -1
+        section: -1,
       })
-    } catch(e) {
-      log.warn("DB: getIndex -> ", e.message)
+    } catch (e) {
+      log.warn('DB: getIndex -> ', e.message)
 
       this.send({
         topic: 'getIndex',
         message: {
           id: uidDB,
-          course: null
+          course: null,
         },
-        section: -1
+        section: -1,
       })
     }
   }
@@ -254,14 +258,14 @@ class LiaDB {
       topic: Port.INDEX,
       section: -1,
       message: {
-        list: courses
-      }
+        list: courses,
+      },
     })
   }
 
   async storeIndex(data: any) {
     if (!this.dbIndex.isOpen()) {
-      log.warn("DB: storeIndex ... db is closed")
+      log.warn('DB: storeIndex ... db is closed')
       return
     }
     let date = new Date()
@@ -275,7 +279,7 @@ class LiaDB {
         data: {},
         created: date.getTime(),
         updated: null,
-        updated_str: null
+        updated_str: null,
       }
     }
 
@@ -292,7 +296,7 @@ class LiaDB {
         id: 0,
         version: data.version,
         data: data,
-        created: date.getTime()
+        created: date.getTime(),
       })
     } else if (item.data[data.version].version !== data.definition.version) {
       item.data[data.version] = data.definition
@@ -307,21 +311,17 @@ class LiaDB {
         id: 0,
         version: data.version,
         data: data,
-        created: date.getTime()
+        created: date.getTime(),
       })
     }
 
-    this.dbIndex.courses.put(item)
-    .then(function (result: any) {
-      log.info("DB: storeIndex", result)
+    this.dbIndex.courses.put(item).then(function (result: any) {
+      log.info('DB: storeIndex', result)
     })
   }
 
   async deleteIndex(uidDB: string) {
-    await Promise.all([
-      this.dbIndex.courses.delete(uidDB),
-      Dexie.delete(uidDB)
-    ])
+    await Promise.all([this.dbIndex.courses.delete(uidDB), Dexie.delete(uidDB)])
   }
 
   async reset(uidDB: string, versionDB: number) {
@@ -331,11 +331,9 @@ class LiaDB {
     await Promise.all([
       db.code.where('version').equals(versionDB).delete(),
       db.quiz.where('version').equals(versionDB).delete(),
-      db.survey.where('version').equals(versionDB).delete()
+      db.survey.where('version').equals(versionDB).delete(),
     ])
   }
-};
-
-export {
-  LiaDB
 }
+
+export { LiaDB }

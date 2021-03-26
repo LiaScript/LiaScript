@@ -15,7 +15,7 @@ enum Port {
   SURVEY = 'survey',
   SWIPE = 'swipe',
   TASK = 'task',
-  TRANSLATE = 'googleTranslate'
+  TRANSLATE = 'googleTranslate',
 }
 
 export default Port

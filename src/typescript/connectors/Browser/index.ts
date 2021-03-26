@@ -5,7 +5,6 @@ import { LiaDB } from './database'
 import { Connector as Base } from '../Base/index'
 
 class Connector extends Base {
-
   private database?: LiaDB
 
   hasIndex() {
@@ -23,57 +22,47 @@ class Connector extends Base {
 
   open(uidDB: string, versionDB: number, slide: number, _data?: Lia.Event) {
     if (this.database)
-      this.database.open(
-        uidDB,
-        versionDB, {
-          topic: Port.CODE,
-          section: slide,
-          message: {
-            topic: Port.RESTORE,
-            section: -1,
-            message: null
-          }
-        })
+      this.database.open(uidDB, versionDB, {
+        topic: Port.CODE,
+        section: slide,
+        message: {
+          topic: Port.RESTORE,
+          section: -1,
+          message: null,
+        },
+      })
   }
 
   load(event: Lia.Event) {
-    if (this.database)
-      this.database.load(event)
+    if (this.database) this.database.load(event)
   }
 
   store(event: Lia.Event) {
-    if (this.database)
-      this.database.store(event)
+    if (this.database) this.database.store(event)
   }
 
   update(event: Lia.Event, id: number) {
-    if (this.database)
-      this.database.update(event, id)
+    if (this.database) this.database.update(event, id)
   }
 
   slide(id: number) {
-    if (this.database)
-      this.database.slide(id)
+    if (this.database) this.database.slide(id)
   }
 
   getIndex() {
-    if (this.database)
-      this.database.listIndex()
+    if (this.database) this.database.listIndex()
   }
 
   deleteFromIndex(uidDB: string) {
-    if (this.database)
-      this.database.deleteIndex(uidDB)
+    if (this.database) this.database.deleteIndex(uidDB)
   }
 
   storeToIndex(json: any) {
-    if (this.database)
-      this.database.storeIndex(json)
+    if (this.database) this.database.storeIndex(json)
   }
 
   restoreFromIndex(uidDB: string, versionDB?: number) {
-    if (this.database)
-      this.database.restore(uidDB, versionDB)
+    if (this.database) this.database.restore(uidDB, versionDB)
   }
 
   reset(uidDB?: string, versionDB?: number) {
@@ -82,11 +71,8 @@ class Connector extends Base {
   }
 
   getFromIndex(uidDB: string) {
-    if (this.database)
-      this.database.getIndex(uidDB)
+    if (this.database) this.database.getIndex(uidDB)
   }
 }
 
-export {
-  Connector
-}
+export { Connector }
