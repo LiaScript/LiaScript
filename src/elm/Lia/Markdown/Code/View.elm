@@ -27,6 +27,10 @@ view lang theme model code =
                             |> Array.toList
                             |> List.indexedMap (viewCode False lang theme True (always JE.null) id_1)
                             |> List.map2 (\a e -> e a) pro.attr
+                            |> CList.attachIf (not <| Log.isEmpty pro.log)
+                                (Html.div [ Attr.class "lia-code-terminal" ]
+                                    [ view_result pro.log ]
+                                )
                     )
                 |> Maybe.withDefault [ Html.text "" ]
                 |> Html.div [ Attr.class "lia-code lia-code--block" ]

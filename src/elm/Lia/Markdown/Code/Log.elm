@@ -6,6 +6,7 @@ module Lia.Markdown.Code.Log exposing
     , decoder
     , empty
     , encode
+    , isEmpty
     , length
     , view
     )
@@ -43,6 +44,11 @@ type alias Log =
 empty : Log
 empty =
     Log True Debug Array.empty []
+
+
+isEmpty : Log -> Bool
+isEmpty =
+    .messages >> Array.isEmpty
 
 
 view : Log -> List ( String, Html msg )
