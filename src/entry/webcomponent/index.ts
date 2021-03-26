@@ -5,7 +5,6 @@ import { Connector } from '../../typescript/connectors/Base/index'
 import TTS from '../../typescript/liascript/tts'
 
 import '../../scss/main.scss'
-import '../../../node_modules/material-icons/iconfont/material-icons.scss'
 
 import '../../typescript/webcomponents/editor'
 import '../../typescript/webcomponents/formula'
