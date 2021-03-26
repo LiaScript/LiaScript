@@ -5,13 +5,14 @@ module Lia.Markdown.Code.Update exposing
     )
 
 import Array exposing (Array)
+import Conditional.Array as CArray
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Code.Events as Event
 import Lia.Markdown.Code.Json as Json
 import Lia.Markdown.Code.Log as Log
 import Lia.Markdown.Code.Terminal as Terminal
-import Lia.Markdown.Code.Types exposing (Code(..), File, Model, Project, Vector, loadVersion, updateVersion)
+import Lia.Markdown.Code.Types exposing (Code(..), File, Model, Project, loadVersion, updateVersion)
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Port.Eval exposing (Eval)
 import Port.Event exposing (Event)
@@ -21,8 +22,8 @@ type Msg
     = Eval Int
     | Stop Int
     | Update Int Int String
-    | FlipView Int Int
-    | FlipFullscreen Int Int
+    | FlipView Code Int
+    | FlipFullscreen Code Int
     | Load Int Int
     | First Int
     | Last Int
@@ -76,7 +77,7 @@ update scripts msg model =
                 (\f -> { f | code = code_str })
                 (\_ -> [])
 
-        FlipView id_1 id_2 ->
+        FlipView (Evaluate id_1) id_2 ->
             update_file
                 id_1
                 id_2
@@ -84,7 +85,45 @@ update scripts msg model =
                 (\f -> { f | visible = not f.visible })
                 (Event.flip_view id_1 id_2)
 
-        FlipFullscreen id_1 id_2 ->
+        FlipView (Highlight id_1) id_2 ->
+            ( { model
+                | highlight =
+                    CArray.setWhen id_1
+                        (model.highlight
+                            |> Array.get id_1
+                            |> Maybe.map
+                                (\pro ->
+                                    { pro
+                                        | file =
+                                            updateArray (\f -> { f | visible = not f.visible }) id_2 pro.file
+                                    }
+                                )
+                        )
+                        model.highlight
+              }
+            , []
+            )
+
+        FlipFullscreen (Highlight id_1) id_2 ->
+            ( { model
+                | highlight =
+                    CArray.setWhen id_1
+                        (model.highlight
+                            |> Array.get id_1
+                            |> Maybe.map
+                                (\pro ->
+                                    { pro
+                                        | file =
+                                            updateArray (\f -> { f | fullscreen = not f.fullscreen }) id_2 pro.file
+                                    }
+                                )
+                        )
+                        model.highlight
+              }
+            , []
+            )
+
+        FlipFullscreen (Evaluate id_1) id_2 ->
             update_file
                 id_1
                 id_2
@@ -361,3 +400,13 @@ logger fn level event_str project =
 
         _ ->
             project
+
+
+updateArray : (e -> e) -> Int -> Array e -> Array e
+updateArray fn i array =
+    CArray.setWhen i
+        (array
+            |> Array.get i
+            |> Maybe.map fn
+        )
+        array

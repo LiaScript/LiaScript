@@ -1,15 +1,15 @@
 module Lia.Markdown.Code.View exposing (view)
 
 import Array
+import Conditional.List as CList
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Html.Events exposing (onClick)
 import Html.Keyed as Keyed
 import Json.Encode as JE
 import Lia.Markdown.Code.Editor as Editor
 import Lia.Markdown.Code.Log as Log exposing (Log)
 import Lia.Markdown.Code.Terminal as Terminal
-import Lia.Markdown.Code.Types exposing (Code(..), File, Model, Snippet, Vector)
+import Lia.Markdown.Code.Types exposing (Code(..), File, Model)
 import Lia.Markdown.Code.Update exposing (Msg(..))
 import Lia.Markdown.HTML.Attributes as Params exposing (Parameters)
 import Lia.Utils exposing (btnIcon)
@@ -19,9 +19,16 @@ import Translations exposing (Lang, codeExecute, codeFirst, codeLast, codeMaximi
 view : Lang -> String -> Model -> Code -> Html Msg
 view lang theme model code =
     case code of
-        Highlight lang_title_code ->
-            lang_title_code
-                |> List.map (view_code lang theme)
+        Highlight id_1 ->
+            Array.get id_1 model.highlight
+                |> Maybe.map
+                    (\pro ->
+                        pro.file
+                            |> Array.toList
+                            |> List.indexedMap (viewCode False lang theme True (always JE.null) id_1)
+                            |> List.map2 (\a e -> e a) pro.attr
+                    )
+                |> Maybe.withDefault [ Html.text "" ]
                 |> Html.div [ Attr.class "lia-code lia-code--block" ]
 
         Evaluate id_1 ->
@@ -35,7 +42,7 @@ view lang theme model code =
                         (List.append
                             (project.file
                                 |> Array.toList
-                                |> List.indexedMap (view_eval lang theme project.running errors id_1)
+                                |> List.indexedMap (viewCode True lang theme project.running errors id_1)
                                 |> List.map2 (\a e -> e a) project.attr
                             )
                             [ view_control lang
@@ -83,39 +90,10 @@ list_get idx list =
                 list_get (idx - 1) xs
 
 
-view_code : Lang -> String -> Snippet -> Html Msg
-view_code lang theme snippet =
-    Html.div [ Attr.class "lia-accordion" ]
-        [ Html.div [ Attr.class "lia-accordion__item" ]
-            [ if snippet.name == "" then
-                Html.text ""
-
-              else
-                Html.div [ Attr.class "lia-accordion__header" ]
-                    [ Html.h3
-                        [ Attr.class "lia-accordion__headline" ]
-                        [ Html.text snippet.name
-                        ]
-                    , btnIcon
-                        { title = codeMaximize lang
-                        , icon = "icon-minus"
-                        , msg = Just <| FlipView -1 -1
-                        , tabbable = False
-                        }
-                        [ Attr.class "lia-accordion__toggle"
-                        ]
-                    ]
-            , Html.div [ Attr.class "lia-accordion__content" ]
-                [ Html.div [ Attr.class "lia-code__input" ] [ highlight theme snippet.attr snippet.lang snippet.code ]
-                ]
-            ]
-        ]
-
-
-view_eval : Lang -> String -> Bool -> (Int -> JE.Value) -> Int -> Int -> File -> Parameters -> Html Msg
-view_eval lang theme running errors id_1 id_2 file attr =
+viewCode : Bool -> Lang -> String -> Bool -> (Int -> JE.Value) -> Int -> Int -> File -> Parameters -> Html Msg
+viewCode executable lang theme running errors id_1 id_2 file attr =
     if file.name == "" then
-        Html.div [ Attr.class "lia-code__input" ] [ evaluate theme attr running ( id_1, id_2 ) file (errors id_2) ]
+        Html.div [ Attr.class "lia-code__input" ] [ evaluate executable theme attr running ( id_1, id_2 ) file (errors id_2) ]
 
     else
         Html.div [ Attr.class "lia-accordion" ]
@@ -128,8 +106,17 @@ view_eval lang theme running errors id_1 id_2 file attr =
                                 codeMaximize lang
 
                             else
-                                codeMaximize lang
-                        , msg = Just <| FlipView id_1 id_2
+                                codeMinimize lang
+                        , msg =
+                            Just <|
+                                FlipView
+                                    (if executable then
+                                        Evaluate id_1
+
+                                     else
+                                        Highlight id_1
+                                    )
+                                    id_2
                         , icon =
                             if file.visible then
                                 "icon-minus"
@@ -147,15 +134,24 @@ view_eval lang theme running errors id_1 id_2 file attr =
                         ]
                     ]
                     [ Html.div [ Attr.class "lia-code__input" ]
-                        [ if file.visible then
+                        [ if file.visible && executable then
                             btnIcon
                                 { title =
                                     if file.fullscreen then
-                                        codeMaximize lang
+                                        codeMinimize lang
 
                                     else
                                         codeMaximize lang
-                                , msg = Just <| FlipFullscreen id_1 id_2
+                                , msg =
+                                    Just <|
+                                        FlipFullscreen
+                                            (if executable then
+                                                Evaluate id_1
+
+                                             else
+                                                Highlight id_1
+                                            )
+                                            id_2
                                 , icon =
                                     if file.fullscreen then
                                         "icon-chevron-up"
@@ -168,7 +164,7 @@ view_eval lang theme running errors id_1 id_2 file attr =
 
                           else
                             Html.text ""
-                        , evaluate theme attr running ( id_1, id_2 ) file (errors id_2)
+                        , evaluate executable theme attr running ( id_1, id_2 ) file (errors id_2)
                         ]
                     ]
                 ]
@@ -200,8 +196,8 @@ pixel from_lines =
     from_lines * 21 + 16
 
 
-highlight : String -> Parameters -> String -> String -> Html Msg
-highlight theme attr lang code =
+highlight : String -> Parameters -> File -> Html Msg
+highlight theme attr file =
     let
         readOnly =
             if Params.get "data-readonly" attr == Nothing then
@@ -214,8 +210,8 @@ highlight theme attr lang code =
         (attr
             |> Params.toAttribute
             |> List.append
-                [ Editor.value code
-                , Editor.mode lang
+                [ Editor.value file.code
+                , Editor.mode file.lang
                 , attr
                     |> Params.get "data-theme"
                     |> Maybe.withDefault theme
@@ -251,8 +247,8 @@ highlight theme attr lang code =
         []
 
 
-evaluate : String -> Parameters -> Bool -> ( Int, Int ) -> File -> JE.Value -> Html Msg
-evaluate theme attr running ( id_1, id_2 ) file errors =
+evaluate : Bool -> String -> Parameters -> Bool -> ( Int, Int ) -> File -> JE.Value -> Html Msg
+evaluate executable theme attr running ( id_1, id_2 ) file errors =
     let
         total_lines =
             lines file.code
@@ -268,12 +264,18 @@ evaluate theme attr running ( id_1, id_2 ) file errors =
                 total_lines
 
         readOnly =
-            if running then
-                running
+            if executable then
+                if running then
+                    running
+
+                else
+                    Params.isSet "data-readonly" attr
+
+            else if Params.get "data-readonly" attr == Nothing then
+                True
 
             else
-                attr
-                    |> Params.isSet "data-readonly"
+                Params.isSet "data-readonly" attr
     in
     Editor.editor
         (attr
@@ -317,13 +319,13 @@ evaluate theme attr running ( id_1, id_2 ) file errors =
                     |> Maybe.andThen String.toInt
                     |> Maybe.withDefault 1
                     |> Editor.firstLineNumber
-                , if Params.get "data-showgutter" attr /= Nothing then
-                    attr
-                        |> Params.isSet "data-showgutter"
-                        |> Editor.showGutter
+                , Editor.showGutter <|
+                    if Params.get "data-showgutter" attr /= Nothing then
+                        attr
+                            |> Params.isSet "data-showgutter"
 
-                  else
-                    Editor.showGutter True
+                    else
+                        executable
                 , Editor.useSoftTabs False
                 , Editor.annotations errors
                 , Editor.enableBasicAutocompletion True

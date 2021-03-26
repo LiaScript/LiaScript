@@ -75,7 +75,7 @@ type alias Snippet =
 
 
 type Code
-    = Highlight (List Snippet)
+    = Highlight Int
     | Evaluate Int
 
 
@@ -85,20 +85,20 @@ init =
     Model Array.empty Array.empty
 
 
-toFile : ( Snippet, Bool ) -> ( Parameters, File )
-toFile ( { attr, lang, name, code }, visible ) =
-    ( attr, File lang name code visible False )
+toFile : Bool -> ( Snippet, Bool ) -> ( Parameters, File )
+toFile fullscreen ( { attr, lang, name, code }, visible ) =
+    ( attr, File lang name code visible fullscreen )
 
 
-initProject : Array ( Snippet, Bool ) -> String -> Log -> Project
-initProject array comment output =
+initProject : Bool -> Array ( Snippet, Bool ) -> String -> Log -> Project
+initProject fullscreen array comment output =
     let
         ( attr, files ) =
             Array.foldl
                 (\s ( a, f ) ->
                     let
                         ( a_, f_ ) =
-                            toFile s
+                            toFile fullscreen s
                     in
                     ( List.append a [ a_ ]
                     , Array.push f_ f

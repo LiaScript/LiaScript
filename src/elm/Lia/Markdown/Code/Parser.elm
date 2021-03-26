@@ -54,10 +54,7 @@ result ( lst, script ) =
             evaluate lst str
 
         Nothing ->
-            lst
-                |> List.map Tuple.first
-                |> Highlight
-                |> succeed
+            highlight lst
 
 
 header : Parser Context String
@@ -133,13 +130,53 @@ evaluate lang_title_code comment =
             in
             { s
                 | code_model =
-                    { model | evaluate = Array.push (initProject array comment output) model.evaluate }
+                    { model | evaluate = Array.push (initProject False array comment output) model.evaluate }
             }
     in
     (.code_model
         >> .evaluate
         >> Array.length
         >> Evaluate
+        >> succeed
+    )
+        |> withState
+        |> ignore (modifyState add_state)
+
+
+highlight : List ( Snippet, Bool ) -> Parser Context Code
+highlight lang_title_code =
+    let
+        ar =
+            Array.fromList lang_title_code
+
+        ( output, array ) =
+            case Array.get (Array.length ar - 1) ar of
+                Just ( snippet, vis ) ->
+                    if String.toLower snippet.name == "@output" then
+                        ( Log.add_Eval (Eval vis snippet.code []) Log.empty
+                        , Array.slice 0 -1 ar
+                        )
+
+                    else
+                        ( Log.empty, ar )
+
+                _ ->
+                    ( Log.empty, ar )
+
+        add_state s =
+            let
+                model =
+                    s.code_model
+            in
+            { s
+                | code_model =
+                    { model | highlight = Array.push (initProject True array "" output) model.highlight }
+            }
+    in
+    (.code_model
+        >> .highlight
+        >> Array.length
+        >> Highlight
         >> succeed
     )
         |> withState
