@@ -1,3 +1,4 @@
+// @ts-ignore
 import ace from 'ace-builds/src-noconflict/ace'
 import getMode from './editor-modes'
 

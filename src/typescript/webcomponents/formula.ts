@@ -1,4 +1,5 @@
 import 'katex/dist/katex.min.css';
+// @ts-ignore
 import katex from 'katex'
 
 customElements.define('lia-formula', class extends HTMLElement {

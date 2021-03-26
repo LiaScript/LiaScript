@@ -1,3 +1,4 @@
+// @ts-ignore
 import * as echarts from 'echarts'
 
 import 'echarts/i18n/langDE.js'
@@ -173,7 +174,7 @@ customElements.define('lia-chart', class extends HTMLElement {
     if (val) {
       if (JSON.stringify(val) !== JSON.stringify(this.option_)) {
         this.option_ = val
-        this.option_["aria"] = {show: true} //, decal: { show: true }}
+        this.option_["aria"] = { show: true } //, decal: { show: true }}
         this.updateChart()
       }
     }

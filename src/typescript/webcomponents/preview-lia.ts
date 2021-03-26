@@ -1,6 +1,5 @@
-import {
-  Elm
-} from '../../elm/Worker.elm'
+// @ts-ignore
+import { Elm } from '../../elm/Worker.elm'
 
 function fetch(self: PreviewLia) {
   let http = new XMLHttpRequest()
