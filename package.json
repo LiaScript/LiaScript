@@ -72,7 +72,6 @@
     "katex": "^0.12.0",
     "lodash": "^4.17.20",
     "logger.ts": "^1.0.5",
-    "material-icons": "^0.3.1",
     "node-elm-compiler": "^5.0.5",
     "parcel": "^1.12.4",
     "parcel-plugin-static-files-copy": "^2.5.1",
