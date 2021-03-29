@@ -7,6 +7,7 @@ port module Lia.Update exposing
     )
 
 import Array exposing (Array)
+import Const
 import Dict
 import Json.Decode as JD
 import Json.Encode as JE
@@ -95,14 +96,46 @@ update : Session -> Msg -> Model -> ( Model, Cmd Msg, List Event )
 update session msg model =
     case msg of
         Load force idx ->
+            let
+                settings =
+                    model.settings
+            in
             if (-1 < idx) && (idx < Array.length model.sections) then
                 if idx == model.section_active || force then
-                    { model | section_active = idx }
+                    { model
+                        | section_active = idx
+                        , settings =
+                            { settings
+                                | table_of_contents =
+                                    if
+                                        session.screen.width
+                                            <= Const.globalBreakpoints.sm
+                                    then
+                                        False
+
+                                    else
+                                        settings.table_of_contents
+                            }
+                    }
                         |> generate
                         |> update session InitSection
 
                 else
-                    ( { model | section_active = idx }
+                    ( { model
+                        | section_active = idx
+                        , settings =
+                            { settings
+                                | table_of_contents =
+                                    if
+                                        session.screen.width
+                                            <= Const.globalBreakpoints.sm
+                                    then
+                                        False
+
+                                    else
+                                        settings.table_of_contents
+                            }
+                      }
                     , Session.navToSlide session idx
                     , []
                     )
