@@ -46,7 +46,7 @@ export class Connector {
         json = defaultSettings
       }
 
-      if (window.innerWidth <= 620) {
+      if (window.innerWidth <= 768) {
         json.table_of_contents = false
       }
     }

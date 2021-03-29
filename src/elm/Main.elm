@@ -2,6 +2,7 @@ module Main exposing (main)
 
 import Browser
 import Browser.Navigation as Nav
+import Const
 import Index.Model as Index
 import Json.Encode as JE
 import Lia.Parser.PatReplace exposing (link)
@@ -87,7 +88,7 @@ init flags url key =
             { url | query = Maybe.map link url.query }
 
         openTableOfContents =
-            flags.screen.width > 620
+            flags.screen.width > Const.globalBreakpoints.sm
     in
     case ( courseUrl.query, flags.courseUrl, flags.script ) of
         -- directly parse the scirpt

@@ -1,5 +1,7 @@
 module Lia.Markdown.Footnote.View exposing (block, inline)
 
+import Accessibility.Aria as A11y_Aria
+import Accessibility.Role as A11y_Role
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Lia.Markdown.Footnote.Model exposing (Model, empty, toList)
@@ -9,9 +11,12 @@ import Lia.Markdown.Types exposing (Markdown)
 inline : String -> List (Html.Attribute msg) -> Html msg
 inline key attr =
     Html.sup
-        (attr
-            |> (::) (Attr.style "cursor" "pointer")
-            |> (::) (Attr.attribute "onclick" ("showFootnote(\"" ++ key ++ "\");"))
+        ([ Attr.style "cursor" "pointer"
+         , Attr.attribute "onclick" ("showFootnote(\"" ++ key ++ "\");")
+         , A11y_Role.link
+         , A11y_Aria.describedBy [ by key ]
+         ]
+            |> List.append attr
         )
         [ braces key ]
 
@@ -49,7 +54,7 @@ definition fn ( key, val ) =
             [ Attr.attribute "valign" "top"
             , Attr.style "padding-right" "10px"
             ]
-            [ Html.p [] [ braces key ] ]
+            [ Html.p [ Attr.id <| by key ] [ braces key ] ]
         , Html.td
             [ Attr.attribute "valign" "top" ]
             (List.map fn val)
@@ -59,3 +64,8 @@ definition fn ( key, val ) =
 braces : String -> Html msg
 braces key =
     Html.text ("[" ++ key ++ "]")
+
+
+by : String -> String
+by =
+    (++) "footnote-"

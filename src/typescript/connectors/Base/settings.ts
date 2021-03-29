@@ -2,7 +2,7 @@ import Lia from '../../liascript/types/lia.d'
 import Port from '../../liascript/types/ports'
 
 export const defaultSettings: Lia.Settings = {
-  table_of_contents: window.innerWidth > 620,
+  table_of_contents: window.innerWidth > 768,
   mode: 'Textbook',
   theme: 'default',
   light: true,
