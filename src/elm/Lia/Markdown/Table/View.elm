@@ -555,19 +555,20 @@ viewTable attr body =
 
 
 toggleBtn : Int -> ( String, String ) -> Html Msg
-toggleBtn id ( icon, title ) =
+toggleBtn id ( name, title ) =
     btn
         { title = title
         , msg = Just <| UpdateTable <| Sub.Toggle id
         , tabbable = True
         }
         [ Attr.class "lia-btn--outline lia-plot__switch mb-1" ]
-        [ Html.img
-            [ Attr.height 16
-            , Attr.width 16
-            , Attr.src <| "img/" ++ icon ++ ".png"
-            ]
-            []
+        [ --Html.img
+          -- [ Attr.height 16
+          -- , Attr.width 16
+          -- , Attr.src <| "img/" ++ icon ++ ".png"
+          -- ]
+          -- []
+          icon ("icon-" ++ name) []
         , Html.span [ Attr.class "lia-btn__text" ]
             [ Html.text title
             ]
