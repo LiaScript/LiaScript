@@ -147,17 +147,17 @@ block_playback : Config sub -> Effect Markdown -> Html Msg
 block_playback config e =
     if config.speaking == Just e.id then
         Html.button
-            [ Attr.class "lia-btn"
+            [ Attr.class "lia-btn icon icon-stop-circle"
             , e.id
                 |> E.Mute
                 |> UpdateEffect True
                 |> onClick
             ]
-            [ Html.text "stop" ]
+            []
 
     else
         Html.button
-            [ Attr.class "lia-btn"
+            [ Attr.class "lia-btn icon icon-play-circle"
             , e.content
                 |> List.map (stringify config.scripts config.visible)
                 |> List.intersperse "\n"
@@ -166,14 +166,14 @@ block_playback config e =
                 |> UpdateEffect True
                 |> onClick
             ]
-            [ Html.text "play_arrow" ]
+            []
 
 
 inline_playback : Config sub -> Effect Inline -> Html msg
 inline_playback config e =
     if config.speaking == Just e.id then
         Html.button
-            [ Attr.class "lia-btn"
+            [ Attr.class "lia-btn lia-btn--transparent icon icon-stop-circle mx-1"
             , Port.TTS.mute e.id
                 |> Event.encode
                 |> Event "effect" config.slide
@@ -182,11 +182,11 @@ inline_playback config e =
                 |> (\event -> "playback(" ++ event ++ ")")
                 |> Attr.attribute "onclick"
             ]
-            [ Html.text "stop" ]
+            []
 
     else
         Html.button
-            [ Attr.class "lia-btn"
+            [ Attr.class "lia-btn lia-btn--transparent icon icon-play-circle mx-1"
             , e.content
                 |> I.stringify
                 |> Port.TTS.playback e.id e.voice
@@ -197,7 +197,7 @@ inline_playback config e =
                 |> (\event -> "playback(" ++ event ++ ")")
                 |> Attr.attribute "onclick"
             ]
-            [ Html.text "play_arrow" ]
+            []
 
 
 circle : Int -> Html msg

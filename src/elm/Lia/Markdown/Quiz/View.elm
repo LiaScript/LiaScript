@@ -256,7 +256,7 @@ viewHintButton id show active title =
             , icon = "icon-hint"
             , tabbable = True
             }
-            [ Attr.class "lia-quiz__hint" ]
+            [ Attr.class "lia-btn--transparent lia-quiz__hint" ]
 
     else
         Html.text ""
