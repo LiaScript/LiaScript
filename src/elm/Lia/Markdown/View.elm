@@ -133,11 +133,8 @@ view_footnote viewer key footnotes =
                 , Attr.style "height" "100%"
                 , Attr.style "top" "0"
                 , Attr.style "right" "0"
-                , Attr.style "background-color" "rgba(0,0,0,0.8)"
-                , Attr.style "z-index" "9999"
-                , Attr.style "overflow" "auto"
-
-                --, onClick FootnoteHide
+                , Attr.style "z-index" "10000"
+                , Attr.class "lia-modal"
                 ]
                 [ notes
                     |> List.map viewer
@@ -147,11 +144,13 @@ view_footnote viewer key footnotes =
                             { icon = "icon-close"
                             , msg = Just FootnoteHide
                             , tabbable = True
-                            , title = "close"
+                            , title = "close modal"
                             }
                             [ Attr.class "lia-btn--transparent"
                             , Attr.style "float" "right"
                             , Attr.style "right" "-3.5rem"
+                            , Attr.id "lia-close-modal"
+                            , A11y_Key.onKeyDown [ A11y_Key.escape FootnoteHide ]
                             ]
                         )
                     |> Html.div
@@ -164,8 +163,15 @@ view_footnote viewer key footnotes =
                         , Attr.style "-ms-transform" "translate(-50%,-30%)"
                         , A11y_Widget.modal True
                         , A11y_Role.dialog
-                        , Attr.style "z-index" "10000"
                         ]
+                , Html.div
+                    [ Attr.style "background-color" "rgba(0,0,0,0.8)"
+                    , Attr.style "width" "100%"
+                    , Attr.style "height" "100%"
+                    , Attr.style "overflow" "auto"
+                    , onClick FootnoteHide
+                    ]
+                    []
                 ]
 
         Nothing ->
