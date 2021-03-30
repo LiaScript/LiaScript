@@ -380,7 +380,7 @@ slideNavigation : Lang -> Mode -> Int -> Effect.Model SubSection -> Html Msg
 slideNavigation lang mode slide effect =
     Html.div [ Attr.class "lia-pagination" ]
         [ Html.div [ Attr.class "lia-pagination__content" ]
-            [ navButton (Trans.basePrev lang) "lia-btn-prev" "icon-arrow-left" PrevSection
+            [ navButton (Trans.baseNext lang) "lia-btn-next" "icon-arrow-right" NextSection
             , Html.span
                 [ Attr.class "lia-pagination__current" ]
                 [ Html.text (String.fromInt (slide + 1))
@@ -394,7 +394,7 @@ slideNavigation lang mode slide effect =
                                 state effect
                     ]
                 ]
-            , navButton (Trans.baseNext lang) "lia-btn-next" "icon-arrow-right" NextSection
+            , navButton (Trans.basePrev lang) "lia-btn-prev" "icon-arrow-left" PrevSection
             ]
         ]
 
