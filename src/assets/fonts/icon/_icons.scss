@@ -440,57 +440,72 @@ $icon-settings: "\EA2D";
   content: $icon-settings
 }
 
-$icon-slides: "\EA2E";
+$icon-sign-in: "\EA2E";
+.icon-sign-in:before {
+  content: $icon-sign-in
+}
+
+$icon-slides: "\EA2F";
 .icon-slides:before {
   content: $icon-slides
 }
 
-$icon-social: "\EA2F";
+$icon-social: "\EA30";
 .icon-social:before {
   content: $icon-social
 }
 
-$icon-sort-asc: "\EA30";
+$icon-sort-asc: "\EA31";
 .icon-sort-asc:before {
   content: $icon-sort-asc
 }
 
-$icon-sort-desc: "\EA31";
+$icon-sort-desc: "\EA32";
 .icon-sort-desc:before {
   content: $icon-sort-desc
 }
 
-$icon-sound-off: "\EA32";
+$icon-sound-off: "\EA33";
 .icon-sound-off:before {
   content: $icon-sound-off
 }
 
-$icon-sound-on: "\EA33";
+$icon-sound-on: "\EA34";
 .icon-sound-on:before {
   content: $icon-sound-on
 }
 
-$icon-stop-circle: "\EA34";
+$icon-stop-circle: "\EA35";
 .icon-stop-circle:before {
   content: $icon-stop-circle
 }
 
-$icon-table: "\EA35";
+$icon-table: "\EA36";
 .icon-table:before {
   content: $icon-table
 }
 
-$icon-warning: "\EA36";
+$icon-trash-1-01: "\EA37";
+.icon-trash-1-01:before {
+  content: $icon-trash-1-01
+}
+
+$icon-trash: "\EA38";
+.icon-trash:before {
+  content: $icon-trash
+}
+
+$icon-warning: "\EA39";
 .icon-warning:before {
   content: $icon-warning
 }
 
-$icon-zoom-out: "\EA37";
+$icon-zoom-out: "\EA3A";
 .icon-zoom-out:before {
   content: $icon-zoom-out
 }
 
-$icon-zoom: "\EA38";
+$icon-zoom: "\EA3B";
 .icon-zoom:before {
   content: $icon-zoom
 }

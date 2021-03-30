@@ -23,7 +23,7 @@ import Translations exposing (Lang(..))
 
 view : Session -> Model -> Html Msg
 view session model =
-    Html.div []
+    Html.div [ Attr.class "p-2" ]
         [ Html.h1 [] [ Html.text "Lia: Open-courSes" ]
         , searchBar model.input
         , if List.isEmpty model.courses && model.initialized then
@@ -64,16 +64,20 @@ searchBar url =
             , onInput Input
             , Attr.value url
             , Attr.placeholder "course-url"
+            , Attr.class "lia-input border-grey-light max-w-50 mr-1"
 
             --, blockKeydown NoOp
             ]
             []
         , if url == "" then
-            Html.text "load course"
+            Html.button [ Attr.class "lia-btn is-disabled", Attr.disabled True ]
+                [ Html.text "load course"
+                ]
 
           else
-            Html.a
+            Html.button
                 [ href url
+                , Attr.class "lia-btn"
                 ]
                 [ Html.text "load course"
                 ]
@@ -90,13 +94,15 @@ card : Bool -> Course -> Html Msg
 card share course =
     case get_active course of
         Just { title, definition } ->
-            Html.article [ Attr.class "card" ]
+            Html.article [ Attr.class "lia-card" ]
                 [ viewVersions course
                 , viewMedia definition.logo
-                , viewHeader title definition.macro
-                , viewBody definition.comment
-                , viewControls share title definition.comment course
-                , viewFooter definition
+                , Html.div [ Attr.class "lia-card__content" ]
+                    [ viewHeader title definition.macro
+                    , viewBody definition.comment
+                    , viewControls share title definition.comment course
+                    , viewFooter definition
+                    ]
                 ]
 
         _ ->
@@ -133,35 +139,36 @@ viewVersions course =
                     , tabbable = True
                     , title = "load version " ++ value
                     }
-                    [ Attr.class <|
+                    [ Attr.class "lia-btn--tag"
+                    , Attr.class <|
                         case course.active of
                             Just id ->
                                 if id == key then
                                     "active"
 
                                 else
-                                    ""
+                                    "lia-btn--outline"
 
                             Nothing ->
                                 if last == i then
                                     "active"
 
                                 else
-                                    ""
+                                    "lia-btn--outline"
                     ]
                     [ "V " ++ value |> Html.text
                     ]
             )
-        |> Html.div [ Attr.class "card__version" ]
+        |> Html.div [ Attr.class "lia-card__version" ]
 
 
 viewMedia : String -> Html msg
 viewMedia url =
-    Html.div [ Attr.class "card__media" ]
-        [ Html.aside [ Attr.class "card__aside" ]
-            [ Html.figure [ Attr.class "card__figure" ]
+    Html.div [ Attr.class "lia-card__media" ]
+        [ Html.aside [ Attr.class "lia-card__aside" ]
+            [ Html.figure [ Attr.class "lia-card__figure" ]
                 [ Html.img
-                    [ Attr.class "card__image"
+                    [ Attr.class "lia-card__image"
                     , Attr.src <|
                         case String.trim url of
                             "" ->
@@ -178,17 +185,17 @@ viewMedia url =
 
 viewHeader : Inlines -> Dict String String -> Html Msg
 viewHeader title macro =
-    Html.header [ Attr.class "card__header" ]
+    Html.header [ Attr.class "lia-card__header" ]
         [ title
             |> inlines
-            |> Html.h3 [ Attr.class "card__title" ]
+            |> Html.h3 [ Attr.class "lia-card__title" ]
         , macro
             |> Dict.get "tags"
             |> Maybe.map
                 (String.replace ";" " | "
                     >> Html.text
                     >> List.singleton
-                    >> Html.h4 [ Attr.class "card__subtitle" ]
+                    >> Html.h4 [ Attr.class "lia-card__subtitle" ]
                 )
             |> Maybe.withDefault (Html.text "")
         ]
@@ -196,7 +203,7 @@ viewHeader title macro =
 
 viewBody : Inlines -> Html Msg
 viewBody comment =
-    Html.div [ Attr.class "card__body" ] <|
+    Html.div [ Attr.class "lia-card__body" ] <|
         case comment of
             [] ->
                 []
@@ -204,27 +211,27 @@ viewBody comment =
             _ ->
                 [ comment
                     |> inlines
-                    |> Html.p [ Attr.class "card__copy" ]
+                    |> Html.p [ Attr.class "lia-card__copy" ]
                 ]
 
 
 viewControls : Bool -> Inlines -> Inlines -> Course -> Html Msg
 viewControls hasShareAPI title comment course =
-    Html.div [ Attr.class "card__controls" ]
+    Html.div [ Attr.class "lia-card__controls" ]
         [ btn
             { msg = Just <| Delete course.id
             , title = "delete"
             , tabbable = True
             }
+            [ Attr.class "lia-btn lia-btn--tag lia-btn--transparent icon icon-trash text-red-dark border-red-dark px-1" ]
             []
-            [ Html.text "Delete" ]
         , btn
             { msg = Just <| Reset course.id course.active
             , title = "reset"
             , tabbable = True
             }
+            [ Attr.class "lia-btn--tag icon icon-refresh lia-btn--transparent text-grey-dark border-grey px-1" ]
             []
-            [ Html.text "Reset" ]
         , if hasShareAPI then
             btn
                 { msg =
@@ -245,9 +252,9 @@ viewControls hasShareAPI title comment course =
             Nothing ->
                 Html.a
                     [ href course.id
-                    , Attr.class "lia-btn"
+                    , Attr.class "lia-btn lia-btn--transparent lia-btn--tag icon icon-sign-in px-1 text-turquoise border-turquoise"
                     ]
-                    [ Html.text "Open" ]
+                    []
 
             Just _ ->
                 btn
@@ -255,17 +262,17 @@ viewControls hasShareAPI title comment course =
                     , title = "open"
                     , tabbable = True
                     }
-                    []
-                    [ Html.text "Open"
+                    [ Attr.class "lia-btn lia-btn--transparent lia-btn--tag icon icon-sign-in px-1 text-turquoise border-turquoise"
                     ]
+                    []
         ]
 
 
 viewFooter : Definition -> Html msg
 viewFooter definition =
-    Html.footer [ Attr.class "card__footer" ]
+    Html.footer [ Attr.class "lia-card__footer" ]
         [ Html.img
-            [ Attr.class "card__logo"
+            [ Attr.class "lia-card__logo"
             , definition.macro
                 |> getIcon
                 |> Attr.src
@@ -281,7 +288,7 @@ viewFooter definition =
                 contact email email
 
             ( author, "" ) ->
-                Html.span [ Attr.class "card__contact" ] [ Html.text author ]
+                Html.span [ Attr.class "lia-card__contact" ] [ Html.text author ]
 
             ( author, email ) ->
                 contact author email
@@ -290,7 +297,10 @@ viewFooter definition =
 
 contact : String -> String -> Html msg
 contact title mail =
-    Html.a [ Attr.class "card__contact", Attr.href <| "mailto:" ++ mail ] [ Html.text title ]
+    Html.a [ Attr.class "lia-card__contact", Attr.href <| "mailto:" ++ mail ]
+        [ Html.text title
+        , Html.i [ Attr.class "icon icon-mail ml-1 align-middle" ] []
+        ]
 
 
 get_active : Course -> Maybe Release

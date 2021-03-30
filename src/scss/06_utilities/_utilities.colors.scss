@@ -1,0 +1,13 @@
+@each $colorName, $colorValue in $global-colors {
+  .bg-#{$colorName} {
+    background-color: rgb(var(--lia-#{$colorName}));
+  }
+
+  .text-#{$colorName} {
+    color: rgb(var(--lia-#{$colorName}));
+  }
+
+  .border-#{$colorName} {
+    border: 1px solid rgb(var(--lia-#{$colorName}));
+  }
+}

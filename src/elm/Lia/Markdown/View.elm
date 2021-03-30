@@ -216,7 +216,7 @@ view_block config block =
                         (config.view
                             >> List.head
                             >> Maybe.withDefault
-                                (Html.p (annotation "lia-paragraph" attr) (config.view [ element ]))
+                                (Html.p (annotation "lia-paragraph clearfix" attr) (config.view [ element ]))
                         )
                         attr
                         (Node name attributes [ inlines ])
@@ -228,11 +228,11 @@ view_block config block =
                             |> Maybe.withDefault (Html.text "")
 
                     else
-                        Html.p (annotation "lia-paragraph" attr) (config.view [ element ])
+                        Html.p (annotation "lia-paragraph clearfix" attr) (config.view [ element ])
 
         Paragraph attr elements ->
             Html.p
-                (annotation "lia-paragraph" attr)
+                (annotation "lia-paragraph clearfix" attr)
                 (config.view elements)
 
         Effect attr e ->

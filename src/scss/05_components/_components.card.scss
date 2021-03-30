@@ -1,20 +1,131 @@
 .lia-card {
-  padding: map-get($global-spacing, spacing-normal);
-  border-radius: 2px;
+  background-color: white;
+  border: 1px solid #399193;
+  display: flex;
+  flex-direction: column;
+  position: relative;
 
-  min-width: 80%;
-
-  .lia-check-item,
-  .lia-radio-item,
-  .lia-survey-matrix {
-    padding: map-get($global-spacing, spacing-normal);
+  @include breakpoint-only("sm", "md") {
+    display: grid;
+    grid-template-columns: 40% 1fr;
   }
 
-  display: inline-block;
-}
+  &__media {
+    //
+  }
 
-@mixin style-card($theme) {
-  .lia-card {
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  &__logo {
+    height: 100%;
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 2rem 0;
+
+    @include breakpoint-only("sm", "md") {
+      margin-top: 4rem;
+      height: auto;
+      padding-top: 0;
+    }
+  }
+
+  &__aside {
+    @include breakpoint-only("sm", "md") {
+      height: 100%;
+    }
+  }
+
+  &__figure {
+    margin: 0;
+    height: 20rem;
+    width: 100%;
+
+    @include breakpoint-only("sm", "md") {
+      height: 100%;
+    }
+  }
+
+  &__image {
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
+  }
+
+  &__version {
+    position: absolute;
+    right: 2.4rem;
+    top: -1px;
+
+    > *:not(:last-child) {
+      margin-right: 1rem;
+    }
+  }
+
+  &__header {
+    padding: 0 2.4rem;
+  }
+
+  &__title {
+    color: rgb(var(--lia-anthracite));
+    display: inline-block;
+    margin: 0 0 2rem;
+    position: relative;
+
+    &:before {
+      background-color: rgb(var(--lia-turquoise));
+      bottom: -0.5rem;
+      content: "";
+      height: 1px;
+      position: absolute;
+      width: 80%;
+    }
+  }
+
+  &__controls {
+    display: flex;
+    justify-content: center;
+    margin: auto 2.4rem 2rem;
+    font-size: 1.8rem;
+
+    > *:not(:last-child) {
+      margin-right: 1rem;
+    }
+
+    > *:last-child {
+      margin-left: auto;
+    }
+  }
+
+  &__subtitle {
+    color: rgb(var(--lia-anthracite));
+    margin: 0 0 1rem;
+  }
+
+  &__body {
+    padding: 0 2.4rem;
+    margin-bottom: 2rem;
+  }
+
+  &__copy {
+    //
+  }
+
+  &__footer {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 2.4rem;
+    max-height: 5rem;
+  }
+
+  &__contact {
+    color: #399193;
+    text-decoration: none;
+
+    i {
+      font-size: 2rem;
+    }
   }
 }

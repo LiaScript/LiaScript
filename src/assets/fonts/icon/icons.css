@@ -395,48 +395,60 @@
   content: "\EA2D"
 }
 
-.icon-slides:before {
+.icon-sign-in:before {
   content: "\EA2E"
 }
 
-.icon-social:before {
+.icon-slides:before {
   content: "\EA2F"
 }
 
-.icon-sort-asc:before {
+.icon-social:before {
   content: "\EA30"
 }
 
-.icon-sort-desc:before {
+.icon-sort-asc:before {
   content: "\EA31"
 }
 
-.icon-sound-off:before {
+.icon-sort-desc:before {
   content: "\EA32"
 }
 
-.icon-sound-on:before {
+.icon-sound-off:before {
   content: "\EA33"
 }
 
-.icon-stop-circle:before {
+.icon-sound-on:before {
   content: "\EA34"
 }
 
-.icon-table:before {
+.icon-stop-circle:before {
   content: "\EA35"
 }
 
-.icon-warning:before {
+.icon-table:before {
   content: "\EA36"
 }
 
-.icon-zoom-out:before {
+.icon-trash-1-01:before {
   content: "\EA37"
 }
 
-.icon-zoom:before {
+.icon-trash:before {
   content: "\EA38"
+}
+
+.icon-warning:before {
+  content: "\EA39"
+}
+
+.icon-zoom-out:before {
+  content: "\EA3A"
+}
+
+.icon-zoom:before {
+  content: "\EA3B"
 }
 
 

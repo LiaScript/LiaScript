@@ -22,6 +22,10 @@
         left: 0;
         position: absolute;
       }
+
+      > p {
+        display: inline-block;
+      }
     }
 
     ul li ul li {
@@ -41,6 +45,10 @@
       span {
         left: 1rem;
         position: relative;
+
+        > p {
+          display: inline-block;
+        }
       }
     }
   }

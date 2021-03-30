@@ -26,3 +26,20 @@
     }
   }
 }
+
+@mixin breakpoint-only($a, $b) {
+  @if map-has-key($global-breakpoints, $a) and
+    map-has-key($global-breakpoints, $b)
+  {
+    @media screen and (min-width: #{map-get($global-breakpoints, $a) - calc-em(1, 16)}) and (max-width: #{map-get($global-breakpoints, $b) - calc-em(1, 16)}) {
+      @content;
+    }
+  } @else if unitless($a) or unitless($b) {
+    $a: $a + 0px;
+    $b: $b + 0px;
+
+    @media screen and (min-width: $a) and (max-width: $b) {
+      @content;
+    }
+  }
+}

@@ -38,6 +38,7 @@
 // Objects
 @import "04_objects/objects.animations";
 @import "04_objects/object.canvas";
+@import "04_objects/objects.preview-grid";
 
 // Components
 @import "05_components/components.accordion";
@@ -61,12 +62,16 @@
 @import "05_components/components.tooltip";
 
 // Utilities
+@import "06_utilities/utilities.alignment";
+@import "06_utilities/utilities.clearfix";
+@import "06_utilities/utilities.colors";
 @import "06_utilities/utilities.display";
 @import "06_utilities/utilities.headless";
 @import "06_utilities/utilities.headline";
 @import "06_utilities/utilities.hidden";
 @import "06_utilities/utilities.spacings";
 @import "06_utilities/utilities.text";
+@import "06_utilities/utilities.width";
 
 // Dump
 @import "./dump.scss";
