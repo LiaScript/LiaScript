@@ -2,6 +2,7 @@ module Lia.Utils exposing
     ( blockKeydown
     , btn
     , btnIcon
+    , focus
     , get
     , icon
     , onEnter
@@ -11,10 +12,12 @@ module Lia.Utils exposing
 
 import Accessibility.Key as A11y_Key exposing (tabbable)
 import Accessibility.Widget as A11y_Widget
+import Browser.Dom as Dom
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Html.Events as Event
 import Json.Decode as JD
+import Task
 import Translations exposing (Lang(..))
 
 
@@ -149,3 +152,8 @@ icon class attributes =
             attributes
         )
         []
+
+
+focus : msg -> String -> Cmd msg
+focus msg =
+    Dom.focus >> Task.attempt (always msg)
