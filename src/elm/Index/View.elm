@@ -195,13 +195,13 @@ viewBody comment =
             _ ->
                 [ comment
                     |> inlines
-                    |> Html.p [ Attr.class "card_copy" ]
+                    |> Html.p [ Attr.class "card__copy" ]
                 ]
 
 
 viewControls : Bool -> Inlines -> Inlines -> Course -> Html Msg
 viewControls hasShareAPI title comment course =
-    Html.div []
+    Html.div [ Attr.class "card__controls" ]
         [ btn
             { msg = Just <| Delete course.id
             , title = "delete"
