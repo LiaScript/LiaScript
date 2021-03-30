@@ -36,187 +36,127 @@ class PreviewLia extends HTMLElement {
     const template = document.createElement('template')
 
     template.innerHTML = `
-    <style>
-    .blog-card {
-       display: flex;
-       flex-direction: column;
-       margin: 1rem auto;
-       box-shadow: 0 3px 7px -1px rgba(0, 0, 0, .1);
-       margin-bottom: 1.6%;
-       background: #fff;
-       line-height: 1.4;
-       font-family: sans-serif;
-       border-radius: 5px;
-       overflow: hidden;
-       z-index: 0;
+    <style>    
+    html {
+      font-size: 62.5%;
     }
-     .blog-card a {
-       color: inherit;
+    
+    body {
+      font-size: 1.5rem;
     }
-     .blog-card a:hover {
-       color: #5ad67d;
-    }
-     .blog-card:hover .photo {
-       transform: scale(1.3) rotate(3deg);
-    }
-     .blog-card .meta {
-       position: relative;
-       z-index: 0;
-       height: 200px;
-    }
-     .blog-card .photo {
-       position: absolute;
-       top: 0;
-       right: 0;
-       bottom: 0;
-       left: 0;
-       background-size: cover;
-       background-position: center;
-       transition: transform 0.2s;
-    }
-     .blog-card .details, .blog-card .details ul {
-       margin: auto;
-       padding: 0;
-       list-style: none;
-    }
-     .blog-card .details {
-       position: absolute;
-       top: 0;
-       bottom: 0;
-       left: -100%;
-       margin: auto;
-       transition: left 0.2s;
-       background: rgba(0, 0, 0, .6);
-       color: #fff;
-       padding: 10px;
-       width: 100%;
-       font-size: 0.9rem;
-    }
-     .blog-card .details a {
-       text-decoration: dotted underline;
-    }
-     .blog-card .details ul li {
-       display: inline-block;
-    }
-     .blog-card .details .author:before {
-       font-family: FontAwesome;
-       margin-right: 10px;
-       content: "\f007";
-    }
-     .blog-card .details .date:before {
-       font-family: FontAwesome;
-       margin-right: 10px;
-       content: "\f133";
-    }
-     .blog-card .details .tags ul:before {
-       font-family: FontAwesome;
-       content: "\f02b";
-       margin-right: 10px;
-    }
-     .blog-card .details .tags li {
-       margin-right: 2px;
-    }
-     .blog-card .details .tags li:first-child {
-       margin-left: -4px;
-    }
-     .blog-card .description {
-       padding: 1rem;
-       background: #fff;
-       position: relative;
-       z-index: 1;
-    }
-     .blog-card .description h1, .blog-card .description h2 {
-       font-family: Poppins, sans-serif;
-    }
-     .blog-card .description h1 {
-       line-height: 1;
-       margin: 0;
-       font-size: 1.7rem;
-    }
-     .blog-card .description h2 {
-       font-size: 1rem;
-       font-weight: 300;
-       text-transform: uppercase;
-       color: #a2a2a2;
-       margin-top: 5px;
-    }
-     .blog-card .description .read-more {
-       text-align: right;
-    }
-     .blog-card .description .read-more a {
-       color: #5ad67d;
-       display: inline-block;
-       position: relative;
-    }
-     .blog-card .description .read-more a:after {
-       content: "\f061";
-       font-family: FontAwesome;
-       margin-left: -10px;
-       opacity: 0;
-       vertical-align: middle;
-       transition: margin 0.3s, opacity 0.3s;
-    }
-     .blog-card .description .read-more a:hover:after {
-       margin-left: 5px;
-       opacity: 1;
-    }
-     .blog-card p {
-       position: relative;
-       margin: 1rem 0 0;
-    }
-     .blog-card p:first-of-type {
-       margin-top: 1.25rem;
-    }
-     .blog-card p:first-of-type:before {
-       content: "";
-       position: absolute;
-       height: 5px;
-       background: #5ad67d;
-       width: 35px;
-       top: -0.75rem;
-       border-radius: 3px;
-    }
-     .blog-card:hover .details {
-       left: 0%;
-    }
-     @media (min-width: 640px) {
-       .blog-card {
-         flex-direction: row;
-         max-width: 700px;
+    
+    .card {
+      border: 1px solid #399193;
+      position: relative;
+      background-color: white;
+      display: flex;
+      flex-direction: column;
+    
+      @media screen and (min-width: 600px) and (max-width: 900px) {
+        display: inline-block;
+        grid-template-columns: 40% 1fr;
       }
-       .blog-card .meta {
-         flex-basis: 40%;
-         height: auto;
+    
+      &__media {
+        margin-bottom: 2rem;
+    
+        @media screen and (min-width: 600px) and (max-width: 900px) {
+          margin-bottom: 0;
+        }
       }
-       .blog-card .description {
-         flex-basis: 60%;
+    
+      &__content {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        @media screen and (min-width: 600px) and (max-width: 900px) {
+          margin-top: 4rem;
+          height: auto;
+        }
       }
-       .blog-card .description:before {
-         transform: skewX(-3deg);
-         content: "";
-         background: #fff;
-         width: 30px;
-         position: absolute;
-         left: -10px;
-         top: 0;
-         bottom: 0;
-         z-index: -1;
+    
+      &__aside {
+        @media screen and (min-width: 600px) and (max-width: 900px) {
+          height: 100%;
+        }
       }
-       .blog-card.alt {
-         flex-direction: row-reverse;
+    
+      &__figure {
+        margin: 0;
+        height: 20rem;
+        width: 100%;
+    
+        @media screen and (min-width: 600px) and (max-width: 900px) {
+          height: 100%;
+        }
       }
-       .blog-card.alt .description:before {
-         left: inherit;
-         right: -10px;
-         transform: skew(3deg);
+    
+      &__image {
+        height: 100%;
+        width: 100%;
+        object-fit: cover;
       }
-       .blog-card.alt .details {
-         padding-left: 25px;
+      &__version {
+        display: inline-block;
+        padding: 0.5rem;
+        background-color: #399193;
+        color: white;
+        position: absolute;
+        top: 0;
+        right: 2.4rem;
       }
-    }
+    
+      &__header {
+        padding: 0 2.4rem;
+      }
+    
+      &__title {
+        display: inline-block;
+        color: #4b4b4b;
+        font-size: 2.3rem;
+        font-family: serif;
+        position: relative;
+        margin: 0 0 2rem;
+    
+        &:before {
+          content: "";
+          position: absolute;
+          bottom: -0.5rem;
+          width: 80%;
+          height: 1px;
+          background-color: #399193;
+        }
+      }
+    
+      &__subtitle {
+        color: #aeaeae;
+        margin: 0 0 1rem;
+        //
+      }
+    
+      &__body {
+        padding: 0 2.4rem;
+      }
+    
+      &__copy {
+        //
+      }
+    
+      &__footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 2.4rem;
+        margin-top: auto;
+      }
+    
+      &__contact {
+        color: #399193;
+        text-decoration: none;
+      }
+    }            
     </style>
-    <div id="container" style="display: inline"></div>
-    `
+    <div id="container" style="inline-block"></div>`
 
     this.container = this.attachShadow({ mode: 'open' })
     this.container.appendChild(template.content.cloneNode(true))
@@ -251,55 +191,63 @@ class PreviewLia extends HTMLElement {
         if (ok) {
           json = JSON.parse(json)
 
-          let tag
+          let tags, icon, author, logo
 
           try {
-            tag = json.definition.macro.tags
+            tags = json.definition.macro.tags
               .split(',')
               .map((e: string) => e.trim())
+              .join(' | ')
+
+            tags = `<h4 class="card__subtitle">${tags}</h4>`
           } catch (e) {
-            tag = []
+            tags = ''
           }
 
-          let logo = json.definition.logo
+          try {
+            icon = self.addBase(json.definition.macro.icon)
+          } catch (e) {
+            // todo: Replace with course instead of nightly
+            icon = 'https://liascript.github.io/nightly/icon.ico'
+          }
 
-          if (!logo.startsWith('http')) {
-            let base = self.source_url.split('/')
-            base.pop()
-            logo = base.join('/') + '/' + logo
+          logo = self.addBase(json.definition.logo)
+
+          if (json.definition.author !== '' && json.definition.email !== '') {
+            author = `<a class="card__contact" href="mailto:${json.definition.email}">${json.definition.author} ✉️</a>`
+          } else if (json.definition.author !== '') {
+            author = `<span class="card__contact">${json.definition.author}</span>`
+          } else if (json.definition.email !== '') {
+            author = `<a class="card__contact" href="mailto:${json.definition.email}">${json.definition.email} ✉️</a>`
+          } else {
+            author = ''
           }
 
           if (json.sections.length !== 0) {
-            div.className = 'blog-card'
-            div.style.all = ''
-            div.innerHTML = `<div class="meta">
-              <div class="photo" style="background-image: url(${logo})"></div>
-              <ul class="details">
-                <li class="author">${json.definition.author}</li>
-                <li class="date"><a href="mailto:${json.definition.email}">${
-              json.definition.email
-            }</a></li>
-                <li class="tags">
-                  <ul>
-                    <li>${!tag[0] ? '' : tag[0]}</li>
-                    <li>${!tag[1] ? '' : tag[1]}</li>
-                    <li>${!tag[2] ? '' : tag[2]}</li>
-                    <li>${!tag[3] ? '' : '...'}</li>
-                  </ul>
-                </li>
-              </ul>
+            div.innerHTML = `<a href="${link}"><article class="card">
+            <div class="card__version">V ${json.definition.version}</div>
+            <div class="card__media">
+              <aside class="card__aside">
+                <figure class="card__figure">
+                  <img src="${logo}" alt="rock formation" class="card__image">
+                </figure>
+              </aside>
             </div>
-            <div class="description">
-              <h1>${json.str_title}</h1>
-              <h2>Version: ${json.definition.version}</h2>
-              <p> ${json.comment} </p>
-              <p class="read-more">
-                <a href="${link}">Open</a>
-              </p>
-            </div>`
+            <div class="card__content">
+              <header class="card__header">
+                <h3 class="card__title">${json.str_title}</h3>
+                ${tags}
+              </header>
+              <div class="card__body">
+                <p class="card__copy">${json.comment}</p>
+              </div>
+              <footer class="card__footer">
+                <img height="50" src="${icon}" alt="Logo" class="card__logo">
+                ${author}
+              </footer>
+            </div>
+            </article></a>`
           }
-
-          // `${json.str_title} <br>  <img style="width: 90px" src="${json.definition.logo}">`
         } else {
           console.warn('could not load course ...')
         }
@@ -314,6 +262,16 @@ class PreviewLia extends HTMLElement {
 
   parse(course: string) {
     this.lia.ports.input.send(['defines', course])
+  }
+
+  addBase(url: string) {
+    if (url.startsWith('http')) {
+      return url
+    }
+
+    let base = this.source_url.split('/')
+    base.pop()
+    return base.join('/') + '/' + url
   }
 }
 
