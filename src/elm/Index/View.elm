@@ -6,6 +6,7 @@ import Const
 import Dict exposing (Dict)
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr exposing (title)
+import Html.Events exposing (onInput)
 import Index.Model exposing (Course, Model, Release)
 import Index.Update exposing (Msg(..))
 import Lia.Definition.Types exposing (Definition)
@@ -15,7 +16,7 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View as Inline
 import Lia.Parser.PatReplace exposing (link)
 import Lia.Settings.Types exposing (Mode(..))
-import Lia.Utils exposing (btn)
+import Lia.Utils exposing (blockKeydown, btn)
 import Session exposing (Session)
 import Translations exposing (Lang(..))
 
@@ -60,14 +61,22 @@ searchBar url =
     Html.div []
         [ Html.input
             [ Attr.type_ "input"
-            , onChange Input
+            , onInput Input
             , Attr.value url
             , Attr.placeholder "course-url"
+
+            --, blockKeydown NoOp
             ]
             []
-        , Html.a [ href url ]
-            [ Html.text "load course"
-            ]
+        , if url == "" then
+            Html.text "load course"
+
+          else
+            Html.a
+                [ href url
+                ]
+                [ Html.text "load course"
+                ]
         ]
 
 
