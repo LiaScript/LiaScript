@@ -107,12 +107,12 @@ $slide-margin-left-textbook: 19rem !default;
   // mode: textbook
   &.lia-mode--textbook {
     .lia-slide__content {
-      max-width: 70.2rem;
+      max-width: calc(71.1rem + #{$slide-margin-left-textbook} + 3rem);
     }
 
     @include breakpoint("md") {
       .lia-slide__content {
-        margin-left: calc(#{$slide-margin-left-textbook} - 3rem);
+        padding-left: $slide-margin-left-textbook;
       }
 
       .lia-pagination {

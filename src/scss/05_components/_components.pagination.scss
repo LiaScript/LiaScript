@@ -17,9 +17,10 @@
     background: rgb(var(--color-highlight));
     color: white;
     display: flex;
+    flex-direction: row-reverse;
     flex-wrap: wrap;
-    font-weight: 700;
     font-size: 1.8rem;
+    font-weight: 700;
     justify-content: space-between;
 
     @include breakpoint("md") {

@@ -1,51 +1,62 @@
 .lia-script {
-  padding: 2px 6px 2px 6px;
-  border-radius: 10px;
+  border-radius: $global-radius;
+  display: inline-flex;
+  overflow: hidden;
+  vertical-align: middle;
 
-  &-with-border {
-    border: 1px solid;
-    padding: 2px 6px 2px 6px;
-    border-radius: 10px;
+  &--with-border {
+    border: 1px solid rgb(var(--color-highlight));
+  }
 
-    &:hover {
-      border: 2px solid;
-      margin-left: -1px;
-      margin-right: -1px;
+  &--border {
+    border: 1px solid rgb(var(--color-highlight));
+  }
+
+  &__refresh {
+    background-color: rgb(var(--lia-grey-light));
+    border-bottom: 0;
+    border-left: 0;
+    border-radius: 0;
+    border-right: 1px solid rgb(var(--color-highlight));
+    border-top: 0;
+    color: rgb(var(--lia-anthracite));
+  }
+
+  > * {
+    width: fit-content;
+
+    &:not(:last-child) {
+      margin-right: 1rem;
     }
   }
 
-  &-border {
-    border: 1px solid;
-    padding: 2px 6px 2px 6px;
-    border-radius: 10px;
+  input,
+  select,
+  textarea {
+    border: none;
+    border-radius: 0;
+  }
 
-    &:hover {
-      border: 2px solid;
-      margin-left: -1px;
-      margin-right: -1px;
+  output {
+    align-items: center;
+    background-color: rgb(var(--lia-anthracite));
+    border-left: 1px solid rgb(var(--color-highlight));
+    color: rgb(var(--lia-white));
+    display: flex;
+    padding: 0.5rem 1.6rem;
+    width: 100%;
+
+    i {
+      margin-right: 0.5rem;
     }
   }
 }
 
-@mixin style-script($theme) {
-  .lia-script {
-    background: mix(map-get($theme, background), #888, 80%);
+output.lia-script {
+  padding: 0.5rem 1.6rem;
+  cursor: pointer;
 
-    &-with-border {
-      background: mix(map-get($theme, background), #888, 80%);
-      border-color: map-get($theme, primary);
-
-      &:hover {
-        border-color: 2px solid map-get($theme, primary);
-      }
-    }
-
-    &-border {
-      border-color: 1px solid map-get($theme, primary);
-
-      &:hover {
-        border-color: 2px solid map-get($theme, primary);
-      }
-    }
+  i {
+    display: none;
   }
 }

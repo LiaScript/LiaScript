@@ -11,11 +11,23 @@ $responsive-voice-hight: 7rem;
   padding: 2rem;
   width: 100%;
 
+  &__control {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+
+    @include breakpoint("xs") {
+      justify-content: flex-start;
+      width: auto;
+    }
+  }
+
   @at-root html.lia-variant-dark & {
     background-color: rgb(var(--lia-anthracite));
   }
 
-  @include breakpoint("sm") {
+  @include breakpoint("xs") {
     align-items: center;
     height: 7rem;
     flex-direction: row;

@@ -15,6 +15,7 @@ import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Section exposing (SubSection(..))
 import Lia.Utils exposing (blockKeydown, onEnter)
+import Lia.Markdown.HTML.Attributes exposing (toAttribute)
 
 
 view : Config sub -> Int -> Parameters -> Html (Msg sub)
@@ -24,7 +25,7 @@ view config id attr =
             case node.result of
                 Just _ ->
                     if node.edit then
-                        Html.span []
+                        Html.span [Attr.class "flex items-center"]
                             [ editor config.theme id node.script
                             , if Input.isHidden node.input then
                                 Html.text ""
@@ -52,10 +53,10 @@ view config id attr =
 class : Script SubSection -> String
 class node =
     if node.input.type_ /= Nothing && node.modify then
-        "lia-script-with-border"
+        "lia-script lia-script--with-border"
 
     else if node.input.type_ /= Nothing then
-        "lia-script-border"
+        "lia-script lia-script--border"
 
     else if node.modify then
         "lia-script"
@@ -71,7 +72,7 @@ script config withStyling attr id node =
             Html.text ""
 
         Just result ->
-            Html.button
+            Html.output
                 (annotation
                     (if withStyling then
                         class node
@@ -80,16 +81,15 @@ script config withStyling attr id node =
                         ""
                     )
                     attr
-                    |> CList.addIf (not withStyling) (Attr.style "margin" "5px")
+                    --|> CList.addIf (not withStyling) (Attr.style "margin-" "1rem")
                     |> List.append
                         (case node.input.type_ of
                             Just Input.Button_ ->
                                 [ Event.onClick (Click id)
-                                , Attr.style "cursor" "pointer"
                                 ]
 
                             Just _ ->
-                                [ Attr.style "cursor" "cell" ]
+                                [ ]
 
                             _ ->
                                 []
@@ -105,7 +105,8 @@ script config withStyling attr id node =
                  --        )
                  --    )
                 )
-                [ case result of
+                [ Html.i [Attr.class "icon icon-chevron-double-right"][],
+                    case result of
                     Text str ->
                         Intl.view node.intl str
 
@@ -139,7 +140,8 @@ input config attr id node =
 
         Just (Input.Checkbox_ []) ->
             [ Html.input
-                [ Attr.checked (node.input.value == "true")
+                [ Attr.class "lia-checkbox"
+                , Attr.checked (node.input.value == "true")
                 , Attr.type_ "checkbox"
                 , onActivate False id
                 , Attr.id "lia-focus"
@@ -155,7 +157,7 @@ input config attr id node =
                 ]
                 []
             ]
-                |> Html.span []
+                |> Html.span [Attr.class "flex items-center"]
                 |> span config attr id node
 
         Just (Input.Checkbox_ options) ->
@@ -188,7 +190,7 @@ input config attr id node =
 select : Int -> String -> Parameters -> List String -> Html (Msg sub)
 select id value attr =
     List.map (\o -> Html.option [ Attr.value o ] [ Html.text o ])
-        >> Html.select (attributes True id value attr)
+        >> Html.select ((Attr.class "lia-select") :: (attributes True id value attr))
 
 
 checkbox : Bool -> Int -> String -> Parameters -> List String -> Html (Msg sub)
@@ -201,40 +203,44 @@ checkbox updateOnChange id value _ =
     in
     List.map
         (\o ->
-            Html.label []
-                [ Html.text o
-                , Html.input
+            Html.label [Attr.class "lia-label mr-1"]
+                [ 
+                Html.input
                     [ Attr.value o
                     , Attr.type_ "checkbox"
                     , Event.onCheck (always (Checkbox id updateOnChange o))
                     , Attr.checked (List.member o list)
                     , onActivate False id
                     , Attr.autofocus True
+                    , Attr.class "lia-checkbox"
                     ]
                     []
+                    , Html.text o
                 ]
         )
-        >> Html.span []
+        >> Html.span [ Attr.class "flex items-center"]
 
 
 radio : Bool -> Int -> String -> Parameters -> List String -> Html (Msg sub)
 radio updateOnChange id value _ =
     List.map
         (\o ->
-            Html.label []
-                [ Html.text o
-                , Html.input
+            Html.label [Attr.class "lia-label mr-1"]
+                [ Html.input
                     [ Attr.value o
                     , Attr.type_ "radio"
                     , Event.onCheck (always (Radio id updateOnChange o))
                     , Attr.checked (o == value)
                     , onActivate False id
                     , Attr.autofocus True
+                    , Attr.class "lia-radio"
                     ]
                     []
+                    ,Html.text o
+            
                 ]
         )
-        >> Html.span []
+        >> Html.span [ Attr.class "flex items-center"]
 
 
 textarea : Int -> String -> Parameters -> Bool -> Html (Msg sub)
@@ -267,20 +273,17 @@ span config attr id node control =
 
 reset : Int -> Html (Msg sub)
 reset id =
-    Html.span
-        [ Attr.class "lia-btn--hint"
-        , Attr.style "position" "relative"
-        , Attr.style "cursor" "pointer"
+    Html.button
+        [ Attr.class "lia-script__refresh icon icon-refresh"
         , Event.onClick (Reset id)
         ]
-        [ Html.text "clear" ]
+        []
 
 
 base : Input -> Int -> Parameters -> String -> Html (Msg sub)
 base input_ id attr value =
-    Html.span []
-        [ Html.input
-            (annotation "lia-script" attr
+    Html.input
+            (toAttribute attr
                 |> List.append
                     [ input_.updateOnChange
                         |> Value id
@@ -289,6 +292,15 @@ base input_ id attr value =
                         |> Maybe.map Input.type_
                         |> Maybe.withDefault "text"
                         |> Attr.type_
+                    , input_.type_
+                        |> Maybe.map (\i -> case Input.type_ i of 
+                            "range" -> "lia-range"
+                            "radio" -> "lia-radio"
+                            "color" -> ""
+                            _ -> "lia-input"
+                        )
+                        |> Maybe.withDefault ""
+                        |> Attr.class 
                     , Attr.value value
                     , onActivate False id
                     , Attr.id "lia-focus"
@@ -297,8 +309,6 @@ base input_ id attr value =
                     ]
             )
             []
-        , Html.text " "
-        ]
 
 
 onActivate : Bool -> Int -> Html.Attribute (Msg sub)
