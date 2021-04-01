@@ -40,63 +40,70 @@ class PreviewLia extends HTMLElement {
     html {
       font-size: 62.5%;
     }
-    
-    body {
-      font-size: 1.5rem;
+      body {
+        font-size: 1.5rem;
     }
-    
-    .card {
-      border: 1px solid #399193;
-      position: relative;
-      background-color: white;
-      display: flex;
-      flex-direction: column;
-    
-      @media screen and (min-width: 600px) and (max-width: 900px) {
-        display: inline-block;
-        grid-template-columns: 40% 1fr;
+      .card {
+        border: 1px solid #399193;
+        position: relative;
+        background-color: white;
+        display: flex;
+        flex-direction: column;
+        max-width: 42.6rem;
+    }
+      @media screen and (min-width: 768px) and (max-width: 1024px) {
+        .card {
+          display: grid;
+          grid-template-columns: 40% 1fr;
+          max-width: 100%;
       }
-    
-      &__media {
+    }
+      @media screen and (min-width: 1024px) {
+        .card {
+          max-width: 42.6rem;
+      }
+    }
+      .card__media {
         margin-bottom: 2rem;
-    
-        @media screen and (min-width: 600px) and (max-width: 900px) {
+        height: 100%;
+    }
+      @media screen and (min-width: 768px) and (max-width: 1024px) {
+        .card__media {
           margin-bottom: 0;
-        }
       }
-    
-      &__content {
+    }
+      .card__content {
         display: flex;
         flex-direction: column;
         height: 100%;
-        @media screen and (min-width: 600px) and (max-width: 900px) {
+    }
+      @media screen and (min-width: 768px) and (max-width: 1024px) {
+        .card__content {
           margin-top: 4rem;
           height: auto;
-        }
       }
-    
-      &__aside {
-        @media screen and (min-width: 600px) and (max-width: 900px) {
+    }
+      @media screen and (min-width: 768px) and (max-width: 1024px) {
+        .card__aside {
           height: 100%;
-        }
       }
-    
-      &__figure {
+    }
+      .card__figure {
         margin: 0;
         height: 20rem;
         width: 100%;
-    
-        @media screen and (min-width: 600px) and (max-width: 900px) {
+    }
+      @media screen and (min-width: 768px) and (max-width: 1024px) {
+        .card__figure {
           height: 100%;
-        }
       }
-    
-      &__image {
+    }
+      .card__image {
         height: 100%;
         width: 100%;
         object-fit: cover;
-      }
-      &__version {
+    }
+      .card__version {
         display: inline-block;
         padding: 0.5rem;
         background-color: #399193;
@@ -104,57 +111,44 @@ class PreviewLia extends HTMLElement {
         position: absolute;
         top: 0;
         right: 2.4rem;
-      }
-    
-      &__header {
+    }
+      .card__header {
         padding: 0 2.4rem;
-      }
-    
-      &__title {
+    }
+      .card__title {
         display: inline-block;
         color: #4b4b4b;
         font-size: 2.3rem;
         font-family: serif;
         position: relative;
         margin: 0 0 2rem;
-    
-        &:before {
-          content: "";
-          position: absolute;
-          bottom: -0.5rem;
-          width: 80%;
-          height: 1px;
-          background-color: #399193;
-        }
-      }
-    
-      &__subtitle {
+    }
+      .card__title:before {
+        content: "";
+        position: absolute;
+        bottom: -0.5rem;
+        width: 80%;
+        height: 1px;
+        background-color: #399193;
+    }
+      .card__subtitle {
         color: #aeaeae;
         margin: 0 0 1rem;
-        //
-      }
-    
-      &__body {
+    }
+      .card__body {
         padding: 0 2.4rem;
-      }
-    
-      &__copy {
-        //
-      }
-    
-      &__footer {
+    }
+      .card__footer {
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 0 2.4rem;
         margin-top: auto;
-      }
-    
-      &__contact {
+    }
+      .card__contact {
         color: #399193;
         text-decoration: none;
-      }
-    }            
+    }
     </style>
     <div id="container" style="inline-block"></div>`
 
@@ -211,7 +205,18 @@ class PreviewLia extends HTMLElement {
             icon = 'https://liascript.github.io/nightly/icon.ico'
           }
 
-          logo = self.addBase(json.definition.logo)
+          logo = ''
+          if (json.definition.logo !== '') {
+            logo = `<div class="card__media">
+              <aside class="card__aside">
+                <figure class="card__figure">
+                  <img src="${self.addBase(
+                    json.definition.logo,
+                  )}" class="card__image">
+                </figure>
+              </aside>
+            </div>`
+          }
 
           if (json.definition.author !== '' && json.definition.email !== '') {
             author = `<a class="card__contact" href="mailto:${json.definition.email}">${json.definition.author} ✉️</a>`
@@ -224,15 +229,9 @@ class PreviewLia extends HTMLElement {
           }
 
           if (json.sections.length !== 0) {
-            div.innerHTML = `<a href="${link}"><article class="card">
+            div.innerHTML = `<a href="${link}" style="text-decoration: none; color: black"><article class="card">
             <div class="card__version">V ${json.definition.version}</div>
-            <div class="card__media">
-              <aside class="card__aside">
-                <figure class="card__figure">
-                  <img src="${logo}" alt="rock formation" class="card__image">
-                </figure>
-              </aside>
-            </div>
+            ${logo}
             <div class="card__content">
               <header class="card__header">
                 <h3 class="card__title">${json.str_title}</h3>
