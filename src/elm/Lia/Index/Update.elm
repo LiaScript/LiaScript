@@ -1,11 +1,10 @@
 module Lia.Index.Update exposing (Msg(..), update)
 
 import Array
-import Browser.Dom as Dom
 import Lia.Index.Model exposing (Model)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Section exposing (Section, Sections)
-import Task
+import Lia.Utils exposing (focus)
 
 
 type Msg
@@ -26,8 +25,7 @@ update msg model sections =
         DeleteSearch ->
             ( ""
             , scan sections ""
-            , Task.attempt (always NoOp)
-                (Dom.focus "lia-input-search")
+            , focus NoOp "lia-input-search"
             )
 
         NoOp ->

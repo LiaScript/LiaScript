@@ -8,12 +8,12 @@ module Lia.Markdown.Effect.Script.Update exposing
     )
 
 import Array
-import Browser.Dom as Dom
 import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Input as Input
 import Lia.Markdown.Effect.Script.Types as Script exposing (Script, Scripts, Stdout(..))
 import Lia.Parser.Parser exposing (parse_subsection)
 import Lia.Section exposing (SubSection)
+import Lia.Utils exposing (focus)
 import Port.Eval as Eval exposing (Eval)
 import Port.Event as Event exposing (Event)
 import Process
@@ -97,7 +97,7 @@ update main msg scripts =
                             }
                             scripts
                         , if active then
-                            Task.attempt (always NoOp) (Dom.focus "lia-focus")
+                            focus NoOp "lia-focus"
 
                           else
                             Cmd.none
@@ -178,7 +178,7 @@ update main msg scripts =
             if bool then
                 ( scripts
                     |> Script.set id fn
-                , Task.attempt (always NoOp) (Dom.focus "lia-focus")
+                , focus NoOp "lia-focus"
                 , []
                 )
 

@@ -7,13 +7,12 @@ module Lia.Settings.Update exposing
     , update
     )
 
-import Browser.Dom as Dom
 import Json.Encode as JE
 import Lia.Settings.Json as Json
 import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
+import Lia.Utils exposing (focus)
 import Port.Event exposing (Event)
 import Port.TTS as TTS
-import Task
 
 
 type Msg
@@ -220,5 +219,4 @@ no_log elementID settings =
 
 
 maybeFocus =
-    Maybe.map (Dom.focus >> Task.attempt (always Ignore))
-        >> Maybe.withDefault Cmd.none
+    Maybe.map (focus Ignore) >> Maybe.withDefault Cmd.none

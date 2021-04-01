@@ -16,11 +16,13 @@ import Lia.Markdown.Effect.Model as E
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Effect.Update as Effect
+import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.Quiz.Update as Quiz
 import Lia.Markdown.Survey.Update as Survey
 import Lia.Markdown.Table.Update as Table
 import Lia.Markdown.Task.Update as Task
 import Lia.Section exposing (Section, SubSection(..))
+import Lia.Utils exposing (focus)
 import Port.Event as Event exposing (Event)
 
 
@@ -37,6 +39,7 @@ type Msg
     | FootnoteHide
     | FootnoteShow String
     | Script (Script.Msg Msg)
+    | NoOp
 
 
 subscriptions : Section -> Sub Msg
@@ -133,13 +136,21 @@ update msg section =
             )
 
         FootnoteShow key ->
-            ( { section | footnote2show = Just key }, Cmd.none, [] )
+            ( { section | footnote2show = Just key }, focus NoOp "lia-close-modal", [] )
 
         FootnoteHide ->
-            ( { section | footnote2show = Nothing }, Cmd.none, [] )
+            ( { section | footnote2show = Nothing }
+            , section.footnote2show
+                |> Maybe.map (Footnote.byKey >> focus NoOp)
+                |> Maybe.withDefault Cmd.none
+            , []
+            )
 
         Script childMsg ->
             updateScript (Just childMsg) ( section, Cmd.none, [] )
+
+        NoOp ->
+            ( section, Cmd.none, [] )
 
 
 subUpdate :

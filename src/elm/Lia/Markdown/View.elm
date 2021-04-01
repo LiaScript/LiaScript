@@ -2,6 +2,8 @@ module Lia.Markdown.View exposing (view)
 
 import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
+import Accessibility.Role as A11y_Role
+import Accessibility.Widget as A11y_Widget
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
@@ -29,6 +31,7 @@ import Lia.Markdown.Types exposing (Markdown(..), MarkdownS)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Section exposing (SubSection(..))
 import Lia.Settings.Types exposing (Mode(..))
+import Lia.Utils exposing (btnIcon)
 import Lia.Voice as Voice
 import SvgBob
 
@@ -124,30 +127,51 @@ view_footnote viewer key footnotes =
     case Maybe.andThen (Footnotes.getNote footnotes) key of
         Just notes ->
             Html.div
-                [ onClick FootnoteHide
-                , Attr.style "position" "fixed"
+                [ Attr.style "position" "fixed"
                 , Attr.style "display" "block"
                 , Attr.style "width" "100%"
                 , Attr.style "height" "100%"
                 , Attr.style "top" "0"
-                , Attr.style "left" "0"
                 , Attr.style "right" "0"
-                , Attr.style "bottom" "0"
-                , Attr.style "background-color" "rgba(0,0,0,0.6)"
-                , Attr.style "z-index" "2"
-                , Attr.style "cursor" "pointer"
-                , Attr.style "overflow" "auto"
+                , Attr.style "z-index" "10000"
+                , Attr.class "lia-modal"
                 ]
-                [ Html.div
-                    [ Attr.style "position" "absolute"
-                    , Attr.style "top" "50%"
-                    , Attr.style "left" "50%"
-                    , Attr.style "font-size" "20px"
-                    , Attr.style "color" "white"
-                    , Attr.style "transform" "translate(-50%,-50%)"
-                    , Attr.style "-ms-transform" "translate(-50%,-50%)"
+                [ notes
+                    |> List.map viewer
+                    |> (::) (Html.br [] [])
+                    |> (::)
+                        (btnIcon
+                            { icon = "icon-close"
+                            , msg = Just FootnoteHide
+                            , tabbable = True
+                            , title = "close modal"
+                            }
+                            [ Attr.class "lia-btn--transparent"
+                            , Attr.style "float" "right"
+                            , Attr.style "right" "-3.5rem"
+                            , Attr.id "lia-close-modal"
+                            , A11y_Key.onKeyDown [ A11y_Key.escape FootnoteHide ]
+                            ]
+                        )
+                    |> Html.div
+                        [ Attr.style "position" "absolute"
+                        , Attr.style "top" "30%"
+                        , Attr.style "left" "50%"
+                        , Attr.style "font-size" "20px"
+                        , Attr.style "color" "white"
+                        , Attr.style "transform" "translate(-50%,-30%)"
+                        , Attr.style "-ms-transform" "translate(-50%,-30%)"
+                        , A11y_Widget.modal True
+                        , A11y_Role.dialog
+                        ]
+                , Html.div
+                    [ Attr.style "background-color" "rgba(0,0,0,0.8)"
+                    , Attr.style "width" "100%"
+                    , Attr.style "height" "100%"
+                    , Attr.style "overflow" "auto"
+                    , onClick FootnoteHide
                     ]
-                    (List.map viewer notes)
+                    []
                 ]
 
         Nothing ->

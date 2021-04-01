@@ -1,7 +1,6 @@
-module Lia.Markdown.Footnote.View exposing (block, inline)
+module Lia.Markdown.Footnote.View exposing (block, byKey, inline)
 
 import Accessibility.Aria as A11y_Aria
-import Accessibility.Role as A11y_Role
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Lia.Markdown.Footnote.Model exposing (Model, empty, toList)
@@ -10,15 +9,20 @@ import Lia.Markdown.Types exposing (Markdown)
 
 inline : String -> List (Html.Attribute msg) -> Html msg
 inline key attr =
-    Html.sup
-        ([ Attr.style "cursor" "pointer"
-         , Attr.attribute "onclick" ("showFootnote(\"" ++ key ++ "\");")
-         , A11y_Role.link
-         , A11y_Aria.describedBy [ by key ]
-         ]
-            |> List.append attr
-        )
-        [ braces key ]
+    Html.sup []
+        [ Html.button
+            ([ Attr.style "padding" "2px"
+             , Attr.class "lia-btn lia-btn--transparent"
+             , Attr.attribute "onclick" ("showFootnote(\"" ++ key ++ "\");")
+             , key
+                |> byKey
+                |> Attr.id
+             , A11y_Aria.describedBy [ by key ]
+             ]
+                |> List.append attr
+            )
+            [ braces key ]
+        ]
 
 
 block : (Markdown -> Html msg) -> Model -> Html msg
@@ -31,7 +35,7 @@ block fn model =
             def =
                 definition fn
         in
-        model
+        [ model
             |> toList
             |> List.map def
             |> Html.table
@@ -45,6 +49,8 @@ block fn model =
                 , Attr.style "transform-origin" "0 50%"
                 , Attr.align "left"
                 ]
+        ]
+            |> Html.footer []
 
 
 definition : (Markdown -> Html msg) -> ( String, List Markdown ) -> Html msg
@@ -69,3 +75,8 @@ braces key =
 by : String -> String
 by =
     (++) "footnote-"
+
+
+byKey : String -> String
+byKey =
+    (++) "key-" >> by
