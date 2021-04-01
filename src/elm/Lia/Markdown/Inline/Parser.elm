@@ -521,9 +521,9 @@ scriptBody =
         |> manyTill
             ([ regex "[^\"'`</]+" --" this is only a comment for syntaxhighlighting ...
              , regex "[ \t\n]+"
-             , regex "\"([^\"]*|(?<=\\\\)\")*\""
-             , regex "'([^']*|(?<=\\\\)')*'"
-             , regex "`([^`]*|\n|(?<=\\\\)`)*`"
+             , regex "\"([^\"]*|\\\\\"|\\\\)*\""
+             , regex "'([^']*|\\\\'|\\\\)*'"
+             , regex "`([^`]*|\n|\\\\`|\\\\)*`"
              , regex "<(?!/)"
              , regex "//[^\n]*"
              , string "/"
