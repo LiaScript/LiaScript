@@ -506,7 +506,7 @@ stringBase2 =
 code : Parser s (Parameters -> Inline)
 code =
     string "`"
-        |> keep (regex "([^`\\n]*|(?<=\\\\)`)+")
+        |> keep (regex "([^`\n\\\\]*|\\\\`|\\\\)+")
         |> ignore (string "`")
         |> map (String.replace "\\`" "`" >> Verbatim)
 
