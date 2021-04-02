@@ -2,6 +2,7 @@ module Lia.Markdown.Quiz.Vector.Types exposing
     ( Quiz
     , State(..)
     , comp
+    , getClass
     , initState
     )
 
@@ -45,3 +46,13 @@ comp quiz state =
 
         _ ->
             False
+
+
+getClass : State -> String
+getClass state =
+    case state of
+        SingleChoice _ ->
+            "single-choice"
+
+        MultipleChoice _ ->
+            "multiple-choice"

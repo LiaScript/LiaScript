@@ -1,5 +1,9 @@
 module Lia.Markdown.View exposing (view)
 
+import Accessibility.Key as A11y_Key
+import Accessibility.Landmark as A11y_Landmark
+import Accessibility.Role as A11y_Role
+import Accessibility.Widget as A11y_Widget
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
@@ -15,16 +19,20 @@ import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Markdown.HTML.View as HTML
-import Lia.Markdown.Inline.Types exposing (Inlines, htmlBlock)
+import Lia.Markdown.Inline.Stringify exposing (stringify_)
+import Lia.Markdown.Inline.Types exposing (Inlines, htmlBlock, mediaBlock)
 import Lia.Markdown.Inline.View exposing (viewer)
+import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Markdown.Quiz.View as Quizzes
 import Lia.Markdown.Survey.View as Surveys
 import Lia.Markdown.Table.View as Table
 import Lia.Markdown.Task.View as Task
-import Lia.Markdown.Types exposing (Markdown(..))
+import Lia.Markdown.Types exposing (Markdown(..), MarkdownS)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Section exposing (SubSection(..))
-import Lia.Settings.Model exposing (Mode(..))
+import Lia.Settings.Types exposing (Mode(..))
+import Lia.Utils exposing (btnIcon)
+import Lia.Voice as Voice
 import SvgBob
 
 
@@ -40,7 +48,7 @@ view config =
                 config.section.body
 
         Just msg ->
-            Html.section [ Attr.class "lia-content" ]
+            viewMain
                 [ view_header config
                 , Html.text msg
                 ]
@@ -70,7 +78,7 @@ subView config id sub =
                                     | table_vector = x.table_vector
                                     , quiz_vector = x.quiz_vector
                                     , survey_vector = x.survey_vector
-                                    , code_vector = x.code_vector
+                                    , code_model = x.code_model
                                     , effect_model =
                                         { effects
                                             | comments = x.effect_model.comments
@@ -103,7 +111,15 @@ view_body ( config, footnote2show, footnotes ) =
                 else
                     s
            )
-        >> Html.section [ Attr.class "lia-content" ]
+        >> viewMain
+
+
+viewMain : List (Html msg) -> Html msg
+viewMain =
+    Html.main_
+        [ Attr.class "lia-slide__content"
+        , A11y_Landmark.main_
+        ]
 
 
 view_footnote : (Markdown -> Html Msg) -> Maybe String -> Footnotes.Model -> Html Msg
@@ -111,30 +127,51 @@ view_footnote viewer key footnotes =
     case Maybe.andThen (Footnotes.getNote footnotes) key of
         Just notes ->
             Html.div
-                [ onClick FootnoteHide
-                , Attr.style "position" "fixed"
+                [ Attr.style "position" "fixed"
                 , Attr.style "display" "block"
                 , Attr.style "width" "100%"
                 , Attr.style "height" "100%"
                 , Attr.style "top" "0"
-                , Attr.style "left" "0"
                 , Attr.style "right" "0"
-                , Attr.style "bottom" "0"
-                , Attr.style "background-color" "rgba(0,0,0,0.6)"
-                , Attr.style "z-index" "2"
-                , Attr.style "cursor" "pointer"
-                , Attr.style "overflow" "auto"
+                , Attr.style "z-index" "10000"
+                , Attr.class "lia-modal"
                 ]
-                [ Html.div
-                    [ Attr.style "position" "absolute"
-                    , Attr.style "top" "50%"
-                    , Attr.style "left" "50%"
-                    , Attr.style "font-size" "20px"
-                    , Attr.style "color" "white"
-                    , Attr.style "transform" "translate(-50%,-50%)"
-                    , Attr.style "-ms-transform" "translate(-50%,-50%)"
+                [ notes
+                    |> List.map viewer
+                    |> (::) (Html.br [] [])
+                    |> (::)
+                        (btnIcon
+                            { icon = "icon-close"
+                            , msg = Just FootnoteHide
+                            , tabbable = True
+                            , title = "close modal"
+                            }
+                            [ Attr.class "lia-btn--transparent"
+                            , Attr.style "float" "right"
+                            , Attr.style "right" "-3.5rem"
+                            , Attr.id "lia-close-modal"
+                            , A11y_Key.onKeyDown [ A11y_Key.escape FootnoteHide ]
+                            ]
+                        )
+                    |> Html.div
+                        [ Attr.style "position" "absolute"
+                        , Attr.style "top" "30%"
+                        , Attr.style "left" "50%"
+                        , Attr.style "font-size" "20px"
+                        , Attr.style "color" "white"
+                        , Attr.style "transform" "translate(-50%,-30%)"
+                        , Attr.style "-ms-transform" "translate(-50%,-30%)"
+                        , A11y_Widget.modal True
+                        , A11y_Role.dialog
+                        ]
+                , Html.div
+                    [ Attr.style "background-color" "rgba(0,0,0,0.8)"
+                    , Attr.style "width" "100%"
+                    , Attr.style "height" "100%"
+                    , Attr.style "overflow" "auto"
+                    , onClick FootnoteHide
                     ]
-                    (List.map viewer notes)
+                    []
                 ]
 
         Nothing ->
@@ -145,41 +182,55 @@ view_header : Config Msg -> Html Msg
 view_header config =
     [ header config
         config.section.indentation
+        0
         []
         config.section.title
     ]
-        |> Html.header []
+        |> Html.header [ A11y_Key.tabbable False ]
 
 
-header : Config Msg -> Int -> Parameters -> Inlines -> Html Msg
-header config i attr =
+header : Config Msg -> Int -> Int -> Parameters -> Inlines -> Html Msg
+header config main sub attr =
     config.view
-        >> (case i of
+        >> (case sub of
+                0 ->
+                    Html.h1 (headerStyle (main + sub) attr)
+
                 1 ->
-                    Html.h1 (annotation "lia-inline lia-h1" attr)
+                    Html.h2 (headerStyle (main + sub) attr)
 
                 2 ->
-                    Html.h2 (annotation "lia-inline lia-h2" attr)
+                    Html.h3 (headerStyle (main + sub) attr)
 
                 3 ->
-                    Html.h3 (annotation "lia-inline lia-h3" attr)
+                    Html.h4 (headerStyle (main + sub) attr)
 
                 4 ->
-                    Html.h4 (annotation "lia-inline lia-h4" attr)
-
-                5 ->
-                    Html.h5 (annotation "lia-inline lia-h5" attr)
+                    Html.h5 (headerStyle (main + sub) attr)
 
                 _ ->
-                    Html.h6 (annotation "lia-inline lia-h6" attr)
+                    Html.h6 (headerStyle (main + sub) attr)
            )
+
+
+headerStyle i =
+    annotation
+        ("h"
+            ++ (String.fromInt <|
+                    if i > 4 then
+                        4
+
+                    else
+                        i
+               )
+        )
 
 
 view_block : Config Msg -> Markdown -> Html Msg
 view_block config block =
     case block of
         HLine attr ->
-            Html.hr (annotation "lia-horiz-line" attr) []
+            Html.hr (annotation "lia-divider" attr) []
 
         Paragraph attr [ element ] ->
             case htmlBlock element of
@@ -189,17 +240,23 @@ view_block config block =
                         (config.view
                             >> List.head
                             >> Maybe.withDefault
-                                (Html.p (annotation "lia-paragraph" attr) (config.view [ element ]))
+                                (Html.p (annotation "lia-paragraph clearfix" attr) (config.view [ element ]))
                         )
                         attr
                         (Node name attributes [ inlines ])
 
                 Nothing ->
-                    Html.p (annotation "lia-paragraph" attr) (config.view [ element ])
+                    if mediaBlock element && attr == [] then
+                        config.view [ element ]
+                            |> List.head
+                            |> Maybe.withDefault (Html.text "")
+
+                    else
+                        Html.p (annotation "lia-paragraph clearfix" attr) (config.view [ element ])
 
         Paragraph attr elements ->
             Html.p
-                (annotation "lia-paragraph" attr)
+                (annotation "lia-paragraph clearfix" attr)
                 (config.view elements)
 
         Effect attr e ->
@@ -210,49 +267,29 @@ view_block config block =
         BulletList attr list ->
             list
                 |> view_bulletlist config
-                |> Html.ul (annotation "lia-list lia-unordered" attr)
+                |> Html.ul (annotation "lia-list--unordered" attr)
 
         OrderedList attr list ->
             list
                 |> view_list config
-                |> Html.ol (annotation "lia-list lia-ordered" attr)
+                |> Html.ol (annotation "lia-list--ordered" attr)
 
         Table attr table ->
-            Table.view
-                config
-                attr
-                table
+            Table.view config attr table
 
-        Quote attr elements ->
-            elements
-                |> List.map (\e -> view_block config e)
-                |> Html.blockquote (annotation "lia-quote" attr)
+        Quote attr quote ->
+            viewQuote config attr quote
 
         HTML attr node ->
             HTML.view Html.div (view_block config) attr node
 
         Code code ->
             code
-                |> Codes.view config.main.lang config.ace_theme config.section.code_vector
+                |> Codes.view config.main.lang config.ace_theme config.section.code_model
                 |> Html.map UpdateCode
 
-        Quiz attr quiz Nothing ->
-            Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr)
-                [ Quizzes.view config.main quiz config.section.quiz_vector
-                    |> Html.map UpdateQuiz
-                ]
-
-        Quiz attr quiz (Just ( answer, hidden_effects )) ->
-            Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr) <|
-                if Quizzes.view_solution config.section.quiz_vector quiz then
-                    List.append
-                        [ Html.map UpdateQuiz <| Quizzes.view config.main quiz config.section.quiz_vector ]
-                        (Html.hr [] [] :: List.map (view_block config) answer)
-
-                else
-                    [ Quizzes.view config.main quiz config.section.quiz_vector
-                        |> Html.map UpdateQuiz
-                    ]
+        Quiz attr quiz solution ->
+            viewQuiz config attr quiz solution
 
         Survey attr survey ->
             config.section.survey_vector
@@ -265,22 +302,54 @@ view_block config block =
                 , Comments.get_paragraph id1 id2 config.section.effect_model
                 )
             of
-                ( Nothing, Just ( attr, par ) ) ->
+                ( Nothing, Just ( _, ( attr, par ) ) ) ->
                     par
                         |> Paragraph attr
                         |> view_block config
 
-                _ ->
+                ( Just _, Just ( narrator, ( attr, par ) ) ) ->
+                    let
+                        attributes =
+                            case Voice.getVoiceFor narrator config.translations of
+                                Nothing ->
+                                    []
+
+                                Just ( translate, voice ) ->
+                                    [ ( "class", "lia-tts-" ++ String.fromInt id1 )
+                                    , ( "class"
+                                      , if translate then
+                                            "hidden-visually translate"
+
+                                        else
+                                            "hide notranslate"
+                                      )
+                                    , ( "data-voice", voice )
+                                    , ( "translate"
+                                      , if translate then
+                                            "yes"
+
+                                        else
+                                            "no"
+                                      )
+                                    , ( "aria-hidden", "true" )
+                                    ]
+                    in
+                    par
+                        |> Paragraph (List.append attributes attr)
+                        |> view_block config
+
+                ( _, Nothing ) ->
                     Html.text ""
 
         Header attr ( elements, sub ) ->
             header config
-                (config.section.indentation + sub)
+                config.section.indentation
+                sub
                 attr
                 elements
 
         Chart attr chart ->
-            Lazy.lazy3 Charts.view attr config.light chart
+            Lazy.lazy4 Charts.view config.main.lang attr config.light chart
 
         ASCII attr bob ->
             view_ascii config attr bob
@@ -288,6 +357,38 @@ view_block config block =
         Task attr list ->
             Task.view config.main config.section.task_vector attr list
                 |> Html.map UpdateTask
+
+        Gallery attr list ->
+            list
+                |> config.view
+                |> Html.div (annotation "lia-gallery" attr)
+
+
+viewQuote : Config Msg -> Parameters -> ( List Markdown, Maybe ( Parameters, Inlines ) ) -> Html Msg
+viewQuote config attr ( elements, cite ) =
+    case cite of
+        Nothing ->
+            elements
+                |> List.map (view_block config)
+                |> Html.blockquote (annotation "lia-quote" attr)
+
+        Just ( cAttr, citation ) ->
+            [ elements
+                |> List.map (view_block config)
+                |> Html.em [ Attr.class "lia-quote__text" ]
+            , citation
+                |> config.view
+                |> (::) (Html.text "—")
+                |> Html.cite (annotation "lia-quote__cite" cAttr)
+            ]
+                |> Html.blockquote
+                    (Attr.cite
+                        (citation
+                            |> stringify_ config.main.scripts config.main.visible
+                            |> String.trim
+                        )
+                        :: annotation "lia-quote" attr
+                    )
 
 
 view_ascii : Config Msg -> Parameters -> SvgBob.Configuration (List Markdown) -> Html Msg
@@ -321,12 +422,37 @@ view_ascii config attr =
            )
 
 
+viewQuiz : Config Msg -> Parameters -> Quiz.Quiz -> Maybe ( MarkdownS, Int ) -> Html Msg
+viewQuiz config attr quiz solution =
+    case solution of
+        Nothing ->
+            Quizzes.view config.main quiz config.section.quiz_vector
+                |> Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr)
+                |> Html.map UpdateQuiz
+
+        Just ( answer, hidden_effects ) ->
+            Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr) <|
+                if Quizzes.showSolution config.section.quiz_vector quiz then
+                    (config.section.quiz_vector
+                        |> Quizzes.view config.main quiz
+                        |> List.map (Html.map UpdateQuiz)
+                    )
+                        ++ [ Html.div [ Attr.class "lia-quiz__solution" ] <| List.map (view_block config) answer ]
+
+                else
+                    config.section.quiz_vector
+                        |> Quizzes.view config.main quiz
+                        |> List.map (Html.map UpdateQuiz)
+
+
 view_list : Config Msg -> List ( String, List Markdown ) -> List (Html Msg)
 view_list config =
     let
         viewer ( value, sub_list ) =
-            List.map (view_block config) sub_list
-                |> Html.li [ Attr.value value ]
+            Html.li [ Attr.value value ]
+                [ List.map (view_block config) sub_list
+                    |> Html.span []
+                ]
     in
     List.map viewer
 

@@ -4,19 +4,32 @@ import Array
 import Lia.Index.Model exposing (Model)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Section exposing (Section, Sections)
+import Lia.Utils exposing (focus)
 
 
 type Msg
     = ScanIndex String
+    | DeleteSearch
+    | NoOp
 
 
-update : Msg -> Sections -> ( Model, Sections )
-update msg sections =
+update : Msg -> Model -> Sections -> ( Model, Sections, Cmd Msg )
+update msg model sections =
     case msg of
         ScanIndex pattern ->
             ( pattern
             , scan sections pattern
+            , Cmd.none
             )
+
+        DeleteSearch ->
+            ( ""
+            , scan sections ""
+            , focus NoOp "lia-input-search"
+            )
+
+        NoOp ->
+            ( model, sections, Cmd.none )
 
 
 scan : Sections -> String -> Sections

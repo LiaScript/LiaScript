@@ -1,0 +1,136 @@
+/* --------------------------------------------------
+   Layout Settings
+   -------------------------------------------------- */
+
+$toc-width-mobile: 100% !default;
+$toc-width-desktop: 28.5rem !default;
+
+$support-width-mobile: 100% !default;
+$support-width-desktop: 21.6rem !default;
+
+$notes-width-mobile: auto !default;
+$notes-width-desktop: 31.5rem !default;
+
+$slide-margin-left-presentation: 19rem !default;
+$slide-margin-left-textbook: 19rem !default;
+
+/* --------------------------------------------------
+   Canvas
+   -------------------------------------------------- */
+.lia-canvas {
+  background-color: rgb(var(--color-background));
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  left: 0;
+  position: relative;
+  transition: $global-transition;
+  width: 100vw;
+  overflow-x: hidden;
+
+  @include breakpoint("sm", "max") {
+    /* push support-menu-toggler to the right if toc is open,
+       prevent that buttons overlay each other */
+    &.lia-toc--visible #lia-btn-support {
+      transform: translate(0, -50%);
+    }
+
+    /* push toc-menu-toggler to the left if support-menu is open,
+       prevent that buttons overlay each other */
+    &.lia-support--visible #lia-btn-toc {
+      transform: translate(0, -50%);
+    }
+
+    /* in case both menus are visible on mobile screens, 
+       this pushes the buttons to their original positions */
+    &.lia-toc--visible.lia-support--visible {
+      #lia-btn-toc,
+      #lia-btn-support {
+        transform: translate(-3rem, -50%);
+      }
+    }
+  }
+
+  @include breakpoint("sm") {
+    &.lia-toc--visible {
+      left: $toc-width-desktop;
+      width: calc(100% - #{$toc-width-desktop});
+
+      .lia-header {
+        left: #{$toc-width-desktop};
+      }
+    }
+
+    &.lia-support--visible {
+      right: $support-width-desktop;
+      width: calc(100% - #{$support-width-desktop});
+
+      .lia-header {
+        right: #{$support-width-desktop};
+      }
+    }
+
+    &.lia-toc--visible.lia-support--visible {
+      width: calc(100% - #{$toc-width-desktop} - #{$support-width-desktop});
+    }
+  }
+
+  @include breakpoint("md") {
+    &.lia-toc--visible.lia-mode--presentation .lia-slide__content,
+    &.lia-toc--visible.lia-mode--textbook .lia-slide__content {
+      width: auto;
+    }
+  }
+
+  @include breakpoint("lg") {
+    flex-direction: row;
+  }
+
+  /* lia mode ui treatments */
+  // mode: slides
+  &.lia-mode--slides {
+    .lia-slide {
+      height: calc(100vh - 14.2rem + 7rem);
+    }
+
+    @include breakpoint("lg") {
+      .lia-header {
+        right: $notes-width-desktop;
+      }
+
+      .lia-slide {
+        height: 100vh;
+      }
+    }
+  }
+
+  // mode: textbook
+  &.lia-mode--textbook {
+    .lia-slide__content {
+      max-width: calc(71.1rem + #{$slide-margin-left-textbook} + 3rem);
+    }
+
+    @include breakpoint("md") {
+      .lia-slide__content {
+        padding-left: $slide-margin-left-textbook;
+      }
+
+      .lia-pagination {
+        margin-bottom: 2rem;
+      }
+    }
+  }
+
+  // mode: presentation
+  &.lia-mode--presentation {
+    .lia-slide__content {
+      max-width: 124.6rem;
+    }
+
+    @include breakpoint("lg") {
+      .lia-slide__content {
+        margin-left: calc(#{$slide-margin-left-presentation} - 3rem);
+      }
+    }
+  }
+}

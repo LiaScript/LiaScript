@@ -1,0 +1,55 @@
+.lia-list {
+  &--unordered,
+  &--ordered {
+    margin-left: 2rem;
+    padding-left: 2rem;
+    position: relative;
+
+    ul,
+    ol {
+      margin-left: 0;
+    }
+  }
+
+  &--unordered {
+    list-style-type: none;
+
+    > li {
+      &:before {
+        content: "\EA0D";
+        color: rgb(var(--color-highlight-dark));
+        font-family: "icon";
+        left: 0;
+        position: absolute;
+      }
+
+      > p {
+        display: inline-block;
+      }
+    }
+
+    ul li ul li {
+      padding-left: 1rem;
+      &:before {
+        content: "\EA21";
+      }
+    }
+  }
+
+  &--ordered {
+    > li {
+      &::marker {
+        color: rgb(var(--color-highlight-dark));
+      }
+
+      span {
+        left: 1rem;
+        position: relative;
+
+        > p {
+          display: inline-block;
+        }
+      }
+    }
+  }
+}

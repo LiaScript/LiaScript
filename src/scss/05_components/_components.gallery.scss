@@ -1,0 +1,28 @@
+.lia-gallery {
+  display: flex;
+  margin-bottom: 2rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  width: 100%;
+
+  .lia-figure {
+    flex: 0 0 32.2rem;
+    scroll-snap-align: start;
+
+    &__media {
+      width: 32.2rem;
+      height: 32.2rem;
+
+      img {
+        height: 100%;
+        object-fit: cover;
+        width: 100%;
+      }
+    }
+  }
+
+  > * {
+    margin-right: 3.2rem;
+  }
+}

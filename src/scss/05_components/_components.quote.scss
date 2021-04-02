@@ -1,0 +1,40 @@
+.lia-quote {
+  background-color: rgba(var(--color-highlight), 0.15);
+  padding: 2.4rem;
+
+  &[cite] {
+    padding: 2.4rem 4.8rem;
+  }
+
+  > *:last-child {
+    margin-bottom: 0;
+  }
+
+  &__text {
+    color: rgb(var(--color-highlight-dark));
+    font-family: "LiaSourceSerifPro";
+    font-weight: 600;
+    font-size: 1.6rem;
+    text-align: center;
+  }
+
+  &__cite {
+    display: block;
+    font-style: normal;
+    margin-top: 2rem;
+    text-align: center;
+  }
+}
+
+@mixin style-quote($theme) {
+  .lia-quote {
+    $info: map-get($theme, primary);
+    $bg: mix(map-get($theme, background), $info, 90%);
+    $fg: color-contrast($bg);
+
+    border-left-color: $info;
+    background: $bg;
+    color: $fg;
+    box-shadow: 8px 7px 0px mix($fg, $bg, 20%);
+  }
+}

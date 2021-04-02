@@ -1,14 +1,11 @@
-// import '@babel/polyfill'
+import '@babel/polyfill'
 
 import LiaScript from '../../typescript/liascript/index.ts'
-import {
-  Connector
-} from '../../typescript/connectors/SCORM1.2/index.js'
+import { Connector } from '../../typescript/connectors/SCORM1.2/index.js'
 
 const ua = window.navigator.userAgent
 
-if (ua.indexOf('Trident/') > 0 ||
-  ua.indexOf('MSIE ') > 0) {
+if (ua.indexOf('Trident/') > 0 || ua.indexOf('MSIE ') > 0) {
   console.warn('unsupported browser')
   document.getElementById('IE-message').hidden = false
 } else {

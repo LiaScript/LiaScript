@@ -56,7 +56,7 @@ main =
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( Lia.Script.init True JE.null "" "" "" Nothing
+    ( Lia.Script.init False True JE.null "" "" "" Nothing
         |> Model Idle "" Nothing
     , if flags.cmd == "" then
         Cmd.none
@@ -117,7 +117,7 @@ update msg model =
             ( { model | state = Error <| parse_error info }
             , info
                 |> parse_error
-                |> error "Load_ReadMe_Result"
+                |> error (url ++ " Load_ReadMe_Result")
             )
 
         Load_Template_Result (Ok template) ->

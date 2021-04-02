@@ -10,71 +10,65 @@ import Lia.Markdown.Quiz.Vector.Types exposing (Quiz, State(..))
 import Lia.Markdown.Quiz.Vector.Update exposing (Msg(..))
 
 
-view : Config sub -> Bool -> Quiz -> State -> Html (Msg sub)
-view config solved quiz state =
+view : Config sub -> Bool -> String -> Quiz -> State -> List (Html (Msg sub))
+view config open class quiz state =
     case ( quiz.solution, state ) of
         ( SingleChoice _, SingleChoice list ) ->
-            table (radio config solved) quiz.options list
+            table (radio config open class) quiz.options list
 
         ( MultipleChoice _, MultipleChoice list ) ->
-            table (check config solved) quiz.options list
+            table (check config open class) quiz.options list
 
         _ ->
-            Html.text ""
+            []
 
 
-table : (Bool -> ( Int, Inlines ) -> Html (Msg sub)) -> List Inlines -> List Bool -> Html (Msg sub)
+table : (Bool -> ( Int, Inlines ) -> Html (Msg sub)) -> List Inlines -> List Bool -> List (Html (Msg sub))
 table fn inlines bools =
     inlines
         |> List.indexedMap Tuple.pair
         |> List.map2 fn bools
-        |> Html.table [ Attr.attribute "cellspacing" "8" ]
 
 
-check : Config sub -> Bool -> Bool -> ( Int, Inlines ) -> Html (Msg sub)
-check config solved checked ( id, line ) =
-    Html.tr [ Attr.class "lia-check-item" ]
-        [ Html.td
-            [ Attr.attribute "valign" "top", Attr.class "lia-label" ]
-            [ Html.input
-                [ Attr.type_ "checkbox"
-                , Attr.checked checked
-                , if solved then
-                    Attr.disabled True
+check : Config sub -> Bool -> String -> Bool -> ( Int, Inlines ) -> Html (Msg sub)
+check config open colorClass checked ( id, line ) =
+    Html.label [ Attr.class "lia-label" ]
+        [ Html.input
+            [ Attr.class "lia-checkbox"
+            , Attr.class colorClass
+            , Attr.type_ "checkbox"
+            , Attr.checked checked
+            , if open then
+                onClick (Toggle id)
 
-                  else
-                    onClick (Toggle id)
-                ]
-                []
-            , Html.span
-                [ Attr.class "lia-check-btn" ]
-                [ Html.text "check" ]
+              else
+                Attr.disabled True
             ]
+            []
         , line
             |> viewer config
-            |> Html.td [ Attr.class "lia-label" ]
+            |> Html.span []
             |> Html.map Script
         ]
 
 
-radio : Config sub -> Bool -> Bool -> ( Int, Inlines ) -> Html (Msg sub)
-radio config solved checked ( id, line ) =
-    Html.tr [ Attr.class "lia-radio-item" ]
-        [ Html.td [ Attr.attribute "valign" "top", Attr.class "lia-label" ]
-            [ Html.input
-                [ Attr.type_ "radio"
-                , Attr.checked checked
-                , if solved then
-                    Attr.disabled True
+radio : Config sub -> Bool -> String -> Bool -> ( Int, Inlines ) -> Html (Msg sub)
+radio config open colorClass checked ( id, line ) =
+    Html.label [ Attr.class "lia-label" ]
+        [ Html.input
+            [ Attr.class "lia-radio"
+            , Attr.class colorClass
+            , Attr.type_ "radio"
+            , Attr.checked checked
+            , if open then
+                onClick (Toggle id)
 
-                  else
-                    onClick (Toggle id)
-                ]
-                []
-            , Html.span [ Attr.class "lia-radio-btn" ] []
+              else
+                Attr.disabled True
             ]
+            []
         , line
             |> viewer config
-            |> Html.td [ Attr.class "lia-label" ]
+            |> Html.span []
             |> Html.map Script
         ]

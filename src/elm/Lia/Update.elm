@@ -1,4 +1,4 @@
-module Lia.Update exposing
+port module Lia.Update exposing
     ( Msg(..)
     , generate
     , get_active_section
@@ -7,6 +7,8 @@ module Lia.Update exposing
     )
 
 import Array exposing (Array)
+import Const
+import Dict
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Index.Update as Index
@@ -16,10 +18,13 @@ import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (Model, loadResource)
 import Lia.Parser.Parser exposing (parse_section)
 import Lia.Section exposing (Section)
-import Lia.Settings.Model exposing (Mode(..))
+import Lia.Settings.Types exposing (Mode(..))
 import Lia.Settings.Update as Settings
 import Port.Event as Event exposing (Event)
 import Session exposing (Session)
+
+
+port media : (( String, Int, Int ) -> msg) -> Sub msg
 
 
 {-| If the model has an activated section, then all subscriptions will be passed
@@ -29,12 +34,15 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     case get_active_section model of
         Just section ->
-            section
-                |> Markdown.subscriptions
-                |> Sub.map UpdateMarkdown
+            Sub.batch
+                [ section
+                    |> Markdown.subscriptions
+                    |> Sub.map UpdateMarkdown
+                , media Media
+                ]
 
         Nothing ->
-            Sub.none
+            media Media
 
 
 {-| Main LiaScript messages:
@@ -62,12 +70,15 @@ type Msg
     | InitSection
     | PrevSection
     | NextSection
+    | JumpToFragment Int
     | UpdateIndex Index.Msg
     | UpdateSettings Settings.Msg
     | UpdateMarkdown Markdown.Msg
     | Handle Event
     | Home
     | Script ( Int, Script.Msg Markdown.Msg )
+    | TTSReplay Bool
+    | Media ( String, Int, Int )
 
 
 {-| **@private:** shortcut for generating events for a specific section:
@@ -81,18 +92,57 @@ send sectionID =
     List.map (\( name, json ) -> Event name sectionID json)
 
 
+blockSwiping : Model -> Bool
+blockSwiping =
+    get_active_section
+        >> Maybe.map (.footnote2show >> (/=) Nothing)
+        >> Maybe.withDefault False
+
+
 update : Session -> Msg -> Model -> ( Model, Cmd Msg, List Event )
 update session msg model =
     case msg of
         Load force idx ->
+            let
+                settings =
+                    model.settings
+            in
             if (-1 < idx) && (idx < Array.length model.sections) then
                 if idx == model.section_active || force then
-                    { model | section_active = idx }
+                    { model
+                        | section_active = idx
+                        , settings =
+                            { settings
+                                | table_of_contents =
+                                    if
+                                        session.screen.width
+                                            <= Const.globalBreakpoints.sm
+                                    then
+                                        False
+
+                                    else
+                                        settings.table_of_contents
+                            }
+                    }
                         |> generate
                         |> update session InitSection
 
                 else
-                    ( { model | section_active = idx }
+                    ( { model
+                        | section_active = idx
+                        , settings =
+                            { settings
+                                | table_of_contents =
+                                    if
+                                        session.screen.width
+                                            <= Const.globalBreakpoints.sm
+                                    then
+                                        False
+
+                                    else
+                                        settings.table_of_contents
+                            }
+                      }
                     , Session.navToSlide session idx
                     , []
                     )
@@ -105,24 +155,24 @@ update session msg model =
 
         UpdateSettings childMsg ->
             let
-                ( settings, events ) =
+                ( settings, cmd, events ) =
                     Settings.update childMsg model.settings
             in
             ( { model | settings = settings }
-            , Cmd.none
+            , Cmd.map UpdateSettings cmd
             , events
             )
 
         UpdateIndex childMsg ->
             let
-                ( index, sections ) =
-                    Index.update childMsg model.sections
+                ( index, sections, cmd ) =
+                    Index.update childMsg model.index_model model.sections
             in
             ( { model
                 | index_model = index
                 , sections = sections
               }
-            , Cmd.none
+            , Cmd.map UpdateIndex cmd
             , []
             )
 
@@ -155,11 +205,11 @@ update session msg model =
                     update session (Load True event.section) model
 
                 "swipe" ->
-                    case JD.decodeValue JD.string event.message of
-                        Ok "left" ->
+                    case ( JD.decodeValue JD.string event.message, blockSwiping model ) of
+                        ( Ok "left", False ) ->
                             update session NextSection model
 
-                        Ok "right" ->
+                        ( Ok "right", False ) ->
                             update session PrevSection model
 
                         _ ->
@@ -198,6 +248,14 @@ update session msg model =
 
                 _ ->
                     ( model, Cmd.none, [] )
+
+        Media ( url, width, height ) ->
+            ( { model
+                | media = Dict.insert url ( width, height ) model.media
+              }
+            , Cmd.none
+            , []
+            )
 
         _ ->
             case ( msg, get_active_section model ) of
@@ -257,6 +315,30 @@ update session msg model =
                     , model.to_do
                         |> List.append (send model.section_active log_)
                         |> (::) (Event "slide" model.section_active JE.null)
+                    )
+
+                ( JumpToFragment id, Just sec ) ->
+                    if (model.settings.mode == Textbook) || sec.effect_model.visible == id then
+                        ( model, Cmd.none, [] )
+
+                    else
+                        let
+                            effect =
+                                sec.effect_model
+
+                            ( sec_, cmd_, log_ ) =
+                                Markdown.nextEffect model.settings.sound { sec | effect_model = { effect | visible = id - 1 } }
+                        in
+                        ( set_active_section model sec_
+                        , Cmd.map UpdateMarkdown cmd_
+                        , send model.section_active log_
+                        )
+
+                ( TTSReplay bool, sec ) ->
+                    ( model
+                    , Cmd.none
+                    , Markdown.ttsReplay model.settings.sound bool sec
+                        |> send -1
                     )
 
                 _ ->
@@ -349,7 +431,7 @@ generate model =
                         model.to_do
                             |> List.append logs
                             |> add_load section.quiz_vector model.section_active "quiz"
-                            |> add_load section.code_vector model.section_active "code"
+                            |> add_load section.code_model.evaluate model.section_active "code"
                             |> add_load section.survey_vector model.section_active "survey"
                             |> add_load section.task_vector model.section_active "task"
                 }

@@ -2,6 +2,7 @@ module Lia.Markdown.Quiz.Matrix.Types exposing
     ( Quiz
     , State
     , comp
+    , getClass
     , initState
     )
 
@@ -39,3 +40,8 @@ comp quiz state =
     in
     List.map2 Vector.comp list1 list2
         |> List.all identity
+
+
+getClass : State -> String
+getClass _ =
+    "matrix"

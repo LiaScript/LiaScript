@@ -20,7 +20,7 @@ const persistent = {
   bag: document.createElement('div'),
   section: -1,
 
-  store: function(section: number) {
+  store: function (section: number) {
     if (section === this.section) return
 
     this.section = section
@@ -32,7 +32,7 @@ const persistent = {
     }
   },
 
-  load: function() {
+  load: function () {
     const elements = document.getElementsByClassName('persistent')
 
     for (const e of elements) {
@@ -45,7 +45,7 @@ const persistent = {
         }
       }
     }
-  }
+  },
 }
 
 export default persistent

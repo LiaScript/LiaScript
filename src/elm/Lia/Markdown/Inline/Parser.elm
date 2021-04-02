@@ -6,6 +6,7 @@ module Lia.Markdown.Inline.Parser exposing
     , javascript
     , line
     , lineWithProblems
+    , mediaReference
     , parse_inlines
     )
 
@@ -315,6 +316,17 @@ reference =
         |> map Ref
 
 
+mediaReference : Parser Context Inline
+mediaReference =
+    [ refMovie
+    , refImage
+    , refQr
+    ]
+        |> choice
+        |> map Ref
+        |> andMap (Macro.macro |> keep annotations)
+
+
 refMail : Parser Context Reference
 refMail =
     ref_pattern Mail ref_info email
@@ -494,7 +506,7 @@ stringBase2 =
 code : Parser s (Parameters -> Inline)
 code =
     string "`"
-        |> keep (regex "([^`\\n]*|(?<=\\\\)`)+")
+        |> keep (regex "([^`\n\\\\]*|\\\\`|\\\\)+")
         |> ignore (string "`")
         |> map (String.replace "\\`" "`" >> Verbatim)
 
@@ -509,9 +521,9 @@ scriptBody =
         |> manyTill
             ([ regex "[^\"'`</]+" --" this is only a comment for syntaxhighlighting ...
              , regex "[ \t\n]+"
-             , regex "\"([^\"]*|(?<=\\\\)\")*\""
-             , regex "'([^']*|(?<=\\\\)')*'"
-             , regex "`([^`]*|\n|(?<=\\\\)`)*`"
+             , regex "\"([^\"]*|\\\\\"|\\\\)*\""
+             , regex "'([^']*|\\\\'|\\\\)*'"
+             , regex "`([^`]*|\n|\\\\`|\\\\)*`"
              , regex "<(?!/)"
              , regex "//[^\n]*"
              , string "/"

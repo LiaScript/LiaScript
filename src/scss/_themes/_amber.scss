@@ -1,21 +1,18 @@
-@import "../../../node_modules/material-icons/css/material-icons";
-@import "../lia";
-
 $fg: material-color('grey', '900');
-$bg: material-color('grey', '50');
+$bg: white;
 
 $theme: (
-    text: $fg,
-    text-inv: $bg,
-    background: $bg,
-    background-inv: $fg,
-    primary: material-color('amber', '500'),
-    secondary: material-color('deep-orange', '500'),
-    success: material-color('green', '500'),
-    info: material-color('blue', '500'),
-    warning: material-color('yellow', '500'),
-    error: material-color('red', '500'),
-    highlight-weight: normal,
+  text: $fg,
+  text-inv: $bg,
+  background: $bg,
+  background-inv: $fg,
+  primary: material-color('amber', '500'),
+  secondary: material-color('deep-orange', '500'),
+  success: material-color('green', '500'),
+  info: material-color('blue', '500'),
+  warning: material-color('yellow', '500'),
+  error: material-color('red', '500'),
+  highlight-weight: normal,
 );
 
 @include create-theme($theme, amber);

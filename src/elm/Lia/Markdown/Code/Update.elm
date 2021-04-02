@@ -5,13 +5,14 @@ module Lia.Markdown.Code.Update exposing
     )
 
 import Array exposing (Array)
+import Conditional.Array as CArray
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Code.Events as Event
 import Lia.Markdown.Code.Json as Json
 import Lia.Markdown.Code.Log as Log
 import Lia.Markdown.Code.Terminal as Terminal
-import Lia.Markdown.Code.Types exposing (Code(..), File, Project, Vector, loadVersion, updateVersion)
+import Lia.Markdown.Code.Types exposing (Code(..), File, Model, Project, loadVersion, updateVersion)
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Port.Eval exposing (Eval)
 import Port.Event exposing (Event)
@@ -21,8 +22,8 @@ type Msg
     = Eval Int
     | Stop Int
     | Update Int Int String
-    | FlipView Int Int
-    | FlipFullscreen Int Int
+    | FlipView Code Int
+    | FlipFullscreen Code Int
     | Load Int Int
     | First Int
     | Last Int
@@ -35,31 +36,31 @@ handle =
     Handle
 
 
-restore : JE.Value -> Vector -> ( Vector, List Event )
+restore : JE.Value -> Model -> ( Model, List Event )
 restore json model =
     case
-        model
+        model.evaluate
             |> Array.map .attr
             |> Array.toList
             |> Json.toVector json
     of
-        Ok (Just model_) ->
-            ( Json.merge model model_, [] )
+        Ok (Just vector) ->
+            ( Json.merge model vector, [] )
 
         Ok Nothing ->
             ( model
-            , if Array.length model == 0 then
+            , if Array.length model.evaluate == 0 then
                 []
 
               else
-                [ Event.store model ]
+                [ Event.store model.evaluate ]
             )
 
         Err _ ->
             ( model, [] )
 
 
-update : Scripts a -> Msg -> Vector -> ( Vector, List Event )
+update : Scripts a -> Msg -> Model -> ( Model, List Event )
 update scripts msg model =
     case msg of
         Eval idx ->
@@ -76,7 +77,7 @@ update scripts msg model =
                 (\f -> { f | code = code_str })
                 (\_ -> [])
 
-        FlipView id_1 id_2 ->
+        FlipView (Evaluate id_1) id_2 ->
             update_file
                 id_1
                 id_2
@@ -84,7 +85,45 @@ update scripts msg model =
                 (\f -> { f | visible = not f.visible })
                 (Event.flip_view id_1 id_2)
 
-        FlipFullscreen id_1 id_2 ->
+        FlipView (Highlight id_1) id_2 ->
+            ( { model
+                | highlight =
+                    CArray.setWhen id_1
+                        (model.highlight
+                            |> Array.get id_1
+                            |> Maybe.map
+                                (\pro ->
+                                    { pro
+                                        | file =
+                                            updateArray (\f -> { f | visible = not f.visible }) id_2 pro.file
+                                    }
+                                )
+                        )
+                        model.highlight
+              }
+            , []
+            )
+
+        FlipFullscreen (Highlight id_1) id_2 ->
+            ( { model
+                | highlight =
+                    CArray.setWhen id_1
+                        (model.highlight
+                            |> Array.get id_1
+                            |> Maybe.map
+                                (\pro ->
+                                    { pro
+                                        | file =
+                                            updateArray (\f -> { f | fullscreen = not f.fullscreen }) id_2 pro.file
+                                    }
+                                )
+                        )
+                        model.highlight
+              }
+            , []
+            )
+
+        FlipFullscreen (Evaluate id_1) id_2 ->
             update_file
                 id_1
                 id_2
@@ -225,18 +264,21 @@ eval scripts idx project =
     ( { project | running = True }, Event.eval scripts idx project )
 
 
-maybe_project : Int -> (a -> b) -> Array a -> Maybe b
-maybe_project idx f model =
-    model
-        |> Array.get idx
-        |> Maybe.map f
+
+--maybe_project : Int -> (a -> b) -> Array a -> Maybe b
 
 
-maybe_update : Int -> Vector -> Maybe ( Project, List Event ) -> ( Vector, List Event )
+maybe_project idx f =
+    .evaluate
+        >> Array.get idx
+        >> Maybe.map f
+
+
+maybe_update : Int -> Model -> Maybe ( Project, List Event ) -> ( Model, List Event )
 maybe_update idx model project =
     case project of
         Just ( p, logs ) ->
-            ( Array.set idx p model
+            ( { model | evaluate = Array.set idx p model.evaluate }
             , if logs == [] then
                 []
 
@@ -248,17 +290,20 @@ maybe_update idx model project =
             ( model, [] )
 
 
-update_file : Int -> Int -> Vector -> (File -> File) -> (File -> List Event) -> ( Vector, List Event )
+update_file : Int -> Int -> Model -> (File -> File) -> (File -> List Event) -> ( Model, List Event )
 update_file id_1 id_2 model f f_log =
-    case Array.get id_1 model of
+    case Array.get id_1 model.evaluate of
         Just project ->
             case project.file |> Array.get id_2 |> Maybe.map f of
                 Just file ->
-                    ( Array.set id_1
-                        { project
-                            | file = Array.set id_2 file project.file
-                        }
-                        model
+                    ( { model
+                        | evaluate =
+                            Array.set id_1
+                                { project
+                                    | file = Array.set id_2 file project.file
+                                }
+                                model.evaluate
+                      }
                     , f_log file
                     )
 
@@ -355,3 +400,13 @@ logger fn level event_str project =
 
         _ ->
             project
+
+
+updateArray : (e -> e) -> Int -> Array e -> Array e
+updateArray fn i array =
+    CArray.setWhen i
+        (array
+            |> Array.get i
+            |> Maybe.map fn
+        )
+        array

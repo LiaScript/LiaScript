@@ -6,6 +6,8 @@ module Lia.Markdown.Effect.Update exposing
     , init
     , next
     , previous
+    , ttsCancel
+    , ttsReplay
     , update
     , updateSub
     )
@@ -82,10 +84,10 @@ update main sound msg model =
                 else
                     ( model, Cmd.none, [] )
 
-            Speak id voice text ->
+            Speak id _ _ ->
                 ( { model | speaking = Just id }
                 , Cmd.none
-                , [ TTS.playback id voice text ]
+                , [ TTS.readFrom -1 id ]
                 )
 
             Mute id ->
@@ -97,17 +99,19 @@ update main sound msg model =
             Send event ->
                 let
                     events =
-                        ("focused"
-                            |> JE.string
-                            |> Event "scrollTo" -1
-                        )
+                        scrollTo True "focused"
+                            :: scrollTo False "lia-notes-active"
                             :: event
                 in
                 ( model
                 , Cmd.none
                 , case current_comment model of
-                    Just ( comment, narrator ) ->
-                        TTS.speak sound narrator comment :: events
+                    Just ( id, _, _ ) ->
+                        if sound then
+                            TTS.readFrom -1 id :: events
+
+                        else
+                            events
 
                     _ ->
                         TTS.cancel :: events
@@ -142,6 +146,17 @@ update main sound msg model =
                                 Script.update main (Script.Handle event) model.javascript
                         in
                         ( { model | javascript = scripts }, Cmd.map Script cmd, events )
+
+
+scrollTo force =
+    JE.string
+        >> Event "scrollTo"
+            (if force then
+                -1
+
+             else
+                0
+            )
 
 
 markRunning : ( Model a, Cmd (Msg sub), List Event ) -> ( Model a, Cmd (Msg sub), List Event )
@@ -220,3 +235,21 @@ previous =
 handle : Event -> Msg sub
 handle =
     Handle
+
+
+ttsReplay :
+    Bool
+    -> Model SubSection
+    -> Maybe Event
+ttsReplay sound model =
+    case ( sound, current_comment model ) of
+        ( True, Just ( id, _, _ ) ) ->
+            Just <| TTS.readFrom -1 id
+
+        _ ->
+            Nothing
+
+
+ttsCancel : Event
+ttsCancel =
+    TTS.cancel

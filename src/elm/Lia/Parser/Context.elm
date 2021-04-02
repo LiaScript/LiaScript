@@ -52,7 +52,7 @@ type alias Context =
     { indentation : List String
     , indentation_skip : Bool
     , task_vector : Task.Vector
-    , code_vector : Code.Vector
+    , code_model : Code.Model
     , quiz_vector : Quiz.Vector
     , survey_vector : Survey.Vector
     , table_vector : Table.Vector
@@ -74,7 +74,7 @@ init search_index global =
     { indentation = []
     , indentation_skip = False
     , task_vector = Array.empty
-    , code_vector = Array.empty
+    , code_model = Code.init
     , quiz_vector = Array.empty
     , survey_vector = Array.empty
     , table_vector = Array.empty

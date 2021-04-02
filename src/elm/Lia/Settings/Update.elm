@@ -1,7 +1,7 @@
 module Lia.Settings.Update exposing
-    ( Button(..)
-    , Msg(..)
+    ( Msg(..)
     , Toggle(..)
+    , customizeEvent
     , handle
     , toggle_sound
     , update
@@ -9,7 +9,8 @@ module Lia.Settings.Update exposing
 
 import Json.Encode as JE
 import Lia.Settings.Json as Json
-import Lia.Settings.Model exposing (Buttons, Mode(..), Model, init_buttons)
+import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
+import Lia.Utils exposing (focus)
 import Port.Event exposing (Event)
 import Port.TTS as TTS
 
@@ -20,10 +21,11 @@ type Msg
     | ChangeEditor String
     | ChangeLang String
     | ChangeFontSize Bool
-    | SwitchMode
+    | SwitchMode Mode
     | Reset
     | Handle Event
     | ShareCourse Event
+    | Focus String
     | Ignore
 
 
@@ -31,82 +33,107 @@ type Toggle
     = TableOfContents
     | Sound
     | Light
-    | Button Button
+    | Action Action
+    | SupportMenu
+    | TranslateWithGoogle
 
 
-type Button
-    = Settings
-    | Translations
-    | Informations
-    | Share
-
-
-update : Msg -> Model -> ( Model, List Event )
+update : Msg -> Settings -> ( Settings, Cmd Msg, List Event )
 update msg model =
     case msg of
         Handle event ->
-            no_log <|
-                case event.topic of
-                    "init" ->
-                        event.message
-                            |> load { model | initialized = True }
+            case event.topic of
+                "init" ->
+                    event.message
+                        |> load { model | initialized = True }
+                        |> no_log Nothing
 
-                    "speak" ->
+                "speak" ->
+                    no_log Nothing
                         { model
                             | speaking =
                                 TTS.decode event.message == TTS.Start
                         }
 
-                    _ ->
-                        model
+                _ ->
+                    log Nothing model
 
         Toggle TableOfContents ->
-            log
+            log Nothing
                 { model
                     | table_of_contents = not model.table_of_contents
-                    , buttons = init_buttons
+                    , action = Nothing
+                }
+
+        Toggle SupportMenu ->
+            log Nothing
+                { model
+                    | support_menu = not model.support_menu
+                    , action = Nothing
                 }
 
         Toggle Sound ->
             let
-                ( new_model, events ) =
-                    log { model | sound = not model.sound }
+                ( new_model, _, events ) =
+                    log Nothing { model | sound = not model.sound }
             in
-            ( new_model, TTS.event new_model.sound :: events )
+            ( new_model, Cmd.none, TTS.event new_model.sound :: events )
 
         Toggle Light ->
-            log { model | light = not model.light }
+            log Nothing { model | light = not model.light }
 
-        Toggle (Button button) ->
-            no_log { model | buttons = toggle button model.buttons }
+        Toggle (Action action) ->
+            no_log
+                (case action of
+                    ShowModes ->
+                        Just "lia-mode-textbook"
 
-        SwitchMode ->
-            case model.mode of
-                Presentation ->
-                    log { model | mode = Slides }
+                    ShowSettings ->
+                        Just "lia-btn-light-mode"
 
-                Slides ->
-                    let
-                        ( new_model, events ) =
-                            log { model | sound = False, mode = Textbook }
-                    in
-                    ( new_model, TTS.event new_model.sound :: events )
+                    _ ->
+                        Nothing
+                )
+                { model
+                    | action =
+                        if action == Close then
+                            Nothing
 
+                        else if model.action /= Just action then
+                            Just action
+
+                        else
+                            Nothing
+                }
+
+        SwitchMode mode ->
+            case mode of
                 Textbook ->
                     let
-                        ( new_model, events ) =
-                            log { model | sound = True, mode = Presentation }
+                        ( new_model, _, events ) =
+                            log Nothing { model | sound = False, mode = Textbook }
                     in
-                    ( new_model, TTS.event new_model.sound :: events )
+                    ( new_model, Cmd.none, TTS.event new_model.sound :: events )
+
+                _ ->
+                    log Nothing { model | mode = mode }
 
         ChangeTheme theme ->
-            log { model | theme = theme }
+            log Nothing
+                { model
+                    | theme =
+                        if theme == "custom" && model.customTheme /= Nothing then
+                            theme
+
+                        else
+                            theme
+                }
 
         ChangeEditor theme ->
-            log { model | editor = theme }
+            log Nothing { model | editor = theme }
 
         ChangeFontSize inc ->
-            log
+            log Nothing
                 { model
                     | font_size =
                         if inc then
@@ -123,16 +150,25 @@ update msg model =
                 }
 
         ChangeLang lang ->
-            log { model | lang = lang }
+            log Nothing { model | lang = lang }
 
         Reset ->
-            ( model, [ Event "reset" -1 JE.null ] )
+            ( model, Cmd.none, [ Event "reset" -1 JE.null ] )
 
         ShareCourse event ->
-            ( model, [ event ] )
+            ( model, Cmd.none, [ event ] )
+
+        Toggle TranslateWithGoogle ->
+            ( { model | translateWithGoogle = True }
+            , Cmd.none
+            , [ Event "googleTranslate" -1 JE.null ]
+            )
+
+        Focus elementID ->
+            ( model, maybeFocus (Just elementID), [] )
 
         Ignore ->
-            ( model, [] )
+            ( model, Cmd.none, [] )
 
 
 handle : Event -> Msg
@@ -140,11 +176,10 @@ handle =
     Handle
 
 
-load : Model -> JE.Value -> Model
-load model json =
-    json
-        |> Json.toModel model
-        |> Result.withDefault model
+load : Settings -> JE.Value -> Settings
+load model =
+    Json.toModel model
+        >> Result.withDefault model
 
 
 toggle_sound : Msg
@@ -152,31 +187,36 @@ toggle_sound =
     Toggle Sound
 
 
-toggle : Button -> Buttons -> Buttons
-toggle toggle_button buttons =
-    let
-        new_buttons =
-            init_buttons
-    in
-    case toggle_button of
-        Settings ->
-            { new_buttons | settings = not buttons.settings }
-
-        Translations ->
-            { new_buttons | translations = not buttons.translations }
-
-        Informations ->
-            { new_buttons | informations = not buttons.informations }
-
-        Share ->
-            { new_buttons | share = not buttons.share }
+log : Maybe String -> Settings -> ( Settings, Cmd Msg, List Event )
+log elementID settings =
+    ( settings
+    , maybeFocus elementID
+    , [ customizeEvent settings ]
+    )
 
 
-log : Model -> ( Model, List Event )
-log model =
-    ( model, [ Event "settings" -1 <| Json.fromModel model ] )
+customizeEvent settings =
+    [ settings
+        |> Json.fromModel
+    , if settings.theme == "custom" then
+        settings.customTheme
+            |> Maybe.map JE.string
+            |> Maybe.withDefault JE.null
+
+      else
+        JE.null
+    ]
+        |> JE.list identity
+        |> Event "settings" -1
 
 
-no_log : Model -> ( Model, List Event )
-no_log model =
-    ( model, [] )
+no_log : Maybe String -> Settings -> ( Settings, Cmd Msg, List Event )
+no_log elementID settings =
+    ( settings
+    , maybeFocus elementID
+    , []
+    )
+
+
+maybeFocus =
+    Maybe.map (focus Ignore) >> Maybe.withDefault Cmd.none

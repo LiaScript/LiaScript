@@ -1,5 +1,6 @@
 module Lia.Markdown.Quiz.Block.View exposing (view)
 
+import Accessibility.Widget as A11y_Widget
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
@@ -8,69 +9,102 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Quiz.Block.Types exposing (Quiz, State(..))
 import Lia.Markdown.Quiz.Block.Update exposing (Msg(..))
-import Lia.Utils exposing (blockKeydown)
+import Lia.Markdown.Quiz.Solution as Solution
+import Lia.Utils exposing (blockKeydown, icon)
 
 
-view : Config sub -> Bool -> Quiz -> State -> Html (Msg sub)
-view config solved quiz state =
+view : Config sub -> Solution.State -> Quiz -> State -> List (Html (Msg sub))
+view config solution quiz state =
     case state of
         Text str ->
-            text solved str
+            [ text solution str
+            , case solution of
+                ( Solution.Solved, _ ) ->
+                    icon "icon-check text-success"
+                        [ Attr.style "position" "absolute"
+                        , Attr.style "top" "1rem"
+                        , Attr.style "right" "1rem"
+                        ]
+
+                ( Solution.Open, trials ) ->
+                    if trials > 0 then
+                        icon "icon-close text-error"
+                            [ Attr.style "position" "absolute"
+                            , Attr.style "top" "1rem"
+                            , Attr.style "right" "1rem"
+                            ]
+
+                    else
+                        Html.text ""
+
+                _ ->
+                    Html.text ""
+            ]
 
         Select open value ->
-            value
+            [ value
                 |> List.head
                 |> Maybe.withDefault -1
-                |> select config solved open quiz.options
+                |> select config solution open quiz.options
+            ]
 
 
-text : Bool -> String -> Html (Msg sub)
-text solved state =
+text : Solution.State -> String -> Html (Msg sub)
+text solution state =
     Html.input
         [ Attr.type_ "input"
-        , Attr.class "lia-input"
+        , Attr.class "lia-input lia-quiz__input"
+        , Attr.class <|
+            if Solution.isOpen solution then
+                ""
+
+            else
+                "lia-input--disabled"
+        , Attr.class (Solution.toClass solution)
         , Attr.value state
-        , Attr.disabled solved
+        , Attr.disabled (not <| Solution.isOpen solution)
         , onInput Input
         , blockKeydown (Input state)
         ]
         []
 
 
-select : Config sub -> Bool -> Bool -> List Inlines -> Int -> Html (Msg sub)
-select config solved open options i =
-    Html.span
-        []
+select : Config sub -> Solution.State -> Bool -> List Inlines -> Int -> Html (Msg sub)
+select config solution open options i =
+    Html.div
+        [ Attr.class "lia-dropdown"
+        , Attr.class <| Solution.toClass solution
+        , if Solution.isOpen solution then
+            onClick Toggle
+
+          else
+            Attr.disabled True
+        ]
         [ Html.span
-            [ Attr.class "lia-dropdown"
-            , if solved then
-                Attr.disabled True
-
-              else
-                onClick Toggle
-            ]
+            [ Attr.class "lia-dropdown__selected" ]
             [ get_option config i options
-            , Html.span
-                [ Attr.class "lia-icon"
-                , Attr.style "float" "right"
-                ]
-                [ if open then
-                    Html.text "arrow_drop_down"
+            , Html.i
+                [ Attr.class <|
+                    "icon"
+                        ++ (if open then
+                                " icon-chevron-up"
 
-                  else
-                    Html.text "arrow_drop_up"
+                            else
+                                " icon-chevron-down"
+                           )
                 ]
+                []
             ]
         , options
             |> List.indexedMap (option config)
             |> Html.div
-                [ Attr.class "lia-dropdown-options"
-                , Attr.style "max-height" <|
+                [ Attr.class "lia-dropdown__options"
+                , Attr.class <|
                     if open then
-                        "2000px"
+                        "is-visible"
 
                     else
-                        "0px"
+                        "is-hidden"
                 ]
         ]
 
@@ -82,7 +116,7 @@ option config id =
         >> Html.map Script
         >> List.singleton
         >> Html.div
-            [ Attr.class "lia-dropdown-option"
+            [ Attr.class "lia-dropdown__option"
             , id
                 |> Choose
                 |> onClick
@@ -103,4 +137,4 @@ get_option config id list =
                 |> get_option config (i - 1)
 
         ( _, [] ) ->
-            Html.text "choose"
+            Html.span [] [ Html.text "choose" ]

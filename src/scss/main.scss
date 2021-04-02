@@ -1,6 +1,78 @@
-@import "_themes/default";
-@import "_themes/amber";
-@import "_themes/green";
-@import "_themes/purple";
-@import "_themes/grey";
-@import "_themes/blue";
+// Settings
+@import "00_settings/settings.colors";
+@import "00_settings/settings.fonts";
+@import "00_settings/settings.global";
+@import "00_settings/settings.iconfont";
+@import "00_settings/settings.typography";
+
+// Tools
+@import "01_tools/tools.color";
+@import "01_tools/tools.px-em-calc";
+@import "01_tools/tools.breakpoints";
+@import "01_tools/tools.flex";
+@import "01_tools/tools.font-size";
+@import "01_tools/tools.hidden-visually";
+@import "01_tools/tools.str-replace";
+
+// Generic
+@import "02_generic/generic.reset";
+@import "02_generic/generic.normalize";
+@import "02_generic/generic.shared";
+
+// Elements
+@import "03_elements/elements.button";
+@import "03_elements/elements.code";
+@import "03_elements/elements.headline";
+@import "03_elements/elements.hr";
+@import "03_elements/elements.input";
+@import "03_elements/elements.label";
+@import "03_elements/elements.link";
+@import "03_elements/elements.list";
+@import "03_elements/elements.media";
+@import "03_elements/elements.page";
+@import "03_elements/elements.select";
+@import "03_elements/elements.table";
+@import "03_elements/elements.text";
+@import "03_elements/elements.textarea";
+
+// Objects
+@import "04_objects/objects.animations";
+@import "04_objects/object.canvas";
+@import "04_objects/objects.preview-grid";
+
+// Components
+@import "05_components/components.accordion";
+@import "05_components/components.card";
+@import "05_components/components.dropdown";
+@import "05_components/components.effect";
+@import "05_components/components.gallery";
+@import "05_components/components.header";
+@import "05_components/components.nav";
+@import "05_components/components.notes";
+@import "05_components/components.pagination";
+@import "05_components/components.quiz";
+@import "05_components/components.quote";
+@import "05_components/components.responsive-voice";
+@import "05_components/components.script";
+@import "05_components/components.slide-animation";
+@import "05_components/components.slide";
+@import "05_components/components.support-menu";
+@import "05_components/components.survey-matrix";
+@import "05_components/components.toc";
+@import "05_components/components.tooltip";
+
+// Utilities
+@import "06_utilities/utilities.alignment";
+@import "06_utilities/utilities.clearfix";
+@import "06_utilities/utilities.colors";
+@import "06_utilities/utilities.display";
+@import "06_utilities/utilities.flex";
+@import "06_utilities/utilities.headless";
+@import "06_utilities/utilities.headline";
+@import "06_utilities/utilities.hidden";
+@import "06_utilities/utilities.spacings";
+@import "06_utilities/utilities.text";
+@import "06_utilities/utilities.width";
+
+// Dump
+@import "./dump.scss";

@@ -19,6 +19,7 @@ import Combine
         , string
         , whitespace
         )
+import Dict
 import Lia.Definition.Types
     exposing
         ( Definition
@@ -37,7 +38,7 @@ import Lia.Parser.Context
         , init
         )
 import Lia.Parser.Helper exposing (stringTill)
-import Lia.Settings.Model exposing (Mode(..))
+import Lia.Settings.Types exposing (Mode(..))
 
 
 parse : Parser Context ()
@@ -180,6 +181,9 @@ store ( key_, value_ ) =
 
         "onload" ->
             set (\c -> { c | onload = value_ })
+
+        "icon" ->
+            set (\c -> { c | macro = Dict.insert "icon" (toURL c.base value_) c.macro })
 
         _ ->
             set (Macro.add ( key_, value_ ))

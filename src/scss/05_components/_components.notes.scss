@@ -1,0 +1,72 @@
+.lia-notes {
+  background-color: rgb(var(--lia-grey-light));
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 14.2rem;
+  max-width: 144rem;
+  overflow: hidden auto;
+  position: relative;
+  width: $notes-width-mobile;
+
+  @at-root html.lia-variant-dark & {
+    background-color: rgb(var(--lia-anthracite));
+  }
+
+  @include breakpoint("sm") {
+    height: calc(14.2rem - 7rem);
+  }
+
+  @include breakpoint("md") {
+    margin: 0 3rem;
+  }
+
+  @include breakpoint("lg") {
+    background-color: transparent;
+    height: auto;
+    margin: 0;
+    max-height: 100%;
+    width: 100%;
+  }
+
+  &__content {
+    background-color: rgb(var(--lia-grey-light));
+    padding: 0 2.3rem 2.3rem;
+
+    @at-root html.lia-variant-dark & {
+      background-color: rgb(var(--lia-anthracite));
+    }
+
+    @include breakpoint("lg") {
+      padding-top: 2.3rem;
+    }
+
+    &:nth-child(2n) {
+      padding: 0 2.3rem;
+    }
+
+    &:last-child {
+      padding-bottom: 2.3rem !important;
+    }
+
+    &.active {
+      color: rgb(var(--color-highlight));
+    }
+
+    > *:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &__counter {
+    border-bottom: 1px solid rgb(var(--lia-grey));
+    color: rgb(var(--lia-grey));
+    display: inline-block;
+    margin-bottom: 0.5rem;
+  }
+
+  @include breakpoint("lg") {
+    border-left: $global-border;
+    max-width: $notes-width-desktop;
+  }
+}

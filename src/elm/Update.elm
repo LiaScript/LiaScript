@@ -14,6 +14,7 @@ import Browser.Events
 import Browser.Navigation as Navigation
 import Http
 import Index.Update as Index
+import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Json.Decode
 import Lia.Script
@@ -22,6 +23,7 @@ import Port.Event exposing (Event)
 import Process
 import Session exposing (Screen)
 import Task
+import Translations
 import Url
 
 
@@ -173,6 +175,29 @@ update msg model =
                             , download Load_ReadMe_Result model.lia.readme
                             )
 
+                "lang" ->
+                    case JD.decodeValue JD.string event.message of
+                        Ok str ->
+                            let
+                                lia =
+                                    model.lia
+                            in
+                            ( { model
+                                | lia =
+                                    { lia
+                                        | translation =
+                                            str
+                                                |> Translations.getLnFromCode
+                                                |> Maybe.withDefault lia.translation
+                                        , langCode = str
+                                    }
+                              }
+                            , Cmd.none
+                            )
+
+                        _ ->
+                            ( model, Cmd.none )
+
                 _ ->
                     update
                         (event
@@ -194,9 +219,13 @@ update msg model =
             case urlRequest of
                 Browser.Internal url ->
                     ( model
-                    , url
-                        |> Url.toString
-                        |> Navigation.load
+                    , if url.query /= model.session.url.query || url.fragment /= Just "" then
+                        url
+                            |> Url.toString
+                            |> Navigation.load
+
+                      else
+                        Cmd.none
                     )
 
                 Browser.External href ->

@@ -1,0 +1,41 @@
+$responsive-voice-hight: 7rem;
+
+.lia-responsive-voice {
+  align-items: flex-start;
+  background-color: rgb(var(--lia-grey-light));
+  color: rgb(var(--color-highlight));
+  display: flex;
+  flex-direction: column;
+  min-height: 6rem;
+  justify-content: center;
+  padding: 2rem;
+  width: 100%;
+
+  &__control {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+
+    @include breakpoint("xs") {
+      justify-content: flex-start;
+      width: auto;
+    }
+  }
+
+  @at-root html.lia-variant-dark & {
+    background-color: rgb(var(--lia-anthracite));
+  }
+
+  @include breakpoint("xs") {
+    align-items: center;
+    height: 7rem;
+    flex-direction: row;
+    padding: 0;
+  }
+
+  @include breakpoint("md") {
+    border-top-left-radius: $global-radius;
+    border-top-right-radius: $global-radius;
+  }
+}

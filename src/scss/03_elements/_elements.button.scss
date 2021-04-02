@@ -1,0 +1,92 @@
+$btn-min-width: 3.6rem;
+$btn-height: 3.6rem;
+
+.lia-btn {
+  align-items: center;
+  background-color: rgb(var(--color-highlight));
+  border: none;
+  color: rgb(var(--lia-white));
+  display: inline-flex;
+  line-height: $global-line-height;
+  padding: 0.5rem 0.6rem;
+
+  &--warning {
+    background-color: rgb(var(--lia-yellow));
+    color: rgb(var(--lia-white));
+    border-color: transparent;
+  }
+
+  &--failure {
+    background-color: rgb(var(--lia-red));
+    color: rgb(var(--lia-white));
+    border-color: transparent;
+  }
+
+  &--success {
+    background-color: rgb(var(--lia-success));
+    color: rgb(var(--lia-white));
+    border-color: transparent;
+  }
+
+  &[disabled],
+  &--disabled {
+    background-color: rgb(var(--lia-grey-light));
+    border-color: rgb(var(--lia-grey));
+    color: rgb(var(--lia-grey));
+  }
+
+  &--tag {
+    border-radius: 0;
+  }
+
+  &--outline {
+    color: rgb(var(--color-highlight));
+    background-color: rgb(var(--color-background));
+    border: 1px solid rgb(var(--color-highlight));
+
+    &.lia-btn--warning {
+      background-color: transparent;
+      border-color: rgb(var(--lia-yellow));
+      color: rgb(var(--lia-yellow));
+    }
+
+    &.lia-btn--failure {
+      background-color: transparent;
+      border-color: rgb(var(--lia-red));
+      color: rgb(var(--lia-red));
+    }
+
+    &.lia-btn--success {
+      background-color: transparent;
+      border-color: rgb(var(--lia-success));
+      color: rgb(var(--lia-success));
+    }
+
+    &[disabled],
+    &.lia-btn--disabled {
+      background-color: transparent;
+      border-color: rgb(var(--lia-grey));
+      color: rgb(var(--lia-grey));
+    }
+  }
+
+  &--transparent {
+    background-color: transparent !important;
+    border: none;
+    color: currentColor;
+  }
+
+  > .lia-btn__icon {
+    line-height: inherit;
+    vertical-align: middle;
+  }
+
+  > .lia-btn__text {
+    margin-left: 1rem;
+    vertical-align: middle;
+  }
+}
+
+a.lia-btn {
+  text-decoration: none;
+}

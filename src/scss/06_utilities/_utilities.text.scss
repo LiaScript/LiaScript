@@ -1,0 +1,44 @@
+/* Alignment */
+
+.text-left {
+  text-align: left;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+/* Font-Weight */
+
+.font-400 {
+  font-weight: 400;
+}
+
+/* Text-Color */
+.text-debug {
+  color: rgb(var(--lia-blue));
+}
+
+.text-info {
+  color: rgb(var(--lia-white));
+}
+
+.text-warning {
+  color: rgb(var(--lia-yellow));
+}
+
+.text-error {
+  color: rgb(var(--lia-red));
+}
+
+.text-disabled {
+  color: rgb(var(--lia-grey));
+}
+
+.text-success {
+  color: rgb(var(--lia-success));
+}

@@ -11,9 +11,9 @@ run_preprocessor : Int -> String -> Expectation
 run_preprocessor len code =
     case Parser.parse_titles (default "") code of
         Ok list ->
-            --list
-            --    |> List.length
-            Expect.equal len len
+            list
+                |> List.length
+                |> Expect.equal len
 
         Err info ->
             Expect.fail info

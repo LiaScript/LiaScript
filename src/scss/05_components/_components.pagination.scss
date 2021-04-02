@@ -1,0 +1,35 @@
+.lia-pagination {
+  display: inline-block;
+  width: 100%;
+
+  @include breakpoint("md") {
+    margin-bottom: 2rem;
+    width: auto;
+  }
+  @include breakpoint("lg") {
+    margin-bottom: 0;
+    margin-right: 2rem;
+    width: auto;
+  }
+
+  &__content {
+    align-items: center;
+    background: rgb(var(--color-highlight));
+    color: white;
+    display: flex;
+    flex-direction: row-reverse;
+    flex-wrap: wrap;
+    font-size: 1.8rem;
+    font-weight: 700;
+    justify-content: space-between;
+
+    @include breakpoint("md") {
+      border-radius: $global-radius;
+      width: 15rem;
+    }
+  }
+
+  &__current {
+    margin: 0 1rem;
+  }
+}

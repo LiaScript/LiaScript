@@ -1,6 +1,5 @@
 export class LiaStorage {
-  constructor() {
-  }
+  constructor() {}
 
   getItems(key: string | string[] = []) {
     if (typeof key === 'string') key = [key]
@@ -27,4 +26,4 @@ export class LiaStorage {
       }
     }
   }
-};
+}

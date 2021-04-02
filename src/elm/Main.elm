@@ -2,6 +2,7 @@ module Main exposing (main)
 
 import Browser
 import Browser.Navigation as Nav
+import Const
 import Index.Model as Index
 import Json.Encode as JE
 import Lia.Parser.PatReplace exposing (link)
@@ -44,7 +45,7 @@ main =
   - `screen`: initial screen-size passed from JavaScript, later it is updated by
     subscribing to `Browser.Events.onResize` in the main Update function
 
-  - `share`: defines if the `navigation.share` API is present
+  - `hasShareAPI`: defines if the `navigation.share` API is present
 
   - `hasIndex`: does the "backend" provides an interface to store and thus to
     restore courses from an index? If this is the case, the home-button will be
@@ -56,7 +57,7 @@ type alias Flags =
     , script : Maybe String
     , settings : JE.Value
     , screen : Screen
-    , share : Bool
+    , hasShareAPI : Bool
     , hasIndex : Bool
     }
 
@@ -80,14 +81,14 @@ init : Flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
     let
         model =
-            Session flags.share key flags.screen
+            Session flags.hasShareAPI key flags.screen
                 >> Model 0 flags.hasIndex Nothing Index.init Nothing
 
         courseUrl =
             { url | query = Maybe.map link url.query }
 
         openTableOfContents =
-            flags.screen.width > 620
+            flags.screen.width > Const.globalBreakpoints.sm
     in
     case ( courseUrl.query, flags.courseUrl, flags.script ) of
         -- directly parse the scirpt
@@ -97,6 +98,7 @@ init flags url key =
                     { courseUrl | query = Just "README.md" }
             in
             Lia.Script.init
+                flags.hasShareAPI
                 openTableOfContents
                 flags.settings
                 (get_base subURL)
@@ -110,6 +112,7 @@ init flags url key =
         -- Check if a URL was passed as a parameter
         ( _, Just query, _ ) ->
             Lia.Script.init
+                flags.hasShareAPI
                 openTableOfContents
                 flags.settings
                 (query
@@ -127,6 +130,7 @@ init flags url key =
         -- Use the url query-parameter as the course-url
         ( Just query, _, _ ) ->
             Lia.Script.init
+                flags.hasShareAPI
                 openTableOfContents
                 flags.settings
                 (get_base courseUrl)
@@ -138,6 +142,7 @@ init flags url key =
 
         _ ->
             Lia.Script.init
+                flags.hasShareAPI
                 openTableOfContents
                 flags.settings
                 ""

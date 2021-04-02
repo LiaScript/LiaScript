@@ -5,6 +5,7 @@ port module Lia.Markdown.Update exposing
     , nextEffect
     , previousEffect
     , subscriptions
+    , ttsReplay
     , update
     , updateScript
     )
@@ -15,11 +16,13 @@ import Lia.Markdown.Effect.Model as E
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Effect.Update as Effect
+import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.Quiz.Update as Quiz
 import Lia.Markdown.Survey.Update as Survey
 import Lia.Markdown.Table.Update as Table
 import Lia.Markdown.Task.Update as Task
 import Lia.Section exposing (Section, SubSection(..))
+import Lia.Utils exposing (focus)
 import Port.Event as Event exposing (Event)
 
 
@@ -36,6 +39,7 @@ type Msg
     | FootnoteHide
     | FootnoteShow String
     | Script (Script.Msg Msg)
+    | NoOp
 
 
 subscriptions : Section -> Sub Msg
@@ -70,12 +74,12 @@ update msg section =
             )
 
         UpdateCode childMsg ->
-            case Code.update section.effect_model.javascript childMsg section.code_vector of
-                ( vector, [] ) ->
-                    ( { section | code_vector = vector }, Cmd.none, [] )
+            case Code.update section.effect_model.javascript childMsg section.code_model of
+                ( code_model, [] ) ->
+                    ( { section | code_model = code_model }, Cmd.none, [] )
 
-                ( vector, events ) ->
-                    ( { section | code_vector = vector }
+                ( code_model, events ) ->
+                    ( { section | code_model = code_model }
                     , Cmd.none
                     , events
                         |> List.map Event.encode
@@ -132,13 +136,21 @@ update msg section =
             )
 
         FootnoteShow key ->
-            ( { section | footnote2show = Just key }, Cmd.none, [] )
+            ( { section | footnote2show = Just key }, focus NoOp "lia-close-modal", [] )
 
         FootnoteHide ->
-            ( { section | footnote2show = Nothing }, Cmd.none, [] )
+            ( { section | footnote2show = Nothing }
+            , section.footnote2show
+                |> Maybe.map (Footnote.byKey >> focus NoOp)
+                |> Maybe.withDefault Cmd.none
+            , []
+            )
 
         Script childMsg ->
             updateScript (Just childMsg) ( section, Cmd.none, [] )
+
+        NoOp ->
+            ( section, Cmd.none, [] )
 
 
 subUpdate :
@@ -173,12 +185,12 @@ subUpdate js msg section =
                     )
 
                 UpdateCode childMsg ->
-                    case Code.update js childMsg subsection.code_vector of
-                        ( vector, [] ) ->
-                            ( SubSection { subsection | code_vector = vector }, Cmd.none, [] )
+                    case Code.update js childMsg subsection.code_model of
+                        ( code_model, [] ) ->
+                            ( SubSection { subsection | code_model = code_model }, Cmd.none, [] )
 
-                        ( vector, events ) ->
-                            ( SubSection { subsection | code_vector = vector }
+                        ( code_model, events ) ->
+                            ( SubSection { subsection | code_model = code_model }
                             , Cmd.none
                             , events
                                 |> List.map Event.encode
@@ -191,7 +203,7 @@ subUpdate js msg section =
                             Quiz.update js childMsg subsection.quiz_vector
                     in
                     case subCmd of
-                        Just cmd ->
+                        Just _ ->
                             { subsection | quiz_vector = vector }
                                 |> SubSection
                                 |> subUpdate js (UpdateQuiz childMsg)
@@ -210,7 +222,7 @@ subUpdate js msg section =
                             Survey.update js childMsg subsection.survey_vector
                     in
                     case subCmd of
-                        Just cmd ->
+                        Just _ ->
                             { subsection | survey_vector = vector }
                                 |> SubSection
                                 |> subUpdate js (UpdateSurvey childMsg)
@@ -229,7 +241,7 @@ subUpdate js msg section =
                             Task.update js childMsg subsection.task_vector
                     in
                     case subCmd of
-                        Just cmd ->
+                        Just _ ->
                             { subsection | task_vector = vector }
                                 |> SubSection
                                 |> subUpdate js (UpdateTask childMsg)
@@ -244,7 +256,7 @@ subUpdate js msg section =
 
                 Script childMsg ->
                     let
-                        ( effect_model, cmd, event ) =
+                        ( effect_model, cmd, _ ) =
                             Effect.updateSub { update = subUpdate, handle = subHandle } childMsg subsection.effect_model
                     in
                     ( SubSection { subsection | effect_model = effect_model }
@@ -259,7 +271,7 @@ subUpdate js msg section =
             case msg of
                 Script childMsg ->
                     let
-                        ( effect_model, cmd, event ) =
+                        ( effect_model, cmd, _ ) =
                             Effect.updateSub { update = subUpdate, handle = subHandle } childMsg sub.effect_model
                     in
                     ( SubSubSection { sub | effect_model = effect_model }
@@ -372,3 +384,28 @@ handle topic event section =
 
         _ ->
             ( section, Cmd.none, [] )
+
+
+ttsReplay : Bool -> Bool -> Maybe Section -> List ( String, JE.Value )
+ttsReplay sound true section =
+    -- replay if possible
+    if sound then
+        if true then
+            section
+                |> Maybe.andThen
+                    (.effect_model
+                        >> Effect.ttsReplay sound
+                        >> Maybe.map
+                            (Event.encode
+                                >> List.singleton
+                                >> send "effect"
+                            )
+                    )
+                |> Maybe.withDefault []
+
+        else
+            [ Event.encode Effect.ttsCancel ]
+                |> send "effect"
+
+    else
+        []

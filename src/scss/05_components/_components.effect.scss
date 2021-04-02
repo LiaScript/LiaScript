@@ -1,0 +1,54 @@
+.lia-effect {
+  &__content {
+    display: block;
+  }
+
+  &__circle {
+    border-radius: 100%;
+    border: 1px solid rgb(var(--color-highlight));
+    color: rgb(var(--color-highlight));
+    display: inline-block;
+    font-weight: 400;
+    height: 2rem;
+    transform: translateX(-124%);
+    position: absolute;
+    text-align: center;
+    line-height: 1.2;
+    width: 2rem;
+
+    &.animated {
+      left: 2.5rem * -1.5;
+    }
+
+    &--inline {
+      position: relative;
+      width: 1.8rem;
+      height: 1.8rem;
+      font-size: 1.2rem;
+      line-height: initial;
+      transform: none;
+
+      &.animated {
+        left: 1.8rem * -1.5;
+      }
+    }
+  }
+
+  &--inline {
+    display: inline-block;
+  }
+}
+
+@mixin style-effect-circle($theme) {
+  .lia-effect-circle {
+    $bg: mix(map-get($theme, background), map-get($theme, background-inv), 80%);
+    background: $bg;
+    color: color-contrast($bg);
+  }
+
+  .lia-effect-circle-inline {
+    $bg: mix(map-get($theme, background), map-get($theme, background-inv), 80%);
+    background: $bg;
+    color: color-contrast($bg);
+  }
+}

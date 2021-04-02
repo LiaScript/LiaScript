@@ -7,7 +7,8 @@ import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Quiz.Block.Update as Block
 import Lia.Markdown.Quiz.Json as Json
 import Lia.Markdown.Quiz.Matrix.Update as Matrix
-import Lia.Markdown.Quiz.Types exposing (Element, Solution(..), State(..), Type, Vector, comp, toState)
+import Lia.Markdown.Quiz.Solution as Solution exposing (Solution)
+import Lia.Markdown.Quiz.Types exposing (Element, State(..), Type, Vector, comp, toState)
 import Lia.Markdown.Quiz.Vector.Update as Vector
 import Port.Eval as Eval
 import Port.Event as Event exposing (Event)
@@ -76,7 +77,7 @@ update scripts msg vector =
                 |> store
 
         ShowSolution idx solution ->
-            (\e -> ( { e | state = toState solution, solved = ReSolved, error_msg = "" }, Nothing ))
+            (\e -> ( { e | state = toState solution, solved = Solution.ReSolved, error_msg = "" }, Nothing ))
                 |> update_ idx vector
                 |> store
 
@@ -107,7 +108,7 @@ get : Int -> Vector -> Maybe Element
 get idx vector =
     case Array.get idx vector of
         Just elem ->
-            if (elem.solved == Solved) || (elem.solved == ReSolved) then
+            if (elem.solved == Solution.Solved) || (elem.solved == Solution.ReSolved) then
                 Nothing
 
             else
@@ -174,7 +175,7 @@ evalEventDecoder json =
             \e ->
                 ( { e
                     | trial = e.trial + 1
-                    , solved = Solved
+                    , solved = Solution.Solved
                     , error_msg = ""
                   }
                 , Nothing
@@ -184,7 +185,7 @@ evalEventDecoder json =
             \e ->
                 ( { e
                     | trial = e.trial + 1
-                    , solved = Open
+                    , solved = Solution.Open
                     , error_msg = ""
                   }
                 , Nothing

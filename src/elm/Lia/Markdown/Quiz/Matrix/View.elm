@@ -10,85 +10,79 @@ import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Quiz.Matrix.Types exposing (Quiz, State)
 import Lia.Markdown.Quiz.Matrix.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Vector.Types as Vector
+import List
 
 
-view : Config sub -> Bool -> Quiz -> State -> Html (Msg sub)
-view config solved quiz state =
-    state
-        |> Array.toList
-        |> List.indexedMap (tr solved)
-        |> List.map2 (add_text config) quiz.options
-        |> (::) (header config quiz.headers)
-        |> Html.table [ Attr.class "lia-survey-matrix" ]
+view : Config sub -> Bool -> String -> Quiz -> State -> Html (Msg sub)
+view config open class quiz state =
+    Html.div [ Attr.class "lia-table-responsive has-thead-sticky has-last-col-sticky" ]
+        [ Html.table [ Attr.class "lia-table lia-survey-matrix is-alternating" ]
+            [ header config quiz.headers
+            , state
+                |> Array.toList
+                |> List.indexedMap (tr open class)
+                |> List.map2 (add_text config) quiz.options
+                |> Html.tbody [ Attr.class "lia-table__body lia-survey-matrix__body" ]
+            ]
+        ]
 
 
 header : Config sub -> List Inlines -> Html (Msg sub)
 header config inlines =
-    inlines
-        |> List.map (th config)
-        |> Html.tr [ Attr.class "lia-label" ]
+    List.append (List.map (th config) inlines) [ Html.th [ Attr.class "lia-table__header lia-survey-matrix__header" ] [] ]
+        |> Html.thead [ Attr.class "lia-table__head lia-survey-matrix__head" ]
 
 
 th : Config sub -> Inlines -> Html (Msg sub)
 th config =
     viewer config
-        >> Html.th [ Attr.align "center" ]
+        >> Html.th [ Attr.class "lia-table__header lia-survey-matrix__header" ]
         >> Html.map Script
 
 
-tr : Bool -> Int -> Vector.State -> List (Html (Msg sub))
-tr solved id state =
+tr : Bool -> String -> Int -> Vector.State -> List (Html (Msg sub))
+tr open class id state =
     case state of
         Vector.SingleChoice list ->
-            list |> List.indexedMap (radio solved id)
+            list |> List.indexedMap (radio open class id)
 
         Vector.MultipleChoice list ->
-            list |> List.indexedMap (check solved id)
+            list |> List.indexedMap (check open class id)
 
 
-radio : Bool -> Int -> Int -> Bool -> Html (Msg sub)
-radio solved row_id column_id value =
-    Html.td [ Attr.align "center" ]
-        [ Html.span
-            [ Attr.class "lia-radio-item" ]
-            [ Html.input
-                [ Attr.type_ "radio"
-                , Attr.checked value
-                , if solved then
-                    Attr.disabled True
+radio : Bool -> String -> Int -> Int -> Bool -> Html (Msg sub)
+radio open colorClass row_id column_id value =
+    Html.td [ Attr.class "lia-table__data lia-survey-matrix__data" ]
+        [ Html.input
+            [ Attr.class "lia-radio"
+            , Attr.class colorClass
+            , Attr.type_ "radio"
+            , Attr.checked value
+            , if open then
+                onClick <| Toggle row_id column_id
 
-                  else
-                    onClick <| Toggle row_id column_id
-                ]
-                []
-            , Html.span
-                [ Attr.class "lia-radio-btn" ]
-                [ Html.text ""
-                ]
+              else
+                Attr.disabled True
             ]
+            []
         ]
 
 
-check : Bool -> Int -> Int -> Bool -> Html (Msg sub)
-check solved row_id column_id value =
-    Html.td [ Attr.align "center" ]
-        [ Html.span
-            [ Attr.class "lia-check-item" ]
-            [ Html.input
-                [ Attr.type_ "checkbox"
-                , Attr.checked value
-                , if solved then
-                    Attr.disabled True
+check : Bool -> String -> Int -> Int -> Bool -> Html (Msg sub)
+check open colorClass row_id column_id value =
+    Html.td [ Attr.class "lia-table__data lia-survey-matrix__data" ]
+        [ Html.input
+            [ Attr.class "lia-checkbox"
+            , Attr.class colorClass
+            , Attr.type_ "checkbox"
+            , Attr.checked value
+            , if open then
+                onClick <| Toggle row_id column_id
 
-                  else
-                    onClick <| Toggle row_id column_id
-                ]
-                []
-            , Html.span
-                [ Attr.class "lia-check-btn" ]
-                [ Html.text "check"
-                ]
+              else
+                Attr.disabled True
             ]
+            []
         ]
 
 
@@ -96,8 +90,8 @@ add_text : Config sub -> Inlines -> List (Html (Msg sub)) -> Html (Msg sub)
 add_text config inline toRow =
     inline
         |> viewer config
-        |> Html.td []
+        |> Html.td [ Attr.class "lia-table__data lia-survey-matrix__data" ]
         |> Html.map Script
         |> List.singleton
         |> List.append toRow
-        |> Html.tr []
+        |> Html.tr [ Attr.class "lia-table__row lia-survey-matrix__row" ]

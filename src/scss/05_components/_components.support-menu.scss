@@ -1,0 +1,194 @@
+.lia-support-menu {
+  background-color: rgb(var(--color-background));
+  border-left: $global-border;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding-top: 6rem;
+  position: fixed;
+  right: 0;
+  top: 0;
+  transition: $global-transition;
+  user-select: none;
+  width: $support-width-mobile;
+  z-index: 1;
+
+  &--closed {
+    transform: translateX(100%);
+
+    .lia-support-menu__toggler {
+      transform: translate(-6.5rem, -50%);
+    }
+  }
+
+  @include breakpoint("sm") {
+    width: $support-width-desktop;
+    padding-top: 0rem;
+  }
+
+  @include breakpoint("md") {
+    border: none;
+    height: 100%;
+    position: relative;
+    width: 100%;
+
+    &--closed {
+      transform: translateX(0);
+
+      .lia-support-menu__toggler {
+        transform: translate(-6.5rem, -50%);
+      }
+    }
+  }
+
+  &__toggler {
+    color: rgb(var(--color-highlight));
+    display: block;
+    visibility: visible;
+
+    position: absolute;
+    top: calc(
+      (#{$header-height-mobile} / 2) +
+        (2 * #{map-get($global-spacing, spacing-small)} - (#{$btn-height} / 4))
+    );
+    left: 0;
+    transform: translate(-6.5rem, -50%);
+    transition: $global-transition;
+
+    @include breakpoint("sm", "max") {
+      transform: translate(2.1rem, -50%);
+    }
+
+    @include breakpoint("md", "max") {
+      &--closed {
+        transform: translateX(100%);
+      }
+    }
+
+    @include breakpoint("md") {
+      display: none;
+      visibility: hidden;
+    }
+  }
+
+  &__collapse {
+    display: block;
+    height: 100%;
+  }
+
+  &__nav {
+    display: block;
+    height: 100%;
+    overflow: hidden auto;
+    padding: 1.7rem 2.1rem;
+
+    &:focus {
+      box-shadow: none !important;
+    }
+
+    @include breakpoint("md") {
+      align-items: center;
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-end;
+      padding: 0;
+      overflow: visible;
+    }
+  }
+
+  &__item {
+    align-items: flex-start;
+    color: rgb(var(--color-highlight));
+    display: flex;
+    flex-direction: column;
+    padding: 1.8rem 0;
+
+    &:not(:first-child) {
+      border-top: $global-border;
+    }
+
+    > .icon {
+      margin-bottom: 1.8rem;
+    }
+
+    > button {
+      font-size: 2rem;
+
+      &.icon:before {
+        vertical-align: middle;
+      }
+    }
+
+    @include breakpoint("sm") {
+      padding: 1.8rem 0.75rem;
+    }
+
+    @include breakpoint("md") {
+      padding: 0 0.75rem;
+
+      &:not(:first-child) {
+        border-top: none;
+      }
+
+      > .icon {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  &__submenu {
+    align-items: flex-start;
+    background-color: rgb(var(--color-background));
+    box-shadow: none;
+    color: rgb(var(--color-text));
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
+    padding: 0;
+    position: relative;
+    right: 0;
+    transition: $global-transition;
+    top: 0;
+    width: 100%;
+
+    @at-root html.lia-variant-dark & {
+      background-color: rgb(var(--lia-grey-dark));
+    }
+
+    .lia-link {
+      text-decoration: none;
+
+      &:not(.active) {
+        color: rgb(var(--color-text));
+      }
+    }
+
+    .lia-btn[aria-checked="true"] {
+      color: rgb(var(--color-highlight));
+    }
+
+    svg {
+      height: 15rem;
+    }
+
+    i {
+      font-size: 2rem;
+    }
+
+    @include breakpoint("md") {
+      border-radius: $global-radius;
+      box-shadow: 0 0 1rem rgba(0, 0, 0, 0.1);
+      display: none;
+      max-width: 30rem;
+      padding: 1.4rem;
+      position: absolute;
+      top: 5.9rem;
+      width: max-content;
+      z-index: 10;
+
+      &.active {
+        display: flex;
+      }
+    }
+  }
+}

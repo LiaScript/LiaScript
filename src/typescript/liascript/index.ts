@@ -1,9 +1,6 @@
+// @ts-ignore
 import { Elm } from '../../elm/Main.elm'
-import {
-  LiaEvents,
-  lia_execute_event,
-  lia_eval_event
-} from './events'
+import { LiaEvents, lia_execute_event, lia_eval_event } from './events'
 // import persistent from './persistent.ts'
 import log from './log'
 import * as Swipe from './swipe'
@@ -13,28 +10,36 @@ import Lia from './types/lia.d'
 import Port from './types/ports'
 import TTS from './tts'
 import { Connector } from '../connectors/Base/index'
+import { updateClassName } from '../connectors/Base/settings'
 
 function isInViewport(elem: HTMLElement) {
   const bounding = elem.getBoundingClientRect()
   return (
-    bounding.top >= 20 &&
+    bounding.top >= 85 &&
     bounding.left >= 0 &&
-    bounding.bottom <= (window.innerHeight - 20 || document.documentElement.clientHeight - 20) &&
-    bounding.right <= (window.innerWidth || document.documentElement.clientWidth)
+    bounding.bottom <=
+      (window.innerHeight - 40 || document.documentElement.clientHeight - 40) &&
+    bounding.right <=
+      (window.innerWidth || document.documentElement.clientWidth)
   )
-};
+}
 
 function scrollIntoView(id: string, delay: number) {
-  setTimeout(function() {
+  setTimeout(function () {
     const elem = document.getElementById(id)
 
     if (elem) {
       elem.scrollIntoView({ behavior: 'smooth' })
     }
   }, delay)
-};
+}
 
-function handleEffects(event: Lia.Event, elmSend: Lia.Send, section: number = -1, self?: LiaScript) {
+function handleEffects(
+  event: Lia.Event,
+  elmSend: Lia.Send,
+  section: number = -1,
+  self?: LiaScript,
+) {
   switch (event.topic) {
     case 'scrollTo':
       scrollIntoView(event.message, 350)
@@ -53,8 +58,8 @@ function handleEffects(event: Lia.Event, elmSend: Lia.Send, section: number = -1
         message: {
           topic: 'speak',
           section: -1,
-          message: 'stop'
-        }
+          message: 'stop',
+        },
       }
 
       if (section >= 0) {
@@ -64,8 +69,8 @@ function handleEffects(event: Lia.Event, elmSend: Lia.Send, section: number = -1
           message: {
             topic: 'speak',
             section: event.section,
-            message: 'stop'
-          }
+            message: 'stop',
+          },
         }
       }
 
@@ -77,10 +82,43 @@ function handleEffects(event: Lia.Event, elmSend: Lia.Send, section: number = -1
         } else if (event.message === 'repeat') {
           event.message = [ttsBackup[0], ttsBackup[1], 'true']
           handleEffects(event, elmSend)
+        } else if (
+          typeof event.message === 'string' &&
+          event.message.startsWith('lia-tts-')
+        ) {
+          let element = document.getElementsByClassName(event.message)
+
+          let text = ''
+
+          for (let i = 0; i < element.length; i++) {
+            text += element[i].innerText || element[i].textContent
+          }
+
+          if (text !== '') {
+            TTS.speak(
+              text,
+              element[0].getAttribute('data-voice'),
+              function () {
+                msg.topic = Port.SETTINGS
+                msg.message.message = 'start'
+
+                elmSend(msg)
+              },
+              function () {
+                msg.topic = Port.SETTINGS
+                msg.message.message = 'stop'
+                elmSend(msg)
+              },
+              function (e: any) {
+                msg.message.message = e.toString()
+                elmSend(msg)
+              },
+            )
+          }
         } else if (firstSpeak) {
           // this is a hack to deal with the delay in responsivevoice
           firstSpeak = false
-          setTimeout(function() {
+          setTimeout(function () {
             handleEffects(event, elmSend)
           }, 200)
         } else {
@@ -89,18 +127,18 @@ function handleEffects(event: Lia.Event, elmSend: Lia.Send, section: number = -1
             TTS.speak(
               event.message[1],
               event.message[0],
-              function() {
+              function () {
                 msg.message.message = 'start'
                 elmSend(msg)
               },
-              function() {
+              function () {
                 msg.message.message = 'stop'
                 elmSend(msg)
               },
-              function(e: any) {
+              function (e: any) {
                 msg.message.message = e.toString()
                 elmSend(msg)
-              }
+              },
             )
           }
         }
@@ -110,17 +148,17 @@ function handleEffects(event: Lia.Event, elmSend: Lia.Send, section: number = -1
       }
       break
     }
-    case "sub": {
+    case 'sub': {
       if (self != undefined && event.message != null) {
-        const newSend = function(subEvent: Lia.Event) {
+        const newSend = function (subEvent: Lia.Event) {
           elmSend({
             topic: Port.EFFECT,
             section: section,
             message: {
-              topic: "sub",
+              topic: 'sub',
               section: event.section,
-              message: subEvent
-            }
+              message: subEvent,
+            },
           })
         }
 
@@ -133,7 +171,7 @@ function handleEffects(event: Lia.Event, elmSend: Lia.Send, section: number = -1
       log.warn('effect missed => ', event, section)
     }
   }
-};
+}
 
 function meta(name: string, content: string) {
   if (content !== '') {
@@ -159,7 +197,7 @@ class LiaScript {
     connector: Connector,
     debug: boolean = false,
     courseUrl: string | null = null,
-    script: string | null = null
+    script: string | null = null,
   ) {
     if (debug) window.debug__ = true
 
@@ -173,16 +211,16 @@ class LiaScript {
         settings: connector.getSettings(),
         screen: {
           width: window.innerWidth,
-          height: window.innerHeight
+          height: window.innerHeight,
         },
-        share: !!navigator.share,
-        hasIndex: connector.hasIndex()
-      }
+        hasShareAPI: !!navigator.share,
+        hasIndex: connector.hasIndex(),
+      },
     })
 
     const sendTo = this.app.ports.event2elm.send
 
-    const sender = function(msg: Lia.Event) {
+    const sender = function (msg: Lia.Event) {
       log.info(`LIA <<< (${msg.topic}:${msg.section})`, msg.message)
       sendTo(msg)
     }
@@ -193,14 +231,19 @@ class LiaScript {
 
     liaStorage = this.connector.storage()
 
-    window.playback = function(event) {
+    window.playback = function (event) {
       handleEffects(event.message, sender, event.section)
     }
 
     let self = this
-    window.showFootnote = (key) => { self.footnote(key) }
+    window.showFootnote = (key) => {
+      self.footnote(key)
+    }
+    window.img_ = (src: string, width: number, height: number) => {
+      self.img_(src, width, height)
+    }
 
-    setTimeout(function() {
+    setTimeout(function () {
       firstSpeak = false
     }, 1000)
   }
@@ -209,74 +252,113 @@ class LiaScript {
     this.app.ports.footnote.send(key)
   }
 
+  img_(src: string, width: number, height: number) {
+    this.app.ports.media.send([src, width, height])
+  }
+
   initNaviation(elem: HTMLElement, elmSend: Lia.Send) {
-    Swipe.detect(elem, function(swipedir) {
+    Swipe.detect(elem, function (swipedir) {
       elmSend({
         topic: Port.SWIPE,
         section: -1,
-        message: swipedir
+        message: swipedir,
       })
     })
 
-    elem.addEventListener('keydown', (e) => {
-      switch (e.key) {
-        case "ArrowRight": {
-          elmSend({
-            topic: Port.SWIPE,
-            section: -1,
-            message: Swipe.Dir.left
-          })
-          break;
+    elem.addEventListener(
+      'keydown',
+      (e) => {
+        switch (e.key) {
+          case 'ArrowRight': {
+            elmSend({
+              topic: Port.SWIPE,
+              section: -1,
+              message: Swipe.Dir.left,
+            })
+            break
+          }
+          case 'ArrowLeft': {
+            elmSend({
+              topic: Port.SWIPE,
+              section: -1,
+              message: Swipe.Dir.right,
+            })
+            break
+          }
         }
-        case "ArrowLeft": {
-          elmSend({
-            topic: Port.SWIPE,
-            section: -1,
-            message: Swipe.Dir.right
-          })
-          break;
-        }
-      }
-    }, false)
+      },
+      false,
+    )
   }
 
   reset() {
     this.app.ports.event2elm.send({
       topic: Port.RESET,
       section: -1,
-      message: null
+      message: null,
     })
   }
 
-  initEventSystem(elem: HTMLElement, jsSubscribe: (fn: (_: Lia.Event) => void) => void, elmSend: Lia.Send) {
+  initEventSystem(
+    elem: HTMLElement,
+    jsSubscribe: (fn: (_: Lia.Event) => void) => void,
+    elmSend: Lia.Send,
+  ) {
     log.info('initEventSystem')
 
     let self = this
 
     this.initNaviation(elem, elmSend)
 
-    jsSubscribe((event: Lia.Event) => { process(true, self, elmSend, event) })
+    var observer = new MutationObserver(function (mutations) {
+      mutations.forEach(function (mutation) {
+        elmSend({
+          topic: 'lang',
+          section: -1,
+          message: document.documentElement.lang,
+        })
+      })
+    })
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      childList: false,
+      characterData: false,
+      attributeFilter: ['lang'],
+    })
+
+    jsSubscribe((event: Lia.Event) => {
+      process(true, self, elmSend, event)
+    })
   }
-};
+}
 
-
-function process(isConnected: boolean, self: LiaScript, elmSend: Lia.Send, event: Lia.Event) {
+function process(
+  isConnected: boolean,
+  self: LiaScript,
+  elmSend: Lia.Send,
+  event: Lia.Event,
+) {
   log.info(`LIA >>> (${event.topic}:${event.section})`, event.message)
 
   switch (event.topic) {
     case Port.SLIDE: {
       self.connector.slide(event.section)
 
-      const sec = document.getElementsByTagName('section')[0]
+      const sec = document.getElementsByTagName('main')[0]
       if (sec) {
         sec.scrollTo(0, 0)
+
+        if (sec.children.length > 0) {
+          sec.children[0].focus()
+        }
       }
 
       const elem = document.getElementById('focusedToc')
       if (elem) {
         if (!isInViewport(elem)) {
           elem.scrollIntoView({
-            behavior: 'smooth'
+            behavior: 'smooth',
           })
         }
       }
@@ -287,7 +369,7 @@ function process(isConnected: boolean, self: LiaScript, elmSend: Lia.Send, event
       self.connector.load({
         topic: event.message,
         section: event.section,
-        message: null
+        message: null,
       })
       break
     }
@@ -353,16 +435,31 @@ function process(isConnected: boolean, self: LiaScript, elmSend: Lia.Send, event
       // } else {
 
       try {
+        updateClassName(event.message[0])
+
         const conf = self.connector.getSettings()
-        if (conf ?.table_of_contents !== event.message.table_of_contents) {
-          setTimeout(function() {
-            window.dispatchEvent(new Event('resize'))
-          }, 200)
+
+        setTimeout(function () {
+          window.dispatchEvent(new Event('resize'))
+        }, 333)
+
+        let style = document.getElementById('lia-custom-style')
+
+        if (typeof event.message[1] === 'string') {
+          if (style == null) {
+            style = document.createElement('style')
+            style.id = 'lia-custom-style'
+            document.head.appendChild(style)
+          }
+
+          style.innerHTML = ':root {' + event.message[1] + '}'
+        } else if (style !== null) {
+          style.innerHTML = ''
         }
-      } catch (e) { }
+      } catch (e) {}
 
       if (isConnected) {
-        self.connector.setSettings(event.message)
+        self.connector.setSettings(event.message[0])
       }
 
       break
@@ -384,11 +481,11 @@ function process(isConnected: boolean, self: LiaScript, elmSend: Lia.Send, event
           tag.src = url
           tag.async = false
           tag.defer = true
-          tag.onload = function() {
+          tag.onload = function () {
             window.event_semaphore--
             log.info('successfully loaded =>', url)
           }
-          tag.onerror = function(e: Error) {
+          tag.onerror = function (e: Error) {
             window.event_semaphore--
             log.warn('could not load =>', url, e)
           }
@@ -407,7 +504,7 @@ function process(isConnected: boolean, self: LiaScript, elmSend: Lia.Send, event
         elmSend({
           topic: Port.LOAD,
           section: -1,
-          message: null
+          message: null,
         })
       }
 
@@ -421,16 +518,18 @@ function process(isConnected: boolean, self: LiaScript, elmSend: Lia.Send, event
           data.readme,
           data.version,
           data.section_active,
-          data
+          data,
         )
       }
 
       if (data.definition.onload !== '') {
         lia_execute_event({
           code: data.definition.onload,
-          delay: 350
+          delay: 350,
         })
       }
+
+      document.documentElement.lang = data.definition.language
 
       meta('author', data.definition.author)
       meta('og:description', data.comment)
@@ -453,7 +552,7 @@ function process(isConnected: boolean, self: LiaScript, elmSend: Lia.Send, event
         case 'list': {
           try {
             TTS.cancel()
-          } catch (e) { }
+          } catch (e) {}
           self.connector.getIndex()
           break
         }
@@ -462,7 +561,10 @@ function process(isConnected: boolean, self: LiaScript, elmSend: Lia.Send, event
           break
         }
         case 'restore': {
-          self.connector.restoreFromIndex(event.message.message, event.message.section)
+          self.connector.restoreFromIndex(
+            event.message.message,
+            event.message.section,
+          )
           break
         }
         case 'reset': {
@@ -494,10 +596,39 @@ function process(isConnected: boolean, self: LiaScript, elmSend: Lia.Send, event
       window.location.reload()
       break
     }
+
+    case Port.TRANSLATE: {
+      injectGoogleTranslate()
+      break
+    }
     default:
       log.error('Command not found => ', event)
   }
 }
 
+var googleTranslate = false
+function injectGoogleTranslate() {
+  // inject the google translator
+  if (!googleTranslate) {
+    let tag = document.createElement('script')
+    tag.src =
+      '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit'
+    tag.type = 'text/javascript'
+    document.head.appendChild(tag)
+
+    window.googleTranslateElementInit = function () {
+      new google.translate.TranslateElement(
+        {
+          pageLanguage: document.documentElement.lang,
+          // includedLanguages: 'ar,en,es,jv,ko,pa,pt,ru,zh-CN',
+          layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+          autoDisplay: false,
+        },
+        'google_translate_element',
+      )
+    }
+    googleTranslate = true
+  }
+}
 
 export default LiaScript

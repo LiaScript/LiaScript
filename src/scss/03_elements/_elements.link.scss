@@ -1,0 +1,13 @@
+.lia-link {
+  color: rgb(var(--color-highlight));
+  word-break: break-word;
+
+  &:link,
+  &:visited {
+    color: rgb(var(--color-highlight));
+  }
+
+  &:hover {
+    color: rgb(var(--color-highlight-dark));
+  }
+}
