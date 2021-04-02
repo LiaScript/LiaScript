@@ -26,3 +26,5 @@ Makefile
 .gitmodules
 shell.nix
 tests
+docs
+gulpfile.js
