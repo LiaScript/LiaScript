@@ -253,18 +253,21 @@ class LiaScript {
     this.app.ports.footnote.send(key)
   }
 
-<<<<<<< HEAD
   goto(line: number) {
-      this.app.ports.event2elm.send({topic: "goto", section: line, message: null});
+    this.app.ports.event2elm.send({
+      topic: 'goto',
+      section: line,
+      message: null,
+    })
   }
 
   jit(code: string) {
-      // port to jit compiler
-      this.app.ports.jit.send(code)
-=======
+    // port to jit compiler
+    this.app.ports.jit.send(code)
+  }
+
   img_(src: string, width: number, height: number) {
     this.app.ports.media.send([src, width, height])
->>>>>>> development
   }
 
   initNaviation(elem: HTMLElement, elmSend: Lia.Send) {
@@ -540,19 +543,9 @@ function process(
         })
       }
 
-<<<<<<< HEAD
       if (firstLoad) {
         firstLoad = false
-=======
-      document.documentElement.lang = data.definition.language
-
-      meta('author', data.definition.author)
-      meta('og:description', data.comment)
-      meta('og:title', data.str_title)
-      meta('og:type', 'website')
-      meta('og:url', '')
-      meta('og:image', data.definition.logo)
->>>>>>> development
+        document.documentElement.lang = data.definition.language
 
         meta('author', data.definition.author)
         meta('og:description', data.comment)
