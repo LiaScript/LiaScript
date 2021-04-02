@@ -10,14 +10,15 @@ import Html.Events exposing (onInput)
 import Index.Model exposing (Course, Model, Release)
 import Index.Update exposing (Msg(..))
 import Lia.Definition.Types exposing (Definition)
-import Lia.Markdown.Code.Editor exposing (onChange)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View as Inline
 import Lia.Parser.PatReplace exposing (link)
 import Lia.Settings.Types exposing (Mode(..))
-import Lia.Utils exposing (blockKeydown, btn)
+import Lia.Utils exposing (btn)
 import Session exposing (Session)
+import Svg
+import Svg.Attributes as SvgAttr
 import Translations exposing (Lang(..))
 
 
@@ -96,7 +97,7 @@ card share course =
         Just { title, definition } ->
             Html.article [ Attr.class "lia-card" ]
                 [ viewVersions course
-                , viewMedia definition.logo
+                , viewMedia course.id definition.logo
                 , Html.div [ Attr.class "lia-card__content" ]
                     [ viewHeader title definition.macro
                     , viewBody definition.comment
@@ -162,22 +163,21 @@ viewVersions course =
         |> Html.div [ Attr.class "lia-card__version" ]
 
 
-viewMedia : String -> Html msg
-viewMedia url =
+viewMedia : String -> String -> Html msg
+viewMedia courseUrl logoUrl =
     Html.div [ Attr.class "lia-card__media" ]
         [ Html.aside [ Attr.class "lia-card__aside" ]
             [ Html.figure [ Attr.class "lia-card__figure" ]
-                [ Html.img
-                    [ Attr.class "lia-card__image"
-                    , Attr.src <|
-                        case String.trim url of
-                            "" ->
-                                ""
+                [ case String.trim logoUrl of
+                    "" ->
+                        defaultBackground courseUrl
 
-                            logo ->
-                                logo
-                    ]
-                    []
+                    logo ->
+                        Html.img
+                            [ Attr.class "lia-card__image"
+                            , Attr.src logo
+                            ]
+                            []
                 ]
             ]
         ]
@@ -321,3 +321,101 @@ get_active course =
 inlines : Inlines -> List (Html Msg)
 inlines =
     List.map (Inline.view_inf Array.empty En Nothing >> Html.map (always NoOp))
+
+
+defaultBackground : String -> Html msg
+defaultBackground url =
+    --Html.span [ Attr.property "innerHTML" <| JE.string "<svg width='400' height='110'><rect width='300' height='100' style='fill:rgb(0,0,255);stroke-width:3;stroke:rgb(0,0,0)' /> Sorry, your browser does not support inline SVG. </svg>" ] []
+    Svg.svg
+        [ SvgAttr.height "400"
+        , SvgAttr.width "800"
+        , SvgAttr.class "lia-card__image"
+        ]
+        [ Svg.defs []
+            [ Svg.linearGradient
+                [ SvgAttr.id "grad"
+                , SvgAttr.x1 "0%"
+                , SvgAttr.y1 "100%"
+                , SvgAttr.x2 "100%"
+                , SvgAttr.y2 "0%"
+                ]
+                [ Svg.stop
+                    [ SvgAttr.offset "0%"
+                    , SvgAttr.style <| "stop-color:" ++ url2Color url ++ ";stop-opacity:1;"
+                    ]
+                    []
+                , Svg.stop
+                    [ SvgAttr.offset "100%"
+                    , SvgAttr.style "stop-color:rgb(255,255,255);stop-opacity:1;"
+                    ]
+                    []
+                ]
+            ]
+        , Svg.rect
+            [ SvgAttr.height "400"
+            , SvgAttr.width "800"
+            , SvgAttr.fill "url(#grad)"
+            ]
+            []
+        , Svg.text "Your browser does not support svg."
+        ]
+
+
+greedyGroupsOf : Int -> List a -> List (List a)
+greedyGroupsOf size xs =
+    greedyGroupsOfWithStep size size xs
+
+
+greedyGroupsOfWithStep : Int -> Int -> List a -> List (List a)
+greedyGroupsOfWithStep size step xs =
+    let
+        group =
+            List.take size xs
+
+        xs_ =
+            List.drop step xs
+
+        okayArgs =
+            size > 0 && step > 0
+
+        okayXs =
+            List.length xs > 0
+    in
+    if okayArgs && okayXs then
+        group :: greedyGroupsOfWithStep size step xs_
+
+    else
+        []
+
+
+url2Color : String -> String
+url2Color url =
+    url
+        |> String.toList
+        |> List.map Char.toCode
+        |> greedyGroupsOf 3
+        |> List.foldl
+            (\rgb ( r, g, b ) ->
+                case rgb of
+                    [ r_, g_, b_ ] ->
+                        ( r + r_, g + g_, b + b_ )
+
+                    [ r_, g_ ] ->
+                        ( r_ + r, g_ + g, b )
+
+                    [ r_ ] ->
+                        ( r_ + r, g, b )
+
+                    _ ->
+                        ( r, g, b )
+            )
+            ( 11111, 99, 12 )
+        |> (\( r, g, b ) ->
+                "rgb("
+                    ++ (String.fromInt <| modBy 155 r)
+                    ++ ","
+                    ++ (String.fromInt <| modBy 155 g)
+                    ++ ","
+                    ++ (String.fromInt <| modBy 155 b)
+                    ++ ")"
+           )
