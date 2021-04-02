@@ -1,0 +1,70 @@
+address,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+blockquote,
+p,
+pre,
+dl,
+ol,
+ul,
+fieldset {
+  margin-bottom: map-get($global-spacing, spacing-normal);
+}
+
+:focus {
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(var(--color-highlight), 0.15) !important;
+}
+
+button,
+.lia-btn,
+input,
+.lia-input,
+select,
+.lia-select,
+textarea,
+.lia-textarea,
+.lia-dropdown {
+  //-moz-appearance: none;
+  //-webkit-appearance: none;
+  align-items: center;
+  border-radius: $global-radius;
+  border: 1px solid transparent;
+  box-shadow: none;
+  color: currentColor;
+  display: inline-flex;
+  justify-content: flex-start;
+  padding: 0.8rem;
+  position: relative;
+  vertical-align: top;
+}
+
+button,
+input,
+select,
+textarea {
+  &[disabled],
+  &--disabled {
+    cursor: not-allowed;
+  }
+}
+
+.lia-btn,
+.lia-input,
+.lia-radio,
+.lia-checkbox,
+.lia-select,
+.lia-textarea,
+.lia-dropdown {
+  background-color: transparent;
+
+  &[disabled],
+  &--disabled,
+  &.is-disabled {
+    cursor: not-allowed;
+  }
+}

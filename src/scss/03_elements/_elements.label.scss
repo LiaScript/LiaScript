@@ -1,0 +1,10 @@
+.lia-label {
+  align-items: center;
+  display: inline-flex;
+  width: max-content;
+
+  > .lia-radio,
+  > .lia-checkbox {
+    margin-right: 1rem;
+  }
+}

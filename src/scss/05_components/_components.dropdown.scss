@@ -1,0 +1,45 @@
+.lia-dropdown {
+  border: 1px solid rgb(var(--color-highlight));
+  display: inline-block;
+  cursor: pointer;
+  overflow: hidden;
+
+  &__selected {
+    display: flex;
+    align-items: center;
+
+    span {
+      margin-right: auto;
+    }
+
+    .icon {
+      font-size: 2rem;
+      margin-left: 2rem;
+    }
+  }
+
+  &__options {
+    overflow-y: auto;
+    max-height: 0;
+
+    &.is-visible {
+      max-height: 20rem;
+    }
+  }
+
+  &__option {
+    padding: 0.5rem 1rem;
+
+    &:first-child {
+      margin-top: 1rem;
+    }
+
+    &:not(:last-child) {
+      margin-bottom: 1rem;
+    }
+  }
+
+  &.is-disabled {
+    border-color: rgb(var(--lia-grey));
+  }
+}

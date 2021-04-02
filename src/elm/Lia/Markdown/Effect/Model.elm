@@ -52,36 +52,36 @@ set_annotation id1 id2 m attr =
             m
 
 
-get_paragraph : Int -> Int -> Model a -> Maybe ( Parameters, Inlines )
+get_paragraph : Int -> Int -> Model a -> Maybe ( String, ( Parameters, Inlines ) )
 get_paragraph id1 id2 model =
-    case
-        model.comments
-            |> Dict.get id1
-            |> Maybe.map .paragraphs
-            |> Maybe.map (Array.get id2)
-    of
-        Just a ->
-            a
+    case Dict.get id1 model.comments of
+        Just element ->
+            element.paragraphs
+                |> Array.get id2
+                |> Maybe.map (Tuple.pair element.narrator)
 
         _ ->
             Nothing
 
 
-current_paragraphs : Model a -> List ( Parameters, Inlines )
+current_paragraphs : Model a -> List ( Bool, Int, List ( Parameters, Inlines ) )
 current_paragraphs model =
-    case Dict.get model.visible model.comments of
-        Just e ->
-            Array.toList e.paragraphs
+    model.comments
+        |> Dict.toList
+        |> List.map
+            (\( key, value ) ->
+                ( key == model.visible
+                , key
+                , Array.toList value.paragraphs
+                )
+            )
 
-        Nothing ->
-            []
 
-
-current_comment : Model a -> Maybe ( String, String )
+current_comment : Model a -> Maybe ( Int, String, String )
 current_comment model =
     model.comments
         |> Dict.get model.visible
-        |> Maybe.map (\e -> ( e.comment, e.narrator ))
+        |> Maybe.map (\e -> ( model.visible, e.comment, e.narrator ))
 
 
 init : Model a

@@ -1,4 +1,4 @@
-port module Worker exposing (init)
+port module Worker exposing (init, main)
 
 import Array
 import Http
@@ -7,7 +7,7 @@ import Lia.Definition.Json.Encode as Def
 import Lia.Json.Encode as Lia
 import Lia.Markdown.Quiz.Json as Quiz
 import Lia.Markdown.Survey.Json as Survey
-import Lia.Parser.Parser as Parser
+import Lia.Parser.Parser exposing (parse_defintion)
 import Lia.Script
 import Lia.Update exposing (generate)
 import Model exposing (State(..))
@@ -56,7 +56,7 @@ main =
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( Lia.Script.init True JE.null "" "" "" Nothing
+    ( Lia.Script.init False True JE.null "" "" "" Nothing
         |> Model Idle "" Nothing
     , if flags.cmd == "" then
         Cmd.none
@@ -71,7 +71,7 @@ init flags =
 defines : String -> ( Bool, String )
 defines str =
     str
-        |> Parser.parse_defintion ""
+        |> parse_defintion ""
         |> Result.map (Tuple.first >> Def.encode >> JE.encode 2 >> Tuple.pair True)
         |> Result.withDefault ( False, "" )
 
@@ -117,7 +117,7 @@ update msg model =
             ( { model | state = Error <| parse_error info }
             , info
                 |> parse_error
-                |> error "Load_ReadMe_Result"
+                |> error (url ++ " Load_ReadMe_Result")
             )
 
         Load_Template_Result (Ok template) ->

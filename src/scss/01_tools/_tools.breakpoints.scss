@@ -1,0 +1,45 @@
+/* --------------------------------------------------
+   Breakpoint Mixin
+   -------------------------------------------------- */
+
+// use 'xs', 'sm', 'md', 'lg', 'xl' or a custom value
+@mixin breakpoint($breakpoint, $direction: $global-media-direction) {
+  // check if value is a preconfigured breakpoint
+  @if map-has-key($global-breakpoints, $breakpoint) {
+    @if $direction == "max" {
+      @media screen and (max-width: #{map-get($global-breakpoints, $breakpoint) - calc-em(1, 16)}) {
+        @content;
+      }
+    } @else {
+      @media screen and (min-width: #{map-get($global-breakpoints, $breakpoint)}) {
+        @content;
+      }
+    }
+  }
+
+  // check unit of value, fallback pixel
+  @else if unitless($breakpoint) {
+    $breakpoint: $breakpoint + 0px;
+
+    @media screen and (#{$direction}-width: $breakpoint) {
+      @content;
+    }
+  }
+}
+
+@mixin breakpoint-only($a, $b) {
+  @if map-has-key($global-breakpoints, $a) and
+    map-has-key($global-breakpoints, $b)
+  {
+    @media screen and (min-width: #{map-get($global-breakpoints, $a) - calc-em(1, 16)}) and (max-width: #{map-get($global-breakpoints, $b) - calc-em(1, 16)}) {
+      @content;
+    }
+  } @else if unitless($a) or unitless($b) {
+    $a: $a + 0px;
+    $b: $b + 0px;
+
+    @media screen and (min-width: $a) and (max-width: $b) {
+      @content;
+    }
+  }
+}

@@ -10,16 +10,19 @@ import Array exposing (Array)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Code.Log as Log
-import Lia.Markdown.Code.Types exposing (File, Project, Repo, Vector, Version)
+import Lia.Markdown.Code.Types exposing (File, Model, Project, Repo, Vector, Version)
 import Lia.Markdown.HTML.Attributes exposing (Parameters)
 
 
-merge : Vector -> Vector -> Vector
+merge : Model -> Vector -> Model
 merge old new =
-    new
-        |> Array.toList
-        |> List.map2 copy (Array.toList old)
-        |> Array.fromList
+    { old
+        | evaluate =
+            new
+                |> Array.toList
+                |> List.map2 copy (Array.toList old.evaluate)
+                |> Array.fromList
+    }
 
 
 copy : Project -> Project -> Project
@@ -28,8 +31,8 @@ copy old new =
 
 
 fromVector : Vector -> JE.Value
-fromVector vector =
-    JE.array fromProject vector
+fromVector =
+    JE.array fromProject
 
 
 toVector : JD.Value -> List (List Parameters) -> Result JD.Error (Maybe Vector)
@@ -53,7 +56,6 @@ fromProject p =
         , ( "version_active", JE.int p.version_active )
         , ( "log", Log.encode p.log )
         , ( "repository", JE.dict identity JE.string p.repository )
-        , ( "compact_view", JE.bool p.compact_view )
         ]
 
 
@@ -63,21 +65,19 @@ project :
     -> Int
     -> Log.Log
     -> Repo
-    -> Bool
     -> (List Parameters -> Project)
-project files version active log repository compact =
-    Project files -1 version active repository "" log False Nothing compact
+project files version active log repository =
+    Project files -1 version active repository "" log False Nothing
 
 
 toProject : JD.Decoder (List Parameters -> Project)
 toProject =
-    JD.map6 project
+    JD.map5 project
         (JD.field "file" (JD.array toFile))
         (JD.field "version" (JD.array toVersion))
         (JD.field "version_active" JD.int)
         (JD.field "log" Log.decoder)
         (JD.field "repository" (JD.dict JD.string))
-        (JD.field "compact_view" JD.bool)
 
 
 fromFile : File -> JE.Value

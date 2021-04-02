@@ -5,6 +5,7 @@ import Lia.Markdown.Effect.Types exposing (isIn)
 import Lia.Markdown.HTML.Types as HTML
 import Lia.Markdown.Inline.Stringify as Inline
 import Lia.Markdown.Types exposing (Markdown(..))
+import Tuple
 
 
 {-| Stringify a LiaScript Markdown element based on dynamic results originated
@@ -26,8 +27,12 @@ stringify scripts id markdown =
         Paragraph _ inlines ->
             Inline.stringify_ scripts id inlines
 
-        Quote _ md ->
+        Quote _ ( md, cite ) ->
             block scripts id md
+                ++ (cite
+                        |> Maybe.map (Tuple.second >> Inline.stringify_ scripts id)
+                        |> Maybe.withDefault ""
+                   )
 
         BulletList _ mds ->
             mds

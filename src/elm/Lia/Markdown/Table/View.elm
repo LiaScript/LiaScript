@@ -1,10 +1,16 @@
 module Lia.Markdown.Table.View exposing (view)
 
+{- Example of a accessible table:
+   <https://dequeuniversity.com/library/aria/table-sortable>
+-}
+
+import Accessibility.Role as A11y_Role
+import Accessibility.Widget as A11y_Widget
 import Array
+import Const
 import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Html.Events exposing (onClick)
 import Html.Lazy as Lazy
 import Lia.Markdown.Chart.Types exposing (Diagram(..), Labels, Point)
 import Lia.Markdown.Chart.View as Chart
@@ -27,8 +33,9 @@ import Lia.Markdown.Table.Types
         )
 import Lia.Markdown.Table.Update as Sub
 import Lia.Markdown.Update exposing (Msg(..))
-import Lia.Utils exposing (blockKeydown)
+import Lia.Utils exposing (blockKeydown, btn, btnIcon, icon)
 import Set
+import Translations exposing (Lang, sortAsc, sortDesc, sortNot)
 
 
 view : Config sub -> Parameters -> Table -> Html Msg
@@ -38,7 +45,8 @@ view config attr table =
             getState table.id config.section.table_vector
     in
     if diagramShow attr state.diagram then
-        Lazy.lazy7 viewDiagram
+        Lazy.lazy8 viewDiagram
+            config.main.lang
             table
             state
             config.main.scripts
@@ -49,26 +57,26 @@ view config attr table =
 
     else if table.head == [] && table.format == [] then
         state
-            |> unformatted config.view (toMatrix config.main.scripts config.main.visible table.body) table.id
-            |> toTable table.id attr table.class
+            |> unformatted config.main.lang config.view (toMatrix config.main.scripts config.main.visible table.body) table.id
+            |> toTable config.main.lang table.id attr table.class
 
     else
         state
-            |> formatted config.view table.head table.format (toMatrix config.main.scripts config.main.visible table.body) table.id
-            |> toTable table.id attr table.class
+            |> formatted config.main.lang config.view table.head table.format (toMatrix config.main.scripts config.main.visible table.body) table.id
+            |> toTable config.main.lang table.id attr table.class
 
 
-viewDiagram : Table -> State -> Scripts a -> Maybe Int -> Int -> Bool -> Parameters -> Html Msg
-viewDiagram table state effects visible width light attr =
+viewDiagram : Lang -> Table -> State -> Scripts a -> Maybe Int -> Int -> Bool -> Parameters -> Html Msg
+viewDiagram lang table state effects visible width light attr =
     Html.div
         [ blockKeydown (UpdateTable Sub.NoOp) ]
-        [ toggleBtn table.id "table"
+        [ toggleBtn table.id ( "table", "Table" )
         , table.body
             |> toMatrix effects visible
             |> sort state
             |> (::) (List.map (toCell effects visible) table.head)
             |> diagramTranspose attr
-            |> chart width (table.format /= []) attr light table.class
+            |> chart lang width (table.format /= []) attr light table.class
         ]
 
 
@@ -90,8 +98,8 @@ diagramTranspose attr matrix =
         matrix
 
 
-chart : Int -> Bool -> Parameters -> Bool -> Class -> Matrix Cell -> Html Msg
-chart width isFormated attr mode class matrix =
+chart : Lang -> Int -> Bool -> Parameters -> Bool -> Class -> Matrix Cell -> Html Msg
+chart lang width isFormated attr mode class matrix =
     let
         ( head, body ) =
             Matrix.split matrix
@@ -99,368 +107,368 @@ chart width isFormated attr mode class matrix =
         labels =
             getLabels attr head
     in
-    Html.div []
-        [ case class of
-            BarChart ->
+    case class of
+        BarChart ->
+            let
+                category =
+                    body
+                        |> List.map (List.head >> Maybe.map .string >> Maybe.withDefault "")
+            in
+            matrix
+                |> Matrix.transpose
+                |> Matrix.tail
+                |> List.map
+                    (\row ->
+                        ( row |> List.head |> Maybe.map .string
+                        , row |> List.tail |> Maybe.map (List.map .float) |> Maybe.withDefault []
+                        )
+                    )
+                |> Chart.viewBarChart lang attr mode labels category
+
+        PieChart ->
+            if
+                body
+                    |> Matrix.column 0
+                    |> Maybe.map (List.all isNumber)
+                    |> Maybe.withDefault False
+            then
+                body
+                    |> Matrix.map .float
+                    |> List.map
+                        (List.map2 (\category -> Maybe.map (Tuple.pair category.string)) head
+                            >> List.filterMap identity
+                        )
+                    |> Chart.viewPieChart lang width attr mode labels Nothing
+
+            else
                 let
                     category =
-                        body
-                            |> List.map (List.head >> Maybe.map .string >> Maybe.withDefault "")
-                in
-                matrix
-                    |> Matrix.transpose
-                    |> Matrix.tail
-                    |> List.map
-                        (\row ->
-                            ( row |> List.head |> Maybe.map .string
-                            , row |> List.tail |> Maybe.map (List.map .float) |> Maybe.withDefault []
-                            )
-                        )
-                    |> Chart.viewBarChart attr mode labels category
+                        head
+                            |> List.tail
+                            |> Maybe.withDefault []
+                            |> List.map .string
 
-            PieChart ->
-                if
-                    body
-                        |> Matrix.column 0
-                        |> Maybe.map (List.all isNumber)
-                        |> Maybe.withDefault False
-                then
-                    body
-                        |> Matrix.map .float
-                        |> List.map
-                            (List.map2 (\category -> Maybe.map (Tuple.pair category.string)) head
-                                >> List.filterMap identity
-                            )
-                        |> Chart.viewPieChart width attr mode labels Nothing
-
-                else
-                    let
-                        category =
-                            head
-                                |> List.tail
-                                |> Maybe.withDefault []
-                                |> List.map .string
-
-                        sub =
-                            body
-                                |> Matrix.column 0
-                                |> Maybe.map (List.map .string)
-
-                        data =
-                            body
-                                |> Matrix.map .float
-                                |> List.filterMap List.tail
-                    in
-                    data
-                        |> List.map (List.map2 (\c -> Maybe.map (Tuple.pair c)) category >> List.filterMap identity)
-                        |> Chart.viewPieChart width attr mode labels sub
-
-            Funnel ->
-                if
-                    body
-                        |> Matrix.column 0
-                        |> Maybe.map (List.all isNumber)
-                        |> Maybe.withDefault False
-                then
-                    body
-                        |> Matrix.map .float
-                        |> List.map
-                            (List.map2 (\category -> Maybe.map (Tuple.pair category.string)) head
-                                >> List.filterMap identity
-                            )
-                        |> Chart.viewFunnel width attr mode labels Nothing
-
-                else
-                    let
-                        category =
-                            head
-                                |> List.tail
-                                |> Maybe.withDefault []
-                                |> List.map .string
-
-                        sub =
-                            body
-                                |> Matrix.column 0
-                                |> Maybe.map (List.map .string)
-
-                        data =
-                            body
-                                |> Matrix.map .float
-                                |> List.filterMap List.tail
-                    in
-                    data
-                        |> List.map (List.map2 (\c -> Maybe.map (Tuple.pair c)) category >> List.filterMap identity)
-                        |> Chart.viewFunnel width attr mode labels sub
-
-            HeatMap ->
-                let
-                    y =
+                    sub =
                         body
                             |> Matrix.column 0
-                            |> Maybe.withDefault []
-                            |> List.map .string
-
-                    x =
-                        head
-                            |> List.tail
-                            |> Maybe.withDefault []
-                            |> List.map .string
-                            |> List.reverse
-                in
-                body
-                    |> Matrix.transpose
-                    |> Matrix.tail
-                    |> List.indexedMap
-                        (\y_ row ->
-                            row
-                                |> List.indexedMap (\x_ cell -> ( x_, y_, cell.float ))
-                        )
-                    |> Chart.viewHeatMap attr mode labels y x
-
-            Radar ->
-                let
-                    categories =
-                        head
-                            |> List.tail
                             |> Maybe.map (List.map .string)
-                            |> Maybe.withDefault []
-                in
-                body
-                    |> List.map
-                        (\row ->
-                            ( row |> List.head |> Maybe.map .string |> Maybe.withDefault ""
-                            , row |> List.tail |> Maybe.map (List.map .float) |> Maybe.withDefault []
-                            )
-                        )
-                    |> Chart.viewRadarChart attr mode labels categories
 
-            Parallel ->
+                    data =
+                        body
+                            |> Matrix.map .float
+                            |> List.filterMap List.tail
+                in
+                data
+                    |> List.map (List.map2 (\c -> Maybe.map (Tuple.pair c)) category >> List.filterMap identity)
+                    |> Chart.viewPieChart lang width attr mode labels sub
+
+        Funnel ->
+            if
+                body
+                    |> Matrix.column 0
+                    |> Maybe.map (List.all isNumber)
+                    |> Maybe.withDefault False
+            then
+                body
+                    |> Matrix.map .float
+                    |> List.map
+                        (List.map2 (\category -> Maybe.map (Tuple.pair category.string)) head
+                            >> List.filterMap identity
+                        )
+                    |> Chart.viewFunnel lang width attr mode labels Nothing
+
+            else
                 let
                     category =
                         head
                             |> List.tail
                             |> Maybe.withDefault []
                             |> List.map .string
-                in
-                body
-                    |> Matrix.transpose
-                    |> Matrix.tail
-                    |> Matrix.map .float
-                    |> Matrix.transpose
-                    |> Chart.viewParallel attr mode labels category
 
-            BoxPlot ->
-                body
-                    |> Matrix.map .float
-                    |> Matrix.transpose
-                    |> Chart.viewBoxPlot attr mode labels (List.map .string head)
-
-            Graph ->
-                let
-                    nodesA =
-                        head
-                            |> List.tail
-                            |> Maybe.withDefault []
-                            |> List.map .string
-
-                    nodesB =
+                    sub =
                         body
                             |> Matrix.column 0
-                            |> Maybe.withDefault []
-                            |> List.map .string
+                            |> Maybe.map (List.map .string)
 
-                    nodes =
-                        nodesA
-                            ++ nodesB
-                            |> Set.fromList
-                            |> Set.toList
-                            |> List.filter ((/=) "")
-                in
-                body
-                    |> List.concatMap
-                        (\row ->
-                            case row of
-                                [] ->
-                                    []
-
-                                b :: values ->
-                                    values
-                                        |> List.map2
-                                            (\a v ->
-                                                case v.float of
-                                                    Just float ->
-                                                        if float == 0 then
-                                                            Nothing
-
-                                                        else
-                                                            Just ( a, b.string, float )
-
-                                                    _ ->
-                                                        Nothing
-                                            )
-                                            nodesA
-                        )
-                    |> List.filterMap identity
-                    |> List.filter (\( a, b, _ ) -> a /= "" || b /= "")
-                    |> Chart.viewGraph attr mode labels nodes
-
-            Sankey ->
-                let
-                    nodesA =
-                        head
-                            |> List.tail
-                            |> Maybe.withDefault []
-                            |> List.map .string
-
-                    nodesB =
-                        body
-                            |> Matrix.column 0
-                            |> Maybe.withDefault []
-                            |> List.map .string
-
-                    nodes =
-                        nodesA
-                            ++ nodesB
-                            |> Set.fromList
-                            |> Set.toList
-                            |> List.filter ((/=) "")
-                in
-                body
-                    |> List.concatMap
-                        (\row ->
-                            case row of
-                                [] ->
-                                    []
-
-                                b :: values ->
-                                    values
-                                        |> List.map2
-                                            (\a v ->
-                                                case v.float of
-                                                    Just float ->
-                                                        if float == 0 then
-                                                            Nothing
-
-                                                        else
-                                                            Just ( a, b.string, float )
-
-                                                    _ ->
-                                                        Nothing
-                                            )
-                                            nodesA
-                        )
-                    |> List.filterMap identity
-                    |> List.filter (\( a, b, _ ) -> a /= "" || b /= "")
-                    |> Chart.viewSankey attr mode labels nodes
-
-            Map ->
-                let
                     data =
-                        if isFormated then
-                            body
+                        body
+                            |> Matrix.map .float
+                            |> List.filterMap List.tail
+                in
+                data
+                    |> List.map (List.map2 (\c -> Maybe.map (Tuple.pair c)) category >> List.filterMap identity)
+                    |> Chart.viewFunnel lang width attr mode labels sub
+
+        HeatMap ->
+            let
+                y =
+                    body
+                        |> Matrix.column 0
+                        |> Maybe.withDefault []
+                        |> List.map .string
+
+                x =
+                    head
+                        |> List.tail
+                        |> Maybe.withDefault []
+                        |> List.map .string
+                        |> List.reverse
+            in
+            body
+                |> Matrix.transpose
+                |> Matrix.tail
+                |> List.indexedMap
+                    (\y_ row ->
+                        row
+                            |> List.indexedMap (\x_ cell -> ( x_, y_, cell.float ))
+                    )
+                |> Chart.viewHeatMap lang attr mode labels y x
+
+        Radar ->
+            let
+                categories =
+                    head
+                        |> List.tail
+                        |> Maybe.map (List.map .string)
+                        |> Maybe.withDefault []
+            in
+            body
+                |> List.map
+                    (\row ->
+                        ( row |> List.head |> Maybe.map .string |> Maybe.withDefault ""
+                        , row |> List.tail |> Maybe.map (List.map .float) |> Maybe.withDefault []
+                        )
+                    )
+                |> Chart.viewRadarChart lang attr mode labels categories
+
+        Parallel ->
+            let
+                category =
+                    head
+                        |> List.tail
+                        |> Maybe.withDefault []
+                        |> List.map .string
+            in
+            body
+                |> Matrix.transpose
+                |> Matrix.tail
+                |> Matrix.map .float
+                |> Matrix.transpose
+                |> Chart.viewParallel lang attr mode labels category
+
+        BoxPlot ->
+            body
+                |> Matrix.map .float
+                |> Matrix.transpose
+                |> Chart.viewBoxPlot lang attr mode labels (List.map .string head)
+
+        Graph ->
+            let
+                nodesA =
+                    head
+                        |> List.tail
+                        |> Maybe.withDefault []
+                        |> List.map .string
+
+                nodesB =
+                    body
+                        |> Matrix.column 0
+                        |> Maybe.withDefault []
+                        |> List.map .string
+
+                nodes =
+                    nodesA
+                        ++ nodesB
+                        |> Set.fromList
+                        |> Set.toList
+                        |> List.filter ((/=) "")
+            in
+            body
+                |> List.concatMap
+                    (\row ->
+                        case row of
+                            [] ->
+                                []
+
+                            b :: values ->
+                                values
+                                    |> List.map2
+                                        (\a v ->
+                                            case v.float of
+                                                Just float ->
+                                                    if float == 0 then
+                                                        Nothing
+
+                                                    else
+                                                        Just ( a, b.string, float )
+
+                                                _ ->
+                                                    Nothing
+                                        )
+                                        nodesA
+                    )
+                |> List.filterMap identity
+                |> List.filter (\( a, b, _ ) -> a /= "" || b /= "")
+                |> Chart.viewGraph lang attr mode labels nodes
+
+        Sankey ->
+            let
+                nodesA =
+                    head
+                        |> List.tail
+                        |> Maybe.withDefault []
+                        |> List.map .string
+
+                nodesB =
+                    body
+                        |> Matrix.column 0
+                        |> Maybe.withDefault []
+                        |> List.map .string
+
+                nodes =
+                    nodesA
+                        ++ nodesB
+                        |> Set.fromList
+                        |> Set.toList
+                        |> List.filter ((/=) "")
+            in
+            body
+                |> List.concatMap
+                    (\row ->
+                        case row of
+                            [] ->
+                                []
+
+                            b :: values ->
+                                values
+                                    |> List.map2
+                                        (\a v ->
+                                            case v.float of
+                                                Just float ->
+                                                    if float == 0 then
+                                                        Nothing
+
+                                                    else
+                                                        Just ( a, b.string, float )
+
+                                                _ ->
+                                                    Nothing
+                                        )
+                                        nodesA
+                    )
+                |> List.filterMap identity
+                |> List.filter (\( a, b, _ ) -> a /= "" || b /= "")
+                |> Chart.viewSankey lang attr mode labels nodes
+
+        Map ->
+            let
+                data =
+                    if isFormated then
+                        body
+
+                    else
+                        matrix
+
+                categories =
+                    data
+                        |> Matrix.column 0
+                        |> Maybe.withDefault []
+                        |> List.map .string
+
+                values =
+                    data
+                        |> Matrix.column 1
+                        |> Maybe.withDefault []
+                        |> List.map .float
+                        |> List.map2 Tuple.pair categories
+            in
+            attr
+                |> Param.get "data-src"
+                |> Chart.viewMapChart lang
+                    attr
+                    mode
+                    labels
+                    values
+
+        _ ->
+            let
+                xs : List (Maybe Float)
+                xs =
+                    body
+                        |> Matrix.column 0
+                        |> Maybe.withDefault []
+                        |> List.map .float
+
+                legend =
+                    head
+                        |> List.tail
+                        |> Maybe.withDefault []
+                        |> List.map .string
+            in
+            if
+                xs
+                    |> List.filterMap identity
+                    |> List.length
+                    |> (==) (List.length xs)
+            then
+                let
+                    type_ name pts =
+                        if class == LinePlot then
+                            Lines pts (Just name)
 
                         else
-                            matrix
+                            Dots pts (Just name)
 
-                    categories =
-                        data
+                    diagrams =
+                        body
+                            |> Matrix.transpose
+                            |> Matrix.tail
+                            |> Matrix.map .float
+                            |> List.map
+                                (List.map2 (\x y -> Maybe.map2 Point x y) xs
+                                    >> List.filterMap identity
+                                )
+                            |> List.map2 type_ legend
+                            |> List.indexedMap (\i diagram -> ( Chart.getColor i, diagram ))
+                in
+                { title = labels.main |> Maybe.withDefault ""
+                , yLabel = labels.y |> Maybe.withDefault ""
+                , xLabel = labels.x |> Maybe.withDefault ""
+                , legend = legend
+                , diagrams = diagrams |> Dict.fromList
+                }
+                    |> Chart.viewChart lang attr mode
+
+            else
+                let
+                    xvalues =
+                        body
                             |> Matrix.column 0
                             |> Maybe.withDefault []
                             |> List.map .string
 
-                    values =
-                        data
-                            |> Matrix.column 1
-                            |> Maybe.withDefault []
-                            |> List.map .float
-                            |> List.map2 Tuple.pair categories
-                in
-                attr
-                    |> Param.get "data-src"
-                    |> Chart.viewMapChart attr
-                        mode
-                        labels
-                        values
-
-            _ ->
-                let
-                    xs : List (Maybe Float)
-                    xs =
-                        body
-                            |> Matrix.column 0
-                            |> Maybe.withDefault []
-                            |> List.map .float
-
-                    legend =
+                    xlabels =
                         head
                             |> List.tail
                             |> Maybe.withDefault []
                             |> List.map .string
                 in
-                if
-                    xs
-                        |> List.filterMap identity
-                        |> List.length
-                        |> (==) (List.length xs)
-                then
-                    let
-                        type_ name pts =
-                            if class == LinePlot then
-                                Lines pts (Just name)
+                body
+                    |> Matrix.transpose
+                    |> Matrix.tail
+                    |> Matrix.map .float
+                    |> List.map2 Tuple.pair xlabels
+                    |> (if class == LinePlot then
+                            Chart.viewLines
 
-                            else
-                                Dots pts (Just name)
-
-                        diagrams =
-                            body
-                                |> Matrix.transpose
-                                |> Matrix.tail
-                                |> Matrix.map .float
-                                |> List.map
-                                    (List.map2 (\x y -> Maybe.map2 Point x y) xs
-                                        >> List.filterMap identity
-                                    )
-                                |> List.map2 type_ legend
-                                |> List.indexedMap (\i diagram -> ( Chart.getColor i, diagram ))
-                    in
-                    { title = labels.main |> Maybe.withDefault ""
-                    , yLabel = labels.y |> Maybe.withDefault ""
-                    , xLabel = labels.x |> Maybe.withDefault ""
-                    , legend = legend
-                    , diagrams = diagrams |> Dict.fromList
-                    }
-                        |> Chart.viewChart attr mode
-
-                else
-                    let
-                        xvalues =
-                            body
-                                |> Matrix.column 0
-                                |> Maybe.withDefault []
-                                |> List.map .string
-
-                        xlabels =
-                            head
-                                |> List.tail
-                                |> Maybe.withDefault []
-                                |> List.map .string
-                    in
-                    body
-                        |> Matrix.transpose
-                        |> Matrix.tail
-                        |> Matrix.map .float
-                        |> List.map2 Tuple.pair xlabels
-                        |> (if class == LinePlot then
-                                Chart.viewLines
-
-                            else
-                                Chart.viewPoints
-                           )
-                            attr
-                            mode
-                            labels
-                            xvalues
-        ]
+                        else
+                            Chart.viewPoints
+                       )
+                        lang
+                        attr
+                        mode
+                        labels
+                        xvalues
 
 
 getLabels : Parameters -> Row Cell -> Labels
@@ -486,106 +494,143 @@ getState id =
     Array.get id >> Maybe.withDefault (State -1 False False)
 
 
-toTable : Int -> Parameters -> Class -> List (Html Msg) -> Html Msg
-toTable id attr class body =
+toTable : Lang -> Int -> Parameters -> Class -> List (Html Msg) -> Html Msg
+toTable lang id attr class body =
     if class == None then
-        Html.table (Param.annotation "lia-table" attr) body
+        viewTable attr body
 
     else
-        Html.div []
+        Html.div [ Attr.class "lia-plot" ]
             [ toggleBtn id <|
                 case class of
                     BarChart ->
-                        "barchart"
+                        ( "barchart", Translations.chartBar lang )
 
                     PieChart ->
-                        "piechart"
+                        ( "piechart", Translations.chartPie lang )
 
                     LinePlot ->
-                        "lineplot"
+                        ( "lineplot", Translations.chartLine lang )
 
                     HeatMap ->
-                        "heatmap"
+                        ( "heatmap", Translations.chartHeatmap lang )
 
                     Radar ->
-                        "radar"
+                        ( "radar", Translations.chartRadar lang )
 
                     Parallel ->
-                        "parallel"
+                        ( "parallel", Translations.chartParallel lang )
 
                     Graph ->
-                        "graph"
+                        ( "graph", Translations.chartGraph lang )
 
                     Map ->
-                        "map"
+                        ( "map", Translations.chartMap lang )
 
                     Sankey ->
-                        "sankey"
+                        ( "sankey", Translations.chartSankey lang )
 
                     ScatterPlot ->
-                        "scatterplot"
+                        ( "scatterplot", Translations.chartScatter lang )
 
                     BoxPlot ->
-                        "boxplot"
+                        ( "boxplot", Translations.chartBoxplot lang )
 
                     Funnel ->
-                        "funnel"
+                        ( "funnel", Translations.chartFunnel lang )
 
                     None ->
-                        ""
-            , Html.table
-                (Attr.style "margin-top" "-0.2em" :: Param.annotation "lia-table" attr)
-                body
+                        ( "", "" )
+            , viewTable attr body
             ]
 
 
-toggleBtn : Int -> String -> Html Msg
-toggleBtn id icon =
-    Html.img
-        [ Attr.style "cursor" "pointer"
-        , Attr.style "height" "16px"
-        , Attr.height 16
-        , Attr.width 16
-        , Attr.style "width" "16px"
-        , onClick <| UpdateTable <| Sub.Toggle id
-        , Attr.src <| "img/" ++ icon ++ ".png"
-        , Attr.style "z-index" "100"
+viewTable : Parameters -> List (Html msg) -> Html msg
+viewTable attr body =
+    Html.div [ Attr.class "lia-table-responsive has-thead-sticky has-first-col-sticky" ]
+        [ Html.table
+            (A11y_Role.grid :: A11y_Widget.readOnly True :: Param.annotation "lia-table" attr)
+            body
         ]
-        []
 
 
-unformatted : (Inlines -> List (Html Msg)) -> Matrix Cell -> Int -> State -> List (Html Msg)
-unformatted viewer rows id state =
+toggleBtn : Int -> ( String, String ) -> Html Msg
+toggleBtn id ( name, title ) =
+    btn
+        { title = title
+        , msg = Just <| UpdateTable <| Sub.Toggle id
+        , tabbable = True
+        }
+        [ Attr.class "lia-btn--outline lia-plot__switch mb-1" ]
+        [ --Html.img
+          -- [ Attr.height 16
+          -- , Attr.width 16
+          -- , Attr.src <| "img/" ++ icon ++ ".png"
+          -- ]
+          -- []
+          icon ("icon-" ++ name) []
+        , Html.span [ Attr.class "lia-btn__text" ]
+            [ Html.text title
+            ]
+        ]
+
+
+unformatted : Lang -> (Inlines -> List (Html Msg)) -> Matrix Cell -> Int -> State -> List (Html Msg)
+unformatted lang viewer rows id state =
     case sort state rows of
         head :: tail ->
             tail
                 |> List.map
-                    (List.map (\e -> Html.td (Attr.align "left" :: Param.toAttribute e.attr) (viewer e.inlines))
-                        >> Html.tr [ Attr.class "lia-inline lia-table-row" ]
+                    (List.map (\e -> Html.td (Attr.class "lia-table__data" :: Param.toAttribute e.attr) (viewer e.inlines))
+                        >> Html.tr [ Attr.class "lia-table__row", A11y_Role.row ]
                     )
                 |> (::)
                     (head
-                        |> view_head1 viewer id state
-                        |> Html.tr [ Attr.class "lia-inline lia-table-row" ]
+                        |> view_head1 lang viewer id state
+                        |> Html.tr [ Attr.class "lia-table__row", A11y_Role.row ]
                     )
 
         [] ->
             []
 
 
-formatted : (Inlines -> List (Html Msg)) -> List ( Parameters, Inlines ) -> List String -> Matrix Cell -> Int -> State -> List (Html Msg)
-formatted viewer head format rows id state =
-    rows
+formatted : Lang -> (Inlines -> List (Html Msg)) -> List ( Parameters, Inlines ) -> List String -> Matrix Cell -> Int -> State -> List (Html Msg)
+formatted lang viewer head format rows id state =
+    [ head
+        |> view_head2 lang viewer id format state
+        |> Html.tr [ A11y_Role.row ]
+        |> List.singleton
+        |> Html.thead [ Attr.class "lia-table__head" ]
+    , rows
         |> sort state
         |> List.map
-            (List.map2 (\f e -> Html.td (Attr.align f :: Param.toAttribute e.attr) (viewer e.inlines)) format
-                >> Html.tr [ Attr.class "lia-inline lia-table-row" ]
+            (List.indexedMap Tuple.pair
+                >> List.map2
+                    (\f ( i, e ) ->
+                        Html.td
+                            (Param.toAttribute e.attr
+                                |> List.append
+                                    [ Attr.class "lia-table__data"
+                                    , Attr.class f
+                                    ]
+                                |> List.append
+                                    (if i == 0 then
+                                        [ A11y_Role.rowHeader
+                                        , Attr.scope "row"
+                                        ]
+
+                                     else
+                                        [ A11y_Role.gridCell
+                                        ]
+                                    )
+                            )
+                            (viewer e.inlines)
+                    )
+                    format
+                >> Html.tr [ Attr.class "lia-table__row", A11y_Role.row ]
             )
-        |> (::)
-            (head
-                |> view_head2 viewer id format state
-                |> Html.thead [ Attr.class "lia-inline lia-table-head" ]
-            )
+        |> Html.tbody [ Attr.class "lia-table__body" ]
+    ]
 
 
 get : Int -> List x -> Maybe x
@@ -628,66 +673,73 @@ sort state matrix =
         matrix
 
 
-view_head1 : (Inlines -> List (Html Msg)) -> Int -> State -> Row Cell -> List (Html Msg)
-view_head1 viewer id state =
+view_head1 : Lang -> (Inlines -> List (Html Msg)) -> Int -> State -> Row Cell -> List (Html Msg)
+view_head1 lang viewer id state =
     List.indexedMap
         (\i r ->
-            header viewer id "left" state i r.inlines
-                |> Html.td (Attr.align "left" :: Param.toAttribute r.attr)
+            header lang viewer id Const.align.default state i r.inlines
+                |> Html.td (Attr.class Const.align.default :: Param.toAttribute r.attr)
         )
 
 
-view_head2 : (Inlines -> List (Html Msg)) -> Int -> List String -> State -> List ( Parameters, Inlines ) -> List (Html Msg)
-view_head2 viewer id format state =
+view_head2 : Lang -> (Inlines -> List (Html Msg)) -> Int -> List String -> State -> List ( Parameters, Inlines ) -> List (Html Msg)
+view_head2 lang viewer id format state =
     List.map2 Tuple.pair format
         >> List.indexedMap
             (\i ( f, ( a, r ) ) ->
-                header viewer id f state i r
-                    |> Html.th (Attr.align f :: Attr.style "height" "100%" :: Param.toAttribute a)
+                header lang viewer id f state i r
+                    |> Html.th
+                        (Attr.class "lia-table__header"
+                            :: (if i == id then
+                                    if state.dir then
+                                        A11y_Widget.sortAscending
+
+                                    else
+                                        A11y_Widget.sortDescending
+
+                                else
+                                    Attr.class ""
+                               )
+                            :: Attr.scope "col"
+                            :: A11y_Role.columnHeader
+                            :: Attr.class f
+                            :: Param.toAttribute a
+                        )
             )
 
 
-header : (Inlines -> List (Html Msg)) -> Int -> String -> State -> Int -> Inlines -> List (Html Msg)
-header viewer id format state i r =
-    [ Html.span
-        (if format /= "right" then
-            [ Attr.style "float" format, Attr.style "height" "100%" ]
+header : Lang -> (Inlines -> List (Html Msg)) -> Int -> String -> State -> Int -> Inlines -> List (Html Msg)
+header lang viewer id format state i r =
+    [ Html.span [ Attr.class format ] (viewer r)
+    , btnIcon
+        { title =
+            if state.column == i && state.dir then
+                sortDesc lang
 
-         else
-            [ Attr.style "height" "100%" ]
-        )
-        (viewer r)
-    , Html.span
-        [ Attr.class "lia-icon"
-        , Attr.style "float" "right"
-        , Attr.style "cursor" "pointer"
-        , Attr.style "margin-right" "-17px"
-        , Attr.style "margin-top" "-10px"
+            else if state.column == i && not state.dir then
+                sortNot lang
 
-        --  , Attr.style "height" "100%"
-        --  , Attr.style "position" "relative"
-        --  , Attr.style "vertical-align" "top"
-        , onClick <| UpdateTable <| Sub.Sort id i
-        ]
-        [ Html.div
-            [ Attr.style "height" "6px"
-            , Attr.style "color" <|
-                if state.column == i && state.dir then
-                    "red"
+            else
+                sortAsc lang
+        , msg = Just <| UpdateTable <| Sub.Sort id i
+        , tabbable = True
+        , icon =
+            if state.column == i then
+                if state.dir then
+                    "icon-sort-asc"
 
                 else
-                    "gray"
-            ]
-            [ Html.text "arrow_drop_up" ]
-        , Html.div
-            [ Attr.style "height" "6px"
-            , Attr.style "color" <|
-                if state.column == i && not state.dir then
-                    "red"
+                    "icon-sort-desc"
 
-                else
-                    "gray"
-            ]
-            [ Html.text "arrow_drop_down" ]
+            else
+                "icon-sort-desc"
+        }
+        [ Attr.class "lia-btn--transparent lia-table__sort"
+        , Attr.class <|
+            if state.column == i then
+                "active"
+
+            else
+                ""
         ]
     ]

@@ -63,7 +63,7 @@ type alias Section =
     , body : List Markdown
     , parsed : Bool
     , error : Maybe String
-    , code_vector : Code.Vector
+    , code_model : Code.Model
     , task_vector : Task.Vector
     , quiz_vector : Quiz.Vector
     , survey_vector : Survey.Vector
@@ -93,7 +93,7 @@ type SubSection
     = SubSection
         { body : List Markdown
         , error : Maybe String
-        , code_vector : Code.Vector
+        , code_model : Code.Model
         , task_vector : Task.Vector
         , quiz_vector : Quiz.Vector
         , survey_vector : Survey.Vector
@@ -140,7 +140,7 @@ init id base =
     , parsed = False
     , body = []
     , error = Nothing
-    , code_vector = Array.empty
+    , code_model = Code.init
     , task_vector = Array.empty
     , quiz_vector = Array.empty
     , survey_vector = Array.empty

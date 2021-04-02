@@ -22,6 +22,7 @@ import Combine
         , succeed
         , withState
         )
+import Const
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.HTML.Attributes as Param exposing (Parameters)
 import Lia.Markdown.Inline.Parser exposing (annotations, line)
@@ -325,10 +326,10 @@ format =
         |> keep
             (sepEndBy (string "|")
                 (choice
-                    [ regex "[\t ]*:-{3,}:[\t ]*" |> onsuccess "center"
-                    , regex "[\t ]*:-{3,}[\t ]*" |> onsuccess "left"
-                    , regex "[\t ]*-{3,}:[\t ]*" |> onsuccess "right"
-                    , regex "[\t ]*-{3,}[\t ]*" |> onsuccess "left"
+                    [ regex "[\t ]*:-{3,}:[\t ]*" |> onsuccess Const.align.center
+                    , regex "[\t ]*:-{3,}[\t ]*" |> onsuccess Const.align.left
+                    , regex "[\t ]*-{3,}:[\t ]*" |> onsuccess Const.align.right
+                    , regex "[\t ]*-{3,}[\t ]*" |> onsuccess Const.align.default
                     ]
                 )
             )

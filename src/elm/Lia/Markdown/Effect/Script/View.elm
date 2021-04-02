@@ -1,5 +1,8 @@
 module Lia.Markdown.Effect.Script.View exposing (view)
 
+import Accessibility.Key as A11y_Key
+import Accessibility.Role as A11y_Role
+import Accessibility.Widget as A11y_Widget
 import Array
 import Conditional.List as CList
 import Html exposing (Html)
@@ -11,10 +14,10 @@ import Lia.Markdown.Effect.Script.Input as Input exposing (Input)
 import Lia.Markdown.Effect.Script.Intl as Intl
 import Lia.Markdown.Effect.Script.Types exposing (Script, Stdout(..), isError)
 import Lia.Markdown.Effect.Script.Update exposing (Msg(..))
-import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
+import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Section exposing (SubSection(..))
-import Lia.Utils exposing (blockKeydown, onEnter)
+import Lia.Utils exposing (blockKeydown, btnIcon, onEnter)
 
 
 view : Config sub -> Int -> Parameters -> Html (Msg sub)
@@ -24,7 +27,7 @@ view config id attr =
             case node.result of
                 Just _ ->
                     if node.edit then
-                        Html.span []
+                        Html.span [ Attr.class "flex items-center" ]
                             [ editor config.theme id node.script
                             , if Input.isHidden node.input then
                                 Html.text ""
@@ -52,10 +55,10 @@ view config id attr =
 class : Script SubSection -> String
 class node =
     if node.input.type_ /= Nothing && node.modify then
-        "lia-script-with-border"
+        "lia-script lia-script--with-border"
 
     else if node.input.type_ /= Nothing then
-        "lia-script-border"
+        "lia-script lia-script--border"
 
     else if node.modify then
         "lia-script"
@@ -71,7 +74,7 @@ script config withStyling attr id node =
             Html.text ""
 
         Just result ->
-            Html.span
+            Html.output
                 (annotation
                     (if withStyling then
                         class node
@@ -80,16 +83,15 @@ script config withStyling attr id node =
                         ""
                     )
                     attr
-                    |> CList.addIf (not withStyling) (Attr.style "margin" "5px")
+                    --|> CList.addIf (not withStyling) (Attr.style "margin-" "1rem")
                     |> List.append
                         (case node.input.type_ of
                             Just Input.Button_ ->
                                 [ Event.onClick (Click id)
-                                , Attr.style "cursor" "pointer"
                                 ]
 
                             Just _ ->
-                                [ Attr.style "cursor" "cell" ]
+                                []
 
                             _ ->
                                 []
@@ -105,7 +107,8 @@ script config withStyling attr id node =
                  --        )
                  --    )
                 )
-                [ case result of
+                [ Html.i [ Attr.class "icon icon-chevron-double-right" ] []
+                , case result of
                     Text str ->
                         Intl.view node.intl str
 
@@ -139,7 +142,8 @@ input config attr id node =
 
         Just (Input.Checkbox_ []) ->
             [ Html.input
-                [ Attr.checked (node.input.value == "true")
+                [ Attr.class "lia-checkbox"
+                , Attr.checked (node.input.value == "true")
                 , Attr.type_ "checkbox"
                 , onActivate False id
                 , Attr.id "lia-focus"
@@ -154,13 +158,8 @@ input config attr id node =
                     )
                 ]
                 []
-            , Html.span
-                [ Attr.class "lia-check-btn"
-                , Attr.style "margin" "0px 4px 0px 4px"
-                ]
-                [ Html.text "check" ]
             ]
-                |> Html.span []
+                |> Html.span [ Attr.class "flex items-center" ]
                 |> span config attr id node
 
         Just (Input.Checkbox_ options) ->
@@ -193,7 +192,7 @@ input config attr id node =
 select : Int -> String -> Parameters -> List String -> Html (Msg sub)
 select id value attr =
     List.map (\o -> Html.option [ Attr.value o ] [ Html.text o ])
-        >> Html.select (attributes True id value attr)
+        >> Html.select (Attr.class "lia-select" :: attributes True id value attr)
 
 
 checkbox : Bool -> Int -> String -> Parameters -> List String -> Html (Msg sub)
@@ -204,46 +203,44 @@ checkbox updateOnChange id value _ =
                 |> Input.decodeList
                 |> Maybe.withDefault []
     in
-    List.concatMap
+    List.map
         (\o ->
-            [ Html.text (" " ++ o ++ " ")
-            , Html.input
-                [ Attr.value o
-                , Attr.type_ "checkbox"
-                , Event.onCheck (always (Checkbox id updateOnChange o))
-                , Attr.checked (List.member o list)
-                , onActivate False id
-                , Attr.autofocus True
+            Html.label [ Attr.class "lia-label mr-1" ]
+                [ Html.input
+                    [ Attr.value o
+                    , Attr.type_ "checkbox"
+                    , Event.onCheck (always (Checkbox id updateOnChange o))
+                    , Attr.checked (List.member o list)
+                    , onActivate False id
+                    , Attr.autofocus True
+                    , Attr.class "lia-checkbox"
+                    ]
+                    []
+                , Html.text o
                 ]
-                []
-            , Html.span
-                [ Attr.class "lia-check-btn" ]
-                [ Html.text "check" ]
-            ]
         )
-        >> Html.span []
+        >> Html.span [ Attr.class "flex items-center" ]
 
 
 radio : Bool -> Int -> String -> Parameters -> List String -> Html (Msg sub)
 radio updateOnChange id value _ =
-    List.concatMap
+    List.map
         (\o ->
-            [ Html.text (" " ++ o ++ " ")
-            , Html.input
-                [ Attr.value o
-                , Attr.type_ "radio"
-                , Event.onCheck (always (Radio id updateOnChange o))
-                , Attr.checked (o == value)
-                , onActivate False id
-                , Attr.autofocus True
+            Html.label [ Attr.class "lia-label mr-1" ]
+                [ Html.input
+                    [ Attr.value o
+                    , Attr.type_ "radio"
+                    , Event.onCheck (always (Radio id updateOnChange o))
+                    , Attr.checked (o == value)
+                    , onActivate False id
+                    , Attr.autofocus True
+                    , Attr.class "lia-radio"
+                    ]
+                    []
+                , Html.text o
                 ]
-                []
-            , Html.span
-                [ Attr.class "lia-radio-btn" ]
-                []
-            ]
         )
-        >> Html.span []
+        >> Html.span [ Attr.class "flex items-center" ]
 
 
 textarea : Int -> String -> Parameters -> Bool -> Html (Msg sub)
@@ -276,38 +273,51 @@ span config attr id node control =
 
 reset : Int -> Html (Msg sub)
 reset id =
-    Html.span
-        [ Attr.class "lia-hint-btn"
-        , Attr.style "position" "relative"
-        , Attr.style "cursor" "pointer"
+    Html.button
+        [ Attr.class "lia-script__refresh icon icon-refresh"
         , Event.onClick (Reset id)
         ]
-        [ Html.text "clear" ]
+        []
 
 
 base : Input -> Int -> Parameters -> String -> Html (Msg sub)
 base input_ id attr value =
-    Html.span []
-        [ Html.input
-            (annotation "lia-script" attr
-                |> List.append
-                    [ input_.updateOnChange
-                        |> Value id
-                        |> Event.onInput
-                    , input_.type_
-                        |> Maybe.map Input.type_
-                        |> Maybe.withDefault "text"
-                        |> Attr.type_
-                    , Attr.value value
-                    , onActivate False id
-                    , Attr.id "lia-focus"
-                    , blockKeydown NoOp
-                    , onEnter (Activate False id)
-                    ]
-            )
-            []
-        , Html.text " "
-        ]
+    Html.input
+        (toAttribute attr
+            |> List.append
+                [ input_.updateOnChange
+                    |> Value id
+                    |> Event.onInput
+                , input_.type_
+                    |> Maybe.map Input.type_
+                    |> Maybe.withDefault "text"
+                    |> Attr.type_
+                , input_.type_
+                    |> Maybe.map
+                        (\i ->
+                            case Input.type_ i of
+                                "range" ->
+                                    "lia-range"
+
+                                "radio" ->
+                                    "lia-radio"
+
+                                "color" ->
+                                    ""
+
+                                _ ->
+                                    "lia-input"
+                        )
+                    |> Maybe.withDefault ""
+                    |> Attr.class
+                , Attr.value value
+                , onActivate False id
+                , Attr.id "lia-focus"
+                , blockKeydown NoOp
+                , onEnter (Activate False id)
+                ]
+        )
+        []
 
 
 onActivate : Bool -> Int -> Html.Attribute (Msg sub)
@@ -342,40 +352,68 @@ editor theme id code =
         , Attr.style "width" "100%"
         , Attr.style "height" "100%"
         , Attr.style "top" "0"
-        , Attr.style "left" "0"
         , Attr.style "right" "0"
-        , Attr.style "bottom" "0"
-        , Attr.style "background-color" "rgba(0,0,0,0.6)"
-        , Attr.style "z-index" "2"
-        , Attr.style "cursor" "pointer"
-        , Attr.style "overflow" "auto"
+        , Attr.style "z-index" "10000"
+        , Attr.class "lia-modal"
         ]
-        [ Html.div
-            [ Attr.style "position" "absolute"
-            , Attr.style "top" "90px"
-            , Attr.style "left" "50%"
-            , Attr.style "width" "90%"
-            , Attr.style "max-width" "800px"
-            , Attr.style "transform" "translate(-50%,0%)"
-            , Attr.style "-ms-transform" "translate(-50%,0%)"
-            ]
-            [ Editor.editor
-                [ Editor.onChange (EditCode id)
-                , Editor.value code
-                , theme
-                    |> Maybe.withDefault "crimson_editor"
-                    |> Editor.theme
-                , Editor.onBlur (Edit False id)
-                , Editor.focusing
-                , Editor.mode "javascript"
-                , Editor.maxLines 16
-                , Editor.showGutter True
-                , Editor.useSoftTabs False
-                , Editor.enableBasicAutocompletion True
-                , Editor.enableLiveAutocompletion True
-                , Editor.enableSnippets True
-                , Editor.extensions [ "language_tools" ]
+        [ [ btnIcon
+                { icon = "icon-close"
+                , msg = Just (Edit False id)
+                , tabbable = True
+                , title = "close modal"
+                }
+                [ Attr.class "lia-btn--transparent"
+                , Attr.style "float" "right"
+                , Attr.style "padding" "0px"
+                , Attr.id "lia-close-modal"
+                , A11y_Key.onKeyDown [ A11y_Key.escape (Edit False id) ]
                 ]
-                []
+          , Html.div
+                [ Attr.style "position" "absolute"
+                , Attr.style "top" "4rem"
+                , Attr.style "left" "50%"
+                , Attr.style "width" "100%"
+                , Attr.style "max-width" "800px"
+                , Attr.style "transform" "translate(-50%,0%)"
+                , Attr.style "-ms-transform" "translate(-50%,0%)"
+                ]
+                [ Editor.editor
+                    [ Editor.onChange (EditCode id)
+                    , Editor.value code
+                    , theme
+                        |> Maybe.withDefault "crimson_editor"
+                        |> Editor.theme
+                    , Editor.focusing
+                    , Editor.mode "javascript"
+                    , Editor.maxLines 16
+                    , Editor.showGutter True
+                    , Editor.useSoftTabs False
+                    , Editor.enableBasicAutocompletion True
+                    , Editor.enableLiveAutocompletion True
+                    , Editor.enableSnippets True
+                    , Editor.extensions [ "language_tools" ]
+                    ]
+                    []
+                ]
+          ]
+            |> Html.div
+                [ Attr.style "position" "absolute"
+                , Attr.style "top" "5%"
+                , Attr.style "left" "50%"
+                , Attr.style "font-size" "20px"
+                , Attr.style "color" "white"
+                , Attr.style "transform" "translate(-50%,-30%)"
+                , Attr.style "-ms-transform" "translate(-50%,-30%)"
+                , Attr.style "width" "90%"
+                , A11y_Widget.modal True
+                , A11y_Role.dialog
+                ]
+        , Html.div
+            [ Attr.style "background-color" "rgba(0,0,0,0.8)"
+            , Attr.style "width" "100%"
+            , Attr.style "height" "100%"
+            , Attr.style "overflow" "auto"
+            , Event.onClick (Edit False id)
             ]
+            []
         ]

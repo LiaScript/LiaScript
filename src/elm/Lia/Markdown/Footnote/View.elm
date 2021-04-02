@@ -1,5 +1,6 @@
-module Lia.Markdown.Footnote.View exposing (block, inline)
+module Lia.Markdown.Footnote.View exposing (block, byKey, inline)
 
+import Accessibility.Aria as A11y_Aria
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Lia.Markdown.Footnote.Model exposing (Model, empty, toList)
@@ -8,12 +9,20 @@ import Lia.Markdown.Types exposing (Markdown)
 
 inline : String -> List (Html.Attribute msg) -> Html msg
 inline key attr =
-    Html.sup
-        (attr
-            |> (::) (Attr.style "cursor" "pointer")
-            |> (::) (Attr.attribute "onclick" ("showFootnote(\"" ++ key ++ "\");"))
-        )
-        [ braces key ]
+    Html.sup []
+        [ Html.button
+            ([ Attr.style "padding" "2px"
+             , Attr.class "lia-btn lia-btn--transparent"
+             , Attr.attribute "onclick" ("showFootnote(\"" ++ key ++ "\");")
+             , key
+                |> byKey
+                |> Attr.id
+             , A11y_Aria.describedBy [ by key ]
+             ]
+                |> List.append attr
+            )
+            [ braces key ]
+        ]
 
 
 block : (Markdown -> Html msg) -> Model -> Html msg
@@ -26,7 +35,7 @@ block fn model =
             def =
                 definition fn
         in
-        model
+        [ model
             |> toList
             |> List.map def
             |> Html.table
@@ -40,6 +49,8 @@ block fn model =
                 , Attr.style "transform-origin" "0 50%"
                 , Attr.align "left"
                 ]
+        ]
+            |> Html.footer []
 
 
 definition : (Markdown -> Html msg) -> ( String, List Markdown ) -> Html msg
@@ -49,7 +60,7 @@ definition fn ( key, val ) =
             [ Attr.attribute "valign" "top"
             , Attr.style "padding-right" "10px"
             ]
-            [ Html.p [] [ braces key ] ]
+            [ Html.p [ Attr.id <| by key ] [ braces key ] ]
         , Html.td
             [ Attr.attribute "valign" "top" ]
             (List.map fn val)
@@ -59,3 +70,13 @@ definition fn ( key, val ) =
 braces : String -> Html msg
 braces key =
     Html.text ("[" ++ key ++ "]")
+
+
+by : String -> String
+by =
+    (++) "footnote-"
+
+
+byKey : String -> String
+byKey =
+    (++) "key-" >> by

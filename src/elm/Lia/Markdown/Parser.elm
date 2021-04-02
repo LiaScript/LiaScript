@@ -6,6 +6,7 @@ import Combine
         , andMap
         , andThen
         , choice
+        , fail
         , ignore
         , keep
         , lazy
@@ -36,7 +37,7 @@ import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Footnote.Parser as Footnote
 import Lia.Markdown.HTML.Attributes as Attributes exposing (Parameters)
 import Lia.Markdown.HTML.Parser as HTML
-import Lia.Markdown.Inline.Parser exposing (combine, comment, line, lineWithProblems)
+import Lia.Markdown.Inline.Parser exposing (combine, comment, line, lineWithProblems, mediaReference)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Parser as Quiz
@@ -121,6 +122,9 @@ elements =
             |> andMap (HTML.parse blocks)
             |> ignore (regex "[ \t]*\n")
         , md_annotations
+            |> map Gallery
+            |> andMap gallery
+        , md_annotations
             |> map Paragraph
             |> andMap paragraph
         , md_annotations
@@ -130,6 +134,24 @@ elements =
         --, comments
         --    |> onsuccess Skip
         ]
+
+
+gallery : Parser Context Inlines
+gallery =
+    regex "[ \t]*"
+        |> keep mediaReference
+        |> many1
+        |> ignore newline
+        |> many1
+        |> map List.concat
+        |> andThen
+            (\list ->
+                if List.length list > 1 then
+                    succeed list
+
+                else
+                    fail "not a gallery"
+            )
 
 
 to_comment : ( Parameters, ( Int, Int ) ) -> Parser Context Markdown
@@ -332,8 +354,28 @@ quote =
     map Quote md_annotations
         |> ignore (regex "> ?")
         |> ignore (Indent.push "> ?")
-        |> andMap (sepBy (many (Indent.check |> ignore (string "\n"))) blocks)
+        |> andMap
+            (sepBy (many (Indent.check |> ignore (string "\n"))) blocks
+                |> andThen checkCitation
+            )
         |> ignore Indent.pop
+
+
+checkCitation mds =
+    succeed <|
+        case List.reverse mds of
+            [ _ ] ->
+                ( mds, Nothing )
+
+            (Paragraph pAttr ((Chars chars cAttr) :: list)) :: tail ->
+                if String.startsWith "--" chars then
+                    ( List.reverse tail, Just <| ( pAttr, Chars (String.dropLeft 2 chars) cAttr :: list ) )
+
+                else
+                    ( mds, Nothing )
+
+            _ ->
+                ( mds, Nothing )
 
 
 

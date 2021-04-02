@@ -11,7 +11,7 @@ import Lia.Definition.Types as Definition exposing (Definition, Resource(..))
 import Lia.Index.Model as Index
 import Lia.Section exposing (Sections)
 import Lia.Settings.Json
-import Lia.Settings.Model as Settings
+import Lia.Settings.Types as Settings exposing (Settings)
 import Port.Event exposing (Event)
 import Translations
 
@@ -67,7 +67,7 @@ type alias Model =
     , readme : String
     , origin : String
     , title : String
-    , settings : Settings.Model
+    , settings : Settings
     , error : Maybe String
     , sections : Sections
     , section_active : Int
@@ -77,8 +77,11 @@ type alias Model =
     , resource : List Resource
     , to_do : List Event
     , translation : Translations.Lang
+    , langCode : String
+    , langCodeOriginal : String
     , search_index : String -> String
     , backup : Dict String String
+    , media : Dict String ( Int, Int )
     }
 
 
@@ -98,11 +101,11 @@ type alias Model =
     active section (defaults to 1)
 
 -}
-init : Bool -> JE.Value -> String -> String -> String -> Maybe String -> Model
-init openTOC settings url readme origin anchor =
+init : Bool -> Bool -> JE.Value -> String -> String -> String -> Maybe String -> Model
+init hasShareApi openTOC settings url readme origin anchor =
     let
         default =
-            Settings.init Settings.Presentation
+            Settings.init hasShareApi Settings.Presentation
     in
     { url = url
     , readme = readme
@@ -122,8 +125,11 @@ init openTOC settings url readme origin anchor =
     , resource = []
     , to_do = []
     , translation = Translations.En
+    , langCode = "en"
+    , langCodeOriginal = "en"
     , search_index = identity
     , backup = Dict.empty
+    , media = Dict.empty
     }
 
 

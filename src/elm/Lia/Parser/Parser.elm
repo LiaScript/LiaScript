@@ -109,7 +109,7 @@ parse_subsection code =
                         SubSection
                             { body = es
                             , error = Nothing
-                            , code_vector = state.code_vector
+                            , code_model = state.code_model
                             , task_vector = state.task_vector
                             , quiz_vector = state.quiz_vector
                             , survey_vector = state.survey_vector
@@ -129,7 +129,7 @@ return sec state es =
         { sec
             | body = es
             , error = Nothing
-            , code_vector = state.code_vector
+            , code_model = state.code_model
             , task_vector = state.task_vector
             , quiz_vector = state.quiz_vector
             , survey_vector = state.survey_vector

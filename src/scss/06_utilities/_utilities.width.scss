@@ -1,0 +1,25 @@
+.max-w-0 {
+  max-width: 0;
+}
+
+.max-w-full {
+  max-width: 100%;
+}
+
+.max-w-50 {
+  max-width: 25%;
+}
+
+.max-w-50 {
+  max-width: 50%;
+}
+
+.max-w-75 {
+  max-width: 75%;
+}
+
+@each $bp, $bp-value in $global-breakpoints {
+  .max-w-#{$bp} {
+    max-width: #{$bp-value - calc-em(1, 16)};
+  }
+}

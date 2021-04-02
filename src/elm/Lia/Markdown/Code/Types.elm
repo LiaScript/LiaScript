@@ -1,11 +1,13 @@
 module Lia.Markdown.Code.Types exposing
     ( Code(..)
     , File
+    , Model
     , Project
     , Repo
     , Snippet
     , Vector
     , Version
+    , init
     , initProject
     , loadVersion
     , updateVersion
@@ -31,6 +33,12 @@ type alias Repo =
     Dict Hash String
 
 
+type alias Model =
+    { evaluate : Vector
+    , highlight : Vector
+    }
+
+
 type alias Vector =
     Array Project
 
@@ -45,7 +53,6 @@ type alias Project =
     , log : Log
     , running : Bool
     , terminal : Maybe Terminal
-    , compact_view : Bool
     , attr : List Parameters
     }
 
@@ -68,24 +75,30 @@ type alias Snippet =
 
 
 type Code
-    = Highlight (List Snippet)
+    = Highlight Int
     | Evaluate Int
 
 
-toFile : ( Snippet, Bool ) -> ( Parameters, File )
-toFile ( { attr, lang, name, code }, visible ) =
-    ( attr, File lang name code visible False )
+{-| Initialize an empty code model with two empty Arrays.
+-}
+init =
+    Model Array.empty Array.empty
 
 
-initProject : Array ( Snippet, Bool ) -> String -> Log -> Project
-initProject array comment output =
+toFile : Bool -> ( Snippet, Bool ) -> ( Parameters, File )
+toFile fullscreen ( { attr, lang, name, code }, visible ) =
+    ( attr, File lang name code visible fullscreen )
+
+
+initProject : Bool -> Array ( Snippet, Bool ) -> String -> Log -> Project
+initProject fullscreen array comment output =
     let
         ( attr, files ) =
             Array.foldl
                 (\s ( a, f ) ->
                     let
                         ( a_, f_ ) =
-                            toFile s
+                            toFile fullscreen s
                     in
                     ( List.append a [ a_ ]
                     , Array.push f_ f
@@ -109,7 +122,6 @@ initProject array comment output =
     , running = False
     , terminal = Nothing
     , repository = Dict.fromList repository
-    , compact_view = False
     }
 
 

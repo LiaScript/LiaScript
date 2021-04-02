@@ -25,155 +25,167 @@ import Html.Attributes as Attr
 import Json.Encode as JE
 import Lia.Markdown.Chart.Types exposing (Chart, Diagram(..), Labels)
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
+import Maybe
+import Translations exposing (Lang, getCodeFromLn)
 
 
-view : Parameters -> Bool -> Chart -> Html msg
-view attr light =
-    encode True >> eCharts attr light Nothing
+view : Lang -> Parameters -> Bool -> Chart -> Html msg
+view lang attr light =
+    encode True >> eCharts lang attr light Nothing
 
 
-viewChart : Parameters -> Bool -> Chart -> Html msg
-viewChart attr light =
-    encode False >> eCharts attr light Nothing
+viewChart : Lang -> Parameters -> Bool -> Chart -> Html msg
+viewChart lang attr light =
+    encode False >> eCharts lang attr light Nothing
 
 
 viewLines :
-    Parameters
+    Lang
+    -> Parameters
     -> Bool
     -> Labels
     -> List String
     -> List ( String, List (Maybe Float) )
     -> Html msg
-viewLines attr light labels category data =
+viewLines lang attr light labels category data =
     encodeBasic "line" labels category data
-        |> eCharts attr light Nothing
+        |> eCharts lang attr light Nothing
 
 
 viewPoints :
-    Parameters
+    Lang
+    -> Parameters
     -> Bool
     -> Labels
     -> List String
     -> List ( String, List (Maybe Float) )
     -> Html msg
-viewPoints attr light labels category data =
+viewPoints lang attr light labels category data =
     encodeBasic "scatter" labels category data
-        |> eCharts attr light Nothing
+        |> eCharts lang attr light Nothing
 
 
 viewBarChart :
-    Parameters
+    Lang
+    -> Parameters
     -> Bool
     -> Labels
     -> List String
     -> List ( Maybe String, List (Maybe Float) )
     -> Html msg
-viewBarChart attr light labels category data =
+viewBarChart lang attr light labels category data =
     encodeBarChart labels category data
-        |> eCharts attr light Nothing
+        |> eCharts lang attr light Nothing
 
 
 viewBoxPlot :
-    Parameters
+    Lang
+    -> Parameters
     -> Bool
     -> Labels
     -> List String
     -> List (List (Maybe Float))
     -> Html msg
-viewBoxPlot attr light labels category data =
+viewBoxPlot lang attr light labels category data =
     encodeBoxPlot labels category data
-        |> eCharts attr light Nothing
+        |> eCharts lang attr light Nothing
 
 
 viewParallel :
-    Parameters
+    Lang
+    -> Parameters
     -> Bool
     -> Labels
     -> List String
     -> List (List (Maybe Float))
     -> Html msg
-viewParallel attr light labels category data =
+viewParallel lang attr light labels category data =
     encodeParallel labels category data
-        |> eCharts attr light Nothing
+        |> eCharts lang attr light Nothing
 
 
 viewGraph :
-    Parameters
+    Lang
+    -> Parameters
     -> Bool
     -> Labels
     -> List String
     -> List ( String, String, Float )
     -> Html msg
-viewGraph attr light labels nodes edges =
+viewGraph lang attr light labels nodes edges =
     encodeGraph labels nodes edges
-        |> eCharts attr light Nothing
+        |> eCharts lang attr light Nothing
 
 
 viewSankey :
-    Parameters
+    Lang
+    -> Parameters
     -> Bool
     -> Labels
     -> List String
     -> List ( String, String, Float )
     -> Html msg
-viewSankey attr light labels nodes edges =
+viewSankey lang attr light labels nodes edges =
     encodeSankey labels nodes edges
-        |> eCharts attr light Nothing
+        |> eCharts lang attr light Nothing
 
 
-viewRadarChart : Parameters -> Bool -> Labels -> List String -> List ( String, List (Maybe Float) ) -> Html msg
-viewRadarChart attr light labels category data =
+viewRadarChart : Lang -> Parameters -> Bool -> Labels -> List String -> List ( String, List (Maybe Float) ) -> Html msg
+viewRadarChart lang attr light labels category data =
     encodeRadarChart labels category data
-        |> eCharts attr light Nothing
+        |> eCharts lang attr light Nothing
 
 
-viewMapChart : Parameters -> Bool -> Labels -> List ( String, Maybe Float ) -> Maybe String -> Html msg
-viewMapChart attr light labels data json =
+viewMapChart : Lang -> Parameters -> Bool -> Labels -> List ( String, Maybe Float ) -> Maybe String -> Html msg
+viewMapChart lang attr light labels data json =
     encodeMapChart labels data json
-        |> eCharts attr light json
+        |> eCharts lang attr light json
 
 
 viewPieChart :
-    Int
+    Lang
+    -> Int
     -> Parameters
     -> Bool
     -> Labels
     -> Maybe (List String)
     -> List (List ( String, Float ))
     -> Html msg
-viewPieChart width attr light labels subtitle data =
+viewPieChart lang width attr light labels subtitle data =
     encodePieChart width labels subtitle data
-        |> eCharts attr light Nothing
+        |> eCharts lang attr light Nothing
 
 
 viewFunnel :
-    Int
+    Lang
+    -> Int
     -> Parameters
     -> Bool
     -> Labels
     -> Maybe (List String)
     -> List (List ( String, Float ))
     -> Html msg
-viewFunnel _ attr light labels subtitle data =
+viewFunnel lang _ attr light labels subtitle data =
     encodeFunnel labels subtitle data
-        |> eCharts attr light Nothing
+        |> eCharts lang attr light Nothing
 
 
 viewHeatMap :
-    Parameters
+    Lang
+    -> Parameters
     -> Bool
     -> Labels
     -> List String
     -> List String
     -> List (List ( Int, Int, Maybe Float ))
     -> Html msg
-viewHeatMap attr light labels x y data =
+viewHeatMap lang attr light labels x y data =
     encodeHeatMap labels x y data
-        |> eCharts attr light Nothing
+        |> eCharts lang attr light Nothing
 
 
-eCharts : Parameters -> Bool -> Maybe String -> JE.Value -> Html msg
-eCharts attr light json option =
+eCharts : Lang -> Parameters -> Bool -> Maybe String -> JE.Value -> Html msg
+eCharts lang attr light json option =
     Html.node "lia-chart"
         (List.append
             [ Attr.attribute "mode" <|
@@ -182,12 +194,15 @@ eCharts attr light json option =
 
                 else
                     "dark"
+            , Attr.attribute "locale" (getCodeFromLn lang)
             , Attr.property "option" option
             , json
                 |> Maybe.withDefault ""
                 |> Attr.attribute "json"
             ]
-            (annotation "lia-chart" attr)
+            (attr
+                |> annotation "lia-chart"
+            )
         )
         []
 
@@ -547,50 +562,42 @@ encodeBarChart labels category data =
                     []
                 |> JE.list identity
     in
-    JE.object
-        [ ( "xAxis"
-          , JE.object
-                ([ ( "type", JE.string "category" )
-
-                 --, ( "name", JE.string xLabel )
-                 , ( "data"
-                   , category
-                        |> JE.list JE.string
-                   )
-                 ]
-                    ++ (labels.x
-                            |> Maybe.map (\title -> [ ( "name", JE.string title ) ])
-                            |> Maybe.withDefault []
-                       )
-                )
+    [ ( "xAxis"
+      , JE.object
+            ([ ( "type", JE.string "category" )
+             , ( "data", category |> JE.list JE.string )
+             ]
+                |> CList.addWhen (labels.x |> Maybe.map (\title -> ( "name", JE.string title )))
+            )
+      )
+    , yAxis "value" labels.y []
+    , grid
+    , ( "legend"
+      , [ ( "data"
+          , data
+                |> List.unzip
+                |> Tuple.first
+                |> List.filterMap identity
+                |> JE.list JE.string
           )
-        , yAxis "value" labels.y []
-        , grid
-
-        --, ( "title", JE.object [ ( "text", JE.string chart.title ) ] )
-        , ( "legend"
-          , JE.object
-                [ ( "data"
-                  , data
-                        |> List.unzip
-                        |> Tuple.first
-                        |> List.filterMap identity
-                        |> JE.list JE.string
-                  )
-                ]
-          )
-        , toolbox Nothing
-            { saveAsImage = True
-            , dataView = True
-            , dataZoom = True
-            , magicType = True
-            , restore = False
-            }
-
-        --  , brush
-        , ( "tooltip", JE.object [] )
-        , ( "series", bars )
         ]
+            |> CList.addIf (labels.main /= Nothing) ( "top", JE.string "30px" )
+            |> JE.object
+      )
+    , toolbox Nothing
+        { saveAsImage = True
+        , dataView = True
+        , dataZoom = True
+        , magicType = True
+        , restore = False
+        }
+
+    --  , brush
+    , ( "tooltip", JE.object [] )
+    , ( "series", bars )
+    ]
+        |> add (encodeTitle Nothing) labels.main
+        |> JE.object
 
 
 grid : ( String, JE.Value )
@@ -1548,29 +1555,13 @@ toolbox position config =
         , ( "feature"
           , []
                 |> CList.addIf config.saveAsImage
-                    ( "saveAsImage"
-                    , JE.object [ ( "title", JE.string "store" ) ]
-                    )
+                    ( "saveAsImage", JE.object [] )
                 |> CList.addIf config.restore
                     ( "restore", JE.object [] )
                 |> CList.addIf config.dataView
-                    ( "dataView"
-                    , JE.object
-                        [ ( "title", JE.string "edit" )
-                        , ( "lang", JE.list JE.string [ "data view", "turn off", "refresh" ] )
-                        ]
-                    )
+                    ( "dataView", JE.object [] )
                 |> CList.addIf config.dataZoom
-                    ( "dataZoom"
-                    , JE.object
-                        [ ( "title"
-                          , JE.object
-                                [ ( "zoom", JE.string "zoom" )
-                                , ( "back", JE.string "back" )
-                                ]
-                          )
-                        ]
-                    )
+                    ( "dataZoom", JE.object [] )
                 |> CList.addIf config.magicType
                     ( "magicType"
                     , JE.object
@@ -1579,14 +1570,6 @@ toolbox position config =
                                 [ "tiled"
                                 , "line"
                                 , "bar"
-                                ]
-                          )
-                        , ( "title"
-                          , JE.object
-                                [ ( "stack", JE.string "stack" )
-                                , ( "tiled", JE.string "tiled" )
-                                , ( "line", JE.string "line" )
-                                , ( "bar", JE.string "bar" )
                                 ]
                           )
                         ]

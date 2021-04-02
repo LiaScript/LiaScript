@@ -1,27 +1,26 @@
 interface Response {
-  height?: number;
-  width?: number;
-  html: any;
+  height?: number
+  width?: number
+  html: any
 }
-
 
 customElements.define(
   'oembed-element',
   class extends HTMLElement {
     connectedCallback() {
       let shadow = this.attachShadow({
-        mode: 'closed'
+        mode: 'closed',
       })
       const urlAttr = this.getAttribute('url')
       if (urlAttr) {
         renderOembed(shadow, urlAttr, {
           maxwidth: this.getAttribute('maxwidth'),
-          maxheight: this.getAttribute('maxheight')
+          maxheight: this.getAttribute('maxheight'),
         })
       } else {
         const discoverUrl = this.getAttribute('discover-url')
         if (discoverUrl) {
-          getDiscoverUrl(discoverUrl, function(discoveredUrl: string | null) {
+          getDiscoverUrl(discoverUrl, function (discoveredUrl: string | null) {
             if (discoveredUrl) {
               renderOembed(shadow, discoveredUrl, null)
             }
@@ -29,15 +28,16 @@ customElements.define(
         }
       }
     }
-  }
+  },
 )
 
 function renderOembed(
   shadow: ShadowRoot,
   urlToEmbed: string,
-  options: { maxwidth?: string | null; maxheight?: string | null } | null) {
+  options: { maxwidth?: string | null; maxheight?: string | null } | null,
+) {
   let apiUrlBuilder = new URL(
-    `https://cors-anywhere.herokuapp.com/${urlToEmbed}`
+    `https://cors-anywhere.herokuapp.com/${urlToEmbed}`,
   )
   if (options && options.maxwidth) {
     apiUrlBuilder.searchParams.set('maxwidth', options.maxwidth)
@@ -62,7 +62,7 @@ function renderOembed(
         if (options) {
           img.setAttribute(
             'style',
-            `max-width: ${options.maxwidth}px; max-height: ${options.maxheight}px;`
+            `max-width: ${options.maxwidth}px; max-height: ${options.maxheight}px;`,
           )
         }
         shadow.appendChild(img)
@@ -73,10 +73,7 @@ function renderOembed(
   })
 }
 
-function tryRenderingHtml(
-  shadow: ShadowRoot,
-  response: Response
-) {
+function tryRenderingHtml(shadow: ShadowRoot, response: Response) {
   if (response && typeof response.html) {
     let iframe = createIframe(response)
     shadow.appendChild(iframe)
@@ -86,14 +83,14 @@ function tryRenderingHtml(
         refetchedIframe.setAttribute(
           'height',
           // @ts-ignore
-          (iframe.contentWindow.document.body.scrollHeight + 10).toString()
+          (iframe.contentWindow.document.body.scrollHeight + 10).toString(),
         )
       }
       if (refetchedIframe && !response.width) {
         refetchedIframe.setAttribute(
           'width',
           // @ts-ignore
-          (iframe.contentWindow.document.body.scrollWidth + 10).toString()
+          (iframe.contentWindow.document.body.scrollWidth + 10).toString(),
         )
       }
     }, 1000)
@@ -111,22 +108,24 @@ function createIframe(response: Response): HTMLIFrameElement {
   return iframe
 }
 
-function getDiscoverUrl(url: string, callback: (discoveredUrl: string | null) => void) {
+function getDiscoverUrl(
+  url: string,
+  callback: (discoveredUrl: string | null) => void,
+) {
   let apiUrl = new URL(`https://cors-anywhere.herokuapp.com/${url}`).toString()
-  httpGetAsync(apiUrl, function(response: string) {
+  httpGetAsync(apiUrl, function (response: string) {
     let dom = document.createElement('html')
     dom.innerHTML = response
     const oembedTag: HTMLLinkElement | null = dom.querySelector(
-      'link[type="application/json+oembed"]'
+      'link[type="application/json+oembed"]',
     )
     callback(oembedTag ? oembedTag.href : null)
   })
 }
 
-
 function httpGetAsync(theUrl: string, callback: (rawResponse: string) => void) {
   let xmlHttp = new XMLHttpRequest()
-  xmlHttp.onreadystatechange = function() {
+  xmlHttp.onreadystatechange = function () {
     if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
       callback(xmlHttp.responseText)
     }

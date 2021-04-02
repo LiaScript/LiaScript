@@ -32,7 +32,8 @@ import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Model exposing (loadResource)
 import Lia.Parser.Parser as Parser
 import Lia.Section as Section exposing (Section, Sections)
-import Lia.Settings.Model exposing (Mode(..))
+import Lia.Settings.Types exposing (Mode(..))
+import Lia.Settings.Update as Settings
 import Lia.Update exposing (Msg(..))
 import Lia.View
 import Port.Event exposing (Event)
@@ -121,6 +122,7 @@ load_first_slide session model =
                 (Json.encode model
                     |> Event "init" model.section_active
                 )
+                    :: Settings.customizeEvent model.settings
                     :: model.to_do
         }
 
@@ -253,7 +255,12 @@ init_script model script =
             in
             ( { model
                 | definition = { definition | attributes = [] }
-                , translation = Translations.getLnFromCode definition.language
+                , translation =
+                    definition.language
+                        |> Translations.getLnFromCode
+                        |> Maybe.withDefault Translations.En
+                , langCode = definition.language
+                , langCodeOriginal = definition.language
                 , settings =
                     { settings
                         | light =
@@ -262,6 +269,7 @@ init_script model script =
                         , mode =
                             definition.mode
                                 |> Maybe.withDefault settings.mode
+                        , customTheme = Dict.get "custom" definition.macro
                     }
               }
                 |> add_todos definition
@@ -344,14 +352,14 @@ searchIndex index str =
 
 {-| Alias for model initialization defined by `Lia.Model.int`
 -}
-init : Bool -> JE.Value -> String -> String -> String -> Maybe String -> Model
+init : Bool -> Bool -> JE.Value -> String -> String -> String -> Maybe String -> Model
 init =
     Lia.Model.init
 
 
 {-| Alias for global LiaScript view defined in `Lia.View.view`
 -}
-view : Screen -> Bool -> Bool -> Model -> Html Msg
+view : Screen -> Bool -> Model -> Html Msg
 view =
     Lia.View.view
 

@@ -1,0 +1,425 @@
+.lia-input {
+  max-width: 100%;
+  width: 100%;
+
+  &.is-failure {
+    border-color: rgb(var(--lia-red));
+  }
+
+  &.is-warning {
+    border-color: rgb(var(--lia-yellow));
+  }
+
+  &.is-success {
+    border-color: rgb(var(--lia-success));
+  }
+
+  &.is-disabled {
+    border-color: rgb(var(--lia-grey));
+  }
+}
+
+/* clears the 'X' from Internet Explorer */
+input[type="search"]::-ms-clear {
+  display: none;
+  width: 0;
+  height: 0;
+}
+input[type="search"]::-ms-reveal {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* clears the 'X' from Chrome */
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+  display: none;
+}
+
+/* --------------------------------------------------
+   Form-Check (Radiobutton & Checkbox Wrapper)
+   -------------------------------------------------- */
+
+.lia-form-check {
+  display: flex;
+  align-items: center;
+}
+
+.lia-form-check .lia-checkbox {
+  margin-right: 0.75rem;
+}
+
+/* --------------------------------------------------
+   Shared Attributes of Radiobutton & Checkbox 
+   -------------------------------------------------- */
+
+.lia-checkbox[type="checkbox"],
+.lia-radio[type="radio"] {
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  -webkit-print-color-adjust: exact;
+  appearance: none;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  border: 1px solid rgb(var(--color-highlight));
+  color-adjust: exact;
+  cursor: pointer;
+  height: 2.4rem;
+  position: relative;
+  transition: all 125ms ease-in-out;
+  vertical-align: middle;
+  width: 2.4rem;
+
+  &.is-failure {
+    border-color: rgb(var(--lia-red));
+  }
+
+  &.is-warning {
+    border-color: rgb(var(--lia-yellow));
+  }
+
+  &.is-success,
+  &.is-success[disabled]:checked {
+    border-color: rgb(var(--lia-success));
+  }
+
+  &.is-disabled {
+    border-color: rgb(var(--lia-grey));
+  }
+}
+
+/* --------------------------------------------------
+   Checkbox
+   -------------------------------------------------- */
+
+.lia-checkbox[type="checkbox"] {
+  border-radius: $global-radius;
+
+  &:after {
+    color: white;
+    content: "\EA08";
+    font-family: "icon";
+    left: 50%;
+    opacity: 0;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  &:checked {
+    background-color: rgb(var(--color-highlight));
+    &:after {
+      opacity: 1;
+    }
+  }
+
+  &.is-turquoise {
+    background-color: rgb(var(--lia-turquoise));
+    border-color: rgb(var(--lia-turquoise));
+  }
+
+  &.is-red {
+    background-color: rgb(var(--lia-red));
+    border-color: rgb(var(--lia-red));
+  }
+
+  &.is-blue {
+    background-color: rgb(var(--lia-blue));
+    border-color: rgb(var(--lia-blue));
+  }
+
+  &.is-yellow {
+    background-color: rgb(var(--lia-yellow));
+    border-color: rgb(var(--lia-yellow));
+  }
+
+  &[disabled] {
+    border-color: rgb(var(--lia-grey));
+
+    &:checked {
+      background-color: rgb(var(--lia-grey));
+      border-color: rgb(var(--lia-grey));
+    }
+  }
+
+  &.is-success[disabled]:checked {
+    background-color: rgb(var(--lia-success));
+  }
+
+  &.is-failure:checked {
+    background-color: rgb(var(--lia-red));
+  }
+}
+
+/* --------------------------------------------------
+   Radiobutton
+   -------------------------------------------------- */
+
+.lia-radio[type="radio"] {
+  border-radius: 100%;
+
+  &:checked {
+    border: 0.8rem solid rgb(var(--color-highlight));
+  }
+
+  &.is-red {
+    border-color: rgb(var(--lia-turquoise));
+
+    &:checked {
+      border-color: rgb(var(--lia-turquoise));
+    }
+  }
+
+  &.is-blue {
+    border-color: rgb(var(--lia-blue));
+
+    &:checked {
+      border-color: rgb(var(--lia-blue));
+    }
+  }
+
+  &.is-yellow {
+    border-color: rgb(var(--lia-yellow));
+
+    &:checked {
+      border-color: rgb(var(--lia-yellow));
+    }
+  }
+
+  &[disabled] {
+    border-color: rgb(var(--lia-grey));
+
+    &:checked {
+      border-color: rgb(var(--lia-grey));
+    }
+  }
+
+  &.is-failure:checked {
+    border-color: rgb(var(--lia-red));
+  }
+}
+
+/* --------------------------------------------------
+   Radiobutton Group
+   -------------------------------------------------- */
+.lia-radio-group {
+  // custom styling for submenu theme color picker
+  &.lia-settings-theme-colors {
+    margin-left: 0.4rem;
+    display: flex;
+    padding: 0.4rem 0;
+
+    > *:not(:last-child) {
+      margin-right: 0.75rem;
+    }
+
+    .lia-radio[type="radio"] {
+      height: 1.8rem;
+      width: 1.8rem;
+      border: none;
+      background-color: rgb(var(--lia-grey-light));
+
+      &.is-turquoise {
+        background-color: rgb(var(--lia-turquoise));
+      }
+
+      &.is-red {
+        background-color: rgb(var(--lia-red));
+      }
+
+      &.is-blue {
+        background-color: rgb(var(--lia-blue));
+      }
+
+      &.is-yellow {
+        background-color: rgb(var(--lia-yellow));
+      }
+
+      &.is-custom {
+        background: linear-gradient(
+          to right,
+          rgb(var(--lia-blue)),
+          rgb(var(--lia-red))
+        );
+      }
+
+      &:checked {
+        &:before {
+          content: "";
+          border-radius: 100%;
+          border: 1px solid black;
+          height: 2.4rem;
+          left: 50%;
+          position: absolute;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          width: 2.4rem;
+
+          @at-root html.lia-variant-dark & {
+            border-color: rgb(var(--lia-white));
+          }
+        }
+      }
+    }
+  }
+}
+
+/* --------------------------------------------------
+   Range Slider
+   -------------------------------------------------- */
+
+// Inspired by Darlan Rod: https://github.com/darlanrod/input-range-sass
+
+$track-color: rgba(var(--color-highlight), 0.2) !default;
+$thumb-color: rgb(var(--color-highlight)) !default;
+
+$thumb-radius: 8px !default;
+$thumb-height: 16px !default;
+$thumb-width: 16px !default;
+$thumb-shadow-size: 0px !default;
+$thumb-shadow-blur: 10px !default;
+$thumb-shadow-color: rgba(0, 0, 0, 0.1) !default;
+$thumb-border-width: 4px !default;
+$thumb-border-color: rgb(var(--lia-white)) !default;
+
+$track-width: 100% !default;
+$track-height: 3px !default;
+$track-shadow-size: 1px !default;
+$track-shadow-blur: 1px !default;
+$track-shadow-color: rgba(0, 0, 0, 0.2) !default;
+$track-border-width: 2px !default;
+$track-border-color: rgb(var(--lia-white)) !default;
+
+$track-radius: 5px !default;
+$contrast: 5% !default;
+
+$ie-bottom-track-color: rgb(var(--color-highlight)) !default;
+
+@mixin shadow($shadow-size, $shadow-blur, $shadow-color) {
+  box-shadow: $shadow-size $shadow-size $shadow-blur $shadow-color,
+    0 0 $shadow-size lighten($shadow-color, 5%);
+}
+
+@mixin track {
+  cursor: default;
+  height: $track-height;
+  transition: all 0.2s ease;
+  width: $track-width;
+}
+
+@mixin thumb {
+  @include shadow($thumb-shadow-size, $thumb-shadow-blur, $thumb-shadow-color);
+  background: $thumb-color;
+  border: $thumb-border-width solid $thumb-border-color;
+  border-radius: $thumb-radius;
+  box-sizing: border-box;
+  cursor: grab;
+  height: $thumb-height;
+  width: $thumb-width;
+}
+
+[type="range"],
+.lia-range {
+  -webkit-appearance: none;
+  background: transparent;
+  //margin: $thumb-height / 2 0;
+  width: $track-width;
+
+  &::-moz-focus-outer {
+    border: 0;
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+
+  &:focus {
+    outline: 0;
+
+    &::-webkit-slider-runnable-track {
+      background: rgb(var(--color-highlight));
+    }
+
+    &::-ms-fill-lower {
+      background: $track-color;
+    }
+
+    &::-ms-fill-upper {
+      background: rgb(var(--color-highlight));
+    }
+  }
+
+  &::-webkit-slider-runnable-track {
+    @include track;
+    background: $track-color;
+    border-radius: $global-radius;
+  }
+
+  &::-webkit-slider-thumb {
+    @include thumb;
+    -webkit-appearance: none;
+    margin-top: -($thumb-height / 2);
+  }
+
+  &::-moz-range-track {
+    @include track;
+    background: $track-color;
+    border: $track-border-width solid $track-border-color;
+    border-radius: $track-radius;
+    height: $track-height / 2;
+  }
+
+  &::-moz-range-thumb {
+    @include thumb;
+  }
+
+  &::-ms-track {
+    @include track;
+    background: transparent;
+    border-color: transparent;
+    border-width: ($thumb-height / 2) 0;
+    color: transparent;
+  }
+
+  &::-ms-fill-lower {
+    @include shadow(
+      $track-shadow-size,
+      $track-shadow-blur,
+      $track-shadow-color
+    );
+    background: $ie-bottom-track-color;
+    border: $track-border-width solid $track-border-color;
+    border-radius: ($track-radius * 2);
+  }
+
+  &::-ms-fill-upper {
+    @include shadow(
+      $track-shadow-size,
+      $track-shadow-blur,
+      $track-shadow-color
+    );
+    background: $track-color;
+    border: $track-border-width solid $track-border-color;
+    border-radius: ($track-radius * 2);
+  }
+
+  &::-ms-thumb {
+    @include thumb;
+    margin-top: $track-height / 4;
+  }
+
+  &:disabled {
+    &::-webkit-slider-thumb,
+    &::-moz-range-thumb,
+    &::-ms-thumb,
+    &::-webkit-slider-runnable-track,
+    &::-ms-fill-lower,
+    &::-ms-fill-upper {
+      cursor: not-allowed;
+    }
+  }
+}

@@ -1,0 +1,70 @@
+/* --------------------------------------------------
+   Headline Settings
+   -------------------------------------------------- */
+
+/*
+ * TODO: h1 für Darstellungsmodi (Presentation, Slides, Textbook) anpassen  
+ */
+$h1-desktop-presentation: 4rem;
+$h1-desktop-slide: 4rem;
+$h1-desktop-textbook: 3.7rem;
+$h1-mobile: 2.3rem;
+
+$h2-desktop: 2.9rem;
+$h2-mobile: 2rem;
+
+$h3-desktop: 2.3rem;
+$h3-mobile: 1.8rem;
+
+$h4-desktop: 1.6rem;
+$h4-mobile: 1.6rem;
+
+/* --------------------------------------------------
+   Headlines
+   -------------------------------------------------- */
+
+h1,
+h2,
+h3 {
+  font-family: $global-font-headline;
+  line-height: $global-line-height;
+}
+
+h4,
+h5 {
+  font-family: $global-font-family;
+  line-height: 1.38;
+}
+
+h1 {
+  font-size: $h1-mobile;
+
+  @include breakpoint("md") {
+    font-size: $h1-desktop-presentation;
+
+    @at-root .lia-mode--textbook & {
+      font-size: $h1-desktop-textbook;
+    }
+  }
+}
+
+h2 {
+  font-size: $h2-mobile;
+
+  @include breakpoint("md") {
+    font-size: $h2-desktop;
+  }
+}
+
+h3 {
+  font-size: $h3-mobile;
+
+  @include breakpoint("md") {
+    font-size: $h3-desktop;
+  }
+}
+
+h4,
+h5 {
+  font-size: $h4-mobile;
+}

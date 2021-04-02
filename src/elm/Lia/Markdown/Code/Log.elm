@@ -6,6 +6,7 @@ module Lia.Markdown.Code.Log exposing
     , decoder
     , empty
     , encode
+    , isEmpty
     , length
     , view
     )
@@ -45,6 +46,11 @@ empty =
     Log True Debug Array.empty []
 
 
+isEmpty : Log -> Bool
+isEmpty =
+    .messages >> Array.isEmpty
+
+
 view : Log -> List ( String, Html msg )
 view log =
     log.messages
@@ -57,19 +63,19 @@ view_message { level, text } =
     ( text
     , case level of
         Debug ->
-            Html.span [ Attr.style "color" "lightblue" ] [ Html.text text ]
+            Html.span [ Attr.class "text-debug" ] [ Html.text text ]
 
         Info ->
-            Html.span [ Attr.style "color" "white" ] [ Html.text text ]
+            Html.span [ Attr.class "text-info" ] [ Html.text text ]
 
         Warn ->
-            Html.span [ Attr.style "color" "yellow" ] [ Html.text text ]
+            Html.span [ Attr.class "text-warning" ] [ Html.text text ]
 
         Error ->
-            Html.span [ Attr.style "color" "red" ] [ Html.text text ]
+            Html.span [ Attr.class "text-error" ] [ Html.text text ]
 
         HTML ->
-            Html.div [ Attr.property "innerHTML" <| JE.string text ] []
+            Html.div [ Attr.class "text-info", Attr.property "innerHTML" <| JE.string text ] []
     )
 
 
