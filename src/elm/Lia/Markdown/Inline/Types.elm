@@ -37,7 +37,6 @@ type Inline
     | Script Int Parameters
     | IHTML (Node Inline) Parameters
     | Container Inlines Parameters
-    | Goto Inline Int
 
 
 type Reference

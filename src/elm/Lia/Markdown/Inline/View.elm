@@ -105,20 +105,6 @@ view config element =
         Formula mode_ e attr ->
             view config (Container [ Formula mode_ e [] ] attr)
 
-        Goto e line ->
-            case e of
-                Goto e_ line_ ->
-                    view config (Goto e_ line_)
-
-                IHTML node attr ->
-                    HTML.view Html.span (view config) attr node
-
-                Chars " " _ ->
-                    Html.text " "
-
-                _ ->
-                    Html.span [ goto line ] [ view config e ]
-
 
 view_inf : Scripts SubSection -> Lang -> Maybe (Dict String ( Int, Int )) -> Inline -> Html (Msg sub)
 view_inf scripts lang media =

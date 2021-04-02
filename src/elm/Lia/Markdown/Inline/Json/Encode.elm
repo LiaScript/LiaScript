@@ -104,9 +104,6 @@ encInline element =
                 , ( "a", encAnnotation a )
                 ]
 
-            _ ->
-                []
-
 
 encReference : Reference -> JE.Value
 encReference ref =

@@ -71,9 +71,6 @@ inline2string effects id inline =
                 |> Maybe.andThen text
                 |> Maybe.withDefault ""
 
-        Goto inlines _ ->
-            inline2string effects id inlines
-
         _ ->
             ""
 

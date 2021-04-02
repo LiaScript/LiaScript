@@ -175,7 +175,8 @@ combine list =
 line : Parser Context Inlines
 line =
     inlines
-        |> andThen goto
+        |> map goto
+        |> andMap getLine
         |> many1
         |> map combine
 
@@ -204,20 +205,55 @@ inlines =
                         |> andMap (Macro.macro |> keep annotations)
                         |> or html
                     )
-                |> andThen goto
+                |> map goto
+                |> andMap getLine
 
 
-goto : Inline -> Parser Context Inline
-goto i =
+goto : Inline -> Int -> Inline
+goto i pos =
     case i of
-        IHTML _ _ ->
-            succeed i
+        Chars e attr ->
+            attr |> doubleClick pos |> Chars e
 
-        Script _ _ ->
-            succeed i
+        Bold e attr ->
+            attr |> doubleClick pos |> Bold e
+
+        Italic e attr ->
+            attr |> doubleClick pos |> Italic e
+
+        Underline e attr ->
+            attr |> doubleClick pos |> Underline e
+
+        Strike e attr ->
+            attr |> doubleClick pos |> Strike e
+
+        Superscript e attr ->
+            attr |> doubleClick pos |> Superscript e
+
+        Symbol e attr ->
+            attr |> doubleClick pos |> Symbol e
+
+        Formula e bool attr ->
+            attr |> doubleClick pos |> Formula e bool
+
+        Verbatim e attr ->
+            attr |> doubleClick pos |> Verbatim e
+
+        Ref e attr ->
+            attr |> doubleClick pos |> Ref e
+
+        FootnoteMark e attr ->
+            attr |> doubleClick pos |> FootnoteMark e
+
+        EInline e attr ->
+            attr |> doubleClick pos |> EInline e
 
         _ ->
-            map (Goto i) getLine
+            i
+
+
+doubleClick pos =
+    (::) ( "ondblclick", "window.liaGoto(" ++ String.fromInt pos ++ ");" )
 
 
 url : Parser s String
