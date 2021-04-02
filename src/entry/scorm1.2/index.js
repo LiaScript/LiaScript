@@ -1,3 +1,4 @@
+global._babelPolyfill = false
 import '@babel/polyfill'
 
 import LiaScript from '../../typescript/liascript/index.ts'
