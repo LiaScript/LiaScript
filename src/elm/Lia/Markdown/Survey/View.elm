@@ -19,17 +19,17 @@ view config attr survey model =
     case survey.survey of
         Text lines ->
             view_text config (get_text_state model survey.id) lines survey.id
-                |> view_survey config "text" model survey.id survey.javascript
+                |> view_survey config attr "text" model survey.id survey.javascript
 
-        --|> Html.p (annotation "lia-quiz" attr)
         Select inlines ->
             view_select config inlines (get_select_state model survey.id) survey.id
-                |> view_survey config "select" model survey.id survey.javascript
+                |> view_survey config attr "select" model survey.id survey.javascript
 
         Vector button questions ->
             vector config button (VectorUpdate survey.id) (get_vector_state model survey.id)
                 |> view_vector questions
                 |> view_survey config
+                    attr
                     (if button then
                         "single-choice"
 
@@ -44,22 +44,22 @@ view config attr survey model =
         Matrix button header vars questions ->
             matrix config button (MatrixUpdate survey.id) (get_matrix_state model survey.id) vars
                 |> view_matrix config header questions
-                |> view_survey config "matrix" model survey.id survey.javascript
+                |> view_survey config attr "matrix" model survey.id survey.javascript
 
 
 
 --|> Html.p (annotation "lia-quiz" attr)
 
 
-view_survey : Config sub -> String -> Vector -> Int -> Maybe String -> (Bool -> Html (Msg sub)) -> Html (Msg sub)
-view_survey config class model idx javascript fn =
+view_survey : Config sub -> Parameters -> String -> Vector -> Int -> Maybe String -> (Bool -> Html (Msg sub)) -> Html (Msg sub)
+view_survey config attr class model idx javascript fn =
     let
         submitted =
             get_submission_state model idx
     in
     Html.div
-        [ Attr.class <|
-            "lia-quiz lia-quiz-"
+        (annotation
+            ("lia-quiz lia-quiz-"
                 ++ class
                 ++ (if submitted then
                         ""
@@ -67,7 +67,9 @@ view_survey config class model idx javascript fn =
                     else
                         " open"
                    )
-        ]
+            )
+            attr
+        )
         [ fn submitted
         , submit_button config submitted idx javascript
         ]
