@@ -130,7 +130,7 @@ img : Config sub -> Parameters -> Inlines -> String -> Maybe Inlines -> Maybe In
 img config attr alt_ url_ title_ width =
     Html.img
         (Attr.src url_
-            :: annotation "lia-image" attr
+            :: toAttribute attr
             |> CList.addIf (width == Nothing) (load url_)
             |> CList.addWhen (title config title_)
             |> CList.addWhen (alt config alt_)
@@ -208,7 +208,7 @@ reference config ref attr =
                             (Attr.src url_
                                 :: Attr.attribute "allowfullscreen" ""
                                 :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                                :: annotation "lia-movie" attr
+                                :: toAttribute attr
                                 |> CList.addWhen (title config title_)
                                 |> CList.addWhen (alt config alt_)
                             )
@@ -218,7 +218,8 @@ reference config ref attr =
                 else
                     Html.video
                         (Attr.controls True
-                            :: annotation "lia-movie" attr
+                            :: Attr.attribute "width" "100%"
+                            :: toAttribute attr
                             |> CList.addWhen (title config title_)
                             |> CList.addWhen (alt config alt_)
                         )
