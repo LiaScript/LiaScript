@@ -31,11 +31,6 @@ viewer config =
     List.map (view config)
 
 
-goto : Int -> Attribute msg
-goto line =
-    Attr.attribute "ondblclick" ("window.liaGoto(" ++ String.fromInt line ++ ");")
-
-
 view : Config sub -> Inline -> Html (Msg sub)
 view config element =
     case element of
@@ -83,7 +78,7 @@ view config element =
         Container list attr ->
             list
                 |> List.map (view config)
-                |> Html.span (annotation "lia-container" attr)
+                |> Html.span (Attr.style "left" "initial" :: annotation "lia-container" attr)
 
         IHTML node attr ->
             HTML.view Html.span (view config) attr node
