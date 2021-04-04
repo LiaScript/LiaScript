@@ -6,7 +6,6 @@ import Combine
         , andMap
         , andThen
         , choice
-        , fail
         , ignore
         , keep
         , lazy
@@ -35,9 +34,10 @@ import Lia.Markdown.Code.Parser as Code
 import Lia.Markdown.Effect.Model exposing (set_annotation)
 import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Footnote.Parser as Footnote
+import Lia.Markdown.Gallery.Parser as Gallery
 import Lia.Markdown.HTML.Attributes as Attributes exposing (Parameters)
 import Lia.Markdown.HTML.Parser as HTML
-import Lia.Markdown.Inline.Parser exposing (combine, comment, line, lineWithProblems, mediaReference)
+import Lia.Markdown.Inline.Parser exposing (combine, comment, line, lineWithProblems)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Parser as Quiz
@@ -123,7 +123,7 @@ elements =
             |> ignore (regex "[ \t]*\n")
         , md_annotations
             |> map Gallery
-            |> andMap gallery
+            |> andMap Gallery.parse
         , md_annotations
             |> map Paragraph
             |> andMap paragraph
@@ -134,24 +134,6 @@ elements =
         --, comments
         --    |> onsuccess Skip
         ]
-
-
-gallery : Parser Context Inlines
-gallery =
-    regex "[ \t]*"
-        |> keep mediaReference
-        |> many1
-        |> ignore newline
-        |> many1
-        |> map List.concat
-        |> andThen
-            (\list ->
-                if List.length list > 1 then
-                    succeed list
-
-                else
-                    fail "not a gallery"
-            )
 
 
 to_comment : ( Parameters, ( Int, Int ) ) -> Parser Context Markdown

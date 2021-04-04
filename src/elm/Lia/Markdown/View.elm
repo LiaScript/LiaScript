@@ -16,6 +16,7 @@ import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.Model as Footnotes
 import Lia.Markdown.Footnote.View as Footnote
+import Lia.Markdown.Gallery.View as Gallery
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Markdown.HTML.View as HTML
@@ -358,10 +359,9 @@ view_block config block =
             Task.view config.main config.section.task_vector attr list
                 |> Html.map UpdateTask
 
-        Gallery attr list ->
-            list
-                |> config.view
-                |> Html.div (annotation "lia-gallery" attr)
+        Gallery attr media ->
+            Gallery.view config.main config.section.gallery_vector attr media
+                |> Html.map UpdateGallery
 
 
 viewQuote : Config Msg -> Parameters -> ( List Markdown, Maybe ( Parameters, Inlines ) ) -> Html Msg

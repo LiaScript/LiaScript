@@ -18,11 +18,14 @@ view : Config sub -> Vector -> Parameters -> Task -> Html (Msg sub)
 view config vector attr task =
     case Array.get task.id vector of
         Just states ->
-            states
-                |> Array.toList
-                |> List.indexedMap Tuple.pair
-                |> List.map2 (row config task.id task.javascript) task.task
-                |> Html.table (Attr.attribute "cellspacing" "8" :: annotation "" attr)
+            Html.div (annotation "lia-quiz lia-quiz-multiple-choice open" attr)
+                [ Html.div [ Attr.class "lia-quiz__answers" ]
+                    (states
+                        |> Array.toList
+                        |> List.indexedMap Tuple.pair
+                        |> List.map2 (row config task.id task.javascript) task.task
+                    )
+                ]
 
         Nothing ->
             Html.text ""
@@ -30,19 +33,15 @@ view config vector attr task =
 
 row : Config sub -> Int -> Maybe String -> Inlines -> ( Int, Bool ) -> Html (Msg sub)
 row config x code inlines ( y, checked ) =
-    [ Html.td [ Attr.attribute "valign" "top", Attr.class "lia-label" ]
-        [ Html.input
-            [ Attr.type_ "checkbox"
-            , Attr.checked checked
-            , onClick (Toggle x y code)
-            ]
-            []
-        , Html.span
-            [ Attr.class "lia-check-btn" ]
-            [ Html.text "check" ]
+    [ Html.input
+        [ Attr.type_ "checkbox"
+        , Attr.checked checked
+        , Attr.class "lia-checkbox"
+        , onClick (Toggle x y code)
         ]
+        []
     , viewer config inlines
-        |> Html.td []
+        |> Html.span []
         |> Html.map Script
     ]
-        |> Html.tr []
+        |> Html.label [ Attr.class "lia-label" ]
