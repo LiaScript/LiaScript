@@ -55,14 +55,14 @@ viewMedia config vector gallery div =
         Html.div []
             [ gallery.media
                 |> get mediaID
-                |> Maybe.map (viewOverlay config gallery.id)
+                |> Maybe.map (viewOverlay config gallery.id mediaID (List.length gallery.media))
                 |> Maybe.withDefault (Html.text "")
             , div
             ]
 
 
-viewOverlay : Config sub -> Int -> Inline -> Html (Msg sub)
-viewOverlay config id media =
+viewOverlay : Config sub -> Int -> Int -> Int -> Inline -> Html (Msg sub)
+viewOverlay config id mediaID size media =
     Html.div
         [ Attr.style "position" "fixed"
         , Attr.style "display" "block"
@@ -85,8 +85,35 @@ viewOverlay config id media =
                 , Attr.id "lia-close-modal"
                 , A11y_Key.onKeyDown [ A11y_Key.escape (Close id) ]
                 ]
-          , [ media ]
+          , [ btnIcon
+                { icon = "icon-arrow-left"
+                , msg =
+                    if mediaID > 0 then
+                        Just (Show id (mediaID - 1))
+
+                    else
+                        Nothing
+                , tabbable = True
+                , title = "previous media"
+                }
+                [ Attr.class "lia-btn--transparent" ]
+            , [ media ]
                 |> viewer config
+                |> Html.div [ Attr.style "width" "100%" ]
+                |> Html.map Script
+            , btnIcon
+                { icon = "icon-arrow-right"
+                , msg =
+                    if mediaID + 1 < size then
+                        Just (Show id (mediaID + 1))
+
+                    else
+                        Nothing
+                , tabbable = True
+                , title = "next media"
+                }
+                [ Attr.class "lia-btn--transparent" ]
+            ]
                 |> Html.div
                     [ Attr.style "position" "absolute"
                     , Attr.style "top" "4rem"
@@ -94,8 +121,9 @@ viewOverlay config id media =
                     , Attr.style "width" "100%"
                     , Attr.style "transform" "translate(-50%,0%)"
                     , Attr.style "-ms-transform" "translate(-50%,0%)"
+                    , Attr.style "align-items" "center"
+                    , Attr.style "display" "flex"
                     ]
-                |> Html.map Script
           ]
             |> Html.div
                 [ Attr.style "position" "absolute"
