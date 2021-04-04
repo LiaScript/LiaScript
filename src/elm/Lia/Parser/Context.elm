@@ -9,16 +9,18 @@ the parser. This state is called `Context` and might have an influence on the
 parsing. It is passed to all successively applied parser.
 -}
 
-import Array
+import Array exposing (Array)
 import Combine exposing (Parser, succeed, withState)
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Code.Types as Code
 import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Footnote.Model as Footnote
+import Lia.Markdown.Gallery.Types as Gallery
 import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Markdown.Survey.Types as Survey
 import Lia.Markdown.Table.Types as Table
 import Lia.Markdown.Task.Types as Task
+import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.Section exposing (SubSection)
 
 
@@ -56,6 +58,7 @@ type alias Context =
     , quiz_vector : Quiz.Vector
     , survey_vector : Survey.Vector
     , table_vector : Table.Vector
+    , gallery_vector : Gallery.Vector
     , effect_model : Effect.Model SubSection
     , effect_number : List Int
     , effect_id : Int
@@ -78,6 +81,7 @@ init search_index global =
     , quiz_vector = Array.empty
     , survey_vector = Array.empty
     , table_vector = Array.empty
+    , gallery_vector = Array.empty
     , effect_model = Effect.init
     , effect_number = [ 0 ]
     , effect_id = 0

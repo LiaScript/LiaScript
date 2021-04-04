@@ -3,6 +3,7 @@ module Lia.Markdown.Types exposing (Markdown(..), MarkdownS)
 import Lia.Markdown.Chart.Types exposing (Chart)
 import Lia.Markdown.Code.Types exposing (Code)
 import Lia.Markdown.Effect.Types exposing (Effect)
+import Lia.Markdown.Gallery.Types exposing (Gallery)
 import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.HTML.Types exposing (Node)
 import Lia.Markdown.Inline.Types exposing (Inlines)
@@ -30,7 +31,7 @@ type Markdown
     | ASCII Parameters (SvgBob.Configuration (List Markdown))
     | HTML Parameters (Node Markdown)
     | Header Parameters ( Inlines, Int )
-    | Gallery Parameters Inlines
+    | Gallery Parameters Gallery
 
 
 type alias MarkdownS =

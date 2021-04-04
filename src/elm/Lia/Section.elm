@@ -11,12 +11,13 @@ import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Code.Types as Code
 import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Footnote.Model as Footnote
+import Lia.Markdown.Gallery.Types as Gallery
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Markdown.Survey.Types as Survey
 import Lia.Markdown.Table.Types as Table
 import Lia.Markdown.Task.Types as Task
-import Lia.Markdown.Types exposing (Markdown)
+import Lia.Markdown.Types exposing (Markdown(..))
 
 
 {-| This is the main record to cotain all section related information.
@@ -68,6 +69,7 @@ type alias Section =
     , quiz_vector : Quiz.Vector
     , survey_vector : Survey.Vector
     , table_vector : Table.Vector
+    , gallery_vector : Gallery.Vector
     , effect_model : Effect.Model SubSection
     , definition : Maybe Definition
     , footnotes : Footnote.Model
@@ -97,6 +99,7 @@ type SubSection
         , quiz_vector : Quiz.Vector
         , survey_vector : Survey.Vector
         , table_vector : Table.Vector
+        , gallery_vector : Gallery.Vector
         , effect_model : Effect.Model SubSection
         , footnotes : Footnote.Model
         , footnote2show : Maybe String
@@ -143,6 +146,7 @@ init id base =
     , quiz_vector = Array.empty
     , survey_vector = Array.empty
     , table_vector = Array.empty
+    , gallery_vector = Array.empty
     , effect_model = Effect.init
     , definition = Nothing
     , footnotes = Footnote.init

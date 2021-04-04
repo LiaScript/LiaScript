@@ -17,6 +17,7 @@ import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Footnote.View as Footnote
+import Lia.Markdown.Gallery.Update as Gallery
 import Lia.Markdown.Quiz.Update as Quiz
 import Lia.Markdown.Survey.Update as Survey
 import Lia.Markdown.Table.Update as Table
@@ -36,6 +37,7 @@ type Msg
     | UpdateSurvey (Survey.Msg Msg)
     | UpdateTable (Table.Msg Msg)
     | UpdateTask (Task.Msg Msg)
+    | UpdateGallery (Gallery.Msg Msg)
     | FootnoteHide
     | FootnoteShow String
     | Script (Script.Msg Msg)
@@ -109,6 +111,17 @@ update msg section =
             , event
                 |> List.map Event.encode
                 |> send "task"
+            )
+                |> updateScript sub
+
+        UpdateGallery childMsg ->
+            let
+                ( vector, sub ) =
+                    Gallery.update childMsg section.gallery_vector
+            in
+            ( { section | gallery_vector = vector }
+            , Cmd.none
+            , []
             )
                 |> updateScript sub
 
