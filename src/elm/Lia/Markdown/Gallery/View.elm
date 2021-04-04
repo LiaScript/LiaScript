@@ -14,7 +14,7 @@ import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inline)
 import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Types exposing (Markdown(..))
-import Lia.Utils exposing (btnIcon, get)
+import Lia.Utils exposing (btnIcon, get, icon)
 
 
 view : Config sub -> Vector -> Parameters -> Gallery -> Html (Msg sub)
@@ -32,8 +32,21 @@ view config vector attr gallery =
                     , Attr.style "height" "32.2rem"
                     , Attr.style "position" "relative"
                     , Attr.style "left" "0"
+                    , A11y_Key.tabbable True
+                    , A11y_Role.button
+                    , A11y_Widget.label "zoom media"
+                    , A11y_Key.onKeyDown
+                        [ A11y_Key.enter (Show gallery.id i)
+                        , A11y_Key.space (Show gallery.id i)
+                        ]
                     ]
-                    []
+                    [ icon "icon-zoom"
+                        [ Attr.style "position" "absolute"
+                        , Attr.style "top" "1.5rem"
+                        , Attr.style "right" "1.5rem"
+                        , Attr.style "scale" "1.5"
+                        ]
+                    ]
                 ]
                     |> Html.div
                         []
