@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.6.4
+version:  0.6.5
 language: en
 narrator: UK English Male
 
@@ -34,7 +34,7 @@ contains the just-in-time compiler that runs directly within your browser.
 - Online Programming
 - Integration of JavaScript
 - Mixing HTML with Markdown
-- Extentendability due to Macros
+- Extendability due to Macros
 - Internal event system
 - Literal programming
 - ...
@@ -78,6 +78,21 @@ LiaScript courses.
   contains a lot of LiaScript help, examples, and snippets.
 
   GitHub: https://github.com/andre-dietrich/liascript-snippets
+
+---
+
+**LiaScript-DevServer:** If you your another editor you can also use this
+project to run your own LiaScript server that monitors your files and performs
+an update of your preview, whenever you save your files...
+
+- Project-Sources:
+  https://github.com/LiaScript/LiaScript-DevServer/
+
+- or install directly from
+  [npmjs.com](https://www.npmjs.com/package/@liascript/devserver)
+  via:
+
+  `npm install -g @liascript/devserver`
 
 ---
 
@@ -254,6 +269,25 @@ This will apply the following three patches:
 
 ## Version-Changes
 
+**0.9.0** (05/04/2021)
+
+- Total redesign of UI/UX
+- Adds support for Tasks
+  
+  ``` markdown
+  - [X] some task solved
+  - [ ] some task unsolved ...
+  ```
+- Support for galleries as collections of images and videos:
+
+  ``` markdown
+  ![some image](url1) ![some image](url2)
+  !?[some video](url3)
+  ![some image](url4)
+  !?[some video](url5)
+  ```
+
+- Images and videos are now scaled automatically to fit the best size
 - Moved from JavaScript to Typescript
 - Optimized internal message-handling
 - Scripts can now also create Quizzes, Code, Surveys, etc.
@@ -282,10 +316,6 @@ This will apply the following three patches:
   +------------------------------------+
   ````
   `````
-
-  ```
-
-  ```
 
 **0.8.12** (08/12/2020)
 
