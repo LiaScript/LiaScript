@@ -24,18 +24,19 @@ app:
 	npm run build
 
 index: preview
-	sed -i "s/\"logo/\".\/logo/g" dist/index.html
-	sed -i "s/href=\"main\./href=\".\/main./g" dist/index.html
-	sed -i "s/href=\"manifest\./href=\".\/manifest./g" dist/index.html
-	sed -i "s/href=\"material-icons\./href=\".\/material-icons./g" dist/index.html
-	sed -i "s/href=\"roboto\./href=\".\/roboto./g" dist/index.html
-	sed -i "s/src=\"ace\./src=\".\/ace./g" dist/index.html
-	sed -i "s/src=\"app\./src=\".\/app./g" dist/index.html
-	sed -i "s/src=\"base\./src=\".\/base./g" dist/index.html
-	sed -i "s/src=\"echarts\./src=\".\/echarts./g" dist/index.html
-	sed -i "s/src=\"katex\./src=\".\/katex./g" dist/index.html
-	sed -i "s/src=\"oembed\./src=\".\/oembed./g" dist/index.html
-	sed -i "s/src=\"preview\-lia\./src=\".\/preview-lia./g" dist/index.html
+	sed -i "s/\"\/logo/\".\/logo/g" dist/index.html
+	sed -i "s/href=\"\/main\./href=\".\/main./g" dist/index.html
+	sed -i "s/href=\"\/manifest\./href=\".\/manifest./g" dist/index.html
+	sed -i "s/=\"\/formula\./=\".\/formula./g" dist/index.html
+	sed -i "s/src=\"\/editor\./src=\".\/editor./g" dist/index.html
+	sed -i "s/src=\"\/app\./src=\".\/app./g" dist/index.html
+	sed -i "s/src=\"\/base\./src=\".\/base./g" dist/index.html
+	sed -i "s/src=\"\/chart\./src=\".\/chart./g" dist/index.html
+	sed -i "s/src=\"\/oembed\./src=\".\/oembed./g" dist/index.html
+	sed -i "s/src=\"\/format\./src=\".\/format./g" dist/index.html
+	sed -i "s/src=\"\/preview\-lia\./src=\".\/preview-lia./g" dist/index.html
+	sed -i "s/src=\"\/preview\-link\./src=\".\/preview-link./g" dist/index.html
+	sed -i "s/src:local(\"\")/src:local(\"\.\")/g" main.*.css
 
 responsivevoice:
 	sed -i "s/responsivevoice\.js\"/responsivevoice.js?key=$(KEY)\"/g" dist/index.html
