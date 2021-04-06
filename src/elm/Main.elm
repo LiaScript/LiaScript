@@ -139,6 +139,7 @@ init flags url key =
                 url.fragment
                 |> model courseUrl Loading
                 |> getIndex query
+                |> navToFirstSlide
 
         _ ->
             Lia.Script.init
@@ -181,9 +182,17 @@ get_origin query =
 -}
 navToFirstSlide : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
 navToFirstSlide ( model, cmd ) =
-    ( model
+    let
+        session =
+            if model.session.url.fragment == Nothing then
+                Session.setFragment 1 model.session
+
+            else
+                model.session
+    in
+    ( { model | session = session }
     , Cmd.batch
-        [ Session.update model.session
+        [ Session.update session
         , cmd
         ]
     )
