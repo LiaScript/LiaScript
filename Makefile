@@ -36,7 +36,8 @@ index: preview
 	sed -i "s/src=\"\/format\./src=\".\/format./g" dist/index.html
 	sed -i "s/src=\"\/preview\-lia\./src=\".\/preview-lia./g" dist/index.html
 	sed -i "s/src=\"\/preview\-link\./src=\".\/preview-link./g" dist/index.html
-	sed -i "s/src:local(\"\")/src:local(\"\.\")/g" main.*.css
+	sed -i "s/src:local(\"\")/src:local(\"\.\")/g" dist/main.*.css
+	sed -i "s/url(\//url(/g" dist/main.*.css
 
 responsivevoice:
 	sed -i "s/responsivevoice\.js\"/responsivevoice.js?key=$(KEY)\"/g" dist/index.html
