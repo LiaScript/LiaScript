@@ -194,13 +194,13 @@ activate course version list =
                                     |> Dict.keys
                                     |> List.head
 
-                            Nothing ->
+                            _ ->
                                 Nothing
                 }
                     :: cs
 
             else
-                activate course version cs
+                c :: activate course version cs
 
 
 decode : JD.Value -> Msg
