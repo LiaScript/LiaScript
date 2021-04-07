@@ -269,6 +269,15 @@ This will apply the following three patches:
 
 ## Version-Changes
 
+
+**0.9.1** (08/04/2021)
+
+- fix: Loading older version of courses
+- fix: Changed icons `+` & `-` in codes, to be equal to the LiaScript syntax
+- fix: Styling for share-buttons
+- fix: Intl formatting for different languages
+- fix: Styling search in dark-mode
+
 **0.9.0** (05/04/2021)
 
 - Total redesign of UI/UX
