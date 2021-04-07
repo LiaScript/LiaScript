@@ -134,10 +134,10 @@ viewCode executable lang theme running errors id_1 id_2 file attr =
                                     id_2
                         , icon =
                             if file.visible then
-                                "icon-minus"
+                                "icon-plus"
 
                             else
-                                "icon-plus"
+                                "icon-minus"
                         , tabbable = True
                         }
                         [ Attr.class "lia-accordion__toggle" ]

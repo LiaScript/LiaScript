@@ -15,7 +15,7 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View as Inline
 import Lia.Parser.PatReplace exposing (link)
 import Lia.Settings.Types exposing (Mode(..))
-import Lia.Utils exposing (btn)
+import Lia.Utils exposing (btn, btnIcon)
 import Session exposing (Session)
 import Svg
 import Svg.Attributes as SvgAttr
@@ -218,22 +218,22 @@ viewBody comment =
 viewControls : Bool -> Inlines -> Inlines -> Course -> Html Msg
 viewControls hasShareAPI title comment course =
     Html.div [ Attr.class "lia-card__controls" ]
-        [ btn
+        [ btnIcon
             { msg = Just <| Delete course.id
             , title = "delete"
             , tabbable = True
+            , icon = "icon-trash"
             }
-            [ Attr.class "lia-btn lia-btn--tag lia-btn--transparent icon icon-trash text-red-dark border-red-dark px-1" ]
-            []
-        , btn
+            [ Attr.class "lia-btn--tag lia-btn--transparent text-red-dark border-red-dark px-1" ]
+        , btnIcon
             { msg = Just <| Reset course.id course.active
             , title = "reset"
             , tabbable = True
+            , icon = "icon-refresh"
             }
-            [ Attr.class "lia-btn--tag icon icon-refresh lia-btn--transparent text-grey-dark border-grey px-1" ]
-            []
+            [ Attr.class "lia-btn--tag lia-btn--transparent text-grey-dark border-grey px-1" ]
         , if hasShareAPI then
-            btn
+            btnIcon
                 { msg =
                     Just <|
                         Share
@@ -242,9 +242,9 @@ viewControls hasShareAPI title comment course =
                             ("https://LiaScript.github.io/course/?" ++ course.id)
                 , title = "share"
                 , tabbable = True
+                , icon = "icon-social"
                 }
-                []
-                [ Html.text "Share" ]
+                [ Attr.class "lia-btn--transparent lia-btn--tag px-1 text-turquoise border-turquoise" ]
 
           else
             Html.text ""
@@ -257,14 +257,14 @@ viewControls hasShareAPI title comment course =
                     []
 
             Just _ ->
-                btn
+                btnIcon
                     { msg = Just <| Restore course.id course.active
                     , title = "open"
                     , tabbable = True
+                    , icon = "icon-sign-in"
                     }
-                    [ Attr.class "lia-btn lia-btn--transparent lia-btn--tag icon icon-sign-in px-1 text-turquoise border-turquoise"
+                    [ Attr.class "lia-btn--transparent lia-btn--tag px-1 text-turquoise border-turquoise"
                     ]
-                    []
         ]
 
 

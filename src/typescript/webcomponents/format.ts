@@ -173,7 +173,9 @@ customElements.define(
     }
 
     get(name: string) {
-      return this.getAttribute(name)
+      const attribute = this.getAttribute(name)
+
+      return attribute === null ? undefined : attribute
     }
 
     get value() {
