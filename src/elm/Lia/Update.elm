@@ -215,7 +215,7 @@ update session msg model =
                                 )
                             |> List.head
                             |> Maybe.withDefault (Array.length model.sections - 1)
-                            |> Load True
+                            |> Load False
                         )
                         model
 

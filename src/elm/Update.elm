@@ -412,19 +412,7 @@ load_readme readme model =
                 |> removeCR
                 |> Lia.Script.init_script model.lia
     in
-    if
-        model.preload
-            |> Maybe.map (Index.inCache lia.definition.version)
-            |> Maybe.withDefault False
-    then
-        ( model
-        , lia.readme
-            |> Index.restore lia.definition.version
-            |> event2js
-        )
-
-    else
-        load model lia code templates
+    load model lia code templates
 
 
 {-| Start parsing and download external imports (templates).
