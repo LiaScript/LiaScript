@@ -3,6 +3,7 @@
   display: inline-flex;
   overflow: hidden;
   vertical-align: middle;
+  background-color: rgba(var(--color-highlight), 0.1);
 
   &--with-border {
     border: 1px solid rgb(var(--color-highlight));
@@ -43,7 +44,7 @@
     border-left: 1px solid rgb(var(--color-highlight));
     color: rgb(var(--lia-white));
     display: flex;
-    padding: 0.5rem 1.6rem;
+    padding: 0rem 0.5rem;
     width: 100%;
 
     i {
@@ -53,7 +54,7 @@
 }
 
 output.lia-script {
-  padding: 0.5rem 1.6rem;
+  padding: 0rem 0.5rem;
   cursor: pointer;
 
   i {
