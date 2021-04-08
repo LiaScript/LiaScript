@@ -276,13 +276,14 @@ This will apply the following three patches:
 ## Version-Changes
 
 
-**0.9.2** (08/04/2021)
+**0.9.3** (08/04/2021)
 
 - fix: Loading older version of courses
 - fix: Changed icons `+` & `-` in codes, to be equal to the LiaScript syntax
 - fix: Styling for share-buttons
 - fix: Intl formatting for different languages
 - fix: Styling search in dark-mode
+- fix: Background colors for script-tags
 - improve(Code): Terminal accessibility
 
 **0.9.0** (05/04/2021)
