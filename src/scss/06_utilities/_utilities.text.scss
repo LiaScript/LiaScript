@@ -20,7 +20,7 @@
 
 /* Text-Color */
 .text-debug {
-  color: rgb(var(--lia-blue));
+  color: deepskyblue;
 }
 
 .text-info {
@@ -28,11 +28,13 @@
 }
 
 .text-warning {
-  color: rgb(var(--lia-yellow));
+  color: #fce3a3;
+  background-color: rgba(yellow, 0.15);
 }
 
 .text-error {
-  color: rgb(var(--lia-red));
+  color: #ffb4d3;
+  background-color: rgba(red, 0.15);
 }
 
 .text-disabled {
