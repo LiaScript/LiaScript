@@ -327,6 +327,7 @@ slideTopBar lang screen url settings def =
                 |> Attr.src
             , Attr.class "lia_header__logo"
             , Attr.alt "LiaScript"
+            , Attr.style "height" "100%"
             ]
             []
         ]
