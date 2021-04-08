@@ -63,20 +63,32 @@ view_message { level, text } =
     ( text
     , case level of
         Debug ->
-            Html.span [ Attr.class "text-debug" ] [ Html.text text ]
+            viewLog "text-debug" text
 
         Info ->
-            Html.span [ Attr.class "text-info" ] [ Html.text text ]
+            viewLog "text-info" text
 
         Warn ->
-            Html.span [ Attr.class "text-warning" ] [ Html.text text ]
+            viewLog "text-warning" text
 
         Error ->
-            Html.span [ Attr.class "text-error" ] [ Html.text text ]
+            viewLog "text-error" text
 
         HTML ->
-            Html.div [ Attr.class "text-info", Attr.property "innerHTML" <| JE.string text ] []
+            Html.div
+                [ Attr.class "text-info"
+                , Attr.property "innerHTML" <| JE.string text
+                ]
+                []
     )
+
+
+viewLog : String -> String -> Html msg
+viewLog class str =
+    Html.div
+        [ Attr.class class ]
+        [ Html.text str
+        ]
 
 
 add : Level -> String -> Log -> Log
@@ -183,6 +195,9 @@ decLevel =
 
                         2 ->
                             Error
+
+                        3 ->
+                            HTML
 
                         _ ->
                             Debug

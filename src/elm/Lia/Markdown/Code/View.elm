@@ -1,5 +1,7 @@
 module Lia.Markdown.Code.View exposing (view)
 
+import Accessibility.Live as A11y_Live
+import Accessibility.Role as A11y_Role
 import Accessibility.Widget as A11y_Widget
 import Array
 import Conditional.List as CList
@@ -29,7 +31,11 @@ view lang theme model code =
                             |> List.indexedMap (viewCode False lang theme True (always JE.null) id_1)
                             |> List.map2 (\a e -> e a) pro.attr
                             |> CList.attachIf (not <| Log.isEmpty pro.log)
-                                (Html.div [ Attr.class "lia-code-terminal" ]
+                                (Html.div
+                                    [ Attr.class "lia-code-terminal"
+                                    , A11y_Role.log
+                                    , A11y_Widget.label "terminal output"
+                                    ]
                                     [ view_result pro.log ]
                                 )
                     )
@@ -56,7 +62,16 @@ view lang theme model code =
                                 (Array.length project.version)
                                 project.running
                                 (project.terminal /= Nothing)
-                            , Html.div [ Attr.class "lia-code-terminal" ]
+                            , Html.div
+                                [ Attr.class "lia-code-terminal"
+                                , A11y_Role.log
+                                , A11y_Widget.label "terminal output"
+                                , if project.running then
+                                    A11y_Live.livePolite
+
+                                  else
+                                    Attr.class ""
+                                ]
                                 [ view_result project.log
                                 , case project.terminal of
                                     Nothing ->
@@ -212,55 +227,55 @@ pixel from_lines =
     from_lines * 21 + 16
 
 
-highlight : String -> Parameters -> File -> Html Msg
-highlight theme attr file =
-    let
-        readOnly =
-            if Params.get "data-readonly" attr == Nothing then
-                True
 
-            else
-                Params.isSet "data-readonly" attr
-    in
-    Editor.editor
-        (attr
-            |> Params.toAttribute
-            |> List.append
-                [ Editor.value file.code
-                , Editor.mode file.lang
-                , attr
-                    |> Params.get "data-theme"
-                    |> Maybe.withDefault theme
-                    |> Editor.theme
-                , attr
-                    |> Params.get "data-tabsize"
-                    |> Maybe.andThen String.toInt
-                    |> Maybe.withDefault 2
-                    |> Editor.tabSize
-                , attr
-                    |> Params.get "data-marker"
-                    |> Maybe.withDefault ""
-                    |> Editor.marker
-                , attr
-                    |> Params.get "data-firstlinenumber"
-                    |> Maybe.andThen String.toInt
-                    |> Maybe.withDefault 1
-                    |> Editor.firstLineNumber
-                , Editor.useSoftTabs False
-                , Editor.readOnly readOnly
-                , Editor.showCursor (not readOnly)
-                , Editor.highlightActiveLine False
-                , attr
-                    |> Params.isSet "data-showgutter"
-                    |> Editor.showGutter
-                , Editor.showPrintMargin False
-                , attr
-                    |> Params.get "data-fontsize"
-                    |> Maybe.withDefault "1.5rem"
-                    |> Editor.fontSize
-                ]
-        )
-        []
+-- highlight : String -> Parameters -> File -> Html Msg
+-- highlight theme attr file =
+--     let
+--         readOnly =
+--             if Params.get "data-readonly" attr == Nothing then
+--                 True
+--             else
+--                 Params.isSet "data-readonly" attr
+--     in
+--     Editor.editor
+--         (attr
+--             |> Params.toAttribute
+--             |> List.append
+--                 [ Editor.value file.code
+--                 , Editor.mode file.lang
+--                 , attr
+--                     |> Params.get "data-theme"
+--                     |> Maybe.withDefault theme
+--                     |> Editor.theme
+--                 , attr
+--                     |> Params.get "data-tabsize"
+--                     |> Maybe.andThen String.toInt
+--                     |> Maybe.withDefault 2
+--                     |> Editor.tabSize
+--                 , attr
+--                     |> Params.get "data-marker"
+--                     |> Maybe.withDefault ""
+--                     |> Editor.marker
+--                 , attr
+--                     |> Params.get "data-firstlinenumber"
+--                     |> Maybe.andThen String.toInt
+--                     |> Maybe.withDefault 1
+--                     |> Editor.firstLineNumber
+--                 , Editor.useSoftTabs False
+--                 , Editor.readOnly readOnly
+--                 , Editor.showCursor (not readOnly)
+--                 , Editor.highlightActiveLine False
+--                 , attr
+--                     |> Params.isSet "data-showgutter"
+--                     |> Editor.showGutter
+--                 , Editor.showPrintMargin False
+--                 , attr
+--                     |> Params.get "data-fontsize"
+--                     |> Maybe.withDefault "1.5rem"
+--                     |> Editor.fontSize
+--                 ]
+--         )
+--         []
 
 
 evaluate : Bool -> String -> Parameters -> Bool -> ( Int, Int ) -> File -> JE.Value -> Html Msg
