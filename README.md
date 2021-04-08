@@ -12,7 +12,13 @@ comment:  Main LiaScript Parser project, written in elm.
 
 [![LiaScript](https://raw.githubusercontent.com/LiaScript/LiaScript/master/badges/course.svg)](https://LiaScript.github.io/course/?https://github.com/LiaScript/docs) [![Gitter](https://badges.gitter.im/LiaScript/community.svg)](https://gitter.im/LiaScript/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
+![GitHub contributors](https://img.shields.io/github/contributors/liascript/liascript)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/liascript/liascript)
+![GitHub repo size](https://img.shields.io/github/repo-size/liascript/liascript)
+
 # LiaScript
+
+
 
 [LiaScript](https://LiaScript.github.io) is an extension to Markdown to support
 the creation of free and open online courses, interactive books and thus, Open
