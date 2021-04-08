@@ -17,7 +17,7 @@ import Lia.Markdown.Effect.Script.Update exposing (Msg(..))
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Section exposing (SubSection(..))
-import Lia.Utils exposing (blockKeydown, btnIcon, onEnter)
+import Lia.Utils exposing (blockKeydown, btnIcon, icon, onEnter)
 
 
 view : Config sub -> Int -> Parameters -> Html (Msg sub)
@@ -107,7 +107,11 @@ script config withStyling attr id node =
                  --        )
                  --    )
                 )
-                [ Html.i [ Attr.class "icon icon-chevron-double-right" ] []
+                [ if not withStyling then
+                    icon "icon-chevron-double-right" []
+
+                  else
+                    Html.text ""
                 , case result of
                     Text str ->
                         Intl.view node.intl str
