@@ -3,8 +3,8 @@
 
   &:before,
   &:after {
-    content: " ";
-    display: table;
+    content: ' ';
+    display: flow-root;
   }
 
   &:after {

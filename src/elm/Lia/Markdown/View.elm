@@ -450,9 +450,7 @@ view_list config =
     let
         viewer ( value, sub_list ) =
             Html.li [ Attr.value value ]
-                [ List.map (view_block config) sub_list
-                    |> Html.span []
-                ]
+                (List.map (view_block config) sub_list)
     in
     List.map viewer
 
