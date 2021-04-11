@@ -72,6 +72,9 @@ mediaBlock inline =
                 Movie _ _ _ ->
                     True
 
+                Audio _ _ _ ->
+                    True
+
                 _ ->
                     False
 
