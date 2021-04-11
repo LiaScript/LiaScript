@@ -125,7 +125,7 @@ elements =
             |> map Gallery
             |> andMap Gallery.parse
         , md_annotations
-            |> map Paragraph
+            |> map checkForCitation
             |> andMap paragraph
         , md_annotations
             |> map Paragraph
@@ -336,28 +336,22 @@ quote =
     map Quote md_annotations
         |> ignore (regex "> ?")
         |> ignore (Indent.push "> ?")
-        |> andMap
-            (sepBy (many (Indent.check |> ignore (string "\n"))) blocks
-                |> andThen checkCitation
-            )
+        |> andMap (sepBy (many (Indent.check |> ignore (string "\n"))) blocks)
         |> ignore Indent.pop
 
 
-checkCitation mds =
-    succeed <|
-        case List.reverse mds of
-            [ _ ] ->
-                ( mds, Nothing )
+checkForCitation : Parameters -> Inlines -> Markdown
+checkForCitation attr p =
+    case p of
+        (Chars chars cAttr) :: rest ->
+            if String.startsWith "--" chars then
+                Citation attr (Chars (String.dropLeft 2 chars) cAttr :: rest)
 
-            (Paragraph pAttr ((Chars chars cAttr) :: list)) :: tail ->
-                if String.startsWith "--" chars then
-                    ( List.reverse tail, Just <| ( pAttr, Chars (String.dropLeft 2 chars) cAttr :: list ) )
+            else
+                Paragraph attr p
 
-                else
-                    ( mds, Nothing )
-
-            _ ->
-                ( mds, Nothing )
+        _ ->
+            Paragraph attr p
 
 
 

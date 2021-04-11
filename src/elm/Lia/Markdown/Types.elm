@@ -16,7 +16,7 @@ import SvgBob
 
 type Markdown
     = HLine Parameters
-    | Quote Parameters ( MarkdownS, Maybe ( Parameters, Inlines ) )
+    | Quote Parameters MarkdownS
     | Paragraph Parameters Inlines
     | BulletList Parameters (List MarkdownS)
     | OrderedList Parameters (List ( String, MarkdownS ))
@@ -32,6 +32,7 @@ type Markdown
     | HTML Parameters (Node Markdown)
     | Header Parameters ( Inlines, Int )
     | Gallery Parameters Gallery
+    | Citation Parameters Inlines
 
 
 type alias MarkdownS =

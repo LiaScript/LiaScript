@@ -363,17 +363,18 @@ view_block config block =
             Gallery.view config.main config.section.gallery_vector attr media
                 |> Html.map UpdateGallery
 
+        Citation attr quote ->
+            quote
+                |> config.view
+                |> (::) (Html.text "—")
+                |> Html.cite (annotation "lia-cite" attr)
 
-viewQuote : Config Msg -> Parameters -> ( List Markdown, Maybe ( Parameters, Inlines ) ) -> Html Msg
-viewQuote config attr ( elements, cite ) =
-    case cite of
-        Nothing ->
-            elements
-                |> List.map (view_block config)
-                |> Html.blockquote (annotation "lia-quote" attr)
 
-        Just ( cAttr, citation ) ->
-            [ elements
+viewQuote : Config Msg -> Parameters -> List Markdown -> Html Msg
+viewQuote config attr elements =
+    case elements of
+        [ Paragraph pAttr pElement, Citation cAttr citation ] ->
+            [ [ Paragraph pAttr pElement ]
                 |> List.map (view_block config)
                 |> Html.em [ Attr.class "lia-quote__text" ]
             , citation
@@ -389,6 +390,11 @@ viewQuote config attr ( elements, cite ) =
                         )
                         :: annotation "lia-quote" attr
                     )
+
+        _ ->
+            elements
+                |> List.map (view_block config)
+                |> Html.blockquote (annotation "lia-quote" attr)
 
 
 view_ascii : Config Msg -> Parameters -> SvgBob.Configuration (List Markdown) -> Html Msg
