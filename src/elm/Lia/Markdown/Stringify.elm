@@ -27,12 +27,8 @@ stringify scripts id markdown =
         Paragraph _ inlines ->
             Inline.stringify_ scripts id inlines
 
-        Quote _ ( md, cite ) ->
-            block scripts id md
-                ++ (cite
-                        |> Maybe.map (Tuple.second >> Inline.stringify_ scripts id)
-                        |> Maybe.withDefault ""
-                   )
+        Quote _ mds ->
+            block scripts id mds
 
         BulletList _ mds ->
             mds
@@ -72,6 +68,9 @@ stringify scripts id markdown =
 
         Header _ ( title, _ ) ->
             Inline.stringify_ scripts id title
+
+        Citation _ inlines ->
+            Inline.stringify_ scripts id inlines
 
         _ ->
             ""

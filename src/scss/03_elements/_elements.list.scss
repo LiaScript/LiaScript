@@ -16,22 +16,22 @@
 
     > li {
       &:before {
-        content: "\EA0D";
+        content: '\EA0D';
         color: rgb(var(--color-highlight-dark));
-        font-family: "icon";
+        font-family: 'icon';
         left: 0;
         position: absolute;
       }
 
       > p {
-        display: inline-block;
+        display: block;
       }
     }
 
     ul li ul li {
       padding-left: 1rem;
       &:before {
-        content: "\EA21";
+        content: '\EA21';
       }
     }
   }
@@ -42,13 +42,9 @@
         color: rgb(var(--color-highlight-dark));
       }
 
-      span {
+      > * {
         left: 1rem;
         position: relative;
-
-        > p {
-          display: inline-block;
-        }
       }
     }
   }

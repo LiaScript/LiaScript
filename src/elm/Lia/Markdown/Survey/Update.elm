@@ -17,6 +17,7 @@ type Msg sub
     | VectorUpdate Int String
     | MatrixUpdate Int Int String
     | Submit Int (Maybe String)
+    | KeyDown Int (Maybe String) Int
     | Handle Event
     | Script (Script.Msg sub)
 
@@ -38,6 +39,13 @@ update scripts msg vector =
 
         MatrixUpdate idx row var ->
             ( update_matrix vector idx row var, [], Nothing )
+
+        KeyDown id javascript char ->
+            if char == 13 then
+                update scripts (Submit id javascript) vector
+
+            else
+                ( vector, [], Nothing )
 
         Submit id Nothing ->
             if submitable vector id then

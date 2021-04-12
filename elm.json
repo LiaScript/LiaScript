@@ -32,8 +32,8 @@
             "elm/file": "1.0.5",
             "elm/time": "1.0.0",
             "elm/virtual-dom": "1.0.2",
-            "elm-community/list-extra": "8.2.3",
-            "folkertdev/elm-flate": "2.0.4",
+            "elm-community/list-extra": "8.3.0",
+            "folkertdev/elm-flate": "2.0.5",
             "justgook/elm-image": "4.0.0",
             "zwilias/elm-utf-tools": "2.0.1"
         }
@@ -45,8 +45,7 @@
         },
         "indirect": {
             "elm/random": "1.0.0",
-            "elm-community/random-extra": "3.1.0",
-            "owanturist/elm-union-find": "1.0.0"
+            "elm-community/random-extra": "3.2.0"
         }
     }
 }

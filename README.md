@@ -275,6 +275,12 @@ This will apply the following three patches:
 
 ## Version-Changes
 
+**0.9.4** (12/04/2021)
+
+- audio elements `?[audio](http...mp3)` can no be part of a gallery too
+- title in references now can be placed in single and double quotation marks
+- adds citation which is indicated by starting a paragraph with `--`
+- minor CSS fixes
 
 **0.9.3** (08/04/2021)
 

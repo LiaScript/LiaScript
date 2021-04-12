@@ -283,10 +283,16 @@ ref_info =
 ref_title : Parser Context (Maybe Inlines)
 ref_title =
     spaces
-        |> ignore (string "\"")
-        |> keep (manyTill inlines (string "\""))
+        |> keep (or (quotedString "\"") (quotedString "'"))
         |> ignore spaces
         |> maybe
+
+
+quotedString : String -> Parser Context Inlines
+quotedString str =
+    string str
+        |> keep (manyTill inlines (string str))
+        |> map combine
 
 
 ref_url_1 : Parser Context String
@@ -294,7 +300,7 @@ ref_url_1 =
     choice
         [ url
         , andMap (regex "#[^ \t\\)]+") searchIndex
-        , regex "[^\\)\n \"]*"
+        , regex "[^\\)\n \"']*"
         ]
 
 
@@ -302,7 +308,7 @@ ref_url_2 : Parser Context String
 ref_url_2 =
     withState (\s -> succeed s.defines.base)
         |> map (++)
-        |> andMap (regex "[^\\)\n \"]*")
+        |> andMap (regex "[^\\)\n \"']*")
         |> or url
 
 
@@ -497,14 +503,14 @@ strings =
 
 stringBase : Parser s (Parameters -> Inline)
 stringBase =
-    regex "[^@*+_~:;`\\^\\[\\]\\(\\)|{}\\\\\\n<>=$ \"\\-]+"
+    regex "[^@*+_~:;`\\^\\[\\]\\(\\)|{}\\\\\\n<>=$ \"'\\-]+"
         |> map Chars
 
 
 stringEscape : Parser s (Parameters -> Inline)
 stringEscape =
     string "\\"
-        |> keep (regex "[@\\^*_+~`\\\\${}\\[\\]|#\\-]")
+        |> keep (regex "[@\\^*_+~`\\\\${}\\[\\]|#\\-\"']")
         |> map Chars
 
 
