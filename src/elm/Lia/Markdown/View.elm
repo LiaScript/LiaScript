@@ -257,7 +257,19 @@ view_block config block =
 
         Paragraph attr elements ->
             Html.p
-                (annotation "lia-paragraph clearfix" attr)
+                (annotation
+                    (if
+                        List.head elements
+                            |> Maybe.map mediaBlock
+                            |> Maybe.withDefault False
+                     then
+                        "lia-paragraph clearfix"
+
+                     else
+                        "lia-paragraph"
+                    )
+                    attr
+                )
                 (config.view elements)
 
         Effect attr e ->
