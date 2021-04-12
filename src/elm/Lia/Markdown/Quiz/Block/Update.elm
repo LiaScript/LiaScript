@@ -15,7 +15,7 @@ update : Msg sub -> State -> ( State, Maybe (Script.Msg sub) )
 update msg state =
     case ( msg, state ) of
         ( Choose option, Select _ _ ) ->
-            ( Select False [ option ], Nothing )
+            ( Select True [ option ], Nothing )
 
         ( Toggle, Select open id ) ->
             ( Select (not open) id, Nothing )
