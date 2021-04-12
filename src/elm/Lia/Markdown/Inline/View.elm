@@ -149,7 +149,7 @@ figure config title_ width element =
         ([ Attr.class "lia-figure" ]
             |> CList.addWhen (Maybe.map Attr.width width)
         )
-        [ Html.div [ Attr.class "lia-figure__media" ]
+        [ Html.span [ Attr.class "lia-figure__media" ]
             [ element
             ]
         , title_
