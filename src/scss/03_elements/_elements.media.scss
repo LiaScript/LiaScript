@@ -15,12 +15,13 @@ figure {
   }
 }
 
-.lia-iframe-wrapper {
+.lia-video-wrapper {
   position: relative;
   padding-bottom: 56.25%;
   height: 0;
 
-  iframe {
+  iframe,
+  video {
     position: absolute;
     top: 0;
     left: 0;
