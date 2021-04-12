@@ -1,0 +1,131 @@
+.lia-modal {
+  top: 0;
+  left: 0;
+  position: fixed;
+  z-index: 9000;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  pointer-events: auto;
+  width: 100vw;
+  height: 100vh;
+  color: white;
+
+  &__outer {
+    background-color: rgba(var(--lia-grey-dark), 0.9);
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+  }
+
+  &__inner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: center;
+    overflow-y: auto;
+    position: absolute;
+  }
+
+  &__close {
+    margin: 1rem 0;
+    position: sticky;
+    text-align: right;
+    top: 0;
+    width: 100%;
+
+    @include breakpoint("sm") {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+    }
+  }
+
+  &__controls {
+    color: white;
+    display: flex;
+    flex-direction: row-reverse;
+    font-size: 2rem;
+    justify-content: space-between;
+    width: 100%;
+
+    @include breakpoint("sm") {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+  }
+
+  &__ctrl-next {
+    right: 0;
+
+    @include breakpoint("sm") {
+      right: 1rem;
+    }
+  }
+
+  &__ctrl-prev {
+    left: 0rem;
+
+    @include breakpoint("sm") {
+      left: 1rem;
+    }
+  }
+
+  &__content {
+    display: flex;
+    max-height: 100%;
+    height: auto;
+    overflow-y: auto;
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    .lia-figure {
+      height: 100%;
+
+      &__media {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      figcaption {
+        padding: 0 0.6rem;
+        max-width: fit-content;
+
+        @include breakpoint("sm") {
+          padding: 0;
+        }
+      }
+    }
+
+    .lia-video-wrapper {
+      height: 100%;
+      padding: 0;
+      display: flex;
+      align-items: center;
+
+      video {
+        position: relative;
+        height: auto;
+      }
+    }
+
+    @include breakpoint("sm") {
+      margin: 1rem 5rem 2rem;
+
+      figcaption {
+        padding: 0;
+      }
+    }
+
+    > * {
+      margin: 0;
+    }
+  }
+}
