@@ -6,6 +6,7 @@ module Lia.Utils exposing
     , get
     , icon
     , onEnter
+    , onKeyDown
     , toEscapeString
     , toJSstring
     )
@@ -43,6 +44,12 @@ toEscapeString str =
         |> String.replace "'" "\\'"
         |> String.replace "`" "\\`"
         |> String.replace "\n" "\\n"
+
+
+onKeyDown : (Int -> msg) -> Html.Attribute msg
+onKeyDown tagger =
+    Event.stopPropagationOn "keydown"
+        (JD.map (\x -> ( x, True )) (JD.map tagger Event.keyCode))
 
 
 {-| Avoid event bubbling. Especially key-press left or right should be handled

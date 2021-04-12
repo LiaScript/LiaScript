@@ -1,5 +1,6 @@
 module Lia.Markdown.Survey.View exposing (view)
 
+import Accessibility.Key as A11y_Key
 import Html exposing (Html, button)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
@@ -10,7 +11,7 @@ import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Survey.Model exposing (get_matrix_state, get_select_state, get_submission_state, get_text_state, get_vector_state)
 import Lia.Markdown.Survey.Types exposing (Survey, Type(..), Vector)
 import Lia.Markdown.Survey.Update exposing (Msg(..))
-import Lia.Utils exposing (blockKeydown, btn)
+import Lia.Utils exposing (blockKeydown, btn, onKeyDown)
 import Translations exposing (surveySubmit, surveySubmitted, surveyText)
 
 
@@ -18,7 +19,7 @@ view : Config sub -> Parameters -> Survey -> Vector -> Html (Msg sub)
 view config attr survey model =
     case survey.survey of
         Text lines ->
-            view_text config (get_text_state model survey.id) lines survey.id
+            view_text config (get_text_state model survey.id) lines survey.id survey.javascript
                 |> view_survey config attr "text" model survey.id survey.javascript
 
         Select inlines ->
@@ -153,12 +154,11 @@ get_option config id list =
             Html.text "choose"
 
 
-view_text : Config sub -> String -> Int -> Int -> Bool -> Html (Msg sub)
-view_text config str lines idx submitted =
+view_text : Config sub -> String -> Int -> Int -> Maybe String -> Bool -> Html (Msg sub)
+view_text config str lines idx javascript submitted =
     let
         attr =
             [ onInput <| TextUpdate idx
-            , blockKeydown (TextUpdate idx str)
             , Attr.placeholder (surveyText config.lang)
             , Attr.value str
             , Attr.disabled submitted
@@ -166,10 +166,15 @@ view_text config str lines idx submitted =
     in
     case lines of
         1 ->
-            Html.input (Attr.class "lia-input lia-quiz__input" :: attr) []
+            Html.input
+                (Attr.class "lia-input lia-quiz__input"
+                    :: onKeyDown (KeyDown idx javascript)
+                    :: attr
+                )
+                []
 
         _ ->
-            Html.textarea (Attr.class "lia-input lia-quiz__input" :: Attr.rows lines :: attr) []
+            Html.textarea (Attr.class "lia-input lia-quiz__input" :: blockKeydown (TextUpdate idx str) :: Attr.rows lines :: attr) []
 
 
 view_vector : List ( String, Inlines ) -> (Bool -> ( String, Inlines ) -> Html (Msg sub)) -> Bool -> Html (Msg sub)
