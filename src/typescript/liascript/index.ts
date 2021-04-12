@@ -258,11 +258,13 @@ class LiaScript {
 
   initNaviation(elem: HTMLElement, elmSend: Lia.Send) {
     Swipe.detect(elem, function (swipedir) {
-      elmSend({
-        topic: Port.SWIPE,
-        section: -1,
-        message: swipedir,
-      })
+      if (document.getElementsByClassName('lia-modal').length === 0) {
+        elmSend({
+          topic: Port.SWIPE,
+          section: -1,
+          message: swipedir,
+        })
+      }
     })
 
     elem.addEventListener(
@@ -270,19 +272,23 @@ class LiaScript {
       (e) => {
         switch (e.key) {
           case 'ArrowRight': {
-            elmSend({
-              topic: Port.SWIPE,
-              section: -1,
-              message: Swipe.Dir.left,
-            })
+            if (document.getElementsByClassName('lia-modal').length === 0) {
+              elmSend({
+                topic: Port.SWIPE,
+                section: -1,
+                message: Swipe.Dir.left,
+              })
+            }
             break
           }
           case 'ArrowLeft': {
-            elmSend({
-              topic: Port.SWIPE,
-              section: -1,
-              message: Swipe.Dir.right,
-            })
+            if (document.getElementsByClassName('lia-modal').length === 0) {
+              elmSend({
+                topic: Port.SWIPE,
+                section: -1,
+                message: Swipe.Dir.right,
+              })
+            }
             break
           }
         }
