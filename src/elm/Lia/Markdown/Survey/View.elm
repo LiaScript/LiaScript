@@ -1,6 +1,5 @@
 module Lia.Markdown.Survey.View exposing (view)
 
-import Accessibility.Key as A11y_Key
 import Html exposing (Html, button)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
@@ -8,7 +7,15 @@ import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
-import Lia.Markdown.Survey.Model exposing (get_matrix_state, get_select_state, get_submission_state, get_text_state, get_vector_state)
+import Lia.Markdown.Survey.Model
+    exposing
+        ( getErrorMessage
+        , get_matrix_state
+        , get_select_state
+        , get_submission_state
+        , get_text_state
+        , get_vector_state
+        )
 import Lia.Markdown.Survey.Types exposing (Survey, Type(..), Vector)
 import Lia.Markdown.Survey.Update exposing (Msg(..))
 import Lia.Utils exposing (blockKeydown, btn, onKeyDown)
@@ -48,8 +55,14 @@ view config attr survey model =
                 |> view_survey config attr "matrix" model survey.id survey.javascript
 
 
+viewError : Maybe String -> Html msg
+viewError message =
+    case message of
+        Nothing ->
+            Html.text ""
 
---|> Html.p (annotation "lia-quiz" attr)
+        Just error ->
+            Html.div [ Attr.class "lia-quiz__warning" ] [ Html.text "⚠️  ", Html.text error ]
 
 
 view_survey : Config sub -> Parameters -> String -> Vector -> Int -> Maybe String -> (Bool -> Html (Msg sub)) -> Html (Msg sub)
@@ -73,6 +86,9 @@ view_survey config attr class model idx javascript fn =
         )
         [ fn submitted
         , submit_button config submitted idx javascript
+        , model
+            |> getErrorMessage idx
+            |> viewError
         ]
 
 
@@ -174,7 +190,13 @@ view_text config str lines idx javascript submitted =
                 []
 
         _ ->
-            Html.textarea (Attr.class "lia-input lia-quiz__input" :: blockKeydown (TextUpdate idx str) :: Attr.rows lines :: attr) []
+            Html.textarea
+                (Attr.class "lia-input lia-quiz__input"
+                    :: blockKeydown (TextUpdate idx str)
+                    :: Attr.rows lines
+                    :: attr
+                )
+                []
 
 
 view_vector : List ( String, Inlines ) -> (Bool -> ( String, Inlines ) -> Html (Msg sub)) -> Bool -> Html (Msg sub)
