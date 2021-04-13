@@ -1,6 +1,5 @@
 module Lia.Markdown.Quiz.Block.View exposing (view)
 
-import Accessibility.Widget as A11y_Widget
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)

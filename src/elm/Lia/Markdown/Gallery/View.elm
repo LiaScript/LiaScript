@@ -28,8 +28,8 @@ view config vector attr gallery =
                     |> Html.div [ Attr.style "float" "left" ]
                 , Html.div
                     [ Event.onClick <| Show gallery.id i
-                    , Attr.style "width" "32.2rem"
-                    , Attr.style "height" "32.2rem"
+                    , Attr.style "width" "25rem"
+                    , Attr.style "height" "25rem"
                     , Attr.style "position" "relative"
                     , Attr.style "left" "0"
                     , A11y_Key.tabbable True
@@ -77,85 +77,57 @@ viewMedia config vector gallery div =
 viewOverlay : Config sub -> Int -> Int -> Int -> Inline -> Html (Msg sub)
 viewOverlay config id mediaID size media =
     Html.div
-        [ Attr.style "position" "fixed"
-        , Attr.style "display" "block"
-        , Attr.style "width" "100%"
-        , Attr.style "height" "100%"
-        , Attr.style "top" "0"
-        , Attr.style "right" "0"
-        , Attr.style "z-index" "10000"
-        , Attr.class "lia-modal"
+        [ Attr.class "lia-modal"
+        , A11y_Widget.modal True
+        , A11y_Role.dialog
         ]
-        [ [ btnIcon
-                { icon = "icon-close"
-                , msg = Just (Close id)
-                , tabbable = True
-                , title = "close modal"
-                }
-                [ Attr.class "lia-btn--transparent"
-                , Attr.style "float" "right"
-                , Attr.style "padding" "0px"
-                , Attr.id "lia-close-modal"
-                , A11y_Key.onKeyDown [ A11y_Key.escape (Close id) ]
-                ]
-          , [ btnIcon
-                { icon = "icon-arrow-left"
-                , msg =
-                    if mediaID > 0 then
-                        Just (Show id (mediaID - 1))
-
-                    else
-                        Nothing
-                , tabbable = True
-                , title = "previous media"
-                }
-                [ Attr.class "lia-btn--transparent" ]
-            , [ media ]
-                |> viewer config
-                |> Html.div [ Attr.style "width" "100%" ]
-                |> Html.map Script
-            , btnIcon
-                { icon = "icon-arrow-right"
-                , msg =
-                    if mediaID + 1 < size then
-                        Just (Show id (mediaID + 1))
-
-                    else
-                        Nothing
-                , tabbable = True
-                , title = "next media"
-                }
-                [ Attr.class "lia-btn--transparent" ]
-            ]
-                |> Html.div
-                    [ Attr.style "position" "absolute"
-                    , Attr.style "top" "4rem"
-                    , Attr.style "left" "50%"
-                    , Attr.style "width" "100%"
-                    , Attr.style "transform" "translate(-50%,0%)"
-                    , Attr.style "-ms-transform" "translate(-50%,0%)"
-                    , Attr.style "align-items" "center"
-                    , Attr.style "display" "flex"
-                    ]
-          ]
-            |> Html.div
-                [ Attr.style "position" "absolute"
-                , Attr.style "top" "5%"
-                , Attr.style "left" "50%"
-                , Attr.style "font-size" "20px"
-                , Attr.style "color" "white"
-                , Attr.style "transform" "translate(-50%,-30%)"
-                , Attr.style "-ms-transform" "translate(-50%,-30%)"
-                , Attr.style "width" "90%"
-                , A11y_Widget.modal True
-                , A11y_Role.dialog
-                ]
-        , Html.div
-            [ Attr.style "background-color" "rgba(0,0,0,0.8)"
-            , Attr.style "width" "100%"
-            , Attr.style "height" "100%"
-            , Attr.style "overflow" "auto"
+        [ Html.div
+            [ Attr.class "lia-modal__outer"
             , Event.onClick (Close id)
             ]
             []
+        , Html.div [ Attr.class "lia-modal__inner" ]
+            [ Html.div [ Attr.class "lia-modal__close" ]
+                [ btnIcon
+                    { icon = "icon-close"
+                    , msg = Just (Close id)
+                    , tabbable = True
+                    , title = "close modal"
+                    }
+                    [ Attr.class "lia-btn--transparent"
+                    , Attr.id "lia-close-modal"
+                    , A11y_Key.onKeyDown [ A11y_Key.escape (Close id) ]
+                    ]
+                ]
+            , [ media ]
+                |> viewer config
+                |> Html.div [ Attr.class "lia-modal__content" ]
+                |> Html.map Script
+            , Html.div [ Attr.class "lia-modal__controls" ]
+                [ btnIcon
+                    { icon = "icon-arrow-right"
+                    , msg =
+                        if mediaID + 1 < size then
+                            Just (Show id (mediaID + 1))
+
+                        else
+                            Nothing
+                    , tabbable = True
+                    , title = "next media"
+                    }
+                    [ Attr.class "lia-modal__ctrl-next lia-btn--transparent" ]
+                , btnIcon
+                    { icon = "icon-arrow-left"
+                    , msg =
+                        if mediaID > 0 then
+                            Just (Show id (mediaID - 1))
+
+                        else
+                            Nothing
+                    , tabbable = True
+                    , title = "previous media"
+                    }
+                    [ Attr.class "lia-modal__ctrl-prev lia-btn--transparent" ]
+                ]
+            ]
         ]

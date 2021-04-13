@@ -22,7 +22,7 @@
       margin-right: 1rem;
     }
 
-    @include breakpoint("md") {
+    @include breakpoint('md') {
       grid-column-start: 2;
     }
   }
@@ -85,7 +85,7 @@
   }
 
   // make sure that any kind of list has no indenting
-  [class^="lia-list"] {
+  [class^='lia-list'] {
     margin-left: 0;
   }
 }

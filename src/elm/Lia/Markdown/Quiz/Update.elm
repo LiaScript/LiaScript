@@ -7,7 +7,7 @@ import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Quiz.Block.Update as Block
 import Lia.Markdown.Quiz.Json as Json
 import Lia.Markdown.Quiz.Matrix.Update as Matrix
-import Lia.Markdown.Quiz.Solution as Solution exposing (Solution)
+import Lia.Markdown.Quiz.Solution as Solution
 import Lia.Markdown.Quiz.Types exposing (Element, State(..), Type, Vector, comp, toState)
 import Lia.Markdown.Quiz.Vector.Update as Vector
 import Port.Eval as Eval
@@ -184,7 +184,12 @@ evalEventDecoder json =
         else
             \e ->
                 ( { e
-                    | trial = e.trial + 1
+                    | trial =
+                        if eval.result == "false" then
+                            e.trial + 1
+
+                        else
+                            e.trial
                     , solved = Solution.Open
                     , error_msg = ""
                   }

@@ -4,7 +4,6 @@ import Array exposing (Array)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onInput)
-import Json.Decode as JD
 import Lia.Utils exposing (onKeyDown)
 
 

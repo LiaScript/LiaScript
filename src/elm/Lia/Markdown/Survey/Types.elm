@@ -17,7 +17,10 @@ type alias Vector =
 
 
 type alias Element =
-    ( Bool, State )
+    ( Bool
+    , State
+    , Maybe String
+    )
 
 
 type State

@@ -118,8 +118,7 @@ viewState config elem quiz =
 -}
 viewQuiz : Config sub -> Element -> Quiz -> List (Html (Msg sub)) -> List (Html (Msg sub))
 viewQuiz config state quiz body =
-    [ viewErrorMessage state.error_msg
-    , Html.div [ Attr.class "lia-quiz__answers" ] body
+    [ Html.div [ Attr.class "lia-quiz__answers" ] body
     , Html.div [ Attr.class "lia-quiz__control" ]
         [ viewMainButton config state.trial state.solved (Check quiz.id quiz.quiz quiz.javascript)
         , viewSolutionButton config state.solved (ShowSolution quiz.id quiz.quiz)
@@ -133,31 +132,37 @@ viewQuiz config state quiz body =
 
 viewFeedback : Lang -> Element -> Html msg
 viewFeedback lang state =
-    case state.solved of
-        Solution.Solved ->
-            Html.div [ Attr.class "lia-quiz__feedback text-success" ]
-                [ lang
-                    |> quizAnswerSuccess
-                    |> Html.text
-                ]
+    if state.error_msg /= "" then
+        Html.div [ Attr.class "lia-quiz__feedback text-error" ]
+            [ Html.text state.error_msg
+            ]
 
-        Solution.ReSolved ->
-            Html.div [ Attr.class "lia-quiz__feedback text-disabled" ]
-                [ lang
-                    |> quizAnswerResolved
-                    |> Html.text
-                ]
-
-        Solution.Open ->
-            if state.trial == 0 then
-                Html.text ""
-
-            else
-                Html.div [ Attr.class "lia-quiz__feedback text-error" ]
+    else
+        case state.solved of
+            Solution.Solved ->
+                Html.div [ Attr.class "lia-quiz__feedback text-success" ]
                     [ lang
-                        |> quizAnswerError
+                        |> quizAnswerSuccess
                         |> Html.text
                     ]
+
+            Solution.ReSolved ->
+                Html.div [ Attr.class "lia-quiz__feedback text-disabled" ]
+                    [ lang
+                        |> quizAnswerResolved
+                        |> Html.text
+                    ]
+
+            Solution.Open ->
+                if state.trial == 0 then
+                    Html.text ""
+
+                else
+                    Html.div [ Attr.class "lia-quiz__feedback text-error" ]
+                        [ lang
+                            |> quizAnswerError
+                            |> Html.text
+                        ]
 
 
 {-| **private:** Show an error-message, which results from the execution of an

@@ -75,6 +75,9 @@ mediaBlock inline =
                 Audio _ _ _ ->
                     True
 
+                QR_Link _ _ ->
+                    True
+
                 _ ->
                     False
 

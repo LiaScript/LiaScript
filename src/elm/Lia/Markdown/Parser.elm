@@ -24,7 +24,6 @@ import Combine
         , sepBy
         , sepBy1
         , skip
-        , string
         , succeed
         , whitespace
         , withState
@@ -298,12 +297,12 @@ unordered_list =
     Indent.push "  "
         |> keep
             (regex "[ \t]*[*+-][ \t]+"
-                |> keep (sepBy1 (maybe newlineWithIndentation) blocks)
+                |> keep (sepBy (many newlineWithIndentation) blocks)
             )
         |> ignore Indent.pop
         |> sepBy1
-            (maybe Indent.check
-                |> ignore (maybe newline)
+            (newlineWithIndentation
+                |> many
                 |> ignore Indent.check
             )
 
@@ -315,20 +314,20 @@ ordered_list =
             (regex "[ \t]*-?\\d+"
                 |> map Tuple.pair
                 |> ignore (regex "\\.[ \t]*")
-                |> andMap (sepBy1 (maybe newlineWithIndentation) blocks)
+                |> andMap (sepBy (many newlineWithIndentation) blocks)
             )
         |> ignore Indent.pop
         |> sepBy1
-            (maybe Indent.check
-                |> ignore (maybe newline)
+            (newlineWithIndentation
+                |> many
                 |> ignore Indent.check
             )
 
 
-newlineWithIndentation : Parser Context (Maybe ())
+newlineWithIndentation : Parser Context ()
 newlineWithIndentation =
-    maybe Indent.check
-        |> ignore (string "\n")
+    Indent.maybeCheck
+        |> ignore newline
 
 
 quote : Parser Context Markdown
@@ -336,7 +335,8 @@ quote =
     map Quote md_annotations
         |> ignore (regex "> ?")
         |> ignore (Indent.push "> ?")
-        |> andMap (sepBy (many (Indent.check |> ignore (string "\n"))) blocks)
+        |> ignore Indent.skip
+        |> andMap (sepBy newlineWithIndentation blocks)
         |> ignore Indent.pop
 
 
