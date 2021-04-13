@@ -35,11 +35,10 @@ import Port.Eval exposing (Eval)
 
 parse : Parser Context Parameters -> Parser Context Code
 parse attr =
-    sepBy1 newline (attr |> andThen listing)
+    sepBy1 Indent.check (attr |> andThen listing)
         |> map Tuple.pair
         |> andMap
-            (regex "[ \n]?"
-                |> ignore (maybe Indent.check)
+            (maybe Indent.check
                 |> keep macro
                 |> keep javascript
                 |> maybe
