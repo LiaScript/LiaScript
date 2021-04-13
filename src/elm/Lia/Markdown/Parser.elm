@@ -343,12 +343,8 @@ quote =
 checkForCitation : Parameters -> Inlines -> Markdown
 checkForCitation attr p =
     case p of
-        (Chars chars cAttr) :: rest ->
-            if String.startsWith "--" chars then
-                Citation attr (Chars (String.dropLeft 2 chars) cAttr :: rest)
-
-            else
-                Paragraph attr p
+        (Chars "-" _) :: (Chars "-" _) :: rest ->
+            Citation attr rest
 
         _ ->
             Paragraph attr p
