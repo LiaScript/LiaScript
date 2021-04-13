@@ -126,10 +126,6 @@ update_ :
 update_ idx vector fn =
     case get idx vector |> Maybe.map fn of
         Just ( elem, sub ) ->
-            let
-                _ =
-                    Debug.log "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW" elem
-            in
             ( Array.set idx elem vector, [], sub )
 
         _ ->
@@ -188,7 +184,12 @@ evalEventDecoder json =
         else
             \e ->
                 ( { e
-                    | trial = e.trial + 1
+                    | trial =
+                        if eval.result == "false" then
+                            e.trial + 1
+
+                        else
+                            e.trial
                     , solved = Solution.Open
                     , error_msg = ""
                   }
