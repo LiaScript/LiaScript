@@ -129,9 +129,12 @@ $controlHeight: 4rem;
 
       video {
         position: relative;
-        //height: auto;
         width: auto;
         max-height: calc(100vh - (2 * #{$controlHeight}));
+      }
+
+      iframe {
+        position: relative;
       }
     }
 
