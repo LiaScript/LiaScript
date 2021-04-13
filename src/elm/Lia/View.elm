@@ -22,7 +22,6 @@ import Lia.Settings.Types exposing (Mode(..), Settings)
 import Lia.Settings.Update exposing (Toggle(..), toggle_sound)
 import Lia.Settings.View as Settings
 import Lia.Update exposing (Msg(..), get_active_section)
-import Port.Share exposing (share)
 import Session exposing (Screen)
 import Translations as Trans exposing (Lang)
 

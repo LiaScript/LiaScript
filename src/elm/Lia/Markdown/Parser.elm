@@ -24,7 +24,6 @@ import Combine
         , sepBy
         , sepBy1
         , skip
-        , string
         , succeed
         , whitespace
         , withState
