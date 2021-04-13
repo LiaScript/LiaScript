@@ -275,6 +275,13 @@ This will apply the following three patches:
 
 ## Version-Changes
 
+**0.9.5** (13/03/2021)
+
+- revert double single quotations for titles (caused bugs)
+- add error output to surveys and quizzes
+- fix: **Wired constructions of nested lists and quotes generate semantically correct HTML**
+- minor fixes in CSS for selection surveys and open modals stop keyboard navigation
+
 **0.9.4** (12/04/2021)
 
 - audio elements `?[audio](http...mp3)` can no be part of a gallery too
