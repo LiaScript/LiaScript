@@ -20,21 +20,16 @@
 
 /* Text-Color */
 .text-debug {
-  color: deepskyblue;
+  color: rgb(var(--lia-blue));
 }
-
 .text-info {
   color: rgb(var(--lia-white));
 }
-
 .text-warning {
-  color: #fce3a3;
-  background-color: rgba(yellow, 0.15);
+  color: rgb(var(--lia-yellow));
 }
-
 .text-error {
-  color: #ffb4d3;
-  background-color: rgba(red, 0.15);
+  color: rgb(var(--lia-red));
 }
 
 .text-disabled {
