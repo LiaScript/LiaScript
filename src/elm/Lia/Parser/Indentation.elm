@@ -1,5 +1,6 @@
 module Lia.Parser.Indentation exposing
     ( check
+    , maybeCheck
     , pop
     , push
     , skip
@@ -9,8 +10,10 @@ import Combine
     exposing
         ( Parser
         , ignore
+        , maybe
         , modifyState
         , regex
+        , string
         , succeed
         , withState
         )
@@ -34,11 +37,55 @@ par_ s =
             |> Combine.skip
 
 
+maybePar_ : Context -> Parser Context ()
+maybePar_ s =
+    if s.indentation == [] then
+        succeed ()
+
+    else if s.indentation_skip then
+        Combine.skip (succeed ())
+
+    else
+        let
+            pattern =
+                String.concat s.indentation
+        in
+        if String.trim pattern == "" then
+            pattern
+                |> regex
+                |> maybe
+                |> Combine.skip
+
+        else
+            let
+                subPattern =
+                    String.trimRight pattern
+            in
+            subPattern
+                |> regex
+                |> (String.repeat
+                        (String.length pattern
+                            - String.length subPattern
+                        )
+                        " "
+                        |> string
+                        |> maybe
+                        |> ignore
+                   )
+                |> Combine.skip
+
+
 {-| Check defined indentation on the `InputStream` and ignore it.
 -}
 check : Parser Context ()
 check =
     withState par_
+        |> ignore (modifyState (skip_ False))
+
+
+maybeCheck : Parser Context ()
+maybeCheck =
+    withState maybePar_
         |> ignore (modifyState (skip_ False))
 
 

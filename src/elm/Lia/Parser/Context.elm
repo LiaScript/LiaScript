@@ -10,7 +10,7 @@ the parser. This state is called `Context` and might have an influence on the
 parsing. It is passed to all successively applied parser.
 -}
 
-import Array exposing (Array)
+import Array
 import Combine
     exposing
         ( Parser

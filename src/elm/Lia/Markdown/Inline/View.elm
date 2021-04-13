@@ -203,7 +203,7 @@ reference config ref attr =
         Movie alt_ ( tube, url_ ) title_ ->
             figure config title_ Nothing <|
                 if tube then
-                    Html.div [ Attr.class "lia-iframe-wrapper" ]
+                    Html.div [ Attr.class "lia-video-wrapper" ]
                         [ Html.iframe
                             (Attr.src url_
                                 :: Attr.attribute "allowfullscreen" ""
@@ -216,14 +216,15 @@ reference config ref attr =
                         ]
 
                 else
-                    Html.video
-                        (Attr.controls True
-                            :: Attr.attribute "width" "100%"
-                            :: toAttribute attr
-                            |> CList.addWhen (title config title_)
-                            |> CList.addWhen (alt config alt_)
-                        )
-                        [ Html.source [ Attr.src url_ ] [] ]
+                    Html.div [ Attr.class "lia-video-wrapper" ]
+                        [ Html.video
+                            (Attr.controls True
+                                :: toAttribute attr
+                                |> CList.addWhen (title config title_)
+                                |> CList.addWhen (alt config alt_)
+                            )
+                            [ Html.source [ Attr.src url_ ] [] ]
+                        ]
 
         Embed _ url _ ->
             oembed Nothing url

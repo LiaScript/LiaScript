@@ -86,8 +86,14 @@ code_body char len =
             char ++ "{" ++ String.fromInt len ++ "}"
     in
     manyTill
-        (maybe Indent.check |> keep (regex ("(?:.(?!" ++ control_frame ++ "))*\\n")))
-        (Indent.check |> keep (regex control_frame |> ignore spaces))
+        (Indent.maybeCheck |> keep (regex ("(?:.(?!" ++ control_frame ++ "))*\\n")))
+        (Indent.check
+            |> keep
+                (regex control_frame
+                    |> ignore spaces
+                    |> ignore newline
+                )
+        )
         |> map (String.concat >> String.dropRight 1)
 
 

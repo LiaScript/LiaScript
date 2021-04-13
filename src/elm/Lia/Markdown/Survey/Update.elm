@@ -66,8 +66,12 @@ update scripts msg vector =
 
         Submit id (Just code) ->
             case vector |> Array.get id of
-                Just ( False, state ) ->
-                    ( vector
+                Just ( False, state, error ) ->
+                    ( if error == Nothing then
+                        vector
+
+                      else
+                        updateError vector id Nothing
                     , [ [ toString state ]
                             |> Eval.event id code (outputs scripts)
                       ]
@@ -83,13 +87,15 @@ update scripts msg vector =
         Handle event ->
             case event.topic of
                 "eval" ->
-                    if
-                        event.message
-                            |> Eval.decode
-                            |> .result
-                            |> (==) "true"
-                    then
+                    let
+                        eval =
+                            Eval.decode event.message
+                    in
+                    if eval.result == "true" && eval.ok then
                         update scripts (Submit event.section Nothing) vector
+
+                    else if eval.result /= "" && not eval.ok then
+                        ( updateError vector event.section (Just eval.result), [], Nothing )
 
                     else
                         ( vector, [], Nothing )
@@ -106,11 +112,21 @@ update scripts msg vector =
                     ( vector, [], Nothing )
 
 
+updateError : Vector -> Int -> Maybe String -> Vector
+updateError vector id message =
+    case Array.get id vector of
+        Just ( False, state, _ ) ->
+            set_state vector id message state
+
+        _ ->
+            vector
+
+
 update_text : Vector -> Int -> String -> Vector
 update_text vector idx str =
     case Array.get idx vector of
-        Just ( False, Text_State _ ) ->
-            set_state vector idx (Text_State str)
+        Just ( False, Text_State _, error ) ->
+            set_state vector idx error (Text_State str)
 
         _ ->
             vector
@@ -119,8 +135,8 @@ update_text vector idx str =
 update_select : Vector -> Int -> Int -> Vector
 update_select vector id value =
     case Array.get id vector of
-        Just ( False, Select_State _ _ ) ->
-            set_state vector id (Select_State False value)
+        Just ( False, Select_State _ _, error ) ->
+            set_state vector id error (Select_State False value)
 
         _ ->
             vector
@@ -129,8 +145,8 @@ update_select vector id value =
 update_select_chose : Vector -> Int -> Vector
 update_select_chose vector id =
     case Array.get id vector of
-        Just ( False, Select_State b value ) ->
-            set_state vector id (Select_State (not b) value)
+        Just ( False, Select_State b value, error ) ->
+            set_state vector id error (Select_State (not b) value)
 
         _ ->
             vector
@@ -139,18 +155,18 @@ update_select_chose vector id =
 update_vector : Vector -> Int -> String -> Vector
 update_vector vector idx var =
     case Array.get idx vector of
-        Just ( False, Vector_State False element ) ->
+        Just ( False, Vector_State False element, error ) ->
             element
                 |> Dict.map (\_ _ -> False)
                 |> Dict.update var (\_ -> Just True)
                 |> Vector_State False
-                |> set_state vector idx
+                |> set_state vector idx error
 
-        Just ( False, Vector_State True element ) ->
+        Just ( False, Vector_State True element, error ) ->
             element
                 |> Dict.update var (\b -> Maybe.map not b)
                 |> Vector_State True
-                |> set_state vector idx
+                |> set_state vector idx error
 
         _ ->
             vector
@@ -159,7 +175,7 @@ update_vector vector idx var =
 update_matrix : Vector -> Int -> Int -> String -> Vector
 update_matrix vector col_id row_id var =
     case Array.get col_id vector of
-        Just ( False, Matrix_State False matrix ) ->
+        Just ( False, Matrix_State False matrix, error ) ->
             let
                 row =
                     Array.get row_id matrix
@@ -170,9 +186,9 @@ update_matrix vector col_id row_id var =
                 |> Maybe.map (\d -> Array.set row_id d matrix)
                 |> Maybe.withDefault matrix
                 |> Matrix_State False
-                |> set_state vector col_id
+                |> set_state vector col_id error
 
-        Just ( False, Matrix_State True matrix ) ->
+        Just ( False, Matrix_State True matrix, error ) ->
             let
                 row =
                     Array.get row_id matrix
@@ -182,22 +198,22 @@ update_matrix vector col_id row_id var =
                 |> Maybe.map (\d -> Array.set row_id d matrix)
                 |> Maybe.withDefault matrix
                 |> Matrix_State True
-                |> set_state vector col_id
+                |> set_state vector col_id error
 
         _ ->
             vector
 
 
-set_state : Vector -> Int -> State -> Vector
-set_state vector idx state =
-    Array.set idx ( False, state ) vector
+set_state : Vector -> Int -> Maybe String -> State -> Vector
+set_state vector idx error state =
+    Array.set idx ( False, state, error ) vector
 
 
 submit : Vector -> Int -> Vector
 submit vector idx =
     case Array.get idx vector of
-        Just ( False, state ) ->
-            Array.set idx ( True, state ) vector
+        Just ( False, state, error ) ->
+            Array.set idx ( True, state, error ) vector
 
         _ ->
             vector
@@ -206,20 +222,20 @@ submit vector idx =
 submitable : Vector -> Int -> Bool
 submitable vector idx =
     case Array.get idx vector of
-        Just ( False, Text_State state ) ->
+        Just ( False, Text_State state, _ ) ->
             state /= ""
 
-        Just ( False, Select_State _ state ) ->
+        Just ( False, Select_State _ state, _ ) ->
             state /= -1
 
-        Just ( False, Vector_State _ state ) ->
+        Just ( False, Vector_State _ state, _ ) ->
             state
                 |> Dict.values
                 |> List.filter (\a -> a)
                 |> List.length
                 |> (\s -> s > 0)
 
-        Just ( False, Matrix_State _ state ) ->
+        Just ( False, Matrix_State _ state, _ ) ->
             state
                 |> Array.toList
                 |> List.map Dict.values

@@ -1,5 +1,6 @@
 module Lia.Markdown.Survey.Parser exposing (parse)
 
+import Accessibility.Aria exposing (errorMessage)
 import Array
 import Combine
     exposing
@@ -172,4 +173,12 @@ modify_State survey_ =
 
 add_state : State -> Context -> Context
 add_state state c =
-    { c | survey_vector = Array.push ( False, state ) c.survey_vector }
+    { c
+        | survey_vector =
+            Array.push
+                ( False
+                , state
+                , Nothing
+                )
+                c.survey_vector
+    }
