@@ -18,7 +18,7 @@ import Lia.Markdown.Survey.Model
         )
 import Lia.Markdown.Survey.Types exposing (Survey, Type(..), Vector)
 import Lia.Markdown.Survey.Update exposing (Msg(..))
-import Lia.Utils exposing (blockKeydown, btn, onKeyDown)
+import Lia.Utils exposing (blockKeydown, btn, icon, onKeyDown)
 import Translations exposing (surveySubmit, surveySubmitted, surveyText)
 
 
@@ -87,7 +87,7 @@ view_survey config attr class model idx javascript fn =
                         ""
 
                     else
-                        " open is-failure"
+                        " open"
                    )
             )
             attr
@@ -125,33 +125,39 @@ submit_button config submitted idx javascript =
 
 view_select : Config sub -> List Inlines -> ( Bool, Int ) -> Int -> Bool -> Html (Msg sub)
 view_select config options ( open, value ) id submitted =
-    Html.div
-        [ Attr.class "lia-dropdown" ]
-        [ Html.span
-            [ Attr.class "lia-dropdown__selected"
-            , if submitted then
-                Attr.disabled True
+    Html.div [ Attr.class "lia-quiz__answers" ]
+        [ Html.div
+            [ Attr.class "lia-dropdown" ]
+            [ Html.span
+                [ Attr.class "lia-dropdown__selected"
+                , if submitted then
+                    Attr.disabled True
 
-              else
-                onClick <| SelectChose id
-            ]
-            [ get_option config value options
-            , Html.i
-                [ Attr.class "lia-icon"
-                , Attr.class <|
-                    if open then
+                  else
+                    onClick <| SelectChose id
+                ]
+                [ Html.span [] [ get_option config value options ]
+                , icon
+                    (if open then
                         "icon-chevron-up"
 
-                    else
+                     else
                         "icon-chevron-down"
+                    )
+                    []
                 ]
-                []
+            , options
+                |> List.indexedMap (option config id)
+                |> Html.div
+                    [ Attr.class "lia-dropdown__options"
+                    , Attr.class <|
+                        if open then
+                            "is-visible"
+
+                        else
+                            "is-hidden"
+                    ]
             ]
-        , options
-            |> List.indexedMap (option config id)
-            |> Html.div
-                [ Attr.class "lia-dropdown-options is-hidden"
-                ]
         ]
 
 
@@ -160,7 +166,7 @@ option config id1 id2 opt =
     opt
         |> (viewer config >> List.map (Html.map Script))
         |> Html.div
-            [ Attr.class "lia-dropdown-option"
+            [ Attr.class "lia-dropdown__option"
             , SelectUpdate id1 id2 |> onClick
             ]
 
