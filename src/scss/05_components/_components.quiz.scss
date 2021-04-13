@@ -13,15 +13,6 @@
     }
   }
 
-  &__warning {
-    display: block;
-    color: rgb(var(--lia-red));
-    background-color: rgba(var(--lia-yellow), 0.1);
-
-    padding: 1rem 1rem;
-    border-radius: 0.8rem;
-  }
-
   &__control {
     display: flex;
     align-items: center;

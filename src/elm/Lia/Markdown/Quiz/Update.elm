@@ -126,6 +126,10 @@ update_ :
 update_ idx vector fn =
     case get idx vector |> Maybe.map fn of
         Just ( elem, sub ) ->
+            let
+                _ =
+                    Debug.log "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW" elem
+            in
             ( Array.set idx elem vector, [], sub )
 
         _ ->

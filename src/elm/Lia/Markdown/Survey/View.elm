@@ -62,10 +62,18 @@ viewError message =
             Html.text ""
 
         Just error ->
-            Html.div [ Attr.class "lia-quiz__warning" ] [ Html.text "⚠️  ", Html.text error ]
+            Html.div [ Attr.class "lia-quiz__feedback text-error" ] [ Html.text error ]
 
 
-view_survey : Config sub -> Parameters -> String -> Vector -> Int -> Maybe String -> (Bool -> Html (Msg sub)) -> Html (Msg sub)
+view_survey :
+    Config sub
+    -> Parameters
+    -> String
+    -> Vector
+    -> Int
+    -> Maybe String
+    -> (Bool -> Html (Msg sub))
+    -> Html (Msg sub)
 view_survey config attr class model idx javascript fn =
     let
         submitted =
@@ -79,7 +87,7 @@ view_survey config attr class model idx javascript fn =
                         ""
 
                     else
-                        " open"
+                        " open is-failure"
                    )
             )
             attr
