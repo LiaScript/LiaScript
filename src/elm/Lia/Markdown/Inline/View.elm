@@ -130,6 +130,7 @@ img : Config sub -> Parameters -> Inlines -> String -> Maybe Inlines -> Maybe In
 img config attr alt_ url_ title_ width =
     Html.img
         (Attr.src url_
+            :: Attr.attribute "loading" "lazy"
             :: toAttribute attr
             |> CList.addIf (width == Nothing) (load url_)
             |> CList.addWhen (title config title_)
@@ -182,6 +183,7 @@ reference config ref attr =
                 if tube then
                     Html.iframe
                         (Attr.src url_
+                            :: Attr.attribute "loading" "lazy"
                             :: Attr.attribute "allowfullscreen" ""
                             :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                             :: Attr.style "width" "100%"
@@ -194,6 +196,7 @@ reference config ref attr =
                 else
                     Html.audio
                         (Attr.controls True
+                            :: Attr.attribute "preload" "none"
                             :: annotation "lia-audio" attr
                             |> CList.addWhen (title config title_)
                             |> CList.addWhen (alt config alt_)
@@ -207,6 +210,7 @@ reference config ref attr =
                         [ Html.iframe
                             (Attr.src url_
                                 :: Attr.attribute "allowfullscreen" ""
+                                :: Attr.attribute "loading" "lazy"
                                 :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                                 :: toAttribute attr
                                 |> CList.addWhen (title config title_)
@@ -219,6 +223,7 @@ reference config ref attr =
                     Html.div [ Attr.class "lia-video-wrapper" ]
                         [ Html.video
                             (Attr.controls True
+                                :: Attr.attribute "preload" "none"
                                 :: toAttribute attr
                                 |> CList.addWhen (title config title_)
                                 |> CList.addWhen (alt config alt_)

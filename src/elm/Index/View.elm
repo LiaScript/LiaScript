@@ -176,6 +176,7 @@ viewMedia courseUrl logoUrl =
                         Html.img
                             [ Attr.class "lia-card__image"
                             , Attr.src logo
+                            , Attr.attribute "loading" "lazy"
                             ]
                             []
                 ]
@@ -278,6 +279,7 @@ viewFooter definition =
                 |> Attr.src
             , Attr.alt "Logo"
             , Attr.height 50
+            , Attr.attribute "loading" "lazy"
             ]
             []
         , case ( String.trim definition.author, String.trim definition.email ) of
