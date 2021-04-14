@@ -318,6 +318,8 @@ class LiaScript {
 
     var observer = new MutationObserver(function (mutations) {
       mutations.forEach(function (mutation) {
+        changeGoogleStyles()
+
         elmSend({
           topic: 'lang',
           section: -1,
@@ -634,6 +636,15 @@ function injectGoogleTranslate() {
       )
     }
     googleTranslate = true
+  }
+}
+
+function changeGoogleStyles() {
+  let goog = document.getElementById(':2.container')
+
+  if (goog) {
+    goog.style.visibility = 'hidden'
+    document.body.style.top = ''
   }
 }
 
