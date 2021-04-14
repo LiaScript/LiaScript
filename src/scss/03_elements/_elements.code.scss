@@ -83,26 +83,9 @@
   }
 }
 
-@mixin style-code($theme) {
-  .lia-code {
-    $bg: mix(map-get($theme, background), map-get($theme, primary), 80%);
-    $fg: mix(map-get($theme, text), map-get($theme, background), 80%);
-    $fg-inv: mix(map-get($theme, text-inv), map-get($theme, background), 80%);
-    background: $bg;
-    color: color-contrast($bg, $fg, $fg-inv);
-
-    &:not(.lia-inline) {
-      $bg: mix(
-        map-get($theme, background),
-        map-get($theme, background-inv),
-        95%
-      );
-      background: $bg;
-    }
-
-    &-stdout {
-      background: #111;
-      color: #eee;
-    }
-  }
+.ace_editor {
+  max-height: calc(
+    var(--max-editor-line-count) * (var(--global-font-size) * 1.47)
+  ) !important;
+  font-size: var(--global-font-size, 1.5rem) !important;
 }

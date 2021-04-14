@@ -25,13 +25,11 @@ view config vector attr gallery =
                 [ [ media ]
                     |> viewer config
                     |> List.map (Html.map Script)
-                    |> Html.div [ Attr.style "float" "left" ]
+                    |> List.head
+                    |> Maybe.withDefault (Html.text "")
                 , Html.div
                     [ Event.onClick <| Show gallery.id i
-                    , Attr.style "width" "25rem"
-                    , Attr.style "height" "25rem"
-                    , Attr.style "position" "relative"
-                    , Attr.style "left" "0"
+                    , Attr.class "lia-lightbox__clickarea"
                     , A11y_Key.tabbable True
                     , A11y_Role.button
                     , A11y_Widget.label "zoom media"
@@ -41,15 +39,12 @@ view config vector attr gallery =
                         ]
                     ]
                     [ icon "icon-zoom"
-                        [ Attr.style "position" "absolute"
-                        , Attr.style "top" "1.5rem"
-                        , Attr.style "right" "1.5rem"
-                        , Attr.style "scale" "1.5"
+                        [ Attr.class "lia-lightbox__icon"
                         ]
                     ]
                 ]
                     |> Html.div
-                        []
+                        [ Attr.class "lia-lightbox" ]
             )
         |> Html.div (annotation "lia-gallery" attr)
         |> viewMedia config vector gallery

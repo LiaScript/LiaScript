@@ -204,14 +204,14 @@ viewCode executable lang theme running errors id_1 id_2 file attr =
 
 toStyle : Bool -> Int -> List (Html.Attribute msg)
 toStyle visible pix =
-    [ Attr.style "max-height"
+    [ Attr.style "height"
         (if visible then
             String.fromInt pix ++ "px"
 
          else
             "0px"
         )
-    , Attr.style "transition" "max-height 0.25s ease-out"
+    , Attr.style "transition" "height 0.25s ease-out"
     ]
 
 
