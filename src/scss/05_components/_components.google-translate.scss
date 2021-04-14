@@ -1,0 +1,22 @@
+.goog-te-menu-frame {
+  max-width: calc(100vw - 2rem) !important;
+  margin: 0 1rem !important;
+}
+
+.goog-te-gadget img {
+  display: none;
+}
+
+.goog-te-gadget-simple {
+  border: 0 !important;
+  padding: 0 !important;
+}
+
+.goog-te-menu-value {
+  margin: 0 !important;
+  padding: 0.5rem 0 !important;
+
+  > *:not(:last-child) {
+    margin-right: 0.5rem !important;
+  }
+}
