@@ -505,9 +505,10 @@ translateWithGoogle : Lang -> Bool -> Bool -> List (Html Msg)
 translateWithGoogle lang tabbable bool =
     [ divider
     , if not bool then
-        Html.label [ A11y_Widget.hidden (not tabbable) ]
+        Html.label [ Attr.class "lia-label", A11y_Widget.hidden (not tabbable) ]
             [ Html.input
                 [ Attr.type_ "checkbox"
+                , Attr.class "lia-checkbox"
                 , Attr.checked bool
                 , onClick (Toggle TranslateWithGoogle)
                 , A11y_Key.tabbable tabbable

@@ -28,7 +28,6 @@ $controlHeight: 4rem;
     overflow-y: auto;
     position: absolute;
     height: 100%;
-    max-height: 100%;
 
     @include breakpoint("sm") {
       height: auto;
@@ -92,53 +91,22 @@ $controlHeight: 4rem;
 
   &__content {
     display: flex;
-    max-height: 100%;
     height: auto;
+    justify-content: center;
+    max-height: 100%;
     overflow-y: auto;
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
 
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
     &::-webkit-scrollbar {
       display: none;
     }
 
-    .lia-figure {
-      height: 100%;
-
-      &__media {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      figcaption {
-        padding: 0 1rem;
-        max-width: fit-content;
-
-        @include breakpoint("sm") {
-          padding: 0;
-        }
-      }
-    }
-
-    .lia-video-wrapper {
-      height: 100%;
-      padding: 0;
-      display: flex;
-      align-items: center;
-
-      video {
-        position: relative;
-        width: auto;
-        max-height: calc(100vh - (2 * #{$controlHeight}));
-      }
-
-      iframe {
-        position: relative;
-      }
-    }
+    width: 100vw;
 
     @include breakpoint("sm") {
+      width: calc(100vw - (2 * 5rem));
+      max-width: 100vw;
       margin: 1rem 5rem;
 
       figcaption {
@@ -148,6 +116,55 @@ $controlHeight: 4rem;
 
     > * {
       margin: 0;
+    }
+  }
+
+  .lia-figure {
+    height: 100%;
+    flex: 1;
+
+    &__media {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      //height: 100%;
+      max-height: calc(100vh - (2 * #{$controlHeight}));
+
+      @include breakpoint("sm") {
+        max-height: calc(100vh - (2 * #{$controlHeight}));
+      }
+    }
+
+    figcaption {
+      padding: 0 1rem;
+      max-width: 65ch;
+      margin: 1rem auto;
+
+      @include breakpoint("sm") {
+        padding: 0;
+      }
+    }
+  }
+
+  .lia-video-wrapper {
+    height: 100%;
+    padding: 0;
+    display: flex;
+    align-items: center;
+
+    video {
+      position: relative;
+      width: auto;
+      height: auto;
+      //max-height: 100vh;
+    }
+  }
+
+  .lia-iframe-wrapper {
+    flex: 1;
+
+    iframe {
+      max-height: 100vh;
     }
   }
 }

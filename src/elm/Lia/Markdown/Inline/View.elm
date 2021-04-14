@@ -150,7 +150,7 @@ figure config title_ width element =
         ([ Attr.class "lia-figure" ]
             |> CList.addWhen (Maybe.map Attr.width width)
         )
-        [ Html.span [ Attr.class "lia-figure__media" ]
+        [ Html.div [ Attr.class "lia-figure__media" ]
             [ element
             ]
         , title_
@@ -206,7 +206,7 @@ reference config ref attr =
         Movie alt_ ( tube, url_ ) title_ ->
             figure config title_ Nothing <|
                 if tube then
-                    Html.div [ Attr.class "lia-video-wrapper" ]
+                    Html.div [ Attr.class "lia-iframe-wrapper" ]
                         [ Html.iframe
                             (Attr.src url_
                                 :: Attr.attribute "allowfullscreen" ""
