@@ -629,7 +629,7 @@ function injectGoogleTranslate() {
         {
           pageLanguage: document.documentElement.lang,
           // includedLanguages: 'ar,en,es,jv,ko,pa,pt,ru,zh-CN',
-          layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+          // layout: google.translate.TranslateElement.InlineLayout.HORIZONTAL,
           autoDisplay: false,
         },
         'google_translate_element',
@@ -640,7 +640,7 @@ function injectGoogleTranslate() {
 }
 
 function changeGoogleStyles() {
-  let goog = document.getElementById(':2.container')
+  let goog = document.getElementById(':1.container')
 
   if (goog) {
     goog.style.visibility = 'hidden'
