@@ -1,37 +1,33 @@
 $controlHeight: 4rem;
 
 .lia-modal {
-  top: 0;
-  left: 0;
-  position: fixed;
-  z-index: 9000;
+  align-items: center;
+  color: white;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  pointer-events: auto;
-  width: 100vw;
   height: 100vh;
-  color: white;
+  justify-content: center;
+  left: 0;
+  pointer-events: auto;
+  position: fixed;
+  top: 0;
+  width: 100vw;
+  z-index: 9000;
 
   &__outer {
     background-color: rgba(0, 0, 0, 0.9);
-    width: 100vw;
     height: 100vh;
     position: absolute;
+    width: 100vw;
   }
 
   &__inner {
     display: flex;
     flex-direction: column;
+    height: 100%;
     justify-content: center;
     overflow-y: auto;
     position: absolute;
-    height: 100%;
-
-    @include breakpoint("sm") {
-      height: auto;
-    }
   }
 
   &__close,
@@ -40,20 +36,20 @@ $controlHeight: 4rem;
   }
 
   &__close {
+    align-items: center;
+    display: flex;
     height: $controlHeight;
+    justify-content: flex-end;
     position: sticky;
     text-align: right;
     top: 0;
     width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
 
     @include breakpoint("sm") {
-      position: absolute;
-      top: 0.5rem;
-      right: 1rem;
       margin: 0;
+      position: absolute;
+      right: 1rem;
+      top: 0.5rem;
     }
   }
 
@@ -62,9 +58,9 @@ $controlHeight: 4rem;
     display: flex;
     flex-direction: row-reverse;
     font-size: 2rem;
+    height: $controlHeight;
     justify-content: space-between;
     width: 100%;
-    height: $controlHeight;
 
     @include breakpoint("sm") {
       position: absolute;
@@ -91,23 +87,23 @@ $controlHeight: 4rem;
 
   &__content {
     display: flex;
-    height: auto;
+    height: 100%;
     justify-content: center;
     max-height: 100%;
     overflow-y: auto;
+    width: 100vw;
 
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE and Edge */
+    // hide scrollbar for different browsers
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     &::-webkit-scrollbar {
       display: none;
     }
 
-    width: 100vw;
-
     @include breakpoint("sm") {
-      width: calc(100vw - (2 * 5rem));
-      max-width: 100vw;
       margin: 1rem 5rem;
+      max-width: 100vw;
+      width: calc(100vw - (2 * 5rem));
 
       figcaption {
         padding: 0;
@@ -120,25 +116,34 @@ $controlHeight: 4rem;
   }
 
   .lia-figure {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
     height: 100%;
-    flex: 1;
+    justify-content: center;
 
     &__media {
-      display: flex;
       align-items: center;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
       justify-content: center;
-      //height: 100%;
-      max-height: calc(100vh - (2 * #{$controlHeight}));
+      width: 100%;
 
-      @include breakpoint("sm") {
-        max-height: calc(100vh - (2 * #{$controlHeight}));
+      &[data-media-type="image"] {
+        height: auto;
+
+        img {
+          min-height: 0;
+        }
       }
     }
 
     figcaption {
-      padding: 0 1rem;
-      max-width: 65ch;
       margin: 1rem auto;
+      max-width: 65ch;
+      min-height: 0;
+      padding: 0 1rem;
 
       @include breakpoint("sm") {
         padding: 0;
@@ -147,24 +152,25 @@ $controlHeight: 4rem;
   }
 
   .lia-video-wrapper {
+    align-items: center;
+    display: flex;
     height: 100%;
     padding: 0;
-    display: flex;
-    align-items: center;
 
     video {
+      height: auto;
       position: relative;
       width: auto;
-      height: auto;
-      //max-height: 100vh;
     }
   }
 
   .lia-iframe-wrapper {
-    flex: 1;
+    flex-grow: 1;
+    padding: 0;
+    width: 100vw;
 
-    iframe {
-      max-height: 100vh;
+    @include breakpoint("sm") {
+      width: calc(100vw - (2 * 5rem));
     }
   }
 }

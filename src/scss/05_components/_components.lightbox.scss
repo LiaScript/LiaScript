@@ -1,0 +1,21 @@
+.lia-lightbox {
+  position: relative;
+
+  &__clickarea {
+    cursor: pointer;
+    height: 25rem;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 25rem;
+  }
+
+  &__icon {
+    color: white;
+    font-size: 2rem;
+    position: absolute;
+    right: 1rem;
+    text-shadow: 1px 1px 5px rgb(0 0 0 / 20%);
+    top: 1rem;
+  }
+}

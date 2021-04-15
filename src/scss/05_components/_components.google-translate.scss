@@ -1,22 +1,13 @@
-.goog-te-menu-frame {
-  max-width: calc(100vw - 2rem) !important;
-  margin: 0 1rem !important;
-}
+#google_translate_element {
+  width: 100%;
+  overflow: hidden;
 
-.goog-te-gadget img {
-  display: none;
-}
-
-.goog-te-gadget-simple {
-  border: 0 !important;
-  padding: 0 !important;
-}
-
-.goog-te-menu-value {
-  margin: 0 !important;
-  padding: 0.5rem 0 !important;
-
-  > *:not(:last-child) {
-    margin-right: 0.5rem !important;
+  .goog-te-combo {
+    margin: 0 0 0.5rem !important;
+    padding: 0.5rem 0 !important;
+    border: 1px solid rgb(var(--lia-grey-light));
+    padding: 0.5rem;
+    width: 100%;
+    word-wrap: normal;
   }
 }
