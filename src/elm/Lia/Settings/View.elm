@@ -24,7 +24,7 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
 import Lia.Settings.Update exposing (Msg(..), Toggle(..))
-import Lia.Utils exposing (blockKeydown, btnIcon)
+import Lia.Utils exposing (blockKeydown, btn, btnIcon)
 import QRCode
 import Translations as Trans exposing (Lang)
 
@@ -199,24 +199,47 @@ modeToString show =
 
 
 viewSizing : Lang -> Bool -> Int -> Html Msg
-viewSizing lang tabbable int =
-    Html.div [ Attr.id "lia-font-sizing" ]
-        [ Html.text <| Trans.baseFont lang ++ ":"
-        , btnIcon
+viewSizing lang tabbable size =
+    Html.div []
+        [ btn
             { title = Trans.baseDec lang
             , tabbable = tabbable
-            , msg = Just (ChangeFontSize False)
-            , icon = "icon-minus"
+            , msg = Just (ChangeFontSize 1)
             }
-            [ A11y_Aria.labeledBy "lia-font-sizing", Attr.class "lia-btn--transparent" ]
-        , Html.text (String.fromInt int ++ " %")
-        , btnIcon
-            { title = Trans.baseInc lang
+            [ Attr.class <|
+                if size /= 2 && size /= 3 then
+                    "active"
+
+                else
+                    ""
+            ]
+            [ Html.text "A" ]
+        , btn
+            { title = Trans.baseDec lang
             , tabbable = tabbable
-            , msg = Just (ChangeFontSize True)
-            , icon = "icon-plus"
+            , msg = Just (ChangeFontSize 2)
             }
-            [ A11y_Aria.labeledBy "lia-font-sizing", Attr.class "lia-btn--transparent" ]
+            [ Attr.class <|
+                if size == 1 then
+                    "active"
+
+                else
+                    ""
+            ]
+            [ Html.text "A" ]
+        , btn
+            { title = Trans.baseDec lang
+            , tabbable = tabbable
+            , msg = Just (ChangeFontSize 3)
+            }
+            [ Attr.class <|
+                if size == 1 then
+                    "active"
+
+                else
+                    ""
+            ]
+            [ Html.text "A" ]
         ]
 
 
