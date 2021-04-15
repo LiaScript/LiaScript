@@ -8,7 +8,7 @@
   position: fixed;
   right: 0;
   top: 0;
-  transition: $global-transition;
+  @include transition(width);
   user-select: none;
   width: $support-width-mobile;
   z-index: 1;
@@ -53,7 +53,6 @@
     );
     left: 0;
     transform: translate(-6.5rem, -50%);
-    transition: $global-transition;
 
     @include breakpoint("sm", "max") {
       transform: translate(2.1rem, -50%);
@@ -147,7 +146,6 @@
     padding: 0;
     position: relative;
     right: 0;
-    transition: $global-transition;
     top: 0;
     width: 100%;
 
@@ -173,6 +171,12 @@
 
     i {
       font-size: 2rem;
+    }
+
+    .lia-settings-editor label {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
     }
 
     @include breakpoint("md") {

@@ -13,7 +13,6 @@ $header-height-mobile: 5.6rem;
   top: 0;
   left: 0;
   right: 0;
-  transition: $global-transition;
   z-index: 100;
 
   @include breakpoint("md") {
@@ -25,14 +24,6 @@ $header-height-mobile: 5.6rem;
     flex: 1;
   }
 
-  &__logo {
-    //
-  }
-
-  &__left {
-    //
-  }
-
   &__middle {
     display: flex;
     height: 100%;
@@ -41,10 +32,5 @@ $header-height-mobile: 5.6rem;
 
   &__right {
     position: relative;
-  }
-}
-
-@mixin style-header($theme) {
-  .lia-header {
   }
 }

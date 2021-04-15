@@ -13,6 +13,7 @@
 @import "01_tools/tools.font-size";
 @import "01_tools/tools.hidden-visually";
 @import "01_tools/tools.str-replace";
+@import "01_tools/tools.transition";
 
 // Generic
 @import "02_generic/generic.reset";
@@ -45,6 +46,7 @@
 @import "05_components/components.card";
 @import "05_components/components.dropdown";
 @import "05_components/components.effect";
+@import "05_components/components.fontscale";
 @import "05_components/components.gallery";
 @import "05_components/components.google-translate";
 @import "05_components/components.header";

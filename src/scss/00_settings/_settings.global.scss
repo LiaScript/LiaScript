@@ -47,7 +47,14 @@ $global-breakpoints: (
 $global-border: 1px solid rgb(var(--color-border)) !default;
 $global-radius: 0.8rem !default;
 $global-outline: 3px !default;
-$global-transition: all 250ms ease-in-out !default;
+
+$global-transition-property: all !default;
+$global-transition-speed: 250ms !default;
+$global-transition-timing-function: ease-in-out !default;
+$global-transition-delay: 0ms !default;
+
+$global-transition: $global-transition-property $global-transition-speed
+  $global-transition-timing-function $global-transition-delay !default;
 
 /* --------------------------------------------------
    Fonts

@@ -85,7 +85,13 @@
 
 .ace_editor {
   max-height: calc(
-    var(--max-editor-line-count) * (var(--global-font-size) * 1.47)
+    var(--max-editor-line-count) *
+      (
+        calc(var(--global-font-size, 1.5rem) * var(--font-size-multiplier)) *
+          1.47
+      )
   ) !important;
-  font-size: var(--global-font-size, 1.5rem) !important;
+  font-size: calc(
+    var(--global-font-size, 1.5rem) * var(--font-size-multiplier)
+  ) !important;
 }

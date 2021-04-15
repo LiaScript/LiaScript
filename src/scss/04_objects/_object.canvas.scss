@@ -25,6 +25,7 @@ $slide-margin-left-textbook: 19rem !default;
   left: 0;
   position: relative;
   transition: $global-transition;
+  transition-property: left, right, width;
   width: 100vw;
   overflow-x: hidden;
 

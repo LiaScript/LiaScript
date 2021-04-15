@@ -38,17 +38,3 @@
     display: inline-block;
   }
 }
-
-@mixin style-effect-circle($theme) {
-  .lia-effect-circle {
-    $bg: mix(map-get($theme, background), map-get($theme, background-inv), 80%);
-    background: $bg;
-    color: color-contrast($bg);
-  }
-
-  .lia-effect-circle-inline {
-    $bg: mix(map-get($theme, background), map-get($theme, background-inv), 80%);
-    background: $bg;
-    color: color-contrast($bg);
-  }
-}

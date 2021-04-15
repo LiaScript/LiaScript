@@ -1,9 +1,16 @@
-// basic color definitions
 :root {
-  // map $global-colors and define global color variables with prefix "lia"
+  // Basic color definitions
+  // Map $global-colors and define global color variables with prefix "lia".
   @each $color, $rgb in $global-colors {
     --lia-#{$color}: #{$rgb};
   }
+
+  // Font-Size
+  --global-font-size: 1.5rem;
+  --font-size-multiplier: 1;
+
+  // Max Editor Line Count
+  --max-editor-line-count: 16;
 }
 
 // additional color definitions for default theme
@@ -44,5 +51,14 @@
     --color-background: var(--lia-grey-dark);
     --color-border: var(--lia-anthracite);
     --color-text: var(--lia-white);
+  }
+
+  //font sizes scaling
+  &.lia-font-scale-2 {
+    --font-size-multiplier: 1.25;
+  }
+
+  &.lia-font-scale-3 {
+    --font-size-multiplier: 1.5;
   }
 }

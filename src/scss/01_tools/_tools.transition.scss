@@ -1,0 +1,49 @@
+@mixin transition(
+  $property: $global-transition-property,
+  $speed: $global-transition-speed,
+  $timing-function: $global-transition-timing-function,
+  $delay: $global-transition-delay
+) {
+  $p: null;
+  $s: null;
+  $t: null;
+  $d: null;
+
+  @if ($property) {
+    @if type-of($property) == string {
+      $p: $property;
+    } @else {
+      @warn "Make sure that `$property` is a string.";
+    }
+  } @else {
+    $p: $global-transition-property;
+  }
+
+  @if ($speed) {
+    @if unitless($speed) {
+      $s: $speed + 0ms;
+    } @else {
+      $s: $speed;
+    }
+  } @else {
+    $s: $global-transition-speed;
+  }
+
+  @if ($timing-function) {
+    $t: $timing-function;
+  } @else {
+    $t: $global-transition-timing-function;
+  }
+
+  @if ($delay) {
+    @if unitless($delay) {
+      $d: $delay + 0ms;
+    } @else {
+      $d: $delay;
+    }
+  } @else {
+    $d: $global-transition-delay;
+  }
+
+  transition: $p $s $t $d;
+}
