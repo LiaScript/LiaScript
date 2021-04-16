@@ -106,7 +106,10 @@ inline config attr e body =
                     circle_ e.begin :: Html.text " " :: body
 
                 PlayBack ->
-                    inline_playback config e :: body
+                    [ inline_playback config e
+                        :: body
+                        |> Html.label []
+                    ]
 
                 PlayBackAnimation ->
                     circle_ e.begin :: inline_playback config e :: body
@@ -120,8 +123,10 @@ inline config attr e body =
                     |> hiddenSpan (not <| isIn config.visible e) attr
 
             PlayBack ->
-                inline_playback config e
+                [ inline_playback config e
                     :: body
+                    |> Html.label []
+                ]
                     |> hiddenSpan False attr
 
             PlayBackAnimation ->
