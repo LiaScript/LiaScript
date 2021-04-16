@@ -94,6 +94,9 @@ function handleEffects(
             text += element[i].innerText || element[i].textContent
           }
 
+          // This is used to clean up effect numbers, which are marked by a \b
+          text = text.replaceAll(/\\u001a\\d+\\u001a/g, '').trim()
+
           if (text !== '') {
             TTS.speak(
               text,
