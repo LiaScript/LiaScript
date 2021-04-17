@@ -19,7 +19,7 @@ import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Section exposing (Section, Sections)
 import Lia.Settings.Types exposing (Mode(..))
-import Lia.Utils exposing (blockKeydown)
+import Lia.Utils exposing (blockKeydown, btn, icon)
 import Translations exposing (Lang, baseSearch)
 
 
@@ -98,16 +98,17 @@ content lang active sectionId msg =
 
 bottom : Bool -> msg -> Html msg
 bottom active msg =
-    Html.button
-        [ onClick msg
-        , Attr.title "home"
-        , Attr.class "lia-btn lia-btn--transparent"
+    btn
+        { title = "home"
+        , msg = Just msg
+        , tabbable = active
+        }
+        [ Attr.class "lia-btn--transparent"
         , Attr.id "lia-btn-home"
-        , A11y_Key.tabbable active
         , A11y_Widget.hidden (not active)
         ]
-        [ Html.i [ A11y_Widget.hidden True, Attr.class "lia-btn__icon icon icon-grid" ] []
-        , Html.span [ Attr.class "lia-btn__text" ] [ Html.text "home" ]
+        [ icon "icon-grid" []
+        , Html.span [ Attr.class "lia-btn__text" ] [ Html.text "Home" ]
         ]
 
 
