@@ -4,6 +4,7 @@ module Lia.Markdown.Effect.View exposing
     , state
     )
 
+import Accessibility.Key as A11y_Key
 import Conditional.List as CList
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -20,6 +21,7 @@ import Lia.Markdown.Stringify exposing (stringify)
 import Lia.Markdown.Types exposing (Markdown)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Settings.Types exposing (Mode(..))
+import Lia.Voice as Voice
 import Port.Event as Event exposing (Event)
 import Port.TTS
 
@@ -34,12 +36,12 @@ circle_ =
 
 number : Int -> String
 number i =
-    "\u{001A}" ++ String.fromInt i ++ "\u{001A}"
+    "\u{200A}" ++ String.fromInt i ++ "\u{200A}"
 
 
 cleanUpNumber : String -> String
 cleanUpNumber str =
-    str ++ ".innerText.replaceAll(/\\u001a\\d+\\u001a/g,'').trim()"
+    str ++ ".innerText.replace(/\\u200a\\d+\\u200a/g,'').trim()"
 
 
 block : Config sub -> Model a -> Parameters -> Effect Markdown -> List (Html Msg) -> Html Msg
@@ -171,6 +173,7 @@ block_playback config e =
     if config.speaking == Just e.id then
         Html.button
             [ Attr.class "lia-btn icon icon-stop-circle"
+            , A11y_Key.tabbable True
             , e.id
                 |> E.Mute
                 |> UpdateEffect True
@@ -181,17 +184,44 @@ block_playback config e =
     else
         Html.button
             [ Attr.class "lia-btn icon icon-play-circle"
-            , "XXX"
-                |> Port.TTS.playback e.id e.voice
-                |> Event.encode
-                |> Event "effect" config.slide
-                |> Event.encode
-                |> JE.encode 0
-                |> String.replace "\"XXX\"" (cleanUpNumber "this.parentNode.childNodes[1]")
-                |> (\event -> "playback(" ++ event ++ ")")
-                |> Attr.attribute "onclick"
+            , A11y_Key.tabbable True
+            , playBackAttr e.id e.voice config.slide "this.parentNode.childNodes[1]"
             ]
             []
+
+
+playBackAttr : Int -> String -> Int -> String -> Html.Attribute msg
+playBackAttr id voice section command =
+    "XXX"
+        |> Port.TTS.playback id voice
+        |> Event.encode
+        |> Event "effect" section
+        |> Event.encode
+        |> JE.encode 0
+        |> String.replace "\"XXX\"" (cleanUpNumber command)
+        |> (\event -> "playback(" ++ event ++ ")")
+        |> Attr.attribute "onclick"
+
+
+inlinePlayBack config e body =
+    case Voice.getVoiceFor e.voice config.translations of
+        Nothing ->
+            []
+
+        Just ( translate, voice ) ->
+            [ Attr.class <|
+                if translate then
+                    "translate"
+
+                else
+                    "notranslate"
+            , Attr.attribute "translate" <|
+                if translate then
+                    "yes"
+
+                else
+                    "no"
+            ]
 
 
 inline_playback : Config sub -> Effect Inline -> Html msg
@@ -206,21 +236,15 @@ inline_playback config e =
                 |> JE.encode 0
                 |> (\event -> "playback(" ++ event ++ ")")
                 |> Attr.attribute "onclick"
+            , A11y_Key.tabbable True
             ]
             []
 
     else
         Html.button
             [ Attr.class "lia-btn lia-btn--transparent icon icon-play-circle mx-1"
-            , "XXX"
-                |> Port.TTS.playback e.id e.voice
-                |> Event.encode
-                |> Event "effect" config.slide
-                |> Event.encode
-                |> JE.encode 0
-                |> String.replace "\"XXX\"" "this.labels[0].innerText"
-                |> (\event -> "playback(" ++ event ++ ")")
-                |> Attr.attribute "onclick"
+            , playBackAttr e.id e.voice config.slide "this.labels[0]"
+            , A11y_Key.tabbable True
             ]
             []
 
