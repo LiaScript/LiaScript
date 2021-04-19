@@ -156,7 +156,7 @@ viewCode executable lang theme running errors id_1 id_2 file attr =
                         , tabbable = True
                         }
                         [ Attr.class "lia-accordion__toggle" ]
-                    , Html.h3 [ Attr.class "lia-accordion__headline" ] [ Html.text file.name ]
+                    , Html.h3 [ Attr.class "lia-accordion__headline h4" ] [ Html.text file.name ]
                     ]
                 , Html.div
                     [ Attr.classList
