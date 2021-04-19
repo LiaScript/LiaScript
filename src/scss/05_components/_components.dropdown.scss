@@ -37,6 +37,10 @@
     &:not(:last-child) {
       margin-bottom: 1rem;
     }
+
+    &:hover {
+      background-color: rgba(var(--color-highlight), 0.1);
+    }
   }
 
   &.is-disabled {

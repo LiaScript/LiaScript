@@ -4,16 +4,9 @@
   @each $color, $rgb in $global-colors {
     --lia-#{$color}: #{$rgb};
   }
-
-  // Font-Size
-  --global-font-size: 1.5rem;
-  --font-size-multiplier: 1;
-
-  // Max Editor Line Count
-  --max-editor-line-count: 16;
 }
 
-// additional color definitions for default theme
+// Additional Color Definitions For Default Theme
 :root {
   --color-background: var(--lia-white);
   --color-border: var(--lia-grey-light);
@@ -52,6 +45,15 @@
     --color-border: var(--lia-anthracite);
     --color-text: var(--lia-white);
   }
+}
+
+:root {
+  // Global Font-Settings
+  --global-font-family: #{$global-font-family};
+  --global-font-mono: #{$global-font-mono};
+  --global-font-headline: #{$global-font-headline};
+  --global-font-size: 1.5rem;
+  --font-size-multiplier: 1;
 
   //font sizes scaling
   &.lia-font-scale-2 {
@@ -61,4 +63,7 @@
   &.lia-font-scale-3 {
     --font-size-multiplier: 1.5;
   }
+
+  // Max Editor Line Count
+  --max-editor-line-count: 16;
 }

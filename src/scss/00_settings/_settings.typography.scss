@@ -18,7 +18,7 @@ input,
 optgroup,
 select,
 textarea {
-  font-family: $global-font-family;
+  font-family: var(--global-font-family, $global-font-family);
 }
 
 a,
