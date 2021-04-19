@@ -38,7 +38,7 @@ import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.Parser.Context exposing (Context)
-import Lia.Parser.Helper exposing (newlines, newlines1, spaces1)
+import Lia.Parser.Helper exposing (newline, newlines, newlines1, spaces1)
 import Lia.Parser.Indentation as Indent
 
 
@@ -193,8 +193,8 @@ comment paragraph =
                 )
             )
         |> ignore (regex "}}--[\t ]*")
-        |> ignore (maybe (newlines1 |> ignore Indent.skip))
-        |> andMap (Indent.check |> keep paragraph)
+        |> ignore (maybe (newline |> ignore Indent.check))
+        |> andMap paragraph
         |> andThen (add_comment True)
         |> ignore reset_effect_number
 

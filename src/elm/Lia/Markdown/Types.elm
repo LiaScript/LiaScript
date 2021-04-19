@@ -33,6 +33,7 @@ type Markdown
     | Header Parameters ( Inlines, Int )
     | Gallery Parameters Gallery
     | Citation Parameters Inlines
+    | Problem Inlines
 
 
 type alias MarkdownS =
