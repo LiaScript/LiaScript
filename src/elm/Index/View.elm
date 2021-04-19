@@ -15,7 +15,7 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View as Inline
 import Lia.Parser.PatReplace exposing (link)
 import Lia.Settings.Types exposing (Mode(..))
-import Lia.Utils exposing (btn, btnIcon)
+import Lia.Utils exposing (blockKeydown, btn, btnIcon)
 import Session exposing (Session)
 import Svg
 import Svg.Attributes as SvgAttr
@@ -66,17 +66,19 @@ searchBar url =
             , Attr.value url
             , Attr.placeholder "course-url"
             , Attr.class "lia-input border-grey-light max-w-50 mr-1"
-
-            --, blockKeydown NoOp
+            , blockKeydown NoOp
             ]
             []
         , if url == "" then
-            Html.button [ Attr.class "lia-btn is-disabled", Attr.disabled True ]
+            Html.button
+                [ Attr.class "lia-btn is-disabled"
+                , Attr.disabled True
+                ]
                 [ Html.text "load course"
                 ]
 
           else
-            Html.button
+            Html.a
                 [ href url
                 , Attr.class "lia-btn"
                 ]
