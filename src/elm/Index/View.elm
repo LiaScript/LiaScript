@@ -253,7 +253,7 @@ viewControls hasShareAPI title comment course =
             Nothing ->
                 Html.a
                     [ href course.id
-                    , Attr.class "lia-btn lia-btn--transparent lia-btn--tag icon icon-sign-in px-1 text-turquoise border-turquoise"
+                    , Attr.class "lia-btn lia-btn--transparent lia-btn--tag icon icon-login px-1 text-turquoise border-turquoise"
                     ]
                     []
 
