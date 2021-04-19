@@ -45,15 +45,15 @@
   &__toggler {
     color: rgb(var(--color-highlight));
     display: block;
-    visibility: visible;
-
+    font-size: 2rem;
+    left: 0;
     position: absolute;
+    transform: translate(-6.5rem, -50%);
+    visibility: visible;
     top: calc(
       (#{$header-height-mobile} / 2) +
         (2 * #{map-get($global-spacing, spacing-small)} - (#{$btn-height} / 4))
     );
-    left: 0;
-    transform: translate(-6.5rem, -50%);
 
     @include breakpoint("sm", "max") {
       transform: translate(2.1rem, -50%);
@@ -168,10 +168,6 @@
 
     svg {
       height: 15rem;
-    }
-
-    i {
-      font-size: 2rem;
     }
 
     .lia-settings-editor label {
