@@ -28,23 +28,37 @@ view session model =
         [ Html.h1 [] [ Html.text "Lia: Open-courSes" ]
         , searchBar model.input
         , if List.isEmpty model.courses && model.initialized then
-            Html.div [] <|
-                [ [ "If you cannot see any courses in this list, try out one of the following links, to get more information about this project and to visit some examples and free interactive books."
-                        |> Html.text
-                  ]
-                    |> Html.p []
-                , Html.a [ Attr.href "https://LiaScript.github.io" ]
-                    [ Html.text "Project-Website" ]
-                , Html.a [ href "https://raw.githubusercontent.com/liaScript/docs/master/README.md" ]
-                    [ Html.text "Project-Description"
+            Html.section [] <|
+                [ Html.br [] []
+                , Html.p
+                    [ Attr.class "lia-paragraph" ]
+                    [ Html.text "If you cannot see any courses in this list, try out one of the following links, to get more information about this project and to visit some examples and free interactive books."
                     ]
-                , Html.a [ href "https://raw.githubusercontent.com/liaScript/index/master/README.md" ]
-                    [ Html.text "Index" ]
-                , [ "At the end, I hope to see some of your courses in my list."
-                        |> Html.text
-                  ]
-                    |> Html.p []
-                , Html.text "Have a nice one ;-) ..."
+                , Html.u
+                    []
+                    [ Html.li []
+                        [ Html.a
+                            [ Attr.href "https://LiaScript.github.io" ]
+                            [ Html.text "Project-Website" ]
+                        ]
+                    , Html.li []
+                        [ Html.a
+                            [ href "https://raw.githubusercontent.com/liaScript/docs/master/README.md" ]
+                            [ Html.text "Project-Documentation" ]
+                        ]
+                    , Html.li []
+                        [ Html.a
+                            [ href "https://raw.githubusercontent.com/liaScript/index/master/README.md" ]
+                            [ Html.text "Index" ]
+                        ]
+                    ]
+                , Html.br [] []
+                , Html.p
+                    [ Attr.class "lia-paragraph" ]
+                    [ Html.text "At the end, we hope to learn from your courses." ]
+                , Html.p
+                    [ Attr.class "lia-paragraph" ]
+                    [ Html.text "Have a nice one ;-) ..." ]
                 ]
 
           else if model.initialized then
