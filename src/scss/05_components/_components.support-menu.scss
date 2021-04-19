@@ -8,7 +8,8 @@
   position: fixed;
   right: 0;
   top: 0;
-  @include transition(width);
+  transition: $global-transition;
+  transition-property: width, transform;
   user-select: none;
   width: $support-width-mobile;
   z-index: 1;
@@ -187,7 +188,7 @@
       padding: 1.4rem;
       position: absolute;
       top: 5.9rem;
-      width: max-content;
+      width: auto;
       z-index: 10;
 
       &.active {

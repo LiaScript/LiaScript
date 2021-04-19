@@ -8,7 +8,7 @@
   padding: 3rem 0 1rem 0;
   position: fixed;
   transition: $global-transition;
-  transition-property: left, width;
+  transition-property: left, width, transform;
   width: $toc-width-mobile;
   z-index: 200;
 
