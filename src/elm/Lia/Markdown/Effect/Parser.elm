@@ -193,7 +193,7 @@ comment paragraph =
                 )
             )
         |> ignore (regex "}}--[\t ]*")
-        |> ignore (maybe (newline |> ignore Indent.check))
+        |> ignore (maybe (newlines |> ignore Indent.check))
         |> andMap paragraph
         |> andThen (add_comment True)
         |> ignore reset_effect_number

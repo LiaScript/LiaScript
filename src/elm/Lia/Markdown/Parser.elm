@@ -376,8 +376,8 @@ horizontal_line =
 
 paragraph : Parser Context Inlines
 paragraph =
-    Indent.skip
-        |> ignore checkParagraph
+    checkParagraph
+        |> ignore Indent.skip
         |> keep (many1 (Indent.check |> keep line |> ignore newline))
         |> map (List.intersperse [ Chars " " [] ] >> List.concat >> combine)
 
