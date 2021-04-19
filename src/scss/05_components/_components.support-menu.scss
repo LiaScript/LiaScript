@@ -10,6 +10,9 @@
   top: 0;
   transition: $global-transition;
   transition-property: width, transform;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
   user-select: none;
   width: $support-width-mobile;
   z-index: 1;

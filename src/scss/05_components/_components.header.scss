@@ -28,6 +28,11 @@ $header-height-mobile: 5.6rem;
     display: flex;
     height: 100%;
     justify-content: center;
+
+    // safari fix
+    img {
+      height: 100%;
+    }
   }
 
   &__right {

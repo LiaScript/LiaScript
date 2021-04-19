@@ -13,11 +13,12 @@
 
     &.has-thead-sticky {
       .lia-table__head {
+        position: -webkit-sticky;
         position: sticky;
-        top: 0;
         z-index: 3;
 
         th {
+          position: -webkit-sticky;
           position: sticky;
           top: 0;
           z-index: 1;
@@ -27,6 +28,7 @@
       &.has-first-col-sticky {
         .lia-table__head th:first-child {
           left: 0;
+          position: -webkit-sticky;
           position: sticky;
           z-index: 2;
         }
@@ -57,6 +59,7 @@
       &.has-last-col-sticky {
         .lia-table__head th:last-child {
           right: 0;
+          position: -webkit-sticky;
           position: sticky;
           z-index: 2;
         }
@@ -91,6 +94,7 @@
           border-left: $global-border;
           border-right: $global-border;
           left: 0;
+          position: -webkit-sticky;
           position: sticky;
           z-index: 2;
 
@@ -136,6 +140,7 @@
           border-left: $global-border;
           border-right: $global-border;
           right: 0;
+          position: -webkit-sticky;
           position: sticky;
           z-index: 2;
 
