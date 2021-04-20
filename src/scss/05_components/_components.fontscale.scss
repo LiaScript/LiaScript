@@ -1,0 +1,22 @@
+.lia-fontscale {
+  display: flex;
+  align-items: center;
+
+  > *:not(:last-child) {
+    margin-right: 1rem;
+  }
+
+  &__lvl-1 {
+    font-size: var(--global-font-size);
+  }
+
+  &__lvl-2 {
+    font-weight: 600;
+    font-size: calc(var(--global-font-size) * 1.25);
+  }
+
+  &__lvl-3 {
+    font-weight: 700;
+    font-size: calc(var(--global-font-size) * 1.5);
+  }
+}

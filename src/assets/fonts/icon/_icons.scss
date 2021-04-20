@@ -365,84 +365,84 @@ $icon-lineplot: "\EA1E";
   content: $icon-lineplot
 }
 
-$icon-mail: "\EA1F";
+$icon-login: "\EA1F";
+.icon-login:before {
+  content: $icon-login
+}
+
+$icon-mail: "\EA20";
 .icon-mail:before {
   content: $icon-mail
 }
 
-$icon-map: "\EA20";
+$icon-map: "\EA21";
 .icon-map:before {
   content: $icon-map
 }
 
-$icon-minus: "\EA21";
+$icon-minus: "\EA22";
 .icon-minus:before {
   content: $icon-minus
 }
 
-$icon-more: "\EA22";
+$icon-more: "\EA23";
 .icon-more:before {
   content: $icon-more
 }
 
-$icon-pencil: "\EA23";
+$icon-pencil: "\EA24";
 .icon-pencil:before {
   content: $icon-pencil
 }
 
-$icon-piechart: "\EA24";
+$icon-piechart: "\EA25";
 .icon-piechart:before {
   content: $icon-piechart
 }
 
-$icon-play-circle: "\EA25";
+$icon-play-circle: "\EA26";
 .icon-play-circle:before {
   content: $icon-play-circle
 }
 
-$icon-plus: "\EA26";
+$icon-plus: "\EA27";
 .icon-plus:before {
   content: $icon-plus
 }
 
-$icon-presentation: "\EA27";
+$icon-presentation: "\EA28";
 .icon-presentation:before {
   content: $icon-presentation
 }
 
-$icon-radar: "\EA28";
+$icon-radar: "\EA29";
 .icon-radar:before {
   content: $icon-radar
 }
 
-$icon-refresh: "\EA29";
+$icon-refresh: "\EA2A";
 .icon-refresh:before {
   content: $icon-refresh
 }
 
-$icon-resolve: "\EA2A";
+$icon-resolve: "\EA2B";
 .icon-resolve:before {
   content: $icon-resolve
 }
 
-$icon-scatterplot: "\EA2B";
+$icon-scatterplot: "\EA2C";
 .icon-scatterplot:before {
   content: $icon-scatterplot
 }
 
-$icon-search: "\EA2C";
+$icon-search: "\EA2D";
 .icon-search:before {
   content: $icon-search
 }
 
-$icon-settings: "\EA2D";
+$icon-settings: "\EA2E";
 .icon-settings:before {
   content: $icon-settings
-}
-
-$icon-sign-in: "\EA2E";
-.icon-sign-in:before {
-  content: $icon-sign-in
 }
 
 $icon-slides: "\EA2F";
@@ -455,14 +455,14 @@ $icon-social: "\EA30";
   content: $icon-social
 }
 
-$icon-sort-asc: "\EA31";
-.icon-sort-asc:before {
-  content: $icon-sort-asc
+$icon-sorting_ascending: "\EA31";
+.icon-sorting_ascending:before {
+  content: $icon-sorting_ascending
 }
 
-$icon-sort-desc: "\EA32";
-.icon-sort-desc:before {
-  content: $icon-sort-desc
+$icon-sorting_descending: "\EA32";
+.icon-sorting_descending:before {
+  content: $icon-sorting_descending
 }
 
 $icon-sound-off: "\EA33";
@@ -485,27 +485,22 @@ $icon-table: "\EA36";
   content: $icon-table
 }
 
-$icon-trash-1-01: "\EA37";
-.icon-trash-1-01:before {
-  content: $icon-trash-1-01
-}
-
-$icon-trash: "\EA38";
+$icon-trash: "\EA37";
 .icon-trash:before {
   content: $icon-trash
 }
 
-$icon-warning: "\EA39";
+$icon-warning: "\EA38";
 .icon-warning:before {
   content: $icon-warning
 }
 
-$icon-zoom-out: "\EA3A";
+$icon-zoom-out: "\EA39";
 .icon-zoom-out:before {
   content: $icon-zoom-out
 }
 
-$icon-zoom: "\EA3B";
+$icon-zoom: "\EA3A";
 .icon-zoom:before {
   content: $icon-zoom
 }

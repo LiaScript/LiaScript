@@ -20,7 +20,7 @@ type Msg
     | ChangeTheme String
     | ChangeEditor String
     | ChangeLang String
-    | ChangeFontSize Bool
+    | ChangeFontSize Int
     | SwitchMode Mode
     | Reset
     | Handle Event
@@ -132,22 +132,8 @@ update msg model =
         ChangeEditor theme ->
             log Nothing { model | editor = theme }
 
-        ChangeFontSize inc ->
-            log Nothing
-                { model
-                    | font_size =
-                        if inc then
-                            -- positive value
-                            model.font_size + 10
-
-                        else if model.font_size <= 10 then
-                            -- check if the new value is already too small
-                            model.font_size
-
-                        else
-                            -- decrease
-                            model.font_size - 10
-                }
+        ChangeFontSize size ->
+            log Nothing { model | font_size = size }
 
         ChangeLang lang ->
             log Nothing { model | lang = lang }

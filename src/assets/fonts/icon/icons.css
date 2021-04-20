@@ -335,67 +335,67 @@
   content: "\EA1E"
 }
 
-.icon-mail:before {
+.icon-login:before {
   content: "\EA1F"
 }
 
-.icon-map:before {
+.icon-mail:before {
   content: "\EA20"
 }
 
-.icon-minus:before {
+.icon-map:before {
   content: "\EA21"
 }
 
-.icon-more:before {
+.icon-minus:before {
   content: "\EA22"
 }
 
-.icon-pencil:before {
+.icon-more:before {
   content: "\EA23"
 }
 
-.icon-piechart:before {
+.icon-pencil:before {
   content: "\EA24"
 }
 
-.icon-play-circle:before {
+.icon-piechart:before {
   content: "\EA25"
 }
 
-.icon-plus:before {
+.icon-play-circle:before {
   content: "\EA26"
 }
 
-.icon-presentation:before {
+.icon-plus:before {
   content: "\EA27"
 }
 
-.icon-radar:before {
+.icon-presentation:before {
   content: "\EA28"
 }
 
-.icon-refresh:before {
+.icon-radar:before {
   content: "\EA29"
 }
 
-.icon-resolve:before {
+.icon-refresh:before {
   content: "\EA2A"
 }
 
-.icon-scatterplot:before {
+.icon-resolve:before {
   content: "\EA2B"
 }
 
-.icon-search:before {
+.icon-scatterplot:before {
   content: "\EA2C"
 }
 
-.icon-settings:before {
+.icon-search:before {
   content: "\EA2D"
 }
 
-.icon-sign-in:before {
+.icon-settings:before {
   content: "\EA2E"
 }
 
@@ -407,11 +407,11 @@
   content: "\EA30"
 }
 
-.icon-sort-asc:before {
+.icon-sorting_ascending:before {
   content: "\EA31"
 }
 
-.icon-sort-desc:before {
+.icon-sorting_descending:before {
   content: "\EA32"
 }
 
@@ -431,24 +431,20 @@
   content: "\EA36"
 }
 
-.icon-trash-1-01:before {
+.icon-trash:before {
   content: "\EA37"
 }
 
-.icon-trash:before {
+.icon-warning:before {
   content: "\EA38"
 }
 
-.icon-warning:before {
+.icon-zoom-out:before {
   content: "\EA39"
 }
 
-.icon-zoom-out:before {
-  content: "\EA3A"
-}
-
 .icon-zoom:before {
-  content: "\EA3B"
+  content: "\EA3A"
 }
 
 

@@ -24,6 +24,8 @@
   }
 
   > * {
+    width: -webkit-fit-content;
+    width: -moz-fit-content;
     width: fit-content;
 
     &:not(:last-child) {
@@ -36,6 +38,29 @@
   textarea {
     border: none;
     border-radius: 0;
+    background-color: transparent;
+  }
+
+  input[type="color"] {
+    width: 10rem;
+    height: auto;
+    -webkit-appearance: none;
+    border: none;
+
+    &::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+
+    &::-webkit-color-swatch {
+      border: none;
+    }
+  }
+
+  textarea {
+    min-width: 25vw;
+    max-width: 50vw;
+    resize: vertical;
+    min-height: 5rem;
   }
 
   output {

@@ -6,32 +6,40 @@
 }
 
 .h1 {
-  font-size: $h1-mobile;
+  font-size: calc(#{$h1-mobile} * var(--font-size-multiplier)) !important;
 
   @include breakpoint("md") {
-    font-size: $h1-desktop-presentation;
+    font-size: calc(
+      #{$h1-desktop-presentation} * var(--font-size-multiplier)
+    ) !important;
+
+    @at-root .lia-mode--textbook & {
+      font-size: calc(
+        #{$h1-desktop-textbook} * var(--font-size-multiplier)
+      ) !important;
+    }
   }
 }
 
 .h2 {
-  font-size: $h2-mobile;
+  font-size: calc(#{$h2-mobile} * var(--font-size-multiplier)) !important;
 
   @include breakpoint("md") {
-    font-size: $h2-desktop;
+    font-size: calc(#{$h2-desktop} * var(--font-size-multiplier)) !important;
   }
 }
 
 .h3 {
-  font-size: $h3-mobile;
+  font-size: calc(#{$h3-desktop} * var(--font-size-multiplier)) !important;
 
   @include breakpoint("md") {
-    font-size: $h3-desktop;
+    font-size: calc(#{$h3-desktop} * var(--font-size-multiplier)) !important;
   }
 }
 
 .h4,
 .h5 {
   font-family: $global-font-family;
-  font-size: $h4-mobile;
+  font-size: calc(#{$h4-mobile} * var(--font-size-multiplier)) !important;
   line-height: 1.38;
 }

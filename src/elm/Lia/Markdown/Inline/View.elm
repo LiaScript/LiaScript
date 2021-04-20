@@ -130,6 +130,7 @@ img : Config sub -> Parameters -> Inlines -> String -> Maybe Inlines -> Maybe In
 img config attr alt_ url_ title_ width =
     Html.img
         (Attr.src url_
+            :: Attr.attribute "loading" "lazy"
             :: toAttribute attr
             |> CList.addIf (width == Nothing) (load url_)
             |> CList.addWhen (title config title_)
@@ -143,13 +144,16 @@ load url =
     Attr.attribute "onload" ("img_('" ++ url ++ "',this.width,this.height)")
 
 
-figure : Config sub -> Maybe Inlines -> Maybe Int -> Html (Msg sub) -> Html (Msg sub)
-figure config title_ width element =
+figure : Config sub -> Maybe Inlines -> Maybe Int -> String -> Html (Msg sub) -> Html (Msg sub)
+figure config title_ width dataType element =
     Html.figure
         ([ Attr.class "lia-figure" ]
             |> CList.addWhen (Maybe.map Attr.width width)
         )
-        [ Html.span [ Attr.class "lia-figure__media" ]
+        [ Html.div
+            [ Attr.class "lia-figure__media"
+            , Attr.attribute "data-media-type" dataType
+            ]
             [ element
             ]
         , title_
@@ -175,13 +179,14 @@ reference config ref attr =
                         |> Maybe.map Tuple.first
             in
             img config attr alt_ url_ title_ width
-                |> figure config title_ width
+                |> figure config title_ width "image"
 
         Audio alt_ ( tube, url_ ) title_ ->
-            figure config title_ Nothing <|
+            figure config title_ Nothing "audio" <|
                 if tube then
                     Html.iframe
                         (Attr.src url_
+                            :: Attr.attribute "loading" "lazy"
                             :: Attr.attribute "allowfullscreen" ""
                             :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                             :: Attr.style "width" "100%"
@@ -194,6 +199,7 @@ reference config ref attr =
                 else
                     Html.audio
                         (Attr.controls True
+                            :: Attr.attribute "preload" "none"
                             :: annotation "lia-audio" attr
                             |> CList.addWhen (title config title_)
                             |> CList.addWhen (alt config alt_)
@@ -201,12 +207,13 @@ reference config ref attr =
                         [ Html.source [ Attr.src url_ ] [] ]
 
         Movie alt_ ( tube, url_ ) title_ ->
-            figure config title_ Nothing <|
-                if tube then
-                    Html.div [ Attr.class "lia-video-wrapper" ]
+            if tube then
+                figure config title_ Nothing "iframe" <|
+                    Html.div [ Attr.class "lia-iframe-wrapper" ]
                         [ Html.iframe
                             (Attr.src url_
                                 :: Attr.attribute "allowfullscreen" ""
+                                :: Attr.attribute "loading" "lazy"
                                 :: Attr.attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                                 :: toAttribute attr
                                 |> CList.addWhen (title config title_)
@@ -215,10 +222,12 @@ reference config ref attr =
                             (viewer config alt_)
                         ]
 
-                else
+            else
+                figure config title_ Nothing "movie" <|
                     Html.div [ Attr.class "lia-video-wrapper" ]
                         [ Html.video
                             (Attr.controls True
+                                :: Attr.attribute "preload" "none"
                                 :: toAttribute attr
                                 |> CList.addWhen (title config title_)
                                 |> CList.addWhen (alt config alt_)
@@ -253,7 +262,7 @@ reference config ref attr =
                         :: annotation "lia-link" attr
                         |> CList.addWhen (title config title_)
                     )
-                |> figure config title_ (Just 300)
+                |> figure config title_ (Just 300) "image"
 
 
 customProviders : List Oembed.Provider

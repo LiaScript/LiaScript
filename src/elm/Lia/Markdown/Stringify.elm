@@ -72,6 +72,9 @@ stringify scripts id markdown =
         Citation _ inlines ->
             Inline.stringify_ scripts id inlines
 
+        Problem inlines ->
+            Inline.stringify_ scripts id inlines
+
         _ ->
             ""
 

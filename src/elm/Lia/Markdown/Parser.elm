@@ -6,9 +6,11 @@ import Combine
         , andMap
         , andThen
         , choice
+        , fail
         , ignore
         , keep
         , lazy
+        , lookAhead
         , many
         , many1
         , manyTill
@@ -53,7 +55,7 @@ import SvgBob
 run : Parser Context (List Markdown)
 run =
     footnotes
-        |> keep blocks
+        |> keep (or blocks problem)
         |> ignore newlines
         |> many
         |> ignore footnotes
@@ -126,12 +128,6 @@ elements =
         , md_annotations
             |> map checkForCitation
             |> andMap paragraph
-        , md_annotations
-            |> map Paragraph
-            |> andMap problem
-
-        --, comments
-        --    |> onsuccess Skip
         ]
 
 
@@ -376,17 +372,47 @@ horizontal_line =
 
 paragraph : Parser Context Inlines
 paragraph =
-    Indent.skip
+    checkParagraph
+        |> ignore Indent.skip
         |> keep (many1 (Indent.check |> keep line |> ignore newline))
         |> map (List.intersperse [ Chars " " [] ] >> List.concat >> combine)
 
 
-problem : Parser Context Inlines
+{-| A paragraph cannot start with a marker for Comments `--{{1}}--` or Effects
+`{{1}}`. This parser checks both case, if the string pattern matches either
+Comment or Effect it will fail.
+
+_Note:_ This is mostly the case in ordered and unordered lists.
+
+TODO: This shall be removed in the future, if a `paragraph` is directly used as
+to for returning `Paragraph`, `Citation`, or `Comment`.
+
+-}
+checkParagraph : Parser Context ()
+checkParagraph =
+    lookAhead
+        (maybe
+            (or (regex "[ \t]*--{{\\d+}}--")
+                (regex "[ \t]*{{\\d+}}")
+            )
+            |> andThen
+                (\e ->
+                    if e == Nothing then
+                        succeed ()
+
+                    else
+                        fail ""
+                )
+        )
+
+
+problem : Parser Context Markdown
 problem =
     Indent.skip
         |> ignore Indent.check
         |> keep lineWithProblems
         |> ignore newline
+        |> map Problem
 
 
 md_annotations : Parser Context Parameters

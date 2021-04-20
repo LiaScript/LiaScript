@@ -6,32 +6,32 @@
   scroll-snap-type: x mandatory;
   width: 100%;
 
-  .lia-figure {
+  .lia-lightbox {
     flex: 0 0 25rem;
     scroll-snap-align: start;
+  }
 
-    &__media {
-      width: 25rem;
-      height: 25rem;
-      display: inline-block;
+  .lia-figure__media {
+    width: 25rem;
+    height: 25rem;
+    display: inline-block;
 
-      img {
-        height: 100%;
-        object-fit: cover;
-        width: 100%;
-      }
+    img {
+      height: 100%;
+      object-fit: cover;
+      width: 100%;
+    }
 
-      video {
-        height: 100%;
-        object-fit: cover;
-        width: 100%;
-      }
+    video {
+      height: 100%;
+      object-fit: cover;
+      width: 100%;
+    }
 
-      div {
-        height: 100%;
-        object-fit: cover;
-        width: 100%;
-      }
+    div {
+      height: 100%;
+      object-fit: cover;
+      width: 100%;
     }
   }
 

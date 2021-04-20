@@ -150,7 +150,7 @@ class PreviewLia extends HTMLElement {
         text-decoration: none;
     }
     </style>
-    <div id="container" style="inline-block"></div>`
+    <div id="container" style="display:inline-block"></div>`
 
     this.container = this.attachShadow({ mode: 'open' })
     this.container.appendChild(template.content.cloneNode(true))

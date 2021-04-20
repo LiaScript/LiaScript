@@ -94,6 +94,9 @@ function handleEffects(
             text += element[i].innerText || element[i].textContent
           }
 
+          // This is used to clean up effect numbers, which are marked by a \b
+          text = text.replace(/\\u001a\\d+\\u001a/g, '').trim()
+
           if (text !== '') {
             TTS.speak(
               text,
@@ -332,6 +335,8 @@ class LiaScript {
 
     var observer = new MutationObserver(function (mutations) {
       mutations.forEach(function (mutation) {
+        changeGoogleStyles()
+
         elmSend({
           topic: 'lang',
           section: -1,
@@ -652,13 +657,22 @@ function injectGoogleTranslate() {
         {
           pageLanguage: document.documentElement.lang,
           // includedLanguages: 'ar,en,es,jv,ko,pa,pt,ru,zh-CN',
-          layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+          // layout: google.translate.TranslateElement.InlineLayout.HORIZONTAL,
           autoDisplay: false,
         },
         'google_translate_element',
       )
     }
     googleTranslate = true
+  }
+}
+
+function changeGoogleStyles() {
+  let goog = document.getElementById(':1.container')
+
+  if (goog) {
+    goog.style.visibility = 'hidden'
+    document.body.style.top = ''
   }
 }
 
