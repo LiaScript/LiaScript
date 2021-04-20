@@ -85,6 +85,10 @@ $slide-margin-left-textbook: 19rem !default;
 
   @include breakpoint("lg") {
     flex-direction: row;
+
+    &.lia-support--visible {
+      width: auto;
+    }
   }
 
   /* lia mode ui treatments */
@@ -101,6 +105,7 @@ $slide-margin-left-textbook: 19rem !default;
 
       .lia-slide {
         height: 100vh;
+        max-width: calc(100% - #{$notes-width-desktop});
       }
     }
   }
