@@ -455,14 +455,14 @@ $icon-social: "\EA30";
   content: $icon-social
 }
 
-$icon-sorting_ascending: "\EA31";
-.icon-sorting_ascending:before {
-  content: $icon-sorting_ascending
+$icon-sort-asc: "\EA31";
+.icon-sort-asc:before {
+  content: $icon-sort-asc
 }
 
-$icon-sorting_descending: "\EA32";
-.icon-sorting_descending:before {
-  content: $icon-sorting_descending
+$icon-sort-desc: "\EA32";
+.icon-sort-desc:before {
+  content: $icon-sort-desc
 }
 
 $icon-sound-off: "\EA33";
