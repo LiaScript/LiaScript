@@ -204,14 +204,13 @@ viewCode executable lang theme running errors id_1 id_2 file attr =
 
 toStyle : Bool -> Int -> List (Html.Attribute msg)
 toStyle visible pix =
-    [ Attr.style "height"
-        (if visible then
-            String.fromInt pix ++ "px"
+    [ Attr.style "min-height" <|
+        if visible then
+            "calc( " ++ String.fromInt pix ++ " * var(--global-font-size, 1.5rem) * var(--font-size-multiplier) * 1.3333 + 1.47rem)"
 
-         else
+        else
             "0px"
-        )
-    , Attr.style "transition" "height 0.25s ease-out"
+    , Attr.style "transition" "min-height 0.25s ease-out"
     ]
 
 
@@ -220,11 +219,6 @@ lines code =
     code
         |> String.lines
         |> List.length
-
-
-pixel : Int -> Int
-pixel from_lines =
-    from_lines * 21 + 16
 
 
 
@@ -313,7 +307,6 @@ evaluate executable theme attr running ( id_1, id_2 ) file errors =
             |> Params.toAttribute
             |> List.append
                 (max_lines
-                    |> pixel
                     |> toStyle file.visible
                 )
             |> List.append
