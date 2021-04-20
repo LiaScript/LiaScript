@@ -240,7 +240,8 @@ html:not([class*="lia-theme-default"]) {
           background-color: rgb(var(--lia-white));
         }
 
-        &.lia-active {
+        &.lia-active,
+        &.lia-active > * {
           color: rgb(var(--color-highlight-menu));
 
           &:before {
