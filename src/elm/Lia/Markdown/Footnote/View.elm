@@ -1,6 +1,7 @@
 module Lia.Markdown.Footnote.View exposing (block, byKey, inline)
 
 import Accessibility.Aria as A11y_Aria
+import Accessibility.Key as A11y_Key
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Lia.Markdown.Footnote.Model exposing (Model, empty, toList)
@@ -12,12 +13,13 @@ inline key attr =
     Html.sup []
         [ Html.button
             ([ Attr.style "padding" "2px"
-             , Attr.class "lia-btn lia-btn--transparent"
+             , Attr.class "lia-btn lia-btn--transparent text-highlight"
              , Attr.attribute "onclick" ("showFootnote(\"" ++ key ++ "\");")
              , key
                 |> byKey
                 |> Attr.id
              , A11y_Aria.describedBy [ by key ]
+             , A11y_Key.tabbable True
              ]
                 |> List.append attr
             )
