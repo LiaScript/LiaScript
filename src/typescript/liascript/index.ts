@@ -18,9 +18,9 @@ function isInViewport(elem: HTMLElement) {
     bounding.top >= 85 &&
     bounding.left >= 0 &&
     bounding.bottom <=
-      (window.innerHeight - 40 || document.documentElement.clientHeight - 40) &&
+    (window.innerHeight - 40 || document.documentElement.clientHeight - 40) &&
     bounding.right <=
-      (window.innerWidth || document.documentElement.clientWidth)
+    (window.innerWidth || document.documentElement.clientWidth)
   )
 }
 
@@ -481,7 +481,7 @@ function process(
         } else if (style !== null) {
           style.innerHTML = ''
         }
-      } catch (e) {}
+      } catch (e) { }
 
       if (isConnected) {
         self.connector.setSettings(event.message[0])
@@ -572,12 +572,12 @@ function process(
 
         try {
           window.top.liaReady()
-        } catch (e) {}
+        } catch (e) { }
       }
 
       try {
         window.top.liaDefinitions(data.definition)
-      } catch (e) {}
+      } catch (e) { }
 
       break
     }
@@ -588,7 +588,7 @@ function process(
         case 'list': {
           try {
             TTS.cancel()
-          } catch (e) {}
+          } catch (e) { }
           self.connector.getIndex()
           break
         }
@@ -647,8 +647,8 @@ function injectGoogleTranslate() {
   // inject the google translator
   if (!googleTranslate) {
     let tag = document.createElement('script')
-    tag.src =
-      '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit'
+    tag.src = (document.location.protocol === "file:" ?
+      'http:' : '') + "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
     tag.type = 'text/javascript'
     document.head.appendChild(tag)
 
