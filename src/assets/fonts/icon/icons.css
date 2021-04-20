@@ -407,11 +407,11 @@
   content: "\EA30"
 }
 
-.icon-sorting_ascending:before {
+.icon-sort-asc:before {
   content: "\EA31"
 }
 
-.icon-sorting_descending:before {
+.icon-sort-desc:before {
   content: "\EA32"
 }
 
