@@ -9,6 +9,10 @@
   right: 0;
   top: 0;
   transition: $global-transition;
+  transition-property: width, transform;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
   user-select: none;
   width: $support-width-mobile;
   z-index: 1;
@@ -44,16 +48,15 @@
   &__toggler {
     color: rgb(var(--color-highlight));
     display: block;
-    visibility: visible;
-
+    font-size: 2rem;
+    left: 0;
     position: absolute;
+    transform: translate(-6.5rem, -50%);
+    visibility: visible;
     top: calc(
       (#{$header-height-mobile} / 2) +
         (2 * #{map-get($global-spacing, spacing-small)} - (#{$btn-height} / 4))
     );
-    left: 0;
-    transform: translate(-6.5rem, -50%);
-    transition: $global-transition;
 
     @include breakpoint("sm", "max") {
       transform: translate(2.1rem, -50%);
@@ -147,7 +150,6 @@
     padding: 0;
     position: relative;
     right: 0;
-    transition: $global-transition;
     top: 0;
     width: 100%;
 
@@ -171,8 +173,10 @@
       height: 15rem;
     }
 
-    i {
-      font-size: 2rem;
+    .lia-settings-editor label {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
     }
 
     @include breakpoint("md") {
@@ -183,7 +187,7 @@
       padding: 1.4rem;
       position: absolute;
       top: 5.9rem;
-      width: max-content;
+      width: auto;
       z-index: 10;
 
       &.active {

@@ -4,6 +4,7 @@ module Lia.Markdown.Effect.View exposing
     , state
     )
 
+import Accessibility.Key as A11y_Key
 import Conditional.List as CList
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -20,34 +21,47 @@ import Lia.Markdown.Stringify exposing (stringify)
 import Lia.Markdown.Types exposing (Markdown)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Settings.Types exposing (Mode(..))
+import Lia.Voice as Voice
 import Port.Event as Event exposing (Event)
 import Port.TTS
 
 
 circle_ : Int -> Html msg
 circle_ =
-    String.fromInt
+    number
         >> Html.text
         >> List.singleton
         >> Html.span [ Attr.class "lia-effect__circle lia-effect__circle--inline" ]
 
 
+number : Int -> String
+number i =
+    "\u{200A}" ++ String.fromInt i ++ "\u{200A}"
+
+
+cleanUpNumber : String -> String
+cleanUpNumber str =
+    str ++ ".innerText.replace(/\\u200a\\d+\\u200a/g,'').trim()"
+
+
 block : Config sub -> Model a -> Parameters -> Effect Markdown -> List (Html Msg) -> Html Msg
 block config model attr e body =
     if config.visible == Nothing then
-        Html.div [ Attr.class "lia-effect" ] <|
-            case class e of
-                Animation ->
+        case class e of
+            Animation ->
+                Html.div [ Attr.class "lia-effect" ] <|
                     [ circle e.begin
                     , Html.div (toAttribute attr) body
                     ]
 
-                PlayBack ->
+            PlayBack ->
+                Html.div [ Attr.class "lia-effect" ] <|
                     [ block_playback config e
                     , Html.div (toAttribute attr) body
                     ]
 
-                PlayBackAnimation ->
+            PlayBackAnimation ->
+                Html.div [ Attr.class "lia-effect" ] <|
                     [ block_playback config e
                     , Html.div []
                         [ circle e.begin
@@ -106,10 +120,17 @@ inline config attr e body =
                     circle_ e.begin :: Html.text " " :: body
 
                 PlayBack ->
-                    inline_playback config e :: body
+                    [ inline_playback config e
+                        :: body
+                        |> Html.label []
+                    ]
 
                 PlayBackAnimation ->
-                    circle_ e.begin :: inline_playback config e :: body
+                    circle_ e.begin
+                        :: [ inline_playback config e
+                                :: body
+                                |> Html.label []
+                           ]
 
     else
         case class e of
@@ -120,14 +141,18 @@ inline config attr e body =
                     |> hiddenSpan (not <| isIn config.visible e) attr
 
             PlayBack ->
-                inline_playback config e
+                [ inline_playback config e
                     :: body
+                    |> Html.label []
+                ]
                     |> hiddenSpan False attr
 
             PlayBackAnimation ->
                 circle_ e.begin
-                    :: inline_playback config e
-                    :: body
+                    :: [ inline_playback config e
+                            :: body
+                            |> Html.label []
+                       ]
                     |> hiddenSpan (not <| isIn config.visible e) attr
 
 
@@ -148,6 +173,7 @@ block_playback config e =
     if config.speaking == Just e.id then
         Html.button
             [ Attr.class "lia-btn icon icon-stop-circle"
+            , A11y_Key.tabbable True
             , e.id
                 |> E.Mute
                 |> UpdateEffect True
@@ -158,15 +184,44 @@ block_playback config e =
     else
         Html.button
             [ Attr.class "lia-btn icon icon-play-circle"
-            , e.content
-                |> List.map (stringify config.scripts config.visible)
-                |> List.intersperse "\n"
-                |> String.concat
-                |> E.Speak e.id e.voice
-                |> UpdateEffect True
-                |> onClick
+            , A11y_Key.tabbable True
+            , playBackAttr e.id e.voice config.slide "this.parentNode.childNodes[1]"
             ]
             []
+
+
+playBackAttr : Int -> String -> Int -> String -> Html.Attribute msg
+playBackAttr id voice section command =
+    "XXX"
+        |> Port.TTS.playback id voice
+        |> Event.encode
+        |> Event "effect" section
+        |> Event.encode
+        |> JE.encode 0
+        |> String.replace "\"XXX\"" (cleanUpNumber command)
+        |> (\event -> "playback(" ++ event ++ ")")
+        |> Attr.attribute "onclick"
+
+
+inlinePlayBack config e body =
+    case Voice.getVoiceFor e.voice config.translations of
+        Nothing ->
+            []
+
+        Just ( translate, voice ) ->
+            [ Attr.class <|
+                if translate then
+                    "translate"
+
+                else
+                    "notranslate"
+            , Attr.attribute "translate" <|
+                if translate then
+                    "yes"
+
+                else
+                    "no"
+            ]
 
 
 inline_playback : Config sub -> Effect Inline -> Html msg
@@ -181,21 +236,15 @@ inline_playback config e =
                 |> JE.encode 0
                 |> (\event -> "playback(" ++ event ++ ")")
                 |> Attr.attribute "onclick"
+            , A11y_Key.tabbable True
             ]
             []
 
     else
         Html.button
             [ Attr.class "lia-btn lia-btn--transparent icon icon-play-circle mx-1"
-            , e.content
-                |> I.stringify
-                |> Port.TTS.playback e.id e.voice
-                |> Event.encode
-                |> Event "effect" config.slide
-                |> Event.encode
-                |> JE.encode 0
-                |> (\event -> "playback(" ++ event ++ ")")
-                |> Attr.attribute "onclick"
+            , playBackAttr e.id e.voice config.slide "this.labels[0]"
+            , A11y_Key.tabbable True
             ]
             []
 
@@ -204,7 +253,7 @@ circle : Int -> Html msg
 circle id =
     Html.span
         [ Attr.class "lia-effect__circle" ]
-        [ Html.text (String.fromInt id) ]
+        [ Html.text (number id) ]
 
 
 state : Model a -> String

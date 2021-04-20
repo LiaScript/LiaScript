@@ -15,7 +15,7 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View as Inline
 import Lia.Parser.PatReplace exposing (link)
 import Lia.Settings.Types exposing (Mode(..))
-import Lia.Utils exposing (btn, btnIcon)
+import Lia.Utils exposing (blockKeydown, btn, btnIcon)
 import Session exposing (Session)
 import Svg
 import Svg.Attributes as SvgAttr
@@ -28,23 +28,37 @@ view session model =
         [ Html.h1 [] [ Html.text "Lia: Open-courSes" ]
         , searchBar model.input
         , if List.isEmpty model.courses && model.initialized then
-            Html.div [] <|
-                [ [ "If you cannot see any courses in this list, try out one of the following links, to get more information about this project and to visit some examples and free interactive books."
-                        |> Html.text
-                  ]
-                    |> Html.p []
-                , Html.a [ Attr.href "https://LiaScript.github.io" ]
-                    [ Html.text "Project-Website" ]
-                , Html.a [ href "https://raw.githubusercontent.com/liaScript/docs/master/README.md" ]
-                    [ Html.text "Project-Description"
+            Html.section [] <|
+                [ Html.br [] []
+                , Html.p
+                    [ Attr.class "lia-paragraph" ]
+                    [ Html.text "If you cannot see any courses in this list, try out one of the following links, to get more information about this project and to visit some examples and free interactive books."
                     ]
-                , Html.a [ href "https://raw.githubusercontent.com/liaScript/index/master/README.md" ]
-                    [ Html.text "Index" ]
-                , [ "At the end, I hope to see some of your courses in my list."
-                        |> Html.text
-                  ]
-                    |> Html.p []
-                , Html.text "Have a nice one ;-) ..."
+                , Html.u
+                    []
+                    [ Html.li []
+                        [ Html.a
+                            [ Attr.href "https://LiaScript.github.io" ]
+                            [ Html.text "Project-Website" ]
+                        ]
+                    , Html.li []
+                        [ Html.a
+                            [ href "https://raw.githubusercontent.com/liaScript/docs/master/README.md" ]
+                            [ Html.text "Project-Documentation" ]
+                        ]
+                    , Html.li []
+                        [ Html.a
+                            [ href "https://raw.githubusercontent.com/liaScript/index/master/README.md" ]
+                            [ Html.text "Index" ]
+                        ]
+                    ]
+                , Html.br [] []
+                , Html.p
+                    [ Attr.class "lia-paragraph" ]
+                    [ Html.text "At the end, we hope to learn from your courses." ]
+                , Html.p
+                    [ Attr.class "lia-paragraph" ]
+                    [ Html.text "Have a nice one ;-) ..." ]
                 ]
 
           else if model.initialized then
@@ -66,17 +80,19 @@ searchBar url =
             , Attr.value url
             , Attr.placeholder "course-url"
             , Attr.class "lia-input border-grey-light max-w-50 mr-1"
-
-            --, blockKeydown NoOp
+            , blockKeydown NoOp
             ]
             []
         , if url == "" then
-            Html.button [ Attr.class "lia-btn is-disabled", Attr.disabled True ]
+            Html.button
+                [ Attr.class "lia-btn is-disabled"
+                , Attr.disabled True
+                ]
                 [ Html.text "load course"
                 ]
 
           else
-            Html.button
+            Html.a
                 [ href url
                 , Attr.class "lia-btn"
                 ]
@@ -176,6 +192,7 @@ viewMedia courseUrl logoUrl =
                         Html.img
                             [ Attr.class "lia-card__image"
                             , Attr.src logo
+                            , Attr.attribute "loading" "lazy"
                             ]
                             []
                 ]
@@ -252,7 +269,7 @@ viewControls hasShareAPI title comment course =
             Nothing ->
                 Html.a
                     [ href course.id
-                    , Attr.class "lia-btn lia-btn--transparent lia-btn--tag icon icon-sign-in px-1 text-turquoise border-turquoise"
+                    , Attr.class "lia-btn lia-btn--transparent lia-btn--tag icon icon-login px-1 text-turquoise border-turquoise"
                     ]
                     []
 
@@ -278,6 +295,7 @@ viewFooter definition =
                 |> Attr.src
             , Attr.alt "Logo"
             , Attr.height 50
+            , Attr.attribute "loading" "lazy"
             ]
             []
         , case ( String.trim definition.author, String.trim definition.email ) of

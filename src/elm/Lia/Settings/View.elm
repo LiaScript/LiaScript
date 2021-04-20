@@ -24,7 +24,7 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
 import Lia.Settings.Update exposing (Msg(..), Toggle(..))
-import Lia.Utils exposing (blockKeydown, btnIcon)
+import Lia.Utils exposing (blockKeydown, btn, btnIcon)
 import QRCode
 import Translations as Trans exposing (Lang)
 
@@ -199,24 +199,50 @@ modeToString show =
 
 
 viewSizing : Lang -> Bool -> Int -> Html Msg
-viewSizing lang tabbable int =
-    Html.div [ Attr.id "lia-font-sizing" ]
-        [ Html.text <| Trans.baseFont lang ++ ":"
-        , btnIcon
+viewSizing lang tabbable size =
+    Html.div [ Attr.class "lia-fontscale" ]
+        [ btn
             { title = Trans.baseDec lang
             , tabbable = tabbable
-            , msg = Just (ChangeFontSize False)
-            , icon = "icon-minus"
+            , msg = Just (ChangeFontSize 1)
             }
-            [ A11y_Aria.labeledBy "lia-font-sizing", Attr.class "lia-btn--transparent" ]
-        , Html.text (String.fromInt int ++ " %")
-        , btnIcon
-            { title = Trans.baseInc lang
+            [ Attr.class "lia-btn--transparent lia-fontscale__lvl-1"
+            , Attr.class <|
+                if size /= 2 && size /= 3 then
+                    "active"
+
+                else
+                    ""
+            ]
+            [ Html.text "A" ]
+        , btn
+            { title = Trans.baseDec lang
             , tabbable = tabbable
-            , msg = Just (ChangeFontSize True)
-            , icon = "icon-plus"
+            , msg = Just (ChangeFontSize 2)
             }
-            [ A11y_Aria.labeledBy "lia-font-sizing", Attr.class "lia-btn--transparent" ]
+            [ Attr.class "lia-btn--transparent lia-fontscale__lvl-2"
+            , Attr.class <|
+                if size == 2 then
+                    "active"
+
+                else
+                    ""
+            ]
+            [ Html.text "A" ]
+        , btn
+            { title = Trans.baseDec lang
+            , tabbable = tabbable
+            , msg = Just (ChangeFontSize 3)
+            }
+            [ Attr.class "lia-btn--transparent lia-fontscale__lvl-3"
+            , Attr.class <|
+                if size == 3 then
+                    "active"
+
+                else
+                    ""
+            ]
+            [ Html.text "A" ]
         ]
 
 
@@ -336,57 +362,59 @@ viewEditorTheme lang tabbable theme =
         op =
             option theme
     in
-    Html.label [ Attr.class "lia-label", A11y_Widget.hidden (not tabbable) ]
-        [ Html.text "Editor"
-        , Html.select
-            [ Attr.class "lia-select d-block"
-            , onInput ChangeEditor
-            , A11y_Key.tabbable tabbable
-            ]
-            [ [ ( "chrome", "Chrome" )
-              , ( "clouds", "Clouds" )
-              , ( "crimson_editor", "Crimson Editor" )
-              , ( "dawn", "Dawn" )
-              , ( "dreamweaver", "Dreamweaver" )
-              , ( "eclipse", "Eclipse" )
-              , ( "github", "Github" )
-              , ( "iplastic", "IPlastic" )
-              , ( "katzenmilch", "KatzenMilch" )
-              , ( "kuroir", "Kuroir" )
-              , ( "solarized_light", "Solarized Light" )
-              , ( "sqlserver", "SQL Server" )
-              , ( "textmate", "TextMate" )
-              , ( "tomorrow", "Tomorrow" )
-              , ( "xcode", "XCode" )
-              ]
-                |> List.map op
-                |> Html.optgroup [ Attr.attribute "label" (Trans.cBright lang), A11y_Widget.hidden True ]
-            , [ ( "ambiance", "Ambiance" )
-              , ( "chaos", "Chaos" )
-              , ( "clouds_midnight", "Clouds Midnight" )
-              , ( "cobalt", "Cobalt" )
-              , ( "dracula", "Dracula" )
-              , ( "gob", "Green on Black" )
-              , ( "gruvbox", "Gruvbox" )
-              , ( "idle_fingers", "idle Fingers" )
-              , ( "kr_theme", "krTheme" )
-              , ( "merbivore", "Merbivore" )
-              , ( "merbivore_soft", "Merbivore Soft" )
-              , ( "mono_industrial", "Mono Industrial" )
-              , ( "monokai", "Monokai" )
-              , ( "nord_dark", "Nord Dark" )
-              , ( "pastel_on_dark", "Pastel on dark" )
-              , ( "solarized_dark", "Solarized Dark" )
-              , ( "terminal", "Terminal" )
-              , ( "tomorrow_night", "Tomorrow Night" )
-              , ( "tomorrow_night_blue", "Tomorrow Night Blue" )
-              , ( "tomorrow_night_bright", "Tomorrow Night Bright" )
-              , ( "tomorrow_night_eighties", "Tomorrow Night 80s" )
-              , ( "twilight", "Twilight" )
-              , ( "vibrant_ink", "Vibrant Ink" )
-              ]
-                |> List.map op
-                |> Html.optgroup [ Attr.attribute "label" (Trans.cDark lang), A11y_Widget.hidden True ]
+    Html.div [ Attr.class "lia-settings-editor" ]
+        [ Html.label [ Attr.class "lia-label", A11y_Widget.hidden (not tabbable) ]
+            [ Html.span [] [ Html.text "Editor:" ]
+            , Html.select
+                [ Attr.class "lia-select d-block"
+                , onInput ChangeEditor
+                , A11y_Key.tabbable tabbable
+                ]
+                [ [ ( "chrome", "Chrome" )
+                  , ( "clouds", "Clouds" )
+                  , ( "crimson_editor", "Crimson Editor" )
+                  , ( "dawn", "Dawn" )
+                  , ( "dreamweaver", "Dreamweaver" )
+                  , ( "eclipse", "Eclipse" )
+                  , ( "github", "Github" )
+                  , ( "iplastic", "IPlastic" )
+                  , ( "katzenmilch", "KatzenMilch" )
+                  , ( "kuroir", "Kuroir" )
+                  , ( "solarized_light", "Solarized Light" )
+                  , ( "sqlserver", "SQL Server" )
+                  , ( "textmate", "TextMate" )
+                  , ( "tomorrow", "Tomorrow" )
+                  , ( "xcode", "XCode" )
+                  ]
+                    |> List.map op
+                    |> Html.optgroup [ Attr.attribute "label" (Trans.cBright lang), A11y_Widget.hidden True ]
+                , [ ( "ambiance", "Ambiance" )
+                  , ( "chaos", "Chaos" )
+                  , ( "clouds_midnight", "Clouds Midnight" )
+                  , ( "cobalt", "Cobalt" )
+                  , ( "dracula", "Dracula" )
+                  , ( "gob", "Green on Black" )
+                  , ( "gruvbox", "Gruvbox" )
+                  , ( "idle_fingers", "idle Fingers" )
+                  , ( "kr_theme", "krTheme" )
+                  , ( "merbivore", "Merbivore" )
+                  , ( "merbivore_soft", "Merbivore Soft" )
+                  , ( "mono_industrial", "Mono Industrial" )
+                  , ( "monokai", "Monokai" )
+                  , ( "nord_dark", "Nord Dark" )
+                  , ( "pastel_on_dark", "Pastel on dark" )
+                  , ( "solarized_dark", "Solarized Dark" )
+                  , ( "terminal", "Terminal" )
+                  , ( "tomorrow_night", "Tomorrow Night" )
+                  , ( "tomorrow_night_blue", "Tomorrow Night Blue" )
+                  , ( "tomorrow_night_bright", "Tomorrow Night Bright" )
+                  , ( "tomorrow_night_eighties", "Tomorrow Night 80s" )
+                  , ( "twilight", "Twilight" )
+                  , ( "vibrant_ink", "Vibrant Ink" )
+                  ]
+                    |> List.map op
+                    |> Html.optgroup [ Attr.attribute "label" (Trans.cDark lang), A11y_Widget.hidden True ]
+                ]
             ]
         ]
 
@@ -505,9 +533,10 @@ translateWithGoogle : Lang -> Bool -> Bool -> List (Html Msg)
 translateWithGoogle lang tabbable bool =
     [ divider
     , if not bool then
-        Html.label [ A11y_Widget.hidden (not tabbable) ]
+        Html.label [ Attr.class "lia-label", A11y_Widget.hidden (not tabbable) ]
             [ Html.input
                 [ Attr.type_ "checkbox"
+                , Attr.class "lia-checkbox"
                 , Attr.checked bool
                 , onClick (Toggle TranslateWithGoogle)
                 , A11y_Key.tabbable tabbable

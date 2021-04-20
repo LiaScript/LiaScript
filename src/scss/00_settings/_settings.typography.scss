@@ -5,7 +5,9 @@ html {
 body {
   background-color: rgb(var(--color-background));
   color: rgb(var(--color-text));
-  font-size: $global-font-size;
+  font-size: calc(
+    var(--global-font-size, $global-font-size) * var(--font-size-multiplier)
+  );
   font-weight: 400;
   line-height: $global-line-height;
 }
@@ -16,7 +18,7 @@ input,
 optgroup,
 select,
 textarea {
-  font-family: $global-font-family;
+  font-family: var(--global-font-family, $global-font-family);
 }
 
 a,

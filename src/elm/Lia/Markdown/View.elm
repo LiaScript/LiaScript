@@ -381,6 +381,9 @@ view_block config block =
                 |> (::) (Html.text "—")
                 |> Html.cite (annotation "lia-cite" attr)
 
+        Problem element ->
+            Html.p [ Attr.class "lia-problem" ] (config.view element)
+
 
 viewQuote : Config Msg -> Parameters -> List Markdown -> Html Msg
 viewQuote config attr elements =
