@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.6.5
+version:  0.9.6
 language: en
 narrator: UK English Male
 
@@ -275,7 +275,14 @@ This will apply the following three patches:
 
 ## Version-Changes
 
-**0.9.5** (13/03/2021)
+**0.9.6** (20/04/2021)
+
+- adds font-spacing
+- lazy loading for images, videos, and iframes
+- better parsing of weird list and quotation structures
+- many little bugfixes
+
+**0.9.5** (13/04/2021)
 
 - revert double single quotations for titles (caused bugs)
 - add error output to surveys and quizzes
@@ -303,7 +310,7 @@ This will apply the following three patches:
 
 - Total redesign of UI/UX
 - Adds support for Tasks
-  
+
   ``` markdown
   - [X] some task solved
   - [ ] some task unsolved ...
