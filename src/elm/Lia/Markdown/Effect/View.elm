@@ -172,7 +172,7 @@ block_playback : Config sub -> Effect Markdown -> Html Msg
 block_playback config e =
     if config.speaking == Just e.id then
         Html.button
-            [ Attr.class "lia-btn icon icon-stop-circle"
+            [ Attr.class "lia-btn lia-btn--transparent text-highlight icon icon-stop-circle"
             , A11y_Key.tabbable True
             , e.id
                 |> E.Mute
@@ -183,7 +183,7 @@ block_playback config e =
 
     else
         Html.button
-            [ Attr.class "lia-btn icon icon-play-circle"
+            [ Attr.class "lia-btn lia-btn--transparent text-highlight icon icon-play-circle"
             , A11y_Key.tabbable True
             , playBackAttr e.id e.voice config.slide "this.parentNode.childNodes[1]"
             ]
