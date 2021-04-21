@@ -16,18 +16,8 @@
     height: 25rem;
     display: inline-block;
 
-    img {
-      height: 100%;
-      object-fit: cover;
-      width: 100%;
-    }
-
-    video {
-      height: 100%;
-      object-fit: cover;
-      width: 100%;
-    }
-
+    img,
+    video,
     div {
       height: 100%;
       object-fit: cover;
