@@ -9,6 +9,7 @@ port module Lia.Update exposing
 import Array exposing (Array)
 import Const
 import Dict
+import Html.Attributes exposing (width)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Index.Update as Index
@@ -24,7 +25,7 @@ import Port.Event as Event exposing (Event)
 import Session exposing (Session)
 
 
-port media : (( String, Int, Int ) -> msg) -> Sub msg
+port media : (( String, Maybe Int, Maybe Int ) -> msg) -> Sub msg
 
 
 {-| If the model has an activated section, then all subscriptions will be passed
@@ -78,7 +79,7 @@ type Msg
     | Home
     | Script ( Int, Script.Msg Markdown.Msg )
     | TTSReplay Bool
-    | Media ( String, Int, Int )
+    | Media ( String, Maybe Int, Maybe Int )
 
 
 {-| **@private:** shortcut for generating events for a specific section:
@@ -243,9 +244,22 @@ update session msg model =
                     ( model, Cmd.none, [] )
 
         Media ( url, width, height ) ->
-            ( { model
-                | media = Dict.insert url ( width, height ) model.media
-              }
+            ( case ( width, height ) of
+                ( Just w, Just h ) ->
+                    { model | media = Dict.insert url ( w, h ) model.media }
+
+                ( Nothing, Nothing ) ->
+                    { model
+                        | modal =
+                            if url == "" then
+                                Nothing
+
+                            else
+                                Just url
+                    }
+
+                _ ->
+                    model
             , Cmd.none
             , []
             )
