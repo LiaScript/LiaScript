@@ -92,13 +92,6 @@ send sectionID =
     List.map (\( name, json ) -> Event name sectionID json)
 
 
-blockSwiping : Model -> Bool
-blockSwiping =
-    get_active_section
-        >> Maybe.map (.footnote2show >> (/=) Nothing)
-        >> Maybe.withDefault False
-
-
 update : Session -> Msg -> Model -> ( Model, Cmd Msg, List Event )
 update session msg model =
     case msg of
@@ -205,11 +198,11 @@ update session msg model =
                     update session (Load True event.section) model
 
                 "swipe" ->
-                    case ( JD.decodeValue JD.string event.message, blockSwiping model ) of
-                        ( Ok "left", False ) ->
+                    case JD.decodeValue JD.string event.message of
+                        Ok "left" ->
                             update session NextSection model
 
-                        ( Ok "right", False ) ->
+                        Ok "right" ->
                             update session PrevSection model
 
                         _ ->

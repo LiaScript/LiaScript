@@ -2,11 +2,8 @@ module Lia.Markdown.View exposing (view)
 
 import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
-import Accessibility.Role as A11y_Role
-import Accessibility.Widget as A11y_Widget
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Html.Events exposing (onClick)
 import Html.Lazy as Lazy
 import Lia.Markdown.Chart.View as Charts
 import Lia.Markdown.Code.View as Codes
@@ -32,7 +29,7 @@ import Lia.Markdown.Types exposing (Markdown(..), MarkdownS)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Section exposing (SubSection(..))
 import Lia.Settings.Types exposing (Mode(..))
-import Lia.Utils exposing (btnIcon, modal)
+import Lia.Utils exposing (modal)
 import Lia.Voice as Voice
 import SvgBob
 

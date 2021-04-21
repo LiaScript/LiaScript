@@ -1,8 +1,5 @@
 module Lia.Markdown.Effect.Script.View exposing (view)
 
-import Accessibility.Key as A11y_Key
-import Accessibility.Role as A11y_Role
-import Accessibility.Widget as A11y_Widget
 import Array
 import Conditional.List as CList
 import Html exposing (Html)
@@ -17,7 +14,7 @@ import Lia.Markdown.Effect.Script.Update exposing (Msg(..))
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Section exposing (SubSection(..))
-import Lia.Utils exposing (blockKeydown, btnIcon, icon, modal, onEnter)
+import Lia.Utils exposing (blockKeydown, icon, modal, onEnter)
 
 
 view : Config sub -> Int -> Parameters -> Html (Msg sub)
