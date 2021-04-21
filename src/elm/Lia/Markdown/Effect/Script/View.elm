@@ -17,7 +17,7 @@ import Lia.Markdown.Effect.Script.Update exposing (Msg(..))
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Section exposing (SubSection(..))
-import Lia.Utils exposing (blockKeydown, btnIcon, icon, onEnter)
+import Lia.Utils exposing (blockKeydown, btnIcon, icon, modal, onEnter)
 
 
 view : Config sub -> Int -> Parameters -> Html (Msg sub)
@@ -350,49 +350,25 @@ onEdit bool =
 
 editor : Maybe String -> Int -> String -> Html (Msg sub)
 editor theme id code =
-    Html.div
-        [ Attr.class "lia-modal"
-        , A11y_Role.dialog
-        , A11y_Widget.modal True
-        ]
-        [ Html.div [ Attr.class "lia-modal__inner" ]
-            [ Html.div [ Attr.class "lia-modal__close" ]
-                [ btnIcon
-                    { icon = "icon-close"
-                    , msg = Just (Edit False id)
-                    , tabbable = True
-                    , title = "close modal"
-                    }
-                    [ Attr.class "lia-btn--transparent"
-                    , Attr.id "lia-modal__close"
-                    , A11y_Key.onKeyDown [ A11y_Key.escape (Edit False id) ]
-                    ]
-                ]
-            , Html.div [ Attr.class "lia-modal__content" ]
-                [ Editor.editor
-                    [ Editor.onChange (EditCode id)
-                    , Editor.value code
-                    , theme
-                        |> Maybe.withDefault "crimson_editor"
-                        |> Editor.theme
-                    , Editor.focusing
-                    , Editor.mode "javascript"
-                    , Editor.maxLines 16
-                    , Editor.showGutter True
-                    , Editor.useSoftTabs False
-                    , Editor.enableBasicAutocompletion True
-                    , Editor.enableLiveAutocompletion True
-                    , Editor.enableSnippets True
-                    , Editor.extensions [ "language_tools" ]
-                    , Attr.style "width" "96%"
-                    , Attr.style "max-width" "900px"
-                    ]
-                    []
-                ]
-            ]
-        , Html.div
-            [ Attr.class "lia-modal__outer"
-            , Event.onClick (Edit False id)
+    modal (Edit False id)
+        Nothing
+        [ Editor.editor
+            [ Editor.onChange (EditCode id)
+            , Editor.value code
+            , theme
+                |> Maybe.withDefault "crimson_editor"
+                |> Editor.theme
+            , Editor.focusing
+            , Editor.mode "javascript"
+            , Editor.maxLines 16
+            , Editor.showGutter True
+            , Editor.useSoftTabs False
+            , Editor.enableBasicAutocompletion True
+            , Editor.enableLiveAutocompletion True
+            , Editor.enableSnippets True
+            , Editor.extensions [ "language_tools" ]
+            , Attr.style "width" "96%"
+            , Attr.style "max-width" "900px"
             ]
             []
         ]

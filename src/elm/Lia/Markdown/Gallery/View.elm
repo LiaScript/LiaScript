@@ -14,7 +14,7 @@ import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inline)
 import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Types exposing (Markdown(..))
-import Lia.Utils exposing (btnIcon, get, icon)
+import Lia.Utils exposing (btnIcon, get, icon, modal)
 
 
 view : Config sub -> Vector -> Parameters -> Gallery -> Html (Msg sub)
@@ -71,58 +71,37 @@ viewMedia config vector gallery div =
 
 viewOverlay : Config sub -> Int -> Int -> Int -> Inline -> Html (Msg sub)
 viewOverlay config id mediaID size media =
-    Html.div
-        [ Attr.class "lia-modal"
-        , A11y_Widget.modal True
-        , A11y_Role.dialog
-        ]
-        [ Html.div [ Attr.class "lia-modal__inner" ]
-            [ Html.div [ Attr.class "lia-modal__close" ]
-                [ btnIcon
-                    { icon = "icon-close"
-                    , msg = Just (Close id)
-                    , tabbable = True
-                    , title = "close modal"
-                    }
-                    [ Attr.class "lia-btn--transparent"
-                    , Attr.id "lia-modal__close"
-                    , A11y_Key.onKeyDown [ A11y_Key.escape (Close id) ]
-                    ]
-                ]
-            , [ media ]
-                |> viewer config
-                |> Html.div [ Attr.class "lia-modal__content" ]
-                |> Html.map Script
-            , Html.div [ Attr.class "lia-modal__controls" ]
-                [ btnIcon
-                    { icon = "icon-arrow-right"
-                    , msg =
-                        if mediaID + 1 < size then
-                            Just (Show id (mediaID + 1))
+    [ media ]
+        |> viewer config
+        |> List.map (Html.map Script)
+        |> modal (Close id) (viewControls id mediaID size)
 
-                        else
-                            Nothing
-                    , tabbable = True
-                    , title = "next media"
-                    }
-                    [ Attr.class "lia-modal__ctrl-next lia-btn--transparent" ]
-                , btnIcon
-                    { icon = "icon-arrow-left"
-                    , msg =
-                        if mediaID > 0 then
-                            Just (Show id (mediaID - 1))
 
-                        else
-                            Nothing
-                    , tabbable = True
-                    , title = "previous media"
-                    }
-                    [ Attr.class "lia-modal__ctrl-prev lia-btn--transparent" ]
-                ]
-            ]
-        , Html.div
-            [ Attr.class "lia-modal__outer"
-            , Event.onClick (Close id)
-            ]
-            []
+viewControls : Int -> Int -> Int -> Maybe (List (Html (Msg sub)))
+viewControls id mediaID size =
+    Just
+        [ btnIcon
+            { icon = "icon-arrow-right"
+            , msg =
+                if mediaID + 1 < size then
+                    Just (Show id (mediaID + 1))
+
+                else
+                    Nothing
+            , tabbable = True
+            , title = "next media"
+            }
+            [ Attr.class "lia-modal__ctrl-next lia-btn--transparent" ]
+        , btnIcon
+            { icon = "icon-arrow-left"
+            , msg =
+                if mediaID > 0 then
+                    Just (Show id (mediaID - 1))
+
+                else
+                    Nothing
+            , tabbable = True
+            , title = "previous media"
+            }
+            [ Attr.class "lia-modal__ctrl-prev lia-btn--transparent" ]
         ]
