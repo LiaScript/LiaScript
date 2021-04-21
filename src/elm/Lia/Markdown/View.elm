@@ -150,7 +150,7 @@ view_footnote viewer key footnotes =
                             [ Attr.class "lia-btn--transparent"
                             , Attr.style "float" "right"
                             , Attr.style "right" "-3.5rem"
-                            , Attr.id "lia-close-modal"
+                            , Attr.id "lia-modal__closel"
                             , A11y_Key.onKeyDown [ A11y_Key.escape FootnoteHide ]
                             ]
                         )

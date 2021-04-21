@@ -76,12 +76,7 @@ viewOverlay config id mediaID size media =
         , A11y_Widget.modal True
         , A11y_Role.dialog
         ]
-        [ Html.div
-            [ Attr.class "lia-modal__outer"
-            , Event.onClick (Close id)
-            ]
-            []
-        , Html.div [ Attr.class "lia-modal__inner" ]
+        [ Html.div [ Attr.class "lia-modal__inner" ]
             [ Html.div [ Attr.class "lia-modal__close" ]
                 [ btnIcon
                     { icon = "icon-close"
@@ -90,7 +85,7 @@ viewOverlay config id mediaID size media =
                     , title = "close modal"
                     }
                     [ Attr.class "lia-btn--transparent"
-                    , Attr.id "lia-close-modal"
+                    , Attr.id "lia-modal__close"
                     , A11y_Key.onKeyDown [ A11y_Key.escape (Close id) ]
                     ]
                 ]
@@ -125,4 +120,9 @@ viewOverlay config id mediaID size media =
                     [ Attr.class "lia-modal__ctrl-prev lia-btn--transparent" ]
                 ]
             ]
+        , Html.div
+            [ Attr.class "lia-modal__outer"
+            , Event.onClick (Close id)
+            ]
+            []
         ]
