@@ -187,7 +187,9 @@
       padding: 1.4rem;
       position: absolute;
       top: 5.9rem;
-      width: auto;
+      width: -webkit-max-content;
+      width: -moz-max-content;
+      width: max-content;
       z-index: 10;
 
       &.active {

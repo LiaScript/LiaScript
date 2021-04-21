@@ -46,6 +46,7 @@ $controlHeight: 4rem;
     text-align: right;
     top: 0;
     width: 100%;
+    z-index: 9001;
 
     @include breakpoint("sm") {
       margin: 0;
@@ -62,6 +63,7 @@ $controlHeight: 4rem;
     height: $controlHeight;
     justify-content: space-between;
     width: 100%;
+    z-index: 9001;
 
     @include breakpoint("sm") {
       position: absolute;
@@ -113,6 +115,7 @@ $controlHeight: 4rem;
 
     > * {
       margin: 0;
+      z-index: 9001;
     }
   }
 

@@ -245,6 +245,9 @@ class LiaScript {
     window.img_ = (src: string, width: number, height: number) => {
       self.img_(src, width, height)
     }
+    window.img_Click = (url: string) => {
+      self.img_Click(url)
+    }
 
     setTimeout(function () {
       firstSpeak = false
@@ -257,6 +260,14 @@ class LiaScript {
 
   img_(src: string, width: number, height: number) {
     this.app.ports.media.send([src, width, height])
+  }
+
+  img_Click(url: string) {
+    // abuse media port to open modals
+    if (document.getElementsByClassName('lia-modal').length === 0) {
+      console.warn("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSs", url)
+      this.app.ports.media.send([url, null, null])
+    }
   }
 
   initNaviation(elem: HTMLElement, elmSend: Lia.Send) {

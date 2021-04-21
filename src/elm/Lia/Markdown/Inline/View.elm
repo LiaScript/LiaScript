@@ -131,6 +131,7 @@ img config attr alt_ url_ title_ width =
     Html.img
         (Attr.src url_
             :: Attr.attribute "loading" "lazy"
+            :: Attr.attribute "onClick" ("window.img_Click(\"" ++ url_ ++ "\")")
             :: toAttribute attr
             |> CList.addIf (width == Nothing) (load url_)
             |> CList.addWhen (title config title_)
