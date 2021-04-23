@@ -9,6 +9,7 @@ module Index.Update exposing
     , update
     )
 
+import Browser.Navigation as Nav
 import Dict
 import Index.Model exposing (Course, Model, Release)
 import Index.Version as Version
@@ -31,6 +32,7 @@ type Msg
     | Handle JD.Value
     | Activate String (Maybe String)
     | NoOp
+    | LoadCourse String
 
 
 index : Event -> Event
@@ -172,6 +174,9 @@ update msg model =
             , Cmd.none
             , [ share title text url ]
             )
+
+        LoadCourse url ->
+            ( model, Nav.load url, [] )
 
         NoOp ->
             ( model, Cmd.none, [] )

@@ -69,16 +69,12 @@ view model =
                         ]
                     ]
 
-            Error info ->
-                [ base_div
-                    [ Html.h1 [] [ Html.text "Load failed" ]
-                    , Html.h6 [] [ Html.text model.lia.readme ]
-                    , Html.p
-                        [ Attr.style "margin-left" "20%"
-                        , Attr.style "margin-right" "20%"
-                        ]
-                        [ Html.text info ]
-                    ]
+            Error _ ->
+                [ model.lia
+                    |> Lia.Script.view
+                        model.session.screen
+                        model.hasIndex
+                    |> Html.map LiaScript
                 ]
     }
 

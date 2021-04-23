@@ -246,6 +246,9 @@ class LiaScript {
     window.img_ = (src: string, width: number, height: number) => {
       self.img_(src, width, height)
     }
+    window.img_Click = (url: string) => {
+      self.img_Click(url)
+    }
 
     setTimeout(function () {
       firstSpeak = false
@@ -271,6 +274,13 @@ class LiaScript {
 
   img_(src: string, width: number, height: number) {
     this.app.ports.media.send([src, width, height])
+  }
+
+  img_Click(url: string) {
+    // abuse media port to open modals
+    if (document.getElementsByClassName('lia-modal').length === 0) {
+      this.app.ports.media.send([url, null, null])
+    }
   }
 
   initNaviation(elem: HTMLElement, elmSend: Lia.Send) {
@@ -538,7 +548,14 @@ function process(
     case Port.INIT: {
       let data = event.message
 
-      if (isConnected) {
+      let isPersistent = true
+      
+      try {
+        isPersistent = !(data.definition.macro["persistent"].trim().toLowerCase() === "false")
+      } catch (e) {}
+      
+
+      if (isConnected && isPersistent) {
         self.connector.open(
           data.readme,
           data.version,
@@ -565,6 +582,7 @@ function process(
         meta('og:url', '')
         meta('og:image', data.definition.logo)
 
+<<<<<<< HEAD
         // store the basic info in the offline-repositories
         if (isConnected) {
           self.connector.storeToIndex(data)
@@ -573,6 +591,11 @@ function process(
         try {
           window.top.liaReady()
         } catch (e) { }
+=======
+      // store the basic info in the offline-repositories
+      if (isConnected  && isPersistent) {
+        self.connector.storeToIndex(data)
+>>>>>>> development
       }
 
       try {

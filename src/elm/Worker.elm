@@ -1,6 +1,7 @@
 port module Worker exposing (init, main)
 
 import Array
+import Error.Report
 import Http
 import Json.Encode as JE
 import Lia.Definition.Json.Encode as Def
@@ -114,7 +115,7 @@ update msg model =
             load_readme readme model
 
         Load_ReadMe_Result url (Err info) ->
-            ( { model | state = Error <| parse_error info }
+            ( { model | state = Error.Report.add model.state (parse_error info) }
             , info
                 |> parse_error
                 |> error (url ++ " Load_ReadMe_Result")
@@ -137,7 +138,7 @@ update msg model =
                 }
 
         Load_Template_Result (Err info) ->
-            ( { model | state = Error <| parse_error info }
+            ( { model | state = Error.Report.add model.state (parse_error info) }
             , info
                 |> parse_error
                 |> error "Load_ReadMe_Result"
@@ -271,7 +272,7 @@ load model lia code templates =
                 | state =
                     lia.error
                         |> Maybe.withDefault ""
-                        |> Error
+                        |> Error.Report.add model.state
               }
             , Cmd.none
             )

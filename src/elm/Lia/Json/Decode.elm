@@ -52,6 +52,7 @@ toModel =
         |> JD.map2 (|>) (JD.succeed identity)
         |> JD.map2 (|>) (JD.succeed Dict.empty)
         |> JD.map2 (|>) (JD.succeed Dict.empty)
+        |> JD.map2 (|>) (JD.succeed Nothing)
 
 
 toSectionBase : JD.Decoder Section.Base

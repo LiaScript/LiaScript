@@ -82,6 +82,7 @@ type alias Model =
     , search_index : String -> String
     , backup : Dict String String
     , media : Dict String ( Int, Int )
+    , modal : Maybe String
     }
 
 
@@ -130,6 +131,7 @@ init hasShareApi openTOC settings url readme origin anchor =
     , search_index = identity
     , backup = Dict.empty
     , media = Dict.empty
+    , modal = Nothing
     }
 
 

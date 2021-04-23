@@ -22,6 +22,7 @@ import Lia.Settings.Types exposing (Mode(..), Settings)
 import Lia.Settings.Update exposing (Toggle(..), toggle_sound)
 import Lia.Settings.View as Settings
 import Lia.Update exposing (Msg(..), get_active_section)
+import Lia.Utils exposing (modal)
 import Session exposing (Screen)
 import Translations as Trans exposing (Lang)
 
@@ -139,6 +140,7 @@ viewSlide screen model =
                 model.media
                 section.effect_model
                 model.section_active
+            , showModal model
             ]
 
         Nothing ->
@@ -442,3 +444,27 @@ responsiveVoice =
                 []
             ]
         ]
+
+
+showModal : Model -> Html Msg
+showModal model =
+    case model.modal of
+        Nothing ->
+            Html.text ""
+
+        Just url ->
+            modal (Media ( "", Nothing, Nothing ))
+                Nothing
+                [ Html.figure [ Attr.class "lia-figure" ]
+                    [ Html.div
+                        [ Attr.class "lia-figure__media"
+                        , Attr.attribute "data-media-image" "image"
+                        , model.media
+                            |> Dict.get url
+                            |> Maybe.map (Tuple.first >> Attr.width)
+                            |> Maybe.withDefault (Attr.class "")
+                        ]
+                        [ Html.img [ Attr.src url ] []
+                        ]
+                    ]
+                ]

@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.6
+version:  0.9.7
 language: en
 narrator: UK English Male
 
@@ -17,8 +17,6 @@ comment:  Main LiaScript Parser project, written in elm.
 ![GitHub repo size](https://img.shields.io/github/repo-size/liascript/liascript)
 
 # LiaScript
-
-
 
 [LiaScript](https://LiaScript.github.io) is an extension to Markdown to support
 the creation of free and open online courses, interactive books and thus, Open
@@ -274,6 +272,20 @@ This will apply the following three patches:
 - elm-patch/dom: enable onclick events as well as innerHTML
 
 ## Version-Changes
+
+**0.9.8** (23/04/2021)
+
+- user friendly error messages, with the possibility to return to the index page.
+- new macro `@persistent: false`, which allows to mark a course, `true` is default
+  and means it, should be stored, `false` is used to prohibit the storage within
+  IndexedDB, or another connector
+- minor CSS bugfixes
+
+**0.9.7** (21/04/2021)
+
+- new feature, click on an image to see it as modal and scaled ...
+- removes bug with parsing quotation marks
+- improved modals & fixed inline script-code editing
 
 **0.9.6** (20/04/2021)
 

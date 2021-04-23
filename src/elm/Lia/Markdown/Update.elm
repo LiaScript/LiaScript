@@ -149,7 +149,7 @@ update msg section =
             )
 
         FootnoteShow key ->
-            ( { section | footnote2show = Just key }, focus NoOp "lia-close-modal", [] )
+            ( { section | footnote2show = Just key }, focus NoOp "lia-modal__close", [] )
 
         FootnoteHide ->
             ( { section | footnote2show = Nothing }

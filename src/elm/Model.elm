@@ -88,4 +88,4 @@ type State
     | Loading
     | Parsing Bool Int
     | Running
-    | Error String
+    | Error (List String)

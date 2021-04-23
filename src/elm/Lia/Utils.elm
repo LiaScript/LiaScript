@@ -5,13 +5,15 @@ module Lia.Utils exposing
     , focus
     , get
     , icon
+    , modal
     , onEnter
     , onKeyDown
     , toEscapeString
     , toJSstring
     )
 
-import Accessibility.Key as A11y_Key exposing (tabbable)
+import Accessibility.Key as A11y_Key
+import Accessibility.Role as A11y_Role
 import Accessibility.Widget as A11y_Widget
 import Browser.Dom as Dom
 import Html exposing (Attribute, Html)
@@ -164,3 +166,39 @@ icon class attributes =
 focus : msg -> String -> Cmd msg
 focus msg =
     Dom.focus >> Task.attempt (always msg)
+
+
+{-| Create custom modals, which overlay the entire view.
+-}
+modal : msg -> Maybe (List (Html msg)) -> List (Html msg) -> Html msg
+modal msgClose controls content =
+    Html.div
+        [ Attr.class "lia-modal"
+        , A11y_Widget.modal True
+        , A11y_Role.dialog
+        ]
+        [ Html.div [ Attr.class "lia-modal__inner" ]
+            [ Html.div [ Attr.class "lia-modal__close" ]
+                [ btnIcon
+                    { icon = "icon-close"
+                    , msg = Just msgClose
+                    , tabbable = True
+                    , title = "close modal"
+                    }
+                    [ Attr.class "lia-btn--transparent"
+                    , Attr.id "lia-modal__close"
+                    , A11y_Key.onKeyDown [ A11y_Key.escape msgClose ]
+                    ]
+                ]
+            , content
+                |> Html.div [ Attr.class "lia-modal__content" ]
+            , controls
+                |> Maybe.map (Html.div [ Attr.class "lia-modal__controls" ])
+                |> Maybe.withDefault (Html.text "")
+            ]
+        , Html.div
+            [ Attr.class "lia-modal__outer"
+            , Event.onClick msgClose
+            ]
+            []
+        ]

@@ -15,13 +15,10 @@ import Lia.Markdown.Effect.Types exposing (Class(..), Effect, class, isIn)
 import Lia.Markdown.Effect.Update as E
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.Inline.Config exposing (Config)
-import Lia.Markdown.Inline.Stringify as I
 import Lia.Markdown.Inline.Types exposing (Inline)
-import Lia.Markdown.Stringify exposing (stringify)
 import Lia.Markdown.Types exposing (Markdown)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Settings.Types exposing (Mode(..))
-import Lia.Voice as Voice
 import Port.Event as Event exposing (Event)
 import Port.TTS
 
@@ -126,11 +123,11 @@ inline config attr e body =
                     ]
 
                 PlayBackAnimation ->
-                    circle_ e.begin
-                        :: [ inline_playback config e
-                                :: body
-                                |> Html.label []
-                           ]
+                    [ circle_ e.begin
+                    , inline_playback config e
+                        :: body
+                        |> Html.label []
+                    ]
 
     else
         case class e of
@@ -148,11 +145,11 @@ inline config attr e body =
                     |> hiddenSpan False attr
 
             PlayBackAnimation ->
-                circle_ e.begin
-                    :: [ inline_playback config e
-                            :: body
-                            |> Html.label []
-                       ]
+                [ circle_ e.begin
+                , inline_playback config e
+                    :: body
+                    |> Html.label []
+                ]
                     |> hiddenSpan (not <| isIn config.visible e) attr
 
 
@@ -201,27 +198,6 @@ playBackAttr id voice section command =
         |> String.replace "\"XXX\"" (cleanUpNumber command)
         |> (\event -> "playback(" ++ event ++ ")")
         |> Attr.attribute "onclick"
-
-
-inlinePlayBack config e body =
-    case Voice.getVoiceFor e.voice config.translations of
-        Nothing ->
-            []
-
-        Just ( translate, voice ) ->
-            [ Attr.class <|
-                if translate then
-                    "translate"
-
-                else
-                    "notranslate"
-            , Attr.attribute "translate" <|
-                if translate then
-                    "yes"
-
-                else
-                    "no"
-            ]
 
 
 inline_playback : Config sub -> Effect Inline -> Html msg

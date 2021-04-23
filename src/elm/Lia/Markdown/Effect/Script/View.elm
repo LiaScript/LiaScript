@@ -1,8 +1,5 @@
 module Lia.Markdown.Effect.Script.View exposing (view)
 
-import Accessibility.Key as A11y_Key
-import Accessibility.Role as A11y_Role
-import Accessibility.Widget as A11y_Widget
 import Array
 import Conditional.List as CList
 import Html exposing (Html)
@@ -17,7 +14,7 @@ import Lia.Markdown.Effect.Script.Update exposing (Msg(..))
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Section exposing (SubSection(..))
-import Lia.Utils exposing (blockKeydown, btnIcon, icon, onEnter)
+import Lia.Utils exposing (blockKeydown, icon, modal, onEnter)
 
 
 view : Config sub -> Int -> Parameters -> Html (Msg sub)
@@ -350,74 +347,25 @@ onEdit bool =
 
 editor : Maybe String -> Int -> String -> Html (Msg sub)
 editor theme id code =
-    Html.div
-        [ Attr.style "position" "fixed"
-        , Attr.style "display" "block"
-        , Attr.style "width" "100%"
-        , Attr.style "height" "100%"
-        , Attr.style "top" "0"
-        , Attr.style "right" "0"
-        , Attr.style "z-index" "10000"
-        , Attr.class "lia-modal"
-        ]
-        [ [ btnIcon
-                { icon = "icon-close"
-                , msg = Just (Edit False id)
-                , tabbable = True
-                , title = "close modal"
-                }
-                [ Attr.class "lia-btn--transparent"
-                , Attr.style "float" "right"
-                , Attr.style "padding" "0px"
-                , Attr.id "lia-close-modal"
-                , A11y_Key.onKeyDown [ A11y_Key.escape (Edit False id) ]
-                ]
-          , Html.div
-                [ Attr.style "position" "absolute"
-                , Attr.style "top" "4rem"
-                , Attr.style "left" "50%"
-                , Attr.style "width" "100%"
-                , Attr.style "max-width" "800px"
-                , Attr.style "transform" "translate(-50%,0%)"
-                , Attr.style "-ms-transform" "translate(-50%,0%)"
-                ]
-                [ Editor.editor
-                    [ Editor.onChange (EditCode id)
-                    , Editor.value code
-                    , theme
-                        |> Maybe.withDefault "crimson_editor"
-                        |> Editor.theme
-                    , Editor.focusing
-                    , Editor.mode "javascript"
-                    , Editor.maxLines 16
-                    , Editor.showGutter True
-                    , Editor.useSoftTabs False
-                    , Editor.enableBasicAutocompletion True
-                    , Editor.enableLiveAutocompletion True
-                    , Editor.enableSnippets True
-                    , Editor.extensions [ "language_tools" ]
-                    ]
-                    []
-                ]
-          ]
-            |> Html.div
-                [ Attr.style "position" "absolute"
-                , Attr.style "top" "5%"
-                , Attr.style "left" "50%"
-                , Attr.style "font-size" "20px"
-                , Attr.style "color" "white"
-                , Attr.style "transform" "translate(-50%,-30%)"
-                , Attr.style "-ms-transform" "translate(-50%,-30%)"
-                , Attr.style "width" "90%"
-                , A11y_Widget.modal True
-                , A11y_Role.dialog
-                ]
-        , Html.div
-            [ Attr.style "background-color" "rgba(0,0,0,0.8)"
-            , Attr.style "width" "100%"
-            , Attr.style "height" "100%"
-            , Attr.style "overflow" "auto"
-            , Event.onClick (Edit False id)
+    modal (Edit False id)
+        Nothing
+        [ Editor.editor
+            [ Editor.onChange (EditCode id)
+            , Editor.value code
+            , theme
+                |> Maybe.withDefault "crimson_editor"
+                |> Editor.theme
+            , Editor.focusing
+            , Editor.mode "javascript"
+            , Editor.maxLines 16
+            , Editor.showGutter True
+            , Editor.useSoftTabs False
+            , Editor.enableBasicAutocompletion True
+            , Editor.enableLiveAutocompletion True
+            , Editor.enableSnippets True
+            , Editor.extensions [ "language_tools" ]
+            , Attr.style "width" "96%"
+            , Attr.style "max-width" "900px"
             ]
             []
         ]

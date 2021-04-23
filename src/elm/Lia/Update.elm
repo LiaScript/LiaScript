@@ -9,6 +9,7 @@ port module Lia.Update exposing
 import Array exposing (Array)
 import Const
 import Dict
+import Html.Attributes exposing (width)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Index.Update as Index
@@ -24,7 +25,7 @@ import Port.Event as Event exposing (Event)
 import Session exposing (Session)
 
 
-port media : (( String, Int, Int ) -> msg) -> Sub msg
+port media : (( String, Maybe Int, Maybe Int ) -> msg) -> Sub msg
 
 
 {-| If the model has an activated section, then all subscriptions will be passed
@@ -78,7 +79,7 @@ type Msg
     | Home
     | Script ( Int, Script.Msg Markdown.Msg )
     | TTSReplay Bool
-    | Media ( String, Int, Int )
+    | Media ( String, Maybe Int, Maybe Int )
 
 
 {-| **@private:** shortcut for generating events for a specific section:
@@ -90,13 +91,6 @@ type Msg
 send : Int -> List ( String, JE.Value ) -> List Event
 send sectionID =
     List.map (\( name, json ) -> Event name sectionID json)
-
-
-blockSwiping : Model -> Bool
-blockSwiping =
-    get_active_section
-        >> Maybe.map (.footnote2show >> (/=) Nothing)
-        >> Maybe.withDefault False
 
 
 update : Session -> Msg -> Model -> ( Model, Cmd Msg, List Event )
@@ -220,11 +214,11 @@ update session msg model =
                         model
 
                 "swipe" ->
-                    case ( JD.decodeValue JD.string event.message, blockSwiping model ) of
-                        ( Ok "left", False ) ->
+                    case JD.decodeValue JD.string event.message of
+                        Ok "left" ->
                             update session NextSection model
 
-                        ( Ok "right", False ) ->
+                        Ok "right" ->
                             update session PrevSection model
 
                         _ ->
@@ -265,9 +259,22 @@ update session msg model =
                     ( model, Cmd.none, [] )
 
         Media ( url, width, height ) ->
-            ( { model
-                | media = Dict.insert url ( width, height ) model.media
-              }
+            ( case ( width, height ) of
+                ( Just w, Just h ) ->
+                    { model | media = Dict.insert url ( w, h ) model.media }
+
+                ( Nothing, Nothing ) ->
+                    { model
+                        | modal =
+                            if url == "" then
+                                Nothing
+
+                            else
+                                Just url
+                    }
+
+                _ ->
+                    model
             , Cmd.none
             , []
             )

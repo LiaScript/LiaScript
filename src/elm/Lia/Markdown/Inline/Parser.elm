@@ -540,7 +540,7 @@ stringSuperscript =
 
 stringCharacters : Parser s (Parameters -> Inline)
 stringCharacters =
-    regex "[~:_;=${}\\[\\]\\(\\)\\-+]"
+    regex "[~:_;=${}\\[\\]\\(\\)\\-+\"]"
         |> map Chars
 
 
