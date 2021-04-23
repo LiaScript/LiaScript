@@ -12,10 +12,14 @@ port module Update exposing
 import Browser
 import Browser.Events
 import Browser.Navigation as Navigation
+import Const
+import Error.Message
+import Error.Report
 import Http
 import Index.Update as Index
 import Json.Decode as JD
 import Json.Encode as JE
+import Lia.Definition.Types as Definition
 import Lia.Json.Decode
 import Lia.Script
 import Model exposing (Model, State(..))
@@ -98,21 +102,6 @@ message msg =
     Process.sleep 0
         |> Task.andThen (always <| Task.succeed msg)
         |> Task.perform identity
-
-
-{-| **@private:** If a Markdown-file cannot be downloaded, for some reasons
-(presumable due to some [CORS][cors] restrictions), this will be used as an
-intermediate proxy. This means, there will be a second trial to download the
-file, but not with the URL:
-
-    "https://cors-anywhere.herokuapp.com/" ++ "https://.../README.md"
-
-[cors]: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
-
--}
-proxy : String
-proxy =
-    "https://cors-anywhere.herokuapp.com/"
 
 
 {-| **@private:** Combine commands and events to one command output.
@@ -278,17 +267,27 @@ update msg model =
             load_readme readme model
 
         Load_ReadMe_Result url (Err info) ->
-            if String.startsWith proxy url then
-                ( { model | state = Error <| parse_error info }
-                , url
-                    |> JE.string
-                    |> Event "offline" -1
-                    |> event2js
-                )
+            if String.startsWith Const.proxy url then
+                startWithError
+                    { model
+                        | state =
+                            Error.Message.loadingCourse url info
+                                |> Error.Report.add model.state
+                    }
+                    |> Tuple.mapSecond
+                        (\cmd ->
+                            Cmd.batch
+                                [ url
+                                    |> JE.string
+                                    |> Event "offline" -1
+                                    |> event2js
+                                , cmd
+                                ]
+                        )
 
             else
                 ( model
-                , Session.setQuery (proxy ++ url) model.session
+                , Session.setQuery (Const.proxy ++ url) model.session
                     |> .url
                     |> Session.load
                 )
@@ -310,11 +309,16 @@ update msg model =
                 }
 
         Load_Template_Result url (Err info) ->
-            if String.startsWith proxy url then
-                ( { model | state = Error <| parse_error info }, Cmd.none )
+            if String.startsWith Const.proxy url then
+                startWithError
+                    { model
+                        | state =
+                            Error.Message.loadingResource url info
+                                |> Error.Report.add model.state
+                    }
 
             else
-                ( model, download Load_Template_Result (proxy ++ url) )
+                ( model, download Load_Template_Result (Const.proxy ++ url) )
 
 
 {-| **@private:** Parsing has been finished, initialize lia, update the url and
@@ -340,6 +344,29 @@ start model =
             Lia.Script.load_first_slide session { lia | section_active = slide }
     in
     ( { model | state = Running, lia = parsed, session = session }
+    , batch LiaScript cmd events
+    )
+
+
+startWithError : Model -> ( Model, Cmd Msg )
+startWithError model =
+    let
+        session =
+            model.session
+                |> Session.setQuery model.lia.readme
+
+        lia =
+            model.lia
+
+        ( parsed, cmd, events ) =
+            Lia.Script.load_first_slide session
+                { lia
+                    | section_active = 0
+                    , sections = Error.Report.generate model.state
+                    , definition = Definition.setPersistent False lia.definition
+                }
+    in
+    ( { model | lia = parsed, session = session }
     , batch LiaScript cmd events
     )
 
@@ -431,14 +458,13 @@ load model lia code templates =
             )
 
         Nothing ->
-            ( { model
-                | state =
-                    lia.error
-                        |> Maybe.withDefault ""
-                        |> Error
-              }
-            , Cmd.none
-            )
+            startWithError
+                { model
+                    | state =
+                        lia.error
+                            |> Maybe.withDefault ""
+                            |> Error.Report.add model.state
+                }
 
 
 {-| **@private:** purge the "Windows" carriage return.
@@ -450,27 +476,6 @@ load model lia code templates =
 removeCR : String -> String
 removeCR =
     String.replace "\u{000D}" ""
-
-
-{-| **@private:** Turns an Http.Error into a string message.
--}
-parse_error : Http.Error -> String
-parse_error msg =
-    case msg of
-        Http.BadUrl url ->
-            "Bad Url " ++ url
-
-        Http.Timeout ->
-            "Network timeout"
-
-        Http.BadStatus int ->
-            "Bad status " ++ String.fromInt int
-
-        Http.NetworkError ->
-            "Network error"
-
-        Http.BadBody body ->
-            "Bad body " ++ body
 
 
 {-| **@private:** Used by multiple times to connect a download with a message.

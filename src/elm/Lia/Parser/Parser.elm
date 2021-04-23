@@ -15,6 +15,7 @@ import Combine
         , regex
         , string
         )
+import Error.Message
 import Lia.Definition.Parser
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Parser as Markdown
@@ -45,11 +46,17 @@ parse_defintion base code =
             Ok ( state.defines, "#" ++ data.input )
 
         Err ( _, stream, ms ) ->
-            if String.trim code == "" then
-                parse_defintion base notification
+            Err <|
+                if String.trim code == "" then
+                    Error.Message.emptyFile
 
-            else
-                Err (formatError ms stream)
+                else
+                    formatError ms stream
+                        |> Error.Message.parseDefinintion code
+
+
+
+--<|formatError ms stream)
 
 
 parse_titles : Definition -> String -> Result String ( Section.Base, String )
@@ -149,7 +156,7 @@ formatError ms stream =
             currentLocation stream
 
         separator =
-            "|> "
+            "\n "
 
         expectationSeparator =
             "\n  * "
@@ -162,28 +169,12 @@ formatError ms stream =
         padding =
             location.column + separatorOffset + 2
     in
-    "Parse error around line:\\n\\n"
+    "Parse error around line: "
         ++ String.fromInt location.line
         ++ separator
         ++ location.source
-        ++ "\\n"
+        ++ "\n"
         ++ String.padLeft padding ' ' "^"
-        ++ "\\nI expected one of the following:\\n"
+        ++ "\nI expected one of the following:\n"
         ++ expectationSeparator
         ++ String.join expectationSeparator ms
-
-
-notification : String
-notification =
-    """# Welcome to LiaScript (Ups)
-
-> The file you have loaded does not contain any content or it is not a valid
-> Markdown file.
-
-LiaScript is domain specific language that is based on Markdown. For more
-information visit:
-
-* Project-website: https://LiaScript.github.io
-* Documentation: https://github.com/liascript/docs
-* YouTube: https://www.youtube.com/channel/UCyiTe2GkW_u05HSdvUblGYg
-  """

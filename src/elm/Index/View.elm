@@ -75,7 +75,7 @@ searchBar : String -> Html Msg
 searchBar url =
     Html.div []
         [ Html.input
-            [ Attr.type_ "input"
+            [ Attr.type_ "url"
             , onInput Input
             , Attr.value url
             , Attr.placeholder "course-url"
@@ -84,18 +84,27 @@ searchBar url =
             ]
             []
         , if url == "" then
-            Html.button
-                [ Attr.class "lia-btn is-disabled"
-                , Attr.disabled True
-                ]
+            btn
+                { tabbable = False
+                , title = "load"
+                , msg = Nothing
+                }
+                []
                 [ Html.text "load course"
                 ]
 
           else
-            Html.a
-                [ href url
-                , Attr.class "lia-btn"
-                ]
+            btn
+                { tabbable = True
+                , title = "load"
+                , msg =
+                    url
+                        |> link
+                        |> (++) "./?"
+                        |> LoadCourse
+                        |> Just
+                }
+                []
                 [ Html.text "load course"
                 ]
         ]
