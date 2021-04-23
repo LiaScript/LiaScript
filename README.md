@@ -273,6 +273,14 @@ This will apply the following three patches:
 
 ## Version-Changes
 
+**0.9.8** (23/04/2021)
+
+- user friendly error messages, with the possibility to return to the index page.
+- new macro `@persistent: false`, which allows to mark a course, `true` is default
+  and means it, should be stored, `false` is used to prohibit the storage within
+  IndexedDB, or another connector
+- minor CSS bugfixes
+
 **0.9.7** (21/04/2021)
 
 - new feature, click on an image to see it as modal and scaled ...
