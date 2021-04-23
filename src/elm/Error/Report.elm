@@ -31,21 +31,23 @@ generate messages =
     toReport <|
         case messages of
             Error [] ->
-                [ slide "Ups, something went wrong" 1 Report.unknown ]
-
-            Error [ "" ] ->
-                [ slide "Ups, something went wrong" 1 Report.unknown ]
+                [ slide ups 1 Report.unknown ]
 
             Error [ report ] ->
-                [ slide "Ups, something went wrong" 1 report ]
+                [ slide ups 1 report ]
 
             Error reports ->
                 reports
-                    |> List.indexedMap (\i report -> slide ("Error " ++ String.fromInt (i + 1)) 2 report)
-                    |> (::) (slide "Ups, something went wrong" 1 "There are a couple of errors, listed in the next sections ...")
+                    |> List.indexedMap (\i report -> slide ("Error " ++ String.fromInt (i + 1)) 3 report)
+                    |> (::) (slide ups 1 Report.multiple)
 
             _ ->
-                [ slide "Ups, something went wrong" 1 Report.unknown ]
+                [ slide ups 1 Report.unknown ]
+
+
+ups : String
+ups =
+    "🙈 Ups, something went wrong"
 
 
 toReport : List Base -> Sections
@@ -62,5 +64,12 @@ slide : String -> Int -> String -> Base
 slide title indentation body =
     { indentation = indentation
     , title = [ Chars title [] ]
-    , code = body ++ "\n"
+    , code =
+        (if body == "" then
+            Report.unknown
+
+         else
+            body
+        )
+            ++ "\n"
     }

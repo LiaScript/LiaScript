@@ -13,6 +13,7 @@ import Browser
 import Browser.Events
 import Browser.Navigation as Navigation
 import Const
+import Error.Message
 import Error.Report
 import Http
 import Index.Update as Index
@@ -267,7 +268,12 @@ update msg model =
 
         Load_ReadMe_Result url (Err info) ->
             if String.startsWith Const.proxy url then
-                startWithError { model | state = Error.Report.add model.state (parse_error info) }
+                startWithError
+                    { model
+                        | state =
+                            Error.Message.loadingCourse url info
+                                |> Error.Report.add model.state
+                    }
                     |> Tuple.mapSecond
                         (\cmd ->
                             Cmd.batch
@@ -304,7 +310,12 @@ update msg model =
 
         Load_Template_Result url (Err info) ->
             if String.startsWith Const.proxy url then
-                startWithError { model | state = Error.Report.add model.state (parse_error info) }
+                startWithError
+                    { model
+                        | state =
+                            Error.Message.loadingResource url info
+                                |> Error.Report.add model.state
+                    }
 
             else
                 ( model, download Load_Template_Result (Const.proxy ++ url) )
@@ -465,27 +476,6 @@ load model lia code templates =
 removeCR : String -> String
 removeCR =
     String.replace "\u{000D}" ""
-
-
-{-| **@private:** Turns an Http.Error into a string message.
--}
-parse_error : Http.Error -> String
-parse_error msg =
-    case msg of
-        Http.BadUrl url ->
-            "Bad Url " ++ url
-
-        Http.Timeout ->
-            "Network timeout"
-
-        Http.BadStatus int ->
-            "Bad status " ++ String.fromInt int
-
-        Http.NetworkError ->
-            "Network error"
-
-        Http.BadBody body ->
-            "Bad body " ++ body
 
 
 {-| **@private:** Used by multiple times to connect a download with a message.
