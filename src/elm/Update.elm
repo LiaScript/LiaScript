@@ -12,10 +12,12 @@ port module Update exposing
 import Browser
 import Browser.Events
 import Browser.Navigation as Navigation
+import Error.Report
 import Http
 import Index.Update as Index
 import Json.Decode as JD
 import Json.Encode as JE
+import Lia.Definition.Types as Definition
 import Lia.Json.Decode
 import Lia.Script
 import Model exposing (Model, State(..))
@@ -279,12 +281,17 @@ update msg model =
 
         Load_ReadMe_Result url (Err info) ->
             if String.startsWith proxy url then
-                ( { model | state = Error <| parse_error info }
-                , url
-                    |> JE.string
-                    |> Event "offline" -1
-                    |> event2js
-                )
+                startWithError { model | state = Error.Report.add model.state (parse_error info) }
+                    |> Tuple.mapSecond
+                        (\cmd ->
+                            Cmd.batch
+                                [ url
+                                    |> JE.string
+                                    |> Event "offline" -1
+                                    |> event2js
+                                , cmd
+                                ]
+                        )
 
             else
                 ( model
@@ -311,7 +318,7 @@ update msg model =
 
         Load_Template_Result url (Err info) ->
             if String.startsWith proxy url then
-                ( { model | state = Error <| parse_error info }, Cmd.none )
+                startWithError { model | state = Error.Report.add model.state (parse_error info) }
 
             else
                 ( model, download Load_Template_Result (proxy ++ url) )
@@ -340,6 +347,29 @@ start model =
             Lia.Script.load_first_slide session { lia | section_active = slide }
     in
     ( { model | state = Running, lia = parsed, session = session }
+    , batch LiaScript cmd events
+    )
+
+
+startWithError : Model -> ( Model, Cmd Msg )
+startWithError model =
+    let
+        session =
+            model.session
+                |> Session.setQuery model.lia.readme
+
+        lia =
+            model.lia
+
+        ( parsed, cmd, events ) =
+            Lia.Script.load_first_slide session
+                { lia
+                    | section_active = 0
+                    , sections = Error.Report.generate model.state
+                    , definition = Definition.setPersistent False lia.definition
+                }
+    in
+    ( { model | lia = parsed, session = session }
     , batch LiaScript cmd events
     )
 
@@ -431,14 +461,13 @@ load model lia code templates =
             )
 
         Nothing ->
-            ( { model
-                | state =
-                    lia.error
-                        |> Maybe.withDefault ""
-                        |> Error
-              }
-            , Cmd.none
-            )
+            startWithError
+                { model
+                    | state =
+                        lia.error
+                            |> Maybe.withDefault ""
+                            |> Error.Report.add model.state
+                }
 
 
 {-| **@private:** purge the "Windows" carriage return.

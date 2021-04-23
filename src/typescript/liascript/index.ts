@@ -534,7 +534,14 @@ function process(
     case Port.INIT: {
       let data = event.message
 
-      if (isConnected) {
+      let isPersistent = true
+      
+      try {
+        isPersistent = !(data.definition.macro["persistent"].trim().toLowerCase() === "false")
+      } catch (e) {}
+      
+
+      if (isConnected && isPersistent) {
         self.connector.open(
           data.readme,
           data.version,
@@ -560,7 +567,7 @@ function process(
       meta('og:image', data.definition.logo)
 
       // store the basic info in the offline-repositories
-      if (isConnected) {
+      if (isConnected  && isPersistent) {
         self.connector.storeToIndex(data)
       }
 

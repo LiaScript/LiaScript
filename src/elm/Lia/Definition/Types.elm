@@ -8,6 +8,7 @@ module Lia.Definition.Types exposing
     , default
     , getIcon
     , get_translations
+    , setPersistent
     )
 
 import Const
@@ -123,3 +124,18 @@ getIcon =
     .macro
         >> Dict.get "icon"
         >> Maybe.withDefault Const.icon
+
+
+setPersistent : Bool -> Definition -> Definition
+setPersistent b def =
+    { def
+        | macro =
+            Dict.insert "persistent"
+                (if b then
+                    "true"
+
+                 else
+                    "false"
+                )
+                def.macro
+    }
