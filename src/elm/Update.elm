@@ -12,6 +12,7 @@ port module Update exposing
 import Browser
 import Browser.Events
 import Browser.Navigation as Navigation
+import Const
 import Error.Report
 import Http
 import Index.Update as Index
@@ -100,21 +101,6 @@ message msg =
     Process.sleep 0
         |> Task.andThen (always <| Task.succeed msg)
         |> Task.perform identity
-
-
-{-| **@private:** If a Markdown-file cannot be downloaded, for some reasons
-(presumable due to some [CORS][cors] restrictions), this will be used as an
-intermediate proxy. This means, there will be a second trial to download the
-file, but not with the URL:
-
-    "https://cors-anywhere.herokuapp.com/" ++ "https://.../README.md"
-
-[cors]: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
-
--}
-proxy : String
-proxy =
-    "https://cors-anywhere.herokuapp.com/"
 
 
 {-| **@private:** Combine commands and events to one command output.
@@ -280,7 +266,7 @@ update msg model =
             load_readme readme model
 
         Load_ReadMe_Result url (Err info) ->
-            if String.startsWith proxy url then
+            if String.startsWith Const.proxy url then
                 startWithError { model | state = Error.Report.add model.state (parse_error info) }
                     |> Tuple.mapSecond
                         (\cmd ->
@@ -295,7 +281,7 @@ update msg model =
 
             else
                 ( model
-                , Session.setQuery (proxy ++ url) model.session
+                , Session.setQuery (Const.proxy ++ url) model.session
                     |> .url
                     |> Session.load
                 )
@@ -317,11 +303,11 @@ update msg model =
                 }
 
         Load_Template_Result url (Err info) ->
-            if String.startsWith proxy url then
+            if String.startsWith Const.proxy url then
                 startWithError { model | state = Error.Report.add model.state (parse_error info) }
 
             else
-                ( model, download Load_Template_Result (proxy ++ url) )
+                ( model, download Load_Template_Result (Const.proxy ++ url) )
 
 
 {-| **@private:** Parsing has been finished, initialize lia, update the url and
