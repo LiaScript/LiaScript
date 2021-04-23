@@ -265,7 +265,6 @@ class LiaScript {
   img_Click(url: string) {
     // abuse media port to open modals
     if (document.getElementsByClassName('lia-modal').length === 0) {
-      console.warn("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSs", url)
       this.app.ports.media.send([url, null, null])
     }
   }
