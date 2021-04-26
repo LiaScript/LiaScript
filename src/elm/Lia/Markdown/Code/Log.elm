@@ -16,6 +16,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Decode as JD
 import Json.Encode as JE
+import Lia.Utils exposing (array_getLast, array_setLast)
 import Port.Eval exposing (Eval)
 
 
@@ -24,6 +25,7 @@ type Level
     | Info -- for information of any kind
     | Warn -- for warnings
     | Error -- for errors
+    | Stream -- concats all outputs, usable for handling stdout from the console
     | HTML -- show html content
 
 
@@ -80,6 +82,9 @@ view_message { level, text } =
                 , Attr.property "innerHTML" <| JE.string text
                 ]
                 []
+
+        Stream ->
+            viewLog "text-info" text
     )
 
 
@@ -95,9 +100,23 @@ add : Level -> String -> Log -> Log
 add level str log =
     { log
         | messages =
-            log.messages
-                |> Array.push (Message level str)
-                |> crop
+            crop <|
+                case level of
+                    Stream ->
+                        case array_getLast log.messages of
+                            Just message ->
+                                if message.level == Stream then
+                                    log.messages
+                                        |> array_setLast (Message level (message.text ++ str))
+
+                                else
+                                    Array.push (Message level str) log.messages
+
+                            _ ->
+                                Array.push (Message level str) log.messages
+
+                    _ ->
+                        Array.push (Message level str) log.messages
     }
 
 
@@ -162,6 +181,9 @@ encLevel level =
             HTML ->
                 3
 
+            Stream ->
+                4
+
 
 encMessage : Message -> JE.Value
 encMessage { level, text } =
@@ -198,6 +220,9 @@ decLevel =
 
                         3 ->
                             HTML
+
+                        4 ->
+                            Stream
 
                         _ ->
                             Debug
