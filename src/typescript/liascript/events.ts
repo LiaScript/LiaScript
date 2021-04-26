@@ -284,7 +284,7 @@ function list_to_string(sep: string, list: any) {
     str += list[0][i].toString() + ' '
   }
 
-  return str + sep
+  return str.slice(0,-1) + sep
 }
 
 function execute_response(
