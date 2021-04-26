@@ -273,6 +273,11 @@ This will apply the following three patches:
 
 ## Version-Changes
 
+**0.9.9** (26/04/2021)
+
+- add `console.stream` to handle stream events from remote services correctly
+- fix: minor CSS bugs in tables
+
 **0.9.8** (23/04/2021)
 
 - user friendly error messages, with the possibility to return to the index page.
