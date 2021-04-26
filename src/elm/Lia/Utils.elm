@@ -1,5 +1,7 @@
 module Lia.Utils exposing
-    ( blockKeydown
+    ( array_getLast
+    , array_setLast
+    , blockKeydown
     , btn
     , btnIcon
     , focus
@@ -15,6 +17,7 @@ module Lia.Utils exposing
 import Accessibility.Key as A11y_Key
 import Accessibility.Role as A11y_Role
 import Accessibility.Widget as A11y_Widget
+import Array exposing (Array)
 import Browser.Dom as Dom
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
@@ -202,3 +205,13 @@ modal msgClose controls content =
             ]
             []
         ]
+
+
+array_getLast : Array a -> Maybe a
+array_getLast array =
+    Array.get (Array.length array - 1) array
+
+
+array_setLast : a -> Array a -> Array a
+array_setLast a array =
+    Array.set (Array.length array - 1) a array

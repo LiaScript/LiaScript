@@ -227,6 +227,12 @@ update scripts msg model =
                         |> Maybe.map (\p -> ( p, [] ))
                         |> maybe_update event.section model
 
+                "stream" ->
+                    model
+                        |> maybe_project event.section (logger Log.add Log.Stream event.message)
+                        |> Maybe.map (\p -> ( p, [] ))
+                        |> maybe_update event.section model
+
                 _ ->
                     ( model, [] )
 

@@ -220,10 +220,14 @@ function lia_eval(code: string, send: SendEval) {
       error: (...args: any) => {
         return send.log('error', '\n', args)
       },
+      stream: (...args: any) => {
+        return send.log('stream', '', args)
+      },
       html: (...args: any) => {
         return send.log('html', '\n', args)
       },
       clear: () => send.lia('LIA: clear'),
+
     }
 
     console.clear()
