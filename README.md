@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.7
+version:  0.9.10
 language: en
 narrator: UK English Male
 
@@ -272,6 +272,13 @@ This will apply the following three patches:
 - elm-patch/dom: enable onclick events as well as innerHTML
 
 ## Version-Changes
+
+**0.9.10** (27/04/2021)
+
+- all images can now be increased and zoomed, if their actual size is less than
+  their native size
+- improve fig-caption
+- small CSS fixes with starting images in paragraphs
 
 **0.9.9** (26/04/2021)
 
