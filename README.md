@@ -277,6 +277,7 @@ This will apply the following three patches:
 
 - all images can now be increased and zoomed, if their actual size is less than
   their native size
+- updated KaTex, echarts, workbox, typescript, ...
 - improve fig-caption
 - small CSS fixes with starting images in paragraphs
 
