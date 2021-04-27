@@ -4,7 +4,7 @@ strong {
 }
 
 .lia-paragraph {
-  figure {
+  > figure:first-child {
     max-width: 50%;
     float: left;
     margin: 0 2rem 2rem 0;

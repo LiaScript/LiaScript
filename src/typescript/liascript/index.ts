@@ -12,6 +12,26 @@ import TTS from './tts'
 import { Connector } from '../connectors/Base/index'
 import { updateClassName } from '../connectors/Base/settings'
 
+
+window.img_Zoom = function(e: MouseEvent){
+
+  if (e.target) {
+    var zooming = e.currentTarget;
+
+    if (e.target.width < e.target.naturalWidth) {  
+      var offsetX = e.offsetX ? e.offsetX : e.touches[0].pageX
+      var offsetY = e.offsetY ? e.offsetY : e.touches[0].pageX
+      var x = offsetX / zooming.offsetWidth * 100
+      var y = offsetY / zooming.offsetHeight * 100
+      zooming.style.backgroundPosition = x + '% ' + y + '%';
+      zooming.style.cursor = "zoom-in"
+    }
+    else {
+      zooming.style.cursor = ""
+    }
+  }
+}
+
 function isInViewport(elem: HTMLElement) {
   const bounding = elem.getBoundingClientRect()
   return (

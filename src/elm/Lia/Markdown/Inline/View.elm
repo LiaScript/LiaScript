@@ -1,5 +1,7 @@
 module Lia.Markdown.Inline.View exposing
-    ( view_inf
+    ( view
+    , viewMedia
+    , view_inf
     , viewer
     )
 
@@ -99,6 +101,43 @@ view config element =
 
         Formula mode_ e attr ->
             view config (Container [ Formula mode_ e [] ] attr)
+
+
+viewMedia : Config sub -> Inline -> Html (Msg sub)
+viewMedia config inline =
+    case inline of
+        Ref (Image alt_ url_ title_) attr ->
+            Html.figure [ Attr.class "lia-figure" ]
+                [ Html.div
+                    [ Attr.class "lia-figure__media"
+                    , Attr.attribute "data-media-image" "image"
+                    , config.media
+                        |> Dict.get url_
+                        |> Maybe.map (Tuple.first >> Attr.width)
+                        |> Maybe.withDefault (Attr.class "")
+                    , Attr.style "background-image" ("url('" ++ url_ ++ "')")
+                    , Attr.class "lia-figure__zoom"
+                    , Attr.attribute "onmousemove" "img_Zoom(event)"
+                    ]
+                    [ Html.img
+                        (Attr.src url_
+                            :: toAttribute attr
+                            |> CList.addIf
+                                (config.media
+                                    |> Dict.get url_
+                                    |> Maybe.map Tuple.first
+                                    |> (==) Nothing
+                                )
+                                (load url_)
+                            |> CList.addWhen (title config title_)
+                            |> CList.addWhen (alt config alt_)
+                        )
+                        []
+                    ]
+                ]
+
+        _ ->
+            view config inline
 
 
 view_inf : Scripts SubSection -> Lang -> Maybe (Dict String ( Int, Int )) -> Inline -> Html (Msg sub)

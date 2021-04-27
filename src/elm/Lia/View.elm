@@ -455,7 +455,9 @@ showModal model =
         Just url ->
             modal (Media ( "", Nothing, Nothing ))
                 Nothing
-                [ Html.figure [ Attr.class "lia-figure" ]
+                [ Html.figure
+                    [ Attr.class "lia-figure"
+                    ]
                     [ Html.div
                         [ Attr.class "lia-figure__media"
                         , Attr.attribute "data-media-image" "image"
@@ -463,8 +465,14 @@ showModal model =
                             |> Dict.get url
                             |> Maybe.map (Tuple.first >> Attr.width)
                             |> Maybe.withDefault (Attr.class "")
+                        , Attr.style "background-image" ("url('" ++ url ++ "')")
+                        , Attr.class "lia-figure__zoom"
+                        , Attr.attribute "onmousemove" "img_Zoom(event)"
                         ]
-                        [ Html.img [ Attr.src url ] []
+                        [ Html.img
+                            [ Attr.src url
+                            ]
+                            []
                         ]
                     ]
                 ]

@@ -46,13 +46,17 @@ customElements.define(
 
       shadowRoot.appendChild(this.container)
 
-      this.initLia()
-      this.initResponsiveVoice()
-    }
+      let self = this
+      setTimeout(function(){
+        self.initLia()
+        self.initResponsiveVoice()     
+   
+      }, 10)
+   }
 
     initLia() {
-      this.courseURL = this.getAttribute('src')
-
+      this.courseURL = this.getAttribute('src')      
+      
       // Load the Markdown document defined by the src attribute
       if (typeof this.courseURL === 'string') {
         this.app = new LiaScript(
@@ -69,13 +73,11 @@ customElements.define(
           new Connector(),
           this.debug,
           null,
-          this.textContent,
+          this.innerHTML.trimStart(),
         )
-      }
-
+      }  
+      
       window.showFootnote = (key) => this.app.footnote(key)
-      //window.gotoLia = (line: number) => this.app.goto(line);
-      //window.jitLia = (code: string) => this.app.jit(code);
     }
 
     initResponsiveVoice() {
