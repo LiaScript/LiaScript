@@ -22,6 +22,7 @@ import Combine
         , or
         , putState
         , regex
+        , regexWith
         , runParser
         , sepBy
         , sepBy1
@@ -164,11 +165,12 @@ svgbody len =
                    )
 
         ascii =
-            if len <= 8 then
-                regex "[\t ]*(ascii|art)[\t ]*\\n"
+            regexWith True False <|
+                if len <= 8 then
+                    "[\t ]*(ascii|art)[\t ]*\\n"
 
-            else
-                regex "([\t ]*(ascii|art))?[\t ]*\\n"
+                else
+                    "([\t ]*(ascii|art))?[\t ]*\\n"
     in
     ascii
         |> keep
