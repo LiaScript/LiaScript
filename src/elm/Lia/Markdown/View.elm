@@ -377,12 +377,6 @@ view_ascii config attr =
                     [ Paragraph [] content ] ->
                         config.view content
 
-                    -- TODO: remove after styling
-                    (Code _) :: _ ->
-                        [ List.map (view_block config) list
-                            |> Html.div [ Attr.style "margin-top" "-16px" ]
-                        ]
-
                     _ ->
                         List.map (view_block config) list
         )
