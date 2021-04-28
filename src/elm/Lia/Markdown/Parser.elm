@@ -151,7 +151,7 @@ to_comment ( attr, ( id1, id2 ) ) =
         |> onsuccess (Comment ( id1, id2 ))
 
 
-svgbody : Int -> Parser Context String
+svgbody : Int -> Parser Context ( Maybe Inlines, String )
 svgbody len =
     let
         control_frame =
@@ -167,13 +167,16 @@ svgbody len =
         ascii =
             regexWith True False <|
                 if len <= 8 then
-                    "[\t ]*(ascii|art)[\t ]*\\n"
+                    "[\t ]*(ascii|art)[\t ]*"
 
                 else
-                    "([\t ]*(ascii|art))?[\t ]*\\n"
+                    "([\t ]*(ascii|art))?[\t ]*"
     in
     ascii
-        |> keep
+        |> keep (maybe line)
+        |> map Tuple.pair
+        |> ignore newline
+        |> andMap
             (manyTill
                 (maybe Indent.check
                     |> keep (regex ("(?:.(?!" ++ control_frame ++ "))*\\n"))
@@ -196,8 +199,8 @@ svgbob =
             )
 
 
-svgbobSub : String -> Parser Context (SvgBob.Configuration (List Markdown))
-svgbobSub str =
+svgbobSub : ( Maybe Inlines, String ) -> Parser Context ( Maybe Inlines, SvgBob.Configuration (List Markdown) )
+svgbobSub ( caption, str ) =
     let
         svg =
             SvgBob.getElements
@@ -234,12 +237,14 @@ svgbobSub str =
             putState newContext
                 |> keep
                     (succeed
-                        { svg = svg.svg
-                        , foreign = foreign
-                        , settings = svg.settings
-                        , columns = svg.columns
-                        , rows = svg.rows
-                        }
+                        ( caption
+                        , { svg = svg.svg
+                          , foreign = foreign
+                          , settings = svg.settings
+                          , columns = svg.columns
+                          , rows = svg.rows
+                          }
+                        )
                     )
     in
     withState fn

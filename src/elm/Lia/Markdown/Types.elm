@@ -28,7 +28,7 @@ type Markdown
     | Chart Parameters Chart
     | Code Code
     | Task Parameters Task
-    | ASCII Parameters (SvgBob.Configuration (List Markdown))
+    | ASCII Parameters ( Maybe Inlines, SvgBob.Configuration (List Markdown) )
     | HTML Parameters (Node Markdown)
     | Header Parameters ( Inlines, Int )
     | Gallery Parameters Gallery
