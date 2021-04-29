@@ -2,7 +2,8 @@ module Lia.Markdown.View exposing (view)
 
 import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
-import Html exposing (Html)
+import Conditional.List as CList
+import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Html.Lazy as Lazy
 import Lia.Markdown.Chart.View as Charts
@@ -368,34 +369,39 @@ viewQuote config attr elements =
                 |> Html.blockquote (annotation "lia-quote" attr)
 
 
-view_ascii : Config Msg -> Parameters -> SvgBob.Configuration (List Markdown) -> Html Msg
-view_ascii config attr =
-    SvgBob.drawElements (toAttribute attr)
-        (\list ->
-            Html.div [] <|
-                case list of
-                    [ Paragraph [] content ] ->
-                        config.view content
+view_ascii : Config Msg -> Parameters -> ( Maybe Inlines, SvgBob.Configuration (List Markdown) ) -> Html Msg
+view_ascii config attr ( caption, image ) =
+    image
+        |> SvgBob.drawElements (toAttribute attr)
+            (\list ->
+                Html.div [] <|
+                    case list of
+                        [ Paragraph [] content ] ->
+                            config.view content
 
-                    -- TODO: remove after styling
-                    (Code _) :: _ ->
-                        [ List.map (view_block config) list
-                            |> Html.div [ Attr.style "margin-top" "-16px" ]
+                        _ ->
+                            List.map (view_block config) list
+            )
+        |> (\svg ->
+                Html.figure [ Attr.class "lia-figure" ]
+                    [ Html.div
+                        ([ Attr.class "lia-figure__media" ]
+                            |> CList.appendIf (not config.light)
+                                [ Attr.style "-webkit-filter" "invert(100%)"
+                                , Attr.style "filter" "invert(100%)"
+                                ]
+                        )
+                        [ svg
                         ]
+                    , case caption of
+                        Nothing ->
+                            Html.text ""
 
-                    _ ->
-                        List.map (view_block config) list
-        )
-        >> (\svg ->
-                if config.light then
-                    svg
-
-                else
-                    Html.div
-                        [ Attr.style "-webkit-filter" "invert(100%)"
-                        , Attr.style "filter" "invert(100%)"
-                        ]
-                        [ svg ]
+                        Just content ->
+                            content
+                                |> config.view
+                                |> Html.figcaption [ Attr.class "lia-figure__caption" ]
+                    ]
            )
 
 
