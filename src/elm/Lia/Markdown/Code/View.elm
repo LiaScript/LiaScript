@@ -309,9 +309,9 @@ evaluate executable theme attr running ( id_1, id_2 ) file errors =
                 (max_lines
                     |> toStyle file.visible
                 )
+            |> CList.addIf (not readOnly) (Editor.onChange <| Update id_1 id_2)
             |> List.append
-                [ Editor.onChange <| Update id_1 id_2
-                , Editor.value file.code
+                [ Editor.value file.code
                 , Editor.mode file.lang
                 , attr
                     |> Params.get "data-theme"
