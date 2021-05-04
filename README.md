@@ -273,6 +273,17 @@ This will apply the following three patches:
 
 ## Version-Changes
 
+**0.9.11** (04/05/2021)
+
+- fix: falsy overwritten evaluation code-snippets
+- style(Cite): changed default font-style to normal
+- add missing icons to tables & improved parsing
+- improve ASCII-Art:
+  
+  - better support of inline Code
+  - enabled caseInsensitive detection of `AsCIi` or `Art`
+  - additional header text can now be used to define figcaption
+
 **0.9.10** (27/04/2021)
 
 - all images can now be increased and zoomed, if their actual size is less than
