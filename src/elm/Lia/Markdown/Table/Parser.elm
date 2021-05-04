@@ -326,10 +326,10 @@ format =
         |> keep
             (sepEndBy (string "|")
                 (choice
-                    [ regex "[\t ]*:-{3,}:[\t ]*" |> onsuccess Const.align.center
-                    , regex "[\t ]*:-{3,}[\t ]*" |> onsuccess Const.align.left
-                    , regex "[\t ]*-{3,}:[\t ]*" |> onsuccess Const.align.right
-                    , regex "[\t ]*-{3,}[\t ]*" |> onsuccess Const.align.default
+                    [ regex "[\t ]*:-+:[\t ]*" |> onsuccess Const.align.center
+                    , regex "[\t ]*:-+[\t ]*" |> onsuccess Const.align.left
+                    , regex "[\t ]*-+:[\t ]*" |> onsuccess Const.align.right
+                    , regex "[\t ]*-+[\t ]*" |> onsuccess Const.align.default
                     ]
                 )
             )
