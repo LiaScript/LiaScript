@@ -201,8 +201,7 @@ class PreviewLia extends HTMLElement {
           try {
             icon = self.addBase(json.definition.macro.icon)
           } catch (e) {
-            // todo: Replace with course instead of nightly
-            icon = 'https://liascript.github.io/nightly/icon.ico'
+            icon = 'https://liascript.github.io/course/icon.ico'
           }
 
           logo = ''
