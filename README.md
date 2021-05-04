@@ -273,6 +273,10 @@ This will apply the following three patches:
 
 ## Version-Changes
 
+**0.9.12** (04/05/2021)
+
+- hotfix: add back deleted main icon
+
 **0.9.11** (04/05/2021)
 
 - fix: falsy overwritten evaluation code-snippets
