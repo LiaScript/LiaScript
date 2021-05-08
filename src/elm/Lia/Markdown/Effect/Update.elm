@@ -33,7 +33,6 @@ type Msg sub
     | Next
     | Previous
     | Send (List Event)
-    | Speak Int String String
     | Mute Int
     | Rendered Bool Dom.Viewport
     | Handle Event
@@ -83,12 +82,6 @@ update main sound msg model =
 
                 else
                     ( model, Cmd.none, [] )
-
-            Speak id _ _ ->
-                ( { model | speaking = Just id }
-                , Cmd.none
-                , [ TTS.readFrom -1 id ]
-                )
 
             Mute id ->
                 ( { model | speaking = Nothing }
@@ -148,6 +141,7 @@ update main sound msg model =
                         ( { model | javascript = scripts }, Cmd.map Script cmd, events )
 
 
+scrollTo : Bool -> String -> Event
 scrollTo force =
     JE.string
         >> Event "scrollTo"

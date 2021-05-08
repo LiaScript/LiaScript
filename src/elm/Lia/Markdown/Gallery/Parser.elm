@@ -1,4 +1,4 @@
-module Lia.Markdown.Gallery.Parser exposing (..)
+module Lia.Markdown.Gallery.Parser exposing (parse)
 
 import Array
 import Combine

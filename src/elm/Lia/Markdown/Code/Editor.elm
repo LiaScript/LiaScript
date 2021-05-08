@@ -8,13 +8,10 @@ module Lia.Markdown.Code.Editor exposing
     , firstLineNumber
     , focusing
     , fontSize
-    , highlightActiveLine
     , marker
     , maxLines
     , mode
-    , onBlur
     , onChange
-    , onFocus
     , readOnly
     , showCursor
     , showGutter
