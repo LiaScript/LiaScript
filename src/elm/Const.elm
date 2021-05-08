@@ -6,10 +6,17 @@ module Const exposing
     )
 
 
+icon : String
 icon =
     "icon.ico"
 
 
+align :
+    { left : String
+    , right : String
+    , center : String
+    , default : String
+    }
 align =
     { left = "text-left"
     , right = "text-right"
@@ -18,6 +25,13 @@ align =
     }
 
 
+globalBreakpoints :
+    { xs : Int
+    , sm : Int
+    , md : Int
+    , lg : Int
+    , xl : Int
+    }
 globalBreakpoints =
     { xs = 480
     , sm = 768

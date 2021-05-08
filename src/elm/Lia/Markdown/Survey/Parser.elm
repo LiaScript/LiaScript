@@ -1,6 +1,5 @@
 module Lia.Markdown.Survey.Parser exposing (parse)
 
-import Accessibility.Aria exposing (errorMessage)
 import Array
 import Combine
     exposing

@@ -1,4 +1,4 @@
-port module Worker exposing (init, main)
+port module Worker exposing (main)
 
 import Array
 import Error.Report

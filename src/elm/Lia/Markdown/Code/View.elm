@@ -15,7 +15,7 @@ import Lia.Markdown.Code.Terminal as Terminal
 import Lia.Markdown.Code.Types exposing (Code(..), File, Model)
 import Lia.Markdown.Code.Update exposing (Msg(..))
 import Lia.Markdown.HTML.Attributes as Params exposing (Parameters)
-import Lia.Utils exposing (btnIcon)
+import Lia.Utils exposing (btnIcon, noTranslate)
 import Translations exposing (Lang, codeExecute, codeFirst, codeLast, codeMaximize, codeMinimize, codeNext, codePrev, codeRunning)
 
 
@@ -113,10 +113,10 @@ list_get idx list =
 viewCode : Bool -> Lang -> String -> Bool -> (Int -> JE.Value) -> Int -> Int -> File -> Parameters -> Html Msg
 viewCode executable lang theme running errors id_1 id_2 file attr =
     if file.name == "" then
-        Html.div [ Attr.class "lia-code__input" ] [ evaluate executable theme attr running ( id_1, id_2 ) file (errors id_2) ]
+        Html.div (noTranslate [ Attr.class "lia-code__input" ]) [ evaluate executable theme attr running ( id_1, id_2 ) file (errors id_2) ]
 
     else
-        Html.div [ Attr.class "lia-accordion" ]
+        Html.div (noTranslate [ Attr.class "lia-accordion" ])
             [ Html.div (Attr.class "lia-accordion__item" :: Params.toAttribute attr)
                 [ Html.label
                     [ Attr.class "lia-accordion__header"

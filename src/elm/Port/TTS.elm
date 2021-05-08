@@ -6,7 +6,6 @@ module Port.TTS exposing
     , mute
     , playback
     , readFrom
-    , speak
     )
 
 import Json.Decode as JD
@@ -56,20 +55,6 @@ cancel : Event.Event
 cancel =
     "cancel"
         |> JE.string
-        |> Event "speak" -1
-
-
-speak : Bool -> String -> String -> Event
-speak loud voice text =
-    [ voice
-    , text
-    , if loud then
-        "true"
-
-      else
-        "false"
-    ]
-        |> JE.list JE.string
         |> Event "speak" -1
 
 

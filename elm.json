@@ -20,7 +20,6 @@
             "elm/url": "1.0.0",
             "f0i/statistics": "2.0.0",
             "pablohirafuji/elm-qrcode": "4.0.1",
-            "pilatch/flip": "1.0.0",
             "rtfeldman/elm-hex": "1.0.0",
             "tesk9/accessible-html": "4.0.0",
             "truqu/elm-md5": "1.1.0"
@@ -35,6 +34,7 @@
             "elm-community/list-extra": "8.3.0",
             "folkertdev/elm-flate": "2.0.5",
             "justgook/elm-image": "4.0.0",
+            "pilatch/flip": "1.0.0",
             "zwilias/elm-utf-tools": "2.0.1"
         }
     },

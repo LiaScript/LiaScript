@@ -1,4 +1,4 @@
-module Lia.Markdown.Gallery.View exposing (..)
+module Lia.Markdown.Gallery.View exposing (view)
 
 import Accessibility.Key as A11y_Key
 import Accessibility.Role as A11y_Role
