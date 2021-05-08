@@ -307,6 +307,7 @@ thanks lang to =
         |> Html.map (\_ -> Ignore)
 
 
+inlines : Lang -> Inlines -> Html Msg
 inlines lang =
     List.map (view_inf Array.empty lang Nothing)
         >> Html.div []

@@ -25,7 +25,6 @@ type Msg
     | Reset
     | Handle Event
     | ShareCourse Event
-    | Focus String
     | Ignore
 
 
@@ -150,9 +149,6 @@ update msg model =
             , [ Event "googleTranslate" -1 JE.null ]
             )
 
-        Focus elementID ->
-            ( model, maybeFocus (Just elementID), [] )
-
         Ignore ->
             ( model, Cmd.none, [] )
 
@@ -181,6 +177,7 @@ log elementID settings =
     )
 
 
+customizeEvent : Settings -> Event
 customizeEvent settings =
     [ settings
         |> Json.fromModel
@@ -204,5 +201,6 @@ no_log elementID settings =
     )
 
 
+maybeFocus : Maybe String -> Cmd Msg
 maybeFocus =
     Maybe.map (focus Ignore) >> Maybe.withDefault Cmd.none

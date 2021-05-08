@@ -171,6 +171,7 @@ header config main sub attr =
            )
 
 
+headerStyle : Int -> Parameters -> List (Attribute msg)
 headerStyle i =
     annotation
         ("h"

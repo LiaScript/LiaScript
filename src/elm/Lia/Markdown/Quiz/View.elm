@@ -165,22 +165,6 @@ viewFeedback lang state =
                         ]
 
 
-{-| **private:** Show an error-message, which results from the execution of an
-associated script-tag.
-
-TODO: needs to be styled appropriately
-
--}
-viewErrorMessage : String -> Html msg
-viewErrorMessage str =
-    if str == "" then
-        Html.text ""
-
-    else
-        -- TODO: mark as error
-        Html.div [] [ Html.text str ]
-
-
 {-| **private:** Show the solution button only if the quiz has not been solved
 yet.
 -}
