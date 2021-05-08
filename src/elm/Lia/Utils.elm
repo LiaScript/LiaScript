@@ -8,6 +8,7 @@ module Lia.Utils exposing
     , get
     , icon
     , modal
+    , noTranslate
     , onEnter
     , onKeyDown
     , toEscapeString
@@ -215,3 +216,10 @@ array_getLast array =
 array_setLast : a -> Array a -> Array a
 array_setLast a array =
     Array.set (Array.length array - 1) a array
+
+
+{-| Add indications for google-translate and others to not translate this element.
+-}
+noTranslate : List (Attribute msg) -> List (Attribute msg)
+noTranslate =
+    List.append [ Attr.class "notranslate", Attr.attribute "translate" "no" ]
