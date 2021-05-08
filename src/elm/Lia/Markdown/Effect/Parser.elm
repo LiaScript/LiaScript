@@ -38,7 +38,7 @@ import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.Parser.Context exposing (Context)
-import Lia.Parser.Helper exposing (newline, newlines, newlines1, spaces1)
+import Lia.Parser.Helper exposing (newlines, spaces1)
 import Lia.Parser.Indentation as Indent
 
 

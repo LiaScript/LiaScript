@@ -23,6 +23,7 @@ import Lia.Markdown.Inline.Stringify exposing (stringify_)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
 import Lia.Section exposing (SubSection)
 import Lia.Settings.Types exposing (Mode(..))
+import Lia.Utils exposing (noTranslate)
 import Oembed
 import QRCode
 import Translations exposing (Lang)
@@ -55,7 +56,12 @@ view config element =
             Html.sup (annotation "lia-superscript" attr) [ view config e ]
 
         Verbatim e attr ->
-            Html.code (annotation "lia-code lia-code--inline" attr) [ Html.text e ]
+            Html.code
+                (attr
+                    |> annotation "lia-code lia-code--inline"
+                    |> noTranslate
+                )
+                [ Html.text e ]
 
         Ref e attr ->
             reference config e attr

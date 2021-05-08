@@ -81,6 +81,7 @@ type Code
 
 {-| Initialize an empty code model with two empty Arrays.
 -}
+init : Model
 init =
     Model Array.empty Array.empty
 
