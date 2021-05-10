@@ -17,8 +17,6 @@ import Lia.Parser.PatReplace exposing (link)
 import Lia.Settings.Types exposing (Mode(..))
 import Lia.Utils exposing (blockKeydown, btn, btnIcon)
 import Session exposing (Session)
-import Svg
-import Svg.Attributes as SvgAttr
 import Translations exposing (Lang(..))
 
 
@@ -194,16 +192,16 @@ viewMedia courseUrl logoUrl =
         [ Html.aside [ Attr.class "lia-card__aside" ]
             [ Html.figure [ Attr.class "lia-card__figure" ]
                 [ case String.trim logoUrl of
-                    "" ->
+                    _ ->
                         defaultBackground courseUrl
 
-                    logo ->
-                        Html.img
-                            [ Attr.class "lia-card__image"
-                            , Attr.src logo
-                            , Attr.attribute "loading" "lazy"
-                            ]
-                            []
+                --logo ->
+                --    Html.img
+                --        [ Attr.class "lia-card__image"
+                --        , Attr.src logo
+                --        , Attr.attribute "loading" "lazy"
+                --        ]
+                --        []
                 ]
             ]
         ]
@@ -354,39 +352,13 @@ inlines =
 defaultBackground : String -> Html msg
 defaultBackground url =
     --Html.span [ Attr.property "innerHTML" <| JE.string "<svg width='400' height='110'><rect width='300' height='100' style='fill:rgb(0,0,255);stroke-width:3;stroke:rgb(0,0,0)' /> Sorry, your browser does not support inline SVG. </svg>" ] []
-    Svg.svg
-        [ SvgAttr.height "400"
-        , SvgAttr.width "800"
-        , SvgAttr.class "lia-card__image"
+    --background-image: radial-gradient(circle farthest-side at right bottom,#ffcdda,#fd2b64 80%,#0e153a);
+    Html.div
+        [ Attr.style "height" "inherit"
+        , Attr.style "width" "inherit"
+        , Attr.style "background-image" <| "radial-gradient(circle farthest-side at right bottom," ++ url2Color url ++ " 30%,#ddd)"
         ]
-        [ Svg.defs []
-            [ Svg.linearGradient
-                [ SvgAttr.id "grad"
-                , SvgAttr.x1 "0%"
-                , SvgAttr.y1 "100%"
-                , SvgAttr.x2 "100%"
-                , SvgAttr.y2 "0%"
-                ]
-                [ Svg.stop
-                    [ SvgAttr.offset "0%"
-                    , SvgAttr.style <| "stop-color:" ++ url2Color url ++ ";stop-opacity:1;"
-                    ]
-                    []
-                , Svg.stop
-                    [ SvgAttr.offset "100%"
-                    , SvgAttr.style "stop-color:rgb(255,255,255);stop-opacity:1;"
-                    ]
-                    []
-                ]
-            ]
-        , Svg.rect
-            [ SvgAttr.height "400"
-            , SvgAttr.width "800"
-            , SvgAttr.fill "url(#grad)"
-            ]
-            []
-        , Svg.text "Your browser does not support svg."
-        ]
+        []
 
 
 greedyGroupsOf : Int -> List a -> List (List a)
@@ -440,10 +412,10 @@ url2Color url =
             ( 11111, 99, 12 )
         |> (\( r, g, b ) ->
                 "rgb("
-                    ++ (String.fromInt <| modBy 155 r)
+                    ++ (String.fromInt <| modBy 255 r)
                     ++ ","
-                    ++ (String.fromInt <| modBy 155 g)
+                    ++ (String.fromInt <| modBy 255 g)
                     ++ ","
-                    ++ (String.fromInt <| modBy 155 b)
+                    ++ (String.fromInt <| modBy 255 b)
                     ++ ")"
            )
