@@ -3,6 +3,7 @@ module Lia.Markdown.Inline.Types exposing
     , Inlines
     , MultInlines
     , Reference(..)
+    , combine
     , htmlBlock
     , mediaBlock
     )
@@ -83,3 +84,28 @@ mediaBlock inline =
 
         _ ->
             False
+
+
+combine : Inlines -> Inlines
+combine list =
+    case list of
+        [] ->
+            []
+
+        [ xs ] ->
+            [ xs ]
+
+        x1 :: x2 :: xs ->
+            case ( x1, x2 ) of
+                ( Chars str attr, Chars " " [] ) ->
+                    combine (Chars (str ++ " ") attr :: xs)
+
+                ( Chars str1 attr1, Chars str2 attr2 ) ->
+                    if attr1 == attr2 then
+                        combine (Chars (str1 ++ str2) attr1 :: xs)
+
+                    else
+                        x1 :: combine (x2 :: xs)
+
+                _ ->
+                    x1 :: combine (x2 :: xs)

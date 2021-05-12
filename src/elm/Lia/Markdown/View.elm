@@ -20,7 +20,7 @@ import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Markdown.HTML.View as HTML
 import Lia.Markdown.Inline.Stringify exposing (stringify_)
 import Lia.Markdown.Inline.Types exposing (Inlines, htmlBlock, mediaBlock)
-import Lia.Markdown.Inline.View exposing (viewer)
+import Lia.Markdown.Inline.View as Inline
 import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Markdown.Quiz.View as Quizzes
 import Lia.Markdown.Survey.View as Surveys
@@ -94,7 +94,7 @@ subView config id sub =
                         config.main
                 in
                 x.body
-                    |> viewer { main | scripts = x.effect_model.javascript }
+                    |> Inline.viewer { main | scripts = x.effect_model.javascript }
                     |> List.map (Html.map Script)
 
 
@@ -278,7 +278,7 @@ view_block config block =
                         |> Paragraph attr
                         |> view_block config
 
-                ( Just _, Just ( narrator, ( attr, par ) ) ) ->
+                ( Just _, Just ( narrator, ( _, par ) ) ) ->
                     let
                         attributes =
                             case Voice.getVoiceFor narrator config.translations of
@@ -306,8 +306,9 @@ view_block config block =
                                     ]
                     in
                     par
-                        |> Paragraph (List.append attributes attr)
-                        |> view_block config
+                        |> Inline.reduce config.main
+                        |> Html.div (toAttribute attributes)
+                        |> Html.map Script
 
                 ( _, Nothing ) ->
                     Html.text ""

@@ -1,6 +1,5 @@
 module Lia.Markdown.Inline.Parser exposing
     ( annotations
-    , combine
     , comment
     , inlines
     , javascript
@@ -46,7 +45,7 @@ import Lia.Markdown.HTML.Parser as HTML
 import Lia.Markdown.Inline.Multimedia as Multimedia
 import Lia.Markdown.Inline.Parser.Formula exposing (formula)
 import Lia.Markdown.Inline.Parser.Symbol exposing (arrows, smileys)
-import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
+import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..), combine)
 import Lia.Markdown.Macro.Parser as Macro
 import Lia.Parser.Context exposing (Context, getLine, searchIndex)
 import Lia.Parser.Helper exposing (spaces)
@@ -152,28 +151,6 @@ html =
 scriptID : Parser Context Int
 scriptID =
     withState (.effect_model >> .javascript >> JS.count >> succeed)
-
-
-combine : Inlines -> Inlines
-combine list =
-    case list of
-        [] ->
-            []
-
-        [ xs ] ->
-            [ xs ]
-
-        x1 :: x2 :: xs ->
-            case ( x1, x2 ) of
-                ( Chars str1 attr1, Chars str2 attr2 ) ->
-                    if attr1 == attr2 then
-                        combine (Chars (str1 ++ str2) attr1 :: xs)
-
-                    else
-                        x1 :: combine (x2 :: xs)
-
-                _ ->
-                    x1 :: combine (x2 :: xs)
 
 
 line : Parser Context Inlines

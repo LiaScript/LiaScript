@@ -39,8 +39,8 @@ import Lia.Markdown.Footnote.Parser as Footnote
 import Lia.Markdown.Gallery.Parser as Gallery
 import Lia.Markdown.HTML.Attributes as Attributes exposing (Parameters)
 import Lia.Markdown.HTML.Parser as HTML
-import Lia.Markdown.Inline.Parser exposing (combine, comment, line, lineWithProblems)
-import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
+import Lia.Markdown.Inline.Parser exposing (comment, line, lineWithProblems)
+import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, combine)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Parser as Quiz
 import Lia.Markdown.Survey.Parser as Survey
