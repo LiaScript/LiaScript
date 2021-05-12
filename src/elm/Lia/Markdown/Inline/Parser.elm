@@ -165,9 +165,9 @@ combine list =
 
         x1 :: x2 :: xs ->
             case ( x1, x2 ) of
-                ( Chars str1 a1, Chars str2 a2 ) ->
-                    if a1 == a2 then
-                        combine (Chars (str1 ++ str2) a1 :: xs)
+                ( Chars str1 attr1, Chars str2 attr2 ) ->
+                    if attr1 == attr2 then
+                        combine (Chars (str1 ++ str2) attr1 :: xs)
 
                     else
                         x1 :: combine (x2 :: xs)
@@ -282,6 +282,7 @@ ref_info : Parser Context Inlines
 ref_info =
     string "["
         |> keep (manyTill inlines (string "]"))
+        |> map combine
 
 
 ref_title : Parser Context (Maybe Inlines)
@@ -290,6 +291,7 @@ ref_title =
         |> ignore (string "\"")
         |> keep (manyTill inlines (string "\""))
         |> ignore spaces
+        |> map combine
         |> maybe
 
 
@@ -450,7 +452,7 @@ between_ : String -> Parser Context Inline
 between_ str =
     string str
         |> keep (many1Till inlines (string str))
-        |> map toContainer
+        |> map (combine >> toContainer)
 
 
 toContainer : List Inline -> Inline
