@@ -191,17 +191,15 @@ viewMedia courseUrl logoUrl =
     Html.div [ Attr.class "lia-card__media" ]
         [ Html.aside [ Attr.class "lia-card__aside" ]
             [ Html.figure [ Attr.class "lia-card__figure" ]
-                [ case String.trim logoUrl of
-                    _ ->
-                        defaultBackground courseUrl
-
-                --logo ->
-                --    Html.img
-                --        [ Attr.class "lia-card__image"
-                --        , Attr.src logo
-                --        , Attr.attribute "loading" "lazy"
-                --        ]
-                --        []
+                [ Html.img
+                    [ Attr.class "lia-card__image"
+                    , logoUrl
+                        |> String.trim
+                        |> Attr.src
+                    , Attr.attribute "loading" "lazy"
+                    , defaultBackground courseUrl
+                    ]
+                    []
                 ]
             ]
         ]
@@ -349,16 +347,9 @@ inlines =
     List.map (Inline.view_inf Array.empty En Nothing >> Html.map (always NoOp))
 
 
-defaultBackground : String -> Html msg
+defaultBackground : String -> Attribute msg
 defaultBackground url =
-    --Html.span [ Attr.property "innerHTML" <| JE.string "<svg width='400' height='110'><rect width='300' height='100' style='fill:rgb(0,0,255);stroke-width:3;stroke:rgb(0,0,0)' /> Sorry, your browser does not support inline SVG. </svg>" ] []
-    --background-image: radial-gradient(circle farthest-side at right bottom,#ffcdda,#fd2b64 80%,#0e153a);
-    Html.div
-        [ Attr.style "height" "inherit"
-        , Attr.style "width" "inherit"
-        , Attr.style "background-image" <| "radial-gradient(circle farthest-side at right bottom," ++ url2Color url ++ " 30%,#ddd)"
-        ]
-        []
+    Attr.style "background-image" <| "radial-gradient(circle farthest-side at right bottom," ++ url2Color url ++ " 30%,#ddd)"
 
 
 greedyGroupsOf : Int -> List a -> List (List a)
