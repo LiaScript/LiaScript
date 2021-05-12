@@ -165,8 +165,12 @@ combine list =
 
         x1 :: x2 :: xs ->
             case ( x1, x2 ) of
-                ( Chars str1 [], Chars str2 [] ) ->
-                    combine (Chars (str1 ++ str2) [] :: xs)
+                ( Chars str1 a1, Chars str2 a2 ) ->
+                    if a1 == a2 then
+                        combine (Chars (str1 ++ str2) a1 :: xs)
+
+                    else
+                        x1 :: combine (x2 :: xs)
 
                 _ ->
                     x1 :: combine (x2 :: xs)
