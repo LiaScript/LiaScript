@@ -273,6 +273,12 @@ This will apply the following three patches:
 
 ## Version-Changes
 
+**0.9.16** (17/05/2021)
+
+- hotfix: Google finds always ways to trick me, this time it was with
+  translating of long paragraphs, which worked sometimes. Now sentences
+  are presented single paragraphs, this seems to do the trick...
+
 **0.9.15** (17/05/2021)
 
 - improved TTS output:
