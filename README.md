@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.14
+version:  0.9.15
 language: en
 narrator: UK English Male
 
@@ -272,6 +272,13 @@ This will apply the following three patches:
 - elm-patch/dom: enable onclick events as well as innerHTML
 
 ## Version-Changes
+
+**0.9.15** (17/05/2021)
+
+- improved TTS output:
+  
+  - Google-translate can now also deal with long paragraphs.
+  - better translation & delay (500ms) to support translated courses
 
 **0.9.14** (08/05/2021)
 
