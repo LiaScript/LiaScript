@@ -1,5 +1,6 @@
 module Lia.Markdown.Inline.View exposing
-    ( view
+    ( reduce
+    , view
     , viewMedia
     , view_inf
     , viewer
@@ -20,7 +21,7 @@ import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribut
 import Lia.Markdown.HTML.View as HTML
 import Lia.Markdown.Inline.Config as Config exposing (Config)
 import Lia.Markdown.Inline.Stringify exposing (stringify_)
-import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
+import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..), combine)
 import Lia.Section exposing (SubSection)
 import Lia.Settings.Types exposing (Mode(..))
 import Lia.Utils exposing (noTranslate)
@@ -86,7 +87,7 @@ view config element =
         Container list attr ->
             list
                 |> List.map (view config)
-                |> Html.span (annotation "lia-container" attr)
+                |> Html.span (Attr.style "left" "initial" :: toAttribute attr)
 
         IHTML node attr ->
             HTML.view Html.span (view config) attr node
@@ -107,6 +108,129 @@ view config element =
 
         Formula mode_ e attr ->
             view config (Container [ Formula mode_ e [] ] attr)
+
+
+toText : Config sub -> Inline -> Html (Msg sub)
+toText config element =
+    case element of
+        Chars e _ ->
+            e
+                |> String.replace ". " ".\n\n"
+                |> Html.text
+
+        Verbatim e attr ->
+            Html.span
+                (attr
+                    |> toAttribute
+                    |> noTranslate
+                )
+                [ Html.text e ]
+
+        Formula mode_ e _ ->
+            Html.node "lia-formula"
+                [ Attr.attribute "displayMode" mode_
+                , e
+                    |> JE.string
+                    |> Attr.property "formula"
+                ]
+                []
+
+        Symbol e _ ->
+            Html.text e
+
+        Container [ e ] _ ->
+            toText config e
+
+        Container list _ ->
+            list
+                |> List.map (toText config)
+                |> Html.span []
+
+        IHTML node attr ->
+            HTML.view Html.span (toText config) attr node
+
+        EInline e _ ->
+            e.content
+                |> List.map (toText config)
+                |> Effect.inline config [] e
+
+        Script id attr ->
+            JS.view config id attr
+
+        _ ->
+            Html.text ""
+
+
+reduce : Config sub -> List Inline -> List (Html (Msg sub))
+reduce config =
+    List.map reduce_
+        >> combine
+        >> List.map (toText config)
+
+
+reduce_ : Inline -> Inline
+reduce_ element =
+    case element of
+        Chars e _ ->
+            Chars e []
+
+        Bold e _ ->
+            reduce_ e
+
+        Italic e _ ->
+            reduce_ e
+
+        Strike e _ ->
+            reduce_ e
+
+        Underline e _ ->
+            reduce_ e
+
+        Superscript e _ ->
+            reduce_ e
+
+        Ref e _ ->
+            case e of
+                Link alt_ _ _ ->
+                    reduce_ (Container alt_ [])
+
+                Mail alt_ _ _ ->
+                    reduce_ (Container alt_ [])
+
+                Image alt_ _ _ ->
+                    reduce_ (Container alt_ [])
+
+                Audio alt_ _ _ ->
+                    reduce_ (Container alt_ [])
+
+                Movie alt_ _ _ ->
+                    reduce_ (Container alt_ [])
+
+                Embed alt_ _ _ ->
+                    reduce_ (Container alt_ [])
+
+                Preview_Lia _ ->
+                    Chars "preview-lia" []
+
+                Preview_Link _ ->
+                    Chars "preview-link" []
+
+                QR_Link _ _ ->
+                    Chars "qrcode" []
+
+        FootnoteMark e _ ->
+            Chars ("[" ++ e ++ "]") []
+
+        Container [ e ] _ ->
+            reduce_ e
+
+        Container list _ ->
+            list
+                |> List.map reduce_
+                |> (\c -> Container c [])
+
+        _ ->
+            element
 
 
 viewMedia : Config sub -> Inline -> Html (Msg sub)

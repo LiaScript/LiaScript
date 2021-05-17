@@ -106,38 +106,40 @@ function handleEffects(
           typeof event.message === 'string' &&
           event.message.startsWith('lia-tts-')
         ) {
-          let element = document.getElementsByClassName(event.message)
+          setTimeout(function() {
+            let element = document.getElementsByClassName(event.message)
 
-          let text = ''
+            let text = ''
 
-          for (let i = 0; i < element.length; i++) {
-            text += element[i].innerText || element[i].textContent
-          }
+            for (let i = 0; i < element.length; i++) {
+              text += element[i].innerText || element[i].textContent
+            }
 
-          // This is used to clean up effect numbers, which are marked by a \b
-          text = text.replace(/\\u001a\\d+\\u001a/g, '').trim()
+            // This is used to clean up effect numbers, which are marked by a \b
+            text = text.replace(/\\u001a\\d+\\u001a/g, '').trim()
 
-          if (text !== '') {
-            TTS.speak(
-              text,
-              element[0].getAttribute('data-voice'),
-              function () {
-                msg.topic = Port.SETTINGS
-                msg.message.message = 'start'
+            if (text !== '') {
+              TTS.speak(
+                text,
+                element[0].getAttribute('data-voice'),
+                function () {
+                  msg.topic = Port.SETTINGS
+                  msg.message.message = 'start'
 
-                elmSend(msg)
-              },
-              function () {
-                msg.topic = Port.SETTINGS
-                msg.message.message = 'stop'
-                elmSend(msg)
-              },
-              function (e: any) {
-                msg.message.message = e.toString()
-                elmSend(msg)
-              },
-            )
-          }
+                  elmSend(msg)
+                },
+                function () {
+                  msg.topic = Port.SETTINGS
+                  msg.message.message = 'stop'
+                  elmSend(msg)
+                },
+                function (e: any) {
+                  msg.message.message = e.toString()
+                  elmSend(msg)
+                },
+              )
+            }
+          }, 500)
         } else if (firstSpeak) {
           // this is a hack to deal with the delay in responsivevoice
           firstSpeak = false

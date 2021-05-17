@@ -177,10 +177,10 @@ slideBottom lang settings slide effects =
                             , Attr.disabled (not settings.sound)
                             , Attr.title <|
                                 if settings.speaking then
-                                    "todo: stop"
+                                    "stop"
 
                                 else
-                                    "todo: replay"
+                                    "replay"
                             ]
                             [ Html.i
                                 [ A11y_Widget.hidden True

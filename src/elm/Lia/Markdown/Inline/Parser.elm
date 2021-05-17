@@ -1,6 +1,5 @@
 module Lia.Markdown.Inline.Parser exposing
     ( annotations
-    , combine
     , comment
     , inlines
     , javascript
@@ -46,7 +45,7 @@ import Lia.Markdown.HTML.Parser as HTML
 import Lia.Markdown.Inline.Multimedia as Multimedia
 import Lia.Markdown.Inline.Parser.Formula exposing (formula)
 import Lia.Markdown.Inline.Parser.Symbol exposing (arrows, smileys)
-import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..))
+import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..), combine)
 import Lia.Markdown.Macro.Parser as Macro
 import Lia.Parser.Context exposing (Context, searchIndex)
 import Lia.Parser.Helper exposing (spaces)
@@ -154,24 +153,6 @@ scriptID =
     withState (.effect_model >> .javascript >> JS.count >> succeed)
 
 
-combine : Inlines -> Inlines
-combine list =
-    case list of
-        [] ->
-            []
-
-        [ xs ] ->
-            [ xs ]
-
-        x1 :: x2 :: xs ->
-            case ( x1, x2 ) of
-                ( Chars str1 [], Chars str2 [] ) ->
-                    combine (Chars (str1 ++ str2) [] :: xs)
-
-                _ ->
-                    x1 :: combine (x2 :: xs)
-
-
 line : Parser Context Inlines
 line =
     inlines |> many1 |> map combine
@@ -225,6 +206,7 @@ ref_info : Parser Context Inlines
 ref_info =
     string "["
         |> keep (manyTill inlines (string "]"))
+        |> map combine
 
 
 ref_title : Parser Context (Maybe Inlines)
@@ -233,6 +215,7 @@ ref_title =
         |> ignore (string "\"")
         |> keep (manyTill inlines (string "\""))
         |> ignore spaces
+        |> map combine
         |> maybe
 
 
@@ -393,7 +376,7 @@ between_ : String -> Parser Context Inline
 between_ str =
     string str
         |> keep (many1Till inlines (string str))
-        |> map toContainer
+        |> map (combine >> toContainer)
 
 
 toContainer : List Inline -> Inline

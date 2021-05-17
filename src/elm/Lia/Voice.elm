@@ -154,7 +154,7 @@ getVoiceFor : String -> ( String, String ) -> Maybe ( Bool, String )
 getVoiceFor voice ( langOld, langNew ) =
     if langOld == langNew then
         -- Nothing has changed
-        Just ( False, voice )
+        Just ( True, voice )
 
     else if getLangFromVoice voice == Just langOld then
         -- the old voice needs to be translated too
