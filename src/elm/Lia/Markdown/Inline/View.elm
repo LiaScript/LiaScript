@@ -115,8 +115,9 @@ toText config element =
     case element of
         Chars e _ ->
             e
-                |> String.replace ". " ".\n\n"
-                |> Html.text
+                |> String.split ". "
+                |> List.map (\s -> s ++ "." |> Html.text |> List.singleton |> Html.p [])
+                |> Html.div []
 
         Verbatim e attr ->
             Html.span

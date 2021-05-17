@@ -286,14 +286,14 @@ view_block config block =
                                     []
 
                                 Just ( translate, voice ) ->
-                                    [ ( "class", "lia-tts-" ++ String.fromInt id1 )
-                                    , ( "class"
+                                    [ ( "class"
                                       , if translate then
-                                            "hidden-visually translate"
+                                            "translate hidden-visually"
 
                                         else
-                                            "hide notranslate"
+                                            "notranslate hide"
                                       )
+                                    , ( "class", "lia-tts-" ++ String.fromInt id1 )
                                     , ( "data-voice", voice )
                                     , ( "translate"
                                       , if translate then
