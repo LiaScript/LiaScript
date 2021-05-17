@@ -114,7 +114,9 @@ toText : Config sub -> Inline -> Html (Msg sub)
 toText config element =
     case element of
         Chars e _ ->
-            Html.text e
+            e
+                |> String.replace ". " ".\n\n"
+                |> Html.text
 
         Verbatim e attr ->
             Html.span
