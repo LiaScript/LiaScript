@@ -20,7 +20,11 @@ customElements.define(
       })
       const urlAttr = this.getAttribute('url')
 
-      const span = document.createElement('span')
+      const span = document.createElement('div')
+      span.style.width = "inherit"
+      span.style.height = "inherit"
+      span.style.display = "inline-block"
+      span.style.maxHeight = "60vh"
 
       shadowRoot.appendChild(span)
 
@@ -43,7 +47,7 @@ customElements.define(
           span.innerHTML = json.html
         })
         .catch((err: any) => {
-          span.innerHTML = `<iframe src="${urlAttr}" style="border: none; width: 100%; height: 60vh;" allowfullscreen></iframe>`
+          span.innerHTML = `<iframe src="${urlAttr}" style="border: none; width: 100%; height: inherit;" allowfullscreen loading="lazy"></iframe>`
 
           console.warn(err);
         });

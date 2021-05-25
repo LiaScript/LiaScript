@@ -437,7 +437,12 @@ reference config ref attr =
 
 oembed : String -> Html msg
 oembed url =
-    Html.node "lia-embed" [ Attr.attribute "url" url ] []
+    Html.node "lia-embed"
+        [ Attr.attribute "url" url
+        , Attr.style "width" "100%"
+        , Attr.style "height" "inherit"
+        ]
+        []
 
 
 view_url : Config sub -> Inlines -> String -> Maybe Inlines -> Parameters -> Html (Msg sub)
