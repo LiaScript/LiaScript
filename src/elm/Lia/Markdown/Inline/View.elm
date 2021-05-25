@@ -405,8 +405,19 @@ reference config ref attr =
                             [ Html.source [ Attr.src url_ ] [] ]
                         ]
 
-        Embed _ url _ ->
-            oembed config.oEmbed url
+        Embed _ url title_ ->
+            Html.figure [ Attr.class "lia-figure", Attr.style "height" "auto", Attr.style "width" "100%" ] <|
+                case title_ of
+                    Just sub ->
+                        [ oembed config.oEmbed url
+                        , sub
+                            |> viewer config
+                            |> Html.figcaption [ Attr.class "lia-figure__caption" ]
+                        ]
+
+                    Nothing ->
+                        [ oembed config.oEmbed url
+                        ]
 
         Preview_Lia url ->
             Html.node "preview-lia"

@@ -52,17 +52,18 @@ customElements.define(
         const paddingLeft = parseInt(window.getComputedStyle(container).getPropertyValue('padding-left').replace("px", ""))
 
         this.maxwidth_ = this.maxwidth_ != null ? this.maxwidth_ : container.clientWidth - paddingLeft - 30
-        this.maxheight_ = this.maxheight_ != null ? this.maxheight_ :Math.floor(container.clientHeight * (scale || 0.674))
+        this.maxheight_ = this.maxheight_ != null ? this.maxheight_ : Math.floor(this.maxwidth_ * (scale || 0.674))
+
+        if ( this.maxheight_ > screen.availHeight ) {
+          this.maxheight_ = Math.floor(screen.availHeight * (scale || 0.76))
+        }
       }
 
       this.render()
     }
 
     render() {
-      if (this.paramCount > 2) {
-
-        console.warn(this.url_ , this.maxheight_ , this.maxwidth_);
-        
+      if (this.paramCount > 2) {  
 
         let div = this.div_
         let options = { 
