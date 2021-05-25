@@ -436,15 +436,9 @@ reference config ref attr =
                 |> figure config title_ (Just 300) "image"
 
 
-customProviders : List Oembed.Provider
-customProviders =
-    []
-
-
 oembed : Maybe { maxHeight : Int, maxWidth : Int } -> String -> Html msg
 oembed options url =
-    Oembed.view customProviders options url
-        |> Maybe.withDefault (Html.text ("Couldn't find oembed provider for url " ++ url))
+    Html.node "oembed-element" [ Attr.attribute "url" url ] []
 
 
 view_url : Config sub -> Inlines -> String -> Maybe Inlines -> Parameters -> Html (Msg sub)
