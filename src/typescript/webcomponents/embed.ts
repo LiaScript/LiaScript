@@ -43,7 +43,7 @@ customElements.define(
           span.innerHTML = json.html
         })
         .catch((err: any) => {
-          span.innerHTML = `<iframe src="${urlAttr}" style="width: 100%; height: 60vh;"></iframe>`
+          span.innerHTML = `<iframe src="${urlAttr}" style="border: none; width: 100%; height: 60vh;" allowfullscreen></iframe>`
 
           console.warn(err);
         });
