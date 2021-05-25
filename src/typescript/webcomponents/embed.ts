@@ -40,13 +40,19 @@ customElements.define(
 
       shadowRoot.appendChild(this.div_)
 
-      const container = document.getElementsByClassName("lia-slide__content")[0]
+      const container = this.parentElement // document.getElementsByClassName("lia-slide__content")[0]
+
+      let scale = null
+
+      try {
+        scale = parseFloat(this.getAttribute("scale"))
+      } catch (e) {}
 
       if(container) {
         const paddingLeft = parseInt(window.getComputedStyle(container).getPropertyValue('padding-left').replace("px", ""))
 
         this.maxwidth_ = this.maxwidth_ != null ? this.maxwidth_ : container.clientWidth - paddingLeft - 30
-        this.maxheight_ = this.maxheight_ != null ? this.maxheight_ :Math.floor(container.clientHeight * 0.6)
+        this.maxheight_ = this.maxheight_ != null ? this.maxheight_ :Math.floor(container.clientHeight * (scale || 0.674))
       }
 
       this.render()
