@@ -23,7 +23,7 @@ view config vector attr gallery =
         |> List.indexedMap
             (\i media ->
                 [ media
-                    |> Inline.view config
+                    |> Inline.view { config | oEmbed = Just { maxwidth = 250, maxheight = 250 } }
                     |> Html.map Script
                 , Html.div
                     [ Event.onClick <| Show gallery.id i
@@ -54,11 +54,11 @@ viewMedia config vector gallery div =
         mediaID =
             Array.get gallery.id vector |> Maybe.withDefault -1
     in
-    if mediaID < 0 then
-        div
+    Html.div [] <|
+        if mediaID < 0 then
+            [ Html.text "", div ]
 
-    else
-        Html.div []
+        else
             [ gallery.media
                 |> get mediaID
                 |> Maybe.map (viewOverlay config gallery.id mediaID (List.length gallery.media))

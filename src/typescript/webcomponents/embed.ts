@@ -10,47 +10,106 @@ setProviderList(providers)
 customElements.define(
   'lia-embed',
   class extends HTMLElement {
+
+    private url_: string | null
+    private div_: HTMLDivElement
+    private maxwidth_: number | null
+    private maxheight_: number | null
+    private paramCount : number
+
     constructor() {
       super()
+
+      this.url_ = null
+
+      this.div_ = document.createElement('div')
+      this.div_.style.width = "inherit"
+      this.div_.style.height = "inherit"
+      this.div_.style.display = "inline-block"
+      
+      this.maxheight_ = null
+      this.maxwidth_ = null
+
+      this.paramCount = 0
     }
 
     connectedCallback() {
       let shadowRoot = this.attachShadow({
         mode: 'closed',
-      })
-      const urlAttr = this.getAttribute('url')
+      })      
 
-      const span = document.createElement('div')
-      span.style.width = "inherit"
-      span.style.height = "inherit"
-      span.style.display = "inline-block"
-      span.style.maxHeight = "60vh"
+      shadowRoot.appendChild(this.div_)
 
-      shadowRoot.appendChild(span)
+      const container = document.getElementsByClassName("lia-slide__content")[0]
 
-      if (urlAttr) {
-        let options = null
+      if(container) {
+        const paddingLeft = parseInt(window.getComputedStyle(container).getPropertyValue('padding-left').replace("px", ""))
 
-        try {
-          const container = document.getElementsByClassName("lia-slide__content")[0]
+        this.maxwidth_ = this.maxwidth_ != null ? this.maxwidth_ : container.clientWidth - paddingLeft - 30
+        this.maxheight_ = this.maxheight_ != null ? this.maxheight_ :Math.floor(container.clientHeight * 0.6)
+      }
 
-          const paddingLeft = parseInt(window.getComputedStyle(container).getPropertyValue('padding-left').replace("px", ""))
+      this.render()
+    }
 
-          options = { 
-            maxwidth: container.clientWidth - paddingLeft - 30,
-            maxheight: Math.floor(container.clientHeight * 0.6)
-          }
-        } catch (e) {}
+    render() {
+      if (this.paramCount > 2) {
 
-        extract(urlAttr, options)
+        console.warn(this.url_ , this.maxheight_ , this.maxwidth_);
+        
+
+        let div = this.div_
+        let options = { 
+          maxwidth: this.maxwidth_,
+          maxheight: this.maxheight_
+        }
+
+        extract(this.url_, options)
         .then((json: any) => {
-          span.innerHTML = json.html
+          div.innerHTML = json.html
         })
         .catch((err: any) => {
-          span.innerHTML = `<iframe src="${urlAttr}" style="border: none; width: 100%; height: inherit;" allowfullscreen loading="lazy"></iframe>`
+          div.innerHTML = `<iframe src="${this.url_}" style="width: ${options.maxwidth ? options.maxwidth+"px" : "100%"}; height: ${options.maxheight ? options.maxheight+"px" : "inherit"};" allowfullscreen loading="lazy"></iframe>`
 
-          console.warn(err);
         });
+      }
+    }
+
+    get url() {
+      return this.url_
+    }
+
+    set url(value) {
+      if (this.url_ !== value) {
+        this.url_ = value
+        this.paramCount++
+        this.render()
+      }
+    }
+
+    get maxheight() {
+      return this.maxheight_
+    }
+
+    set maxheight(value) {
+      if (this.maxheight_ !== value) {
+        this.paramCount++
+        if (value != 0) {
+          this.maxheight_ = value
+        }
+      }
+    }
+
+    get maxwidth() {
+      return this.maxwidth_
+    }
+
+    set maxwidth(value) {
+      if (this.maxwidth_ !== value) {     
+        this.paramCount++
+        if (value != 0) {
+          this.maxwidth_ = value
+        }
       }
     }
   },

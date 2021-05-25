@@ -406,7 +406,7 @@ reference config ref attr =
                         ]
 
         Embed _ url _ ->
-            oembed url
+            oembed config.oEmbed url
 
         Preview_Lia url ->
             Html.node "preview-lia"
@@ -435,12 +435,32 @@ reference config ref attr =
                 |> figure config title_ (Just 300) "image"
 
 
-oembed : String -> Html msg
-oembed url =
+oembed : Maybe { maxwidth : Int, maxheight : Int } -> String -> Html msg
+oembed option url =
     Html.node "lia-embed"
-        [ Attr.attribute "url" url
-        , Attr.style "width" "100%"
-        , Attr.style "height" "inherit"
+        [ url
+            |> JE.string
+            |> Attr.property "url"
+        , option
+            |> Maybe.map (\o -> String.fromInt o.maxwidth ++ "px")
+            |> Maybe.withDefault "auto"
+            |> Attr.style "width"
+        , option
+            |> Maybe.map (\o -> String.fromInt o.maxheight ++ "px")
+            |> Maybe.withDefault "auto"
+            |> Attr.style "height"
+        , Attr.style "display" "inline-block"
+        , Attr.style "max-height" "60vh"
+        , option
+            |> Maybe.map .maxwidth
+            |> Maybe.withDefault 0
+            |> JE.int
+            |> Attr.property "maxwidth"
+        , option
+            |> Maybe.map .maxheight
+            |> Maybe.withDefault 0
+            |> JE.int
+            |> Attr.property "maxheight"
         ]
         []
 

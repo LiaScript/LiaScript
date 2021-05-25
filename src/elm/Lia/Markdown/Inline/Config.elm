@@ -21,6 +21,7 @@ type alias Config sub =
     , lang : Lang
     , theme : Maybe String
     , media : Dict String ( Int, Int )
+    , oEmbed : Maybe { maxwidth : Int, maxheight : Int }
     , scripts : Scripts SubSection
     }
 
@@ -49,6 +50,7 @@ init slide mode visible speaking effects theme lang media =
         theme
         lang
         media
+        Nothing
         effects
 
 
