@@ -406,7 +406,7 @@ reference config ref attr =
                         ]
 
         Embed _ url _ ->
-            oembed Nothing url
+            oembed url
 
         Preview_Lia url ->
             Html.node "preview-lia"
@@ -435,9 +435,9 @@ reference config ref attr =
                 |> figure config title_ (Just 300) "image"
 
 
-oembed : Maybe { maxHeight : Int, maxWidth : Int } -> String -> Html msg
-oembed options url =
-    Html.node "oembed-element" [ Attr.attribute "url" url ] []
+oembed : String -> Html msg
+oembed url =
+    Html.node "lia-embed" [ Attr.attribute "url" url ] []
 
 
 view_url : Config sub -> Inlines -> String -> Maybe Inlines -> Parameters -> Html (Msg sub)

@@ -3,7 +3,7 @@ import {
 } from 'oembed-parser';
 
 customElements.define(
-  'oembed-element',
+  'lia-embed',
   class extends HTMLElement {
     constructor() {
       super()
