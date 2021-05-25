@@ -25,7 +25,6 @@ import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..), c
 import Lia.Section exposing (SubSection)
 import Lia.Settings.Types exposing (Mode(..))
 import Lia.Utils exposing (noTranslate)
-import Oembed
 import QRCode
 import Translations exposing (Lang)
 
