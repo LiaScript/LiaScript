@@ -1,6 +1,11 @@
 import {
   extract,
+  setProviderList
 } from 'oembed-parser';
+
+const providers = require('./embed-providers.json');
+
+setProviderList(providers)
 
 customElements.define(
   'lia-embed',
