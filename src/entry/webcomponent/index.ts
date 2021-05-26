@@ -9,7 +9,7 @@ import '../../scss/main.scss'
 
 import '../../typescript/webcomponents/editor'
 import '../../typescript/webcomponents/formula'
-import '../../typescript/webcomponents/oembed'
+import '../../typescript/webcomponents/embed'
 import '../../typescript/webcomponents/chart'
 import '../../typescript/webcomponents/preview-lia'
 import '../../typescript/webcomponents/preview-link'

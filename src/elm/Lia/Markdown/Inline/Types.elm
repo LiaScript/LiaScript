@@ -79,6 +79,9 @@ mediaBlock inline =
                 QR_Link _ _ ->
                     True
 
+                Embed _ _ _ ->
+                    True
+
                 _ ->
                     False
 
