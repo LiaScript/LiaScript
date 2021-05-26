@@ -357,6 +357,7 @@ mediaReference =
     [ refMovie
     , refImage
     , refQr
+    , refEmbed
     ]
         |> choice
         |> map Ref
