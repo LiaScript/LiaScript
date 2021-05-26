@@ -25,7 +25,6 @@ import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..), c
 import Lia.Section exposing (SubSection)
 import Lia.Settings.Types exposing (Mode(..))
 import Lia.Utils exposing (noTranslate)
-import Oembed
 import QRCode
 import Translations exposing (Lang)
 
@@ -406,8 +405,19 @@ reference config ref attr =
                             [ Html.source [ Attr.src url_ ] [] ]
                         ]
 
-        Embed _ url _ ->
-            oembed Nothing url
+        Embed _ url title_ ->
+            Html.figure [ Attr.class "lia-figure", Attr.style "height" "auto", Attr.style "width" "100%" ] <|
+                case title_ of
+                    Just sub ->
+                        [ oembed config.oEmbed url
+                        , sub
+                            |> viewer config
+                            |> Html.figcaption [ Attr.class "lia-figure__caption" ]
+                        ]
+
+                    Nothing ->
+                        [ oembed config.oEmbed url
+                        ]
 
         Preview_Lia url ->
             Html.node "preview-lia"
@@ -436,15 +446,51 @@ reference config ref attr =
                 |> figure config title_ (Just 300) "image"
 
 
-customProviders : List Oembed.Provider
-customProviders =
-    []
+oembed : Maybe { maxwidth : Int, maxheight : Int, scale : Float } -> String -> Html msg
+oembed option url =
+    Html.node "lia-embed"
+        [ url
+            |> JE.string
+            |> Attr.property "url"
+        , option
+            |> Maybe.map
+                (\o ->
+                    if o.maxwidth > 0 then
+                        String.fromInt o.maxwidth ++ "px"
 
+                    else
+                        "auto"
+                )
+            |> Maybe.withDefault "auto"
+            |> Attr.style "width"
+        , option
+            |> Maybe.map
+                (\o ->
+                    if o.maxheight > 0 then
+                        String.fromInt o.maxheight ++ "px"
 
-oembed : Maybe { maxHeight : Int, maxWidth : Int } -> String -> Html msg
-oembed options url =
-    Oembed.view customProviders options url
-        |> Maybe.withDefault (Html.text ("Couldn't find oembed provider for url " ++ url))
+                    else
+                        "auto"
+                )
+            |> Maybe.withDefault "auto"
+            |> Attr.style "height"
+        , Attr.style "display" "inline-block"
+        , Attr.style "max-height" "100%"
+        , option
+            |> Maybe.map .maxwidth
+            |> Maybe.withDefault 0
+            |> JE.int
+            |> Attr.property "maxwidth"
+        , option
+            |> Maybe.map .maxheight
+            |> Maybe.withDefault 0
+            |> JE.int
+            |> Attr.property "maxheight"
+        , option
+            |> Maybe.map (.scale >> String.fromFloat >> Attr.attribute "scale")
+            |> Maybe.withDefault (Attr.class "")
+        ]
+        []
 
 
 view_url : Config sub -> Inlines -> String -> Maybe Inlines -> Parameters -> Html (Msg sub)
