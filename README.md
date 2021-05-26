@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.15
+version:  0.9.17
 language: en
 narrator: UK English Male
 
@@ -272,6 +272,12 @@ This will apply the following three patches:
 - elm-patch/dom: enable onclick events as well as innerHTML
 
 ## Version-Changes
+
+**0.9.17** (26/05/2021)
+
+- feature: Oembed support via the extended link notation `??[alt](url "maybe title")`,
+  additionally these embeds can be used in galleries as well.
+- fix(ASCII-art): wrong concatenation of multi verbatim elements in single-line
 
 **0.9.16** (17/05/2021)
 
