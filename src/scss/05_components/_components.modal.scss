@@ -157,6 +157,10 @@ $controlHeight: 4rem;
           min-height: 0;
         }
       }
+
+      &[data-media-type="iframe"] {
+        height: 100%;
+      }
     }
 
     figcaption {
