@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.17
+version:  0.9.18
 language: en
 narrator: UK English Male
 
@@ -272,6 +272,12 @@ This will apply the following three patches:
 - elm-patch/dom: enable onclick events as well as innerHTML
 
 ## Version-Changes
+
+**0.9.18** (28/05/2021)
+
+- feature: audio elements are now also usable within a gallery
+- improve: background color added to gallery-cards
+- fix: Video now visible in modal again
 
 **0.9.17** (26/05/2021)
 
