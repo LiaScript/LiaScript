@@ -354,11 +354,12 @@ reference =
 
 mediaReference : Parser Context Inline
 mediaReference =
-    [ refMovie
-    , refImage
+    [ refImage
+    , refMovie
+    , refAudio
     , refQr
     , refEmbed
-    ]
+        ]
         |> choice
         |> map Ref
         |> andMap (Macro.macro |> keep annotations)
