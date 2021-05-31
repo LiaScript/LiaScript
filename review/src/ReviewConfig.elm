@@ -41,28 +41,28 @@ import UseCamelCase
 config : List Rule
 config =
     [ Simplify.rule Simplify.defaults
-    , NoRedundantConcat.rule
-    , NoRedundantCons.rule
+    --, NoRedundantConcat.rule
+    --, NoRedundantCons.rule
     --, NoExposingEverything.rule
-    , NoImportingEverything.rule []
-    , NoMissingTypeAnnotation.rule
+    --, NoImportingEverything.rule []
+    --, NoMissingTypeAnnotation.rule
     --, NoMissingTypeAnnotationInLetIn.rule
     --, Documentation.ReadmeLinksPointToCurrentVersion.rule
-    , NoMissingTypeExpose.rule
-    , NoInvalidRGBValues.rule
-    , NoMissingSubscriptionsCall.rule
+    --, NoMissingTypeExpose.rule
+    --, NoInvalidRGBValues.rule
+    --, NoMissingSubscriptionsCall.rule
     --, NoRecursiveUpdate.rule
-    , NoUselessSubscriptions.rule
+    --, NoUselessSubscriptions.rule
     --, NoUnused.CustomTypeConstructors.rule []
     --, NoUnused.CustomTypeConstructorArgs.rule
-    , NoUnused.Dependencies.rule
+    --, NoUnused.Dependencies.rule
     --, NoUnused.Exports.rule
-    , NoUnused.Modules.rule
+    --, NoUnused.Modules.rule
     --, NoUnused.Parameters.rule
     --, NoUnused.Patterns.rule
-    , NoUnused.Variables.rule
-    , NoLongImportLines.rule
-    --, UseCamelCase.rule UseCamelCase.default
-    --, NoBooleanCase.rule
-    --, NoRedundantCons.rule
+    --, NoUnused.Variables.rule
+    --, NoLongImportLines.rule
+    , UseCamelCase.rule UseCamelCase.default
+    , NoBooleanCase.rule
+    , NoRedundantCons.rule
     ]
