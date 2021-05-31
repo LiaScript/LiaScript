@@ -40,12 +40,12 @@ import UseCamelCase
 
 config : List Rule
 config =
-    [-- Simplify.rule Simplify.defaults
-    --, NoRedundantConcat.rule
-     NoRedundantCons.rule
-     -- NoExposingEverything.rule
-    --, NoImportingEverything.rule []
-    --, NoMissingTypeAnnotation.rule
+    [ Simplify.rule Simplify.defaults
+    , NoRedundantConcat.rule
+    , NoRedundantCons.rule
+    --, NoExposingEverything.rule
+    , NoImportingEverything.rule []
+    , NoMissingTypeAnnotation.rule
     --, NoMissingTypeAnnotationInLetIn.rule
     --, Documentation.ReadmeLinksPointToCurrentVersion.rule
     --, NoMissingTypeExpose.rule

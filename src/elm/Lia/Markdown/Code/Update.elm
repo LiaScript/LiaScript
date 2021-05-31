@@ -270,10 +270,7 @@ eval scripts idx project =
     ( { project | running = True }, Event.eval scripts idx project )
 
 
-
---maybe_project : Int -> (a -> b) -> Array a -> Maybe b
-
-
+maybe_project : Int -> (a -> b) -> { project | evaluate : Array a } -> Maybe b
 maybe_project idx f =
     .evaluate
         >> Array.get idx
