@@ -61,7 +61,7 @@ config =
     --, NoUnused.Parameters.rule
     --, NoUnused.Patterns.rule
     , NoUnused.Variables.rule
-    --, NoLongImportLines.rule
+    , NoLongImportLines.rule
     --, UseCamelCase.rule UseCamelCase.default
     --, NoBooleanCase.rule
     --, NoRedundantCons.rule
