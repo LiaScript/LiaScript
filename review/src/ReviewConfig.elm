@@ -48,7 +48,7 @@ config =
     , NoMissingTypeAnnotation.rule
     --, NoMissingTypeAnnotationInLetIn.rule
     --, Documentation.ReadmeLinksPointToCurrentVersion.rule
-    --, NoMissingTypeExpose.rule
+    , NoMissingTypeExpose.rule
     --, NoInvalidRGBValues.rule
     --, NoMissingSubscriptionsCall.rule
     --, NoRecursiveUpdate.rule

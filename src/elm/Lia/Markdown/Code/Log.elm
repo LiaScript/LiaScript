@@ -1,6 +1,7 @@
 module Lia.Markdown.Code.Log exposing
     ( Level(..)
     , Log
+    , Message
     , add
     , add_Eval
     , decoder

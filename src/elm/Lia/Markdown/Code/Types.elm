@@ -1,6 +1,7 @@
 module Lia.Markdown.Code.Types exposing
     ( Code(..)
     , File
+    , Hash
     , Model
     , Project
     , Repo
