@@ -475,18 +475,14 @@ encodeBoxPlot labels category data =
     [ ( "xAxis"
       , JE.object
             ([ ( "type", JE.string "category" )
-
-             --, ( "name", JE.string xLabel )
              , ( "data"
                , boxplots
                     |> List.map Tuple.first
                     |> JE.list JE.string
                )
              ]
-                ++ (labels.x
-                        |> Maybe.map (\title -> [ ( "name", JE.string title ) ])
-                        |> Maybe.withDefault []
-                   )
+                |> CList.addWhen
+                    (labels.x |> Maybe.map (JE.string >> Tuple.pair "name"))
             )
       )
     , yAxis "value" labels.y []
@@ -1594,28 +1590,32 @@ series withColor ( char, diagram ) =
         <|
             case diagram of
                 Lines list label_ ->
-                    [ ( "data"
-                      , list
-                            |> List.map (\point -> JE.list JE.float [ point.x, point.y ])
-                            |> JE.list identity
-                      )
-                    , ( "type", JE.string "line" )
-                    , ( "barGap", JE.int 0 )
-                    , style withColor char
-                    , smooth withColor char
-                    ]
-                        ++ name label_
+                    label_
+                        |> name
+                        |> List.append
+                            [ ( "data"
+                              , list
+                                    |> List.map (\point -> JE.list JE.float [ point.x, point.y ])
+                                    |> JE.list identity
+                              )
+                            , ( "type", JE.string "line" )
+                            , ( "barGap", JE.int 0 )
+                            , style withColor char
+                            , smooth withColor char
+                            ]
 
                 Dots list label_ ->
-                    [ ( "data"
-                      , list
-                            |> List.map (\point -> [ point.x, point.y ])
-                            |> JE.list (JE.list JE.float)
-                      )
-                    , ( "barGap", JE.int 0 )
-                    , ( "type", JE.string "scatter" )
-                    ]
-                        ++ name label_
+                    label_
+                        |> name
+                        |> List.append
+                            [ ( "data"
+                              , list
+                                    |> List.map (\point -> [ point.x, point.y ])
+                                    |> JE.list (JE.list JE.float)
+                              )
+                            , ( "barGap", JE.int 0 )
+                            , ( "type", JE.string "scatter" )
+                            ]
 
 
 name : Maybe String -> List ( String, JE.Value )
