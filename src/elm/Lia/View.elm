@@ -19,7 +19,7 @@ import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model)
 import Lia.Section exposing (SubSection)
 import Lia.Settings.Types exposing (Mode(..), Settings)
-import Lia.Settings.Update exposing (Toggle(..), toggle_sound)
+import Lia.Settings.Update exposing (toggle_sound)
 import Lia.Settings.View as Settings
 import Lia.Update exposing (Msg(..), get_active_section)
 import Lia.Utils exposing (modal)

@@ -6,11 +6,10 @@ import Json.Decode as JD
 import Lia.Definition.Json.Decode as Definition
 import Lia.Index.Model as Index
 import Lia.Markdown.Inline.Json.Decode as Inline
-import Lia.Markdown.Inline.Types exposing (Inline(..))
 import Lia.Model exposing (Model)
 import Lia.Section as Section
 import Lia.Settings.Types as Settings
-import Translations exposing (Lang(..))
+import Translations
 
 
 {-| Decode the entire structure of a preparsed LiaScript course. The additional

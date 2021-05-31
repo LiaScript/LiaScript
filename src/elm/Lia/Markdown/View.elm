@@ -29,7 +29,6 @@ import Lia.Markdown.Task.View as Task
 import Lia.Markdown.Types exposing (Markdown(..), MarkdownS)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Section exposing (SubSection(..))
-import Lia.Settings.Types exposing (Mode(..))
 import Lia.Utils exposing (modal)
 import Lia.Voice as Voice
 import SvgBob

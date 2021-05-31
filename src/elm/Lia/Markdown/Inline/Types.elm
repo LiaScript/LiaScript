@@ -11,7 +11,6 @@ module Lia.Markdown.Inline.Types exposing
 import Lia.Markdown.Effect.Types exposing (Effect)
 import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.HTML.Types exposing (Node(..))
-import Lia.Settings.Types exposing (Mode(..))
 
 
 type alias Inlines =

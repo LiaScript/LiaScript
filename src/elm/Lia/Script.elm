@@ -31,7 +31,6 @@ import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Model exposing (loadResource)
 import Lia.Parser.Parser as Parser
 import Lia.Section as Section exposing (Sections)
-import Lia.Settings.Types exposing (Mode(..))
 import Lia.Settings.Update as Settings
 import Lia.Update exposing (Msg(..))
 import Lia.View

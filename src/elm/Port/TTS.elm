@@ -12,7 +12,6 @@ import Json.Decode as JD
 import Json.Encode as JE
 import Port.Event as Event exposing (Event)
 import String
-import Translations exposing (Lang(..))
 
 
 type Msg

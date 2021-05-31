@@ -18,7 +18,6 @@ import Lia.Index.Update exposing (Msg(..))
 import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Section exposing (Section, Sections)
-import Lia.Settings.Types exposing (Mode(..))
 import Lia.Utils exposing (blockKeydown, btn, icon)
 import Translations exposing (Lang, baseSearch)
 
