@@ -295,7 +295,7 @@ tagAttributeQuotedValue quote =
                 , characterReference
                 ]
                 |> many
-                |> map (String.join "")
+                |> map String.concat
             )
         |> ignore (string quote)
 
@@ -307,7 +307,7 @@ tagAttributeUnquotedValue =
         , characterReference
         ]
         |> many1
-        |> map (String.join "")
+        |> map String.concat
 
 
 characterReference : Parser context String
