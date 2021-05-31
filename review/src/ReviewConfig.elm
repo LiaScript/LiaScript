@@ -11,29 +11,58 @@ when inside the directory containing this file.
 
 -}
 
-import NoDebug.Log
-import NoDebug.TodoOrToString
+import Documentation.ReadmeLinksPointToCurrentVersion
+import NoBooleanCase
 import NoExposingEverything
 import NoImportingEverything
+import NoInvalidRGBValues
+import NoLongImportLines
+import NoMissingSubscriptionsCall
 import NoMissingTypeAnnotation
+import NoMissingTypeAnnotationInLetIn
+import NoMissingTypeExpose
+import NoRecursiveUpdate
+import NoRedundantConcat
+import NoRedundantCons
+import NoUnused.CustomTypeConstructorArgs
 import NoUnused.CustomTypeConstructors
 import NoUnused.Dependencies
 import NoUnused.Exports
 import NoUnused.Modules
+import NoUnused.Parameters
+import NoUnused.Patterns
 import NoUnused.Variables
+import NoUselessSubscriptions
 import Review.Rule exposing (Rule)
+import Simplify
+import UseCamelCase
 
 
 config : List Rule
 config =
-    [ NoDebug.Log.rule
-    , NoDebug.TodoOrToString.rule
-    , NoExposingEverything.rule
-    , NoImportingEverything.rule []
-    , NoMissingTypeAnnotation.rule
-    , NoUnused.CustomTypeConstructors.rule []
-    , NoUnused.Dependencies.rule
-    , NoUnused.Exports.rule
-    , NoUnused.Modules.rule
-    , NoUnused.Variables.rule
+    [-- Simplify.rule Simplify.defaults
+    --, NoRedundantConcat.rule
+     NoRedundantCons.rule
+     -- NoExposingEverything.rule
+    --, NoImportingEverything.rule []
+    --, NoMissingTypeAnnotation.rule
+    --, NoMissingTypeAnnotationInLetIn.rule
+    --, Documentation.ReadmeLinksPointToCurrentVersion.rule
+    --, NoMissingTypeExpose.rule
+    --, NoInvalidRGBValues.rule
+    --, NoMissingSubscriptionsCall.rule
+    --, NoRecursiveUpdate.rule
+    --, NoUselessSubscriptions.rule
+    --, NoUnused.CustomTypeConstructors.rule []
+    --, NoUnused.CustomTypeConstructorArgs.rule
+    --, NoUnused.Dependencies.rule
+    --, NoUnused.Exports.rule
+    --, NoUnused.Modules.rule
+    --, NoUnused.Parameters.rule
+    --, NoUnused.Patterns.rule
+    --, NoUnused.Variables.rule
+    --, NoLongImportLines.rule
+    --, UseCamelCase.rule UseCamelCase.default
+    --, NoBooleanCase.rule
+    --, NoRedundantCons.rule
     ]
