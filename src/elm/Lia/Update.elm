@@ -103,23 +103,25 @@ update session msg model =
             in
             if (-1 < idx) && (idx < Array.length model.sections) then
                 if idx == model.section_active || force then
-                    { model
-                        | section_active = idx
-                        , settings =
-                            { settings
-                                | table_of_contents =
-                                    if
-                                        session.screen.width
-                                            <= Const.globalBreakpoints.sm
-                                    then
-                                        False
+                    update session
+                        InitSection
+                        (generate
+                            { model
+                                | section_active = idx
+                                , settings =
+                                    { settings
+                                        | table_of_contents =
+                                            if
+                                                session.screen.width
+                                                    <= Const.globalBreakpoints.sm
+                                            then
+                                                False
 
-                                    else
-                                        settings.table_of_contents
+                                            else
+                                                settings.table_of_contents
+                                    }
                             }
-                    }
-                        |> generate
-                        |> update session InitSection
+                        )
 
                 else
                     ( { model

@@ -273,9 +273,7 @@ view_block config block =
                 )
             of
                 ( Nothing, Just ( _, ( attr, par ) ) ) ->
-                    par
-                        |> Paragraph attr
-                        |> view_block config
+                    view_block config (Paragraph attr par)
 
                 ( Just _, Just ( narrator, ( _, par ) ) ) ->
                     let

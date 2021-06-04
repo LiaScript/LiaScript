@@ -33,7 +33,7 @@ import Lia.Markdown.Table.Types
         )
 import Lia.Markdown.Table.Update as Sub
 import Lia.Markdown.Update exposing (Msg(..))
-import Lia.Utils exposing (blockKeydown, btn, btnIcon, icon)
+import Lia.Utils exposing (blockKeydown, btn, btnIcon, get, icon)
 import Set
 import Translations exposing (Lang, sortAsc, sortDesc, sortNot)
 
@@ -633,15 +633,6 @@ formatted lang viewer head format rows id state =
     ]
 
 
-get : Int -> List x -> Maybe x
-get i =
-    if i == 0 then
-        List.head
-
-    else
-        List.tail >> Maybe.andThen (get (i - 1))
-
-
 sort : State -> Matrix Cell -> Matrix Cell
 sort state matrix =
     if state.column /= -1 then
@@ -661,7 +652,12 @@ sort state matrix =
                         matrix
 
                 else
-                    List.sortBy (get state.column >> Maybe.map (.string >> String.toLower) >> Maybe.withDefault "") matrix
+                    List.sortBy
+                        (get state.column
+                            >> Maybe.map (.string >> String.toLower)
+                            >> Maybe.withDefault ""
+                        )
+                        matrix
         in
         if state.dir then
             sorted

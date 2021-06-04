@@ -175,7 +175,9 @@ inlines =
                      , Footnote.inline
                      , reference
                      , formula
-                     , inlines |> Effect.inline |> map EInline
+                     , inlines
+                        |> Effect.inline
+                        |> map EInline
                      , strings
                      ]
                         |> choice
@@ -306,7 +308,7 @@ mediaReference =
     , refAudio
     , refQr
     , refEmbed
-        ]
+    ]
         |> choice
         |> map Ref
         |> andMap (Macro.macro |> keep annotations)
