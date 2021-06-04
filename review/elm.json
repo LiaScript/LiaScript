@@ -11,6 +11,7 @@
             "jfmengels/elm-review": "2.4.1",
             "jfmengels/elm-review-common": "1.0.4",
             "jfmengels/elm-review-documentation": "1.0.2",
+            "jfmengels/elm-review-performance": "1.0.0",
             "jfmengels/elm-review-simplify": "2.0.3",
             "jfmengels/elm-review-the-elm-architecture": "1.0.3",
             "jfmengels/elm-review-unused": "1.1.11",

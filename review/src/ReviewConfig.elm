@@ -36,6 +36,7 @@ import NoUselessSubscriptions
 import Review.Rule exposing (Rule)
 import Simplify
 import UseCamelCase
+import NoUnoptimizedRecursion
 
 
 config : List Rule
@@ -62,7 +63,8 @@ config =
     --, NoUnused.Patterns.rule
     --, NoUnused.Variables.rule
     --, NoLongImportLines.rule
-    , UseCamelCase.rule UseCamelCase.default
-    , NoBooleanCase.rule
-    , NoRedundantCons.rule
+    --, UseCamelCase.rule UseCamelCase.default
+    --, NoBooleanCase.rule
+    --, NoRedundantCons.rule
+    , NoUnoptimizedRecursion.rule (NoUnoptimizedRecursion.optOutWithComment "IGNORE TCO")
     ]
