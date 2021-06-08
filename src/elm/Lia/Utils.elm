@@ -25,7 +25,6 @@ import Html.Attributes as Attr
 import Html.Events as Event
 import Json.Decode as JD
 import Task
-import Translations exposing (Lang(..))
 
 
 {-| Convert JavaScript string escapes for backspace to elm escaped strings:

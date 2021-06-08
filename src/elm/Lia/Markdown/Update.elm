@@ -217,9 +217,9 @@ subUpdate js msg section =
                     in
                     case subCmd of
                         Just _ ->
-                            { subsection | quiz_vector = vector }
-                                |> SubSection
-                                |> subUpdate js (UpdateQuiz childMsg)
+                            subUpdate js
+                                (UpdateQuiz childMsg)
+                                (SubSection { subsection | quiz_vector = vector })
 
                         _ ->
                             ( SubSection { subsection | quiz_vector = vector }
@@ -236,9 +236,9 @@ subUpdate js msg section =
                     in
                     case subCmd of
                         Just _ ->
-                            { subsection | survey_vector = vector }
-                                |> SubSection
-                                |> subUpdate js (UpdateSurvey childMsg)
+                            subUpdate js
+                                (UpdateSurvey childMsg)
+                                (SubSection { subsection | survey_vector = vector })
 
                         _ ->
                             ( SubSection { subsection | survey_vector = vector }
@@ -255,9 +255,9 @@ subUpdate js msg section =
                     in
                     case subCmd of
                         Just _ ->
-                            { subsection | task_vector = vector }
-                                |> SubSection
-                                |> subUpdate js (UpdateTask childMsg)
+                            subUpdate js
+                                (UpdateTask childMsg)
+                                (SubSection { subsection | task_vector = vector })
 
                         _ ->
                             ( SubSection { subsection | task_vector = vector }

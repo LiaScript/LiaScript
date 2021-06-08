@@ -26,7 +26,7 @@ import Const
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.HTML.Attributes as Param exposing (Parameters)
 import Lia.Markdown.Inline.Parser exposing (annotations, line)
-import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
+import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Table.Matrix as Matrix exposing (Matrix)
 import Lia.Markdown.Table.Types

@@ -1,4 +1,4 @@
-port module Worker exposing (main)
+port module Worker exposing (Flags, Model, Msg, main)
 
 import Array
 import Error.Report
@@ -196,9 +196,9 @@ parseSection active lia =
         lia
 
     else
-        { lia | section_active = active }
-            |> generate
-            |> parseSection (active + 1)
+        parseSection
+            (active + 1)
+            (generate { lia | section_active = active })
 
 
 parsing : Model -> ( Model, Cmd Msg )

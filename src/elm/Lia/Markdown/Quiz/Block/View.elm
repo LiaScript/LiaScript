@@ -132,8 +132,7 @@ get_option config id list =
                 |> Html.map Script
 
         ( i, _ :: xs ) ->
-            xs
-                |> get_option config (i - 1)
+            get_option config (i - 1) xs
 
         ( _, [] ) ->
             Html.span [] [ Html.text "choose" ]

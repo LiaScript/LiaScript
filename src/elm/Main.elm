@@ -1,4 +1,4 @@
-module Main exposing (main)
+module Main exposing (Flags, main)
 
 import Browser
 import Browser.Navigation as Nav

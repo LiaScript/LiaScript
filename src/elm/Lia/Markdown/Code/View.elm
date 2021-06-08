@@ -16,7 +16,18 @@ import Lia.Markdown.Code.Types exposing (Code(..), File, Model)
 import Lia.Markdown.Code.Update exposing (Msg(..))
 import Lia.Markdown.HTML.Attributes as Params exposing (Parameters)
 import Lia.Utils exposing (btnIcon, noTranslate)
-import Translations exposing (Lang, codeExecute, codeFirst, codeLast, codeMaximize, codeMinimize, codeNext, codePrev, codeRunning)
+import Translations
+    exposing
+        ( Lang
+        , codeExecute
+        , codeFirst
+        , codeLast
+        , codeMaximize
+        , codeMinimize
+        , codeNext
+        , codePrev
+        , codeRunning
+        )
 
 
 view : Lang -> String -> Model -> Code -> Html Msg

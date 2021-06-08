@@ -29,7 +29,6 @@ import Lia.Markdown.Task.View as Task
 import Lia.Markdown.Types exposing (Markdown(..), MarkdownS)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Section exposing (SubSection(..))
-import Lia.Settings.Types exposing (Mode(..))
 import Lia.Utils exposing (modal)
 import Lia.Voice as Voice
 import SvgBob
@@ -274,9 +273,7 @@ view_block config block =
                 )
             of
                 ( Nothing, Just ( _, ( attr, par ) ) ) ->
-                    par
-                        |> Paragraph attr
-                        |> view_block config
+                    view_block config (Paragraph attr par)
 
                 ( Just _, Just ( narrator, ( _, par ) ) ) ->
                     let
