@@ -264,6 +264,9 @@ viewMedia config inline =
                         )
                         []
                     ]
+                , title_
+                    |> Maybe.map (viewer config >> Html.figcaption [ Attr.class "lia-figure__caption" ])
+                    |> Maybe.withDefault (Html.text "")
                 ]
 
         _ ->
@@ -407,7 +410,7 @@ reference config ref attr =
 
         Embed _ url title_ ->
             Html.figure [ Attr.class "lia-figure", Attr.style "height" "auto", Attr.style "width" "100%" ] <|
-                [ Html.div [Attr.class "lia-figure__media"] <|
+                [ Html.div [ Attr.class "lia-figure__media" ] <|
                     case title_ of
                         Just sub ->
                             [ oembed config.oEmbed url
