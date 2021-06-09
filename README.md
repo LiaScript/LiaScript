@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.18
+version:  0.9.19
 language: en
 narrator: UK English Male
 
@@ -272,6 +272,11 @@ This will apply the following three patches:
 - elm-patch/dom: enable onclick events as well as innerHTML
 
 ## Version-Changes
+
+**0.9.19** (09/06/2021)
+
+- some optimizations with the help of elm-review
+- fix: CSS width in gallery views
 
 **0.9.18** (28/05/2021)
 
