@@ -34,29 +34,20 @@ toggle id state =
 
 
 toggleSingle : Int -> List Bool -> List Bool
-toggleSingle id list =
-    case list of
-        [] ->
-            []
-
-        _ :: xs ->
-            (id == 0) :: toggleSingle (id - 1) xs
+toggleSingle id =
+    List.indexedMap (\i _ -> i == id)
 
 
 toggleMultiple : Int -> List Bool -> List Bool
-toggleMultiple id list =
-    case list of
-        [] ->
-            []
+toggleMultiple id =
+    List.indexedMap
+        (\i b ->
+            if i == id then
+                not b
 
-        x :: xs ->
-            (if id == 0 then
-                not x
-
-             else
-                x
-            )
-                :: toggleMultiple (id - 1) xs
+            else
+                b
+        )
 
 
 toString : State -> String

@@ -121,10 +121,9 @@ update msg model =
             log Nothing
                 { model
                     | theme =
-                        if theme == "custom" && model.customTheme /= Nothing then
-                            theme
-
-                        else
+                       -- if theme == "custom" && model.customTheme /= Nothing then
+                        --    theme
+                        --else
                             theme
                 }
 

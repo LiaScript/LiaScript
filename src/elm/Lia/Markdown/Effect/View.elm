@@ -18,7 +18,6 @@ import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inline)
 import Lia.Markdown.Types exposing (Markdown)
 import Lia.Markdown.Update exposing (Msg(..))
-import Lia.Settings.Types exposing (Mode(..))
 import Port.Event as Event exposing (Event)
 import Port.TTS
 

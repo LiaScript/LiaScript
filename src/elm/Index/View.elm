@@ -14,7 +14,6 @@ import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View as Inline
 import Lia.Parser.PatReplace exposing (link)
-import Lia.Settings.Types exposing (Mode(..))
 import Lia.Utils exposing (blockKeydown, btn, btnIcon)
 import Session exposing (Session)
 import Translations exposing (Lang(..))

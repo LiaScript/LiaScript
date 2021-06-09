@@ -7,8 +7,8 @@ import LiaFuzz exposing (fuzzRegex)
 import Test exposing (Test, describe, fuzz)
 
 
-run_preprocessor : Int -> String -> Expectation
-run_preprocessor len code =
+run : Int -> String -> Expectation
+run len code =
     case Parser.parse_titles (default "") code of
         Ok list ->
             list
