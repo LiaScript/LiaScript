@@ -1,8 +1,85 @@
-import { extract, setProviderList } from "oembed-parser";
-
 const providers = require("./embed-providers.json");
 
-setProviderList(providers);
+type Params = {
+  maxwidth?: number;
+  maxheight?: number;
+};
+
+type Provider = {
+  name: string;
+  url: string;
+  endpoint: string;
+};
+
+const fetchEmbed = async (url: string, provider: string, params: Params) => {
+  let {
+    name, // eslint-disable-line camelcase
+    url, // eslint-disable-line camelcase
+    endpoint: resourceUrl,
+  } = provider;
+
+  resourceUrl = resourceUrl.replace(/\{format\}/g, "json");
+
+  let link = `${resourceUrl}?format=json&url=${encodeURIComponent(url)}`;
+
+  link =
+    params && params.maxwidth ? `${link}&maxwidth=${params.maxwidth}` : link;
+  link =
+    params && params.maxheight ? `${link}&maxheight=${params.maxheight}` : link;
+
+  link = "https://api.allorigins.win/get?url=" + encodeURIComponent(link);
+
+  const res = await fetch(link, { mode: "no-cors" });
+  const json = await res.json();
+
+  json.provider_name = provider_name; // eslint-disable-line camelcase
+  json.provider_url = provider_url; // eslint-disable-line camelcase
+  return json;
+};
+
+function isValidURL(str: string) {
+  if (!str) {
+    return false;
+  }
+
+  /* eslint-disable*/
+  let pattern =
+    /^(?:(?:https?|ftp):\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,}))\.?)(?::\d{2,5})?(?:[/?#]\S*)?$/i;
+  /* eslint-enable*/
+
+  return pattern.test(str);
+}
+
+function findProvider(url: string) {
+  const candidates = providers.filter((provider: any) => {
+    const { schemes, domain } = provider;
+    if (!schemes.length) {
+      return url.includes(domain);
+    }
+    return schemes.some((scheme) => {
+      const reg = new RegExp(scheme.replace(/\*/g, "(.*)"), "i");
+      return url.match(reg);
+    });
+  });
+
+  return candidates.length > 0 ? candidates[0] : null;
+}
+
+async function extract(url: string, params) {
+  if (!isValidURL(url)) {
+    throw new Error("Invalid input URL");
+  }
+  const p = findProvider(url);
+  if (!p) {
+    throw new Error(`No provider found with given url "${url}"`);
+  }
+  const data = await fetchEmbed(url, p, params);
+  return data;
+}
+
+function iframe(url: string) {
+  return `<iframe src="${url}" style="width: 100%; height: inherit" allowfullscreen loading="lazy"></iframe>`;
+}
 
 customElements.define(
   "lia-embed",
@@ -75,7 +152,12 @@ customElements.define(
 
         extract(this.url_, options)
           .then((json: any) => {
-            div.innerHTML = json.html;
+            try {
+              json = JSON.parse(json.contents);
+              div.innerHTML = json.html;
+            } catch (e) {
+              div.innerHTML = iframe(this.url_);
+            }
           })
           .catch((err: any) => {
             div.innerHTML = `<iframe src="${this.url_}" style="width: ${
