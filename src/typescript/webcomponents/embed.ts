@@ -8,72 +8,88 @@ type Params = {
 type Provider = {
   name: string;
   url: string;
-  endpoint: string;
+  endpoints: Endpoint[];
 };
 
-const fetchEmbed = async (url: string, provider: string, params: Params) => {
-  let {
-    name, // eslint-disable-line camelcase
-    url, // eslint-disable-line camelcase
-    endpoint: resourceUrl,
-  } = provider;
-
-  resourceUrl = resourceUrl.replace(/\{format\}/g, "json");
-
-  let link = `${resourceUrl}?format=json&url=${encodeURIComponent(url)}`;
-
-  link =
-    params && params.maxwidth ? `${link}&maxwidth=${params.maxwidth}` : link;
-  link =
-    params && params.maxheight ? `${link}&maxheight=${params.maxheight}` : link;
-
-  link = "https://api.allorigins.win/get?url=" + encodeURIComponent(link);
-
-  const res = await fetch(link, { mode: "no-cors" });
-  const json = await res.json();
-
-  json.provider_name = provider_name; // eslint-disable-line camelcase
-  json.provider_url = provider_url; // eslint-disable-line camelcase
-  return json;
+type Endpoint = {
+  schemes?: string[];
+  url: string;
+  discovery?: boolean;
+  formats?: string[];
 };
 
-function isValidURL(str: string) {
-  if (!str) {
-    return false;
-  }
+function findProvider(link: string): Provider | undefined {
+  const candidate = providers.find((provider: Provider) => {
+    const { schemes, url } = provider.endpoints[0];
 
-  /* eslint-disable*/
-  let pattern =
-    /^(?:(?:https?|ftp):\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,}))\.?)(?::\d{2,5})?(?:[/?#]\S*)?$/i;
-  /* eslint-enable*/
-
-  return pattern.test(str);
-}
-
-function findProvider(url: string) {
-  const candidates = providers.filter((provider: any) => {
-    const { schemes, domain } = provider;
-    if (!schemes.length) {
-      return url.includes(domain);
+    if (!schemes || !schemes.length) {
+      return url.includes(link);
     }
+
     return schemes.some((scheme) => {
-      const reg = new RegExp(scheme.replace(/\*/g, "(.*)"), "i");
-      return url.match(reg);
+      const reg = new RegExp(scheme.replace(/\*/g, "(?:.*)"), "i");
+
+      return link.match(reg);
     });
   });
 
-  return candidates.length > 0 ? candidates[0] : null;
+  return candidate;
 }
 
-async function extract(url: string, params) {
-  if (!isValidURL(url)) {
-    throw new Error("Invalid input URL");
+async function fetchEmbed(
+  link: string,
+  provider: Provider,
+  params: Params,
+  prefix?: string
+) {
+  let resourceUrl = provider.endpoints[0].url;
+
+  resourceUrl = resourceUrl.replace(/\{format\}/g, "json");
+
+  let url = `${resourceUrl}?format=json&url=${encodeURIComponent(link)}`;
+
+  url = params.maxwidth ? `${url}&maxwidth=${params.maxwidth}` : url;
+  url = params.maxheight ? `${url}&maxheight=${params.maxheight}` : url;
+
+  let res, json;
+
+  if (prefix) {
+    url = prefix + encodeURIComponent(url);
+
+    res = await fetch(url);
+    json = await res.text();
+    json = JSON.parse(json);
+    json = JSON.parse(json.contents);
+  } else {
+    res = await fetch(url);
+    json = await res.json();
   }
-  const p = findProvider(url);
+
+  json.provider_name = provider.name; // eslint-disable-line camelcase
+  json.provider_url = provider.url; // eslint-disable-line camelcase
+
+  return json;
+}
+
+async function extract(link: string, params: Params) {
+  const p = findProvider(link);
+
   if (!p) {
-    throw new Error(`No provider found with given url "${url}"`);
+    throw new Error(`No provider found with given url "${link}"`);
   }
-  const data = await fetchEmbed(url, p, params);
+  let data;
+
+  try {
+    data = await fetchEmbed(link, p, params);
+  } catch (error) {
+    data = await fetchEmbed(
+      link,
+      p,
+      params,
+      "https://api.allorigins.win/get?url="
+    );
+  }
+
   return data;
 }
 
@@ -86,8 +102,8 @@ customElements.define(
   class extends HTMLElement {
     private url_: string | null;
     private div_: HTMLDivElement;
-    private maxwidth_: number | null;
-    private maxheight_: number | null;
+    private maxwidth_: number | undefined;
+    private maxheight_: number | undefined;
     private paramCount: number;
 
     constructor() {
@@ -99,9 +115,6 @@ customElements.define(
       this.div_.style.width = "inherit";
       this.div_.style.height = "inherit";
       this.div_.style.display = "inline-block";
-
-      this.maxheight_ = null;
-      this.maxwidth_ = null;
 
       this.paramCount = 0;
     }
@@ -150,22 +163,24 @@ customElements.define(
           maxheight: this.maxheight_,
         };
 
-        extract(this.url_, options)
-          .then((json: any) => {
-            try {
-              json = JSON.parse(json.contents);
-              div.innerHTML = json.html;
-            } catch (e) {
-              div.innerHTML = iframe(this.url_);
-            }
-          })
-          .catch((err: any) => {
-            div.innerHTML = `<iframe src="${this.url_}" style="width: ${
-              options.maxwidth ? options.maxwidth + "px" : "100%"
-            }; height: ${
-              options.maxheight ? options.maxheight + "px" : "inherit"
-            };" allowfullscreen loading="lazy"></iframe>`;
-          });
+        if (this.url_) {
+          let url_ = this.url_;
+          extract(url_, options)
+            .then((json: any) => {
+              try {
+                div.innerHTML = json.html;
+              } catch (e) {
+                div.innerHTML = iframe(url_);
+              }
+            })
+            .catch((err: any) => {
+              div.innerHTML = `<iframe src="${url_}" style="width: ${
+                options.maxwidth ? options.maxwidth + "px" : "100%"
+              }; height: ${
+                options.maxheight ? options.maxheight + "px" : "inherit"
+              };" allowfullscreen loading="lazy"></iframe>`;
+            });
+        }
       }
     }
 
