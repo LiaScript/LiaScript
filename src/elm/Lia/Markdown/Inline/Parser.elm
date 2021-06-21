@@ -15,12 +15,12 @@ import Combine
         , andMap
         , andThen
         , choice
-        , fail
         , ignore
         , keep
         , lazy
         , many
         , many1
+        , many1Till
         , manyTill
         , map
         , maybe
@@ -391,20 +391,6 @@ toContainer inline_list =
 
         moreThanOne ->
             Container moreThanOne []
-
-
-many1Till : Parser s a -> Parser s end -> Parser s (List a)
-many1Till p =
-    manyTill p
-        >> andThen
-            (\result ->
-                case result of
-                    [] ->
-                        fail "not enough results"
-
-                    _ ->
-                        succeed result
-            )
 
 
 strings : Parser Context (Parameters -> Inline)
