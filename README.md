@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.19
+version:  0.9.20
 language: en
 narrator: UK English Male
 
@@ -272,6 +272,13 @@ This will apply the following three patches:
 - elm-patch/dom: enable onclick events as well as innerHTML
 
 ## Version-Changes
+
+**0.9.20** (22/06/2021)
+
+- optimized loading of oEmbed content, which deals with some CORS issues and adds
+  thumbnails to galleries
+- fix: `-- citation` in editor mode
+- minor CSS optimizations
 
 **0.9.19** (09/06/2021)
 
