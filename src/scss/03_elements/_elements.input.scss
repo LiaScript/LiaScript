@@ -1,3 +1,5 @@
+@use "sass:math";
+
 .lia-input {
   max-width: 100%;
   width: 100%;
@@ -362,7 +364,7 @@ $ie-bottom-track-color: rgb(var(--color-highlight)) !default;
   &::-webkit-slider-thumb {
     @include thumb;
     -webkit-appearance: none;
-    margin-top: -($thumb-height / 2);
+    margin-top: - math.div($thumb-height, 2);
   }
 
   &::-moz-range-track {
@@ -370,7 +372,7 @@ $ie-bottom-track-color: rgb(var(--color-highlight)) !default;
     background: $track-color;
     border: $track-border-width solid $track-border-color;
     border-radius: $track-radius;
-    height: $track-height / 2;
+    height: math.div($track-height, 2);
   }
 
   &::-moz-range-thumb {
@@ -381,7 +383,7 @@ $ie-bottom-track-color: rgb(var(--color-highlight)) !default;
     @include track;
     background: transparent;
     border-color: transparent;
-    border-width: ($thumb-height / 2) 0;
+    border-width: math.div($thumb-height, 2) 0;
     color: transparent;
   }
 
@@ -409,7 +411,7 @@ $ie-bottom-track-color: rgb(var(--color-highlight)) !default;
 
   &::-ms-thumb {
     @include thumb;
-    margin-top: $track-height / 4;
+    margin-top: math.div($track-height, 4);
   }
 
   &:disabled {

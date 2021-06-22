@@ -466,7 +466,8 @@
   url(../../src/assets/fonts/icon/fonts/icon.woff2) format("woff2"),
   url(../../src/assets/fonts/icon/fonts/icon.woff) format("woff"),
   url(../../src/assets/fonts/icon/fonts/icon.ttf) format("truetype"),
-  url(../../src/assets/fonts/icon/fonts/icon.svg#icon) format("svg")
+  url(../../src/assets/fonts/icon/fonts/icon.svg#icon) format("svg");
+  font-display: swap;
 }
 
 .icon {
