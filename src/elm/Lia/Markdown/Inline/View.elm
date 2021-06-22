@@ -451,7 +451,7 @@ reference config ref attr =
                 |> figure config title_ (Just 300) "image"
 
 
-oembed : Maybe { maxwidth : Int, maxheight : Int, scale : Float } -> String -> Html msg
+oembed : Maybe { maxwidth : Int, maxheight : Int, scale : Float, thumbnail : Bool } -> String -> Html msg
 oembed option url =
     Html.node "lia-embed"
         [ url
@@ -491,6 +491,11 @@ oembed option url =
             |> Maybe.withDefault 0
             |> JE.int
             |> Attr.property "maxheight"
+        , option
+            |> Maybe.map .thumbnail
+            |> Maybe.withDefault False
+            |> JE.bool
+            |> Attr.property "thumbnail"
         , option
             |> Maybe.map (.scale >> String.fromFloat >> Attr.attribute "scale")
             |> Maybe.withDefault (Attr.class "")

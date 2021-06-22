@@ -21,7 +21,7 @@ type alias Config sub =
     , lang : Lang
     , theme : Maybe String
     , media : Dict String ( Int, Int )
-    , oEmbed : Maybe { maxwidth : Int, maxheight : Int, scale : Float }
+    , oEmbed : Maybe { maxwidth : Int, maxheight : Int, scale : Float, thumbnail : Bool }
     , scripts : Scripts SubSection
     }
 

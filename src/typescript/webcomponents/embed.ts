@@ -104,6 +104,7 @@ customElements.define(
     private div_: HTMLDivElement;
     private maxwidth_: number | undefined;
     private maxheight_: number | undefined;
+    private thumbnail_: boolean;
     private paramCount: number;
 
     constructor() {
@@ -115,6 +116,8 @@ customElements.define(
       this.div_.style.width = "inherit";
       this.div_.style.height = "inherit";
       this.div_.style.display = "inline-block";
+
+      this.thumbnail_ = false;
 
       this.paramCount = 0;
     }
@@ -165,10 +168,16 @@ customElements.define(
 
         if (this.url_) {
           let url_ = this.url_;
+          let thumbnail_ = this.thumbnail_;
+
           extract(url_, options)
             .then((json: any) => {
               try {
-                div.innerHTML = json.html;
+                if (thumbnail_ && json.thumbnail_url) {
+                  div.innerHTML = `<img style="width: inherit; height: inherit; object-fit: cover" src="${json.thumbnail_url}"></img>`;
+                } else {
+                  div.innerHTML = json.html;
+                }
               } catch (e) {
                 div.innerHTML = iframe(url_);
               }
@@ -220,6 +229,14 @@ customElements.define(
           this.maxwidth_ = value;
         }
       }
+    }
+
+    get thumbnail() {
+      return this.thumbnail_;
+    }
+
+    set thumbnail(value: boolean) {
+      this.thumbnail_ = value;
     }
   }
 );
