@@ -23,7 +23,7 @@ view config vector attr gallery =
         |> List.indexedMap
             (\i media ->
                 [ media
-                    |> Inline.view { config | oEmbed = Just { maxwidth = 250, maxheight = 250, scale = 1.0 } }
+                    |> Inline.view { config | oEmbed = Just { maxwidth = 250, maxheight = 250, scale = 1.0, thumbnail = True } }
                     |> Html.map Script
                 , Html.div
                     [ Event.onClick <| Show gallery.id i
@@ -69,7 +69,7 @@ viewMedia config vector gallery div =
 
 viewOverlay : Config sub -> Int -> Int -> Int -> Inline -> Html (Msg sub)
 viewOverlay config id mediaID size =
-    Inline.viewMedia { config | oEmbed = Just { maxwidth = 0, maxheight = 0, scale = 0.76 } }
+    Inline.viewMedia { config | oEmbed = Just { maxwidth = 0, maxheight = 0, scale = 0.76, thumbnail = False } }
         >> Html.map Script
         >> List.singleton
         >> modal (Close id) (viewControls id mediaID size)
