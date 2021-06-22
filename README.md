@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.20
+version:  0.9.21
 language: en
 narrator: UK English Male
 
@@ -273,7 +273,7 @@ This will apply the following three patches:
 
 ## Version-Changes
 
-**0.9.20** (22/06/2021)
+**0.9.21** (22/06/2021)
 
 - optimized loading of oEmbed content, which deals with some CORS issues and adds
   thumbnails to galleries
