@@ -50,6 +50,10 @@
     "@babel/polyfill": "^7.12.1",
     "@babel/preset-env": "^7.12.11",
     "@babel/runtime": "^7.12.5",
+    "@parcel/packager-raw-url": "^2.0.0-beta.2",
+    "@parcel/transformer-elm": "^2.0.0-beta.2",
+    "@parcel/transformer-sass": "^2.0.0-beta.2",
+    "@parcel/transformer-webmanifest": "^2.0.0-beta.2",
     "@typescript-eslint/eslint-plugin": "^4.14.0",
     "@typescript-eslint/parser": "^4.14.0",
     "ace-builds": "^1.4.12",
@@ -71,8 +75,8 @@
     "lodash": "^4.17.21",
     "logger.ts": "^1.0.5",
     "node-elm-compiler": "^5.0.5",
-    "parcel": "^1.12.4",
-    "parcel-plugin-static-files-copy": "^2.6.0",
+    "parcel": "^2.0.0-beta.2",
+    "parcel-reporter-multiple-static-file-copier": "^1.0.5",
     "sass": "^1.35.1",
     "simplify-scorm": "0.0.1",
     "tsc": "^2.0.3",
@@ -82,19 +86,20 @@
   "browserslist": [
     "cover 80.0%"
   ],
-  "staticFiles": {
-    "staticPath": [
-      "static",
-      {
-        "staticPath": "node_modules/ace-builds/src-min-noconflict",
-        "staticOutDir": "editor"
-      },
-      {
-        "staticPath": "node_modules/katex/dist/katex.min.css"
-      }
-    ],
-    "watcherGlob": "**/*.md"
-  },
+  "multipleStaticFileCopier": [
+    {
+      "origin": "static",
+      "destination": "dist/"
+    },
+    {
+      "origin": "node_modules/ace-builds/src-min-noconflict",
+      "destination": "dist/editor/"
+    },
+    {
+      "origin": "node_modules/katex/dist/katex.min.css",
+      "destination": "dist/katex.min.css"
+    }
+  ],
   "presets": [
     "@babel/preset-env"
   ],
