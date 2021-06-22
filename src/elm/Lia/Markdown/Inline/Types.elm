@@ -111,28 +111,3 @@ combine list =
 
                 _ ->
                     x1 :: combine (x2 :: xs)
-
-
-combine2 : Inlines -> Inlines
-combine2 list =
-    combine_ list []
-
-
-combine_ : Inlines -> Inlines -> Inlines
-combine_ input output =
-    case ( input, output ) of
-        ( [], _ ) ->
-            List.reverse output
-
-        ( (Chars str attr) :: is, (Chars " " []) :: os ) ->
-            combine_ is (Chars (str ++ " ") attr :: os)
-
-        ( (Chars str1 attr1) :: is, (Chars str2 attr2) :: os ) ->
-            if attr1 == attr2 then
-                combine_ is (Chars (str2 ++ str1) attr1 :: os)
-
-            else
-                combine_ is (Chars str1 attr1 :: output)
-
-        ( i :: is, _ ) ->
-            combine_ is (i :: output)
