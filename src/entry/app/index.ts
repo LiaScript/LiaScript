@@ -1,6 +1,3 @@
-global._babelPolyfill = false
-import '@babel/polyfill'
-
 import LiaScript from '../../typescript/liascript/index'
 import { Connector } from '../../typescript/connectors/Browser/index'
 
