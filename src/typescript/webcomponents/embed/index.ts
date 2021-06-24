@@ -1,4 +1,4 @@
-const providers = require("./embed-providers.json");
+const providers = require("./providers.json");
 
 type Params = {
   maxwidth?: number;
