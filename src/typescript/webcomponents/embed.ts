@@ -6,8 +6,6 @@ type Params = {
 };
 
 type Provider = {
-  name: string;
-  url: string;
   endpoints: Endpoint[];
 };
 
@@ -64,9 +62,6 @@ async function fetchEmbed(
     res = await fetch(url);
     json = await res.json();
   }
-
-  json.provider_name = provider.name; // eslint-disable-line camelcase
-  json.provider_url = provider.url; // eslint-disable-line camelcase
 
   return json;
 }
