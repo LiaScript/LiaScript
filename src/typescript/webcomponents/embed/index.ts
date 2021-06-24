@@ -1,47 +1,38 @@
-const providers = require("./providers.json");
+import { endpoints } from "./endpoints";
 
 type Params = {
   maxwidth?: number;
   maxheight?: number;
 };
 
-type Provider = {
-  endpoints: Endpoint[];
-};
+type Endpoint = [string, string[]];
 
-type Endpoint = {
-  schemes?: string[];
-  url: string;
-  discovery?: boolean;
-  formats?: string[];
-};
+function findProvider(link: string): string | undefined {
+  const candidate = endpoints.find((endpoint: Endpoint) => {
+    const [url, schema] = endpoint;
 
-function findProvider(link: string): Provider | undefined {
-  const candidate = providers.find((provider: Provider) => {
-    const { schemes, url } = provider.endpoints[0];
-
-    if (!schemes || !schemes.length) {
+    if (!schema || !schema.length) {
       return url.includes(link);
     }
 
-    return schemes.some((scheme) => {
-      const reg = new RegExp(scheme.replace(/\*/g, "(?:.*)"), "i");
+    return schema.some((schema) => {
+      const reg = new RegExp(schema.replace(/\*/g, "(?:.*)"), "i");
 
       return link.match(reg);
     });
   });
 
-  return candidate;
+  if (candidate) {
+    return candidate[0];
+  }
 }
 
 async function fetchEmbed(
   link: string,
-  provider: Provider,
+  resourceUrl: string,
   params: Params,
   prefix?: string
 ) {
-  let resourceUrl = provider.endpoints[0].url;
-
   resourceUrl = resourceUrl.replace(/\{format\}/g, "json");
 
   let url = `${resourceUrl}?format=json&url=${encodeURIComponent(link)}`;
