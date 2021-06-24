@@ -1,11 +1,5 @@
 import { endpoints } from "./endpoints";
-
-type Params = {
-  maxwidth?: number;
-  maxheight?: number;
-};
-
-type Endpoint = [string, string[]];
+import { Params, Endpoint } from "./types.d";
 
 function findProvider(link: string): string | undefined {
   const candidate = endpoints.find((endpoint: Endpoint) => {
