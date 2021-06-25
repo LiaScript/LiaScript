@@ -10,9 +10,7 @@ function findProvider(link: string): string | undefined {
     }
 
     return schema.some((schema) => {
-      const reg = new RegExp(schema.replace(/\*/g, "(?:.*)"), "i");
-
-      return link.match(reg);
+      return link.match(new RegExp(schema.replace(/\*/g, "(?:.*)"), "i"));
     });
   });
 
