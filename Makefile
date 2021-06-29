@@ -6,12 +6,16 @@ help:
 	@echo "make editor               - will bild the editor in branch 'editor'"
 	@echo "                            note that the target is different"
 	@echo "                            no indexeddb support"
+	@echo "make clean                - delete dist folder"
 	@echo "make ... KEY='adfia2'     - if you want to host this app by your own,"
 	@echo "                            you will have to get a responsivevoice-API key"
 	@echo "                            your key can be passed via the KEY parameter"
 
 
-all: app index manifest responsivevoice
+clean:
+	rm -rf dist
+
+all: clean app index manifest responsivevoice preview
 	rm dist/README.md
 
 editor: base index responsivevoice
@@ -23,7 +27,7 @@ base:
 app:
 	npm run build
 
-index: preview
+index:
 	sed -i "s/\"\/logo/\".\/logo/g" dist/index.html
 	sed -i "s/href=\"\/main\./href=\".\/main./g" dist/index.html
 	sed -i "s/href=\"\/manifest\./href=\".\/manifest./g" dist/index.html
@@ -36,8 +40,8 @@ index: preview
 	sed -i "s/src=\"\/format\./src=\".\/format./g" dist/index.html
 	sed -i "s/src=\"\/preview\-lia\./src=\".\/preview-lia./g" dist/index.html
 	sed -i "s/src=\"\/preview\-link\./src=\".\/preview-link./g" dist/index.html
-	sed -i "s/src:local(\"\")/src:local(\"\.\")/g" dist/main.*.css
-	sed -i "s/url(\//url(/g" dist/main.*.css
+	sed -i "s/src:local(\"\")/src:local(\"\.\")/g" dist/index.*.css
+	sed -i "s/url(\//url(/g" dist/index.*.css
 
 responsivevoice:
 	sed -i "s/responsivevoice\.js\"/responsivevoice.js?key=$(KEY)\"/g" dist/index.html
@@ -47,9 +51,7 @@ manifest:
 	sed -i "s/\"index\.html/\".\/index.html/g" dist/manifest.webmanifest
 
 preview:
-	sed -i -r "s/preview-lia\.([^.])*/preview-lia/g" dist/index.html
-	mv dist/preview-lia.*.js dist/preview-lia.js
-	sed -i -r "s/preview-lia\.([^.])*/preview-lia/g" dist/sw.js
+	npm run build:preview
 
 watch:
 	npm run watch
