@@ -52,7 +52,7 @@
     "@typescript-eslint/parser": "^4.14.0",
     "ace-builds": "^1.4.12",
     "async": "^3.2.0",
-    "caniuse-lite": "^1.0.30001239",
+    "caniuse-lite": "^1.0.30001241",
     "dexie": "^2.0.4",
     "echarts": "^5.1.2",
     "elm": "^0.19.1-5",
