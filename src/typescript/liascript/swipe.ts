@@ -1,3 +1,9 @@
+declare global {
+  interface Window {
+    onmsgesturechange?: any
+  }
+}
+
 enum Dir {
   none = 'none',
   left = 'left',
