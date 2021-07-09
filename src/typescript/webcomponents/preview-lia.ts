@@ -210,7 +210,7 @@ class PreviewLia extends HTMLElement {
               <aside class="card__aside">
                 <figure class="card__figure">
                   <img src="${self.addBase(
-                    json.definition.logo,
+                    json.definition.logo
                   )}" class="card__image">
                 </figure>
               </aside>

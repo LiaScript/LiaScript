@@ -70,7 +70,7 @@ class LiaError extends Error {
     msg: string,
     type: Lia.ErrType,
     line: number,
-    column?: number,
+    column?: number
   ) {
     this.details[fileId].push({
       row: line,
@@ -132,7 +132,7 @@ export class LiaEvents {
   dispatch_input(event: Lia.Event) {
     try {
       this.input[event.section][event.message.section][event.message.topic](
-        event.message.message,
+        event.message.message
       )
     } catch (e) {
       log.error('unable to dispatch message', event.message)
@@ -227,7 +227,6 @@ function lia_eval(code: string, send: SendEval) {
         return send.log('html', '\n', args)
       },
       clear: () => send.lia('LIA: clear'),
-
     }
 
     console.clear()
@@ -245,7 +244,7 @@ function lia_eval(code: string, send: SendEval) {
 export function lia_eval_event(
   send: Lia.Send,
   handler: LiaEvents,
-  event: Lia.Event,
+  event: Lia.Event
 ) {
   lia_eval(event.message.message, {
     lia: (result: string, details = [], ok = true) => {
@@ -284,14 +283,14 @@ function list_to_string(sep: string, list: any) {
     str += list[0][i].toString() + ' '
   }
 
-  return str.slice(0,-1) + sep
+  return str.slice(0, -1) + sep
 }
 
 function execute_response(
   topic: string,
   event_id: number,
   send: Lia.Send,
-  section?: number,
+  section?: number
 ) {
   return (msg: any, details: Lia.ErrMessage[][] = [], ok = true) => {
     if (typeof msg !== 'string') {
@@ -317,7 +316,7 @@ function execute_response(
 export function lia_execute_event(
   event: { code: string; delay: number; id?: number },
   sender?: Lia.Send,
-  section: number = -1,
+  section: number = -1
 ) {
   if (window.event_semaphore > 0) {
     lia_queue.push({

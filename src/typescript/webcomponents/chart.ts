@@ -34,7 +34,7 @@ customElements.define(
     private container: HTMLDivElement
 
     private chart: null | echarts.ECharts
-    private option_: object
+    private option_: { aria?: { show: boolean, decal?: boolean } }
     private geoJson: {
       url: string
       data: null | object
@@ -51,6 +51,11 @@ customElements.define(
       const shadowRoot = this.attachShadow({
         mode: 'open',
       })
+
+
+
+
+
 
       this.option_ = {}
       this.chart = null

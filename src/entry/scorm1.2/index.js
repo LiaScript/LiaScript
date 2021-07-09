@@ -2,7 +2,9 @@ global._babelPolyfill = false
 import '@babel/polyfill'
 
 import LiaScript from '../../typescript/liascript/index.ts'
-import { Connector } from '../../typescript/connectors/SCORM1.2/index.js'
+import {
+  Connector
+} from '../../typescript/connectors/SCORM1.2/index.js'
 
 const ua = window.navigator.userAgent
 

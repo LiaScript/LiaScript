@@ -71,7 +71,7 @@ class LiaDB {
     if (!this.db || this.version === 0) return
 
     log.warn(
-      `liaDB: event(store), table(${event.topic}), id(${event.section}), data(${event.message})`,
+      `liaDB: event(store), table(${event.topic}), id(${event.section}), data(${event.message})`
     )
 
     await this.db[event.topic].put({

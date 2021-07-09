@@ -27,7 +27,7 @@ const TTS = {
     voice: string,
     onstart?: () => void,
     onend?: () => void,
-    onerror?: (_: any) => void,
+    onerror?: (_: any) => void
   ) {
     window.responsiveVoice.speak(text, voice, {
       onstart: onstart,

@@ -17,6 +17,7 @@ import '../../typescript/webcomponents/format'
 
 customElements.define(
   'lia-script',
+
   class extends HTMLElement {
     private container: HTMLDivElement
     private debug: boolean
@@ -47,16 +48,15 @@ customElements.define(
       shadowRoot.appendChild(this.container)
 
       let self = this
-      setTimeout(function(){
+      setTimeout(function () {
         self.initLia()
-        self.initResponsiveVoice()     
-   
+        self.initResponsiveVoice()
       }, 10)
-   }
+    }
 
     initLia() {
-      this.courseURL = this.getAttribute('src')      
-      
+      this.courseURL = this.getAttribute('src')
+
       // Load the Markdown document defined by the src attribute
       if (typeof this.courseURL === 'string') {
         this.app = new LiaScript(
@@ -64,7 +64,7 @@ customElements.define(
           new Connector(),
           this.debug,
           this.courseURL,
-          null,
+          null
         )
       } // Load the Content from within the web component
       else {
@@ -73,10 +73,10 @@ customElements.define(
           new Connector(),
           this.debug,
           null,
-          this.innerHTML.trimStart(),
+          this.innerHTML.trimStart()
         )
-      }  
-      
+      }
+
       window.showFootnote = (key) => this.app.footnote(key)
     }
 
@@ -91,5 +91,5 @@ customElements.define(
     disconnectedCallback() {
       delete this.app
     }
-  },
+  }
 )

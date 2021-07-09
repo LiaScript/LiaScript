@@ -68,5 +68,5 @@ customElements.define(
     disconnectedCallback() {
       this.span.innerHTML = ''
     }
-  },
+  }
 )
