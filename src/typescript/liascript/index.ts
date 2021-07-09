@@ -395,9 +395,7 @@ function process(
       if (sec) {
         sec.scrollTo(0, 0)
 
-        if (sec.children.length > 0) {
-          ;(sec.children[0] as HTMLElement).focus()
-        }
+        if (sec.children.length > 0) (sec.children[0] as HTMLElement).focus()
       }
 
       const elem = document.getElementById('focusedToc')
