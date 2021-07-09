@@ -671,6 +671,7 @@ function injectGoogleTranslate() {
     document.head.appendChild(tag)
 
     window.googleTranslateElementInit = function () {
+      // @ts-ignore: will be injected by google
       new google.translate.TranslateElement(
         {
           pageLanguage: document.documentElement.lang,
