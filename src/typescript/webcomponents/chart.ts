@@ -144,7 +144,11 @@ customElements.define(
           this.geoJson.url = newValue
           this.geoJson.data = null
 
-          if (this.geoJson.url.startsWith('http')) {
+          if (
+            this.geoJson.url.startsWith('https://') ||
+            this.geoJson.url.startsWith('http://') ||
+            this.geoJson.url.startsWith('hyper://')
+          ) {
             let xmlHttp = new XMLHttpRequest()
             let self = this
             xmlHttp.onreadystatechange = function () {
