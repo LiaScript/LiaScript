@@ -263,7 +263,11 @@ class PreviewLia extends HTMLElement {
   }
 
   addBase(url: string) {
-    if (url.startsWith('http')) {
+    if (
+      url.startsWith('https://') ||
+      url.startsWith('http://') ||
+      url.startsWith('hyper://')
+    ) {
       return url
     }
 

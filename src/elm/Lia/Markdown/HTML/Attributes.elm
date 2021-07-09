@@ -224,12 +224,19 @@ toURL basis url =
     if
         url
             |> String.toLower
-            |> String.startsWith "http"
+            |> allowed
     then
         url
 
     else
         basis ++ url
+
+
+allowed : String -> Bool
+allowed url =
+    String.startsWith "https://" url
+        || String.startsWith "http://" url
+        || String.startsWith "hyper://" url
 
 
 {-| General HTML attribute parser, the base-URL is added in front of relative
