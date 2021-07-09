@@ -1,4 +1,4 @@
-import 'katex/dist/katex.min.css'
+//import 'katex/dist/katex.min.css'
 // @ts-ignore
 import katex from 'katex'
 

@@ -45,6 +45,8 @@
   <meta name="msapplication-tap-highlight" content="no">
   <meta name="theme-color" content="#000000">
 
+  <meta name="description" content="LiaScript is a service for running free and interactive online courses, build with its own Markup-language. So check out the following course ;-)">
+
   <link rel="manifest" href="./manifest.webmanifest">
 
   <!-- Favicons -->
@@ -81,7 +83,16 @@
     }
   </style>
 
-  <link rel="stylesheet" href="../../scss/main.scss">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/icon/fonts/icon.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/source-code-pro/source-code-pro-v13-latin-600.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/source-code-pro/source-code-pro-v13-latin-regular.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/source-sans-pro/source-sans-pro-v14-latin-600.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/source-sans-pro/source-sans-pro-v14-latin-700.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/source-sans-pro/source-sans-pro-v14-latin-regular.woff2">  
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/source-serif-pro/source-serif-pro-v10-latin-600.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/source-serif-pro/source-serif-pro-v10-latin-700.woff2">
+
+  <link rel="stylesheet" href="../../scss/main.scss" media="none" onload="if(media!='all')media='all'">
 </head>
 
 <body>
@@ -106,7 +117,13 @@
     <p>
       Thanks.
     </p>
-  </div>  
+  </div>
+
+  <div style="width:100%;text-align:center;top:25%;position:absolute"> 
+    <h1>Loading</h1>
+    <br>
+    <div class="lds-dual-ring"></div>
+  </div>
 </body>
 
 </html>

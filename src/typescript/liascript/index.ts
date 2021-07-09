@@ -604,20 +604,14 @@ function process(
         meta('og:url', '')
         meta('og:image', data.definition.logo)
 
-<<<<<<< HEAD
         // store the basic info in the offline-repositories
-        if (isConnected) {
+        if (isConnected && isPersistent) {
           self.connector.storeToIndex(data)
         }
 
         try {
           window.top.liaReady()
         } catch (e) { }
-=======
-      // store the basic info in the offline-repositories
-      if (isConnected  && isPersistent) {
-        self.connector.storeToIndex(data)
->>>>>>> development
       }
 
       try {
