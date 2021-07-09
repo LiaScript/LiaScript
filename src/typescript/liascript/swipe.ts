@@ -62,7 +62,7 @@ function detect(el: HTMLElement, callback: (_: Dir) => void) {
       startTime = new Date().getTime() // record time when finger first makes contact with surface
       // e.preventDefault()
     },
-    { passive: true },
+    { passive: true }
   )
 
   touchsurface.addEventListener(
@@ -70,7 +70,7 @@ function detect(el: HTMLElement, callback: (_: Dir) => void) {
     function (_: TouchEvent) {
       // e.preventDefault() // prevent scrolling when inside DIV
     },
-    { passive: true },
+    { passive: true }
   )
 
   touchsurface.addEventListener(
@@ -97,7 +97,7 @@ function detect(el: HTMLElement, callback: (_: Dir) => void) {
       if (swipedir !== Dir.none) handleswipe(swipedir)
       // e.preventDefault()
     },
-    { passive: true },
+    { passive: true }
   )
 
   if (!detecttouch) {
@@ -114,7 +114,7 @@ function detect(el: HTMLElement, callback: (_: Dir) => void) {
           // e.preventDefault()
         }
       },
-      { passive: true },
+      { passive: true }
     )
 
     document.body.addEventListener(
@@ -122,7 +122,7 @@ function detect(el: HTMLElement, callback: (_: Dir) => void) {
       function (_e: MouseEvent) {
         // e.preventDefault() // prevent scrolling when inside DIV
       },
-      { passive: true },
+      { passive: true }
     )
 
     document.body.addEventListener(
@@ -153,7 +153,7 @@ function detect(el: HTMLElement, callback: (_: Dir) => void) {
           // e.preventDefault()
         }
       },
-      { passive: true },
+      { passive: true }
     )
   }
 }

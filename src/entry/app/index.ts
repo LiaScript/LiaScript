@@ -19,5 +19,3 @@ import('../../typescript/connectors/Browser/index').then(function (Browser) {
     const app = new LiaScript(document.body, new Browser.Connector(), debug)
   }
 })
-
-

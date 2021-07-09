@@ -15,7 +15,7 @@ declare global {
   interface Window {
     requestIdleCallback: (
       callback: (deadline: RequestIdleCallbackDeadline) => void,
-      opts?: RequestIdleCallbackOptions,
+      opts?: RequestIdleCallbackOptions
     ) => RequestIdleCallbackHandle
     cancelIdleCallback: (handle: RequestIdleCallbackHandle) => void
   }
@@ -65,8 +65,8 @@ function addMarker(color: string, name?: string | undefined) {
         position:absolute;
         background:${color};
         z-index:20
-      }`,
-      ),
+      }`
+      )
     )
     document.getElementsByTagName('head')[0].appendChild(node)
   }
@@ -192,12 +192,12 @@ customElements.define(
         this._editor.on('change', runDispatch)
         input.setAttribute(
           'aria-label',
-          'Code-editor in ' + this.model.mode + ' mode',
+          'Code-editor in ' + this.model.mode + ' mode'
         )
       } else {
         input.setAttribute(
           'aria-label',
-          'Code-block in ' + this.model.mode + ' mode',
+          'Code-block in ' + this.model.mode + ' mode'
         )
       }
 
@@ -237,7 +237,7 @@ customElements.define(
             option,
             value,
             ' => ',
-            e.toString(),
+            e.toString()
           )
         }
       }
@@ -262,7 +262,7 @@ customElements.define(
           'Problem Ace: setAnnotations ',
           this.model.annotations,
           ' => ',
-          e.toString(),
+          e.toString()
         )
       }
     }
@@ -323,10 +323,10 @@ customElements.define(
             parseInt(m[0]),
             parseInt(m[1]),
             parseInt(m[2]),
-            parseInt(m[3]),
+            parseInt(m[3])
           ),
           markerStyle(m[4]),
-          m[5] ? m[5] : 'fullLine',
+          m[5] ? m[5] : 'fullLine'
         )
       }
     }
@@ -526,5 +526,5 @@ customElements.define(
         console.log('Problem Ace: focus => ', e.toString())
       }
     }
-  },
+  }
 )

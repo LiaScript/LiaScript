@@ -12,24 +12,22 @@ import TTS from './tts'
 import { Connector } from '../connectors/Base/index'
 import { updateClassName } from '../connectors/Base/settings'
 
-
-window.img_Zoom = function (e: MouseEvent|TouchEvent) {
-  const target = e.target as HTMLImageElement;
+window.img_Zoom = function (e: MouseEvent | TouchEvent) {
+  const target = e.target as HTMLImageElement
 
   if (target) {
-    const zooming = e.currentTarget as HTMLImageElement;
+    const zooming = e.currentTarget as HTMLImageElement
 
     if (zooming) {
       if (target.width < target.naturalWidth) {
         var offsetX = e instanceof MouseEvent ? e.offsetX : e.touches[0].pageX
         var offsetY = e instanceof MouseEvent ? e.offsetY : e.touches[0].pageY
-        var x = offsetX / zooming.offsetWidth * 100
-        var y = offsetY / zooming.offsetHeight * 100
-        zooming.style.backgroundPosition = x + '% ' + y + '%';
-        zooming.style.cursor = "zoom-in"
-      }
-      else {
-        zooming.style.cursor = ""
+        var x = (offsetX / zooming.offsetWidth) * 100
+        var y = (offsetY / zooming.offsetHeight) * 100
+        zooming.style.backgroundPosition = x + '% ' + y + '%'
+        zooming.style.cursor = 'zoom-in'
+      } else {
+        zooming.style.cursor = ''
       }
     }
   }
@@ -61,7 +59,7 @@ function handleEffects(
   event: Lia.Event,
   elmSend: Lia.Send,
   section: number = -1,
-  self?: LiaScript,
+  self?: LiaScript
 ) {
   switch (event.topic) {
     case 'scrollTo':
@@ -109,14 +107,15 @@ function handleEffects(
           typeof event.message === 'string' &&
           event.message.startsWith('lia-tts-')
         ) {
-          setTimeout(function() {
+          setTimeout(function () {
             let element = document.getElementsByClassName(event.message)
-            let voice = element[0].getAttribute('data-voice') || "default"
+            let voice = element[0].getAttribute('data-voice') || 'default'
 
             let text = ''
 
             for (let i = 0; i < element.length; i++) {
-              text += (element[i] as HTMLElement).innerText || element[i].textContent
+              text +=
+                (element[i] as HTMLElement).innerText || element[i].textContent
             }
 
             // This is used to clean up effect numbers, which are marked by a \b
@@ -140,7 +139,7 @@ function handleEffects(
                 function (e: any) {
                   msg.message.message = e.toString()
                   elmSend(msg)
-                },
+                }
               )
             }
           }, 500)
@@ -167,7 +166,7 @@ function handleEffects(
               function (e: any) {
                 msg.message.message = e.toString()
                 elmSend(msg)
-              },
+              }
             )
           }
         }
@@ -226,7 +225,7 @@ class LiaScript {
     connector: Connector,
     debug: boolean = false,
     courseUrl: string | null = null,
-    script: string | null = null,
+    script: string | null = null
   ) {
     if (debug) window.debug__ = true
 
@@ -332,7 +331,7 @@ class LiaScript {
           }
         }
       },
-      false,
+      false
     )
   }
 
@@ -347,7 +346,7 @@ class LiaScript {
   initEventSystem(
     elem: HTMLElement,
     jsSubscribe: (fn: (_: Lia.Event) => void) => void,
-    elmSend: Lia.Send,
+    elmSend: Lia.Send
   ) {
     log.info('initEventSystem')
 
@@ -384,7 +383,7 @@ function process(
   isConnected: boolean,
   self: LiaScript,
   elmSend: Lia.Send,
-  event: Lia.Event,
+  event: Lia.Event
 ) {
   log.info(`LIA >>> (${event.topic}:${event.section})`, event.message)
 
@@ -397,7 +396,7 @@ function process(
         sec.scrollTo(0, 0)
 
         if (sec.children.length > 0) {
-          (sec.children[0] as HTMLElement).focus()
+          ;(sec.children[0] as HTMLElement).focus()
         }
       }
 
@@ -561,18 +560,19 @@ function process(
       let data = event.message
 
       let isPersistent = true
-      
+
       try {
-        isPersistent = !(data.definition.macro["persistent"].trim().toLowerCase() === "false")
+        isPersistent = !(
+          data.definition.macro['persistent'].trim().toLowerCase() === 'false'
+        )
       } catch (e) {}
-      
 
       if (isConnected && isPersistent) {
         self.connector.open(
           data.readme,
           data.version,
           data.section_active,
-          data,
+          data
         )
       }
 
@@ -593,7 +593,7 @@ function process(
       meta('og:image', data.definition.logo)
 
       // store the basic info in the offline-repositories
-      if (isConnected  && isPersistent) {
+      if (isConnected && isPersistent) {
         self.connector.storeToIndex(data)
       }
 
@@ -617,7 +617,7 @@ function process(
         case 'restore': {
           self.connector.restoreFromIndex(
             event.message.message,
-            event.message.section,
+            event.message.section
           )
           break
         }
@@ -679,7 +679,7 @@ function injectGoogleTranslate() {
           // layout: google.translate.TranslateElement.InlineLayout.HORIZONTAL,
           autoDisplay: false,
         },
-        'google_translate_element',
+        'google_translate_element'
       )
     }
     googleTranslate = true

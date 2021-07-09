@@ -1,8 +1,13 @@
-import { Connector as Base } from '../Base/index.ts'
+import {
+  Connector as Base
+} from '../Base/index.ts'
 
 const SCORM = require('simplify-scorm/src/scormAPI')
 
 SCORM.scormAPIFunc()
+
+
+
 
 class Connector extends Base {
   constructor() {
@@ -64,19 +69,19 @@ class Connector extends Base {
 
     let solved =
       this.quiz
-        .map((e) => e.filter((f) => f === true))
-        .reduce((a, b) => a + b.length, 0) +
+      .map((e) => e.filter((f) => f === true))
+      .reduce((a, b) => a + b.length, 0) +
       this.survey
-        .map((e) => e.filter((f) => f === true))
-        .reduce((a, b) => a + b.length, 0)
+      .map((e) => e.filter((f) => f === true))
+      .reduce((a, b) => a + b.length, 0)
 
     let finished =
       this.quiz
-        .map((e) => e.filter((f) => f != null))
-        .reduce((a, b) => a + b.length, 0) +
+      .map((e) => e.filter((f) => f != null))
+      .reduce((a, b) => a + b.length, 0) +
       this.survey
-        .map((e) => e.filter((f) => f != null))
-        .reduce((a, b) => a + b.length, 0)
+      .map((e) => e.filter((f) => f != null))
+      .reduce((a, b) => a + b.length, 0)
 
     let score = solved === 0 ? 0 : (solved * 100) / total
 
@@ -237,11 +242,11 @@ class Connector extends Base {
       case 'quiz': {
         this.scorm.LMSSetValue(
           'cmi.interactions.' + id + '.result',
-          obj.data.solved === 0
-            ? 'neutral'
-            : obj.data.solved === 1
-            ? 'correct'
-            : 'wrong',
+          obj.data.solved === 0 ?
+          'neutral' :
+          obj.data.solved === 1 ?
+          'correct' :
+          'wrong',
         )
 
         this.scorm.LMSSetValue(
@@ -358,4 +363,6 @@ class Connector extends Base {
   }
 }
 
-export { Connector }
+export {
+  Connector
+}

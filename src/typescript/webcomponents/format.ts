@@ -140,28 +140,28 @@ customElements.define(
         switch (this.format) {
           case Format.Number:
             value = new Intl.NumberFormat(this.locale, this.option).format(
-              parseFloat(this.value_),
+              parseFloat(this.value_)
             )
             break
           case Format.DateTime:
             value = new Intl.DateTimeFormat(this.locale, this.option).format(
-              Date.parse(this.value_),
+              Date.parse(this.value_)
             )
             break
           case Format.RelativeTime:
             value = new Intl.RelativeTimeFormat(
               this.locale,
-              this.option,
+              this.option
             ).format(this.value_, this.unit)
             break
           case Format.List:
             value = new Intl.ListFormat(this.locale, this.option).format(
-              JSON.parse(this.value_),
+              JSON.parse(this.value_)
             )
             break
           case Format.PluralRules:
             value = new Intl.PluralRules(this.locale, this.option).select(
-              parseFloat(this.value_),
+              parseFloat(this.value_)
             )
             break
         }
@@ -206,5 +206,5 @@ customElements.define(
     }
 
     disconnectedCallback() {}
-  },
+  }
 )

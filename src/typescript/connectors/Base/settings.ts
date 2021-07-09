@@ -15,7 +15,7 @@ export const defaultSettings: Lia.Settings = {
 export function initSettings(
   send: Lia.Send | null,
   data: Lia.Settings = defaultSettings,
-  local = false,
+  local = false
 ) {
   if (local) {
     localStorage.setItem(Port.SETTINGS, JSON.stringify(data))

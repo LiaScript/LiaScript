@@ -1,6 +1,6 @@
 export type Params = {
-  maxwidth?: number;
-  maxheight?: number;
-};
+  maxwidth?: number
+  maxheight?: number
+}
 
-export type Endpoint = [string, string[]];
+export type Endpoint = [string, string[]]
