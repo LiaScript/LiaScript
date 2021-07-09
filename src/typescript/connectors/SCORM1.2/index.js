@@ -7,8 +7,6 @@ const SCORM = require('simplify-scorm/src/scormAPI')
 SCORM.scormAPIFunc()
 
 
-
-
 class Connector extends Base {
   constructor() {
     super()
