@@ -13,21 +13,24 @@ import { Connector } from '../connectors/Base/index'
 import { updateClassName } from '../connectors/Base/settings'
 
 
-window.img_Zoom = function(e: MouseEvent){
+window.img_Zoom = function (e: MouseEvent|TouchEvent) {
+  const target = e.target as HTMLImageElement;
 
-  if (e.target) {
-    var zooming = e.currentTarget;
+  if (target) {
+    const zooming = e.currentTarget as HTMLImageElement;
 
-    if (e.target.width < e.target.naturalWidth) {  
-      var offsetX = e.offsetX ? e.offsetX : e.touches[0].pageX
-      var offsetY = e.offsetY ? e.offsetY : e.touches[0].pageX
-      var x = offsetX / zooming.offsetWidth * 100
-      var y = offsetY / zooming.offsetHeight * 100
-      zooming.style.backgroundPosition = x + '% ' + y + '%';
-      zooming.style.cursor = "zoom-in"
-    }
-    else {
-      zooming.style.cursor = ""
+    if (zooming) {
+      if (target.width < target.naturalWidth) {
+        var offsetX = e instanceof MouseEvent ? e.offsetX : e.touches[0].pageX
+        var offsetY = e instanceof MouseEvent ? e.offsetY : e.touches[0].pageY
+        var x = offsetX / zooming.offsetWidth * 100
+        var y = offsetY / zooming.offsetHeight * 100
+        zooming.style.backgroundPosition = x + '% ' + y + '%';
+        zooming.style.cursor = "zoom-in"
+      }
+      else {
+        zooming.style.cursor = ""
+      }
     }
   }
 }
@@ -108,20 +111,21 @@ function handleEffects(
         ) {
           setTimeout(function() {
             let element = document.getElementsByClassName(event.message)
+            let voice = element[0].getAttribute('data-voice') || "default"
 
             let text = ''
 
             for (let i = 0; i < element.length; i++) {
-              text += element[i].innerText || element[i].textContent
+              text += (element[i] as HTMLElement).innerText || element[i].textContent
             }
 
             // This is used to clean up effect numbers, which are marked by a \b
             text = text.replace(/\\u001a\\d+\\u001a/g, '').trim()
 
-            if (text !== '') {
+            if (text !== '' && element[0]) {
               TTS.speak(
                 text,
-                element[0].getAttribute('data-voice'),
+                voice,
                 function () {
                   msg.topic = Port.SETTINGS
                   msg.message.message = 'start'
@@ -393,7 +397,7 @@ function process(
         sec.scrollTo(0, 0)
 
         if (sec.children.length > 0) {
-          sec.children[0].focus()
+          (sec.children[0] as HTMLElement).focus()
         }
       }
 
