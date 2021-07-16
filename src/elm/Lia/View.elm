@@ -230,10 +230,10 @@ slideA11y lang mode media effect id =
                     effect
                         |> Effect.current_paragraphs
                         |> List.map
-                            (\( active, counter, par ) ->
-                                par
+                            (\( active, counter, comment ) ->
+                                comment
                                     |> List.map
-                                        (Tuple.second
+                                        (.content
                                             >> List.map (view_inf effect.javascript lang (Just media))
                                             >> Html.p []
                                             >> Html.map (Tuple.pair id >> Script)

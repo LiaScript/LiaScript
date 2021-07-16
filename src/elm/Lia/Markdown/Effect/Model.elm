@@ -1,17 +1,21 @@
 module Lia.Markdown.Effect.Model exposing
-    ( Element
+    ( Content
+    , Element
     , Model
     , current_comment
     , current_paragraphs
+    , getHiddenComments
     , get_paragraph
     , init
     , set_annotation
     )
 
 import Array exposing (Array)
+import Browser.Events exposing (Visibility(..))
 import Dict exposing (Dict)
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Lia.Markdown.HTML.Attributes exposing (Parameters)
+import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 
 
@@ -26,8 +30,14 @@ type alias Model a =
 
 type alias Element =
     { narrator : String
-    , comment : String
-    , paragraphs : Array ( Parameters, Inlines )
+    , content : Array Content
+    }
+
+
+type alias Content =
+    { visible : Bool
+    , attr : Parameters
+    , content : Inlines
     }
 
 
@@ -35,13 +45,13 @@ set_annotation : Int -> Int -> Dict Int Element -> Parameters -> Dict Int Elemen
 set_annotation id1 id2 m attr =
     case Dict.get id1 m of
         Just e ->
-            case Array.get id2 e.paragraphs of
-                Just ( _, par ) ->
+            case Array.get id2 e.content of
+                Just par ->
                     Dict.insert id1
                         { e
-                            | paragraphs =
-                                e.paragraphs
-                                    |> Array.set id2 ( attr, par )
+                            | content =
+                                e.content
+                                    |> Array.set id2 { par | attr = attr }
                         }
                         m
 
@@ -52,19 +62,51 @@ set_annotation id1 id2 m attr =
             m
 
 
-get_paragraph : Int -> Int -> Model a -> Maybe ( String, ( Parameters, Inlines ) )
-get_paragraph id1 id2 model =
+get_paragraph : Bool -> Int -> Int -> Model a -> Maybe ( String, Content )
+get_paragraph attachHidden id1 id2 model =
     case Dict.get id1 model.comments of
         Just element ->
-            element.paragraphs
-                |> Array.get id2
-                |> Maybe.map (Tuple.pair element.narrator)
+            case Array.get id2 element.content of
+                Just content ->
+                    Just <|
+                        ( element.narrator
+                        , if attachHidden then
+                            getComment_Helper
+                                element.content
+                                (id2 + 1)
+                                content
+
+                          else
+                            content
+                        )
+
+                _ ->
+                    Nothing
 
         _ ->
             Nothing
 
 
-current_paragraphs : Model a -> List ( Bool, Int, List ( Parameters, Inlines ) )
+getComment_Helper : Array Content -> Int -> Content -> Content
+getComment_Helper from id result =
+    case Array.get id from of
+        Nothing ->
+            result
+
+        Just next ->
+            if next.visible then
+                result
+
+            else
+                getComment_Helper
+                    from
+                    (id + 1)
+                    { result
+                        | content = List.append result.content next.content
+                    }
+
+
+current_paragraphs : Model a -> List ( Bool, Int, List Content )
 current_paragraphs model =
     model.comments
         |> Dict.toList
@@ -72,16 +114,56 @@ current_paragraphs model =
             (\( key, value ) ->
                 ( key == model.visible
                 , key
-                , Array.toList value.paragraphs
+                , Array.toList value.content
                 )
             )
 
 
-current_comment : Model a -> Maybe ( Int, String, String )
+current_comment : Model a -> Maybe ( Int, String )
 current_comment model =
     model.comments
         |> Dict.get model.visible
-        |> Maybe.map (\e -> ( model.visible, e.comment, e.narrator ))
+        |> Maybe.map (\e -> ( model.visible, e.narrator ))
+
+
+{-| This Function returns a list all hidden comments, that do not have a normal
+comment above them. This might look a bit complicated, but it is required at
+the moment to preserve the order. Hidden comments that do not start ... will be
+automatically attached to the printed comments (cf. `get_paragraph`).
+
+    --{{1}}--
+    The next comment wont b added, because I exist
+
+    <!-- --{{1}}--
+    Do not show this in Textbook-mode ...
+    -->
+
+    <!-- --{{0}}--
+    I will get returned ...
+    -->
+
+-}
+getHiddenComments : Dict Int Element -> List ( Int, String, String )
+getHiddenComments =
+    Dict.toList
+        >> List.filterMap
+            (\( key, value ) ->
+                case Array.get 0 value.content of
+                    Just first ->
+                        if not first.visible then
+                            first
+                                |> getComment_Helper value.content 1
+                                |> .content
+                                |> stringify
+                                |> (\text -> ( key, value.narrator, text ))
+                                |> Just
+
+                        else
+                            Nothing
+
+                    _ ->
+                        Nothing
+            )
 
 
 init : Model a
