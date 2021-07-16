@@ -103,13 +103,51 @@ view_body ( config, footnote2show, footnotes ) =
         >> (::) (view_footnote (view_block config) footnote2show footnotes)
         >> (::) (view_header config)
         >> (\s ->
-                if config.main.visible == Nothing then
-                    List.append s [ Footnote.block (view_block config) footnotes ]
+                List.append s <|
+                    if config.main.visible == Nothing then
+                        [ Footnote.block (view_block config) footnotes ]
 
-                else
-                    s
+                    else
+                        config.section.effect_model.comments
+                            |> Comments.getHiddenComments
+                            |> List.map
+                                (\( id, voice, text ) ->
+                                    Html.span
+                                        (voice
+                                            |> addTranslation config.translations id
+                                            |> toAttribute
+                                        )
+                                        [ Html.text text ]
+                                )
            )
         >> viewMain
+
+
+addTranslation : ( String, String ) -> Int -> String -> List ( String, String )
+addTranslation translations id narrator =
+    case Voice.getVoiceFor narrator translations of
+        Nothing ->
+            []
+
+        Just ( translate, voice ) ->
+            [ ( "class"
+              , if translate then
+                    "translate hidden-visually"
+
+                else
+                    "notranslate hide"
+              )
+            , ( "class", "lia-tts-" ++ String.fromInt id )
+            , ( "data-voice", voice )
+            , ( "translate"
+              , if translate then
+                    "yes"
+
+                else
+                    "no"
+              )
+            , ( "aria-hidden", "true" )
+            ]
 
 
 viewMain : List (Html msg) -> Html msg
@@ -269,42 +307,24 @@ view_block config block =
         Comment ( id1, id2 ) ->
             case
                 ( config.main.visible
-                , Comments.get_paragraph id1 id2 config.section.effect_model
+                , Comments.get_paragraph
+                    (config.main.visible == Nothing)
+                    id1
+                    id2
+                    config.section.effect_model
                 )
             of
-                ( Nothing, Just ( _, ( attr, par ) ) ) ->
-                    view_block config (Paragraph attr par)
+                ( Nothing, Just ( _, comment ) ) ->
+                    view_block config (Paragraph comment.attr comment.content)
 
-                ( Just _, Just ( narrator, ( _, par ) ) ) ->
-                    let
-                        attributes =
-                            case Voice.getVoiceFor narrator config.translations of
-                                Nothing ->
-                                    []
-
-                                Just ( translate, voice ) ->
-                                    [ ( "class"
-                                      , if translate then
-                                            "translate hidden-visually"
-
-                                        else
-                                            "notranslate hide"
-                                      )
-                                    , ( "class", "lia-tts-" ++ String.fromInt id1 )
-                                    , ( "data-voice", voice )
-                                    , ( "translate"
-                                      , if translate then
-                                            "yes"
-
-                                        else
-                                            "no"
-                                      )
-                                    , ( "aria-hidden", "true" )
-                                    ]
-                    in
-                    par
+                ( Just _, Just ( narrator, comment ) ) ->
+                    comment.content
                         |> Inline.reduce config.main
-                        |> Html.div (toAttribute attributes)
+                        |> Html.div
+                            (narrator
+                                |> addTranslation config.translations id1
+                                |> toAttribute
+                            )
                         |> Html.map Script
 
                 ( _, Nothing ) ->

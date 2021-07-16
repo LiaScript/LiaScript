@@ -99,7 +99,7 @@ update main sound msg model =
                 ( model
                 , Cmd.none
                 , case current_comment model of
-                    Just ( id, _, _ ) ->
+                    Just ( id, _ ) ->
                         if sound then
                             TTS.readFrom -1 id :: events
 
@@ -237,7 +237,7 @@ ttsReplay :
     -> Maybe Event
 ttsReplay sound model =
     case ( sound, current_comment model ) of
-        ( True, Just ( id, _, _ ) ) ->
+        ( True, Just ( id, _ ) ) ->
             Just <| TTS.readFrom -1 id
 
         _ ->

@@ -31,9 +31,8 @@ import Combine
 import Combine.Char exposing (anyChar)
 import Combine.Num exposing (int)
 import Dict
-import Lia.Markdown.Effect.Model exposing (Element)
+import Lia.Markdown.Effect.Model exposing (Content, Element)
 import Lia.Markdown.Effect.Types as Effect exposing (Effect)
-import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Types exposing (Markdown(..))
@@ -241,29 +240,16 @@ add_comment visible ( idx, temp_narrator, par ) =
                             case Dict.get idx e.comments of
                                 Just cmt ->
                                     Dict.insert idx
-                                        (if visible then
-                                            { cmt
-                                                | comment = cmt.comment ++ "\n" ++ stringify par
-                                                , paragraphs = Array.push ( [], par ) cmt.paragraphs
-                                            }
-
-                                         else
-                                            { cmt | comment = cmt.comment ++ "\n" ++ stringify par }
-                                        )
+                                        { cmt
+                                            | content = Array.push (Content visible [] par) cmt.content
+                                        }
                                         e.comments
 
                                 _ ->
                                     Dict.insert idx
-                                        (Element
-                                            narrator
-                                            (stringify par)
-                                            (Array.fromList <|
-                                                if visible then
-                                                    [ ( [], par ) ]
-
-                                                else
-                                                    []
-                                            )
+                                        ([ Content visible [] par ]
+                                            |> Array.fromList
+                                            |> Element narrator
                                         )
                                         e.comments
                     }
@@ -284,7 +270,7 @@ get_counter idx =
             succeed <|
                 case Dict.get idx s.effect_model.comments of
                     Just e ->
-                        Array.length e.paragraphs - 1
+                        Array.length e.content - 1
 
                     Nothing ->
                         0
