@@ -19,9 +19,6 @@ const modes: {
   ada: 'ada',
   alda: 'alda',
   /* ------------------------------------- */
-  actionscript: 'c_cpp',
-  as: 'c_cpp',
-  /* ------------------------------------- */
   apache: 'apache_conf',
   apacheconf: 'apache_conf',
   apache_conf: 'apache_conf',
@@ -102,7 +99,7 @@ const modes: {
   pcmk: 'sh',
   /* ------------------------------------- */
   crystal: 'crystal',
-  cr: 'crylstal',
+  cr: 'crystal',
   /* ------------------------------------- */
   csharp: 'csharp',
   cs: 'csharp',
