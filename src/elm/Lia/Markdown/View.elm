@@ -308,7 +308,7 @@ view_block config block =
             case
                 ( config.main.visible
                 , Comments.get_paragraph
-                    (config.main.visible == Nothing)
+                    (config.main.visible /= Nothing)
                     id1
                     id2
                     config.section.effect_model
