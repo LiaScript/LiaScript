@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.21
+version:  0.9.22
 language: en
 narrator: UK English Male
 
@@ -272,6 +272,15 @@ This will apply the following three patches:
 - elm-patch/dom: enable onclick events as well as innerHTML
 
 ## Version-Changes
+
+**0.9.22** (12/07/2021)
+
+- Updated code-snippet language support
+  (see [code-list](https://github.com/LiaScript/docs/blob/master/Code.md))
+- Optimized loading time with lighthouse
+- fix: icons in nested lists (3rd level)
+- fix: silent hidden TTS
+- refactor typescript
 
 **0.9.21** (22/06/2021)
 
