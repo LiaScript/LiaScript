@@ -607,14 +607,18 @@ function process(
         meta('og:image', data.definition.logo)
 
         // store the basic info in the offline-repositories
-        // if (isConnected && isPersistent) {
-        //   self.connector.storeToIndex(data)
-        // }
+        if (isConnected && isPersistent) {
+          self.connector.storeToIndex(data)
+        }
 
         try {
           window.top.liaReady()
         } catch (e) {}
       }
+
+      try {
+        window.top.liaDefinitions(data.definition)
+      } catch (e) {}
 
       break
     }
