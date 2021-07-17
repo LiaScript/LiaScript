@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.22
+version:  0.9.23
 language: en
 narrator: UK English Male
 
@@ -273,7 +273,7 @@ This will apply the following three patches:
 
 ## Version-Changes
 
-**0.9.22** (12/07/2021)
+**0.9.23** (12/07/2021)
 
 - Updated code-snippet language support
   (see [code-list](https://github.com/LiaScript/docs/blob/master/Code.md))
