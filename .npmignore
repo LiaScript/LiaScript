@@ -29,3 +29,5 @@ tests
 docs
 gulpfile.js
 patches
+.parcel-cache
+.parcelrc
