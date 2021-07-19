@@ -178,6 +178,7 @@ inlines =
                      , inlines
                         |> Effect.inline
                         |> map EInline
+                     , hashTag
                      , strings
                      ]
                         |> choice
@@ -420,6 +421,12 @@ strings =
                 , stringCharacters
                 , stringBase2
                 ]
+
+
+hashTag : Parser Context (Parameters -> Inline)
+hashTag =
+    regex "#\\S+"
+        |> map Hashtag
 
 
 stringBase : Parser s (Parameters -> Inline)

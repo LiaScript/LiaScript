@@ -107,6 +107,9 @@ view config element =
         Formula mode_ e attr ->
             view config (Container [ Formula mode_ e [] ] attr)
 
+        Hashtag id attr ->
+            Html.a (toAttribute attr) [ Html.text id ]
+
 
 toText : Config sub -> Inline -> Html (Msg sub)
 toText config element =
@@ -155,6 +158,9 @@ toText config element =
 
         Script id attr ->
             JS.view config id attr
+
+        Hashtag str _ ->
+            Html.text str
 
         _ ->
             Html.text ""

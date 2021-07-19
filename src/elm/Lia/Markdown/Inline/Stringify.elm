@@ -71,6 +71,9 @@ inline2string effects id inline =
                 |> Maybe.andThen text
                 |> Maybe.withDefault ""
 
+        Hashtag str _ ->
+            str
+
         _ ->
             ""
 

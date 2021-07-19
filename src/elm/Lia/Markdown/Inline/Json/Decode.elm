@@ -18,6 +18,7 @@ decInline =
     , strReader "FootnoteMark" FootnoteMark
     , strReader "Symbol" Symbol
     , strReader "Verbatim" Verbatim
+    , strReader "Hashtag" Hashtag
     , inlReader "Bold" Bold
     , inlReader "Italic" Italic
     , inlReader "Strike" Strike
