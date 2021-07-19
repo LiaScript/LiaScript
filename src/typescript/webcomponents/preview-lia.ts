@@ -1,5 +1,6 @@
 // @ts-ignore
 import { Elm } from '../../elm/Worker.elm'
+import { allowedProtocol } from '../helper'
 
 function fetch(self: PreviewLia) {
   let http = new XMLHttpRequest()
@@ -263,11 +264,7 @@ class PreviewLia extends HTMLElement {
   }
 
   addBase(url: string) {
-    if (
-      url.startsWith('https://') ||
-      url.startsWith('http://') ||
-      url.startsWith('hyper://')
-    ) {
+    if (allowedProtocol(url)) {
       return url
     }
 

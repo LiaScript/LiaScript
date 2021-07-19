@@ -221,22 +221,47 @@ basis is automatically added:
 -}
 toURL : String -> String -> String
 toURL basis url =
-    if
-        url
-            |> String.toLower
-            |> allowed
-    then
+    if allowedProtocol url then
         url
 
     else
         basis ++ url
 
 
-allowed : String -> Bool
-allowed url =
-    String.startsWith "https://" url
-        || String.startsWith "http://" url
-        || String.startsWith "hyper://" url
+{-| List of allowed supported protocols.
+-}
+allowedProtocol : String -> Bool
+allowedProtocol url =
+    case
+        url
+            |> String.split "://"
+            |> List.head
+            |> Maybe.withDefault ""
+            |> String.toLower
+    of
+        "https" ->
+            True
+
+        "http" ->
+            True
+
+        "file" ->
+            True
+
+        "hyper" ->
+            True
+
+        "dat" ->
+            True
+
+        "ipfs" ->
+            True
+
+        "ipns" ->
+            True
+
+        _ ->
+            False
 
 
 {-| General HTML attribute parser, the base-URL is added in front of relative

@@ -9,6 +9,7 @@ import 'echarts/i18n/langFR.js'
 import 'echarts/i18n/langJA.js'
 import 'echarts/i18n/langTH.js'
 import 'echarts/i18n/langZH.js'
+import { allowedProtocol } from '../helper'
 
 const style = 'width: 100%; height: 400px; margin-top: -0.2em;'
 
@@ -144,11 +145,7 @@ customElements.define(
           this.geoJson.url = newValue
           this.geoJson.data = null
 
-          if (
-            this.geoJson.url.startsWith('https://') ||
-            this.geoJson.url.startsWith('http://') ||
-            this.geoJson.url.startsWith('hyper://')
-          ) {
+          if (allowedProtocol(this.geoJson.url)) {
             let xmlHttp = new XMLHttpRequest()
             let self = this
             xmlHttp.onreadystatechange = function () {
