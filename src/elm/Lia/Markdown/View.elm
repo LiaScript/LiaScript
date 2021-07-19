@@ -330,7 +330,7 @@ view_block config block =
                 ( _, Nothing ) ->
                     Html.text ""
 
-        Header attr ( elements, sub ) ->
+        Header attr ( sub, elements ) ->
             header config
                 config.section.indentation
                 sub

@@ -50,6 +50,7 @@ import Lia.Markdown.Types exposing (Markdown(..), MarkdownS)
 import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (c_frame, newline, newlines, spaces)
 import Lia.Parser.Indentation as Indent
+import Lia.Parser.Preprocessor exposing (title_tag)
 import SvgBob
 
 
@@ -250,17 +251,48 @@ svgbobSub ( caption, str ) =
     withState fn
 
 
-subHeader : Parser Context ( Inlines, Int )
+subHeader : Parser Context ( Int, Inlines )
 subHeader =
+    or subHeaderType1 subHeaderType2
+        |> ignore (regex "[ \t]*\n?")
+
+
+{-| This deals with all headers that are left within a slight, which occur
+within HTML blocks or other nested elements:
+
+    <details markdown="1">
+        <summary>Solution</summary>
+
+        ### A Header
+        > 1. Yes, add explanation here
+        >
+        > **TODO**: add image
+
+    </details>
+
+-}
+subHeaderType1 : Parser Context ( Int, Inlines )
+subHeaderType1 =
+    title_tag
+        |> map Tuple.pair
+        |> andMap line
+
+
+{-| This is a special type of level 1 or level 2 headers in Markdown:
+
+    Level one header
+    ================
+
+    Level two header
+    ----------------
+
+-}
+subHeaderType2 : Parser Context ( Int, Inlines )
+subHeaderType2 =
     line
         |> ignore (regex "[ \t]*\n")
-        |> map Tuple.pair
+        |> map (\i title -> ( title, i ))
         |> andMap underline
-        |> ignore (regex "[ \t]*\n")
-
-
-
---|> ignore (regex "[ \t]*\n")
 
 
 underline : Parser Context Int

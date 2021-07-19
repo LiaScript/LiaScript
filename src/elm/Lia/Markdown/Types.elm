@@ -30,7 +30,7 @@ type Markdown
     | Task Parameters Task
     | ASCII Parameters ( Maybe Inlines, SvgBob.Configuration (List Markdown) )
     | HTML Parameters (Node Markdown)
-    | Header Parameters ( Inlines, Int )
+    | Header Parameters ( Int, Inlines )
     | Gallery Parameters Gallery
     | Citation Parameters Inlines
     | Problem Inlines
