@@ -95,6 +95,13 @@ encInline element =
                 , ( "a", encParameters a )
                 ]
 
+            Hashtag id a ->
+                [ ( "Hashtag"
+                  , JE.string id
+                  )
+                , ( "a", encAnnotation a )
+                ]
+
             Script id a ->
                 [ ( "Script", JE.int id )
                 , ( "a", encParameters a )

@@ -32,6 +32,7 @@ type Inline
     | EInline (Effect Inline) Parameters
     | Script Int Parameters
     | IHTML (Node Inline) Parameters
+    | Hashtag String Parameters
     | Container Inlines Parameters
 
 
