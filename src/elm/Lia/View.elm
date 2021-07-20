@@ -10,6 +10,7 @@ import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Html.Keyed as Keyed
 import Lia.Definition.Types as Definition exposing (Definition)
+import Lia.Graph.View as Graph
 import Lia.Index.View as Index
 import Lia.Markdown.Config as Config
 import Lia.Markdown.Effect.Model as Effect
@@ -129,6 +130,7 @@ viewSlide screen model =
                     model.media
                     |> Markdown.view
                     |> Html.map UpdateMarkdown
+                , Graph.view model.translation model.graph
                 , slideBottom
                     screen
                     model.translation

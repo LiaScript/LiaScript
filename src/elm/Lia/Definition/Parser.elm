@@ -28,6 +28,7 @@ import Lia.Definition.Types
         , add_imports
         , add_translation
         )
+import Lia.Graph.Model as Graph
 import Lia.Markdown.HTML.Attributes exposing (toURL)
 import Lia.Markdown.Inline.Parser exposing (comment, line)
 import Lia.Markdown.Inline.Types exposing (Inlines)
@@ -55,7 +56,7 @@ inline_parser defines str =
     case
         str
             |> String.replace "\n" " "
-            |> Combine.runParser line (init Nothing defines)
+            |> Combine.runParser line (init Graph.init Nothing defines)
     of
         Ok ( _, _, rslt ) ->
             rslt

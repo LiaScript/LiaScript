@@ -12,6 +12,7 @@ import Dict
 import Html.Attributes exposing (width)
 import Json.Decode as JD
 import Json.Encode as JE
+import Lia.Graph.Model as Graph
 import Lia.Index.Update as Index
 import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Effect.Update as Effect
@@ -356,24 +357,29 @@ generate model =
     case get_active_section model of
         Just sec ->
             let
-                section =
+                newGraph =
+                    Graph.rootSection model.section_active model.graph
+
+                ( graph, section ) =
                     if sec.parsed then
                         let
                             effects =
                                 sec.effect_model
                         in
-                        { sec | effect_model = { effects | visible = 0 } }
+                        ( newGraph, { sec | effect_model = { effects | visible = 0 } } )
 
                     else
-                        case parse_section model.search_index model.definition sec of
+                        case parse_section newGraph model.search_index model.definition sec of
                             Ok new_sec ->
                                 new_sec
 
                             Err msg ->
-                                { sec
+                                ( newGraph
+                                , { sec
                                     | body = []
                                     , error = Just msg
-                                }
+                                  }
+                                )
 
                 ( resource, logs ) =
                     section
@@ -385,6 +391,7 @@ generate model =
             set_active_section
                 { model
                     | resource = resource
+                    , graph = graph
                     , to_do =
                         model.to_do
                             |> List.append logs

@@ -4,6 +4,7 @@ import Array
 import Dict
 import Json.Decode as JD
 import Lia.Definition.Json.Decode as Definition
+import Lia.Graph.Model as Graph
 import Lia.Index.Model as Index
 import Lia.Markdown.Inline.Json.Decode as Inline
 import Lia.Model exposing (Model)
@@ -51,6 +52,7 @@ toModel =
         |> JD.map2 (|>) (JD.succeed identity)
         |> JD.map2 (|>) (JD.succeed Dict.empty)
         |> JD.map2 (|>) (JD.succeed Nothing)
+        |> JD.map2 (|>) (JD.succeed Graph.init)
 
 
 toSectionBase : JD.Decoder Section.Base

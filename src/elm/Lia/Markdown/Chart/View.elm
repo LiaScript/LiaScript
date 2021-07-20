@@ -1,5 +1,6 @@
 module Lia.Markdown.Chart.View exposing
-    ( getColor
+    ( eCharts
+    , getColor
     , view
     , viewBarChart
     , viewBoxPlot

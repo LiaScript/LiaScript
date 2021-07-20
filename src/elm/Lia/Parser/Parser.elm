@@ -18,6 +18,7 @@ import Combine
 import Error.Message
 import Lia.Definition.Parser
 import Lia.Definition.Types exposing (Definition)
+import Lia.Graph.Model as Graph exposing (Graph)
 import Lia.Markdown.Parser as Markdown
 import Lia.Markdown.Types exposing (Block(..), Blocks)
 import Lia.Parser.Context exposing (Context, init)
@@ -38,7 +39,7 @@ parse_definition base code =
             )
             (base
                 |> Lia.Definition.Types.default
-                |> init Nothing
+                |> init Graph.init Nothing
             )
             (code ++ "\n")
     of
@@ -61,7 +62,7 @@ parse_definition base code =
 
 parse_titles : Definition -> String -> Result String ( Section.Base, String )
 parse_titles defines code =
-    case Combine.runParser Preprocessor.section (init Nothing defines) code of
+    case Combine.runParser Preprocessor.section (init Graph.init Nothing defines) code of
         Ok ( _, data, rslt ) ->
             Ok ( rslt, data.input )
 
@@ -70,15 +71,16 @@ parse_titles defines code =
 
 
 parse_section :
-    (String -> String)
+    Graph
+    -> (String -> String)
     -> Definition
     -> Section
-    -> Result String Section
-parse_section search_index global sec =
+    -> Result String ( Graph, Section )
+parse_section graph search_index global sec =
     case
         Combine.runParser
             (Lia.Definition.Parser.parse |> keep Markdown.run)
-            (init (Just search_index) { global | section = sec.id })
+            (init graph (Just search_index) { global | section = sec.id })
             sec.code
     of
         Ok ( state, _, es ) ->
@@ -130,10 +132,11 @@ parse_subsection globals id code =
             formatError ms stream |> Err
 
 
-return : Section -> Context -> Blocks -> Result String Section
+return : Section -> Context -> Blocks -> Result String ( Graph, Section )
 return sec state es =
     Ok
-        { sec
+        ( state.graph
+        , { sec
             | body = es
             , error = Nothing
             , code_model = state.code_model
@@ -151,7 +154,8 @@ return sec state es =
                 else
                     Nothing
             , parsed = True
-        }
+          }
+        )
 
 
 formatError : List String -> InputStream -> String
