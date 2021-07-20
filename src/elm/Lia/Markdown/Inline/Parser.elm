@@ -38,6 +38,7 @@ import Combine
         , withState
         )
 import Combine.Char exposing (anyChar)
+import Lia.Graph.Model as Graph exposing (Graph)
 import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Effect.Script.Types as JS
 import Lia.Markdown.Footnote.Parser as Footnote
@@ -46,6 +47,7 @@ import Lia.Markdown.HTML.Parser as HTML
 import Lia.Markdown.Inline.Multimedia as Multimedia
 import Lia.Markdown.Inline.Parser.Formula exposing (formula)
 import Lia.Markdown.Inline.Parser.Symbol exposing (arrows, smileys)
+import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines, Reference(..), combine)
 import Lia.Markdown.Macro.Parser as Macro
 import Lia.Parser.Context exposing (Context, searchIndex)
@@ -180,7 +182,7 @@ inlines =
                      , inlines
                         |> Effect.inline
                         |> map EInline
-                     , hashTag
+                     , hashtag
                      , strings
                      ]
                         |> choice
@@ -308,7 +310,31 @@ reference =
     , refLink
     ]
         |> choice
+        |> andThen addLink
         |> map Ref
+
+
+addLink : Reference -> Parser Context Reference
+addLink ref =
+    case ref of
+        Link name_ url_ _ ->
+            graphInsert ref <|
+                if String.startsWith "https://LiaScript.github.io/course/?" url_ then
+                    Graph.addCourse (stringify name_) url_
+
+                else if String.startsWith "#" url_ then
+                    case url_ |> String.dropLeft 1 |> String.toInt of
+                        Just id ->
+                            Graph.addSection id
+
+                        _ ->
+                            Graph.addLink (stringify name_) url_
+
+                else
+                    Graph.addLink (stringify name_) url_
+
+        _ ->
+            succeed ref
 
 
 mediaReference : Parser Context Inline
@@ -425,10 +451,29 @@ strings =
                 ]
 
 
-hashTag : Parser Context (Parameters -> Inline)
-hashTag =
+hashtag : Parser Context (Parameters -> Inline)
+hashtag =
     regex "#\\S+"
-        |> map Hashtag
+        |> andThen addHashtag
+
+
+addHashtag : String -> Parser Context (Parameters -> Inline)
+addHashtag tag =
+    tag
+        |> Graph.addHashtag
+        |> graphInsert (Hashtag tag)
+
+
+updateGraph : (Graph.Graph -> Graph.Graph) -> Context -> Context
+updateGraph graph state =
+    { state | graph = graph state.graph }
+
+
+graphInsert : x -> (Graph -> Graph) -> Parser Context x
+graphInsert rslt =
+    updateGraph
+        >> modifyState
+        >> keep (succeed rslt)
 
 
 stringBase : Parser s (Parameters -> Inline)
