@@ -26,6 +26,7 @@ import Dict
 import Html exposing (Html)
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition, add_macros)
+import Lia.Graph.Model as Graph
 import Lia.Json.Encode as Json
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Update as Markdown
@@ -101,6 +102,7 @@ load_first_slide session model =
         { model
             | title = get_title model.sections
             , search_index = search_index
+            , graph = Graph.parseSections model.sections model.graph
             , to_do =
                 (Json.encode model
                     |> Event "init" model.section_active

@@ -3,6 +3,7 @@ module Lia.View exposing (view)
 import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
 import Accessibility.Widget as A11y_Widget
+import Array exposing (Array)
 import Const
 import Dict exposing (Dict)
 import Html exposing (Html)
