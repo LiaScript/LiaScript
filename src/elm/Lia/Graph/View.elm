@@ -2,7 +2,7 @@ module Lia.Graph.View exposing (..)
 
 import Dict
 import Html exposing (Html)
-import Html.Attributes exposing (title)
+import Html.Attributes as Attr
 import Html.Lazy
 import Json.Encode as JE
 import Lia.Graph.Model exposing (Graph, Node(..))
@@ -75,7 +75,7 @@ chart lang graph =
                 |> JE.object
           )
         ]
-        |> eCharts lang [] True Nothing
+        |> eCharts lang [ Attr.style "width" "100%", Attr.style "height" "100%" ] [] True Nothing
 
 
 tooltip node =

@@ -21,7 +21,7 @@ import Char exposing (toLower)
 import Conditional.List as CList
 import Dict exposing (Dict)
 import FStatistics
-import Html exposing (Html)
+import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Json.Encode as JE
 import Lia.Markdown.Chart.Types exposing (Chart, Diagram(..), Labels)
@@ -32,12 +32,12 @@ import Translations exposing (Lang, getCodeFromLn)
 
 view : Lang -> Parameters -> Bool -> Chart -> Html msg
 view lang attr light =
-    encode True >> eCharts lang attr light Nothing
+    encode True >> eCharts lang [] attr light Nothing
 
 
 viewChart : Lang -> Parameters -> Bool -> Chart -> Html msg
 viewChart lang attr light =
-    encode False >> eCharts lang attr light Nothing
+    encode False >> eCharts lang [] attr light Nothing
 
 
 viewLines :
@@ -50,7 +50,7 @@ viewLines :
     -> Html msg
 viewLines lang attr light labels category data =
     encodeBasic "line" labels category data
-        |> eCharts lang attr light Nothing
+        |> eCharts lang [] attr light Nothing
 
 
 viewPoints :
@@ -63,7 +63,7 @@ viewPoints :
     -> Html msg
 viewPoints lang attr light labels category data =
     encodeBasic "scatter" labels category data
-        |> eCharts lang attr light Nothing
+        |> eCharts lang [] attr light Nothing
 
 
 viewBarChart :
@@ -76,7 +76,7 @@ viewBarChart :
     -> Html msg
 viewBarChart lang attr light labels category data =
     encodeBarChart labels category data
-        |> eCharts lang attr light Nothing
+        |> eCharts lang [] attr light Nothing
 
 
 viewBoxPlot :
@@ -89,7 +89,7 @@ viewBoxPlot :
     -> Html msg
 viewBoxPlot lang attr light labels category data =
     encodeBoxPlot labels category data
-        |> eCharts lang attr light Nothing
+        |> eCharts lang [] attr light Nothing
 
 
 viewParallel :
@@ -102,7 +102,7 @@ viewParallel :
     -> Html msg
 viewParallel lang attr light labels category data =
     encodeParallel labels category data
-        |> eCharts lang attr light Nothing
+        |> eCharts lang [] attr light Nothing
 
 
 viewGraph :
@@ -115,7 +115,7 @@ viewGraph :
     -> Html msg
 viewGraph lang attr light labels nodes edges =
     encodeGraph labels nodes edges
-        |> eCharts lang attr light Nothing
+        |> eCharts lang [] attr light Nothing
 
 
 viewSankey :
@@ -128,19 +128,19 @@ viewSankey :
     -> Html msg
 viewSankey lang attr light labels nodes edges =
     encodeSankey labels nodes edges
-        |> eCharts lang attr light Nothing
+        |> eCharts lang [] attr light Nothing
 
 
 viewRadarChart : Lang -> Parameters -> Bool -> Labels -> List String -> List ( String, List (Maybe Float) ) -> Html msg
 viewRadarChart lang attr light labels category data =
     encodeRadarChart labels category data
-        |> eCharts lang attr light Nothing
+        |> eCharts lang [] attr light Nothing
 
 
 viewMapChart : Lang -> Parameters -> Bool -> Labels -> List ( String, Maybe Float ) -> Maybe String -> Html msg
 viewMapChart lang attr light labels data json =
     encodeMapChart labels data json
-        |> eCharts lang attr light json
+        |> eCharts lang [] attr light json
 
 
 viewPieChart :
@@ -154,7 +154,7 @@ viewPieChart :
     -> Html msg
 viewPieChart lang width attr light labels subtitle data =
     encodePieChart width labels subtitle data
-        |> eCharts lang attr light Nothing
+        |> eCharts lang [] attr light Nothing
 
 
 viewFunnel :
@@ -168,7 +168,7 @@ viewFunnel :
     -> Html msg
 viewFunnel lang _ attr light labels subtitle data =
     encodeFunnel labels subtitle data
-        |> eCharts lang attr light Nothing
+        |> eCharts lang [] attr light Nothing
 
 
 viewHeatMap :
@@ -182,11 +182,11 @@ viewHeatMap :
     -> Html msg
 viewHeatMap lang attr light labels x y data =
     encodeHeatMap labels x y data
-        |> eCharts lang attr light Nothing
+        |> eCharts lang [] attr light Nothing
 
 
-eCharts : Lang -> Parameters -> Bool -> Maybe String -> JE.Value -> Html msg
-eCharts lang attr light json option =
+eCharts : Lang -> List (Attribute msg) -> Parameters -> Bool -> Maybe String -> JE.Value -> Html msg
+eCharts lang attr1 attr2 light json option =
     Html.node "lia-chart"
         (List.append
             [ Attr.attribute "mode" <|
@@ -201,9 +201,8 @@ eCharts lang attr light json option =
                 |> Maybe.withDefault ""
                 |> Attr.attribute "json"
             ]
-            (attr
-                |> annotation "lia-chart"
-            )
+            (annotation "lia-chart" attr2)
+            |> List.append attr1
         )
         []
 

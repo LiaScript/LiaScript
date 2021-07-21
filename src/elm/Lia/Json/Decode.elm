@@ -10,6 +10,7 @@ import Lia.Markdown.Inline.Json.Decode as Inline
 import Lia.Model exposing (Model)
 import Lia.Section as Section
 import Lia.Settings.Types as Settings
+import SplitPane
 import Translations
 
 
@@ -53,6 +54,7 @@ toModel =
         |> JD.map2 (|>) (JD.succeed Dict.empty)
         |> JD.map2 (|>) (JD.succeed Nothing)
         |> JD.map2 (|>) (JD.succeed Graph.init)
+        |> JD.map2 (|>) (JD.succeed (SplitPane.init SplitPane.Horizontal))
 
 
 toSectionBase : JD.Decoder Section.Base
