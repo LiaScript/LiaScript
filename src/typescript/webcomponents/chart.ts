@@ -11,7 +11,7 @@ import 'echarts/i18n/langTH.js'
 import 'echarts/i18n/langZH.js'
 import { allowedProtocol, debounce } from '../helper'
 
-const style = 'width: 100%; height: 400px; margin-top: -0.2em;'
+const style = 'width: 100%; height: inherit; margin-top: -0.2em;'
 
 // TODO
 // - [ ] Switching to dark-mode and then performing an external translation does
