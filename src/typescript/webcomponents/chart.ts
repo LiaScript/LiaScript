@@ -195,7 +195,7 @@ customElements.define(
         echarts.registerMap(this.geoJson.url, this.geoJson.data)
       }
 
-      this.chart.setOption(this.option_, true)
+      this.chart.setOption(this.option_, false, false)
     }
 
     resizeChart() {
