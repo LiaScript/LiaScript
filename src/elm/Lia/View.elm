@@ -3,7 +3,6 @@ module Lia.View exposing (view)
 import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
 import Accessibility.Widget as A11y_Widget
-import Array exposing (Array)
 import Const
 import Dict exposing (Dict)
 import Html exposing (Html)
@@ -27,6 +26,7 @@ import Lia.Settings.View as Settings
 import Lia.Update exposing (Msg(..), get_active_section)
 import Lia.Utils exposing (modal)
 import Session exposing (Screen)
+import SplitPane
 import Translations as Trans exposing (Lang)
 
 
@@ -121,17 +121,22 @@ viewSlide screen model =
         Just section ->
             [ Html.div [ Attr.class "lia-slide" ]
                 [ slideTopBar model.translation screen model.url model.settings model.definition
-                , Config.init
-                    model.translation
-                    ( model.langCodeOriginal, model.langCode )
-                    model.settings
-                    screen
-                    section
-                    model.section_active
-                    model.media
-                    |> Markdown.view
-                    |> Html.map UpdateMarkdown
-                , Graph.view model.translation model.graph
+                , Html.div [ Attr.style "height" "95%" ]
+                    [ SplitPane.view viewConfig
+                        (Config.init
+                            model.translation
+                            ( model.langCodeOriginal, model.langCode )
+                            model.settings
+                            screen
+                            section
+                            model.section_active
+                            model.media
+                            |> Markdown.view
+                            |> Html.map UpdateMarkdown
+                        )
+                        (Graph.view model.translation model.graph)
+                        model.splitPane
+                    ]
                 , slideBottom
                     screen
                     model.translation
@@ -160,6 +165,14 @@ viewSlide screen model =
                 , Html.text "Ups, something went wrong"
                 ]
             ]
+
+
+viewConfig : SplitPane.ViewConfig Msg
+viewConfig =
+    SplitPane.createViewConfig
+        { toMsg = PaneMsg
+        , customSplitter = Nothing
+        }
 
 
 {-| **@private:** used to display the text2speech output settings and spoken

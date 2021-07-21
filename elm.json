@@ -20,7 +20,8 @@
             "pablohirafuji/elm-qrcode": "4.0.1",
             "rtfeldman/elm-hex": "1.0.0",
             "tesk9/accessible-html": "4.1.0",
-            "truqu/elm-md5": "1.1.0"
+            "truqu/elm-md5": "1.1.0",
+            "whale9490/elm-split-pane": "1.0.0"
         },
         "indirect": {
             "avh4/elm-color": "1.0.0",

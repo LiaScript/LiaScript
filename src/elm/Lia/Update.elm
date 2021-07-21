@@ -25,6 +25,7 @@ import Lia.Settings.Update as Settings
 import Port.Event as Event exposing (Event)
 import Return exposing (Return)
 import Session exposing (Session)
+import SplitPane
 
 
 port media : (( String, Maybe Int, Maybe Int ) -> msg) -> Sub msg
@@ -42,6 +43,7 @@ subscriptions model =
                     |> Markdown.subscriptions
                     |> Sub.map UpdateMarkdown
                 , media Media
+                , Sub.map PaneMsg <| SplitPane.subscriptions model.splitPane
                 ]
 
         Nothing ->
@@ -82,6 +84,7 @@ type Msg
     | Script ( Int, Script.Msg Markdown.Msg )
     | TTSReplay Bool
     | Media ( String, Maybe Int, Maybe Int )
+    | PaneMsg SplitPane.Msg
 
 
 update : Session -> Msg -> Model -> Return Model Msg Markdown.Msg
@@ -234,6 +237,12 @@ update session msg model =
 
                     _ ->
                         model
+
+        PaneMsg paneMsg ->
+            ( { model | splitPane = SplitPane.update paneMsg model.splitPane }
+            , Cmd.none
+            , []
+            )
 
         _ ->
             case ( msg, get_active_section model ) of

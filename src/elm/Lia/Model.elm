@@ -14,6 +14,7 @@ import Lia.Section exposing (Sections)
 import Lia.Settings.Json
 import Lia.Settings.Types as Settings exposing (Settings)
 import Port.Event exposing (Event)
+import SplitPane
 import Translations
 
 
@@ -84,6 +85,7 @@ type alias Model =
     , media : Dict String ( Int, Int )
     , modal : Maybe String
     , graph : Graph
+    , splitPane : SplitPane.State
     }
 
 
@@ -133,6 +135,7 @@ init hasShareApi openTOC settings url readme origin anchor =
     , media = Dict.empty
     , modal = Nothing
     , graph = Graph.init
+    , splitPane = SplitPane.init SplitPane.Horizontal
     }
 
 
