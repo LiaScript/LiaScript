@@ -44,6 +44,7 @@ customElements.define(
     private mode: string
 
     private resizeObserver: ResizeObserver
+    private clickEvent?: any
 
     static get observedAttributes() {
       return ['style', 'mode', 'json', 'locale', 'aria-label']
@@ -57,6 +58,7 @@ customElements.define(
 
       this.option_ = {}
       this.chart = null
+
       this.geoJson = {
         url: '',
         data: null,
@@ -94,6 +96,13 @@ customElements.define(
             self.container.getAttribute('aria-label') || ''
           )
         })
+
+        this.chart.on('click', function (params: any) {
+          console.log(params)
+          self.clickEvent = params
+          self.dispatchEvent(new CustomEvent('onClick'))
+        })
+
         // TODO: Check for more appropriate roles...
         self.setAttribute('aria-role', 'figure alert')
         self.setAttribute('aria-relevant', 'text')
@@ -216,6 +225,14 @@ customElements.define(
           this.updateChart()
         }
       }
+    }
+
+    get onClick() {
+      return this.clickEvent
+    }
+
+    set onClick(val) {
+      this.clickEvent = val
     }
   }
 )

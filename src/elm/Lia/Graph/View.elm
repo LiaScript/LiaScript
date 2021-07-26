@@ -3,9 +3,12 @@ module Lia.Graph.View exposing (..)
 import Dict
 import Html exposing (Html)
 import Html.Attributes as Attr
+import Html.Events
 import Html.Lazy
+import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Graph.Model exposing (Graph, Node(..))
+import Lia.Graph.Update exposing (Msg(..))
 import Lia.Markdown.Chart.View exposing (eCharts)
 import Translations exposing (Lang)
 
@@ -14,12 +17,11 @@ view lang graph =
     Html.Lazy.lazy2 chart lang graph
 
 
-chart : Lang -> Graph -> Html msg
+chart : Lang -> Graph -> Html Msg
 chart lang graph =
     JE.object
         [ ( "tooltip", JE.object [] )
         , legend
-        , ( "animation", JE.bool True )
         , ( "animationDurationUpdate", JE.int 1500 )
         , ( "animationEasingUpdate", JE.string "quintcInOut" )
         , ( "series"
@@ -32,15 +34,16 @@ chart lang graph =
             , ( "roam", JE.bool True )
             , ( "force"
               , JE.object
-                    [ ( "repulsion", JE.int 250 )
-                    , ( "edgeLength", JE.int 100 )
-                    , ( "gravity", JE.float 0.1 )
+                    [ ( "repulsion", JE.int 2500 )
+                    , ( "edgeLength", JE.int 120 )
+                    , ( "gravity", JE.float 0.2 )
                     ]
               )
             , ( "draggable", JE.bool True )
             , ( "data"
               , graph.node
                     |> Dict.toList
+                    |> List.sortBy Tuple.first
                     |> List.map
                         (\( id, node ) ->
                             [ ( "id", JE.string id )
@@ -51,6 +54,16 @@ chart lang graph =
                             , categoryID node
                             , tooltip node
                             , ( "symbolSize", JE.int (getValue node) )
+                            , ( "itemStyle"
+                              , JE.object <|
+                                    if isRoot graph node then
+                                        [ ( "borderColor", JE.string "#000" )
+                                        , ( "borderWidth", JE.int 3 )
+                                        ]
+
+                                    else
+                                        []
+                              )
 
                             --, ( "fixed", JE.bool True )
                             --, ( "x", JE.int 100 )
@@ -61,6 +74,7 @@ chart lang graph =
               )
             , ( "edges"
               , graph.edge
+                    |> List.sortBy .from
                     |> List.map
                         (\edge ->
                             [ ( "source", JE.string edge.from )
@@ -70,12 +84,23 @@ chart lang graph =
                         )
                     |> JE.list JE.object
               )
-            , ( "emphasis", JE.object [ ( "focus", JE.string "adjacency" ), ( "scale", JE.bool True ) ] )
+
+            --, ( "emphasis", JE.object [ ( "focus", JE.string "adjacency" ), ( "scale", JE.bool True ) ] )
             ]
                 |> JE.object
           )
         ]
-        |> eCharts lang [ Attr.style "width" "100%", Attr.style "height" "100%" ] [] True Nothing
+        |> eCharts lang
+            [ Attr.style "width" "100%"
+            , Attr.style "height" "calc(100% - 7.8rem)"
+
+            --, Attr.style "position" "absolute"
+            , Attr.style "margin-top" "7.8rem"
+            , onClick Clicked
+            ]
+            []
+            True
+            Nothing
 
 
 tooltip node =
@@ -176,4 +201,55 @@ getValue node =
             10
 
         Section _ wheight _ ->
-            (6 - wheight) * 6
+            case wheight of
+                1 ->
+                    120
+
+                2 ->
+                    60
+
+                3 ->
+                    30
+
+                4 ->
+                    15
+
+                _ ->
+                    10
+
+
+onClick : (JE.Value -> msg) -> Html.Attribute msg
+onClick msg =
+    JD.value
+        |> JD.at [ "target", "onClick" ]
+        |> JD.map msg
+        |> Html.Events.on "onClick"
+
+
+equal : Node -> Node -> Bool
+equal node1 node2 =
+    case ( node1, node2 ) of
+        ( Section id1 _ _, Section id2 _ _ ) ->
+            id1 == id2
+
+        ( Hashtag str1, Hashtag str2 ) ->
+            str1 == str2
+
+        ( Link url1 _, Link url2 _ ) ->
+            url1 == url2
+
+        ( Course url1 _, Course url2 _ ) ->
+            url1 == url2
+
+        _ ->
+            False
+
+
+isRoot : Graph -> Node -> Bool
+isRoot graph node =
+    case ( graph.root, node ) of
+        ( Just (Section id1 _ _), Section id2 _ _ ) ->
+            id1 == id2
+
+        _ ->
+            False

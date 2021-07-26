@@ -10,7 +10,6 @@ module Lia.Graph.Model exposing
     , addSection
     , init
     , parseSections
-    , rootSection
     )
 
 import Array
@@ -123,11 +122,6 @@ rootConnect node graph =
 
         Nothing ->
             addNode node graph
-
-
-rootSection : Int -> Graph -> Graph
-rootSection i graph =
-    { graph | root = Just (Section i -1 "") }
 
 
 parseSections sections =

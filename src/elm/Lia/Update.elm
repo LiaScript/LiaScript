@@ -12,7 +12,7 @@ import Dict
 import Html.Attributes exposing (width)
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Graph.Model as Graph
+import Lia.Graph.Update as Graph
 import Lia.Index.Update as Index
 import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Effect.Update as Effect
@@ -85,6 +85,7 @@ type Msg
     | TTSReplay Bool
     | Media ( String, Maybe Int, Maybe Int )
     | PaneMsg SplitPane.Msg
+    | UpdateGraph Graph.Msg
 
 
 update : Session -> Msg -> Model -> Return Model Msg Markdown.Msg
@@ -237,6 +238,16 @@ update session msg model =
 
                     _ ->
                         model
+
+        UpdateGraph graphMsg ->
+            let
+                ( graph, cmd ) =
+                    Graph.update session graphMsg model.graph
+            in
+            ( { model | graph = graph }
+            , Cmd.map UpdateGraph cmd
+            , []
+            )
 
         PaneMsg paneMsg ->
             ( { model | splitPane = SplitPane.update paneMsg model.splitPane }
