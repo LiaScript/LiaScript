@@ -320,7 +320,10 @@ addLink ref =
         Link name_ url_ _ ->
             graphInsert ref <|
                 if String.startsWith "https://LiaScript.github.io/course/?" url_ then
-                    Graph.addCourse (stringify name_) url_
+                    Graph.addCourse
+                        { name = stringify name_
+                        , url = url_
+                        }
 
                 else if String.startsWith "#" url_ then
                     case url_ |> String.dropLeft 1 |> String.toInt of
