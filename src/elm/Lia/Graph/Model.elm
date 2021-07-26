@@ -23,7 +23,7 @@ import Lia.Section exposing (Section)
 type Node
     = Hashtag String
     | Section Int Int String
-    | Link String String
+    | Link { name : String, url : String }
     | Course String String
 
 
@@ -80,7 +80,7 @@ nodeID node =
         Hashtag str ->
             "tag: " ++ String.toLower str
 
-        Link _ url ->
+        Link { name, url } ->
             "url: " ++ url
 
         Section i _ _ ->
@@ -94,7 +94,7 @@ addHashtag name =
 
 addLink : String -> String -> Graph -> Graph
 addLink name url =
-    rootConnect (Link name url)
+    rootConnect (Link { name = name, url = url })
 
 
 addSection : Int -> Graph -> Graph
