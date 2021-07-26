@@ -328,10 +328,16 @@ addLink ref =
                             Graph.addSection id
 
                         _ ->
-                            Graph.addLink (stringify name_) url_
+                            Graph.addLink
+                                { name = stringify name_
+                                , url = url_
+                                }
 
                 else
-                    Graph.addLink (stringify name_) url_
+                    Graph.addLink
+                        { name = stringify name_
+                        , url = url_
+                        }
 
         _ ->
             succeed ref
