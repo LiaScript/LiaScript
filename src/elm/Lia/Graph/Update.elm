@@ -3,7 +3,7 @@ module Lia.Graph.Update exposing (..)
 import Dict
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Graph.Model exposing (Graph, Node(..))
+import Lia.Graph.Model exposing (Graph, Node(..), section)
 import Session exposing (Session)
 import Url
 
@@ -17,8 +17,8 @@ update session msg graph =
     case msg of
         Clicked obj ->
             case getNode graph obj of
-                Just (Section id _ _) ->
-                    ( graph, Session.navToSlide session id )
+                Just (Section sec) ->
+                    ( graph, Session.navToSlide session sec.id )
 
                 Just (Link node) ->
                     ( graph
@@ -34,7 +34,7 @@ update session msg graph =
 
 rootSection : Int -> Graph -> Graph
 rootSection i graph =
-    { graph | root = Just (Section i -1 "") }
+    { graph | root = Just (section i) }
 
 
 getNode : Graph -> JE.Value -> Maybe Node

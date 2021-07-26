@@ -10,6 +10,7 @@ module Lia.Graph.Model exposing
     , addSection
     , init
     , parseSections
+    , section
     )
 
 import Array
@@ -22,7 +23,7 @@ import Lia.Section exposing (Section)
 
 type Node
     = Hashtag String
-    | Section Int Int String
+    | Section { id : Int, weight : Int, name : String }
     | Link { name : String, url : String }
     | Course String String
 
@@ -80,11 +81,11 @@ nodeID node =
         Hashtag str ->
             "tag: " ++ String.toLower str
 
-        Link { name, url } ->
-            "url: " ++ url
+        Link link ->
+            "url: " ++ link.url
 
-        Section i _ _ ->
-            "sec: " ++ String.fromInt i
+        Section sec ->
+            "sec: " ++ String.fromInt sec.id
 
 
 addHashtag : String -> Graph -> Graph
@@ -92,16 +93,28 @@ addHashtag name =
     rootConnect (Hashtag name)
 
 
-addLink : String -> String -> Graph -> Graph
-addLink name url =
-    rootConnect (Link { name = name, url = url })
+addLink : { name : String, url : String } -> Graph -> Graph
+addLink link =
+    rootConnect (Link link)
+
+
+section : Int -> Node
+section id =
+    Section
+        { id = id
+        , weight = -1
+        , name = ""
+        }
 
 
 addSection : Int -> Graph -> Graph
 addSection id graph =
     case graph.root of
         Just root ->
-            addEdge root (Section id -1 "") graph
+            addEdge
+                root
+                (section id)
+                graph
 
         _ ->
             graph
@@ -135,14 +148,26 @@ parseSectionsHelper prev sections graph =
 
         ( x :: xs, [] ) ->
             graph
-                |> addNode (Section x.id x.indentation (stringify x.title))
+                |> addNode
+                    (Section
+                        { id = x.id
+                        , weight = x.indentation
+                        , name = stringify x.title
+                        }
+                    )
                 |> parseSectionsHelper [ x ] xs
 
         ( x :: xs, p :: ps ) ->
             if x.indentation > p.indentation then
                 graph
-                    |> addNode (Section x.id x.indentation (stringify x.title))
-                    |> addEdge (Section p.id -1 "") (Section x.id -1 "")
+                    |> addNode
+                        (Section
+                            { id = x.id
+                            , weight = x.indentation
+                            , name = stringify x.title
+                            }
+                        )
+                    |> addEdge (section p.id) (section x.id)
                     |> parseSectionsHelper (x :: prev) xs
 
             else

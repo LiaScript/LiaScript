@@ -115,8 +115,8 @@ tooltip node =
                     Link { name, url } ->
                         name ++ ":<br/><a href='" ++ url ++ "'>" ++ url ++ "</a>"
 
-                    Section id _ name ->
-                        name
+                    Section sec ->
+                        sec.name
 
                     _ ->
                         "basdfasf<br/>asdfasfdafd"
@@ -163,7 +163,7 @@ categoryID node =
             Link _ ->
                 2
 
-            Section _ _ _ ->
+            Section _ ->
                 3
     )
 
@@ -175,6 +175,9 @@ legend =
 getName : Node -> String
 getName node =
     case node of
+        Section sec ->
+            sec.name
+
         Course title _ ->
             title
 
@@ -183,9 +186,6 @@ getName node =
 
         Link link ->
             link.name
-
-        Section _ _ name ->
-            name
 
 
 getValue : Node -> Int
@@ -200,8 +200,8 @@ getValue node =
         Link _ ->
             10
 
-        Section _ wheight _ ->
-            case wheight of
+        Section sec ->
+            case sec.weight of
                 1 ->
                     120
 
@@ -229,8 +229,8 @@ onClick msg =
 equal : Node -> Node -> Bool
 equal node1 node2 =
     case ( node1, node2 ) of
-        ( Section id1 _ _, Section id2 _ _ ) ->
-            id1 == id2
+        ( Section sec1, Section sec2 ) ->
+            sec1.id == sec2.id
 
         ( Hashtag str1, Hashtag str2 ) ->
             str1 == str2
@@ -248,8 +248,8 @@ equal node1 node2 =
 isRoot : Graph -> Node -> Bool
 isRoot graph node =
     case ( graph.root, node ) of
-        ( Just (Section id1 _ _), Section id2 _ _ ) ->
-            id1 == id2
+        ( Just (Section sec1), Section sec2 ) ->
+            sec1.id == sec2.id
 
         _ ->
             False
