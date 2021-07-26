@@ -20,9 +20,9 @@ update session msg graph =
                 Just (Section id _ _) ->
                     ( graph, Session.navToSlide session id )
 
-                Just (Link _ url) ->
+                Just (Link node) ->
                     ( graph
-                    , url
+                    , node.url
                         |> Url.fromString
                         |> Maybe.map Session.load
                         |> Maybe.withDefault Cmd.none

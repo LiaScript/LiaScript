@@ -112,7 +112,7 @@ tooltip node =
                     Hashtag name ->
                         name
 
-                    Link name url ->
+                    Link { name, url } ->
                         name ++ ":<br/><a href='" ++ url ++ "'>" ++ url ++ "</a>"
 
                     Section id _ name ->
@@ -160,7 +160,7 @@ categoryID node =
             Hashtag _ ->
                 1
 
-            Link _ _ ->
+            Link _ ->
                 2
 
             Section _ _ _ ->
@@ -181,8 +181,8 @@ getName node =
         Hashtag name ->
             name
 
-        Link name _ ->
-            name
+        Link link ->
+            link.name
 
         Section _ _ name ->
             name
@@ -197,7 +197,7 @@ getValue node =
         Hashtag _ ->
             10
 
-        Link _ _ ->
+        Link _ ->
             10
 
         Section _ wheight _ ->
@@ -235,8 +235,8 @@ equal node1 node2 =
         ( Hashtag str1, Hashtag str2 ) ->
             str1 == str2
 
-        ( Link url1 _, Link url2 _ ) ->
-            url1 == url2
+        ( Link link1, Link link2 ) ->
+            link1.url == link2.url
 
         ( Course url1 _, Course url2 _ ) ->
             url1 == url2
