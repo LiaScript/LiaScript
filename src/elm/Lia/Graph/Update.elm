@@ -1,6 +1,7 @@
 module Lia.Graph.Update exposing (..)
 
 import Dict
+import Html exposing (node)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Graph.Model exposing (Graph, Node(..), section)
@@ -41,7 +42,30 @@ getNode : Graph -> JE.Value -> Maybe Node
 getNode graph obj =
     case JD.decodeValue (JD.field "data" (JD.field "id" JD.string)) obj of
         Ok id ->
-            Dict.get id graph.node
+            graph.node
+                |> Dict.get id
+                |> Maybe.map Tuple.first
 
         _ ->
             Nothing
+
+
+sectionVisibility : Graph -> List Int -> Graph
+sectionVisibility graph ids =
+    { graph
+        | node =
+            graph.node
+                |> Dict.map
+                    (\_ ( node, _ ) ->
+                        case node of
+                            Section sec ->
+                                if List.isEmpty ids then
+                                    ( node, True )
+
+                                else
+                                    ( node, List.member sec.id ids )
+
+                            _ ->
+                                ( node, True )
+                    )
+    }

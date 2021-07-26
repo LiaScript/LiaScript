@@ -152,7 +152,16 @@ update session msg model =
                 ( index, sections, cmd ) =
                     Index.update childMsg model.index_model model.sections
             in
-            { model | index_model = index, sections = sections }
+            { model
+                | index_model = index
+                , sections = sections
+                , graph =
+                    sections
+                        |> Array.filter .visible
+                        |> Array.map .id
+                        |> Array.toList
+                        |> Graph.sectionVisibility model.graph
+            }
                 |> Return.val
                 |> Return.cmd (Cmd.map UpdateIndex cmd)
 
