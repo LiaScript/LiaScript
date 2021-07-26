@@ -45,7 +45,7 @@ chart lang graph =
                     |> Dict.toList
                     |> List.sortBy Tuple.first
                     |> List.map
-                        (\( id, node ) ->
+                        (\( id, ( node, visible ) ) ->
                             [ ( "id", JE.string id )
                             , ( "name"
                               , getName node
@@ -61,8 +61,12 @@ chart lang graph =
                                         , ( "borderWidth", JE.int 3 )
                                         ]
 
-                                    else
+                                    else if visible then
                                         []
+
+                                    else
+                                        [ ( "opacity", JE.float 0.1 )
+                                        ]
                               )
 
                             --, ( "fixed", JE.bool True )
@@ -203,16 +207,16 @@ getValue node =
         Section sec ->
             case sec.weight of
                 1 ->
-                    120
+                    200
 
                 2 ->
-                    60
+                    100
 
                 3 ->
-                    30
+                    50
 
                 4 ->
-                    15
+                    25
 
                 _ ->
                     10

@@ -36,7 +36,7 @@ type alias Edge =
 
 type alias Graph =
     { root : Maybe Node
-    , node : Dict String Node
+    , node : Dict String ( Node, Bool )
     , edge : List Edge
     }
 
@@ -53,7 +53,7 @@ addNode : Node -> Graph -> Graph
 addNode node graph =
     { graph
         | node =
-            Dict.insert (nodeID node) node graph.node
+            Dict.insert (nodeID node) ( node, True ) graph.node
     }
 
 
