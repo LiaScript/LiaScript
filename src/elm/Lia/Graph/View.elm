@@ -154,7 +154,7 @@ categoryID node =
     ( "category"
     , JE.int <|
         case node of
-            Course _ _ ->
+            Course _ ->
                 0
 
             Hashtag _ ->
@@ -178,8 +178,8 @@ getName node =
         Section sec ->
             sec.name
 
-        Course title _ ->
-            title
+        Course lia ->
+            lia.name
 
         Hashtag name ->
             name
@@ -191,7 +191,7 @@ getName node =
 getValue : Node -> Int
 getValue node =
     case node of
-        Course _ _ ->
+        Course _ ->
             50
 
         Hashtag _ ->
@@ -238,8 +238,8 @@ equal node1 node2 =
         ( Link link1, Link link2 ) ->
             link1.url == link2.url
 
-        ( Course url1 _, Course url2 _ ) ->
-            url1 == url2
+        ( Course lia1, Course lia2 ) ->
+            lia1.url == lia2.url
 
         _ ->
             False

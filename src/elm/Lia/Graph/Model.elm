@@ -25,7 +25,7 @@ type Node
     = Hashtag String
     | Section { id : Int, weight : Int, name : String }
     | Link { name : String, url : String }
-    | Course String String
+    | Course { name : String, url : String }
 
 
 type alias Edge =
@@ -75,8 +75,8 @@ addEdge from to graph =
 nodeID : Node -> String
 nodeID node =
     case node of
-        Course _ url ->
-            "lia: " ++ url
+        Course lia ->
+            "lia: " ++ lia.url
 
         Hashtag str ->
             "tag: " ++ String.toLower str
@@ -120,9 +120,9 @@ addSection id graph =
             graph
 
 
-addCourse : String -> String -> Graph -> Graph
-addCourse name url =
-    rootConnect (Course name url)
+addCourse : { name : String, url : String } -> Graph -> Graph
+addCourse lia =
+    rootConnect (Course lia)
 
 
 rootConnect : Node -> Graph -> Graph
