@@ -134,7 +134,10 @@ viewSlide screen model =
                             |> Markdown.view
                             |> Html.map UpdateMarkdown
                         )
-                        (Graph.view model.translation model.graph)
+                        (model.graph
+                            |> Graph.view model.translation
+                            |> Html.map UpdateGraph
+                        )
                         model.splitPane
                     ]
                 , slideBottom
