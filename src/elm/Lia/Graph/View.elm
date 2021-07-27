@@ -53,7 +53,7 @@ chart lang graph =
                               )
                             , categoryID node
                             , tooltip node
-                            , ( "symbolSize", JE.int (getValue node) )
+                            , ( "symbolSize", JE.float <| getValue node )
                             , ( "itemStyle"
                               , JE.object <|
                                     if isRoot graph node then
@@ -192,7 +192,7 @@ getName node =
             link.name
 
 
-getValue : Node -> Int
+getValue : Node -> Float
 getValue node =
     case node of
         Course _ ->
@@ -205,21 +205,7 @@ getValue node =
             10
 
         Section sec ->
-            case sec.weight of
-                1 ->
-                    200
-
-                2 ->
-                    100
-
-                3 ->
-                    50
-
-                4 ->
-                    25
-
-                _ ->
-                    10
+            toFloat sec.weight / 60
 
 
 onClick : (JE.Value -> msg) -> Html.Attribute msg

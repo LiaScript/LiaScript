@@ -151,7 +151,7 @@ parseSectionsHelper prev sections graph =
                 |> addNode
                     (Section
                         { id = x.id
-                        , weight = x.indentation
+                        , weight = String.length x.code --x.indentation
                         , name = stringify x.title
                         }
                     )
@@ -163,7 +163,7 @@ parseSectionsHelper prev sections graph =
                     |> addNode
                         (Section
                             { id = x.id
-                            , weight = x.indentation
+                            , weight = String.length x.code --x.indentation
                             , name = stringify x.title
                             }
                         )
