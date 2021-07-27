@@ -1,4 +1,7 @@
-module Lia.Markdown.Gallery.Types exposing (Gallery, Vector)
+module Lia.Markdown.Gallery.Types exposing
+    ( Gallery
+    , Vector
+    )
 
 import Array exposing (Array)
 import Lia.Markdown.Inline.Types exposing (Inlines)

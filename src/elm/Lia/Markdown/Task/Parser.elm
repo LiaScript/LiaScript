@@ -26,7 +26,7 @@ import Lia.Parser.Context exposing (Context)
     - [X] some checked tasks
     <script> // do something with the input </script>
 
-The associated script is a LiaScript feature, it is optional and will containt
+The associated script is a LiaScript feature, it is optional and will contain
 some JavaScript code that is executed every time the user changes the input.
 
 -}

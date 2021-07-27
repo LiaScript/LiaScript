@@ -1,4 +1,7 @@
-module Lia.Index.Update exposing (Msg(..), update)
+module Lia.Index.Update exposing
+    ( Msg(..)
+    , update
+    )
 
 import Array
 import Lia.Index.Model exposing (Model)

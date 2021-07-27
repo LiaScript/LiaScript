@@ -239,7 +239,7 @@ view_matrix config header questions fn submitted =
         [ Html.table [ Attr.class "lia-table lia-survey-matrix is-alternating" ]
             [ header
                 |> List.map ((viewer config >> List.map (Html.map Script)) >> Html.th [ Attr.class "lia-table__head lia-survey-matrix__head" ])
-                |> Html.thead [ Attr.class "lia-table__head lia-survey-matric__head" ]
+                |> Html.thead [ Attr.class "lia-table__head lia-survey-matrix__head" ]
             , questions
                 |> List.indexedMap Tuple.pair
                 |> List.map fnX

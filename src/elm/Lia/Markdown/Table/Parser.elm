@@ -1,4 +1,7 @@
-module Lia.Markdown.Table.Parser exposing (classify, parse)
+module Lia.Markdown.Table.Parser exposing
+    ( classify
+    , parse
+    )
 
 import Array
 import Combine
@@ -48,7 +51,7 @@ import Set
 parse : Parser Context Table
 parse =
     Indent.skip
-        |> keep (or formated simple)
+        |> keep (or formatted simple)
         |> modify_State
 
 
@@ -187,7 +190,7 @@ checkDiagram headLine rows =
                 PieChart
 
             else if
-                -- thera are only unique numbers in first column
+                -- there are only unique numbers in first column
                 firstColumn
                     |> List.filterMap identity
                     |> Set.fromList
@@ -311,8 +314,8 @@ simple =
         |> map (Table None [] [])
 
 
-formated : Parser Context (Int -> Table)
-formated =
+formatted : Parser Context (Int -> Table)
+formatted =
     row
         |> map (Table None)
         |> andMap format

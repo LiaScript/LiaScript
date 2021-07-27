@@ -1,4 +1,7 @@
-module Lia.Markdown.Footnote.Parser exposing (block, inline)
+module Lia.Markdown.Footnote.Parser exposing
+    ( block
+    , inline
+    )
 
 import Combine
     exposing

@@ -1,4 +1,7 @@
-module Lia.Index.Model exposing (Model, init)
+module Lia.Index.Model exposing
+    ( Model
+    , init
+    )
 
 
 type alias Model =

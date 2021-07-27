@@ -25,27 +25,27 @@ import Lia.Section exposing (SubSection)
 
 
 {-| The `Context` defines the current state of the parser. It keeps track of the
-current indentation as well as on all identfied elements that might require state
+current indentation as well as on all identified elements that might require state
 control:
 
-  - `indentation`: a list of `["  ", "> "]`, elements are pushed on and poppend
+  - `indentation`: a list of `["  ", "> "]`, elements are pushed on and popped
     off this stack, to check the currently defined indentation.
   - `indentation_skip`: defines if the indentation should be skipped within the
     next step
   - `****_vector`: any kind of state to preserve for the applied sub-modules.
-    Normaly new states are pushed on this stack/array and their position (id) is
-    later used to identfy the required element from within the views.
+    Normally new states are pushed on this stack/array and their position (id) is
+    later used to identify the required element from within the views.
   - `effect_model` & `effect_number` are specific, the `effect_number` is a
     stack of Int that is required to keep the current animation-id, if for
     example `<script>` are used within a effect or to deal with nested effects.
-  - `defines`: is a set of macros and other definitions, that are normaly
+  - `defines`: is a set of macros and other definitions, that are normally
     defined within the head of every LiaScript document
   - `footnotes`
   - `defines_updated`:
   - `search_index`: a function, that translates a string title into a section
     number
 
-> Context is commonly used per section, since sections are preparsed at first
+> Context is commonly used per section, since sections are pre-parsed at first
 > and afterwards only the current section is parsed, in order to speed up
 > execution.
 
@@ -70,7 +70,7 @@ type alias Context =
 
 
 {-| Initialize the current `Context` with a searchIndex function and the global
-defininitions.
+definitions.
 -}
 init : Maybe (String -> String) -> Definition -> Context
 init search_index global =

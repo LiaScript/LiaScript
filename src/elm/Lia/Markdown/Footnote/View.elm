@@ -1,4 +1,8 @@
-module Lia.Markdown.Footnote.View exposing (block, byKey, inline)
+module Lia.Markdown.Footnote.View exposing
+    ( block
+    , byKey
+    , inline
+    )
 
 import Accessibility.Aria as A11y_Aria
 import Accessibility.Key as A11y_Key

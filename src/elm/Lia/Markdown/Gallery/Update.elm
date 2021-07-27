@@ -1,4 +1,7 @@
-module Lia.Markdown.Gallery.Update exposing (Msg(..), update)
+module Lia.Markdown.Gallery.Update exposing
+    ( Msg(..)
+    , update
+    )
 
 import Array
 import Lia.Markdown.Effect.Script.Update as Script

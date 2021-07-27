@@ -26,7 +26,7 @@ type Level
     | Info -- for information of any kind
     | Warn -- for warnings
     | Error -- for errors
-    | Stream -- concats all outputs, usable for handling stdout from the console
+    | Stream -- concatenates all outputs, usable for handling stdout from the console
     | HTML -- show html content
 
 

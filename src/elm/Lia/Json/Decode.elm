@@ -12,7 +12,7 @@ import Lia.Settings.Types as Settings
 import Translations
 
 
-{-| Decode the entire structure of a preparsed LiaScript course. The additional
+{-| Decode the entire structure of a pre-parsed LiaScript course. The additional
 screen `width` is only used to render the course with an opened or closed table
 of contents.
 -}

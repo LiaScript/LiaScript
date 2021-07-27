@@ -1,4 +1,7 @@
-module Main exposing (Flags, main)
+module Main exposing
+    ( Flags
+    , main
+    )
 
 import Browser
 import Browser.Navigation as Nav
@@ -91,7 +94,7 @@ init flags url key =
             flags.screen.width > Const.globalBreakpoints.sm
     in
     case ( courseUrl.query, flags.courseUrl, flags.script ) of
-        -- directly parse the scirpt
+        -- directly parse the script
         ( _, _, Just script ) ->
             let
                 subURL =

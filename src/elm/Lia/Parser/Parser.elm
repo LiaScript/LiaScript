@@ -1,5 +1,5 @@
 module Lia.Parser.Parser exposing
-    ( parse_defintion
+    ( parse_definition
     , parse_section
     , parse_subsection
     , parse_titles
@@ -26,8 +26,8 @@ import Lia.Parser.Preprocessor as Preprocessor
 import Lia.Section as Section exposing (Section, SubSection(..))
 
 
-parse_defintion : String -> String -> Result String ( Definition, String )
-parse_defintion base code =
+parse_definition : String -> String -> Result String ( Definition, String )
+parse_definition base code =
     case
         Combine.runParser
             (Lia.Definition.Parser.parse
@@ -52,7 +52,7 @@ parse_defintion base code =
 
                 else
                     formatError ms stream
-                        |> Error.Message.parseDefinintion code
+                        |> Error.Message.parseDefinition code
 
 
 

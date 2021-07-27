@@ -150,7 +150,7 @@ resources and to add additional macros.
 -}
 add_imports : Model -> String -> Model
 add_imports model code =
-    case Parser.parse_defintion model.url code of
+    case Parser.parse_definition model.url code of
         Ok ( definition, _ ) ->
             add_todos definition model
 
@@ -194,7 +194,7 @@ add_todos definition model =
 
 
 {-| **@private**: Process a title-string, so that it can be easily compared with
-realtive links. Incorporates string lowercase, replacement of " " by "-", etc.
+relative links. Incorporates string lowercase, replacement of " " by "-", etc.
 
     generateIndex 1 "The Main  Title" == ( "#the-main-title", "#2" )
 
@@ -213,11 +213,11 @@ generateIndex id title =
     )
 
 
-{-| Initalize a LiaScript Model with the code of a course. The header of this
+{-| Initialize a LiaScript Model with the code of a course. The header of this
 course is parsed as a definition, that contains `@authors`, `@import`, etc. The
 result is a:
 
-1.  `Model` that is preconfigured
+1.  `Model` that is pre-configured
 2.  `String` that only contains the document code without header definitions
 3.  `List String` of templates that have to be downloaded and parsed
 
@@ -228,7 +228,7 @@ thus one section at a time. After the model has been initialized the function
 -}
 init_script : Model -> String -> ( Model, Maybe String, List String )
 init_script model script =
-    case Parser.parse_defintion model.origin script of
+    case Parser.parse_definition model.origin script of
         Ok ( definition, code ) ->
             let
                 settings =
@@ -262,12 +262,12 @@ init_script model script =
             ( { model | error = Just msg }, Nothing, [] )
 
 
-{-| Successively parse section after section. Every thime this function is
+{-| Successively parse section after section. Every time this function is
 called a new section is added to the section array in the model and the
 remainder of the code gets returned. If there is no more code to parse,
 `Nothing` gets returned.
 
-This successive preparsing is intended to minimize blocking time, since parsing
+This successive pre-parsing is intended to minimize blocking time, since parsing
 very large documents might take some time. Parsing this it is possible to
 present some progress to the user as well as do other stuff in the background.
 
@@ -305,7 +305,7 @@ get_title =
         >> Maybe.withDefault "Lia"
 
 
-{-| **@private:** Used by the index-title search to identfy the section number
+{-| **@private:** Used by the index-title search to identify the section number
 that matches the relative Markdown link.
 -}
 filterIndex : String -> ( String, String ) -> Bool

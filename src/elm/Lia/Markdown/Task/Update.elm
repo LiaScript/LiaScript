@@ -1,4 +1,8 @@
-module Lia.Markdown.Task.Update exposing (Msg(..), handle, update)
+module Lia.Markdown.Task.Update exposing
+    ( Msg(..)
+    , handle
+    , update
+    )
 
 import Array exposing (Array)
 import Json.Encode as JE
@@ -12,7 +16,7 @@ import Port.Event as Event exposing (Event)
 
 {-| Interaction associated to LiaScript task list:
 
-  - `Toggle x y js`: toogle on boolean value, depending on the `x` and `y`
+  - `Toggle x y js`: toggle on boolean value, depending on the `x` and `y`
     coordinates. If set, the js code is executed after every toggle event.
   - `Handle`: event communication via ports
   - `Script`: mandatory to enable `Effect.Script` events to be executed in every

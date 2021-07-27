@@ -29,7 +29,7 @@ import Translations as Trans exposing (Lang)
 
 {-| Main view for the entire LiaScript model with the parameters:
 
-1.  `screen`: width and heigth of the window
+1.  `screen`: width and height of the window
 2.  `hasShareAPI`: will enable sharing vie the `navigation.share` api, otherwise
     create an QR-code with the entire course-URL
 3.  `hasIndex`: display a home-button or not
@@ -157,7 +157,7 @@ viewSlide screen model =
             ]
 
 
-{-| **@private:** used to diplay the text2speech output settings and spoken
+{-| **@private:** used to display the text2speech output settings and spoken
 comments in text, depending on the currently applied rendering mode.
 -}
 slideBottom : Screen -> Lang -> Settings -> Int -> Effect.Model SubSection -> Html Msg
@@ -302,7 +302,7 @@ slideA11y lang mode media effect id =
 
 1.  `str`: string to be displayed in the body
 2.  `title`: attribute
-3.  `id`: so that it can be identfied by external css
+3.  `id`: so that it can be identified by external css
 4.  `msg`: to release if pressed
 
 -}

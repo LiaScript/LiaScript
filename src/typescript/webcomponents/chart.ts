@@ -16,7 +16,7 @@ const style = 'width: 100%; height: 400px; margin-top: -0.2em;'
 // TODO
 // - [ ] Switching to dark-mode and then performing an external translation does
 //       not reload the dark-mode properly.
-// - [ ] Let translator also translate the titles, xaxis, etc.
+// - [ ] Let translator also translate the titles, x-axis, etc.
 // - [ ] Check for more appropriate aria labeling.
 // - [ ] Make buttons also accessible, no keyboard yet
 //

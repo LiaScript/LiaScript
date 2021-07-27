@@ -37,7 +37,7 @@ import Html.Attributes as Attr
 import Lia.Markdown.HTML.NamedCharacterReferences as NamedCharacterReferences
 
 
-{-| Used internaly to store HTML parameter as Tuples of `(name, value)`.
+{-| Used internally to store HTML parameter as Tuples of `(name, value)`.
 
 **Note:** The name value is automatically stored in lowercase.
 
@@ -159,7 +159,7 @@ isTrue val =
     val == "" || val == "1" || val == "true"
 
 
-{-| Add the classname and to the parameter list and translate them into a list
+{-| Add the class-name and to the parameter list and translate them into a list
 of attributes...
 -}
 annotation : String -> Parameters -> List (Attribute msg)
@@ -178,7 +178,7 @@ toAttribute =
 
     "src", "href", "data", "data-src", "formaction", "poster"
 
-are checked if they definee a relative or absolute path. If it is a relative
+are checked if they define a relative or absolute path. If it is a relative
 URL, then the base-URL is automatically added to the front:
 
     base "http://base.url/" ( "src", "pic.jpg" )
@@ -367,14 +367,14 @@ namedCharacterReference =
 numericCharacterReference : Parser context String
 numericCharacterReference =
     let
-        codepoint =
+        codePoint =
             choice
                 [ regex "(x|X)" |> keep hexadecimal
                 , regex "0*" |> keep int
                 ]
     in
     string "#"
-        |> keep (map (Char.fromCode >> String.fromChar) codepoint)
+        |> keep (map (Char.fromCode >> String.fromChar) codePoint)
 
 
 {-| **@private: ** Hexadecimal Strings are converted to Int

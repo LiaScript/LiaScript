@@ -1,4 +1,15 @@
-module Lia.Markdown.Code.Events exposing (eval, evalDecode, flip_view, fullscreen, input, load, stop, store, version_append, version_update)
+module Lia.Markdown.Code.Events exposing
+    ( eval
+    , evalDecode
+    , flip_view
+    , fullscreen
+    , input
+    , load
+    , stop
+    , store
+    , version_append
+    , version_update
+    )
 
 import Array
 import Json.Encode as JE

@@ -492,7 +492,7 @@ scriptBody : Parser s String
 scriptBody =
     regexWith True False "</script>"
         |> manyTill
-            ([ regex "[^@\"'`</]+" --" this is only a comment for syntaxhighlighting ...
+            ([ regex "[^@\"'`</]+" --" this is only a comment for syntax-highlighting ...
              , regex "[ \t\n]+"
              , string "@'"
              , string "@"

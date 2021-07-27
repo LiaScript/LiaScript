@@ -1,4 +1,7 @@
-module Lia.Markdown.Types exposing (Markdown(..), MarkdownS)
+module Lia.Markdown.Types exposing
+    ( Markdown(..)
+    , MarkdownS
+    )
 
 import Lia.Markdown.Chart.Types exposing (Chart)
 import Lia.Markdown.Code.Types exposing (Code)

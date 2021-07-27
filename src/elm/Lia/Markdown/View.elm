@@ -274,7 +274,7 @@ view_block config block =
 
         BulletList attr list ->
             list
-                |> view_bulletlist config
+                |> view_bulletList config
                 |> Html.ul (annotation "lia-list--unordered" attr)
 
         OrderedList attr list ->
@@ -457,8 +457,8 @@ view_list config =
     List.map viewer
 
 
-view_bulletlist : Config Msg -> List (List Markdown) -> List (Html Msg)
-view_bulletlist config =
+view_bulletList : Config Msg -> List (List Markdown) -> List (Html Msg)
+view_bulletList config =
     let
         viewer =
             List.map (view_block config)

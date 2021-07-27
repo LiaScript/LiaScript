@@ -48,7 +48,7 @@ update scripts msg vector =
                 ( vector, [], Nothing )
 
         Submit id Nothing ->
-            if submitable vector id then
+            if submittable vector id then
                 let
                     new_vector =
                         submit vector id
@@ -219,8 +219,8 @@ submit vector idx =
             vector
 
 
-submitable : Vector -> Int -> Bool
-submitable vector idx =
+submittable : Vector -> Int -> Bool
+submittable vector idx =
     case Array.get idx vector of
         Just ( False, Text_State state, _ ) ->
             state /= ""

@@ -33,7 +33,7 @@ import Translations
 
   - `error`: contains parsing error messages
 
-  - `sections`: an array of all preparsed sections
+  - `sections`: an array of all pre-parsed sections
 
   - `section_active`: the currently visible section id
 
@@ -49,8 +49,8 @@ import Translations
 
   - `resource`: a list of all javascript and css files that have to be loaded
 
-  - `to_do`: before a course can be rendered eintirely, some tasks have to be
-    fullfilled, such as loading external resources, checking in the backend, if
+  - `to_do`: before a course can be rendered entirely, some tasks have to be
+    fulfilled, such as loading external resources, checking in the backend, if
     there is some data on quizzes, that has to be restored, etc. All of this is
     collected as events and send immediately through the elm-port to js.
 

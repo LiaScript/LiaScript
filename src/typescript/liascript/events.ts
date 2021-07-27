@@ -47,7 +47,7 @@ type SendExec = {
 window.event_semaphore = 0
 let lia_queue: JSEvent[] = []
 
-// Basic class for handline Code-Errors
+// Basic class for handling Code-Errors
 class LiaError extends Error {
   public details: Lia.ErrMessage[][]
 

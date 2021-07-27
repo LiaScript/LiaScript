@@ -398,7 +398,7 @@ viewEditorTheme lang tabbable theme =
                   , ( "gruvbox", "Gruvbox" )
                   , ( "idle_fingers", "idle Fingers" )
                   , ( "kr_theme", "krTheme" )
-                  , ( "merbivore", "Merbivore" )
+                  , ( "herbivore", "Merbivore" )
                   , ( "merbivore_soft", "Merbivore Soft" )
                   , ( "mono_industrial", "Mono Industrial" )
                   , ( "monokai", "Monokai" )

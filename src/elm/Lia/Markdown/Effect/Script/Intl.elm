@@ -1,4 +1,8 @@
-module Lia.Markdown.Effect.Script.Intl exposing (Intl, from, view)
+module Lia.Markdown.Effect.Script.Intl exposing
+    ( Intl
+    , from
+    , view
+    )
 
 import Html exposing (Html)
 import Html.Attributes as Attr

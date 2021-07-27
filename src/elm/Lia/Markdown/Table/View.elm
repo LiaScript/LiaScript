@@ -99,7 +99,7 @@ diagramTranspose attr matrix =
 
 
 chart : Lang -> Int -> Bool -> Parameters -> Bool -> Class -> Matrix Cell -> Html Msg
-chart lang width isFormated attr mode class matrix =
+chart lang width isFormatted attr mode class matrix =
     let
         ( head, body ) =
             Matrix.split matrix
@@ -363,7 +363,7 @@ chart lang width isFormated attr mode class matrix =
         Map ->
             let
                 data =
-                    if isFormated then
+                    if isFormatted then
                         body
 
                     else
@@ -441,13 +441,13 @@ chart lang width isFormated attr mode class matrix =
 
             else
                 let
-                    xvalues =
+                    xValues =
                         body
                             |> Matrix.column 0
                             |> Maybe.withDefault []
                             |> List.map .string
 
-                    xlabels =
+                    xLabels =
                         head
                             |> List.tail
                             |> Maybe.withDefault []
@@ -457,7 +457,7 @@ chart lang width isFormated attr mode class matrix =
                     |> Matrix.transpose
                     |> Matrix.tail
                     |> Matrix.map .float
-                    |> List.map2 Tuple.pair xlabels
+                    |> List.map2 Tuple.pair xLabels
                     |> (if class == LinePlot then
                             Chart.viewLines
 
@@ -468,7 +468,7 @@ chart lang width isFormated attr mode class matrix =
                         attr
                         mode
                         labels
-                        xvalues
+                        xValues
 
 
 getLabels : Parameters -> Row Cell -> Labels
