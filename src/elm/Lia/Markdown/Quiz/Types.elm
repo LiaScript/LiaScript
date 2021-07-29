@@ -14,7 +14,7 @@ module Lia.Markdown.Quiz.Types exposing
     )
 
 import Array exposing (Array)
-import Lia.Markdown.Inline.Types exposing (MultInlines)
+import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Block.Types as Block
 import Lia.Markdown.Quiz.Matrix.Types as Matrix
 import Lia.Markdown.Quiz.Solution as Solution exposing (Solution)
@@ -26,7 +26,7 @@ type alias Vector =
 
 
 type alias Hints =
-    MultInlines
+    List Inlines
 
 
 type alias Element =

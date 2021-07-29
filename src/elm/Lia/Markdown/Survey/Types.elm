@@ -9,7 +9,7 @@ module Lia.Markdown.Survey.Types exposing
 
 import Array exposing (Array)
 import Dict exposing (Dict)
-import Lia.Markdown.Inline.Types exposing (Inlines, MultInlines)
+import Lia.Markdown.Inline.Types exposing (Inlines)
 
 
 type alias Vector =
@@ -82,6 +82,6 @@ type alias Survey =
 
 type Type
     = Text Int
-    | Select MultInlines
+    | Select (List Inlines)
     | Vector Bool (List ( String, Inlines ))
-    | Matrix Bool MultInlines (List String) MultInlines
+    | Matrix Bool (List Inlines) (List String) (List Inlines)

@@ -1,7 +1,6 @@
 module Lia.Markdown.Inline.Types exposing
     ( Inline(..)
     , Inlines
-    , MultInlines
     , Reference(..)
     , combine
     , htmlBlock
@@ -15,10 +14,6 @@ import Lia.Markdown.HTML.Types exposing (Node(..))
 
 type alias Inlines =
     List Inline
-
-
-type alias MultInlines =
-    List Inlines
 
 
 type Inline

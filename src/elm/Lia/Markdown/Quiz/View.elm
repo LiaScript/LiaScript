@@ -24,7 +24,7 @@ TODO:
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Lia.Markdown.Inline.Config exposing (Config)
-import Lia.Markdown.Inline.Types exposing (MultInlines)
+import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Quiz.Block.View as Block
 import Lia.Markdown.Quiz.Matrix.View as Matrix
@@ -219,7 +219,7 @@ shown within a list and an additional button will be displayed to reveal more
 hints, if there are still hints not shown to the user and if the quiz has not
 been solved yet.
 -}
-viewHints : Config sub -> Int -> MultInlines -> Html (Msg sub)
+viewHints : Config sub -> Int -> List Inlines -> Html (Msg sub)
 viewHints config counter hints =
     if List.isEmpty hints then
         Html.text ""
