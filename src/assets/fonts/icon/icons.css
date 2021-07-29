@@ -447,12 +447,16 @@
   content: "\EA3A"
 }
 
-.icon-zoom-out:before {
+.icon-web:before {
   content: "\EA3B"
 }
 
-.icon-zoom:before {
+.icon-zoom-out:before {
   content: "\EA3C"
+}
+
+.icon-zoom:before {
+  content: "\EA3D"
 }
 
 

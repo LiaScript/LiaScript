@@ -505,12 +505,17 @@ $icon-warning: "\EA3A";
   content: $icon-warning
 }
 
-$icon-zoom-out: "\EA3B";
+$icon-web: "\EA3B";
+.icon-web:before {
+  content: $icon-web
+}
+
+$icon-zoom-out: "\EA3C";
 .icon-zoom-out:before {
   content: $icon-zoom-out
 }
 
-$icon-zoom: "\EA3C";
+$icon-zoom: "\EA3D";
 .icon-zoom:before {
   content: $icon-zoom
 }
