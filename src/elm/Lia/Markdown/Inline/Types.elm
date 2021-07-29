@@ -7,6 +7,7 @@ module Lia.Markdown.Inline.Types exposing
     , mediaBlock
     )
 
+import Html exposing (output)
 import Lia.Markdown.Effect.Types exposing (Effect)
 import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.HTML.Types exposing (Node(..))
@@ -85,24 +86,17 @@ mediaBlock inline =
 
 combine : Inlines -> Inlines
 combine list =
-    case list of
-        [] ->
-            []
+    combineHelper list []
 
-        [ xs ] ->
-            [ xs ]
 
-        x1 :: x2 :: xs ->
-            case ( x1, x2 ) of
-                ( Chars str attr, Chars " " [] ) ->
-                    combine (Chars (str ++ " ") attr :: xs)
+combineHelper : Inlines -> Inlines -> Inlines
+combineHelper input output =
+    case ( input, output ) of
+        ( [], _ ) ->
+            List.reverse output
 
-                ( Chars str1 attr1, Chars str2 attr2 ) ->
-                    if attr1 == attr2 then
-                        combine (Chars (str1 ++ str2) attr1 :: xs)
+        ( (Chars str1 []) :: is, (Chars str2 []) :: os ) ->
+            combineHelper is (Chars (str2 ++ str1) [] :: os)
 
-                    else
-                        x1 :: combine (x2 :: xs)
-
-                _ ->
-                    x1 :: combine (x2 :: xs)
+        ( i :: is, _ ) ->
+            combineHelper is (i :: output)
