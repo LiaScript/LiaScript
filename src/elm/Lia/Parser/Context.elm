@@ -20,7 +20,6 @@ import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Markdown.Survey.Types as Survey
 import Lia.Markdown.Table.Types as Table
 import Lia.Markdown.Task.Types as Task
-import Lia.Markdown.Types exposing (Markdown(..))
 import Lia.Section exposing (SubSection)
 
 

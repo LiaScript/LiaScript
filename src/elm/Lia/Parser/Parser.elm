@@ -19,7 +19,7 @@ import Error.Message
 import Lia.Definition.Parser
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Parser as Markdown
-import Lia.Markdown.Types exposing (Markdown(..))
+import Lia.Markdown.Types exposing (Block(..), Blocks)
 import Lia.Parser.Context exposing (Context, init)
 import Lia.Parser.Helper exposing (stringTill)
 import Lia.Parser.Preprocessor as Preprocessor
@@ -125,7 +125,7 @@ parse_subsection code =
             formatError ms stream |> Err
 
 
-return : Section -> Context -> List Markdown -> Result String Section
+return : Section -> Context -> Blocks -> Result String Section
 return sec state es =
     Ok
         { sec

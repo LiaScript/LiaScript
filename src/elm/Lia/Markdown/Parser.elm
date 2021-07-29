@@ -46,7 +46,7 @@ import Lia.Markdown.Quiz.Parser as Quiz
 import Lia.Markdown.Survey.Parser as Survey
 import Lia.Markdown.Table.Parser as Table
 import Lia.Markdown.Task.Parser as Task
-import Lia.Markdown.Types exposing (Markdown(..), MarkdownS)
+import Lia.Markdown.Types as Markdown
 import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (c_frame, newline, newlines, spaces)
 import Lia.Parser.Indentation as Indent
@@ -54,7 +54,7 @@ import Lia.Parser.Preprocessor exposing (title_tag)
 import SvgBob
 
 
-run : Parser Context (List Markdown)
+run : Parser Context Markdown.Blocks
 run =
     footnotes
         |> keep (or blocks problem)
@@ -70,7 +70,7 @@ footnotes =
         |> skip
 
 
-blocks : Parser Context Markdown
+blocks : Parser Context Markdown.Block
 blocks =
     lazy <|
         \() ->
@@ -80,52 +80,52 @@ blocks =
                 |> ignore (maybe (whitespace |> keep Effect.hidden_comment))
 
 
-elements : Parser Context Markdown
+elements : Parser Context Markdown.Block
 elements =
     choice
         [ md_annotations
-            |> map Effect
+            |> map Markdown.Effect
             |> andMap (Effect.markdown blocks)
         , md_annotations
             |> map Tuple.pair
             |> andMap (Effect.comment paragraph)
             |> andThen to_comment
         , md_annotations
-            |> map Chart
+            |> map Markdown.Chart
             |> andMap Chart.parse
         , md_annotations
-            |> map (\attr tab -> Table.classify attr tab >> Table attr)
+            |> map (\attr tab -> Table.classify attr tab >> Markdown.Table attr)
             |> andMap Table.parse
             |> andMap (withState (.effect_model >> .javascript >> succeed))
         , svgbob
-        , map Code (Code.parse md_annotations)
+        , map Markdown.Code (Code.parse md_annotations)
         , md_annotations
-            |> map Header
+            |> map Markdown.Header
             |> andMap subHeader
         , horizontal_line
         , md_annotations
-            |> map Survey
+            |> map Markdown.Survey
             |> andMap Survey.parse
         , md_annotations
-            |> map Quiz
+            |> map Markdown.Quiz
             |> andMap Quiz.parse
             |> andMap solution
         , md_annotations
-            |> map Task
+            |> map Markdown.Task
             |> andMap Task.parse
         , quote
         , md_annotations
-            |> map OrderedList
+            |> map Markdown.OrderedList
             |> andMap ordered_list
         , md_annotations
-            |> map BulletList
+            |> map Markdown.BulletList
             |> andMap unordered_list
         , md_annotations
-            |> map HTML
+            |> map Markdown.HTML
             |> andMap (HTML.parse blocks)
             |> ignore (regex "[ \t]*\n")
         , md_annotations
-            |> map Gallery
+            |> map Markdown.Gallery
             |> andMap Gallery.parse
         , md_annotations
             |> map checkForCitation
@@ -133,7 +133,7 @@ elements =
         ]
 
 
-to_comment : ( Parameters, ( Int, Int ) ) -> Parser Context Markdown
+to_comment : ( Parameters, ( Int, Int ) ) -> Parser Context Markdown.Block
 to_comment ( attr, ( id1, id2 ) ) =
     (case attr of
         [] ->
@@ -149,7 +149,7 @@ to_comment ( attr, ( id1, id2 ) ) =
                     { s | effect_model = { e | comments = set_annotation id1 id2 e.comments attr } }
                 )
     )
-        |> onsuccess (Comment ( id1, id2 ))
+        |> onsuccess (Markdown.Comment ( id1, id2 ))
 
 
 svgbody : Int -> Parser Context ( Maybe Inlines, String )
@@ -189,10 +189,10 @@ svgbody len =
             )
 
 
-svgbob : Parser Context Markdown
+svgbob : Parser Context Markdown.Block
 svgbob =
     md_annotations
-        |> map ASCII
+        |> map Markdown.ASCII
         |> andMap
             (c_frame
                 |> andThen svgbody
@@ -200,7 +200,7 @@ svgbob =
             )
 
 
-svgbobSub : ( Maybe Inlines, String ) -> Parser Context ( Maybe Inlines, SvgBob.Configuration (List Markdown) )
+svgbobSub : ( Maybe Inlines, String ) -> Parser Context ( Maybe Inlines, SvgBob.Configuration Markdown.Blocks )
 svgbobSub ( caption, str ) =
     let
         svg =
@@ -302,7 +302,7 @@ underline =
         (regex "-{3,}[ \t]*" |> keep (succeed 2))
 
 
-solution : Parser Context (Maybe ( List Markdown, Int ))
+solution : Parser Context (Maybe ( Markdown.Blocks, Int ))
 solution =
     let
         rslt e1 blocks_ e2 =
@@ -319,7 +319,7 @@ solution =
         |> maybe
 
 
-ident_blocks : Parser Context MarkdownS
+ident_blocks : Parser Context Markdown.Blocks
 ident_blocks =
     blocks
         |> ignore (regex "\n?")
@@ -327,7 +327,7 @@ ident_blocks =
         |> ignore Indent.pop
 
 
-unordered_list : Parser Context (List MarkdownS)
+unordered_list : Parser Context (List Markdown.Blocks)
 unordered_list =
     Indent.push "  "
         |> keep
@@ -342,7 +342,7 @@ unordered_list =
             )
 
 
-ordered_list : Parser Context (List ( String, MarkdownS ))
+ordered_list : Parser Context (List ( String, Markdown.Blocks ))
 ordered_list =
     Indent.push "   "
         |> keep
@@ -365,9 +365,9 @@ newlineWithIndentation =
         |> ignore newline
 
 
-quote : Parser Context Markdown
+quote : Parser Context Markdown.Block
 quote =
-    map Quote md_annotations
+    map Markdown.Quote md_annotations
         |> ignore (regex "> ?")
         |> ignore (Indent.push "> ?")
         |> ignore Indent.skip
@@ -375,18 +375,18 @@ quote =
         |> ignore Indent.pop
 
 
-checkForCitation : Parameters -> Inlines -> Markdown
+checkForCitation : Parameters -> Inlines -> Markdown.Block
 checkForCitation attr p =
     case p of
         (Chars chars cAttr) :: rest ->
             if String.startsWith "--" chars then
-                Citation attr (Chars (String.dropLeft 2 chars) cAttr :: rest)
+                Markdown.Citation attr (Chars (String.dropLeft 2 chars) cAttr :: rest)
 
             else
-                Paragraph attr p
+                Markdown.Paragraph attr p
 
         _ ->
-            Paragraph attr p
+            Markdown.Paragraph attr p
 
 
 
@@ -406,11 +406,11 @@ checkForCitation attr p =
 --        |> ignore indentation_pop
 
 
-horizontal_line : Parser Context Markdown
+horizontal_line : Parser Context Markdown.Block
 horizontal_line =
     md_annotations
         |> ignore (regex "-{3,}")
-        |> map HLine
+        |> map Markdown.HLine
 
 
 paragraph : Parser Context Inlines
@@ -449,13 +449,13 @@ checkParagraph =
         )
 
 
-problem : Parser Context Markdown
+problem : Parser Context Markdown.Block
 problem =
     Indent.skip
         |> ignore Indent.check
         |> keep lineWithProblems
         |> ignore newline
-        |> map Problem
+        |> map Markdown.Problem
 
 
 md_annotations : Parser Context Parameters

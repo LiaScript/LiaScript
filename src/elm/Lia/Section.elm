@@ -17,7 +17,7 @@ import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Markdown.Survey.Types as Survey
 import Lia.Markdown.Table.Types as Table
 import Lia.Markdown.Task.Types as Task
-import Lia.Markdown.Types exposing (Markdown(..))
+import Lia.Markdown.Types as Markdown
 
 
 {-| This is the main record to contain all section related information.
@@ -61,7 +61,7 @@ type alias Section =
     , indentation : Int
     , visible : Bool
     , id : Int
-    , body : List Markdown
+    , body : Markdown.Blocks
     , parsed : Bool
     , error : Maybe String
     , code_model : Code.Model
@@ -92,7 +92,7 @@ stored permanently. To minimize the requirements, there are actually two types:
 -}
 type SubSection
     = SubSection
-        { body : List Markdown
+        { body : Markdown.Blocks
         , error : Maybe String
         , code_model : Code.Model
         , task_vector : Task.Vector

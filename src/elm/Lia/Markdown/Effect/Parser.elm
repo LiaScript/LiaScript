@@ -35,13 +35,13 @@ import Lia.Markdown.Effect.Model exposing (Content, Element)
 import Lia.Markdown.Effect.Types as Effect exposing (Effect)
 import Lia.Markdown.Inline.Types exposing (Inline(..), Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
-import Lia.Markdown.Types exposing (Markdown(..))
+import Lia.Markdown.Types as Markdown
 import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (newlines, spaces1)
 import Lia.Parser.Indentation as Indent
 
 
-markdown : Parser Context Markdown -> Parser Context (Effect Markdown)
+markdown : Parser Context Markdown.Block -> Parser Context (Effect Markdown.Block)
 markdown blocks =
     regex "[\t ]*{{"
         |> keep definition
@@ -53,12 +53,12 @@ markdown blocks =
         |> andMap effect_id
 
 
-single : Parser Context Markdown -> Parser Context (List Markdown)
+single : Parser Context Markdown.Block -> Parser Context Markdown.Blocks
 single =
     map List.singleton
 
 
-multi : Parser Context Markdown -> Parser Context (List Markdown)
+multi : Parser Context Markdown.Block -> Parser Context Markdown.Blocks
 multi blocks =
     Indent.check
         |> ignore (regex "[\t ]*\\*{3,}\\n+")
