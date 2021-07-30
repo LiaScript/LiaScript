@@ -12,7 +12,11 @@ import TTS from './tts'
 import { Connector } from '../connectors/Base/index'
 import { updateClassName } from '../connectors/Base/settings'
 
+<<<<<<< HEAD
 import { initTooltip } from '../webcomponents/tooltip/index'
+=======
+import { Sync } from '../sync/Beaker/index'
+>>>>>>> d7dc2677 (not ready)
 
 window.img_Zoom = function (e: MouseEvent | TouchEvent) {
   const target = e.target as HTMLImageElement
@@ -233,6 +237,7 @@ var firstSpeak = true
 class LiaScript {
   private app: any
   public connector: Connector
+  private sync?: Sync
 
   constructor(
     elem: HTMLElement,
