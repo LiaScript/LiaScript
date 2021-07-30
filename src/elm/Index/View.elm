@@ -260,7 +260,7 @@ viewControls hasShareAPI title comment course =
             , tabbable = True
             , icon = "icon-refresh"
             }
-            [ Attr.class "lia-btn--tag lia-btn--transparent text-grey-dark border-grey px-1" ]
+            [ Attr.class "lia-btn--tag lia-btn--transparent text-grey border-grey px-1" ]
         , if hasShareAPI then
             btnIcon
                 { msg =
