@@ -1,4 +1,7 @@
-module Lia.Voice exposing (Voice, getVoiceFor)
+module Lia.Voice exposing
+    ( Voice
+    , getVoiceFor
+    )
 
 
 type alias Voice =

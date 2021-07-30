@@ -1,4 +1,7 @@
-module Model exposing (Model, State(..))
+module Model exposing
+    ( Model
+    , State(..)
+    )
 
 {-| The global Model and the global State the application can be in.
 
@@ -7,11 +10,11 @@ by the `State` type:
 
 1.  `Running`: Means a LiaScript course has been loaded, parsed and is now
     rendered.
-2.  `Idle`: Nothing has to be done. In moste cases this means, that an index of
+2.  `Idle`: Nothing has to be done. In most cases this means, that an index of
     all previously stored courses is displayed.
 3.  `Loading` | `Parsing`: The course document gets loaded and parsed.
 4.  `Error`: This happens only, if the course URL could not be loaded or
-    something very unusual happend during parsing.
+    something very unusual happened during parsing.
 
 -}
 
@@ -23,7 +26,7 @@ import Session exposing (Session)
 
 {-| The global LiaScript Model:
 
-  - `size`: referes to the byte-size of the loaded document (this info is later
+  - `size`: refers to the byte-size of the loaded document (this info is later
     used to animate the preprocessing with a percentage value)
 
   - `hasIndex`: this parameter is defined by the so called connectors, depending
@@ -37,7 +40,7 @@ import Session exposing (Session)
 
   - `preload`: if some content is reloaded from the "backend", it is stored in
     here. This might be the case, if the Version of a course has not changed or
-    if the user is offline. In both cases, a subsequent preparsing is not
+    if the user is offline. In both cases, a subsequent pre-parsing is not
     necessary.
 
   - `session`: session data on local navigation and the screen size
@@ -75,12 +78,12 @@ type alias Model =
       - The Int defines the number (a counter) of LiaScript imports that have to
         be loaded and parsed additionally. This number is counted down after
         every successful download
-      - **Note:** Only `Parsing False 0` means that the process of preparsing is
+      - **Note:** Only `Parsing False 0` means that the process of pre-parsing is
         finished.
 
   - `Running`: Pass all action to Lia
 
-  - `Error`: What has happend?
+  - `Error`: What has happened?
 
 -}
 type State

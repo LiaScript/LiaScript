@@ -60,7 +60,7 @@ onKeyDown tagger =
 {-| Avoid event bubbling. Especially key-press left or right should be handled
 by some elements itself and not result in a section-switch. Thus, on global
 scale the left and right arrow keys should be used in slide-navigation, but
-locally it must be surpressed in text inputs, search fields, etc.
+locally it must be suppressed in text inputs, search fields, etc.
 -}
 blockKeydown : msg -> Html.Attribute msg
 blockKeydown =

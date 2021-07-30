@@ -1,5 +1,5 @@
 module Lia.Parser.Parser exposing
-    ( parse_defintion
+    ( parse_definition
     , parse_section
     , parse_subsection
     , parse_titles
@@ -20,15 +20,15 @@ import Error.Message
 import Lia.Definition.Parser
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Parser as Markdown
-import Lia.Markdown.Types exposing (Markdown(..))
+import Lia.Markdown.Types exposing (Block(..), Blocks)
 import Lia.Parser.Context exposing (Context, init)
 import Lia.Parser.Helper exposing (stringTill)
 import Lia.Parser.Preprocessor as Preprocessor
 import Lia.Section as Section exposing (Section, SubSection(..))
 
 
-parse_defintion : String -> String -> Result String ( Definition, ( String, Int ) )
-parse_defintion base code =
+parse_definition : String -> String -> Result String ( Definition, ( String, Int ) )
+parse_definition base code =
     case
         Combine.runParser
             (Lia.Definition.Parser.parse
@@ -53,7 +53,7 @@ parse_defintion base code =
 
                 else
                     formatError ms stream
-                        |> Error.Message.parseDefinintion code
+                        |> Error.Message.parseDefinition code
 
 
 
@@ -131,7 +131,7 @@ parse_subsection code =
             formatError ms stream |> Err
 
 
-return : Section -> Context -> List Markdown -> Result String Section
+return : Section -> Context -> Blocks -> Result String Section
 return sec state es =
     Ok
         { sec

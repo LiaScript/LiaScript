@@ -12,7 +12,7 @@ import Array exposing (Array)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 
 
-{-| Stores the boolen state for all Task lists per section. Every entry
+{-| Stores the boolean state for all Task lists per section. Every entry
 represents the states for an entire Task list:
 
     [ [ True, False, True, True ]
@@ -26,7 +26,7 @@ type alias Vector =
 
 {-| This type is used by the LiaScript renderer:
 
-  - `task`: one List element referes to on boolean value within the state Vector
+  - `task`: one List element refers to on boolean value within the state Vector
   - `id`: reference to the state within the `Vector`
   - `javascript`: contains some optional code that is executed on every input
     (onCheck)

@@ -24,7 +24,7 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
 import Lia.Settings.Update exposing (Msg(..), Toggle(..))
-import Lia.Utils exposing (blockKeydown, btn, btnIcon)
+import Lia.Utils exposing (blockKeydown, btn, btnIcon, noTranslate)
 import QRCode
 import Translations as Trans exposing (Lang)
 
@@ -201,49 +201,31 @@ modeToString show =
 viewSizing : Lang -> Bool -> Int -> Html Msg
 viewSizing lang tabbable size =
     Html.div [ Attr.class "lia-fontscale" ]
-        [ btn
-            { title = Trans.baseDec lang
-            , tabbable = tabbable
-            , msg = Just (ChangeFontSize 1)
-            }
-            [ Attr.class "lia-btn--transparent lia-fontscale__lvl-1"
-            , Attr.class <|
-                if size /= 2 && size /= 3 then
-                    "active"
-
-                else
-                    ""
-            ]
-            [ Html.text "A" ]
-        , btn
-            { title = Trans.baseDec lang
-            , tabbable = tabbable
-            , msg = Just (ChangeFontSize 2)
-            }
-            [ Attr.class "lia-btn--transparent lia-fontscale__lvl-2"
-            , Attr.class <|
-                if size == 2 then
-                    "active"
-
-                else
-                    ""
-            ]
-            [ Html.text "A" ]
-        , btn
-            { title = Trans.baseDec lang
-            , tabbable = tabbable
-            , msg = Just (ChangeFontSize 3)
-            }
-            [ Attr.class "lia-btn--transparent lia-fontscale__lvl-3"
-            , Attr.class <|
-                if size == 3 then
-                    "active"
-
-                else
-                    ""
-            ]
-            [ Html.text "A" ]
+        [ Trans.baseFont lang (Trans.baseSize1 lang)
+            |> fontButton tabbable size 1
+        , Trans.baseFont lang (Trans.baseSize2 lang)
+            |> fontButton tabbable size 2
+        , Trans.baseFont lang (Trans.baseSize3 lang)
+            |> fontButton tabbable size 3
         ]
+
+
+fontButton : Bool -> Int -> Int -> String -> Html Msg
+fontButton tabbable size i title =
+    btn
+        { title = title
+        , tabbable = tabbable
+        , msg = Just (ChangeFontSize i)
+        }
+        [ Attr.class <| "lia-btn--transparent lia-fontscale__lvl-" ++ String.fromInt i
+        , Attr.class <|
+            if size == i then
+                "active"
+
+            else
+                ""
+        ]
+        [ Html.span (noTranslate []) [ Html.text "A" ] ]
 
 
 bold : String -> Html msg
@@ -398,7 +380,7 @@ viewEditorTheme lang tabbable theme =
                   , ( "gruvbox", "Gruvbox" )
                   , ( "idle_fingers", "idle Fingers" )
                   , ( "kr_theme", "krTheme" )
-                  , ( "merbivore", "Merbivore" )
+                  , ( "herbivore", "Merbivore" )
                   , ( "merbivore_soft", "Merbivore Soft" )
                   , ( "mono_industrial", "Mono Industrial" )
                   , ( "monokai", "Monokai" )

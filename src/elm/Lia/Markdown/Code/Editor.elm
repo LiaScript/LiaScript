@@ -8,6 +8,7 @@ module Lia.Markdown.Code.Editor exposing
     , firstLineNumber
     , focusing
     , fontSize
+    , highlightActiveLine
     , marker
     , maxLines
     , mode

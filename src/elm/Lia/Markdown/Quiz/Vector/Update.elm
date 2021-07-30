@@ -1,4 +1,9 @@
-module Lia.Markdown.Quiz.Vector.Update exposing (Msg(..), toString, toggle, update)
+module Lia.Markdown.Quiz.Vector.Update exposing
+    ( Msg(..)
+    , toString
+    , toggle
+    , update
+    )
 
 import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Quiz.Vector.Types exposing (State(..))

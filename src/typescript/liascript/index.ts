@@ -308,13 +308,13 @@ class LiaScript {
     }
   }
 
-  initNaviation(elem: HTMLElement, elmSend: Lia.Send) {
-    Swipe.detect(elem, function (swipedir) {
+  initNavigation(elem: HTMLElement, elmSend: Lia.Send) {
+    Swipe.detect(elem, function (swipeDir) {
       if (document.getElementsByClassName('lia-modal').length === 0) {
         elmSend({
           topic: Port.SWIPE,
           section: -1,
-          message: swipedir,
+          message: swipeDir,
         })
       }
     })
@@ -366,7 +366,7 @@ class LiaScript {
 
     let self = this
 
-    this.initNaviation(elem, elmSend)
+    this.initNavigation(elem, elmSend)
 
     var observer = new MutationObserver(function (mutations) {
       mutations.forEach(function (mutation) {

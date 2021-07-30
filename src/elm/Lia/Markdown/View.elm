@@ -26,7 +26,7 @@ import Lia.Markdown.Quiz.View as Quizzes
 import Lia.Markdown.Survey.View as Surveys
 import Lia.Markdown.Table.View as Table
 import Lia.Markdown.Task.View as Task
-import Lia.Markdown.Types exposing (Markdown(..), MarkdownS)
+import Lia.Markdown.Types exposing (Block(..), Blocks)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Section exposing (SubSection(..))
 import Lia.Utils exposing (modal)
@@ -97,7 +97,7 @@ subView config id sub =
                     |> List.map (Html.map Script)
 
 
-view_body : ( Config Msg, Maybe String, Footnotes.Model ) -> List Markdown -> Html Msg
+view_body : ( Config Msg, Maybe String, Footnotes.Model ) -> Blocks -> Html Msg
 view_body ( config, footnote2show, footnotes ) =
     List.map (view_block config)
         >> (::) (view_footnote (view_block config) footnote2show footnotes)
@@ -158,7 +158,7 @@ viewMain =
         ]
 
 
-view_footnote : (Markdown -> Html Msg) -> Maybe String -> Footnotes.Model -> Html Msg
+view_footnote : (Block -> Html Msg) -> Maybe String -> Footnotes.Model -> Html Msg
 view_footnote viewer key footnotes =
     case Maybe.andThen (Footnotes.getNote footnotes) key of
         Just notes ->
@@ -222,7 +222,7 @@ headerStyle i =
         )
 
 
-view_block : Config Msg -> Markdown -> Html Msg
+view_block : Config Msg -> Block -> Html Msg
 view_block config block =
     case block of
         HLine attr ->
@@ -274,7 +274,7 @@ view_block config block =
 
         BulletList attr list ->
             list
-                |> view_bulletlist config
+                |> view_bulletList config
                 |> Html.ul (annotation "lia-list--unordered" attr)
 
         OrderedList attr list ->
@@ -330,7 +330,7 @@ view_block config block =
                 ( _, Nothing ) ->
                     Html.text ""
 
-        Header attr ( elements, sub ) ->
+        Header attr ( sub, elements ) ->
             header config
                 config.section.indentation
                 sub
@@ -361,7 +361,7 @@ view_block config block =
             Html.p [ Attr.class "lia-problem" ] (config.view element)
 
 
-viewQuote : Config Msg -> Parameters -> List Markdown -> Html Msg
+viewQuote : Config Msg -> Parameters -> Blocks -> Html Msg
 viewQuote config attr elements =
     case elements of
         [ Paragraph pAttr pElement, Citation cAttr citation ] ->
@@ -388,7 +388,7 @@ viewQuote config attr elements =
                 |> Html.blockquote (annotation "lia-quote" attr)
 
 
-view_ascii : Config Msg -> Parameters -> ( Maybe Inlines, SvgBob.Configuration (List Markdown) ) -> Html Msg
+view_ascii : Config Msg -> Parameters -> ( Maybe Inlines, SvgBob.Configuration Blocks ) -> Html Msg
 view_ascii config attr ( caption, image ) =
     image
         |> SvgBob.drawElements (toAttribute attr)
@@ -424,7 +424,7 @@ view_ascii config attr ( caption, image ) =
            )
 
 
-viewQuiz : Config Msg -> Parameters -> Quiz.Quiz -> Maybe ( MarkdownS, Int ) -> Html Msg
+viewQuiz : Config Msg -> Parameters -> Quiz.Quiz -> Maybe ( Blocks, Int ) -> Html Msg
 viewQuiz config attr quiz solution =
     case solution of
         Nothing ->
@@ -447,7 +447,7 @@ viewQuiz config attr quiz solution =
                         |> List.map (Html.map UpdateQuiz)
 
 
-view_list : Config Msg -> List ( String, List Markdown ) -> List (Html Msg)
+view_list : Config Msg -> List ( String, Blocks ) -> List (Html Msg)
 view_list config =
     let
         viewer ( value, sub_list ) =
@@ -457,8 +457,8 @@ view_list config =
     List.map viewer
 
 
-view_bulletlist : Config Msg -> List (List Markdown) -> List (Html Msg)
-view_bulletlist config =
+view_bulletList : Config Msg -> List Blocks -> List (Html Msg)
+view_bulletList config =
     let
         viewer =
             List.map (view_block config)

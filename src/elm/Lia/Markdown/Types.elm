@@ -1,4 +1,7 @@
-module Lia.Markdown.Types exposing (Markdown(..), MarkdownS)
+module Lia.Markdown.Types exposing
+    ( Block(..)
+    , Blocks
+    )
 
 import Lia.Markdown.Chart.Types exposing (Chart)
 import Lia.Markdown.Code.Types exposing (Code)
@@ -14,27 +17,27 @@ import Lia.Markdown.Task.Types exposing (Task)
 import SvgBob
 
 
-type Markdown
+type Block
     = HLine Parameters
-    | Quote Parameters MarkdownS
+    | Quote Parameters Blocks
     | Paragraph Parameters Inlines
-    | BulletList Parameters (List MarkdownS)
-    | OrderedList Parameters (List ( String, MarkdownS ))
+    | BulletList Parameters (List Blocks)
+    | OrderedList Parameters (List ( String, Blocks ))
     | Table Parameters Table
-    | Quiz Parameters Quiz (Maybe ( MarkdownS, Int ))
-    | Effect Parameters (Effect Markdown)
+    | Quiz Parameters Quiz (Maybe ( Blocks, Int ))
+    | Effect Parameters (Effect Block)
     | Comment ( Int, Int )
     | Survey Parameters Survey
     | Chart Parameters Chart
     | Code Code
     | Task Parameters Task
-    | ASCII Parameters ( Maybe Inlines, SvgBob.Configuration (List Markdown) )
-    | HTML Parameters (Node Markdown)
-    | Header Parameters ( Inlines, Int )
+    | ASCII Parameters ( Maybe Inlines, SvgBob.Configuration Blocks )
+    | HTML Parameters (Node Block)
+    | Header Parameters ( Int, Inlines )
     | Gallery Parameters Gallery
     | Citation Parameters Inlines
     | Problem Inlines
 
 
-type alias MarkdownS =
-    List Markdown
+type alias Blocks =
+    List Block

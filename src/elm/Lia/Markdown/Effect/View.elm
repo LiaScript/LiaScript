@@ -16,7 +16,7 @@ import Lia.Markdown.Effect.Update as E
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inline)
-import Lia.Markdown.Types exposing (Markdown)
+import Lia.Markdown.Types exposing (Block)
 import Lia.Markdown.Update exposing (Msg(..))
 import Port.Event as Event exposing (Event)
 import Port.TTS
@@ -40,7 +40,7 @@ cleanUpNumber str =
     str ++ ".innerText.replace(/\\u200a\\d+\\u200a/g,'').trim()"
 
 
-block : Config sub -> Model a -> Parameters -> Effect Markdown -> List (Html Msg) -> Html Msg
+block : Config sub -> Model a -> Parameters -> Effect Block -> List (Html Msg) -> Html Msg
 block config model attr e body =
     if config.visible == Nothing then
         case class e of
@@ -164,7 +164,7 @@ hiddenSpan hide =
         >> Html.span
 
 
-block_playback : Config sub -> Effect Markdown -> Html Msg
+block_playback : Config sub -> Effect Block -> Html Msg
 block_playback config e =
     if config.speaking == Just e.id then
         Html.button

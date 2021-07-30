@@ -229,7 +229,7 @@ parseType_ params input_ =
             Text_
 
 
-{-| Defines if an input-type should be reevaluted on change.
+{-| Defines if an input-type should be reevaluated on change.
 -}
 runnable : Maybe Type_ -> Maybe Bool -> Bool
 runnable t_ updateOnChange =

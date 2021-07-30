@@ -148,7 +148,7 @@ parsed as an normal string.
 
 This comes handy for checked representations like `radioButton` or `checkButton`.
 
-**Note:** The first paremeter is a regex, which comes handy if you want to allow
+**Note:** The first parameter is a regex, which comes handy if you want to allow
 multiple options, such as upper- and lowercase or different "strings" that will
 return `True`.
 
@@ -163,6 +163,6 @@ either true false =
 {-| Transforms a list of options `(List Bool, List Inlines)` into a Vector-Quiz.
 -}
 toQuiz : (List Bool -> State) -> ( List Bool, List Inlines ) -> Quiz
-toQuiz fn ( bools, inlines ) =
-    fn bools
+toQuiz fn ( booleans, inlines ) =
+    fn booleans
         |> Quiz inlines

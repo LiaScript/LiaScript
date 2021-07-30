@@ -29,7 +29,7 @@ import Translations as Trans exposing (Lang)
 
 {-| Main view for the entire LiaScript model with the parameters:
 
-1.  `screen`: width and heigth of the window
+1.  `screen`: width and height of the window
 2.  `hasShareAPI`: will enable sharing vie the `navigation.share` api, otherwise
     create an QR-code with the entire course-URL
 3.  `hasIndex`: display a home-button or not
@@ -129,6 +129,7 @@ viewSlide screen model =
                     |> Markdown.view
                     |> Html.map UpdateMarkdown
                 , slideBottom
+                    screen
                     model.translation
                     model.settings
                     model.section_active
@@ -156,11 +157,11 @@ viewSlide screen model =
             ]
 
 
-{-| **@private:** used to diplay the text2speech output settings and spoken
+{-| **@private:** used to display the text2speech output settings and spoken
 comments in text, depending on the currently applied rendering mode.
 -}
-slideBottom : Lang -> Settings -> Int -> Effect.Model SubSection -> Html Msg
-slideBottom lang settings slide effects =
+slideBottom : Screen -> Lang -> Settings -> Int -> Effect.Model SubSection -> Html Msg
+slideBottom screen lang settings slide effects =
     Html.footer
         [ Attr.class "lia-slide__footer" ]
         [ slideNavigation lang settings.mode slide effects
@@ -169,56 +170,72 @@ slideBottom lang settings slide effects =
                 Html.text ""
 
             _ ->
-                Html.div [ Attr.class "lia-responsive-voice" ]
-                    [ Html.div [ Attr.class "lia-responsive-voice__control" ]
-                        [ Html.button
-                            [ Attr.class "lia-btn lia-btn--transparent lia-responsive-voice__play"
-                            , onClick <| TTSReplay (not settings.speaking)
-                            , Attr.disabled (not settings.sound)
-                            , Attr.title <|
-                                if settings.speaking then
-                                    "stop"
-
-                                else
-                                    "replay"
+                Html.div [ Attr.class "lia-responsive-voice" ] <|
+                    if screen.width > Const.globalBreakpoints.sm then
+                        [ Html.div [ Attr.class "lia-responsive-voice__control" ]
+                            [ btnReplay settings
+                            , btnStop lang settings
                             ]
-                            [ Html.i
-                                [ A11y_Widget.hidden True
-                                , Attr.class <|
-                                    if settings.speaking then
-                                        "lia-btn__icon icon icon-stop-circle"
+                        , responsiveVoice
+                        ]
 
-                                    else
-                                        "lia-btn__icon icon icon-play-circle"
-                                ]
-                                []
-                            ]
-                        , Html.button
-                            [ Attr.class "lia-btn lia-btn--transparent"
-                            , Attr.id "lia-btn-sound"
-                            , onClick (UpdateSettings toggle_sound)
-                            , Attr.title <|
-                                if settings.sound then
-                                    Trans.soundOn lang
-
-                                else
-                                    Trans.soundOff lang
-                            ]
-                            [ Html.i
-                                [ A11y_Widget.hidden True
-                                , Attr.class <|
-                                    if settings.sound then
-                                        "lia-btn__icon icon icon-sound-on"
-
-                                    else
-                                        "lia-btn__icon icon icon-sound-off"
-                                ]
-                                []
+                    else
+                        [ Html.div [ Attr.class "lia-responsive-voice__control" ]
+                            [ btnReplay settings
+                            , responsiveVoice
+                            , btnStop lang settings
                             ]
                         ]
-                    , responsiveVoice
-                    ]
         ]
+
+
+btnReplay : Settings -> Html Msg
+btnReplay settings =
+    Lia.Utils.btnIcon
+        { title =
+            if settings.speaking then
+                "stop"
+
+            else
+                "replay"
+        , tabbable = settings.sound
+        , msg =
+            if settings.sound then
+                Just (TTSReplay (not settings.speaking))
+
+            else
+                Nothing
+        , icon =
+            if settings.speaking then
+                "icon-stop-circle"
+
+            else
+                "icon-play-circle"
+        }
+        [ Attr.id "lia-btn-sound"
+        , Attr.class "lia-btn--transparent lia-responsive-voice__play"
+        ]
+
+
+btnStop : Lang -> Settings -> Html Msg
+btnStop lang settings =
+    Lia.Utils.btnIcon
+        { title =
+            if settings.sound then
+                Trans.soundOn lang
+
+            else
+                Trans.soundOff lang
+        , tabbable = True
+        , msg = Just (UpdateSettings toggle_sound)
+        , icon =
+            if settings.sound then
+                "icon-sound-on"
+
+            else
+                "icon-sound-off"
+        }
+        [ Attr.id "lia-btn-sound", Attr.class "lia-btn--transparent" ]
 
 
 slideA11y : Lang -> Mode -> Dict String ( Int, Int ) -> Effect.Model SubSection -> Int -> Html Msg
@@ -285,7 +302,7 @@ slideA11y lang mode media effect id =
 
 1.  `str`: string to be displayed in the body
 2.  `title`: attribute
-3.  `id`: so that it can be identfied by external css
+3.  `id`: so that it can be identified by external css
 4.  `msg`: to release if pressed
 
 -}

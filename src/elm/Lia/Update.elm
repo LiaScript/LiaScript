@@ -51,7 +51,7 @@ subscriptions model =
   - `Load`: load a specific section if it is not loaded yet or force a loading
   - `InitSection`: if the `Load` response is received, this message is called to
     perform parsing, if necessary, and initialize all section base settings
-  - `PrevSection`: go to next anaimation fragment or section, this depends on
+  - `PrevSection`: go to next animation fragment or section, this depends on
     the currently applied presentation mode
   - `NextSection`: like `PrevSection` but go back
   - `UpdateIndex`: encapsulates all searching related issues
@@ -406,7 +406,7 @@ set_active_section model section =
 3.  load additional resources or macros that might be defined in the
     section-head:
 
-    ```Mardown
+    ```Markdown
     <!- -
     author: someone
 

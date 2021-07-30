@@ -38,7 +38,7 @@ JavaScript. All events make use of the basic Event-structure:
     { topic = String, section = Int, message = JE.Value }
 
 A message can also be of type `Event` or of something else. The JavaScript part
-will handle these events accoring to the topic value...
+will handle these events according to the topic value...
 
 -}
 port event2js : Event -> Cmd msg
@@ -46,7 +46,7 @@ port event2js : Event -> Cmd msg
 
 {-| **@private:** Incoming events are mostly of type `Event`. `Event.topic` and
 `Event.section` are used to provide the correct path through the internal
-LiaScript implementation and thus modules and submodules. In most cases it is
+LiaScript implementation and thus modules and sub-modules. In most cases it is
 actually a nesting of messages like within the IP-stack
 -}
 port event2elm : (Event -> msg) -> Sub msg
@@ -65,7 +65,7 @@ port jit : (String -> msg) -> Sub msg
     course overview is handled here
   - `Resize`: handle screen resizing
   - `LiaParse`: parse the document in chunks, so that the view can be updated.
-    This message is called repetitive until the app/parsing process reches
+    This message is called repetitive until the app/parsing process reaches
     `State` `Parsing False 0`.
   - `LinkClicked`
   - `UrlChanged`
@@ -472,7 +472,7 @@ load model lia code templates =
 
 {-| **@private:** purge the "Windows" carriage return.
 
-> Since all following grammers in parsing use only `\n` as newline instead of
+> Since all following grammars in parsing use only `\n` as newline instead of
 > `\r\n`, this char needs to be purged entirely.
 
 -}

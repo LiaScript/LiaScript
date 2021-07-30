@@ -4,7 +4,7 @@ module Error.Message exposing
     , loadingCourse
     , loadingResource
     , multiple
-    , parseDefinintion
+    , parseDefinition
     , unknown
     , whatIsLiaScript
     )
@@ -269,8 +269,8 @@ https://liascript.github.io/course/?https://raw.githubusercontent.com/liaScript/
 """
 
 
-parseDefinintion : String -> String -> String
-parseDefinintion code message =
+parseDefinition : String -> String -> String
+parseDefinition code message =
     """
 > I was trying to parse the **first** part of the course, which is either an
 > HTML-comment or something else, until I reach the header (which is marked by

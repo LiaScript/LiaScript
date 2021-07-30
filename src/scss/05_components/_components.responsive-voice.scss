@@ -23,6 +23,10 @@ $responsive-voice-hight: 7rem;
     }
   }
 
+  &__info {
+    text-align: center;
+  }
+
   @at-root html.lia-variant-dark & {
     background-color: rgb(var(--lia-anthracite));
   }

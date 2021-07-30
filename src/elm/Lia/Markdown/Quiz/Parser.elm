@@ -1,4 +1,7 @@
-module Lia.Markdown.Quiz.Parser exposing (maybeJS, parse)
+module Lia.Markdown.Quiz.Parser exposing
+    ( maybeJS
+    , parse
+    )
 
 import Array
 import Combine

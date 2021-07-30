@@ -1,4 +1,7 @@
-module Lia.Parser.Preprocessor exposing (section)
+module Lia.Parser.Preprocessor exposing
+    ( section
+    , title_tag
+    )
 
 import Combine
     exposing
@@ -53,7 +56,7 @@ body =
     [ regex "(?:[^#`<]+|[\\x0D\n]+|<!--[\\S\\s]{0,1000}?-->)" -- comment
     , regex "(`{3,})[\\S\\s]*?\\1" -- code_block or ascii art
     , regex "`.+?`" -- code_block or ascii art
-    , regex "(?:<([\\w+\\-]+)[\\S\\s]*?</\\2>|`|<)"
+    , regex "(?:<([\\w+\\-]+)[\\S\\s]*?</\\1>|`|<)"
     , regex "#+(\\w|[^\\u0000-\\u007F]|[ \t]*\n)"
     , withColumn check |> keep (string "#")
     ]

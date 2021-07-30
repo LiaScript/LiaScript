@@ -1,11 +1,15 @@
-module Lia.Markdown.Footnote.View exposing (block, byKey, inline)
+module Lia.Markdown.Footnote.View exposing
+    ( block
+    , byKey
+    , inline
+    )
 
 import Accessibility.Aria as A11y_Aria
 import Accessibility.Key as A11y_Key
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Lia.Markdown.Footnote.Model exposing (Model, empty, toList)
-import Lia.Markdown.Types exposing (Markdown)
+import Lia.Markdown.Types as Markdown
 
 
 inline : String -> List (Html.Attribute msg) -> Html msg
@@ -27,7 +31,7 @@ inline key attr =
         ]
 
 
-block : (Markdown -> Html msg) -> Model -> Html msg
+block : (Markdown.Block -> Html msg) -> Model -> Html msg
 block fn model =
     if empty model then
         Html.text ""
@@ -55,7 +59,7 @@ block fn model =
             |> Html.footer []
 
 
-definition : (Markdown -> Html msg) -> ( String, List Markdown ) -> Html msg
+definition : (Markdown.Block -> Html msg) -> ( String, Markdown.Blocks ) -> Html msg
 definition fn ( key, val ) =
     Html.tr []
         [ Html.td

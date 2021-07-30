@@ -1,4 +1,7 @@
-module Lia.Markdown.Footnote.Parser exposing (block, inline)
+module Lia.Markdown.Footnote.Parser exposing
+    ( block
+    , inline
+    )
 
 import Combine
     exposing
@@ -16,7 +19,7 @@ import Combine
 import Lia.Markdown.Footnote.Model as Model
 import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.Inline.Types exposing (Inline(..))
-import Lia.Markdown.Types exposing (Markdown(..))
+import Lia.Markdown.Types as Markdown
 import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (stringTill)
 import Lia.Parser.Indentation as Indent
@@ -31,7 +34,7 @@ inline =
         |> andThen store
 
 
-block : Parser Context (List Markdown) -> Parser Context ()
+block : Parser Context Markdown.Blocks -> Parser Context ()
 block p =
     string "[^"
         |> keep (stringTill (string "]:"))
@@ -45,13 +48,13 @@ store : ( String, Maybe String ) -> Parser Context (Parameters -> Inline)
 store ( key, val ) =
     case val of
         Just v ->
-            add_footnote ( key, [ Paragraph [] [ Chars v [] ] ] )
+            add_footnote ( key, [ Markdown.Paragraph [] [ Chars v [] ] ] )
                 |> keep (succeed (FootnoteMark key))
 
         _ ->
             succeed (FootnoteMark key)
 
 
-add_footnote : ( String, List Markdown ) -> Parser Context ()
+add_footnote : ( String, Markdown.Blocks ) -> Parser Context ()
 add_footnote ( key, val ) =
     modifyState (\s -> { s | footnotes = Model.insert key val s.footnotes })

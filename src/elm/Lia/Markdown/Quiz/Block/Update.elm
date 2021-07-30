@@ -1,4 +1,8 @@
-module Lia.Markdown.Quiz.Block.Update exposing (Msg(..), toString, update)
+module Lia.Markdown.Quiz.Block.Update exposing
+    ( Msg(..)
+    , toString
+    , update
+    )
 
 import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Quiz.Block.Types exposing (State(..))

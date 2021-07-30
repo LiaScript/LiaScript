@@ -1,4 +1,8 @@
-module Lia.Markdown.Quiz.View exposing (class, showSolution, view)
+module Lia.Markdown.Quiz.View exposing
+    ( class
+    , showSolution
+    , view
+    )
 
 {-| This module defines the basic frame for all subsequent and specialized
 quizzes. It adds a common checkButton, hintButton, and resolveButton and shows
@@ -13,14 +17,14 @@ TODO:
     4.  state:
           - open: the quiz has not been touched yet
           - resolved: resolved quiz
-          - solved: soved quiz
+          - solved: solved quiz
 
 -}
 
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Lia.Markdown.Inline.Config exposing (Config)
-import Lia.Markdown.Inline.Types exposing (MultInlines)
+import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Quiz.Block.View as Block
 import Lia.Markdown.Quiz.Matrix.View as Matrix
@@ -211,11 +215,11 @@ viewMainButton config trials solution msg =
 
 
 {-| **private:** If hints have been added to the quiz by `[[?]]` these will
-shown within a list and an additional button will be diplayed to reveal more
+shown within a list and an additional button will be displayed to reveal more
 hints, if there are still hints not shown to the user and if the quiz has not
 been solved yet.
 -}
-viewHints : Config sub -> Int -> MultInlines -> Html (Msg sub)
+viewHints : Config sub -> Int -> List Inlines -> Html (Msg sub)
 viewHints config counter hints =
     if List.isEmpty hints then
         Html.text ""

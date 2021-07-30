@@ -336,6 +336,7 @@ evaluate executable theme attr running ( id_1, id_2 ) file errors =
                         max_lines
                     )
                 , Editor.readOnly readOnly
+                , Editor.highlightActiveLine (not readOnly)
                 , attr
                     |> Params.get "data-tabsize"
                     |> Maybe.andThen String.toInt

@@ -1,4 +1,7 @@
-module Lia.Markdown.Inline.Parser.Symbol exposing (arrows, smileys)
+module Lia.Markdown.Inline.Parser.Symbol exposing
+    ( arrows
+    , smileys
+    )
 
 import Combine exposing (Parser, choice, map, onsuccess, string)
 import Lia.Markdown.HTML.Attributes exposing (Parameters)

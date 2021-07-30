@@ -1,11 +1,18 @@
-module Lia.Markdown.Footnote.Model exposing (Model, empty, getNote, init, insert, toList)
+module Lia.Markdown.Footnote.Model exposing
+    ( Model
+    , empty
+    , getNote
+    , init
+    , insert
+    , toList
+    )
 
 import Dict exposing (Dict)
-import Lia.Markdown.Types exposing (MarkdownS)
+import Lia.Markdown.Types as Markdown
 
 
 type alias Model =
-    Dict String MarkdownS
+    Dict String Markdown.Blocks
 
 
 init : Model
@@ -13,12 +20,12 @@ init =
     Dict.empty
 
 
-insert : String -> MarkdownS -> Model -> Model
+insert : String -> Markdown.Blocks -> Model -> Model
 insert key val model =
     Dict.insert key val model
 
 
-toList : Model -> List ( String, MarkdownS )
+toList : Model -> List ( String, Markdown.Blocks )
 toList =
     Dict.toList
 
@@ -28,6 +35,6 @@ empty =
     Dict.isEmpty
 
 
-getNote : Model -> String -> Maybe MarkdownS
+getNote : Model -> String -> Maybe Markdown.Blocks
 getNote model key =
     Dict.get key model

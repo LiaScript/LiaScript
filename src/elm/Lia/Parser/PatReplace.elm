@@ -1,4 +1,7 @@
-module Lia.Parser.PatReplace exposing (link, replace)
+module Lia.Parser.PatReplace exposing
+    ( link
+    , replace
+    )
 
 import Regex
 

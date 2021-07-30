@@ -17,10 +17,10 @@ import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Markdown.Survey.Types as Survey
 import Lia.Markdown.Table.Types as Table
 import Lia.Markdown.Task.Types as Task
-import Lia.Markdown.Types exposing (Markdown(..))
+import Lia.Markdown.Types as Markdown
 
 
-{-| This is the main record to cotain all section related information.
+{-| This is the main record to contain all section related information.
 
   - `code`: the entire Markdown code for this section
   - `title`: already processed `# Title`
@@ -29,13 +29,13 @@ import Lia.Markdown.Types exposing (Markdown(..))
   - `id`: **back reference** the position of this section in the section array
   - `body`: the parsed LiaScript-Markdown elements
   - `parsed`: has the `code` already been parsed to `body`
-  - `error`: if there has a parsing error occured
+  - `error`: if there has a parsing error occurred
   - `definition`:
 
 **subModules:** All self-contained LiaScript elements, that provide some kind
-of interactivity. Verctors are arrays, which are used for identification. Every
-element has a counterpart in body (Mardown-Types), that is used for displaying,
-but it referes to state-changes via an id, which points to an element in these
+of interactivity. Vectors are arrays, which are used for identification. Every
+element has a counterpart in body (Markdown-Types), that is used for displaying,
+but it refers to state-changes via an id, which points to an element in these
 arrays.
 
   - `code_vector`
@@ -61,7 +61,7 @@ type alias Section =
     , indentation : Int
     , visible : Bool
     , id : Int
-    , body : List Markdown
+    , body : Markdown.Blocks
     , parsed : Bool
     , error : Maybe String
     , code_model : Code.Model
@@ -80,7 +80,7 @@ type alias Section =
 
 {-| A special type of section that is only applied in combination with LiaScript
 `<script>...</script>` elements, that are defined in module
-`Lia.Markdown.Effect.Script`. The result of such a script can allso be some
+`Lia.Markdown.Effect.Script`. The result of such a script can also be some
 LiaScript code, such as tables, codes, quizzes, etc. that offer some kind of
 interaction. These elements are parsed at runtime and their content is not
 stored permanently. To minimize the requirements, there are actually two types:
@@ -93,7 +93,7 @@ stored permanently. To minimize the requirements, there are actually two types:
 -}
 type SubSection
     = SubSection
-        { body : List Markdown
+        { body : Markdown.Blocks
         , error : Maybe String
         , code_model : Code.Model
         , task_vector : Task.Vector
@@ -119,7 +119,7 @@ type alias Sections =
 
 
 {-| Base type for initializing sections. This is the result of the preprocessing
-(preparsing) that only identfies, titles, their indentation, and the remaining
+(pre-parsing) that only identifies, titles, their indentation, and the remaining
 code. The code gets only parsed, if the user visits this section.
 -}
 type alias Base =
