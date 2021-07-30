@@ -17,6 +17,9 @@ import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Definition.Json.Decode as Definition
 import Lia.Markdown.Inline.Json.Decode as Inline
+import Lia.Settings.Types exposing (Settings)
+import Lia.Settings.Update as Settings
+import Lia.Update exposing (Msg(..))
 import Port.Event as Event exposing (Event)
 import Port.Share exposing (share)
 
@@ -33,6 +36,7 @@ type Msg
     | Activate String (Maybe String)
     | NoOp
     | LoadCourse String
+    | UpdateSettings Settings.Msg
 
 
 index : Event -> Event
@@ -98,88 +102,109 @@ handle =
     Handle
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, List Event )
-update msg model =
+update : Msg -> Settings -> Model -> ( Settings, ( Model, Cmd Msg, List Event ) )
+update msg settings model =
+    updateSettings msg settings <|
+        case msg of
+            IndexList list ->
+                ( { model
+                    | courses = list
+                    , initialized = True
+                  }
+                , Cmd.none
+                , []
+                )
+
+            IndexError _ ->
+                ( model, Cmd.none, [] )
+
+            Delete courseID ->
+                ( { model
+                    | courses =
+                        model.courses
+                            |> List.filter (.id >> (/=) courseID)
+                  }
+                , Cmd.none
+                , [ delete courseID ]
+                )
+
+            Reset courseID version ->
+                ( model
+                , Cmd.none
+                , [ reset courseID <|
+                        Maybe.withDefault -1 <|
+                            case version of
+                                Just ver ->
+                                    String.toInt ver
+
+                                Nothing ->
+                                    model.courses
+                                        |> List.filter (.id >> (==) courseID)
+                                        |> List.head
+                                        |> Maybe.map
+                                            (\c ->
+                                                c.versions
+                                                    |> Dict.keys
+                                                    |> List.filterMap String.toInt
+                                                    |> List.maximum
+                                                    |> Maybe.withDefault -1
+                                            )
+                  ]
+                )
+
+            Handle json ->
+                update (decode json) settings model
+                    |> Tuple.second
+
+            Input url ->
+                ( { model | input = url }, Cmd.none, [] )
+
+            Restore course version ->
+                ( model
+                , Cmd.none
+                , [ restore (Maybe.withDefault "0.0.0" version) course ]
+                )
+
+            Activate course version ->
+                ( { model
+                    | courses =
+                        model.courses
+                            |> activate course version
+                  }
+                , Cmd.none
+                , []
+                )
+
+            Share title text url ->
+                ( model
+                , Cmd.none
+                , [ share title text url ]
+                )
+
+            LoadCourse url ->
+                ( model, Nav.load url, [] )
+
+            _ ->
+                ( model, Cmd.none, [] )
+
+
+updateSettings : Msg -> Settings -> ( Model, Cmd Msg, List Event ) -> ( Settings, ( Model, Cmd Msg, List Event ) )
+updateSettings msg settings ( model, cmd, events ) =
     case msg of
-        IndexList list ->
-            ( { model
-                | courses = list
-                , initialized = True
-              }
-            , Cmd.none
-            , []
+        UpdateSettings subMsg ->
+            let
+                ( newSettings, newCmd, newEvents ) =
+                    Settings.update subMsg settings
+            in
+            ( newSettings
+            , ( model
+              , Cmd.batch [ cmd, Cmd.map UpdateSettings newCmd ]
+              , List.append events newEvents
+              )
             )
 
-        IndexError _ ->
-            ( model, Cmd.none, [] )
-
-        Delete courseID ->
-            ( { model
-                | courses =
-                    model.courses
-                        |> List.filter (.id >> (/=) courseID)
-              }
-            , Cmd.none
-            , [ delete courseID ]
-            )
-
-        Reset courseID version ->
-            ( model
-            , Cmd.none
-            , [ reset courseID <|
-                    Maybe.withDefault -1 <|
-                        case version of
-                            Just ver ->
-                                String.toInt ver
-
-                            Nothing ->
-                                model.courses
-                                    |> List.filter (.id >> (==) courseID)
-                                    |> List.head
-                                    |> Maybe.map
-                                        (\c ->
-                                            c.versions
-                                                |> Dict.keys
-                                                |> List.filterMap String.toInt
-                                                |> List.maximum
-                                                |> Maybe.withDefault -1
-                                        )
-              ]
-            )
-
-        Handle json ->
-            update (decode json) model
-
-        Input url ->
-            ( { model | input = url }, Cmd.none, [] )
-
-        Restore course version ->
-            ( model
-            , Cmd.none
-            , [ restore (Maybe.withDefault "0.0.0" version) course ]
-            )
-
-        Activate course version ->
-            ( { model
-                | courses =
-                    model.courses
-                        |> activate course version
-              }
-            , Cmd.none
-            , []
-            )
-
-        Share title text url ->
-            ( model
-            , Cmd.none
-            , [ share title text url ]
-            )
-
-        LoadCourse url ->
-            ( model, Nav.load url, [] )
-
-        NoOp ->
-            ( model, Cmd.none, [] )
+        _ ->
+            ( settings, ( model, cmd, events ) )
 
 
 activate : String -> Maybe String -> List Course -> List Course

@@ -25,7 +25,7 @@ import Lia.Script
 import Model exposing (Model, State(..))
 import Port.Event exposing (Event)
 import Process
-import Session exposing (Screen)
+import Session exposing (Screen, Session)
 import Task
 import Translations
 import Url
@@ -197,10 +197,13 @@ update msg model =
 
         UpdateIndex childMsg ->
             let
-                ( index, cmd, events ) =
-                    Index.update childMsg model.index
+                ( settings, ( index, cmd, events ) ) =
+                    Index.update childMsg model.lia.settings model.index
+
+                lia =
+                    model.lia
             in
-            ( { model | index = index }
+            ( { model | index = index, lia = { lia | settings = settings } }
             , batch UpdateIndex cmd events
             )
 
