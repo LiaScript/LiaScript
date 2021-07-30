@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.23
+version:  0.9.24
 language: en
 narrator: UK English Male
 
@@ -272,6 +272,48 @@ This will apply the following three patches:
 - elm-patch/dom: enable onclick events as well as innerHTML
 
 ## Version-Changes
+
+**0.9.24** (30/07/2021)
+
+- Add arabic translation: `language: ar`
+- Improved inline parsing speed.
+- Add support for sharing courses on other protocols than `http://` and
+  `https://`.
+  
+  - [`hyper:// & dat://`](https://en.wikipedia.org/wiki/Dat_%28software%29)
+
+    This allows to use the
+    [Beaker](https://en.wikipedia.org/wiki/Beaker_%28eb_browser%29) browser
+    for creating, sharing, and editing courses directly within the browser,
+    _no further upload required!_ 
+
+  - [`ipfs:// & ipns://`](https://en.wikipedia.org/wiki/InterPlanetary_File_System)
+
+    Since the newest version of the [Brave](https://brave.com) browser also has
+    support for the "InterPlanetary File-System".
+
+    [Blog-Post](https://brave.com/brave-integrates-ipfs)
+
+  - How is this achieved?
+
+    Actually by applying a patch to the original elm-url module, which can be
+    found here:
+
+    https://github.com/andre-dietrich/elm-patch
+
+- Minor fixes in pre-processing, spelling , styling, and removed
+  line-highlighting for not interactive code-blocks
+
+- Additional headers are allowed, if they are within lists or block-quotes,
+  etc.:
+
+  ``` markdown
+  # Outer Header
+
+  > ## Inner Header
+  >
+  > which will not lead to a separate slide.
+  ```
 
 **0.9.23** (12/07/2021)
 
