@@ -435,24 +435,28 @@
   content: "\EA37"
 }
 
-.icon-table:before {
+.icon-sync:before {
   content: "\EA38"
 }
 
-.icon-trash:before {
+.icon-table:before {
   content: "\EA39"
 }
 
-.icon-warning:before {
+.icon-trash:before {
   content: "\EA3A"
 }
 
-.icon-zoom-out:before {
+.icon-warning:before {
   content: "\EA3B"
 }
 
-.icon-zoom:before {
+.icon-zoom-out:before {
   content: "\EA3C"
+}
+
+.icon-zoom:before {
+  content: "\EA3D"
 }
 
 

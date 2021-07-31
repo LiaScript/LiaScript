@@ -490,27 +490,32 @@ $icon-stop-circle: "\EA37";
   content: $icon-stop-circle
 }
 
-$icon-table: "\EA38";
+$icon-sync: "\EA38";
+.icon-sync:before {
+  content: $icon-sync
+}
+
+$icon-table: "\EA39";
 .icon-table:before {
   content: $icon-table
 }
 
-$icon-trash: "\EA39";
+$icon-trash: "\EA3A";
 .icon-trash:before {
   content: $icon-trash
 }
 
-$icon-warning: "\EA3A";
+$icon-warning: "\EA3B";
 .icon-warning:before {
   content: $icon-warning
 }
 
-$icon-zoom-out: "\EA3B";
+$icon-zoom-out: "\EA3C";
 .icon-zoom-out:before {
   content: $icon-zoom-out
 }
 
-$icon-zoom: "\EA3C";
+$icon-zoom: "\EA3D";
 .icon-zoom:before {
   content: $icon-zoom
 }
