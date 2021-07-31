@@ -333,64 +333,13 @@ navButton title id class msg =
 -}
 slideTopBar : Lang -> Screen -> String -> Settings -> Definition -> Html Msg
 slideTopBar lang screen url settings def =
-    let
-        tabbable =
-            screen.width >= Const.globalBreakpoints.md || settings.support_menu
-    in
-    [ Html.div [ Attr.class "lia-header__left" ] []
-    , Html.div [ Attr.class "lia-header__middle" ]
-        [ Html.img
-            [ def
-                |> Definition.getIcon
-                |> Attr.src
-            , Attr.class "lia_header__logo"
-            , Attr.alt "LiaScript"
-            ]
-            []
-        ]
-    , Html.div [ Attr.class "lia-header__right" ]
-        [ Html.div
-            [ Attr.class "lia-support-menu"
-            , Attr.id "lia-support-menu"
-            , Attr.class <|
-                if settings.support_menu then
-                    "lia-support-menu--open"
-
-                else
-                    "lia-support-menu--closed"
-            ]
-            [ Settings.btnSupport lang settings.support_menu
-            , Html.div
-                [ Attr.class "lia-support-menu__collapse"
-                ]
-                [ [ ( Settings.menuMode, "mode" )
-                  , ( Settings.menuSettings, "settings" )
-                  , ( Settings.menuTranslations def, "lang" )
-                  , ( Settings.menuShare url, "share" )
-                  , ( Settings.menuInformation def, "info" )
-                  ]
-                    |> List.map
-                        (\( fn, class ) ->
-                            Html.li
-                                [ Attr.class <| "nav__item lia-support-menu__item lia-support-menu__item--" ++ class
-                                , A11y_Role.menuItem
-                                , A11y_Widget.hasMenuPopUp
-                                ]
-                                (fn lang tabbable settings)
-                        )
-                    |> Html.ul
-                        [ Attr.class "nav lia-support-menu__nav"
-                        , A11y_Role.menuBar
-                        , A11y_Key.tabbable False
-                        ]
-                ]
-            ]
-        ]
+    [ ( Settings.menuMode, "mode" )
+    , ( Settings.menuSettings, "settings" )
+    , ( Settings.menuTranslations def, "lang" )
+    , ( Settings.menuShare url, "share" )
+    , ( Settings.menuInformation def, "info" )
     ]
-        |> Html.header
-            [ Attr.class "lia-header"
-            , Attr.id "lia-toolbar-nav"
-            ]
+        |> Settings.header lang screen settings (Definition.getIcon def)
         |> Html.map UpdateSettings
 
 

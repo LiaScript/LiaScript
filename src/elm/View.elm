@@ -30,7 +30,7 @@ view model =
                 ]
 
             Idle ->
-                [ Html.map UpdateIndex <| Index.view model.session model.index
+                [ Html.map UpdateIndex <| Index.view model.session model.lia.settings model.index
                 ]
 
             Loading ->

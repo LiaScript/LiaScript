@@ -1,10 +1,10 @@
 .lia-card {
-  background-color: white;
-  border: 1px solid #399193;
+  background-color: rgb(var(--color-background));
+  border: 1px solid rgb(var(--color-highlight));
   display: flex;
   flex-direction: column;
   position: relative;
-  color: black;
+  color: rgb(var(--color-text));
 
   @include breakpoint-only('sm', 'md') {
     display: grid;
@@ -69,13 +69,12 @@
   }
 
   &__title {
-    color: rgb(var(--lia-anthracite));
     display: inline-block;
     margin: 0 0 2rem;
     position: relative;
 
     &:before {
-      background-color: rgb(var(--lia-turquoise));
+      background-color: rgb(var(--color-highlight));
       bottom: -0.5rem;
       content: '';
       height: 1px;

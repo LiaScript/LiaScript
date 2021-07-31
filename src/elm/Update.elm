@@ -25,7 +25,7 @@ import Lia.Script
 import Model exposing (Model, State(..))
 import Port.Event exposing (Event)
 import Process
-import Session exposing (Screen)
+import Session exposing (Screen, Session)
 import Task
 import Translations
 import Url
@@ -197,10 +197,13 @@ update msg model =
 
         UpdateIndex childMsg ->
             let
-                ( index, cmd, events ) =
-                    Index.update childMsg model.index
+                ( settings, ( index, cmd, events ) ) =
+                    Index.update childMsg model.lia.settings model.index
+
+                lia =
+                    model.lia
             in
-            ( { model | index = index }
+            ( { model | index = index, lia = { lia | settings = settings } }
             , batch UpdateIndex cmd events
             )
 
@@ -267,7 +270,7 @@ update msg model =
             load_readme readme model
 
         Load_ReadMe_Result url (Err info) ->
-            if String.startsWith Const.proxy url then
+            if String.startsWith Const.urlProxy url then
                 startWithError
                     { model
                         | state =
@@ -287,7 +290,7 @@ update msg model =
 
             else
                 ( model
-                , Session.setQuery (Const.proxy ++ url) model.session
+                , Session.setQuery (Const.urlProxy ++ url) model.session
                     |> .url
                     |> Session.load
                 )
@@ -309,7 +312,7 @@ update msg model =
                 }
 
         Load_Template_Result url (Err info) ->
-            if String.startsWith Const.proxy url then
+            if String.startsWith Const.urlProxy url then
                 startWithError
                     { model
                         | state =
@@ -318,7 +321,7 @@ update msg model =
                     }
 
             else
-                ( model, download Load_Template_Result (Const.proxy ++ url) )
+                ( model, download Load_Template_Result (Const.urlProxy ++ url) )
 
 
 {-| **@private:** Parsing has been finished, initialize lia, update the url and

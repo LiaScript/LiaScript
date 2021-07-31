@@ -58,11 +58,11 @@ loadingError : String -> String -> Http.Error -> String
 loadingError message url networkStatus =
     let
         hasProxy =
-            String.startsWith Const.proxy url
+            String.startsWith Const.urlProxy url
 
         rootUrl =
             if hasProxy then
-                String.replace Const.proxy "" url
+                String.replace Const.urlProxy "" url
 
             else
                 url
@@ -96,7 +96,7 @@ whatIsLiaScript =
     """LiaScript is a domain specific language for educational content that is based on Markdown.
 For more information visit some of the following sources:
 
-* Project-website: https://LiaScript.github.io
+* Project-website: """ ++ Const.urlLiascript ++ """
 * Documentation: https://github.com/liascript/docs
 * YouTube: https://www.youtube.com/channel/UCyiTe2GkW_u05HSdvUblGYg
 """
@@ -128,8 +128,8 @@ comment:  Try to write a short comment about
 
 This is your **course** initialization stub.
 
-Please see the [Docs](https://liascript.github.io/course/?https://raw.githubusercontent.com/liaScript/docs/master/README.md)
-to find out what is possible in [LiaScript](https://liascript.github.io).
+Please see the [Docs](""" ++ Const.urlLiascriptCourse ++ """https://raw.githubusercontent.com/liaScript/docs/master/README.md)
+to find out what is possible in [LiaScript](""" ++ Const.urlLiascript ++ """).
 
 If you want to use instant help in your Atom IDE, please type **lia** to see all available shortcuts.
 
@@ -264,7 +264,7 @@ else {
 
 Find out what you also can do ...
 
-https://liascript.github.io/course/?https://raw.githubusercontent.com/liaScript/docs/master/README.md
+""" ++ Const.urlLiascriptCourse ++ """https://raw.githubusercontent.com/liaScript/docs/master/README.md
 ````
 """
 
