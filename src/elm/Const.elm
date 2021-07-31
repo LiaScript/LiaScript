@@ -2,7 +2,9 @@ module Const exposing
     ( align
     , globalBreakpoints
     , icon
-    , proxy
+    , urlLiascript
+    , urlLiascriptCourse
+    , urlProxy
     )
 
 
@@ -51,6 +53,16 @@ file, but not with the URL:
 [cors]: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
 
 -}
-proxy : String
-proxy =
+urlProxy : String
+urlProxy =
     "https://cors-anywhere.herokuapp.com/"
+
+
+urlLiascript : String
+urlLiascript =
+    "https://LiaScript.github.io"
+
+
+urlLiascriptCourse : String
+urlLiascriptCourse =
+    urlLiascript ++ "/course/?"

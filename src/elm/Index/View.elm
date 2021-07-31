@@ -42,7 +42,7 @@ view session settings model =
                         []
                         [ Html.li []
                             [ Html.a
-                                [ Attr.href "https://LiaScript.github.io" ]
+                                [ Attr.href Const.urlLiascript ]
                                 [ Html.text "Project-Website" ]
                             ]
                         , Html.li []
@@ -268,7 +268,7 @@ viewControls hasShareAPI title comment course =
                         Share
                             (title |> stringify)
                             ((comment |> stringify) ++ "\n")
-                            ("https://LiaScript.github.io/course/?" ++ course.id)
+                            (Const.urlLiascriptCourse ++ course.id)
                 , title = "share"
                 , tabbable = True
                 , icon = "icon-social"
