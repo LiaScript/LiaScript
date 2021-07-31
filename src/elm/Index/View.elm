@@ -260,7 +260,7 @@ viewControls hasShareAPI title comment course =
             , tabbable = True
             , icon = "icon-refresh"
             }
-            [ Attr.class "lia-btn--tag lia-btn--transparent text-grey border-grey px-1" ]
+            [ Attr.class "lia-btn--tag lia-btn--transparent text-yellow-dark border-yellow-dark px-1" ]
         , if hasShareAPI then
             btnIcon
                 { msg =
@@ -281,10 +281,10 @@ viewControls hasShareAPI title comment course =
             Nothing ->
                 Html.a
                     [ href course.id
-                    , Attr.class "lia-btn lia-btn--transparent lia-btn--tag icon icon-login px-1 text-turquoise border-turquoise"
+                    , Attr.class "lia-btn lia-btn--transparent lia-btn--tag px-1 border-turquoise"
                     , Attr.title "open"
                     ]
-                    []
+                    [ Html.i [ Attr.class "icon icon-login text-turquoise" ] [] ]
 
             Just _ ->
                 btnIcon
