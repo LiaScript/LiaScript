@@ -15,6 +15,7 @@ type alias Settings =
     , editor : String
     , font_size : Int
     , sound : Bool
+    , graph : Bool
     , lang : String
     , action : Maybe Action
     , speaking : Bool
@@ -50,6 +51,7 @@ init hasShareApi mode =
     , editor = "dreamweaver"
     , font_size = 100
     , sound = True
+    , graph = False
     , lang = "default"
     , action = Nothing
     , speaking = False

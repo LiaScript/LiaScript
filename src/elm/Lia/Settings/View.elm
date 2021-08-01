@@ -3,6 +3,7 @@ module Lia.Settings.View exposing
     , btnSupport
     , design
     , header
+    , menuGraph
     , menuInformation
     , menuMode
     , menuSettings
@@ -483,6 +484,19 @@ menuMode lang tabbable settings =
             )
     , viewModes lang tabbable settings
         |> submenu (settings.action == Just ShowModes)
+    ]
+
+
+menuGraph : Lang -> Bool -> Settings -> List (Html Msg)
+menuGraph _ tabbable _ =
+    [ btnIcon
+        { title = "toggle graph"
+        , icon = "icon-web"
+        , tabbable = tabbable
+        , msg = Just <| Toggle Graph
+        }
+        [ Attr.class "lia-btn--transparent hide-md-down"
+        ]
     ]
 
 
