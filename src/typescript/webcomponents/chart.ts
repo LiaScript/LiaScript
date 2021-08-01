@@ -9,7 +9,7 @@ import 'echarts/i18n/langFR.js'
 import 'echarts/i18n/langJA.js'
 import 'echarts/i18n/langTH.js'
 import 'echarts/i18n/langZH.js'
-import { allowedProtocol } from '../helper'
+import { allowedProtocol, debounce } from '../helper'
 
 const style = 'width: 100%; height: 400px; margin-top: -0.2em;'
 
@@ -43,6 +43,8 @@ customElements.define(
     private locale: string
     private mode: string
 
+    private resizeObserver: ResizeObserver
+
     static get observedAttributes() {
       return ['style', 'mode', 'json', 'locale', 'aria-label']
     }
@@ -65,9 +67,11 @@ customElements.define(
       shadowRoot.appendChild(this.container)
 
       let self = this
-      window.addEventListener('resize', function () {
-        self.resizeChart()
-      })
+      this.resizeObserver = new ResizeObserver(
+        debounce(() => {
+          self.resizeChart()
+        })
+      )
     }
 
     connectedCallback() {
@@ -95,12 +99,21 @@ customElements.define(
         self.setAttribute('aria-relevant', 'text')
         this.updateChart()
         this.resizeChart()
+
+        try {
+          if (this.parentElement) {
+            this.resizeObserver.observe(this.parentElement)
+          }
+        } catch (e) {
+          console.warn('charts: resize observer =>', e)
+        }
       }
     }
 
     disconnectedCallback() {
       if (this.chart) echarts.dispose(this.chart)
 
+      this.resizeObserver.disconnect()
       this.geoJson.data = {}
     }
 
