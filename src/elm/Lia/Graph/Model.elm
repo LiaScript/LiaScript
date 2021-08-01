@@ -23,7 +23,7 @@ import Lia.Section exposing (Section)
 
 type Node
     = Hashtag String
-    | Section { id : Int, weight : Int, name : String }
+    | Section { id : Int, indentation : Int, weight : Int, name : String }
     | Link { name : String, url : String }
     | Course { name : String, url : String }
 
@@ -102,6 +102,7 @@ section : Int -> Node
 section id =
     Section
         { id = id
+        , indentation = -1
         , weight = -1
         , name = ""
         }
@@ -151,7 +152,8 @@ parseSectionsHelper prev sections graph =
                 |> addNode
                     (Section
                         { id = x.id
-                        , weight = String.length x.code --x.indentation
+                        , weight = String.length x.code
+                        , indentation = x.indentation
                         , name = stringify x.title
                         }
                     )
@@ -163,7 +165,8 @@ parseSectionsHelper prev sections graph =
                     |> addNode
                         (Section
                             { id = x.id
-                            , weight = String.length x.code --x.indentation
+                            , weight = String.length x.code
+                            , indentation = x.indentation
                             , name = stringify x.title
                             }
                         )
