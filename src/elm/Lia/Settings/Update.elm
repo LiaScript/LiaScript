@@ -36,6 +36,7 @@ type Toggle
     = TableOfContents
     | Sound
     | Light
+    | Graph
     | Action Action
     | SupportMenu
     | TranslateWithGoogle
@@ -86,6 +87,9 @@ update main msg model =
 
         Toggle Light ->
             log Nothing { model | light = not model.light }
+
+        Toggle Graph ->
+            log Nothing { model | graph = not model.graph }
 
         Toggle (Action action) ->
             no_log

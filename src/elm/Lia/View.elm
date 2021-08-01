@@ -12,6 +12,7 @@ import Html.Keyed as Keyed
 import Lia.Definition.Types as Definition exposing (Definition)
 import Lia.Graph.View as Graph
 import Lia.Index.View as Index
+import Lia.Markdown.Code.Editor exposing (mode)
 import Lia.Markdown.Config as Config
 import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Effect.View exposing (state)
@@ -121,25 +122,38 @@ viewSlide screen model =
         Just section ->
             [ Html.div [ Attr.class "lia-slide" ]
                 [ slideTopBar model.translation screen model.url model.settings model.definition
-                , Html.div [ Attr.style "height" "95%" ]
-                    [ SplitPane.view viewConfig
-                        (Config.init
-                            model.translation
-                            ( model.langCodeOriginal, model.langCode )
-                            model.settings
-                            screen
-                            section
-                            model.section_active
-                            model.media
-                            |> Markdown.view
-                            |> Html.map UpdateMarkdown
-                        )
-                        (model.graph
-                            |> Graph.view model.translation
-                            |> Html.map UpdateGraph
-                        )
-                        model.splitPane
-                    ]
+                , if model.settings.graph then
+                    Html.div [ Attr.style "height" "95%" ]
+                        [ SplitPane.view viewConfig
+                            (Config.init
+                                model.translation
+                                ( model.langCodeOriginal, model.langCode )
+                                model.settings
+                                screen
+                                section
+                                model.section_active
+                                model.media
+                                |> Markdown.view
+                                |> Html.map UpdateMarkdown
+                            )
+                            (model.graph
+                                |> Graph.view model.translation
+                                |> Html.map UpdateGraph
+                            )
+                            model.splitPane
+                        ]
+
+                  else
+                    Config.init
+                        model.translation
+                        ( model.langCodeOriginal, model.langCode )
+                        model.settings
+                        screen
+                        section
+                        model.section_active
+                        model.media
+                        |> Markdown.view
+                        |> Html.map UpdateMarkdown
                 , slideBottom
                     screen
                     model.translation
@@ -361,7 +375,8 @@ navButton title id class msg =
 -}
 slideTopBar : Lang -> Screen -> String -> Settings -> Definition -> Html Msg
 slideTopBar lang screen url settings def =
-    [ ( Settings.menuMode, "mode" )
+    [ ( Settings.menuGraph, "web" )
+    , ( Settings.menuMode, "mode" )
     , ( Settings.menuSettings, "settings" )
     , ( Settings.menuTranslations def, "lang" )
     , ( Settings.menuShare url, "share" )
