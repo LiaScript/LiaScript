@@ -12,7 +12,7 @@ parsing. It is passed to all successively applied parser.
 import Array
 import Combine exposing (Parser, succeed, withState)
 import Lia.Definition.Types exposing (Definition)
-import Lia.Graph.Model as Graph exposing (Graph)
+import Lia.Graph.Graph as Graph exposing (Graph)
 import Lia.Markdown.Code.Types as Code
 import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Footnote.Model as Footnote

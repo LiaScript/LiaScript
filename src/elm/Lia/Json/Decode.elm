@@ -4,7 +4,7 @@ import Array
 import Dict
 import Json.Decode as JD
 import Lia.Definition.Json.Decode as Definition
-import Lia.Graph.Model as Graph
+import Lia.Graph.Graph as Graph
 import Lia.Index.Model as Index
 import Lia.Markdown.Inline.Json.Decode as Inline
 import Lia.Model exposing (Model)

@@ -1,4 +1,4 @@
-module Lia.Graph.Model exposing
+module Lia.Graph.Graph exposing
     ( Graph
     , addCourse
     , addEdge

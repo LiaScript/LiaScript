@@ -8,7 +8,7 @@ import Array
 import Dict exposing (Dict)
 import Json.Encode as JE
 import Lia.Definition.Types as Definition exposing (Definition, Resource(..))
-import Lia.Graph.Model as Graph exposing (Graph)
+import Lia.Graph.Graph as Graph exposing (Graph)
 import Lia.Index.Model as Index
 import Lia.Section exposing (Sections)
 import Lia.Settings.Json
