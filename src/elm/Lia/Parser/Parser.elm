@@ -18,7 +18,7 @@ import Combine
 import Error.Message
 import Lia.Definition.Parser
 import Lia.Definition.Types exposing (Definition)
-import Lia.Graph.Graph as Graph exposing (Graph)
+import Lia.Graph.Model as Graph
 import Lia.Markdown.Parser as Markdown
 import Lia.Markdown.Types exposing (Block(..), Blocks)
 import Lia.Parser.Context exposing (Context, init)
@@ -71,11 +71,11 @@ parse_titles defines code =
 
 
 parse_section :
-    Graph
+    Graph.Model
     -> (String -> String)
     -> Definition
     -> Section
-    -> Result String ( Graph, Section )
+    -> Result String ( Graph.Model, Section )
 parse_section graph search_index global sec =
     case
         Combine.runParser
@@ -132,7 +132,7 @@ parse_subsection globals id code =
             formatError ms stream |> Err
 
 
-return : Section -> Context -> Blocks -> Result String ( Graph, Section )
+return : Section -> Context -> Blocks -> Result String ( Graph.Model, Section )
 return sec state es =
     Ok
         ( state.graph

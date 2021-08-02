@@ -28,7 +28,7 @@ import Lia.Definition.Types
         , add_imports
         , add_translation
         )
-import Lia.Graph.Graph as Graph
+import Lia.Graph.Model as Graph
 import Lia.Markdown.HTML.Attributes exposing (toURL)
 import Lia.Markdown.Inline.Parser exposing (comment, line)
 import Lia.Markdown.Inline.Types exposing (Inlines)

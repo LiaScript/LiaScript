@@ -387,7 +387,7 @@ generate model =
         Just sec ->
             let
                 newGraph =
-                    Graph.rootSection model.section_active model.graph
+                    Graph.setRootSection model.section_active model.graph
 
                 ( graph, section ) =
                     if sec.parsed then

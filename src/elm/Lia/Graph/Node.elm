@@ -4,6 +4,7 @@ module Lia.Graph.Node exposing
     , id
     , isVisible
     , name
+    , section
     , weight
     )
 
@@ -104,3 +105,14 @@ equal node1 node2 =
 
         _ ->
             False
+
+
+section : Int -> Node
+section i =
+    Section
+        { id = i
+        , indentation = -1
+        , weight = -1
+        , name = ""
+        , visible = False
+        }
