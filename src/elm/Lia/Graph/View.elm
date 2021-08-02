@@ -45,7 +45,7 @@ chart lang graph =
                     |> Dict.toList
                     |> List.sortBy Tuple.first
                     |> List.map
-                        (\( id, ( node, visible ) ) ->
+                        (\( id, node ) ->
                             [ ( "id", JE.string id )
                             , ( "name"
                               , getName node
@@ -61,7 +61,7 @@ chart lang graph =
                                         , ( "borderWidth", JE.int 3 )
                                         ]
 
-                                    else if visible then
+                                    else if isVisible node then
                                         []
 
                                     else
@@ -127,6 +127,16 @@ tooltip node =
           )
         ]
     )
+
+
+isVisible : Node -> Bool
+isVisible node =
+    case node of
+        Section sec ->
+            sec.visible
+
+        _ ->
+            True
 
 
 categoryList =
