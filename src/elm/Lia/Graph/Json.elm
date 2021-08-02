@@ -1,12 +1,9 @@
 module Lia.Graph.Json exposing (encode)
 
 import Json.Encode as JE
-import Lia.Graph.Model
-    exposing
-        ( Edge
-        , Graph
-        , Node(..)
-        )
+import Lia.Graph.Edge exposing (Edge)
+import Lia.Graph.Model exposing (Graph)
+import Lia.Graph.Node exposing (Node(..))
 
 
 encode : Graph -> JE.Value

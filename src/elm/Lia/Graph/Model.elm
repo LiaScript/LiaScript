@@ -1,6 +1,5 @@
 module Lia.Graph.Model exposing
-    ( Edge
-    , Graph
+    ( Graph
     , addCourse
     , addEdge
     , addHashtag
@@ -17,20 +16,15 @@ import Array
 import Browser.Events exposing (Visibility(..))
 import Dict exposing (Dict)
 import Html exposing (node)
+import Lia.Graph.Edge as Edge exposing (Edges)
 import Lia.Graph.Node as Node exposing (Node(..))
 import Lia.Markdown.Inline.Stringify exposing (stringify)
-
-
-type alias Edge =
-    { from : String
-    , to : String
-    }
 
 
 type alias Graph =
     { root : Maybe Node
     , node : Dict String Node
-    , edge : List Edge
+    , edge : Edges
     }
 
 
@@ -49,17 +43,7 @@ addNode node graph =
 
 addEdge : Node -> Node -> Graph -> Graph
 addEdge from to graph =
-    let
-        edge =
-            Edge (Node.id from) (Node.id to)
-    in
-    if List.member edge graph.edge then
-        graph
-
-    else
-        { graph
-            | edge = Edge (Node.id from) (Node.id to) :: graph.edge
-        }
+    { graph | edge = Edge.add from to graph.edge }
 
 
 addHashtag : String -> Graph -> Graph
