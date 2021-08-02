@@ -13,6 +13,7 @@ module Lia.Graph.Model exposing
 import Array exposing (Array)
 import Dict
 import Json.Encode as JE
+import Lia.Graph.Edges as Edges
 import Lia.Graph.Graph as Graph exposing (Graph)
 import Lia.Graph.Node as Node exposing (Node(..))
 import Lia.Markdown.Inline.Stringify exposing (stringify)
@@ -208,11 +209,11 @@ updateJson model =
                       )
                     , ( "edges"
                       , model.graph.edge
-                            |> List.sortBy .from
+                            |> Edges.toList
                             |> List.map
-                                (\edge ->
-                                    [ ( "source", JE.string edge.from )
-                                    , ( "target", JE.string edge.to )
+                                (\( from, to ) ->
+                                    [ ( "source", JE.string from )
+                                    , ( "target", JE.string to )
                                     , ( "symbolSize", JE.list JE.int [ 5 ] )
                                     ]
                                 )
