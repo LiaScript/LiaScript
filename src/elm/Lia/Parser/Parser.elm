@@ -18,7 +18,7 @@ import Combine
 import Error.Message
 import Lia.Definition.Parser
 import Lia.Definition.Types exposing (Definition)
-import Lia.Graph.Model as Graph exposing (Graph)
+import Lia.Graph.Graph as Graph exposing (Graph)
 import Lia.Markdown.Parser as Markdown
 import Lia.Markdown.Types exposing (Block(..), Blocks)
 import Lia.Parser.Context exposing (Context, init)

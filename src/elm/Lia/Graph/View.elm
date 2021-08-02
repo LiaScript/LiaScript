@@ -7,7 +7,7 @@ import Html.Events
 import Html.Lazy
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Graph.Model exposing (Graph, isRootNode)
+import Lia.Graph.Graph exposing (Graph, isRootNode)
 import Lia.Graph.Node as Node exposing (Node(..))
 import Lia.Graph.Update exposing (Msg(..))
 import Lia.Markdown.Chart.View exposing (eCharts)

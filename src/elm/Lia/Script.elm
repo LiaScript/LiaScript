@@ -26,7 +26,7 @@ import Dict
 import Html exposing (Html)
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition, add_macros)
-import Lia.Graph.Model as Graph
+import Lia.Graph.Graph as Graph
 import Lia.Json.Encode as Json
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Update as Markdown

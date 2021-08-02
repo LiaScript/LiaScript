@@ -38,7 +38,7 @@ import Combine
         , withState
         )
 import Combine.Char exposing (anyChar)
-import Lia.Graph.Model as Graph exposing (Graph)
+import Lia.Graph.Graph as Graph exposing (Graph)
 import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Effect.Script.Types as JS
 import Lia.Markdown.Footnote.Parser as Footnote
