@@ -108,10 +108,10 @@ category node =
 
 categories : List String
 categories =
-    [ "course"
-    , "hashtag"
-    , "link"
-    , "section"
+    [ "Course"
+    , "Hashtag"
+    , "Link"
+    , "Section"
     ]
 
 
