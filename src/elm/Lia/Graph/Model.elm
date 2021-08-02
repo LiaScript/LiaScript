@@ -1,7 +1,6 @@
 module Lia.Graph.Model exposing
     ( Edge
     , Graph
-    , Node(..)
     , addCourse
     , addEdge
     , addHashtag
@@ -9,6 +8,7 @@ module Lia.Graph.Model exposing
     , addNode
     , addSection
     , init
+    , isRootNode
     , parseSections
     , section
     )
@@ -17,33 +17,8 @@ import Array
 import Browser.Events exposing (Visibility(..))
 import Dict exposing (Dict)
 import Html exposing (node)
+import Lia.Graph.Node as Node exposing (Node(..))
 import Lia.Markdown.Inline.Stringify exposing (stringify)
-import Lia.Markdown.Inline.Types exposing (Inline(..))
-import Lia.Section exposing (Section)
-
-
-type Node
-    = Hashtag
-        { name : String
-        , visible : Bool
-        }
-    | Section
-        { id : Int
-        , indentation : Int
-        , weight : Int
-        , name : String
-        , visible : Bool
-        }
-    | Link
-        { name : String
-        , url : String
-        , visible : Bool
-        }
-    | Course
-        { name : String
-        , url : String
-        , visible : Bool
-        }
 
 
 type alias Edge =
@@ -69,38 +44,22 @@ init =
 
 addNode : Node -> Graph -> Graph
 addNode node graph =
-    { graph | node = Dict.insert (nodeID node) node graph.node }
+    { graph | node = Dict.insert (Node.id node) node graph.node }
 
 
 addEdge : Node -> Node -> Graph -> Graph
 addEdge from to graph =
     let
         edge =
-            Edge (nodeID from) (nodeID to)
+            Edge (Node.id from) (Node.id to)
     in
     if List.member edge graph.edge then
         graph
 
     else
         { graph
-            | edge = Edge (nodeID from) (nodeID to) :: graph.edge
+            | edge = Edge (Node.id from) (Node.id to) :: graph.edge
         }
-
-
-nodeID : Node -> String
-nodeID node =
-    case node of
-        Course lia ->
-            "lia: " ++ lia.url
-
-        Hashtag tag ->
-            "tag: " ++ String.toLower tag.name
-
-        Link link ->
-            "url: " ++ link.url
-
-        Section sec ->
-            "sec: " ++ String.fromInt sec.id
 
 
 addHashtag : String -> Graph -> Graph
@@ -193,3 +152,13 @@ parseSectionsHelper prev sections graph =
 
             else
                 parseSectionsHelper ps sections graph
+
+
+isRootNode : Graph -> Node -> Bool
+isRootNode graph node =
+    case ( graph.root, node ) of
+        ( Just (Section sec1), Section sec2 ) ->
+            sec1.id == sec2.id
+
+        _ ->
+            False
