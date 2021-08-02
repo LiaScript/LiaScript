@@ -1,5 +1,7 @@
 module Lia.Graph.Node exposing
     ( Node(..)
+    , categories
+    , category
     , equal
     , id
     , isVisible
@@ -86,6 +88,31 @@ weight node =
 
         _ ->
             10
+
+
+category : Node -> Int
+category node =
+    case node of
+        Course _ ->
+            0
+
+        Hashtag _ ->
+            1
+
+        Link _ ->
+            2
+
+        Section _ ->
+            3
+
+
+categories : List String
+categories =
+    [ "course"
+    , "hashtag"
+    , "link"
+    , "section"
+    ]
 
 
 equal : Node -> Node -> Bool

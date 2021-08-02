@@ -7,9 +7,12 @@ module Lia.Graph.Model exposing
     , addSections
     , init
     , isRootNode
+    , updateJson
     )
 
 import Array exposing (Array)
+import Dict
+import Json.Encode as JE
 import Lia.Graph.Graph as Graph exposing (Graph)
 import Lia.Graph.Node as Node exposing (Node(..))
 import Lia.Markdown.Inline.Stringify exposing (stringify)
@@ -19,6 +22,7 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 type alias Model =
     { graph : Graph
     , root : Maybe Node
+    , json : JE.Value
     }
 
 
@@ -27,6 +31,7 @@ init =
     Model
         Graph.empty
         Nothing
+        JE.null
 
 
 isRootNode : Model -> Node -> Bool
@@ -153,3 +158,106 @@ addSectionsHelper prev sections graph =
 
             else
                 addSectionsHelper ps sections graph
+
+
+updateJson : Model -> Model
+updateJson model =
+    { model
+        | json =
+            JE.object
+                [ ( "tooltip", JE.object [] )
+                , ( "legend", JE.object [ ( "data", JE.list JE.string Node.categories ) ] )
+                , ( "animationDurationUpdate", JE.int 100 )
+                , ( "animationEasingUpdate", JE.string "quintcInOut" )
+                , ( "series"
+                  , [ ( "type", JE.string "graph" )
+                    , ( "layout", JE.string "force" )
+                    , ( "animation", JE.bool True )
+                    , ( "categories", JE.list base Node.categories )
+                    , ( "label", JE.object [ ( "show", JE.bool True ) ] )
+                    , ( "symbolSize", JE.float 20 )
+                    , ( "roam", JE.bool True )
+                    , ( "force", force )
+                    , ( "draggable", JE.bool True )
+                    , ( "data"
+                      , model.graph.node
+                            |> Dict.toList
+                            |> List.map
+                                (\( id, node ) ->
+                                    [ ( "id", JE.string id )
+                                    , ( "name", JE.string <| Node.name node )
+                                    , ( "category", JE.int <| Node.category node )
+                                    , ( "tooltip", formatter node )
+                                    , ( "symbolSize", JE.float <| Node.weight node )
+                                    , ( "itemStyle"
+                                      , JE.object <|
+                                            if isRootNode model node then
+                                                [ ( "borderColor", JE.string "#000" )
+                                                , ( "borderWidth", JE.int 3 )
+                                                ]
+
+                                            else if Node.isVisible node then
+                                                []
+
+                                            else
+                                                [ ( "opacity", JE.float 0.1 ) ]
+                                      )
+                                    ]
+                                )
+                            |> JE.list JE.object
+                      )
+                    , ( "edges"
+                      , model.graph.edge
+                            |> List.sortBy .from
+                            |> List.map
+                                (\edge ->
+                                    [ ( "source", JE.string edge.from )
+                                    , ( "target", JE.string edge.to )
+                                    , ( "symbolSize", JE.list JE.int [ 5 ] )
+                                    ]
+                                )
+                            |> JE.list JE.object
+                      )
+                    ]
+                        |> JE.object
+                  )
+                ]
+    }
+
+
+force : JE.Value
+force =
+    JE.object
+        [ ( "repulsion", JE.int 2500 )
+        , ( "edgeLength", JE.int 120 )
+        , ( "gravity", JE.float 0.2 )
+        ]
+
+
+formatter : Node -> JE.Value
+formatter node =
+    JE.object
+        [ ( "formatter"
+          , JE.string <|
+                case node of
+                    Hashtag tag ->
+                        tag.name
+
+                    Link { name, url } ->
+                        name ++ ":<br/><a href='" ++ url ++ "'>" ++ url ++ "</a>"
+
+                    Section sec ->
+                        sec.name
+
+                    Course lia ->
+                        lia.name ++ ":<br/><a href='" ++ lia.url ++ "'>" ++ lia.url ++ "</a>"
+          )
+        ]
+
+
+base : String -> JE.Value
+base name =
+    JE.object
+        [ ( "name", JE.string name )
+        , ( "base", JE.string name )
+        ]
