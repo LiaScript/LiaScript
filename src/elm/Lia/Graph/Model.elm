@@ -22,7 +22,7 @@ import Lia.Section exposing (Section)
 
 
 type Node
-    = Hashtag String
+    = Hashtag { name : String }
     | Section { id : Int, indentation : Int, weight : Int, name : String }
     | Link { name : String, url : String }
     | Course { name : String, url : String }
@@ -78,8 +78,8 @@ nodeID node =
         Course lia ->
             "lia: " ++ lia.url
 
-        Hashtag str ->
-            "tag: " ++ String.toLower str
+        Hashtag tag ->
+            "tag: " ++ String.toLower tag.name
 
         Link link ->
             "url: " ++ link.url
@@ -90,7 +90,7 @@ nodeID node =
 
 addHashtag : String -> Graph -> Graph
 addHashtag name =
-    rootConnect (Hashtag name)
+    rootConnect (Hashtag { name = name })
 
 
 addLink : { name : String, url : String } -> Graph -> Graph

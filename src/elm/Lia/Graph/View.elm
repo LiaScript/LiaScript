@@ -113,8 +113,8 @@ tooltip node =
         [ ( "formatter"
           , JE.string <|
                 case node of
-                    Hashtag name ->
-                        name
+                    Hashtag tag ->
+                        tag.name
 
                     Link { name, url } ->
                         name ++ ":<br/><a href='" ++ url ++ "'>" ++ url ++ "</a>"
@@ -185,8 +185,8 @@ getName node =
         Course lia ->
             lia.name
 
-        Hashtag name ->
-            name
+        Hashtag tag ->
+            tag.name
 
         Link link ->
             link.name

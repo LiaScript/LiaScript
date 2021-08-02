@@ -36,26 +36,22 @@ fromNode node =
             , ( "indentation", JE.int sec.indentation )
             , ( "weight", JE.int sec.weight )
             ]
-                |> JE.object
                 |> fromType "sec"
 
         Link link ->
             [ fromName link
             , fromUrl link
             ]
-                |> JE.object
                 |> fromType "url"
 
         Hashtag tag ->
-            tag
-                |> JE.string
+            [ fromName tag ]
                 |> fromType "tag"
 
         Course course ->
             [ fromName course
             , fromUrl course
             ]
-                |> JE.object
                 |> fromType "lia"
 
 
@@ -69,6 +65,6 @@ fromUrl node =
     ( "url", JE.string node.url )
 
 
-fromType : String -> JE.Value -> JE.Value
+fromType : String -> List ( String, JE.Value ) -> JE.Value
 fromType name obj =
-    JE.object [ ( name, obj ) ]
+    JE.object [ ( name, JE.object obj ) ]
