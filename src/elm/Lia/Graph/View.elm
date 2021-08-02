@@ -12,13 +12,13 @@ import Lia.Markdown.Chart.View exposing (eCharts)
 import Translations exposing (Lang)
 
 
-view : Lang -> Model -> Html Msg
-view lang model =
-    Html.Lazy.lazy2 chart lang model
+view : Lang -> Bool -> Model -> Html Msg
+view lang lightMode model =
+    Html.Lazy.lazy3 chart lang lightMode model
 
 
-chart : Lang -> Model -> Html Msg
-chart lang model =
+chart : Lang -> Bool -> Model -> Html Msg
+chart lang lightMode model =
     eCharts lang
         [ Attr.style "width" "100%"
         , Attr.style "height" "calc(100% - 7.8rem)"
@@ -28,7 +28,7 @@ chart lang model =
         , onClick Clicked
         ]
         []
-        True
+        lightMode
         Nothing
         model.json
 
