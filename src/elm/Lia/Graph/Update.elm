@@ -8,7 +8,7 @@ module Lia.Graph.Update exposing
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Graph.Graph as Graph
-import Lia.Graph.Model exposing (Model)
+import Lia.Graph.Model exposing (Model, isRootNode, updateJson)
 import Lia.Graph.Node as Node exposing (Node(..))
 import Session exposing (Session)
 import Url
@@ -40,7 +40,11 @@ update session msg graph =
 
 setRootSection : Int -> Model -> Model
 setRootSection i model =
-    { model | root = Just (Node.section i) }
+    if isRootNode model (Node.section i) then
+        model
+
+    else
+        updateJson { model | root = Just (Node.section i) }
 
 
 getNode : Model -> JE.Value -> Maybe Node
