@@ -159,6 +159,12 @@ customElements.define(
               locale: this.locale,
             })
             this.updateChart()
+            let self = this
+            this.chart.on('click', function (params: any) {
+              console.log(params)
+              self.clickEvent = params
+              self.dispatchEvent(new CustomEvent('onClick'))
+            })
           }
           break
         }
