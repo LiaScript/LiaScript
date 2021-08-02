@@ -8,7 +8,7 @@ module Lia.Graph.Graph exposing
     )
 
 import Dict exposing (Dict)
-import Lia.Graph.Edge as Edge exposing (Edges)
+import Lia.Graph.Edges as Edges exposing (Edges)
 import Lia.Graph.Node as Node exposing (Node(..))
 
 
@@ -22,7 +22,7 @@ empty : Graph
 empty =
     Graph
         Dict.empty
-        []
+        Edges.empty
 
 
 addNode : Node -> Graph -> Graph
@@ -32,7 +32,7 @@ addNode node graph =
 
 addEdge : Node -> Node -> Graph -> Graph
 addEdge from to graph =
-    { graph | edge = Edge.add from to graph.edge }
+    { graph | edge = Edges.add from to graph.edge }
 
 
 setSectionVisibility : Graph -> List Int -> Graph
