@@ -4,7 +4,8 @@ import Dict
 import Html exposing (node)
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Graph.Model exposing (Graph, Node(..), section)
+import Lia.Graph.Model exposing (Graph, section)
+import Lia.Graph.Node exposing (Node(..))
 import Session exposing (Session)
 import Url
 

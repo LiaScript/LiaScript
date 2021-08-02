@@ -7,7 +7,8 @@ import Html.Events
 import Html.Lazy
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Graph.Model exposing (Graph, Node(..))
+import Lia.Graph.Model exposing (Graph, isRootNode)
+import Lia.Graph.Node as Node exposing (Node(..))
 import Lia.Graph.Update exposing (Msg(..))
 import Lia.Markdown.Chart.View exposing (eCharts)
 import Translations exposing (Lang)
@@ -48,20 +49,20 @@ chart lang graph =
                         (\( id, node ) ->
                             [ ( "id", JE.string id )
                             , ( "name"
-                              , getName node
+                              , Node.name node
                                     |> JE.string
                               )
                             , categoryID node
                             , tooltip node
-                            , ( "symbolSize", JE.float <| getValue node )
+                            , ( "symbolSize", JE.float <| Node.weight node )
                             , ( "itemStyle"
                               , JE.object <|
-                                    if isRoot graph node then
+                                    if isRootNode graph node then
                                         [ ( "borderColor", JE.string "#000" )
                                         , ( "borderWidth", JE.int 3 )
                                         ]
 
-                                    else if isVisible node then
+                                    else if Node.isVisible node then
                                         []
 
                                     else
@@ -129,16 +130,6 @@ tooltip node =
     )
 
 
-isVisible : Node -> Bool
-isVisible node =
-    case node of
-        Section sec ->
-            sec.visible
-
-        _ ->
-            True
-
-
 categoryList =
     [ "course"
     , "hashtag"
@@ -186,70 +177,9 @@ legend =
     ( "legend", JE.object [ ( "data", categoryList |> JE.list JE.string ) ] )
 
 
-getName : Node -> String
-getName node =
-    case node of
-        Section sec ->
-            sec.name
-
-        Course lia ->
-            lia.name
-
-        Hashtag tag ->
-            tag.name
-
-        Link link ->
-            link.name
-
-
-getValue : Node -> Float
-getValue node =
-    case node of
-        Course _ ->
-            50
-
-        Hashtag _ ->
-            10
-
-        Link _ ->
-            10
-
-        Section sec ->
-            toFloat sec.weight / 60
-
-
 onClick : (JE.Value -> msg) -> Html.Attribute msg
 onClick msg =
     JD.value
         |> JD.at [ "target", "onClick" ]
         |> JD.map msg
         |> Html.Events.on "onClick"
-
-
-equal : Node -> Node -> Bool
-equal node1 node2 =
-    case ( node1, node2 ) of
-        ( Section sec1, Section sec2 ) ->
-            sec1.id == sec2.id
-
-        ( Hashtag str1, Hashtag str2 ) ->
-            str1 == str2
-
-        ( Link link1, Link link2 ) ->
-            link1.url == link2.url
-
-        ( Course lia1, Course lia2 ) ->
-            lia1.url == lia2.url
-
-        _ ->
-            False
-
-
-isRoot : Graph -> Node -> Bool
-isRoot graph node =
-    case ( graph.root, node ) of
-        ( Just (Section sec1), Section sec2 ) ->
-            sec1.id == sec2.id
-
-        _ ->
-            False
