@@ -1,6 +1,5 @@
 module Lia.Graph.Json exposing (encode)
 
-import Dict
 import Json.Encode as JE
 import Lia.Graph.Model
     exposing
@@ -13,11 +12,7 @@ import Lia.Graph.Model
 encode : Graph -> JE.Value
 encode graph =
     JE.object
-        [ ( "node"
-          , graph.node
-                |> Dict.map (\_ ( node, _ ) -> node)
-                |> JE.dict identity fromNode
-          )
+        [ ( "node", JE.dict identity fromNode graph.node )
         , ( "edge", JE.list fromEdge graph.edge )
         ]
 

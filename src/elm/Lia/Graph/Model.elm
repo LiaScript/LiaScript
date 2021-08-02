@@ -14,6 +14,7 @@ module Lia.Graph.Model exposing
     )
 
 import Array
+import Browser.Events exposing (Visibility(..))
 import Dict exposing (Dict)
 import Html exposing (node)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
@@ -22,10 +23,27 @@ import Lia.Section exposing (Section)
 
 
 type Node
-    = Hashtag { name : String }
-    | Section { id : Int, indentation : Int, weight : Int, name : String }
-    | Link { name : String, url : String }
-    | Course { name : String, url : String }
+    = Hashtag
+        { name : String
+        , visible : Bool
+        }
+    | Section
+        { id : Int
+        , indentation : Int
+        , weight : Int
+        , name : String
+        , visible : Bool
+        }
+    | Link
+        { name : String
+        , url : String
+        , visible : Bool
+        }
+    | Course
+        { name : String
+        , url : String
+        , visible : Bool
+        }
 
 
 type alias Edge =
@@ -36,7 +54,7 @@ type alias Edge =
 
 type alias Graph =
     { root : Maybe Node
-    , node : Dict String ( Node, Bool )
+    , node : Dict String Node
     , edge : List Edge
     }
 
@@ -51,10 +69,7 @@ init =
 
 addNode : Node -> Graph -> Graph
 addNode node graph =
-    { graph
-        | node =
-            Dict.insert (nodeID node) ( node, True ) graph.node
-    }
+    { graph | node = Dict.insert (nodeID node) node graph.node }
 
 
 addEdge : Node -> Node -> Graph -> Graph
@@ -90,12 +105,12 @@ nodeID node =
 
 addHashtag : String -> Graph -> Graph
 addHashtag name =
-    rootConnect (Hashtag { name = name })
+    rootConnect (Hashtag { name = name, visible = True })
 
 
 addLink : { name : String, url : String } -> Graph -> Graph
 addLink link =
-    rootConnect (Link link)
+    rootConnect (Link { name = link.name, url = link.url, visible = True })
 
 
 section : Int -> Node
@@ -105,6 +120,7 @@ section id =
         , indentation = -1
         , weight = -1
         , name = ""
+        , visible = False
         }
 
 
@@ -123,7 +139,7 @@ addSection id graph =
 
 addCourse : { name : String, url : String } -> Graph -> Graph
 addCourse lia =
-    rootConnect (Course lia)
+    rootConnect (Course { name = lia.name, url = lia.url, visible = True })
 
 
 rootConnect : Node -> Graph -> Graph
@@ -155,6 +171,7 @@ parseSectionsHelper prev sections graph =
                         , weight = String.length x.code
                         , indentation = x.indentation
                         , name = stringify x.title
+                        , visible = True
                         }
                     )
                 |> parseSectionsHelper [ x ] xs
@@ -168,6 +185,7 @@ parseSectionsHelper prev sections graph =
                             , weight = String.length x.code
                             , indentation = x.indentation
                             , name = stringify x.title
+                            , visible = True
                             }
                         )
                     |> addEdge (section p.id) (section x.id)
