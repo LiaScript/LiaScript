@@ -137,7 +137,7 @@ viewSlide screen model =
                                 |> Html.map UpdateMarkdown
                             )
                             (model.graph
-                                |> Graph.view model.translation
+                                |> Graph.view model.translation model.settings.light
                                 |> Html.map UpdateGraph
                             )
                             model.splitPane
