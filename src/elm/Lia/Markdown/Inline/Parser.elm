@@ -38,7 +38,7 @@ import Combine
         , withState
         )
 import Combine.Char exposing (anyChar)
-import Lia.Graph.Graph as Graph exposing (Graph)
+import Lia.Graph.Model as Graph
 import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Effect.Script.Types as JS
 import Lia.Markdown.Footnote.Parser as Footnote
@@ -473,12 +473,12 @@ addHashtag tag =
         |> graphInsert (Hashtag tag)
 
 
-updateGraph : (Graph.Graph -> Graph.Graph) -> Context -> Context
+updateGraph : (Graph.Model -> Graph.Model) -> Context -> Context
 updateGraph graph state =
     { state | graph = graph state.graph }
 
 
-graphInsert : x -> (Graph -> Graph) -> Parser Context x
+graphInsert : x -> (Graph.Model -> Graph.Model) -> Parser Context x
 graphInsert rslt =
     updateGraph
         >> modifyState

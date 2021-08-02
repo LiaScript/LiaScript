@@ -7,19 +7,19 @@ import Html.Events
 import Html.Lazy
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Graph.Graph exposing (Graph, isRootNode)
+import Lia.Graph.Model exposing (Model, isRootNode)
 import Lia.Graph.Node as Node exposing (Node(..))
 import Lia.Graph.Update exposing (Msg(..))
 import Lia.Markdown.Chart.View exposing (eCharts)
 import Translations exposing (Lang)
 
 
-view lang graph =
-    Html.Lazy.lazy2 chart lang graph
+view lang model =
+    Html.Lazy.lazy2 chart lang model
 
 
-chart : Lang -> Graph -> Html Msg
-chart lang graph =
+chart : Lang -> Model -> Html Msg
+chart lang model =
     JE.object
         [ ( "tooltip", JE.object [] )
         , legend
@@ -42,7 +42,7 @@ chart lang graph =
               )
             , ( "draggable", JE.bool True )
             , ( "data"
-              , graph.node
+              , model.graph.node
                     |> Dict.toList
                     |> List.sortBy Tuple.first
                     |> List.map
@@ -57,7 +57,7 @@ chart lang graph =
                             , ( "symbolSize", JE.float <| Node.weight node )
                             , ( "itemStyle"
                               , JE.object <|
-                                    if isRootNode graph node then
+                                    if isRootNode model node then
                                         [ ( "borderColor", JE.string "#000" )
                                         , ( "borderWidth", JE.int 3 )
                                         ]
@@ -78,7 +78,7 @@ chart lang graph =
                     |> JE.list JE.object
               )
             , ( "edges"
-              , graph.edge
+              , model.graph.edge
                     |> List.sortBy .from
                     |> List.map
                         (\edge ->

@@ -1,11 +1,15 @@
-module Lia.Graph.Update exposing (..)
+module Lia.Graph.Update exposing
+    ( Msg(..)
+    , setRootSection
+    , setSectionVisibility
+    , update
+    )
 
-import Dict
-import Html exposing (node)
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Graph.Graph exposing (Graph, section)
-import Lia.Graph.Node exposing (Node(..))
+import Lia.Graph.Graph as Graph
+import Lia.Graph.Model exposing (Model)
+import Lia.Graph.Node as Node exposing (Node(..))
 import Session exposing (Session)
 import Url
 
@@ -14,7 +18,7 @@ type Msg
     = Clicked JD.Value
 
 
-update : Session -> Msg -> Graph -> ( Graph, Cmd Msg )
+update : Session -> Msg -> Model -> ( Model, Cmd Msg )
 update session msg graph =
     case msg of
         Clicked obj ->
@@ -34,41 +38,18 @@ update session msg graph =
                     ( graph, Cmd.none )
 
 
-rootSection : Int -> Graph -> Graph
-rootSection i graph =
-    { graph | root = Just (section i) }
+setRootSection : Int -> Model -> Model
+setRootSection i model =
+    { model | root = Just (Node.section i) }
 
 
-getNode : Graph -> JE.Value -> Maybe Node
-getNode graph obj =
-    case JD.decodeValue (JD.field "data" (JD.field "id" JD.string)) obj of
-        Ok id ->
-            Dict.get id graph.node
-
-        _ ->
-            Nothing
+getNode : Model -> JE.Value -> Maybe Node
+getNode model =
+    JD.decodeValue (JD.field "data" (JD.field "id" JD.string))
+        >> Result.toMaybe
+        >> Maybe.andThen (Graph.getNodeById model.graph)
 
 
-sectionVisibility : Graph -> List Int -> Graph
-sectionVisibility graph ids =
-    { graph
-        | node =
-            graph.node
-                |> Dict.map
-                    (\_ node ->
-                        case node of
-                            Section sec ->
-                                Section
-                                    { sec
-                                        | visible =
-                                            if List.isEmpty ids then
-                                                True
-
-                                            else
-                                                List.member sec.id ids
-                                    }
-
-                            _ ->
-                                node
-                    )
-    }
+setSectionVisibility : Model -> List Int -> Model
+setSectionVisibility model ids =
+    { model | graph = Graph.setSectionVisibility model.graph ids }

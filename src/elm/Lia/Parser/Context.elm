@@ -12,7 +12,7 @@ parsing. It is passed to all successively applied parser.
 import Array
 import Combine exposing (Parser, succeed, withState)
 import Lia.Definition.Types exposing (Definition)
-import Lia.Graph.Graph as Graph exposing (Graph)
+import Lia.Graph.Model as Graph
 import Lia.Markdown.Code.Types as Code
 import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Footnote.Model as Footnote
@@ -66,14 +66,14 @@ type alias Context =
     , footnotes : Footnote.Model
     , defines_updated : Bool
     , search_index : String -> String
-    , graph : Graph
+    , graph : Graph.Model
     }
 
 
 {-| Initialize the current `Context` with a searchIndex function and the global
 definitions.
 -}
-init : Graph -> Maybe (String -> String) -> Definition -> Context
+init : Graph.Model -> Maybe (String -> String) -> Definition -> Context
 init graph search_index global =
     { indentation = []
     , indentation_skip = False

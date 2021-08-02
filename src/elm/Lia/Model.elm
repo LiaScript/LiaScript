@@ -8,7 +8,7 @@ import Array
 import Dict exposing (Dict)
 import Json.Encode as JE
 import Lia.Definition.Types as Definition exposing (Definition, Resource(..))
-import Lia.Graph.Graph as Graph exposing (Graph)
+import Lia.Graph.Model as Graph
 import Lia.Index.Model as Index
 import Lia.Section exposing (Sections)
 import Lia.Settings.Json
@@ -84,7 +84,7 @@ type alias Model =
     , search_index : String -> String
     , media : Dict String ( Int, Int )
     , modal : Maybe String
-    , graph : Graph
+    , graph : Graph.Model
     , splitPane : SplitPane.State
     }
 
