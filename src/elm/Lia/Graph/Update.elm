@@ -10,24 +10,26 @@ import Json.Encode as JE
 import Lia.Graph.Graph as Graph
 import Lia.Graph.Model exposing (Model, isRootNode, updateJson)
 import Lia.Graph.Node as Node exposing (Node(..))
+import Lia.Graph.Settings as Settings
 import Session exposing (Session)
 import Url
 
 
 type Msg
     = Clicked JD.Value
+    | UpdateSettings Settings.Msg
 
 
 update : Session -> Msg -> Model -> ( Model, Cmd Msg )
-update session msg graph =
+update session msg model =
     case msg of
         Clicked obj ->
-            case getNode graph obj of
+            case getNode model obj of
                 Just (Section sec) ->
-                    ( graph, Session.navToSlide session sec.id )
+                    ( model, Session.navToSlide session sec.id )
 
                 Just (Link node) ->
-                    ( graph
+                    ( model
                     , node.url
                         |> Url.fromString
                         |> Maybe.map Session.load
@@ -35,7 +37,16 @@ update session msg graph =
                     )
 
                 _ ->
-                    ( graph, Cmd.none )
+                    ( model, Cmd.none )
+
+        UpdateSettings subMsg ->
+            ( { model
+                | settings =
+                    Settings.update subMsg model.settings
+              }
+                |> updateJson
+            , Cmd.none
+            )
 
 
 setRootSection : Int -> Model -> Model
