@@ -27,10 +27,16 @@ export class Sync extends Base {
     return window.beaker && window.location.protocol === 'hyper' ? true : false
   }
 
-  connect(send: Lia.Send, course: string, room: string) {
+  connect(
+    send: Lia.Send,
+    course: string,
+    room: string,
+    username: string,
+    password?: string
+  ) {
     if (!window.beaker) return
 
-    super.connect(send, course, room)
+    super.connect(send, course, room, username, password)
 
     let peerIds: Set<number> = new Set()
     this.peerIds = peerIds
