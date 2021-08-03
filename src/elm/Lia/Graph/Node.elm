@@ -2,6 +2,8 @@ module Lia.Graph.Node exposing
     ( Node(..)
     , categories
     , category
+    , children
+    , connect
     , equal
     , id
     , isVisible
@@ -22,6 +24,7 @@ type Node
         , weight : Int
         , name : String
         , visible : Bool
+        , children : List String
         }
     | Link
         { name : String
@@ -142,4 +145,25 @@ section i =
         , weight = -1
         , name = ""
         , visible = False
+        , children = []
         }
+
+
+connect : Node -> Node -> Node
+connect child parent =
+    case parent of
+        Section data ->
+            Section { data | children = id child :: data.children }
+
+        _ ->
+            parent
+
+
+children : Node -> List String
+children node =
+    case node of
+        Section data ->
+            data.children
+
+        _ ->
+            []

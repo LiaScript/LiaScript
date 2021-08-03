@@ -13,7 +13,6 @@ module Lia.Graph.Model exposing
 import Array exposing (Array)
 import Dict
 import Json.Encode as JE
-import Lia.Graph.Edges as Edges
 import Lia.Graph.Graph as Graph exposing (Graph)
 import Lia.Graph.Node as Node exposing (Node(..))
 import Lia.Markdown.Inline.Stringify exposing (stringify)
@@ -138,6 +137,7 @@ addSectionsHelper prev sections graph =
                         , indentation = x.indentation
                         , name = stringify x.title
                         , visible = True
+                        , children = []
                         }
                     )
                 |> addSectionsHelper [ x ] xs
@@ -152,6 +152,7 @@ addSectionsHelper prev sections graph =
                             , indentation = x.indentation
                             , name = stringify x.title
                             , visible = True
+                            , children = []
                             }
                         )
                     |> Graph.addEdge (Node.section p.id) (Node.section x.id)
@@ -181,7 +182,7 @@ updateJson model =
                     , ( "force", force )
                     , ( "draggable", JE.bool True )
                     , ( "data"
-                      , model.graph.node
+                      , model.graph
                             |> Dict.toList
                             |> List.map
                                 (\( id, node ) ->
@@ -208,8 +209,8 @@ updateJson model =
                             |> JE.list JE.object
                       )
                     , ( "edges"
-                      , model.graph.edge
-                            |> Edges.toList
+                      , model.graph
+                            |> Graph.getEdges
                             |> List.map
                                 (\( from, to ) ->
                                     [ ( "source", JE.string from )

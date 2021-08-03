@@ -1,22 +1,13 @@
 module Lia.Graph.Json exposing (encode)
 
 import Json.Encode as JE
-import Lia.Graph.Edges exposing (Edge)
-import Lia.Graph.Model exposing (Graph)
+import Lia.Graph.Graph exposing (Graph)
 import Lia.Graph.Node exposing (Node(..))
 
 
 encode : Graph -> JE.Value
 encode graph =
-    JE.object
-        [ ( "node", JE.dict identity fromNode graph.node )
-        , ( "edge", JE.list fromEdge graph.edge )
-        ]
-
-
-fromEdge : Edge -> JE.Value
-fromEdge edge =
-    JE.list JE.string [ edge.from, edge.to ]
+    JE.dict identity fromNode graph
 
 
 fromNode : Node -> JE.Value
@@ -27,6 +18,7 @@ fromNode node =
             , ( "id", JE.int sec.id )
             , ( "indentation", JE.int sec.indentation )
             , ( "weight", JE.int sec.weight )
+            , ( "children", JE.list JE.string sec.children )
             ]
                 |> fromType "sec"
 
