@@ -65,7 +65,7 @@ addSection id model =
         Just root ->
             { model
                 | graph =
-                    Graph.addEdge
+                    Graph.addLink
                         root
                         (Node.section id)
                         model.graph
@@ -83,7 +83,7 @@ rootConnect node model =
                 Just root ->
                     model.graph
                         |> Graph.addNode node
-                        |> Graph.addEdge root node
+                        |> Graph.addLink root node
 
                 Nothing ->
                     model.graph
@@ -138,6 +138,7 @@ addSectionsHelper prev sections graph =
                         , name = stringify x.title
                         , visible = True
                         , children = []
+                        , links = []
                         }
                     )
                 |> addSectionsHelper [ x ] xs
@@ -153,9 +154,10 @@ addSectionsHelper prev sections graph =
                             , name = stringify x.title
                             , visible = True
                             , children = []
+                            , links = []
                             }
                         )
-                    |> Graph.addEdge (Node.section p.id) (Node.section x.id)
+                    |> Graph.addChild (Node.section p.id) (Node.section x.id)
                     |> addSectionsHelper (x :: prev) xs
 
             else
@@ -183,7 +185,7 @@ updateJson model =
                     , ( "draggable", JE.bool True )
                     , ( "data"
                       , model.graph
-                            |> Dict.toList
+                            |> Graph.toList
                             |> List.map
                                 (\( id, node ) ->
                                     [ ( "id", JE.string id )
@@ -210,7 +212,7 @@ updateJson model =
                       )
                     , ( "edges"
                       , model.graph
-                            |> Graph.getEdges
+                            |> Graph.getConnections
                             |> List.map
                                 (\( from, to ) ->
                                     [ ( "source", JE.string from )
