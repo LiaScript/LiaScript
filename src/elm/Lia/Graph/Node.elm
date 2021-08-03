@@ -1,19 +1,22 @@
 module Lia.Graph.Node exposing
     ( Node(..)
-    , addChild
     , addLink
+    , addParent
     , categories
     , category
-    , children
     , connections
     , equal
-    , id
+    , identifier
     , isVisible
     , links
     , name
+    , parent
     , section
     , weight
     )
+
+import Conditional.Set as CSet
+import Set exposing (Set)
 
 
 type Node
@@ -27,8 +30,8 @@ type Node
         , weight : Int
         , name : String
         , visible : Bool
-        , children : List String
-        , links : List String
+        , parent : Maybe String
+        , links : Set String
         }
     | Link
         { name : String
@@ -68,8 +71,8 @@ name node =
             lia.name
 
 
-id : Node -> String
-id node =
+identifier : Node -> String
+identifier node =
     case node of
         Section sec ->
             "sec: " ++ String.fromInt sec.id
@@ -149,8 +152,8 @@ section i =
         , weight = -1
         , name = ""
         , visible = False
-        , children = []
-        , links = []
+        , parent = Nothing
+        , links = Set.empty
         }
 
 
@@ -158,37 +161,37 @@ addLink : Node -> Node -> Node
 addLink target source =
     case source of
         Section data ->
-            Section { data | children = id target :: data.links }
+            Section { data | links = Set.insert (identifier target) data.links }
 
         _ ->
             source
 
 
-addChild : Node -> Node -> Node
-addChild child parent =
-    case parent of
+addParent : Node -> Node -> Node
+addParent child p =
+    case child of
         Section data ->
-            Section { data | children = id child :: data.children }
+            Section { data | parent = Just (identifier p) }
 
         _ ->
-            parent
+            child
 
 
-children : Node -> List String
-children node =
+parent : Node -> Maybe String
+parent node =
     case node of
         Section data ->
-            data.children
+            data.parent
 
         _ ->
-            []
+            Nothing
 
 
 links : Node -> List String
 links node =
     case node of
         Section data ->
-            data.links
+            Set.toList data.links
 
         _ ->
             []
@@ -198,7 +201,9 @@ connections : Node -> List String
 connections node =
     case node of
         Section data ->
-            data.children ++ data.links
+            data.links
+                |> CSet.insertWhen data.parent
+                |> Set.toList
 
         _ ->
             []
