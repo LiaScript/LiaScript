@@ -1,20 +1,21 @@
 module Lia.Graph.Graph exposing
     ( Graph
-    , addChild
     , addLink
     , addNode
+    , addParent
     , empty
-    , getChildren
     , getConnections
     , getLinks
     , getNodeById
     , getNodes
     , setSectionVisibility
     , toList
+    , zip
     )
 
 import Dict exposing (Dict)
 import Lia.Graph.Node as Node exposing (Node(..))
+import Set
 
 
 type alias Graph =
@@ -28,20 +29,20 @@ empty =
 
 addNode : Node -> Graph -> Graph
 addNode node =
-    Dict.insert (Node.id node) node
+    Dict.insert (Node.identifier node) node
 
 
-addChild : Node -> Node -> Graph -> Graph
-addChild parent child =
+addParent : Node -> Node -> Graph -> Graph
+addParent parent child =
     Dict.update
-        (Node.id parent)
-        (Maybe.map (Node.addChild child))
+        (Node.identifier parent)
+        (Maybe.map (Node.addParent child))
 
 
 addLink : Node -> Node -> Graph -> Graph
 addLink parent child =
     Dict.update
-        (Node.id parent)
+        (Node.identifier parent)
         (Maybe.map (Node.addLink child))
 
 
@@ -88,11 +89,6 @@ getLinks =
     getEdges Node.links
 
 
-getChildren : Graph -> List ( String, String )
-getChildren =
-    getEdges Node.children
-
-
 getConnections : Graph -> List ( String, String )
 getConnections =
     getEdges Node.connections
@@ -108,3 +104,84 @@ getEdges fn =
                     |> List.map (Tuple.pair key)
             )
         >> List.concat
+
+
+zip : Int -> Graph -> Graph
+zip indentation graph =
+    if indentation >= 0 && indentation < 6 then
+        zip_ indentation 6 graph
+
+    else
+        graph
+
+
+zip_ minimum maximum graph =
+    if minimum == maximum then
+        graph
+
+    else
+        graph
+            |> zipHelper maximum
+            |> zip_ minimum (maximum - 1)
+
+
+zipHelper : Int -> Graph -> Graph
+zipHelper indentation graph =
+    let
+        ( true, false ) =
+            Dict.partition (filter indentation) graph
+    in
+    false
+        |> getNodes
+        |> List.foldl
+            (\node container ->
+                case Node.parent node of
+                    Just id ->
+                        Dict.update id
+                            (Maybe.map (shallowCopy graph node))
+                            container
+
+                    _ ->
+                        container
+            )
+            true
+
+
+shallowCopy : Graph -> Node -> Node -> Node
+shallowCopy graph source target =
+    case ( source, target ) of
+        ( Section sourceData, Section targetData ) ->
+            Section
+                { targetData
+                    | weight = targetData.weight + sourceData.weight
+                    , links =
+                        Set.union targetData.links sourceData.links
+                            |> Set.map (updateLinks graph sourceData.indentation)
+                }
+
+        _ ->
+            target
+
+
+filter : Int -> String -> Node -> Bool
+filter maximum _ node =
+    case node of
+        Section data ->
+            maximum > data.indentation
+
+        _ ->
+            True
+
+
+updateLinks : Graph -> Int -> String -> String
+updateLinks db indentation id =
+    case getNodeById db id of
+        Just (Section data) ->
+            if data.indentation >= indentation then
+                Maybe.withDefault id data.parent
+
+            else
+                id
+
+        _ ->
+            id

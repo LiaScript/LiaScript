@@ -11,18 +11,20 @@ module Lia.Graph.Model exposing
     )
 
 import Array exposing (Array)
-import Dict
 import Json.Encode as JE
 import Lia.Graph.Graph as Graph exposing (Graph)
 import Lia.Graph.Node as Node exposing (Node(..))
+import Lia.Graph.Settings as Settings exposing (Settings)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
+import Set
 
 
 type alias Model =
     { graph : Graph
     , root : Maybe Node
     , json : JE.Value
+    , settings : Settings
     }
 
 
@@ -32,6 +34,7 @@ init =
         Graph.empty
         Nothing
         JE.null
+        Settings.init
 
 
 isRootNode : Model -> Node -> Bool
@@ -137,8 +140,8 @@ addSectionsHelper prev sections graph =
                         , indentation = x.indentation
                         , name = stringify x.title
                         , visible = True
-                        , children = []
-                        , links = []
+                        , parent = Nothing
+                        , links = Set.empty
                         }
                     )
                 |> addSectionsHelper [ x ] xs
@@ -153,11 +156,10 @@ addSectionsHelper prev sections graph =
                             , indentation = x.indentation
                             , name = stringify x.title
                             , visible = True
-                            , children = []
-                            , links = []
+                            , parent = Just <| Node.identifier <| Node.section p.id
+                            , links = Set.empty
                             }
                         )
-                    |> Graph.addChild (Node.section p.id) (Node.section x.id)
                     |> addSectionsHelper (x :: prev) xs
 
             else
@@ -166,6 +168,14 @@ addSectionsHelper prev sections graph =
 
 updateJson : Model -> Model
 updateJson model =
+    let
+        graph =
+            if model.settings.indentation < 6 then
+                Graph.zip model.settings.indentation model.graph
+
+            else
+                model.graph
+    in
     { model
         | json =
             JE.object
@@ -184,7 +194,7 @@ updateJson model =
                     , ( "force", force )
                     , ( "draggable", JE.bool True )
                     , ( "data"
-                      , model.graph
+                      , graph
                             |> Graph.toList
                             |> List.map
                                 (\( id, node ) ->
@@ -192,7 +202,8 @@ updateJson model =
                                     , ( "name", JE.string <| Node.name node )
                                     , ( "category", JE.int <| Node.category node )
                                     , ( "tooltip", formatter node )
-                                    , ( "symbolSize", JE.float <| Node.weight node )
+
+                                    --, ( "symbolSize", JE.float <| Node.weight node )
                                     , ( "itemStyle"
                                       , JE.object <|
                                             if isRootNode model node then
@@ -211,7 +222,7 @@ updateJson model =
                             |> JE.list JE.object
                       )
                     , ( "edges"
-                      , model.graph
+                      , graph
                             |> Graph.getConnections
                             |> List.map
                                 (\( from, to ) ->
