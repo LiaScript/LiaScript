@@ -1,12 +1,16 @@
 module Lia.Graph.Graph exposing
     ( Graph
-    , addEdge
+    , addChild
+    , addLink
     , addNode
     , empty
-    , getEdges
+    , getChildren
+    , getConnections
+    , getLinks
     , getNodeById
     , getNodes
     , setSectionVisibility
+    , toList
     )
 
 import Dict exposing (Dict)
@@ -27,11 +31,18 @@ addNode node =
     Dict.insert (Node.id node) node
 
 
-addEdge : Node -> Node -> Graph -> Graph
-addEdge parent child =
+addChild : Node -> Node -> Graph -> Graph
+addChild parent child =
     Dict.update
         (Node.id parent)
-        (Maybe.map (Node.connect child))
+        (Maybe.map (Node.addChild child))
+
+
+addLink : Node -> Node -> Graph -> Graph
+addLink parent child =
+    Dict.update
+        (Node.id parent)
+        (Maybe.map (Node.addLink child))
 
 
 setSectionVisibility : Graph -> List Int -> Graph
@@ -67,13 +78,33 @@ getNodes =
     Dict.values
 
 
-getEdges : Graph -> List ( String, String )
-getEdges =
+toList : Graph -> List ( String, Node )
+toList =
     Dict.toList
+
+
+getLinks : Graph -> List ( String, String )
+getLinks =
+    getEdges Node.links
+
+
+getChildren : Graph -> List ( String, String )
+getChildren =
+    getEdges Node.children
+
+
+getConnections : Graph -> List ( String, String )
+getConnections =
+    getEdges Node.connections
+
+
+getEdges : (Node -> List String) -> Graph -> List ( String, String )
+getEdges fn =
+    toList
         >> List.map
             (\( key, node ) ->
                 node
-                    |> Node.children
+                    |> fn
                     |> List.map (Tuple.pair key)
             )
         >> List.concat
