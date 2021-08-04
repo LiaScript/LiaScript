@@ -108,13 +108,16 @@ getComment_Helper from id result =
 
 current_paragraphs : Model a -> List ( Bool, Int, List Content )
 current_paragraphs model =
-    model.comments
-        |> Dict.toList
+    model.effects
+        |> List.range 0
         |> List.map
-            (\( key, value ) ->
+            (\key ->
                 ( key == model.visible
                 , key
-                , Array.toList value.content
+                , model.comments
+                    |> Dict.get key
+                    |> Maybe.map (.content >> Array.toList)
+                    |> Maybe.withDefault []
                 )
             )
 
