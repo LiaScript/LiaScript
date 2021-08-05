@@ -16,16 +16,9 @@ import { initTooltip } from '../webcomponents/tooltip/index'
 
 import * as Beaker from '../sync/Beaker/index'
 import * as Jitsi from '../sync/Jitsi/index'
-<<<<<<< HEAD
-<<<<<<< HEAD
 import * as Matrix from '../sync/Matrix/index'
 import * as PubNub from '../sync/PubNub/index'
 import * as GUN from '../sync/Gun/index'
-=======
->>>>>>> 1de91bc7 (Add stub for jitsi)
-=======
-import * as Matrix from '../sync/Matrix/index'
->>>>>>> 88403f92 (Add local jitsi and matrix stub)
 
 window.img_Zoom = function (e: MouseEvent | TouchEvent) {
   const target = e.target as HTMLImageElement
@@ -273,7 +266,6 @@ class LiaScript {
         hasShareAPI: !!navigator.share,
         hasIndex: connector.hasIndex(),
         syncSupport: allowSync
-<<<<<<< HEAD
           ? [
               // beaker is only supported within the beaker-browser
               Beaker.isSupported() ? 'beaker' : '',
@@ -283,9 +275,6 @@ class LiaScript {
               'matrix',
               'pubnub',
             ]
-=======
-          ? [Beaker.isSupported() ? 'beaker' : '', 'matrix', 'jitsi']
->>>>>>> 1de91bc7 (Add stub for jitsi)
           : [],
       },
     })
@@ -404,6 +393,31 @@ class LiaScript {
         },
       ],
       message: null,
+    })
+  }
+
+  initSynchronization() {
+    let self = this
+    let publish = this.app.ports.syncIn.send
+
+    this.app.ports.syncOut.subscribe(function (event: Lia.Event) {
+      switch (event.topic) {
+        case 'connect': {
+          if (!self.sync) delete self.sync
+
+          self.sync = new Sync()
+
+          self.sync.connect(
+            publish,
+            event.message.course,
+            event.message.room,
+            event.message.username,
+            event.message.password
+          )
+
+          break
+        }
+      }
     })
   }
 
@@ -654,15 +668,12 @@ function process(
 
                   break
                 }
-<<<<<<< HEAD
                 case 'gun': {
                   self.sync = new GUN.Sync(elmSend)
                   self.sync.connect(event.message)
 
                   break
                 }
-=======
->>>>>>> 1de91bc7 (Add stub for jitsi)
                 case 'jitsi': {
                   self.sync = new Jitsi.Sync(elmSend)
                   self.sync.connect(event.message)
@@ -672,7 +683,6 @@ function process(
                 case 'matrix': {
                   self.sync = new Matrix.Sync(elmSend)
                   self.sync.connect(event.message)
-<<<<<<< HEAD
 
                   break
                 }
@@ -680,8 +690,6 @@ function process(
                 case 'pubnub': {
                   self.sync = new PubNub.Sync(elmSend)
                   self.sync.connect(event.message)
-=======
->>>>>>> 88403f92 (Add local jitsi and matrix stub)
 
                   break
                 }

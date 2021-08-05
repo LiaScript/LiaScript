@@ -44,6 +44,8 @@ subscriptions model =
                 [ section
                     |> Markdown.subscriptions
                     |> Sub.map UpdateMarkdown
+
+                --, Sub.map UpdateSync Sync.subscriptions
                 , media Media
                 ]
 
