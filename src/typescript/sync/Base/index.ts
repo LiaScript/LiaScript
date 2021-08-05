@@ -130,20 +130,4 @@ export class Sync {
       console.error('load: ', e)
     }
   }
-
-  uniqueID() {
-    if (this.course && this.room) {
-      return JSON.stringify({
-        course: this.course,
-        room: this.room,
-      })
-    }
-
-    console.warn('Sync: no uniqueID')
-    return ''
-  }
-
-  publish(event: any) {}
-
-  subscribe(topic: string) {}
 }
