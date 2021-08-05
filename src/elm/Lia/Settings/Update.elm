@@ -36,6 +36,7 @@ type Toggle
     = TableOfContents
     | Sound
     | Light
+    | Sync
     | Action Action
     | SupportMenu
     | TranslateWithGoogle
@@ -97,6 +98,9 @@ update main msg model =
 
         Toggle Tooltips ->
             log Nothing { model | tooltips = not model.tooltips }
+
+        Toggle Sync ->
+            no_log Nothing { model | sync = not model.sync }
 
         Toggle (Action action) ->
             no_log

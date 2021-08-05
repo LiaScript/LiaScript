@@ -26,7 +26,13 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
 import Lia.Settings.Update exposing (Msg(..), Toggle(..))
-import Lia.Utils exposing (blockKeydown, btn, btnIcon, noTranslate)
+import Lia.Utils
+    exposing
+        ( blockKeydown
+        , btn
+        , btnIcon
+        , noTranslate
+        )
 import QRCode
 import Session exposing (Screen)
 import Translations as Trans exposing (Lang)
@@ -615,6 +621,14 @@ menuShare url lang tabbable settings =
 
         else
             Html.text ""
+      , divider
+      , btn
+            { title = "Classrom"
+            , tabbable = tabbable
+            , msg = Just (Toggle Sync)
+            }
+            []
+            [ Html.text "Classroom" ]
       ]
         |> submenu (settings.action == Just Share)
     ]

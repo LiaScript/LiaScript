@@ -21,6 +21,7 @@ import Lia.Parser.Parser exposing (parse_section)
 import Lia.Section exposing (Section)
 import Lia.Settings.Types exposing (Mode(..))
 import Lia.Settings.Update as Settings
+import Lia.Sync.Update as Sync
 import Port.Event as Event exposing (Event)
 import Return exposing (Return)
 import Session exposing (Session)
@@ -40,6 +41,7 @@ subscriptions model =
                 [ section
                     |> Markdown.subscriptions
                     |> Sub.map UpdateMarkdown
+                , Sub.map UpdateSync Sync.subscriptions
                 , media Media
                 ]
 
@@ -76,6 +78,7 @@ type Msg
     | UpdateIndex Index.Msg
     | UpdateSettings Settings.Msg
     | UpdateMarkdown Markdown.Msg
+    | UpdateSync Sync.Msg
     | Handle Event
     | Home
     | Script ( Int, Script.Msg Markdown.Msg )
@@ -150,6 +153,16 @@ update session msg model =
             { model | index_model = index, sections = sections }
                 |> Return.val
                 |> Return.cmd (Cmd.map UpdateIndex cmd)
+
+        UpdateSync childMsg ->
+            let
+                ( sync, cmd ) =
+                    Sync.update childMsg model.sync
+            in
+            ( { model | sync = sync }
+            , Cmd.map UpdateSync cmd
+            , []
+            )
 
         Handle event ->
             case Event.pop event of

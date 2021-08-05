@@ -59,6 +59,21 @@ export class Sync extends Base {
         if (message) send(message)
       }
     )
+
+    send({
+      topic: 'connect',
+      section: -1,
+      message: true,
+    })
+  }
+
+  disconnect() {
+    if (this.send)
+      this.send({
+        topic: 'disconnect',
+        section: -1,
+        message: null,
+      })
   }
 
   publish(message: Object) {

@@ -21,8 +21,9 @@ import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model)
 import Lia.Section exposing (SubSection)
 import Lia.Settings.Types exposing (Mode(..), Settings)
-import Lia.Settings.Update exposing (toggle_sound)
+import Lia.Settings.Update as Settings_
 import Lia.Settings.View as Settings
+import Lia.Sync.View as Sync
 import Lia.Update exposing (Msg(..), get_active_section)
 import Lia.Utils exposing (modal)
 import Session exposing (Screen)
@@ -227,7 +228,7 @@ btnStop lang settings =
             else
                 Trans.soundOff lang
         , tabbable = True
-        , msg = Just (UpdateSettings toggle_sound)
+        , msg = Just (UpdateSettings Settings_.toggle_sound)
         , icon =
             if settings.sound then
                 "icon-sound-on"
@@ -428,11 +429,18 @@ responsiveVoice show =
 
 showModal : Model -> Html Msg
 showModal model =
-    case model.modal of
-        Nothing ->
+    case ( model.modal, model.settings.sync ) of
+        ( Nothing, False ) ->
             Html.text ""
 
-        Just url ->
+        ( _, True ) ->
+            model.sync
+                |> Sync.view
+                |> Html.map UpdateSync
+                |> List.singleton
+                |> modal (UpdateSettings (Settings_.Toggle Settings_.Sync)) Nothing
+
+        ( Just url, _ ) ->
             modal (Media ( "", Nothing, Nothing ))
                 Nothing
                 [ Html.figure

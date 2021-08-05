@@ -30,6 +30,8 @@ export class Sync {
     this.password = password
   }
 
+  disconnect() {}
+
   isSupported(): boolean {
     return false
   }
