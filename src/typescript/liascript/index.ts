@@ -221,7 +221,7 @@ var firstSpeak = true
 class LiaScript {
   private app: any
   public connector: Connector
-  private sync?: Sync
+  public sync?: Sync
 
   constructor(
     elem: HTMLElement,
@@ -280,6 +280,8 @@ class LiaScript {
     setTimeout(function () {
       firstSpeak = false
     }, 1000)
+
+    this.initSynchronization()
   }
 
   footnote(key: string) {
@@ -343,6 +345,31 @@ class LiaScript {
       topic: Port.RESET,
       section: -1,
       message: null,
+    })
+  }
+
+  initSynchronization() {
+    let self = this
+    let publish = this.app.ports.syncIn.send
+
+    this.app.ports.syncOut.subscribe(function (event: Lia.Event) {
+      switch (event.topic) {
+        case 'connect': {
+          if (!self.sync) delete self.sync
+
+          self.sync = new Sync()
+
+          self.sync.connect(
+            publish,
+            event.message.course,
+            event.message.room,
+            event.message.username,
+            event.message.password
+          )
+
+          break
+        }
+      }
     })
   }
 

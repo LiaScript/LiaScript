@@ -12,6 +12,7 @@ import Lia.Index.Model as Index
 import Lia.Section exposing (Sections)
 import Lia.Settings.Json
 import Lia.Settings.Types as Settings exposing (Settings)
+import Lia.Sync.Types as Sync
 import Port.Event exposing (Event)
 import Translations
 
@@ -82,6 +83,7 @@ type alias Model =
     , search_index : String -> String
     , media : Dict String ( Int, Int )
     , modal : Maybe String
+    , sync : Sync.Settings
     }
 
 
@@ -130,6 +132,7 @@ init hasShareApi openTOC settings url readme origin anchor =
     , search_index = identity
     , media = Dict.empty
     , modal = Nothing
+    , sync = Sync.init
     }
 
 

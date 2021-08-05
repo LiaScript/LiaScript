@@ -9,6 +9,7 @@ import Lia.Markdown.Inline.Json.Decode as Inline
 import Lia.Model exposing (Model)
 import Lia.Section as Section
 import Lia.Settings.Types as Settings
+import Lia.Sync.Types as Sync
 import Translations
 
 
@@ -51,6 +52,7 @@ toModel =
         |> JD.map2 (|>) (JD.succeed identity)
         |> JD.map2 (|>) (JD.succeed Dict.empty)
         |> JD.map2 (|>) (JD.succeed Nothing)
+        |> JD.map2 (|>) (JD.succeed Sync.init)
 
 
 toSectionBase : JD.Decoder Section.Base
