@@ -6,8 +6,9 @@ port module Lia.Sync.Update exposing
 
 import Json.Decode as JD
 import Json.Encode as JE
+import Lia.Sync.Chat as Chat
 import Lia.Sync.Types exposing (Settings, State(..))
-import Port.Event exposing (Event)
+import Port.Event as Event exposing (Event)
 
 
 port syncOut : Event -> Cmd msg
@@ -28,6 +29,7 @@ type Msg
     | Connect
     | Disconnect
     | Handle Event
+    | UpdateChat Chat.Msg
 
 
 update : Msg -> Settings -> ( Settings, Cmd Msg )
@@ -46,8 +48,32 @@ update msg model =
                     else
                         ( { model | state = Disconnected }, Cmd.none )
 
+                "chat" ->
+                    ( { model
+                        | chat =
+                            event.message
+                                |> Event.decode
+                                |> Result.map (Chat.handle model.chat)
+                                |> Result.withDefault model.chat
+                      }
+                    , Cmd.none
+                    )
+
                 _ ->
                     ( model, Cmd.none )
+
+        UpdateChat subMsg ->
+            case Chat.update subMsg model.username model.chat of
+                ( chat, Nothing ) ->
+                    ( { model | chat = chat }, Cmd.none )
+
+                ( chat, Just event ) ->
+                    ( { model | chat = chat }
+                    , event
+                        |> Event.encode
+                        |> Event "chat" -1
+                        |> syncOut
+                    )
 
         Password str ->
             ( { model | password = str }, Cmd.none )

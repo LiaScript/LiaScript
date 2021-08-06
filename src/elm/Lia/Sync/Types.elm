@@ -6,6 +6,8 @@ module Lia.Sync.Types exposing
     , isConnected
     )
 
+import Lia.Sync.Chat as Chat exposing (Chat)
+
 
 type State
     = Pending
@@ -24,6 +26,7 @@ type alias Settings =
     , room : String
     , username : String
     , password : String
+    , chat : Chat
     }
 
 
@@ -35,6 +38,7 @@ init =
     , room = "test123"
     , username = "unknown"
     , password = ""
+    , chat = Chat.init
     }
 
 
