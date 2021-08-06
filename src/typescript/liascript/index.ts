@@ -369,6 +369,12 @@ class LiaScript {
 
           break
         }
+        case 'disonnect': {
+          break
+        }
+        default: {
+          self.sync.publish(event)
+        }
       }
     })
   }
