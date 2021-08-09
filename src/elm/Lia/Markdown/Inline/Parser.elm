@@ -417,7 +417,7 @@ strings =
 
 stringBase : Parser s (Parameters -> Inline)
 stringBase =
-    regex "[^@*+_~:;`\\^\\[\\]\\(\\)|{}\\\\\\n<>=$ \"\\-]+"
+    regex "[^\\[\\]\\(\\)@*+_~:;`\\^|{}\\\\\\n<>=$ \"\\-]+"
         |> map Chars
 
 
@@ -460,7 +460,7 @@ stringSuperscript =
 
 stringCharacters : Parser s (Parameters -> Inline)
 stringCharacters =
-    regex "[~:_;=${}\\[\\]\\(\\)\\-+\"]"
+    regex "[\\[\\]\\(\\)~:_;=${}\\-+\"*]"
         |> map Chars
 
 
