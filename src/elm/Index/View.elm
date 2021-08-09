@@ -7,7 +7,7 @@ import Html.Events exposing (onInput)
 import Index.Model exposing (Model)
 import Index.Update exposing (Msg(..))
 import Index.View.Base as Base
-import Index.View.Board as Board exposing (Board)
+import Index.View.Board as Board
 import Index.View.Empty as Empty
 import Lia.Parser.PatReplace exposing (link)
 import Lia.Settings.Types exposing (Settings)
@@ -24,7 +24,11 @@ view session settings model =
           ]
             |> Settings.header En session.screen settings Const.icon
             |> Html.map UpdateSettings
-        , Html.main_ [ Attr.class "lia-slide__content" ]
+        , Html.main_
+            [ Attr.class "lia-slide__content"
+            , Attr.style "width" "100%"
+            , Attr.style "max-width" "100%"
+            ]
             [ Html.h1 [] [ Html.text "Lia: Open-courSes" ]
             , searchBar model.input
             , if List.isEmpty model.courses && model.initialized then
@@ -34,9 +38,13 @@ view session settings model =
                 --Base.view session model.courses
                 model.board
                     |> Board.view (Base.card session.share)
-                        [ Attr.style "max-width" "560px"
-                        , Attr.style "margin-right" "2rem"
-                        , Attr.style "border" "2px #999 solid"
+                        [ Attr.style "min-width" "360px"
+                        , Attr.style "border-radius" "15px"
+                        , Attr.style "background" "#bbb"
+                        , Attr.style "margin" "2rem 2rem 0rem 0rem"
+                        , Attr.style "padding" "10px"
+
+                        --, Attr.style "max-height" "calc(100vh - 28rem)"
                         ]
                     |> Html.map BoardUpdate
 

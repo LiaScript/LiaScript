@@ -13,7 +13,7 @@ import Browser.Navigation as Nav
 import Dict
 import Index.Model exposing (Course, Model, Release)
 import Index.Version as Version
-import Index.View.Board as Board exposing (Board)
+import Index.View.Board as Board
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Definition.Json.Decode as Definition
@@ -133,12 +133,23 @@ update msg settings model =
 
             BoardUpdate childMsg ->
                 case Board.update childMsg model.board of
-                    ( board, Nothing ) ->
-                        ( { model | board = board }, Cmd.none, [] )
+                    ( board, cmd, Nothing ) ->
+                        ( { model | board = board }, Cmd.map BoardUpdate cmd, [] )
 
-                    ( board, Just cmd ) ->
-                        update cmd settings { model | board = board }
-                            |> Tuple.second
+                    ( board, cmd, Just parentMsg ) ->
+                        let
+                            ( newModel, subCmd, events ) =
+                                { model | board = board }
+                                    |> update parentMsg settings
+                                    |> Tuple.second
+                        in
+                        ( newModel
+                        , Cmd.batch
+                            [ subCmd
+                            , Cmd.map BoardUpdate cmd
+                            ]
+                        , events
+                        )
 
             Reset courseID version ->
                 ( model
