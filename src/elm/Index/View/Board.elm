@@ -14,6 +14,7 @@ import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Html.Events as Event
 import Json.Decode as JD
+import Lia.Utils exposing (focus)
 import List.Extra
     exposing
         ( getAt
@@ -27,6 +28,7 @@ type alias Board note =
     { columns : List (Column note)
     , moving : Maybe Reference
     , newColumn : Maybe String
+    , changeColumn : Maybe Int
     }
 
 
@@ -43,7 +45,7 @@ type Reference
 
 init : Board note
 init =
-    Board [] Nothing Nothing
+    Board [] Nothing Nothing Nothing
 
 
 type Msg withParent
@@ -52,17 +54,20 @@ type Msg withParent
     | InputColumn String
     | InputColumnStart
     | InputColumnStop
+    | ChangeColumn (Maybe Int) (Maybe String)
     | Parent withParent
+    | Ignore
 
 
-update : Msg withParent -> Board note -> ( Board note, Maybe withParent )
+update : Msg withParent -> Board note -> ( Board note, Cmd (Msg withParent), Maybe withParent )
 update msg board =
     case msg of
         Parent parentMsg ->
-            ( board, Just parentMsg )
+            ( board, Cmd.none, Just parentMsg )
 
         InputColumnStart ->
             ( { board | newColumn = Just "" }
+            , focus Ignore inputID
             , Nothing
             )
 
@@ -73,11 +78,28 @@ update msg board =
 
                 new ->
                     addColumn new { board | newColumn = Nothing }
+            , Cmd.none
             , Nothing
             )
 
         InputColumn name ->
             ( { board | newColumn = Just name }
+            , Cmd.none
+            , Nothing
+            )
+
+        ChangeColumn id Nothing ->
+            ( { board | changeColumn = id }
+            , focus Ignore inputID
+            , Nothing
+            )
+
+        ChangeColumn (Just id) (Just name) ->
+            ( { board
+                | changeColumn = Just id
+                , columns = updateAt id (\col -> { col | name = name }) board.columns
+              }
+            , Cmd.none
             , Nothing
             )
 
@@ -91,6 +113,7 @@ update msg board =
                         _ ->
                             board.moving
               }
+            , Cmd.none
             , Nothing
             )
 
@@ -121,8 +144,12 @@ update msg board =
                         _ ->
                             board.columns
               }
+            , Cmd.none
             , Nothing
             )
+
+        _ ->
+            ( board, Cmd.none, Nothing )
 
 
 swapNotes : Int -> Int -> Int -> Int -> List (Column note) -> List (Column note)
@@ -185,12 +212,18 @@ setNote columnID noteID note =
 view : (note -> Html withParent) -> List (Attribute (Msg withParent)) -> Board note -> Html (Msg withParent)
 view fn attributes board =
     board.columns
-        |> List.indexedMap (viewColumn fn attributes)
+        |> List.indexedMap (viewColumn fn attributes board.changeColumn)
         |> viewAddColumn attributes board.newColumn
         |> Html.div
             [ Attr.style "display" "flex"
             , Attr.style "align-items" "flex-start"
+            , Attr.style "overflow-x" "auto"
             ]
+
+
+inputID : String
+inputID =
+    "lia-index-column-input"
 
 
 viewAddColumn : List (Attribute (Msg withParent)) -> Maybe String -> List (Html (Msg withParent)) -> List (Html (Msg withParent))
@@ -200,20 +233,37 @@ viewAddColumn attributes newColumn columns =
             Nothing ->
                 Html.button
                     (Attr.style "flex" "1"
+                        :: Attr.style "width" "100%"
                         :: Event.onClick InputColumnStart
                         :: attributes
                     )
-                    [ Html.h2 [] [ Html.text "+ Add column" ]
+                    [ Html.h3
+                        [ Attr.style "width" "inherit"
+                        , Attr.style "margin-bottom" "0px"
+                        ]
+                        [ plus
+                        , Html.span
+                            []
+                            [ Html.text "Add New Column" ]
+                        ]
                     ]
 
             Just name ->
                 Html.div
                     (Attr.style "flex" "1" :: attributes)
-                    [ Html.h2 []
-                        [ Html.input
+                    [ Html.h3 []
+                        [ plus
+                        , Html.input
                             [ Attr.value name
                             , Event.onInput InputColumn
                             , Event.onBlur InputColumnStop
+                            , Attr.style "float" "right"
+                            , Attr.style "display" "block"
+                            , Attr.style "width" "calc(100% - 5rem)"
+                            , Attr.style "color" "#000"
+                            , Attr.style "height" "4.2rem"
+                            , Attr.id inputID
+                            , Attr.autofocus True
                             ]
                             []
                         ]
@@ -221,21 +271,69 @@ viewAddColumn attributes newColumn columns =
         ]
 
 
-viewColumn : (note -> Html withParent) -> List (Attribute (Msg withParent)) -> Int -> Column note -> Html (Msg withParent)
-viewColumn fn attributes id column =
+plus =
+    Html.span
+        [ Attr.style "padding" "0px 1rem 0px 1rem"
+        , Attr.style "background" "#888"
+        , Attr.style "border-radius" "1rem"
+        , Attr.style "float" "left"
+        ]
+        [ Html.text "+ "
+        ]
+
+
+viewColumn : (note -> Html withParent) -> List (Attribute (Msg withParent)) -> Maybe Int -> Int -> Column note -> Html (Msg withParent)
+viewColumn fn attributes changingID id column =
     draggable (ColumnID id)
         (Attr.style "flex" "1" :: attributes)
-        [ Html.h2 [] [ Html.text column.name ]
+        [ Html.h3
+            [ Attr.style "width" "inherit"
+            , Attr.style "margin-bottom" "0px"
+            ]
+            [ Html.span
+                [ Attr.style "padding" "0px 1rem 0px 1rem"
+                , Attr.style "background" "#888"
+                , Attr.style "border-radius" "2rem"
+                , Attr.style "float" "left"
+                ]
+                [ column.notes
+                    |> List.length
+                    |> String.fromInt
+                    |> Html.text
+                ]
+            , if changingID /= Just id then
+                Html.span
+                    [ Attr.style "text-align" "center"
+                    , Attr.style "display" "block"
+                    , Event.onDoubleClick (ChangeColumn (Just id) Nothing)
+                    ]
+                    [ Html.text column.name ]
+
+              else
+                Html.input
+                    [ Attr.value column.name
+                    , Attr.style "float" "right"
+                    , Attr.style "display" "block"
+                    , Attr.style "width" "calc(100% - 5rem)"
+                    , Attr.style "color" "#000"
+                    , Attr.style "height" "4.2rem"
+                    , Attr.id inputID
+                    , Attr.autofocus True
+                    , Event.onInput (Just >> ChangeColumn (Just id))
+                    , Event.onBlur (ChangeColumn Nothing Nothing)
+                    ]
+                    []
+            ]
         , column.notes
             |> List.indexedMap (viewNote fn id)
-            |> Html.div []
+            |> Html.div [ Attr.style "overflow-y" "auto", Attr.style "float" "left" ]
         ]
 
 
 viewNote : (note -> Html withParent) -> Int -> Int -> note -> Html (Msg withParent)
 viewNote fn columnID noteID note =
     draggable (NoteID columnID noteID)
-        []
+        [ Attr.style "padding-top" "1rem" ]
         [ fn note
             |> Html.map Parent
         ]
