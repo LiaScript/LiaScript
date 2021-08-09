@@ -1,86 +1,33 @@
-module Index.View exposing (view)
+module Index.View.Base exposing
+    ( card
+    , href
+    , view
+    )
 
+import Array
 import Const
-import Html exposing (Html)
+import Dict exposing (Dict)
+import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
-import Html.Events exposing (onInput)
-import Index.Model exposing (Model)
+import Index.Model exposing (Course, Release)
 import Index.Update exposing (Msg(..))
-import Index.View.Base as Base
-import Index.View.Empty as Empty
+import Lia.Definition.Types exposing (Definition)
+import Lia.Markdown.Inline.Stringify exposing (stringify)
+import Lia.Markdown.Inline.Types exposing (Inlines)
+import Lia.Markdown.Inline.View as Inline
 import Lia.Parser.PatReplace exposing (link)
-import Lia.Settings.Types exposing (Settings)
-import Lia.Settings.View as Settings
-import Lia.Utils exposing (blockKeydown, btn)
-import Session exposing (Session)
+import Lia.Utils exposing (btn, btnIcon)
 import Translations exposing (Lang(..))
 
 
-view : Session -> Settings -> Model -> Html Msg
-view session settings model =
-    Html.div [ Attr.class "p-2" ]
-        [ [ ( Settings.menuSettings, "settings" )
-          ]
-            |> Settings.header En session.screen settings Const.icon
-            |> Html.map UpdateSettings
-        , Html.main_ [ Attr.class "lia-slide__content" ]
-            [ Html.h1 [] [ Html.text "Lia: Open-courSes" ]
-            , searchBar model.input
-            , if List.isEmpty model.courses && model.initialized then
-                Empty.view
-
-              else if model.initialized then
-                Base.view session model.courses
-
-              else
-                Html.text ""
-            ]
-        ]
+href : String -> Attribute msg
+href =
+    link >> (++) "./?" >> Attr.href
 
 
-searchBar : String -> Html Msg
-searchBar url =
-    Html.div []
-        [ Html.input
-            [ Attr.type_ "url"
-            , onInput Input
-            , Attr.value url
-            , Attr.placeholder "course-url"
-            , Attr.class "lia-input border-grey-light max-w-50 mr-1"
-            , blockKeydown NoOp
-            ]
-            []
-        , if url == "" then
-            btn
-                { tabbable = False
-                , title = "load"
-                , msg = Nothing
-                }
-                []
-                [ Html.text "load course"
-                ]
-
-          else
-            btn
-                { tabbable = True
-                , title = "load"
-                , msg =
-                    url
-                        |> link
-                        |> (++) "./?"
-                        |> LoadCourse
-                        |> Just
-                }
-                []
-                [ Html.text "load course"
-                ]
-        ]
-
-
-getIcon : Dict String String -> String
-getIcon =
-    Dict.get "icon"
-        >> Maybe.withDefault Const.icon
+view session =
+    List.map (card session.share)
+        >> Html.div [ Attr.class "preview-grid" ]
 
 
 card : Bool -> Course -> Html Msg
@@ -100,11 +47,6 @@ card share course =
 
         _ ->
             Html.text "something went wrong"
-
-
-href : String -> Attribute msg
-href =
-    link >> (++) "./?" >> Attr.href
 
 
 viewVersions : Course -> Html Msg
@@ -228,10 +170,9 @@ viewControls hasShareAPI title comment course =
                 { msg =
                     Just <|
                         Share
-                            { title = stringify title
-                            , text = stringify comment
-                            , url = Const.urlLiascriptCourse ++ course.id
-                            }
+                            (title |> stringify)
+                            ((comment |> stringify) ++ "\n")
+                            (Const.urlLiascriptCourse ++ course.id)
                 , title = "share"
                 , tabbable = True
                 , icon = "icon-social"
@@ -312,9 +253,15 @@ get_active course =
                 |> Dict.get id
 
 
+getIcon : Dict String String -> String
+getIcon =
+    Dict.get "icon"
+        >> Maybe.withDefault Const.icon
+
+
 inlines : Inlines -> List (Html Msg)
 inlines =
-    List.map (Inline.view_inf Array.empty En Nothing Nothing >> Html.map (always NoOp))
+    List.map (Inline.view_inf Array.empty En Nothing >> Html.map (always NoOp))
 
 
 defaultBackground : String -> Attribute msg
