@@ -5,7 +5,6 @@ module Lia.Utils exposing
     , btn
     , btnIcon
     , focus
-    , get
     , icon
     , modal
     , noTranslate
@@ -70,25 +69,6 @@ blockKeydown =
 stopPropagationOn : String -> msg -> Html.Attribute msg
 stopPropagationOn name msg =
     Event.stopPropagationOn name (JD.succeed ( msg, True ))
-
-
-{-| Get the ith element of a list:
-
-    get 2 [ 1, 2, 3, 4, 5 ] == Just 3
-
--}
-get : Int -> List x -> Maybe x
-get i list =
-    case list of
-        [] ->
-            Nothing
-
-        r :: rs ->
-            if i <= 0 then
-                Just r
-
-            else
-                get (i - 1) rs
 
 
 isEnter : msg -> Int -> JD.Decoder msg

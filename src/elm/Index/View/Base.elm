@@ -17,6 +17,7 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View as Inline
 import Lia.Parser.PatReplace exposing (link)
 import Lia.Utils exposing (btn, btnIcon)
+import List.Extra exposing (greedyGroupsOf)
 import Translations exposing (Lang(..))
 
 
@@ -267,33 +268,6 @@ inlines =
 defaultBackground : String -> Attribute msg
 defaultBackground url =
     Attr.style "background-image" <| "radial-gradient(circle farthest-side at right bottom," ++ url2Color url ++ " 30%,#ddd)"
-
-
-greedyGroupsOf : Int -> List a -> List (List a)
-greedyGroupsOf size xs =
-    greedyGroupsOfWithStep size size xs
-
-
-greedyGroupsOfWithStep : Int -> Int -> List a -> List (List a)
-greedyGroupsOfWithStep size step xs =
-    let
-        group =
-            List.take size xs
-
-        xs_ =
-            List.drop step xs
-
-        okayArgs =
-            size > 0 && step > 0
-
-        okayXs =
-            List.length xs > 0
-    in
-    if okayArgs && okayXs then
-        group :: greedyGroupsOfWithStep size step xs_
-
-    else
-        []
 
 
 url2Color : String -> String
