@@ -14,8 +14,8 @@ import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inline)
 import Lia.Markdown.Inline.View as Inline
 import Lia.Markdown.Types exposing (Block(..))
-import Lia.Utils exposing (btnIcon, get, icon, modal)
-import Translations exposing (Lang)
+import Lia.Utils exposing (btnIcon, icon, modal)
+import List.Extra exposing (getAt)
 
 
 view : Config sub -> Vector -> Parameters -> Gallery -> Html (Msg sub)
@@ -61,7 +61,7 @@ viewMedia config vector gallery div =
 
         else
             [ gallery.media
-                |> get mediaID
+                |> getAt mediaID
                 |> Maybe.map (viewOverlay config gallery.id mediaID (List.length gallery.media))
                 |> Maybe.withDefault (Html.text "")
             , div

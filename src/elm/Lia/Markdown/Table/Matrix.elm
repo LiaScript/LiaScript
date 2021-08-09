@@ -13,6 +13,7 @@ module Lia.Markdown.Table.Matrix exposing
     )
 
 import Lia.Utils as Util
+import List.Extra exposing (getAt)
 
 
 type alias Matrix cell =
@@ -30,7 +31,7 @@ map fn =
 
 column : Int -> Matrix cell -> Maybe (Row cell)
 column i =
-    transpose >> Util.get i
+    transpose >> getAt i
 
 
 head : Matrix cell -> Row cell
