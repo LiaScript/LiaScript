@@ -1,6 +1,7 @@
 module Index.Model exposing (Course, Model, Release, init)
 
 import Dict exposing (Dict)
+import Index.View.Board as Board exposing (Board)
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 
@@ -9,12 +10,15 @@ type alias Model =
     { input : String
     , courses : List Course
     , initialized : Bool
+    , board : Board Course
     }
 
 
 init : Model
 init =
-    Model "" [] False
+    Board.init
+        |> Board.addColumn "New"
+        |> Model "" [] False
 
 
 type alias Course =

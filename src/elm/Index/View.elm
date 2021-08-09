@@ -7,6 +7,7 @@ import Html.Events exposing (onInput)
 import Index.Model exposing (Model)
 import Index.Update exposing (Msg(..))
 import Index.View.Base as Base
+import Index.View.Board as Board exposing (Board)
 import Index.View.Empty as Empty
 import Lia.Parser.PatReplace exposing (link)
 import Lia.Settings.Types exposing (Settings)
@@ -30,7 +31,14 @@ view session settings model =
                 Empty.view
 
               else if model.initialized then
-                Base.view session model.courses
+                --Base.view session model.courses
+                model.board
+                    |> Board.view (Base.card session.share)
+                        [ Attr.style "max-width" "560px"
+                        , Attr.style "margin-right" "2rem"
+                        , Attr.style "border" "2px #999 solid"
+                        ]
+                    |> Html.map BoardUpdate
 
               else
                 Html.text ""
