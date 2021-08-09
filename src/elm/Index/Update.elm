@@ -13,6 +13,7 @@ import Browser.Navigation as Nav
 import Dict
 import Index.Model exposing (Course, Model, Release)
 import Index.Version as Version
+import Index.View.Board as Board exposing (Board)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Definition.Json.Decode as Definition
@@ -37,6 +38,7 @@ type Msg
     | NoOp
     | LoadCourse String
     | UpdateSettings Settings.Msg
+    | BoardUpdate (Board.Msg Msg)
 
 
 index : Event -> Event
@@ -110,6 +112,7 @@ update msg settings model =
                 ( { model
                     | courses = list
                     , initialized = True
+                    , board = List.foldl (Board.addNote 0) model.board list
                   }
                 , Cmd.none
                 , []
@@ -127,6 +130,15 @@ update msg settings model =
                 , Cmd.none
                 , [ delete courseID ]
                 )
+
+            BoardUpdate childMsg ->
+                case Board.update childMsg model.board of
+                    ( board, Nothing ) ->
+                        ( { model | board = board }, Cmd.none, [] )
+
+                    ( board, Just cmd ) ->
+                        update cmd settings { model | board = board }
+                            |> Tuple.second
 
             Reset courseID version ->
                 ( model
