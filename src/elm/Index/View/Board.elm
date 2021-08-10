@@ -27,7 +27,7 @@ import List.Extra
 
 
 type alias Board note =
-    { store : Maybe String
+    { store : Maybe JE.Value
     , moving : Maybe Reference
     , newColumn : Maybe String
     , changeColumn : Maybe Int
@@ -35,10 +35,11 @@ type alias Board note =
     }
 
 
-type alias Update note withParent =
+type alias Return note withParent =
     { board : Board note
     , cmd : Maybe (Cmd (Msg withParent))
     , parentMsg : Maybe withParent
+    , store : Maybe JE.Value
     }
 
 
@@ -53,7 +54,7 @@ type Reference
     | ColumnID Int
 
 
-init : Board note
+init : Board { note | id : String }
 init =
     Board Nothing Nothing Nothing Nothing []
 
@@ -69,34 +70,54 @@ type Msg withParent
     | Ignore
 
 
-updateBoard : Board note -> Update note withParent
-updateBoard board =
-    Update board Nothing Nothing
+return :
+    Board { note | id : String }
+    -> Return { note | id : String } withParent
+return board =
+    Return board Nothing Nothing Nothing
 
 
-updateCmd cmd board =
-    { board | cmd = Just cmd }
+returnCmd :
+    Cmd (Msg withParent)
+    -> Return { note | id : String } withParent
+    -> Return { note | id : String } withParent
+returnCmd cmd return_ =
+    { return_ | cmd = Just cmd }
 
 
-updateParent parentMsg board =
-    { board | parentMsg = Just parentMsg }
+returnMsg :
+    parent
+    -> Return { note | id : String } parent
+    -> Return { note | id : String } parent
+returnMsg msg return_ =
+    { return_ | parentMsg = Just msg }
 
 
-update : Msg withParent -> Board note -> Update note withParent
+updateStore :
+    Return { note | id : String } withParent
+    -> Return { note | id : String } withParent
+updateStore return_ =
+    { return_ | store = Just (store return_.board) }
+
+
+update :
+    Msg withParent
+    -> Board { note | id : String }
+    -> Return { note | id : String } withParent
 update msg board =
     case msg of
         Parent parentMsg ->
             board
-                |> updateBoard
-                |> updateParent parentMsg
+                |> return
+                |> returnMsg parentMsg
 
         InputColumnStart ->
             { board | newColumn = Just "" }
-                |> updateBoard
-                |> updateCmd (focus Ignore inputID)
+                |> return
+                |> returnCmd (focus Ignore inputID)
 
         InputColumnStop ->
-            updateBoard <|
+            return <|
                 case board.newColumn |> Maybe.map String.trim |> Maybe.withDefault "" of
                     "" ->
                         { board | newColumn = Nothing }
@@ -105,20 +126,19 @@ update msg board =
                         addColumn new { board | newColumn = Nothing }
 
         InputColumn name ->
-            { board | newColumn = Just name }
-                |> updateBoard
+            return { board | newColumn = Just name }
 
         ChangeColumn id Nothing ->
             { board | changeColumn = id }
-                |> updateBoard
-                |> updateCmd (focus Ignore inputID)
+                |> return
+                |> returnCmd (focus Ignore inputID)
 
         ChangeColumn (Just id) (Just name) ->
             { board
                 | changeColumn = Just id
                 , columns = updateAt id (\col -> { col | name = name }) board.columns
             }
-                |> updateBoard
+                |> return
 
         Move ref ->
             { board
@@ -130,42 +150,43 @@ update msg board =
                         _ ->
                             board.moving
             }
-                |> updateBoard
+                |> return
 
         Drop ref ->
-            updateBoard <|
-                { board
-                    | moving = Nothing
-                    , columns =
-                        case ( board.moving, ref ) of
-                            ( Just (NoteID sourceId id), ColumnID targetId ) ->
-                                case getNote sourceId id board.columns of
-                                    Just note ->
-                                        board.columns
-                                            |> updateAt targetId (\col -> { col | notes = note :: col.notes })
-                                            |> updateAt sourceId (\col -> { col | notes = removeAt id col.notes })
+            updateStore <|
+                return <|
+                    { board
+                        | moving = Nothing
+                        , columns =
+                            case ( board.moving, ref ) of
+                                ( Just (NoteID sourceId id), ColumnID targetId ) ->
+                                    case getNote sourceId id board.columns of
+                                        Just note ->
+                                            board.columns
+                                                |> updateAt targetId (\col -> { col | notes = note :: col.notes })
+                                                |> updateAt sourceId (\col -> { col | notes = removeAt id col.notes })
 
-                                    _ ->
-                                        board.columns
+                                        _ ->
+                                            board.columns
 
-                            ( Just (ColumnID sourceId), ColumnID targetId ) ->
-                                swapAt sourceId targetId board.columns
+                                ( Just (ColumnID sourceId), ColumnID targetId ) ->
+                                    swapAt sourceId targetId board.columns
 
-                            ( Just (ColumnID sourceId), NoteID targetId _ ) ->
-                                swapAt sourceId targetId board.columns
+                                ( Just (ColumnID sourceId), NoteID targetId _ ) ->
+                                    swapAt sourceId targetId board.columns
 
-                            ( Just (NoteID a1 a2), NoteID b1 b2 ) ->
-                                swapNotes a1 a2 b1 b2 board.columns
+                                ( Just (NoteID a1 a2), NoteID b1 b2 ) ->
+                                    swapNotes a1 a2 b1 b2 board.columns
 
-                            _ ->
-                                board.columns
-                }
+                                _ ->
+                                    board.columns
+                    }
 
         _ ->
-            updateBoard board
+            return board
 
 
-swapNotes : Int -> Int -> Int -> Int -> List (Column note) -> List (Column note)
+swapNotes : Int -> Int -> Int -> Int -> List (Column { note | id : String }) -> List (Column { note | id : String })
 swapNotes columnA noteA columnB noteB columns =
     case ( getNote columnA noteA columns, getNote columnB noteB columns ) of
         ( Just a, Just b ) ->
@@ -177,12 +198,19 @@ swapNotes columnA noteA columnB noteB columns =
             columns
 
 
-deleteNote : Int -> Int -> List (Column note) -> List (Column note)
+deleteNote :
+    Int
+    -> Int
+    -> List (Column { note | id : String })
+    -> List (Column { note | id : String })
 deleteNote columnID noteID =
     updateAt columnID (\col -> { col | notes = removeAt noteID col.notes })
 
 
-deleteColumn : Int -> List (Column note) -> List (Column note)
+deleteColumn :
+    Int
+    -> List (Column { note | id : String })
+    -> List (Column { note | id : String })
 deleteColumn i columns =
     case columns of
         [] ->
@@ -212,17 +240,30 @@ deleteColumn i columns =
                     )
 
 
-getNote : Int -> Int -> List (Column note) -> Maybe note
+getNote :
+    Int
+    -> Int
+    -> List (Column { note | id : String })
+    -> Maybe { note | id : String }
 getNote columnID noteID =
     getAt columnID >> Maybe.andThen (.notes >> getAt noteID)
 
 
-setNote : Int -> Int -> note -> List (Column note) -> List (Column note)
+setNote :
+    Int
+    -> Int
+    -> { note | id : String }
+    -> List (Column { note | id : String })
+    -> List (Column { note | id : String })
 setNote columnID noteID note =
     updateAt columnID (\col -> { col | notes = col.notes |> updateAt noteID (always note) })
 
 
-view : (note -> Html withParent) -> List (Attribute (Msg withParent)) -> Board note -> Html (Msg withParent)
+view :
+    ({ note | id : String } -> Html withParent)
+    -> List (Attribute (Msg withParent))
+    -> Board { note | id : String }
+    -> Html (Msg withParent)
 view fn attributes board =
     board.columns
         |> List.indexedMap (viewColumn fn attributes board.changeColumn)
@@ -284,6 +325,7 @@ viewAddColumn attributes newColumn columns =
         ]
 
 
+plus : Html msg
 plus =
     Html.span
         [ Attr.style "padding" "0px 1rem 0px 1rem"
@@ -295,7 +337,13 @@ plus =
         ]
 
 
-viewColumn : (note -> Html withParent) -> List (Attribute (Msg withParent)) -> Maybe Int -> Int -> Column note -> Html (Msg withParent)
+viewColumn :
+    ({ note | id : String } -> Html withParent)
+    -> List (Attribute (Msg withParent))
+    -> Maybe Int
+    -> Int
+    -> Column { note | id : String }
+    -> Html (Msg withParent)
 viewColumn fn attributes changingID id column =
     draggable (ColumnID id)
         (Attr.style "flex" "1" :: attributes)
@@ -343,7 +391,12 @@ viewColumn fn attributes changingID id column =
         ]
 
 
-viewNote : (note -> Html withParent) -> Int -> Int -> note -> Html (Msg withParent)
+viewNote :
+    ({ note | id : String } -> Html withParent)
+    -> Int
+    -> Int
+    -> { note | id : String }
+    -> Html (Msg withParent)
 viewNote fn columnID noteID note =
     draggable (NoteID columnID noteID)
         [ Attr.style "padding-top" "1rem" ]
@@ -352,7 +405,10 @@ viewNote fn columnID noteID note =
         ]
 
 
-draggable : Reference -> List (Attribute (Msg withParent)) -> (List (Html (Msg withParent)) -> Html (Msg withParent))
+draggable :
+    Reference
+    -> List (Attribute (Msg withParent))
+    -> (List (Html (Msg withParent)) -> Html (Msg withParent))
 draggable ref attributes =
     [ Attr.attribute "draggable" "true"
     , Attr.attribute "ondragover" "return false"
@@ -364,12 +420,19 @@ draggable ref attributes =
         |> Html.div
 
 
-addNote : Int -> note -> Board note -> Board note
+addNote :
+    Int
+    -> { note | id : String }
+    -> Board { note | id : String }
+    -> Board { note | id : String }
 addNote id note board =
     { board | columns = updateAt id (\col -> { col | notes = note :: col.notes }) board.columns }
 
 
-addColumn : String -> Board notes -> Board notes
+addColumn :
+    String
+    -> Board { note | id : String }
+    -> Board { note | id : String }
 addColumn name board =
     { board | columns = List.append board.columns [ Column name [] ] }
 
@@ -390,37 +453,44 @@ onDrop message =
         )
 
 
-store : List (Column { note | id : String }) -> JE.Value
+store : Board { note | id : String } -> JE.Value
 store =
-    List.map
-        (\column ->
-            [ ( "name", JE.string column.name )
-            , ( "id"
-              , column.notes
-                    |> List.map .id
-                    |> JE.list JE.string
-              )
-            ]
-        )
+    .columns
+        >> List.map
+            (\column ->
+                [ ( "name", JE.string column.name )
+                , ( "id"
+                  , column.notes
+                        |> List.map .id
+                        |> JE.list JE.string
+                  )
+                ]
+            )
         >> JE.list JE.object
 
 
+restore : List { note | id : String } -> JE.Value -> Board { note | id : String }
+restore data json =
+    Board Nothing Nothing Nothing Nothing <|
+        case JD.decodeValue (JD.list decoder) json of
+            Ok list ->
+                list
+                    |> List.map (merge data)
 
---restore : List { note | id : String } -> JE.Value -> Board { note | id : String }
+            Err _ ->
+                []
 
 
-restore data =
-    JD.decodeValue (JD.list decoder)
-        >> Result.map
-            (List.map
-                (\col ->
-                    { col
-                        | notes = List.filterMap (\id -> find ((==) id) data) col.notes
-                    }
-                )
-            )
-        >> Result.withDefault []
-        >> Board Nothing Nothing Nothing Nothing
+merge : List { note | id : String } -> Column String -> Column { note | id : String }
+merge data column =
+    { name = column.name
+    , notes = List.filterMap (match data) column.notes
+    }
+
+
+match : List { note | id : String } -> String -> Maybe { note | id : String }
+match data id =
+    find (\elem -> elem.id == id) data
 
 
 decoder : JD.Decoder (Column String)
