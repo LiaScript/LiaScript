@@ -4,7 +4,7 @@ import Const
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onInput)
-import Index.Model exposing (Model)
+import Index.Model as Model exposing (Model)
 import Index.Update exposing (Msg(..))
 import Index.View.Base as Base
 import Index.View.Board as Board
@@ -31,10 +31,10 @@ view session settings model =
             ]
             [ Html.h1 [] [ Html.text "Lia: Open-courSes" ]
             , searchBar model.input
-            , if List.isEmpty model.courses && model.initialized then
+            , if List.isEmpty model.courses && Model.loaded model then
                 Empty.view
 
-              else if model.initialized then
+              else if Model.loaded model then
                 --Base.view session model.courses
                 model.board
                     |> Board.view (Base.card session.share)
