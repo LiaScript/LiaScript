@@ -132,21 +132,32 @@ update msg settings model =
                 )
 
             BoardUpdate childMsg ->
-                case Board.update childMsg model.board of
-                    ( board, cmd, Nothing ) ->
-                        ( { model | board = board }, Cmd.map BoardUpdate cmd, [] )
+                let
+                    update_on =
+                        Board.update childMsg model.board
+                in
+                case update_on.parentMsg of
+                    Nothing ->
+                        ( { model | board = update_on.board }
+                        , update_on.cmd
+                            |> Maybe.map (Cmd.map BoardUpdate)
+                            |> Maybe.withDefault Cmd.none
+                        , []
+                        )
 
-                    ( board, cmd, Just parentMsg ) ->
+                    Just parentMsg ->
                         let
                             ( newModel, subCmd, events ) =
-                                { model | board = board }
+                                { model | board = update_on.board }
                                     |> update parentMsg settings
                                     |> Tuple.second
                         in
                         ( newModel
                         , Cmd.batch
                             [ subCmd
-                            , Cmd.map BoardUpdate cmd
+                            , update_on.cmd
+                                |> Maybe.map (Cmd.map BoardUpdate)
+                                |> Maybe.withDefault Cmd.none
                             ]
                         , events
                         )

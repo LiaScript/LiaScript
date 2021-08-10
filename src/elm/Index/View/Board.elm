@@ -14,10 +14,12 @@ import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Html.Events as Event
 import Json.Decode as JD
+import Json.Encode as JE
 import Lia.Utils exposing (focus)
 import List.Extra
     exposing
-        ( getAt
+        ( find
+        , getAt
         , removeAt
         , swapAt
         , updateAt
@@ -25,10 +27,18 @@ import List.Extra
 
 
 type alias Board note =
-    { columns : List (Column note)
+    { store : Maybe String
     , moving : Maybe Reference
     , newColumn : Maybe String
     , changeColumn : Maybe Int
+    , columns : List (Column note)
+    }
+
+
+type alias Update note withParent =
+    { board : Board note
+    , cmd : Maybe (Cmd (Msg withParent))
+    , parentMsg : Maybe withParent
     }
 
 
@@ -45,7 +55,7 @@ type Reference
 
 init : Board note
 init =
-    Board [] Nothing Nothing Nothing
+    Board Nothing Nothing Nothing Nothing []
 
 
 type Msg withParent
@@ -59,52 +69,59 @@ type Msg withParent
     | Ignore
 
 
-update : Msg withParent -> Board note -> ( Board note, Cmd (Msg withParent), Maybe withParent )
+updateBoard : Board note -> Update note withParent
+updateBoard board =
+    Update board Nothing Nothing
+
+
+updateCmd cmd board =
+    { board | cmd = Just cmd }
+
+
+updateParent parentMsg board =
+    { board | parentMsg = Just parentMsg }
+
+
+update : Msg withParent -> Board note -> Update note withParent
 update msg board =
     case msg of
         Parent parentMsg ->
-            ( board, Cmd.none, Just parentMsg )
+            board
+                |> updateBoard
+                |> updateParent parentMsg
 
         InputColumnStart ->
-            ( { board | newColumn = Just "" }
-            , focus Ignore inputID
-            , Nothing
-            )
+            { board | newColumn = Just "" }
+                |> updateBoard
+                |> updateCmd (focus Ignore inputID)
 
         InputColumnStop ->
-            ( case board.newColumn |> Maybe.map String.trim |> Maybe.withDefault "" of
-                "" ->
-                    { board | newColumn = Nothing }
+            updateBoard <|
+                case board.newColumn |> Maybe.map String.trim |> Maybe.withDefault "" of
+                    "" ->
+                        { board | newColumn = Nothing }
 
-                new ->
-                    addColumn new { board | newColumn = Nothing }
-            , Cmd.none
-            , Nothing
-            )
+                    new ->
+                        addColumn new { board | newColumn = Nothing }
 
         InputColumn name ->
-            ( { board | newColumn = Just name }
-            , Cmd.none
-            , Nothing
-            )
+            { board | newColumn = Just name }
+                |> updateBoard
 
         ChangeColumn id Nothing ->
-            ( { board | changeColumn = id }
-            , focus Ignore inputID
-            , Nothing
-            )
+            { board | changeColumn = id }
+                |> updateBoard
+                |> updateCmd (focus Ignore inputID)
 
         ChangeColumn (Just id) (Just name) ->
-            ( { board
+            { board
                 | changeColumn = Just id
                 , columns = updateAt id (\col -> { col | name = name }) board.columns
-              }
-            , Cmd.none
-            , Nothing
-            )
+            }
+                |> updateBoard
 
         Move ref ->
-            ( { board
+            { board
                 | moving =
                     case board.moving of
                         Nothing ->
@@ -112,44 +129,40 @@ update msg board =
 
                         _ ->
                             board.moving
-              }
-            , Cmd.none
-            , Nothing
-            )
+            }
+                |> updateBoard
 
         Drop ref ->
-            ( { board
-                | moving = Nothing
-                , columns =
-                    case ( board.moving, ref ) of
-                        ( Just (NoteID sourceId id), ColumnID targetId ) ->
-                            case getNote sourceId id board.columns of
-                                Just note ->
-                                    board.columns
-                                        |> updateAt targetId (\col -> { col | notes = note :: col.notes })
-                                        |> updateAt sourceId (\col -> { col | notes = removeAt id col.notes })
+            updateBoard <|
+                { board
+                    | moving = Nothing
+                    , columns =
+                        case ( board.moving, ref ) of
+                            ( Just (NoteID sourceId id), ColumnID targetId ) ->
+                                case getNote sourceId id board.columns of
+                                    Just note ->
+                                        board.columns
+                                            |> updateAt targetId (\col -> { col | notes = note :: col.notes })
+                                            |> updateAt sourceId (\col -> { col | notes = removeAt id col.notes })
 
-                                _ ->
-                                    board.columns
+                                    _ ->
+                                        board.columns
 
-                        ( Just (ColumnID sourceId), ColumnID targetId ) ->
-                            swapAt sourceId targetId board.columns
+                            ( Just (ColumnID sourceId), ColumnID targetId ) ->
+                                swapAt sourceId targetId board.columns
 
-                        ( Just (ColumnID sourceId), NoteID targetId _ ) ->
-                            swapAt sourceId targetId board.columns
+                            ( Just (ColumnID sourceId), NoteID targetId _ ) ->
+                                swapAt sourceId targetId board.columns
 
-                        ( Just (NoteID a1 a2), NoteID b1 b2 ) ->
-                            swapNotes a1 a2 b1 b2 board.columns
+                            ( Just (NoteID a1 a2), NoteID b1 b2 ) ->
+                                swapNotes a1 a2 b1 b2 board.columns
 
-                        _ ->
-                            board.columns
-              }
-            , Cmd.none
-            , Nothing
-            )
+                            _ ->
+                                board.columns
+                }
 
         _ ->
-            ( board, Cmd.none, Nothing )
+            updateBoard board
 
 
 swapNotes : Int -> Int -> Int -> Int -> List (Column note) -> List (Column note)
@@ -375,3 +388,43 @@ onDrop message =
             , stopPropagation = True
             }
         )
+
+
+store : List (Column { note | id : String }) -> JE.Value
+store =
+    List.map
+        (\column ->
+            [ ( "name", JE.string column.name )
+            , ( "id"
+              , column.notes
+                    |> List.map .id
+                    |> JE.list JE.string
+              )
+            ]
+        )
+        >> JE.list JE.object
+
+
+
+--restore : List { note | id : String } -> JE.Value -> Board { note | id : String }
+
+
+restore data =
+    JD.decodeValue (JD.list decoder)
+        >> Result.map
+            (List.map
+                (\col ->
+                    { col
+                        | notes = List.filterMap (\id -> find ((==) id) data) col.notes
+                    }
+                )
+            )
+        >> Result.withDefault []
+        >> Board Nothing Nothing Nothing Nothing
+
+
+decoder : JD.Decoder (Column String)
+decoder =
+    JD.map2 Column
+        (JD.field "name" JD.string)
+        (JD.field "id" (JD.list JD.string))
