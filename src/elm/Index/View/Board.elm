@@ -25,6 +25,7 @@ import List.Extra
         , swapAt
         , updateAt
         )
+import Translations exposing (Lang(..))
 
 
 type alias Board note =
@@ -68,10 +69,12 @@ init default =
 type Msg withParent
     = Move Reference
     | Drop Reference
-    | InputColumn String
-    | InputColumnStart
-    | InputColumnStop
-    | ChangeColumn (Maybe Int) (Maybe String)
+    | AddColumnInput String
+    | AddColumnStart
+    | AddColumnStop
+    | ChangeColumnInput String
+    | ChangeColumnStart Int
+    | ChangeColumnStop
     | Parent withParent
     | Ignore
 
@@ -99,10 +102,10 @@ returnMsg msg return_ =
     { return_ | parentMsg = Just msg }
 
 
-updateStore :
+returnStore :
     Return { note | id : String } withParent
     -> Return { note | id : String } withParent
-updateStore return_ =
+returnStore return_ =
     { return_ | store = Just (store return_.board) }
 
 
@@ -117,34 +120,48 @@ update msg board =
                 |> return
                 |> returnMsg parentMsg
 
-        InputColumnStart ->
+        AddColumnStart ->
             { board | newColumn = Just "" }
                 |> return
                 |> returnCmd (focus Ignore inputID)
 
-        InputColumnStop ->
-            return <|
-                case board.newColumn |> Maybe.map String.trim |> Maybe.withDefault "" of
-                    "" ->
-                        { board | newColumn = Nothing }
+        AddColumnStop ->
+            returnStore <|
+                return <|
+                    case board.newColumn |> Maybe.map String.trim |> Maybe.withDefault "" of
+                        "" ->
+                            { board | newColumn = Nothing }
 
-                    new ->
-                        addColumn new { board | newColumn = Nothing }
+                        new ->
+                            addColumn new { board | newColumn = Nothing }
 
-        InputColumn name ->
+        AddColumnInput name ->
             return { board | newColumn = Just name }
 
-        ChangeColumn id Nothing ->
-            { board | changeColumn = id }
+        ChangeColumnStart id ->
+            { board | changeColumn = Just id }
                 |> return
                 |> returnCmd (focus Ignore inputID)
 
-        ChangeColumn (Just id) (Just name) ->
-            { board
-                | changeColumn = Just id
-                , columns = updateAt id (\col -> { col | name = name }) board.columns
-            }
+        ChangeColumnStop ->
+            { board | changeColumn = Nothing }
                 |> return
+                |> returnStore
+
+        ChangeColumnInput name ->
+            return <|
+                case board.changeColumn of
+                    Just id ->
+                        { board
+                            | columns =
+                                updateAt
+                                    id
+                                    (\col -> { col | name = name })
+                                    board.columns
+                        }
+
+                    Nothing ->
+                        board
 
         Move ref ->
             { board
@@ -159,7 +176,7 @@ update msg board =
                 |> return
 
         Drop ref ->
-            updateStore <|
+            returnStore <|
                 return <|
                     { board
                         | moving = Nothing
@@ -294,7 +311,7 @@ viewAddColumn attributes newColumn columns =
                 Html.button
                     (Attr.style "flex" "1"
                         :: Attr.style "width" "100%"
-                        :: Event.onClick InputColumnStart
+                        :: Event.onClick AddColumnStart
                         :: attributes
                     )
                     [ Html.h3
@@ -315,8 +332,8 @@ viewAddColumn attributes newColumn columns =
                         [ plus
                         , Html.input
                             [ Attr.value name
-                            , Event.onInput InputColumn
-                            , Event.onBlur InputColumnStop
+                            , Event.onInput AddColumnInput
+                            , Event.onBlur AddColumnStop
                             , Attr.style "float" "right"
                             , Attr.style "display" "block"
                             , Attr.style "width" "calc(100% - 5rem)"
@@ -372,7 +389,7 @@ viewColumn fn attributes changingID id column =
                 Html.span
                     [ Attr.style "text-align" "center"
                     , Attr.style "display" "block"
-                    , Event.onDoubleClick (ChangeColumn (Just id) Nothing)
+                    , Event.onDoubleClick (ChangeColumnStart id)
                     ]
                     [ Html.text column.name ]
 
@@ -386,14 +403,17 @@ viewColumn fn attributes changingID id column =
                     , Attr.style "height" "4.2rem"
                     , Attr.id inputID
                     , Attr.autofocus True
-                    , Event.onInput (Just >> ChangeColumn (Just id))
-                    , Event.onBlur (ChangeColumn Nothing Nothing)
+                    , Event.onInput ChangeColumnInput
+                    , Event.onBlur ChangeColumnStop
                     ]
                     []
             ]
         , column.notes
             |> List.indexedMap (viewNote fn id)
-            |> Html.div [ Attr.style "overflow-y" "auto", Attr.style "float" "left" ]
+            |> Html.div
+                [ Attr.style "overflow-y" "auto"
+                , Attr.style "float" "left"
+                ]
         ]
 
 
@@ -475,23 +495,24 @@ store =
         >> JE.list JE.object
 
 
-restore : List { note | id : String } -> JE.Value -> Board { note | id : String }
+restore : List { note | id : String } -> JE.Value -> Maybe (Board { note | id : String })
 restore data json =
-    Board Nothing Nothing Nothing Nothing <|
-        case JD.decodeValue (JD.list decoder) json of
-            Ok list ->
-                let
-                    columns =
-                        List.map (merge data) list
+    case JD.decodeValue (JD.list decoder) json of
+        Ok list ->
+            let
+                columns =
+                    List.map (merge data) list
 
-                    runaways =
-                        catchRunaways columns data
-                in
-                columns
-                    |> updateAt 0 (\col -> { col | notes = List.append col.notes runaways })
+                runaways =
+                    catchRunaways columns data
+            in
+            columns
+                |> updateAt 0 (\col -> { col | notes = List.append col.notes runaways })
+                |> Board Nothing Nothing Nothing Nothing
+                |> Just
 
-            Err _ ->
-                []
+        Err _ ->
+            Nothing
 
 
 catchRunaways :
@@ -505,7 +526,7 @@ catchRunaways columns =
                 |> List.map (.notes >> List.map .id)
                 |> List.concat
     in
-    List.filter (\elem -> List.member elem.id ids)
+    List.filter (\elem -> not <| List.member elem.id ids)
 
 
 merge : List { note | id : String } -> Column String -> Column { note | id : String }

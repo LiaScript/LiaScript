@@ -623,6 +623,22 @@ function process(
             TTS.cancel()
           } catch (e) {}
           self.connector.getIndex()
+
+          let board
+
+          try {
+            board = localStorage.getItem('__LiaScriptKanBanBoard__')
+
+            board = board ? JSON.parse(board) : null
+          } catch (e) {
+            board = null
+            console.warn('loading kanban board from local storage failed ->', e)
+          }
+
+          event.message.topic = 'board'
+          event.message.message = board
+
+          elmSend(event)
           break
         }
         case 'delete': {
@@ -642,6 +658,13 @@ function process(
         }
         case 'get': {
           self.connector.getFromIndex(event.message.message)
+          break
+        }
+        case 'board': {
+          localStorage.setItem(
+            '__LiaScriptKanBanBoard__',
+            JSON.stringify(event.message.message)
+          )
           break
         }
         default:

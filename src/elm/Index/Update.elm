@@ -11,7 +11,7 @@ module Index.Update exposing
 
 import Browser.Navigation as Nav
 import Dict
-import Index.Model exposing (Course, Model, Release)
+import Index.Model as Model exposing (Course, Model, Release)
 import Index.Version as Version
 import Index.View.Board as Board
 import Json.Decode as JD
@@ -45,6 +45,16 @@ index : Event -> Event
 index =
     Event.encode
         >> Event "index" -1
+
+
+storeBoard : Maybe JE.Value -> List Event
+storeBoard =
+    Maybe.map
+        (Event "board" -1
+            >> index
+            >> List.singleton
+        )
+        >> Maybe.withDefault []
 
 
 init : Event
@@ -109,11 +119,9 @@ update msg settings model =
     updateSettings msg settings <|
         case msg of
             IndexList list ->
-                ( { model
-                    | courses = list
-                    , initialized = True
-                    , board = List.foldl (Board.addNote 0) model.board list
-                  }
+                ( { model | courses = list }
+                    |> Model.loadedList
+                    |> initializeBoard
                 , Cmd.none
                 , []
                 )
@@ -142,7 +150,7 @@ update msg settings model =
                         , update_on.cmd
                             |> Maybe.map (Cmd.map BoardUpdate)
                             |> Maybe.withDefault Cmd.none
-                        , []
+                        , storeBoard update_on.store
                         )
 
                     Just parentMsg ->
@@ -159,7 +167,9 @@ update msg settings model =
                                 |> Maybe.map (Cmd.map BoardUpdate)
                                 |> Maybe.withDefault Cmd.none
                             ]
-                        , events
+                        , update_on.store
+                            |> storeBoard
+                            |> List.append events
                         )
 
             Reset courseID version ->
@@ -187,8 +197,23 @@ update msg settings model =
                 )
 
             Handle json ->
-                update (decode json) settings model
-                    |> Tuple.second
+                case Event.decode json of
+                    Ok event ->
+                        case event.topic of
+                            "board" ->
+                                ( { model | boardConfig = Just event.message }
+                                    |> Model.loadedBoard
+                                    |> initializeBoard
+                                , Cmd.none
+                                , []
+                                )
+
+                            _ ->
+                                ( model, Cmd.none, [] )
+
+                    _ ->
+                        update (decode json) settings (Model.loadedList model)
+                            |> Tuple.second
 
             Input url ->
                 ( { model | input = url }, Cmd.none, [] )
@@ -220,6 +245,21 @@ update msg settings model =
 
             _ ->
                 ( model, Cmd.none, [] )
+
+
+initializeBoard : Model -> Model
+initializeBoard model =
+    if Model.loaded model then
+        { model
+            | boardConfig = Nothing
+            , board =
+                model.boardConfig
+                    |> Maybe.andThen (Board.restore model.courses)
+                    |> Maybe.withDefault (List.foldl (Board.addNote 0) model.board model.courses)
+        }
+
+    else
+        model
 
 
 updateSettings : Msg -> Settings -> ( Model, Cmd Msg, List Event ) -> ( Settings, ( Model, Cmd Msg, List Event ) )
