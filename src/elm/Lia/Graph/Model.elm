@@ -193,6 +193,7 @@ updateJson model =
                     , ( "roam", JE.bool True )
                     , ( "force", force )
                     , ( "draggable", JE.bool True )
+                    , emphasis
                     , ( "data"
                       , graph
                             |> Graph.toList
@@ -276,3 +277,13 @@ base name =
         [ ( "name", JE.string name )
         , ( "base", JE.string name )
         ]
+
+
+emphasis : ( String, JE.Value )
+emphasis =
+    ( "emphasis"
+    , JE.object
+        [ ( "focus", JE.string "adjacency" )
+        , ( "lineStyle", JE.object [ ( "width", JE.int 10 ) ] )
+        ]
+    )
