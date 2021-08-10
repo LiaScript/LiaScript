@@ -6,6 +6,7 @@ module Index.View.Board exposing
     , deleteColumn
     , deleteNote
     , init
+    , restore
     , update
     , view
     )
@@ -54,9 +55,14 @@ type Reference
     | ColumnID Int
 
 
-init : Board { note | id : String }
-init =
-    Board Nothing Nothing Nothing Nothing []
+init : String -> Board { note | id : String }
+init default =
+    Board
+        Nothing
+        Nothing
+        Nothing
+        Nothing
+        [ Column default [] ]
 
 
 type Msg withParent
@@ -474,11 +480,32 @@ restore data json =
     Board Nothing Nothing Nothing Nothing <|
         case JD.decodeValue (JD.list decoder) json of
             Ok list ->
-                list
-                    |> List.map (merge data)
+                let
+                    columns =
+                        List.map (merge data) list
+
+                    runaways =
+                        catchRunaways columns data
+                in
+                columns
+                    |> updateAt 0 (\col -> { col | notes = List.append col.notes runaways })
 
             Err _ ->
                 []
+
+
+catchRunaways :
+    List (Column { note | id : String })
+    -> List { note | id : String }
+    -> List { note | id : String }
+catchRunaways columns =
+    let
+        ids =
+            columns
+                |> List.map (.notes >> List.map .id)
+                |> List.concat
+    in
+    List.filter (\elem -> List.member elem.id ids)
 
 
 merge : List { note | id : String } -> Column String -> Column { note | id : String }

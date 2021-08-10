@@ -16,8 +16,7 @@ type alias Model =
 
 init : Model
 init =
-    Board.init
-        |> Board.addColumn "New"
+    Board.init "Default"
         |> Model "" [] False
 
 
