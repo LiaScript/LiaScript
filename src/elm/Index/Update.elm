@@ -21,7 +21,7 @@ import Lia.Markdown.Inline.Json.Decode as Inline
 import Lia.Settings.Types exposing (Settings)
 import Lia.Settings.Update as Settings
 import Lia.Update exposing (Msg(..))
-import Port.Event as Event exposing (Event)
+import Port.Event as Event exposing (Event, store)
 import Port.Share exposing (share)
 
 
@@ -131,12 +131,15 @@ update msg settings model =
 
             Delete courseID ->
                 ( { model
-                    | courses =
-                        model.courses
-                            |> List.filter (.id >> (/=) courseID)
+                    | courses = List.filter (.id >> (/=) courseID) model.courses
+                    , board = Board.deleteNote courseID model.board
                   }
                 , Cmd.none
-                , [ delete courseID ]
+                , model.board
+                    |> Board.store
+                    |> Just
+                    |> storeBoard
+                    |> (::) (delete courseID)
                 )
 
             BoardUpdate childMsg ->

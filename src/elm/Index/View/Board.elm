@@ -7,6 +7,7 @@ module Index.View.Board exposing
     , deleteNote
     , init
     , restore
+    , store
     , update
     , view
     )
@@ -222,12 +223,22 @@ swapNotes columnA noteA columnB noteB columns =
 
 
 deleteNote :
-    Int
-    -> Int
-    -> List (Column { note | id : String })
-    -> List (Column { note | id : String })
-deleteNote columnID noteID =
-    updateAt columnID (\col -> { col | notes = removeAt noteID col.notes })
+    String
+    -> Board { note | id : String }
+    -> Board { note | id : String }
+deleteNote id board =
+    { board
+        | columns =
+            board.columns
+                |> List.map
+                    (\col ->
+                        { col | notes = List.filter (.id >> (/=) id) col.notes }
+                    )
+    }
+
+
+
+--updateAt columnID (\col -> { col | notes = removeAt noteID col.notes })
 
 
 deleteColumn :
