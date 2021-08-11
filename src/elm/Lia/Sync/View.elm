@@ -1,12 +1,8 @@
-module Lia.Sync.View exposing
-    ( chat
-    , view
-    )
+module Lia.Sync.View exposing (view)
 
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events as Event
-import Lia.Sync.Chat as Chat
 import Lia.Sync.Types as Sync exposing (State(..))
 import Lia.Sync.Update exposing (Msg(..))
 import Lia.Utils exposing (btn)
@@ -67,9 +63,3 @@ input msg label type_ value =
             ]
             []
         ]
-
-
-chat : Sync.Settings -> Html Msg
-chat sync =
-    Chat.view sync.chat
-        |> Html.map UpdateChat

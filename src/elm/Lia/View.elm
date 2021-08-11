@@ -146,9 +146,6 @@ viewSlide screen model =
                 model.media
                 section.effect_model
                 model.section_active
-            , model.sync
-                |> Sync.chat
-                |> Html.map UpdateSync
             , showModal model
             ]
 
