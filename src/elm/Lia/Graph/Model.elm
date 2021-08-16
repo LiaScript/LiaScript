@@ -222,7 +222,12 @@ updateJson model =
                       )
                     , ( "edges"
                       , graph
-                            |> Graph.getLinks
+                            |> (if model.settings.showDocumentStructure then
+                                    Graph.getConnections
+
+                                else
+                                    Graph.getLinks
+                               )
                             |> List.map
                                 (\( from, to ) ->
                                     [ ( "source", JE.string from )

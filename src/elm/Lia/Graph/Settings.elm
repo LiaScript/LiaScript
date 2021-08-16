@@ -9,16 +9,19 @@ module Lia.Graph.Settings exposing
 type alias Settings =
     { highlightVisited : Bool
     , indentation : Int
+    , showDocumentStructure : Bool
     }
 
 
 type Msg
     = Indentation String
+    | ShowDocumentStructure Bool
 
 
 init =
     { highlightVisited = False
     , indentation = 3
+    , showDocumentStructure = False
     }
 
 
@@ -32,3 +35,6 @@ update msg settings =
 
                 _ ->
                     settings
+
+        ShowDocumentStructure bool ->
+            { settings | showDocumentStructure = bool }
