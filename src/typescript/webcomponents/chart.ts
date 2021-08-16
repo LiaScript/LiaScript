@@ -224,11 +224,15 @@ customElements.define(
     set option(val) {
       if (val) {
         if (JSON.stringify(val) !== JSON.stringify(this.option_)) {
-          this.option_ = val
-          this.option_['aria'] = {
-            show: true,
-          } //, decal: { show: true }}
-          this.updateChart()
+          let self = this
+
+          debounce(() => {
+            self.option_ = val
+            self.option_['aria'] = {
+              show: true,
+            } //, decal: { show: true }}
+            self.updateChart()
+          })()
         }
       }
     }
