@@ -63,4 +63,13 @@ viewSettings settings =
                 ]
                 []
             ]
+        , Html.label []
+            [ Html.text "Document structure"
+            , Html.input
+                [ Attr.type_ "checkbox"
+                , Attr.checked settings.showDocumentStructure
+                , Event.onClick (UpdateSettings <| Settings.ShowDocumentStructure (not settings.showDocumentStructure))
+                ]
+                []
+            ]
         ]
