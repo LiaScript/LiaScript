@@ -13,7 +13,7 @@ module Lia.Graph.Model exposing
 import Array exposing (Array)
 import Json.Encode as JE
 import Lia.Graph.Graph as Graph exposing (Graph)
-import Lia.Graph.Node as Node exposing (Node(..))
+import Lia.Graph.Node as Node exposing (Node, Type(..))
 import Lia.Graph.Settings as Settings exposing (Settings)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
@@ -39,27 +39,24 @@ init =
 
 isRootNode : Model -> Node -> Bool
 isRootNode model node =
-    case ( model.root, node ) of
-        ( Just (Section sec1), Section sec2 ) ->
-            sec1.id == sec2.id
-
-        _ ->
-            False
+    model.root
+        |> Maybe.map (Node.equal node)
+        |> Maybe.withDefault False
 
 
 addCourse : { name : String, url : String } -> Model -> Model
 addCourse lia =
-    rootConnect (Course { name = lia.name, url = lia.url, visible = True })
+    rootConnect lia.name (Course lia.url)
 
 
 addHashtag : String -> Model -> Model
 addHashtag name =
-    rootConnect (Hashtag { name = name, visible = True })
+    rootConnect name Hashtag
 
 
 addLink : { name : String, url : String } -> Model -> Model
 addLink link =
-    rootConnect (Link { name = link.name, url = link.url, visible = True })
+    rootConnect link.name (Link link.url)
 
 
 addSection : Int -> Model -> Model
@@ -78,20 +75,25 @@ addSection id model =
             model
 
 
-rootConnect : Node -> Model -> Model
-rootConnect node model =
+rootConnect : String -> Type -> Model -> Model
+rootConnect name data model =
     { model
         | graph =
             case model.root of
                 Just root ->
                     model.graph
-                        |> Graph.addNode node
-                        |> Graph.addLink root node
+                        |> Graph.addNode (new name data)
+                        |> Graph.addLink root (new name data)
 
                 Nothing ->
                     model.graph
-                        |> Graph.addNode node
+                        |> Graph.addNode (new name data)
     }
+
+
+new : String -> Type -> Node
+new name =
+    Node name True Set.empty
 
 
 addSections :
@@ -134,15 +136,13 @@ addSectionsHelper prev sections graph =
         ( x :: xs, [] ) ->
             graph
                 |> Graph.addNode
-                    (Section
-                        { id = x.id
-                        , weight = String.length x.code
-                        , indentation = x.indentation
-                        , name = stringify x.title
-                        , visible = True
-                        , parent = Nothing
-                        , links = Set.empty
-                        }
+                    ({ id = x.id
+                     , weight = String.length x.code
+                     , indentation = x.indentation
+                     , parent = Nothing
+                     }
+                        |> Section
+                        |> Node (stringify x.title) True Set.empty
                     )
                 |> addSectionsHelper [ x ] xs
 
@@ -150,15 +150,13 @@ addSectionsHelper prev sections graph =
             if x.indentation > p.indentation then
                 graph
                     |> Graph.addNode
-                        (Section
-                            { id = x.id
-                            , weight = String.length x.code
-                            , indentation = x.indentation
-                            , name = stringify x.title
-                            , visible = True
-                            , parent = Just <| Node.identifier <| Node.section p.id
-                            , links = Set.empty
-                            }
+                        ({ id = x.id
+                         , weight = String.length x.code
+                         , indentation = x.indentation
+                         , parent = Just <| Node.identifier <| Node.section p.id
+                         }
+                            |> Section
+                            |> Node (stringify x.title) True Set.empty
                         )
                     |> addSectionsHelper (x :: prev) xs
 
@@ -200,7 +198,7 @@ updateJson model =
                             |> List.map
                                 (\( id, node ) ->
                                     [ ( "id", JE.string id )
-                                    , ( "name", JE.string <| Node.name node )
+                                    , ( "name", JE.string <| node.name )
                                     , ( "category", JE.int <| Node.category node )
                                     , ( "tooltip", formatter node )
 
@@ -212,7 +210,7 @@ updateJson model =
                                                 , ( "borderWidth", JE.int 3 )
                                                 ]
 
-                                            else if Node.isVisible node then
+                                            else if node.visible then
                                                 []
 
                                             else
@@ -224,7 +222,7 @@ updateJson model =
                       )
                     , ( "edges"
                       , graph
-                            |> Graph.getConnections
+                            |> Graph.getLinks
                             |> List.map
                                 (\( from, to ) ->
                                     [ ( "source", JE.string from )
@@ -255,18 +253,18 @@ formatter node =
     JE.object
         [ ( "formatter"
           , JE.string <|
-                case node of
-                    Hashtag tag ->
-                        tag.name
+                case node.data of
+                    Hashtag ->
+                        node.name
 
-                    Link { name, url } ->
-                        name ++ ":<br/><a href='" ++ url ++ "'>" ++ url ++ "</a>"
+                    Link url ->
+                        node.name ++ ":<br/><a href='" ++ url ++ "'>" ++ url ++ "</a>"
 
-                    Section sec ->
-                        sec.name
+                    Section _ ->
+                        node.name
 
-                    Course lia ->
-                        lia.name ++ ":<br/><a href='" ++ lia.url ++ "'>" ++ lia.url ++ "</a>"
+                    Course url ->
+                        node.name ++ ":<br/><a href='" ++ url ++ "'>" ++ url ++ "</a>"
           )
         ]
 

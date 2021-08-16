@@ -1,5 +1,6 @@
 module Lia.Graph.Node exposing
-    ( Node(..)
+    ( Node
+    , Type(..)
     , addLink
     , addParent
     , categories
@@ -7,9 +8,7 @@ module Lia.Graph.Node exposing
     , connections
     , equal
     , identifier
-    , isVisible
     , links
-    , name
     , parent
     , section
     , weight
@@ -19,77 +18,45 @@ import Conditional.Set as CSet
 import Set exposing (Set)
 
 
-type Node
+type Type
     = Hashtag
-        { name : String
-        , visible : Bool
-        }
+    | Link String
+    | Course String
     | Section
         { id : Int
         , indentation : Int
         , weight : Int
-        , name : String
-        , visible : Bool
         , parent : Maybe String
-        , links : Set String
-        }
-    | Link
-        { name : String
-        , url : String
-        , visible : Bool
-        }
-    | Course
-        { name : String
-        , url : String
-        , visible : Bool
         }
 
 
-isVisible : Node -> Bool
-isVisible node =
-    case node of
-        Section sec ->
-            sec.visible
-
-        _ ->
-            True
-
-
-name : Node -> String
-name node =
-    case node of
-        Section sec ->
-            sec.name
-
-        Link link ->
-            link.name
-
-        Hashtag tag ->
-            tag.name
-
-        Course lia ->
-            lia.name
+type alias Node =
+    { name : String
+    , visible : Bool
+    , links : Set String
+    , data : Type
+    }
 
 
 identifier : Node -> String
 identifier node =
-    case node of
+    case node.data of
         Section sec ->
             "sec: " ++ String.fromInt sec.id
 
-        Link link ->
-            "url: " ++ link.url
+        Link url ->
+            "url: " ++ url
 
-        Course lia ->
-            "lia: " ++ lia.url
+        Course url ->
+            "lia: " ++ url
 
-        Hashtag tag ->
-            "tag: " ++ String.toLower tag.name
+        Hashtag ->
+            "tag: " ++ String.toLower node.name
 
 
 weight : Node -> Float
 weight node =
-    case node of
+    case node.data of
         Section sec ->
             toFloat sec.weight / 60
 
@@ -102,11 +69,11 @@ weight node =
 
 category : Node -> Int
 category node =
-    case node of
+    case node.data of
         Course _ ->
             0
 
-        Hashtag _ ->
+        Hashtag ->
             1
 
         Link _ ->
@@ -127,18 +94,18 @@ categories =
 
 equal : Node -> Node -> Bool
 equal node1 node2 =
-    case ( node1, node2 ) of
+    case ( node1.data, node2.data ) of
         ( Section sec1, Section sec2 ) ->
             sec1.id == sec2.id
 
-        ( Hashtag str1, Hashtag str2 ) ->
-            str1 == str2
+        ( Hashtag, Hashtag ) ->
+            node1.name == node2.name
 
-        ( Link link1, Link link2 ) ->
-            link1.url == link2.url
+        ( Link url1, Link url2 ) ->
+            url1 == url2
 
         ( Course lia1, Course lia2 ) ->
-            lia1.url == lia2.url
+            lia1 == lia2
 
         _ ->
             False
@@ -146,32 +113,29 @@ equal node1 node2 =
 
 section : Int -> Node
 section i =
-    Section
-        { id = i
-        , indentation = -1
-        , weight = -1
-        , name = ""
-        , visible = False
-        , parent = Nothing
-        , links = Set.empty
-        }
+    { name = ""
+    , visible = False
+    , links = Set.empty
+    , data =
+        Section
+            { id = i
+            , indentation = -1
+            , weight = -1
+            , parent = Nothing
+            }
+    }
 
 
 addLink : Node -> Node -> Node
 addLink target source =
-    case source of
-        Section data ->
-            Section { data | links = Set.insert (identifier target) data.links }
-
-        _ ->
-            source
+    { source | links = Set.insert (identifier target) source.links }
 
 
 addParent : Node -> Node -> Node
 addParent child p =
-    case child of
-        Section data ->
-            Section { data | parent = Just (identifier p) }
+    case child.data of
+        Section sec ->
+            { child | data = Section { sec | parent = Just (identifier p) } }
 
         _ ->
             child
@@ -179,7 +143,7 @@ addParent child p =
 
 parent : Node -> Maybe String
 parent node =
-    case node of
+    case node.data of
         Section data ->
             data.parent
 
@@ -188,22 +152,12 @@ parent node =
 
 
 links : Node -> List String
-links node =
-    case node of
-        Section data ->
-            Set.toList data.links
-
-        _ ->
-            []
+links =
+    .links >> Set.toList
 
 
 connections : Node -> List String
 connections node =
-    case node of
-        Section data ->
-            data.links
-                |> CSet.insertWhen data.parent
-                |> Set.toList
-
-        _ ->
-            []
+    node.links
+        |> CSet.insertWhen (parent node)
+        |> Set.toList
