@@ -14,8 +14,8 @@ module Lia.Graph.Graph exposing
     )
 
 import Dict exposing (Dict)
-import Lia.Graph.Node as Node exposing (Node(..))
-import Set
+import Lia.Graph.Node as Node exposing (Node, Type(..))
+import Set exposing (Set)
 
 
 type alias Graph =
@@ -53,17 +53,16 @@ setSectionVisibility graph ids =
 
 secVisibility : List Int -> x -> Node -> Node
 secVisibility ids _ node =
-    case node of
+    case node.data of
         Section sec ->
-            Section
-                { sec
-                    | visible =
-                        if List.isEmpty ids then
-                            True
+            { node
+                | visible =
+                    if List.isEmpty ids then
+                        True
 
-                        else
-                            List.member sec.id ids
-                }
+                    else
+                        List.member sec.id ids
+            }
 
         _ ->
             node
@@ -149,15 +148,18 @@ zipHelper indentation graph =
 
 shallowCopy : Graph -> Node -> Node -> Node
 shallowCopy graph source target =
-    case ( source, target ) of
+    case ( source.data, target.data ) of
         ( Section sourceData, Section targetData ) ->
-            Section
-                { targetData
-                    | weight = targetData.weight + sourceData.weight
-                    , links =
-                        Set.union targetData.links sourceData.links
-                            |> Set.map (updateLinks graph sourceData.indentation)
-                }
+            { target
+                | links =
+                    Set.union target.links source.links
+                        |> Set.map (updateLinks graph sourceData.indentation)
+                , data =
+                    Section
+                        { targetData
+                            | weight = targetData.weight + sourceData.weight
+                        }
+            }
 
         _ ->
             target
@@ -165,7 +167,7 @@ shallowCopy graph source target =
 
 filter : Int -> String -> Node -> Bool
 filter maximum _ node =
-    case node of
+    case node.data of
         Section data ->
             maximum > data.indentation
 
@@ -175,7 +177,11 @@ filter maximum _ node =
 
 updateLinks : Graph -> Int -> String -> String
 updateLinks db indentation id =
-    case getNodeById db id of
+    case
+        id
+            |> getNodeById db
+            |> Maybe.map .data
+    of
         Just (Section data) ->
             if data.indentation >= indentation then
                 Maybe.withDefault id data.parent

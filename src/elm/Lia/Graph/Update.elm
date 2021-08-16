@@ -9,7 +9,7 @@ import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Graph.Graph as Graph
 import Lia.Graph.Model exposing (Model, isRootNode, updateJson)
-import Lia.Graph.Node as Node exposing (Node(..))
+import Lia.Graph.Node as Node exposing (Node, Type(..))
 import Lia.Graph.Settings as Settings
 import Session exposing (Session)
 import Url
@@ -24,13 +24,17 @@ update : Session -> Msg -> Model -> ( Model, Cmd Msg )
 update session msg model =
     case msg of
         Clicked obj ->
-            case getNode model obj of
+            case
+                obj
+                    |> getNode model
+                    |> Maybe.map .data
+            of
                 Just (Section sec) ->
                     ( model, Session.navToSlide session sec.id )
 
-                Just (Link node) ->
+                Just (Link url) ->
                     ( model
-                    , node.url
+                    , url
                         |> Url.fromString
                         |> Maybe.map Session.load
                         |> Maybe.withDefault Cmd.none
