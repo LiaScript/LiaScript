@@ -1,13 +1,15 @@
 port module Lia.Sync.Update exposing
     ( Msg(..)
+    , send
     , subscriptions
     , update
     )
 
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Sync.Types exposing (Settings, State(..))
+import Lia.Sync.Types exposing (Settings, State(..), isConnected)
 import Port.Event as Event exposing (Event)
+import Return exposing (Return)
 
 
 port syncOut : Event -> Cmd msg
@@ -30,7 +32,7 @@ type Msg
     | Handle Event
 
 
-update : Msg -> Settings -> ( Settings, Cmd Msg )
+update : Msg -> Settings -> Return Settings Msg sub
 update msg model =
     case msg of
         Handle event ->
@@ -40,48 +42,79 @@ update msg model =
             in
             case event.topic of
                 "connect" ->
-                    if bool event.message then
-                        ( { model | state = Connected }, Cmd.none )
+                    Return.val <|
+                        if bool event.message then
+                            { model | state = Connected }
 
-                    else
-                        ( { model | state = Disconnected }, Cmd.none )
+                        else
+                            { model | state = Disconnected }
+
+                "sync" ->
+                    model
+                        |> Return.val
+                        |> Return.batchEvents
+                            (case Event.decode event.message of
+                                Ok message ->
+                                    [ message ]
+
+                                Err _ ->
+                                    []
+                            )
 
                 _ ->
-                    ( model, Cmd.none )
+                    Return.val model
 
         Password str ->
-            ( { model | password = str }, Cmd.none )
+            { model | password = str }
+                |> Return.val
 
         Username str ->
-            ( { model | username = str }, Cmd.none )
+            { model | username = str }
+                |> Return.val
 
         Room str ->
-            ( { model | room = str }, Cmd.none )
+            { model | room = str }
+                |> Return.val
 
         Connect ->
-            ( { model | state = Pending }
-            , [ ( "course", JE.string model.course )
-              , ( "room", JE.string model.room )
-              , ( "username", JE.string model.username )
-              , ( "password"
-                , if String.isEmpty model.password then
-                    JE.null
+            { model | state = Pending }
+                |> Return.val
+                |> Return.cmd
+                    ([ ( "course", JE.string model.course )
+                     , ( "room", JE.string model.room )
+                     , ( "username", JE.string model.username )
+                     , ( "password"
+                       , if String.isEmpty model.password then
+                            JE.null
 
-                  else
-                    JE.string model.password
-                )
-              ]
-                |> JE.object
-                |> Event "connect" -1
-                |> syncOut
-            )
+                         else
+                            JE.string model.password
+                       )
+                     ]
+                        |> JE.object
+                        |> sync "connect"
+                    )
 
         Disconnect ->
-            ( { model | state = Pending }
-            , JE.null
-                |> Event "disconnect" -1
-                |> syncOut
-            )
+            { model | state = Pending }
+                |> Return.val
+                |> Return.cmd (sync "disconnect" JE.null)
+
+
+sync : String -> JE.Value -> Cmd Msg
+sync topic =
+    Event topic -1 >> syncOut
+
+
+send : Settings -> List Event -> Cmd Msg
+send settings events =
+    if isConnected settings then
+        events
+            |> List.map (Event.encode >> sync "sync")
+            |> Cmd.batch
+
+    else
+        Cmd.none
 
 
 bool : JE.Value -> Bool
