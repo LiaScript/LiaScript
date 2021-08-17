@@ -95,8 +95,12 @@ combineHelper input output =
         ( [], _ ) ->
             List.reverse output
 
-        ( (Chars str1 []) :: is, (Chars str2 []) :: os ) ->
-            combineHelper is (Chars (str2 ++ str1) [] :: os)
+        ( (Chars str1 attr1) :: is, (Chars str2 attr2) :: os ) ->
+            if attr1 == attr2 then
+                combineHelper is (Chars (str2 ++ str1) attr1 :: os)
+
+            else
+                combineHelper is (Chars str1 attr1 :: output)
 
         ( i :: is, _ ) ->
             combineHelper is (i :: output)
