@@ -10,18 +10,21 @@ type alias Settings =
     { highlightVisited : Bool
     , indentation : Int
     , showDocumentStructure : Bool
+    , showGlobalGraph : Bool
     }
 
 
 type Msg
     = Indentation String
-    | ShowDocumentStructure Bool
+    | ShowDocumentStructure
+    | ShowGlobalGraph
 
 
 init =
     { highlightVisited = False
     , indentation = 3
     , showDocumentStructure = False
+    , showGlobalGraph = False
     }
 
 
@@ -36,5 +39,8 @@ update msg settings =
                 _ ->
                     settings
 
-        ShowDocumentStructure bool ->
-            { settings | showDocumentStructure = bool }
+        ShowDocumentStructure ->
+            { settings | showDocumentStructure = not settings.showDocumentStructure }
+
+        ShowGlobalGraph ->
+            { settings | showGlobalGraph = not settings.showGlobalGraph }
