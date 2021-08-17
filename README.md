@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.24
+version:  0.9.25
 language: en
 narrator: UK English Male
 
@@ -272,6 +272,14 @@ This will apply the following three patches:
 - elm-patch/dom: enable onclick events as well as innerHTML
 
 ## Version-Changes
+
+**0.9.25** (17/08/2021)
+
+- Sidebar in Slide-mode can now used to navigate through all effects
+- Home-view has also a settings menu and cards are now presented according to the
+  common style
+- Improved TTS for translations
+- Minor bug-fixes
 
 **0.9.24** (30/07/2021)
 
