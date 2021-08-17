@@ -2,7 +2,6 @@ module Lia.View exposing (view)
 
 import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
-import Accessibility.Role as A11y_Role
 import Accessibility.Widget as A11y_Widget
 import Const
 import Dict exposing (Dict)
@@ -14,6 +13,7 @@ import Lia.Index.View as Index
 import Lia.Markdown.Config as Config
 import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Effect.View exposing (state)
+import Lia.Markdown.HTML.Attributes exposing (toAttribute)
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model)
@@ -137,6 +137,7 @@ viewSlide screen model =
                 ]
             , slideA11y
                 model.translation
+                ( model.langCodeOriginal, model.langCode )
                 model.settings.mode
                 model.media
                 section.effect_model
@@ -238,8 +239,8 @@ btnStop lang settings =
         [ Attr.id "lia-btn-sound", Attr.class "lia-btn--transparent" ]
 
 
-slideA11y : Lang -> Mode -> Dict String ( Int, Int ) -> Effect.Model SubSection -> Int -> Html Msg
-slideA11y lang mode media effect id =
+slideA11y : Lang -> ( String, String ) -> Mode -> Dict String ( Int, Int ) -> Effect.Model SubSection -> Int -> Html Msg
+slideA11y lang translations mode media effect id =
     case mode of
         Slides ->
             let
@@ -249,12 +250,21 @@ slideA11y lang mode media effect id =
                         |> List.map
                             (\( active, counter, comment ) ->
                                 comment
-                                    |> List.map
-                                        (.content
-                                            >> List.map (view_inf effect.javascript lang (Just media))
-                                            >> Html.p []
-                                            >> Html.map (Tuple.pair id >> Script)
+                                    |> Maybe.map
+                                        (\( narrator, content ) ->
+                                            List.map
+                                                (.content
+                                                    >> List.map (view_inf effect.javascript lang (Just media))
+                                                    >> Html.p
+                                                        (narrator
+                                                            |> Markdown.addTranslation False translations counter
+                                                            |> toAttribute
+                                                        )
+                                                    >> Html.map (Tuple.pair id >> Script)
+                                                )
+                                                content
                                         )
+                                    |> Maybe.withDefault []
                                     |> (::)
                                         (Html.a
                                             [ Attr.class "hide-lg-down"

@@ -106,7 +106,7 @@ getComment_Helper from id result =
                     }
 
 
-current_paragraphs : Model a -> List ( Bool, Int, List Content )
+current_paragraphs : Model a -> List ( Bool, Int, Maybe ( String, List Content ) )
 current_paragraphs model =
     model.effects
         |> List.range 0
@@ -116,8 +116,7 @@ current_paragraphs model =
                 , key
                 , model.comments
                     |> Dict.get key
-                    |> Maybe.map (.content >> Array.toList)
-                    |> Maybe.withDefault []
+                    |> Maybe.map (\element -> ( element.narrator, Array.toList element.content ))
                 )
             )
 
