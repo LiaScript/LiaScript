@@ -2,7 +2,6 @@ module Lia.View exposing (view)
 
 import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
-import Accessibility.Role as A11y_Role
 import Accessibility.Widget as A11y_Widget
 import Const
 import Dict exposing (Dict)
@@ -14,6 +13,7 @@ import Lia.Index.View as Index
 import Lia.Markdown.Config as Config
 import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Effect.View exposing (state)
+import Lia.Markdown.HTML.Attributes exposing (toAttribute)
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Markdown.View as Markdown
 import Lia.Model exposing (Model)
@@ -137,6 +137,7 @@ viewSlide screen model =
                 ]
             , slideA11y
                 model.translation
+                ( model.langCodeOriginal, model.langCode )
                 model.settings.mode
                 model.media
                 section.effect_model
@@ -238,8 +239,8 @@ btnStop lang settings =
         [ Attr.id "lia-btn-sound", Attr.class "lia-btn--transparent" ]
 
 
-slideA11y : Lang -> Mode -> Dict String ( Int, Int ) -> Effect.Model SubSection -> Int -> Html Msg
-slideA11y lang mode media effect id =
+slideA11y : Lang -> ( String, String ) -> Mode -> Dict String ( Int, Int ) -> Effect.Model SubSection -> Int -> Html Msg
+slideA11y lang translations mode media effect id =
     case mode of
         Slides ->
             let
@@ -249,12 +250,21 @@ slideA11y lang mode media effect id =
                         |> List.map
                             (\( active, counter, comment ) ->
                                 comment
-                                    |> List.map
-                                        (.content
-                                            >> List.map (view_inf effect.javascript lang (Just media))
-                                            >> Html.p []
-                                            >> Html.map (Tuple.pair id >> Script)
+                                    |> Maybe.map
+                                        (\( narrator, content ) ->
+                                            List.map
+                                                (.content
+                                                    >> List.map (view_inf effect.javascript lang (Just media))
+                                                    >> Html.p
+                                                        (narrator
+                                                            |> Markdown.addTranslation False translations counter
+                                                            |> toAttribute
+                                                        )
+                                                    >> Html.map (Tuple.pair id >> Script)
+                                                )
+                                                content
                                         )
+                                    |> Maybe.withDefault []
                                     |> (::)
                                         (Html.a
                                             [ Attr.class "hide-lg-down"
@@ -333,65 +343,13 @@ navButton title id class msg =
 -}
 slideTopBar : Lang -> Screen -> String -> Settings -> Definition -> Html Msg
 slideTopBar lang screen url settings def =
-    let
-        tabbable =
-            screen.width >= Const.globalBreakpoints.md || settings.support_menu
-    in
-    [ Html.div [ Attr.class "lia-header__left" ] []
-    , Html.div [ Attr.class "lia-header__middle" ]
-        [ Html.img
-            [ def
-                |> Definition.getIcon
-                |> Attr.src
-            , Attr.class "lia_header__logo"
-            , Attr.alt "LiaScript"
-            , Attr.style "height" "100%"
-            ]
-            []
-        ]
-    , Html.div [ Attr.class "lia-header__right" ]
-        [ Html.div
-            [ Attr.class "lia-support-menu"
-            , Attr.id "lia-support-menu"
-            , Attr.class <|
-                if settings.support_menu then
-                    "lia-support-menu--open"
-
-                else
-                    "lia-support-menu--closed"
-            ]
-            [ Settings.btnSupport lang settings.support_menu
-            , Html.div
-                [ Attr.class "lia-support-menu__collapse"
-                ]
-                [ [ ( Settings.menuMode, "mode" )
-                  , ( Settings.menuSettings, "settings" )
-                  , ( Settings.menuTranslations def, "lang" )
-                  , ( Settings.menuShare url, "share" )
-                  , ( Settings.menuInformation def, "info" )
-                  ]
-                    |> List.map
-                        (\( fn, class ) ->
-                            Html.li
-                                [ Attr.class <| "nav__item lia-support-menu__item lia-support-menu__item--" ++ class
-                                , A11y_Role.menuItem
-                                , A11y_Widget.hasMenuPopUp
-                                ]
-                                (fn lang tabbable settings)
-                        )
-                    |> Html.ul
-                        [ Attr.class "nav lia-support-menu__nav"
-                        , A11y_Role.menuBar
-                        , A11y_Key.tabbable False
-                        ]
-                ]
-            ]
-        ]
+    [ ( Settings.menuMode, "mode" )
+    , ( Settings.menuSettings, "settings" )
+    , ( Settings.menuTranslations def, "lang" )
+    , ( Settings.menuShare url, "share" )
+    , ( Settings.menuInformation def, "info" )
     ]
-        |> Html.header
-            [ Attr.class "lia-header"
-            , Attr.id "lia-toolbar-nav"
-            ]
+        |> Settings.header lang screen settings (Definition.getIcon def)
         |> Html.map UpdateSettings
 
 

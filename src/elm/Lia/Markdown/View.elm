@@ -1,4 +1,7 @@
-module Lia.Markdown.View exposing (view)
+module Lia.Markdown.View exposing
+    ( addTranslation
+    , view
+    )
 
 import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
@@ -29,6 +32,7 @@ import Lia.Markdown.Task.View as Task
 import Lia.Markdown.Types exposing (Block(..), Blocks)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Section exposing (SubSection(..))
+import Lia.Settings.Types exposing (Mode(..))
 import Lia.Utils exposing (modal)
 import Lia.Voice as Voice
 import SvgBob
@@ -114,7 +118,7 @@ view_body ( config, footnote2show, footnotes ) =
                                 (\( id, voice, text ) ->
                                     Html.span
                                         (voice
-                                            |> addTranslation config.translations id
+                                            |> addTranslation True config.translations id
                                             |> toAttribute
                                         )
                                         [ Html.text text ]
@@ -123,19 +127,26 @@ view_body ( config, footnote2show, footnotes ) =
         >> viewMain
 
 
-addTranslation : ( String, String ) -> Int -> String -> List ( String, String )
-addTranslation translations id narrator =
+addTranslation : Bool -> ( String, String ) -> Int -> String -> List ( String, String )
+addTranslation hidden translations id narrator =
     case Voice.getVoiceFor narrator translations of
         Nothing ->
             []
 
         Just ( translate, voice ) ->
             [ ( "class"
-              , if translate then
-                    "translate hidden-visually"
+              , case ( translate, hidden ) of
+                    ( True, True ) ->
+                        "translate hidden-visually"
 
-                else
-                    "notranslate hide"
+                    ( False, True ) ->
+                        "notranslate hide"
+
+                    ( True, False ) ->
+                        "translate"
+
+                    ( False, False ) ->
+                        "notranslate"
               )
             , ( "class", "lia-tts-" ++ String.fromInt id )
             , ( "data-voice", voice )
@@ -146,8 +157,8 @@ addTranslation translations id narrator =
                 else
                     "no"
               )
-            , ( "aria-hidden", "true" )
             ]
+                |> CList.addIf hidden ( "aria-hidden", "true" )
 
 
 viewMain : List (Html msg) -> Html msg
@@ -306,7 +317,8 @@ view_block config block =
 
         Comment ( id1, id2 ) ->
             case
-                ( config.main.visible
+                ( config.mode
+                  -- , config.main.visible
                 , Comments.get_paragraph
                     (config.main.visible /= Nothing)
                     id1
@@ -314,20 +326,20 @@ view_block config block =
                     config.section.effect_model
                 )
             of
-                ( Nothing, Just ( _, comment ) ) ->
+                ( Textbook, Just ( _, comment ) ) ->
                     view_block config (Paragraph comment.attr comment.content)
 
-                ( Just _, Just ( narrator, comment ) ) ->
+                ( Presentation, Just ( narrator, comment ) ) ->
                     comment.content
                         |> Inline.reduce config.main
                         |> Html.div
                             (narrator
-                                |> addTranslation config.translations id1
+                                |> addTranslation True config.translations id1
                                 |> toAttribute
                             )
                         |> Html.map Script
 
-                ( _, Nothing ) ->
+                _ ->
                     Html.text ""
 
         Header attr ( sub, elements ) ->
