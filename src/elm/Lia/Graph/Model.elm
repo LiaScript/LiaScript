@@ -168,7 +168,10 @@ updateJson : Model -> Model
 updateJson model =
     let
         graph =
-            if model.settings.indentation < 6 then
+            if not model.settings.showGlobalGraph then
+                ma
+
+            else if model.settings.indentation < 6 then
                 Graph.zip model.settings.indentation model.graph
 
             else

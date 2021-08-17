@@ -68,7 +68,16 @@ viewSettings settings =
             , Html.input
                 [ Attr.type_ "checkbox"
                 , Attr.checked settings.showDocumentStructure
-                , Event.onClick (UpdateSettings <| Settings.ShowDocumentStructure (not settings.showDocumentStructure))
+                , Event.onClick (UpdateSettings <| Settings.ShowDocumentStructure)
+                ]
+                []
+            ]
+        , Html.label []
+            [ Html.text "Global Graph"
+            , Html.input
+                [ Attr.type_ "checkbox"
+                , Attr.checked settings.showGlobalGraph
+                , Event.onClick (UpdateSettings <| Settings.ShowGlobalGraph)
                 ]
                 []
             ]
