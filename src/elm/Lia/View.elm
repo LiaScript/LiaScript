@@ -8,6 +8,7 @@ import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
+import Html.Keyed as Keyed
 import Lia.Definition.Types as Definition exposing (Definition)
 import Lia.Index.View as Index
 import Lia.Markdown.Config as Config
@@ -243,66 +244,62 @@ slideA11y : Lang -> ( String, String ) -> Mode -> Dict String ( Int, Int ) -> Ef
 slideA11y lang translations mode media effect id =
     case mode of
         Slides ->
-            let
-                comments =
-                    effect
-                        |> Effect.current_paragraphs
-                        |> List.map
-                            (\( active, counter, comment ) ->
-                                comment
-                                    |> Maybe.map
-                                        (\( narrator, content ) ->
-                                            List.map
-                                                (.content
-                                                    >> List.map (view_inf effect.javascript lang (Just media))
-                                                    >> Html.p
-                                                        (narrator
-                                                            |> Markdown.addTranslation False translations counter
-                                                            |> toAttribute
-                                                        )
-                                                    >> Html.map (Tuple.pair id >> Script)
+            effect
+                |> Effect.current_paragraphs
+                |> List.map
+                    (\( active, counter, comment ) ->
+                        comment
+                            |> Maybe.map
+                                (\( narrator, content ) ->
+                                    List.map
+                                        (.content
+                                            >> List.map (view_inf effect.javascript lang (Just media))
+                                            >> Html.p
+                                                (narrator
+                                                    |> Markdown.addTranslation False translations counter
+                                                    |> toAttribute
                                                 )
-                                                content
+                                            >> Html.map (Tuple.pair id >> Script)
                                         )
-                                    |> Maybe.withDefault []
-                                    |> (::)
-                                        (Html.a
-                                            [ Attr.class "hide-lg-down"
-                                            , counter |> JumpToFragment |> onClick
-                                            , Attr.href "#"
-                                            ]
-                                            [ Html.small
-                                                [ Attr.class "lia-notes__counter" ]
-                                                [ String.fromInt counter
-                                                    ++ "/"
-                                                    ++ String.fromInt effect.effects
-                                                    |> Html.text
-                                                ]
-                                            ]
-                                        )
-                                    |> Html.div
-                                        [ Attr.class
-                                            ("lia-notes__content"
-                                                ++ (if active then
-                                                        " active"
-
-                                                    else
-                                                        " hide-lg-down"
-                                                   )
-                                            )
-                                        , Attr.id
-                                            (if active then
-                                                "lia-notes-active"
-
-                                             else
-                                                ""
-                                            )
+                                        content
+                                )
+                            |> Maybe.withDefault []
+                            |> (::)
+                                (Html.a
+                                    [ Attr.class "hide-lg-down"
+                                    , counter |> JumpToFragment |> onClick
+                                    , Attr.href "#"
+                                    ]
+                                    [ Html.small
+                                        [ Attr.class "lia-notes__counter" ]
+                                        [ String.fromInt counter
+                                            ++ "/"
+                                            ++ String.fromInt effect.effects
+                                            |> Html.text
                                         ]
-                            )
-            in
-            comments
-                |> Html.aside
-                    [ Attr.class "lia-notes" ]
+                                    ]
+                                )
+                            |> Html.div
+                                [ Attr.class
+                                    ("lia-notes__content"
+                                        ++ (if active then
+                                                " active"
+
+                                            else
+                                                " hide-lg-down"
+                                           )
+                                    )
+                                , Attr.id
+                                    (if active then
+                                        "lia-notes-active"
+
+                                     else
+                                        ""
+                                    )
+                                ]
+                            |> Tuple.pair (String.fromInt id ++ "-/-" ++ String.fromInt counter)
+                    )
+                |> Keyed.node "aside" [ Attr.class "lia-notes" ]
 
         _ ->
             Html.text ""
