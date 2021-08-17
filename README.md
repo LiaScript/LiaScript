@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.26
+version:  0.9.27
 language: en
 narrator: UK English Male
 
@@ -273,7 +273,7 @@ This will apply the following three patches:
 
 ## Version-Changes
 
-**0.9.26** (17/08/2021)
+**0.9.27** (17/08/2021)
 
 - Sidebar in Slide-mode can now used to navigate through all effects
 - Home-view has also a settings menu and cards are now presented according to the
