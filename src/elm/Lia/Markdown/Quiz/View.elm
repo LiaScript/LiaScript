@@ -21,6 +21,8 @@ TODO:
 
 -}
 
+import Accessibility.Role as A11y_Role
+import Accessibility.Widget as A11y_Widget
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Lia.Markdown.Inline.Config exposing (Config)
@@ -122,8 +124,8 @@ viewState config elem quiz =
 -}
 viewQuiz : Config sub -> Element -> Quiz -> List (Html (Msg sub)) -> List (Html (Msg sub))
 viewQuiz config state quiz body =
-    [ Html.div [ Attr.class "lia-quiz__answers" ] body
-    , Html.div [ Attr.class "lia-quiz__control" ]
+    [ Html.div [ Attr.class "lia-quiz__answers", A11y_Widget.label "Answer area" ] body
+    , Html.div [ A11y_Widget.label "Submit Buttons", Attr.class "lia-quiz__control" ]
         [ viewMainButton config state.trial state.solved (Check quiz.id quiz.quiz quiz.javascript)
         , viewSolutionButton config state.solved (ShowSolution quiz.id quiz.quiz)
         , Translations.quizHint config.lang
@@ -144,7 +146,7 @@ viewFeedback lang state =
     else
         case state.solved of
             Solution.Solved ->
-                Html.div [ Attr.class "lia-quiz__feedback text-success" ]
+                Html.div [ Attr.class "lia-quiz__feedback text-success" ] -- TODO: maybe lable success, failure, ... locale independend
                     [ lang
                         |> quizAnswerSuccess
                         |> Html.text
@@ -203,7 +205,7 @@ viewMainButton config trials solution msg =
                 Nothing
         , tabbable = solution == Solution.Open
         }
-        [ Attr.class "lia-btn--outline lia-quiz__check" ]
+        [ Attr.class "lia-btn--outline lia-quiz__check", A11y_Widget.label "Check answer" ]
         [ Html.text (quizCheck config.lang)
         , Html.text <|
             if trials > 0 then
@@ -249,7 +251,7 @@ viewHintButton id show active title =
             , icon = "icon-hint"
             , tabbable = True
             }
-            [ Attr.class "lia-btn--transparent lia-quiz__hint" ]
+            [ Attr.class "lia-btn--transparent lia-quiz__hint", A11y_Role.button ]
 
     else
         Html.text ""

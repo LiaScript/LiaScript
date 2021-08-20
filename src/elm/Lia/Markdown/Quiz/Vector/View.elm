@@ -1,5 +1,7 @@
 module Lia.Markdown.Quiz.Vector.View exposing (view)
 
+import Accessibility.Role as A11y_Role
+import Accessibility.Widget as A11y_Widget
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
@@ -38,6 +40,7 @@ check config open colorClass checked ( id, line ) =
             , Attr.class colorClass
             , Attr.type_ "checkbox"
             , Attr.checked checked
+            , A11y_Role.checkBox
             , if open then
                 onClick (Toggle id)
 
@@ -60,6 +63,7 @@ radio config open colorClass checked ( id, line ) =
             , Attr.class colorClass
             , Attr.type_ "radio"
             , Attr.checked checked
+            , A11y_Role.radio
             , if open then
                 onClick (Toggle id)
 

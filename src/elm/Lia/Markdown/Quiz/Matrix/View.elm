@@ -1,5 +1,7 @@
 module Lia.Markdown.Quiz.Matrix.View exposing (view)
 
+import Accessibility.Role as A11y_Role
+import Accessibility.Widget as A11y_Widget
 import Array
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -36,7 +38,7 @@ header config inlines =
 th : Config sub -> Inlines -> Html (Msg sub)
 th config =
     viewer config
-        >> Html.th [ Attr.class "lia-table__header lia-survey-matrix__header" ]
+        >> Html.th [ Attr.class "lia-table__header lia-survey-matrix__header", A11y_Role.columnHeader ]
         >> Html.map Script
 
 
@@ -58,11 +60,14 @@ radio open colorClass row_id column_id value =
             , Attr.class colorClass
             , Attr.type_ "radio"
             , Attr.checked value
+            , A11y_Widget.label "Matrix quiz answer"
+            , A11y_Role.radio
             , if open then
                 onClick <| Toggle row_id column_id
 
               else
                 Attr.disabled True
+            , A11y_Role.radio
             ]
             []
         ]
@@ -76,6 +81,8 @@ check open colorClass row_id column_id value =
             , Attr.class colorClass
             , Attr.type_ "checkbox"
             , Attr.checked value
+            , A11y_Widget.label "Matrix quiz answer"
+            , A11y_Role.checkBox
             , if open then
                 onClick <| Toggle row_id column_id
 
@@ -94,4 +101,4 @@ add_text config inline toRow =
         |> Html.map Script
         |> List.singleton
         |> List.append toRow
-        |> Html.tr [ Attr.class "lia-table__row lia-survey-matrix__row" ]
+        |> Html.tr [ Attr.class "lia-table__row lia-survey-matrix__row", A11y_Role.rowHeader ]
