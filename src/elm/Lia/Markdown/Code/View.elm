@@ -7,7 +7,9 @@ import Array
 import Conditional.List as CList
 import Html exposing (Html)
 import Html.Attributes as Attr
+import Html.Events as Event
 import Html.Keyed as Keyed
+import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Code.Editor as Editor
 import Lia.Markdown.Code.Log as Log exposing (Log)
@@ -47,7 +49,8 @@ view lang theme model code =
                                     , A11y_Role.log
                                     , A11y_Widget.label "terminal output"
                                     ]
-                                    [ view_result pro.log ]
+                                    [ view_result (Highlight id_1) pro.logSize pro.log
+                                    ]
                                 )
                     )
                 |> Maybe.withDefault [ Html.text "" ]
@@ -83,7 +86,7 @@ view lang theme model code =
                                   else
                                     Attr.class ""
                                 ]
-                                [ view_result project.log
+                                [ view_result (Evaluate id_1) project.logSize project.log
                                 , case project.terminal of
                                     Nothing ->
                                         Html.text ""
@@ -373,15 +376,20 @@ evaluate executable theme attr running ( id_1, id_2 ) file errors =
         []
 
 
-view_result : Log -> Html msg
-view_result log =
+view_result : Code -> Maybe String -> Log -> Html Msg
+view_result code height log =
     if Array.isEmpty log.messages then
         Html.text ""
 
     else
         Log.view log
-            |> Keyed.node "pre"
+            |> Keyed.node "lia-terminal"
                 [ Attr.class "lia-code-terminal__output"
+                , Resize code
+                    |> onChangeHeight
+                , height
+                    |> Maybe.map (JE.string >> Attr.property "height")
+                    |> Maybe.withDefault (Attr.class "")
                 , log.messages
                     |> Log.length
                     |> (*) 2
@@ -493,3 +501,11 @@ view_control lang idx version_active version_count running terminal =
                 [ Attr.class "lia-btn--transparent" ]
             ]
         ]
+
+
+onChangeHeight : (String -> msg) -> Html.Attribute msg
+onChangeHeight msg =
+    JD.string
+        |> JD.at [ "target", "height" ]
+        |> JD.map msg
+        |> Event.on "onchangeheight"
