@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.27
+version:  0.9.28
 language: en
 narrator: UK English Male
 
@@ -281,6 +281,11 @@ This will apply the following three patches:
 - elm-patch/dom: enable onclick events as well as innerHTML
 
 ## Version-Changes
+
+**0.9.28** (23/08/2021)
+
+- feat: Resizable terminal windows
+- fix(CORS): Changed CORS-proxy to allorigins.win
 
 **0.9.27** (17/08/2021)
 
