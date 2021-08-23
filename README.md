@@ -239,6 +239,8 @@ directly point to any Markdown-file anywhere within the web.
 
 ## Build
 
+Use the following commands to download the LiaScript source-code and to build it locally.
+
 ```bash
 git clone https://github.com/liascript/liascript
 
@@ -251,14 +253,21 @@ npm run watch  # develop in watch-mode
 npm run build  # build to dist
 ```
 
-In order to fix some elm-issues you can also apply the included patches:
+After your first build, you can run the following commands, this will download additional
+elm-patches and apply them:
 
 ```bash
-git submodule update --recursive
+git submodule update --init --recursive
 
 cd patches
 
 make
+
+cd .. # go back
+
+rm -rf elm-stuff .parcel-cache # remove all cached stuff 
+
+npm run build # force an entire rebuild of the project 
 ```
 
 This will apply the following three patches:
