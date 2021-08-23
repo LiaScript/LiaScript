@@ -52,6 +52,7 @@ type alias Project =
     , repository : Repo
     , evaluation : String
     , log : Log
+    , logSize : Maybe String
     , running : Bool
     , terminal : Maybe Terminal
     , attr : List Parameters
@@ -121,6 +122,7 @@ initProject fullscreen array comment output =
     , evaluation = comment
     , version_active = 0
     , log = output
+    , logSize = Nothing
     , running = False
     , terminal = Nothing
     , repository = Dict.fromList repository

@@ -29,6 +29,7 @@ type Msg
     | Last Int
     | UpdateTerminal Int Terminal.Msg
     | Handle Event
+    | Resize Code String
 
 
 handle : Event -> Msg
@@ -242,10 +243,30 @@ update scripts msg model =
                 |> Maybe.map (\p -> ( p, Event.stop idx ))
                 |> maybe_update idx model
 
+        Resize code height ->
+            ( case code of
+                Evaluate id ->
+                    { model | evaluate = onResize id height model.evaluate }
+
+                Highlight id ->
+                    { model | highlight = onResize id height model.highlight }
+            , []
+            )
+
         UpdateTerminal idx childMsg ->
             model
                 |> maybe_project idx (update_terminal (Event.input idx) childMsg)
                 |> maybe_update idx model
+
+
+onResize : Int -> String -> Array Project -> Array Project
+onResize id height code =
+    CArray.setWhen id
+        (code
+            |> Array.get id
+            |> Maybe.map (\pro -> { pro | logSize = Just height })
+        )
+        code
 
 
 update_terminal : (String -> Event) -> Terminal.Msg -> Project -> ( Project, List Event )

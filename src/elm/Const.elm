@@ -48,14 +48,14 @@ globalBreakpoints =
 intermediate proxy. This means, there will be a second trial to download the
 file, but not with the URL:
 
-    "https://cors-anywhere.herokuapp.com/" ++ "https://.../README.md"
+    "https://api.allorigins.win/raw?url=" ++ "https://.../README.md"
 
 [cors]: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
 
 -}
 urlProxy : String
 urlProxy =
-    "https://cors-anywhere.herokuapp.com/"
+    "https://api.allorigins.win/raw?url="
 
 
 urlLiascript : String
