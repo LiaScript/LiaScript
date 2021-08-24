@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.28
+version:  0.9.29
 language: en
 narrator: UK English Male
 
@@ -281,6 +281,10 @@ This will apply the following three patches:
 - elm-patch/dom: enable onclick events as well as innerHTML
 
 ## Version-Changes
+
+**0.9.29** (24/08/2012)
+
+- fix: Terminal-output now with whitespace pre behavior
 
 **0.9.28** (23/08/2021)
 
