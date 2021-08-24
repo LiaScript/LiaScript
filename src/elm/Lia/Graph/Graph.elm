@@ -8,6 +8,7 @@ module Lia.Graph.Graph exposing
     , getLinks
     , getNodeById
     , getNodes
+    , local
     , setSectionVisibility
     , toList
     , zip
@@ -15,7 +16,7 @@ module Lia.Graph.Graph exposing
 
 import Dict exposing (Dict)
 import Lia.Graph.Node as Node exposing (Node, Type(..))
-import Set exposing (Set)
+import Set
 
 
 type alias Graph =
@@ -103,6 +104,29 @@ getEdges fn =
                     |> List.map (Tuple.pair key)
             )
         >> List.concat
+
+
+local : Node -> Graph -> Graph
+local root graph =
+    let
+        id =
+            Node.identifier root
+
+        node =
+            getNodeById graph id |> Maybe.withDefault root
+    in
+    graph
+        |> Dict.filter (localFilter node id)
+        |> Dict.insert id node
+
+
+localFilter rootNode rootID id node =
+    case ( rootNode.data, node.data ) of
+        ( Node.Section rootData, Node.Section data ) ->
+            (data.parent == Just rootID) || (rootData.parent == Just id) || Set.member id rootNode.links || Set.member rootID node.links
+
+        _ ->
+            Set.member id rootNode.links || Set.member rootID node.links
 
 
 zip : Int -> Graph -> Graph

@@ -169,7 +169,9 @@ updateJson model =
     let
         graph =
             if not model.settings.showGlobalGraph then
-                ma
+                model.root
+                    |> Maybe.map (\root -> Graph.local root model.graph)
+                    |> Maybe.withDefault model.graph
 
             else if model.settings.indentation < 6 then
                 Graph.zip model.settings.indentation model.graph
