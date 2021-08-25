@@ -20,7 +20,7 @@ import Set exposing (Set)
 
 type Type
     = Hashtag
-    | Link String
+    | Reference String
     | Course String
     | Section
         { id : Int
@@ -44,8 +44,8 @@ identifier node =
         Section sec ->
             "sec: " ++ String.fromInt sec.id
 
-        Link url ->
-            "url: " ++ url
+        Reference url ->
+            "ref: " ++ url
 
         Course url ->
             "lia: " ++ url
@@ -76,7 +76,7 @@ category node =
         Hashtag ->
             1
 
-        Link _ ->
+        Reference _ ->
             2
 
         Section _ ->
@@ -98,11 +98,11 @@ equal node1 node2 =
         ( Section sec1, Section sec2 ) ->
             sec1.id == sec2.id
 
+        ( Reference url1, Reference url2 ) ->
+            url1 == url2
+
         ( Hashtag, Hashtag ) ->
             node1.name == node2.name
-
-        ( Link url1, Link url2 ) ->
-            url1 == url2
 
         ( Course lia1, Course lia2 ) ->
             lia1 == lia2
