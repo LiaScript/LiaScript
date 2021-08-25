@@ -44,10 +44,11 @@
     "build:webcomponentPublic": "rm -rf dist && npx parcel build --no-source-maps --public-url https://liascript.github.io/webcomponent/ src/entry/webcomponent/index.ts && rm dist/README.md"
   },
   "devDependencies": {
-    "@parcel/packager-raw-url": "^2.0.0-beta.2",
-    "@parcel/transformer-elm": "^2.0.0-beta.2",
-    "@parcel/transformer-sass": "^2.0.0-beta.2",
-    "@parcel/transformer-webmanifest": "^2.0.0-beta.2",
+    "@parcel/packager-raw-url": "^2.0.0-rc.0",
+    "@parcel/transformer-elm": "^2.0.0-rc.0",
+    "@parcel/transformer-image": "^2.0.0-rc.0",
+    "@parcel/transformer-sass": "^2.0.0-rc.0",
+    "@parcel/transformer-webmanifest": "^2.0.0-rc.0",
     "@typescript-eslint/eslint-plugin": "^4.14.0",
     "@typescript-eslint/parser": "^4.14.0",
     "ace-builds": "^1.4.12",
