@@ -56,7 +56,7 @@ addHashtag name =
 
 addLink : { name : String, url : String } -> Model -> Model
 addLink link =
-    rootConnect link.name (Link link.url)
+    rootConnect link.name (Reference link.url)
 
 
 addSection : Int -> Model -> Model
@@ -267,7 +267,7 @@ formatter node =
                     Hashtag ->
                         node.name
 
-                    Link url ->
+                    Reference url ->
                         node.name ++ ":<br/><a href='" ++ url ++ "'>" ++ url ++ "</a>"
 
                     Section _ ->

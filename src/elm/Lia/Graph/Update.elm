@@ -24,21 +24,24 @@ update : Session -> Msg -> Model -> ( Model, Cmd Msg )
 update session msg model =
     case msg of
         Clicked obj ->
-            case
-                obj
-                    |> getNode model
-                    |> Maybe.map .data
-            of
+            let
+                node =
+                    getNode model obj
+            in
+            case Maybe.map .data node of
                 Just (Section sec) ->
                     ( model, Session.navToSlide session sec.id )
 
-                Just (Link url) ->
+                Just (Reference url) ->
                     ( model
                     , url
                         |> Url.fromString
                         |> Maybe.map Session.load
                         |> Maybe.withDefault Cmd.none
                     )
+
+                Just Hashtag ->
+                    ( { model | root = node }, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
