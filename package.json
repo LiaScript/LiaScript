@@ -59,7 +59,7 @@
     "elm": "^0.19.1-5",
     "elm-hot": "^1.1.6",
     "elm-test": "^0.19.1-revision6",
-    "eslint": "^7.29.0",
+    "eslint": "^7.32.0",
     "fs": "^0.0.1-security",
     "gulp": "^4.0.2",
     "gulp-consolidate": "^0.2.0",
@@ -69,13 +69,13 @@
     "lodash": "^4.17.21",
     "logger.ts": "^1.0.5",
     "node-elm-compiler": "^5.0.6",
-    "parcel": "^2.0.0-beta.2",
+    "parcel": "^2.0.0-rc.0",
     "parcel-reporter-multiple-static-file-copier": "^1.0.5",
-    "sass": "^1.38.0",
+    "sass": "^1.38.1",
     "simplify-scorm": "0.0.1",
     "tsc": "^2.0.3",
     "typescript": "^4.3.5",
-    "workbox-cli": "^6.1.5"
+    "workbox-cli": "^6.2.4"
   },
   "browserslist": [
     "cover 80.0%"
