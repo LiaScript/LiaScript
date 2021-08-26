@@ -234,7 +234,7 @@ class LiaScript {
     this.app = Elm.Main.init({
       node: elem,
       flags: {
-        courseUrl: courseUrl,
+        courseUrl: window.liaDefaultCourse || courseUrl,
         script: script,
         settings: connector.getSettings(),
         screen: {
