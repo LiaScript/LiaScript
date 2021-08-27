@@ -31,12 +31,14 @@ export type Settings = {
 type Mode = 'Slides' | 'Presentation' | 'Textbook'
 
 type Lang =
+  | 'ar'
   | 'bg'
   | 'de'
   | 'en'
   | 'es'
   | 'fa'
   | 'hy'
+  | 'ko'
   | 'nl'
   | 'ru'
   | 'tw'

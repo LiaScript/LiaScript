@@ -15,6 +15,7 @@ type Lang
     | Es
     | Fa
     | Hy
+    | Ko
     | Nl
     | Ru
     | Tw
@@ -46,6 +47,9 @@ getLnFromCode code =
 
         "hy" ->
             Just Hy
+
+        "ko" ->
+            Just Ko
 
         "nl" ->
             Just Nl
@@ -92,6 +96,9 @@ getCodeFromLn lang =
         Hy ->
             "hy"
 
+        Ko ->
+            "ko"
+
         Nl ->
             "nl"
 
@@ -131,6 +138,9 @@ baseNext lang =
 
         Hy ->
             "հաջորդը"
+
+        Ko ->
+            "다음"
 
         Nl ->
             "verder"
@@ -172,6 +182,9 @@ basePrev lang =
         Hy ->
             "նախորդը"
 
+        Ko ->
+            "이전"
+
         Nl ->
             "terug"
 
@@ -211,6 +224,9 @@ baseFont lang str0 =
 
         Hy ->
             "Տառատեսակի չափը ՝ " ++ str0 ++ ""
+
+        Ko ->
+            "글꼴 크기: " ++ str0 ++ ""
 
         Nl ->
             "Lettergrootte: " ++ str0 ++ ""
@@ -252,6 +268,9 @@ baseSize1 lang =
         Hy ->
             "փոքր"
 
+        Ko ->
+            "작게"
+
         Nl ->
             "klein"
 
@@ -291,6 +310,9 @@ baseSize2 lang =
 
         Hy ->
             "միջին"
+
+        Ko ->
+            "보통"
 
         Nl ->
             "medium"
@@ -332,6 +354,9 @@ baseSize3 lang =
         Hy ->
             "մեծ"
 
+        Ko ->
+            "크게"
+
         Nl ->
             "groot"
 
@@ -371,6 +396,9 @@ baseSearch lang =
 
         Hy ->
             "փնտրել"
+
+        Ko ->
+            "찾기"
 
         Nl ->
             "zoek"
@@ -412,6 +440,9 @@ baseDelete lang =
         Hy ->
             "ջնջել որոնումը"
 
+        Ko ->
+            "입력 내용 지우기"
+
         Nl ->
             "Duidelijke zoek"
 
@@ -451,6 +482,9 @@ baseResults lang =
 
         Hy ->
             "արդյունքներ"
+
+        Ko ->
+            "결과"
 
         Nl ->
             "Resultaten"
@@ -492,6 +526,9 @@ baseOneResult lang =
         Hy ->
             "մեկ արդյունք"
 
+        Ko ->
+            "단일 결과"
+
         Nl ->
             "een resultaat"
 
@@ -531,6 +568,9 @@ baseNoResult lang =
 
         Hy ->
             "արդյունք չկա"
+
+        Ko ->
+            "결과 없음"
 
         Nl ->
             "Geen resultaten"
@@ -572,6 +612,9 @@ baseToc lang =
         Hy ->
             "բովանդակություն"
 
+        Ko ->
+            "목차"
+
         Nl ->
             "Inhoudsopgave"
 
@@ -611,6 +654,9 @@ baseShow lang =
 
         Hy ->
             "ցույց տալ"
+
+        Ko ->
+            "보이기"
 
         Nl ->
             "tonen"
@@ -652,6 +698,9 @@ baseHide lang =
         Hy ->
             "թաքցնել"
 
+        Ko ->
+            "감추기"
+
         Nl ->
             "verbergen"
 
@@ -691,6 +740,9 @@ baseLang lang =
 
         Hy ->
             "հայերեն"
+
+        Ko ->
+            "한국어"
 
         Nl ->
             "Nederlands"
@@ -732,6 +784,9 @@ no_translation lang =
         Hy ->
             "դեռ թագմանություն չկա"
 
+        Ko ->
+            "번역되지 않음"
+
         Nl ->
             "noch geen vertaling aanwezig"
 
@@ -771,6 +826,9 @@ translateWithGoogle lang =
 
         Hy ->
             "Թարգմանեք Google- ի միջոցով (փորձնական)"
+
+        Ko ->
+            "Google 번역을 사용한 번역 결과 (실험적 기능)"
 
         Nl ->
             "Vertalen met Google (experimenteel)"
@@ -812,6 +870,9 @@ cColor lang =
         Hy ->
             "գույն"
 
+        Ko ->
+            "색상"
+
         Nl ->
             "kleur"
 
@@ -851,6 +912,9 @@ cSchema lang =
 
         Hy ->
             "Գունային սխեման"
+
+        Ko ->
+            "색상 스키마"
 
         Nl ->
             "Kleurenschema"
@@ -892,6 +956,9 @@ cDark lang =
         Hy ->
             "մուգ"
 
+        Ko ->
+            "어두움"
+
         Nl ->
             "donker"
 
@@ -931,6 +998,9 @@ cBright lang =
 
         Hy ->
             "բաց"
+
+        Ko ->
+            "밝음"
 
         Nl ->
             "licht"
@@ -972,6 +1042,9 @@ cDefault lang =
         Hy ->
             "կանխադրված"
 
+        Ko ->
+            "기본"
+
         Nl ->
             "standaard"
 
@@ -1011,6 +1084,9 @@ cBlue lang =
 
         Hy ->
             "կապույտ"
+
+        Ko ->
+            "파랑"
 
         Nl ->
             "blauw"
@@ -1052,6 +1128,9 @@ cRed lang =
         Hy ->
             "կարմիր"
 
+        Ko ->
+            "빨강"
+
         Nl ->
             "rood"
 
@@ -1091,6 +1170,9 @@ cYellow lang =
 
         Hy ->
             "դեղին"
+
+        Ko ->
+            "노랑"
 
         Nl ->
             "geel"
@@ -1132,6 +1214,9 @@ cTurquoise lang =
         Hy ->
             "փիրուզագույն"
 
+        Ko ->
+            "청록"
+
         Nl ->
             "turkoois"
 
@@ -1171,6 +1256,9 @@ modeMode lang =
 
         Hy ->
             "Ներկայացման ռեժիմ"
+
+        Ko ->
+            "프레젠테이션 모드"
 
         Nl ->
             "Presentatiemodus"
@@ -1212,6 +1300,9 @@ modeTextbook lang =
         Hy ->
             "գիրք"
 
+        Ko ->
+            "텍스트 북"
+
         Nl ->
             "Studieboek"
 
@@ -1251,6 +1342,9 @@ modePresentation lang =
 
         Hy ->
             "ներկայացում"
+
+        Ko ->
+            "프레젠테이션"
 
         Nl ->
             "Presentatie"
@@ -1292,6 +1386,9 @@ modeSlides lang =
         Hy ->
             "սլայդներ"
 
+        Ko ->
+            "슬라이드"
+
         Nl ->
             "Folies"
 
@@ -1331,6 +1428,9 @@ soundOn lang =
 
         Hy ->
             "ձայնով"
+
+        Ko ->
+            "소리 켬"
 
         Nl ->
             "Luidspreker aan"
@@ -1372,6 +1472,9 @@ soundOff lang =
         Hy ->
             "առանց ձայն"
 
+        Ko ->
+            "소리 끔"
+
         Nl ->
             "Luidspreker uit"
 
@@ -1411,6 +1514,9 @@ infoAuthor lang =
 
         Hy ->
             "հեղինակ: "
+
+        Ko ->
+            "저자: "
 
         Nl ->
             "Auteur: "
@@ -1452,6 +1558,9 @@ infoDate lang =
         Hy ->
             "ամսաթիվ: "
 
+        Ko ->
+            "날짜: "
+
         Nl ->
             "Datum: "
 
@@ -1491,6 +1600,9 @@ infoEmail lang =
 
         Hy ->
             "էլ․ փոստ: "
+
+        Ko ->
+            "메일: "
 
         Nl ->
             "e-email: "
@@ -1532,6 +1644,9 @@ infoVersion lang =
         Hy ->
             "տարբերակ: "
 
+        Ko ->
+            "버전: "
+
         Nl ->
             "Versie: "
 
@@ -1571,6 +1686,9 @@ confInformation lang =
 
         Hy ->
             "ինֆորմացիա"
+
+        Ko ->
+            "정보"
 
         Nl ->
             "Informatie"
@@ -1612,6 +1730,9 @@ confSettings lang =
         Hy ->
             "կարգավորումներ"
 
+        Ko ->
+            "설정"
+
         Nl ->
             "Instellingen"
 
@@ -1651,6 +1772,9 @@ confShare lang =
 
         Hy ->
             "կիսվել"
+
+        Ko ->
+            "공유"
 
         Nl ->
             "Delen"
@@ -1692,6 +1816,9 @@ confTranslations lang =
         Hy ->
             "թարգմանություններ"
 
+        Ko ->
+            "번역"
+
         Nl ->
             "Vertalingen"
 
@@ -1731,6 +1858,9 @@ codeExecute lang =
 
         Hy ->
             "իրականացնել"
+
+        Ko ->
+            "실행"
 
         Nl ->
             "uitvoeren"
@@ -1772,6 +1902,9 @@ codeRunning lang =
         Hy ->
             "ընթանում է"
 
+        Ko ->
+            "실행 중"
+
         Nl ->
             "wordt uitgevoerd"
 
@@ -1811,6 +1944,9 @@ codePrev lang =
 
         Hy ->
             "նախորդ տարբերակը"
+
+        Ko ->
+            "이전 버전"
 
         Nl ->
             "een versie terug"
@@ -1852,6 +1988,9 @@ codeNext lang =
         Hy ->
             "հաջորդ տարբերակը"
 
+        Ko ->
+            "다음 버전"
+
         Nl ->
             "een versie vooruit"
 
@@ -1891,6 +2030,9 @@ codeFirst lang =
 
         Hy ->
             "առաջին տարբերակը"
+
+        Ko ->
+            "첫 버전"
 
         Nl ->
             "eerste versie"
@@ -1932,6 +2074,9 @@ codeLast lang =
         Hy ->
             "վերջին տարբերակը"
 
+        Ko ->
+            "최신 버전"
+
         Nl ->
             "laatste versie"
 
@@ -1971,6 +2116,9 @@ codeMinimize lang =
 
         Hy ->
             "նվազեցնել տեսքը"
+
+        Ko ->
+            "뷰 최소화"
 
         Nl ->
             "weergave verkleinen"
@@ -2012,6 +2160,9 @@ codeMaximize lang =
         Hy ->
             "բարձրագունել տեսքը"
 
+        Ko ->
+            "뷰 최대화"
+
         Nl ->
             "weergave maximaliseren"
 
@@ -2051,6 +2202,9 @@ quizCheck lang =
 
         Hy ->
             "ստուգել"
+
+        Ko ->
+            "확인"
 
         Nl ->
             "bekijk"
@@ -2092,6 +2246,9 @@ quizSolution lang =
         Hy ->
             "ցույց տալ լուծումը"
 
+        Ko ->
+            "정답 보기"
+
         Nl ->
             "toon oplossing"
 
@@ -2131,6 +2288,9 @@ quizHint lang =
 
         Hy ->
             "ցուցադրել ակնարկ"
+
+        Ko ->
+            "힌트 보기"
 
         Nl ->
             "toon hint"
@@ -2172,6 +2332,9 @@ quizAnswerSuccess lang =
         Hy ->
             "Շնորհավորում եմ, դա ճիշտ պատասխանն էր"
 
+        Ko ->
+            "축하합니다. 올바른 답을 선택했습니다."
+
         Nl ->
             "Gefeliciteerd, dat was het juiste antwoord"
 
@@ -2211,6 +2374,9 @@ quizAnswerError lang =
 
         Hy ->
             "Դա ճիշտ պատասխան չէ"
+
+        Ko ->
+            "선택한 답은 올바르지 않습니다."
 
         Nl ->
             "Dat is niet het juiste antwoord"
@@ -2252,6 +2418,9 @@ quizAnswerResolved lang =
         Hy ->
             "Լուծված պատասխան"
 
+        Ko ->
+            "이미 푼 퀴즈입니다."
+
         Nl ->
             "Opgelost antwoord"
 
@@ -2291,6 +2460,9 @@ surveySubmit lang =
 
         Hy ->
             "ներկայացնել"
+
+        Ko ->
+            "제출"
 
         Nl ->
             "Verzenden"
@@ -2332,6 +2504,9 @@ surveySubmitted lang =
         Hy ->
             "շնորհակալություն"
 
+        Ko ->
+            "감사합니다"
+
         Nl ->
             "Vriendelijk bedankt"
 
@@ -2372,6 +2547,9 @@ surveyText lang =
         Hy ->
             "Մուտքագրեք որոշ տեքստ"
 
+        Ko ->
+            "내용을 입력해주세요."
+
         Nl ->
             "Tekstinvoer ..."
 
@@ -2403,6 +2581,9 @@ sortAsc lang =
         Es ->
             "orden ascendente"
 
+        Ko ->
+            "오름차순 정렬"
+
         Nl ->
             "oplopend sorteren"
 
@@ -2427,6 +2608,9 @@ sortDesc lang =
 
         Es ->
             "orden descendiente"
+
+        Ko ->
+            "내림차순 정렬"
 
         Nl ->
             "sorteer aflopend"
@@ -2453,6 +2637,9 @@ sortNot lang =
         Es ->
             "no ordenado"
 
+        Ko ->
+            "정렬 안 됨"
+
         Nl ->
             "niet gesorteerd"
 
@@ -2475,6 +2662,9 @@ chartPie lang =
         De ->
             "Tortendiagramm"
 
+        Ko ->
+            "파이 차트"
+
         Tw ->
             "饼图"
 
@@ -2493,6 +2683,9 @@ chartBar lang =
 
         De ->
             "Balkendiagramm"
+
+        Ko ->
+            "바 차트"
 
         Tw ->
             "柱状图"
@@ -2513,6 +2706,9 @@ chartLine lang =
         De ->
             "Liniendiagramm"
 
+        Ko ->
+            "라인 차트"
+
         Tw ->
             "折线图"
 
@@ -2531,6 +2727,9 @@ chartScatter lang =
 
         De ->
             "Streudiagramm"
+
+        Ko ->
+            "분포도"
 
         Tw ->
             "散点图"
@@ -2551,6 +2750,9 @@ chartEffectScatter lang =
         De ->
             "Welligkeits-Streudiagramm"
 
+        Ko ->
+            "리플 분포도"
+
         Tw ->
             "涟漪散点图"
 
@@ -2569,6 +2771,9 @@ chartRadar lang =
 
         De ->
             "Radar-Karte"
+
+        Ko ->
+            "레이더 차트"
 
         Tw ->
             "雷达图"
@@ -2589,6 +2794,9 @@ chartTree lang =
         De ->
             "Baum"
 
+        Ko ->
+            "트리"
+
         Tw ->
             "树图"
 
@@ -2607,6 +2815,9 @@ chartTreemap lang =
 
         De ->
             "Baumkarte"
+
+        Ko ->
+            "트리맵"
 
         Tw ->
             "矩形树图"
@@ -2627,6 +2838,9 @@ chartK lang =
         De ->
             "K Liniendiagramm"
 
+        Ko ->
+            "K 라인 차트"
+
         Tw ->
             "K线图"
 
@@ -2645,6 +2859,9 @@ chartHeatmap lang =
 
         De ->
             "Heatmap"
+
+        Ko ->
+            "히트 맵"
 
         Tw ->
             "热力图"
@@ -2665,6 +2882,9 @@ chartMap lang =
         De ->
             "Karte"
 
+        Ko ->
+            "맵"
+
         Tw ->
             "地图"
 
@@ -2683,6 +2903,9 @@ chartParallel lang =
 
         De ->
             "Parallele Koordinatenkarte"
+
+        Ko ->
+            "평행 좌표 맵"
 
         Tw ->
             "平行坐标图"
@@ -2703,6 +2926,9 @@ chartLines lang =
         De ->
             "Liniendiagramm"
 
+        Ko ->
+            "선 그래프"
+
         Tw ->
             "线图"
 
@@ -2721,6 +2947,9 @@ chartGraph lang =
 
         De ->
             "Beziehungsgrafik"
+
+        Ko ->
+            "관계도"
 
         Tw ->
             "关系图"
@@ -2741,6 +2970,9 @@ chartSankey lang =
         De ->
             "Sankey-Diagramm"
 
+        Ko ->
+            "생키 다이어그램"
+
         Tw ->
             "桑基图"
 
@@ -2759,6 +2991,9 @@ chartFunnel lang =
 
         De ->
             "Trichterdiagramm"
+
+        Ko ->
+            "퍼널 차트"
 
         Tw ->
             "漏斗图"
@@ -2779,6 +3014,9 @@ chartPictorialBar lang =
         De ->
             "Bildlicher Balken"
 
+        Ko ->
+            "픽토리얼 바"
+
         Tw ->
             "象形柱图"
 
@@ -2794,6 +3032,9 @@ chartBoxplot lang =
     case lang of 
         De ->
             "Boxplot"
+
+        Ko ->
+            "상자 그림"
 
         Tw ->
             "箱型图"
@@ -2811,6 +3052,9 @@ chartCandlestick lang =
         De ->
             "Kerzenständer"
 
+        Ko ->
+            "캔들스틱 차트"
+
         Tw ->
             "K线图"
 
@@ -2826,6 +3070,9 @@ chartGauge lang =
     case lang of 
         De ->
             "Meßanzeige"
+
+        Ko ->
+            "게이지"
 
         Tw ->
             "仪表盘图"
@@ -2843,6 +3090,9 @@ chartThemeRiver lang =
         De ->
             "Thematische Flusskarte"
 
+        Ko ->
+            "테마 리버 맵"
+
         Tw ->
             "主题河流图"
 
@@ -2858,6 +3108,9 @@ chartSunburst lang =
     case lang of 
         De ->
             "Sonnenausbruch"
+
+        Ko ->
+            "선버스트 차트"
 
         Tw ->
             "旭日图"
