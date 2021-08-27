@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.29
+version:  0.9.30
 language: en
 narrator: UK English Male
 
@@ -282,7 +282,12 @@ This will apply the following three patches:
 
 ## Version-Changes
 
-**0.9.29** (24/08/2012)
+**0.9.30** (27/08/2021)
+
+- Add korean translation `language: ko`
+- Updated build to newer parcel.rc
+
+**0.9.29** (24/08/2021)
 
 - fix: Terminal-output now with whitespace pre behavior
 
