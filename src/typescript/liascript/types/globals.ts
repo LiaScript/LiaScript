@@ -3,6 +3,7 @@ import Lia from './lia.d'
 declare global {
   interface Window {
     debug__?: boolean
+    liaDefaultCourse?: string
     event_semaphore: number
 
     playback: (_: Lia.Event) => void
