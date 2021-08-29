@@ -353,7 +353,7 @@ viewEditorTheme lang tabbable theme =
         [ Html.label [ Attr.class "lia-label", A11y_Widget.hidden (not tabbable) ]
             [ Html.span [] [ Html.text "Editor:" ]
             , Html.select
-                [ Attr.class "lia-select d-block"
+                [ Attr.class "lia-select"
                 , onInput ChangeEditor
                 , A11y_Key.tabbable tabbable
                 ]
