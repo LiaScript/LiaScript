@@ -1,6 +1,8 @@
 .lia-fontscale {
   display: flex;
   align-items: center;
+  width: 100%;
+  justify-content: space-between;
 
   > *:not(:last-child) {
     margin-right: 1rem;

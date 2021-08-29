@@ -227,6 +227,7 @@ fontButton tabbable size i title =
 
             else
                 ""
+        , A11y_Widget.checked (Just (size == i))
         ]
         [ Html.span (noTranslate []) [ Html.text "A" ] ]
 
