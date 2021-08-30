@@ -214,6 +214,8 @@ input[type="search"]::-webkit-search-results-decoration {
     margin-left: 0.4rem;
     display: flex;
     padding: 0.4rem 0;
+    width: 100%;
+    justify-content: space-evenly;
 
     > *:not(:last-child) {
       margin-right: 0.75rem;

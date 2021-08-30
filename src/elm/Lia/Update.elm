@@ -152,7 +152,14 @@ update session msg model =
         UpdateSettings childMsg ->
             let
                 ( settings, cmd, events ) =
-                    Settings.update childMsg model.settings
+                    Settings.update
+                        (Just
+                            { title = model.title
+                            , comment = model.definition.comment
+                            }
+                        )
+                        childMsg
+                        model.settings
             in
             ( { model | settings = settings }
             , Cmd.map UpdateSettings cmd

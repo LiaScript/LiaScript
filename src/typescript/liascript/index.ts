@@ -635,7 +635,7 @@ function process(
     case Port.SHARE: {
       try {
         if (navigator.share) {
-          navigator.share(event.message.message)
+          navigator.share(event.message)
         }
       } catch (e) {
         log.error('sharing was not possible => ', event.message, e)

@@ -31,7 +31,7 @@ type Msg
     | Delete String
     | Reset String (Maybe String)
     | Restore String (Maybe String)
-    | Share String String String
+    | Share { title : String, text : String, url : String }
     | Handle JD.Value
     | Activate String (Maybe String)
     | NoOp
@@ -175,10 +175,10 @@ update msg settings model =
                 , []
                 )
 
-            Share title text url ->
+            Share site ->
                 ( model
                 , Cmd.none
-                , [ share title text url ]
+                , [ share site ]
                 )
 
             LoadCourse url ->
@@ -194,7 +194,7 @@ updateSettings msg settings ( model, cmd, events ) =
         UpdateSettings subMsg ->
             let
                 ( newSettings, newCmd, newEvents ) =
-                    Settings.update subMsg settings
+                    Settings.update Nothing subMsg settings
             in
             ( newSettings
             , ( model
