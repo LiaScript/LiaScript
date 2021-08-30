@@ -68,6 +68,7 @@ text solution state =
         , Attr.disabled (not <| Solution.isOpen solution)
         , onInput Input
         , blockKeydown (Input state)
+        , A11y_Widget.label "quiz answer"
         ]
         []
 
@@ -82,13 +83,12 @@ select config solution open options i =
 
           else
             Attr.disabled True
-        , A11y_Role.list
-        , A11y_Widget.hidden False
-        -- , A11y_Key.onKeyDown [ A11y_Key.enter Toggle ]
         ]
         [ Html.span
             [ Attr.class "lia-dropdown__selected"
-            , A11y_Role.listItem
+            , A11y_Widget.hidden False
+            , A11y_Role.button
+            , A11y_Widget.expanded open
             ]
             [ get_option config i options
             , Html.i
@@ -100,6 +100,7 @@ select config solution open options i =
                             else
                                 " icon-chevron-down"
                            )
+                , A11y_Role.button
                 ]
                 []
             ]
@@ -128,6 +129,7 @@ option config id =
             , id
                 |> Choose
                 |> onClick
+            , A11y_Role.listItem
             ]
 
 
@@ -144,4 +146,4 @@ get_option config id list =
             get_option config (i - 1) xs
 
         ( _, [] ) ->
-            Html.span [] [ Html.text "choose" ]
+            Html.span [ ] [ Html.text "choose" ]
