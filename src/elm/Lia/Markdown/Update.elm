@@ -11,6 +11,7 @@ port module Lia.Markdown.Update exposing
     )
 
 import Json.Encode as JE
+import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Code.Update as Code
 import Lia.Markdown.Effect.Model as E
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
@@ -54,8 +55,8 @@ send name =
     List.map (Tuple.pair name)
 
 
-update : Msg -> Section -> ( Section, Cmd Msg, List ( String, JE.Value ) )
-update msg section =
+update : Definition -> Msg -> Section -> ( Section, Cmd Msg, List ( String, JE.Value ) )
+update globals msg section =
     case msg of
         UpdateEffect sound childMsg ->
             let
@@ -63,6 +64,13 @@ update msg section =
                     Effect.update
                         { update = subUpdate
                         , handle = subHandle
+                        , globals =
+                            case section.definition of
+                                Nothing ->
+                                    Just globals
+
+                                _ ->
+                                    section.definition
                         }
                         sound
                         childMsg
@@ -178,7 +186,7 @@ subUpdate js msg section =
                 UpdateEffect sound childMsg ->
                     let
                         ( effect_model, cmd, event ) =
-                            Effect.update { update = subUpdate, handle = subHandle } sound childMsg subsection.effect_model
+                            Effect.update { update = subUpdate, handle = subHandle, globals = Nothing } sound childMsg subsection.effect_model
                     in
                     ( SubSection { subsection | effect_model = effect_model }
                     , Cmd.map (UpdateEffect sound) cmd
@@ -270,7 +278,7 @@ subUpdate js msg section =
                 Script childMsg ->
                     let
                         ( effect_model, cmd, _ ) =
-                            Effect.updateSub { update = subUpdate, handle = subHandle } childMsg subsection.effect_model
+                            Effect.updateSub { update = subUpdate, handle = subHandle, globals = Nothing } childMsg subsection.effect_model
                     in
                     ( SubSection { subsection | effect_model = effect_model }
                     , Cmd.map (UpdateEffect True) cmd
@@ -285,7 +293,7 @@ subUpdate js msg section =
                 Script childMsg ->
                     let
                         ( effect_model, cmd, _ ) =
-                            Effect.updateSub { update = subUpdate, handle = subHandle } childMsg sub.effect_model
+                            Effect.updateSub { update = subUpdate, handle = subHandle, globals = Nothing } childMsg sub.effect_model
                     in
                     ( SubSubSection { sub | effect_model = effect_model }
                     , Cmd.map (UpdateEffect True) cmd
@@ -295,7 +303,7 @@ subUpdate js msg section =
                 UpdateEffect sound childMsg ->
                     let
                         ( effect_model, cmd, event ) =
-                            Effect.update { update = subUpdate, handle = subHandle } sound childMsg sub.effect_model
+                            Effect.update { update = subUpdate, handle = subHandle, globals = Nothing } sound childMsg sub.effect_model
                     in
                     ( SubSubSection { sub | effect_model = effect_model }
                     , Cmd.map (UpdateEffect sound) cmd
@@ -320,7 +328,7 @@ updateScript msg ( section, cmd, events ) =
         Just sub ->
             let
                 ( effect_model, cmd2, event ) =
-                    Effect.updateSub { update = subUpdate, handle = subHandle } sub section.effect_model
+                    Effect.updateSub { update = subUpdate, handle = subHandle, globals = Nothing } sub section.effect_model
             in
             ( { section | effect_model = effect_model }
             , Cmd.batch [ cmd, Cmd.map (UpdateEffect True) cmd2 ]
@@ -330,19 +338,19 @@ updateScript msg ( section, cmd, events ) =
             )
 
 
-nextEffect : Bool -> Section -> ( Section, Cmd Msg, List ( String, JE.Value ) )
-nextEffect sound =
-    update (UpdateEffect sound Effect.next)
+nextEffect : Definition -> Bool -> Section -> ( Section, Cmd Msg, List ( String, JE.Value ) )
+nextEffect globals sound =
+    update globals (UpdateEffect sound Effect.next)
 
 
-previousEffect : Bool -> Section -> ( Section, Cmd Msg, List ( String, JE.Value ) )
-previousEffect sound =
-    update (UpdateEffect sound Effect.previous)
+previousEffect : Definition -> Bool -> Section -> ( Section, Cmd Msg, List ( String, JE.Value ) )
+previousEffect globals sound =
+    update globals (UpdateEffect sound Effect.previous)
 
 
-initEffect : Bool -> Bool -> Section -> ( Section, Cmd Msg, List ( String, JE.Value ) )
-initEffect run_all_javascript sound =
-    update (UpdateEffect sound (Effect.init run_all_javascript))
+initEffect : Definition -> Bool -> Bool -> Section -> ( Section, Cmd Msg, List ( String, JE.Value ) )
+initEffect globals run_all_javascript sound =
+    update globals (UpdateEffect sound (Effect.init run_all_javascript))
 
 
 subHandle : Scripts SubSection -> JE.Value -> SubSection -> ( SubSection, Cmd Msg, List ( String, JE.Value ) )
@@ -377,23 +385,23 @@ subHandle js json section =
             ( section, Cmd.none, [] )
 
 
-handle : String -> Event -> Section -> ( Section, Cmd Msg, List ( String, JE.Value ) )
-handle topic event section =
+handle : Definition -> String -> Event -> Section -> ( Section, Cmd Msg, List ( String, JE.Value ) )
+handle globals topic event section =
     case topic of
         "code" ->
-            update (UpdateCode (Code.handle event)) section
+            update globals (UpdateCode (Code.handle event)) section
 
         "quiz" ->
-            update (UpdateQuiz (Quiz.handle event)) section
+            update globals (UpdateQuiz (Quiz.handle event)) section
 
         "survey" ->
-            update (UpdateSurvey (Survey.handle event)) section
+            update globals (UpdateSurvey (Survey.handle event)) section
 
         "effect" ->
-            update (UpdateEffect True (Effect.handle event)) section
+            update globals (UpdateEffect True (Effect.handle event)) section
 
         "task" ->
-            update (UpdateTask (Task.handle event)) section
+            update globals (UpdateTask (Task.handle event)) section
 
         _ ->
             ( section, Cmd.none, [] )

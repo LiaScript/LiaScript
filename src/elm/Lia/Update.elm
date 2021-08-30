@@ -220,7 +220,7 @@ update session msg model =
                         ( Just sec, Ok e ) ->
                             let
                                 ( sec_, cmd_, events ) =
-                                    Markdown.handle event.topic e sec
+                                    Markdown.handle model.definition event.topic e sec
                             in
                             ( { model | sections = Array.set event.section sec_ model.sections }
                             , Cmd.map UpdateMarkdown cmd_
@@ -271,7 +271,7 @@ update session msg model =
                 ( UpdateMarkdown childMsg, Just sec ) ->
                     let
                         ( section, cmd_, log_ ) =
-                            Markdown.update childMsg sec
+                            Markdown.update model.definition childMsg sec
                     in
                     ( set_active_section model section
                     , Cmd.map UpdateMarkdown cmd_
@@ -288,7 +288,7 @@ update session msg model =
                     else
                         let
                             ( sec_, cmd_, log_ ) =
-                                Markdown.nextEffect model.settings.sound sec
+                                Markdown.nextEffect model.definition model.settings.sound sec
                         in
                         ( set_active_section model sec_
                         , Cmd.map UpdateMarkdown cmd_
@@ -302,7 +302,7 @@ update session msg model =
                     else
                         let
                             ( sec_, cmd_, log_ ) =
-                                Markdown.previousEffect model.settings.sound sec
+                                Markdown.previousEffect model.definition model.settings.sound sec
                         in
                         ( set_active_section model sec_
                         , Cmd.map UpdateMarkdown cmd_
@@ -314,10 +314,10 @@ update session msg model =
                         ( sec_, cmd_, log_ ) =
                             case model.settings.mode of
                                 Textbook ->
-                                    Markdown.initEffect True False sec
+                                    Markdown.initEffect model.definition True False sec
 
                                 _ ->
-                                    Markdown.initEffect False model.settings.sound sec
+                                    Markdown.initEffect model.definition False model.settings.sound sec
                     in
                     ( set_active_section { model | to_do = [] } sec_
                     , Cmd.map UpdateMarkdown cmd_
@@ -336,7 +336,7 @@ update session msg model =
                                 sec.effect_model
 
                             ( sec_, cmd_, log_ ) =
-                                Markdown.nextEffect model.settings.sound { sec | effect_model = { effect | visible = id - 1 } }
+                                Markdown.nextEffect model.definition model.settings.sound { sec | effect_model = { effect | visible = id - 1 } }
                         in
                         ( set_active_section model sec_
                         , Cmd.map UpdateMarkdown cmd_
