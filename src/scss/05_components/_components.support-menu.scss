@@ -158,7 +158,7 @@
     position: relative;
     right: 0;
     top: 0;
-    width: auto;
+    width: max-content;
 
     @at-root html.lia-variant-dark & {
       background-color: rgb(var(--lia-grey-dark));
@@ -188,7 +188,7 @@
 
     @include breakpoint("md") {
       border-radius: $global-radius;
-      box-shadow: 0 0 1rem rgba(0, 0, 0, 0.1);
+      box-shadow: 0 0 1rem rgba(128, 128, 128, 0.2);
       display: none;
       max-width: 30rem;
       padding: 1.4rem;

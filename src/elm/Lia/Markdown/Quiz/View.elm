@@ -194,7 +194,7 @@ quiz with the solution state. The number of trials is automatically added.
 viewMainButton : Config sub -> Int -> Solution -> Msg sub -> Html (Msg sub)
 viewMainButton config trials solution msg =
     btn
-        { title = "check your solution"
+        { title = ""
         , msg =
             if solution == Solution.Open then
                 Just msg

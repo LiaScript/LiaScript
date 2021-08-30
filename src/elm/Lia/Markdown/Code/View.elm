@@ -47,7 +47,7 @@ view lang theme model code =
                                 (Html.div
                                     [ Attr.class "lia-code-terminal"
                                     , A11y_Role.log
-                                    , A11y_Widget.label "terminal output"
+                                    , A11y_Widget.label (Translations.codeTerminal lang)
                                     ]
                                     [ view_result (Highlight id_1) pro.logSize pro.log
                                     ]
@@ -79,7 +79,7 @@ view lang theme model code =
                             , Html.div
                                 [ Attr.class "lia-code-terminal"
                                 , A11y_Role.log
-                                , A11y_Widget.label "terminal output"
+                                , A11y_Widget.label (Translations.codeTerminal lang)
                                 , if project.running then
                                     A11y_Live.livePolite
 

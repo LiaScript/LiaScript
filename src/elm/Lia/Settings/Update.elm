@@ -8,10 +8,14 @@ module Lia.Settings.Update exposing
     )
 
 import Json.Encode as JE
+import Lia.Markdown.Effect.Parser exposing (comment)
+import Lia.Markdown.Inline.Stringify exposing (stringify)
+import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Settings.Json as Json
 import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
 import Lia.Utils exposing (focus)
 import Port.Event exposing (Event)
+import Port.Share
 import Port.TTS as TTS
 
 
@@ -24,7 +28,7 @@ type Msg
     | SwitchMode Mode
     | Reset
     | Handle Event
-    | ShareCourse Event
+    | ShareCourse String
     | Ignore
 
 
@@ -37,8 +41,8 @@ type Toggle
     | TranslateWithGoogle
 
 
-update : Msg -> Settings -> ( Settings, Cmd Msg, List Event )
-update msg model =
+update : Maybe { title : String, comment : Inlines } -> Msg -> Settings -> ( Settings, Cmd Msg, List Event )
+update main msg model =
     case msg of
         Handle event ->
             case event.topic of
@@ -121,10 +125,10 @@ update msg model =
             log Nothing
                 { model
                     | theme =
-                       -- if theme == "custom" && model.customTheme /= Nothing then
+                        -- if theme == "custom" && model.customTheme /= Nothing then
                         --    theme
                         --else
-                            theme
+                        theme
                 }
 
         ChangeEditor theme ->
@@ -139,8 +143,22 @@ update msg model =
         Reset ->
             ( model, Cmd.none, [ Event "reset" -1 JE.null ] )
 
-        ShareCourse event ->
-            ( model, Cmd.none, [ event ] )
+        ShareCourse url ->
+            ( model
+            , Cmd.none
+            , [ { title =
+                    main
+                        |> Maybe.map .title
+                        |> Maybe.withDefault ""
+                , text =
+                    main
+                        |> Maybe.map (.comment >> stringify)
+                        |> Maybe.withDefault ""
+                , url = url
+                }
+                    |> Port.Share.share
+              ]
+            )
 
         Toggle TranslateWithGoogle ->
             ( { model | translateWithGoogle = True }

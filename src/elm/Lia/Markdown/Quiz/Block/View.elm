@@ -10,6 +10,7 @@ import Lia.Markdown.Quiz.Block.Types exposing (Quiz, State(..))
 import Lia.Markdown.Quiz.Block.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Solution as Solution
 import Lia.Utils exposing (blockKeydown, icon)
+import Translations exposing (Lang)
 
 
 view : Config sub -> Solution.State -> Quiz -> State -> List (Html (Msg sub))
@@ -135,4 +136,4 @@ get_option config id list =
             get_option config (i - 1) xs
 
         ( _, [] ) ->
-            Html.span [] [ Html.text "choose" ]
+            Html.span [] [ Html.text <| Translations.quizSelection config.lang ]

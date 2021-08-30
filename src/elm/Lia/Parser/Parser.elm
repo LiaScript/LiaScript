@@ -94,12 +94,15 @@ parse_section search_index global sec =
             formatError ms stream |> Err
 
 
-parse_subsection : String -> Result String SubSection
-parse_subsection code =
+parse_subsection : Maybe Definition -> String -> Result String SubSection
+parse_subsection globals code =
     case
         Combine.runParser
             (Lia.Definition.Parser.parse |> keep Markdown.run)
-            (init Dict.empty Nothing 0 (Lia.Definition.Types.default ""))
+            (globals
+                |> Maybe.withDefault (Lia.Definition.Types.default "")
+                |> init Dict.empty Nothing 0
+            )
             (String.trim code ++ "\n")
     of
         Ok ( state, _, es ) ->

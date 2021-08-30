@@ -146,7 +146,11 @@ btn { title, tabbable, msg } =
             |> Maybe.withDefault (Attr.disabled True)
         , A11y_Key.tabbable tabbable
         , A11y_Widget.hidden (not tabbable)
-        , Attr.title title
+        , if String.isEmpty title then
+            Attr.class ""
+
+          else
+            Attr.title title
         ]
         >> Html.button
 

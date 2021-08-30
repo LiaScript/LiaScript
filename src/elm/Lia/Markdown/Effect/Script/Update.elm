@@ -9,6 +9,7 @@ module Lia.Markdown.Effect.Script.Update exposing
 
 import Array
 import Json.Encode as JE
+import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Effect.Script.Input as Input
 import Lia.Markdown.Effect.Script.Types as Script exposing (Script, Scripts, Stdout(..))
 import Lia.Parser.Parser exposing (parse_subsection)
@@ -38,6 +39,7 @@ type Msg sub
 update :
     { update : Scripts SubSection -> sub -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
     , handle : Scripts SubSection -> JE.Value -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
+    , globals : Maybe Definition
     }
     -> Msg sub
     -> Scripts SubSection
@@ -198,7 +200,7 @@ update main msg scripts =
                     let
                         ( publish, javascript ) =
                             scripts
-                                |> update_ event.section event.message
+                                |> update_ main.globals event.section event.message
 
                         node =
                             javascript
@@ -247,7 +249,7 @@ update main msg scripts =
                     let
                         ( publish, javascript ) =
                             scripts
-                                |> update_ event.section event.message
+                                |> update_ main.globals event.section event.message
 
                         node =
                             javascript
@@ -335,13 +337,13 @@ execute delay ( id, code ) =
             ]
 
 
-update_ : Int -> JE.Value -> Scripts SubSection -> ( Bool, Scripts SubSection )
-update_ id e scripts =
+update_ : Maybe Definition -> Int -> JE.Value -> Scripts SubSection -> ( Bool, Scripts SubSection )
+update_ defintion id e scripts =
     case Array.get id scripts of
         Just js ->
             let
                 new =
-                    eval_ (Eval.decode e) js
+                    eval_ defintion (Eval.decode e) js
             in
             ( new.result /= js.result
             , Array.set id new scripts
@@ -351,8 +353,8 @@ update_ id e scripts =
             ( False, scripts )
 
 
-eval_ : Eval -> Script SubSection -> Script SubSection
-eval_ e js =
+eval_ : Maybe Definition -> Eval -> Script SubSection -> Script SubSection
+eval_ defintion e js =
     let
         waiting =
             e.result == "LIA: wait"
@@ -376,7 +378,11 @@ eval_ e js =
                                 |> HTML
 
                         else if String.startsWith "LIASCRIPT:" e.result then
-                            case e.result |> String.dropLeft 10 |> parse_subsection of
+                            case
+                                e.result
+                                    |> String.dropLeft 10
+                                    |> parse_subsection defintion
+                            of
                                 Ok rslt ->
                                     IFrame rslt
 

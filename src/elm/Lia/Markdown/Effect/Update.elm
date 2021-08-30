@@ -15,6 +15,7 @@ module Lia.Markdown.Effect.Update exposing
 import Browser.Dom as Dom
 import Json.Decode as JD
 import Json.Encode as JE
+import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Effect.Model
     exposing
         ( Model
@@ -42,6 +43,7 @@ type Msg sub
 updateSub :
     { update : Scripts SubSection -> sub -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
     , handle : Scripts SubSection -> JE.Value -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
+    , globals : Maybe Definition
     }
     -> Script.Msg sub
     -> Model SubSection
@@ -53,6 +55,7 @@ updateSub main msg =
 update :
     { update : Scripts SubSection -> sub -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
     , handle : Scripts SubSection -> JE.Value -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
+    , globals : Maybe Definition
     }
     -> Bool
     -> Msg sub
@@ -176,6 +179,7 @@ markRunning ( model, cmd, events ) =
 execute :
     { update : Scripts SubSection -> sub -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
     , handle : Scripts SubSection -> JE.Value -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
+    , globals : Maybe Definition
     }
     -> Bool
     -> Bool
