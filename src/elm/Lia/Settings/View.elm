@@ -572,7 +572,7 @@ menuShare url lang tabbable settings =
                 [ Attr.style "width" "100%"
                 , Attr.style "justify-content" "center"
                 ]
-                [ Html.label [] [ Html.text "share via..." ] ]
+                [ Html.label [] [ Html.text <| Trans.confShareVia lang ] ]
 
         else
             Html.text ""

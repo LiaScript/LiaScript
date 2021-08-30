@@ -1924,6 +1924,49 @@ confShare lang =
             "Share"
 
 
+confShareVia : Lang -> String
+confShareVia lang =
+    case lang of 
+        Ar ->
+            "شارك عبر ..."
+
+        Bg ->
+            "споделете чрез ..."
+
+        De ->
+            "Teilen per ..."
+
+        Es ->
+            "compartir via ..."
+
+        Fa ->
+            "اشتراک گذاری از طریق ..."
+
+        Hy ->
+            "տարածել միջոցով ..."
+
+        Ko ->
+            "share via ..."
+
+        Nl ->
+            "deel via ..."
+
+        Ru ->
+            "Отправить по ..."
+
+        Tw ->
+            "通过...分享"
+
+        Ua ->
+            "поділитися через ..."
+
+        Zh ->
+            "通过...分享"
+
+        _ ->
+            "share via ..."
+
+
 confTranslations : Lang -> String
 confTranslations lang =
     case lang of 
