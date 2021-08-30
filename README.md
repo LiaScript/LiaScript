@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.30
+version:  0.9.31
 language: en
 narrator: UK English Male
 
@@ -281,6 +281,13 @@ This will apply the following three patches:
 - elm-patch/dom: enable onclick events as well as innerHTML
 
 ## Version-Changes
+
+**0.9.31** (30/08/2021)
+
+- Improved internationalization and CSS bug-fixes
+- Script-tags can now also be evaluated with internal macro support
+- Add share-button to main settings, which will only appear on devices which support
+  `navigation.share`
 
 **0.9.30** (27/08/2021)
 
