@@ -84,13 +84,14 @@ divider =
 
 
 viewLightMode : Lang -> Bool -> Bool -> Html Msg
-viewLightMode _ tabbable isLight =
+viewLightMode lang tabbable isLight =
     Html.button
         [ Attr.class "lia-btn lia-btn--transparent"
         , onClick (Toggle Light)
         , A11y_Key.tabbable tabbable
         , A11y_Widget.hidden (not tabbable)
         , Attr.id "lia-btn-light-mode"
+        , Attr.style "width" "100%"
         ]
         [ Html.i
             [ A11y_Widget.hidden True
@@ -106,10 +107,10 @@ viewLightMode _ tabbable isLight =
         , Html.span [ Attr.class "lia-btn__text" ]
             [ Html.text <|
                 if isLight then
-                    "Dark-Mode"
+                    Trans.cDark lang
 
                 else
-                    "Light-Mode"
+                    Trans.cBright lang
             ]
         ]
 
@@ -205,16 +206,16 @@ viewSizing : Lang -> Bool -> Int -> Html Msg
 viewSizing lang tabbable size =
     Html.div [ Attr.class "lia-fontscale" ]
         [ Trans.baseFont lang (Trans.baseSize1 lang)
-            |> fontButton tabbable size 1
+            |> fontButton lang tabbable size 1
         , Trans.baseFont lang (Trans.baseSize2 lang)
-            |> fontButton tabbable size 2
+            |> fontButton lang tabbable size 2
         , Trans.baseFont lang (Trans.baseSize3 lang)
-            |> fontButton tabbable size 3
+            |> fontButton lang tabbable size 3
         ]
 
 
-fontButton : Bool -> Int -> Int -> String -> Html Msg
-fontButton tabbable size i title =
+fontButton : Lang -> Bool -> Int -> Int -> String -> Html Msg
+fontButton lang tabbable size i title =
     btn
         { title = title
         , tabbable = tabbable
@@ -229,7 +230,7 @@ fontButton tabbable size i title =
                 ""
         , A11y_Widget.checked (Just (size == i))
         ]
-        [ Html.span (noTranslate []) [ Html.text "A" ] ]
+        [ Html.span (noTranslate []) [ Html.text (Trans.baseAbc lang) ] ]
 
 
 bold : String -> Html msg
@@ -336,11 +337,18 @@ submenu isActive =
         ]
 
 
-qrCodeView : String -> Html msg
-qrCodeView =
-    QRCode.fromString
-        >> Result.map (QRCode.toSvgWithoutQuietZone [])
-        >> Result.withDefault (Html.text "Error while encoding to QRCode.")
+qrCodeView : Lang -> String -> Html msg
+qrCodeView lang url =
+    url
+        |> QRCode.fromString
+        |> Result.map
+            (QRCode.toSvgWithoutQuietZone
+                [ Attr.style "background-color" "#FFF"
+                , Attr.style "padding" "0.4rem"
+                , Attr.alt (Trans.qrCode lang ++ ": " ++ url)
+                ]
+            )
+        |> Result.withDefault (Html.text <| Trans.qrErr lang)
 
 
 viewEditorTheme : Lang -> Bool -> String -> Html Msg
@@ -351,7 +359,7 @@ viewEditorTheme lang tabbable theme =
     in
     Html.div [ Attr.class "lia-settings-editor" ]
         [ Html.label [ Attr.class "lia-label", A11y_Widget.hidden (not tabbable) ]
-            [ Html.span [] [ Html.text "Editor:" ]
+            [ Html.div [ Attr.style "margin-bottom" "0.4rem" ] [ Html.text <| Trans.baseEditor lang ++ ":" ]
             , Html.select
                 [ Attr.class "lia-select"
                 , onInput ChangeEditor
@@ -553,7 +561,7 @@ menuShare url lang _ settings =
             |> Attr.title
         ]
         []
-    , [ qrCodeView url
+    , [ qrCodeView lang url
       ]
         |> submenu (settings.action == Just Share)
     ]

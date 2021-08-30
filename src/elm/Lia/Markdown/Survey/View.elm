@@ -181,7 +181,7 @@ get_option config id list =
             get_option config (i - 1) xs
 
         ( _, [] ) ->
-            Html.text "choose"
+            Html.text <| Translations.quizSelection config.lang
 
 
 view_text : Config sub -> String -> Int -> Int -> Maybe String -> Bool -> Html (Msg sub)

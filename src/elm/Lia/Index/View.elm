@@ -95,10 +95,10 @@ content lang active sectionId msg =
         >> List.map (item lang active sectionId msg)
 
 
-bottom : Bool -> msg -> Html msg
-bottom active msg =
+bottom : Lang -> Bool -> msg -> Html msg
+bottom lang active msg =
     btn
-        { title = "home"
+        { title = ""
         , msg = Just msg
         , tabbable = active
         }
@@ -107,7 +107,7 @@ bottom active msg =
         , A11y_Widget.hidden (not active)
         ]
         [ icon "icon-grid" []
-        , Html.span [ Attr.class "lia-btn__text" ] [ Html.text "Home" ]
+        , Html.span [ Attr.class "lia-btn__text" ] [ Html.text (Translations.home lang) ]
         ]
 
 

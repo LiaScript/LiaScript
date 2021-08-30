@@ -204,6 +204,92 @@ basePrev lang =
             "previous"
 
 
+basePlay : Lang -> String
+basePlay lang =
+    case lang of 
+        Ar ->
+            "العب"
+
+        Bg ->
+            "играйте"
+
+        De ->
+            "Wiedergabe"
+
+        Es ->
+            "jugar"
+
+        Fa ->
+            "بازی کن"
+
+        Hy ->
+            "Խաղացեք"
+
+        Ko ->
+            "play"
+
+        Nl ->
+            "afspelen"
+
+        Ru ->
+            "играй"
+
+        Tw ->
+            "播放"
+
+        Ua ->
+            "грати"
+
+        Zh ->
+            "播放"
+
+        _ ->
+            "play"
+
+
+baseStop : Lang -> String
+baseStop lang =
+    case lang of 
+        Ar ->
+            "توقف"
+
+        Bg ->
+            "спрете"
+
+        De ->
+            "Stopp"
+
+        Es ->
+            "parar"
+
+        Fa ->
+            "بس کن"
+
+        Hy ->
+            "դադարեցրեք"
+
+        Ko ->
+            "stop"
+
+        Nl ->
+            "stoppen"
+
+        Ru ->
+            "остановись"
+
+        Tw ->
+            "停止"
+
+        Ua ->
+            "зупинятися"
+
+        Zh ->
+            "停止"
+
+        _ ->
+            "stop"
+
+
 baseFont : Lang -> String -> String
 baseFont lang str0 =
     case lang of 
@@ -720,6 +806,49 @@ baseHide lang =
             "hide"
 
 
+baseEditor : Lang -> String
+baseEditor lang =
+    case lang of 
+        Ar ->
+            "على غرار المحرر"
+
+        Bg ->
+            "редакторски стил"
+
+        De ->
+            "Editor-Stil"
+
+        Es ->
+            "estilo editor"
+
+        Fa ->
+            "به سبک ویرایشگر"
+
+        Hy ->
+            "խմբագիր ոճով"
+
+        Ko ->
+            "Editor-Style"
+
+        Nl ->
+            "editor-stijl"
+
+        Ru ->
+            "стиль редактора"
+
+        Tw ->
+            "编辑风格"
+
+        Ua ->
+            "стиль редактора"
+
+        Zh ->
+            "编辑风格"
+
+        _ ->
+            "Editor-Style"
+
+
 baseLang : Lang -> String
 baseLang lang =
     case lang of 
@@ -939,86 +1068,86 @@ cDark : Lang -> String
 cDark lang =
     case lang of 
         Ar ->
-            "داكن"
+            "الوضع المظلم"
 
         Bg ->
-            "Тъмно"
+            "тъмен режим"
 
         De ->
-            "Dunkel"
+            "Dunkelmodus"
 
         Es ->
-            "oscuro"
+            "modo oscuro"
 
         Fa ->
-            "تیره"
+            "حالت تاریک"
 
         Hy ->
-            "մուգ"
+            "մութ ռեժիմ"
 
         Ko ->
             "어두움"
 
         Nl ->
-            "donker"
+            "donkere modus"
 
         Ru ->
-            "тёмный"
+            "темный режим"
 
         Tw ->
-            "深"
+            "暗模式"
 
         Ua ->
-            "темний"
+            "темний режим"
 
         Zh ->
-            "深"
+            "暗模式"
 
         _ ->
-            "Dark"
+            "Dark-Mode"
 
 
 cBright : Lang -> String
 cBright lang =
     case lang of 
         Ar ->
-            "لامع"
+            "وضع الإضاءة"
 
         Bg ->
-            "Светло"
+            "светъл режим"
 
         De ->
-            "Hell"
+            "Hellmodus"
 
         Es ->
-            "luminoso"
+            "modo claro"
 
         Fa ->
-            "روشن"
+            "حالت روشن"
 
         Hy ->
-            "բաց"
+            "թեթև ռեժիմ"
 
         Ko ->
             "밝음"
 
         Nl ->
-            "licht"
+            "lichte modus"
 
         Ru ->
-            "светлый"
+            "светлый режим"
 
         Tw ->
-            "淺"
+            "亮模式"
 
         Ua ->
-            "світлий"
+            "світлий режим"
 
         Zh ->
-            "淺"
+            "亮模式"
 
         _ ->
-            "Bright"
+            "Light-Mode"
 
 
 cDefault : Lang -> String
@@ -2182,6 +2311,43 @@ codeMaximize lang =
             "maximize view"
 
 
+codeTerminal : Lang -> String
+codeTerminal lang =
+    case lang of 
+        Ar ->
+            "طرفية"
+
+        Bg ->
+            "терминал"
+
+        De ->
+            "Terminal"
+
+        Fa ->
+            "پایانه"
+
+        Hy ->
+            "տերմինալ"
+
+        Ko ->
+            "terminal"
+
+        Ru ->
+            "термина́л"
+
+        Tw ->
+            "终端"
+
+        Ua ->
+            "термінал"
+
+        Zh ->
+            "终端"
+
+        _ ->
+            "terminal"
+
+
 quizCheck : Lang -> String
 quizCheck lang =
     case lang of 
@@ -2309,6 +2475,49 @@ quizHint lang =
 
         _ ->
             "show hint"
+
+
+quizSelection : Lang -> String
+quizSelection lang =
+    case lang of 
+        Ar ->
+            "اختيار"
+
+        Bg ->
+            "избор"
+
+        De ->
+            "Auswahl"
+
+        Es ->
+            "selección"
+
+        Fa ->
+            "انتخاب"
+
+        Hy ->
+            "ընտրություն"
+
+        Ko ->
+            "selection"
+
+        Nl ->
+            "selectie"
+
+        Ru ->
+            "выбор"
+
+        Tw ->
+            "选择"
+
+        Ua ->
+            "вибір"
+
+        Zh ->
+            "选择"
+
+        _ ->
+            "selection"
 
 
 quizAnswerSuccess : Lang -> String
@@ -3027,6 +3236,105 @@ chartPictorialBar lang =
             "Pictorial bar"
 
 
+qrCode : Lang -> String
+qrCode lang =
+    case lang of 
+        Ar ->
+            "رمز الاستجابة السريعة للموقع"
+
+        Bg ->
+            "QR код за уебсайт"
+
+        De ->
+            "QR-Code für Webseite"
+
+        Es ->
+            "Código QR para sitio web"
+
+        Fa ->
+            "کد QR برای وب سایت"
+
+        Hy ->
+            "Վեբ կայքի QR կոդ"
+
+        Ko ->
+            "QR code for website"
+
+        Nl ->
+            "QR-code voor website"
+
+        Ru ->
+            "QR-код для сайта"
+
+        Tw ->
+            "网站二维码"
+
+        Ua ->
+            "QR -код для веб -сайту"
+
+        Zh ->
+            "网站二维码"
+
+        _ ->
+            "QR code for website"
+
+
+qrErr : Lang -> String
+qrErr lang =
+    case lang of 
+        Ar ->
+            "خطأ أثناء الترميز إلى رمز الاستجابة السريعة"
+
+        Bg ->
+            "Грешка при кодирането към QR код"
+
+        De ->
+            "Fehler beim Codieren in QR-Code"
+
+        Es ->
+            "Error al codificar en código QR"
+
+        Fa ->
+            "خطا هنگام رمزگذاری روی کد QR"
+
+        Hy ->
+            "Սխալ QR կոդի կոդավորման ժամանակ"
+
+        Ko ->
+            "Error while encoding to QR code"
+
+        Nl ->
+            "Fout bij het coderen naar QR-code"
+
+        Ru ->
+            "Ошибка при кодировании в QR-код"
+
+        Tw ->
+            "编码为二维码时出错"
+
+        Ua ->
+            "Помилка під час кодування в QR -код"
+
+        Zh ->
+            "编码为二维码时出错"
+
+        _ ->
+            "Error while encoding to QR code"
+
+
+home : Lang -> String
+home lang =
+    case lang of 
+        De ->
+            "Übersicht"
+
+        Ko ->
+            "Home"
+
+        _ ->
+            "Home"
+
+
 chartBoxplot : Lang -> String
 chartBoxplot lang =
     case lang of 
@@ -3120,4 +3428,11 @@ chartSunburst lang =
 
         _ ->
             "Sunburst"
+
+
+baseAbc : Lang -> String
+baseAbc lang =
+    case lang of 
+        _ ->
+            "Aa"
 

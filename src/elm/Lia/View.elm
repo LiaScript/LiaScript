@@ -88,7 +88,7 @@ viewIndex hasIndex model =
         --|> Html.map Script
         , if hasIndex then
             Html.div [ Attr.class "lia-toc__bottom" ]
-                [ Index.bottom model.settings.table_of_contents Home ]
+                [ Index.bottom model.translation model.settings.table_of_contents Home ]
 
           else
             Html.text ""
@@ -175,7 +175,7 @@ slideBottom screen lang settings slide effects =
                 Html.div [ Attr.class "lia-responsive-voice" ] <|
                     if screen.width > Const.globalBreakpoints.sm then
                         [ Html.div [ Attr.class "lia-responsive-voice__control" ]
-                            [ btnReplay settings
+                            [ btnReplay lang settings
                             , btnStop lang settings
                             ]
                         , responsiveVoice
@@ -183,7 +183,7 @@ slideBottom screen lang settings slide effects =
 
                     else
                         [ Html.div [ Attr.class "lia-responsive-voice__control" ]
-                            [ btnReplay settings
+                            [ btnReplay lang settings
                             , responsiveVoice
                             , btnStop lang settings
                             ]
@@ -191,15 +191,15 @@ slideBottom screen lang settings slide effects =
         ]
 
 
-btnReplay : Settings -> Html Msg
-btnReplay settings =
+btnReplay : Lang -> Settings -> Html Msg
+btnReplay lang settings =
     Lia.Utils.btnIcon
         { title =
             if settings.speaking then
-                "stop"
+                Trans.baseStop lang
 
             else
-                "replay"
+                Trans.basePlay lang
         , tabbable = settings.sound
         , msg =
             if settings.sound then

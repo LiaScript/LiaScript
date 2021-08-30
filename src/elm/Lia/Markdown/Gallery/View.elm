@@ -15,6 +15,7 @@ import Lia.Markdown.Inline.Types exposing (Inline)
 import Lia.Markdown.Inline.View as Inline
 import Lia.Markdown.Types exposing (Block(..))
 import Lia.Utils exposing (btnIcon, get, icon, modal)
+import Translations exposing (Lang)
 
 
 view : Config sub -> Vector -> Parameters -> Gallery -> Html (Msg sub)
@@ -72,11 +73,11 @@ viewOverlay config id mediaID size =
     Inline.viewMedia { config | oEmbed = Just { maxwidth = 0, maxheight = 0, scale = 0.76, thumbnail = False } }
         >> Html.map Script
         >> List.singleton
-        >> modal (Close id) (viewControls id mediaID size)
+        >> modal (Close id) (viewControls config.lang id mediaID size)
 
 
-viewControls : Int -> Int -> Int -> Maybe (List (Html (Msg sub)))
-viewControls id mediaID size =
+viewControls : Lang -> Int -> Int -> Int -> Maybe (List (Html (Msg sub)))
+viewControls lang id mediaID size =
     Just
         [ btnIcon
             { icon = "icon-arrow-right"
@@ -87,7 +88,7 @@ viewControls id mediaID size =
                 else
                     Nothing
             , tabbable = True
-            , title = "next media"
+            , title = Translations.baseNext lang
             }
             [ Attr.class "lia-modal__ctrl-next lia-btn--transparent" ]
         , btnIcon
@@ -99,7 +100,7 @@ viewControls id mediaID size =
                 else
                     Nothing
             , tabbable = True
-            , title = "previous media"
+            , title = Translations.basePrev lang
             }
             [ Attr.class "lia-modal__ctrl-prev lia-btn--transparent" ]
         ]

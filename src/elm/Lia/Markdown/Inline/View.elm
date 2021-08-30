@@ -437,8 +437,8 @@ reference config ref attr =
         QR_Link url title_ ->
             [ url
                 |> QRCode.fromString
-                |> Result.map (QRCode.toSvg [ A11y_Widget.label <| "QR-Code for website: " ++ url ])
-                |> Result.withDefault (Html.text "Error while encoding to QRCode.")
+                |> Result.map (QRCode.toSvg [ A11y_Widget.label <| Translations.qrCode config.lang ++ ": " ++ url ])
+                |> Result.withDefault (Html.text (Translations.qrErr config.lang))
             ]
                 |> Html.a
                     (Attr.href url
