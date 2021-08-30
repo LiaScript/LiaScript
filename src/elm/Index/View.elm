@@ -266,9 +266,10 @@ viewControls hasShareAPI title comment course =
                 { msg =
                     Just <|
                         Share
-                            (title |> stringify)
-                            ((comment |> stringify) ++ "\n")
-                            (Const.urlLiascriptCourse ++ course.id)
+                            { title = stringify title
+                            , text = stringify comment
+                            , url = Const.urlLiascriptCourse ++ course.id
+                            }
                 , title = "share"
                 , tabbable = True
                 , icon = "icon-social"

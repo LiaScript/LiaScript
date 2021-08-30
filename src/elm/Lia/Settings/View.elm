@@ -22,6 +22,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
 import Lia.Definition.Types exposing (Definition)
+import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
@@ -548,7 +549,7 @@ translateWithGoogle lang tabbable bool =
 
 
 menuShare : String -> Lang -> Bool -> Settings -> List (Html Msg)
-menuShare url lang _ settings =
+menuShare url lang tabbable settings =
     [ lang
         |> Trans.confShare
         |> actionBtn Share
@@ -562,6 +563,19 @@ menuShare url lang _ settings =
         ]
         []
     , [ qrCodeView lang url
+      , if settings.hasShareApi then
+            btn
+                { title = ""
+                , tabbable = tabbable
+                , msg = Just (ShareCourse url)
+                }
+                [ Attr.style "width" "100%"
+                , Attr.style "justify-content" "center"
+                ]
+                [ Html.label [] [ Html.text "share via..." ] ]
+
+        else
+            Html.text ""
       ]
         |> submenu (settings.action == Just Share)
     ]
