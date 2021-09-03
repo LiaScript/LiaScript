@@ -1,5 +1,7 @@
 module Lia.Markdown.Quiz.Block.View exposing (view)
 
+import Accessibility.Role as A11y_Role
+import Accessibility.Widget as A11y_Widget
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
@@ -10,7 +12,7 @@ import Lia.Markdown.Quiz.Block.Types exposing (Quiz, State(..))
 import Lia.Markdown.Quiz.Block.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Solution as Solution
 import Lia.Utils exposing (blockKeydown, icon)
-import Translations exposing (Lang)
+import Translations
 
 
 view : Config sub -> Solution.State -> Quiz -> State -> List (Html (Msg sub))
@@ -65,6 +67,7 @@ text solution state =
         , Attr.disabled (not <| Solution.isOpen solution)
         , onInput Input
         , blockKeydown (Input state)
+        , A11y_Widget.label "quiz answer"
         ]
         []
 
@@ -81,7 +84,11 @@ select config solution open options i =
             Attr.disabled True
         ]
         [ Html.span
-            [ Attr.class "lia-dropdown__selected" ]
+            [ Attr.class "lia-dropdown__selected"
+            , A11y_Widget.hidden False
+            , A11y_Role.button
+            , A11y_Widget.expanded open
+            ]
             [ get_option config i options
             , Html.i
                 [ Attr.class <|
@@ -92,6 +99,7 @@ select config solution open options i =
                             else
                                 " icon-chevron-down"
                            )
+                , A11y_Role.button
                 ]
                 []
             ]
@@ -120,6 +128,7 @@ option config id =
             , id
                 |> Choose
                 |> onClick
+            , A11y_Role.listItem
             ]
 
 

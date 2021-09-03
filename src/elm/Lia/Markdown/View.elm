@@ -21,7 +21,7 @@ import Lia.Markdown.Gallery.View as Gallery
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Markdown.HTML.View as HTML
-import Lia.Markdown.Inline.Stringify exposing (stringify_)
+import Lia.Markdown.Inline.Stringify exposing (stringify, stringify_)
 import Lia.Markdown.Inline.Types exposing (Inlines, htmlBlock, mediaBlock)
 import Lia.Markdown.Inline.View as Inline
 import Lia.Markdown.Quiz.Types as Quiz
@@ -35,6 +35,7 @@ import Lia.Section exposing (SubSection(..))
 import Lia.Settings.Types exposing (Mode(..))
 import Lia.Utils exposing (modal)
 import Lia.Voice as Voice
+import MD5
 import SvgBob
 
 
@@ -103,7 +104,7 @@ subView config id sub =
 
 view_body : ( Config Msg, Maybe String, Footnotes.Model ) -> Blocks -> Html Msg
 view_body ( config, footnote2show, footnotes ) =
-    List.map (view_block config)
+    fold config []
         >> (::) (view_footnote (view_block config) footnote2show footnotes)
         >> (::) (view_header config)
         >> (\s ->
@@ -125,6 +126,30 @@ view_body ( config, footnote2show, footnotes ) =
                                 )
            )
         >> viewMain
+
+
+fold : Config Msg -> List (Html Msg) -> Blocks -> List (Html Msg)
+fold config output blocks =
+    case blocks of
+        [] ->
+            List.reverse output
+
+        (Paragraph a e) :: (Quiz attr quiz solution) :: bs ->
+            let
+                id =
+                    stringify e
+                        |> MD5.hex
+                        |> String.slice 0 8
+            in
+            fold config
+                (viewQuiz config (Just id) attr quiz solution
+                    :: view_block config (Paragraph (( "id", id ) :: a) e)
+                    :: output
+                )
+                bs
+
+        b :: bs ->
+            fold config (view_block config b :: output) bs
 
 
 addTranslation : Bool -> ( String, String ) -> Int -> String -> List ( String, String )
@@ -308,7 +333,7 @@ view_block config block =
                 |> Html.map UpdateCode
 
         Quiz attr quiz solution ->
-            viewQuiz config attr quiz solution
+            viewQuiz config Nothing attr quiz solution
 
         Survey attr survey ->
             config.section.survey_vector
@@ -436,11 +461,11 @@ view_ascii config attr ( caption, image ) =
            )
 
 
-viewQuiz : Config Msg -> Parameters -> Quiz.Quiz -> Maybe ( Blocks, Int ) -> Html Msg
-viewQuiz config attr quiz solution =
+viewQuiz : Config Msg -> Maybe String -> Parameters -> Quiz.Quiz -> Maybe ( Blocks, Int ) -> Html Msg
+viewQuiz config labeledBy attr quiz solution =
     case solution of
         Nothing ->
-            Quizzes.view config.main quiz config.section.quiz_vector
+            Quizzes.view config.main labeledBy quiz config.section.quiz_vector
                 |> Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr)
                 |> Html.map UpdateQuiz
 
@@ -448,14 +473,14 @@ viewQuiz config attr quiz solution =
             Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr) <|
                 if Quizzes.showSolution config.section.quiz_vector quiz then
                     (config.section.quiz_vector
-                        |> Quizzes.view config.main quiz
+                        |> Quizzes.view config.main labeledBy quiz
                         |> List.map (Html.map UpdateQuiz)
                     )
                         ++ [ Html.div [ Attr.class "lia-quiz__solution" ] <| List.map (view_block config) answer ]
 
                 else
                     config.section.quiz_vector
-                        |> Quizzes.view config.main quiz
+                        |> Quizzes.view config.main labeledBy quiz
                         |> List.map (Html.map UpdateQuiz)
 
 
