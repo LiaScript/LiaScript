@@ -3562,6 +3562,9 @@ chartSunburst lang =
 baseAbc : Lang -> String
 baseAbc lang =
     case lang of 
+        Ko ->
+            "가"
+
         _ ->
             "Aa"
 
