@@ -252,14 +252,16 @@ slideA11y lang translations mode media effect id =
                             |> Maybe.map
                                 (\( narrator, content ) ->
                                     List.map
-                                        (.content
-                                            >> List.map (view_inf effect.javascript lang (Just media))
-                                            >> Html.p
-                                                (narrator
-                                                    |> Markdown.addTranslation False translations counter
-                                                    |> toAttribute
-                                                )
-                                            >> Html.map (Tuple.pair id >> Script)
+                                        (\c ->
+                                            c.content
+                                                |> List.map (view_inf effect.javascript lang (Just media))
+                                                |> Html.p
+                                                    (narrator
+                                                        |> Markdown.addTranslation False translations counter
+                                                        |> List.append c.attr
+                                                        |> toAttribute
+                                                    )
+                                                |> Html.map (Tuple.pair id >> Script)
                                         )
                                         content
                                 )
