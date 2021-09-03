@@ -53,6 +53,8 @@ import Translations
         , quizAnswerResolved
         , quizAnswerSuccess
         , quizCheck
+        , quizLabelCheck
+        , quizLabelSolution
         , quizSolution
         )
 
@@ -138,7 +140,7 @@ viewQuiz config labeledBy state quiz ( attr, body ) =
             :: attr
         )
         body
-    , Html.div [ A11y_Widget.label "Submit Buttons", Attr.class "lia-quiz__control" ]
+    , Html.div [ Attr.class "lia-quiz__control" ]
         [ viewMainButton config state.trial state.solved (Check quiz.id quiz.quiz quiz.javascript)
         , viewSolutionButton config state.solved (ShowSolution quiz.id quiz.quiz)
         , Translations.quizHint config.lang
@@ -201,7 +203,7 @@ viewSolutionButton config solution msg =
         , tabbable = True
         , icon = "icon-resolve"
         }
-        [ Attr.class "lia-btn--transparent lia-quiz__resolve" ]
+        [ Attr.class "lia-btn--transparent lia-quiz__resolve", A11y_Widget.label (quizLabelSolution config.lang) ]
 
 
 {-| **private:** Show the main check-button to compare the current state of the
@@ -219,7 +221,7 @@ viewMainButton config trials solution msg =
                 Nothing
         , tabbable = solution == Solution.Open
         }
-        [ Attr.class "lia-btn--outline lia-quiz__check", A11y_Widget.label "Check answer" ]
+        [ Attr.class "lia-btn--outline lia-quiz__check", A11y_Widget.label (quizLabelCheck config.lang) ]
         [ Html.text (quizCheck config.lang)
         , Html.text <|
             if trials > 0 then
