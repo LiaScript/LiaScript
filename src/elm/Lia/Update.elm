@@ -160,7 +160,7 @@ update session msg model =
                         |> Array.filter .visible
                         |> Array.map .id
                         |> Array.toList
-                        |> Graph.sectionVisibility model.graph
+                        |> Graph.setSectionVisibility model.graph
             }
                 |> Return.val
                 |> Return.cmd (Cmd.map UpdateIndex cmd)
@@ -253,16 +253,13 @@ update session msg model =
                 ( graph, cmd ) =
                     Graph.update session graphMsg model.graph
             in
-            ( { model | graph = graph }
-            , Cmd.map UpdateGraph cmd
-            , []
-            )
+            { model | graph = graph }
+                |> Return.val
+                |> Return.cmd (Cmd.map UpdateGraph cmd)
 
         PaneMsg paneMsg ->
-            ( { model | splitPane = SplitPane.update paneMsg model.splitPane }
-            , Cmd.none
-            , []
-            )
+            { model | splitPane = SplitPane.update paneMsg model.splitPane }
+                |> Return.val
 
         _ ->
             case ( msg, get_active_section model ) of

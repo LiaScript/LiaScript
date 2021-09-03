@@ -97,7 +97,7 @@ parse_subsection globals id code =
             (Lia.Definition.Parser.parse |> keep Markdown.run)
             (globals
                 |> Maybe.withDefault (Lia.Definition.Types.default "")
-                |> init Nothing
+                |> init Graph.init Nothing
             )
             (String.trim code ++ "\n")
     of
