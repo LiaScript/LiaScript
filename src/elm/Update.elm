@@ -26,7 +26,7 @@ import Lia.Script
 import Model exposing (Model, State(..))
 import Port.Event exposing (Event)
 import Process
-import Session exposing (Screen, Session)
+import Session exposing (Screen)
 import Task
 import Translations
 import Url

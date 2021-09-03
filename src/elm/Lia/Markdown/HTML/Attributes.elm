@@ -221,7 +221,7 @@ basis is automatically added:
 -}
 toURL : String -> String -> String
 toURL basis url =
-    if allowedProtocol url then
+    if allowedProtocol url || String.startsWith "#" url then
         url
 
     else

@@ -226,7 +226,7 @@ basePlay lang =
             "Խաղացեք"
 
         Ko ->
-            "play"
+            "플레이"
 
         Nl ->
             "afspelen"
@@ -269,7 +269,7 @@ baseStop lang =
             "դադարեցրեք"
 
         Ko ->
-            "stop"
+            "멈추다"
 
         Nl ->
             "stoppen"
@@ -828,7 +828,7 @@ baseEditor lang =
             "խմբագիր ոճով"
 
         Ko ->
-            "Editor-Style"
+            "에디터 스타일"
 
         Nl ->
             "editor-stijl"
@@ -1086,7 +1086,7 @@ cDark lang =
             "մութ ռեժիմ"
 
         Ko ->
-            "어두움"
+            "다크 모드"
 
         Nl ->
             "donkere modus"
@@ -1129,7 +1129,7 @@ cBright lang =
             "թեթև ռեժիմ"
 
         Ko ->
-            "밝음"
+            "라이트 모드"
 
         Nl ->
             "lichte modus"
@@ -1946,7 +1946,7 @@ confShareVia lang =
             "տարածել միջոցով ..."
 
         Ko ->
-            "share via ..."
+            "통해 공유 ..."
 
         Nl ->
             "deel via ..."
@@ -2373,7 +2373,7 @@ codeTerminal lang =
             "տերմինալ"
 
         Ko ->
-            "terminal"
+            "단말기"
 
         Ru ->
             "термина́л"
@@ -2542,7 +2542,7 @@ quizSelection lang =
             "ընտրություն"
 
         Ko ->
-            "selection"
+            "선택"
 
         Nl ->
             "selectie"
@@ -2561,6 +2561,92 @@ quizSelection lang =
 
         _ ->
             "selection"
+
+
+quizLabelCheck : Lang -> String
+quizLabelCheck lang =
+    case lang of 
+        Ar ->
+            "تحقق من الجواب. تم وضع علامة على الإجابة على أنها صحيحة أو غير صحيحة."
+
+        Bg ->
+            "Проверете отговора. Отговорът е маркиран като правилен или неправилен."
+
+        De ->
+            "Überprüfe die Antwort. Die Antwort wird als richtig oder falsch markiert."
+
+        Es ->
+            "Comprueba la respuesta. La respuesta está marcada como correcta o incorrecta."
+
+        Fa ->
+            "پاسخ را بررسی کنید. پاسخ صحیح یا نادرست علامت گذاری شده است."
+
+        Hy ->
+            "Ստուգեք պատասխանը: Պատասխանը նշվում է որպես ճիշտ կամ սխալ:"
+
+        Ko ->
+            "답을 확인하세요. 정답 또는 오답으로 표시됩니다."
+
+        Nl ->
+            "Controleer het antwoord. Het antwoord wordt gemarkeerd als goed of fout."
+
+        Ru ->
+            "Проверьте ответ. Ответ отмечен как правильный или неправильный."
+
+        Tw ->
+            "检查答案。答案被标记为正确或不正确。"
+
+        Ua ->
+            "Перевірте відповідь. Відповідь позначена як правильна чи неправильна."
+
+        Zh ->
+            "检查答案。答案被标记为正确或不正确。"
+
+        _ ->
+            "Check the answer. The response will be marked as correct or incorrect."
+
+
+quizLabelSolution : Lang -> String
+quizLabelSolution lang =
+    case lang of 
+        Ar ->
+            "اعرض الحل. تم وضع علامة 'حل' الاختبار."
+
+        Bg ->
+            "Покажете решението. Тестът е означен като решен."
+
+        De ->
+            "Zeige die Lösung. Das Quiz wird als aufgelöst markiert."
+
+        Es ->
+            "Muestre la solución. El cuestionario se marca como resuelto."
+
+        Fa ->
+            "راه حل را نشان دهید. مسابقه به عنوان حل شده علامت گذاری شده است."
+
+        Hy ->
+            "Showույց տվեք լուծումը: Վիկտորինան նշվում է որպես լուծված:"
+
+        Ko ->
+            "솔루션을 보여주세요. 퀴즈가 해결된 것으로 표시됩니다."
+
+        Nl ->
+            "Laat de oplossing zien. De quiz is gemarkeerd als opgelost."
+
+        Ru ->
+            "Покажи решение. Викторина помечается как решенная."
+
+        Tw ->
+            "显示解决方案。测验被标记为已解决。"
+
+        Ua ->
+            "Покажіть рішення. Вікторина позначена як розв’язана."
+
+        Zh ->
+            "显示解决方案。测验被标记为已解决。"
+
+        _ ->
+            "Show the solution. The quiz will be marked as resolved."
 
 
 quizAnswerSuccess : Lang -> String
@@ -2603,7 +2689,7 @@ quizAnswerSuccess lang =
             "恭喜，那是正确的答案"
 
         _ ->
-            "Congratiulations, that was the right answer"
+            "Congratulations, that was the right answer"
 
 
 quizAnswerError : Lang -> String
@@ -3372,7 +3458,7 @@ home lang =
             "Übersicht"
 
         Ko ->
-            "Home"
+            "집"
 
         _ ->
             "Home"
@@ -3476,6 +3562,9 @@ chartSunburst lang =
 baseAbc : Lang -> String
 baseAbc lang =
     case lang of 
+        Ko ->
+            "가"
+
         _ ->
             "Aa"
 

@@ -21,7 +21,10 @@ TODO:
 
 -}
 
-import Html exposing (Html)
+import Accessibility.Aria as A11y_Aria
+import Accessibility.Role as A11y_Role
+import Accessibility.Widget as A11y_Widget
+import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inlines)
@@ -50,18 +53,20 @@ import Translations
         , quizAnswerResolved
         , quizAnswerSuccess
         , quizCheck
+        , quizLabelCheck
+        , quizLabelSolution
         , quizSolution
         )
 
 
 {-| Main Quiz view function.
 -}
-view : Config sub -> Quiz -> Vector -> List (Html (Msg sub))
-view config quiz vector =
+view : Config sub -> Maybe String -> Quiz -> Vector -> List (Html (Msg sub))
+view config labeledBy quiz vector =
     case getState vector quiz.id of
         Just elem ->
             viewState config elem quiz
-                |> viewQuiz config elem quiz
+                |> viewQuiz config labeledBy elem quiz
 
         _ ->
             []
@@ -80,13 +85,15 @@ class id vector =
 {-| **private:** Simple router function that is used to match the current state
 of a quiz with its type.
 -}
-viewState : Config sub -> Element -> Quiz -> List (Html (Msg sub))
+viewState : Config sub -> Element -> Quiz -> ( List (Attribute (Msg sub)), List (Html (Msg sub)) )
 viewState config elem quiz =
     case ( elem.state, quiz.quiz ) of
         ( Block_State s, Block_Type q ) ->
-            s
+            ( []
+            , s
                 |> Block.view config ( elem.solved, elem.trial ) q
                 |> List.map (Html.map (Block_Update quiz.id))
+            )
 
         ( Vector_State s, Vector_Type q ) ->
             s
@@ -94,19 +101,21 @@ viewState config elem quiz =
                     (elem.solved == Solution.Open)
                     (Solution.toClass ( elem.solved, elem.trial ))
                     q
-                |> List.map (Html.map (Vector_Update quiz.id))
+                |> Tuple.mapSecond (List.map (Html.map (Vector_Update quiz.id)))
 
         ( Matrix_State s, Matrix_Type q ) ->
-            [ s
-                |> Matrix.view config
-                    (elem.solved == Solution.Open)
-                    (Solution.toClass ( elem.solved, elem.trial ))
-                    q
-                |> Html.map (Matrix_Update quiz.id)
-            ]
+            ( []
+            , [ s
+                    |> Matrix.view config
+                        (elem.solved == Solution.Open)
+                        (Solution.toClass ( elem.solved, elem.trial ))
+                        q
+                    |> Html.map (Matrix_Update quiz.id)
+              ]
+            )
 
         _ ->
-            []
+            ( [], [] )
 
 
 {-| **private:** Return the current quiz as List of elements that contains:
@@ -120,9 +129,17 @@ viewState config elem quiz =
     button and a list of already revealed hints
 
 -}
-viewQuiz : Config sub -> Element -> Quiz -> List (Html (Msg sub)) -> List (Html (Msg sub))
-viewQuiz config state quiz body =
-    [ Html.div [ Attr.class "lia-quiz__answers" ] body
+viewQuiz : Config sub -> Maybe String -> Element -> Quiz -> ( List (Attribute (Msg sub)), List (Html (Msg sub)) ) -> List (Html (Msg sub))
+viewQuiz config labeledBy state quiz ( attr, body ) =
+    [ Html.div
+        (Attr.class "lia-quiz__answers"
+            :: (labeledBy
+                    |> Maybe.map A11y_Aria.labelledBy
+                    |> Maybe.withDefault (Attr.class "")
+               )
+            :: attr
+        )
+        body
     , Html.div [ Attr.class "lia-quiz__control" ]
         [ viewMainButton config state.trial state.solved (Check quiz.id quiz.quiz quiz.javascript)
         , viewSolutionButton config state.solved (ShowSolution quiz.id quiz.quiz)
@@ -145,6 +162,7 @@ viewFeedback lang state =
         case state.solved of
             Solution.Solved ->
                 Html.div [ Attr.class "lia-quiz__feedback text-success" ]
+                    -- TODO: maybe lable success, failure, ... locale independend
                     [ lang
                         |> quizAnswerSuccess
                         |> Html.text
@@ -185,7 +203,7 @@ viewSolutionButton config solution msg =
         , tabbable = True
         , icon = "icon-resolve"
         }
-        [ Attr.class "lia-btn--transparent lia-quiz__resolve" ]
+        [ Attr.class "lia-btn--transparent lia-quiz__resolve", A11y_Widget.label (quizLabelSolution config.lang) ]
 
 
 {-| **private:** Show the main check-button to compare the current state of the
@@ -203,7 +221,7 @@ viewMainButton config trials solution msg =
                 Nothing
         , tabbable = solution == Solution.Open
         }
-        [ Attr.class "lia-btn--outline lia-quiz__check" ]
+        [ Attr.class "lia-btn--outline lia-quiz__check", A11y_Widget.label (quizLabelCheck config.lang) ]
         [ Html.text (quizCheck config.lang)
         , Html.text <|
             if trials > 0 then
@@ -249,7 +267,7 @@ viewHintButton id show active title =
             , icon = "icon-hint"
             , tabbable = True
             }
-            [ Attr.class "lia-btn--transparent lia-quiz__hint" ]
+            [ Attr.class "lia-btn--transparent lia-quiz__hint", A11y_Role.button ]
 
     else
         Html.text ""
