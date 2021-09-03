@@ -40,7 +40,7 @@ import Combine.Char exposing (anyChar)
 import Lia.Markdown.Effect.Parser as Effect
 import Lia.Markdown.Effect.Script.Types as JS
 import Lia.Markdown.Footnote.Parser as Footnote
-import Lia.Markdown.HTML.Attributes as Attributes exposing (Parameters)
+import Lia.Markdown.HTML.Attributes as Attributes exposing (Parameters, toURL)
 import Lia.Markdown.HTML.Parser as HTML
 import Lia.Markdown.Inline.Multimedia as Multimedia
 import Lia.Markdown.Inline.Parser.Formula exposing (formula)
@@ -186,9 +186,16 @@ inlines =
                     )
 
 
-url : Parser s String
+url : Parser Context String
 url =
     regex "[a-zA-Z]+://(/)?[a-zA-Z0-9\\.\\-\\_]+\\.([a-z\\.]{2,6})[^ \\]\\)\t\n]*"
+        |> andThen baseURL
+
+
+baseURL : String -> Parser Context String
+baseURL u =
+    withState (.defines >> .base >> succeed)
+        |> map (\base -> toURL base u)
 
 
 email : Parser s String
@@ -199,7 +206,7 @@ email =
         |> map ((++) "mailto:")
 
 
-inline_url : Parser s (Parameters -> Inline)
+inline_url : Parser Context (Parameters -> Inline)
 inline_url =
     map (\u -> Ref (Link [ Chars u [] ] u Nothing)) url
 
@@ -226,7 +233,7 @@ ref_url_1 =
     choice
         [ url
         , andMap (regex "#[^ \t\\)]+") searchIndex
-        , regex "[^\\)\n \"]*"
+        , regex "[^\\)\n \"]*" |> andThen baseURL
         ]
 
 
