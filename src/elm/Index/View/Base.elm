@@ -12,6 +12,7 @@ import Html.Attributes as Attr
 import Index.Model exposing (Course, Release)
 import Index.Update exposing (Msg(..))
 import Lia.Definition.Types exposing (Definition)
+import Lia.Markdown.Effect.Parser exposing (comment)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View as Inline
@@ -171,9 +172,10 @@ viewControls hasShareAPI title comment course =
                 { msg =
                     Just <|
                         Share
-                            (title |> stringify)
-                            ((comment |> stringify) ++ "\n")
-                            (Const.urlLiascriptCourse ++ course.id)
+                            { title = stringify title
+                            , text = stringify comment ++ "\n"
+                            , url = Const.urlLiascriptCourse ++ course.id
+                            }
                 , title = "share"
                 , tabbable = True
                 , icon = "icon-social"

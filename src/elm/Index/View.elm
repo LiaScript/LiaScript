@@ -28,6 +28,9 @@ view session settings model =
             [ Attr.class "lia-slide__content"
             , Attr.style "width" "100%"
             , Attr.style "max-width" "100%"
+            , Attr.style "height" "calc(100vh - 12rem)"
+            , Attr.style "margin-bottom" "0px"
+            , Attr.style "overflow" "none"
             ]
             [ Html.h1 [] [ Html.text "Lia: Open-courSes" ]
             , searchBar model.input
@@ -42,9 +45,7 @@ view session settings model =
                         , Attr.style "border-radius" "15px"
                         , Attr.style "background" "#bbb"
                         , Attr.style "margin" "2rem 2rem 0rem 0rem"
-                        , Attr.style "padding" "10px"
-
-                        --, Attr.style "max-height" "calc(100vh - 28rem)"
+                        , Attr.style "padding" "10px 10px 2px 10px"
                         ]
                     |> Html.map BoardUpdate
 

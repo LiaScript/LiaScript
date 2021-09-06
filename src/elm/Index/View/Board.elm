@@ -12,12 +12,14 @@ module Index.View.Board exposing
     , view
     )
 
+import Accessibility.Key as A11y_Key
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Html.Events as Event
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Utils exposing (focus)
+import Lia.Markdown.Table.Matrix exposing (column)
+import Lia.Utils exposing (btn, btnIcon, focus, icon)
 import List.Extra
     exposing
         ( find
@@ -34,6 +36,8 @@ type alias Board note =
     , moving : Maybe Reference
     , newColumn : Maybe String
     , changeColumn : Maybe Int
+    , activeColumn : Maybe Int
+    , backup : String
     , columns : List (Column note)
     }
 
@@ -64,6 +68,8 @@ init default =
         Nothing
         Nothing
         Nothing
+        Nothing
+        ""
         [ Column default [] ]
 
 
@@ -75,9 +81,11 @@ type Msg withParent
     | AddColumnStop
     | ChangeColumnInput String
     | ChangeColumnStart Int
-    | ChangeColumnStop
+    | ChangeColumnStop Bool
     | Parent withParent
     | Ignore
+    | ActivateMenu (Maybe Int)
+    | DeleteColumn Int
 
 
 return :
@@ -140,14 +148,29 @@ update msg board =
             return { board | newColumn = Just name }
 
         ChangeColumnStart id ->
-            { board | changeColumn = Just id }
+            { board
+                | changeColumn = Just id
+                , activeColumn = Nothing
+                , backup = ""
+            }
                 |> return
                 |> returnCmd (focus Ignore inputID)
 
-        ChangeColumnStop ->
-            { board | changeColumn = Nothing }
-                |> return
-                |> returnStore
+        ChangeColumnStop ok ->
+            if ok then
+                { board
+                    | changeColumn = Nothing
+                    , backup = ""
+                }
+                    |> return
+                    |> returnStore
+
+            else
+                { board
+                    | changeColumn = Nothing
+                    , backup = ""
+                }
+                    |> return
 
         ChangeColumnInput name ->
             return <|
@@ -206,7 +229,18 @@ update msg board =
                                     board.columns
                     }
 
-        _ ->
+        ActivateMenu id ->
+            return { board | activeColumn = id }
+
+        DeleteColumn id ->
+            { board
+                | activeColumn = Nothing
+                , columns = deleteColumn id board.columns
+            }
+                |> return
+                |> returnStore
+
+        Ignore ->
             return board
 
 
@@ -272,6 +306,7 @@ deleteColumn i columns =
                                     |> List.append col.notes
                         }
                     )
+                |> removeAt i
 
 
 getNote :
@@ -300,12 +335,12 @@ view :
     -> Html (Msg withParent)
 view fn attributes board =
     board.columns
-        |> List.indexedMap (viewColumn fn attributes board.changeColumn)
+        |> List.indexedMap (viewColumn fn attributes board.activeColumn board.changeColumn)
         |> viewAddColumn attributes board.newColumn
         |> Html.div
             [ Attr.style "display" "flex"
             , Attr.style "align-items" "flex-start"
-            , Attr.style "overflow-x" "auto"
+            , Attr.style "overflow" "auto"
             ]
 
 
@@ -362,12 +397,15 @@ viewAddColumn attributes newColumn columns =
 plus : Html msg
 plus =
     Html.span
-        [ Attr.style "padding" "0px 1rem 0px 1rem"
+        [ Attr.style "padding" "0rem 1rem"
         , Attr.style "background" "#888"
-        , Attr.style "border-radius" "1rem"
+        , Attr.style "border-radius" "2rem"
         , Attr.style "float" "left"
+        , Attr.style "height" "3rem"
+        , Attr.style "background-color" "rgb(var(--color-highlight))"
+        , Attr.style "color" "rgb(var(--lia-white))"
         ]
-        [ Html.text "+ "
+        [ Html.text "+"
         ]
 
 
@@ -375,21 +413,26 @@ viewColumn :
     ({ note | id : String } -> Html withParent)
     -> List (Attribute (Msg withParent))
     -> Maybe Int
+    -> Maybe Int
     -> Int
     -> Column { note | id : String }
     -> Html (Msg withParent)
-viewColumn fn attributes changingID id column =
+viewColumn fn attributes activatedID changingID id column =
     draggable (ColumnID id)
         (Attr.style "flex" "1" :: attributes)
-        [ Html.h3
+        [ Html.div
             [ Attr.style "width" "inherit"
             , Attr.style "margin-bottom" "0px"
+            , Attr.style "display" "flex"
+            , Attr.style "justify-content" "space-between"
             ]
             [ Html.span
-                [ Attr.style "padding" "0px 1rem 0px 1rem"
+                [ Attr.style "padding" "0.5rem 1rem"
                 , Attr.style "background" "#888"
                 , Attr.style "border-radius" "2rem"
-                , Attr.style "float" "left"
+                , Attr.style "height" "3rem"
+                , Attr.style "background-color" "rgb(var(--color-highlight))"
+                , Attr.style "color" "rgb(var(--lia-white))"
                 ]
                 [ column.notes
                     |> List.length
@@ -397,17 +440,15 @@ viewColumn fn attributes changingID id column =
                     |> Html.text
                 ]
             , if changingID /= Just id then
-                Html.span
-                    [ Attr.style "text-align" "center"
-                    , Attr.style "display" "block"
-                    , Event.onDoubleClick (ChangeColumnStart id)
+                Html.h3
+                    [ Event.onDoubleClick (ChangeColumnStart id)
+                    , Attr.style "margin-bottom" "0px"
                     ]
                     [ Html.text column.name ]
 
               else
                 Html.input
                     [ Attr.value column.name
-                    , Attr.style "float" "right"
                     , Attr.style "display" "block"
                     , Attr.style "width" "calc(100% - 5rem)"
                     , Attr.style "color" "#000"
@@ -415,16 +456,73 @@ viewColumn fn attributes changingID id column =
                     , Attr.id inputID
                     , Attr.autofocus True
                     , Event.onInput ChangeColumnInput
-                    , Event.onBlur ChangeColumnStop
+                    , Event.onBlur <| ChangeColumnStop True
+                    , A11y_Key.onKeyDown
+                        [ A11y_Key.enter <| ChangeColumnStop True
+                        , A11y_Key.escape <| ChangeColumnStop False
+                        ]
                     ]
                     []
+            , columnMenu id activatedID
             ]
         , column.notes
             |> List.indexedMap (viewNote fn id)
             |> Html.div
                 [ Attr.style "overflow-y" "auto"
-                , Attr.style "float" "left"
+                , Attr.style "max-height" "calc(100vh - 34rem)"
                 ]
+        ]
+
+
+columnMenu : Int -> Maybe Int -> Html (Msg withParent)
+columnMenu columnID activeColumnID =
+    Html.span [ Attr.class "nav__item lia-support-menu__item" ]
+        [ btnIcon
+            { title = "settings"
+            , msg =
+                Just <|
+                    ActivateMenu <|
+                        if Just columnID == activeColumnID then
+                            Nothing
+
+                        else
+                            Just columnID
+            , tabbable = True
+            , icon = "icon-more"
+            }
+            [ Attr.class "lia-btn--transparent" ]
+        , Html.div
+            [ Attr.class "lia-support-menu__submenu"
+            , Attr.class <|
+                if Just columnID == activeColumnID then
+                    "active"
+
+                else
+                    ""
+            ]
+            [ btn
+                { title = "rename"
+                , msg = Just (ChangeColumnStart columnID)
+                , tabbable = True
+                }
+                [ Attr.class "lia-btn--transparent", Attr.style "width" "100%" ]
+                [ icon "lia-btn__icon icon-trash" []
+                , Html.span
+                    [ Attr.class "lia-btn__text" ]
+                    [ Html.text "rename" ]
+                ]
+            , btn
+                { title = "delete"
+                , msg = Just (DeleteColumn columnID)
+                , tabbable = True
+                }
+                [ Attr.class "lia-btn--transparent", Attr.style "width" "100%" ]
+                [ icon "lia-btn__icon icon-trash" []
+                , Html.span
+                    [ Attr.class "lia-btn__text" ]
+                    [ Html.text "delete" ]
+                ]
+            ]
         ]
 
 
@@ -436,7 +534,7 @@ viewNote :
     -> Html (Msg withParent)
 viewNote fn columnID noteID note =
     draggable (NoteID columnID noteID)
-        [ Attr.style "padding-top" "1rem" ]
+        [ Attr.style "padding-bottom" "1rem" ]
         [ fn note
             |> Html.map Parent
         ]
@@ -519,7 +617,7 @@ restore data json =
             in
             columns
                 |> updateAt 0 (\col -> { col | notes = List.append col.notes runaways })
-                |> Board Nothing Nothing Nothing Nothing
+                |> Board Nothing Nothing Nothing Nothing Nothing ""
                 |> Just
 
         Err _ ->
