@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.31
+version:  0.9.32
 language: en
 narrator: UK English Male
 
@@ -281,6 +281,14 @@ This will apply the following three patches:
 - elm-patch/dom: enable onclick events as well as innerHTML
 
 ## Version-Changes
+
+**0.9.32** (06/09/2021)
+
+- Improved accessibility for quizzes
+- Custom styling enabled for comments
+- Imporved relative link handling
+- Updated translations
+- fix: Minor CSS bugs and relative links in `href="#..."`
 
 **0.9.31** (30/08/2021)
 
