@@ -16,6 +16,7 @@ import Lia.Markdown.Inline.View as Inline
 import Lia.Markdown.Types exposing (Block(..))
 import Lia.Utils exposing (btnIcon, icon, modal)
 import List.Extra exposing (getAt)
+import Translations exposing (Lang)
 
 
 view : Config sub -> Vector -> Parameters -> Gallery -> Html (Msg sub)
