@@ -3,16 +3,27 @@ module Lia.Markdown.Inline.Multimedia exposing (audio, movie)
 import Lia.Parser.PatReplace exposing (replace, root)
 
 
+{-| <http://embedcodedailymotion.blogspot.com/2016/05/dailymotion-embed-generator-tdborder.html>
+
+<https://developers.google.com/youtube/player_parameters>
+
+<https://vimeo.zendesk.com/hc/en-us/articles/360001494447-Using-Player-Parameters>
+
+-}
 movie : String -> ( Bool, String )
 movie =
     [ { by =
             \url w ->
                 "https://www.youtube.com/embed/"
                     ++ w
-                    ++ preserve url [ "autoplay=", "start=", "end=", "mute=" ]
+                    ++ preserve url youTubeRules
       , pattern = root "(?:youtu\\.be/|youtube\\.com/(?:(?:watch)?\\?(?:.*&)?v(?:i)?=|(?:v|vi|user)/))([^\\?&\"'<> #]+)"
       }
-    , { by = \url w -> "https://player.vimeo.com/video/" ++ w ++ preserve url [ "autoplay=", "muted=", "loop" ]
+    , { by =
+            \url w ->
+                "https://player.vimeo.com/video/"
+                    ++ w
+                    ++ preserve url vimeoRules
       , pattern = root "(?:player.)?(?:vimeo\\.com).*?(\\d+)"
       }
     , { by = \_ w -> "https://www.dailymotion.com/embed/video/" ++ w
@@ -37,7 +48,7 @@ audio =
             \url w ->
                 "https://www.youtube.com/embed/"
                     ++ w
-                    ++ preserve url [ "autoplay=", "start=", "end=", "mute=" ]
+                    ++ preserve url youTubeRules
       , pattern = root "music\\.(?:youtu\\.be/|youtube\\.com/(?:(?:watch)?\\?(?:.*&)?v(?:i)?=|(?:v|vi|user)/))([^\\?&\"'<> #]+)"
       }
 
@@ -86,3 +97,55 @@ fragment url params =
                 |> Maybe.map ((++) "#")
                 |> Maybe.withDefault ""
            )
+
+
+{-| <https://developers.google.com/youtube/player_parameters>
+-}
+youTubeRules : List String
+youTubeRules =
+    [ "autoplay"
+    , "cc_lang_pref"
+    , "color"
+    , "disablekb"
+    , "enablejsapi"
+    , "end"
+    , "fs"
+    , "hl"
+    , "iv_load_policy"
+    , "list"
+    , "listType"
+    , "loop"
+    , "modestbranding"
+    , "mute"
+    , "origin"
+    , "playlist"
+    , "playsinline"
+    , "rel"
+    , "start"
+    , "widget_referrer"
+    ]
+
+
+{-| <https://vimeo.zendesk.com/hc/en-us/articles/360001494447-Using-Player-Parameters>
+-}
+vimeoRules : List String
+vimeoRules =
+    [ "autopause"
+    , "autoplay"
+    , "background"
+    , "byline"
+    , "color"
+    , "controls"
+    , "dnt"
+    , "keyboard"
+    , "loop"
+    , "muted"
+    , "pip"
+    , "playsinline"
+    , "portrait"
+    , "quality"
+    , "speed"
+    , "texttrack"
+    , "title"
+    , "transparent"
+    ]
