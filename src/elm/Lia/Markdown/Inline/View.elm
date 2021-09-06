@@ -303,8 +303,8 @@ img config attr alt_ url_ title_ width =
     Html.img
         (Attr.src url_
             :: Attr.attribute "loading" "lazy"
-            :: (if List.isEmpty attr then
-                    [ Attr.attribute "onClick" ("window.img_Click(\"" ++ url_ ++ "\")") ]
+            :: (if isEmpty attr then
+                    Attr.attribute "onClick" ("window.img_Click(\"" ++ url_ ++ "\")") :: toAttribute attr
 
                 else
                     toAttribute attr
@@ -314,6 +314,15 @@ img config attr alt_ url_ title_ width =
             |> CList.addWhen (alt config alt_)
         )
         []
+
+
+{-| Internal helper function that checks if alle elements within the editor-branch do only contain
+double-click events for navigation. In this case the modal functionality is also applied to
+the image element.
+-}
+isEmpty : Parameters -> Bool
+isEmpty =
+    List.all (Tuple.first >> (==) "ondblclick")
 
 
 load : String -> Attribute msg
