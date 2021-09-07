@@ -6,6 +6,7 @@ module Lia.Markdown.Quiz.Block.Update exposing
 
 import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Quiz.Block.Types exposing (State(..))
+import Return exposing (Return)
 
 
 type Msg sub
@@ -15,23 +16,29 @@ type Msg sub
     | Script (Script.Msg sub)
 
 
-update : Msg sub -> State -> ( State, Maybe (Script.Msg sub) )
+update : Msg sub -> State -> Return State Never sub
 update msg state =
     case ( msg, state ) of
         ( Choose option, Select _ _ ) ->
-            ( Select True [ option ], Nothing )
+            Select True [ option ]
+                |> Return.value
 
         ( Toggle, Select open id ) ->
-            ( Select (not open) id, Nothing )
+            Select (not open) id
+                |> Return.value
 
         ( Input str, Text _ ) ->
-            ( Text str, Nothing )
+            Text str
+                |> Return.value
 
         ( Script sub, _ ) ->
-            ( state, Just sub )
+            state
+                |> Return.value
+                |> Return.script sub
 
         _ ->
-            ( state, Nothing )
+            state
+                |> Return.value
 
 
 toString : State -> String

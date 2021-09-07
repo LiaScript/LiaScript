@@ -98,16 +98,16 @@ update globals msg section =
 
         UpdateQuiz childMsg ->
             let
-                ( vector, event, sub ) =
+                result =
                     Quiz.update section.effect_model.javascript childMsg section.quiz_vector
             in
-            ( { section | quiz_vector = vector }
+            ( { section | quiz_vector = result.value }
             , Cmd.none
-            , event
+            , result.events
                 |> List.map Event.encode
                 |> send "quiz"
             )
-                |> updateScript sub
+                |> updateScript result.script
 
         UpdateTask childMsg ->
             let
@@ -220,19 +220,19 @@ subUpdate js msg section =
 
                 UpdateQuiz childMsg ->
                     let
-                        ( vector, events, subCmd ) =
+                        result =
                             Quiz.update js childMsg subsection.quiz_vector
                     in
-                    case subCmd of
+                    case result.script of
                         Just _ ->
                             subUpdate js
                                 (UpdateQuiz childMsg)
-                                (SubSection { subsection | quiz_vector = vector })
+                                (SubSection { subsection | quiz_vector = result.value })
 
                         _ ->
-                            ( SubSection { subsection | quiz_vector = vector }
+                            ( SubSection { subsection | quiz_vector = result.value }
                             , Cmd.none
-                            , events
+                            , result.events
                                 |> List.map Event.encode
                                 |> send "quiz"
                             )
