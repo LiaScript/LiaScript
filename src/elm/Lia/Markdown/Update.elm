@@ -135,16 +135,16 @@ update globals msg section =
 
         UpdateSurvey childMsg ->
             let
-                ( vector, event, sub ) =
+                result =
                     Survey.update section.effect_model.javascript childMsg section.survey_vector
             in
-            ( { section | survey_vector = vector }
+            ( { section | survey_vector = result.value }
             , Cmd.none
-            , event
+            , result.events
                 |> List.map Event.encode
                 |> send "survey"
             )
-                |> updateScript sub
+                |> updateScript result.script
 
         UpdateTable childMsg ->
             let
@@ -239,19 +239,19 @@ subUpdate js msg section =
 
                 UpdateSurvey childMsg ->
                     let
-                        ( vector, events, subCmd ) =
+                        result =
                             Survey.update js childMsg subsection.survey_vector
                     in
-                    case subCmd of
+                    case result.script of
                         Just _ ->
                             subUpdate js
                                 (UpdateSurvey childMsg)
-                                (SubSection { subsection | survey_vector = vector })
+                                (SubSection { subsection | survey_vector = result.value })
 
                         _ ->
-                            ( SubSection { subsection | survey_vector = vector }
+                            ( SubSection { subsection | survey_vector = result.value }
                             , Cmd.none
-                            , events
+                            , result.events
                                 |> List.map Event.encode
                                 |> send "survey"
                             )
