@@ -27,23 +27,31 @@ href =
     link >> (++) "./?" >> Attr.href
 
 
-view session =
-    List.map (card session.share)
+view session show =
+    List.map (card session.share show)
         >> Html.div [ Attr.class "preview-grid" ]
 
 
-card : Bool -> Course -> Html Msg
-card share course =
+card : Bool -> { tags : Bool, body : Bool, footer : Bool } -> Course -> Html Msg
+card share show course =
     case get_active course of
         Just { title, definition } ->
             Html.article [ Attr.class "lia-card" ]
                 [ viewVersions course
                 , viewMedia course.id definition.logo
                 , Html.div [ Attr.class "lia-card__content" ]
-                    [ viewHeader title definition.macro
-                    , viewBody definition.comment
-                    , viewControls share title definition.comment course
-                    , viewFooter definition
+                    [ viewHeader show.tags title definition.macro
+                    , if show.body then
+                        viewBody definition.comment
+
+                      else
+                        Html.text ""
+                    , viewControls share show.footer title definition.comment course
+                    , if show.footer then
+                        viewFooter definition
+
+                      else
+                        Html.text ""
                     ]
                 ]
 
@@ -118,21 +126,25 @@ viewMedia courseUrl logoUrl =
         ]
 
 
-viewHeader : Inlines -> Dict String String -> Html Msg
-viewHeader title macro =
+viewHeader : Bool -> Inlines -> Dict String String -> Html Msg
+viewHeader viewTags title macro =
     Html.header [ Attr.class "lia-card__header" ]
         [ title
             |> inlines
             |> Html.h3 [ Attr.class "lia-card__title" ]
-        , macro
-            |> Dict.get "tags"
-            |> Maybe.map
-                (String.replace ";" " | "
-                    >> Html.text
-                    >> List.singleton
-                    >> Html.h4 [ Attr.class "lia-card__subtitle" ]
-                )
-            |> Maybe.withDefault (Html.text "")
+        , if viewTags then
+            macro
+                |> Dict.get "tags"
+                |> Maybe.map
+                    (String.replace ";" " | "
+                        >> Html.text
+                        >> List.singleton
+                        >> Html.h4 [ Attr.class "lia-card__subtitle" ]
+                    )
+                |> Maybe.withDefault (Html.text "")
+
+          else
+            Html.text ""
         ]
 
 
@@ -150,9 +162,16 @@ viewBody comment =
                 ]
 
 
-viewControls : Bool -> Inlines -> Inlines -> Course -> Html Msg
-viewControls hasShareAPI title comment course =
-    Html.div [ Attr.class "lia-card__controls" ]
+viewControls : Bool -> Bool -> Inlines -> Inlines -> Course -> Html Msg
+viewControls hasShareAPI showFooter title comment course =
+    Html.div
+        [ Attr.class "lia-card__controls"
+        , if showFooter then
+            Attr.class ""
+
+          else
+            Attr.style "margin-bottom" "0px"
+        ]
         [ btnIcon
             { msg = Just <| Delete course.id
             , title = "delete"
