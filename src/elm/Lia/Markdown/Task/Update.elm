@@ -12,6 +12,7 @@ import Lia.Markdown.Task.Json as Json
 import Lia.Markdown.Task.Types exposing (Vector)
 import Port.Eval as Eval
 import Port.Event as Event exposing (Event)
+import Return exposing (Return)
 
 
 {-| Interaction associated to LiaScript task list:
@@ -29,18 +30,20 @@ type Msg sub
     | Script (Script.Msg sub)
 
 
-update : Scripts a -> Msg sub -> Vector -> ( Vector, List Event, Maybe (Script.Msg sub) )
+update :
+    Scripts a
+    -> Msg sub
+    -> Vector
+    -> Return Vector Never sub
 update scripts msg vector =
     case msg of
         -- simple toggle
         Toggle x y Nothing ->
-            ( vector
+            vector
                 |> Array.get x
                 |> Maybe.map (\state -> Array.set x (toggle y state) vector)
                 |> Maybe.withDefault vector
-            , []
-            , Nothing
-            )
+                |> Return.value
                 |> store
 
         -- toggle and execute the code snippet
@@ -51,37 +54,38 @@ update scripts msg vector =
                     |> Maybe.map (toggle y)
             of
                 Just state ->
-                    ( Array.set x state vector
-                    , [ [ state
-                            |> JE.array JE.bool
-                            |> JE.encode 0
-                        ]
-                            |> Eval.event x code (outputs scripts)
-                      ]
-                    , Nothing
-                    )
+                    vector
+                        |> Array.set x state
+                        |> Return.value
+                        |> Return.event
+                            ([ state
+                                |> JE.array JE.bool
+                                |> JE.encode 0
+                             ]
+                                |> Eval.event x code (outputs scripts)
+                            )
                         |> store
 
                 Nothing ->
-                    ( vector, [], Nothing )
+                    Return.value vector
 
-        Script childMsg ->
-            ( vector, [], Just childMsg )
+        Script sub ->
+            vector
+                |> Return.value
+                |> Return.script sub
 
         Handle event ->
-            case event.topic of
-                -- currently it is only possible to restore states from the backend
-                "restore" ->
-                    ( event.message
-                        |> Json.toVector
-                        |> Result.withDefault vector
-                    , []
-                    , Nothing
-                    )
+            Return.value <|
+                case event.topic of
+                    -- currently it is only possible to restore states from the backend
+                    "restore" ->
+                        event.message
+                            |> Json.toVector
+                            |> Result.withDefault vector
 
-                -- eval events are not handled at the moment
-                _ ->
-                    ( vector, [], Nothing )
+                    -- eval events are not handled at the moment
+                    _ ->
+                        vector
 
 
 toggle : Int -> Array Bool -> Array Bool
@@ -98,16 +102,14 @@ toggle y states =
 {-| Create a store event, that will store the state of the task persistently
 within the backend.
 -}
-store : ( Vector, List Event, Maybe (Script.Msg sub) ) -> ( Vector, List Event, Maybe (Script.Msg sub) )
-store ( vector, events, sub ) =
-    ( vector
-    , (vector
-        |> Json.fromVector
-        |> Event.store
-      )
-        :: events
-    , sub
-    )
+store : Return Vector Never sub -> Return Vector Never sub
+store return =
+    return
+        |> Return.event
+            (return.value
+                |> Json.fromVector
+                |> Event.store
+            )
 
 
 {-| Pass events from parent update function to the Task update function.

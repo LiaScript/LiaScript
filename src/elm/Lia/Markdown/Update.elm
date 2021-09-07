@@ -111,16 +111,16 @@ update globals msg section =
 
         UpdateTask childMsg ->
             let
-                ( vector, event, sub ) =
+                result =
                     Task.update section.effect_model.javascript childMsg section.task_vector
             in
-            ( { section | task_vector = vector }
+            ( { section | task_vector = result.value }
             , Cmd.none
-            , event
+            , result.events
                 |> List.map Event.encode
                 |> send "task"
             )
-                |> updateScript sub
+                |> updateScript result.script
 
         UpdateGallery childMsg ->
             let
@@ -258,19 +258,19 @@ subUpdate js msg section =
 
                 UpdateTask childMsg ->
                     let
-                        ( vector, events, subCmd ) =
+                        result =
                             Task.update js childMsg subsection.task_vector
                     in
-                    case subCmd of
+                    case result.script of
                         Just _ ->
                             subUpdate js
                                 (UpdateTask childMsg)
-                                (SubSection { subsection | task_vector = vector })
+                                (SubSection { subsection | task_vector = result.value })
 
                         _ ->
-                            ( SubSection { subsection | task_vector = vector }
+                            ( SubSection { subsection | task_vector = result.value }
                             , Cmd.none
-                            , events
+                            , result.events
                                 |> List.map Event.encode
                                 |> send "task"
                             )
