@@ -30,7 +30,7 @@ view session settings model =
             , Attr.style "max-width" "100%"
             , Attr.style "height" "calc(100vh - 12rem)"
             , Attr.style "margin-bottom" "0px"
-            , Attr.style "overflow" "none"
+            , Attr.style "overflow" "hidden"
             ]
             [ Html.h1 [] [ Html.text "Lia: Open-courSes" ]
             , searchBar model.input
@@ -40,12 +40,15 @@ view session settings model =
               else if Model.loaded model then
                 --Base.view session model.courses
                 model.board
-                    |> Board.view (Base.card session.share)
+                    |> Board.view (Base.card session.share { body = False, tags = False, footer = False })
                         [ Attr.style "min-width" "360px"
                         , Attr.style "border-radius" "15px"
-                        , Attr.style "background" "#bbb"
+
+                        --, Attr.style "background" "rgb(var(--color-highlight))"
                         , Attr.style "margin" "2rem 2rem 0rem 0rem"
                         , Attr.style "padding" "10px 10px 2px 10px"
+                        , Attr.style "border" "2.5px solid"
+                        , Attr.style "border-color" "rgb(var(--color-highlight))"
                         ]
                     |> Html.map BoardUpdate
 
