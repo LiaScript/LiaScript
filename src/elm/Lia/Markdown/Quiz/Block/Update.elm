@@ -4,7 +4,7 @@ module Lia.Markdown.Quiz.Block.Update exposing
     , update
     )
 
-import Lia.Markdown.Effect.Script.Update as Script
+import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Quiz.Block.Types exposing (State(..))
 import Return exposing (Return)
 

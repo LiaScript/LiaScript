@@ -13,7 +13,7 @@ import Html.Attributes exposing (width)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Index.Update as Index
-import Lia.Markdown.Effect.Script.Update as Script
+import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (Model, loadResource)

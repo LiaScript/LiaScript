@@ -1,6 +1,5 @@
 module Lia.Markdown.Effect.Script.Update exposing
-    ( Msg(..)
-    , execute
+    ( execute
     , getAll
     , getVisible
     , setRunning
@@ -11,7 +10,7 @@ import Array
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Effect.Script.Input as Input
-import Lia.Markdown.Effect.Script.Types as Script exposing (Script, Scripts, Stdout(..))
+import Lia.Markdown.Effect.Script.Types as Script exposing (Msg(..), Script, Scripts, Stdout(..))
 import Lia.Parser.Parser exposing (parse_subsection)
 import Lia.Section exposing (SubSection)
 import Lia.Utils exposing (focus)
@@ -19,21 +18,6 @@ import Port.Eval as Eval exposing (Eval)
 import Port.Event as Event exposing (Event)
 import Process
 import Task
-
-
-type Msg sub
-    = Click Int
-    | Reset Int
-    | Activate Bool Int
-    | Value Int Bool String
-    | Radio Int Bool String
-    | Checkbox Int Bool String
-    | Edit Bool Int
-    | EditCode Int String
-    | NoOp
-    | Handle Event
-    | Delay Float (Msg sub)
-    | Sub Int sub
 
 
 update :

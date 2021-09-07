@@ -6,8 +6,7 @@ module Lia.Markdown.Task.Update exposing
 
 import Array exposing (Array)
 import Json.Encode as JE
-import Lia.Markdown.Effect.Script.Types exposing (Scripts, outputs)
-import Lia.Markdown.Effect.Script.Update as Script
+import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
 import Lia.Markdown.Task.Json as Json
 import Lia.Markdown.Task.Types exposing (Vector)
 import Port.Eval as Eval

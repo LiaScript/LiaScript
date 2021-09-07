@@ -6,8 +6,7 @@ module Lia.Markdown.Inline.Config exposing
 
 import Dict exposing (Dict)
 import Html exposing (Html)
-import Lia.Markdown.Effect.Script.Types exposing (Scripts)
-import Lia.Markdown.Effect.Script.Update exposing (Msg)
+import Lia.Markdown.Effect.Script.Types exposing (Msg, Scripts)
 import Lia.Section exposing (SubSection)
 import Lia.Settings.Types exposing (Mode(..))
 import Translations exposing (Lang)

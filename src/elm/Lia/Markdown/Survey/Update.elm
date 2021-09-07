@@ -2,8 +2,7 @@ module Lia.Markdown.Survey.Update exposing (Msg(..), handle, update)
 
 import Array
 import Dict
-import Lia.Markdown.Effect.Script.Types exposing (Scripts, outputs)
-import Lia.Markdown.Effect.Script.Update as Script
+import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
 import Lia.Markdown.Survey.Json as Json
 import Lia.Markdown.Survey.Types exposing (State(..), Vector, toString)
 import Port.Eval as Eval

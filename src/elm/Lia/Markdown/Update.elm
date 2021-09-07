@@ -14,7 +14,7 @@ import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Code.Update as Code
 import Lia.Markdown.Effect.Model as E
-import Lia.Markdown.Effect.Script.Types exposing (Scripts)
+import Lia.Markdown.Effect.Script.Types as Script_ exposing (Scripts)
 import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Footnote.View as Footnote
@@ -41,7 +41,7 @@ type Msg
     | UpdateGallery (Gallery.Msg Msg)
     | FootnoteHide
     | FootnoteShow String
-    | Script (Script.Msg Msg)
+    | Script (Script_.Msg Msg)
     | NoOp
 
 
@@ -315,7 +315,7 @@ subUpdate js msg section =
 
 
 updateScript :
-    Maybe (Script.Msg Msg)
+    Maybe (Script_.Msg Msg)
     -> ( { sec | effect_model : E.Model SubSection }, Cmd Msg, List ( String, JE.Value ) )
     -> ( { sec | effect_model : E.Model SubSection }, Cmd Msg, List ( String, JE.Value ) )
 updateScript msg ( section, cmd, events ) =

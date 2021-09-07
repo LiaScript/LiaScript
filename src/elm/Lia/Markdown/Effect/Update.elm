@@ -21,7 +21,7 @@ import Lia.Markdown.Effect.Model
         ( Model
         , current_comment
         )
-import Lia.Markdown.Effect.Script.Types exposing (Scripts)
+import Lia.Markdown.Effect.Script.Types as Script_ exposing (Scripts)
 import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Section exposing (SubSection)
 import Port.Event exposing (Event)
@@ -37,7 +37,7 @@ type Msg sub
     | Mute Int
     | Rendered Bool Dom.Viewport
     | Handle Event
-    | Script (Script.Msg sub)
+    | Script (Script_.Msg sub)
 
 
 updateSub :
@@ -45,7 +45,7 @@ updateSub :
     , handle : Scripts SubSection -> JE.Value -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
     , globals : Maybe Definition
     }
-    -> Script.Msg sub
+    -> Script_.Msg sub
     -> Model SubSection
     -> ( Model SubSection, Cmd (Msg sub), List Event )
 updateSub main msg =
@@ -139,7 +139,7 @@ update main sound msg model =
                     _ ->
                         let
                             ( scripts, cmd, events ) =
-                                Script.update main (Script.Handle event) model.javascript
+                                Script.update main (Script_.Handle event) model.javascript
                         in
                         ( { model | javascript = scripts }, Cmd.map Script cmd, events )
 

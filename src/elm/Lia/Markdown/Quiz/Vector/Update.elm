@@ -5,7 +5,7 @@ module Lia.Markdown.Quiz.Vector.Update exposing
     , update
     )
 
-import Lia.Markdown.Effect.Script.Update as Script
+import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Quiz.Vector.Types exposing (State(..))
 import Return exposing (Return)
 

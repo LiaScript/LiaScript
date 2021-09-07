@@ -4,7 +4,7 @@ module Lia.Markdown.Gallery.Update exposing
     )
 
 import Array
-import Lia.Markdown.Effect.Script.Update as Script
+import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Gallery.Types exposing (Vector)
 import Return exposing (Return)
 

@@ -1,7 +1,7 @@
 module Lia.Markdown.Quiz.Matrix.Update exposing (Msg(..), toString, update)
 
 import Array
-import Lia.Markdown.Effect.Script.Update as Script
+import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Quiz.Matrix.Types exposing (State)
 import Lia.Markdown.Quiz.Vector.Update as Vector
 import Return exposing (Return)
