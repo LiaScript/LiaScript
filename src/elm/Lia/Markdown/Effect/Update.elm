@@ -41,8 +41,8 @@ type Msg sub
 
 
 updateSub :
-    { update : Scripts SubSection -> sub -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
-    , handle : Scripts SubSection -> JE.Value -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
+    { update : Scripts SubSection -> sub -> SubSection -> ( SubSection, Cmd sub, List Event )
+    , handle : Scripts SubSection -> JE.Value -> SubSection -> ( SubSection, Cmd sub, List Event )
     , globals : Maybe Definition
     }
     -> Script_.Msg sub
@@ -53,8 +53,8 @@ updateSub main msg =
 
 
 update :
-    { update : Scripts SubSection -> sub -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
-    , handle : Scripts SubSection -> JE.Value -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
+    { update : Scripts SubSection -> sub -> SubSection -> ( SubSection, Cmd sub, List Event )
+    , handle : Scripts SubSection -> JE.Value -> SubSection -> ( SubSection, Cmd sub, List Event )
     , globals : Maybe Definition
     }
     -> Bool
@@ -177,8 +177,8 @@ markRunning ( model, cmd, events ) =
 
 
 execute :
-    { update : Scripts SubSection -> sub -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
-    , handle : Scripts SubSection -> JE.Value -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
+    { update : Scripts SubSection -> sub -> SubSection -> ( SubSection, Cmd sub, List Event )
+    , handle : Scripts SubSection -> JE.Value -> SubSection -> ( SubSection, Cmd sub, List Event )
     , globals : Maybe Definition
     }
     -> Bool

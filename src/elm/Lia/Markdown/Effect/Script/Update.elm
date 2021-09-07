@@ -12,7 +12,7 @@ import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Effect.Script.Input as Input
 import Lia.Markdown.Effect.Script.Types as Script exposing (Msg(..), Script, Scripts, Stdout(..))
 import Lia.Parser.Parser exposing (parse_subsection)
-import Lia.Section exposing (SubSection)
+import Lia.Section exposing (SubSection(..))
 import Lia.Utils exposing (focus)
 import Port.Eval as Eval exposing (Eval)
 import Port.Event as Event exposing (Event)
@@ -21,8 +21,8 @@ import Task
 
 
 update :
-    { update : Scripts SubSection -> sub -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
-    , handle : Scripts SubSection -> JE.Value -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
+    { update : Scripts SubSection -> sub -> SubSection -> ( SubSection, Cmd sub, List Event )
+    , handle : Scripts SubSection -> JE.Value -> SubSection -> ( SubSection, Cmd sub, List Event )
     , globals : Maybe Definition
     }
     -> Msg sub
@@ -40,8 +40,7 @@ update main msg scripts =
                     ( Script.set id (\s -> { s | result = Just (IFrame new) }) scripts
                     , Cmd.map (Sub id) cmd
                     , events
-                        |> List.map (\( name, json ) -> Event name id json |> Event.encode)
-                        |> List.map (Event "sub" id)
+                        |> List.map (Event.encode >> Event "sub" id)
                     )
 
                 _ ->
@@ -268,8 +267,7 @@ update main msg scripts =
                             ( Script.set event.section (\s -> { s | result = Just (IFrame new) }) scripts
                             , Cmd.map (Sub event.section) cmd
                             , events
-                                |> List.map (\( name, json ) -> Event name event.section json |> Event.encode)
-                                |> List.map (Event "sub" event.section)
+                                |> List.map (Event.encode >> Event "sub" event.section)
                             )
 
                         _ ->
@@ -327,7 +325,7 @@ update_ defintion id e scripts =
         Just js ->
             let
                 new =
-                    eval_ defintion (Eval.decode e) js
+                    eval_ defintion id (Eval.decode e) js
             in
             ( new.result /= js.result
             , Array.set id new scripts
@@ -337,8 +335,8 @@ update_ defintion id e scripts =
             ( False, scripts )
 
 
-eval_ : Maybe Definition -> Eval -> Script SubSection -> Script SubSection
-eval_ defintion e js =
+eval_ : Maybe Definition -> Int -> Eval -> Script SubSection -> Script SubSection
+eval_ defintion id e js =
     let
         waiting =
             e.result == "LIA: wait"
@@ -365,7 +363,7 @@ eval_ defintion e js =
                             case
                                 e.result
                                     |> String.dropLeft 10
-                                    |> parse_subsection defintion
+                                    |> parse_subsection defintion id
                             of
                                 Ok rslt ->
                                     IFrame rslt

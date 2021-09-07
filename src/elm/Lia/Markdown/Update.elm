@@ -14,8 +14,7 @@ import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Code.Update as Code
 import Lia.Markdown.Effect.Model as E
-import Lia.Markdown.Effect.Script.Types as Script_ exposing (Scripts)
-import Lia.Markdown.Effect.Script.Update as Script
+import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts)
 import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.Gallery.Update as Gallery
@@ -41,7 +40,7 @@ type Msg
     | UpdateGallery (Gallery.Msg Msg)
     | FootnoteHide
     | FootnoteShow String
-    | Script (Script_.Msg Msg)
+    | Script (Script.Msg Msg)
     | NoOp
 
 
@@ -50,12 +49,12 @@ subscriptions _ =
     footnote FootnoteShow
 
 
-send : String -> List JE.Value -> List ( String, JE.Value )
-send name =
-    List.map (Tuple.pair name)
+send : String -> Int -> List Event -> List Event
+send name id =
+    List.map (Event.encode >> Event name id)
 
 
-update : Definition -> Msg -> Section -> ( Section, Cmd Msg, List ( String, JE.Value ) )
+update : Definition -> Msg -> Section -> ( Section, Cmd Msg, List Event )
 update globals msg section =
     case msg of
         UpdateEffect sound childMsg ->
@@ -79,8 +78,7 @@ update globals msg section =
             ( { section | effect_model = effect_model }
             , Cmd.map (UpdateEffect sound) cmd
             , event
-                |> List.map Event.encode
-                |> send "effect"
+                |> send "effect" section.id
             )
 
         UpdateCode childMsg ->
@@ -91,8 +89,7 @@ update globals msg section =
             ( { section | code_model = result.value }
             , Cmd.none
             , result.events
-                |> List.map Event.encode
-                |> send "code"
+                |> send "code" section.id
             )
 
         UpdateQuiz childMsg ->
@@ -103,8 +100,7 @@ update globals msg section =
             ( { section | quiz_vector = result.value }
             , Cmd.none
             , result.events
-                |> List.map Event.encode
-                |> send "quiz"
+                |> send "quiz" section.id
             )
                 |> updateScript result.script
 
@@ -116,8 +112,7 @@ update globals msg section =
             ( { section | task_vector = result.value }
             , Cmd.none
             , result.events
-                |> List.map Event.encode
-                |> send "task"
+                |> send "task" section.id
             )
                 |> updateScript result.script
 
@@ -140,8 +135,7 @@ update globals msg section =
             ( { section | survey_vector = result.value }
             , Cmd.none
             , result.events
-                |> List.map Event.encode
-                |> send "survey"
+                |> send "survey" section.id
             )
                 |> updateScript result.script
 
@@ -177,7 +171,7 @@ subUpdate :
     Scripts SubSection
     -> Msg
     -> SubSection
-    -> ( SubSection, Cmd Msg, List ( String, JE.Value ) )
+    -> ( SubSection, Cmd Msg, List Event )
 subUpdate js msg section =
     case section of
         SubSection subsection ->
@@ -190,8 +184,7 @@ subUpdate js msg section =
                     ( SubSection { subsection | effect_model = effect_model }
                     , Cmd.map (UpdateEffect sound) cmd
                     , event
-                        |> List.map Event.encode
-                        |> send "effect"
+                        |> send "effect" subsection.id
                     )
 
                 UpdateTable childMsg ->
@@ -212,8 +205,7 @@ subUpdate js msg section =
                     ( SubSection { subsection | code_model = result.value }
                     , Cmd.none
                     , result.events
-                        |> List.map Event.encode
-                        |> send "code"
+                        |> send "code" subsection.id
                     )
 
                 UpdateQuiz childMsg ->
@@ -231,8 +223,7 @@ subUpdate js msg section =
                             ( SubSection { subsection | quiz_vector = result.value }
                             , Cmd.none
                             , result.events
-                                |> List.map Event.encode
-                                |> send "quiz"
+                                |> send "quiz" subsection.id
                             )
 
                 UpdateSurvey childMsg ->
@@ -250,8 +241,7 @@ subUpdate js msg section =
                             ( SubSection { subsection | survey_vector = result.value }
                             , Cmd.none
                             , result.events
-                                |> List.map Event.encode
-                                |> send "survey"
+                                |> send "survey" subsection.id
                             )
 
                 UpdateTask childMsg ->
@@ -269,8 +259,7 @@ subUpdate js msg section =
                             ( SubSection { subsection | task_vector = result.value }
                             , Cmd.none
                             , result.events
-                                |> List.map Event.encode
-                                |> send "task"
+                                |> send "task" subsection.id
                             )
 
                 Script childMsg ->
@@ -306,8 +295,7 @@ subUpdate js msg section =
                     ( SubSubSection { sub | effect_model = effect_model }
                     , Cmd.map (UpdateEffect sound) cmd
                     , event
-                        |> List.map Event.encode
-                        |> send "effect"
+                        |> send "effect" sub.id
                     )
 
                 _ ->
@@ -315,9 +303,9 @@ subUpdate js msg section =
 
 
 updateScript :
-    Maybe (Script_.Msg Msg)
-    -> ( { sec | effect_model : E.Model SubSection }, Cmd Msg, List ( String, JE.Value ) )
-    -> ( { sec | effect_model : E.Model SubSection }, Cmd Msg, List ( String, JE.Value ) )
+    Maybe (Script.Msg Msg)
+    -> ( { sec | id : Int, effect_model : E.Model SubSection }, Cmd Msg, List Event )
+    -> ( { sec | id : Int, effect_model : E.Model SubSection }, Cmd Msg, List Event )
 updateScript msg ( section, cmd, events ) =
     case msg of
         Nothing ->
@@ -331,27 +319,26 @@ updateScript msg ( section, cmd, events ) =
             ( { section | effect_model = effect_model }
             , Cmd.batch [ cmd, Cmd.map (UpdateEffect True) cmd2 ]
             , event
-                |> List.map Event.encode
-                |> send "effect"
+                |> send "effect" section.id
             )
 
 
-nextEffect : Definition -> Bool -> Section -> ( Section, Cmd Msg, List ( String, JE.Value ) )
+nextEffect : Definition -> Bool -> Section -> ( Section, Cmd Msg, List Event )
 nextEffect globals sound =
     update globals (UpdateEffect sound Effect.next)
 
 
-previousEffect : Definition -> Bool -> Section -> ( Section, Cmd Msg, List ( String, JE.Value ) )
+previousEffect : Definition -> Bool -> Section -> ( Section, Cmd Msg, List Event )
 previousEffect globals sound =
     update globals (UpdateEffect sound Effect.previous)
 
 
-initEffect : Definition -> Bool -> Bool -> Section -> ( Section, Cmd Msg, List ( String, JE.Value ) )
+initEffect : Definition -> Bool -> Bool -> Section -> ( Section, Cmd Msg, List Event )
 initEffect globals run_all_javascript sound =
     update globals (UpdateEffect sound (Effect.init run_all_javascript))
 
 
-subHandle : Scripts SubSection -> JE.Value -> SubSection -> ( SubSection, Cmd Msg, List ( String, JE.Value ) )
+subHandle : Scripts SubSection -> JE.Value -> SubSection -> ( SubSection, Cmd Msg, List Event )
 subHandle js json section =
     case Event.decode json of
         Ok event ->
@@ -383,7 +370,7 @@ subHandle js json section =
             ( section, Cmd.none, [] )
 
 
-handle : Definition -> String -> Event -> Section -> ( Section, Cmd Msg, List ( String, JE.Value ) )
+handle : Definition -> String -> Event -> Section -> ( Section, Cmd Msg, List Event )
 handle globals topic event section =
     case topic of
         "code" ->
@@ -405,26 +392,26 @@ handle globals topic event section =
             ( section, Cmd.none, [] )
 
 
-ttsReplay : Bool -> Bool -> Maybe Section -> List ( String, JE.Value )
+ttsReplay : Bool -> Bool -> Maybe Section -> List Event
 ttsReplay sound true section =
     -- replay if possible
     if sound then
         if true then
             section
                 |> Maybe.andThen
-                    (.effect_model
-                        >> Effect.ttsReplay sound
-                        >> Maybe.map
-                            (Event.encode
-                                >> List.singleton
-                                >> send "effect"
-                            )
+                    (\s ->
+                        s.effect_model
+                            |> Effect.ttsReplay sound
+                            |> Maybe.map
+                                (List.singleton
+                                    >> send "effect" s.id
+                                )
                     )
                 |> Maybe.withDefault []
 
         else
-            [ Event.encode Effect.ttsCancel ]
-                |> send "effect"
+            [ Effect.ttsCancel ]
+                |> send "effect" -1
 
     else
         []

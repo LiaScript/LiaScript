@@ -82,17 +82,6 @@ type Msg
     | Media ( String, Maybe Int, Maybe Int )
 
 
-{-| **@private:** shortcut for generating events for a specific section:
-
-1.  id of the active section
-2.  a list of (`String` topics, `Event` messages)
-
--}
-send : Int -> List ( String, JE.Value ) -> List Event
-send sectionID =
-    List.map (\( name, json ) -> Event name sectionID json)
-
-
 update : Session -> Msg -> Model -> ( Model, Cmd Msg, List Event )
 update session msg model =
     case msg of
@@ -231,7 +220,7 @@ update session msg model =
                             in
                             ( { model | sections = Array.set event.section sec_ model.sections }
                             , Cmd.map UpdateMarkdown cmd_
-                            , send event.section events
+                            , events
                             )
 
                         _ ->
@@ -246,7 +235,7 @@ update session msg model =
                     in
                     ( { model | sections = Array.set id section model.sections }
                     , Cmd.map UpdateMarkdown cmd_
-                    , send id log_
+                    , log_
                     )
 
                 _ ->
@@ -282,7 +271,7 @@ update session msg model =
                     in
                     ( set_active_section model section
                     , Cmd.map UpdateMarkdown cmd_
-                    , send model.section_active log_
+                    , log_
                     )
 
                 ( NextSection, Just sec ) ->
@@ -299,7 +288,7 @@ update session msg model =
                         in
                         ( set_active_section model sec_
                         , Cmd.map UpdateMarkdown cmd_
-                        , send model.section_active log_
+                        , log_
                         )
 
                 ( PrevSection, Just sec ) ->
@@ -313,7 +302,7 @@ update session msg model =
                         in
                         ( set_active_section model sec_
                         , Cmd.map UpdateMarkdown cmd_
-                        , send model.section_active log_
+                        , log_
                         )
 
                 ( InitSection, Just sec ) ->
@@ -329,7 +318,7 @@ update session msg model =
                     ( set_active_section { model | to_do = [] } sec_
                     , Cmd.map UpdateMarkdown cmd_
                     , model.to_do
-                        |> List.append (send model.section_active log_)
+                        |> List.append log_
                         |> (::) (Event "slide" model.section_active JE.null)
                     )
 
@@ -347,14 +336,13 @@ update session msg model =
                         in
                         ( set_active_section model sec_
                         , Cmd.map UpdateMarkdown cmd_
-                        , send model.section_active log_
+                        , log_
                         )
 
                 ( TTSReplay bool, sec ) ->
                     ( model
                     , Cmd.none
                     , Markdown.ttsReplay model.settings.sound bool sec
-                        |> send -1
                     )
 
                 _ ->
