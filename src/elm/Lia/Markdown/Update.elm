@@ -124,14 +124,14 @@ update globals msg section =
 
         UpdateGallery childMsg ->
             let
-                ( vector, sub ) =
+                return =
                     Gallery.update childMsg section.gallery_vector
             in
-            ( { section | gallery_vector = vector }
+            ( { section | gallery_vector = return.value }
             , Cmd.none
             , []
             )
-                |> updateScript sub
+                |> updateScript return.script
 
         UpdateSurvey childMsg ->
             let

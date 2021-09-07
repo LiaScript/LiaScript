@@ -6,6 +6,7 @@ module Lia.Markdown.Gallery.Update exposing
 import Array
 import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Markdown.Gallery.Types exposing (Vector)
+import Return exposing (Return)
 
 
 type Msg sub
@@ -14,14 +15,20 @@ type Msg sub
     | Script (Script.Msg sub)
 
 
-update : Msg sub -> Vector -> ( Vector, Maybe (Script.Msg sub) )
+update : Msg sub -> Vector -> Return Vector Never sub
 update msg vector =
     case msg of
         Show id id2 ->
-            ( Array.set id id2 vector, Nothing )
+            vector
+                |> Array.set id id2
+                |> Return.value
 
         Close id ->
-            ( Array.set id -1 vector, Nothing )
+            vector
+                |> Array.set id -1
+                |> Return.value
 
         Script sub ->
-            ( vector, Just sub )
+            vector
+                |> Return.value
+                |> Return.script sub
