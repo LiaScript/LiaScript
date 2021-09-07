@@ -84,17 +84,16 @@ update globals msg section =
             )
 
         UpdateCode childMsg ->
-            case Code.update section.effect_model.javascript childMsg section.code_model of
-                ( code_model, [] ) ->
-                    ( { section | code_model = code_model }, Cmd.none, [] )
-
-                ( code_model, events ) ->
-                    ( { section | code_model = code_model }
-                    , Cmd.none
-                    , events
-                        |> List.map Event.encode
-                        |> send "code"
-                    )
+            let
+                result =
+                    Code.update section.effect_model.javascript childMsg section.code_model
+            in
+            ( { section | code_model = result.value }
+            , Cmd.none
+            , result.events
+                |> List.map Event.encode
+                |> send "code"
+            )
 
         UpdateQuiz childMsg ->
             let
@@ -206,17 +205,16 @@ subUpdate js msg section =
                     )
 
                 UpdateCode childMsg ->
-                    case Code.update js childMsg subsection.code_model of
-                        ( code_model, [] ) ->
-                            ( SubSection { subsection | code_model = code_model }, Cmd.none, [] )
-
-                        ( code_model, events ) ->
-                            ( SubSection { subsection | code_model = code_model }
-                            , Cmd.none
-                            , events
-                                |> List.map Event.encode
-                                |> send "code"
-                            )
+                    let
+                        result =
+                            Code.update js childMsg subsection.code_model
+                    in
+                    ( SubSection { subsection | code_model = result.value }
+                    , Cmd.none
+                    , result.events
+                        |> List.map Event.encode
+                        |> send "code"
+                    )
 
                 UpdateQuiz childMsg ->
                     let

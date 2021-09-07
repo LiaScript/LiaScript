@@ -2,6 +2,7 @@ module Return exposing
     ( Return
     , cmd
     , event
+    , events
     , map
     , script
     , value
@@ -28,9 +29,14 @@ value model =
         []
 
 
-event : Event -> Return model cmd sub -> Return model cmd sub
+event : Event -> Return model msg sub -> Return model msg sub
 event e r =
     { r | events = e :: r.events }
+
+
+events : List Event -> Return model msg sub -> Return model msg sub
+events e r =
+    { r | events = List.append r.events e }
 
 
 cmd : Cmd msg -> Return model msg sub -> Return model msg sub
