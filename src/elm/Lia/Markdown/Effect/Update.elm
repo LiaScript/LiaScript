@@ -118,10 +118,10 @@ update main sound msg model =
 
             Script childMsg ->
                 let
-                    ( scripts, cmd, events ) =
+                    return =
                         Script.update main childMsg model.javascript
                 in
-                ( { model | javascript = scripts }, Cmd.map Script cmd, events )
+                ( { model | javascript = return.value }, Cmd.map Script return.cmd, return.events )
 
             Handle event ->
                 case event.topic of
@@ -138,10 +138,10 @@ update main sound msg model =
 
                     _ ->
                         let
-                            ( scripts, cmd, events ) =
+                            return =
                                 Script.update main (Script_.Handle event) model.javascript
                         in
-                        ( { model | javascript = scripts }, Cmd.map Script cmd, events )
+                        ( { model | javascript = return.value }, Cmd.map Script return.cmd, return.events )
 
 
 scrollTo : Bool -> String -> Event
