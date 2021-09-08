@@ -42,8 +42,8 @@ type Msg sub
 
 
 updateSub :
-    { update : Scripts SubSection -> sub -> SubSection -> ( SubSection, Cmd sub, List Event )
-    , handle : Scripts SubSection -> JE.Value -> SubSection -> ( SubSection, Cmd sub, List Event )
+    { update : Scripts SubSection -> sub -> SubSection -> Return SubSection sub sub
+    , handle : Scripts SubSection -> JE.Value -> SubSection -> Return SubSection sub sub
     , globals : Maybe Definition
     }
     -> Script_.Msg sub
@@ -54,8 +54,8 @@ updateSub main msg =
 
 
 update :
-    { update : Scripts SubSection -> sub -> SubSection -> ( SubSection, Cmd sub, List Event )
-    , handle : Scripts SubSection -> JE.Value -> SubSection -> ( SubSection, Cmd sub, List Event )
+    { update : Scripts SubSection -> sub -> SubSection -> Return SubSection sub sub
+    , handle : Scripts SubSection -> JE.Value -> SubSection -> Return SubSection sub sub
     , globals : Maybe Definition
     }
     -> Bool
@@ -185,8 +185,8 @@ markRunning return =
 
 
 execute :
-    { update : Scripts SubSection -> sub -> SubSection -> ( SubSection, Cmd sub, List Event )
-    , handle : Scripts SubSection -> JE.Value -> SubSection -> ( SubSection, Cmd sub, List Event )
+    { update : Scripts SubSection -> sub -> SubSection -> Return SubSection sub sub
+    , handle : Scripts SubSection -> JE.Value -> SubSection -> Return SubSection sub sub
     , globals : Maybe Definition
     }
     -> Bool

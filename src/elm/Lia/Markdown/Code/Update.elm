@@ -38,7 +38,7 @@ handle =
     Handle
 
 
-restore : JE.Value -> Model -> Return Model Never sub
+restore : JE.Value -> Model -> Return Model msg sub
 restore json model =
     case
         model.evaluate
@@ -66,7 +66,7 @@ restore json model =
                 |> Return.value
 
 
-update : Scripts sub -> Msg -> Model -> Return Model Never sub
+update : Scripts a -> Msg -> Model -> Return Model msg sub
 update scripts msg model =
     case msg of
         Eval idx ->
@@ -300,7 +300,7 @@ maybe_project idx f =
         >> Maybe.map f
 
 
-maybe_update : Int -> Model -> Maybe ( Project, List Event ) -> Return Model Never sub
+maybe_update : Int -> Model -> Maybe ( Project, List Event ) -> Return Model msg sub
 maybe_update idx model project =
     case project of
         Just ( p, logs ) ->
@@ -312,7 +312,7 @@ maybe_update idx model project =
             Return.value model
 
 
-update_file : Int -> Int -> Model -> (File -> File) -> (File -> List Event) -> Return Model Never sub
+update_file : Int -> Int -> Model -> (File -> File) -> (File -> List Event) -> Return Model msg sub
 update_file id_1 id_2 model f f_log =
     case Array.get id_1 model.evaluate of
         Just project ->

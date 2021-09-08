@@ -14,7 +14,7 @@ type Msg sub
     | NoOp
 
 
-update : Msg sub -> Vector -> Return Vector Never sub
+update : Msg sub -> Vector -> Return Vector msg sub
 update msg vector =
     Return.value <|
         case msg of

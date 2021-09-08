@@ -33,7 +33,7 @@ update :
     Scripts a
     -> Msg sub
     -> Vector
-    -> Return Vector Never sub
+    -> Return Vector msg sub
 update scripts msg vector =
     case msg of
         -- simple toggle
@@ -101,7 +101,7 @@ toggle y states =
 {-| Create a store event, that will store the state of the task persistently
 within the backend.
 -}
-store : Return Vector Never sub -> Return Vector Never sub
+store : Return Vector msg sub -> Return Vector msg sub
 store return =
     return
         |> Return.event

@@ -25,7 +25,7 @@ type Msg sub
     | Script (Script.Msg sub)
 
 
-update : Scripts a -> Msg sub -> Vector -> Return Vector Never sub
+update : Scripts a -> Msg sub -> Vector -> Return Vector msg sub
 update scripts msg vector =
     case msg of
         Block_Update id _ ->
@@ -122,7 +122,7 @@ update_ :
     Int
     -> Vector
     -> (Element -> Return Element Never sub)
-    -> Return Vector Never sub
+    -> Return Vector msg sub
 update_ idx vector fn =
     Return.value <|
         case get idx vector |> Maybe.map fn of
@@ -165,7 +165,7 @@ handle =
     Handle
 
 
-evalEventDecoder : JE.Value -> Element -> Return Element Never sub
+evalEventDecoder : JE.Value -> Element -> Return Element msg sub
 evalEventDecoder json =
     let
         eval =
@@ -199,7 +199,7 @@ evalEventDecoder json =
         \e -> Return.value { e | error_msg = eval.result }
 
 
-store : Return Vector Never sub -> Return Vector Never sub
+store : Return Vector msg sub -> Return Vector msg sub
 store return =
     return
         |> Return.event
@@ -209,7 +209,7 @@ store return =
             )
 
 
-check : Type -> Element -> Return Element Never sub
+check : Type -> Element -> Return Element msg sub
 check solution e =
     { e
         | trial = e.trial + 1

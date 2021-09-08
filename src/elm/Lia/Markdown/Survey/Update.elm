@@ -22,7 +22,7 @@ type Msg sub
     | Script (Script.Msg sub)
 
 
-update : Scripts a -> Msg sub -> Vector -> Return Vector Never sub
+update : Scripts a -> Msg sub -> Vector -> Return Vector msg sub
 update scripts msg vector =
     case msg of
         TextUpdate idx str ->

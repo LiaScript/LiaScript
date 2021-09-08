@@ -25,6 +25,7 @@ import Lia.Markdown.Task.Update as Task
 import Lia.Section exposing (Section, SubSection(..))
 import Lia.Utils exposing (focus)
 import Port.Event as Event exposing (Event)
+import Return exposing (Return, upgrade)
 
 
 port footnote : (String -> msg) -> Sub msg
@@ -167,46 +168,47 @@ update globals msg section =
             ( section, Cmd.none, [] )
 
 
+subs :
+    Maybe Definition
+    ->
+        { update : Scripts SubSection -> Msg -> SubSection -> Return SubSection Msg Msg
+        , handle : Scripts SubSection -> JE.Value -> SubSection -> Return SubSection Msg Msg
+        , globals : Maybe Definition
+        }
+subs globals =
+    { update = subUpdate
+    , handle = subHandle
+    , globals = globals
+    }
+
+
 subUpdate :
     Scripts SubSection
     -> Msg
     -> SubSection
-    -> ( SubSection, Cmd Msg, List Event )
+    -> Return SubSection Msg Msg
 subUpdate js msg section =
     case section of
         SubSection subsection ->
             case msg of
                 UpdateEffect sound childMsg ->
-                    let
-                        return =
-                            Effect.update { update = subUpdate, handle = subHandle, globals = Nothing } sound childMsg subsection.effect_model
-                    in
-                    ( SubSection { subsection | effect_model = return.value }
-                    , Cmd.map (UpdateEffect sound) return.cmd
-                    , return.events
-                        |> send "effect" subsection.id
-                    )
+                    subsection.effect_model
+                        |> Effect.update (subs Nothing) sound childMsg
+                        |> Return.map (\v -> SubSection { subsection | effect_model = v })
+                        |> Return.cmdMap (UpdateEffect sound)
+                        |> Return.upgrade "effect" subsection.id
 
                 UpdateTable childMsg ->
-                    let
-                        return =
-                            Table.update childMsg subsection.table_vector
-                    in
-                    ( SubSection { subsection | table_vector = return.value }
-                    , Cmd.none
-                    , []
-                    )
+                    subsection.table_vector
+                        |> Table.update childMsg
+                        |> Return.map (\v -> SubSection { subsection | table_vector = v })
 
                 UpdateCode childMsg ->
-                    let
-                        result =
-                            Code.update js childMsg subsection.code_model
-                    in
-                    ( SubSection { subsection | code_model = result.value }
-                    , Cmd.none
-                    , result.events
-                        |> send "code" subsection.id
-                    )
+                    subsection.code_model
+                        |> Code.update js childMsg
+                        |> Return.map (\v -> SubSection { subsection | code_model = v })
+                        |> Return.cmdMap UpdateCode
+                        |> Return.upgrade "code" subsection.id
 
                 UpdateQuiz childMsg ->
                     let
@@ -220,11 +222,9 @@ subUpdate js msg section =
                                 (SubSection { subsection | quiz_vector = result.value })
 
                         _ ->
-                            ( SubSection { subsection | quiz_vector = result.value }
-                            , Cmd.none
-                            , result.events
-                                |> send "quiz" subsection.id
-                            )
+                            result
+                                |> Return.map (\v -> SubSection { subsection | quiz_vector = v })
+                                |> upgrade "quiz" subsection.id
 
                 UpdateSurvey childMsg ->
                     let
@@ -238,11 +238,9 @@ subUpdate js msg section =
                                 (SubSection { subsection | survey_vector = result.value })
 
                         _ ->
-                            ( SubSection { subsection | survey_vector = result.value }
-                            , Cmd.none
-                            , result.events
-                                |> send "survey" subsection.id
-                            )
+                            result
+                                |> Return.map (\v -> SubSection { subsection | survey_vector = v })
+                                |> upgrade "survey" subsection.id
 
                 UpdateTask childMsg ->
                     let
@@ -256,52 +254,38 @@ subUpdate js msg section =
                                 (SubSection { subsection | task_vector = result.value })
 
                         _ ->
-                            ( SubSection { subsection | task_vector = result.value }
-                            , Cmd.none
-                            , result.events
-                                |> send "task" subsection.id
-                            )
+                            result
+                                |> Return.map (\v -> SubSection { subsection | task_vector = v })
+                                |> upgrade "task" subsection.id
 
                 Script childMsg ->
-                    let
-                        return =
-                            Effect.updateSub { update = subUpdate, handle = subHandle, globals = Nothing } childMsg subsection.effect_model
-                    in
-                    ( SubSection { subsection | effect_model = return.value }
-                    , Cmd.map (UpdateEffect True) return.cmd
-                    , return.events
-                        |> send "script" subsection.id
-                    )
+                    subsection.effect_model
+                        |> Effect.updateSub (subs Nothing) childMsg
+                        |> Return.map (\v -> SubSection { subsection | effect_model = v })
+                        |> Return.cmdMap (UpdateEffect True)
+                        |> Return.upgrade "script" subsection.id
 
                 _ ->
-                    ( section, Cmd.none, [] )
+                    Return.value section
 
         SubSubSection sub ->
             case msg of
                 Script childMsg ->
-                    let
-                        return =
-                            Effect.updateSub { update = subUpdate, handle = subHandle, globals = Nothing } childMsg sub.effect_model
-                    in
-                    ( SubSubSection { sub | effect_model = return.value }
-                    , Cmd.map (UpdateEffect True) return.cmd
-                    , return.events
-                        |> send "script" sub.id
-                    )
+                    sub.effect_model
+                        |> Effect.updateSub (subs Nothing) childMsg
+                        |> Return.map (\v -> SubSubSection { sub | effect_model = v })
+                        |> Return.cmdMap (UpdateEffect True)
+                        |> Return.upgrade "script" sub.id
 
                 UpdateEffect sound childMsg ->
-                    let
-                        return =
-                            Effect.update { update = subUpdate, handle = subHandle, globals = Nothing } sound childMsg sub.effect_model
-                    in
-                    ( SubSubSection { sub | effect_model = return.value }
-                    , Cmd.map (UpdateEffect sound) return.cmd
-                    , return.events
-                        |> send "effect" sub.id
-                    )
+                    sub.effect_model
+                        |> Effect.update (subs Nothing) sound childMsg
+                        |> Return.map (\v -> SubSubSection { sub | effect_model = v })
+                        |> Return.cmdMap (UpdateEffect sound)
+                        |> Return.upgrade "effect" sub.id
 
                 _ ->
-                    ( section, Cmd.none, [] )
+                    Return.value section
 
 
 updateScript :
@@ -340,7 +324,7 @@ initEffect globals run_all_javascript sound =
     update globals (UpdateEffect sound (Effect.init run_all_javascript))
 
 
-subHandle : Scripts SubSection -> JE.Value -> SubSection -> ( SubSection, Cmd Msg, List Event )
+subHandle : Scripts SubSection -> JE.Value -> SubSection -> Return SubSection Msg Msg
 subHandle js json section =
     case Event.decode json of
         Ok event ->
@@ -363,13 +347,13 @@ subHandle js json section =
                             subUpdate js (UpdateTask (Task.handle message)) section
 
                         _ ->
-                            ( section, Cmd.none, [] )
+                            Return.value section
 
                 _ ->
-                    ( section, Cmd.none, [] )
+                    Return.value section
 
         _ ->
-            ( section, Cmd.none, [] )
+            Return.value section
 
 
 handle : Definition -> String -> Event -> Section -> ( Section, Cmd Msg, List Event )

@@ -22,8 +22,8 @@ import Task
 
 
 update :
-    { update : Scripts SubSection -> sub -> SubSection -> ( SubSection, Cmd sub, List Event )
-    , handle : Scripts SubSection -> JE.Value -> SubSection -> ( SubSection, Cmd sub, List Event )
+    { update : Scripts SubSection -> sub -> SubSection -> Return SubSection sub sub
+    , handle : Scripts SubSection -> JE.Value -> SubSection -> Return SubSection sub sub
     , globals : Maybe Definition
     }
     -> Msg sub
@@ -35,14 +35,14 @@ update main msg scripts =
             case scripts |> Array.get id |> Maybe.andThen .result of
                 Just (IFrame lia) ->
                     let
-                        ( new, cmd, events ) =
+                        return =
                             main.update scripts sub lia
                     in
-                    Script.set id (\s -> { s | result = Just (IFrame new) }) scripts
+                    Script.set id (\s -> { s | result = Just (IFrame return.value) }) scripts
                         |> Return.value
-                        |> Return.cmd (Cmd.map (Sub id) cmd)
+                        |> Return.cmd (Cmd.map (Sub id) return.cmd)
                         |> Return.events
-                            (events
+                            (return.events
                                 |> List.map (Event.encode >> Event "sub" id)
                             )
 
@@ -252,13 +252,13 @@ update main msg scripts =
                     case scripts |> Array.get event.section |> Maybe.andThen .result of
                         Just (IFrame lia) ->
                             let
-                                ( new, cmd, events ) =
+                                return =
                                     main.handle scripts event.message lia
                             in
-                            Script.set event.section (\s -> { s | result = Just (IFrame new) }) scripts
+                            Script.set event.section (\s -> { s | result = Just (IFrame return.value) }) scripts
                                 |> Return.value
-                                |> Return.cmd (Cmd.map (Sub event.section) cmd)
-                                |> Return.events (List.map (Event.encode >> Event "sub" event.section) events)
+                                |> Return.cmd (Cmd.map (Sub event.section) return.cmd)
+                                |> Return.events (List.map (Event.encode >> Event "sub" event.section) return.events)
 
                         _ ->
                             Return.value scripts
