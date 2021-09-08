@@ -266,8 +266,8 @@ decRelease =
         Definition.decode
 
 
-{-| Check if the current passed version string is allso available as accessible
-from the local cache. Major verions of `0` are not stored permanently.
+{-| Check if the current passed version string is also available as accessible
+from the local cache. Major versions of `0` are not stored permanently.
 -}
 inCache : String -> Course -> Bool
 inCache version course =

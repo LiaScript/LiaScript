@@ -25,10 +25,10 @@ view config open class quiz state =
 
 
 table : (Bool -> ( Int, Inlines ) -> Html (Msg sub)) -> List Inlines -> List Bool -> List (Html (Msg sub))
-table fn inlines bools =
+table fn inlines bool =
     inlines
         |> List.indexedMap Tuple.pair
-        |> List.map2 fn bools
+        |> List.map2 fn bool
 
 
 check : Config sub -> Bool -> String -> Bool -> ( Int, Inlines ) -> Html (Msg sub)
