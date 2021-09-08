@@ -15,7 +15,7 @@ type Msg sub
     | Script (Script.Msg sub)
 
 
-update : Msg sub -> Vector -> Return Vector Never sub
+update : Msg sub -> Vector -> Return Vector msg sub
 update msg vector =
     case msg of
         Show id id2 ->

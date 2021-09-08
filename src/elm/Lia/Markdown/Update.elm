@@ -55,117 +55,83 @@ send name id =
     List.map (Event.encode >> Event name id)
 
 
-update : Definition -> Msg -> Section -> ( Section, Cmd Msg, List Event )
+update : Definition -> Msg -> Section -> Return Section Msg Msg
 update globals msg section =
     case msg of
         UpdateEffect sound childMsg ->
-            let
-                return =
-                    Effect.update
-                        { update = subUpdate
-                        , handle = subHandle
-                        , globals =
-                            case section.definition of
-                                Nothing ->
-                                    Just globals
-
-                                _ ->
-                                    section.definition
-                        }
-                        sound
-                        childMsg
-                        section.effect_model
-            in
-            ( { section | effect_model = return.value }
-            , Cmd.map (UpdateEffect sound) return.cmd
-            , return.events
-                |> send "effect" section.id
-            )
+            section.effect_model
+                |> Effect.update
+                    (section.definition
+                        |> Maybe.withDefault globals
+                        |> Just
+                        |> subs
+                    )
+                    sound
+                    childMsg
+                |> Return.map (\v -> { section | effect_model = v })
+                |> Return.cmdMap (UpdateEffect sound)
+                |> Return.upgrade "effect" section.id
 
         UpdateCode childMsg ->
-            let
-                result =
-                    Code.update section.effect_model.javascript childMsg section.code_model
-            in
-            ( { section | code_model = result.value }
-            , Cmd.none
-            , result.events
-                |> send "code" section.id
-            )
+            section.code_model
+                |> Code.update section.effect_model.javascript childMsg
+                |> Return.map (\v -> { section | code_model = v })
+                |> Return.upgrade "code" section.id
 
         UpdateQuiz childMsg ->
-            let
-                result =
-                    Quiz.update section.effect_model.javascript childMsg section.quiz_vector
-            in
-            ( { section | quiz_vector = result.value }
-            , Cmd.none
-            , result.events
-                |> send "quiz" section.id
-            )
-                |> updateScript result.script
+            section.quiz_vector
+                |> Quiz.update section.effect_model.javascript childMsg
+                |> Return.map (\v -> { section | quiz_vector = v })
+                |> Return.upgrade "quiz" section.id
+                |> updateScript
 
         UpdateTask childMsg ->
-            let
-                result =
-                    Task.update section.effect_model.javascript childMsg section.task_vector
-            in
-            ( { section | task_vector = result.value }
-            , Cmd.none
-            , result.events
-                |> send "task" section.id
-            )
-                |> updateScript result.script
+            section.task_vector
+                |> Task.update section.effect_model.javascript childMsg
+                |> Return.map (\v -> { section | task_vector = v })
+                |> Return.upgrade "task" section.id
+                |> updateScript
 
         UpdateGallery childMsg ->
-            let
-                return =
-                    Gallery.update childMsg section.gallery_vector
-            in
-            ( { section | gallery_vector = return.value }
-            , Cmd.none
-            , []
-            )
-                |> updateScript return.script
+            section.gallery_vector
+                |> Gallery.update childMsg
+                |> Return.map (\v -> { section | gallery_vector = v })
+                |> updateScript
 
         UpdateSurvey childMsg ->
-            let
-                result =
-                    Survey.update section.effect_model.javascript childMsg section.survey_vector
-            in
-            ( { section | survey_vector = result.value }
-            , Cmd.none
-            , result.events
-                |> send "survey" section.id
-            )
-                |> updateScript result.script
+            section.survey_vector
+                |> Survey.update section.effect_model.javascript childMsg
+                |> Return.map (\v -> { section | survey_vector = v })
+                |> Return.upgrade "survey" section.id
+                |> updateScript
 
         UpdateTable childMsg ->
-            let
-                return =
-                    Table.update childMsg section.table_vector
-            in
-            ( { section | table_vector = return.value }
-            , Cmd.none
-            , []
-            )
+            section.table_vector
+                |> Table.update childMsg
+                |> Return.map (\v -> { section | table_vector = v })
 
         FootnoteShow key ->
-            ( { section | footnote2show = Just key }, focus NoOp "lia-modal__close", [] )
+            { section | footnote2show = Just key }
+                |> Return.value
+                |> Return.cmd (focus NoOp "lia-modal__close")
 
         FootnoteHide ->
-            ( { section | footnote2show = Nothing }
-            , section.footnote2show
-                |> Maybe.map (Footnote.byKey >> focus NoOp)
-                |> Maybe.withDefault Cmd.none
-            , []
-            )
+            { section | footnote2show = Nothing }
+                |> Return.value
+                |> Return.cmd
+                    (section.footnote2show
+                        |> Maybe.map (Footnote.byKey >> focus NoOp)
+                        |> Maybe.withDefault Cmd.none
+                    )
 
         Script childMsg ->
-            updateScript (Just childMsg) ( section, Cmd.none, [] )
+            section
+                |> Return.value
+                |> Return.script childMsg
+                |> updateScript
 
         NoOp ->
-            ( section, Cmd.none, [] )
+            Return.value section
 
 
 subs :
@@ -289,37 +255,41 @@ subUpdate js msg section =
 
 
 updateScript :
-    Maybe (Script.Msg Msg)
-    -> ( { sec | id : Int, effect_model : E.Model SubSection }, Cmd Msg, List Event )
-    -> ( { sec | id : Int, effect_model : E.Model SubSection }, Cmd Msg, List Event )
-updateScript msg ( section, cmd, events ) =
-    case msg of
+    Return { sec | id : Int, effect_model : E.Model SubSection } Msg Msg
+    -> Return { sec | id : Int, effect_model : E.Model SubSection } Msg Msg
+updateScript return =
+    case return.script of
         Nothing ->
-            ( section, cmd, events )
+            return
 
         Just sub ->
             let
-                return =
-                    Effect.updateSub { update = subUpdate, handle = subHandle, globals = Nothing } sub section.effect_model
+                ret =
+                    return.value.effect_model
+                        |> Effect.updateSub (subs Nothing) sub
+                        |> Return.upgrade "effect" section.id
+                        |> Return.cmdMap (UpdateEffect True)
+
+                section =
+                    return.value
             in
-            ( { section | effect_model = return.value }
-            , Cmd.batch [ cmd, Cmd.map (UpdateEffect True) return.cmd ]
-            , return.events
-                |> send "effect" section.id
-            )
+            { section | effect_model = ret.value }
+                |> Return.replace return
+                |> Return.cmdBatch [ ret.cmd ]
+                |> Return.events ret.events
 
 
-nextEffect : Definition -> Bool -> Section -> ( Section, Cmd Msg, List Event )
+nextEffect : Definition -> Bool -> Section -> Return Section Msg Msg
 nextEffect globals sound =
     update globals (UpdateEffect sound Effect.next)
 
 
-previousEffect : Definition -> Bool -> Section -> ( Section, Cmd Msg, List Event )
+previousEffect : Definition -> Bool -> Section -> Return Section Msg Msg
 previousEffect globals sound =
     update globals (UpdateEffect sound Effect.previous)
 
 
-initEffect : Definition -> Bool -> Bool -> Section -> ( Section, Cmd Msg, List Event )
+initEffect : Definition -> Bool -> Bool -> Section -> Return Section Msg Msg
 initEffect globals run_all_javascript sound =
     update globals (UpdateEffect sound (Effect.init run_all_javascript))
 
@@ -356,7 +326,7 @@ subHandle js json section =
             Return.value section
 
 
-handle : Definition -> String -> Event -> Section -> ( Section, Cmd Msg, List Event )
+handle : Definition -> String -> Event -> Section -> Return Section Msg Msg
 handle globals topic event section =
     case topic of
         "code" ->
@@ -375,7 +345,7 @@ handle globals topic event section =
             update globals (UpdateTask (Task.handle event)) section
 
         _ ->
-            ( section, Cmd.none, [] )
+            Return.value section
 
 
 ttsReplay : Bool -> Bool -> Maybe Section -> List Event

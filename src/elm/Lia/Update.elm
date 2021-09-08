@@ -22,6 +22,7 @@ import Lia.Section exposing (Section)
 import Lia.Settings.Types exposing (Mode(..))
 import Lia.Settings.Update as Settings
 import Port.Event as Event exposing (Event)
+import Return
 import Session exposing (Session)
 
 
@@ -215,12 +216,12 @@ update session msg model =
                     of
                         ( Just sec, Ok e ) ->
                             let
-                                ( sec_, cmd_, events ) =
+                                return =
                                     Markdown.handle model.definition event.topic e sec
                             in
-                            ( { model | sections = Array.set event.section sec_ model.sections }
-                            , Cmd.map UpdateMarkdown cmd_
-                            , events
+                            ( { model | sections = Array.set event.section return.value model.sections }
+                            , Cmd.map UpdateMarkdown return.cmd
+                            , return.events
                             )
 
                         _ ->
@@ -230,12 +231,15 @@ update session msg model =
             case Array.get id model.sections of
                 Just sec ->
                     let
-                        ( section, cmd_, log_ ) =
-                            Markdown.updateScript (Just sub) ( sec, Cmd.none, [] )
+                        return =
+                            sec
+                                |> Return.value
+                                |> Return.script sub
+                                |> Markdown.updateScript
                     in
-                    ( { model | sections = Array.set id section model.sections }
-                    , Cmd.map UpdateMarkdown cmd_
-                    , log_
+                    ( { model | sections = Array.set id return.value model.sections }
+                    , Cmd.map UpdateMarkdown return.cmd
+                    , return.events
                     )
 
                 _ ->
@@ -266,12 +270,12 @@ update session msg model =
             case ( msg, get_active_section model ) of
                 ( UpdateMarkdown childMsg, Just sec ) ->
                     let
-                        ( section, cmd_, log_ ) =
+                        return =
                             Markdown.update model.definition childMsg sec
                     in
-                    ( set_active_section model section
-                    , Cmd.map UpdateMarkdown cmd_
-                    , log_
+                    ( set_active_section model return.value
+                    , Cmd.map UpdateMarkdown return.cmd
+                    , return.events
                     )
 
                 ( NextSection, Just sec ) ->
@@ -283,12 +287,12 @@ update session msg model =
 
                     else
                         let
-                            ( sec_, cmd_, log_ ) =
+                            return =
                                 Markdown.nextEffect model.definition model.settings.sound sec
                         in
-                        ( set_active_section model sec_
-                        , Cmd.map UpdateMarkdown cmd_
-                        , log_
+                        ( set_active_section model return.value
+                        , Cmd.map UpdateMarkdown return.cmd
+                        , return.events
                         )
 
                 ( PrevSection, Just sec ) ->
@@ -297,17 +301,17 @@ update session msg model =
 
                     else
                         let
-                            ( sec_, cmd_, log_ ) =
+                            return =
                                 Markdown.previousEffect model.definition model.settings.sound sec
                         in
-                        ( set_active_section model sec_
-                        , Cmd.map UpdateMarkdown cmd_
-                        , log_
+                        ( set_active_section model return.value
+                        , Cmd.map UpdateMarkdown return.cmd
+                        , return.events
                         )
 
                 ( InitSection, Just sec ) ->
                     let
-                        ( sec_, cmd_, log_ ) =
+                        return =
                             case model.settings.mode of
                                 Textbook ->
                                     Markdown.initEffect model.definition True False sec
@@ -315,10 +319,10 @@ update session msg model =
                                 _ ->
                                     Markdown.initEffect model.definition False model.settings.sound sec
                     in
-                    ( set_active_section { model | to_do = [] } sec_
-                    , Cmd.map UpdateMarkdown cmd_
+                    ( set_active_section { model | to_do = [] } return.value
+                    , Cmd.map UpdateMarkdown return.cmd
                     , model.to_do
-                        |> List.append log_
+                        |> List.append return.events
                         |> (::) (Event "slide" model.section_active JE.null)
                     )
 
@@ -331,12 +335,12 @@ update session msg model =
                             effect =
                                 sec.effect_model
 
-                            ( sec_, cmd_, log_ ) =
+                            return =
                                 Markdown.nextEffect model.definition model.settings.sound { sec | effect_model = { effect | visible = id - 1 } }
                         in
-                        ( set_active_section model sec_
-                        , Cmd.map UpdateMarkdown cmd_
-                        , log_
+                        ( set_active_section model return.value
+                        , Cmd.map UpdateMarkdown return.cmd
+                        , return.events
                         )
 
                 ( TTSReplay bool, sec ) ->
