@@ -348,7 +348,7 @@ handle globals topic event section =
             Return.value section
 
 
-ttsReplay : Bool -> Bool -> Maybe Section -> List Event
+ttsReplay : Bool -> Bool -> Maybe Section -> Maybe Event
 ttsReplay sound true section =
     -- replay if possible
     if sound then
@@ -358,16 +358,14 @@ ttsReplay sound true section =
                     (\s ->
                         s.effect_model
                             |> Effect.ttsReplay sound
-                            |> Maybe.map
-                                (List.singleton
-                                    >> send "effect" s.id
-                                )
+                            |> Maybe.map (Event.encode >> Event "effect" s.id)
                     )
-                |> Maybe.withDefault []
 
         else
-            [ Effect.ttsCancel ]
-                |> send "effect" -1
+            Effect.ttsCancel
+                |> Event.encode
+                |> Event "effect" -1
+                |> Just
 
     else
-        []
+        Nothing
