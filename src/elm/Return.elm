@@ -1,6 +1,7 @@
 module Return exposing
     ( Return
     , cmd
+    , cmdBatch
     , cmdMap
     , event
     , events
@@ -52,8 +53,18 @@ cmd c r =
     { r | cmd = c }
 
 
+cmdMap : (msgA -> msgB) -> Return model msgA sub -> Return model msgB sub
 cmdMap fn r =
-    { r | cmd = Cmd.map fn r.cmd }
+    { value = r.value
+    , cmd = Cmd.map fn r.cmd
+    , script = r.script
+    , events = r.events
+    }
+
+
+cmdBatch : List (Cmd msg) -> Return model msg sub -> Return model msg sub
+cmdBatch cmds r =
+    { r | cmd = Cmd.batch (r.cmd :: cmds) }
 
 
 script : Script.Msg sub -> Return model msg sub -> Return model msg sub
