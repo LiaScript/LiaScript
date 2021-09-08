@@ -1,7 +1,6 @@
 module Lia.Markdown.Quiz.Vector.View exposing (view)
 
 import Accessibility.Role as A11y_Role
-import Accessibility.Widget as A11y_Widget
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)

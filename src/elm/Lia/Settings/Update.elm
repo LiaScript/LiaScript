@@ -8,7 +8,6 @@ module Lia.Settings.Update exposing
     )
 
 import Json.Encode as JE
-import Lia.Markdown.Effect.Parser exposing (comment)
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Settings.Json as Json

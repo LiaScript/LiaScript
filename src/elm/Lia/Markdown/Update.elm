@@ -141,10 +141,10 @@ update globals msg section =
 
         UpdateTable childMsg ->
             let
-                vector =
+                return =
                     Table.update childMsg section.table_vector
             in
-            ( { section | table_vector = vector }
+            ( { section | table_vector = return.value }
             , Cmd.none
             , []
             )
@@ -189,10 +189,10 @@ subUpdate js msg section =
 
                 UpdateTable childMsg ->
                     let
-                        vector =
+                        return =
                             Table.update childMsg subsection.table_vector
                     in
-                    ( SubSection { subsection | table_vector = vector }
+                    ( SubSection { subsection | table_vector = return.value }
                     , Cmd.none
                     , []
                     )
