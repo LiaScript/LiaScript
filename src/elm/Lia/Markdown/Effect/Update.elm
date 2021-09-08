@@ -26,6 +26,7 @@ import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Section exposing (SubSection)
 import Port.Event exposing (Event)
 import Port.TTS as TTS
+import Return exposing (Return)
 import Task
 
 
@@ -47,7 +48,7 @@ updateSub :
     }
     -> Script_.Msg sub
     -> Model SubSection
-    -> ( Model SubSection, Cmd (Msg sub), List Event )
+    -> Return (Model SubSection) (Msg sub) sub
 updateSub main msg =
     update main True (Script msg)
 
@@ -60,15 +61,14 @@ update :
     -> Bool
     -> Msg sub
     -> Model SubSection
-    -> ( Model SubSection, Cmd (Msg sub), List Event )
+    -> Return (Model SubSection) (Msg sub) sub
 update main sound msg model =
     markRunning <|
         case msg of
             Init run_all_javascript ->
-                ( model
-                , Task.perform (Rendered run_all_javascript) Dom.getViewport
-                , []
-                )
+                model
+                    |> Return.value
+                    |> Return.cmd (Task.perform (Rendered run_all_javascript) Dom.getViewport)
 
             Next ->
                 if has_next model then
@@ -76,7 +76,7 @@ update main sound msg model =
                         |> execute main sound False 0
 
                 else
-                    ( model, Cmd.none, [] )
+                    Return.value model
 
             Previous ->
                 if has_previous model then
@@ -84,13 +84,12 @@ update main sound msg model =
                         |> execute main sound False 0
 
                 else
-                    ( model, Cmd.none, [] )
+                    Return.value model
 
             Mute id ->
-                ( { model | speaking = Nothing }
-                , Cmd.none
-                , [ TTS.mute id ]
-                )
+                { model | speaking = Nothing }
+                    |> Return.value
+                    |> Return.event (TTS.mute id)
 
             Send event ->
                 let
@@ -99,19 +98,20 @@ update main sound msg model =
                             :: scrollTo False "lia-notes-active"
                             :: event
                 in
-                ( model
-                , Cmd.none
-                , case current_comment model of
-                    Just ( id, _ ) ->
-                        if sound then
-                            TTS.readFrom -1 id :: events
+                model
+                    |> Return.value
+                    |> Return.events
+                        (case current_comment model of
+                            Just ( id, _ ) ->
+                                if sound then
+                                    TTS.readFrom -1 id :: events
 
-                        else
-                            events
+                                else
+                                    events
 
-                    _ ->
-                        TTS.cancel :: events
-                )
+                            _ ->
+                                TTS.cancel :: events
+                        )
 
             Rendered run_all_javascript _ ->
                 execute main sound run_all_javascript 0 model
@@ -121,27 +121,34 @@ update main sound msg model =
                     return =
                         Script.update main childMsg model.javascript
                 in
-                ( { model | javascript = return.value }, Cmd.map Script return.cmd, return.events )
+                { model | javascript = return.value }
+                    |> Return.value
+                    |> Return.cmd (Cmd.map Script return.cmd)
+                    |> Return.events return.events
 
             Handle event ->
                 case event.topic of
                     "speak" ->
-                        case event.message |> JD.decodeValue JD.string of
-                            Ok "start" ->
-                                ( { model | speaking = Just event.section }, Cmd.none, [] )
+                        Return.value <|
+                            case event.message |> JD.decodeValue JD.string of
+                                Ok "start" ->
+                                    { model | speaking = Just event.section }
 
-                            Ok "stop" ->
-                                ( { model | speaking = Nothing }, Cmd.none, [] )
+                                Ok "stop" ->
+                                    { model | speaking = Nothing }
 
-                            _ ->
-                                ( model, Cmd.none, [] )
+                                _ ->
+                                    model
 
                     _ ->
                         let
                             return =
                                 Script.update main (Script_.Handle event) model.javascript
                         in
-                        ( { model | javascript = return.value }, Cmd.map Script return.cmd, return.events )
+                        { model | javascript = return.value }
+                            |> Return.value
+                            |> Return.cmd (Cmd.map Script return.cmd)
+                            |> Return.events return.events
 
 
 scrollTo : Bool -> String -> Event
@@ -156,24 +163,25 @@ scrollTo force =
             )
 
 
-markRunning : ( Model a, Cmd (Msg sub), List Event ) -> ( Model a, Cmd (Msg sub), List Event )
-markRunning ( model, cmd, events ) =
-    ( { model
-        | javascript =
-            List.foldl
-                (\e js ->
-                    if e.section < 0 then
-                        js
+markRunning : Return (Model a) (Msg sub) sub -> Return (Model a) (Msg sub) sub
+markRunning return =
+    return
+        |> Return.map
+            (\model ->
+                { model
+                    | javascript =
+                        List.foldl
+                            (\e js ->
+                                if e.section < 0 then
+                                    js
 
-                    else
-                        Script.setRunning e.section True js
-                )
-                model.javascript
-                events
-      }
-    , cmd
-    , events
-    )
+                                else
+                                    Script.setRunning e.section True js
+                            )
+                            model.javascript
+                            return.events
+                }
+            )
 
 
 execute :
@@ -185,7 +193,7 @@ execute :
     -> Bool
     -> Int
     -> Model SubSection
-    -> ( Model SubSection, Cmd (Msg sub), List Event )
+    -> Return (Model SubSection) (Msg sub) sub
 execute main sound run_all delay model =
     let
         javascript =

@@ -59,7 +59,7 @@ update globals msg section =
     case msg of
         UpdateEffect sound childMsg ->
             let
-                ( effect_model, cmd, event ) =
+                return =
                     Effect.update
                         { update = subUpdate
                         , handle = subHandle
@@ -75,9 +75,9 @@ update globals msg section =
                         childMsg
                         section.effect_model
             in
-            ( { section | effect_model = effect_model }
-            , Cmd.map (UpdateEffect sound) cmd
-            , event
+            ( { section | effect_model = return.value }
+            , Cmd.map (UpdateEffect sound) return.cmd
+            , return.events
                 |> send "effect" section.id
             )
 
@@ -178,12 +178,12 @@ subUpdate js msg section =
             case msg of
                 UpdateEffect sound childMsg ->
                     let
-                        ( effect_model, cmd, event ) =
+                        return =
                             Effect.update { update = subUpdate, handle = subHandle, globals = Nothing } sound childMsg subsection.effect_model
                     in
-                    ( SubSection { subsection | effect_model = effect_model }
-                    , Cmd.map (UpdateEffect sound) cmd
-                    , event
+                    ( SubSection { subsection | effect_model = return.value }
+                    , Cmd.map (UpdateEffect sound) return.cmd
+                    , return.events
                         |> send "effect" subsection.id
                     )
 
@@ -264,12 +264,13 @@ subUpdate js msg section =
 
                 Script childMsg ->
                     let
-                        ( effect_model, cmd, _ ) =
+                        return =
                             Effect.updateSub { update = subUpdate, handle = subHandle, globals = Nothing } childMsg subsection.effect_model
                     in
-                    ( SubSection { subsection | effect_model = effect_model }
-                    , Cmd.map (UpdateEffect True) cmd
-                    , []
+                    ( SubSection { subsection | effect_model = return.value }
+                    , Cmd.map (UpdateEffect True) return.cmd
+                    , return.events
+                        |> send "script" subsection.id
                     )
 
                 _ ->
@@ -279,22 +280,23 @@ subUpdate js msg section =
             case msg of
                 Script childMsg ->
                     let
-                        ( effect_model, cmd, _ ) =
+                        return =
                             Effect.updateSub { update = subUpdate, handle = subHandle, globals = Nothing } childMsg sub.effect_model
                     in
-                    ( SubSubSection { sub | effect_model = effect_model }
-                    , Cmd.map (UpdateEffect True) cmd
-                    , []
+                    ( SubSubSection { sub | effect_model = return.value }
+                    , Cmd.map (UpdateEffect True) return.cmd
+                    , return.events
+                        |> send "script" sub.id
                     )
 
                 UpdateEffect sound childMsg ->
                     let
-                        ( effect_model, cmd, event ) =
+                        return =
                             Effect.update { update = subUpdate, handle = subHandle, globals = Nothing } sound childMsg sub.effect_model
                     in
-                    ( SubSubSection { sub | effect_model = effect_model }
-                    , Cmd.map (UpdateEffect sound) cmd
-                    , event
+                    ( SubSubSection { sub | effect_model = return.value }
+                    , Cmd.map (UpdateEffect sound) return.cmd
+                    , return.events
                         |> send "effect" sub.id
                     )
 
@@ -313,12 +315,12 @@ updateScript msg ( section, cmd, events ) =
 
         Just sub ->
             let
-                ( effect_model, cmd2, event ) =
+                return =
                     Effect.updateSub { update = subUpdate, handle = subHandle, globals = Nothing } sub section.effect_model
             in
-            ( { section | effect_model = effect_model }
-            , Cmd.batch [ cmd, Cmd.map (UpdateEffect True) cmd2 ]
-            , event
+            ( { section | effect_model = return.value }
+            , Cmd.batch [ cmd, Cmd.map (UpdateEffect True) return.cmd ]
+            , return.events
                 |> send "effect" section.id
             )
 
