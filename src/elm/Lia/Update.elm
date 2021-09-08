@@ -140,7 +140,7 @@ update session msg model =
 
         UpdateSettings childMsg ->
             let
-                ( settings, cmd, events ) =
+                return =
                     Settings.update
                         (Just
                             { title = model.title
@@ -150,9 +150,9 @@ update session msg model =
                         childMsg
                         model.settings
             in
-            ( { model | settings = settings }
-            , Cmd.map UpdateSettings cmd
-            , events
+            ( { model | settings = return.value }
+            , Cmd.map UpdateSettings return.cmd
+            , return.events
             )
 
         UpdateIndex childMsg ->

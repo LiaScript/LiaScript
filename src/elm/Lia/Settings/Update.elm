@@ -16,6 +16,7 @@ import Lia.Utils exposing (focus)
 import Port.Event exposing (Event)
 import Port.Share
 import Port.TTS as TTS
+import Return exposing (Return)
 
 
 type Msg
@@ -40,7 +41,11 @@ type Toggle
     | TranslateWithGoogle
 
 
-update : Maybe { title : String, comment : Inlines } -> Msg -> Settings -> ( Settings, Cmd Msg, List Event )
+update :
+    Maybe { title : String, comment : Inlines }
+    -> Msg
+    -> Settings
+    -> Return Settings Msg sub
 update main msg model =
     case msg of
         Handle event ->
@@ -52,10 +57,7 @@ update main msg model =
 
                 "speak" ->
                     no_log Nothing
-                        { model
-                            | speaking =
-                                TTS.decode event.message == TTS.Start
-                        }
+                        { model | speaking = TTS.decode event.message == TTS.Start }
 
                 _ ->
                     log Nothing model
@@ -76,10 +78,11 @@ update main msg model =
 
         Toggle Sound ->
             let
-                ( new_model, _, events ) =
+                return =
                     log Nothing { model | sound = not model.sound }
             in
-            ( new_model, Cmd.none, TTS.event new_model.sound :: events )
+            return
+                |> Return.event (TTS.event return.value.sound)
 
         Toggle Light ->
             log Nothing { model | light = not model.light }
@@ -112,10 +115,11 @@ update main msg model =
             case mode of
                 Textbook ->
                     let
-                        ( new_model, _, events ) =
+                        return =
                             log Nothing { model | sound = False, mode = Textbook }
                     in
-                    ( new_model, Cmd.none, TTS.event new_model.sound :: events )
+                    return
+                        |> Return.event (TTS.event return.value.sound)
 
                 _ ->
                     log Nothing { model | mode = mode }
@@ -140,33 +144,34 @@ update main msg model =
             log Nothing { model | lang = lang }
 
         Reset ->
-            ( model, Cmd.none, [ Event "reset" -1 JE.null ] )
+            model
+                |> Return.value
+                |> Return.event (Event "reset" -1 JE.null)
 
         ShareCourse url ->
-            ( model
-            , Cmd.none
-            , [ { title =
-                    main
-                        |> Maybe.map .title
-                        |> Maybe.withDefault ""
-                , text =
-                    main
-                        |> Maybe.map (.comment >> stringify)
-                        |> Maybe.withDefault ""
-                , url = url
-                }
-                    |> Port.Share.share
-              ]
-            )
+            model
+                |> Return.value
+                |> Return.event
+                    ({ title =
+                        main
+                            |> Maybe.map .title
+                            |> Maybe.withDefault ""
+                     , text =
+                        main
+                            |> Maybe.map (.comment >> stringify)
+                            |> Maybe.withDefault ""
+                     , url = url
+                     }
+                        |> Port.Share.share
+                    )
 
         Toggle TranslateWithGoogle ->
-            ( { model | translateWithGoogle = True }
-            , Cmd.none
-            , [ Event "googleTranslate" -1 JE.null ]
-            )
+            { model | translateWithGoogle = True }
+                |> Return.value
+                |> Return.event (Event "googleTranslate" -1 JE.null)
 
         Ignore ->
-            ( model, Cmd.none, [] )
+            Return.value model
 
 
 handle : Event -> Msg
@@ -185,12 +190,12 @@ toggle_sound =
     Toggle Sound
 
 
-log : Maybe String -> Settings -> ( Settings, Cmd Msg, List Event )
+log : Maybe String -> Settings -> Return Settings Msg sub
 log elementID settings =
-    ( settings
-    , maybeFocus elementID
-    , [ customizeEvent settings ]
-    )
+    settings
+        |> Return.value
+        |> Return.cmd (maybeFocus elementID)
+        |> Return.event (customizeEvent settings)
 
 
 customizeEvent : Settings -> Event
@@ -209,12 +214,9 @@ customizeEvent settings =
         |> Event "settings" -1
 
 
-no_log : Maybe String -> Settings -> ( Settings, Cmd Msg, List Event )
-no_log elementID settings =
-    ( settings
-    , maybeFocus elementID
-    , []
-    )
+no_log : Maybe String -> Settings -> Return Settings Msg sub
+no_log elementID =
+    Return.value >> Return.cmd (maybeFocus elementID)
 
 
 maybeFocus : Maybe String -> Cmd Msg

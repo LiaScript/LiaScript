@@ -193,13 +193,13 @@ updateSettings msg settings ( model, cmd, events ) =
     case msg of
         UpdateSettings subMsg ->
             let
-                ( newSettings, newCmd, newEvents ) =
+                return =
                     Settings.update Nothing subMsg settings
             in
-            ( newSettings
+            ( return.value
             , ( model
-              , Cmd.batch [ cmd, Cmd.map UpdateSettings newCmd ]
-              , List.append events newEvents
+              , Cmd.batch [ cmd, Cmd.map UpdateSettings return.cmd ]
+              , List.append events return.events
               )
             )
 
