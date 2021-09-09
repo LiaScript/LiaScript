@@ -7,6 +7,7 @@ module Return exposing
     , mapCmd
     , mapEvents
     , mapVal
+    , mapValCmd
     , replace
     , script
     , val
@@ -62,6 +63,15 @@ mapCmd fn { value, command, sub, events } =
     }
 
 
+mapValCmd : (modelA -> modelB) -> (msgA -> msgB) -> Return modelA msgA sub -> Return modelB msgB sub
+mapValCmd fnVal fnMsg { value, command, sub, events } =
+    { value = fnVal value
+    , command = Cmd.map fnMsg command
+    , events = events
+    , sub = sub
+    }
+
+
 batchCmd : List (Cmd msg) -> Return model msg sub -> Return model msg sub
 batchCmd cmds r =
     { r | command = Cmd.batch (r.command :: cmds) }
@@ -72,7 +82,7 @@ script s r =
     { r | sub = Just s }
 
 
-mapVal : (model -> model_) -> Return model msg sub -> Return model_ msg sub
+mapVal : (modelA -> modelB) -> Return modelA msg sub -> Return modelB msg sub
 mapVal fn { value, command, events, sub } =
     { value = fn value
     , command = command

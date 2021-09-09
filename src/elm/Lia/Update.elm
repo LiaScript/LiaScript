@@ -140,8 +140,7 @@ update session msg model =
         UpdateSettings childMsg ->
             model.settings
                 |> Settings.update (Just { title = model.title, comment = model.definition.comment }) childMsg
-                |> Return.mapVal (\v -> { model | settings = v })
-                |> Return.mapCmd UpdateSettings
+                |> Return.mapValCmd (\v -> { model | settings = v }) UpdateSettings
 
         UpdateIndex childMsg ->
             let
@@ -199,8 +198,7 @@ update session msg model =
                         ( Just sec, Ok e ) ->
                             sec
                                 |> Markdown.handle model.definition event.topic e
-                                |> Return.mapVal (\v -> { model | sections = Array.set event.section v model.sections })
-                                |> Return.mapCmd UpdateMarkdown
+                                |> Return.mapValCmd (\v -> { model | sections = Array.set event.section v model.sections }) UpdateMarkdown
 
                         _ ->
                             Return.val model
@@ -212,8 +210,7 @@ update session msg model =
                         |> Return.val
                         |> Return.script sub
                         |> Markdown.updateScript
-                        |> Return.mapVal (\v -> { model | sections = Array.set id v model.sections })
-                        |> Return.mapCmd UpdateMarkdown
+                        |> Return.mapValCmd (\v -> { model | sections = Array.set id v model.sections }) UpdateMarkdown
 
                 _ ->
                     Return.val model
@@ -242,8 +239,7 @@ update session msg model =
                 ( UpdateMarkdown childMsg, Just sec ) ->
                     sec
                         |> Markdown.update model.definition childMsg
-                        |> Return.mapVal (set_active_section model)
-                        |> Return.mapCmd UpdateMarkdown
+                        |> Return.mapValCmd (set_active_section model) UpdateMarkdown
 
                 ( NextSection, Just sec ) ->
                     if (model.settings.mode == Textbook) || not (Effect.has_next sec.effect_model) then
@@ -252,8 +248,7 @@ update session msg model =
                     else
                         sec
                             |> Markdown.nextEffect model.definition model.settings.sound
-                            |> Return.mapVal (set_active_section model)
-                            |> Return.mapCmd UpdateMarkdown
+                            |> Return.mapValCmd (set_active_section model) UpdateMarkdown
 
                 ( PrevSection, Just sec ) ->
                     if (model.settings.mode == Textbook) || not (Effect.has_previous sec.effect_model) then
@@ -262,8 +257,7 @@ update session msg model =
                     else
                         sec
                             |> Markdown.previousEffect model.definition model.settings.sound
-                            |> Return.mapVal (set_active_section model)
-                            |> Return.mapCmd UpdateMarkdown
+                            |> Return.mapValCmd (set_active_section model) UpdateMarkdown
 
                 ( InitSection, Just sec ) ->
                     let
@@ -276,8 +270,9 @@ update session msg model =
                                     Markdown.initEffect model.definition False model.settings.sound sec
                     in
                     return
-                        |> Return.mapVal (set_active_section { model | to_do = [] })
-                        |> Return.mapCmd UpdateMarkdown
+                        |> Return.mapValCmd
+                            (set_active_section { model | to_do = [] })
+                            UpdateMarkdown
                         |> Return.batchEvents (Event "slide" model.section_active JE.null :: model.to_do)
 
                 ( JumpToFragment id, Just sec ) ->
@@ -293,8 +288,7 @@ update session msg model =
                                 Markdown.nextEffect model.definition model.settings.sound { sec | effect_model = { effect | visible = id - 1 } }
                         in
                         return
-                            |> Return.mapVal (set_active_section model)
-                            |> Return.mapCmd UpdateMarkdown
+                            |> Return.mapValCmd (set_active_section model) UpdateMarkdown
 
                 ( TTSReplay bool, sec ) ->
                     case Markdown.ttsReplay model.settings.sound bool sec of

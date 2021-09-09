@@ -50,11 +50,6 @@ subscriptions _ =
     footnote FootnoteShow
 
 
-send : String -> Int -> List Event -> List Event
-send name id =
-    List.map (Event.encode >> Event name id)
-
-
 update : Definition -> Msg -> Section -> Return Section Msg Msg
 update globals msg section =
     case msg of
@@ -68,8 +63,7 @@ update globals msg section =
                     )
                     sound
                     childMsg
-                |> Return.mapVal (\v -> { section | effect_model = v })
-                |> Return.mapCmd (UpdateEffect sound)
+                |> Return.mapValCmd (\v -> { section | effect_model = v }) (UpdateEffect sound)
                 |> Return.mapEvents "effect" section.id
 
         UpdateCode childMsg ->
@@ -160,8 +154,7 @@ subUpdate js msg section =
                 UpdateEffect sound childMsg ->
                     subsection.effect_model
                         |> Effect.update (subs Nothing) sound childMsg
-                        |> Return.mapVal (\v -> SubSection { subsection | effect_model = v })
-                        |> Return.mapCmd (UpdateEffect sound)
+                        |> Return.mapValCmd (\v -> SubSection { subsection | effect_model = v }) (UpdateEffect sound)
                         |> Return.mapEvents "effect" subsection.id
 
                 UpdateTable childMsg ->
@@ -172,8 +165,7 @@ subUpdate js msg section =
                 UpdateCode childMsg ->
                     subsection.code_model
                         |> Code.update js childMsg
-                        |> Return.mapVal (\v -> SubSection { subsection | code_model = v })
-                        |> Return.mapCmd UpdateCode
+                        |> Return.mapValCmd (\v -> SubSection { subsection | code_model = v }) UpdateCode
                         |> Return.mapEvents "code" subsection.id
 
                 UpdateQuiz childMsg ->
@@ -227,8 +219,7 @@ subUpdate js msg section =
                 Script childMsg ->
                     subsection.effect_model
                         |> Effect.updateSub (subs Nothing) childMsg
-                        |> Return.mapVal (\v -> SubSection { subsection | effect_model = v })
-                        |> Return.mapCmd (UpdateEffect True)
+                        |> Return.mapValCmd (\v -> SubSection { subsection | effect_model = v }) (UpdateEffect True)
                         |> Return.mapEvents "script" subsection.id
 
                 _ ->
@@ -239,15 +230,13 @@ subUpdate js msg section =
                 Script childMsg ->
                     sub.effect_model
                         |> Effect.updateSub (subs Nothing) childMsg
-                        |> Return.mapVal (\v -> SubSubSection { sub | effect_model = v })
-                        |> Return.mapCmd (UpdateEffect True)
+                        |> Return.mapValCmd (\v -> SubSubSection { sub | effect_model = v }) (UpdateEffect True)
                         |> Return.mapEvents "script" sub.id
 
                 UpdateEffect sound childMsg ->
                     sub.effect_model
                         |> Effect.update (subs Nothing) sound childMsg
-                        |> Return.mapVal (\v -> SubSubSection { sub | effect_model = v })
-                        |> Return.mapCmd (UpdateEffect sound)
+                        |> Return.mapValCmd (\v -> SubSubSection { sub | effect_model = v }) (UpdateEffect sound)
                         |> Return.mapEvents "effect" sub.id
 
                 _ ->

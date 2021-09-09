@@ -36,8 +36,7 @@ update main msg scripts =
                 Just (IFrame lia) ->
                     lia
                         |> main.update scripts sub
-                        |> Return.mapVal (\v -> Script.set id (\s -> { s | result = Just (IFrame v) }) scripts)
-                        |> Return.mapCmd (Sub id)
+                        |> Return.mapValCmd (\v -> Script.set id (\s -> { s | result = Just (IFrame v) }) scripts) (Sub id)
                         |> Return.mapEvents "sub" id
 
                 _ ->
@@ -247,8 +246,7 @@ update main msg scripts =
                         Just (IFrame lia) ->
                             lia
                                 |> main.handle scripts event.message
-                                |> Return.mapVal (\v -> Script.set event.section (\s -> { s | result = Just (IFrame v) }) scripts)
-                                |> Return.mapCmd (Sub event.section)
+                                |> Return.mapValCmd (\v -> Script.set event.section (\s -> { s | result = Just (IFrame v) }) scripts) (Sub event.section)
                                 |> Return.mapEvents "sub" event.section
 
                         _ ->

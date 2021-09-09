@@ -119,8 +119,7 @@ update main sound msg model =
             Script childMsg ->
                 model.javascript
                     |> Script.update main childMsg
-                    |> Return.mapVal (\v -> { model | javascript = v })
-                    |> Return.mapCmd Script
+                    |> Return.mapValCmd (\v -> { model | javascript = v }) Script
 
             Handle event ->
                 case event.topic of
@@ -139,8 +138,7 @@ update main sound msg model =
                     _ ->
                         model.javascript
                             |> Script.update main (Script_.Handle event)
-                            |> Return.mapVal (\v -> { model | javascript = v })
-                            |> Return.mapCmd Script
+                            |> Return.mapValCmd (\v -> { model | javascript = v }) Script
 
 
 scrollTo : Bool -> String -> Event
