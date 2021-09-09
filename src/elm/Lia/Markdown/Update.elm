@@ -275,7 +275,7 @@ updateScript return =
             in
             { section | effect_model = ret.value }
                 |> Return.replace return
-                |> Return.cmdBatch [ ret.cmd ]
+                |> Return.cmdBatch [ ret.command ]
                 |> Return.events ret.events
 
 

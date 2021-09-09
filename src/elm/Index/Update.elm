@@ -198,7 +198,7 @@ updateSettings msg settings ( model, cmd, events ) =
             in
             ( return.value
             , ( model
-              , Cmd.batch [ cmd, Cmd.map UpdateSettings return.cmd ]
+              , Cmd.batch [ cmd, Cmd.map UpdateSettings return.command ]
               , List.append events return.events
               )
             )

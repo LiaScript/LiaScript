@@ -127,7 +127,7 @@ update msg model =
                     Lia.Script.update model.session childMsg model.lia
             in
             ( { model | lia = return.value }
-            , batch LiaScript return.cmd return.events
+            , batch LiaScript return.command return.events
             )
 
         Handle event ->
@@ -252,7 +252,7 @@ update msg model =
                             | lia = return.value
                             , session = session
                           }
-                        , batch LiaScript return.cmd return.events
+                        , batch LiaScript return.command return.events
                         )
 
             else
@@ -347,7 +347,7 @@ start model =
             Lia.Script.load_first_slide session { lia | section_active = slide }
     in
     ( { model | state = Running, lia = return.value, session = session }
-    , batch LiaScript return.cmd return.events
+    , batch LiaScript return.command return.events
     )
 
 
@@ -370,7 +370,7 @@ startWithError model =
                 }
     in
     ( { model | lia = return.value, session = session }
-    , batch LiaScript return.cmd return.events
+    , batch LiaScript return.command return.events
     )
 
 

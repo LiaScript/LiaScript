@@ -117,14 +117,10 @@ update main sound msg model =
                 execute main sound run_all_javascript 0 model
 
             Script childMsg ->
-                let
-                    return =
-                        Script.update main childMsg model.javascript
-                in
-                { model | javascript = return.value }
-                    |> Return.value
-                    |> Return.cmd (Cmd.map Script return.cmd)
-                    |> Return.events return.events
+                model.javascript
+                    |> Script.update main childMsg
+                    |> Return.map (\v -> { model | javascript = v })
+                    |> Return.cmdMap Script
 
             Handle event ->
                 case event.topic of
@@ -141,14 +137,10 @@ update main sound msg model =
                                     model
 
                     _ ->
-                        let
-                            return =
-                                Script.update main (Script_.Handle event) model.javascript
-                        in
-                        { model | javascript = return.value }
-                            |> Return.value
-                            |> Return.cmd (Cmd.map Script return.cmd)
-                            |> Return.events return.events
+                        model.javascript
+                            |> Script.update main (Script_.Handle event)
+                            |> Return.map (\v -> { model | javascript = v })
+                            |> Return.cmdMap Script
 
 
 scrollTo : Bool -> String -> Event

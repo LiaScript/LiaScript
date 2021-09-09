@@ -18,7 +18,7 @@ import Port.Event as Event exposing (Event)
 
 type alias Return model msg sub =
     { value : model
-    , cmd : Cmd msg
+    , command : Cmd msg
     , script : Maybe (Script.Msg sub)
     , events : List Event
     }
@@ -50,13 +50,13 @@ upgrade topic id r =
 
 cmd : Cmd msg -> Return model msg sub -> Return model msg sub
 cmd c r =
-    { r | cmd = c }
+    { r | command = c }
 
 
 cmdMap : (msgA -> msgB) -> Return model msgA sub -> Return model msgB sub
 cmdMap fn r =
     { value = r.value
-    , cmd = Cmd.map fn r.cmd
+    , command = Cmd.map fn r.command
     , script = r.script
     , events = r.events
     }
@@ -64,7 +64,7 @@ cmdMap fn r =
 
 cmdBatch : List (Cmd msg) -> Return model msg sub -> Return model msg sub
 cmdBatch cmds r =
-    { r | cmd = Cmd.batch (r.cmd :: cmds) }
+    { r | command = Cmd.batch (r.command :: cmds) }
 
 
 script : Script.Msg sub -> Return model msg sub -> Return model msg sub
@@ -75,7 +75,7 @@ script s r =
 map : (model -> model_) -> Return model msg sub -> Return model_ msg sub
 map fn r =
     { value = fn r.value
-    , cmd = r.cmd
+    , command = r.command
     , script = r.script
     , events = r.events
     }
