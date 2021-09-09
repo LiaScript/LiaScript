@@ -16,7 +16,7 @@ type Msg sub
 
 update : Msg sub -> Vector -> Return Vector msg sub
 update msg vector =
-    Return.value <|
+    Return.val <|
         case msg of
             Sort id col ->
                 vector

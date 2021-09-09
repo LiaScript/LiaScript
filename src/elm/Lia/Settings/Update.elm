@@ -82,7 +82,7 @@ update main msg model =
                     log Nothing { model | sound = not model.sound }
             in
             return
-                |> Return.event (TTS.event return.value.sound)
+                |> Return.batchEvent (TTS.event return.value.sound)
 
         Toggle Light ->
             log Nothing { model | light = not model.light }
@@ -119,7 +119,7 @@ update main msg model =
                             log Nothing { model | sound = False, mode = Textbook }
                     in
                     return
-                        |> Return.event (TTS.event return.value.sound)
+                        |> Return.batchEvent (TTS.event return.value.sound)
 
                 _ ->
                     log Nothing { model | mode = mode }
@@ -145,13 +145,13 @@ update main msg model =
 
         Reset ->
             model
-                |> Return.value
-                |> Return.event (Event "reset" -1 JE.null)
+                |> Return.val
+                |> Return.batchEvent (Event "reset" -1 JE.null)
 
         ShareCourse url ->
             model
-                |> Return.value
-                |> Return.event
+                |> Return.val
+                |> Return.batchEvent
                     ({ title =
                         main
                             |> Maybe.map .title
@@ -167,11 +167,11 @@ update main msg model =
 
         Toggle TranslateWithGoogle ->
             { model | translateWithGoogle = True }
-                |> Return.value
-                |> Return.event (Event "googleTranslate" -1 JE.null)
+                |> Return.val
+                |> Return.batchEvent (Event "googleTranslate" -1 JE.null)
 
         Ignore ->
-            Return.value model
+            Return.val model
 
 
 handle : Event -> Msg
@@ -193,9 +193,9 @@ toggle_sound =
 log : Maybe String -> Settings -> Return Settings Msg sub
 log elementID settings =
     settings
-        |> Return.value
+        |> Return.val
         |> Return.cmd (maybeFocus elementID)
-        |> Return.event (customizeEvent settings)
+        |> Return.batchEvent (customizeEvent settings)
 
 
 customizeEvent : Settings -> Event
@@ -216,7 +216,7 @@ customizeEvent settings =
 
 no_log : Maybe String -> Settings -> Return Settings Msg sub
 no_log elementID =
-    Return.value >> Return.cmd (maybeFocus elementID)
+    Return.val >> Return.cmd (maybeFocus elementID)
 
 
 maybeFocus : Maybe String -> Cmd Msg

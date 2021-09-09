@@ -1,15 +1,15 @@
 module Return exposing
     ( Return
+    , batchCmd
+    , batchEvent
+    , batchEvents
     , cmd
-    , cmdBatch
-    , cmdMap
-    , event
-    , events
-    , map
+    , mapCmd
+    , mapEvents
+    , mapVal
     , replace
     , script
-    , upgrade
-    , value
+    , val
     )
 
 import Lia.Markdown.Effect.Script.Types as Script
@@ -19,32 +19,32 @@ import Port.Event as Event exposing (Event)
 type alias Return model msg sub =
     { value : model
     , command : Cmd msg
-    , script : Maybe (Script.Msg sub)
     , events : List Event
+    , sub : Maybe (Script.Msg sub)
     }
 
 
-value : model -> Return model cmd sub
-value model =
+val : model -> Return model cmd sub
+val model =
     Return
         model
         Cmd.none
-        Nothing
         []
+        Nothing
 
 
-event : Event -> Return model msg sub -> Return model msg sub
-event e r =
+batchEvent : Event -> Return model msg sub -> Return model msg sub
+batchEvent e r =
     { r | events = e :: r.events }
 
 
-events : List Event -> Return model msg sub -> Return model msg sub
-events e r =
+batchEvents : List Event -> Return model msg sub -> Return model msg sub
+batchEvents e r =
     { r | events = List.append r.events e }
 
 
-upgrade : String -> Int -> Return model msg sub -> Return model msg sub
-upgrade topic id r =
+mapEvents : String -> Int -> Return model msg sub -> Return model msg sub
+mapEvents topic id r =
     { r | events = List.map (Event.encode >> Event topic id) r.events }
 
 
@@ -53,37 +53,37 @@ cmd c r =
     { r | command = c }
 
 
-cmdMap : (msgA -> msgB) -> Return model msgA sub -> Return model msgB sub
-cmdMap fn r =
-    { value = r.value
-    , command = Cmd.map fn r.command
-    , script = r.script
-    , events = r.events
+mapCmd : (msgA -> msgB) -> Return model msgA sub -> Return model msgB sub
+mapCmd fn { value, command, sub, events } =
+    { value = value
+    , command = Cmd.map fn command
+    , events = events
+    , sub = sub
     }
 
 
-cmdBatch : List (Cmd msg) -> Return model msg sub -> Return model msg sub
-cmdBatch cmds r =
+batchCmd : List (Cmd msg) -> Return model msg sub -> Return model msg sub
+batchCmd cmds r =
     { r | command = Cmd.batch (r.command :: cmds) }
 
 
 script : Script.Msg sub -> Return model msg sub -> Return model msg sub
 script s r =
-    { r | script = Just s }
+    { r | sub = Just s }
 
 
-map : (model -> model_) -> Return model msg sub -> Return model_ msg sub
-map fn r =
-    { value = fn r.value
-    , command = r.command
-    , script = r.script
-    , events = r.events
+mapVal : (model -> model_) -> Return model msg sub -> Return model_ msg sub
+mapVal fn { value, command, events, sub } =
+    { value = fn value
+    , command = command
+    , events = events
+    , sub = sub
     }
 
 
 replace : Return model_ msg sub -> model -> Return model msg sub
 replace r m =
-    map (always m) r
+    mapVal (always m) r
 
 
 

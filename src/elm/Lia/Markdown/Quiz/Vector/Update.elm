@@ -21,11 +21,11 @@ update msg state =
         Toggle id ->
             state
                 |> toggle id
-                |> Return.value
+                |> Return.val
 
         Script sub ->
             state
-                |> Return.value
+                |> Return.val
                 |> Return.script sub
 
 

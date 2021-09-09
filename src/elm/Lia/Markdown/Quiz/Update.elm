@@ -63,8 +63,8 @@ update scripts msg vector =
                             ""
             in
             vector
-                |> Return.value
-                |> Return.event
+                |> Return.val
+                |> Return.batchEvent
                     (Eval.event idx
                         code
                         (outputs scripts)
@@ -72,12 +72,12 @@ update scripts msg vector =
                     )
 
         ShowHint idx ->
-            (\e -> Return.value { e | hint = e.hint + 1 })
+            (\e -> Return.val { e | hint = e.hint + 1 })
                 |> update_ idx vector
                 |> store
 
         ShowSolution idx solution ->
-            (\e -> Return.value { e | state = toState solution, solved = Solution.ReSolved, error_msg = "" })
+            (\e -> Return.val { e | state = toState solution, solved = Solution.ReSolved, error_msg = "" })
                 |> update_ idx vector
                 |> store
 
@@ -93,14 +93,14 @@ update scripts msg vector =
                     event.message
                         |> Json.toVector
                         |> Result.withDefault vector
-                        |> Return.value
+                        |> Return.val
 
                 _ ->
-                    Return.value vector
+                    Return.val vector
 
         Script sub ->
             vector
-                |> Return.value
+                |> Return.val
                 |> Return.script sub
 
 
@@ -124,7 +124,7 @@ update_ :
     -> (Element -> Return Element msg sub)
     -> Return Vector msg sub
 update_ idx vector fn =
-    Return.value <|
+    Return.val <|
         case get idx vector |> Maybe.map fn of
             Just elem ->
                 Array.set idx elem.value vector
@@ -139,20 +139,20 @@ state_ msg e =
         ( Block_Update _ m, Block_State s ) ->
             s
                 |> Block.update m
-                |> Return.map (setState e Block_State)
+                |> Return.mapVal (setState e Block_State)
 
         ( Vector_Update _ m, Vector_State s ) ->
             s
                 |> Vector.update m
-                |> Return.map (setState e Vector_State)
+                |> Return.mapVal (setState e Vector_State)
 
         ( Matrix_Update _ m, Matrix_State s ) ->
             s
                 |> Matrix.update m
-                |> Return.map (setState e Matrix_State)
+                |> Return.mapVal (setState e Matrix_State)
 
         _ ->
-            Return.value e
+            Return.val e
 
 
 setState : Element -> (s -> State) -> s -> Element
@@ -174,7 +174,7 @@ evalEventDecoder json =
     if eval.ok then
         if eval.result == "true" then
             \e ->
-                Return.value
+                Return.val
                     { e
                         | trial = e.trial + 1
                         , solved = Solution.Solved
@@ -183,7 +183,7 @@ evalEventDecoder json =
 
         else
             \e ->
-                Return.value
+                Return.val
                     { e
                         | trial =
                             if eval.result == "false" then
@@ -196,13 +196,13 @@ evalEventDecoder json =
                     }
 
     else
-        \e -> Return.value { e | error_msg = eval.result }
+        \e -> Return.val { e | error_msg = eval.result }
 
 
 store : Return Vector msg sub -> Return Vector msg sub
 store return =
     return
-        |> Return.event
+        |> Return.batchEvent
             (return.value
                 |> Json.fromVector
                 |> Event.store
@@ -215,4 +215,4 @@ check solution e =
         | trial = e.trial + 1
         , solved = comp solution e.state
     }
-        |> Return.value
+        |> Return.val

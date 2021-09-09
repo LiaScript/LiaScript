@@ -36,12 +36,12 @@ update main msg scripts =
                 Just (IFrame lia) ->
                     lia
                         |> main.update scripts sub
-                        |> Return.map (\v -> Script.set id (\s -> { s | result = Just (IFrame v) }) scripts)
-                        |> Return.cmdMap (Sub id)
-                        |> Return.upgrade "sub" id
+                        |> Return.mapVal (\v -> Script.set id (\s -> { s | result = Just (IFrame v) }) scripts)
+                        |> Return.mapCmd (Sub id)
+                        |> Return.mapEvents "sub" id
 
                 _ ->
-                    Return.value scripts
+                    Return.val scripts
 
         Activate active id ->
             case Array.get id scripts of
@@ -75,7 +75,7 @@ update main msg scripts =
                                 , updated = False
                             }
                             scripts
-                            |> Return.value
+                            |> Return.val
                             |> Return.cmd
                                 (if active then
                                     focus NoOp "lia-focus"
@@ -85,7 +85,7 @@ update main msg scripts =
                                 )
 
                 Nothing ->
-                    Return.value scripts
+                    Return.val scripts
 
         Value id exec str ->
             if exec then
@@ -94,7 +94,7 @@ update main msg scripts =
             else
                 scripts
                     |> Script.set id (\js -> { js | input = Input.value str js.input })
-                    |> Return.value
+                    |> Return.val
 
         Checkbox id exec str ->
             if exec then
@@ -103,7 +103,7 @@ update main msg scripts =
             else
                 scripts
                     |> Script.set id (\js -> { js | input = Input.toggle str js.input, updated = True })
-                    |> Return.value
+                    |> Return.val
 
         Radio id exec str ->
             if exec then
@@ -112,7 +112,7 @@ update main msg scripts =
             else
                 scripts
                     |> Script.set id (\js -> { js | input = Input.value str js.input, updated = True })
-                    |> Return.value
+                    |> Return.val
 
         Click id ->
             reRun identity Cmd.none id scripts
@@ -132,11 +132,11 @@ update main msg scripts =
                 scripts
 
         NoOp ->
-            Return.value scripts
+            Return.val scripts
 
         Delay milliseconds subMsg ->
             scripts
-                |> Return.value
+                |> Return.val
                 |> Return.cmd
                     (Process.sleep milliseconds
                         |> Task.perform (always subMsg)
@@ -153,7 +153,7 @@ update main msg scripts =
             if bool then
                 scripts
                     |> Script.set id fn
-                    |> Return.value
+                    |> Return.val
                     |> Return.cmd (focus NoOp "lia-focus")
 
             else
@@ -162,7 +162,7 @@ update main msg scripts =
         EditCode id str ->
             scripts
                 |> Script.set id (\js -> { js | script = str })
-                |> Return.value
+                |> Return.val
 
         Handle event ->
             case event.topic of
@@ -196,15 +196,15 @@ update main msg scripts =
                                 event.section
                                 (\js -> { js | update = False })
                                 javascript
-                                |> Return.value
-                                |> Return.events (List.map (execute 0) nodeUpdate)
+                                |> Return.val
+                                |> Return.batchEvents (List.map (execute 0) nodeUpdate)
 
                         Just output ->
                             javascript
                                 |> Script.updateChildren output
                                 |> Script.set event.section (\js -> { js | update = False })
-                                |> Return.value
-                                |> Return.events
+                                |> Return.val
+                                |> Return.batchEvents
                                     (if publish then
                                         javascript
                                             |> Script.scriptChildren output
@@ -227,12 +227,12 @@ update main msg scripts =
                     in
                     case Maybe.andThen .output node of
                         Nothing ->
-                            Return.value javascript
+                            Return.val javascript
 
                         Just output ->
                             Script.updateChildren output javascript
-                                |> Return.value
-                                |> Return.events
+                                |> Return.val
+                                |> Return.batchEvents
                                     (if publish then
                                         javascript
                                             |> Script.scriptChildren output
@@ -247,15 +247,15 @@ update main msg scripts =
                         Just (IFrame lia) ->
                             lia
                                 |> main.handle scripts event.message
-                                |> Return.map (\v -> Script.set event.section (\s -> { s | result = Just (IFrame v) }) scripts)
-                                |> Return.cmdMap (Sub event.section)
-                                |> Return.upgrade "sub" event.section
+                                |> Return.mapVal (\v -> Script.set event.section (\s -> { s | result = Just (IFrame v) }) scripts)
+                                |> Return.mapCmd (Sub event.section)
+                                |> Return.mapEvents "sub" event.section
 
                         _ ->
-                            Return.value scripts
+                            Return.val scripts
 
                 _ ->
-                    Return.value scripts
+                    Return.val scripts
 
 
 reRun : (Script a -> Script a) -> Cmd (Msg sub) -> Int -> Scripts a -> Return (Scripts a) (Msg sub) sub
@@ -276,9 +276,9 @@ reRun fn cmd id scripts =
     case Script.get identity id scripts_ of
         Just node ->
             scripts_
-                |> Return.value
+                |> Return.val
                 |> Return.cmd cmd
-                |> Return.events
+                |> Return.batchEvents
                     (if node.running then
                         []
 
@@ -289,7 +289,7 @@ reRun fn cmd id scripts =
                     )
 
         Nothing ->
-            Return.value scripts_
+            Return.val scripts_
 
 
 execute : Int -> ( Int, String ) -> Event

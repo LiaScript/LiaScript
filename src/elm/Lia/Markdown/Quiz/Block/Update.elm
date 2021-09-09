@@ -21,24 +21,24 @@ update msg state =
     case ( msg, state ) of
         ( Choose option, Select _ _ ) ->
             Select True [ option ]
-                |> Return.value
+                |> Return.val
 
         ( Toggle, Select open id ) ->
             Select (not open) id
-                |> Return.value
+                |> Return.val
 
         ( Input str, Text _ ) ->
             Text str
-                |> Return.value
+                |> Return.val
 
         ( Script sub, _ ) ->
             state
-                |> Return.value
+                |> Return.val
                 |> Return.script sub
 
         _ ->
             state
-                |> Return.value
+                |> Return.val
 
 
 toString : State -> String

@@ -27,30 +27,30 @@ update scripts msg vector =
     case msg of
         TextUpdate idx str ->
             update_text vector idx str
-                |> Return.value
+                |> Return.val
 
         SelectUpdate id value ->
             update_select vector id value
-                |> Return.value
+                |> Return.val
 
         SelectChose id ->
             update_select_chose vector id
-                |> Return.value
+                |> Return.val
 
         VectorUpdate idx var ->
             update_vector vector idx var
-                |> Return.value
+                |> Return.val
 
         MatrixUpdate idx row var ->
             update_matrix vector idx row var
-                |> Return.value
+                |> Return.val
 
         KeyDown id javascript char ->
             if char == 13 then
                 update scripts (Submit id javascript) vector
 
             else
-                Return.value vector
+                Return.val vector
 
         Submit id Nothing ->
             if submittable vector id then
@@ -59,8 +59,8 @@ update scripts msg vector =
                         submit vector id
                 in
                 new_vector
-                    |> Return.value
-                    |> Return.event
+                    |> Return.val
+                    |> Return.batchEvent
                         (new_vector
                             |> Json.fromVector
                             |> Event.store
@@ -68,7 +68,7 @@ update scripts msg vector =
 
             else
                 vector
-                    |> Return.value
+                    |> Return.val
 
         Submit id (Just code) ->
             case vector |> Array.get id of
@@ -79,18 +79,18 @@ update scripts msg vector =
                      else
                         updateError vector id Nothing
                     )
-                        |> Return.value
-                        |> Return.event
+                        |> Return.val
+                        |> Return.batchEvent
                             ([ toString state ]
                                 |> Eval.event id code (outputs scripts)
                             )
 
                 _ ->
-                    Return.value vector
+                    Return.val vector
 
         Script sub ->
             vector
-                |> Return.value
+                |> Return.val
                 |> Return.script sub
 
         Handle event ->
@@ -106,19 +106,19 @@ update scripts msg vector =
                     else if eval.result /= "" && not eval.ok then
                         Just eval.result
                             |> updateError vector event.section
-                            |> Return.value
+                            |> Return.val
 
                     else
-                        Return.value vector
+                        Return.val vector
 
                 "restore" ->
                     event.message
                         |> Json.toVector
                         |> Result.withDefault vector
-                        |> Return.value
+                        |> Return.val
 
                 _ ->
-                    Return.value vector
+                    Return.val vector
 
 
 updateError : Vector -> Int -> Maybe String -> Vector

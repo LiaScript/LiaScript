@@ -25,7 +25,7 @@ import Lia.Markdown.Task.Update as Task
 import Lia.Section exposing (Section, SubSection(..))
 import Lia.Utils exposing (focus)
 import Port.Event as Event exposing (Event)
-import Return exposing (Return, upgrade)
+import Return exposing (Return)
 
 
 port footnote : (String -> msg) -> Sub msg
@@ -68,56 +68,56 @@ update globals msg section =
                     )
                     sound
                     childMsg
-                |> Return.map (\v -> { section | effect_model = v })
-                |> Return.cmdMap (UpdateEffect sound)
-                |> Return.upgrade "effect" section.id
+                |> Return.mapVal (\v -> { section | effect_model = v })
+                |> Return.mapCmd (UpdateEffect sound)
+                |> Return.mapEvents "effect" section.id
 
         UpdateCode childMsg ->
             section.code_model
                 |> Code.update section.effect_model.javascript childMsg
-                |> Return.map (\v -> { section | code_model = v })
-                |> Return.upgrade "code" section.id
+                |> Return.mapVal (\v -> { section | code_model = v })
+                |> Return.mapEvents "code" section.id
 
         UpdateQuiz childMsg ->
             section.quiz_vector
                 |> Quiz.update section.effect_model.javascript childMsg
-                |> Return.map (\v -> { section | quiz_vector = v })
-                |> Return.upgrade "quiz" section.id
+                |> Return.mapVal (\v -> { section | quiz_vector = v })
+                |> Return.mapEvents "quiz" section.id
                 |> updateScript
 
         UpdateTask childMsg ->
             section.task_vector
                 |> Task.update section.effect_model.javascript childMsg
-                |> Return.map (\v -> { section | task_vector = v })
-                |> Return.upgrade "task" section.id
+                |> Return.mapVal (\v -> { section | task_vector = v })
+                |> Return.mapEvents "task" section.id
                 |> updateScript
 
         UpdateGallery childMsg ->
             section.gallery_vector
                 |> Gallery.update childMsg
-                |> Return.map (\v -> { section | gallery_vector = v })
+                |> Return.mapVal (\v -> { section | gallery_vector = v })
                 |> updateScript
 
         UpdateSurvey childMsg ->
             section.survey_vector
                 |> Survey.update section.effect_model.javascript childMsg
-                |> Return.map (\v -> { section | survey_vector = v })
-                |> Return.upgrade "survey" section.id
+                |> Return.mapVal (\v -> { section | survey_vector = v })
+                |> Return.mapEvents "survey" section.id
                 |> updateScript
 
         UpdateTable childMsg ->
             section.table_vector
                 |> Table.update childMsg
-                |> Return.map (\v -> { section | table_vector = v })
+                |> Return.mapVal (\v -> { section | table_vector = v })
 
         FootnoteShow key ->
             { section | footnote2show = Just key }
-                |> Return.value
+                |> Return.val
                 |> Return.cmd (focus NoOp "lia-modal__close")
 
         FootnoteHide ->
             { section | footnote2show = Nothing }
-                |> Return.value
+                |> Return.val
                 |> Return.cmd
                     (section.footnote2show
                         |> Maybe.map (Footnote.byKey >> focus NoOp)
@@ -126,12 +126,12 @@ update globals msg section =
 
         Script childMsg ->
             section
-                |> Return.value
+                |> Return.val
                 |> Return.script childMsg
                 |> updateScript
 
         NoOp ->
-            Return.value section
+            Return.val section
 
 
 subs :
@@ -160,28 +160,28 @@ subUpdate js msg section =
                 UpdateEffect sound childMsg ->
                     subsection.effect_model
                         |> Effect.update (subs Nothing) sound childMsg
-                        |> Return.map (\v -> SubSection { subsection | effect_model = v })
-                        |> Return.cmdMap (UpdateEffect sound)
-                        |> Return.upgrade "effect" subsection.id
+                        |> Return.mapVal (\v -> SubSection { subsection | effect_model = v })
+                        |> Return.mapCmd (UpdateEffect sound)
+                        |> Return.mapEvents "effect" subsection.id
 
                 UpdateTable childMsg ->
                     subsection.table_vector
                         |> Table.update childMsg
-                        |> Return.map (\v -> SubSection { subsection | table_vector = v })
+                        |> Return.mapVal (\v -> SubSection { subsection | table_vector = v })
 
                 UpdateCode childMsg ->
                     subsection.code_model
                         |> Code.update js childMsg
-                        |> Return.map (\v -> SubSection { subsection | code_model = v })
-                        |> Return.cmdMap UpdateCode
-                        |> Return.upgrade "code" subsection.id
+                        |> Return.mapVal (\v -> SubSection { subsection | code_model = v })
+                        |> Return.mapCmd UpdateCode
+                        |> Return.mapEvents "code" subsection.id
 
                 UpdateQuiz childMsg ->
                     let
                         result =
                             Quiz.update js childMsg subsection.quiz_vector
                     in
-                    case result.script of
+                    case result.sub of
                         Just _ ->
                             subUpdate js
                                 (UpdateQuiz childMsg)
@@ -189,15 +189,15 @@ subUpdate js msg section =
 
                         _ ->
                             result
-                                |> Return.map (\v -> SubSection { subsection | quiz_vector = v })
-                                |> upgrade "quiz" subsection.id
+                                |> Return.mapVal (\v -> SubSection { subsection | quiz_vector = v })
+                                |> Return.mapEvents "quiz" subsection.id
 
                 UpdateSurvey childMsg ->
                     let
                         result =
                             Survey.update js childMsg subsection.survey_vector
                     in
-                    case result.script of
+                    case result.sub of
                         Just _ ->
                             subUpdate js
                                 (UpdateSurvey childMsg)
@@ -205,15 +205,15 @@ subUpdate js msg section =
 
                         _ ->
                             result
-                                |> Return.map (\v -> SubSection { subsection | survey_vector = v })
-                                |> upgrade "survey" subsection.id
+                                |> Return.mapVal (\v -> SubSection { subsection | survey_vector = v })
+                                |> Return.mapEvents "survey" subsection.id
 
                 UpdateTask childMsg ->
                     let
                         result =
                             Task.update js childMsg subsection.task_vector
                     in
-                    case result.script of
+                    case result.sub of
                         Just _ ->
                             subUpdate js
                                 (UpdateTask childMsg)
@@ -221,44 +221,44 @@ subUpdate js msg section =
 
                         _ ->
                             result
-                                |> Return.map (\v -> SubSection { subsection | task_vector = v })
-                                |> upgrade "task" subsection.id
+                                |> Return.mapVal (\v -> SubSection { subsection | task_vector = v })
+                                |> Return.mapEvents "task" subsection.id
 
                 Script childMsg ->
                     subsection.effect_model
                         |> Effect.updateSub (subs Nothing) childMsg
-                        |> Return.map (\v -> SubSection { subsection | effect_model = v })
-                        |> Return.cmdMap (UpdateEffect True)
-                        |> Return.upgrade "script" subsection.id
+                        |> Return.mapVal (\v -> SubSection { subsection | effect_model = v })
+                        |> Return.mapCmd (UpdateEffect True)
+                        |> Return.mapEvents "script" subsection.id
 
                 _ ->
-                    Return.value section
+                    Return.val section
 
         SubSubSection sub ->
             case msg of
                 Script childMsg ->
                     sub.effect_model
                         |> Effect.updateSub (subs Nothing) childMsg
-                        |> Return.map (\v -> SubSubSection { sub | effect_model = v })
-                        |> Return.cmdMap (UpdateEffect True)
-                        |> Return.upgrade "script" sub.id
+                        |> Return.mapVal (\v -> SubSubSection { sub | effect_model = v })
+                        |> Return.mapCmd (UpdateEffect True)
+                        |> Return.mapEvents "script" sub.id
 
                 UpdateEffect sound childMsg ->
                     sub.effect_model
                         |> Effect.update (subs Nothing) sound childMsg
-                        |> Return.map (\v -> SubSubSection { sub | effect_model = v })
-                        |> Return.cmdMap (UpdateEffect sound)
-                        |> Return.upgrade "effect" sub.id
+                        |> Return.mapVal (\v -> SubSubSection { sub | effect_model = v })
+                        |> Return.mapCmd (UpdateEffect sound)
+                        |> Return.mapEvents "effect" sub.id
 
                 _ ->
-                    Return.value section
+                    Return.val section
 
 
 updateScript :
     Return { sec | id : Int, effect_model : E.Model SubSection } Msg Msg
     -> Return { sec | id : Int, effect_model : E.Model SubSection } Msg Msg
 updateScript return =
-    case return.script of
+    case return.sub of
         Nothing ->
             return
 
@@ -267,16 +267,16 @@ updateScript return =
                 ret =
                     return.value.effect_model
                         |> Effect.updateSub (subs Nothing) sub
-                        |> Return.upgrade "effect" section.id
-                        |> Return.cmdMap (UpdateEffect True)
+                        |> Return.mapEvents "effect" section.id
+                        |> Return.mapCmd (UpdateEffect True)
 
                 section =
                     return.value
             in
             { section | effect_model = ret.value }
                 |> Return.replace return
-                |> Return.cmdBatch [ ret.command ]
-                |> Return.events ret.events
+                |> Return.batchCmd [ ret.command ]
+                |> Return.batchEvents ret.events
 
 
 nextEffect : Definition -> Bool -> Section -> Return Section Msg Msg
@@ -317,13 +317,13 @@ subHandle js json section =
                             subUpdate js (UpdateTask (Task.handle message)) section
 
                         _ ->
-                            Return.value section
+                            Return.val section
 
                 _ ->
-                    Return.value section
+                    Return.val section
 
         _ ->
-            Return.value section
+            Return.val section
 
 
 handle : Definition -> String -> Event -> Section -> Return Section Msg Msg
@@ -345,7 +345,7 @@ handle globals topic event section =
             update globals (UpdateTask (Task.handle event)) section
 
         _ ->
-            Return.value section
+            Return.val section
 
 
 ttsReplay : Bool -> Bool -> Maybe Section -> Maybe Event

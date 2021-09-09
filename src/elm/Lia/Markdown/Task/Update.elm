@@ -42,7 +42,7 @@ update scripts msg vector =
                 |> Array.get x
                 |> Maybe.map (\state -> Array.set x (toggle y state) vector)
                 |> Maybe.withDefault vector
-                |> Return.value
+                |> Return.val
                 |> store
 
         -- toggle and execute the code snippet
@@ -55,8 +55,8 @@ update scripts msg vector =
                 Just state ->
                     vector
                         |> Array.set x state
-                        |> Return.value
-                        |> Return.event
+                        |> Return.val
+                        |> Return.batchEvent
                             ([ state
                                 |> JE.array JE.bool
                                 |> JE.encode 0
@@ -66,15 +66,15 @@ update scripts msg vector =
                         |> store
 
                 Nothing ->
-                    Return.value vector
+                    Return.val vector
 
         Script sub ->
             vector
-                |> Return.value
+                |> Return.val
                 |> Return.script sub
 
         Handle event ->
-            Return.value <|
+            Return.val <|
                 case event.topic of
                     -- currently it is only possible to restore states from the backend
                     "restore" ->
@@ -104,7 +104,7 @@ within the backend.
 store : Return Vector msg sub -> Return Vector msg sub
 store return =
     return
-        |> Return.event
+        |> Return.batchEvent
             (return.value
                 |> Json.fromVector
                 |> Event.store

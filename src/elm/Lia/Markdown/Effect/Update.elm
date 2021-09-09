@@ -67,7 +67,7 @@ update main sound msg model =
         case msg of
             Init run_all_javascript ->
                 model
-                    |> Return.value
+                    |> Return.val
                     |> Return.cmd (Task.perform (Rendered run_all_javascript) Dom.getViewport)
 
             Next ->
@@ -76,7 +76,7 @@ update main sound msg model =
                         |> execute main sound False 0
 
                 else
-                    Return.value model
+                    Return.val model
 
             Previous ->
                 if has_previous model then
@@ -84,12 +84,12 @@ update main sound msg model =
                         |> execute main sound False 0
 
                 else
-                    Return.value model
+                    Return.val model
 
             Mute id ->
                 { model | speaking = Nothing }
-                    |> Return.value
-                    |> Return.event (TTS.mute id)
+                    |> Return.val
+                    |> Return.batchEvent (TTS.mute id)
 
             Send event ->
                 let
@@ -99,8 +99,8 @@ update main sound msg model =
                             :: event
                 in
                 model
-                    |> Return.value
-                    |> Return.events
+                    |> Return.val
+                    |> Return.batchEvents
                         (case current_comment model of
                             Just ( id, _ ) ->
                                 if sound then
@@ -119,13 +119,13 @@ update main sound msg model =
             Script childMsg ->
                 model.javascript
                     |> Script.update main childMsg
-                    |> Return.map (\v -> { model | javascript = v })
-                    |> Return.cmdMap Script
+                    |> Return.mapVal (\v -> { model | javascript = v })
+                    |> Return.mapCmd Script
 
             Handle event ->
                 case event.topic of
                     "speak" ->
-                        Return.value <|
+                        Return.val <|
                             case event.message |> JD.decodeValue JD.string of
                                 Ok "start" ->
                                     { model | speaking = Just event.section }
@@ -139,8 +139,8 @@ update main sound msg model =
                     _ ->
                         model.javascript
                             |> Script.update main (Script_.Handle event)
-                            |> Return.map (\v -> { model | javascript = v })
-                            |> Return.cmdMap Script
+                            |> Return.mapVal (\v -> { model | javascript = v })
+                            |> Return.mapCmd Script
 
 
 scrollTo : Bool -> String -> Event
@@ -158,7 +158,7 @@ scrollTo force =
 markRunning : Return (Model a) (Msg sub) sub -> Return (Model a) (Msg sub) sub
 markRunning return =
     return
-        |> Return.map
+        |> Return.mapVal
             (\model ->
                 { model
                     | javascript =

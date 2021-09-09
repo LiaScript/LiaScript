@@ -16,7 +16,7 @@ update : Msg sub -> State -> Return State msg sub
 update msg state =
     case msg of
         Toggle row_id column_id ->
-            Return.value <|
+            Return.val <|
                 case
                     state
                         |> Array.get row_id
@@ -30,7 +30,7 @@ update msg state =
 
         Script sub ->
             state
-                |> Return.value
+                |> Return.val
                 |> Return.script sub
 
 

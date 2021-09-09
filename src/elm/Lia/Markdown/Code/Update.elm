@@ -48,12 +48,12 @@ restore json model =
     of
         Ok (Just vector) ->
             Json.merge model vector
-                |> Return.value
+                |> Return.val
 
         Ok Nothing ->
             model
-                |> Return.value
-                |> Return.events
+                |> Return.val
+                |> Return.batchEvents
                     (if Array.length model.evaluate == 0 then
                         []
 
@@ -63,7 +63,7 @@ restore json model =
 
         Err _ ->
             model
-                |> Return.value
+                |> Return.val
 
 
 update : Scripts a -> Msg -> Model -> Return Model msg sub
@@ -107,7 +107,7 @@ update scripts msg model =
                         )
                         model.highlight
             }
-                |> Return.value
+                |> Return.val
 
         FlipFullscreen (Highlight id_1) id_2 ->
             { model
@@ -125,7 +125,7 @@ update scripts msg model =
                         )
                         model.highlight
             }
-                |> Return.value
+                |> Return.val
 
         FlipFullscreen (Evaluate id_1) id_2 ->
             update_file
@@ -238,7 +238,7 @@ update scripts msg model =
                         |> maybe_update event.section model
 
                 _ ->
-                    Return.value model
+                    Return.val model
 
         Stop idx ->
             model
@@ -247,7 +247,7 @@ update scripts msg model =
                 |> maybe_update idx model
 
         Resize code height ->
-            Return.value <|
+            Return.val <|
                 case code of
                     Evaluate id ->
                         { model | evaluate = onResize id height model.evaluate }
@@ -305,11 +305,11 @@ maybe_update idx model project =
     case project of
         Just ( p, logs ) ->
             { model | evaluate = Array.set idx p model.evaluate }
-                |> Return.value
-                |> Return.events logs
+                |> Return.val
+                |> Return.batchEvents logs
 
         _ ->
-            Return.value model
+            Return.val model
 
 
 update_file : Int -> Int -> Model -> (File -> File) -> (File -> List Event) -> Return Model msg sub
@@ -326,14 +326,14 @@ update_file id_1 id_2 model f f_log =
                                 }
                                 model.evaluate
                     }
-                        |> Return.value
-                        |> Return.events (f_log file)
+                        |> Return.val
+                        |> Return.batchEvents (f_log file)
 
                 Nothing ->
-                    Return.value model
+                    Return.val model
 
         Nothing ->
-            Return.value model
+            Return.val model
 
 
 is_version_new : Int -> ( Project, List Event ) -> ( Project, List Event )

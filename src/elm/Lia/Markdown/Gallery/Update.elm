@@ -21,14 +21,14 @@ update msg vector =
         Show id id2 ->
             vector
                 |> Array.set id id2
-                |> Return.value
+                |> Return.val
 
         Close id ->
             vector
                 |> Array.set id -1
-                |> Return.value
+                |> Return.val
 
         Script sub ->
             vector
-                |> Return.value
+                |> Return.val
                 |> Return.script sub
