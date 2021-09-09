@@ -34,17 +34,11 @@ update main msg scripts =
         Sub id sub ->
             case scripts |> Array.get id |> Maybe.andThen .result of
                 Just (IFrame lia) ->
-                    let
-                        return =
-                            main.update scripts sub lia
-                    in
-                    Script.set id (\s -> { s | result = Just (IFrame return.value) }) scripts
-                        |> Return.value
-                        |> Return.cmd (Cmd.map (Sub id) return.cmd)
-                        |> Return.events
-                            (return.events
-                                |> List.map (Event.encode >> Event "sub" id)
-                            )
+                    lia
+                        |> main.update scripts sub
+                        |> Return.map (\v -> Script.set id (\s -> { s | result = Just (IFrame v) }) scripts)
+                        |> Return.cmdMap (Sub id)
+                        |> Return.upgrade "sub" id
 
                 _ ->
                     Return.value scripts
@@ -251,14 +245,11 @@ update main msg scripts =
                 "sub" ->
                     case scripts |> Array.get event.section |> Maybe.andThen .result of
                         Just (IFrame lia) ->
-                            let
-                                return =
-                                    main.handle scripts event.message lia
-                            in
-                            Script.set event.section (\s -> { s | result = Just (IFrame return.value) }) scripts
-                                |> Return.value
-                                |> Return.cmd (Cmd.map (Sub event.section) return.cmd)
-                                |> Return.events (List.map (Event.encode >> Event "sub" event.section) return.events)
+                            lia
+                                |> main.handle scripts event.message
+                                |> Return.map (\v -> Script.set event.section (\s -> { s | result = Just (IFrame v) }) scripts)
+                                |> Return.cmdMap (Sub event.section)
+                                |> Return.upgrade "sub" event.section
 
                         _ ->
                             Return.value scripts
