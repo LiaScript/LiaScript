@@ -15,7 +15,7 @@ type Msg sub
     | Script (Script.Msg sub)
 
 
-update : Msg sub -> State -> Return State Never sub
+update : Msg sub -> State -> Return State msg sub
 update msg state =
     case msg of
         Toggle id ->

@@ -121,7 +121,7 @@ get idx vector =
 update_ :
     Int
     -> Vector
-    -> (Element -> Return Element Never sub)
+    -> (Element -> Return Element msg sub)
     -> Return Vector msg sub
 update_ idx vector fn =
     Return.value <|
@@ -133,7 +133,7 @@ update_ idx vector fn =
                 vector
 
 
-state_ : Msg sub -> Element -> Return Element Never sub
+state_ : Msg sub -> Element -> Return Element msg sub
 state_ msg e =
     case ( msg, e.state ) of
         ( Block_Update _ m, Block_State s ) ->
