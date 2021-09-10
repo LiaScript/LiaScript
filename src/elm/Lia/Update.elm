@@ -249,13 +249,9 @@ update session msg model =
                         model
 
         UpdateGraph graphMsg ->
-            let
-                ( graph, cmd ) =
-                    Graph.update session graphMsg model.graph
-            in
-            { model | graph = graph }
-                |> Return.val
-                |> Return.cmd (Cmd.map UpdateGraph cmd)
+            model.graph
+                |> Graph.update session graphMsg
+                |> Return.mapValCmd (\v -> { model | graph = v }) UpdateGraph
 
         PaneMsg paneMsg ->
             { model | splitPane = SplitPane.update paneMsg model.splitPane }
