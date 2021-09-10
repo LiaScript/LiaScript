@@ -12,8 +12,7 @@ import Dict exposing (Dict)
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr exposing (width)
 import Json.Encode as JE
-import Lia.Markdown.Effect.Script.Types exposing (Scripts)
-import Lia.Markdown.Effect.Script.Update exposing (Msg)
+import Lia.Markdown.Effect.Script.Types exposing (Msg, Scripts)
 import Lia.Markdown.Effect.Script.View as JS
 import Lia.Markdown.Effect.View as Effect
 import Lia.Markdown.Footnote.View as Footnote

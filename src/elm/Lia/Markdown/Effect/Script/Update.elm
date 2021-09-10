@@ -1,6 +1,5 @@
 module Lia.Markdown.Effect.Script.Update exposing
-    ( Msg(..)
-    , execute
+    ( execute
     , getAll
     , getVisible
     , setRunning
@@ -11,60 +10,37 @@ import Array
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Effect.Script.Input as Input
-import Lia.Markdown.Effect.Script.Types as Script exposing (Script, Scripts, Stdout(..))
+import Lia.Markdown.Effect.Script.Types as Script exposing (Msg(..), Script, Scripts, Stdout(..))
 import Lia.Parser.Parser exposing (parse_subsection)
-import Lia.Section exposing (SubSection)
+import Lia.Section exposing (SubSection(..))
 import Lia.Utils exposing (focus)
 import Port.Eval as Eval exposing (Eval)
 import Port.Event as Event exposing (Event)
 import Process
+import Return exposing (Return)
 import Task
 
 
-type Msg sub
-    = Click Int
-    | Reset Int
-    | Activate Bool Int
-    | Value Int Bool String
-    | Radio Int Bool String
-    | Checkbox Int Bool String
-    | Edit Bool Int
-    | EditCode Int String
-    | NoOp
-    | Handle Event
-    | Delay Float (Msg sub)
-    | Sub Int sub
-
-
 update :
-    { update : Scripts SubSection -> sub -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
-    , handle : Scripts SubSection -> JE.Value -> SubSection -> ( SubSection, Cmd sub, List ( String, JE.Value ) )
+    { update : Scripts SubSection -> sub -> SubSection -> Return SubSection sub sub
+    , handle : Scripts SubSection -> JE.Value -> SubSection -> Return SubSection sub sub
     , globals : Maybe Definition
     }
     -> Msg sub
     -> Scripts SubSection
-    -> ( Scripts SubSection, Cmd (Msg sub), List Event )
+    -> Return (Scripts SubSection) (Msg sub) sub
 update main msg scripts =
     case msg of
         Sub id sub ->
             case scripts |> Array.get id |> Maybe.andThen .result of
                 Just (IFrame lia) ->
-                    let
-                        ( new, cmd, events ) =
-                            main.update scripts sub lia
-                    in
-                    ( Script.set id (\s -> { s | result = Just (IFrame new) }) scripts
-                    , Cmd.map (Sub id) cmd
-                    , events
-                        |> List.map (\( name, json ) -> Event name id json |> Event.encode)
-                        |> List.map (Event "sub" id)
-                    )
+                    lia
+                        |> main.update scripts sub
+                        |> Return.mapValCmd (\v -> Script.set id (\s -> { s | result = Just (IFrame v) }) scripts) (Sub id)
+                        |> Return.mapEvents "sub" id
 
                 _ ->
-                    ( scripts
-                    , Cmd.none
-                    , []
-                    )
+                    Return.val scripts
 
         Activate active id ->
             case Array.get id scripts of
@@ -87,7 +63,7 @@ update main msg scripts =
                             scripts
 
                     else
-                        ( Array.set id
+                        Array.set id
                             { node
                                 | input =
                                     if node.updated then
@@ -98,49 +74,44 @@ update main msg scripts =
                                 , updated = False
                             }
                             scripts
-                        , if active then
-                            focus NoOp "lia-focus"
+                            |> Return.val
+                            |> Return.cmd
+                                (if active then
+                                    focus NoOp "lia-focus"
 
-                          else
-                            Cmd.none
-                        , []
-                        )
+                                 else
+                                    Cmd.none
+                                )
 
                 Nothing ->
-                    ( scripts, Cmd.none, [] )
+                    Return.val scripts
 
         Value id exec str ->
             if exec then
                 reRun (\js -> { js | input = Input.value str js.input }) Cmd.none id scripts
 
             else
-                ( scripts
+                scripts
                     |> Script.set id (\js -> { js | input = Input.value str js.input })
-                , Cmd.none
-                , []
-                )
+                    |> Return.val
 
         Checkbox id exec str ->
             if exec then
                 reRun (\js -> { js | input = Input.toggle str js.input, updated = True }) Cmd.none id scripts
 
             else
-                ( scripts
+                scripts
                     |> Script.set id (\js -> { js | input = Input.toggle str js.input, updated = True })
-                , Cmd.none
-                , []
-                )
+                    |> Return.val
 
         Radio id exec str ->
             if exec then
                 reRun (\js -> { js | input = Input.value str js.input, updated = True }) Cmd.none id scripts
 
             else
-                ( scripts
+                scripts
                     |> Script.set id (\js -> { js | input = Input.value str js.input, updated = True })
-                , Cmd.none
-                , []
-                )
+                    |> Return.val
 
         Click id ->
             reRun identity Cmd.none id scripts
@@ -160,14 +131,15 @@ update main msg scripts =
                 scripts
 
         NoOp ->
-            ( scripts, Cmd.none, [] )
+            Return.val scripts
 
         Delay milliseconds subMsg ->
-            ( scripts
-            , Process.sleep milliseconds
-                |> Task.perform (always subMsg)
-            , []
-            )
+            scripts
+                |> Return.val
+                |> Return.cmd
+                    (Process.sleep milliseconds
+                        |> Task.perform (always subMsg)
+                    )
 
         Edit bool id ->
             let
@@ -178,21 +150,18 @@ update main msg scripts =
                     }
             in
             if bool then
-                ( scripts
+                scripts
                     |> Script.set id fn
-                , focus NoOp "lia-focus"
-                , []
-                )
+                    |> Return.val
+                    |> Return.cmd (focus NoOp "lia-focus")
 
             else
                 reRun fn Cmd.none id scripts
 
         EditCode id str ->
-            ( scripts
+            scripts
                 |> Script.set id (\js -> { js | script = str })
-            , Cmd.none
-            , []
-            )
+                |> Return.val
 
         Handle event ->
             case event.topic of
@@ -222,28 +191,28 @@ update main msg scripts =
                     in
                     case Maybe.andThen .output node of
                         Nothing ->
-                            ( Script.set
+                            Script.set
                                 event.section
                                 (\js -> { js | update = False })
                                 javascript
-                            , Cmd.none
-                            , List.map (execute 0) nodeUpdate
-                            )
+                                |> Return.val
+                                |> Return.batchEvents (List.map (execute 0) nodeUpdate)
 
                         Just output ->
-                            ( javascript
+                            javascript
                                 |> Script.updateChildren output
                                 |> Script.set event.section (\js -> { js | update = False })
-                            , Cmd.none
-                            , if publish then
-                                javascript
-                                    |> Script.scriptChildren output
-                                    |> List.append nodeUpdate
-                                    |> List.map (execute 0)
+                                |> Return.val
+                                |> Return.batchEvents
+                                    (if publish then
+                                        javascript
+                                            |> Script.scriptChildren output
+                                            |> List.append nodeUpdate
+                                            |> List.map (execute 0)
 
-                              else
-                                []
-                            )
+                                     else
+                                        []
+                                    )
 
                 "codeX" ->
                     let
@@ -257,45 +226,37 @@ update main msg scripts =
                     in
                     case Maybe.andThen .output node of
                         Nothing ->
-                            ( javascript
-                            , Cmd.none
-                            , []
-                            )
+                            Return.val javascript
 
                         Just output ->
-                            ( Script.updateChildren output javascript
-                            , Cmd.none
-                            , if publish then
-                                javascript
-                                    |> Script.scriptChildren output
-                                    |> List.map (execute 0)
+                            Script.updateChildren output javascript
+                                |> Return.val
+                                |> Return.batchEvents
+                                    (if publish then
+                                        javascript
+                                            |> Script.scriptChildren output
+                                            |> List.map (execute 0)
 
-                              else
-                                []
-                            )
+                                     else
+                                        []
+                                    )
 
                 "sub" ->
                     case scripts |> Array.get event.section |> Maybe.andThen .result of
                         Just (IFrame lia) ->
-                            let
-                                ( new, cmd, events ) =
-                                    main.handle scripts event.message lia
-                            in
-                            ( Script.set event.section (\s -> { s | result = Just (IFrame new) }) scripts
-                            , Cmd.map (Sub event.section) cmd
-                            , events
-                                |> List.map (\( name, json ) -> Event name event.section json |> Event.encode)
-                                |> List.map (Event "sub" event.section)
-                            )
+                            lia
+                                |> main.handle scripts event.message
+                                |> Return.mapValCmd (\v -> Script.set event.section (\s -> { s | result = Just (IFrame v) }) scripts) (Sub event.section)
+                                |> Return.mapEvents "sub" event.section
 
                         _ ->
-                            ( scripts, Cmd.none, [] )
+                            Return.val scripts
 
                 _ ->
-                    ( scripts, Cmd.none, [] )
+                    Return.val scripts
 
 
-reRun : (Script a -> Script a) -> Cmd (Msg sub) -> Int -> Scripts a -> ( Scripts a, Cmd (Msg sub), List Event )
+reRun : (Script a -> Script a) -> Cmd (Msg sub) -> Int -> Scripts a -> Return (Scripts a) (Msg sub) sub
 reRun fn cmd id scripts =
     let
         scripts_ =
@@ -312,19 +273,21 @@ reRun fn cmd id scripts =
     in
     case Script.get identity id scripts_ of
         Just node ->
-            ( scripts_
-            , cmd
-            , if node.running then
-                []
+            scripts_
+                |> Return.val
+                |> Return.cmd cmd
+                |> Return.batchEvents
+                    (if node.running then
+                        []
 
-              else
-                [ ( id, node.script, Input.getValue node.input ) ]
-                    |> Script.replaceInputs scripts
-                    |> List.map (execute 0)
-            )
+                     else
+                        [ ( id, node.script, Input.getValue node.input ) ]
+                            |> Script.replaceInputs scripts
+                            |> List.map (execute 0)
+                    )
 
         Nothing ->
-            ( scripts_, cmd, [] )
+            Return.val scripts_
 
 
 execute : Int -> ( Int, String ) -> Event
@@ -343,7 +306,7 @@ update_ defintion id e scripts =
         Just js ->
             let
                 new =
-                    eval_ defintion (Eval.decode e) js
+                    eval_ defintion id (Eval.decode e) js
             in
             ( new.result /= js.result
             , Array.set id new scripts
@@ -353,8 +316,8 @@ update_ defintion id e scripts =
             ( False, scripts )
 
 
-eval_ : Maybe Definition -> Eval -> Script SubSection -> Script SubSection
-eval_ defintion e js =
+eval_ : Maybe Definition -> Int -> Eval -> Script SubSection -> Script SubSection
+eval_ defintion id e js =
     let
         waiting =
             e.result == "LIA: wait"
@@ -381,7 +344,7 @@ eval_ defintion e js =
                             case
                                 e.result
                                     |> String.dropLeft 10
-                                    |> parse_subsection defintion
+                                    |> parse_subsection defintion id
                             of
                                 Ok rslt ->
                                     IFrame rslt

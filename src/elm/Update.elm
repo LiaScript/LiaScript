@@ -123,11 +123,11 @@ update msg model =
     case msg of
         LiaScript childMsg ->
             let
-                ( lia, cmd, events ) =
+                return =
                     Lia.Script.update model.session childMsg model.lia
             in
-            ( { model | lia = lia }
-            , batch LiaScript cmd events
+            ( { model | lia = return.value }
+            , batch LiaScript return.command return.events
             )
 
         Handle event ->
@@ -245,14 +245,14 @@ update msg model =
                                     |> Session.setUrl url
                                     |> Session.setFragment (slide + 1)
 
-                            ( lia, cmd, events ) =
+                            return =
                                 Lia.Script.load_slide session True slide model.lia
                         in
                         ( { model
-                            | lia = lia
+                            | lia = return.value
                             , session = session
                           }
-                        , batch LiaScript cmd events
+                        , batch LiaScript return.command return.events
                         )
 
             else
@@ -343,11 +343,11 @@ start model =
         lia =
             model.lia
 
-        ( parsed, cmd, events ) =
+        return =
             Lia.Script.load_first_slide session { lia | section_active = slide }
     in
-    ( { model | state = Running, lia = parsed, session = session }
-    , batch LiaScript cmd events
+    ( { model | state = Running, lia = return.value, session = session }
+    , batch LiaScript return.command return.events
     )
 
 
@@ -361,7 +361,7 @@ startWithError model =
         lia =
             model.lia
 
-        ( parsed, cmd, events ) =
+        return =
             Lia.Script.load_first_slide session
                 { lia
                     | section_active = 0
@@ -369,8 +369,8 @@ startWithError model =
                     , definition = Definition.setPersistent False lia.definition
                 }
     in
-    ( { model | lia = parsed, session = session }
-    , batch LiaScript cmd events
+    ( { model | lia = return.value, session = session }
+    , batch LiaScript return.command return.events
     )
 
 

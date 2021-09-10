@@ -5,6 +5,7 @@ module Lia.Markdown.Table.Update exposing
 
 import Array
 import Lia.Markdown.Table.Types exposing (Class(..), State, Vector)
+import Return exposing (Return)
 
 
 type Msg sub
@@ -13,23 +14,24 @@ type Msg sub
     | NoOp
 
 
-update : Msg sub -> Vector -> Vector
+update : Msg sub -> Vector -> Return Vector msg sub
 update msg vector =
-    case msg of
-        Sort id col ->
-            vector
-                |> Array.get id
-                |> Maybe.map (\state -> Array.set id (updateSort col state) vector)
-                |> Maybe.withDefault vector
+    Return.val <|
+        case msg of
+            Sort id col ->
+                vector
+                    |> Array.get id
+                    |> Maybe.map (\state -> Array.set id (updateSort col state) vector)
+                    |> Maybe.withDefault vector
 
-        Toggle id ->
-            vector
-                |> Array.get id
-                |> Maybe.map (\state -> Array.set id { state | diagram = not state.diagram } vector)
-                |> Maybe.withDefault vector
+            Toggle id ->
+                vector
+                    |> Array.get id
+                    |> Maybe.map (\state -> Array.set id { state | diagram = not state.diagram } vector)
+                    |> Maybe.withDefault vector
 
-        NoOp ->
-            vector
+            NoOp ->
+                vector
 
 
 

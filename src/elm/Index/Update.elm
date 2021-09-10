@@ -193,13 +193,13 @@ updateSettings msg settings ( model, cmd, events ) =
     case msg of
         UpdateSettings subMsg ->
             let
-                ( newSettings, newCmd, newEvents ) =
+                return =
                     Settings.update Nothing subMsg settings
             in
-            ( newSettings
+            ( return.value
             , ( model
-              , Cmd.batch [ cmd, Cmd.map UpdateSettings newCmd ]
-              , List.append events newEvents
+              , Cmd.batch [ cmd, Cmd.map UpdateSettings return.command ]
+              , List.append events return.events
               )
             )
 
@@ -266,8 +266,8 @@ decRelease =
         Definition.decode
 
 
-{-| Check if the current passed version string is allso available as accessible
-from the local cache. Major verions of `0` are not stored permanently.
+{-| Check if the current passed version string is also available as accessible
+from the local cache. Major versions of `0` are not stored permanently.
 -}
 inCache : String -> Course -> Bool
 inCache version course =

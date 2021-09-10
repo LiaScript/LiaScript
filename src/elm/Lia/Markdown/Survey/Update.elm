@@ -2,12 +2,12 @@ module Lia.Markdown.Survey.Update exposing (Msg(..), handle, update)
 
 import Array
 import Dict
-import Lia.Markdown.Effect.Script.Types exposing (Scripts, outputs)
-import Lia.Markdown.Effect.Script.Update as Script
+import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
 import Lia.Markdown.Survey.Json as Json
 import Lia.Markdown.Survey.Types exposing (State(..), Vector, toString)
 import Port.Eval as Eval
 import Port.Event as Event exposing (Event)
+import Return exposing (Return)
 
 
 type Msg sub
@@ -22,30 +22,35 @@ type Msg sub
     | Script (Script.Msg sub)
 
 
-update : Scripts a -> Msg sub -> Vector -> ( Vector, List Event, Maybe (Script.Msg sub) )
+update : Scripts a -> Msg sub -> Vector -> Return Vector msg sub
 update scripts msg vector =
     case msg of
         TextUpdate idx str ->
-            ( update_text vector idx str, [], Nothing )
+            update_text vector idx str
+                |> Return.val
 
         SelectUpdate id value ->
-            ( update_select vector id value, [], Nothing )
+            update_select vector id value
+                |> Return.val
 
         SelectChose id ->
-            ( update_select_chose vector id, [], Nothing )
+            update_select_chose vector id
+                |> Return.val
 
         VectorUpdate idx var ->
-            ( update_vector vector idx var, [], Nothing )
+            update_vector vector idx var
+                |> Return.val
 
         MatrixUpdate idx row var ->
-            ( update_matrix vector idx row var, [], Nothing )
+            update_matrix vector idx row var
+                |> Return.val
 
         KeyDown id javascript char ->
             if char == 13 then
                 update scripts (Submit id javascript) vector
 
             else
-                ( vector, [], Nothing )
+                Return.val vector
 
         Submit id Nothing ->
             if submittable vector id then
@@ -53,36 +58,40 @@ update scripts msg vector =
                     new_vector =
                         submit vector id
                 in
-                ( new_vector
-                , new_vector
-                    |> Json.fromVector
-                    |> Event.store
-                    |> List.singleton
-                , Nothing
-                )
+                new_vector
+                    |> Return.val
+                    |> Return.batchEvent
+                        (new_vector
+                            |> Json.fromVector
+                            |> Event.store
+                        )
 
             else
-                ( vector, [], Nothing )
+                vector
+                    |> Return.val
 
         Submit id (Just code) ->
             case vector |> Array.get id of
                 Just ( False, state, error ) ->
-                    ( if error == Nothing then
+                    (if error == Nothing then
                         vector
 
-                      else
+                     else
                         updateError vector id Nothing
-                    , [ [ toString state ]
-                            |> Eval.event id code (outputs scripts)
-                      ]
-                    , Nothing
                     )
+                        |> Return.val
+                        |> Return.batchEvent
+                            ([ toString state ]
+                                |> Eval.event id code (outputs scripts)
+                            )
 
                 _ ->
-                    ( vector, [], Nothing )
+                    Return.val vector
 
         Script sub ->
-            ( vector, [], Just sub )
+            vector
+                |> Return.val
+                |> Return.script sub
 
         Handle event ->
             case event.topic of
@@ -95,21 +104,21 @@ update scripts msg vector =
                         update scripts (Submit event.section Nothing) vector
 
                     else if eval.result /= "" && not eval.ok then
-                        ( updateError vector event.section (Just eval.result), [], Nothing )
+                        Just eval.result
+                            |> updateError vector event.section
+                            |> Return.val
 
                     else
-                        ( vector, [], Nothing )
+                        Return.val vector
 
                 "restore" ->
-                    ( event.message
+                    event.message
                         |> Json.toVector
                         |> Result.withDefault vector
-                    , []
-                    , Nothing
-                    )
+                        |> Return.val
 
                 _ ->
-                    ( vector, [], Nothing )
+                    Return.val vector
 
 
 updateError : Vector -> Int -> Maybe String -> Vector

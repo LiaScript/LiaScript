@@ -16,6 +16,7 @@ import Lia.Markdown.Code.Types exposing (Code(..), File, Model, Project, loadVer
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
 import Port.Eval exposing (Eval)
 import Port.Event exposing (Event)
+import Return exposing (Return)
 
 
 type Msg
@@ -37,7 +38,7 @@ handle =
     Handle
 
 
-restore : JE.Value -> Model -> ( Model, List Event )
+restore : JE.Value -> Model -> Return Model msg sub
 restore json model =
     case
         model.evaluate
@@ -46,22 +47,26 @@ restore json model =
             |> Json.toVector json
     of
         Ok (Just vector) ->
-            ( Json.merge model vector, [] )
+            Json.merge model vector
+                |> Return.val
 
         Ok Nothing ->
-            ( model
-            , if Array.length model.evaluate == 0 then
-                []
+            model
+                |> Return.val
+                |> Return.batchEvents
+                    (if Array.length model.evaluate == 0 then
+                        []
 
-              else
-                [ Event.store model.evaluate ]
-            )
+                     else
+                        [ Event.store model.evaluate ]
+                    )
 
         Err _ ->
-            ( model, [] )
+            model
+                |> Return.val
 
 
-update : Scripts a -> Msg -> Model -> ( Model, List Event )
+update : Scripts a -> Msg -> Model -> Return Model msg sub
 update scripts msg model =
     case msg of
         Eval idx ->
@@ -87,7 +92,7 @@ update scripts msg model =
                 (Event.flip_view id_1 id_2)
 
         FlipView (Highlight id_1) id_2 ->
-            ( { model
+            { model
                 | highlight =
                     CArray.setWhen id_1
                         (model.highlight
@@ -101,12 +106,11 @@ update scripts msg model =
                                 )
                         )
                         model.highlight
-              }
-            , []
-            )
+            }
+                |> Return.val
 
         FlipFullscreen (Highlight id_1) id_2 ->
-            ( { model
+            { model
                 | highlight =
                     CArray.setWhen id_1
                         (model.highlight
@@ -120,9 +124,8 @@ update scripts msg model =
                                 )
                         )
                         model.highlight
-              }
-            , []
-            )
+            }
+                |> Return.val
 
         FlipFullscreen (Evaluate id_1) id_2 ->
             update_file
@@ -235,7 +238,7 @@ update scripts msg model =
                         |> maybe_update event.section model
 
                 _ ->
-                    ( model, [] )
+                    Return.val model
 
         Stop idx ->
             model
@@ -244,14 +247,13 @@ update scripts msg model =
                 |> maybe_update idx model
 
         Resize code height ->
-            ( case code of
-                Evaluate id ->
-                    { model | evaluate = onResize id height model.evaluate }
+            Return.val <|
+                case code of
+                    Evaluate id ->
+                        { model | evaluate = onResize id height model.evaluate }
 
-                Highlight id ->
-                    { model | highlight = onResize id height model.highlight }
-            , []
-            )
+                    Highlight id ->
+                        { model | highlight = onResize id height model.highlight }
 
         UpdateTerminal idx childMsg ->
             model
@@ -298,44 +300,40 @@ maybe_project idx f =
         >> Maybe.map f
 
 
-maybe_update : Int -> Model -> Maybe ( Project, List Event ) -> ( Model, List Event )
+maybe_update : Int -> Model -> Maybe ( Project, List Event ) -> Return Model msg sub
 maybe_update idx model project =
     case project of
         Just ( p, logs ) ->
-            ( { model | evaluate = Array.set idx p model.evaluate }
-            , if logs == [] then
-                []
-
-              else
-                logs
-            )
+            { model | evaluate = Array.set idx p model.evaluate }
+                |> Return.val
+                |> Return.batchEvents logs
 
         _ ->
-            ( model, [] )
+            Return.val model
 
 
-update_file : Int -> Int -> Model -> (File -> File) -> (File -> List Event) -> ( Model, List Event )
+update_file : Int -> Int -> Model -> (File -> File) -> (File -> List Event) -> Return Model msg sub
 update_file id_1 id_2 model f f_log =
     case Array.get id_1 model.evaluate of
         Just project ->
             case project.file |> Array.get id_2 |> Maybe.map f of
                 Just file ->
-                    ( { model
+                    { model
                         | evaluate =
                             Array.set id_1
                                 { project
                                     | file = Array.set id_2 file project.file
                                 }
                                 model.evaluate
-                      }
-                    , f_log file
-                    )
+                    }
+                        |> Return.val
+                        |> Return.batchEvents (f_log file)
 
                 Nothing ->
-                    ( model, [] )
+                    Return.val model
 
         Nothing ->
-            ( model, [] )
+            Return.val model
 
 
 is_version_new : Int -> ( Project, List Event ) -> ( Project, List Event )
