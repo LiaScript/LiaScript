@@ -106,13 +106,13 @@ message msg =
 
 {-| **@private:** Combine commands and events to one command output.
 -}
-batch : (a -> msg) -> Cmd a -> List Event -> Cmd msg
-batch map cmd events =
-    if List.isEmpty events then
+batch : (a -> msg) -> Cmd a -> List Event -> List Event -> Cmd msg
+batch map cmd events debug =
+    if List.isEmpty events && List.isEmpty debug then
         Cmd.map map cmd
 
     else
-        events
+        List.append events debug
             |> List.map event2js
             |> (::) (Cmd.map map cmd)
             |> Cmd.batch
@@ -127,7 +127,7 @@ update msg model =
                     Lia.Script.update model.session childMsg model.lia
             in
             ( { model | lia = return.value }
-            , batch LiaScript return.command return.events
+            , batch LiaScript return.command return.events return.debug
             )
 
         Handle event ->
@@ -204,7 +204,7 @@ update msg model =
                     model.lia
             in
             ( { model | index = index, lia = { lia | settings = settings } }
-            , batch UpdateIndex cmd events
+            , batch UpdateIndex cmd events []
             )
 
         LinkClicked urlRequest ->
@@ -252,7 +252,7 @@ update msg model =
                             | lia = return.value
                             , session = session
                           }
-                        , batch LiaScript return.command return.events
+                        , batch LiaScript return.command return.events return.debug
                         )
 
             else
@@ -347,7 +347,7 @@ start model =
             Lia.Script.load_first_slide session { lia | section_active = slide }
     in
     ( { model | state = Running, lia = return.value, session = session }
-    , batch LiaScript return.command return.events
+    , batch LiaScript return.command return.events return.debug
     )
 
 
@@ -370,7 +370,7 @@ startWithError model =
                 }
     in
     ( { model | lia = return.value, session = session }
-    , batch LiaScript return.command return.events
+    , batch LiaScript return.command return.events return.debug
     )
 
 

@@ -4,6 +4,8 @@ module Return exposing
     , batchEvent
     , batchEvents
     , cmd
+    , error
+    , log
     , mapCmd
     , mapEvents
     , mapVal
@@ -11,8 +13,10 @@ module Return exposing
     , replace
     , script
     , val
+    , warn
     )
 
+import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Types as Script
 import Port.Event as Event exposing (Event)
 
@@ -22,6 +26,7 @@ type alias Return model msg sub =
     , command : Cmd msg
     , events : List Event
     , sub : Maybe (Script.Msg sub)
+    , debug : List Event
     }
 
 
@@ -32,6 +37,7 @@ val model =
         Cmd.none
         []
         Nothing
+        []
 
 
 batchEvent : Event -> Return model msg sub -> Return model msg sub
@@ -55,20 +61,22 @@ cmd c r =
 
 
 mapCmd : (msgA -> msgB) -> Return model msgA sub -> Return model msgB sub
-mapCmd fn { value, command, sub, events } =
+mapCmd fn { value, command, sub, events, debug } =
     { value = value
     , command = Cmd.map fn command
     , events = events
     , sub = sub
+    , debug = debug
     }
 
 
 mapValCmd : (modelA -> modelB) -> (msgA -> msgB) -> Return modelA msgA sub -> Return modelB msgB sub
-mapValCmd fnVal fnMsg { value, command, sub, events } =
+mapValCmd fnVal fnMsg { value, command, sub, events, debug } =
     { value = fnVal value
     , command = Cmd.map fnMsg command
     , events = events
     , sub = sub
+    , debug = debug
     }
 
 
@@ -83,11 +91,12 @@ script s r =
 
 
 mapVal : (modelA -> modelB) -> Return modelA msg sub -> Return modelB msg sub
-mapVal fn { value, command, events, sub } =
+mapVal fn { value, command, events, sub, debug } =
     { value = fn value
     , command = command
     , events = events
     , sub = sub
+    , debug = debug
     }
 
 
@@ -96,5 +105,21 @@ replace r m =
     mapVal (always m) r
 
 
+log : String -> Return model msg sub -> Return model msg sub
+log =
+    debug_ 0
 
---{ r | value = fn r.value }
+
+warn : String -> Return model msg sub -> Return model msg sub
+warn =
+    debug_ 1
+
+
+error : String -> Return model msg sub -> Return model msg sub
+error =
+    debug_ 2
+
+
+debug_ : Int -> String -> Return model msg sub -> Return model msg sub
+debug_ id message r =
+    { r | debug = Event "log" id (JE.string message) :: r.debug }
