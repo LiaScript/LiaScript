@@ -11,6 +11,7 @@ import Lia.Graph.Graph as Graph
 import Lia.Graph.Model exposing (Model, isRootNode, updateJson)
 import Lia.Graph.Node as Node exposing (Node, Type(..))
 import Lia.Graph.Settings as Settings
+import Return exposing (Return)
 import Session exposing (Session)
 import Url
 
@@ -20,7 +21,7 @@ type Msg
     | UpdateSettings Settings.Msg
 
 
-update : Session -> Msg -> Model -> ( Model, Cmd Msg )
+update : Session -> Msg -> Model -> Return Model Msg sub
 update session msg model =
     case msg of
         Clicked obj ->
@@ -30,30 +31,30 @@ update session msg model =
             in
             case Maybe.map .data node of
                 Just (Section sec) ->
-                    ( model, Session.navToSlide session sec.id )
+                    model
+                        |> Return.val
+                        |> Return.cmd (Session.navToSlide session sec.id)
 
                 Just (Reference url) ->
-                    ( model
-                    , url
-                        |> Url.fromString
-                        |> Maybe.map Session.load
-                        |> Maybe.withDefault Cmd.none
-                    )
+                    model
+                        |> Return.val
+                        |> Return.cmd
+                            (url
+                                |> Url.fromString
+                                |> Maybe.map Session.load
+                                |> Maybe.withDefault Cmd.none
+                            )
 
                 Just Hashtag ->
-                    ( { model | root = node }, Cmd.none )
+                    Return.val { model | root = node }
 
                 _ ->
-                    ( model, Cmd.none )
+                    Return.val model
 
         UpdateSettings subMsg ->
-            ( { model
-                | settings =
-                    Settings.update subMsg model.settings
-              }
+            { model | settings = Settings.update subMsg model.settings }
                 |> updateJson
-            , Cmd.none
-            )
+                |> Return.val
 
 
 setRootSection : Int -> Model -> Model
