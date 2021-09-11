@@ -13,7 +13,6 @@ import Html.Attributes exposing (width)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Index.Update as Index
-import Lia.Markdown.Code.Log exposing (Message)
 import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Update as Markdown
@@ -25,8 +24,9 @@ import Lia.Settings.Update as Settings
 import Lia.Sync.Update as Sync
 import Port.Eval exposing (event)
 import Port.Event as Event exposing (Event)
-import Return exposing (Return)
+import Return exposing (Return, sync)
 import Session exposing (Session)
+import Translations exposing (Lang(..))
 
 
 port media : (( String, Maybe Int, Maybe Int ) -> msg) -> Sub msg
@@ -43,7 +43,6 @@ subscriptions model =
                 [ section
                     |> Markdown.subscriptions
                     |> Sub.map UpdateMarkdown
-                , Sub.map UpdateSync Sync.subscriptions
                 , media Media
                 ]
 
@@ -86,81 +85,6 @@ type Msg
     | Script ( Int, Script.Msg Markdown.Msg )
     | TTSReplay Bool
     | Media ( String, Maybe Int, Maybe Int )
-
-
-msgToEvent : Msg -> Maybe Event
-msgToEvent msg =
-    case msg of
-        InitSection ->
-            JE.null
-                |> Event "msg:InitSection" -1
-                |> Just
-
-        Load force id ->
-            force
-                |> JE.bool
-                |> Event "msg:Load" id
-                |> Just
-
-        _ ->
-            Nothing
-
-
-eventToMsg : Event -> Maybe Msg
-eventToMsg event =
-    case event.topic of
-        "msg:Load" ->
-            event.message
-                |> JD.decodeValue JD.bool
-                |> Result.map (\force -> Load force event.section)
-                |> Result.toMaybe
-
-        "msg:InitSection" ->
-            Just InitSection
-
-        _ ->
-            Just (Handle event)
-
-
-applyEvents : Session -> Return Model Msg Markdown.Msg -> List Event -> Return Model Msg Markdown.Msg
-applyEvents session =
-    List.foldl (applyEvent session)
-
-
-applyEvent : Session -> Event -> Return Model Msg Markdown.Msg -> Return Model Msg Markdown.Msg
-applyEvent session event return =
-    event
-        |> eventToMsg
-        |> Maybe.map
-            (\msg ->
-                return.value
-                    |> update session msg
-                    |> Return.batchEvents return.events
-                    |> Return.batchCmd [ return.command ]
-            )
-        |> Maybe.withDefault return
-
-
-applyMsg : Msg -> Return Model Msg sub -> Return Model Msg sub
-applyMsg msg return =
-    Return.batchCmd [ synchronize return.value (Just msg) [] ] return
-
-
-synchronize { sync } msg events =
-    case
-        msg
-            |> Maybe.andThen msgToEvent
-            |> Maybe.map List.singleton
-            |> Maybe.withDefault []
-            |> List.append events
-    of
-        [] ->
-            Cmd.none
-
-        msgs ->
-            msgs
-                |> Sync.send sync
-                |> Cmd.map UpdateSync
 
 
 update : Session -> Msg -> Model -> Return Model Msg Markdown.Msg
@@ -207,10 +131,8 @@ update session msg model =
                             }
                     }
                         |> Return.val
-                        |> Return.batchCmd
-                            [ Session.navToSlide session idx
-                            , synchronize model (Just msg) []
-                            ]
+                        |> Return.cmd (Session.navToSlide session idx)
+                        |> Return.sync (Event "load" idx JE.null)
 
             else
                 Return.val model
@@ -266,6 +188,30 @@ update session msg model =
                         Nothing ->
                             Return.val model
                                 |> Return.warn "message goto with no id"
+
+                Just ( "sync", e ) ->
+                    case Event.topic e of
+                        Just "sync" ->
+                            model.sync
+                                |> Sync.handle sync.message
+                                |> Return.mapValCmd (\v -> { model | sync = v }) UpdateSync
+
+                        Just "load" ->
+                            update session (Load True sync.section) model
+
+                        _ ->
+                            case
+                                ( Array.get sync.section model.sections
+                                , Event.decode sync.message
+                                )
+                            of
+                                ( Just sec, Ok e ) ->
+                                    sec
+                                        |> Markdown.handle model.definition sync.topic e
+                                        |> Return.mapValCmd (\v -> { model | sections = Array.set sync.section v model.sections }) UpdateMarkdown
+
+                                _ ->
+                                    Return.val model
 
                 Just ( "swipe", e ) ->
                     case

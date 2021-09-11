@@ -1,26 +1,14 @@
-port module Lia.Sync.Update exposing
+module Lia.Sync.Update exposing
     ( Msg(..)
-    , send
-    , subscriptions
+    , handle
     , update
     )
 
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Sync.Types exposing (Settings, State(..), isConnected)
+import Lia.Sync.Types exposing (Settings, State(..))
 import Port.Event as Event exposing (Event)
 import Return exposing (Return)
-
-
-port syncOut : Event -> Cmd msg
-
-
-port syncIn : (Event -> msg) -> Sub msg
-
-
-subscriptions : Sub Msg
-subscriptions =
-    syncIn Handle
 
 
 type Msg
@@ -32,34 +20,27 @@ type Msg
     | Handle Event
 
 
+handle : JE.Value -> Settings -> Return Settings Msg sub
+handle json =
+    case Event.decode json |> Debug.log "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSs" of
+        Ok event ->
+            update (Handle event)
+
+        Err _ ->
+            Return.val >> Return.warn "Sync.handle: "
+
+
 update : Msg -> Settings -> Return Settings Msg sub
 update msg model =
     case msg of
         Handle event ->
-            let
-                _ =
-                    Debug.log "SYNC" event
-            in
             case event.topic of
                 "connect" ->
-                    Return.val <|
-                        if bool event.message then
-                            { model | state = Connected }
+                    if bool event.message then
+                        Return.val { model | state = Connected }
 
-                        else
-                            { model | state = Disconnected }
-
-                "sync" ->
-                    model
-                        |> Return.val
-                        |> Return.batchEvents
-                            (case Event.decode event.message of
-                                Ok message ->
-                                    [ message ]
-
-                                Err _ ->
-                                    []
-                            )
+                    else
+                        Return.val { model | state = Disconnected }
 
                 _ ->
                     Return.val model
@@ -79,7 +60,7 @@ update msg model =
         Connect ->
             { model | state = Pending }
                 |> Return.val
-                |> Return.cmd
+                |> Return.sync
                     ([ ( "course", JE.string model.course )
                      , ( "room", JE.string model.room )
                      , ( "username", JE.string model.username )
@@ -92,29 +73,13 @@ update msg model =
                        )
                      ]
                         |> JE.object
-                        |> sync "connect"
+                        |> Event "connect" -1
                     )
 
         Disconnect ->
             { model | state = Pending }
                 |> Return.val
-                |> Return.cmd (sync "disconnect" JE.null)
-
-
-sync : String -> JE.Value -> Cmd Msg
-sync topic =
-    Event topic -1 >> syncOut
-
-
-send : Settings -> List Event -> Cmd Msg
-send settings events =
-    if isConnected settings then
-        events
-            |> List.map (Event.encode >> sync "sync")
-            |> Cmd.batch
-
-    else
-        Cmd.none
+                |> Return.sync (Event "disconnect" -1 JE.null)
 
 
 bool : JE.Value -> Bool

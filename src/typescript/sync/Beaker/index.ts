@@ -29,14 +29,16 @@ export class Sync extends Base {
 
   connect(
     send: Lia.Send,
-    course: string,
-    room: string,
-    username: string,
-    password?: string
+    data: {
+      course: string
+      room: string
+      username: string
+      password?: string
+    }
   ) {
     if (!window.beaker) return
 
-    super.connect(send, course, room, username, password)
+    super.connect(send, data)
 
     let peerIds: Set<number> = new Set()
     this.peerIds = peerIds
@@ -60,19 +62,39 @@ export class Sync extends Base {
       }
     )
 
+    console.warn(
+      'WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW'
+    )
+
     send({
-      topic: 'connect',
+      topic: 'sync',
       section: -1,
-      message: true,
+      message: {
+        topic: 'sync',
+        section: -1,
+        message: {
+          topic: 'connect',
+          section: -1,
+          message: true,
+        },
+      },
     })
   }
 
   disconnect() {
     if (this.send)
       this.send({
-        topic: 'disconnect',
+        topic: 'sync',
         section: -1,
-        message: null,
+        message: {
+          topic: 'sync',
+          section: -1,
+          message: {
+            topic: 'disconnect',
+            section: -1,
+            message: null,
+          },
+        },
       })
   }
 

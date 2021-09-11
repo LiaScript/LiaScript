@@ -297,7 +297,6 @@ class LiaScript {
     }, 1000)
 
     initTooltip()
-    this.initSynchronization()
   }
 
   footnote(key: string) {
@@ -377,37 +376,6 @@ class LiaScript {
         },
       ],
       message: null,
-    })
-  }
-
-  initSynchronization() {
-    let self = this
-    let publish = this.app.ports.syncIn.send
-
-    this.app.ports.syncOut.subscribe(function (event: Lia.Event) {
-      switch (event.topic) {
-        case 'connect': {
-          if (!self.sync) delete self.sync
-
-          self.sync = new Sync()
-
-          self.sync.connect(
-            publish,
-            event.message.course,
-            event.message.room,
-            event.message.username,
-            event.message.password
-          )
-
-          break
-        }
-        case 'disonnect': {
-          break
-        }
-        default: {
-          self.sync.publish(event)
-        }
-      }
     })
   }
 
@@ -641,6 +609,39 @@ function process(
         log.error('loading resource => ', e)
       }
 
+      break
+    }
+    case Port.SYNC: {
+      console.warn('SYNC >>>>', event.message)
+
+      switch (event.message.topic) {
+        case 'sync': {
+          // all sync relevant messages
+          switch (event.message.message.topic) {
+            case 'connect': {
+              if (!self.sync) delete self.sync
+
+              self.sync = new Sync()
+
+              self.sync.connect(elmSend, event.message.message)
+
+              break
+            }
+            case 'disconnect': {
+              if (self.sync) self.sync.disconnect()
+              break
+            }
+            default: {
+              console.warn('sync: unknown topic -> ', event.message)
+            }
+          }
+          break
+        }
+
+        default: {
+          if (self.sync) self.sync.publish(event)
+        }
+      }
       break
     }
     case Port.PERSISTENT: {

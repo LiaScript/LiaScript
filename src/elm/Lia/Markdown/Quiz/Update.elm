@@ -18,7 +18,7 @@ import Lia.Markdown.Quiz.Types exposing (Element, State(..), Type(..), Vector, c
 import Lia.Markdown.Quiz.Vector.Update as Vector
 import Port.Eval as Eval
 import Port.Event as Event exposing (Event)
-import Return exposing (Return, script)
+import Return exposing (Return)
 
 
 type Msg sub
@@ -50,6 +50,7 @@ update scripts msg vector =
                     case e.scriptID of
                         Nothing ->
                             check solution
+                                >> syncSolution id
                                 |> update_ id vector
                                 |> store
 
@@ -75,6 +76,12 @@ update scripts msg vector =
                 Nothing ->
                     vector
                         |> Return.val
+
+        Check id solution Nothing ->
+            check solution
+                >> syncSolution id
+                |> update_ id vector
+                |> store
 
         ShowHint idx ->
             (\e -> Return.val { e | hint = e.hint + 1 })
@@ -139,6 +146,12 @@ update scripts msg vector =
                         |> Result.withDefault vector
                         |> Return.val
                         |> init (\i s -> execute i s.state)
+
+                "sync" ->
+                    event.message
+                        |> Event.decode
+                        |> Result.map (syncUpdate vector)
+                        |> Result.withDefault (Return.val vector)
 
                 _ ->
                     Return.val vector

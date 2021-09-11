@@ -53,6 +53,7 @@ batchEvents e r =
     { r | events = List.append r.events e }
 
 
+upgrade : String -> Int -> List Event -> List Event
 upgrade topic id =
     List.map (Event.pushWithId topic id)
 
@@ -120,7 +121,7 @@ replace r m =
 
 sync : Event -> Return model msg sub -> Return model msg sub
 sync event r =
-    { r | synchronize = event :: r.synchronize }
+    { r | synchronize = Event.push "sync" event :: r.synchronize }
 
 
 log : String -> Return model msg sub -> Return model msg sub

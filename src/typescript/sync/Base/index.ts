@@ -17,17 +17,19 @@ export class Sync {
   */
   connect(
     send: Lia.Send,
-    course: string,
-    room: string,
-    username?: string,
-    password?: string
+    data: {
+      course: string
+      room: string
+      username: string
+      password?: string
+    }
   ) {
     this.send = send
-    this.room = room
-    this.course = course
+    this.room = data.room
+    this.course = data.course
 
-    this.username = username
-    this.password = password
+    this.username = data.username
+    this.password = data.password
   }
 
   disconnect() {}
