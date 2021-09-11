@@ -269,6 +269,7 @@ viewQuiz config labeledBy state quiz ( attr, body ) =
             |> viewHintButton quiz.id (quiz.hints /= []) (Solution.Open == state.solved && state.hint < List.length quiz.hints)
         ]
     , viewFeedback config.lang state
+    , viewSync state
     , viewHints config state.hint quiz.hints
     ]
 

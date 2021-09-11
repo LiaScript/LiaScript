@@ -24,7 +24,7 @@ import Lia.Settings.Update as Settings
 import Lia.Sync.Update as Sync
 import Port.Eval exposing (event)
 import Port.Event as Event exposing (Event)
-import Return exposing (Return)
+import Return exposing (Return, sync)
 import Session exposing (Session)
 import Set exposing (Set)
 import Translations exposing (Lang(..))
@@ -44,7 +44,6 @@ subscriptions model =
                 [ section
                     |> Markdown.subscriptions
                     |> Sub.map UpdateMarkdown
-                , Sub.map UpdateSync Sync.subscriptions
                 , media Media
                 ]
 
