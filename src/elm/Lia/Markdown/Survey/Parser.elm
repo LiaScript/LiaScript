@@ -183,6 +183,7 @@ add_state state id c =
                 , state = state
                 , errorMsg = Nothing
                 , scriptID = id
+                , sync = Nothing
                 }
                 c.survey_vector
     }
