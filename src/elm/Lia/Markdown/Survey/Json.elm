@@ -16,7 +16,7 @@ fromVector vector =
 
 
 fromElement : Element -> JE.Value
-fromElement (Element b state errorMessage) =
+fromElement (Element b state errorMessage _) =
     [ ( "submitted", JE.bool b )
     , ( "state", fromState state )
     ]
@@ -81,10 +81,11 @@ toVector json =
 
 toElement : JD.Decoder Element
 toElement =
-    JD.map3 Element
+    JD.map4 Element
         (JD.field "submitted" JD.bool)
         (JD.field "state" toState)
         (JD.maybe (JD.field "errorMessage" JD.string))
+        (JD.succeed Nothing)
 
 
 toState : JD.Decoder State

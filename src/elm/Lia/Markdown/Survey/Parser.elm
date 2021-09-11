@@ -175,6 +175,6 @@ add_state state c =
     { c
         | survey_vector =
             Array.push
-                (Element False state Nothing)
+                (Element False state Nothing Nothing)
                 c.survey_vector
     }
