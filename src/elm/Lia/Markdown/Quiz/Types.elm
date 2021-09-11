@@ -35,6 +35,11 @@ type alias Element =
     , trial : Int
     , hint : Int
     , error_msg : String
+    , sync :
+        Maybe
+            { solved : Int
+            , resolved : Int
+            }
     }
 
 

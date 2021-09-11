@@ -39,6 +39,7 @@ update scripts msg vector =
 
         Check id solution Nothing ->
             check solution
+                >> syncSolution id
                 |> update_ id vector
                 |> store
 
@@ -95,6 +96,12 @@ update scripts msg vector =
                         |> Result.withDefault vector
                         |> Return.val
 
+                "sync" ->
+                    event.message
+                        |> Event.decode
+                        |> Result.map (syncUpdate vector)
+                        |> Result.withDefault (Return.val vector)
+
                 _ ->
                     Return.val vector
 
@@ -102,6 +109,60 @@ update scripts msg vector =
             vector
                 |> Return.val
                 |> Return.script sub
+
+
+syncSolution : Int -> Return Element msg sub -> Return Element msg sub
+syncSolution id ret =
+    case ret.value.solved of
+        Solution.Solved ->
+            Return.sync (Event "solved" id JE.null) ret
+
+        Solution.ReSolved ->
+            Return.sync (Event "resolved" id JE.null) ret
+
+        Solution.Open ->
+            ret
+
+
+syncUpdate : Vector -> Event -> Return Vector msg sub
+syncUpdate vector event =
+    case event.topic of
+        "solved" ->
+            update_ event.section
+                vector
+                (\e ->
+                    { e
+                        | sync =
+                            Just <|
+                                case e.sync of
+                                    Just s ->
+                                        { s | solved = 1 + s.solved }
+
+                                    Nothing ->
+                                        { solved = 1, resolved = 0 }
+                    }
+                        |> Return.val
+                )
+
+        "resolved" ->
+            update_ event.section
+                vector
+                (\e ->
+                    { e
+                        | sync =
+                            Just <|
+                                case e.sync of
+                                    Just s ->
+                                        { s | resolved = 1 + s.resolved }
+
+                                    Nothing ->
+                                        { resolved = 1, solved = 0 }
+                    }
+                        |> Return.val
+                )
+
+        _ ->
+            Return.val vector
 
 
 get : Int -> Vector -> Maybe Element
@@ -124,13 +185,13 @@ update_ :
     -> (Element -> Return Element msg sub)
     -> Return Vector msg sub
 update_ idx vector fn =
-    Return.val <|
-        case get idx vector |> Maybe.map fn of
-            Just elem ->
-                Array.set idx elem.value vector
+    case get idx vector |> Maybe.map fn of
+        Just elem ->
+            Return.mapVal (\v -> Array.set idx v vector) elem
 
-            _ ->
-                vector
+        _ ->
+            vector
+                |> Return.val
 
 
 state_ : Msg sub -> Element -> Return Element msg sub

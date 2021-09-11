@@ -103,7 +103,7 @@ modify_State q =
             { s
                 | quiz_vector =
                     Array.push
-                        (Element Solution.Open e 0 0 "")
+                        (Element Solution.Open e 0 0 "" Nothing)
                         s.quiz_vector
             }
     in
