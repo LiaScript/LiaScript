@@ -12,6 +12,7 @@ module Return exposing
     , mapValCmd
     , replace
     , script
+    , sync
     , val
     , warn
     )
@@ -27,6 +28,7 @@ type alias Return model msg sub =
     , events : List Event
     , sub : Maybe (Script.Msg sub)
     , debug : List Event
+    , synchronize : List Event
     }
 
 
@@ -37,6 +39,7 @@ val model =
         Cmd.none
         []
         Nothing
+        []
         []
 
 
@@ -50,9 +53,16 @@ batchEvents e r =
     { r | events = List.append r.events e }
 
 
+upgrade topic id =
+    List.map (Event.pushWithId topic id)
+
+
 mapEvents : String -> Int -> Return model msg sub -> Return model msg sub
 mapEvents topic id r =
-    { r | events = List.map (Event.pushWithId topic id) r.events }
+    { r
+        | events = upgrade topic id r.events
+        , synchronize = upgrade topic id r.synchronize
+    }
 
 
 cmd : Cmd msg -> Return model msg sub -> Return model msg sub
@@ -61,22 +71,24 @@ cmd c r =
 
 
 mapCmd : (msgA -> msgB) -> Return model msgA sub -> Return model msgB sub
-mapCmd fn { value, command, sub, events, debug } =
+mapCmd fn { value, command, sub, events, debug, synchronize } =
     { value = value
     , command = Cmd.map fn command
     , events = events
     , sub = sub
     , debug = debug
+    , synchronize = synchronize
     }
 
 
 mapValCmd : (modelA -> modelB) -> (msgA -> msgB) -> Return modelA msgA sub -> Return modelB msgB sub
-mapValCmd fnVal fnMsg { value, command, sub, events, debug } =
+mapValCmd fnVal fnMsg { value, command, sub, events, debug, synchronize } =
     { value = fnVal value
     , command = Cmd.map fnMsg command
     , events = events
     , sub = sub
     , debug = debug
+    , synchronize = synchronize
     }
 
 
@@ -91,18 +103,24 @@ script s r =
 
 
 mapVal : (modelA -> modelB) -> Return modelA msg sub -> Return modelB msg sub
-mapVal fn { value, command, events, sub, debug } =
+mapVal fn { value, command, events, sub, debug, synchronize } =
     { value = fn value
     , command = command
     , events = events
     , sub = sub
     , debug = debug
+    , synchronize = synchronize
     }
 
 
 replace : Return model_ msg sub -> model -> Return model msg sub
 replace r m =
     mapVal (always m) r
+
+
+sync : Event -> Return model msg sub -> Return model msg sub
+sync event r =
+    { r | synchronize = event :: r.synchronize }
 
 
 log : String -> Return model msg sub -> Return model msg sub
