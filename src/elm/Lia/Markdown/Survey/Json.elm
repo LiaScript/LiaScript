@@ -3,12 +3,11 @@ module Lia.Markdown.Survey.Json exposing
     , toVector
     )
 
-import Accessibility.Aria exposing (errorMessage)
 import Conditional.List as CList
 import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Markdown.Survey.Types exposing (Element, State(..), Vector)
+import Lia.Markdown.Survey.Types exposing (Element(..), State(..), Vector)
 
 
 fromVector : Vector -> JE.Value
@@ -17,7 +16,7 @@ fromVector vector =
 
 
 fromElement : Element -> JE.Value
-fromElement ( b, state, errorMessage ) =
+fromElement (Element b state errorMessage) =
     [ ( "submitted", JE.bool b )
     , ( "state", fromState state )
     ]
@@ -82,7 +81,7 @@ toVector json =
 
 toElement : JD.Decoder Element
 toElement =
-    JD.map3 (\a b c -> ( a, b, c ))
+    JD.map3 Element
         (JD.field "submitted" JD.bool)
         (JD.field "state" toState)
         (JD.maybe (JD.field "errorMessage" JD.string))

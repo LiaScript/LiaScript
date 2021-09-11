@@ -29,7 +29,7 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Block.Parser as Block
 import Lia.Markdown.Quiz.Block.Types as BlockTypes
 import Lia.Markdown.Quiz.Parser exposing (maybeJS)
-import Lia.Markdown.Survey.Types exposing (State(..), Survey, Type(..))
+import Lia.Markdown.Survey.Types exposing (Element(..), State(..), Survey, Type(..))
 import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (newline, spaces)
 import Lia.Parser.Indentation as Indent
@@ -175,9 +175,6 @@ add_state state c =
     { c
         | survey_vector =
             Array.push
-                ( False
-                , state
-                , Nothing
-                )
+                (Element False state Nothing)
                 c.survey_vector
     }

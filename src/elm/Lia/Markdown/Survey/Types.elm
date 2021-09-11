@@ -1,5 +1,5 @@
 module Lia.Markdown.Survey.Types exposing
-    ( Element
+    ( Element(..)
     , State(..)
     , Survey
     , Type(..)
@@ -16,11 +16,8 @@ type alias Vector =
     Array Element
 
 
-type alias Element =
-    ( Bool
-    , State
-    , Maybe String
-    )
+type Element
+    = Element Bool State (Maybe String)
 
 
 type State

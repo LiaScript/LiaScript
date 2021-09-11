@@ -4,7 +4,7 @@ import Array
 import Dict
 import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
 import Lia.Markdown.Survey.Json as Json
-import Lia.Markdown.Survey.Types exposing (State(..), Vector, toString)
+import Lia.Markdown.Survey.Types exposing (Element(..), State(..), Vector, toString)
 import Port.Eval as Eval
 import Port.Event as Event exposing (Event)
 import Return exposing (Return)
@@ -72,7 +72,7 @@ update scripts msg vector =
 
         Submit id (Just code) ->
             case vector |> Array.get id of
-                Just ( False, state, error ) ->
+                Just (Element False state error) ->
                     (if error == Nothing then
                         vector
 
@@ -124,7 +124,7 @@ update scripts msg vector =
 updateError : Vector -> Int -> Maybe String -> Vector
 updateError vector id message =
     case Array.get id vector of
-        Just ( False, state, _ ) ->
+        Just (Element False state _) ->
             set_state vector id message state
 
         _ ->
@@ -134,7 +134,7 @@ updateError vector id message =
 update_text : Vector -> Int -> String -> Vector
 update_text vector idx str =
     case Array.get idx vector of
-        Just ( False, Text_State _, error ) ->
+        Just (Element False (Text_State _) error) ->
             set_state vector idx error (Text_State str)
 
         _ ->
@@ -144,7 +144,7 @@ update_text vector idx str =
 update_select : Vector -> Int -> Int -> Vector
 update_select vector id value =
     case Array.get id vector of
-        Just ( False, Select_State _ _, error ) ->
+        Just (Element False (Select_State _ _) error) ->
             set_state vector id error (Select_State False value)
 
         _ ->
@@ -154,7 +154,7 @@ update_select vector id value =
 update_select_chose : Vector -> Int -> Vector
 update_select_chose vector id =
     case Array.get id vector of
-        Just ( False, Select_State b value, error ) ->
+        Just (Element False (Select_State b value) error) ->
             set_state vector id error (Select_State (not b) value)
 
         _ ->
@@ -164,14 +164,14 @@ update_select_chose vector id =
 update_vector : Vector -> Int -> String -> Vector
 update_vector vector idx var =
     case Array.get idx vector of
-        Just ( False, Vector_State False element, error ) ->
+        Just (Element False (Vector_State False element) error) ->
             element
                 |> Dict.map (\_ _ -> False)
                 |> Dict.update var (\_ -> Just True)
                 |> Vector_State False
                 |> set_state vector idx error
 
-        Just ( False, Vector_State True element, error ) ->
+        Just (Element False (Vector_State True element) error) ->
             element
                 |> Dict.update var (\b -> Maybe.map not b)
                 |> Vector_State True
@@ -184,7 +184,7 @@ update_vector vector idx var =
 update_matrix : Vector -> Int -> Int -> String -> Vector
 update_matrix vector col_id row_id var =
     case Array.get col_id vector of
-        Just ( False, Matrix_State False matrix, error ) ->
+        Just (Element False (Matrix_State False matrix) error) ->
             let
                 row =
                     Array.get row_id matrix
@@ -197,7 +197,7 @@ update_matrix vector col_id row_id var =
                 |> Matrix_State False
                 |> set_state vector col_id error
 
-        Just ( False, Matrix_State True matrix, error ) ->
+        Just (Element False (Matrix_State True matrix) error) ->
             let
                 row =
                     Array.get row_id matrix
@@ -215,14 +215,14 @@ update_matrix vector col_id row_id var =
 
 set_state : Vector -> Int -> Maybe String -> State -> Vector
 set_state vector idx error state =
-    Array.set idx ( False, state, error ) vector
+    Array.set idx (Element False state error) vector
 
 
 submit : Vector -> Int -> Vector
 submit vector idx =
     case Array.get idx vector of
-        Just ( False, state, error ) ->
-            Array.set idx ( True, state, error ) vector
+        Just (Element False state error) ->
+            Array.set idx (Element True state error) vector
 
         _ ->
             vector
@@ -231,20 +231,20 @@ submit vector idx =
 submittable : Vector -> Int -> Bool
 submittable vector idx =
     case Array.get idx vector of
-        Just ( False, Text_State state, _ ) ->
+        Just (Element False (Text_State state) _) ->
             state /= ""
 
-        Just ( False, Select_State _ state, _ ) ->
+        Just (Element False (Select_State _ state) _) ->
             state /= -1
 
-        Just ( False, Vector_State _ state, _ ) ->
+        Just (Element False (Vector_State _ state) _) ->
             state
                 |> Dict.values
                 |> List.filter (\a -> a)
                 |> List.length
                 |> (\s -> s > 0)
 
-        Just ( False, Matrix_State _ state, _ ) ->
+        Just (Element False (Matrix_State _ state) _) ->
             state
                 |> Array.toList
                 |> List.map Dict.values
