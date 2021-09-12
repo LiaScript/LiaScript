@@ -16,7 +16,7 @@ import Lia.Markdown.Survey.Model
         , get_text_state
         , get_vector_state
         )
-import Lia.Markdown.Survey.Types exposing (Survey, Type(..), Vector)
+import Lia.Markdown.Survey.Types exposing (State(..), Survey, Sync, Type(..), Vector)
 import Lia.Markdown.Survey.Update exposing (Msg(..))
 import Lia.Utils exposing (blockKeydown, btn, icon, onKeyDown)
 import Translations exposing (surveySubmit, surveySubmitted, surveyText)
@@ -48,7 +48,6 @@ view config attr survey model =
                     survey.id
                     survey.javascript
 
-        --|> Html.p (annotation "lia-quiz" attr)
         Matrix button header vars questions ->
             matrix config button (MatrixUpdate survey.id) (get_matrix_state model survey.id) vars
                 |> view_matrix config header questions
@@ -184,8 +183,8 @@ get_option config id list =
             Html.text <| Translations.quizSelection config.lang
 
 
-view_text : Config sub -> String -> Int -> Int -> Maybe String -> Bool -> Html (Msg sub)
-view_text config str lines idx javascript submitted =
+view_text : Config sub -> ( String, Maybe Sync ) -> Int -> Int -> Maybe String -> Bool -> Html (Msg sub)
+view_text config ( str, sync ) lines idx javascript submitted =
     let
         attr =
             [ onInput <| TextUpdate idx
@@ -193,24 +192,50 @@ view_text config str lines idx javascript submitted =
             , Attr.value str
             , Attr.disabled submitted
             ]
-    in
-    case lines of
-        1 ->
-            Html.input
-                (Attr.class "lia-input lia-quiz__input"
-                    :: onKeyDown (KeyDown idx javascript)
-                    :: attr
-                )
-                []
 
-        _ ->
-            Html.textarea
-                (Attr.class "lia-input lia-quiz__input"
-                    :: blockKeydown (TextUpdate idx str)
-                    :: Attr.rows lines
-                    :: attr
-                )
-                []
+        syncMessages input_ =
+            case sync of
+                Nothing ->
+                    input_
+
+                Just msgs ->
+                    Html.div []
+                        [ input_
+                        , msgs
+                            |> List.map
+                                (\msg ->
+                                    Html.li []
+                                        [ Html.text
+                                            (case msg of
+                                                Text_State s ->
+                                                    s
+
+                                                _ ->
+                                                    ""
+                                            )
+                                        ]
+                                )
+                            |> Html.ul []
+                        ]
+    in
+    syncMessages <|
+        case lines of
+            1 ->
+                Html.input
+                    (Attr.class "lia-input lia-quiz__input"
+                        :: onKeyDown (KeyDown idx javascript)
+                        :: attr
+                    )
+                    []
+
+            _ ->
+                Html.textarea
+                    (Attr.class "lia-input lia-quiz__input"
+                        :: blockKeydown (TextUpdate idx str)
+                        :: Attr.rows lines
+                        :: attr
+                    )
+                    []
 
 
 view_vector : List ( String, Inlines ) -> (Bool -> ( String, Inlines ) -> Html (Msg sub)) -> Bool -> Html (Msg sub)

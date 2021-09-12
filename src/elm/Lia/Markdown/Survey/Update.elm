@@ -2,12 +2,13 @@ module Lia.Markdown.Survey.Update exposing (Msg(..), handle, update)
 
 import Array
 import Dict
+import Json.Decode as JD
 import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
 import Lia.Markdown.Survey.Json as Json
 import Lia.Markdown.Survey.Types exposing (Element(..), State(..), Sync, Vector, toString)
 import Port.Eval as Eval
 import Port.Event as Event exposing (Event)
-import Return exposing (Return, sync)
+import Return exposing (Return)
 
 
 type Msg sub
@@ -54,25 +55,30 @@ update scripts msg vector =
 
         Submit id Nothing ->
             if submittable vector id then
-                let
-                    new_vector =
-                        submit vector id
-                in
-                new_vector
-                    |> Return.val
-                    |> Return.batchEvent
-                        (new_vector
-                            |> Json.fromVector
-                            |> Event.store
-                        )
+                case submit vector id of
+                    ( Just state, new_vector ) ->
+                        new_vector
+                            |> Return.val
+                            |> Return.batchEvent
+                                (new_vector
+                                    |> Json.fromVector
+                                    |> Event.store
+                                )
+                            |> Return.sync
+                                (state
+                                    |> Json.fromState
+                                    |> Event "submit" id
+                                )
+
+                    _ ->
+                        Return.val vector
 
             else
-                vector
-                    |> Return.val
+                Return.val vector
 
         Submit id (Just code) ->
             case vector |> Array.get id of
-                Just (Element False state error sync) ->
+                Just (Element False state error _) ->
                     (if error == Nothing then
                         vector
 
@@ -83,6 +89,11 @@ update scripts msg vector =
                         |> Return.batchEvent
                             ([ toString state ]
                                 |> Eval.event id code (outputs scripts)
+                            )
+                        |> Return.sync
+                            (state
+                                |> Json.fromState
+                                |> Event "submit" id
                             )
 
                 _ ->
@@ -117,8 +128,39 @@ update scripts msg vector =
                         |> Result.withDefault vector
                         |> Return.val
 
+                "sync" ->
+                    event.message
+                        |> Event.decode
+                        |> Result.map (updateSync vector)
+                        |> Result.withDefault vector
+                        |> Return.val
+
                 _ ->
                     Return.val vector
+
+
+updateSync : Vector -> Event -> Vector
+updateSync vector event =
+    case ( event.topic, JD.decodeValue Json.toState event.message ) of
+        ( "submit", Ok state ) ->
+            case Array.get event.section vector of
+                Just (Element a b c (Just sync)) ->
+                    Array.set
+                        event.section
+                        (Element a b c (Just (state :: sync)))
+                        vector
+
+                Just (Element a b c Nothing) ->
+                    Array.set
+                        event.section
+                        (Element a b c (Just [ state ]))
+                        vector
+
+                _ ->
+                    vector
+
+        _ ->
+            vector
 
 
 updateError : Vector -> Int -> Maybe String -> Vector
@@ -218,14 +260,14 @@ set_state vector idx error sync state =
     Array.set idx (Element False state error sync) vector
 
 
-submit : Vector -> Int -> Vector
+submit : Vector -> Int -> ( Maybe State, Vector )
 submit vector idx =
     case Array.get idx vector of
         Just (Element False state error sync) ->
-            Array.set idx (Element True state error sync) vector
+            ( Just state, Array.set idx (Element True state error sync) vector )
 
         _ ->
-            vector
+            ( Nothing, vector )
 
 
 submittable : Vector -> Int -> Bool

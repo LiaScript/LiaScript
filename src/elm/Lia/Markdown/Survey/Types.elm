@@ -21,8 +21,8 @@ type Element
     = Element Bool State (Maybe String) (Maybe Sync)
 
 
-type Sync
-    = List State
+type alias Sync =
+    List State
 
 
 type State

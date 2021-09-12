@@ -1,5 +1,7 @@
 module Lia.Markdown.Survey.Json exposing
-    ( fromVector
+    ( fromState
+    , fromVector
+    , toState
     , toVector
     )
 

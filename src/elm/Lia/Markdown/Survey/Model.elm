@@ -9,7 +9,8 @@ module Lia.Markdown.Survey.Model exposing
 
 import Array
 import Dict
-import Lia.Markdown.Survey.Types exposing (Element(..), State(..), Vector)
+import Lia.Markdown.Survey.Types exposing (Element(..), State(..), Sync, Vector)
+import Return exposing (sync)
 
 
 getErrorMessage : Int -> Vector -> Maybe String
@@ -27,14 +28,14 @@ get_submission_state vector idx =
             False
 
 
-get_text_state : Vector -> Int -> String
+get_text_state : Vector -> Int -> ( String, Maybe Sync )
 get_text_state vector idx =
     case Array.get idx vector of
-        Just (Element _ (Text_State str) _ _) ->
-            str
+        Just (Element _ (Text_State str) _ sync) ->
+            ( str, sync )
 
         _ ->
-            ""
+            ( "", Nothing )
 
 
 get_vector_state : Vector -> Int -> String -> Bool
