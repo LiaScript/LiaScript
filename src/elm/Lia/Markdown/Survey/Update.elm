@@ -7,6 +7,7 @@ module Lia.Markdown.Survey.Update exposing
 import Array
 import Browser exposing (element)
 import Dict
+import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
 import Lia.Markdown.Effect.Script.Update as JS
@@ -78,6 +79,11 @@ update scripts msg vector =
                                             |> Json.fromVector
                                             |> Event.store
                                         )
+                                    |> Return.sync
+                                        (state
+                                            |> Json.fromState
+                                            |> Event "submit" id
+                                        )
 
                             else
                                 vector
@@ -105,6 +111,11 @@ update scripts msg vector =
 
                                         Nothing ->
                                             []
+                                    )
+                                |> Return.sync
+                                    (state
+                                        |> Json.fromState
+                                        |> Event "submit" id
                                     )
 
                 _ ->
@@ -162,6 +173,13 @@ update scripts msg vector =
                         |> Result.withDefault vector
                         |> Return.val
                         |> init (\i s -> execute i s.state)
+
+                "sync" ->
+                    event.message
+                        |> Event.decode
+                        |> Result.map (updateSync vector)
+                        |> Result.withDefault vector
+                        |> Return.val
 
                 _ ->
                     Return.val vector
@@ -319,14 +337,14 @@ set_state vector idx error js state =
     Array.set idx (Element False state error js) vector
 
 
-submit : Vector -> Int -> Vector
+submit : Vector -> Int -> ( Maybe State, Vector )
 submit vector idx =
     case Array.get idx vector of
         Just element ->
-            Array.set idx { element | submitted = True } vector
+            ( Just element.state, Array.set idx { element | submitted = True } vector )
 
         _ ->
-            vector
+            ( Nothing, vector )
 
 
 submittable : Vector -> Int -> Bool

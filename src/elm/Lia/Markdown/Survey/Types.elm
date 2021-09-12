@@ -26,6 +26,10 @@ type alias Element =
     }
 
 
+type alias Sync =
+    List State
+
+
 type State
     = Text_State String
     | Select_State Bool Int
