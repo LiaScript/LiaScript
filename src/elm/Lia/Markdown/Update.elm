@@ -104,6 +104,7 @@ update globals msg section =
                 section.table_vector
                     |> Table.update childMsg
                     |> Return.mapVal (\v -> { section | table_vector = v })
+                    |> Return.mapEvents "table" section.id
 
             FootnoteShow key ->
                 { section | footnote2show = Just key }
@@ -162,6 +163,7 @@ subUpdate js msg section =
                     subsection.table_vector
                         |> Table.update childMsg
                         |> Return.mapVal (\v -> SubSection { subsection | table_vector = v })
+                        |> Return.mapEvents "table" subsection.id
 
                 UpdateCode childMsg ->
                     subsection.code_model
@@ -306,6 +308,9 @@ subHandle js json section =
                         "task" ->
                             subUpdate js (UpdateTask (Task.handle message)) section
 
+                        "table" ->
+                            subUpdate js (UpdateTable (Table.handle message)) section
+
                         _ ->
                             Return.val section
 
@@ -333,6 +338,9 @@ handle globals topic event section =
 
         "task" ->
             update globals (UpdateTask (Task.handle event)) section
+
+        "table" ->
+            update globals (UpdateTable (Table.handle event)) section
 
         _ ->
             Return.val section
