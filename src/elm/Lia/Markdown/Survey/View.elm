@@ -205,11 +205,17 @@ view_text config ( str, sync ) lines idx submitted =
                     input_
 
                 Just msgs ->
-                    Html.div []
+                    Html.div
+                        []
                         [ msgs
                             |> List.map
                                 (\msg ->
-                                    Html.li []
+                                    Html.div
+                                        [ Attr.style "background-color" "#ccc"
+                                        , Attr.style "margin" "5px 0px"
+                                        , Attr.style "padding" "0px 5px"
+                                        , Attr.style "border-radius" "5px"
+                                        ]
                                         [ Html.text
                                             (case msg of
                                                 Text_State s ->
@@ -220,7 +226,11 @@ view_text config ( str, sync ) lines idx submitted =
                                             )
                                         ]
                                 )
-                            |> Html.ul []
+                            |> Html.div
+                                [ Attr.style "max-height" "225px"
+                                , Attr.style "overflow" "auto"
+                                , Attr.style "margin-bottom" "5px"
+                                ]
                         , input_
                         ]
     in
