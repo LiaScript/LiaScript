@@ -109,11 +109,11 @@ message msg =
 -}
 batch : (a -> msg) -> Return model a sub -> Cmd msg
 batch map ret =
-    let
-        _ =
-            Debug.log "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW" ret.synchronize
-    in
-    [ ret.events, ret.debug, ret.synchronize |> List.map (Event.encode >> Event "sync" -1) ]
+    [ ret.events
+    , ret.debug
+    , ret.synchronize
+        |> Debug.log "##########################################################"
+    ]
         |> List.concat
         |> List.map event2js
         |> (::) (Cmd.map map ret.command)

@@ -160,6 +160,7 @@ update session msg model =
             model.sync
                 |> Sync.update childMsg
                 |> Return.mapValCmd (\v -> { model | sync = v }) UpdateSync
+                |> Return.mapEvents "sync" -1
 
         Handle event ->
             case Event.pop event of

@@ -52,80 +52,81 @@ subscriptions _ =
 
 update : Definition -> Msg -> Section -> Return Section Msg Msg
 update globals msg section =
-    case msg of
-        UpdateEffect sound childMsg ->
-            section.effect_model
-                |> Effect.update
-                    (section.definition
-                        |> Maybe.withDefault globals
-                        |> Just
-                        |> subs
-                    )
-                    sound
-                    childMsg
-                |> Return.mapValCmd (\v -> { section | effect_model = v }) (UpdateEffect sound)
-                |> Return.mapEvents "effect" section.id
+    Return.mapSync "sync" -1 <|
+        case msg of
+            UpdateEffect sound childMsg ->
+                section.effect_model
+                    |> Effect.update
+                        (section.definition
+                            |> Maybe.withDefault globals
+                            |> Just
+                            |> subs
+                        )
+                        sound
+                        childMsg
+                    |> Return.mapValCmd (\v -> { section | effect_model = v }) (UpdateEffect sound)
+                    |> Return.mapEvents "effect" section.id
 
-        UpdateCode childMsg ->
-            section.code_model
-                |> Code.update section.effect_model.javascript childMsg
-                |> Return.mapVal (\v -> { section | code_model = v })
-                |> Return.mapEvents "code" section.id
+            UpdateCode childMsg ->
+                section.code_model
+                    |> Code.update section.effect_model.javascript childMsg
+                    |> Return.mapVal (\v -> { section | code_model = v })
+                    |> Return.mapEvents "code" section.id
 
-        UpdateQuiz childMsg ->
-            section.quiz_vector
-                |> Quiz.update section.effect_model.javascript childMsg
-                |> Return.mapVal (\v -> { section | quiz_vector = v })
-                |> Return.mapEvents "quiz" section.id
-                |> updateScript
+            UpdateQuiz childMsg ->
+                section.quiz_vector
+                    |> Quiz.update section.effect_model.javascript childMsg
+                    |> Return.mapVal (\v -> { section | quiz_vector = v })
+                    |> Return.mapEvents "quiz" section.id
+                    |> updateScript
 
-        UpdateTask childMsg ->
-            section.task_vector
-                |> Task.update section.effect_model.javascript childMsg
-                |> Return.mapVal (\v -> { section | task_vector = v })
-                |> Return.mapEvents "task" section.id
-                |> updateScript
+            UpdateTask childMsg ->
+                section.task_vector
+                    |> Task.update section.effect_model.javascript childMsg
+                    |> Return.mapVal (\v -> { section | task_vector = v })
+                    |> Return.mapEvents "task" section.id
+                    |> updateScript
 
-        UpdateGallery childMsg ->
-            section.gallery_vector
-                |> Gallery.update childMsg
-                |> Return.mapVal (\v -> { section | gallery_vector = v })
-                |> updateScript
+            UpdateGallery childMsg ->
+                section.gallery_vector
+                    |> Gallery.update childMsg
+                    |> Return.mapVal (\v -> { section | gallery_vector = v })
+                    |> updateScript
 
-        UpdateSurvey childMsg ->
-            section.survey_vector
-                |> Survey.update section.effect_model.javascript childMsg
-                |> Return.mapVal (\v -> { section | survey_vector = v })
-                |> Return.mapEvents "survey" section.id
-                |> updateScript
+            UpdateSurvey childMsg ->
+                section.survey_vector
+                    |> Survey.update section.effect_model.javascript childMsg
+                    |> Return.mapVal (\v -> { section | survey_vector = v })
+                    |> Return.mapEvents "survey" section.id
+                    |> updateScript
 
-        UpdateTable childMsg ->
-            section.table_vector
-                |> Table.update childMsg
-                |> Return.mapVal (\v -> { section | table_vector = v })
+            UpdateTable childMsg ->
+                section.table_vector
+                    |> Table.update childMsg
+                    |> Return.mapVal (\v -> { section | table_vector = v })
 
-        FootnoteShow key ->
-            { section | footnote2show = Just key }
-                |> Return.val
-                |> Return.cmd (focus NoOp "lia-modal__close")
+            FootnoteShow key ->
+                { section | footnote2show = Just key }
+                    |> Return.val
+                    |> Return.cmd (focus NoOp "lia-modal__close")
 
-        FootnoteHide ->
-            { section | footnote2show = Nothing }
-                |> Return.val
-                |> Return.cmd
-                    (section.footnote2show
-                        |> Maybe.map (Footnote.byKey >> focus NoOp)
-                        |> Maybe.withDefault Cmd.none
-                    )
+            FootnoteHide ->
+                { section | footnote2show = Nothing }
+                    |> Return.val
+                    |> Return.cmd
+                        (section.footnote2show
+                            |> Maybe.map (Footnote.byKey >> focus NoOp)
+                            |> Maybe.withDefault Cmd.none
+                        )
 
-        Script childMsg ->
-            section
-                |> Return.val
-                |> Return.script childMsg
-                |> updateScript
+            Script childMsg ->
+                section
+                    |> Return.val
+                    |> Return.script childMsg
+                    |> updateScript
 
-        NoOp ->
-            Return.val section
+            NoOp ->
+                Return.val section
 
 
 subs :

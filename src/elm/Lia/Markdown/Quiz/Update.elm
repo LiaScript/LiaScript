@@ -90,7 +90,8 @@ update scripts msg vector =
 
         ShowSolution id solution ->
             (\e -> Return.val { e | state = toState solution, solved = Solution.ReSolved, error_msg = "" })
-                |> update_ id vector
+                >> syncSolution idx
+                |> update_ idx vector
                 |> store
                 |> (\return ->
                         case Array.get id vector |> Maybe.andThen .scriptID of
@@ -168,6 +169,13 @@ toString state =
         Block_State b ->
             Block.toString b
 
+
+syncSolution : Int -> Return Element msg sub -> Return Element msg sub
+syncSolution id ret =
+    case ret.value.solved of
+        Solution.Solved ->
+            Return.sync (Event "solved" id (JE.int ret.value.trial)) ret
+
         Vector_State s ->
             Vector.toString s
 
@@ -187,11 +195,10 @@ get : Int -> Vector -> Maybe Element
 get idx vector =
     case Array.get idx vector of
         Just elem ->
-            if (elem.solved == Solution.Solved) || (elem.solved == Solution.ReSolved) then
-                Nothing
-
-            else
-                Just elem
+            --if (elem.solved == Solution.Solved) || (elem.solved == Solution.ReSolved) then
+            --    Nothing
+            --else
+            Just elem
 
         _ ->
             Nothing

@@ -8,6 +8,7 @@ module Return exposing
     , log
     , mapCmd
     , mapEvents
+    , mapSync
     , mapVal
     , mapValCmd
     , replace
@@ -122,6 +123,11 @@ replace r m =
 sync : Event -> Return model msg sub -> Return model msg sub
 sync event r =
     { r | synchronize = Event.push "sync" event :: r.synchronize }
+
+
+mapSync : String -> Int -> Return model msg sub -> Return model msg sub
+mapSync topic id r =
+    { r | synchronize = upgrade topic id r.synchronize }
 
 
 log : String -> Return model msg sub -> Return model msg sub
