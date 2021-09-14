@@ -72,6 +72,7 @@ update globals msg section =
                     |> Code.update section.effect_model.javascript childMsg
                     |> Return.mapVal (\v -> { section | code_model = v })
                     |> Return.mapEvents "code" section.id
+                    |> updateScript
 
             UpdateQuiz childMsg ->
                 section.quiz_vector

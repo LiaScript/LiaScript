@@ -14,8 +14,8 @@ import Lia.Markdown.Code.Log as Log
 import Lia.Markdown.Code.Terminal as Terminal
 import Lia.Markdown.Code.Types exposing (Code(..), File, Model, Project, loadVersion, updateVersion)
 import Lia.Markdown.Effect.Script.Types exposing (Scripts)
-import Port.Eval exposing (Eval)
-import Port.Event exposing (Event)
+import Port.Eval exposing (Eval, event)
+import Port.Event as PEvent exposing (Event)
 import Return exposing (Return)
 
 
@@ -70,10 +70,8 @@ update : Scripts a -> Msg -> Model -> Return Model msg sub
 update scripts msg model =
     case msg of
         Eval idx ->
-            model
-                |> maybe_project idx (eval scripts idx)
-                |> Maybe.map (.value >> is_version_new idx)
-                |> maybe_update idx model
+            execute scripts model idx
+                |> Return.sync (Event "eval" idx JE.null)
 
         Update id_1 id_2 code_str ->
             update_file
@@ -82,32 +80,21 @@ update scripts msg model =
                 model
                 (\f -> { f | code = code_str })
                 (\_ -> [])
+                |> Return.sync
+                    ([ ( "id", JE.int id_2 )
+                     , ( "code", JE.string code_str )
+                     ]
+                        |> JE.object
+                        |> Event "update" id_1
+                    )
 
         FlipView (Evaluate id_1) id_2 ->
-            update_file
-                id_1
-                id_2
-                model
-                (\f -> { f | visible = not f.visible })
-                (Event.flip_view id_1 id_2)
+            flipEval model id_1 id_2
+                |> Return.sync (Event "flip_eval" id_1 (JE.int id_2))
 
         FlipView (Highlight id_1) id_2 ->
-            { model
-                | highlight =
-                    CArray.setWhen id_1
-                        (model.highlight
-                            |> Array.get id_1
-                            |> Maybe.map
-                                (\pro ->
-                                    { pro
-                                        | file =
-                                            updateArray (\f -> { f | visible = not f.visible }) id_2 pro.file
-                                    }
-                                )
-                        )
-                        model.highlight
-            }
-                |> Return.val
+            flipHigh model id_1 id_2
+                |> Return.sync (Event "flip_high" id_1 (JE.int id_2))
 
         FlipFullscreen (Highlight id_1) id_2 ->
             { model
@@ -136,16 +123,12 @@ update scripts msg model =
                 (Event.fullscreen id_1 id_2)
 
         Load idx version ->
-            model
-                |> maybe_project idx (loadVersion version)
-                |> Maybe.map (Event.load idx)
-                |> maybe_update idx model
+            load model idx version
+                |> Return.sync (Event "load" idx (JE.int version))
 
         First idx ->
-            model
-                |> maybe_project idx (loadVersion 0)
-                |> Maybe.map (Event.load idx)
-                |> maybe_update idx model
+            load model idx 0
+                |> Return.sync (Event "load" idx (JE.int 0))
 
         Last idx ->
             let
@@ -155,10 +138,8 @@ update scripts msg model =
                         |> Maybe.map .value
                         |> Maybe.withDefault 0
             in
-            model
-                |> maybe_project idx (loadVersion version)
-                |> Maybe.map (Event.load idx)
-                |> maybe_update idx model
+            load model idx version
+                |> Return.sync (Event "load" idx (JE.int version))
 
         Handle event ->
             case Port.Event.destructure event of
@@ -228,6 +209,57 @@ update scripts msg model =
                     model
                         |> maybe_project section (logger Log.add Log.Stream message)
                         |> maybe_update section model
+
+                "sync" ->
+                    case PEvent.decode event.message of
+                        Ok e ->
+                            case e.topic of
+                                "flip_eval" ->
+                                    e.message
+                                        |> JD.decodeValue JD.int
+                                        |> Result.map (flipEval model e.section)
+                                        |> Result.withDefault (Return.val model)
+
+                                "flip_high" ->
+                                    e.message
+                                        |> JD.decodeValue JD.int
+                                        |> Result.map (flipHigh model e.section)
+                                        |> Result.withDefault (Return.val model)
+
+                                "eval" ->
+                                    execute scripts model e.section
+
+                                "update" ->
+                                    case
+                                        JD.decodeValue
+                                            (JD.map2 Tuple.pair
+                                                (JD.field "id" JD.int)
+                                                (JD.field "code" JD.string)
+                                            )
+                                            e.message
+                                    of
+                                        Ok ( id, code ) ->
+                                            update_file
+                                                e.section
+                                                id
+                                                model
+                                                (\f -> { f | code = code })
+                                                (\_ -> [])
+
+                                        _ ->
+                                            Return.val model
+
+                                "load" ->
+                                    e.message
+                                        |> JD.decodeValue JD.int
+                                        |> Result.map (load model e.section)
+                                        |> Result.withDefault (Return.val model)
+
+                                _ ->
+                                    Return.val model
+
+                        _ ->
+                            Return.val model
 
                 _ ->
                     Return.val model
@@ -420,3 +452,49 @@ updateArray fn i array =
             |> Maybe.map fn
         )
         array
+
+
+flipEval : Model -> Int -> Int -> Return Model msg sub
+flipEval model id_1 id_2 =
+    update_file
+        id_1
+        id_2
+        model
+        (\f -> { f | visible = not f.visible })
+        (Event.flip_view id_1 id_2)
+
+
+flipHigh : Model -> Int -> Int -> Return Model msg sub
+flipHigh model id_1 id_2 =
+    { model
+        | highlight =
+            CArray.setWhen id_1
+                (model.highlight
+                    |> Array.get id_1
+                    |> Maybe.map
+                        (\pro ->
+                            { pro
+                                | file =
+                                    updateArray (\f -> { f | visible = not f.visible }) id_2 pro.file
+                            }
+                        )
+                )
+                model.highlight
+    }
+        |> Return.val
+
+
+execute : Scripts a -> Model -> Int -> Return Model msg sub
+execute scripts model id =
+    model
+        |> maybe_project id (eval scripts id)
+        |> Maybe.map (.value >> is_version_new id)
+        |> maybe_update id model
+
+
+load : Model -> Int -> Int -> Return Model msg sub
+load model id version =
+    model
+        |> maybe_project id (loadVersion version)
+        |> Maybe.map (Event.load id)
+        |> maybe_update id model
