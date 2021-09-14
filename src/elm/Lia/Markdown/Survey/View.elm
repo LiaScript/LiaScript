@@ -206,8 +206,7 @@ view_text config ( str, sync ) lines idx submitted =
 
                 Just msgs ->
                     Html.div []
-                        [ input_
-                        , msgs
+                        [ msgs
                             |> List.map
                                 (\msg ->
                                     Html.li []
@@ -222,6 +221,7 @@ view_text config ( str, sync ) lines idx submitted =
                                         ]
                                 )
                             |> Html.ul []
+                        , input_
                         ]
     in
     syncMessages <|
@@ -279,11 +279,40 @@ view_matrix config header questions fn submitted =
         ]
 
 
-vector : Config sub -> Bool -> (String -> Msg sub) -> (String -> Bool) -> Bool -> ( String, Inlines ) -> Html (Msg sub)
+vector :
+    Config sub
+    -> Bool
+    -> (String -> Msg sub)
+    -> (String -> ( Maybe Float, Bool ))
+    -> Bool
+    -> ( String, Inlines )
+    -> Html (Msg sub)
 vector config button msg fn submitted ( var, elements ) =
+    let
+        ( sync, state ) =
+            fn var
+    in
     Html.label [ Attr.class "lia-label" ]
-        [ input button (msg var) (fn var) submitted
-        , Html.span [] [ inline config elements ]
+        [ input button (msg var) state submitted
+        , Html.span []
+            [ inline config elements
+            , case sync of
+                Nothing ->
+                    Html.text ""
+
+                Just percent ->
+                    Html.span
+                        [ Attr.style "background-color" "#ccc"
+                        , Attr.style "margin" "0px 5px"
+                        , Attr.style "padding" "0px 5px"
+                        , Attr.style "border-radius" "5px"
+                        ]
+                        [ percent
+                            |> String.fromFloat
+                            |> Html.text
+                        , Html.text " %"
+                        ]
+            ]
         ]
 
 

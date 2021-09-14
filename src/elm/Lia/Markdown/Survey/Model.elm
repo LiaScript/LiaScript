@@ -35,16 +35,58 @@ get_text_state vector idx =
             ( "", Nothing )
 
 
-get_vector_state : Vector -> Int -> String -> Bool
+get_vector_state : Vector -> Int -> String -> ( Maybe Float, Bool )
 get_vector_state vector idx var =
-    case Array.get idx vector |> Maybe.map .state of
-        Just (Vector_State _ state) ->
+    case Array.get idx vector |> Maybe.map (\e -> ( e.state, e.sync )) of
+        Just ( Vector_State _ state, Nothing ) ->
             state
                 |> Dict.get var
                 |> Maybe.withDefault False
+                |> Tuple.pair Nothing
+
+        Just ( Vector_State b state, Just sync ) ->
+            let
+                counter =
+                    (if b then
+                        Vector_State b state :: sync
+
+                     else
+                        sync
+                    )
+                        |> List.filter
+                            (\syncedStates ->
+                                case syncedStates of
+                                    Vector_State _ syncedVector ->
+                                        syncedVector
+                                            |> Dict.get var
+                                            |> Maybe.withDefault False
+
+                                    _ ->
+                                        False
+                            )
+                        |> List.length
+                        |> toFloat
+            in
+            ( Just
+                (100
+                    * counter
+                    / toFloat
+                        ((if b then
+                            1
+
+                          else
+                            0
+                         )
+                            + List.length sync
+                        )
+                )
+            , state
+                |> Dict.get var
+                |> Maybe.withDefault False
+            )
 
         _ ->
-            False
+            ( Nothing, False )
 
 
 get_select_state : Vector -> Int -> ( Bool, Int )
