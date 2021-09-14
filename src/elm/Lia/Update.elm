@@ -160,6 +160,7 @@ update session msg model =
             model.sync
                 |> Sync.update childMsg
                 |> Return.mapValCmd (\v -> { model | sync = v }) UpdateSync
+                |> Return.mapEvents "sync" -1
 
         Handle event ->
             case event.topic of
@@ -191,7 +192,7 @@ update session msg model =
                 "sync" ->
                     case Event.decode event.message of
                         Ok sync ->
-                            case sync.topic of
+                            case sync.topic |> Debug.log "TOPIC" of
                                 "sync" ->
                                     model.sync
                                         |> Sync.handle sync.message
@@ -202,9 +203,7 @@ update session msg model =
 
                                 _ ->
                                     case
-                                        ( Array.get sync.section model.sections
-                                        , Event.decode sync.message
-                                        )
+                                        ( Array.get sync.section model.sections, Event.decode sync.message )
                                     of
                                         ( Just sec, Ok e ) ->
                                             sec

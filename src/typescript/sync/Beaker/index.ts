@@ -62,10 +62,6 @@ export class Sync extends Base {
       }
     )
 
-    console.warn(
-      'WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW'
-    )
-
     send({
       topic: 'sync',
       section: -1,
@@ -99,6 +95,8 @@ export class Sync extends Base {
   }
 
   publish(message: Object) {
+    console.warn('publishing: ', message)
+
     if (this.peerIds && this.userEvent) {
       let msg = encode(message)
 

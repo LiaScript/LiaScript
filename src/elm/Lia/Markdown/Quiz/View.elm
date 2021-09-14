@@ -154,7 +154,7 @@ viewQuiz config labeledBy state quiz ( attr, body ) =
 
 viewSync : Element -> Html msg
 viewSync e =
-    case e.sync of
+    case e.sync |> Debug.log "STATE OF SYNC:" of
         Nothing ->
             Html.text ""
 

@@ -562,7 +562,7 @@ function process(
       break
     }
     case Port.SYNC: {
-      console.warn('SYNC >>>>', event.message)
+      console.warn('SYNC >>>>', event)
 
       switch (event.message.topic) {
         case 'sync': {
@@ -582,7 +582,7 @@ function process(
               break
             }
             default: {
-              console.warn('sync: unknown topic -> ', event.message)
+              console.warn('sync: unknown topic -> ', event)
             }
           }
           break

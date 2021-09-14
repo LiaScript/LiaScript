@@ -79,6 +79,7 @@ update scripts msg vector =
 
         ShowSolution idx solution ->
             (\e -> Return.val { e | state = toState solution, solved = Solution.ReSolved, error_msg = "" })
+                >> syncSolution idx
                 |> update_ idx vector
                 |> store
 
@@ -115,7 +116,7 @@ syncSolution : Int -> Return Element msg sub -> Return Element msg sub
 syncSolution id ret =
     case ret.value.solved of
         Solution.Solved ->
-            Return.sync (Event "solved" id JE.null) ret
+            Return.sync (Event "solved" id (JE.int ret.value.trial)) ret
 
         Solution.ReSolved ->
             Return.sync (Event "resolved" id JE.null) ret
@@ -169,11 +170,10 @@ get : Int -> Vector -> Maybe Element
 get idx vector =
     case Array.get idx vector of
         Just elem ->
-            if (elem.solved == Solution.Solved) || (elem.solved == Solution.ReSolved) then
-                Nothing
-
-            else
-                Just elem
+            --if (elem.solved == Solution.Solved) || (elem.solved == Solution.ReSolved) then
+            --    Nothing
+            --else
+            Just elem
 
         _ ->
             Nothing
