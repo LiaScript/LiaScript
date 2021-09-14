@@ -91,6 +91,7 @@ update globals msg section =
                 section.gallery_vector
                     |> Gallery.update childMsg
                     |> Return.mapVal (\v -> { section | gallery_vector = v })
+                    |> Return.mapEvents "gallery" section.id
                     |> updateScript
 
             UpdateSurvey childMsg ->
@@ -338,6 +339,9 @@ handle globals topic event section =
 
         "table" ->
             update globals (UpdateTable (Table.handle event)) section
+
+        "gallery" ->
+            update globals (UpdateGallery (Gallery.handle event)) section
 
         _ ->
             Return.val section
