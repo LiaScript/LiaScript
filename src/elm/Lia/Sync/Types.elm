@@ -32,8 +32,8 @@ init =
     { sync = Beaker
     , state = Disconnected
     , course = "www"
-    , room = "test123"
-    , username = "unknown"
+    , room = "test"
+    , username = "anonymous"
     , password = ""
     }
 

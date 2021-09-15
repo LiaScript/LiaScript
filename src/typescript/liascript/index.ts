@@ -612,8 +612,6 @@ function process(
       break
     }
     case Port.SYNC: {
-      console.warn('SYNC >>>>', event)
-
       switch (event.message.topic) {
         case 'sync': {
           // all sync relevant messages
