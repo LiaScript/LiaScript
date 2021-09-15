@@ -22,7 +22,7 @@ type Msg
 
 handle : JE.Value -> Settings -> Return Settings Msg sub
 handle json =
-    case Event.decode json |> Debug.log "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSs" of
+    case Event.decode json of
         Ok event ->
             update (Handle event)
 

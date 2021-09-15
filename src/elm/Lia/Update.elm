@@ -192,7 +192,7 @@ update session msg model =
                 "sync" ->
                     case Event.decode event.message of
                         Ok sync ->
-                            case sync.topic |> Debug.log "TOPIC" of
+                            case sync.topic of
                                 "sync" ->
                                     model.sync
                                         |> Sync.handle sync.message

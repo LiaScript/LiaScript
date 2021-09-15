@@ -95,8 +95,6 @@ export class Sync extends Base {
   }
 
   publish(message: Object) {
-    console.warn('publishing: ', message)
-
     if (this.peerIds && this.userEvent) {
       let msg = encode(message)
 

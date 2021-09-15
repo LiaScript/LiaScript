@@ -112,7 +112,6 @@ batch map ret =
     [ ret.events
     , ret.debug
     , ret.synchronize
-        |> Debug.log "##########################################################"
     ]
         |> List.concat
         |> List.map event2js

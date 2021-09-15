@@ -11,7 +11,7 @@ import Lia.Utils exposing (btn)
 view : Sync.Settings -> Html Msg
 view settings =
     Html.div []
-        [ Html.h1 [] [ Html.text "ClassroomXXX" ]
+        [ Html.h1 [] [ Html.text "Classroom" ]
         , input Room "room" "input" settings.room
         , Html.br [] []
         , Html.br [] []
