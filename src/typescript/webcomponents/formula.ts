@@ -21,6 +21,8 @@ customElements.define(
         mode: 'open',
       })
 
+      this.formula_ = this.getAttribute('formula') || ''
+
       let link = document.createElement('link')
       link.rel = 'stylesheet'
       link.href = 'katex.min.css'
