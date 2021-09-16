@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.32
+version:  0.9.33
 language: en
 narrator: UK English Male
 
@@ -282,11 +282,16 @@ This will apply the following three patches:
 
 ## Version-Changes
 
+**0.9.33** (15/09/2021)
+
+- fix: CSS styling for Katex-formulas and displayMode
+- Internal message-routing uses a fixed datatype (`Return`) for all modules
+
 **0.9.32** (06/09/2021)
 
 - Improved accessibility for quizzes
 - Custom styling enabled for comments
-- Imporved relative link handling
+- Improved relative link handling
 - Updated translations
 - fix: Minor CSS bugs and relative links in `href="#..."`
 
