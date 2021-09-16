@@ -7,13 +7,11 @@ customElements.define(
   class extends HTMLElement {
     private span: HTMLSpanElement
     private formula_: string
-    private displayMode: boolean
 
     constructor() {
       super()
       this.span = document.createElement('span')
       this.formula_ = ''
-      this.displayMode = false
     }
 
     connectedCallback() {
@@ -29,13 +27,20 @@ customElements.define(
       shadowRoot.appendChild(this.span)
 
       this.formula_ = this.getAttribute('formula') || ''
-      const mode = this.getAttribute('displayMode')
-
-      if (mode) {
-        this.displayMode = JSON.parse(mode)
-      }
 
       this.render()
+    }
+
+    displayMode(): boolean {
+      try {
+        const mode = this.getAttribute('displayMode') || 'false'
+
+        let ret = JSON.parse(mode)
+
+        return ret ? true : false
+      } catch (e) {}
+
+      return false
     }
 
     render() {
@@ -43,7 +48,7 @@ customElements.define(
         try {
           katex.render(this.formula_, this.span, {
             throwOnError: false,
-            displayMode: this.displayMode,
+            displayMode: this.displayMode(),
             trust: true, // allow latex like \includegraphics
           })
         } catch (e: any) {
