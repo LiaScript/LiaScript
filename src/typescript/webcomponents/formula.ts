@@ -1,4 +1,4 @@
-//import 'katex/dist/katex.min.css'
+import 'katex/dist/katex.min.css'
 // @ts-ignore
 import katex from 'katex'
 
@@ -21,8 +21,6 @@ customElements.define(
         mode: 'open',
       })
 
-      this.formula_ = this.getAttribute('formula') || ''
-
       let link = document.createElement('link')
       link.rel = 'stylesheet'
       link.href = 'katex.min.css'
@@ -30,6 +28,7 @@ customElements.define(
       shadowRoot.appendChild(link)
       shadowRoot.appendChild(this.span)
 
+      this.formula_ = this.getAttribute('formula') || ''
       const mode = this.getAttribute('displayMode')
 
       if (mode) {
@@ -47,7 +46,7 @@ customElements.define(
             displayMode: this.displayMode,
             trust: true, // allow latex like \includegraphics
           })
-        } catch (e) {
+        } catch (e: any) {
           console.warn('katex', e.message)
         }
 
