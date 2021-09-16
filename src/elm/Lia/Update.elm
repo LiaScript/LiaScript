@@ -13,7 +13,7 @@ import Html.Attributes exposing (width)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Index.Update as Index
-import Lia.Markdown.Effect.Script.Update as Script
+import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (Model, loadResource)
@@ -22,6 +22,7 @@ import Lia.Section exposing (Section)
 import Lia.Settings.Types exposing (Mode(..))
 import Lia.Settings.Update as Settings
 import Port.Event as Event exposing (Event)
+import Return exposing (Return)
 import Session exposing (Session)
 
 
@@ -82,18 +83,7 @@ type Msg
     | Media ( String, Maybe Int, Maybe Int )
 
 
-{-| **@private:** shortcut for generating events for a specific section:
-
-1.  id of the active section
-2.  a list of (`String` topics, `Event` messages)
-
--}
-send : Int -> List ( String, JE.Value ) -> List Event
-send sectionID =
-    List.map (\( name, json ) -> Event name sectionID json)
-
-
-update : Session -> Msg -> Model -> ( Model, Cmd Msg, List Event )
+update : Session -> Msg -> Model -> Return Model Msg Markdown.Msg
 update session msg model =
     case msg of
         Load force idx ->
@@ -124,60 +114,42 @@ update session msg model =
                         )
 
                 else
-                    ( { model
+                    { model
                         | section_active = idx
                         , settings =
                             { settings
                                 | table_of_contents =
-                                    if
-                                        session.screen.width
-                                            <= Const.globalBreakpoints.sm
-                                    then
+                                    if session.screen.width <= Const.globalBreakpoints.sm then
                                         False
 
                                     else
                                         settings.table_of_contents
                             }
-                      }
-                    , Session.navToSlide session idx
-                    , []
-                    )
+                    }
+                        |> Return.val
+                        |> Return.cmd (Session.navToSlide session idx)
 
             else
-                ( model, Cmd.none, [] )
+                Return.val model
 
         Home ->
-            ( model, Session.navToHome session, [] )
+            model
+                |> Return.val
+                |> Return.cmd (Session.navToHome session)
 
         UpdateSettings childMsg ->
-            let
-                ( settings, cmd, events ) =
-                    Settings.update
-                        (Just
-                            { title = model.title
-                            , comment = model.definition.comment
-                            }
-                        )
-                        childMsg
-                        model.settings
-            in
-            ( { model | settings = settings }
-            , Cmd.map UpdateSettings cmd
-            , events
-            )
+            model.settings
+                |> Settings.update (Just { title = model.title, comment = model.definition.comment }) childMsg
+                |> Return.mapValCmd (\v -> { model | settings = v }) UpdateSettings
 
         UpdateIndex childMsg ->
             let
                 ( index, sections, cmd ) =
                     Index.update childMsg model.index_model model.sections
             in
-            ( { model
-                | index_model = index
-                , sections = sections
-              }
-            , Cmd.map UpdateIndex cmd
-            , []
-            )
+            { model | index_model = index, sections = sections }
+                |> Return.val
+                |> Return.cmd (Cmd.map UpdateIndex cmd)
 
         Handle event ->
             case event.topic of
@@ -193,16 +165,15 @@ update session msg model =
                                 model
 
                         _ ->
-                            ( model, Cmd.none, [] )
+                            Return.val model
 
                 "load" ->
                     update session InitSection (generate model)
 
                 "reset" ->
-                    ( model
-                    , Cmd.none
-                    , [ Event "reset" -1 JE.null ]
-                    )
+                    model
+                        |> Return.val
+                        |> Return.batchEvent (Event "reset" -1 JE.null)
 
                 "goto" ->
                     update session
@@ -231,7 +202,7 @@ update session msg model =
                             update session PrevSection model
 
                         _ ->
-                            ( model, Cmd.none, [] )
+                            Return.val model
 
                 _ ->
                     case
@@ -240,100 +211,72 @@ update session msg model =
                         )
                     of
                         ( Just sec, Ok e ) ->
-                            let
-                                ( sec_, cmd_, events ) =
-                                    Markdown.handle model.definition event.topic e sec
-                            in
-                            ( { model | sections = Array.set event.section sec_ model.sections }
-                            , Cmd.map UpdateMarkdown cmd_
-                            , send event.section events
-                            )
+                            sec
+                                |> Markdown.handle model.definition event.topic e
+                                |> Return.mapValCmd (\v -> { model | sections = Array.set event.section v model.sections }) UpdateMarkdown
 
                         _ ->
-                            ( model, Cmd.none, [] )
+                            Return.val model
 
         Script ( id, sub ) ->
             case Array.get id model.sections of
                 Just sec ->
-                    let
-                        ( section, cmd_, log_ ) =
-                            Markdown.updateScript (Just sub) ( sec, Cmd.none, [] )
-                    in
-                    ( { model | sections = Array.set id section model.sections }
-                    , Cmd.map UpdateMarkdown cmd_
-                    , send id log_
-                    )
+                    sec
+                        |> Return.val
+                        |> Return.script sub
+                        |> Markdown.updateScript
+                        |> Return.mapValCmd (\v -> { model | sections = Array.set id v model.sections }) UpdateMarkdown
 
                 _ ->
-                    ( model, Cmd.none, [] )
+                    Return.val model
 
         Media ( url, width, height ) ->
-            ( case ( width, height ) of
-                ( Just w, Just h ) ->
-                    { model | media = Dict.insert url ( w, h ) model.media }
+            Return.val <|
+                case ( width, height ) of
+                    ( Just w, Just h ) ->
+                        { model | media = Dict.insert url ( w, h ) model.media }
 
-                ( Nothing, Nothing ) ->
-                    { model
-                        | modal =
-                            if url == "" then
-                                Nothing
+                    ( Nothing, Nothing ) ->
+                        { model
+                            | modal =
+                                if url == "" then
+                                    Nothing
 
-                            else
-                                Just url
-                    }
+                                else
+                                    Just url
+                        }
 
-                _ ->
-                    model
-            , Cmd.none
-            , []
-            )
+                    _ ->
+                        model
 
         _ ->
             case ( msg, get_active_section model ) of
                 ( UpdateMarkdown childMsg, Just sec ) ->
-                    let
-                        ( section, cmd_, log_ ) =
-                            Markdown.update model.definition childMsg sec
-                    in
-                    ( set_active_section model section
-                    , Cmd.map UpdateMarkdown cmd_
-                    , send model.section_active log_
-                    )
+                    sec
+                        |> Markdown.update model.definition childMsg
+                        |> Return.mapValCmd (set_active_section model) UpdateMarkdown
 
                 ( NextSection, Just sec ) ->
-                    if
-                        (model.settings.mode == Textbook)
-                            || not (Effect.has_next sec.effect_model)
-                    then
+                    if (model.settings.mode == Textbook) || not (Effect.has_next sec.effect_model) then
                         update session (Load False (model.section_active + 1)) model
 
                     else
-                        let
-                            ( sec_, cmd_, log_ ) =
-                                Markdown.nextEffect model.definition model.settings.sound sec
-                        in
-                        ( set_active_section model sec_
-                        , Cmd.map UpdateMarkdown cmd_
-                        , send model.section_active log_
-                        )
+                        sec
+                            |> Markdown.nextEffect model.definition model.settings.sound
+                            |> Return.mapValCmd (set_active_section model) UpdateMarkdown
 
                 ( PrevSection, Just sec ) ->
                     if (model.settings.mode == Textbook) || not (Effect.has_previous sec.effect_model) then
                         update session (Load False (model.section_active - 1)) model
 
                     else
-                        let
-                            ( sec_, cmd_, log_ ) =
-                                Markdown.previousEffect model.definition model.settings.sound sec
-                        in
-                        ( set_active_section model sec_
-                        , Cmd.map UpdateMarkdown cmd_
-                        , send model.section_active log_
-                        )
+                        sec
+                            |> Markdown.previousEffect model.definition model.settings.sound
+                            |> Return.mapValCmd (set_active_section model) UpdateMarkdown
 
                 ( InitSection, Just sec ) ->
                     let
-                        ( sec_, cmd_, log_ ) =
+                        return =
                             case model.settings.mode of
                                 Textbook ->
                                     Markdown.initEffect model.definition True False sec
@@ -341,39 +284,38 @@ update session msg model =
                                 _ ->
                                     Markdown.initEffect model.definition False model.settings.sound sec
                     in
-                    ( set_active_section { model | to_do = [] } sec_
-                    , Cmd.map UpdateMarkdown cmd_
-                    , model.to_do
-                        |> List.append (send model.section_active log_)
-                        |> (::) (Event "slide" model.section_active JE.null)
-                    )
+                    return
+                        |> Return.mapValCmd
+                            (set_active_section { model | to_do = [] })
+                            UpdateMarkdown
+                        |> Return.batchEvents (Event "slide" model.section_active JE.null :: model.to_do)
 
                 ( JumpToFragment id, Just sec ) ->
                     if (model.settings.mode == Textbook) || sec.effect_model.visible == id then
-                        ( model, Cmd.none, [] )
+                        Return.val model
 
                     else
                         let
                             effect =
                                 sec.effect_model
 
-                            ( sec_, cmd_, log_ ) =
+                            return =
                                 Markdown.nextEffect model.definition model.settings.sound { sec | effect_model = { effect | visible = id - 1 } }
                         in
-                        ( set_active_section model sec_
-                        , Cmd.map UpdateMarkdown cmd_
-                        , send model.section_active log_
-                        )
+                        return
+                            |> Return.mapValCmd (set_active_section model) UpdateMarkdown
 
                 ( TTSReplay bool, sec ) ->
-                    ( model
-                    , Cmd.none
-                    , Markdown.ttsReplay model.settings.sound bool sec
-                        |> send -1
-                    )
+                    case Markdown.ttsReplay model.settings.sound bool sec of
+                        Just event ->
+                            Return.val model
+                                |> Return.batchEvent event
+
+                        Nothing ->
+                            Return.val model
 
                 _ ->
-                    ( model, Cmd.none, [] )
+                    Return.val model
 
 
 {-| **@private:** shortcut for creating load events for quiz-, survey-, task-,

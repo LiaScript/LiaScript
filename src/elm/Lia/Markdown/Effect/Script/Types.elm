@@ -1,5 +1,6 @@
 module Lia.Markdown.Effect.Script.Types exposing
-    ( Script
+    ( Msg(..)
+    , Script
     , Scripts
     , Stdout(..)
     , count
@@ -20,6 +21,7 @@ import Lia.Markdown.Effect.Script.Input as Input exposing (Input)
 import Lia.Markdown.Effect.Script.Intl as Intl exposing (Intl)
 import Lia.Markdown.HTML.Attributes as Attr exposing (Parameters)
 import Port.Eval as Eval
+import Port.Event exposing (Event)
 import Regex
 
 
@@ -32,6 +34,21 @@ type Stdout a
     | Text String
     | HTML String
     | IFrame a
+
+
+type Msg sub
+    = Click Int
+    | Reset Int
+    | Activate Bool Int
+    | Value Int Bool String
+    | Radio Int Bool String
+    | Checkbox Int Bool String
+    | Edit Bool Int
+    | EditCode Int String
+    | NoOp
+    | Handle Event
+    | Delay Float (Msg sub)
+    | Sub Int sub
 
 
 isError : Stdout a -> Bool

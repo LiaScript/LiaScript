@@ -9,8 +9,7 @@ import Json.Encode as JE
 import Lia.Markdown.Code.Editor as Editor
 import Lia.Markdown.Effect.Script.Input as Input exposing (Input)
 import Lia.Markdown.Effect.Script.Intl as Intl
-import Lia.Markdown.Effect.Script.Types exposing (Script, Stdout(..), isError)
-import Lia.Markdown.Effect.Script.Update exposing (Msg(..))
+import Lia.Markdown.Effect.Script.Types exposing (Msg(..), Script, Stdout(..), isError)
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Section exposing (SubSection(..))

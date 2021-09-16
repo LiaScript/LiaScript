@@ -484,9 +484,26 @@ function process(
       }
       break
     }
-    case Port.EFFECT:
+    case Port.EFFECT: {
       handleEffects(event.message, elmSend, event.section, self)
       break
+    }
+    case Port.LOG: {
+      switch (event.section) {
+        case 0:
+          log.info(event.message)
+          break
+        case 1:
+          log.warn(event.message)
+          break
+        case 2:
+          log.error(event.message)
+          break
+        default:
+          console.warn('unknown log event ', event.section, event.message)
+      }
+      break
+    }
     case Port.SETTINGS: {
       // if (self.channel) {
       //  self.channel.push('lia', {settings: event.message});

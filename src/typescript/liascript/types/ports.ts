@@ -4,6 +4,7 @@ enum Port {
   INDEX = 'index',
   INIT = 'init',
   LOAD = 'load',
+  LOG = 'log',
   PERSISTENT = 'persistent',
   QUIZ = 'quiz',
   RESET = 'reset',

@@ -94,8 +94,8 @@ parse_section search_index global sec =
             formatError ms stream |> Err
 
 
-parse_subsection : Maybe Definition -> String -> Result String SubSection
-parse_subsection globals code =
+parse_subsection : Maybe Definition -> Int -> String -> Result String SubSection
+parse_subsection globals id code =
     case
         Combine.runParser
             (Lia.Definition.Parser.parse |> keep Markdown.run)
@@ -110,14 +110,16 @@ parse_subsection globals code =
                 case es of
                     [ Paragraph [] sub ] ->
                         SubSubSection
-                            { body = sub
+                            { id = id
+                            , body = sub
                             , error = Nothing
                             , effect_model = state.effect_model
                             }
 
                     _ ->
                         SubSection
-                            { body = es
+                            { id = id
+                            , body = es
                             , error = Nothing
                             , code_model = state.code_model
                             , task_vector = state.task_vector

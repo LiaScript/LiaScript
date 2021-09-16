@@ -29,6 +29,7 @@ import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition, add_macros)
 import Lia.Json.Encode as Json
 import Lia.Markdown.Inline.Stringify exposing (stringify)
+import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (loadResource)
 import Lia.Parser.Parser as Parser
 import Lia.Section as Section exposing (Section, Sections)
@@ -37,6 +38,7 @@ import Lia.Settings.Update as Settings
 import Lia.Update exposing (Msg(..))
 import Lia.View
 import Port.Event exposing (Event)
+import Return exposing (Return)
 import Session exposing (Screen, Session)
 import Translations
 
@@ -81,7 +83,7 @@ pages =
 this is the first load, then some more initialization has to be done, so use
 `load_first_slide` in this case.
 -}
-load_slide : Session -> Bool -> Int -> Model -> ( Model, Cmd Msg, List Event )
+load_slide : Session -> Bool -> Int -> Model -> Return Model Msg Markdown.Msg
 load_slide session force =
     Load force >> Lia.Update.update session
 
@@ -91,7 +93,7 @@ now be displayed for the first time. It determines the active section, creates
 a `search_index` for local referenced links, and creates connector event, that
 passes a preprocessed version of the course, to the cache used by the backend.
 -}
-load_first_slide : Session -> Model -> ( Model, Cmd Msg, List Event )
+load_first_slide : Session -> Model -> Return Model Msg Markdown.Msg
 load_first_slide session model =
     let
         search_index =
@@ -373,6 +375,6 @@ subscriptions =
 
 {-| Alias for LiaScript update `Lia.Update.update`
 -}
-update : Session -> Msg -> Model -> ( Model, Cmd Msg, List Event )
+update : Session -> Msg -> Model -> Return Model Msg Markdown.Msg
 update =
     Lia.Update.update

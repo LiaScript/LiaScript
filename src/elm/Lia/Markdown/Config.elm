@@ -7,7 +7,7 @@ module Lia.Markdown.Config exposing
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Lia.Markdown.Effect.Model as Effect
-import Lia.Markdown.Effect.Script.Update as Script
+import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Inline.Config as Inline
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)

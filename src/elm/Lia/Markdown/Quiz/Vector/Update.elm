@@ -5,8 +5,9 @@ module Lia.Markdown.Quiz.Vector.Update exposing
     , update
     )
 
-import Lia.Markdown.Effect.Script.Update as Script
+import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Quiz.Vector.Types exposing (State(..))
+import Return exposing (Return)
 
 
 type Msg sub
@@ -14,14 +15,18 @@ type Msg sub
     | Script (Script.Msg sub)
 
 
-update : Msg sub -> State -> ( State, Maybe (Script.Msg sub) )
+update : Msg sub -> State -> Return State msg sub
 update msg state =
     case msg of
         Toggle id ->
-            ( toggle id state, Nothing )
+            state
+                |> toggle id
+                |> Return.val
 
         Script sub ->
-            ( state, Just sub )
+            state
+                |> Return.val
+                |> Return.script sub
 
 
 toggle : Int -> State -> State

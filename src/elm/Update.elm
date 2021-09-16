@@ -112,13 +112,13 @@ message msg =
 
 {-| **@private:** Combine commands and events to one command output.
 -}
-batch : (a -> msg) -> Cmd a -> List Event -> Cmd msg
-batch map cmd events =
-    if List.isEmpty events then
+batch : (a -> msg) -> Cmd a -> List Event -> List Event -> Cmd msg
+batch map cmd events debug =
+    if List.isEmpty events && List.isEmpty debug then
         Cmd.map map cmd
 
     else
-        events
+        List.append events debug
             |> List.map event2js
             |> (::) (Cmd.map map cmd)
             |> Cmd.batch
@@ -138,11 +138,11 @@ update msg model =
 
         LiaScript childMsg ->
             let
-                ( lia, cmd, events ) =
+                return =
                     Lia.Script.update model.session childMsg model.lia
             in
-            ( { model | lia = lia }
-            , batch LiaScript cmd events
+            ( { model | lia = return.value }
+            , batch LiaScript return.command return.events return.debug
             )
 
         Handle event ->
@@ -219,7 +219,7 @@ update msg model =
                     model.lia
             in
             ( { model | index = index, lia = { lia | settings = settings } }
-            , batch UpdateIndex cmd events
+            , batch UpdateIndex cmd events []
             )
 
         LinkClicked urlRequest ->
@@ -260,14 +260,14 @@ update msg model =
                                     |> Session.setUrl url
                                     |> Session.setFragment (slide + 1)
 
-                            ( lia, cmd, events ) =
+                            return =
                                 Lia.Script.load_slide session True slide model.lia
                         in
                         ( { model
-                            | lia = lia
+                            | lia = return.value
                             , session = session
                           }
-                        , batch LiaScript cmd events
+                        , batch LiaScript return.command return.events return.debug
                         )
 
             else
@@ -359,11 +359,11 @@ start model =
         lia =
             model.lia
 
-        ( parsed, cmd, events ) =
+        return =
             Lia.Script.load_first_slide session { lia | section_active = slide }
     in
-    ( { model | state = Running, lia = parsed, session = session }
-    , batch LiaScript cmd events
+    ( { model | state = Running, lia = return.value, session = session }
+    , batch LiaScript return.command return.events return.debug
     )
 
 
@@ -377,7 +377,7 @@ startWithError model =
         lia =
             model.lia
 
-        ( parsed, cmd, events ) =
+        return =
             Lia.Script.load_first_slide session
                 { lia
                     | section_active = 0
@@ -385,8 +385,8 @@ startWithError model =
                     , definition = Definition.setPersistent False lia.definition
                 }
     in
-    ( { model | lia = parsed, session = session }
-    , batch LiaScript cmd events
+    ( { model | lia = return.value, session = session }
+    , batch LiaScript return.command return.events return.debug
     )
 
 

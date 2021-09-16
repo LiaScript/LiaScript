@@ -93,7 +93,8 @@ stored permanently. To minimize the requirements, there are actually two types:
 -}
 type SubSection
     = SubSection
-        { body : Markdown.Blocks
+        { id : Int
+        , body : Markdown.Blocks
         , error : Maybe String
         , code_model : Code.Model
         , task_vector : Task.Vector
@@ -106,7 +107,8 @@ type SubSection
         , footnote2show : Maybe String
         }
     | SubSubSection
-        { body : Inlines
+        { id : Int
+        , body : Inlines
         , error : Maybe String
         , effect_model : Effect.Model SubSection
         }
