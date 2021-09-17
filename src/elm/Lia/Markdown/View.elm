@@ -201,7 +201,15 @@ view_footnote viewer key footnotes =
             [ notes
                 |> List.map viewer
                 |> Html.div
-                    [ Attr.style "padding-top" "5rem" ]
+                    [ Attr.style "max-height" "92%"
+                    , Attr.style "overflow" "auto"
+                    ]
+                |> List.singleton
+                |> Html.div
+                    [ Attr.style "display" "flex"
+                    , Attr.style "align-items" "center"
+                    , Attr.style "max-width" "90%"
+                    ]
             ]
                 |> modal FootnoteHide Nothing
 

@@ -39,7 +39,7 @@ block p =
     string "[^"
         |> keep (stringTill (string "]:"))
         |> map Tuple.pair
-        |> ignore (Indent.push "[ ]{3,}")
+        |> ignore (Indent.push "[ ]{2,}")
         |> andMap p
         |> andThen add_footnote
 
