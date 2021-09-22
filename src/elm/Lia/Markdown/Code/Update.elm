@@ -72,7 +72,7 @@ update scripts msg model =
         Eval idx ->
             model
                 |> maybe_project idx (eval scripts idx)
-                |> Maybe.map (is_version_new idx)
+                |> Maybe.map (.value >> is_version_new idx)
                 |> maybe_update idx model
 
         Update id_1 id_2 code_str ->
@@ -152,6 +152,7 @@ update scripts msg model =
                 version =
                     model
                         |> maybe_project idx (.version >> Array.length >> (+) -1)
+                        |> Maybe.map .value
                         |> Maybe.withDefault 0
             in
             model
@@ -170,7 +171,6 @@ update scripts msg model =
                         "LIA: wait" ->
                             model
                                 |> maybe_project event.section (\p -> { p | log = Log.empty })
-                                |> Maybe.map (\p -> ( p, [] ))
                                 |> maybe_update event.section model
 
                         "LIA: stop" ->
@@ -182,14 +182,12 @@ update scripts msg model =
                         "LIA: clear" ->
                             model
                                 |> maybe_project event.section clr
-                                |> Maybe.map (\p -> ( p, [] ))
                                 |> maybe_update event.section model
 
                         -- preserve previous logging by setting ok to false
                         "LIA: terminal" ->
                             model
                                 |> maybe_project event.section (\p -> { p | terminal = Just <| Terminal.init })
-                                |> Maybe.map (\p -> ( p, [] ))
                                 |> maybe_update event.section model
 
                         _ ->
@@ -204,37 +202,31 @@ update scripts msg model =
                 "debug" ->
                     model
                         |> maybe_project event.section (logger Log.add Log.Debug event.message)
-                        |> Maybe.map (\p -> ( p, [] ))
                         |> maybe_update event.section model
 
                 "info" ->
                     model
                         |> maybe_project event.section (logger Log.add Log.Info event.message)
-                        |> Maybe.map (\p -> ( p, [] ))
                         |> maybe_update event.section model
 
                 "warn" ->
                     model
                         |> maybe_project event.section (logger Log.add Log.Warn event.message)
-                        |> Maybe.map (\p -> ( p, [] ))
                         |> maybe_update event.section model
 
                 "error" ->
                     model
                         |> maybe_project event.section (logger Log.add Log.Error event.message)
-                        |> Maybe.map (\p -> ( p, [] ))
                         |> maybe_update event.section model
 
                 "html" ->
                     model
                         |> maybe_project event.section (logger Log.add Log.HTML event.message)
-                        |> Maybe.map (\p -> ( p, [] ))
                         |> maybe_update event.section model
 
                 "stream" ->
                     model
                         |> maybe_project event.section (logger Log.add Log.Stream event.message)
-                        |> Maybe.map (\p -> ( p, [] ))
                         |> maybe_update event.section model
 
                 _ ->
@@ -243,7 +235,7 @@ update scripts msg model =
         Stop idx ->
             model
                 |> maybe_project idx (\p -> { p | running = False, terminal = Nothing })
-                |> Maybe.map (\p -> ( p, Event.stop idx ))
+                |> Maybe.map (Return.batchEvent (Event.stop idx))
                 |> maybe_update idx model
 
         Resize code height ->
@@ -258,6 +250,7 @@ update scripts msg model =
         UpdateTerminal idx childMsg ->
             model
                 |> maybe_project idx (update_terminal (Event.input idx) childMsg)
+                |> Maybe.map .value
                 |> maybe_update idx model
 
 
@@ -271,45 +264,40 @@ onResize id height code =
         code
 
 
-update_terminal : (String -> Event) -> Terminal.Msg -> Project -> ( Project, List Event )
+update_terminal : (String -> Event) -> Terminal.Msg -> Project -> Return Project msg sub
 update_terminal f msg project =
     case project.terminal |> Maybe.map (Terminal.update msg) of
         Just ( terminal, Nothing ) ->
-            ( { project | terminal = Just terminal }
-            , []
-            )
+            { project | terminal = Just terminal }
+                |> Return.val
 
         Just ( terminal, Just str ) ->
-            ( { project | terminal = Just terminal, log = Log.add Log.Info str project.log }
-            , [ f str ]
-            )
+            { project | terminal = Just terminal, log = Log.add Log.Info str project.log }
+                |> Return.val
+                |> Return.batchEvent (f str)
 
         Nothing ->
-            ( project, [] )
+            Return.val project
 
 
-eval : Scripts a -> Int -> Project -> ( Project, List Event )
+eval : Scripts a -> Int -> Project -> Return Project msg sub
 eval scripts idx project =
-    ( { project | running = True }, Event.eval scripts idx project )
+    { project | running = True }
+        |> Return.val
+        |> Return.batchEvent (Event.eval scripts idx project)
 
 
-maybe_project : Int -> (a -> b) -> { project | evaluate : Array a } -> Maybe b
+maybe_project : Int -> (Project -> x) -> Model -> Maybe (Return x cmd sub)
 maybe_project idx f =
     .evaluate
         >> Array.get idx
-        >> Maybe.map f
+        >> Maybe.map (f >> Return.val)
 
 
-maybe_update : Int -> Model -> Maybe ( Project, List Event ) -> Return Model msg sub
-maybe_update idx model project =
-    case project of
-        Just ( p, logs ) ->
-            { model | evaluate = Array.set idx p model.evaluate }
-                |> Return.val
-                |> Return.batchEvents logs
-
-        _ ->
-            Return.val model
+maybe_update : Int -> Model -> Maybe (Return Project msg sub) -> Return Model msg sub
+maybe_update idx model =
+    Maybe.map (Return.mapVal (\v -> { model | evaluate = Array.set idx v model.evaluate }))
+        >> Maybe.withDefault (Return.val model)
 
 
 update_file : Int -> Int -> Model -> (File -> File) -> (File -> List Event) -> Return Model msg sub
@@ -336,16 +324,16 @@ update_file id_1 id_2 model f f_log =
             Return.val model
 
 
-is_version_new : Int -> ( Project, List Event ) -> ( Project, List Event )
-is_version_new idx ( project, events ) =
-    case updateVersion project of
+is_version_new : Int -> Return Project msg sub -> Return Project msg sub
+is_version_new idx return =
+    case updateVersion return.value of
         Just ( new_project, repo_update ) ->
-            ( new_project
-            , Event.version_append idx new_project repo_update :: events
-            )
+            new_project
+                |> Return.replace return
+                |> Return.batchEvent (Event.version_append idx new_project repo_update)
 
         Nothing ->
-            ( project, events )
+            return
 
 
 stop : Project -> Project
