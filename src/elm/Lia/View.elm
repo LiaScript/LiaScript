@@ -254,10 +254,10 @@ slideA11y lang translations mode media effect id =
                                     List.map
                                         (\c ->
                                             c.content
-                                                |> List.map (view_inf effect.javascript lang (Just media))
+                                                |> List.map (view_inf effect.javascript lang (Just translations) (Just media))
                                                 |> Html.p
                                                     (narrator
-                                                        |> Markdown.addTranslation False translations counter
+                                                        |> Markdown.addTranslation False (Just translations) counter
                                                         |> List.append c.attr
                                                         |> toAttribute
                                                     )

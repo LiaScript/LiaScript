@@ -18,6 +18,7 @@ import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inline)
 import Lia.Markdown.Types exposing (Block)
 import Lia.Markdown.Update exposing (Msg(..))
+import Lia.Voice as Voice
 import Port.Event as Event exposing (Event)
 import Port.TTS
 
@@ -178,12 +179,22 @@ block_playback config e =
             []
 
     else
-        Html.button
-            [ Attr.class "lia-btn lia-btn--transparent text-highlight icon icon-play-circle"
-            , A11y_Key.tabbable True
-            , playBackAttr e.id e.voice config.slide "this.parentNode.childNodes[1]"
-            ]
-            []
+        case config.translations |> Maybe.andThen (Voice.getVoiceFor e.voice) of
+            Nothing ->
+                Html.button
+                    [ Attr.class "lia-btn lia-btn--transparent text-highlight icon icon-play-circle"
+                    , A11y_Key.tabbable True
+                    , playBackAttr e.id e.voice config.slide "this.parentNode.childNodes[1]"
+                    ]
+                    []
+
+            Just ( translate, voice ) ->
+                Html.button
+                    [ Attr.class "lia-btn lia-btn--transparent text-highlight icon icon-play-circle"
+                    , A11y_Key.tabbable True
+                    , playBackAttr e.id voice config.slide "this.parentNode.childNodes[1]"
+                    ]
+                    []
 
 
 playBackAttr : Int -> String -> Int -> String -> Html.Attribute msg
@@ -212,16 +223,35 @@ inline_playback config e =
                 |> (\event -> "playback(" ++ event ++ ")")
                 |> Attr.attribute "onclick"
             , A11y_Key.tabbable True
+            , Attr.attribute "xxxxxxxxxxxx" (Debug.toString config.translations)
             ]
             []
 
     else
-        Html.button
-            [ Attr.class "lia-btn lia-btn--transparent icon icon-play-circle mx-1"
-            , playBackAttr e.id e.voice config.slide "this.labels[0]"
-            , A11y_Key.tabbable True
-            ]
-            []
+        case config.translations |> Maybe.andThen (Voice.getVoiceFor e.voice) of
+            Nothing ->
+                Html.button
+                    [ Attr.class "lia-btn lia-btn--transparent icon icon-play-circle mx-1"
+                    , playBackAttr
+                        e.id
+                        e.voice
+                        config.slide
+                        "this.labels[0]"
+                    , A11y_Key.tabbable True
+                    ]
+                    []
+
+            Just ( translate, voice ) ->
+                Html.button
+                    [ Attr.class "lia-btn lia-btn--transparent icon icon-play-circle mx-1"
+                    , playBackAttr
+                        e.id
+                        voice
+                        config.slide
+                        "this.labels[0]"
+                    , A11y_Key.tabbable True
+                    ]
+                    []
 
 
 circle : Int -> Html msg

@@ -272,9 +272,9 @@ viewMedia config inline =
             view config inline
 
 
-view_inf : Scripts SubSection -> Lang -> Maybe (Dict String ( Int, Int )) -> Inline -> Html (Msg sub)
-view_inf scripts lang media =
-    Config.init -1 Textbook 0 Nothing scripts lang Nothing (media |> Maybe.withDefault Dict.empty) |> view
+view_inf : Scripts SubSection -> Lang -> Maybe ( String, String ) -> Maybe (Dict String ( Int, Int )) -> Inline -> Html (Msg sub)
+view_inf scripts lang translations media =
+    Config.init -1 Textbook 0 Nothing scripts lang Nothing translations (media |> Maybe.withDefault Dict.empty) |> view
 
 
 stringFrom : Config sub -> Maybe Inlines -> Maybe String
