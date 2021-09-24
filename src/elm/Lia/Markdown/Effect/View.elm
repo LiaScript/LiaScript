@@ -223,7 +223,6 @@ inline_playback config e =
                 |> (\event -> "playback(" ++ event ++ ")")
                 |> Attr.attribute "onclick"
             , A11y_Key.tabbable True
-            , Attr.attribute "xxxxxxxxxxxx" (Debug.toString config.translations)
             ]
             []
 
