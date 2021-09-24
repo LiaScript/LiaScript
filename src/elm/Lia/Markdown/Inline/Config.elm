@@ -22,6 +22,7 @@ type alias Config sub =
     , media : Dict String ( Int, Int )
     , oEmbed : Maybe { maxwidth : Int, maxheight : Int, scale : Float, thumbnail : Bool }
     , scripts : Scripts SubSection
+    , translations : Maybe ( String, String )
     }
 
 
@@ -33,9 +34,10 @@ init :
     -> Scripts SubSection
     -> Lang
     -> Maybe String
+    -> Maybe ( String, String )
     -> Dict String ( Int, Int )
     -> Config sub
-init slide mode visible speaking effects theme lang media =
+init slide mode visible speaking effects theme lang translations media =
     Config
         Nothing
         slide
@@ -51,6 +53,7 @@ init slide mode visible speaking effects theme lang media =
         media
         Nothing
         effects
+        translations
 
 
 setViewer : (Int -> SubSection -> List (Html (Msg sub))) -> Config sub -> Config sub
