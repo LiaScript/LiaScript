@@ -285,6 +285,7 @@ This will apply the following three patches:
 **0.9.34** (23/09/2021)
 
 - improve: footnote styling
+- inline & block-playback are now also translatable via tts
 
 **0.9.33** (15/09/2021)
 
