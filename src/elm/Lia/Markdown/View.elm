@@ -119,7 +119,7 @@ view_body ( config, footnote2show, footnotes ) =
                                 (\( id, voice, text ) ->
                                     Html.span
                                         (voice
-                                            |> addTranslation True config.translations id
+                                            |> addTranslation True config.main.translations id
                                             |> toAttribute
                                         )
                                         [ Html.text text ]
@@ -152,9 +152,9 @@ fold config output blocks =
             fold config (view_block config b :: output) bs
 
 
-addTranslation : Bool -> ( String, String ) -> Int -> String -> List ( String, String )
+addTranslation : Bool -> Maybe ( String, String ) -> Int -> String -> List ( String, String )
 addTranslation hidden translations id narrator =
-    case Voice.getVoiceFor narrator translations of
+    case translations |> Maybe.andThen (Voice.getVoiceFor narrator) of
         Nothing ->
             []
 
@@ -367,7 +367,7 @@ view_block config block =
                         |> Inline.reduce config.main
                         |> Html.div
                             (narrator
-                                |> addTranslation True config.translations id1
+                                |> addTranslation True config.main.translations id1
                                 |> toAttribute
                             )
                         |> Html.map Script

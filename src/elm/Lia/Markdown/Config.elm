@@ -25,7 +25,6 @@ type alias Config sub =
     , ace_theme : String
     , light : Bool
     , screen : Screen
-    , translations : ( String, String )
     , main : Inline.Config sub
     }
 
@@ -34,7 +33,7 @@ init : Lang -> ( String, String ) -> Settings -> Screen -> Section -> Int -> Dic
 init lang translations settings screen section id media =
     let
         config =
-            inline lang settings section.effect_model id media
+            inline lang translations settings section.effect_model id media
     in
     Config
         settings.mode
@@ -48,12 +47,11 @@ init lang translations settings screen section id media =
          else
             screen
         )
-        translations
         config
 
 
-inline : Lang -> Settings -> Effect.Model SubSection -> Int -> Dict String ( Int, Int ) -> Inline.Config sub
-inline lang settings effect id media =
+inline : Lang -> ( String, String ) -> Settings -> Effect.Model SubSection -> Int -> Dict String ( Int, Int ) -> Inline.Config sub
+inline lang translations settings effect id media =
     Inline.init id
         settings.mode
         effect.visible
@@ -61,6 +59,7 @@ inline lang settings effect id media =
         effect.javascript
         lang
         (Just settings.editor)
+        (Just translations)
         media
 
 
