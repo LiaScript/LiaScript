@@ -1,8 +1,11 @@
 $controlHeight: 4rem;
 
 .lia-modal {
+  --color-text: white;
+  --color-background: var(--lia-grey-dark);
+  --color-border: var(--lia-grey-light);
   align-items: center;
-  color: white;
+  color: var(--color-text);
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -195,5 +198,11 @@ $controlHeight: 4rem;
     @include breakpoint("sm") {
       width: calc(100vw - (2 * 6rem));
     }
+  }
+
+  .lia-video-wrapper,
+  .lia-iframe-wrapper {
+    position: relative;
+    padding-bottom: 56.25%;
   }
 }
