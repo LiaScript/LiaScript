@@ -172,7 +172,7 @@ inlines =
             Macro.macro
                 |> keep
                     ([ code
-                     , Footnote.inline
+                     , Footnote.inline parse_inlines
                      , reference
                      , formula
                      , inlines
