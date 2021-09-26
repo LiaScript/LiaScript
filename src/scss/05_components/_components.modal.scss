@@ -199,4 +199,10 @@ $controlHeight: 4rem;
       width: calc(100vw - (2 * 6rem));
     }
   }
+
+  .lia-video-wrapper,
+  .lia-iframe-wrapper {
+    position: relative;
+    padding-bottom: 56.25%;
+  }
 }
