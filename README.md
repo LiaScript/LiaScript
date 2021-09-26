@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.34
+version:  0.9.35
 language: en
 narrator: UK English Male
 
@@ -281,6 +281,15 @@ This will apply the following three patches:
 - elm-patch/dom: enable onclick events as well as innerHTML
 
 ## Version-Changes
+
+**0.9.35** (26/09/2021)
+
+- chore: Npm update
+- fix: footnote
+  
+  * CSS table and background color
+  * styling of multimedia in modal
+  * inline footnote now with Markdown parser
 
 **0.9.34** (23/09/2021)
 
