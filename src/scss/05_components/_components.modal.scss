@@ -1,8 +1,11 @@
 $controlHeight: 4rem;
 
 .lia-modal {
+  --color-text: white;
+  --color-background: var(--lia-grey-dark);
+  --color-border: var(--lia-grey-light);
   align-items: center;
-  color: white;
+  color: var(--color-text);
   display: flex;
   flex-direction: column;
   height: 100%;
