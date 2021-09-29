@@ -7,6 +7,8 @@ module Lia.Markdown.Task.Update exposing
 import Array exposing (Array)
 import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
+import Lia.Markdown.Effect.Script.Update exposing (run)
+import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.Task.Json as Json
 import Lia.Markdown.Task.Types exposing (Vector)
 import Port.Eval as Eval
@@ -24,7 +26,7 @@ import Return exposing (Return)
 
 -}
 type Msg sub
-    = Toggle Int Int (Maybe String)
+    = Toggle Int Int (Maybe Int)
     | Handle Event
     | Script (Script.Msg sub)
 
@@ -46,7 +48,7 @@ update scripts msg vector =
                 |> store
 
         -- toggle and execute the code snippet
-        Toggle x y (Just code) ->
+        Toggle x y (Just id) ->
             case
                 vector
                     |> Array.get x
@@ -56,14 +58,20 @@ update scripts msg vector =
                     vector
                         |> Array.set x state
                         |> Return.val
-                        |> Return.batchEvent
-                            ([ state
+                        --|> Return.batchEvent
+                        --    ([ state
+                        --        |> JE.array JE.bool
+                        --        |> JE.encode 0
+                        --     ]
+                        --        |> Eval.event x code (outputs scripts)
+                        --    )
+                        |> store
+                        |> Return.script
+                            (state
                                 |> JE.array JE.bool
                                 |> JE.encode 0
-                             ]
-                                |> Eval.event x code (outputs scripts)
+                                |> run id
                             )
-                        |> store
 
                 Nothing ->
                     Return.val vector

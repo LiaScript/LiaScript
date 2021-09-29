@@ -31,13 +31,16 @@ view config vector attr task =
             Html.text ""
 
 
-row : Config sub -> Int -> Maybe String -> Inlines -> ( Int, Bool ) -> Html (Msg sub)
+row : Config sub -> Int -> Maybe ( Parameters, Int ) -> Inlines -> ( Int, Bool ) -> Html (Msg sub)
 row config x code inlines ( y, checked ) =
     [ Html.input
         [ Attr.type_ "checkbox"
         , Attr.checked checked
         , Attr.class "lia-checkbox"
-        , onClick (Toggle x y code)
+        , code
+            |> Maybe.map Tuple.second
+            |> Toggle x y
+            |> onClick
         ]
         []
     , viewer config inlines
