@@ -4,7 +4,6 @@ import Array
 import Combine
     exposing
         ( Parser
-        , andMap
         , andThen
         , ignore
         , keep
@@ -15,7 +14,6 @@ import Combine
         , succeed
         , withState
         )
-import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.Inline.Parser exposing (eScript)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
@@ -42,26 +40,29 @@ parse =
         |> groupBy (string "- [") (string "]")
         |> map List.unzip
         |> andThen modify_State
-        |> andMap maybeJS
 
 
 {-| **@private:** Push the parsed state `List Bool` to the parser `Context` and
 and return the list of inlines to be visualized.
 -}
-modify_State : ( List Bool, List Inlines ) -> Parser Context (Maybe ( Parameters, Int ) -> Task)
+modify_State : ( List Bool, List Inlines ) -> Parser Context Task
 modify_State ( states, tasks ) =
     let
-        addTask : Context -> Context
-        addTask s =
-            { s | task_vector = Array.push (Array.fromList states) s.task_vector }
+        addTask : Maybe Int -> Context -> Context
+        addTask m s =
+            { s | task_vector = Array.push ( Array.fromList states, m ) s.task_vector }
     in
     (.task_vector >> Array.length >> succeed)
         |> withState
         |> map (Task tasks)
-        |> ignore (modifyState addTask)
+        |> ignore
+            (maybeJS
+                |> map addTask
+                |> andThen modifyState
+            )
 
 
-maybeJS : Parser Context (Maybe ( Parameters, Int ))
+maybeJS : Parser Context (Maybe Int)
 maybeJS =
     macro
         |> ignore (maybe Indent.check)
@@ -69,6 +70,7 @@ maybeJS =
             (maybe
                 (spaces
                     |> keep (eScript [ ( "input", "hidden" ) ])
+                    |> map Tuple.second
                     |> ignore newline
                 )
             )

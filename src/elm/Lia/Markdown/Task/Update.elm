@@ -6,12 +6,10 @@ module Lia.Markdown.Task.Update exposing
 
 import Array exposing (Array)
 import Json.Encode as JE
-import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
+import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts)
 import Lia.Markdown.Effect.Script.Update exposing (run)
-import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.Task.Json as Json
 import Lia.Markdown.Task.Types exposing (Vector)
-import Port.Eval as Eval
 import Port.Event as Event exposing (Event)
 import Return exposing (Return)
 
@@ -26,7 +24,7 @@ import Return exposing (Return)
 
 -}
 type Msg sub
-    = Toggle Int Int (Maybe Int)
+    = Toggle Int Int
     | Handle Event
     | Script (Script.Msg sub)
 
@@ -39,24 +37,22 @@ update :
 update scripts msg vector =
     case msg of
         -- simple toggle
-        Toggle x y Nothing ->
-            vector
-                |> Array.get x
-                |> Maybe.map (\state -> Array.set x (toggle y state) vector)
-                |> Maybe.withDefault vector
-                |> Return.val
-                |> store
-
-        -- toggle and execute the code snippet
-        Toggle x y (Just id) ->
+        Toggle x y ->
             case
                 vector
                     |> Array.get x
-                    |> Maybe.map (toggle y)
+                    |> Maybe.map (Tuple.mapFirst (toggle y))
             of
-                Just state ->
+                Just ( state, Nothing ) ->
                     vector
-                        |> Array.set x state
+                        |> Array.set x ( state, Nothing )
+                        |> Return.val
+                        |> store
+
+                -- toggle and execute the code snippet
+                Just ( state, Just id ) ->
+                    vector
+                        |> Array.set x ( state, Just id )
                         |> Return.val
                         --|> Return.batchEvent
                         --    ([ state
@@ -66,12 +62,7 @@ update scripts msg vector =
                         --        |> Eval.event x code (outputs scripts)
                         --    )
                         |> store
-                        |> Return.script
-                            (state
-                                |> JE.array JE.bool
-                                |> JE.encode 0
-                                |> run id
-                            )
+                        |> Return.script (execute id state)
 
                 Nothing ->
                     Return.val vector
@@ -82,17 +73,19 @@ update scripts msg vector =
                 |> Return.script sub
 
         Handle event ->
-            Return.val <|
-                case event.topic of
-                    -- currently it is only possible to restore states from the backend
-                    "restore" ->
-                        event.message
-                            |> Json.toVector
-                            |> Result.withDefault vector
+            init <|
+                Return.val <|
+                    case event.topic of
+                        -- currently it is only possible to restore states from the backend
+                        "restore" ->
+                            event.message
+                                |> Json.toVector
+                                |> Result.map (merge vector)
+                                |> Result.withDefault vector
 
-                    -- eval events are not handled at the moment
-                    _ ->
-                        vector
+                        -- eval events are not handled at the moment
+                        _ ->
+                            vector
 
 
 toggle : Int -> Array Bool -> Array Bool
@@ -124,3 +117,30 @@ store return =
 handle : Event -> Msg sub
 handle =
     Handle
+
+
+merge : Vector -> Vector -> Vector
+merge v1 =
+    Array.toList
+        >> List.map2 (\( _, c1 ) ( b2, _ ) -> ( b2, c1 )) (Array.toList v1)
+        >> Array.fromList
+
+
+init : Return Vector msg sub -> Return Vector msg sub
+init return =
+    Array.foldl
+        (\state ret ->
+            case state of
+                ( s, Just id ) ->
+                    Return.script (execute id s) ret
+
+                _ ->
+                    ret
+        )
+        return
+        return.value
+
+
+execute : Int -> Array Bool -> Script.Msg sub
+execute id =
+    JE.array JE.bool >> JE.encode 0 >> run id

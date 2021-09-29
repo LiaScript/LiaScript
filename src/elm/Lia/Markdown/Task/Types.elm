@@ -9,7 +9,6 @@ elements for visualization are stored within the `Task` record.
 -}
 
 import Array exposing (Array)
-import Lia.Markdown.HTML.Attributes exposing (Parameters)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 
 
@@ -22,7 +21,7 @@ represents the states for an entire Task list:
 
 -}
 type alias Vector =
-    Array (Array Bool)
+    Array ( Array Bool, Maybe Int )
 
 
 {-| This type is used by the LiaScript renderer:
@@ -36,5 +35,4 @@ type alias Vector =
 type alias Task =
     { task : List Inlines
     , id : Int
-    , javascript : Maybe ( Parameters, Int )
     }

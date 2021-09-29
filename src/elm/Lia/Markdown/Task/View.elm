@@ -21,9 +21,10 @@ view config vector attr task =
             Html.div (annotation "lia-quiz lia-quiz-multiple-choice open" attr)
                 [ Html.div [ Attr.class "lia-quiz__answers" ]
                     (states
+                        |> Tuple.first
                         |> Array.toList
                         |> List.indexedMap Tuple.pair
-                        |> List.map2 (row config task.id task.javascript) task.task
+                        |> List.map2 (row config task.id) task.task
                     )
                 ]
 
@@ -31,15 +32,13 @@ view config vector attr task =
             Html.text ""
 
 
-row : Config sub -> Int -> Maybe ( Parameters, Int ) -> Inlines -> ( Int, Bool ) -> Html (Msg sub)
-row config x code inlines ( y, checked ) =
+row : Config sub -> Int -> Inlines -> ( Int, Bool ) -> Html (Msg sub)
+row config x inlines ( y, checked ) =
     [ Html.input
         [ Attr.type_ "checkbox"
         , Attr.checked checked
         , Attr.class "lia-checkbox"
-        , code
-            |> Maybe.map Tuple.second
-            |> Toggle x y
+        , Toggle x y
             |> onClick
         ]
         []
