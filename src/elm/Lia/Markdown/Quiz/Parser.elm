@@ -51,7 +51,7 @@ parse =
     ]
         |> choice
         |> andThen adds
-        |> andThen (modify_State Nothing)
+        |> andThen modify_State
 
 
 
@@ -86,21 +86,20 @@ hints =
         |> optional []
 
 
-modify_State : Maybe Int -> Quiz -> Parser Context Quiz
-modify_State id q =
+modify_State : Quiz -> Parser Context Quiz
+modify_State q =
     let
-        add_state e s =
+        add_state id s =
             { s
                 | quiz_vector =
                     Array.push
-                        ( Element Solution.Open e 0 0 "", id )
+                        ( Element Solution.Open (initState q.quiz) 0 0 "", id )
                         s.quiz_vector
             }
     in
-    q.quiz
-        |> initState
-        |> add_state
-        |> modifyState
+    maybeJS
+        |> map add_state
+        |> andThen modifyState
         |> keep (succeed q)
 
 

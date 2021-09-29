@@ -8,8 +8,8 @@ module Lia.Markdown.Quiz.Update exposing
 
 import Array exposing (Array)
 import Json.Encode as JE
-import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts)
-import Lia.Markdown.Effect.Script.Update exposing (execute, run)
+import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
+import Lia.Markdown.Effect.Script.Update as JS
 import Lia.Markdown.Quiz.Block.Update as Block
 import Lia.Markdown.Quiz.Json as Json
 import Lia.Markdown.Quiz.Matrix.Update as Matrix
@@ -18,7 +18,7 @@ import Lia.Markdown.Quiz.Types exposing (Element, State(..), Type, Vector, comp,
 import Lia.Markdown.Quiz.Vector.Update as Vector
 import Port.Eval as Eval
 import Port.Event as Event exposing (Event)
-import Return exposing (Return)
+import Return exposing (Return, script)
 
 
 type Msg sub
@@ -54,35 +54,65 @@ update scripts msg vector =
                 Just ( e, Just scriptID ) ->
                     vector
                         |> Return.val
-                        |> Return.script (execute scriptID e)
+                        --|> Return.script (execute scriptID e)
+                        |> Return.batchEvents
+                            (case
+                                scripts
+                                    |> Array.get scriptID
+                                    |> Maybe.map .script
+                             of
+                                Just code ->
+                                    [ [ toString e.state ]
+                                        |> Eval.event id code (outputs scripts)
+                                    ]
+
+                                Nothing ->
+                                    []
+                            )
 
                 Nothing ->
                     vector
                         |> Return.val
 
-        --|> Return.batchEvent
-        --    (Eval.event id
-        --        code
-        --        (outputs scripts)
-        --        [ state ]
-        --    )
         ShowHint idx ->
             (\e -> Return.val { e | hint = e.hint + 1 })
                 |> update_ idx vector
                 |> store
 
-        ShowSolution idx solution ->
+        ShowSolution id solution ->
             (\e -> Return.val { e | state = toState solution, solved = Solution.ReSolved, error_msg = "" })
-                |> update_ idx vector
+                |> update_ id vector
                 |> store
+                |> (\return ->
+                        case Array.get id vector of
+                            Just ( e, Just scriptID ) ->
+                                return
+                                    |> Return.script (execute scriptID <| toState solution)
+
+                            _ ->
+                                return
+                   )
 
         Handle event ->
             case event.topic of
                 "eval" ->
-                    event.message
-                        |> evalEventDecoder
-                        |> update_ event.section vector
-                        |> store
+                    case
+                        vector
+                            |> Array.get event.section
+                            |> Maybe.andThen Tuple.second
+                    of
+                        Just id ->
+                            event.message
+                                |> evalEventDecoder
+                                |> update_ event.section vector
+                                |> store
+                                |> Return.script (JS.handle { event | topic = "code", section = id })
+
+                        Nothing ->
+                            event.message
+                                |> evalEventDecoder
+                                |> update_ event.section vector
+                                |> store
 
                 "restore" ->
                     event.message
@@ -90,7 +120,7 @@ update scripts msg vector =
                         |> Result.map (merge vector)
                         |> Result.withDefault vector
                         |> Return.val
-                        |> init execute
+                        |> init (\i s -> execute i s.state)
 
                 _ ->
                     Return.val vector
@@ -117,9 +147,9 @@ toString state =
             ""
 
 
-execute : Int -> Element -> Script.Msg sub
+execute : Int -> State -> Script.Msg sub
 execute id =
-    .state >> toString >> run id
+    toString >> JS.run id
 
 
 get : Int -> Vector -> Maybe Element
@@ -200,16 +230,14 @@ evalEventDecoder json =
                         , error_msg = ""
                     }
 
+        else if String.startsWith "LIA:" eval.result then
+            Return.val
+
         else
             \e ->
                 Return.val
                     { e
-                        | trial =
-                            if eval.result == "false" then
-                                e.trial + 1
-
-                            else
-                                e.trial
+                        | trial = e.trial + 1
                         , solved = Solution.Open
                         , error_msg = ""
                     }

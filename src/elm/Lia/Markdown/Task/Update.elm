@@ -6,13 +6,14 @@ module Lia.Markdown.Task.Update exposing
 
 import Array exposing (Array)
 import Json.Encode as JE
-import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts)
-import Lia.Markdown.Effect.Script.Update exposing (run)
+import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
+import Lia.Markdown.Effect.Script.Update as JS
 import Lia.Markdown.Quiz.Update exposing (init, merge)
 import Lia.Markdown.Task.Json as Json
 import Lia.Markdown.Task.Types exposing (Vector)
+import Port.Eval as Eval
 import Port.Event as Event exposing (Event)
-import Return exposing (Return)
+import Return exposing (Return, script)
 
 
 {-| Interaction associated to LiaScript task list:
@@ -55,16 +56,25 @@ update scripts msg vector =
                     vector
                         |> Array.set x ( state, Just id )
                         |> Return.val
-                        --|> Return.batchEvent
-                        --    ([ state
-                        --        |> JE.array JE.bool
-                        --        |> JE.encode 0
-                        --     ]
-                        --        |> Eval.event x code (outputs scripts)
-                        --    )
-                        |> store
-                        |> Return.script (execute id state)
+                        |> Return.batchEvents
+                            (case
+                                Array.get id scripts
+                                    |> Maybe.map .script
+                             of
+                                Just code ->
+                                    [ [ state
+                                            |> JE.array JE.bool
+                                            |> JE.encode 0
+                                      ]
+                                        |> Eval.event x code (outputs scripts)
+                                    ]
 
+                                Nothing ->
+                                    []
+                            )
+                        |> store
+
+                --|> Return.script (execute id state)
                 Nothing ->
                     Return.val vector
 
@@ -75,7 +85,6 @@ update scripts msg vector =
 
         Handle event ->
             case event.topic of
-                -- currently it is only possible to restore states from the backend
                 "restore" ->
                     event.message
                         |> Json.toVector
@@ -84,7 +93,20 @@ update scripts msg vector =
                         |> Return.val
                         |> init execute
 
-                -- eval events are not handled at the moment
+                "eval" ->
+                    case
+                        vector
+                            |> Array.get event.section
+                            |> Maybe.andThen Tuple.second
+                    of
+                        Just id ->
+                            vector
+                                |> Return.val
+                                |> Return.script (JS.handle { event | topic = "code", section = id })
+
+                        Nothing ->
+                            Return.val vector
+
                 _ ->
                     Return.val vector
 
@@ -122,4 +144,4 @@ handle =
 
 execute : Int -> Array Bool -> Script.Msg sub
 execute id =
-    JE.array JE.bool >> JE.encode 0 >> run id
+    JE.array JE.bool >> JE.encode 0 >> JS.run id

@@ -2,6 +2,7 @@ module Lia.Markdown.Effect.Script.Update exposing
     ( execute
     , getAll
     , getVisible
+    , handle
     , run
     , setRunning
     , update
@@ -18,13 +19,18 @@ import Lia.Utils exposing (focus)
 import Port.Eval as Eval exposing (Eval)
 import Port.Event exposing (Event)
 import Process
-import Return exposing (Return, script)
+import Return exposing (Return)
 import Task
 
 
 run : Int -> String -> Msg sub
 run =
     Execute
+
+
+handle : Event -> Msg sub
+handle =
+    Handle
 
 
 update :

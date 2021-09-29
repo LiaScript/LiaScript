@@ -6,14 +6,16 @@ module Lia.Markdown.Survey.Update exposing
 
 import Array
 import Dict
-import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts)
-import Lia.Markdown.Effect.Script.Update exposing (run)
+import Json.Encode as JE
+import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
+import Lia.Markdown.Effect.Script.Update as JS
 import Lia.Markdown.Quiz.Update exposing (init, merge)
 import Lia.Markdown.Survey.Json as Json
-import Lia.Markdown.Survey.Types exposing (State(..), Vector, toString)
+import Lia.Markdown.Survey.Types exposing (Element, State(..), Vector, toString)
 import Port.Eval as Eval
 import Port.Event as Event exposing (Event)
 import Return exposing (Return)
+import Translations exposing (Lang(..))
 
 
 type Msg sub
@@ -86,12 +88,22 @@ update scripts msg vector =
                         updateError vector id Nothing
                     )
                         |> Return.val
-                        |> Return.script (execute scriptID state)
+                        --|> Return.script (execute scriptID state)
+                        |> Return.batchEvents
+                            (case
+                                scripts
+                                    |> Array.get scriptID
+                                    |> Maybe.map .script
+                             of
+                                Just code ->
+                                    [ [ toString state ]
+                                        |> Eval.event id code (outputs scripts)
+                                    ]
 
-                --|> Return.batchEvent
-                --    ([ toString state ]
-                --        |> Eval.event id code (outputs scripts)
-                --    )
+                                Nothing ->
+                                    []
+                            )
+
                 _ ->
                     Return.val vector
 
@@ -103,21 +115,39 @@ update scripts msg vector =
         Handle event ->
             case event.topic of
                 "eval" ->
-                    let
-                        eval =
-                            Eval.decode event.message
-                    in
-                    if eval.result == "true" && eval.ok then
-                        update scripts (Submit event.section) vector
+                    case
+                        vector
+                            |> Array.get event.section
+                            |> Maybe.andThen Tuple.second
+                    of
+                        Just id ->
+                            event.message
+                                |> evalEventDecoder
+                                |> update_ event.section vector
+                                |> store
+                                |> Return.script (JS.handle { event | topic = "code", section = id })
 
-                    else if eval.result /= "" && not eval.ok then
-                        Just eval.result
-                            |> updateError vector event.section
-                            |> Return.val
+                        Nothing ->
+                            event.message
+                                |> evalEventDecoder
+                                |> update_ event.section vector
+                                |> store
 
-                    else
-                        Return.val vector
+                {- let
+                       eval =
+                           Eval.decode event.message
+                   in
+                   if eval.result == "true" && eval.ok then
+                       update scripts (Submit event.section) vector
 
+                   else if eval.result /= "" && not eval.ok then
+                       Just eval.result
+                           |> updateError vector event.section
+                           |> Return.val
+
+                   else
+                       Return.val vector
+                -}
                 "restore" ->
                     event.message
                         |> Json.toVector
@@ -130,9 +160,53 @@ update scripts msg vector =
                     Return.val vector
 
 
+update_ :
+    Int
+    -> Vector
+    -> (Element -> Return Element msg sub)
+    -> Return Vector msg sub
+update_ idx vector fn =
+    case Array.get idx vector |> Maybe.map (Tuple.mapFirst fn) of
+        Just elem ->
+            Array.set idx (Tuple.mapFirst .value elem) vector
+                |> Return.val
+
+        _ ->
+            vector
+                |> Return.val
+
+
+store : Return Vector msg sub -> Return Vector msg sub
+store return =
+    return
+        |> Return.batchEvent
+            (return.value
+                |> Json.fromVector
+                |> Event.store
+            )
+
+
 execute : Int -> State -> Script.Msg sub
 execute id =
-    toString >> run id
+    toString >> JS.run id
+
+
+evalEventDecoder : JE.Value -> Element -> Return Element msg sub
+evalEventDecoder json =
+    let
+        eval =
+            Eval.decode json
+    in
+    if eval.ok then
+        if eval.result == "true" then
+            \( _, b, c ) ->
+                Return.val ( True, b, c )
+
+        else
+            Return.val
+
+    else
+        \( a, b, _ ) -> Return.val ( a, b, Just eval.result )
 
 
 updateError : Vector -> Int -> Maybe String -> Vector
