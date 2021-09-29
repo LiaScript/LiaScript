@@ -13,7 +13,7 @@ import Lia.Markdown.Survey.Types exposing (Element, State(..), Vector)
 
 fromVector : Vector -> JE.Value
 fromVector vector =
-    JE.array fromElement vector
+    JE.array (Tuple.first >> fromElement) vector
 
 
 fromElement : Element -> JE.Value
@@ -77,7 +77,7 @@ dict2json dict =
 
 toVector : JD.Value -> Result JD.Error Vector
 toVector json =
-    JD.decodeValue (JD.array toElement) json
+    JD.decodeValue (JD.array (toElement |> JD.map (\e -> ( e, Nothing )))) json
 
 
 toElement : JD.Decoder Element

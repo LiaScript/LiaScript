@@ -8,6 +8,7 @@ import Array exposing (Array)
 import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts)
 import Lia.Markdown.Effect.Script.Update exposing (run)
+import Lia.Markdown.Quiz.Update exposing (init, merge)
 import Lia.Markdown.Task.Json as Json
 import Lia.Markdown.Task.Types exposing (Vector)
 import Port.Event as Event exposing (Event)
@@ -73,19 +74,19 @@ update scripts msg vector =
                 |> Return.script sub
 
         Handle event ->
-            init <|
-                Return.val <|
-                    case event.topic of
-                        -- currently it is only possible to restore states from the backend
-                        "restore" ->
-                            event.message
-                                |> Json.toVector
-                                |> Result.map (merge vector)
-                                |> Result.withDefault vector
+            case event.topic of
+                -- currently it is only possible to restore states from the backend
+                "restore" ->
+                    event.message
+                        |> Json.toVector
+                        |> Result.map (merge vector)
+                        |> Result.withDefault vector
+                        |> Return.val
+                        |> init execute
 
-                        -- eval events are not handled at the moment
-                        _ ->
-                            vector
+                -- eval events are not handled at the moment
+                _ ->
+                    Return.val vector
 
 
 toggle : Int -> Array Bool -> Array Bool
@@ -117,28 +118,6 @@ store return =
 handle : Event -> Msg sub
 handle =
     Handle
-
-
-merge : Vector -> Vector -> Vector
-merge v1 =
-    Array.toList
-        >> List.map2 (\( _, c1 ) ( b2, _ ) -> ( b2, c1 )) (Array.toList v1)
-        >> Array.fromList
-
-
-init : Return Vector msg sub -> Return Vector msg sub
-init return =
-    Array.foldl
-        (\state ret ->
-            case state of
-                ( s, Just id ) ->
-                    Return.script (execute id s) ret
-
-                _ ->
-                    ret
-        )
-        return
-        return.value
 
 
 execute : Int -> Array Bool -> Script.Msg sub

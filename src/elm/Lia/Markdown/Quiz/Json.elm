@@ -13,8 +13,8 @@ import Lia.Markdown.Quiz.Vector.Json as Vector
 
 
 fromVector : Vector -> JE.Value
-fromVector vector =
-    JE.array fromElement vector
+fromVector =
+    JE.array (Tuple.first >> fromElement)
 
 
 fromElement : Element -> JE.Value
@@ -57,8 +57,8 @@ fromState state =
 
 
 toVector : JD.Value -> Result JD.Error Vector
-toVector json =
-    JD.decodeValue (JD.array toElement) json
+toVector =
+    JD.decodeValue (JD.array (toElement |> JD.map (\v -> ( v, Nothing ))))
 
 
 toElement : JD.Decoder Element

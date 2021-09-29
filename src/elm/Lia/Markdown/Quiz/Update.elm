@@ -1,8 +1,15 @@
-module Lia.Markdown.Quiz.Update exposing (Msg(..), handle, update)
+module Lia.Markdown.Quiz.Update exposing
+    ( Msg(..)
+    , handle
+    , init
+    , merge
+    , update
+    )
 
-import Array
+import Array exposing (Array)
 import Json.Encode as JE
-import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
+import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts)
+import Lia.Markdown.Effect.Script.Update exposing (execute, run)
 import Lia.Markdown.Quiz.Block.Update as Block
 import Lia.Markdown.Quiz.Json as Json
 import Lia.Markdown.Quiz.Matrix.Update as Matrix
@@ -18,7 +25,7 @@ type Msg sub
     = Block_Update Int (Block.Msg sub)
     | Vector_Update Int (Vector.Msg sub)
     | Matrix_Update Int (Matrix.Msg sub)
-    | Check Int Type (Maybe String)
+    | Check Int Type
     | ShowHint Int
     | ShowSolution Int Type
     | Handle Event
@@ -37,40 +44,28 @@ update scripts msg vector =
         Matrix_Update id _ ->
             update_ id vector (state_ msg)
 
-        Check id solution Nothing ->
-            check solution
-                |> update_ id vector
-                |> store
+        Check id solution ->
+            case Array.get id vector of
+                Just ( _, Nothing ) ->
+                    check solution
+                        |> update_ id vector
+                        |> store
 
-        Check idx _ (Just code) ->
-            let
-                state =
-                    case
-                        vector
-                            |> Array.get idx
-                            |> Maybe.map .state
-                    of
-                        Just (Block_State b) ->
-                            Block.toString b
+                Just ( e, Just scriptID ) ->
+                    vector
+                        |> Return.val
+                        |> Return.script (execute scriptID e)
 
-                        Just (Vector_State s) ->
-                            Vector.toString s
+                Nothing ->
+                    vector
+                        |> Return.val
 
-                        Just (Matrix_State m) ->
-                            Matrix.toString m
-
-                        _ ->
-                            ""
-            in
-            vector
-                |> Return.val
-                |> Return.batchEvent
-                    (Eval.event idx
-                        code
-                        (outputs scripts)
-                        [ state ]
-                    )
-
+        --|> Return.batchEvent
+        --    (Eval.event id
+        --        code
+        --        (outputs scripts)
+        --        [ state ]
+        --    )
         ShowHint idx ->
             (\e -> Return.val { e | hint = e.hint + 1 })
                 |> update_ idx vector
@@ -92,8 +87,10 @@ update scripts msg vector =
                 "restore" ->
                     event.message
                         |> Json.toVector
+                        |> Result.map (merge vector)
                         |> Result.withDefault vector
                         |> Return.val
+                        |> init execute
 
                 _ ->
                     Return.val vector
@@ -104,9 +101,30 @@ update scripts msg vector =
                 |> Return.script sub
 
 
+toString : State -> String
+toString state =
+    case state of
+        Block_State b ->
+            Block.toString b
+
+        Vector_State s ->
+            Vector.toString s
+
+        Matrix_State m ->
+            Matrix.toString m
+
+        _ ->
+            ""
+
+
+execute : Int -> Element -> Script.Msg sub
+execute id =
+    .state >> toString >> run id
+
+
 get : Int -> Vector -> Maybe Element
 get idx vector =
-    case Array.get idx vector of
+    case Array.get idx vector |> Maybe.map Tuple.first of
         Just elem ->
             if (elem.solved == Solution.Solved) || (elem.solved == Solution.ReSolved) then
                 Nothing
@@ -124,13 +142,14 @@ update_ :
     -> (Element -> Return Element msg sub)
     -> Return Vector msg sub
 update_ idx vector fn =
-    Return.val <|
-        case get idx vector |> Maybe.map fn of
-            Just elem ->
-                Array.set idx elem.value vector
+    case Array.get idx vector |> Maybe.map (Tuple.mapFirst fn) of
+        Just elem ->
+            Array.set idx (Tuple.mapFirst .value elem) vector
+                |> Return.val
 
-            _ ->
-                vector
+        _ ->
+            vector
+                |> Return.val
 
 
 state_ : Msg sub -> Element -> Return Element msg sub
@@ -216,3 +235,25 @@ check solution e =
         , solved = comp solution e.state
     }
         |> Return.val
+
+
+merge : Array ( a, Maybe Int ) -> Array ( a, Maybe Int ) -> Array ( a, Maybe Int )
+merge v1 =
+    Array.toList
+        >> List.map2 (\( _, c1 ) ( b2, _ ) -> ( b2, c1 )) (Array.toList v1)
+        >> Array.fromList
+
+
+init : (Int -> x -> Script.Msg sub) -> Return (Array ( x, Maybe Int )) msg sub -> Return (Array ( x, Maybe Int )) msg sub
+init fn return =
+    Array.foldl
+        (\state ret ->
+            case state of
+                ( s, Just id ) ->
+                    Return.script (fn id s) ret
+
+                _ ->
+                    ret
+        )
+        return
+        return.value

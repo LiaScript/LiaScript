@@ -37,7 +37,7 @@ import Lia.Parser.Indentation as Indent
 
 parse : Parser Context Survey
 parse =
-    survey |> andThen modify_State
+    survey |> ignore (map modify_State maybeJS)
 
 
 survey : Parser Context Survey
@@ -52,7 +52,6 @@ survey =
         ]
         |> map Survey
         |> andMap (withState (.survey_vector >> Array.length >> succeed))
-        |> andMap maybeJS
 
 
 toMatrix : Bool -> List Inlines -> (List Inlines -> Type)
@@ -139,8 +138,8 @@ question p =
         |> ignore newline
 
 
-modify_State : Survey -> Parser Context Survey
-modify_State survey_ =
+modify_State : Maybe Int -> Survey -> Parser Context ()
+modify_State id survey_ =
     let
         state =
             let
@@ -167,17 +166,23 @@ modify_State survey_ =
                         |> Array.repeat (List.length qs)
                         |> Matrix_State bool
     in
-    modifyState (add_state state) |> keep (succeed survey_)
+    modifyState (add_state id state)
 
 
-add_state : State -> Context -> Context
-add_state state c =
+
+--|> keep (succeed survey_)
+
+
+add_state : Maybe Int -> State -> Context -> Context
+add_state id state c =
     { c
         | survey_vector =
             Array.push
-                ( False
-                , state
-                , Nothing
+                ( ( False
+                  , state
+                  , Nothing
+                  )
+                , id
                 )
                 c.survey_vector
     }

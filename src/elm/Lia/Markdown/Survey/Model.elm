@@ -14,12 +14,12 @@ import Lia.Markdown.Survey.Types exposing (State(..), Vector)
 
 getErrorMessage : Int -> Vector -> Maybe String
 getErrorMessage id =
-    Array.get id >> Maybe.andThen (\( _, _, message ) -> message)
+    Array.get id >> Maybe.andThen (Tuple.first >> (\( _, _, message ) -> message))
 
 
 get_submission_state : Vector -> Int -> Bool
 get_submission_state vector idx =
-    case Array.get idx vector of
+    case Array.get idx vector |> Maybe.map Tuple.first of
         Just ( True, _, _ ) ->
             True
 
@@ -29,7 +29,7 @@ get_submission_state vector idx =
 
 get_text_state : Vector -> Int -> String
 get_text_state vector idx =
-    case Array.get idx vector of
+    case Array.get idx vector |> Maybe.map Tuple.first of
         Just ( _, Text_State str, _ ) ->
             str
 
@@ -39,7 +39,7 @@ get_text_state vector idx =
 
 get_vector_state : Vector -> Int -> String -> Bool
 get_vector_state vector idx var =
-    case Array.get idx vector of
+    case Array.get idx vector |> Maybe.map Tuple.first of
         Just ( _, Vector_State _ state, _ ) ->
             state
                 |> Dict.get var
@@ -51,7 +51,7 @@ get_vector_state vector idx var =
 
 get_select_state : Vector -> Int -> ( Bool, Int )
 get_select_state vector id =
-    case Array.get id vector of
+    case Array.get id vector |> Maybe.map Tuple.first of
         Just ( _, Select_State open value, _ ) ->
             ( open, value )
 
@@ -61,7 +61,7 @@ get_select_state vector id =
 
 get_matrix_state : Vector -> Int -> Int -> String -> Bool
 get_matrix_state vector idx row var =
-    case Array.get idx vector of
+    case Array.get idx vector |> Maybe.map Tuple.first of
         Just ( _, Matrix_State _ matrix, _ ) ->
             matrix
                 |> Array.get row

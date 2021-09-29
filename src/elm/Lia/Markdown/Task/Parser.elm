@@ -6,22 +6,17 @@ import Combine
         ( Parser
         , andThen
         , ignore
-        , keep
         , map
-        , maybe
         , modifyState
         , string
         , succeed
         , withState
         )
-import Lia.Markdown.Inline.Parser exposing (eScript)
 import Lia.Markdown.Inline.Types exposing (Inlines)
-import Lia.Markdown.Macro.Parser exposing (macro)
+import Lia.Markdown.Quiz.Parser exposing (maybeJS)
 import Lia.Markdown.Quiz.Vector.Parser exposing (either, groupBy)
 import Lia.Markdown.Task.Types exposing (Task)
 import Lia.Parser.Context exposing (Context)
-import Lia.Parser.Helper exposing (newline, spaces)
-import Lia.Parser.Indentation as Indent
 
 
 {-| Parse lines of GitHub flavored tasks:
@@ -59,18 +54,4 @@ modify_State ( states, tasks ) =
             (maybeJS
                 |> map addTask
                 |> andThen modifyState
-            )
-
-
-maybeJS : Parser Context (Maybe Int)
-maybeJS =
-    macro
-        |> ignore (maybe Indent.check)
-        |> keep
-            (maybe
-                (spaces
-                    |> keep (eScript [ ( "input", "hidden" ) ])
-                    |> map Tuple.second
-                    |> ignore newline
-                )
             )

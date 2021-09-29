@@ -141,7 +141,7 @@ viewQuiz config labeledBy state quiz ( attr, body ) =
         )
         body
     , Html.div [ Attr.class "lia-quiz__control" ]
-        [ viewMainButton config state.trial state.solved (Check quiz.id quiz.quiz quiz.javascript)
+        [ viewMainButton config state.trial state.solved (Check quiz.id quiz.quiz)
         , viewSolutionButton config state.solved (ShowSolution quiz.id quiz.quiz)
         , Translations.quizHint config.lang
             |> viewHintButton quiz.id (quiz.hints /= []) (Solution.Open == state.solved && state.hint < List.length quiz.hints)
