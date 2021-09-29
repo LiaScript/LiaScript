@@ -13,7 +13,7 @@ import Lia.Markdown.Task.Json as Json
 import Lia.Markdown.Task.Types exposing (Vector)
 import Port.Eval as Eval
 import Port.Event as Event exposing (Event)
-import Return exposing (Return, script)
+import Return exposing (Return)
 
 
 {-| Interaction associated to LiaScript task list:
