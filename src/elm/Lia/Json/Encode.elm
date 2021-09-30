@@ -12,11 +12,16 @@ import Lia.Markdown.Inline.Types exposing (Inline(..))
 import Lia.Markdown.Json.Encode as Body
 import Lia.Model exposing (Model)
 import Lia.Section exposing (Section, Sections)
-import Translations exposing (Lang(..))
+import Translations exposing (Lang(..), getCodeFromLn)
 
 
 encode : Model -> JE.Value
-encode model =
+encode =
+    encodeWith encSection
+
+
+encodeWith : (Section -> JE.Value) -> Model -> JE.Value
+encodeWith sectionEncoder model =
     JE.object
         [ ( "title"
           , model.sections
@@ -48,7 +53,7 @@ encode model =
           , model.origin |> JE.string
           )
         , ( "sections"
-          , model.sections |> JE.array encSection
+          , model.sections |> JE.array sectionEncoder
           )
         , ( "section_active"
           , model.section_active |> JE.int
@@ -99,78 +104,6 @@ encSectionFull sec =
         ]
 
 
-getCodeFromLn : Lang -> String
-getCodeFromLn ln =
-    case ln of
-        Bg ->
-            "bg"
-
-        De ->
-            "de"
-
-        Fa ->
-            "fa"
-
-        Hy ->
-            "hy"
-
-        Ua ->
-            "ua"
-
-        _ ->
-            "en"
-
-
 encodeFull : Model -> JE.Value
-encodeFull model =
-    JE.object
-        [ ( "title"
-          , model.sections
-                |> Array.get 0
-                |> Maybe.map .title
-                |> Maybe.withDefault [ Chars model.title [] ]
-                |> Inline.encode
-          )
-        , ( "str_title"
-          , model.sections
-                |> get_title
-                |> JE.string
-          )
-        , ( "definition"
-          , model.definition |> Definition.encode
-          )
-        , ( "comment"
-          , model.definition.comment
-                |> stringify
-                |> JE.string
-          )
-        , ( "readme"
-          , model.readme |> JE.string
-          )
-        , ( "url"
-          , model.url |> JE.string
-          )
-        , ( "origin"
-          , model.origin |> JE.string
-          )
-        , ( "sections"
-          , model.sections |> JE.array encSectionFull
-          )
-        , ( "section_active"
-          , model.section_active |> JE.int
-          )
-        , ( "version"
-          , model.definition.version
-                |> String.split "."
-                |> List.head
-                |> Maybe.withDefault "0"
-                |> String.toInt
-                |> Maybe.withDefault 0
-                |> JE.int
-          )
-        , ( "translation"
-          , model.translation
-                |> getCodeFromLn
-                |> JE.string
-          )
-        ]
+encodeFull =
+    encodeWith encSectionFull
