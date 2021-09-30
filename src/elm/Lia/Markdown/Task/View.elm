@@ -14,22 +14,28 @@ import Lia.Markdown.Task.Update exposing (Msg(..))
 
 {-| Render the current Task list, based on its states with the `Vector`.
 -}
-view : Config sub -> Vector -> Parameters -> Task -> Html (Msg sub)
+view : Config sub -> Vector -> Parameters -> Task -> ( Maybe Int, Html (Msg sub) )
 view config vector attr task =
-    case Array.get task.id vector of
-        Just states ->
-            Html.div (annotation "lia-quiz lia-quiz-multiple-choice open" attr)
-                [ Html.div [ Attr.class "lia-quiz__answers" ]
-                    (states
-                        |> Tuple.first
-                        |> Array.toList
-                        |> List.indexedMap Tuple.pair
-                        |> List.map2 (row config task.id) task.task
-                    )
-                ]
+    Tuple.pair
+        (vector
+            |> Array.get task.id
+            |> Maybe.andThen Tuple.second
+        )
+    <|
+        case Array.get task.id vector of
+            Just states ->
+                Html.div (annotation "lia-quiz lia-quiz-multiple-choice open" attr)
+                    [ Html.div [ Attr.class "lia-quiz__answers" ]
+                        (states
+                            |> Tuple.first
+                            |> Array.toList
+                            |> List.indexedMap Tuple.pair
+                            |> List.map2 (row config task.id) task.task
+                        )
+                    ]
 
-        Nothing ->
-            Html.text ""
+            Nothing ->
+                Html.text ""
 
 
 row : Config sub -> Int -> Inlines -> ( Int, Bool ) -> Html (Msg sub)

@@ -1,5 +1,6 @@
 module Lia.Markdown.Survey.View exposing (view)
 
+import Array
 import Html exposing (Html, button)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
@@ -22,36 +23,42 @@ import Lia.Utils exposing (blockKeydown, btn, icon, onKeyDown)
 import Translations exposing (surveySubmit, surveySubmitted, surveyText)
 
 
-view : Config sub -> Parameters -> Survey -> Vector -> Html (Msg sub)
+view : Config sub -> Parameters -> Survey -> Vector -> ( Maybe Int, Html (Msg sub) )
 view config attr survey model =
-    case survey.survey of
-        Text lines ->
-            view_text config (get_text_state model survey.id) lines survey.id
-                |> view_survey config attr "text" model survey.id
+    Tuple.pair
+        (model
+            |> Array.get survey.id
+            |> Maybe.andThen Tuple.second
+        )
+    <|
+        case survey.survey of
+            Text lines ->
+                view_text config (get_text_state model survey.id) lines survey.id
+                    |> view_survey config attr "text" model survey.id
 
-        Select inlines ->
-            view_select config inlines (get_select_state model survey.id) survey.id
-                |> view_survey config attr "select" model survey.id
+            Select inlines ->
+                view_select config inlines (get_select_state model survey.id) survey.id
+                    |> view_survey config attr "select" model survey.id
 
-        Vector button questions ->
-            vector config button (VectorUpdate survey.id) (get_vector_state model survey.id)
-                |> view_vector questions
-                |> view_survey config
-                    attr
-                    (if button then
-                        "single-choice"
+            Vector button questions ->
+                vector config button (VectorUpdate survey.id) (get_vector_state model survey.id)
+                    |> view_vector questions
+                    |> view_survey config
+                        attr
+                        (if button then
+                            "single-choice"
 
-                     else
-                        "multiple-choice"
-                    )
-                    model
-                    survey.id
+                         else
+                            "multiple-choice"
+                        )
+                        model
+                        survey.id
 
-        --|> Html.p (annotation "lia-quiz" attr)
-        Matrix button header vars questions ->
-            matrix config button (MatrixUpdate survey.id) (get_matrix_state model survey.id) vars
-                |> view_matrix config header questions
-                |> view_survey config attr "matrix" model survey.id
+            --|> Html.p (annotation "lia-quiz" attr)
+            Matrix button header vars questions ->
+                matrix config button (MatrixUpdate survey.id) (get_matrix_state model survey.id) vars
+                    |> view_matrix config header questions
+                    |> view_survey config attr "matrix" model survey.id
 
 
 viewError : Maybe String -> Html msg
