@@ -1,15 +1,37 @@
 module Lia.Markdown.Quiz.Json exposing
-    ( fromVector
+    ( encode
+    , fromVector
     , toVector
     )
 
 import Json.Decode as JD
 import Json.Encode as JE
+import Lia.Markdown.Inline.Json.Encode as Inline
 import Lia.Markdown.Quiz.Block.Json as Block
 import Lia.Markdown.Quiz.Matrix.Json as Matrix
 import Lia.Markdown.Quiz.Solution as Solution
-import Lia.Markdown.Quiz.Types exposing (Element, State(..), Vector)
+import Lia.Markdown.Quiz.Types exposing (Element, Quiz, State(..), Type(..), Vector)
 import Lia.Markdown.Quiz.Vector.Json as Vector
+
+
+encode : Quiz -> JE.Value
+encode quiz =
+    JE.object
+        [ case quiz.quiz of
+            Generic_Type ->
+                ( "Generic", JE.null )
+
+            Block_Type block ->
+                Block.encode block
+
+            Vector_Type vector ->
+                Vector.encode vector
+
+            Matrix_Type matrix ->
+                Matrix.encode matrix
+        , ( "id", JE.int quiz.id )
+        , ( "hints", JE.list Inline.encode quiz.hints )
+        ]
 
 
 fromVector : Vector -> JE.Value

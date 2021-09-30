@@ -185,6 +185,30 @@ respond model =
                 |> Tuple.pair True
                 |> output
 
+        "fullJson2" ->
+            let
+                lia =
+                    parseSection 0 model.lia
+            in
+            [ ( "lia"
+              , Lia.encodeFull lia
+              )
+            , ( "quiz"
+              , lia.sections
+                    |> Array.map .quiz_vector
+                    |> JE.array Quiz.fromVector
+              )
+            , ( "survey"
+              , lia.sections
+                    |> Array.map .survey_vector
+                    |> JE.array Survey.fromVector
+              )
+            ]
+                |> JE.object
+                |> JE.encode 2
+                |> Tuple.pair True
+                |> output
+
         _ ->
             error "unknown cmd" model.cmd
     )
