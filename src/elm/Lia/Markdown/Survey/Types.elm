@@ -13,7 +13,7 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 
 
 type alias Vector =
-    Array Element
+    Array ( Element, Maybe Int )
 
 
 type alias Element =
@@ -76,7 +76,6 @@ key_value_string ( key, value ) =
 type alias Survey =
     { survey : Type
     , id : Int
-    , javascript : Maybe String
     }
 
 

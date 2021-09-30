@@ -52,7 +52,6 @@ survey =
         ]
         |> map Survey
         |> andMap (withState (.survey_vector >> Array.length >> succeed))
-        |> andMap maybeJS
 
 
 toMatrix : Bool -> List Inlines -> (List Inlines -> Type)
@@ -167,17 +166,28 @@ modify_State survey_ =
                         |> Array.repeat (List.length qs)
                         |> Matrix_State bool
     in
-    modifyState (add_state state) |> keep (succeed survey_)
+    succeed survey_
+        |> ignore
+            (maybeJS
+                |> map (add_state state)
+                |> andThen modifyState
+            )
 
 
-add_state : State -> Context -> Context
-add_state state c =
+
+--|> keep (succeed survey_)
+
+
+add_state : State -> Maybe Int -> Context -> Context
+add_state state id c =
     { c
         | survey_vector =
             Array.push
-                ( False
-                , state
-                , Nothing
+                ( ( False
+                  , state
+                  , Nothing
+                  )
+                , id
                 )
                 c.survey_vector
     }

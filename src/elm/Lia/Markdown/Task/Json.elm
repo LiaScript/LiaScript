@@ -22,11 +22,15 @@ encode task =
 -}
 fromVector : Vector -> JE.Value
 fromVector =
-    JE.array (JE.array JE.bool)
+    JE.array (Tuple.first >> JE.array JE.bool)
 
 
 {-| Read in a Task vector from a JSON representation.
 -}
 toVector : JD.Value -> Result JD.Error Vector
 toVector =
-    JD.decodeValue (JD.array (JD.array JD.bool))
+    JD.bool
+        |> JD.array
+        |> JD.map (\v -> ( v, Nothing ))
+        |> JD.array
+        |> JD.decodeValue

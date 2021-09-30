@@ -2,6 +2,8 @@ module Lia.Markdown.Effect.Script.Update exposing
     ( execute
     , getAll
     , getVisible
+    , handle
+    , run
     , setRunning
     , update
     )
@@ -15,10 +17,20 @@ import Lia.Parser.Parser exposing (parse_subsection)
 import Lia.Section exposing (SubSection(..))
 import Lia.Utils exposing (focus)
 import Port.Eval as Eval exposing (Eval)
-import Port.Event as Event exposing (Event)
+import Port.Event exposing (Event)
 import Process
 import Return exposing (Return)
 import Task
+
+
+run : Int -> String -> Msg sub
+run =
+    Execute
+
+
+handle : Event -> Msg sub
+handle =
+    Handle
 
 
 update :
@@ -40,6 +52,20 @@ update main msg scripts =
                         |> Return.mapEvents "sub" id
 
                 _ ->
+                    Return.val scripts
+
+        Execute id value ->
+            case Array.get id scripts of
+                Just node ->
+                    scripts
+                        |> Array.set id
+                            { node
+                                | input = Input.value value node.input
+                                , updated = True
+                            }
+                        |> update main (Activate False id)
+
+                Nothing ->
                     Return.val scripts
 
         Activate active id ->

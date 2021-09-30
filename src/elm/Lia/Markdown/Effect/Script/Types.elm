@@ -39,6 +39,7 @@ type Stdout a
 type Msg sub
     = Click Int
     | Reset Int
+    | Execute Int String
     | Activate Bool Int
     | Value Int Bool String
     | Radio Int Bool String

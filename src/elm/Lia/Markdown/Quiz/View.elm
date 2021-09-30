@@ -24,6 +24,7 @@ TODO:
 import Accessibility.Aria as A11y_Aria
 import Accessibility.Role as A11y_Role
 import Accessibility.Widget as A11y_Widget
+import Array
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Lia.Markdown.Inline.Config exposing (Config)
@@ -61,15 +62,20 @@ import Translations
 
 {-| Main Quiz view function.
 -}
-view : Config sub -> Maybe String -> Quiz -> Vector -> List (Html (Msg sub))
+view : Config sub -> Maybe String -> Quiz -> Vector -> ( Maybe Int, List (Html (Msg sub)) )
 view config labeledBy quiz vector =
     case getState vector quiz.id of
         Just elem ->
             viewState config elem quiz
                 |> viewQuiz config labeledBy elem quiz
+                |> Tuple.pair
+                    (vector
+                        |> Array.get quiz.id
+                        |> Maybe.andThen Tuple.second
+                    )
 
         _ ->
-            []
+            ( Nothing, [] )
 
 
 {-| Determine the quiz class based on the current state
@@ -141,7 +147,7 @@ viewQuiz config labeledBy state quiz ( attr, body ) =
         )
         body
     , Html.div [ Attr.class "lia-quiz__control" ]
-        [ viewMainButton config state.trial state.solved (Check quiz.id quiz.quiz quiz.javascript)
+        [ viewMainButton config state.trial state.solved (Check quiz.id quiz.quiz)
         , viewSolutionButton config state.solved (ShowSolution quiz.id quiz.quiz)
         , Translations.quizHint config.lang
             |> viewHintButton quiz.id (quiz.hints /= []) (Solution.Open == state.solved && state.hint < List.length quiz.hints)

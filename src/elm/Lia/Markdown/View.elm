@@ -346,7 +346,8 @@ view_block config block =
         Survey attr survey ->
             config.section.survey_vector
                 |> Surveys.view config.main attr survey
-                |> Html.map UpdateSurvey
+                |> Tuple.mapSecond (Html.map UpdateSurvey)
+                |> scriptView config.view
 
         Comment ( id1, id2 ) ->
             case
@@ -390,7 +391,8 @@ view_block config block =
 
         Task attr list ->
             Task.view config.main config.section.task_vector attr list
-                |> Html.map UpdateTask
+                |> Tuple.mapSecond (Html.map UpdateTask)
+                |> scriptView config.view
 
         Gallery attr media ->
             Gallery.view config.main config.section.gallery_vector attr media
@@ -404,6 +406,21 @@ view_block config block =
 
         Problem element ->
             Html.p [ Attr.class "lia-problem" ] (config.view element)
+
+
+scriptView : (Inlines -> List (Html Msg)) -> ( Maybe Int, Html Msg ) -> Html Msg
+scriptView viewer content =
+    case content of
+        ( Nothing, sub ) ->
+            sub
+
+        ( Just id, sub ) ->
+            Html.div []
+                [ sub
+                , [ Inline.toScript id [ ( "display", "inline-block" ) ] ]
+                    |> viewer
+                    |> Html.div [ Attr.class "lia-paragraph" ]
+                ]
 
 
 viewQuote : Config Msg -> Parameters -> Blocks -> Html Msg
@@ -471,25 +488,33 @@ view_ascii config attr ( caption, image ) =
 
 viewQuiz : Config Msg -> Maybe String -> Parameters -> Quiz.Quiz -> Maybe ( Blocks, Int ) -> Html Msg
 viewQuiz config labeledBy attr quiz solution =
-    case solution of
-        Nothing ->
-            Quizzes.view config.main labeledBy quiz config.section.quiz_vector
-                |> Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr)
-                |> Html.map UpdateQuiz
+    scriptView config.view <|
+        case solution of
+            Nothing ->
+                Quizzes.view config.main labeledBy quiz config.section.quiz_vector
+                    |> Tuple.mapSecond (Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr))
+                    |> Tuple.mapSecond (Html.map UpdateQuiz)
 
-        Just ( answer, hidden_effects ) ->
-            Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr) <|
+            Just ( answer, hidden_effects ) ->
                 if Quizzes.showSolution config.section.quiz_vector quiz then
-                    (config.section.quiz_vector
+                    config.section.quiz_vector
                         |> Quizzes.view config.main labeledBy quiz
-                        |> List.map (Html.map UpdateQuiz)
-                    )
-                        ++ [ Html.div [ Attr.class "lia-quiz__solution" ] <| List.map (view_block config) answer ]
+                        |> Tuple.mapSecond (List.map (Html.map UpdateQuiz))
+                        |> Tuple.mapSecond
+                            (\list ->
+                                List.append list
+                                    [ answer
+                                        |> List.map (view_block config)
+                                        |> Html.div [ Attr.class "lia-quiz__solution" ]
+                                    ]
+                            )
+                        |> Tuple.mapSecond (Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr))
 
                 else
                     config.section.quiz_vector
                         |> Quizzes.view config.main labeledBy quiz
-                        |> List.map (Html.map UpdateQuiz)
+                        |> Tuple.mapSecond (List.map (Html.map UpdateQuiz))
+                        |> Tuple.mapSecond (Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr))
 
 
 view_list : Config Msg -> List ( String, Blocks ) -> List (Html Msg)
