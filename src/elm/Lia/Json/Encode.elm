@@ -1,4 +1,7 @@
-module Lia.Json.Encode exposing (encode)
+module Lia.Json.Encode exposing
+    ( encode
+    , encodeFull
+    )
 
 import Array
 import Json.Encode as JE
@@ -6,13 +9,19 @@ import Lia.Definition.Json.Encode as Definition
 import Lia.Markdown.Inline.Json.Encode as Inline
 import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inline(..))
+import Lia.Markdown.Json.Encode as Body
 import Lia.Model exposing (Model)
 import Lia.Section exposing (Section, Sections)
-import Translations exposing (Lang(..))
+import Translations exposing (Lang(..), getCodeFromLn)
 
 
 encode : Model -> JE.Value
-encode model =
+encode =
+    encodeWith encSection
+
+
+encodeWith : (Section -> JE.Value) -> Model -> JE.Value
+encodeWith sectionEncoder model =
     JE.object
         [ ( "title"
           , model.sections
@@ -44,7 +53,7 @@ encode model =
           , model.origin |> JE.string
           )
         , ( "sections"
-          , model.sections |> JE.array encSection
+          , model.sections |> JE.array sectionEncoder
           )
         , ( "section_active"
           , model.section_active |> JE.int
@@ -85,23 +94,16 @@ encSection sec =
         ]
 
 
-getCodeFromLn : Lang -> String
-getCodeFromLn ln =
-    case ln of
-        Bg ->
-            "bg"
+encSectionFull : Section -> JE.Value
+encSectionFull sec =
+    JE.object
+        [ ( "title", Inline.encode sec.title )
+        , ( "code", JE.string sec.code )
+        , ( "indentation", JE.int sec.indentation )
+        , ( "body", Body.encode sec.body )
+        ]
 
-        De ->
-            "de"
 
-        Fa ->
-            "fa"
-
-        Hy ->
-            "hy"
-
-        Ua ->
-            "ua"
-
-        _ ->
-            "en"
+encodeFull : Model -> JE.Value
+encodeFull =
+    encodeWith encSectionFull

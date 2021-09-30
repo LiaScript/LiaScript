@@ -1,12 +1,25 @@
 module Lia.Markdown.Quiz.Matrix.Json exposing
-    ( fromState
+    ( encode
+    , fromState
     , toState
     )
 
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Markdown.Quiz.Matrix.Types exposing (State)
+import Lia.Markdown.Inline.Json.Encode as Inline
+import Lia.Markdown.Quiz.Matrix.Types exposing (Quiz, State)
 import Lia.Markdown.Quiz.Vector.Json as Vector
+
+
+encode : Quiz -> ( String, JE.Value )
+encode quiz =
+    ( uid
+    , JE.object
+        [ ( "headers", JE.list Inline.encode quiz.headers )
+        , ( "options", JE.list Inline.encode quiz.options )
+        , ( "solution", fromState quiz.solution )
+        ]
+    )
 
 
 uid : String

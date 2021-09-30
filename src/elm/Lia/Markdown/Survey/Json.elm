@@ -1,5 +1,6 @@
 module Lia.Markdown.Survey.Json exposing
-    ( fromVector
+    ( encode
+    , fromVector
     , toVector
     )
 
@@ -8,12 +9,52 @@ import Conditional.List as CList
 import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Markdown.Survey.Types exposing (Element, State(..), Vector)
+import Lia.Markdown.Inline.Json.Encode as Inline
+import Lia.Markdown.Survey.Types exposing (Element, State(..), Survey, Type(..), Vector)
+
+
+encode : Survey -> JE.Value
+encode survey =
+    JE.object <|
+        [ ( "id", JE.int survey.id )
+        , case survey.survey of
+            Text i ->
+                ( "Text"
+                , JE.int i
+                )
+
+            Select elements ->
+                ( "Select"
+                , JE.list Inline.encode elements
+                )
+
+            Vector bool options ->
+                ( "Vector"
+                , JE.object
+                    [ ( "bool", JE.bool bool )
+                    , ( "options"
+                      , options
+                            |> List.map (Tuple.mapSecond Inline.encode)
+                            |> JE.object
+                      )
+                    ]
+                )
+
+            Matrix bool cols ids rows ->
+                ( "Matrix"
+                , JE.object
+                    [ ( "bool", JE.bool bool )
+                    , ( "cols", JE.list Inline.encode cols )
+                    , ( "ids", JE.list JE.string ids )
+                    , ( "rows", JE.list Inline.encode rows )
+                    ]
+                )
+        ]
 
 
 fromVector : Vector -> JE.Value
 fromVector vector =
-    JE.array fromElement vector
+    JE.array (Tuple.first >> fromElement) vector
 
 
 fromElement : Element -> JE.Value
@@ -77,7 +118,7 @@ dict2json dict =
 
 toVector : JD.Value -> Result JD.Error Vector
 toVector json =
-    JD.decodeValue (JD.array toElement) json
+    JD.decodeValue (JD.array (toElement |> JD.map (\e -> ( e, Nothing )))) json
 
 
 toElement : JD.Decoder Element

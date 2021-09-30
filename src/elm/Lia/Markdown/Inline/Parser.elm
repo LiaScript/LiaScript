@@ -1,6 +1,7 @@
 module Lia.Markdown.Inline.Parser exposing
     ( annotations
     , comment
+    , eScript
     , inlines
     , javascript
     , line
@@ -114,8 +115,8 @@ javascriptWithAttributes =
         |> andMap scriptBody
 
 
-html : Parser Context Inline
-html =
+eScript : Parameters -> Parser Context ( Parameters, Int )
+eScript default =
     let
         state ( attr, script ) =
             modifyState
@@ -143,8 +144,9 @@ html =
                 |> keep (succeed attr)
     in
     javascriptWithAttributes
+        |> map (Tuple.mapFirst (\attr -> List.append attr default))
         |> andThen state
-        |> map (\attr id -> Script id attr)
+        |> map Tuple.pair
         |> andMap scriptID
 
 
@@ -186,7 +188,7 @@ inlines =
                      ]
                         |> choice
                         |> andMap (Macro.macro |> keep annotations)
-                        |> or html
+                        |> or (eScript [] |> map (\( attr, id ) -> Script id attr))
                     )
                 |> map goto
                 |> andMap getLine

@@ -1,5 +1,6 @@
 module Lia.Markdown.Survey.View exposing (view)
 
+import Array
 import Html exposing (Html, button)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
@@ -22,37 +23,42 @@ import Lia.Utils exposing (blockKeydown, btn, icon, onKeyDown)
 import Translations exposing (surveySubmit, surveySubmitted, surveyText)
 
 
-view : Config sub -> Parameters -> Survey -> Vector -> Html (Msg sub)
+view : Config sub -> Parameters -> Survey -> Vector -> ( Maybe Int, Html (Msg sub) )
 view config attr survey model =
-    case survey.survey of
-        Text lines ->
-            view_text config (get_text_state model survey.id) lines survey.id survey.javascript
-                |> view_survey config attr "text" model survey.id survey.javascript
+    Tuple.pair
+        (model
+            |> Array.get survey.id
+            |> Maybe.andThen Tuple.second
+        )
+    <|
+        case survey.survey of
+            Text lines ->
+                view_text config (get_text_state model survey.id) lines survey.id
+                    |> view_survey config attr "text" model survey.id
 
-        Select inlines ->
-            view_select config inlines (get_select_state model survey.id) survey.id
-                |> view_survey config attr "select" model survey.id survey.javascript
+            Select inlines ->
+                view_select config inlines (get_select_state model survey.id) survey.id
+                    |> view_survey config attr "select" model survey.id
 
-        Vector button questions ->
-            vector config button (VectorUpdate survey.id) (get_vector_state model survey.id)
-                |> view_vector questions
-                |> view_survey config
-                    attr
-                    (if button then
-                        "single-choice"
+            Vector button questions ->
+                vector config button (VectorUpdate survey.id) (get_vector_state model survey.id)
+                    |> view_vector questions
+                    |> view_survey config
+                        attr
+                        (if button then
+                            "single-choice"
 
-                     else
-                        "multiple-choice"
-                    )
-                    model
-                    survey.id
-                    survey.javascript
+                         else
+                            "multiple-choice"
+                        )
+                        model
+                        survey.id
 
-        --|> Html.p (annotation "lia-quiz" attr)
-        Matrix button header vars questions ->
-            matrix config button (MatrixUpdate survey.id) (get_matrix_state model survey.id) vars
-                |> view_matrix config header questions
-                |> view_survey config attr "matrix" model survey.id survey.javascript
+            --|> Html.p (annotation "lia-quiz" attr)
+            Matrix button header vars questions ->
+                matrix config button (MatrixUpdate survey.id) (get_matrix_state model survey.id) vars
+                    |> view_matrix config header questions
+                    |> view_survey config attr "matrix" model survey.id
 
 
 viewError : Maybe String -> Html msg
@@ -71,10 +77,9 @@ view_survey :
     -> String
     -> Vector
     -> Int
-    -> Maybe String
     -> (Bool -> Html (Msg sub))
     -> Html (Msg sub)
-view_survey config attr class model idx javascript fn =
+view_survey config attr class model idx fn =
     let
         submitted =
             get_submission_state model idx
@@ -93,15 +98,15 @@ view_survey config attr class model idx javascript fn =
             attr
         )
         [ fn submitted
-        , submit_button config submitted idx javascript
+        , submit_button config submitted idx
         , model
             |> getErrorMessage idx
             |> viewError
         ]
 
 
-submit_button : Config sub -> Bool -> Int -> Maybe String -> Html (Msg sub)
-submit_button config submitted idx javascript =
+submit_button : Config sub -> Bool -> Int -> Html (Msg sub)
+submit_button config submitted idx =
     Html.div [ Attr.class "lia-quiz__control" ]
         [ if submitted then
             btn
@@ -114,7 +119,7 @@ submit_button config submitted idx javascript =
 
           else
             btn
-                { msg = Just <| Submit idx javascript
+                { msg = Just <| Submit idx
                 , tabbable = False
                 , title = surveySubmit config.lang
                 }
@@ -184,8 +189,8 @@ get_option config id list =
             Html.text <| Translations.quizSelection config.lang
 
 
-view_text : Config sub -> String -> Int -> Int -> Maybe String -> Bool -> Html (Msg sub)
-view_text config str lines idx javascript submitted =
+view_text : Config sub -> String -> Int -> Int -> Bool -> Html (Msg sub)
+view_text config str lines idx submitted =
     let
         attr =
             [ onInput <| TextUpdate idx
@@ -198,7 +203,7 @@ view_text config str lines idx javascript submitted =
         1 ->
             Html.input
                 (Attr.class "lia-input lia-quiz__input"
-                    :: onKeyDown (KeyDown idx javascript)
+                    :: onKeyDown (KeyDown idx)
                     :: attr
                 )
                 []

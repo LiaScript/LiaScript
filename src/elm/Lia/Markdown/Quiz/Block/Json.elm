@@ -1,11 +1,28 @@
 module Lia.Markdown.Quiz.Block.Json exposing
-    ( fromState
+    ( encode
+    , fromState
     , toState
     )
 
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Markdown.Quiz.Block.Types exposing (State(..))
+import Lia.Markdown.Inline.Json.Encode as Inline
+import Lia.Markdown.Quiz.Block.Types exposing (Quiz, State(..))
+
+
+encode : Quiz -> ( String, JE.Value )
+encode quiz =
+    ( case quiz.solution of
+        Text _ ->
+            "Text"
+
+        Select _ _ ->
+            "Select"
+    , JE.object
+        [ ( "options", JE.list Inline.encode quiz.options )
+        , ( "solution", fromState quiz.solution )
+        ]
+    )
 
 
 fromState : State -> JE.Value

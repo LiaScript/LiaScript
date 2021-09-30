@@ -226,7 +226,7 @@ basePlay lang =
             "Խաղացեք"
 
         Ko ->
-            "플레이"
+            "재생"
 
         Nl ->
             "afspelen"
@@ -269,7 +269,7 @@ baseStop lang =
             "դադարեցրեք"
 
         Ko ->
-            "멈추다"
+            "정지"
 
         Nl ->
             "stoppen"
@@ -957,7 +957,7 @@ translateWithGoogle lang =
             "Թարգմանեք Google- ի միջոցով (փորձնական)"
 
         Ko ->
-            "Google 번역을 사용한 번역 결과 (실험적 기능)"
+            "Google Translate로 번역하기 (실험적 기능)"
 
         Nl ->
             "Vertalen met Google (experimenteel)"
@@ -1946,7 +1946,7 @@ confShareVia lang =
             "տարածել միջոցով ..."
 
         Ko ->
-            "통해 공유 ..."
+            "공유하기"
 
         Nl ->
             "deel via ..."
@@ -3387,7 +3387,7 @@ qrCode lang =
             "Վեբ կայքի QR կոդ"
 
         Ko ->
-            "QR code for website"
+            "웹 사이트용 QR 코드"
 
         Nl ->
             "QR-code voor website"
@@ -3430,7 +3430,7 @@ qrErr lang =
             "Սխալ QR կոդի կոդավորման ժամանակ"
 
         Ko ->
-            "Error while encoding to QR code"
+            "QR 코드를 만드는 도중 오류가 발생했습니다."
 
         Nl ->
             "Fout bij het coderen naar QR-code"

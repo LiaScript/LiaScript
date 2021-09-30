@@ -22,7 +22,7 @@ import Combine
         , succeed
         , withState
         )
-import Lia.Markdown.Inline.Parser exposing (javascript)
+import Lia.Markdown.Inline.Parser exposing (eScript)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Macro.Parser exposing (macro)
 import Lia.Markdown.Quiz.Block.Parser as Block
@@ -54,24 +54,14 @@ parse =
         |> andThen modify_State
 
 
+
+--andThen maybeJS
+
+
 adds : Type -> Parser Context Quiz
 adds type_ =
     map (Quiz type_) get_counter
         |> andMap hints
-        |> andMap maybeJS
-
-
-maybeJS : Parser Context (Maybe String)
-maybeJS =
-    macro
-        |> ignore (maybe Indent.check)
-        |> keep
-            (maybe
-                (spaces
-                    |> keep javascript
-                    |> ignore newline
-                )
-            )
 
 
 get_counter : Parser Context Int
@@ -99,16 +89,29 @@ hints =
 modify_State : Quiz -> Parser Context Quiz
 modify_State q =
     let
-        add_state e s =
+        add_state id s =
             { s
                 | quiz_vector =
                     Array.push
-                        (Element Solution.Open e 0 0 "")
+                        ( Element Solution.Open (initState q.quiz) 0 0 "", id )
                         s.quiz_vector
             }
     in
-    q.quiz
-        |> initState
-        |> add_state
-        |> modifyState
+    maybeJS
+        |> map add_state
+        |> andThen modifyState
         |> keep (succeed q)
+
+
+maybeJS : Parser Context (Maybe Int)
+maybeJS =
+    macro
+        |> ignore (maybe Indent.check)
+        |> keep
+            (maybe
+                (spaces
+                    |> keep (eScript [ ( "input", "hidden" ) ])
+                    |> map Tuple.second
+                    |> ignore newline
+                )
+            )

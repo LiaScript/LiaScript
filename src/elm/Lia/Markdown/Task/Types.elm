@@ -21,7 +21,7 @@ represents the states for an entire Task list:
 
 -}
 type alias Vector =
-    Array (Array Bool)
+    Array ( Array Bool, Maybe Int )
 
 
 {-| This type is used by the LiaScript renderer:
@@ -35,5 +35,4 @@ type alias Vector =
 type alias Task =
     { task : List Inlines
     , id : Int
-    , javascript : Maybe String
     }

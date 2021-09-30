@@ -1,5 +1,6 @@
 module Lia.Markdown.Inline.View exposing
     ( reduce
+    , toScript
     , view
     , viewMedia
     , view_inf
@@ -26,6 +27,11 @@ import Lia.Settings.Types exposing (Mode(..))
 import Lia.Utils exposing (noTranslate)
 import QRCode
 import Translations exposing (Lang)
+
+
+toScript : Int -> Parameters -> Inline
+toScript =
+    Script
 
 
 viewer : Config sub -> Inlines -> List (Html (Msg sub))
