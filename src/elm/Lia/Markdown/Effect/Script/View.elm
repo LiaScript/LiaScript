@@ -365,6 +365,7 @@ editor theme id code =
             , Editor.extensions [ "language_tools" ]
             , Attr.style "width" "96%"
             , Attr.style "max-width" "900px"
+            , Attr.class "notranslate"
             ]
             []
         ]
