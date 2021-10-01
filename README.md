@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.36
+version:  0.9.37
 language: en
 narrator: UK English Male
 
@@ -281,6 +281,10 @@ This will apply the following three patches:
 - elm-patch/dom: enable onclick events as well as innerHTML
 
 ## Version-Changes
+
+**0.9.37** (01/10/2021)
+
+* hotfix: modal script-editor now prohibits translations
 
 **0.9.36** (01/10/2021)
 
