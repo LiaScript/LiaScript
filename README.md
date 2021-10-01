@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.35
+version:  0.9.36
 language: en
 narrator: UK English Male
 
@@ -281,6 +281,13 @@ This will apply the following three patches:
 - elm-patch/dom: enable onclick events as well as innerHTML
 
 ## Version-Changes
+
+**0.9.36** (01/10/2021)
+
+* Attached scripts can now also publish their results
+* Updated korean translations
+* Export to (nearly) full Json, which can be used later as the basis to translate
+  documents into other formats
 
 **0.9.35** (26/09/2021)
 
