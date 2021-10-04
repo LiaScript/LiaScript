@@ -93,7 +93,7 @@ modify_State q =
             { s
                 | quiz_vector =
                     Array.push
-                        ( Element Solution.Open (initState q.quiz) 0 0 "", id )
+                        (Element Solution.Open (initState q.quiz) 0 0 "" id)
                         s.quiz_vector
             }
     in
@@ -110,7 +110,13 @@ maybeJS =
         |> keep
             (maybe
                 (spaces
-                    |> keep (eScript [ ( "input", "hidden" ) ])
+                    |> keep
+                        (eScript
+                            [ ( "input", "hidden" )
+                            , ( "block", "true" )
+                            , ( "default", "undefined" )
+                            ]
+                        )
                     |> map Tuple.second
                     |> ignore newline
                 )

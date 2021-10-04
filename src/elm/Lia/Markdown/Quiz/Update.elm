@@ -46,29 +46,31 @@ update scripts msg vector =
 
         Check id solution ->
             case Array.get id vector of
-                Just ( _, Nothing ) ->
-                    check solution
-                        |> update_ id vector
-                        |> store
+                Just e ->
+                    case e.scriptID of
+                        Nothing ->
+                            check solution
+                                |> update_ id vector
+                                |> store
 
-                Just ( e, Just scriptID ) ->
-                    vector
-                        |> Return.val
-                        --|> Return.script (execute scriptID e)
-                        |> Return.batchEvents
-                            (case
-                                scripts
-                                    |> Array.get scriptID
-                                    |> Maybe.map .script
-                             of
-                                Just code ->
-                                    [ [ toString e.state ]
-                                        |> Eval.event id code (outputs scripts)
-                                    ]
+                        Just scriptID ->
+                            vector
+                                |> Return.val
+                                --|> Return.script (execute scriptID e)
+                                |> Return.batchEvents
+                                    (case
+                                        scripts
+                                            |> Array.get scriptID
+                                            |> Maybe.map .script
+                                     of
+                                        Just code ->
+                                            [ [ toString e.state ]
+                                                |> Eval.event id code (outputs scripts)
+                                            ]
 
-                                Nothing ->
-                                    []
-                            )
+                                        Nothing ->
+                                            []
+                                    )
 
                 Nothing ->
                     vector
@@ -84,8 +86,8 @@ update scripts msg vector =
                 |> update_ id vector
                 |> store
                 |> (\return ->
-                        case Array.get id vector of
-                            Just ( e, Just scriptID ) ->
+                        case Array.get id vector |> Maybe.andThen .scriptID of
+                            Just scriptID ->
                                 return
                                     |> Return.script (execute scriptID <| toState solution)
 
@@ -99,14 +101,14 @@ update scripts msg vector =
                     case
                         vector
                             |> Array.get event.section
-                            |> Maybe.andThen Tuple.second
+                            |> Maybe.andThen .scriptID
                     of
-                        Just id ->
+                        Just scriptID ->
                             event.message
                                 |> evalEventDecoder
                                 |> update_ event.section vector
                                 |> store
-                                |> Return.script (JS.handle { event | topic = "code", section = id })
+                                |> Return.script (JS.handle { event | topic = "code", section = scriptID })
 
                         Nothing ->
                             event.message
@@ -154,7 +156,7 @@ execute id =
 
 get : Int -> Vector -> Maybe Element
 get idx vector =
-    case Array.get idx vector |> Maybe.map Tuple.first of
+    case Array.get idx vector of
         Just elem ->
             if (elem.solved == Solution.Solved) || (elem.solved == Solution.ReSolved) then
                 Nothing
@@ -172,14 +174,12 @@ update_ :
     -> (Element -> Return Element msg sub)
     -> Return Vector msg sub
 update_ idx vector fn =
-    case Array.get idx vector |> Maybe.map (Tuple.mapFirst fn) of
-        Just elem ->
-            Array.set idx (Tuple.mapFirst .value elem) vector
-                |> Return.val
+    case Array.get idx vector |> Maybe.map fn of
+        Just ret ->
+            Return.mapVal (\v -> Array.set idx v vector) ret
 
         _ ->
-            vector
-                |> Return.val
+            Return.val vector
 
 
 state_ : Msg sub -> Element -> Return Element msg sub
@@ -265,20 +265,23 @@ check solution e =
         |> Return.val
 
 
-merge : Array ( a, Maybe Int ) -> Array ( a, Maybe Int ) -> Array ( a, Maybe Int )
+merge : Array { a | scriptID : Maybe Int } -> Array { a | scriptID : Maybe Int } -> Array { a | scriptID : Maybe Int }
 merge v1 =
     Array.toList
-        >> List.map2 (\( _, c1 ) ( b2, _ ) -> ( b2, c1 )) (Array.toList v1)
+        >> List.map2 (\sID body -> { body | scriptID = sID.scriptID }) (Array.toList v1)
         >> Array.fromList
 
 
-init : (Int -> x -> Script.Msg sub) -> Return (Array ( x, Maybe Int )) msg sub -> Return (Array ( x, Maybe Int )) msg sub
+init :
+    (Int -> { a | scriptID : Maybe Int } -> Script.Msg sub)
+    -> Return (Array { a | scriptID : Maybe Int }) msg sub
+    -> Return (Array { a | scriptID : Maybe Int }) msg sub
 init fn return =
     Array.foldl
         (\state ret ->
-            case state of
-                ( s, Just id ) ->
-                    Return.script (fn id s) ret
+            case state.scriptID of
+                Just id ->
+                    Return.script (fn id state) ret
 
                 _ ->
                     ret

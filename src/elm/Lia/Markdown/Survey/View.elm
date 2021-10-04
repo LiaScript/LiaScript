@@ -28,7 +28,7 @@ view config attr survey model =
     Tuple.pair
         (model
             |> Array.get survey.id
-            |> Maybe.andThen Tuple.second
+            |> Maybe.andThen .scriptID
         )
     <|
         case survey.survey of

@@ -13,14 +13,15 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 
 
 type alias Vector =
-    Array ( Element, Maybe Int )
+    Array Element
 
 
 type alias Element =
-    ( Bool
-    , State
-    , Maybe String
-    )
+    { submitted : Bool
+    , state : State
+    , errorMsg : Maybe String
+    , scriptID : Maybe Int
+    }
 
 
 type State

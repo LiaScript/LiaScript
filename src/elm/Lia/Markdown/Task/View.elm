@@ -1,6 +1,7 @@
 module Lia.Markdown.Task.View exposing (view)
 
 import Array
+import Browser exposing (element)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
@@ -16,26 +17,22 @@ import Lia.Markdown.Task.Update exposing (Msg(..))
 -}
 view : Config sub -> Vector -> Parameters -> Task -> ( Maybe Int, Html (Msg sub) )
 view config vector attr task =
-    Tuple.pair
-        (vector
-            |> Array.get task.id
-            |> Maybe.andThen Tuple.second
-        )
-    <|
-        case Array.get task.id vector of
-            Just states ->
-                Html.div (annotation "lia-quiz lia-quiz-multiple-choice open" attr)
-                    [ Html.div [ Attr.class "lia-quiz__answers" ]
-                        (states
-                            |> Tuple.first
-                            |> Array.toList
-                            |> List.indexedMap Tuple.pair
-                            |> List.map2 (row config task.id) task.task
-                        )
-                    ]
+    case Array.get task.id vector of
+        Just element ->
+            ( element.scriptID
+            , Html.div
+                (annotation "lia-quiz lia-quiz-multiple-choice open" attr)
+                [ Html.div [ Attr.class "lia-quiz__answers" ]
+                    (element.state
+                        |> Array.toList
+                        |> List.indexedMap Tuple.pair
+                        |> List.map2 (row config task.id) task.task
+                    )
+                ]
+            )
 
-            Nothing ->
-                Html.text ""
+        Nothing ->
+            ( Nothing, Html.text "" )
 
 
 row : Config sub -> Int -> Inlines -> ( Int, Bool ) -> Html (Msg sub)

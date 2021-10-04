@@ -77,6 +77,7 @@ type alias Script a =
     , script : String
     , updated : Bool -- use this for preventing closing
     , running : Bool
+    , block : Bool -- this indicates script execution is triggered by an external handler
     , update : Bool
     , runOnce : Bool
     , modify : Bool
@@ -103,6 +104,7 @@ push lang id params script javascript =
         , script = script
         , updated = False -- use this for preventing closing
         , running = False
+        , block = Attr.isSet "block" params
         , update = False
         , runOnce = Attr.isSet "run-once" params
         , modify = Attr.isNotSet "modify" params
@@ -191,7 +193,7 @@ scriptChildren output javascript =
         |> Array.toIndexedList
         |> List.filterMap
             (\( i, js ) ->
-                if not js.running && List.member output js.inputs then
+                if not js.running && not js.block && List.member output js.inputs then
                     Just
                         ( i
                         , js.script

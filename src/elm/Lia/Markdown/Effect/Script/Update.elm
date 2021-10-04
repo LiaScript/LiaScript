@@ -19,7 +19,7 @@ import Lia.Utils exposing (focus)
 import Port.Eval as Eval exposing (Eval)
 import Port.Event exposing (Event)
 import Process
-import Return exposing (Return)
+import Return exposing (Return, script, val)
 import Task
 
 
@@ -63,7 +63,7 @@ update main msg scripts =
                                 | input = Input.value value node.input
                                 , updated = True
                             }
-                        |> update main (Activate False id)
+                        |> update main (Handle (Event "code" id (Eval.encode <| Eval True value [])))
 
                 Nothing ->
                     Return.val scripts
@@ -303,7 +303,7 @@ reRun fn cmd id scripts =
                 |> Return.val
                 |> Return.cmd cmd
                 |> Return.batchEvents
-                    (if node.running then
+                    (if node.running || node.block then
                         []
 
                      else
@@ -395,7 +395,7 @@ getIdle : (Script a -> x) -> Scripts a -> List ( Int, x )
 getIdle =
     Script.filterMap
         (\js ->
-            not js.running && not (js.runOnce && js.counter >= 1)
+            not js.running && not js.block && not (js.runOnce && js.counter >= 1)
         )
 
 

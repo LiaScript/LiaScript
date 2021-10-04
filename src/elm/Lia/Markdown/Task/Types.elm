@@ -1,6 +1,8 @@
 module Lia.Markdown.Task.Types exposing
-    ( Task
+    ( Element
+    , Task
     , Vector
+    , toString
     )
 
 {-| As in most LiaScript modules, the representation is separated from the
@@ -9,6 +11,7 @@ elements for visualization are stored within the `Task` record.
 -}
 
 import Array exposing (Array)
+import Json.Encode as JE
 import Lia.Markdown.Inline.Types exposing (Inlines)
 
 
@@ -21,7 +24,13 @@ represents the states for an entire Task list:
 
 -}
 type alias Vector =
-    Array ( Array Bool, Maybe Int )
+    Array Element
+
+
+type alias Element =
+    { state : Array Bool
+    , scriptID : Maybe Int
+    }
 
 
 {-| This type is used by the LiaScript renderer:
@@ -36,3 +45,8 @@ type alias Task =
     { task : List Inlines
     , id : Int
     }
+
+
+toString : Element -> String
+toString =
+    .state >> JE.array JE.bool >> JE.encode 0

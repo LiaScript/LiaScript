@@ -36,7 +36,7 @@ encode quiz =
 
 fromVector : Vector -> JE.Value
 fromVector =
-    JE.array (Tuple.first >> fromElement)
+    JE.array fromElement
 
 
 fromElement : Element -> JE.Value
@@ -80,7 +80,7 @@ fromState state =
 
 toVector : JD.Value -> Result JD.Error Vector
 toVector =
-    JD.decodeValue (JD.array (toElement |> JD.map (\v -> ( v, Nothing ))))
+    JD.decodeValue (JD.array toElement)
 
 
 toElement : JD.Decoder Element
@@ -97,12 +97,13 @@ toElement =
                 _ ->
                     JD.succeed Solution.ReSolved
     in
-    JD.map5 Element
+    JD.map6 Element
         (JD.field "solved" JD.int |> JD.andThen solved_decoder)
         (JD.field "state" toState)
         (JD.field "trial" JD.int)
         (JD.field "hint" JD.int)
         (JD.field "error_msg" JD.string)
+        (JD.succeed Nothing)
 
 
 toState : JD.Decoder State

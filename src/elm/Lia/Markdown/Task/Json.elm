@@ -22,7 +22,7 @@ encode task =
 -}
 fromVector : Vector -> JE.Value
 fromVector =
-    JE.array (Tuple.first >> JE.array JE.bool)
+    JE.array (.state >> JE.array JE.bool)
 
 
 {-| Read in a Task vector from a JSON representation.
@@ -31,6 +31,6 @@ toVector : JD.Value -> Result JD.Error Vector
 toVector =
     JD.bool
         |> JD.array
-        |> JD.map (\v -> ( v, Nothing ))
+        |> JD.map (\v -> { state = v, scriptID = Nothing })
         |> JD.array
         |> JD.decodeValue

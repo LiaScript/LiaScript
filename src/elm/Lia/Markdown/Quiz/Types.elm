@@ -22,7 +22,7 @@ import Lia.Markdown.Quiz.Vector.Types as Vector
 
 
 type alias Vector =
-    Array ( Element, Maybe Int )
+    Array Element
 
 
 type alias Hints =
@@ -35,6 +35,7 @@ type alias Element =
     , trial : Int
     , hint : Int
     , error_msg : String
+    , scriptID : Maybe Int
     }
 
 
@@ -85,7 +86,6 @@ getState : Vector -> Int -> Maybe Element
 getState vector idx =
     vector
         |> Array.get idx
-        |> Maybe.map Tuple.first
 
 
 toState : Type -> State
