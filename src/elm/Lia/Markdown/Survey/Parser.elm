@@ -174,10 +174,6 @@ modify_State survey_ =
             )
 
 
-
---|> keep (succeed survey_)
-
-
 add_state : State -> Maybe Int -> Context -> Context
 add_state state id c =
     { c

@@ -110,7 +110,12 @@ maybeJS =
         |> keep
             (maybe
                 (spaces
-                    |> keep (eScript [ ( "input", "hidden" ) ])
+                    |> keep
+                        (eScript
+                            [ ( "input", "hidden" )
+                            , ( "block", "true" )
+                            ]
+                        )
                     |> map Tuple.second
                     |> ignore newline
                 )
