@@ -233,7 +233,7 @@ function lia_eval(code: string, send: SendEval) {
     console.clear()
 
     send.lia(String(eval(code + '\n'))) //, send, console)))
-  } catch (e) {
+  } catch (e: any) {
     if (e instanceof LiaError) {
       send.lia(e.message, e.details, false)
     } else {
@@ -369,7 +369,7 @@ export function lia_execute_event(
       ) {
         send.lia(result === undefined ? 'LIA: stop' : result)
       }
-    } catch (e) {
+    } catch (e: any) {
       log.error('exec => ', e.message)
       if (!!send) send.lia(e.message, [], false)
     }
