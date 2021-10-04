@@ -114,6 +114,7 @@ maybeJS =
                         (eScript
                             [ ( "input", "hidden" )
                             , ( "block", "true" )
+                            , ( "default", "undefined" )
                             ]
                         )
                     |> map Tuple.second
