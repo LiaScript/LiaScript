@@ -24,7 +24,6 @@ TODO:
 import Accessibility.Aria as A11y_Aria
 import Accessibility.Role as A11y_Role
 import Accessibility.Widget as A11y_Widget
-import Array
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Lia.Markdown.Inline.Config exposing (Config)
@@ -66,13 +65,10 @@ view : Config sub -> Maybe String -> Quiz -> Vector -> ( Maybe Int, List (Html (
 view config labeledBy quiz vector =
     case getState vector quiz.id of
         Just elem ->
-            viewState config elem quiz
+            ( elem.scriptID
+            , viewState config elem quiz
                 |> viewQuiz config labeledBy elem quiz
-                |> Tuple.pair
-                    (vector
-                        |> Array.get quiz.id
-                        |> Maybe.andThen Tuple.second
-                    )
+            )
 
         _ ->
             ( Nothing, [] )

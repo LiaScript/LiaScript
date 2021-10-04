@@ -45,7 +45,14 @@ modify_State ( states, tasks ) =
     let
         addTask : Maybe Int -> Context -> Context
         addTask m s =
-            { s | task_vector = Array.push ( Array.fromList states, m ) s.task_vector }
+            { s
+                | task_vector =
+                    Array.push
+                        { state = Array.fromList states
+                        , scriptID = m
+                        }
+                        s.task_vector
+            }
     in
     (.task_vector >> Array.length >> succeed)
         |> withState

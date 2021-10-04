@@ -1,5 +1,6 @@
 module Lia.Markdown.Task.Types exposing
-    ( Task
+    ( Element
+    , Task
     , Vector
     )
 
@@ -21,7 +22,13 @@ represents the states for an entire Task list:
 
 -}
 type alias Vector =
-    Array ( Array Bool, Maybe Int )
+    Array Element
+
+
+type alias Element =
+    { state : Array Bool
+    , scriptID : Maybe Int
+    }
 
 
 {-| This type is used by the LiaScript renderer:

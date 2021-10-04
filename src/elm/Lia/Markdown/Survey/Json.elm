@@ -4,7 +4,6 @@ module Lia.Markdown.Survey.Json exposing
     , toVector
     )
 
-import Accessibility.Aria exposing (errorMessage)
 import Conditional.List as CList
 import Dict exposing (Dict)
 import Json.Decode as JD
@@ -53,16 +52,16 @@ encode survey =
 
 
 fromVector : Vector -> JE.Value
-fromVector vector =
-    JE.array (Tuple.first >> fromElement) vector
+fromVector =
+    JE.array fromElement
 
 
 fromElement : Element -> JE.Value
-fromElement ( b, state, errorMessage ) =
-    [ ( "submitted", JE.bool b )
-    , ( "state", fromState state )
+fromElement element =
+    [ ( "submitted", JE.bool element.submitted )
+    , ( "state", fromState element.state )
     ]
-        |> CList.addWhen (fromError errorMessage)
+        |> CList.addWhen (fromError element.errorMsg)
         |> JE.object
 
 
@@ -117,16 +116,17 @@ dict2json dict =
 
 
 toVector : JD.Value -> Result JD.Error Vector
-toVector json =
-    JD.decodeValue (JD.array (toElement |> JD.map (\e -> ( e, Nothing )))) json
+toVector =
+    JD.decodeValue (JD.array toElement)
 
 
 toElement : JD.Decoder Element
 toElement =
-    JD.map3 (\a b c -> ( a, b, c ))
+    JD.map4 Element
         (JD.field "submitted" JD.bool)
         (JD.field "state" toState)
         (JD.maybe (JD.field "errorMessage" JD.string))
+        (JD.succeed Nothing)
 
 
 toState : JD.Decoder State

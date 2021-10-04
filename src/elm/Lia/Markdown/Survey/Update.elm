@@ -5,6 +5,7 @@ module Lia.Markdown.Survey.Update exposing
     )
 
 import Array
+import Browser exposing (element)
 import Dict
 import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
@@ -62,47 +63,49 @@ update scripts msg vector =
 
         Submit id ->
             case vector |> Array.get id of
-                Just ( _, Nothing ) ->
-                    if submittable vector id then
-                        let
-                            new_vector =
-                                submit vector id
-                        in
-                        new_vector
-                            |> Return.val
-                            |> Return.batchEvent
-                                (new_vector
-                                    |> Json.fromVector
-                                    |> Event.store
-                                )
+                Just element ->
+                    case element.scriptID of
+                        Nothing ->
+                            if submittable vector id then
+                                let
+                                    new_vector =
+                                        submit vector id
+                                in
+                                new_vector
+                                    |> Return.val
+                                    |> Return.batchEvent
+                                        (new_vector
+                                            |> Json.fromVector
+                                            |> Event.store
+                                        )
 
-                    else
-                        vector
-                            |> Return.val
+                            else
+                                vector
+                                    |> Return.val
 
-                Just ( ( False, state, error ), Just scriptID ) ->
-                    (if error == Nothing then
-                        vector
+                        Just scriptID ->
+                            (if element.errorMsg == Nothing then
+                                vector
 
-                     else
-                        updateError vector id Nothing
-                    )
-                        |> Return.val
-                        --|> Return.script (execute scriptID state)
-                        |> Return.batchEvents
-                            (case
-                                scripts
-                                    |> Array.get scriptID
-                                    |> Maybe.map .script
-                             of
-                                Just code ->
-                                    [ [ toString state ]
-                                        |> Eval.event id code (outputs scripts)
-                                    ]
-
-                                Nothing ->
-                                    []
+                             else
+                                updateError vector id Nothing
                             )
+                                |> Return.val
+                                --|> Return.script (execute scriptID state)
+                                |> Return.batchEvents
+                                    (case
+                                        scripts
+                                            |> Array.get scriptID
+                                            |> Maybe.map .script
+                                     of
+                                        Just code ->
+                                            [ [ toString element.state ]
+                                                |> Eval.event id code (outputs scripts)
+                                            ]
+
+                                        Nothing ->
+                                            []
+                                    )
 
                 _ ->
                     Return.val vector
@@ -118,14 +121,14 @@ update scripts msg vector =
                     case
                         vector
                             |> Array.get event.section
-                            |> Maybe.andThen Tuple.second
+                            |> Maybe.andThen .scriptID
                     of
-                        Just id ->
+                        Just scriptID ->
                             event.message
                                 |> evalEventDecoder
                                 |> update_ event.section vector
                                 |> store
-                                |> Return.script (JS.handle { event | topic = "code", section = id })
+                                |> Return.script (JS.handle { event | topic = "code", section = scriptID })
 
                         Nothing ->
                             event.message
@@ -166,14 +169,12 @@ update_ :
     -> (Element -> Return Element msg sub)
     -> Return Vector msg sub
 update_ idx vector fn =
-    case Array.get idx vector |> Maybe.map (Tuple.mapFirst fn) of
-        Just elem ->
-            Array.set idx (Tuple.mapFirst .value elem) vector
-                |> Return.val
+    case Array.get idx vector |> Maybe.map fn of
+        Just ret ->
+            Return.mapVal (\v -> Array.set idx v vector) ret
 
         _ ->
-            vector
-                |> Return.val
+            Return.val vector
 
 
 store : Return Vector msg sub -> Return Vector msg sub
@@ -199,21 +200,21 @@ evalEventDecoder json =
     in
     if eval.ok then
         if eval.result == "true" then
-            \( _, b, c ) ->
-                Return.val ( True, b, c )
+            \e -> Return.val { e | submitted = True }
 
         else
             Return.val
 
     else
-        \( a, b, _ ) -> Return.val ( a, b, Just eval.result )
+        \e ->
+            Return.val { e | errorMsg = Just eval.result }
 
 
 updateError : Vector -> Int -> Maybe String -> Vector
 updateError vector id message =
-    case Array.get id vector of
-        Just ( ( False, state, _ ), js ) ->
-            set_state vector id message js state
+    case Array.get id vector |> Maybe.map (\e -> ( e.submitted, e )) of
+        Just ( False, element ) ->
+            set_state vector id message element.scriptID element.state
 
         _ ->
             vector
@@ -221,9 +222,9 @@ updateError vector id message =
 
 update_text : Vector -> Int -> String -> Vector
 update_text vector idx str =
-    case Array.get idx vector of
-        Just ( ( False, Text_State _, error ), js ) ->
-            set_state vector idx error js (Text_State str)
+    case Array.get idx vector |> Maybe.map (\e -> ( e.submitted, e.state, e )) of
+        Just ( False, Text_State _, element ) ->
+            set_state vector idx element.errorMsg element.scriptID (Text_State str)
 
         _ ->
             vector
@@ -231,9 +232,13 @@ update_text vector idx str =
 
 update_select : Vector -> Int -> Int -> Vector
 update_select vector id value =
-    case Array.get id vector of
-        Just ( ( False, Select_State _ _, error ), js ) ->
-            set_state vector id error js (Select_State False value)
+    case Array.get id vector |> Maybe.map (\e -> ( e.submitted, e.state, e )) of
+        Just ( False, Select_State _ _, element ) ->
+            set_state vector
+                id
+                element.errorMsg
+                element.scriptID
+                (Select_State False value)
 
         _ ->
             vector
@@ -241,9 +246,13 @@ update_select vector id value =
 
 update_select_chose : Vector -> Int -> Vector
 update_select_chose vector id =
-    case Array.get id vector of
-        Just ( ( False, Select_State b value, error ), js ) ->
-            set_state vector id error js (Select_State (not b) value)
+    case Array.get id vector |> Maybe.map (\e -> ( e.submitted, e.state, e )) of
+        Just ( False, Select_State b value, element ) ->
+            set_state vector
+                id
+                element.errorMsg
+                element.scriptID
+                (Select_State (not b) value)
 
         _ ->
             vector
@@ -251,19 +260,19 @@ update_select_chose vector id =
 
 update_vector : Vector -> Int -> String -> Vector
 update_vector vector idx var =
-    case Array.get idx vector of
-        Just ( ( False, Vector_State False element, error ), js ) ->
-            element
+    case Array.get idx vector |> Maybe.map (\e -> ( e.submitted, e.state, e )) of
+        Just ( False, Vector_State False e, element ) ->
+            e
                 |> Dict.map (\_ _ -> False)
                 |> Dict.update var (\_ -> Just True)
                 |> Vector_State False
-                |> set_state vector idx error js
+                |> set_state vector idx element.errorMsg element.scriptID
 
-        Just ( ( False, Vector_State True element, error ), js ) ->
-            element
+        Just ( False, Vector_State True e, element ) ->
+            e
                 |> Dict.update var (\b -> Maybe.map not b)
                 |> Vector_State True
-                |> set_state vector idx error js
+                |> set_state vector idx element.errorMsg element.scriptID
 
         _ ->
             vector
@@ -271,8 +280,8 @@ update_vector vector idx var =
 
 update_matrix : Vector -> Int -> Int -> String -> Vector
 update_matrix vector col_id row_id var =
-    case Array.get col_id vector of
-        Just ( ( False, Matrix_State False matrix, error ), js ) ->
+    case Array.get col_id vector |> Maybe.map (\e -> ( e.submitted, e.state, e )) of
+        Just ( False, Matrix_State False matrix, element ) ->
             let
                 row =
                     Array.get row_id matrix
@@ -283,9 +292,9 @@ update_matrix vector col_id row_id var =
                 |> Maybe.map (\d -> Array.set row_id d matrix)
                 |> Maybe.withDefault matrix
                 |> Matrix_State False
-                |> set_state vector col_id error js
+                |> set_state vector col_id element.errorMsg element.scriptID
 
-        Just ( ( False, Matrix_State True matrix, error ), js ) ->
+        Just ( False, Matrix_State True matrix, element ) ->
             let
                 row =
                     Array.get row_id matrix
@@ -295,7 +304,7 @@ update_matrix vector col_id row_id var =
                 |> Maybe.map (\d -> Array.set row_id d matrix)
                 |> Maybe.withDefault matrix
                 |> Matrix_State True
-                |> set_state vector col_id error js
+                |> set_state vector col_id element.errorMsg element.scriptID
 
         _ ->
             vector
@@ -303,14 +312,14 @@ update_matrix vector col_id row_id var =
 
 set_state : Vector -> Int -> Maybe String -> Maybe Int -> State -> Vector
 set_state vector idx error js state =
-    Array.set idx ( ( False, state, error ), js ) vector
+    Array.set idx (Element False state error js) vector
 
 
 submit : Vector -> Int -> Vector
 submit vector idx =
     case Array.get idx vector of
-        Just ( ( False, state, error ), js ) ->
-            Array.set idx ( ( True, state, error ), js ) vector
+        Just element ->
+            Array.set idx { element | submitted = True } vector
 
         _ ->
             vector
@@ -318,21 +327,25 @@ submit vector idx =
 
 submittable : Vector -> Int -> Bool
 submittable vector idx =
-    case Array.get idx vector |> Maybe.map Tuple.first of
-        Just ( False, Text_State state, _ ) ->
+    case
+        vector
+            |> Array.get idx
+            |> Maybe.map (\e -> ( e.submitted, e.state ))
+    of
+        Just ( False, Text_State state ) ->
             state /= ""
 
-        Just ( False, Select_State _ state, _ ) ->
+        Just ( False, Select_State _ state ) ->
             state /= -1
 
-        Just ( False, Vector_State _ state, _ ) ->
+        Just ( False, Vector_State _ state ) ->
             state
                 |> Dict.values
                 |> List.filter (\a -> a)
                 |> List.length
                 |> (\s -> s > 0)
 
-        Just ( False, Matrix_State _ state, _ ) ->
+        Just ( False, Matrix_State _ state ) ->
             state
                 |> Array.toList
                 |> List.map Dict.values

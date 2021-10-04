@@ -4,13 +4,14 @@ module Lia.Markdown.Task.Update exposing
     , update
     )
 
-import Array exposing (Array)
+import Array
+import Browser exposing (element)
 import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
 import Lia.Markdown.Effect.Script.Update as JS
 import Lia.Markdown.Quiz.Update exposing (init, merge)
 import Lia.Markdown.Task.Json as Json
-import Lia.Markdown.Task.Types exposing (Vector)
+import Lia.Markdown.Task.Types exposing (Element, Vector)
 import Port.Eval as Eval
 import Port.Event as Event exposing (Event)
 import Return exposing (Return)
@@ -43,36 +44,37 @@ update scripts msg vector =
             case
                 vector
                     |> Array.get x
-                    |> Maybe.map (Tuple.mapFirst (toggle y))
+                    |> Maybe.map (toggle y)
             of
-                Just ( state, Nothing ) ->
-                    vector
-                        |> Array.set x ( state, Nothing )
-                        |> Return.val
-                        |> store
+                Just element ->
+                    case element.scriptID of
+                        Nothing ->
+                            vector
+                                |> Array.set x element
+                                |> Return.val
+                                |> store
 
-                -- toggle and execute the code snippet
-                Just ( state, Just id ) ->
-                    vector
-                        |> Array.set x ( state, Just id )
-                        |> Return.val
-                        |> Return.batchEvents
-                            (case
-                                Array.get id scripts
-                                    |> Maybe.map .script
-                             of
-                                Just code ->
-                                    [ [ state
-                                            |> JE.array JE.bool
-                                            |> JE.encode 0
-                                      ]
-                                        |> Eval.event x code (outputs scripts)
-                                    ]
+                        Just scriptID ->
+                            vector
+                                |> Array.set x element
+                                |> Return.val
+                                |> Return.batchEvents
+                                    (case
+                                        Array.get scriptID scripts
+                                            |> Maybe.map .script
+                                     of
+                                        Just code ->
+                                            [ [ element.state
+                                                    |> JE.array JE.bool
+                                                    |> JE.encode 0
+                                              ]
+                                                |> Eval.event x code (outputs scripts)
+                                            ]
 
-                                Nothing ->
-                                    []
-                            )
-                        |> store
+                                        Nothing ->
+                                            []
+                                    )
+                                |> store
 
                 --|> Return.script (execute id state)
                 Nothing ->
@@ -97,12 +99,12 @@ update scripts msg vector =
                     case
                         vector
                             |> Array.get event.section
-                            |> Maybe.andThen Tuple.second
+                            |> Maybe.andThen .scriptID
                     of
-                        Just id ->
+                        Just scriptID ->
                             vector
                                 |> Return.val
-                                |> Return.script (JS.handle { event | topic = "code", section = id })
+                                |> Return.script (JS.handle { event | topic = "code", section = scriptID })
 
                         Nothing ->
                             Return.val vector
@@ -111,15 +113,18 @@ update scripts msg vector =
                     Return.val vector
 
 
-toggle : Int -> Array Bool -> Array Bool
-toggle y states =
-    Array.set y
-        (states
-            |> Array.get y
-            |> Maybe.map not
-            |> Maybe.withDefault False
-        )
-        states
+toggle : Int -> Element -> Element
+toggle y element =
+    { element
+        | state =
+            Array.set y
+                (element.state
+                    |> Array.get y
+                    |> Maybe.map not
+                    |> Maybe.withDefault False
+                )
+                element.state
+    }
 
 
 {-| Create a store event, that will store the state of the task persistently
@@ -142,6 +147,6 @@ handle =
     Handle
 
 
-execute : Int -> Array Bool -> Script.Msg sub
+execute : Int -> Element -> Script.Msg sub
 execute id =
-    JE.array JE.bool >> JE.encode 0 >> JS.run id
+    .state >> JE.array JE.bool >> JE.encode 0 >> JS.run id

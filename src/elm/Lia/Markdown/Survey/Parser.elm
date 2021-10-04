@@ -183,11 +183,10 @@ add_state state id c =
     { c
         | survey_vector =
             Array.push
-                ( ( False
-                  , state
-                  , Nothing
-                  )
-                , id
-                )
+                { submitted = False
+                , state = state
+                , errorMsg = Nothing
+                , scriptID = id
+                }
                 c.survey_vector
     }
