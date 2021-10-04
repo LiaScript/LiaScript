@@ -40,6 +40,7 @@ type SendExec = {
   output: (result: string, details?: Lia.ErrMessage[][], ok?: boolean) => void
   wait: () => void
   stop: () => void
+  clear: () => void
   html: (msg: string) => void
   liascript: (msg: string) => void
 }
@@ -232,7 +233,7 @@ function lia_eval(code: string, send: SendEval) {
     console.clear()
 
     send.lia(String(eval(code + '\n'))) //, send, console)))
-  } catch (e) {
+  } catch (e: any) {
     if (e instanceof LiaError) {
       send.lia(e.message, e.details, false)
     } else {
@@ -346,6 +347,9 @@ export function lia_execute_event(
         stop: () => {
           execute_response('code', id, sender, section)('LIA: stop')
         },
+        clear: () => {
+          execute_response('code', id, sender, section)('LIA: clear')
+        },
         html: (msg: string) => {
           execute_response('code', id, sender, section)('HTML: ' + msg)
         },
@@ -365,7 +369,7 @@ export function lia_execute_event(
       ) {
         send.lia(result === undefined ? 'LIA: stop' : result)
       }
-    } catch (e) {
+    } catch (e: any) {
       log.error('exec => ', e.message)
       if (!!send) send.lia(e.message, [], false)
     }

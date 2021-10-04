@@ -358,6 +358,9 @@ eval_ defintion id e js =
             else if e.result == "LIA: stop" then
                 js.result
 
+            else if e.result == "LIA: clear" then
+                Nothing
+
             else
                 Just <|
                     if e.ok then

@@ -170,7 +170,7 @@ function handleEffects(
             )
           }
         }
-      } catch (e) {
+      } catch (e: any) {
         msg.message.message = e.toString()
         elmSend(msg)
       }
