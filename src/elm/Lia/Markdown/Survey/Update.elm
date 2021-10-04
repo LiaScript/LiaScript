@@ -157,8 +157,8 @@ update scripts msg vector =
                         |> Result.map (merge vector)
                         |> Result.withDefault vector
                         |> Return.val
+                        |> init (\i s -> execute i s.state)
 
-                --|> init execute
                 _ ->
                     Return.val vector
 
