@@ -40,6 +40,7 @@ type SendExec = {
   output: (result: string, details?: Lia.ErrMessage[][], ok?: boolean) => void
   wait: () => void
   stop: () => void
+  clear: () => void
   html: (msg: string) => void
   liascript: (msg: string) => void
 }
@@ -345,6 +346,9 @@ export function lia_execute_event(
         },
         stop: () => {
           execute_response('code', id, sender, section)('LIA: stop')
+        },
+        clear: () => {
+          execute_response('code', id, sender, section)('LIA: clear')
         },
         html: (msg: string) => {
           execute_response('code', id, sender, section)('HTML: ' + msg)
