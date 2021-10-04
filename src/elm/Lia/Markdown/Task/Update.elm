@@ -11,7 +11,7 @@ import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
 import Lia.Markdown.Effect.Script.Update as JS
 import Lia.Markdown.Quiz.Update exposing (init, merge)
 import Lia.Markdown.Task.Json as Json
-import Lia.Markdown.Task.Types exposing (Element, Vector)
+import Lia.Markdown.Task.Types exposing (Element, Vector, toString)
 import Port.Eval as Eval
 import Port.Event as Event exposing (Event)
 import Return exposing (Return)
@@ -64,10 +64,7 @@ update scripts msg vector =
                                             |> Maybe.map .script
                                      of
                                         Just code ->
-                                            [ [ element.state
-                                                    |> JE.array JE.bool
-                                                    |> JE.encode 0
-                                              ]
+                                            [ [ toString element ]
                                                 |> Eval.event x code (outputs scripts)
                                             ]
 
@@ -149,4 +146,4 @@ handle =
 
 execute : Int -> Element -> Script.Msg sub
 execute id =
-    .state >> JE.array JE.bool >> JE.encode 0 >> JS.run id
+    toString >> JS.run id

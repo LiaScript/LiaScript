@@ -2,6 +2,7 @@ module Lia.Markdown.Task.Types exposing
     ( Element
     , Task
     , Vector
+    , toString
     )
 
 {-| As in most LiaScript modules, the representation is separated from the
@@ -10,6 +11,7 @@ elements for visualization are stored within the `Task` record.
 -}
 
 import Array exposing (Array)
+import Json.Encode as JE
 import Lia.Markdown.Inline.Types exposing (Inlines)
 
 
@@ -43,3 +45,8 @@ type alias Task =
     { task : List Inlines
     , id : Int
     }
+
+
+toString : Element -> String
+toString =
+    .state >> JE.array JE.bool >> JE.encode 0

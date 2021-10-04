@@ -12,10 +12,11 @@ import Combine
         , succeed
         , withState
         )
+import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Parser exposing (maybeJS)
 import Lia.Markdown.Quiz.Vector.Parser exposing (either, groupBy)
-import Lia.Markdown.Task.Types exposing (Task)
+import Lia.Markdown.Task.Types exposing (Task, toString)
 import Lia.Parser.Context exposing (Context)
 
 
@@ -52,6 +53,37 @@ modify_State ( states, tasks ) =
                         , scriptID = m
                         }
                         s.task_vector
+                , effect_model =
+                    case m of
+                        Nothing ->
+                            s.effect_model
+
+                        Just scriptID ->
+                            let
+                                effect_model =
+                                    s.effect_model
+                            in
+                            { effect_model
+                                | javascript =
+                                    case Array.get scriptID effect_model.javascript of
+                                        Just script ->
+                                            Array.set scriptID
+                                                { script
+                                                    | result =
+                                                        Just
+                                                            (Script.Text
+                                                                (toString
+                                                                    { state = Array.fromList states
+                                                                    , scriptID = Nothing
+                                                                    }
+                                                                )
+                                                            )
+                                                }
+                                                effect_model.javascript
+
+                                        Nothing ->
+                                            effect_model.javascript
+                            }
             }
     in
     (.task_vector >> Array.length >> succeed)
