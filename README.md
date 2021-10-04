@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.38
+version:  0.9.39
 language: en
 narrator: UK English Male
 
@@ -282,11 +282,12 @@ This will apply the following three patches:
 
 ## Version-Changes
 
-**0.9.38** (04/10/2021)
+**0.9.39** (04/10/2021)
 
 * improve: Attached scripts are now executed only if a change was triggered by the
   user and their default value gets loaded. The default or initial state for quizzes
   and surveys is undefined, for tasks it is defined by the initial state.
+* improve: Add `send.clear` command to scripts
 
 **0.9.37** (01/10/2021)
 
