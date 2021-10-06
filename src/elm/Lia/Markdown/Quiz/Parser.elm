@@ -17,6 +17,7 @@ import Combine
         , modifyState
         , onsuccess
         , optional
+        , regex
         , skip
         , string
         , succeed
@@ -73,7 +74,7 @@ generic : Parser Context ()
 generic =
     maybe Indent.check
         |> ignore spaces
-        |> ignore (string "[[!]]")
+        |> ignore (regex "(?:- )?\\[\\[!\\]\\]")
         |> ignore newline
         |> skip
 

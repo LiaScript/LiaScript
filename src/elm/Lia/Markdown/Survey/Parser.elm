@@ -86,9 +86,9 @@ toSelect quiz =
 pattern : Parser Context a -> Parser Context a
 pattern p =
     maybe Indent.check
-        |> ignore (regex "[\t ]*\\[")
+        |> ignore (regex "\\-?[\t ]*\\[")
         |> keep p
-        |> ignore (regex "][\t ]*")
+        |> ignore (regex "\\][\t ]*")
 
 
 id_str : Parser s String
@@ -125,7 +125,7 @@ header begin end =
 questions : Parser Context (List Inlines)
 questions =
     maybe Indent.check
-        |> ignore (regex "[\t ]*\\[[\t ]+\\]")
+        |> ignore (regex "\\-?[\t ]*\\[[\t ]+\\]")
         |> keep line
         |> ignore newline
         |> many1
