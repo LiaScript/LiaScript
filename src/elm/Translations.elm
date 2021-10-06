@@ -2831,7 +2831,7 @@ surveySubmitted lang =
             "Благодаря"
 
         De ->
-            "Dankeshön"
+            "Dankeschön"
 
         Es ->
             "enviado"
