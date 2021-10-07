@@ -4,7 +4,8 @@ module Lia.Markdown.Survey.Update exposing
     , update
     )
 
-import Array
+import Accessibility.Aria exposing (errorMessage)
+import Array exposing (Array)
 import Browser exposing (element)
 import Dict
 import Json.Decode as JD
@@ -80,7 +81,7 @@ update scripts msg vector =
                                             |> Event.store
                                         )
                                     |> Return.sync
-                                        (state
+                                        (element.state
                                             |> Json.fromState
                                             |> Event "submit" id
                                         )
@@ -113,7 +114,7 @@ update scripts msg vector =
                                             []
                                     )
                                 |> Return.sync
-                                    (state
+                                    (element.state
                                         |> Json.fromState
                                         |> Event "submit" id
                                     )
@@ -185,6 +186,33 @@ update scripts msg vector =
                     Return.val vector
 
 
+updateSync : Vector -> Event -> Vector
+updateSync vector event =
+    case ( event.topic, Array.get event.section vector ) of
+        ( "submit", Just element ) ->
+            Array.set event.section
+                { element
+                    | sync =
+                        case element.sync of
+                            Just list ->
+                                event.message
+                                    |> JD.decodeValue Json.toState
+                                    |> Result.map (\state -> state :: list)
+                                    |> Result.withDefault list
+                                    |> Just
+
+                            Nothing ->
+                                event.message
+                                    |> JD.decodeValue Json.toState
+                                    |> Result.map List.singleton
+                                    |> Result.toMaybe
+                }
+                vector
+
+        _ ->
+            vector
+
+
 update_ :
     Int
     -> Vector
@@ -236,7 +264,7 @@ updateError : Vector -> Int -> Maybe String -> Vector
 updateError vector id message =
     case Array.get id vector |> Maybe.map (\e -> ( e.submitted, e )) of
         Just ( False, element ) ->
-            set_state vector id message element.scriptID element.state
+            set_state vector id { element | errorMsg = message }
 
         _ ->
             vector
@@ -246,7 +274,7 @@ update_text : Vector -> Int -> String -> Vector
 update_text vector idx str =
     case Array.get idx vector |> Maybe.map (\e -> ( e.submitted, e.state, e )) of
         Just ( False, Text_State _, element ) ->
-            set_state vector idx element.errorMsg element.scriptID (Text_State str)
+            set_state vector idx { element | state = Text_State str }
 
         _ ->
             vector
@@ -256,11 +284,7 @@ update_select : Vector -> Int -> Int -> Vector
 update_select vector id value =
     case Array.get id vector |> Maybe.map (\e -> ( e.submitted, e.state, e )) of
         Just ( False, Select_State _ _, element ) ->
-            set_state vector
-                id
-                element.errorMsg
-                element.scriptID
-                (Select_State False value)
+            set_state vector id { element | state = Select_State False value }
 
         _ ->
             vector
@@ -270,11 +294,7 @@ update_select_chose : Vector -> Int -> Vector
 update_select_chose vector id =
     case Array.get id vector |> Maybe.map (\e -> ( e.submitted, e.state, e )) of
         Just ( False, Select_State b value, element ) ->
-            set_state vector
-                id
-                element.errorMsg
-                element.scriptID
-                (Select_State (not b) value)
+            set_state vector id { element | state = Select_State (not b) value }
 
         _ ->
             vector
@@ -284,17 +304,23 @@ update_vector : Vector -> Int -> String -> Vector
 update_vector vector idx var =
     case Array.get idx vector |> Maybe.map (\e -> ( e.submitted, e.state, e )) of
         Just ( False, Vector_State False e, element ) ->
-            e
-                |> Dict.map (\_ _ -> False)
-                |> Dict.update var (\_ -> Just True)
-                |> Vector_State False
-                |> set_state vector idx element.errorMsg element.scriptID
+            { element
+                | state =
+                    e
+                        |> Dict.map (\_ _ -> False)
+                        |> Dict.update var (\_ -> Just True)
+                        |> Vector_State False
+            }
+                |> set_state vector idx
 
         Just ( False, Vector_State True e, element ) ->
-            e
-                |> Dict.update var (\b -> Maybe.map not b)
-                |> Vector_State True
-                |> set_state vector idx element.errorMsg element.scriptID
+            { element
+                | state =
+                    e
+                        |> Dict.update var (\b -> Maybe.map not b)
+                        |> Vector_State True
+            }
+                |> set_state vector idx
 
         _ ->
             vector
@@ -308,43 +334,49 @@ update_matrix vector col_id row_id var =
                 row =
                     Array.get row_id matrix
             in
-            row
-                |> Maybe.map (\d -> Dict.map (\_ _ -> False) d)
-                |> Maybe.map (\d -> Dict.update var (\_ -> Just True) d)
-                |> Maybe.map (\d -> Array.set row_id d matrix)
-                |> Maybe.withDefault matrix
-                |> Matrix_State False
-                |> set_state vector col_id element.errorMsg element.scriptID
+            { element
+                | state =
+                    row
+                        |> Maybe.map (\d -> Dict.map (\_ _ -> False) d)
+                        |> Maybe.map (\d -> Dict.update var (\_ -> Just True) d)
+                        |> Maybe.map (\d -> Array.set row_id d matrix)
+                        |> Maybe.withDefault matrix
+                        |> Matrix_State False
+            }
+                |> set_state vector col_id
 
         Just ( False, Matrix_State True matrix, element ) ->
             let
                 row =
                     Array.get row_id matrix
             in
-            row
-                |> Maybe.map (\d -> Dict.update var (\b -> Maybe.map not b) d)
-                |> Maybe.map (\d -> Array.set row_id d matrix)
-                |> Maybe.withDefault matrix
-                |> Matrix_State True
-                |> set_state vector col_id element.errorMsg element.scriptID
+            { element
+                | state =
+                    row
+                        |> Maybe.map (\d -> Dict.update var (\b -> Maybe.map not b) d)
+                        |> Maybe.map (\d -> Array.set row_id d matrix)
+                        |> Maybe.withDefault matrix
+                        |> Matrix_State True
+            }
+                |> set_state vector col_id
 
         _ ->
             vector
 
 
-set_state : Vector -> Int -> Maybe String -> Maybe Int -> State -> Vector
-set_state vector idx error js state =
-    Array.set idx (Element False state error js) vector
+set_state : Vector -> Int -> Element -> Vector
+set_state vector id element =
+    Array.set id element vector
 
 
-submit : Vector -> Int -> ( Maybe State, Vector )
+submit : Vector -> Int -> Vector
 submit vector idx =
     case Array.get idx vector of
         Just element ->
-            ( Just element.state, Array.set idx { element | submitted = True } vector )
+            Array.set idx { element | submitted = True } vector
 
         _ ->
-            ( Nothing, vector )
+            vector
 
 
 submittable : Vector -> Int -> Bool
