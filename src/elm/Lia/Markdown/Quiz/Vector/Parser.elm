@@ -132,7 +132,7 @@ parser-parameter is used to parse the part within the starting brackets.
 -}
 group : Parser Context a -> Parser Context ( List a, List Inlines )
 group =
-    groupBy (string "[") (string "]")
+    groupBy (regex "(?:- )?\\[") (string "]")
         >> map List.unzip
 
 

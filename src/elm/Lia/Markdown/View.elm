@@ -9,6 +9,7 @@ import Conditional.List as CList
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Html.Lazy as Lazy
+import Json.Encode as JE
 import Lia.Markdown.Chart.View as Charts
 import Lia.Markdown.Code.View as Codes
 import Lia.Markdown.Config as Config exposing (Config)
@@ -24,6 +25,7 @@ import Lia.Markdown.HTML.View as HTML
 import Lia.Markdown.Inline.Stringify exposing (stringify, stringify_)
 import Lia.Markdown.Inline.Types exposing (Inlines, htmlBlock, mediaBlock)
 import Lia.Markdown.Inline.View as Inline
+import Lia.Markdown.Json.Encode as Encode
 import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Markdown.Quiz.View as Quizzes
 import Lia.Markdown.Survey.View as Surveys
@@ -128,6 +130,15 @@ view_body ( config, footnote2show, footnotes ) =
         >> viewMain
 
 
+toHash : Block -> String
+toHash =
+    List.singleton
+        >> Encode.encode
+        >> JE.encode 0
+        >> MD5.hex
+        >> String.slice 0 8
+
+
 fold : Config Msg -> List (Html Msg) -> Blocks -> List (Html Msg)
 fold config output blocks =
     case blocks of
@@ -137,13 +148,23 @@ fold config output blocks =
         (Paragraph a e) :: (Quiz attr quiz solution) :: bs ->
             let
                 id =
-                    stringify e
-                        |> MD5.hex
-                        |> String.slice 0 8
+                    toHash (Paragraph a e)
             in
             fold config
                 (viewQuiz config (Just id) attr quiz solution
                     :: view_block config (Paragraph (( "id", id ) :: a) e)
+                    :: output
+                )
+                bs
+
+        (HTML a e) :: (Quiz attr quiz solution) :: bs ->
+            let
+                id =
+                    toHash (HTML a e)
+            in
+            fold config
+                (viewQuiz config (Just id) attr quiz solution
+                    :: view_block config (HTML (( "id", id ) :: a) e)
                     :: output
                 )
                 bs
