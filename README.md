@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.39
+version:  0.9.40
 language: en
 narrator: UK English Male
 
@@ -281,6 +281,14 @@ This will apply the following three patches:
 - elm-patch/dom: enable onclick events as well as innerHTML
 
 ## Version-Changes
+
+**0.9.40** (21/10/2021)
+
+- improved quiz:
+
+  - accessibility with block-question
+  - quizzes can have starting dashes
+  - fixes for generic quizzes
 
 **0.9.39** (04/10/2021)
 
