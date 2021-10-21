@@ -166,7 +166,7 @@ toString state =
             Matrix.toString m
 
         _ ->
-            "true"
+            "undefined"
 
 
 execute : Int -> State -> Script.Msg sub
