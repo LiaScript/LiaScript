@@ -91,21 +91,7 @@ update scripts msg vector =
                                 case solution of
                                     Generic_Type ->
                                         return
-                                            |> Return.batchEvents
-                                                (case
-                                                    scripts
-                                                        |> Array.get scriptID
-                                                        |> Maybe.map .script
-                                                 of
-                                                    Just code ->
-                                                        [ [ "resolved" ]
-                                                            |> Eval.event id code (outputs scripts)
-                                                        ]
-
-                                                    Nothing ->
-                                                        []
-                                                )
-                                            |> Return.script (execute scriptID <| toState solution)
+                                            |> Return.script (JS.run scriptID "true")
 
                                     _ ->
                                         return
@@ -166,7 +152,7 @@ toString state =
             Matrix.toString m
 
         _ ->
-            "undefined"
+            ""
 
 
 execute : Int -> State -> Script.Msg sub
