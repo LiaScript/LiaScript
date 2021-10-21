@@ -14,7 +14,7 @@ import Lia.Markdown.Quiz.Block.Update as Block
 import Lia.Markdown.Quiz.Json as Json
 import Lia.Markdown.Quiz.Matrix.Update as Matrix
 import Lia.Markdown.Quiz.Solution as Solution
-import Lia.Markdown.Quiz.Types exposing (Element, State(..), Type, Vector, comp, toState)
+import Lia.Markdown.Quiz.Types exposing (Element, State(..), Type(..), Vector, comp, toState)
 import Lia.Markdown.Quiz.Vector.Update as Vector
 import Port.Eval as Eval
 import Port.Event as Event exposing (Event)
@@ -88,8 +88,28 @@ update scripts msg vector =
                 |> (\return ->
                         case Array.get id vector |> Maybe.andThen .scriptID of
                             Just scriptID ->
-                                return
-                                    |> Return.script (execute scriptID <| toState solution)
+                                case solution of
+                                    Generic_Type ->
+                                        return
+                                            |> Return.batchEvents
+                                                (case
+                                                    scripts
+                                                        |> Array.get scriptID
+                                                        |> Maybe.map .script
+                                                 of
+                                                    Just code ->
+                                                        [ [ "resolved" ]
+                                                            |> Eval.event id code (outputs scripts)
+                                                        ]
+
+                                                    Nothing ->
+                                                        []
+                                                )
+                                            |> Return.script (execute scriptID <| toState solution)
+
+                                    _ ->
+                                        return
+                                            |> Return.script (execute scriptID <| toState solution)
 
                             _ ->
                                 return
@@ -146,7 +166,7 @@ toString state =
             Matrix.toString m
 
         _ ->
-            ""
+            "true"
 
 
 execute : Int -> State -> Script.Msg sub
@@ -223,24 +243,32 @@ evalEventDecoder json =
     if eval.ok then
         if eval.result == "true" then
             \e ->
-                Return.val
-                    { e
-                        | trial = e.trial + 1
-                        , solved = Solution.Solved
-                        , error_msg = ""
-                    }
+                Return.val <|
+                    if e.solved == Solution.Open then
+                        { e
+                            | trial = e.trial + 1
+                            , solved = Solution.Solved
+                            , error_msg = ""
+                        }
+
+                    else
+                        e
 
         else if String.startsWith "LIA:" eval.result then
             Return.val
 
         else
             \e ->
-                Return.val
-                    { e
-                        | trial = e.trial + 1
-                        , solved = Solution.Open
-                        , error_msg = ""
-                    }
+                Return.val <|
+                    if e.solved == Solution.Open then
+                        { e
+                            | trial = e.trial + 1
+                            , solved = Solution.Open
+                            , error_msg = ""
+                        }
+
+                    else
+                        e
 
     else
         \e -> Return.val { e | error_msg = eval.result }
