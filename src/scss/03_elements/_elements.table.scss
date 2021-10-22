@@ -186,7 +186,9 @@
   }
 
   &__row {
-    background-color: rgb(var(--color-background));
+    td {
+      background-color: rgb(var(--color-background));
+    }
 
     &:first-of-type > td {
       border-top: 0;
