@@ -517,7 +517,7 @@ viewQuiz config labeledBy attr quiz solution =
                     |> Tuple.mapSecond (Html.map UpdateQuiz)
 
             Just ( answer, hidden_effects ) ->
-                if Quizzes.showSolution config.section.quiz_vector quiz then
+                if Quizzes.showSolution quiz config.section.quiz_vector then
                     config.section.quiz_vector
                         |> Quizzes.view config.main labeledBy quiz
                         |> Tuple.mapSecond (List.map (Html.map UpdateQuiz))
