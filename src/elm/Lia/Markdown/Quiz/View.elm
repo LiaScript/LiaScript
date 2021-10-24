@@ -24,6 +24,7 @@ TODO:
 import Accessibility.Aria as A11y_Aria
 import Accessibility.Role as A11y_Role
 import Accessibility.Widget as A11y_Widget
+import Array
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
 import Lia.Markdown.Inline.Config exposing (Config)
@@ -40,7 +41,6 @@ import Lia.Markdown.Quiz.Types
         , Type(..)
         , Vector
         , getClass
-        , getState
         , isSolved
         )
 import Lia.Markdown.Quiz.Update exposing (Msg(..))
@@ -63,7 +63,7 @@ import Translations
 -}
 view : Config sub -> Maybe String -> Quiz -> Vector -> ( Maybe Int, List (Html (Msg sub)) )
 view config labeledBy quiz vector =
-    case getState vector quiz.id of
+    case Array.get quiz.id vector of
         Just elem ->
             ( elem.scriptID
             , viewState config elem quiz
@@ -77,11 +77,11 @@ view config labeledBy quiz vector =
 {-| Determine the quiz class based on the current state
 -}
 class : Int -> Vector -> String
-class id vector =
-    getState vector id
-        |> Maybe.map (\s -> "lia-quiz-" ++ getClass s.state ++ " " ++ Solution.toString s.solved)
-        |> Maybe.withDefault ""
-        |> (++) "lia-quiz "
+class id =
+    Array.get id
+        >> Maybe.map (\s -> "lia-quiz-" ++ getClass s.state ++ " " ++ Solution.toString s.solved)
+        >> Maybe.withDefault ""
+        >> (++) "lia-quiz "
 
 
 {-| **private:** Simple router function that is used to match the current state
@@ -284,9 +284,8 @@ viewHintButton id show active title =
     Resolved -> True
 
 -}
-showSolution : Vector -> Quiz -> Bool
-showSolution vector quiz =
-    quiz.id
-        |> getState vector
-        |> Maybe.map isSolved
-        |> Maybe.withDefault False
+showSolution : Quiz -> Vector -> Bool
+showSolution quiz =
+    Array.get quiz.id
+        >> Maybe.map isSolved
+        >> Maybe.withDefault False
