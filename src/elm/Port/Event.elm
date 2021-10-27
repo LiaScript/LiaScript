@@ -10,6 +10,7 @@ module Port.Event exposing
     , message
     , store
     , topic
+    , topicWithId
     )
 
 import Json.Decode as JD
@@ -57,6 +58,13 @@ topic =
     .route
         >> List.head
         >> Maybe.map (\(Point t _) -> t)
+
+
+topicWithId : Event -> Maybe ( String, Maybe Int )
+topicWithId =
+    .route
+        >> List.head
+        >> Maybe.map (\(Point t i) -> ( t, i ))
 
 
 message : Event -> JE.Value

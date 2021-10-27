@@ -17,9 +17,9 @@ import Lia.Parser.Parser exposing (parse_subsection)
 import Lia.Section exposing (SubSection(..))
 import Lia.Utils exposing (focus)
 import Port.Eval as Eval exposing (Eval)
-import Port.Event exposing (Event)
+import Port.Event as Event exposing (Event)
 import Process
-import Return exposing (Return, script, val)
+import Return exposing (Return)
 import Task
 
 
@@ -63,7 +63,12 @@ update main msg scripts =
                                 | input = Input.value value node.input
                                 , updated = True
                             }
-                        |> update main (Handle (Event "code" id (Eval.encode <| Eval True value [])))
+                        |> update main
+                            (Eval True value []
+                                |> Eval.encode
+                                |> Event.initWithId "code" id
+                                |> Handle
+                            )
 
                 Nothing ->
                     Return.val scripts
@@ -190,16 +195,16 @@ update main msg scripts =
                 |> Return.val
 
         Handle event ->
-            case event.topic of
-                "code" ->
+            case Event.topicWithId event of
+                Just ( "code", Just section ) ->
                     let
                         ( publish, javascript ) =
                             scripts
-                                |> update_ main.globals event.section event.message
+                                |> update_ main.globals section (Event.message event)
 
                         node =
                             javascript
-                                |> Script.get identity event.section
+                                |> Script.get identity section
 
                         nodeUpdate =
                             if
@@ -208,7 +213,7 @@ update main msg scripts =
                                     |> Maybe.withDefault False
                             then
                                 node
-                                    |> Maybe.map (\n -> [ ( event.section, n.script, Input.getValue n.input ) ])
+                                    |> Maybe.map (\n -> [ ( section, n.script, Input.getValue n.input ) ])
                                     |> Maybe.withDefault []
                                     |> Script.replaceInputs javascript
 
@@ -218,7 +223,7 @@ update main msg scripts =
                     case Maybe.andThen .output node of
                         Nothing ->
                             Script.set
-                                event.section
+                                section
                                 (\js -> { js | update = False })
                                 javascript
                                 |> Return.val
@@ -227,7 +232,7 @@ update main msg scripts =
                         Just output ->
                             javascript
                                 |> Script.updateChildren output
-                                |> Script.set event.section (\js -> { js | update = False })
+                                |> Script.set section (\js -> { js | update = False })
                                 |> Return.val
                                 |> Return.batchEvents
                                     (if publish then
@@ -240,15 +245,15 @@ update main msg scripts =
                                         []
                                     )
 
-                "codeX" ->
+                Just ( "codeX", Just section ) ->
                     let
                         ( publish, javascript ) =
                             scripts
-                                |> update_ main.globals event.section event.message
+                                |> update_ main.globals section (Event.message event)
 
                         node =
                             javascript
-                                |> Script.get identity event.section
+                                |> Script.get identity section
                     in
                     case Maybe.andThen .output node of
                         Nothing ->
@@ -267,13 +272,13 @@ update main msg scripts =
                                         []
                                     )
 
-                "sub" ->
-                    case scripts |> Array.get event.section |> Maybe.andThen .result of
+                Just ( "sub", Just section ) ->
+                    case scripts |> Array.get section |> Maybe.andThen .result of
                         Just (IFrame lia) ->
                             lia
-                                |> main.handle scripts event.message
-                                |> Return.mapValCmd (\v -> Script.set event.section (\s -> { s | result = Just (IFrame v) }) scripts) (Sub event.section)
-                                |> Return.mapEvents "sub" event.section
+                                |> main.handle scripts (Event.message event)
+                                |> Return.mapValCmd (\v -> Script.set section (\s -> { s | result = Just (IFrame v) }) scripts) (Sub section)
+                                |> Return.mapEvents "sub" section
 
                         _ ->
                             Return.val scripts
@@ -318,12 +323,12 @@ reRun fn cmd id scripts =
 
 execute : Int -> ( Int, String ) -> Event
 execute delay ( id, code ) =
-    Event "execute" id <|
-        JE.object
-            [ ( "delay", JE.int delay )
-            , ( "code", JE.string code )
-            , ( "id", JE.int id )
-            ]
+    [ ( "delay", JE.int delay )
+    , ( "code", JE.string code )
+    , ( "id", JE.int id )
+    ]
+        |> JE.object
+        |> Event.initWithId "execute" id
 
 
 update_ : Maybe Definition -> Int -> JE.Value -> Scripts SubSection -> ( Bool, Scripts SubSection )
