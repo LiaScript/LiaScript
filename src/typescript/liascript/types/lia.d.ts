@@ -12,9 +12,13 @@ export type ErrMessage = {
 }
 
 export type Event = {
+  route: Point[]
+  message: any
+}
+
+type Point = {
   topic: string
-  section: number
-  message: Event | any
+  id: number | null
 }
 
 export type Settings = {

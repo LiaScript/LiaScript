@@ -78,9 +78,13 @@ export class Connector {
 
   getFromIndex(_uidDB: string) {
     this.send({
-      topic: Port.RESTORE,
+      route: [
+        {
+          topic: Port.RESTORE,
+          id: null,
+        },
+      ],
       message: null,
-      section: -1,
     })
   }
 }
