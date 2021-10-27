@@ -131,26 +131,33 @@ update msg model =
             )
 
         Handle event ->
-            case event.topic of
-                "index" ->
+            case Port.Event.topic event of
+                Just "index" ->
                     update
-                        (event.message
+                        (event
+                            |> Port.Event.message
                             |> Index.handle
                             |> UpdateIndex
                         )
                         model
 
-                "getIndex" ->
+                Just "getIndex" ->
                     let
                         ( id, course ) =
-                            Index.decodeGet event.message
+                            event
+                                |> Port.Event.message
+                                |> Index.decodeGet
                     in
                     ( { model | preload = course }
                     , download Load_ReadMe_Result id
                     )
 
-                "restore" ->
-                    case Lia.Json.Decode.decode event.message of
+                Just "restore" ->
+                    case
+                        event
+                            |> Port.Event.message
+                            |> Lia.Json.Decode.decode
+                    of
                         Ok lia ->
                             start
                                 { model
@@ -164,8 +171,12 @@ update msg model =
                             , download Load_ReadMe_Result model.lia.readme
                             )
 
-                "lang" ->
-                    case JD.decodeValue JD.string event.message of
+                Just "lang" ->
+                    case
+                        event
+                            |> Port.Event.message
+                            |> JD.decodeValue JD.string
+                    of
                         Ok str ->
                             let
                                 lia =
@@ -282,7 +293,7 @@ update msg model =
                             Cmd.batch
                                 [ url
                                     |> JE.string
-                                    |> Event "offline" -1
+                                    |> Port.Event.init "offline"
                                     |> event2js
                                 , cmd
                                 ]

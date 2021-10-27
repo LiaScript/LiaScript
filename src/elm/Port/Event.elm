@@ -9,6 +9,7 @@ module Port.Event exposing
     , initWithId
     , message
     , pop
+    , popWithId
     , push
     , pushWithId
     , store
@@ -27,8 +28,10 @@ type alias Event =
     }
 
 
-type Point
-    = Point String (Maybe Int)
+type alias Point =
+    { topic_ : String
+    , id_ : Maybe Int
+    }
 
 
 empty : String -> Event
@@ -59,8 +62,18 @@ pushWithId topic_ id_ to =
 pop : Event -> Maybe ( String, Event )
 pop event =
     case event.route of
-        (Point topic_ _) :: route ->
-            Just ( topic_, { event | route = route } )
+        point :: route ->
+            Just ( point.topic_, { event | route = route } )
+
+        _ ->
+            Nothing
+
+
+popWithId : Event -> Maybe ( String, Maybe Int, Event )
+popWithId event =
+    case event.route of
+        { topic_, id_ } :: route ->
+            Just ( topic_, id_, { event | route = route } )
 
         _ ->
             Nothing
@@ -70,21 +83,21 @@ topic : Event -> Maybe String
 topic =
     .route
         >> List.head
-        >> Maybe.map (\(Point t _) -> t)
+        >> Maybe.map .topic_
 
 
 topicWithId : Event -> Maybe ( String, Maybe Int )
 topicWithId =
     .route
         >> List.head
-        >> Maybe.map (\(Point t i) -> ( t, i ))
+        >> Maybe.map (\{ topic_, id_ } -> ( topic_, id_ ))
 
 
 id : Event -> Maybe Int
 id =
     .route
         >> List.head
-        >> Maybe.andThen (\(Point _ i) -> i)
+        >> Maybe.andThen .id_
 
 
 destructure : Event -> ( Maybe ( String, Maybe Int ), JE.Value )
@@ -106,7 +119,7 @@ encode { route, msg } =
 
 
 encPoint : Point -> JE.Value
-encPoint (Point topic_ id_) =
+encPoint { topic_, id_ } =
     JE.object
         [ ( "topic", JE.string topic_ )
         , ( "id"
