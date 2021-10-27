@@ -12,7 +12,7 @@ import Lia.Index.Model as Index
 import Lia.Section exposing (Sections)
 import Lia.Settings.Json
 import Lia.Settings.Types as Settings exposing (Settings)
-import Port.Event exposing (Event)
+import Port.Event as Event exposing (Event)
 import Translations
 
 
@@ -149,7 +149,7 @@ loadResource old new =
     ( List.append old to_load
     , List.map
         (\res ->
-            Event "resource" 0 <|
+            Event.init "resource" <|
                 JE.list JE.string <|
                     case res of
                         Script url ->
