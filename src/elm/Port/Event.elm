@@ -3,6 +3,7 @@ module Port.Event exposing
     , decode
     , encode
     , init
+    , initWithId
     , store
     )
 
@@ -24,6 +25,11 @@ type Point
 init : String -> JE.Value -> Event
 init topic =
     Event [ Point topic Nothing ]
+
+
+initWithId : String -> Int -> JE.Value -> Event
+initWithId topic id =
+    Event [ Point topic (Just id) ]
 
 
 encode : Event -> JE.Value

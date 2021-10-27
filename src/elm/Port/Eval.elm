@@ -12,7 +12,7 @@ module Port.Eval exposing
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Utils exposing (toEscapeString, toJSstring)
-import Port.Event exposing (Event)
+import Port.Event as Event exposing (Event)
 
 
 type alias Eval =
@@ -40,7 +40,7 @@ event id code scripts inputs =
         |> List.foldl replace_id code_
         |> replace_0 default
         |> JE.string
-        |> Event "eval" id
+        |> Event.initWithId "eval" id
 
 
 replace_0 : String -> String -> String
