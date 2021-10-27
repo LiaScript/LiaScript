@@ -161,8 +161,8 @@ update scripts msg model =
                 |> maybe_update idx model
 
         Handle event ->
-            case event.topic of
-                "eval" ->
+            case Port.Event.destructure event of
+                ( Just ( "eval", Just section ), message ) ->
                     let
                         e =
                             Event.evalDecode event
@@ -170,64 +170,64 @@ update scripts msg model =
                     case e.result of
                         "LIA: wait" ->
                             model
-                                |> maybe_project event.section (\p -> { p | log = Log.empty })
-                                |> maybe_update event.section model
+                                |> maybe_project section (\p -> { p | log = Log.empty })
+                                |> maybe_update section model
 
                         "LIA: stop" ->
                             model
-                                |> maybe_project event.section stop
-                                |> Maybe.map (Event.version_update event.section)
-                                |> maybe_update event.section model
+                                |> maybe_project section stop
+                                |> Maybe.map (Event.version_update section)
+                                |> maybe_update section model
 
                         "LIA: clear" ->
                             model
-                                |> maybe_project event.section clr
-                                |> maybe_update event.section model
+                                |> maybe_project section clr
+                                |> maybe_update section model
 
                         -- preserve previous logging by setting ok to false
                         "LIA: terminal" ->
                             model
-                                |> maybe_project event.section (\p -> { p | terminal = Just <| Terminal.init })
-                                |> maybe_update event.section model
+                                |> maybe_project section (\p -> { p | terminal = Just <| Terminal.init })
+                                |> maybe_update section model
 
                         _ ->
                             model
-                                |> maybe_project event.section (set_result False e)
-                                |> Maybe.map (Event.version_update event.section)
-                                |> maybe_update event.section model
+                                |> maybe_project section (set_result False e)
+                                |> Maybe.map (Event.version_update section)
+                                |> maybe_update section model
 
-                "restore" ->
-                    restore event.message model
+                ( Just ( "restore", _ ), message ) ->
+                    restore message model
 
-                "debug" ->
+                ( Just ( "debug", Just section ), message ) ->
                     model
-                        |> maybe_project event.section (logger Log.add Log.Debug event.message)
-                        |> maybe_update event.section model
+                        |> maybe_project section (logger Log.add Log.Debug message)
+                        |> maybe_update section model
 
-                "info" ->
+                ( Just ( "info", Just section ), message ) ->
                     model
-                        |> maybe_project event.section (logger Log.add Log.Info event.message)
-                        |> maybe_update event.section model
+                        |> maybe_project section (logger Log.add Log.Info message)
+                        |> maybe_update section model
 
-                "warn" ->
+                ( Just ( "warn", Just section ), message ) ->
                     model
-                        |> maybe_project event.section (logger Log.add Log.Warn event.message)
-                        |> maybe_update event.section model
+                        |> maybe_project section (logger Log.add Log.Warn message)
+                        |> maybe_update section model
 
-                "error" ->
+                ( Just ( "error", Just section ), message ) ->
                     model
-                        |> maybe_project event.section (logger Log.add Log.Error event.message)
-                        |> maybe_update event.section model
+                        |> maybe_project section (logger Log.add Log.Error message)
+                        |> maybe_update section model
 
-                "html" ->
+                ( Just ( "html", Just section ), message ) ->
                     model
-                        |> maybe_project event.section (logger Log.add Log.HTML event.message)
-                        |> maybe_update event.section model
+                        |> maybe_project section (logger Log.add Log.HTML message)
+                        |> maybe_update section model
 
-                "stream" ->
+                ( Just ( "stream", Just section ), message ) ->
                     model
-                        |> maybe_project event.section (logger Log.add Log.Stream event.message)
-                        |> maybe_update event.section model
+                        |> maybe_project section (logger Log.add Log.Stream message)
+                        |> maybe_update section model
 
                 _ ->
                     Return.val model
