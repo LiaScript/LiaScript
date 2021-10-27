@@ -52,7 +52,7 @@ batchEvents e r =
 
 mapEvents : String -> Int -> Return model msg sub -> Return model msg sub
 mapEvents topic id r =
-    { r | events = List.map (Event.encode >> Event topic id) r.events }
+    { r | events = List.map (Event.addTopicWithId topic id) r.events }
 
 
 cmd : Cmd msg -> Return model msg sub -> Return model msg sub
@@ -122,4 +122,4 @@ error =
 
 debug_ : Int -> String -> Return model msg sub -> Return model msg sub
 debug_ id message r =
-    { r | debug = Event "log" id (JE.string message) :: r.debug }
+    { r | debug = Event.initWithId "log" id (JE.string message) :: r.debug }
