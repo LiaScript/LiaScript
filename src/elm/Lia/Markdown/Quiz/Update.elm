@@ -102,28 +102,38 @@ update scripts msg vector =
                    )
 
         Handle event ->
-            case event.topic of
-                "eval" ->
+            case Event.topicWithId event of
+                Just ( "eval", Just section ) ->
                     case
                         vector
-                            |> Array.get event.section
+                            |> Array.get section
                             |> Maybe.andThen .scriptID
                     of
                         Just scriptID ->
-                            event.message
+                            let
+                                message =
+                                    Event.message event
+                            in
+                            message
                                 |> evalEventDecoder
-                                |> update_ event.section vector
+                                |> update_ section vector
                                 |> store
-                                |> Return.script (JS.handle { event | topic = "code", section = scriptID })
+                                |> Return.script
+                                    (message
+                                        |> Event.initWithId "code" scriptID
+                                        |> JS.handle
+                                    )
 
                         Nothing ->
-                            event.message
+                            event
+                                |> Event.message
                                 |> evalEventDecoder
-                                |> update_ event.section vector
+                                |> update_ section vector
                                 |> store
 
-                "restore" ->
-                    event.message
+                Just ( "restore", _ ) ->
+                    event
+                        |> Event.message
                         |> Json.toVector
                         |> Result.map (merge vector)
                         |> Result.withDefault vector
