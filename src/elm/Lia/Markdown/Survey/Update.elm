@@ -116,24 +116,28 @@ update scripts msg vector =
                 |> Return.script sub
 
         Handle event ->
-            case event.topic of
-                "eval" ->
+            case Event.destructure event of
+                ( Just ( "eval", Just section ), message ) ->
                     case
                         vector
-                            |> Array.get event.section
+                            |> Array.get section
                             |> Maybe.andThen .scriptID
                     of
                         Just scriptID ->
-                            event.message
+                            message
                                 |> evalEventDecoder
-                                |> update_ event.section vector
+                                |> update_ section vector
                                 |> store
-                                |> Return.script (JS.handle { event | topic = "code", section = scriptID })
+                                |> Return.script
+                                    (message
+                                        |> Event.initWithId "code" scriptID
+                                        |> JS.handle
+                                    )
 
                         Nothing ->
-                            event.message
+                            message
                                 |> evalEventDecoder
-                                |> update_ event.section vector
+                                |> update_ section vector
                                 |> store
 
                 {- let
@@ -151,8 +155,8 @@ update scripts msg vector =
                    else
                        Return.val vector
                 -}
-                "restore" ->
-                    event.message
+                ( Just ( "restore", _ ), message ) ->
+                    message
                         |> Json.toVector
                         |> Result.map (merge vector)
                         |> Result.withDefault vector

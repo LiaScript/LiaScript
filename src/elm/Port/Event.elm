@@ -3,6 +3,7 @@ module Port.Event exposing
     , addTopic
     , addTopicWithId
     , decode
+    , destructure
     , empty
     , encode
     , id
@@ -73,6 +74,11 @@ id =
     .route
         >> List.head
         >> Maybe.andThen (\(Point _ i) -> i)
+
+
+destructure : Event -> ( Maybe ( String, Maybe Int ), JE.Value )
+destructure event =
+    ( topicWithId event, event.msg )
 
 
 message : Event -> JE.Value
