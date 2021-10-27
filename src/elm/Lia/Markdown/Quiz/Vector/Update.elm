@@ -5,6 +5,7 @@ module Lia.Markdown.Quiz.Vector.Update exposing
     , update
     )
 
+import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Quiz.Vector.Types exposing (State(..))
 import List.Extra
@@ -75,11 +76,10 @@ toString state =
                 |> List.map
                     (\s ->
                         if s then
-                            "1"
+                            1
 
                         else
-                            "0"
+                            0
                     )
-                |> List.intersperse ","
-                |> String.concat
-                |> (\str -> "[" ++ str ++ "]")
+                |> JE.list JE.int
+                |> JE.encode 0
