@@ -298,8 +298,12 @@ class LiaScript {
     Swipe.detect(elem, function (swipeDir) {
       if (document.getElementsByClassName('lia-modal').length === 0) {
         elmSend({
-          topic: Port.SWIPE,
-          section: -1,
+          route: [
+            {
+              topic: Port.SWIPE,
+              id: null,
+            },
+          ],
           message: swipeDir,
         })
       }
@@ -312,8 +316,12 @@ class LiaScript {
           case 'ArrowRight': {
             if (document.getElementsByClassName('lia-modal').length === 0) {
               elmSend({
-                topic: Port.SWIPE,
-                section: -1,
+                route: [
+                  {
+                    topic: Port.SWIPE,
+                    id: null,
+                  },
+                ],
                 message: Swipe.Dir.left,
               })
             }
@@ -322,8 +330,12 @@ class LiaScript {
           case 'ArrowLeft': {
             if (document.getElementsByClassName('lia-modal').length === 0) {
               elmSend({
-                topic: Port.SWIPE,
-                section: -1,
+                route: [
+                  {
+                    topic: Port.SWIPE,
+                    id: null,
+                  },
+                ],
                 message: Swipe.Dir.right,
               })
             }
@@ -359,8 +371,12 @@ class LiaScript {
         changeGoogleStyles()
 
         elmSend({
-          topic: 'lang',
-          section: -1,
+          route: [
+            {
+              topic: 'lang',
+              id: null,
+            },
+          ],
           message: document.documentElement.lang,
         })
       })
@@ -385,11 +401,12 @@ function process(
   elmSend: Lia.Send,
   event: Lia.Event
 ) {
-  log.info(`LIA >>> (${event.topic}:${event.section})`, event.message)
+  log.info(`LIA >>> (${event.route})`, event.message)
 
-  switch (event.topic) {
+  switch (event.route[0].topic) {
     case Port.SLIDE: {
-      self.connector.slide(event.section)
+      if (typeof event.route[0].id === 'number')
+        self.connector.slide(event.route[0].id)
 
       const sec = document.getElementsByTagName('main')[0]
       if (sec) {
@@ -475,7 +492,7 @@ function process(
       break
     }
     case Port.LOG: {
-      switch (event.section) {
+      switch (event.route[0].id) {
         case 0:
           log.info(event.message)
           break
@@ -486,7 +503,7 @@ function process(
           log.error(event.message)
           break
         default:
-          console.warn('unknown log event ', event.section, event.message)
+          console.warn('unknown log event ', event.route[0].id, event.message)
       }
       break
     }
@@ -563,8 +580,12 @@ function process(
         // todo, needs to be moved back
         // persistent.store(event.section)
         elmSend({
-          topic: Port.LOAD,
-          section: -1,
+          route: [
+            {
+              topic: Port.LOAD,
+              id: null,
+            },
+          ],
           message: null,
         })
       }

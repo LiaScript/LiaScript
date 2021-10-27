@@ -132,9 +132,10 @@ export class LiaEvents {
 
   dispatch_input(event: Lia.Event) {
     try {
-      this.input[event.section][event.message.section][event.message.topic](
-        event.message.message
-      )
+      if (event.route[0].id !== null && event.route[1].id !== null)
+        this.input[event.route[0].id][event.route[1].id][event.route[1].topic](
+          event.message
+        )
     } catch (e) {
       log.error('unable to dispatch message', event.message)
     }

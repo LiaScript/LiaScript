@@ -25,13 +25,17 @@ export function initSettings(
 
   if (send) {
     send({
-      topic: Port.SETTINGS,
-      section: -1,
-      message: {
-        topic: 'init',
-        section: -1,
-        message: data,
-      },
+      route: [
+        {
+          topic: Port.SETTINGS,
+          id: null,
+        },
+        {
+          topic: 'init',
+          id: null,
+        },
+      ],
+      message: data,
     })
   }
 }
@@ -56,7 +60,7 @@ export function updateClassName(data: Lia.Settings) {
     } lia-font-scale-${fontSize}`
 
     document.documentElement.className = className
-  } catch (err) {
+  } catch (err: any) {
     console.warn('settings (className): ', err.message)
   }
 }
