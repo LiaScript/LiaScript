@@ -6,7 +6,6 @@ module Lia.Markdown.Task.Update exposing
 
 import Array
 import Browser exposing (element)
-import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
 import Lia.Markdown.Effect.Script.Update as JS
 import Lia.Markdown.Quiz.Update exposing (init, merge)
@@ -83,25 +82,29 @@ update scripts msg vector =
                 |> Return.script sub
 
         Handle event ->
-            case event.topic of
-                "restore" ->
-                    event.message
+            case Event.destructure event of
+                ( Just ( "restore", _ ), message ) ->
+                    message
                         |> Json.toVector
                         |> Result.map (merge vector)
                         |> Result.withDefault vector
                         |> Return.val
                         |> init execute
 
-                "eval" ->
+                ( Just ( "eval", Just section ), message ) ->
                     case
                         vector
-                            |> Array.get event.section
+                            |> Array.get section
                             |> Maybe.andThen .scriptID
                     of
                         Just scriptID ->
                             vector
                                 |> Return.val
-                                |> Return.script (JS.handle { event | topic = "code", section = scriptID })
+                                |> Return.script
+                                    (message
+                                        |> Event.initWithId "code" scriptID
+                                        |> JS.handle
+                                    )
 
                         Nothing ->
                             Return.val vector
