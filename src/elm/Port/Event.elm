@@ -1,5 +1,7 @@
 module Port.Event exposing
     ( Event
+    , addTopic
+    , addTopicWithId
     , decode
     , encode
     , init
@@ -30,6 +32,16 @@ init topic =
 initWithId : String -> Int -> JE.Value -> Event
 initWithId topic id =
     Event [ Point topic (Just id) ]
+
+
+addTopic : String -> Event -> Event
+addTopic topic to =
+    { to | route = Point topic Nothing :: to.route }
+
+
+addTopicWithId : String -> Int -> Event -> Event
+addTopicWithId topic id to =
+    { to | route = Point topic (Just id) :: to.route }
 
 
 encode : Event -> JE.Value
