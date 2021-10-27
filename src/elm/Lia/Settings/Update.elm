@@ -13,7 +13,7 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Settings.Json as Json
 import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
 import Lia.Utils exposing (focus)
-import Port.Event exposing (Event)
+import Port.Event as Event exposing (Event)
 import Port.Share
 import Port.TTS as TTS
 import Return exposing (Return)
@@ -49,15 +49,22 @@ update :
 update main msg model =
     case msg of
         Handle event ->
-            case event.topic of
-                "init" ->
-                    event.message
+            case Event.topic event of
+                Just "init" ->
+                    event
+                        |> Event.message
                         |> load { model | initialized = True }
                         |> no_log Nothing
 
-                "speak" ->
+                Just "speak" ->
                     no_log Nothing
-                        { model | speaking = TTS.decode event.message == TTS.Start }
+                        { model
+                            | speaking =
+                                event
+                                    |> Event.message
+                                    |> TTS.decode
+                                    |> (==) TTS.Start
+                        }
 
                 _ ->
                     log Nothing model
@@ -146,7 +153,7 @@ update main msg model =
         Reset ->
             model
                 |> Return.val
-                |> Return.batchEvent (Event "reset" -1 JE.null)
+                |> Return.batchEvent (Event.empty "reset")
 
         ShareCourse url ->
             model
@@ -168,7 +175,7 @@ update main msg model =
         Toggle TranslateWithGoogle ->
             { model | translateWithGoogle = True }
                 |> Return.val
-                |> Return.batchEvent (Event "googleTranslate" -1 JE.null)
+                |> Return.batchEvent (Event.empty "googleTranslate")
 
         Ignore ->
             Return.val model
@@ -211,7 +218,7 @@ customizeEvent settings =
         JE.null
     ]
         |> JE.list identity
-        |> Event "settings" -1
+        |> Event.init "settings"
 
 
 no_log : Maybe String -> Settings -> Return Settings Msg sub

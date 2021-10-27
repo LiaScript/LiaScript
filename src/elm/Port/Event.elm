@@ -3,10 +3,13 @@ module Port.Event exposing
     , addTopic
     , addTopicWithId
     , decode
+    , empty
     , encode
     , init
     , initWithId
+    , message
     , store
+    , topic
     )
 
 import Json.Decode as JD
@@ -16,7 +19,7 @@ import Lia.Markdown.Chart.Types exposing (Point)
 
 type alias Event =
     { route : List Point
-    , message : JE.Value
+    , msg : JE.Value
     }
 
 
@@ -24,38 +27,55 @@ type Point
     = Point String (Maybe Int)
 
 
+empty : String -> Event
+empty topic_ =
+    init topic_ JE.null
+
+
 init : String -> JE.Value -> Event
-init topic =
-    Event [ Point topic Nothing ]
+init topic_ =
+    Event [ Point topic_ Nothing ]
 
 
 initWithId : String -> Int -> JE.Value -> Event
-initWithId topic id =
-    Event [ Point topic (Just id) ]
+initWithId topic_ id =
+    Event [ Point topic_ (Just id) ]
 
 
 addTopic : String -> Event -> Event
-addTopic topic to =
-    { to | route = Point topic Nothing :: to.route }
+addTopic topic_ to =
+    { to | route = Point topic_ Nothing :: to.route }
 
 
 addTopicWithId : String -> Int -> Event -> Event
-addTopicWithId topic id to =
-    { to | route = Point topic (Just id) :: to.route }
+addTopicWithId topic_ id to =
+    { to | route = Point topic_ (Just id) :: to.route }
+
+
+topic : Event -> Maybe String
+topic =
+    .route
+        >> List.head
+        >> Maybe.map (\(Point t _) -> t)
+
+
+message : Event -> JE.Value
+message =
+    .msg
 
 
 encode : Event -> JE.Value
-encode { route, message } =
+encode { route, msg } =
     JE.object
         [ ( "route", JE.list encPoint route )
-        , ( "message", message )
+        , ( "message", msg )
         ]
 
 
 encPoint : Point -> JE.Value
-encPoint (Point topic id) =
+encPoint (Point topic_ id) =
     JE.object
-        [ ( "topic", JE.string topic )
+        [ ( "topic", JE.string topic_ )
         , ( "id"
           , id
                 |> Maybe.map JE.int
