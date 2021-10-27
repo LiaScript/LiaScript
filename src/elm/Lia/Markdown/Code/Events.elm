@@ -23,13 +23,14 @@ import Return exposing (Return)
 
 
 stop : Int -> Event
-stop idx =
-    Event "stop" idx JE.null
+stop id =
+    Event.initWithId "stop" id JE.null
 
 
 input : Int -> String -> Event
-input idx string =
-    Event "input" idx <| JE.string string
+input id =
+    JE.string
+        >> Event.initWithId "input" id
 
 
 eval : Scripts a -> Int -> Project -> Event
@@ -48,33 +49,33 @@ store model =
 
 
 evalDecode : Event -> Eval
-evalDecode event =
-    Eval.decode event.message
+evalDecode =
+    Event.message >> Eval.decode
 
 
 version_update : Int -> Return Project msg sub -> Return Project msg sub
-version_update idx return =
+version_update id return =
     return
         |> Return.batchEvent
-            (Event "version_update" idx <|
-                JE.object
-                    [ ( "version_active", JE.int return.value.version_active )
-                    , ( "log", Log.encode return.value.log )
-                    , ( "version"
-                      , case Array.get return.value.version_active return.value.version of
-                            Just version ->
-                                Json.fromVersion version
+            ([ ( "version_active", JE.int return.value.version_active )
+             , ( "log", Log.encode return.value.log )
+             , ( "version"
+               , case Array.get return.value.version_active return.value.version of
+                    Just version ->
+                        Json.fromVersion version
 
-                            Nothing ->
-                                JE.null
-                      )
-                    ]
+                    Nothing ->
+                        JE.null
+               )
+             ]
+                |> JE.object
+                |> Event.initWithId "version_update" id
             )
 
 
 version_append : Int -> Project -> Repo -> Event
-version_append idx project repo_update =
-    Event "version_append" idx <|
+version_append id project repo_update =
+    Event.initWithId "version_append" id <|
         JE.object
             [ ( "version_active", JE.int project.version_active )
             , ( "log", Log.encode project.log )
@@ -92,10 +93,10 @@ version_append idx project repo_update =
 
 
 load : Int -> Return Project msg sub -> Return Project msg sub
-load idx return =
+load id return =
     return
         |> Return.batchEvent
-            (Event "load" idx <|
+            (Event.initWithId "load" id <|
                 JE.object
                     [ ( "file", JE.array Json.fromFile return.value.file )
                     , ( "version_active", JE.int return.value.version_active )
@@ -120,7 +121,6 @@ toggle : String -> Int -> Int -> Bool -> List Event
 toggle message id1 id2 value =
     [ value
         |> JE.bool
-        |> Event message id2
-        |> Event.encode
-        |> Event "flip" id1
+        |> Event.initWithId message id2
+        |> Event.addTopicWithId "flip" id1
     ]
