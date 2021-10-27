@@ -1,7 +1,5 @@
 module Port.Event exposing
     ( Event
-    , addTopic
-    , addTopicWithId
     , decode
     , destructure
     , empty
@@ -10,6 +8,9 @@ module Port.Event exposing
     , init
     , initWithId
     , message
+    , pop
+    , push
+    , pushWithId
     , store
     , topic
     , topicWithId
@@ -45,14 +46,24 @@ initWithId topic_ id_ =
     Event [ Point topic_ (Just id_) ]
 
 
-addTopic : String -> Event -> Event
-addTopic topic_ to =
+push : String -> Event -> Event
+push topic_ to =
     { to | route = Point topic_ Nothing :: to.route }
 
 
-addTopicWithId : String -> Int -> Event -> Event
-addTopicWithId topic_ id_ to =
+pushWithId : String -> Int -> Event -> Event
+pushWithId topic_ id_ to =
     { to | route = Point topic_ (Just id_) :: to.route }
+
+
+pop : Event -> Maybe ( String, Event )
+pop event =
+    case event.route of
+        (Point topic_ _) :: route ->
+            Just ( topic_, { event | route = route } )
+
+        _ ->
+            Nothing
 
 
 topic : Event -> Maybe String

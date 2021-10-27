@@ -201,8 +201,7 @@ playBackAttr : Int -> String -> Int -> String -> Html.Attribute msg
 playBackAttr id voice section command =
     "XXX"
         |> Port.TTS.playback id voice
-        |> Event.encode
-        |> Event "effect" section
+        |> Event.pushWithId "effect" section
         |> Event.encode
         |> JE.encode 0
         |> String.replace "\"XXX\"" (cleanUpNumber command)
@@ -216,8 +215,7 @@ inline_playback config e =
         Html.button
             [ Attr.class "lia-btn lia-btn--transparent icon icon-stop-circle mx-1"
             , Port.TTS.mute e.id
-                |> Event.encode
-                |> Event "effect" config.slide
+                |> Event.pushWithId "effect" config.slide
                 |> Event.encode
                 |> JE.encode 0
                 |> (\event -> "playback(" ++ event ++ ")")

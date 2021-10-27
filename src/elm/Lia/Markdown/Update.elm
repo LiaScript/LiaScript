@@ -285,34 +285,31 @@ initEffect globals run_all_javascript sound =
 
 subHandle : Scripts SubSection -> JE.Value -> SubSection -> Return SubSection Msg Msg
 subHandle js json section =
-    case Event.decode json of
-        Ok event ->
-            case Event.decode event.message of
-                Ok message ->
-                    case event.topic of
-                        "code" ->
-                            subUpdate js (UpdateCode (Code.handle message)) section
+    case
+        json
+            |> Event.decode
+            |> Result.toMaybe
+            |> Maybe.andThen Event.pop
+    of
+        Just ( "code", event ) ->
+            subUpdate js (UpdateCode (Code.handle event)) section
 
-                        "quiz" ->
-                            subUpdate js (UpdateQuiz (Quiz.handle message)) section
+        Just ( "quiz", event ) ->
+            subUpdate js (UpdateQuiz (Quiz.handle event)) section
 
-                        "survey" ->
-                            subUpdate js (UpdateSurvey (Survey.handle message)) section
+        Just ( "survey", event ) ->
+            subUpdate js (UpdateSurvey (Survey.handle event)) section
 
-                        "effect" ->
-                            subUpdate js (UpdateEffect True (Effect.handle message)) section
+        Just ( "effect", event ) ->
+            subUpdate js (UpdateEffect True (Effect.handle event)) section
 
-                        "task" ->
-                            subUpdate js (UpdateTask (Task.handle message)) section
-
-                        _ ->
-                            Return.val section
-
-                _ ->
-                    Return.val section
+        Just ( "task", event ) ->
+            subUpdate js (UpdateTask (Task.handle event)) section
 
         _ ->
-            Return.val section
+            section
+                |> Return.val
+                |> Return.error "subHandle Problem"
 
 
 handle : Definition -> String -> Event -> Section -> Return Section Msg Msg
@@ -347,13 +344,12 @@ ttsReplay sound true section =
                     (\s ->
                         s.effect_model
                             |> Effect.ttsReplay sound
-                            |> Maybe.map (Event.encode >> Event "effect" s.id)
+                            |> Maybe.map (Event.pushWithId "effect" s.id)
                     )
 
         else
             Effect.ttsCancel
-                |> Event.encode
-                |> Event "effect" -1
+                |> Event.push "effect"
                 |> Just
 
     else
