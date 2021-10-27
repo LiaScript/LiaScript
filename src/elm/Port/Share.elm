@@ -1,7 +1,7 @@
 module Port.Share exposing (share)
 
 import Json.Encode as JE
-import Port.Event exposing (Event)
+import Port.Event as Event exposing (Event)
 
 
 share : { title : String, text : String, url : String } -> Event
@@ -11,4 +11,4 @@ share { title, text, url } =
     , ( "url", JE.string url )
     ]
         |> JE.object
-        |> Event "share" -1
+        |> Event.init "share"
