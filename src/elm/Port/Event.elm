@@ -5,6 +5,7 @@ module Port.Event exposing
     , decode
     , empty
     , encode
+    , id
     , init
     , initWithId
     , message
@@ -39,8 +40,8 @@ init topic_ =
 
 
 initWithId : String -> Int -> JE.Value -> Event
-initWithId topic_ id =
-    Event [ Point topic_ (Just id) ]
+initWithId topic_ id_ =
+    Event [ Point topic_ (Just id_) ]
 
 
 addTopic : String -> Event -> Event
@@ -49,8 +50,8 @@ addTopic topic_ to =
 
 
 addTopicWithId : String -> Int -> Event -> Event
-addTopicWithId topic_ id to =
-    { to | route = Point topic_ (Just id) :: to.route }
+addTopicWithId topic_ id_ to =
+    { to | route = Point topic_ (Just id_) :: to.route }
 
 
 topic : Event -> Maybe String
@@ -67,6 +68,13 @@ topicWithId =
         >> Maybe.map (\(Point t i) -> ( t, i ))
 
 
+id : Event -> Maybe Int
+id =
+    .route
+        >> List.head
+        >> Maybe.andThen (\(Point _ i) -> i)
+
+
 message : Event -> JE.Value
 message =
     .msg
@@ -81,11 +89,11 @@ encode { route, msg } =
 
 
 encPoint : Point -> JE.Value
-encPoint (Point topic_ id) =
+encPoint (Point topic_ id_) =
     JE.object
         [ ( "topic", JE.string topic_ )
         , ( "id"
-          , id
+          , id_
                 |> Maybe.map JE.int
                 |> Maybe.withDefault JE.null
           )
