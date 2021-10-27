@@ -122,5 +122,5 @@ toggle message id1 id2 value =
     [ value
         |> JE.bool
         |> Event.initWithId message id2
-        |> Event.addTopicWithId "flip" id1
+        |> Event.pushWithId "flip" id1
     ]

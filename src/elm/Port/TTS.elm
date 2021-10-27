@@ -30,7 +30,7 @@ event on =
     )
         |> JE.string
         |> Event.init "speak"
-        |> Event.addTopic "effect"
+        |> Event.push "effect"
 
 
 decode : JD.Value -> Msg

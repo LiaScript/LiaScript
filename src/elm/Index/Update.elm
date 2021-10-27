@@ -41,34 +41,33 @@ type Msg
 
 index : Event -> Event
 index =
-    Event.encode
-        >> Event "index" -1
+    Event.push "index"
 
 
 init : Event
 init =
-    Event "list" -1 JE.null
+    Event.empty "list"
         |> index
 
 
 delete : String -> Event
 delete =
     JE.string
-        >> Event "delete" -1
+        >> Event.init "delete"
         >> index
 
 
 get : String -> Event
 get =
     JE.string
-        >> Event "get" -1
+        >> Event.init "get"
         >> index
 
 
 restore : String -> String -> Event
 restore version =
     JE.string
-        >> Event "restore" (Version.getMajor version)
+        >> Event.initWithId "restore" (Version.getMajor version)
         >> index
 
 
@@ -76,7 +75,7 @@ reset : String -> Int -> Event
 reset course version =
     course
         |> JE.string
-        |> Event "reset" version
+        |> Event.initWithId "reset" version
         |> index
 
 

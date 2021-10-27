@@ -52,7 +52,7 @@ batchEvents e r =
 
 mapEvents : String -> Int -> Return model msg sub -> Return model msg sub
 mapEvents topic id r =
-    { r | events = List.map (Event.addTopicWithId topic id) r.events }
+    { r | events = List.map (Event.pushWithId topic id) r.events }
 
 
 cmd : Cmd msg -> Return model msg sub -> Return model msg sub

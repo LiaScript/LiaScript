@@ -152,34 +152,39 @@ update session msg model =
                 |> Return.cmd (Cmd.map UpdateIndex cmd)
 
         Handle event ->
-            case event.topic of
-                "settings" ->
-                    case event.message |> Event.decode of
-                        Ok e ->
-                            update
-                                session
-                                (e
-                                    |> Settings.handle
-                                    |> UpdateSettings
-                                )
-                                model
+            case Event.pop event of
+                Just ( "settings", e ) ->
+                    update
+                        session
+                        (e
+                            |> Settings.handle
+                            |> UpdateSettings
+                        )
+                        model
 
-                        _ ->
-                            Return.val model
-
-                "load" ->
+                Just ( "load", _ ) ->
                     update session InitSection (generate model)
 
-                "reset" ->
+                Just ( "reset", _ ) ->
                     model
                         |> Return.val
-                        |> Return.batchEvent (Event "reset" -1 JE.null)
+                        |> Return.batchEvent (Event.init "reset" JE.null)
 
-                "goto" ->
-                    update session (Load True event.section) model
+                Just ( "goto", _ ) ->
+                    case Event.id event of
+                        Just id ->
+                            update session (Load True id) model
 
-                "swipe" ->
-                    case JD.decodeValue JD.string event.message of
+                        Nothing ->
+                            Return.val model
+                                |> Return.warn "message goto with no id"
+
+                Just ( "swipe", e ) ->
+                    case
+                        e
+                            |> Event.message
+                            |> JD.decodeValue JD.string
+                    of
                         Ok "left" ->
                             update session NextSection model
 
@@ -189,19 +194,23 @@ update session msg model =
                         _ ->
                             Return.val model
 
-                _ ->
+                Just ( topic, e ) ->
                     case
-                        ( Array.get event.section model.sections
-                        , Event.decode event.message
-                        )
+                        event
+                            |> Event.id
+                            |> Maybe.map (\id -> ( id, Array.get id model.sections ))
                     of
-                        ( Just sec, Ok e ) ->
+                        Just ( id, Just sec ) ->
                             sec
-                                |> Markdown.handle model.definition event.topic e
-                                |> Return.mapValCmd (\v -> { model | sections = Array.set event.section v model.sections }) UpdateMarkdown
+                                |> Markdown.handle model.definition topic e
+                                |> Return.mapValCmd (\v -> { model | sections = Array.set id v model.sections }) UpdateMarkdown
 
                         _ ->
                             Return.val model
+
+                Nothing ->
+                    Return.val model
+                        |> Return.error "unknown main topic"
 
         Script ( id, sub ) ->
             case Array.get id model.sections of
@@ -273,7 +282,7 @@ update session msg model =
                         |> Return.mapValCmd
                             (set_active_section { model | to_do = [] })
                             UpdateMarkdown
-                        |> Return.batchEvents (Event "slide" model.section_active JE.null :: model.to_do)
+                        |> Return.batchEvents (Event.initWithId "slide" model.section_active JE.null :: model.to_do)
 
                 ( JumpToFragment id, Just sec ) ->
                     if (model.settings.mode == Textbook) || sec.effect_model.visible == id then
@@ -313,7 +322,7 @@ add_load vector sectionID name logs =
         logs
 
     else
-        (Event "load" sectionID <| JE.string name) :: logs
+        (Event.initWithId "load" sectionID <| JE.string name) :: logs
 
 
 {-| **@private:** shortcut for returning the active section in from the model.
