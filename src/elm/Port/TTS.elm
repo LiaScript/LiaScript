@@ -29,9 +29,8 @@ event on =
         "cancel"
     )
         |> JE.string
-        |> Event "speak" -1
-        |> Event.encode
-        |> Event "effect" -1
+        |> Event.init "speak"
+        |> Event.addTopic "effect"
 
 
 decode : JD.Value -> Msg
@@ -54,7 +53,7 @@ cancel : Event.Event
 cancel =
     "cancel"
         |> JE.string
-        |> Event "speak" -1
+        |> Event.init "speak"
 
 
 playback : Int -> String -> String -> Event
@@ -64,7 +63,7 @@ playback id voice text =
     , "true"
     ]
         |> JE.list JE.string
-        |> Event "speak" id
+        |> Event.initWithId "speak" id
 
 
 readFrom : Int -> Int -> Event
@@ -72,11 +71,11 @@ readFrom id effectID =
     "lia-tts-"
         ++ String.fromInt effectID
         |> JE.string
-        |> Event "speak" id
+        |> Event.initWithId "speak" id
 
 
 mute : Int -> Event.Event
 mute id =
     "cancel"
         |> JE.string
-        |> Event "speak" id
+        |> Event.initWithId "speak" id
