@@ -24,7 +24,7 @@ import Lia.Markdown.Effect.Model
 import Lia.Markdown.Effect.Script.Types as Script_ exposing (Scripts)
 import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Section exposing (SubSection)
-import Port.Event exposing (Event)
+import Port.Event as Event exposing (Event)
 import Port.TTS as TTS
 import Return exposing (Return)
 import Task
@@ -122,12 +122,16 @@ update main sound msg model =
                     |> Return.mapValCmd (\v -> { model | javascript = v }) Script
 
             Handle event ->
-                case event.topic of
-                    "speak" ->
+                case Event.topicWithId event of
+                    Just ( "speak", Just section ) ->
                         Return.val <|
-                            case event.message |> JD.decodeValue JD.string of
+                            case
+                                event
+                                    |> Event.message
+                                    |> JD.decodeValue JD.string
+                            of
                                 Ok "start" ->
-                                    { model | speaking = Just event.section }
+                                    { model | speaking = Just section }
 
                                 Ok "stop" ->
                                     { model | speaking = Nothing }
@@ -144,7 +148,7 @@ update main sound msg model =
 scrollTo : Bool -> String -> Event
 scrollTo force =
     JE.string
-        >> Event "scrollTo"
+        >> Event.initWithId "scrollTo"
             (if force then
                 -1
 
@@ -162,11 +166,16 @@ markRunning return =
                     | javascript =
                         List.foldl
                             (\e js ->
-                                if e.section < 0 then
-                                    js
+                                case Event.id e of
+                                    Just id ->
+                                        if id < 0 then
+                                            js
 
-                                else
-                                    Script.setRunning e.section True js
+                                        else
+                                            Script.setRunning id True js
+
+                                    _ ->
+                                        js
                             )
                             model.javascript
                             return.events
