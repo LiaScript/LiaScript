@@ -47,20 +47,20 @@ class LiaDB {
 
     try {
       await this.db.open()
-    } catch (e) {
+    } catch (e: any) {
       log.warn('DB: open -> ', e.message)
       this.db = null
     }
 
     if (init && this.db) {
-      const item = await this.db[init.topic].get({
-        id: init.section,
+      const item = await this.db[init.route[0].topic].get({
+        id: init.route[0].id,
         version: versionDB,
       })
 
       if (!!item) {
         if (item.data) {
-          init.message.message = item.data
+          init.message = item.data
         }
         this.send(init)
       }
@@ -71,11 +71,11 @@ class LiaDB {
     if (!this.db || this.version === 0) return
 
     log.warn(
-      `liaDB: event(store), table(${event.topic}), id(${event.section}), data(${event.message})`
+      `liaDB: event(store), table(${event.route[0].topic}), id(${event.route[0].id}), data(${event.message})`
     )
 
-    await this.db[event.topic].put({
-      id: event.section,
+    await this.db[event.route[0].topic].put({
+      id: event.route[0].id,
       version: versionDB != null ? versionDB : this.version,
       data: event.message,
       created: new Date().getTime(),
@@ -85,27 +85,29 @@ class LiaDB {
   async load(event: Lia.Event, versionDB?: number) {
     if (!this.db) return
 
-    log.info('loading => ', event.topic, event.section)
+    log.info('loading => ', event.message, event.route)
 
-    const item = await this.db[event.topic].get({
-      id: event.section,
+    const item = await this.db[event.message].get({
+      id: event.route[0].id,
       version: versionDB != undefined ? versionDB : this.version,
     })
 
     if (item) {
-      log.info('restore table', event.topic) //, e._value.data)
-      event.message = {
+      log.info('restore table', event.message) //, e._value.data)
+
+      event.message = item.data
+      event.route.push({
         topic: Port.RESTORE,
-        section: -1,
-        message: item.data,
-      }
+        id: null,
+      })
+
       this.send(event)
-    } else if (event.topic === Port.CODE) {
-      event.message = {
+    } else if (event.message === Port.CODE) {
+      event.message = null
+      event.route.push({
         topic: Port.RESTORE,
-        section: -1,
-        message: null,
-      }
+        id: null,
+      })
       this.send(event)
     }
   }
@@ -148,17 +150,18 @@ class LiaDB {
         version: this.version,
       })
 
-      if (vector.data) {
-        let project = vector.data[event.section]
+      if (vector.data && event.route[0].id !== null) {
+        let project = vector.data[event.route[0].id]
 
-        switch (event.topic) {
+        switch (event.route[0].topic) {
           case 'flip': {
-            if (event.message.topic === 'view') {
-              project.file[event.message.section].visible =
-                event.message.message
-            } else if (event.message.topic === 'fullscreen') {
-              project.file[event.message.section].fullscreen =
-                event.message.message
+            if (event.route[1].topic === 'view' && event.route[1].id !== null) {
+              project.file[event.route[1].id].visible = event.message
+            } else if (
+              event.route[1].topic === 'fullscreen' &&
+              event.route[1].id !== null
+            ) {
+              project.file[event.route[1].id].fullscreen = event.message
             }
             break
           }
@@ -193,7 +196,7 @@ class LiaDB {
           }
         }
 
-        vector.data[event.section] = project
+        vector.data[event.route[0].id] = project
 
         await db.code.put(vector)
       }
@@ -214,9 +217,13 @@ class LiaDB {
       })
 
       this.send({
-        topic: Port.RESTORE,
+        route: [
+          {
+            topic: Port.RESTORE,
+            id: null,
+          },
+        ],
         message: offline === undefined ? null : offline.data,
-        section: -1,
       })
     }
   }
@@ -226,23 +233,31 @@ class LiaDB {
       const course = await this.dbIndex.courses.get(uidDB)
 
       this.send({
-        topic: 'getIndex',
+        route: [
+          {
+            topic: 'getIndex',
+            id: null,
+          },
+        ],
         message: {
           id: uidDB,
           course: course,
         },
-        section: -1,
       })
-    } catch (e) {
+    } catch (e: any) {
       log.warn('DB: getIndex -> ', e.message)
 
       this.send({
-        topic: 'getIndex',
+        route: [
+          {
+            topic: 'getIndex',
+            id: null,
+          },
+        ],
         message: {
           id: uidDB,
           course: null,
         },
-        section: -1,
       })
     }
   }
@@ -255,8 +270,12 @@ class LiaDB {
     }
 
     this.send({
-      topic: Port.INDEX,
-      section: -1,
+      route: [
+        {
+          topic: Port.INDEX,
+          id: null,
+        },
+      ],
       message: {
         list: courses,
       },
