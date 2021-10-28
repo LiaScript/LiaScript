@@ -63,7 +63,7 @@ function handleEffects(
   section: number = -1,
   self?: LiaScript
 ) {
-  switch (event.topic) {
+  switch (event.route[0].topic) {
     case 'scrollTo':
       scrollIntoView(event.message, 350)
       break
@@ -75,32 +75,40 @@ function handleEffects(
       lia_execute_event(event.message, elmSend, section)
       break
     case 'speak': {
-      let msg = {
-        topic: Port.SETTINGS,
-        section: -1,
-        message: {
-          topic: 'speak',
-          section: -1,
-          message: 'stop',
-        },
+      let msg: Lia.Event = {
+        route: [
+          {
+            topic: Port.SETTINGS,
+            id: null,
+          },
+          {
+            topic: 'speak',
+            id: null,
+          },
+        ],
+        message: 'stop',
       }
 
       if (section >= 0) {
         msg = {
-          topic: Port.EFFECT,
-          section: section,
-          message: {
-            topic: 'speak',
-            section: event.section,
-            message: 'stop',
-          },
+          route: [
+            {
+              topic: Port.EFFECT,
+              id: section,
+            },
+            {
+              topic: 'speak',
+              id: event.route[0].id,
+            },
+          ],
+          message: 'stop',
         }
       }
 
       try {
         if (event.message === 'cancel') {
           TTS.cancel()
-          msg.message.message = 'stop'
+          msg.message = 'stop'
           elmSend(msg)
         } else if (event.message === 'repeat') {
           event.message = [ttsBackup[0], ttsBackup[1], 'true']
@@ -128,18 +136,18 @@ function handleEffects(
                 text,
                 voice,
                 function () {
-                  msg.topic = Port.SETTINGS
+                  msg.route[0].topic = Port.SETTINGS
                   msg.message.message = 'start'
 
                   elmSend(msg)
                 },
                 function () {
-                  msg.topic = Port.SETTINGS
+                  msg.route[0].topic = Port.SETTINGS
                   msg.message.message = 'stop'
                   elmSend(msg)
                 },
                 function (e: any) {
-                  msg.message.message = e.toString()
+                  msg.message = e.toString()
                   elmSend(msg)
                 }
               )
@@ -158,41 +166,45 @@ function handleEffects(
               event.message[1],
               event.message[0],
               function () {
-                msg.message.message = 'start'
+                msg.message = 'start'
                 elmSend(msg)
               },
               function () {
-                msg.message.message = 'stop'
+                msg.message = 'stop'
                 elmSend(msg)
               },
               function (e: any) {
-                msg.message.message = e.toString()
+                msg.message = e.toString()
                 elmSend(msg)
               }
             )
           }
         }
       } catch (e: any) {
-        msg.message.message = e.toString()
+        msg.message = e.toString()
         elmSend(msg)
       }
       break
     }
     case 'sub': {
-      if (self != undefined && event.message != null) {
+      if (self != undefined && event.route.length != 0) {
         const newSend = function (subEvent: Lia.Event) {
           elmSend({
-            topic: Port.EFFECT,
-            section: section,
-            message: {
-              topic: 'sub',
-              section: event.section,
-              message: subEvent,
-            },
+            route: [
+              {
+                topic: Port.EFFECT,
+                id: section,
+              },
+              {
+                topic: 'sub',
+                id: event.route[0].id,
+              },
+            ],
+            message: subEvent,
           })
         }
 
-        process(false, self, newSend, event.message)
+        process(false, self, newSend, event)
       }
       break
     }
@@ -251,7 +263,7 @@ class LiaScript {
     const sendTo = this.app.ports.event2elm.send
 
     const sender = function (msg: Lia.Event) {
-      log.info(`LIA <<< (${msg.topic}:${msg.section})`, msg.message)
+      log.info(`LIA <<< (${msg.route}) :`, msg.message)
       sendTo(msg)
     }
 
@@ -262,7 +274,9 @@ class LiaScript {
     liaStorage = this.connector.storage()
 
     window.playback = function (event) {
-      handleEffects(event.message, sender, event.section)
+      const id = event.route[0].id || -1
+      event.route.slice(1)
+      handleEffects(event, sender, id)
     }
 
     let self = this
@@ -353,8 +367,12 @@ class LiaScript {
 
   reset() {
     this.app.ports.event2elm.send({
-      topic: Port.RESET,
-      section: -1,
+      route: [
+        {
+          topic: Port.RESET,
+          id: null,
+        },
+      ],
       message: null,
     })
   }
@@ -431,21 +449,29 @@ function process(
       break
     }
     case Port.LOAD: {
-      self.connector.load({
-        topic: event.message,
-        section: event.section,
-        message: null,
-      })
+      self.connector.load(
+        // generate the return message ...
+        // the previous topic is mapped with the current message to match the return path
+        {
+          route: [
+            {
+              topic: event.message,
+              id: event.route[0].id,
+            },
+          ],
+          message: event.message,
+        }
+      )
       break
     }
     case Port.CODE: {
-      switch (event.message.topic) {
+      switch (event.route[1].topic) {
         case 'eval':
           lia_eval_event(elmSend, eventHandler, event)
           break
         case 'store':
           if (isConnected) {
-            event.message = event.message.message
+            event.route.slice(1)
             self.connector.store(event)
           }
           break
@@ -457,42 +483,46 @@ function process(
           break
         default: {
           if (isConnected) {
-            self.connector.update(event.message, event.section)
+            const slide = event.route[0].id || -1
+            event.route.slice(1)
+            self.connector.update(event, slide)
           }
         }
       }
       break
     }
     case Port.QUIZ: {
-      if (isConnected && event.message.topic === 'store') {
-        event.message = event.message.message
+      if (isConnected && event.route[1].topic === 'store') {
+        event.route.slice(1)
         self.connector.store(event)
-      } else if (event.message.topic === 'eval') {
+      } else if (event.route[1].topic === 'eval') {
         lia_eval_event(elmSend, eventHandler, event)
       }
 
       break
     }
     case Port.SURVEY: {
-      if (isConnected && event.message.topic === 'store') {
-        event.message = event.message.message
+      if (isConnected && event.route[1].topic === 'store') {
+        event.route.slice(1)
         self.connector.store(event)
-      } else if (event.message.topic === 'eval') {
+      } else if (event.route[1].topic === 'eval') {
         lia_eval_event(elmSend, eventHandler, event)
       }
       break
     }
     case Port.TASK: {
-      if (isConnected && event.message.topic === 'store') {
-        event.message = event.message.message
+      if (isConnected && event.route[1].topic === 'store') {
+        event.route.slice(1)
         self.connector.store(event)
-      } else if (event.message.topic === 'eval') {
+      } else if (event.route[1].topic === 'eval') {
         lia_eval_event(elmSend, eventHandler, event)
       }
       break
     }
     case Port.EFFECT: {
-      handleEffects(event.message, elmSend, event.section, self)
+      const id = event.route[0].id || -1
+      event.route.slice(1)
+      handleEffects(event, elmSend, id, self)
       break
     }
     case Port.LOG: {
@@ -642,7 +672,7 @@ function process(
     case Port.INDEX: {
       if (!isConnected) break
 
-      switch (event.message.topic) {
+      switch (event.route[1].topic) {
         case 'list': {
           try {
             TTS.cancel()
@@ -651,26 +681,26 @@ function process(
           break
         }
         case 'delete': {
-          self.connector.deleteFromIndex(event.message.message)
+          self.connector.deleteFromIndex(event.message)
           break
         }
         case 'restore': {
           self.connector.restoreFromIndex(
-            event.message.message,
-            event.message.section
+            event.message,
+            event.route[1].id || -1
           )
           break
         }
         case 'reset': {
-          self.connector.reset(event.message.message, event.message.section)
+          self.connector.reset(event.message, event.route[1].id || -1)
           break
         }
         case 'get': {
-          self.connector.getFromIndex(event.message.message)
+          self.connector.getFromIndex(event.message)
           break
         }
         default:
-          log.error('Command  not found => ', event.message)
+          log.error('Command not found => ', event)
       }
       break
     }
