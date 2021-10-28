@@ -137,13 +137,13 @@ function handleEffects(
                 voice,
                 function () {
                   msg.route[0].topic = Port.SETTINGS
-                  msg.message.message = 'start'
+                  msg.message = 'start'
 
                   elmSend(msg)
                 },
                 function () {
                   msg.route[0].topic = Port.SETTINGS
-                  msg.message.message = 'stop'
+                  msg.message = 'stop'
                   elmSend(msg)
                 },
                 function (e: any) {
@@ -521,7 +521,7 @@ function process(
     }
     case Port.EFFECT: {
       const id = event.route[0].id || -1
-      event.route.slice(1)
+      event.route = event.route.slice(1)
       handleEffects(event, elmSend, id, self)
       break
     }
