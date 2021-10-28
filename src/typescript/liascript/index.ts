@@ -275,7 +275,7 @@ class LiaScript {
 
     window.playback = function (event) {
       const id = event.route[0].id || -1
-      event.route.slice(1)
+      event.route = event.route.slice(1)
       handleEffects(event, sender, id)
     }
 
