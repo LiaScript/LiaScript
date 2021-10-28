@@ -50,7 +50,7 @@ update :
 update main msg model =
     case msg of
         Handle event ->
-            case Event.topic event of
+            case Event.topic_ event of
                 Just "init" ->
                     event
                         |> Event.message

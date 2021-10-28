@@ -131,7 +131,7 @@ update msg model =
             )
 
         Handle event ->
-            case Port.Event.topic event of
+            case Port.Event.topic_ event of
                 Just "index" ->
                     update
                         (event

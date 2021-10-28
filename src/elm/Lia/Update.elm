@@ -171,7 +171,7 @@ update session msg model =
                         |> Return.batchEvent (Event.init "reset" JE.null)
 
                 Just ( "goto", _ ) ->
-                    case Event.id event of
+                    case Event.id_ event of
                         Just id ->
                             update session (Load True id) model
 
@@ -197,7 +197,7 @@ update session msg model =
                 Just ( topic, e ) ->
                     case
                         event
-                            |> Event.id
+                            |> Event.id_
                             |> Maybe.map (\id -> ( id, Array.get id model.sections ))
                     of
                         Just ( id, Just sec ) ->

@@ -4,7 +4,7 @@ module Port.Event exposing
     , destructure
     , empty
     , encode
-    , id
+    , id_
     , init
     , initWithId
     , message
@@ -13,8 +13,8 @@ module Port.Event exposing
     , push
     , pushWithId
     , store
-    , topic
     , topicWithId
+    , topic_
     )
 
 import Json.Decode as JD
@@ -24,46 +24,46 @@ import Lia.Markdown.Chart.Types exposing (Point)
 
 type alias Event =
     { route : List Point
-    , msg : JE.Value
+    , message : JE.Value
     }
 
 
 type alias Point =
-    { topic_ : String
-    , id_ : Maybe Int
+    { topic : String
+    , id : Maybe Int
     }
 
 
 empty : String -> Event
-empty topic_ =
-    init topic_ JE.null
+empty topic =
+    init topic JE.null
 
 
 init : String -> JE.Value -> Event
-init topic_ =
-    Event [ Point topic_ Nothing ]
+init topic =
+    Event [ Point topic Nothing ]
 
 
 initWithId : String -> Int -> JE.Value -> Event
-initWithId topic_ id_ =
-    Event [ Point topic_ (Just id_) ]
+initWithId topic id =
+    Event [ Point topic (Just id) ]
 
 
 push : String -> Event -> Event
-push topic_ to =
-    { to | route = Point topic_ Nothing :: to.route }
+push topic to =
+    { to | route = Point topic Nothing :: to.route }
 
 
 pushWithId : String -> Int -> Event -> Event
-pushWithId topic_ id_ to =
-    { to | route = Point topic_ (Just id_) :: to.route }
+pushWithId topic id to =
+    { to | route = Point topic (Just id) :: to.route }
 
 
 pop : Event -> Maybe ( String, Event )
 pop event =
     case event.route of
         point :: route ->
-            Just ( point.topic_, { event | route = route } )
+            Just ( point.topic, { event | route = route } )
 
         _ ->
             Nothing
@@ -72,58 +72,58 @@ pop event =
 popWithId : Event -> Maybe ( String, Maybe Int, Event )
 popWithId event =
     case event.route of
-        { topic_, id_ } :: route ->
-            Just ( topic_, id_, { event | route = route } )
+        { topic, id } :: route ->
+            Just ( topic, id, { event | route = route } )
 
         _ ->
             Nothing
 
 
-topic : Event -> Maybe String
-topic =
+topic_ : Event -> Maybe String
+topic_ =
     .route
         >> List.head
-        >> Maybe.map .topic_
+        >> Maybe.map .topic
 
 
 topicWithId : Event -> Maybe ( String, Maybe Int )
 topicWithId =
     .route
         >> List.head
-        >> Maybe.map (\{ topic_, id_ } -> ( topic_, id_ ))
+        >> Maybe.map (\{ topic, id } -> ( topic, id ))
 
 
-id : Event -> Maybe Int
-id =
+id_ : Event -> Maybe Int
+id_ =
     .route
         >> List.head
-        >> Maybe.andThen .id_
+        >> Maybe.andThen .id
 
 
 destructure : Event -> ( Maybe ( String, Maybe Int ), JE.Value )
 destructure event =
-    ( topicWithId event, event.msg )
+    ( topicWithId event, event.message )
 
 
 message : Event -> JE.Value
 message =
-    .msg
+    .message
 
 
 encode : Event -> JE.Value
-encode { route, msg } =
+encode event =
     JE.object
-        [ ( "route", JE.list encPoint route )
-        , ( "message", msg )
+        [ ( "route", JE.list encPoint event.route )
+        , ( "message", event.message )
         ]
 
 
 encPoint : Point -> JE.Value
-encPoint { topic_, id_ } =
+encPoint { topic, id } =
     JE.object
-        [ ( "topic", JE.string topic_ )
+        [ ( "topic", JE.string topic )
         , ( "id"
-          , id_
+          , id
                 |> Maybe.map JE.int
                 |> Maybe.withDefault JE.null
           )
