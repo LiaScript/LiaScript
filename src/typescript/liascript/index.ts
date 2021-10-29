@@ -471,7 +471,7 @@ function process(
           break
         case 'store':
           if (isConnected) {
-            event.route.slice(1)
+            //event.route = event.route.slice(1)
             self.connector.store(event)
           }
           break
@@ -484,7 +484,7 @@ function process(
         default: {
           if (isConnected) {
             const slide = event.route[0].id || -1
-            event.route.slice(1)
+            event.route = event.route.slice(1)
             self.connector.update(event, slide)
           }
         }
@@ -493,7 +493,7 @@ function process(
     }
     case Port.QUIZ: {
       if (isConnected && event.route[1].topic === 'store') {
-        event.route.slice(1)
+        // event.route.slice(1)
         self.connector.store(event)
       } else if (event.route[1].topic === 'eval') {
         lia_eval_event(elmSend, eventHandler, event)
@@ -503,7 +503,7 @@ function process(
     }
     case Port.SURVEY: {
       if (isConnected && event.route[1].topic === 'store') {
-        event.route.slice(1)
+        // event.route.slice(1)
         self.connector.store(event)
       } else if (event.route[1].topic === 'eval') {
         lia_eval_event(elmSend, eventHandler, event)
@@ -512,7 +512,7 @@ function process(
     }
     case Port.TASK: {
       if (isConnected && event.route[1].topic === 'store') {
-        event.route.slice(1)
+        // event.route.slice(1)
         self.connector.store(event)
       } else if (event.route[1].topic === 'eval') {
         lia_eval_event(elmSend, eventHandler, event)

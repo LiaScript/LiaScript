@@ -248,10 +248,10 @@ export function lia_eval_event(
   handler: LiaEvents,
   event: Lia.Event
 ) {
-  lia_eval(event.message.message, {
+  lia_eval(event.message, {
     lia: (result: string, details = [], ok = true) => {
-      event.message.topic = JS.eval
-      event.message.message = {
+      event.route[1].topic = JS.eval
+      event.message = {
         result: result,
         details: details,
         ok: ok,
@@ -259,14 +259,14 @@ export function lia_eval_event(
       send(event)
     },
     log: (topic: string, sep: string, ...args: any) => {
-      event.message.topic = topic
-      event.message.message = list_to_string(sep, args)
+      event.route[1].topic = topic
+      event.message = list_to_string(sep, args)
       send(event)
     },
     // service: websocket(channel),
     handle: (name: string, fn: any) => {
-      const e1 = event.section
-      const e2 = event.message.section
+      const e1 = event.route[0].id || -1
+      const e2 = event.route[1].id || -1
       handler.register_input(e1, e2, name, fn)
     },
     register: (name: string, fn: any) => {
@@ -300,16 +300,20 @@ function execute_response(
     }
 
     send({
-      topic: Port.EFFECT,
-      section: section === undefined ? -1 : section,
-      message: {
-        topic: topic,
-        section: event_id,
-        message: {
-          ok: ok,
-          result: msg,
-          details: details,
+      route: [
+        {
+          topic: Port.EFFECT,
+          id: section === undefined ? -1 : section,
         },
+        {
+          topic: topic,
+          id: event_id,
+        },
+      ],
+      message: {
+        ok: ok,
+        result: msg,
+        details: details,
       },
     })
   }
