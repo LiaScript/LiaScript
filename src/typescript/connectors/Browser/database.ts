@@ -150,6 +150,8 @@ class LiaDB {
         version: this.version,
       })
 
+      console.warn('SSSSSSSSSSSSSS', vector, event)
+
       if (vector.data && event.route[0].id !== null) {
         let project = vector.data[event.route[0].id]
 
