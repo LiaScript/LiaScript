@@ -20,23 +20,18 @@ type Msg
     | Handle Event
 
 
-handle : JE.Value -> Settings -> Return Settings Msg sub
-handle json =
-    case Event.decode json of
-        Ok event ->
-            update (Handle event)
-
-        Err _ ->
-            Return.val >> Return.warn "Sync.handle: "
+handle : Event -> Settings -> Return Settings Msg sub
+handle event =
+    update (Handle event)
 
 
 update : Msg -> Settings -> Return Settings Msg sub
 update msg model =
     case msg of
         Handle event ->
-            case event.topic of
-                "connect" ->
-                    if bool event.message then
+            case Event.destructure event of
+                Just ( "connect", _, message ) ->
+                    if bool message then
                         Return.val { model | state = Connected }
 
                     else
@@ -73,13 +68,13 @@ update msg model =
                        )
                      ]
                         |> JE.object
-                        |> Event "connect" -1
+                        |> Event.init "connect"
                     )
 
         Disconnect ->
             { model | state = Pending }
                 |> Return.val
-                |> Return.sync (Event "disconnect" -1 JE.null)
+                |> Return.sync (Event.empty "disconnect")
 
 
 bool : JE.Value -> Bool

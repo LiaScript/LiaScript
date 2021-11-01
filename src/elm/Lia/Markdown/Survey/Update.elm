@@ -83,7 +83,7 @@ update scripts msg vector =
                                     |> Return.sync
                                         (element.state
                                             |> Json.fromState
-                                            |> Event "submit" id
+                                            |> Event.initWithId "submit" id
                                         )
 
                             else
@@ -116,7 +116,7 @@ update scripts msg vector =
                                 |> Return.sync
                                     (element.state
                                         |> Json.fromState
-                                        |> Event "submit" id
+                                        |> Event.initWithId "submit" id
                                     )
 
                 _ ->
@@ -129,7 +129,7 @@ update scripts msg vector =
 
         Handle event ->
             case Event.destructure event of
-                ( Just ( "eval", Just section ), message ) ->
+                Just ( "eval", Just section, message ) ->
                     case
                         vector
                             |> Array.get section
@@ -167,7 +167,7 @@ update scripts msg vector =
                    else
                        Return.val vector
                 -}
-                ( Just ( "restore", _ ), message ) ->
+                Just ( "restore", _, message ) ->
                     message
                         |> Json.toVector
                         |> Result.map (merge vector)
@@ -175,34 +175,39 @@ update scripts msg vector =
                         |> Return.val
                         |> init (\i s -> execute i s.state)
 
-                "sync" ->
-                    event.message
-                        |> Event.decode
-                        |> Result.map (updateSync vector)
-                        |> Result.withDefault vector
+                Just ( "sync", _, _ ) ->
+                    event
+                        |> Event.pop
+                        |> Maybe.andThen (Tuple.second >> Event.destructure >> Maybe.map (updateSync vector))
+                        |> Maybe.withDefault vector
                         |> Return.val
 
                 _ ->
                     Return.val vector
 
 
-updateSync : Vector -> Event -> Vector
-updateSync vector event =
-    case ( event.topic, Array.get event.section vector ) of
-        ( "submit", Just element ) ->
-            Array.set event.section
+updateSync : Vector -> ( String, Maybe Int, JE.Value ) -> Vector
+updateSync vector ( topic, id, message ) =
+    case
+        ( topic
+        , id
+        , Maybe.andThen (\i -> Array.get i vector) id
+        )
+    of
+        ( "submit", Just section, Just element ) ->
+            Array.set section
                 { element
                     | sync =
                         case element.sync of
                             Just list ->
-                                event.message
+                                message
                                     |> JD.decodeValue Json.toState
                                     |> Result.map (\state -> state :: list)
                                     |> Result.withDefault list
                                     |> Just
 
                             Nothing ->
-                                event.message
+                                message
                                     |> JD.decodeValue Json.toState
                                     |> Result.map List.singleton
                                     |> Result.toMaybe

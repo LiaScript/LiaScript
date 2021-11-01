@@ -132,11 +132,11 @@ update msg model =
             )
 
         Handle event ->
-            case Port.Event.topic_ event of
+            case Event.topic_ event of
                 Just "index" ->
                     update
                         (event
-                            |> Port.Event.message
+                            |> Event.message
                             |> Index.handle
                             |> UpdateIndex
                         )
@@ -146,7 +146,7 @@ update msg model =
                     let
                         ( id, course ) =
                             event
-                                |> Port.Event.message
+                                |> Event.message
                                 |> Index.decodeGet
                     in
                     ( { model | preload = course }
@@ -156,7 +156,7 @@ update msg model =
                 Just "restore" ->
                     case
                         event
-                            |> Port.Event.message
+                            |> Event.message
                             |> Lia.Json.Decode.decode
                     of
                         Ok lia ->
@@ -175,7 +175,7 @@ update msg model =
                 Just "lang" ->
                     case
                         event
-                            |> Port.Event.message
+                            |> Event.message
                             |> JD.decodeValue JD.string
                     of
                         Ok str ->
@@ -297,7 +297,7 @@ update msg model =
                             Cmd.batch
                                 [ url
                                     |> JE.string
-                                    |> Port.Event.init "offline"
+                                    |> Event.init "offline"
                                     |> event2js
                                 , cmd
                                 ]

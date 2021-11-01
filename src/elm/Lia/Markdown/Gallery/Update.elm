@@ -34,12 +34,12 @@ update msg vector =
         Show id id2 ->
             vector
                 |> show id id2
-                |> Return.sync (Event "show" id (JE.int id2))
+                |> Return.sync (Event.initWithId "show" id (JE.int id2))
 
         Close id ->
             vector
                 |> close id
-                |> Return.sync (Event "close" id JE.null)
+                |> Return.sync (Event.initWithId "close" id JE.null)
 
         Script sub ->
             vector
@@ -47,18 +47,18 @@ update msg vector =
                 |> Return.script sub
 
         Handle event ->
-            case ( event.topic, Event.decode event.message ) of
-                ( "sync", Ok e ) ->
-                    case e.topic of
-                        "show" ->
-                            e.message
+            case Event.pop event of
+                Just ( "sync", e ) ->
+                    case Event.destructure e of
+                        Just ( "show", Just section, message ) ->
+                            message
                                 |> JD.decodeValue JD.int
-                                |> Result.map (\id -> show e.section id vector)
+                                |> Result.map (\id -> show section id vector)
                                 |> Result.withDefault (Return.val vector)
 
-                        "close" ->
+                        Just ( "close", Just section, _ ) ->
                             vector
-                                |> close e.section
+                                |> close section
 
                         _ ->
                             Return.val vector

@@ -132,7 +132,7 @@ update session msg model =
                     }
                         |> Return.val
                         |> Return.cmd (Session.navToSlide session idx)
-                        |> Return.sync (Event "load" idx JE.null)
+                        |> Return.sync (Event.initWithId "load" idx JE.null)
 
             else
                 Return.val model
@@ -191,28 +191,27 @@ update session msg model =
                                 |> Return.warn "message goto with no id"
 
                 Just ( "sync", e ) ->
-                    case Event.topic e of
-                        Just "sync" ->
+                    case Event.popWithId e of
+                        Just ( "sync", _, e_ ) ->
                             model.sync
-                                |> Sync.handle sync.message
+                                |> Sync.handle e_
                                 |> Return.mapValCmd (\v -> { model | sync = v }) UpdateSync
 
-                        Just "load" ->
-                            update session (Load True sync.section) model
+                        Just ( "load", Just id, _ ) ->
+                            update session (Load True id) model
 
-                        _ ->
-                            case
-                                ( Array.get sync.section model.sections
-                                , Event.decode sync.message
-                                )
-                            of
-                                ( Just sec, Ok e ) ->
+                        Just ( topic, Just id, e_ ) ->
+                            case Array.get id model.sections of
+                                Just sec ->
                                     sec
-                                        |> Markdown.handle model.definition sync.topic e
-                                        |> Return.mapValCmd (\v -> { model | sections = Array.set sync.section v model.sections }) UpdateMarkdown
+                                        |> Markdown.handle model.definition topic e_
+                                        |> Return.mapValCmd (\v -> { model | sections = Array.set id v model.sections }) UpdateMarkdown
 
                                 _ ->
                                     Return.val model
+
+                        _ ->
+                            Return.val model
 
                 Just ( "swipe", e ) ->
                     case

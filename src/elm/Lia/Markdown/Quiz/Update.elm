@@ -143,11 +143,11 @@ update scripts msg vector =
                         |> Return.val
                         |> init (\i s -> execute i s.state)
 
-                "sync" ->
-                    event.message
-                        |> Event.decode
-                        |> Result.map (syncUpdate vector)
-                        |> Result.withDefault (Return.val vector)
+                Just ( "sync", _ ) ->
+                    event
+                        |> Event.pop
+                        |> Maybe.map (Tuple.second >> syncUpdate vector)
+                        |> Maybe.withDefault (Return.val vector)
 
                 _ ->
                     Return.val vector
@@ -175,14 +175,18 @@ toString state =
 
 
 syncUpdate : Vector -> Event -> Return Vector msg sub
-syncUpdate vector { topic, section, message } =
-    case Array.get section vector of
-        Just element ->
-            Array.set section
+syncUpdate vector event =
+    case
+        event
+            |> Event.topicWithId
+            |> syncGet vector
+    of
+        Just ( topic, id, element ) ->
+            Array.set id
                 { element
                     | sync =
                         Just <|
-                            syncUpdateHelper topic message <|
+                            syncUpdateHelper topic event.message <|
                                 case element.sync of
                                     Nothing ->
                                         { solved = 0, resolved = 0 }
@@ -195,6 +199,21 @@ syncUpdate vector { topic, section, message } =
 
         _ ->
             Return.val vector
+
+
+syncGet : Vector -> Maybe ( String, Maybe Int ) -> Maybe ( String, Int, Element )
+syncGet vector conf =
+    case conf of
+        Just ( topic, Just id ) ->
+            case Array.get id vector of
+                Just elem ->
+                    Just ( topic, id, elem )
+
+                _ ->
+                    Nothing
+
+        _ ->
+            Nothing
 
 
 syncUpdateHelper : String -> JE.Value -> { solved : Int, resolved : Int } -> { solved : Int, resolved : Int }
@@ -214,10 +233,10 @@ syncSolution : Int -> Return Element msg sub -> Return Element msg sub
 syncSolution id ret =
     case ret.value.solved of
         Solution.Solved ->
-            Return.sync (Event "solved" id (JE.int ret.value.trial)) ret
+            Return.sync (Event.initWithId "solved" id (JE.int ret.value.trial)) ret
 
         Solution.ReSolved ->
-            Return.sync (Event "resolved" id JE.null) ret
+            Return.sync (Event.initWithId "resolved" id JE.null) ret
 
         _ ->
             ret

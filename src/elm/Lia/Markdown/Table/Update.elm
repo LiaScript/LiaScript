@@ -33,23 +33,23 @@ update msg vector =
     case msg of
         Sort id col ->
             sort id vector col
-                |> Return.sync (Event "sort" id (JE.int col))
+                |> Return.sync (Event.initWithId "sort" id (JE.int col))
 
         Toggle id ->
             toggle id vector
-                |> Return.sync (Event "toggle" id JE.null)
+                |> Return.sync (Event.initWithId "toggle" id JE.null)
 
         Handle event ->
-            case ( event.topic, Event.decode event.message ) of
-                ( "sync", Ok e ) ->
-                    case e.topic of
-                        "toggle" ->
-                            toggle e.section vector
+            case Event.pop event of
+                Just ( "sync", e ) ->
+                    case Event.destructure e of
+                        Just ( "toggle", Just id, _ ) ->
+                            toggle id vector
 
-                        "sort" ->
-                            e.message
+                        Just ( "sort", Just id, message ) ->
+                            message
                                 |> JD.decodeValue JD.int
-                                |> Result.map (sort e.section vector)
+                                |> Result.map (sort id vector)
                                 |> Result.withDefault (Return.val vector)
 
                         _ ->

@@ -100,9 +100,14 @@ id_ =
         >> Maybe.andThen .id
 
 
-destructure : Event -> ( Maybe ( String, Maybe Int ), JE.Value )
+destructure : Event -> Maybe ( String, Maybe Int, JE.Value )
 destructure event =
-    ( topicWithId event, event.message )
+    case topicWithId event of
+        Just ( topic, id ) ->
+            Just ( topic, id, event.message )
+
+        _ ->
+            Nothing
 
 
 message : Event -> JE.Value
