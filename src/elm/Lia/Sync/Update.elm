@@ -29,16 +29,20 @@ update : Msg -> Settings -> Return Settings Msg sub
 update msg model =
     case msg of
         Handle event ->
-            case Event.destructure event of
-                Just ( "connect", _, message ) ->
-                    if bool message then
-                        Return.val { model | state = Connected }
+            Return.val <|
+                case Event.destructure event of
+                    Just ( "connect", _, message ) ->
+                        if bool message then
+                            { model | state = Connected }
 
-                    else
-                        Return.val { model | state = Disconnected }
+                        else
+                            { model | state = Disconnected }
 
-                _ ->
-                    Return.val model
+                    Just ( "disconnect", _, _ ) ->
+                        { model | state = Disconnected }
+
+                    _ ->
+                        model
 
         Password str ->
             { model | password = str }

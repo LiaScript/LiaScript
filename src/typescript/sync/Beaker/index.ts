@@ -74,7 +74,8 @@ export class Sync extends Base {
   }
 
   disconnect() {
-    if (this.send)
+    if (this.send && this.peerEvent) {
+      this.peerEvent.close()
       this.send({
         route: [
           { topic: 'sync', id: null },
@@ -83,6 +84,7 @@ export class Sync extends Base {
         ],
         message: null,
       })
+    }
   }
 
   publish(message: Object) {
