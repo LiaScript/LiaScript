@@ -12,6 +12,9 @@ class Connector extends Base {
   private scorm?: SCORM
   private active: boolean
 
+  private quiz?: boolean[][]
+  private survey?: boolean[][]
+
   constructor() {
     super()
 
@@ -107,16 +110,16 @@ class Connector extends Base {
     let location = this.scorm.LMSGetValue('cmi.core.lesson_location')
 
     try {
-      location = JSON.parse(location)
-      location.slide = id
-      location.visited[id] = true
+      let loc = JSON.parse(location)
 
-      this.scorm.LMSSetValue(
-        'cmi.core.lesson_location',
-        JSON.stringify(location)
-      )
+      if (loc.slide && loc.visited) {
+        loc.slide = id
+        loc.visited[id] = true
 
-      this.scorm.LMSCommit()
+        this.scorm.LMSSetValue('cmi.core.lesson_location', JSON.stringify(loc))
+
+        this.scorm.LMSCommit()
+      }
     } catch (e) {
       console.warn('slide:', e)
     }
@@ -130,8 +133,12 @@ class Connector extends Base {
     try {
       location = JSON.parse(this.scorm.LMSGetValue('cmi.core.lesson_location'))
       this.send({
-        topic: 'goto',
-        section: location.slide,
+        route: [
+          {
+            topic: 'goto',
+            id: location.slide,
+          },
+        ],
         message: null,
       })
     } catch (e) {
@@ -151,13 +158,33 @@ class Connector extends Base {
     }
   }
 
-  countObjectives() {
-    if (this.scorm) return this.scorm.LMSGetValue('cmi.objectives._count')
+  countObjectives(): number {
+    let count = -1
+    if (this.scorm) {
+      try {
+        count = parseInt(this.scorm.LMSGetValue('cmi.objectives._count'))
+      } catch (e) {
+        console.warn('Could not get objectives count')
+        count = -1
+      }
+    }
+
+    return count
   }
 
-  countInteractions() {
-    if (this.scorm)
-      return parseInt(this.scorm.LMSGetValue('cmi.interactions._count'))
+  countInteractions(): number {
+    let count = -1
+
+    if (this.scorm) {
+      try {
+        count = parseInt(this.scorm.LMSGetValue('cmi.interactions._count'))
+      } catch (e) {
+        console.warn('Could not get objectives count')
+        count = -1
+      }
+    }
+
+    return count
   }
 
   // generates a unique id to be used in interactions and objectives
@@ -165,7 +192,14 @@ class Connector extends Base {
     return [obj.type, obj.sec + 1, obj.i].join('/')
   }
 
-  getObjective(id: number) {
+  getObjective(id: number):
+    | undefined
+    | {
+        type: string
+        sec: number
+        i: number
+        data: any
+      } {
     if (!this.scorm) return
 
     let val = null
@@ -191,8 +225,7 @@ class Connector extends Base {
         data: data,
       }
     } catch (e) {
-      console.warn('getObjective', val, id, e)
-      return null
+      console.warn('could not getObjective', val, id, e)
     }
   }
 
@@ -286,11 +319,11 @@ class Connector extends Base {
   store(event: Lia.Event) {
     if (!this.scorm || !this.active) return
 
-    if (event.topic === 'code') {
+    if (event.route[0].topic === 'code') {
       for (let i = 0; i < event.message.length; i++) {
         this.logInteraction({
-          type: event.topic,
-          sec: event.section,
+          type: event.route[0].topic,
+          sec: event.route[0].id || -1,
           i: i,
           data: event.message[i],
         })
@@ -306,7 +339,10 @@ class Connector extends Base {
     for (let i = 0; i < count; i++) {
       let item = this.getObjective(i)
       if (!!item) {
-        if (item.sec === event.section && item.type === event.topic) {
+        if (
+          item.sec === event.route[0].id &&
+          item.type === event.route[0].topic
+        ) {
           // store only the position to be overwritten
           items.push(i)
         }
@@ -314,8 +350,8 @@ class Connector extends Base {
     }
 
     let obj = {
-      type: event.topic,
-      sec: event.section,
+      type: event.route[0].topic,
+      sec: event.route[0].id || -1,
       i: 0,
       data: null,
     }
@@ -338,13 +374,17 @@ class Connector extends Base {
   load(event: Lia.Event) {
     if (!this.scorm) return
 
-    if (event.topic === 'code') {
-      event.message = {
-        topic: 'restore',
-        section: -1,
+    if (event.route[0].topic === 'code') {
+      this.send({
+        route: [
+          event.route[0],
+          {
+            topic: 'restore',
+            id: null,
+          },
+        ],
         message: null,
-      }
-      this.send(event)
+      })
       return
     }
 
@@ -355,19 +395,26 @@ class Connector extends Base {
     for (let i = 0; i < count; i++) {
       let item = this.getObjective(i)
       if (!!item) {
-        if (item.sec === event.section && item.type === event.topic) {
+        if (
+          item.sec === event.route[0].id &&
+          item.type === event.route[0].topic
+        ) {
           items.push(item)
         }
       }
     }
 
     if (items.length !== 0) {
-      event.message = {
-        topic: 'restore',
-        section: -1,
+      this.send({
+        route: [
+          event.route[0],
+          {
+            topic: 'restore',
+            id: null,
+          },
+        ],
         message: items.sort((a, b) => a.i - b.i).map((e) => e.data),
-      }
-      this.send(event)
+      })
     }
   }
 }
