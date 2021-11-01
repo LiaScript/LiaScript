@@ -62,35 +62,26 @@ export class Sync extends Base {
       }
     )
 
-    send({
-      topic: 'sync',
-      section: -1,
-      message: {
-        topic: 'sync',
-        section: -1,
-        message: {
-          topic: 'connect',
-          section: -1,
-          message: true,
-        },
-      },
-    })
+    if (this.send)
+      this.send({
+        route: [
+          { topic: 'sync', id: null },
+          { topic: 'sync', id: null },
+          { topic: 'connect', id: null },
+        ],
+        message: true,
+      })
   }
 
   disconnect() {
     if (this.send)
       this.send({
-        topic: 'sync',
-        section: -1,
-        message: {
-          topic: 'sync',
-          section: -1,
-          message: {
-            topic: 'disconnect',
-            section: -1,
-            message: null,
-          },
-        },
+        route: [
+          { topic: 'sync', id: null },
+          { topic: 'sync', id: null },
+          { topic: 'disconnect', id: null },
+        ],
+        message: null,
       })
   }
 

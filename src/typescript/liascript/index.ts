@@ -612,16 +612,16 @@ function process(
       break
     }
     case Port.SYNC: {
-      switch (event.message.topic) {
+      switch (event.route[1].topic) {
         case 'sync': {
           // all sync relevant messages
-          switch (event.message.message.topic) {
+          switch (event.route[2].topic) {
             case 'connect': {
               if (!self.sync) delete self.sync
 
               self.sync = new Sync()
 
-              self.sync.connect(elmSend, event.message.message)
+              self.sync.connect(elmSend, event.message)
 
               break
             }
