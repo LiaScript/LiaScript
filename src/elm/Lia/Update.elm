@@ -24,7 +24,7 @@ import Lia.Settings.Update as Settings
 import Lia.Sync.Update as Sync
 import Port.Eval exposing (event)
 import Port.Event as Event exposing (Event)
-import Return exposing (Return, sync)
+import Return exposing (Return)
 import Session exposing (Session)
 import Translations exposing (Lang(..))
 
@@ -158,7 +158,7 @@ update session msg model =
 
         UpdateSync childMsg ->
             model.sync
-                |> Sync.update childMsg
+                |> Sync.update session childMsg
                 |> Return.mapValCmd (\v -> { model | sync = v }) UpdateSync
                 |> Return.mapEvents "sync" -1
 
@@ -194,7 +194,7 @@ update session msg model =
                     case Event.popWithId e of
                         Just ( "sync", _, e_ ) ->
                             model.sync
-                                |> Sync.handle e_
+                                |> Sync.handle session e_
                                 |> Return.mapValCmd (\v -> { model | sync = v }) UpdateSync
 
                         Just ( "load", Just id, _ ) ->

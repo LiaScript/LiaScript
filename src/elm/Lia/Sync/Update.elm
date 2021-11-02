@@ -9,6 +9,7 @@ import Json.Encode as JE
 import Lia.Sync.Types exposing (Settings, State(..))
 import Port.Event as Event exposing (Event)
 import Return exposing (Return)
+import Session exposing (Session)
 import Set
 
 
@@ -21,13 +22,13 @@ type Msg
     | Handle Event
 
 
-handle : Event -> Settings -> Return Settings Msg sub
-handle event =
-    update (Handle event)
+handle : Session -> Event -> Settings -> Return Settings Msg sub
+handle session event =
+    update session (Handle event)
 
 
-update : Msg -> Settings -> Return Settings Msg sub
-update msg model =
+update : Session -> Msg -> Settings -> Return Settings Msg sub
+update session msg model =
     case msg of
         Handle event ->
             Return.val <|
