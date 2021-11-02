@@ -629,7 +629,7 @@ menuShare url sync lang tabbable settings =
             , msg = Just (Toggle Sync)
             }
             []
-            [ Html.text (Sync.title sync) ]
+            [ Sync.title sync ]
       ]
         |> submenu (settings.action == Just Share)
     ]
