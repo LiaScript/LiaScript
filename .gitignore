@@ -6,6 +6,7 @@ dist
 .DS_Store
 .cache
 .parcel-cache
-.cache
+.vscode
 static/README.md
 backup/**
+benchmark
