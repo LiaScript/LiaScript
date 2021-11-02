@@ -23,8 +23,8 @@ let runTimestamp = Math.round(Date.now() / 1000);
  */
 
 const paths = {
-  iconSvgInputFolder: "./assets/icons",
-  iconFontOutputFolder: "./assets/fonts",
+  iconSvgInputFolder: "./icons",
+  iconFontOutputFolder: "./fonts",
   iconFontCssFile: "./../scss/00_settings/_settings.iconfont.scss",
   iconTemplatePath: "./../templates/icon-preview",
 };
