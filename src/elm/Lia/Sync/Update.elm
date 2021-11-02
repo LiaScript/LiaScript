@@ -1,5 +1,6 @@
 module Lia.Sync.Update exposing
     ( Msg(..)
+    , SyncMsg(..)
     , handle
     , update
     )
@@ -7,6 +8,7 @@ module Lia.Sync.Update exposing
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Sync.Types exposing (Settings, State(..))
+import Lia.Sync.Via exposing (Backend)
 import Port.Event as Event exposing (Event)
 import Return exposing (Return)
 import Session exposing (Session)
@@ -17,9 +19,15 @@ type Msg
     = Room String
     | Username String
     | Password String
+    | Backend SyncMsg
     | Connect
     | Disconnect
     | Handle Event
+
+
+type SyncMsg
+    = Open Bool -- Backend selection
+    | Select (Maybe Backend)
 
 
 handle : Session -> Event -> Settings -> Return Settings Msg sub
@@ -89,6 +97,10 @@ update session msg model =
             { model | room = str }
                 |> Return.val
 
+        Backend sub ->
+            { model | sync = updateSync sub model.sync }
+                |> Return.val
+
         Connect ->
             { model | state = Pending }
                 |> Return.val
@@ -112,6 +124,18 @@ update session msg model =
             { model | state = Pending }
                 |> Return.val
                 |> Return.sync (Event.empty "disconnect")
+
+
+updateSync msg sync =
+    case msg of
+        Open open ->
+            { sync | open = open }
+
+        Select backend ->
+            { sync
+                | select = backend
+                , open = False
+            }
 
 
 bool : JE.Value -> Bool

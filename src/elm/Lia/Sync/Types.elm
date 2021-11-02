@@ -1,6 +1,7 @@
 module Lia.Sync.Types exposing
     ( Settings
     , State(..)
+    , Sync
     , init
     , isConnected
     , title
@@ -12,6 +13,7 @@ import Lia.Sync.Via as Via exposing (Backend)
 import Lia.Utils exposing (icon)
 import Return exposing (sync)
 import Set exposing (Set)
+import Translations exposing (Lang(..))
 
 
 type State
@@ -21,8 +23,7 @@ type State
 
 
 type alias Settings =
-    { supportedSync : List Backend
-    , sync : Maybe Backend
+    { sync : Sync
     , state : State
     , course : String
     , room : String
@@ -32,10 +33,20 @@ type alias Settings =
     }
 
 
+type alias Sync =
+    { support : List Backend
+    , select : Maybe Backend
+    , open : Bool
+    }
+
+
 init : Settings
 init =
-    { supportedSync = [ Via.Beaker, Via.Matrix ]
-    , sync = Nothing
+    { sync =
+        { support = [ Via.Beaker, Via.Matrix ]
+        , select = Nothing
+        , open = False
+        }
     , state = Disconnected
     , course = "www"
     , room = "test"
