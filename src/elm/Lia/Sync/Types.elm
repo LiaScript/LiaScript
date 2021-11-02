@@ -8,6 +8,7 @@ module Lia.Sync.Types exposing
     )
 
 import Html exposing (Html)
+import Html.Attributes as Attr
 import Lia.Utils exposing (icon)
 import Return exposing (sync)
 import Set exposing (Set)
@@ -60,13 +61,18 @@ title : Settings -> Html msg
 title sync =
     case sync.state of
         Disconnected ->
-            Html.span []
-                [ Html.text "Classrooms"
-                , icon "icon-person" []
-                ]
+            Html.text "Classrooms"
 
         Connected ->
-            Html.text <| "Classroom (" ++ String.fromInt (Set.size sync.peers) ++ ")"
+            Html.span []
+                [ Html.text "Classroom ("
+                , icon "icon-person"
+                    [ Attr.style "font-size" "smaller"
+                    , Attr.style "padding-right" "4px"
+                    ]
+                , Html.text <| String.fromInt (Set.size sync.peers)
+                , Html.text ")"
+                ]
 
         Pending ->
             Html.text "Classroom (pending)"
