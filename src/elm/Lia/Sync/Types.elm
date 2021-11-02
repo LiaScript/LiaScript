@@ -4,7 +4,11 @@ module Lia.Sync.Types exposing
     , Via
     , init
     , isConnected
+    , title
     )
+
+import Return exposing (sync)
+import Set exposing (Set)
 
 
 type State
@@ -24,6 +28,7 @@ type alias Settings =
     , room : String
     , username : String
     , password : String
+    , peers : Set String
     }
 
 
@@ -35,6 +40,7 @@ init =
     , room = "test"
     , username = "anonymous"
     , password = ""
+    , peers = Set.empty
     }
 
 
@@ -46,3 +52,16 @@ isConnected sync =
 
         _ ->
             False
+
+
+title : Settings -> String
+title sync =
+    case sync.state of
+        Disconnected ->
+            "Classroom"
+
+        Connected ->
+            "Classroom (" ++ String.fromInt (Set.size sync.peers) ++ ")"
+
+        Pending ->
+            "Classroom (pending)"

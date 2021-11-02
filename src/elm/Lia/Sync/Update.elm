@@ -9,6 +9,7 @@ import Json.Encode as JE
 import Lia.Sync.Types exposing (Settings, State(..))
 import Port.Event as Event exposing (Event)
 import Return exposing (Return)
+import Set
 
 
 type Msg
@@ -33,13 +34,44 @@ update msg model =
                 case Event.destructure event of
                     Just ( "connect", _, message ) ->
                         if bool message then
-                            { model | state = Connected }
+                            { model
+                                | state = Connected
+                                , peers = Set.empty
+                            }
 
                         else
-                            { model | state = Disconnected }
+                            { model
+                                | state = Disconnected
+                                , peers = Set.empty
+                            }
 
                     Just ( "disconnect", _, _ ) ->
-                        { model | state = Disconnected }
+                        { model
+                            | state = Disconnected
+                            , peers = Set.empty
+                        }
+
+                    Just ( "join", _, message ) ->
+                        { model
+                            | peers =
+                                case JD.decodeValue JD.string message of
+                                    Ok peerID ->
+                                        Set.insert peerID model.peers
+
+                                    _ ->
+                                        model.peers
+                        }
+
+                    Just ( "leave", _, message ) ->
+                        { model
+                            | peers =
+                                case JD.decodeValue JD.string message of
+                                    Ok peerID ->
+                                        Set.remove peerID model.peers
+
+                                    _ ->
+                                        model.peers
+                        }
 
                     _ ->
                         model

@@ -18,10 +18,18 @@ function decode(message: Uint8Array) {
 }
 
 export class Sync extends Base {
-  private peerIds?: Set<number>
+  private peerIds: Set<number>
+  private peerChannelIds: Set<number>
 
   private peerEvent?: Beaker.Event
-  private userEvent?: Beaker.UserEvent
+  private peerChannelEvent?: Beaker.UserEvent
+
+  constructor() {
+    super()
+
+    this.peerIds = new Set()
+    this.peerChannelIds = new Set()
+  }
 
   isSupported() {
     return window.beaker && window.location.protocol === 'hyper' ? true : false
@@ -40,60 +48,95 @@ export class Sync extends Base {
 
     super.connect(send, data)
 
-    let peerIds: Set<number> = new Set()
-    this.peerIds = peerIds
+    let self = this
+
+    this.peerIds = new Set()
+    this.peerChannelIds = new Set()
 
     this.peerEvent = window.beaker.peersockets.watch()
 
     this.peerEvent.addEventListener('join', (e: Beaker.Message) => {
-      peerIds.add(e.peerId)
+      self.peerIds.add(e.peerId)
+
+      self.sendTo(e.peerId, self.syncMsg('join'))
     })
     this.peerEvent.addEventListener('leave', (e: Beaker.Message) => {
-      peerIds.delete(e.peerId)
+      self.peerIds.delete(e.peerId)
     })
 
-    this.userEvent = window.beaker.peersockets.join(this.uniqueID())
-    this.userEvent.addEventListener(
+    this.peerChannelEvent = window.beaker.peersockets.join(this.uniqueID())
+    this.peerChannelEvent.addEventListener(
       'message',
       function (event: Beaker.Message) {
         let message = decode(event.message)
 
-        if (message) send(message)
+        if (message) {
+          if (message.route.length == 3) {
+            switch (message.route[2].topic) {
+              case 'join': {
+                if (!self.peerChannelIds.has(event.peerId)) {
+                  self.peerChannelIds.add(event.peerId)
+                  self.sendTo(event.peerId, self.syncMsg('join'))
+                }
+
+                message.message = JSON.stringify(event.peerId)
+                break
+              }
+              case 'leave': {
+                self.peerChannelIds.delete(event.peerId)
+                message.message = JSON.stringify(event.peerId)
+                break
+              }
+            }
+          }
+
+          send(message)
+        }
       }
     )
 
-    if (this.send)
-      this.send({
-        route: [
-          { topic: 'sync', id: null },
-          { topic: 'sync', id: null },
-          { topic: 'connect', id: null },
-        ],
-        message: true,
-      })
+    this.publish(this.syncMsg('join'))
+
+    this.sync('connect', true)
   }
 
   disconnect() {
-    if (this.send && this.peerEvent) {
-      this.peerEvent.close()
-      this.send({
-        route: [
-          { topic: 'sync', id: null },
-          { topic: 'sync', id: null },
-          { topic: 'disconnect', id: null },
-        ],
-        message: null,
-      })
+    //if (this.peerEvent) this.peerEvent.close()
+
+    this.publish(this.syncMsg('leave'))
+    this.sync('disconnect')
+  }
+
+  sync(topic: string, message: any = null) {
+    if (this.send) {
+      this.send(this.syncMsg(topic, message))
+    }
+  }
+
+  syncMsg(topic: string, message: any = null) {
+    return {
+      route: [
+        { topic: 'sync', id: null },
+        { topic: 'sync', id: null },
+        { topic: topic, id: null },
+      ],
+      message: message,
     }
   }
 
   publish(message: Object) {
-    if (this.peerIds && this.userEvent) {
+    if (this.peerChannelEvent) {
       let msg = encode(message)
 
       for (let peerId of this.peerIds) {
-        this.userEvent.send(peerId, msg)
+        this.peerChannelEvent.send(peerId, msg)
       }
+    }
+  }
+
+  sendTo(peerId: number, message: Object) {
+    if (this.peerChannelEvent) {
+      this.peerChannelEvent.send(peerId, encode(message))
     }
   }
 }

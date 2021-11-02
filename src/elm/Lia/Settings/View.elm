@@ -26,6 +26,7 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (view_inf)
 import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
 import Lia.Settings.Update exposing (Msg(..), Toggle(..))
+import Lia.Sync.Types as Sync
 import Lia.Utils
     exposing
         ( blockKeydown
@@ -593,8 +594,8 @@ translateWithGoogle lang tabbable bool =
     ]
 
 
-menuShare : String -> Lang -> Bool -> Settings -> List (Html Msg)
-menuShare url lang tabbable settings =
+menuShare : String -> Sync.Settings -> Lang -> Bool -> Settings -> List (Html Msg)
+menuShare url sync lang tabbable settings =
     [ lang
         |> Trans.confShare
         |> actionBtn Share
@@ -623,12 +624,12 @@ menuShare url lang tabbable settings =
             Html.text ""
       , divider
       , btn
-            { title = "Classrom"
+            { title = "Classroom"
             , tabbable = tabbable
             , msg = Just (Toggle Sync)
             }
             []
-            [ Html.text "Classroom" ]
+            [ Html.text (Sync.title sync) ]
       ]
         |> submenu (settings.action == Just Share)
     ]
