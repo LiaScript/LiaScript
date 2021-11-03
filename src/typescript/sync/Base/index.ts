@@ -34,10 +34,6 @@ export class Sync {
 
   disconnect() {}
 
-  isSupported(): boolean {
-    return false
-  }
-
   uniqueID() {
     if (this.course && this.room) {
       return JSON.stringify({

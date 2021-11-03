@@ -623,13 +623,17 @@ menuShare url sync lang tabbable settings =
         else
             Html.text ""
       , divider
-      , btn
-            { title = "Classroom"
-            , tabbable = tabbable
-            , msg = Just (Toggle Sync)
-            }
-            []
-            [ Sync.title sync ]
+      , if Sync.isSupported sync then
+            btn
+                { title = "Classroom"
+                , tabbable = tabbable
+                , msg = Just (Toggle Sync)
+                }
+                []
+                [ Sync.title sync ]
+
+        else
+            Html.text ""
       ]
         |> submenu (settings.action == Just Share)
     ]

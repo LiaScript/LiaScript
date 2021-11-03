@@ -17,6 +17,10 @@ function decode(message: Uint8Array) {
   }
 }
 
+export function isSupported() {
+  return window.beaker && window.location.protocol === 'hyper' ? true : false
+}
+
 export class Sync extends Base {
   private peerIds: Set<number>
   private peerChannelIds: Set<number>
@@ -29,10 +33,6 @@ export class Sync extends Base {
 
     this.peerIds = new Set()
     this.peerChannelIds = new Set()
-  }
-
-  isSupported() {
-    return window.beaker && window.location.protocol === 'hyper' ? true : false
   }
 
   connect(

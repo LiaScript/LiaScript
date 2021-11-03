@@ -13,7 +13,8 @@ import { Connector } from '../connectors/Base/index'
 import { updateClassName } from '../connectors/Base/settings'
 
 import { initTooltip } from '../webcomponents/tooltip/index'
-import { Sync } from '../sync/Beaker/index'
+
+import * as Beaker from '../sync/Beaker/index'
 
 window.img_Zoom = function (e: MouseEvent | TouchEvent) {
   const target = e.target as HTMLImageElement
@@ -234,11 +235,12 @@ var firstSpeak = true
 class LiaScript {
   private app: any
   public connector: Connector
-  public sync?: Sync
+  public sync?: any
 
   constructor(
     elem: HTMLElement,
     connector: Connector,
+    allowSync: boolean = false,
     debug: boolean = false,
     courseUrl: string | null = null,
     script: string | null = null
@@ -259,6 +261,9 @@ class LiaScript {
         },
         hasShareAPI: !!navigator.share,
         hasIndex: connector.hasIndex(),
+        syncSupport: allowSync
+          ? [Beaker.isSupported() ? 'beaker' : '', 'matrix']
+          : [],
       },
     })
 
@@ -619,7 +624,7 @@ function process(
             case 'connect': {
               if (!self.sync) delete self.sync
 
-              self.sync = new Sync()
+              self.sync = new Beaker.Sync()
 
               self.sync.connect(elmSend, event.message)
 

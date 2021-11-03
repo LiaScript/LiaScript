@@ -62,6 +62,7 @@ customElements.define(
         this.app = new LiaScript(
           this.container,
           new Connector(),
+          false, // allowSync
           this.debug,
           this.courseURL,
           null
@@ -71,6 +72,7 @@ customElements.define(
         this.app = new LiaScript(
           this.container,
           new Connector(),
+          false, // allowSync
           this.debug,
           null,
           this.innerHTML.trimStart()

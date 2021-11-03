@@ -18,9 +18,9 @@ import Translations
 screen `width` is only used to render the course with an opened or closed table
 of contents.
 -}
-decode : JD.Value -> Result JD.Error Model
-decode =
-    JD.decodeValue toModel
+decode : Sync.Settings -> JD.Value -> Result JD.Error Model
+decode sync =
+    JD.decodeValue (toModel sync)
 
 
 andMap : String -> JD.Decoder a -> JD.Decoder (a -> value) -> JD.Decoder value
@@ -28,8 +28,8 @@ andMap key dec =
     JD.map2 (|>) (JD.field key dec)
 
 
-toModel : JD.Decoder Model
-toModel =
+toModel : Sync.Settings -> JD.Decoder Model
+toModel sync =
     JD.succeed Model
         |> andMap "url" JD.string
         |> andMap "readme" (JD.string |> JD.map repo)
@@ -54,7 +54,7 @@ toModel =
         |> JD.map2 (|>) (JD.succeed identity)
         |> JD.map2 (|>) (JD.succeed Dict.empty)
         |> JD.map2 (|>) (JD.succeed Nothing)
-        |> JD.map2 (|>) (JD.succeed Sync.init)
+        |> JD.map2 (|>) (JD.succeed sync)
 
 
 toSectionBase : JD.Decoder Section.Base

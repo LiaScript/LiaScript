@@ -4,6 +4,7 @@ module Lia.Sync.Types exposing
     , Sync
     , init
     , isConnected
+    , isSupported
     , title
     )
 
@@ -40,10 +41,10 @@ type alias Sync =
     }
 
 
-init : Settings
-init =
+init : List String -> Settings
+init supportedBackends =
     { sync =
-        { support = [ Via.Beaker, Via.Matrix ]
+        { support = List.filterMap Via.fromString supportedBackends
         , select = Nothing
         , open = False
         }
@@ -54,6 +55,11 @@ init =
     , password = ""
     , peers = Set.empty
     }
+
+
+isSupported : Settings -> Bool
+isSupported =
+    .sync >> .support >> List.isEmpty >> not
 
 
 isConnected : Settings -> Bool

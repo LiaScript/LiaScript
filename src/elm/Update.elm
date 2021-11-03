@@ -157,7 +157,7 @@ update msg model =
                     case
                         event
                             |> Event.message
-                            |> Lia.Json.Decode.decode
+                            |> Lia.Json.Decode.decode model.lia.sync
                     of
                         Ok lia ->
                             start

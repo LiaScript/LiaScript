@@ -62,6 +62,7 @@ type alias Flags =
     , screen : Screen
     , hasShareAPI : Bool
     , hasIndex : Bool
+    , syncSupport : List String
     }
 
 
@@ -104,6 +105,7 @@ init flags url key =
                 flags.hasShareAPI
                 openTableOfContents
                 flags.settings
+                flags.syncSupport
                 (get_base subURL)
                 "README.md"
                 ""
@@ -118,6 +120,7 @@ init flags url key =
                 flags.hasShareAPI
                 openTableOfContents
                 flags.settings
+                flags.syncSupport
                 (query
                     |> Url.fromString
                     |> Maybe.withDefault { courseUrl | query = Just query }
@@ -136,6 +139,7 @@ init flags url key =
                 flags.hasShareAPI
                 openTableOfContents
                 flags.settings
+                flags.syncSupport
                 (get_base courseUrl)
                 query
                 (get_origin courseUrl.query)
@@ -149,6 +153,7 @@ init flags url key =
                 flags.hasShareAPI
                 openTableOfContents
                 flags.settings
+                flags.syncSupport
                 ""
                 ""
                 ""
