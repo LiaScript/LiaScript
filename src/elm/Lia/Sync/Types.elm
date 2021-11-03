@@ -4,9 +4,11 @@ module Lia.Sync.Types exposing
     , Via
     , init
     , isConnected
+    , isSupported
     , title
     )
 
+import Lia.Sync.Via as Via
 import Return exposing (sync)
 import Set exposing (Set)
 
@@ -17,13 +19,8 @@ type State
     | Closed
 
 
-type Via
-    = Beaker
-
-
 type alias Settings =
-    { sync : Via
-    , state : State
+    { state : Sync
     , course : String
     , room : String
     , username : String
@@ -32,16 +29,32 @@ type alias Settings =
     }
 
 
-init : Settings
-init =
-    { sync = Beaker
-    , state = Closed
+type alias Sync =
+    { support : List Via.Backend
+    , select : Maybe Via.Backend
+    , open : Bool
+    }
+
+
+init : List String -> Settings
+init supportedBackends =
+    { sync =
+        { support = List.filterMap Via.fromString supportedBackends
+        , select = Nothing
+        , open = False
+        }
+    , state = Disconnected
     , course = "www"
     , room = "test123"
     , username = "unknown"
     , password = ""
     , peers = Set.empty
     }
+
+
+isSupported : Settings -> Bool
+isSupported =
+    .sync >> .support >> List.isEmpty >> not
 
 
 isConnected : Settings -> Bool
