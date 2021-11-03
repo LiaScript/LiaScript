@@ -76,16 +76,16 @@ title : Settings -> Html msg
 title sync =
     case sync.state of
         Disconnected ->
-            Html.text "Classrooms"
+            Html.text "Classroom"
 
         Connected ->
             Html.span []
                 [ Html.text "Classroom ("
-                , icon "icon-person"
-                    [ Attr.style "font-size" "smaller"
-                    , Attr.style "padding-right" "4px"
-                    ]
-                , Html.text <| String.fromInt (Set.size sync.peers)
+                , icon "icon-person icon-sm" [ Attr.style "padding-right" "4px" ]
+                , sync.peers
+                    |> Set.size
+                    |> String.fromInt
+                    |> Html.text
                 , Html.text ")"
                 ]
 
