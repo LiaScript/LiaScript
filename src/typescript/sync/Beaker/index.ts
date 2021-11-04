@@ -98,9 +98,10 @@ export class Sync extends Base {
   }
 
   disconnect() {
-    //if (this.peerEvent) this.peerEvent.close()
-
     this.publish(this.syncMsg('leave'))
+
+    if (this.peerChannelEvent) this.peerChannelEvent.close()
+
     this.sync('disconnect')
   }
 
