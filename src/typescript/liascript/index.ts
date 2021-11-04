@@ -624,9 +624,24 @@ function process(
             case 'connect': {
               if (!self.sync) delete self.sync
 
-              self.sync = new Beaker.Sync()
+              switch (event.message.backend) {
+                case 'beaker': {
+                  self.sync = new Beaker.Sync()
+                  self.sync.connect(elmSend, event.message)
 
-              self.sync.connect(elmSend, event.message)
+                  break
+                }
+                case 'matrix': {
+                  alert('Not yet implemented!')
+
+                  event.message = false
+                  elmSend(event)
+                  break
+                }
+                default: {
+                  log.error('could not load =>', event.message)
+                }
+              }
 
               break
             }

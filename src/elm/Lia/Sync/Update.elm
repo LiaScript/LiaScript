@@ -8,7 +8,7 @@ module Lia.Sync.Update exposing
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Sync.Types exposing (Settings, State(..))
-import Lia.Sync.Via exposing (Backend)
+import Lia.Sync.Via as Via exposing (Backend)
 import Port.Event as Event exposing (Event)
 import Return exposing (Return)
 import Session exposing (Session)
@@ -102,23 +102,34 @@ update session msg model =
                 |> Return.val
 
         Connect ->
-            { model | state = Pending }
-                |> Return.val
-                |> Return.sync
-                    ([ ( "course", JE.string model.course )
-                     , ( "room", JE.string model.room )
-                     , ( "username", JE.string model.username )
-                     , ( "password"
-                       , if String.isEmpty model.password then
-                            JE.null
+            case ( model.sync.select, model.state ) of
+                ( Just backend, Disconnected ) ->
+                    { model | state = Pending }
+                        |> Return.val
+                        |> Return.sync
+                            ([ ( "backend"
+                               , backend
+                                    |> Via.toString
+                                    |> String.toLower
+                                    |> JE.string
+                               )
+                             , ( "course", JE.string model.course )
+                             , ( "room", JE.string model.room )
+                             , ( "username", JE.string model.username )
+                             , ( "password"
+                               , if String.isEmpty model.password then
+                                    JE.null
 
-                         else
-                            JE.string model.password
-                       )
-                     ]
-                        |> JE.object
-                        |> Event.init "connect"
-                    )
+                                 else
+                                    JE.string model.password
+                               )
+                             ]
+                                |> JE.object
+                                |> Event.init "connect"
+                            )
+
+                _ ->
+                    model |> Return.val
 
         Disconnect ->
             { model | state = Pending }
