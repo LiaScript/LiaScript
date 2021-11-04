@@ -1,11 +1,13 @@
 export class Sync {
-  protected send?: Lia.Send
+  protected send: Lia.Send
   protected room?: string
   protected course?: string
   protected username?: string
   protected password?: string
 
-  constructor() {}
+  constructor(send: Lia.Send) {
+    this.send = send
+  }
 
   /* to have a valid connection 3 things are required:
   
@@ -15,16 +17,12 @@ export class Sync {
 
   the remaining 2 things are optional
   */
-  connect(
-    send: Lia.Send,
-    data: {
-      course: string
-      room: string
-      username: string
-      password?: string
-    }
-  ) {
-    this.send = send
+  connect(data: {
+    course: string
+    room: string
+    username: string
+    password?: string
+  }) {
     this.room = data.room
     this.course = data.course
 

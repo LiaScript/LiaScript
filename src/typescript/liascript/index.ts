@@ -626,8 +626,8 @@ function process(
 
               switch (event.message.backend) {
                 case 'beaker': {
-                  self.sync = new Beaker.Sync()
-                  self.sync.connect(elmSend, event.message)
+                  self.sync = new Beaker.Sync(elmSend)
+                  self.sync.connect(event.message)
 
                   break
                 }

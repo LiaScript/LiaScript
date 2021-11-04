@@ -28,25 +28,22 @@ export class Sync extends Base {
   private peerEvent?: Beaker.Event
   private peerChannelEvent?: Beaker.UserEvent
 
-  constructor() {
-    super()
+  constructor(send: Lia.Send) {
+    super(send)
 
     this.peerIds = new Set()
     this.peerChannelIds = new Set()
   }
 
-  connect(
-    send: Lia.Send,
-    data: {
-      course: string
-      room: string
-      username: string
-      password?: string
-    }
-  ) {
+  connect(data: {
+    course: string
+    room: string
+    username: string
+    password?: string
+  }) {
     if (!window.beaker) return
 
-    super.connect(send, data)
+    super.connect(data)
 
     let self = this
 
@@ -90,7 +87,7 @@ export class Sync extends Base {
             }
           }
 
-          send(message)
+          self.send(message)
         }
       }
     )
@@ -108,9 +105,7 @@ export class Sync extends Base {
   }
 
   sync(topic: string, message: any = null) {
-    if (this.send) {
-      this.send(this.syncMsg(topic, message))
-    }
+    this.send(this.syncMsg(topic, message))
   }
 
   syncMsg(topic: string, message: any = null) {
