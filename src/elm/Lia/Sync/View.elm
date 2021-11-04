@@ -129,7 +129,7 @@ button state =
                 []
                 [ Html.text "connect" ]
 
-        Connected ->
+        Connected _ ->
             btn
                 { title = "disconnect"
                 , msg = Just Disconnect

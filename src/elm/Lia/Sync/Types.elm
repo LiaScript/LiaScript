@@ -19,7 +19,7 @@ import Translations exposing (Lang(..))
 
 type State
     = Pending
-    | Connected
+    | Connected String
     | Disconnected
 
 
@@ -65,7 +65,7 @@ isSupported =
 isConnected : Settings -> Bool
 isConnected sync =
     case sync.state of
-        Connected ->
+        Connected _ ->
             True
 
         _ ->
@@ -78,7 +78,7 @@ title sync =
         Disconnected ->
             Html.text "Classroom"
 
-        Connected ->
+        Connected _ ->
             Html.span []
                 [ Html.text "Classroom ("
                 , icon "icon-person icon-sm" [ Attr.style "padding-right" "4px" ]

@@ -42,17 +42,18 @@ update session msg model =
             Return.val <|
                 case Event.destructure event of
                     Just ( "connect", _, message ) ->
-                        if bool message then
-                            { model
-                                | state = Connected
-                                , peers = Set.empty
-                            }
+                        case JD.decodeValue JD.string message |> Debug.log "hash" of
+                            Ok hashID ->
+                                { model
+                                    | state = Connected hashID
+                                    , peers = Set.empty
+                                }
 
-                        else
-                            { model
-                                | state = Disconnected
-                                , peers = Set.empty
-                            }
+                            _ ->
+                                { model
+                                    | state = Disconnected
+                                    , peers = Set.empty
+                                }
 
                     Just ( "disconnect", _, _ ) ->
                         { model
@@ -147,10 +148,3 @@ updateSync msg sync =
                 | select = backend
                 , open = False
             }
-
-
-bool : JE.Value -> Bool
-bool =
-    JD.decodeValue JD.bool
-        >> Result.toMaybe
-        >> Maybe.withDefault False

@@ -3,6 +3,23 @@ import Beaker from './beaker.d'
 
 import { Sync as Base } from '../Base/index'
 
+/* This function is only required to generate a random string, that is used
+as a personal ID for every peer, since it is not possible at the moment to
+get the own peer ID from the beaker browser.
+*/
+function random(length: number = 16) {
+  // Declare all characters
+  let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+
+  // Pick characters randomly
+  let str = ''
+  for (let i = 0; i < length; i++) {
+    str += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+
+  return str
+}
+
 function encode(json: object) {
   return new TextEncoder().encode(JSON.stringify(json))
 }
@@ -28,8 +45,12 @@ export class Sync extends Base {
   private peerEvent?: Beaker.Event
   private peerChannelEvent?: Beaker.UserEvent
 
+  private id: string
+
   constructor(send: Lia.Send) {
     super(send)
+
+    this.id = random()
 
     this.peerIds = new Set()
     this.peerChannelIds = new Set()
@@ -55,7 +76,7 @@ export class Sync extends Base {
     this.peerEvent.addEventListener('join', (e: Beaker.Message) => {
       self.peerIds.add(e.peerId)
 
-      self.sendTo(e.peerId, self.syncMsg('join'))
+      self.sendTo(e.peerId, self.syncMsg('join', self.id))
     })
     this.peerEvent.addEventListener('leave', (e: Beaker.Message) => {
       self.peerIds.delete(e.peerId)
@@ -73,15 +94,14 @@ export class Sync extends Base {
               case 'join': {
                 if (!self.peerChannelIds.has(event.peerId)) {
                   self.peerChannelIds.add(event.peerId)
-                  self.sendTo(event.peerId, self.syncMsg('join'))
+                  self.sendTo(event.peerId, self.syncMsg('join', self.id))
                 }
 
-                message.message = JSON.stringify(event.peerId)
                 break
               }
               case 'leave': {
                 self.peerChannelIds.delete(event.peerId)
-                message.message = JSON.stringify(event.peerId)
+                message.message = self.id
                 break
               }
             }
@@ -94,7 +114,7 @@ export class Sync extends Base {
 
     this.publish(this.syncMsg('join'))
 
-    this.sync('connect', true)
+    this.sync('connect', this.id)
   }
 
   disconnect() {
