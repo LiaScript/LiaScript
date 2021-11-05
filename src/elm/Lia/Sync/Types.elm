@@ -4,7 +4,6 @@ module Lia.Sync.Types exposing
     , Sync
     , init
     , insert
-    , isConnected
     , isSupported
     , title
     )
@@ -62,16 +61,6 @@ init supportedBackends =
 isSupported : Settings -> Bool
 isSupported =
     .sync >> .support >> List.isEmpty >> not
-
-
-isConnected : Settings -> Bool
-isConnected sync =
-    case sync.state of
-        Connected _ ->
-            True
-
-        _ ->
-            False
 
 
 title : Settings -> Html msg

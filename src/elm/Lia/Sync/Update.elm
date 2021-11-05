@@ -2,6 +2,7 @@ module Lia.Sync.Update exposing
     ( Msg(..)
     , SyncMsg(..)
     , handle
+    , isConnected
     , update
     )
 
@@ -148,3 +149,13 @@ updateSync msg sync =
                 | select = backend
                 , open = False
             }
+
+
+isConnected : Settings -> Bool
+isConnected sync =
+    case sync.state of
+        Connected _ ->
+            True
+
+        _ ->
+            False

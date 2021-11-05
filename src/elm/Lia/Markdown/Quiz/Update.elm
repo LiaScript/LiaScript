@@ -3,6 +3,7 @@ module Lia.Markdown.Quiz.Update exposing
     , handle
     , init
     , merge
+    , synchronize
     , update
     )
 
@@ -54,7 +55,10 @@ update sync scripts msg vector =
                     case e.scriptID of
                         Nothing ->
                             check solution
-                                >> syncSolution sync id
+                                >> (sync
+                                        |> Maybe.map (syncSolution id)
+                                        |> Maybe.withDefault identity
+                                   )
                                 |> update_ id vector
                                 |> store
 
@@ -88,7 +92,10 @@ update sync scripts msg vector =
 
         ShowSolution id solution ->
             (\e -> Return.val { e | state = toState solution, solved = Solution.ReSolved, error_msg = "" })
-                >> syncSolution sync id
+                >> (sync
+                        |> Maybe.map (syncSolution id)
+                        |> Maybe.withDefault identity
+                   )
                 |> update_ id vector
                 |> store
                 |> (\return ->
@@ -198,10 +205,10 @@ syncUpdate vector id state =
             Return.val vector
 
 
-syncSolution : Maybe Sync.Settings -> Int -> Return Element msg sub -> Return Element msg sub
-syncSolution maybeSync id ret =
-    case ( maybeSync, Synchronization.toState ret.value ) of
-        ( Just sync, Just syncState ) ->
+syncSolution : Int -> Sync.Settings -> Return Element msg sub -> Return Element msg sub
+syncSolution id sync ret =
+    case Synchronization.toState ret.value of
+        Just syncState ->
             case Sync.insert sync syncState ret.value.sync of
                 ( False, newSync ) ->
                     ret
@@ -213,6 +220,17 @@ syncSolution maybeSync id ret =
 
         _ ->
             ret
+
+
+synchronize : Sync.Settings -> Vector -> ( Vector, List Event )
+synchronize sync vector =
+    vector
+        |> Array.indexedMap (\i -> Return.val >> syncSolution i sync)
+        |> Array.map (\ret -> ( ret.value, ret.synchronize ))
+        |> Array.toList
+        |> List.unzip
+        |> Tuple.mapSecond List.concat
+        |> Tuple.mapFirst Array.fromList
 
 
 execute : Int -> State -> Script.Msg sub

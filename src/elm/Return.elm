@@ -14,6 +14,7 @@ module Return exposing
     , replace
     , script
     , sync
+    , syncAppend
     , syncMsg
     , val
     , warn
@@ -142,6 +143,11 @@ mapSync topic id r =
                 Just i ->
                     upgrade topic i r.synchronize
     }
+
+
+syncAppend : List Event -> Return model msg sub -> Return model msg sub
+syncAppend events r =
+    { r | synchronize = List.append events r.synchronize }
 
 
 log : String -> Return model msg sub -> Return model msg sub

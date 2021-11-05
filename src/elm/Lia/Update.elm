@@ -193,9 +193,36 @@ update session msg model =
                 Just ( "sync", e ) ->
                     case Event.popWithId e of
                         Just ( "sync", _, e_ ) ->
-                            model.sync
-                                |> Sync.handle session e_
-                                |> Return.mapValCmd (\v -> { model | sync = v }) UpdateSync
+                            let
+                                sync =
+                                    Sync.handle session e_ model.sync
+                            in
+                            case ( Sync.isConnected model.sync, Sync.isConnected sync.value ) of
+                                -- A connection has happened ...
+                                ( False, True ) ->
+                                    let
+                                        ( sections, events ) =
+                                            model.sections
+                                                |> Array.map (Markdown.synchronize sync.value)
+                                                |> Array.toList
+                                                |> List.unzip
+                                                |> Tuple.mapFirst Array.fromList
+                                                |> Tuple.mapSecond List.concat
+                                    in
+                                    sync
+                                        |> Return.mapValCmd
+                                            (\v ->
+                                                { model
+                                                    | sync = v
+                                                    , sections = sections
+                                                }
+                                            )
+                                            UpdateSync
+                                        |> Return.syncAppend events
+
+                                _ ->
+                                    sync
+                                        |> Return.mapValCmd (\v -> { model | sync = v }) UpdateSync
 
                         Just ( "load", Just id, _ ) ->
                             update session (Load True id) model

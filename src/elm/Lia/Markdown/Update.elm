@@ -5,6 +5,7 @@ port module Lia.Markdown.Update exposing
     , nextEffect
     , previousEffect
     , subscriptions
+    , synchronize
     , ttsReplay
     , update
     , updateScript
@@ -247,6 +248,18 @@ subUpdate js msg section =
 
                 _ ->
                     Return.val section
+
+
+synchronize : Sync.Settings -> Section -> ( Section, List Event )
+synchronize sync section =
+    let
+        ( quiz_vector, events ) =
+            Quiz.synchronize sync section.quiz_vector
+    in
+    ( { section | quiz_vector = quiz_vector }
+    , events
+        |> List.map (Event.pushWithId "quiz" section.id)
+    )
 
 
 updateScript :
