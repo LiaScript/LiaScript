@@ -141,6 +141,7 @@ export class Sync extends Base {
   }
 
   publish(message: Object) {
+    console.warn('BEAKER', message)
     if (this.peerChannelEvent) {
       let msg = encode(message)
 

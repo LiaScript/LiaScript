@@ -17,7 +17,9 @@ import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Block.Types as Block
 import Lia.Markdown.Quiz.Matrix.Types as Matrix
 import Lia.Markdown.Quiz.Solution as Solution exposing (Solution)
+import Lia.Markdown.Quiz.Synchronization as Synchronization
 import Lia.Markdown.Quiz.Vector.Types as Vector
+import Lia.Sync.Container exposing (Container)
 
 
 type alias Vector =
@@ -35,11 +37,7 @@ type alias Element =
     , hint : Int
     , error_msg : String
     , scriptID : Maybe Int
-    , sync :
-        Maybe
-            { solved : Int
-            , resolved : Int
-            }
+    , sync : Container Synchronization.State
     }
 
 

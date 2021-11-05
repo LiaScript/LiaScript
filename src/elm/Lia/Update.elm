@@ -204,7 +204,7 @@ update session msg model =
                             case Array.get id model.sections of
                                 Just sec ->
                                     sec
-                                        |> Markdown.handle model.definition topic e_
+                                        |> Markdown.handle (Just model.sync) model.definition topic e_
                                         |> Return.mapValCmd (\v -> { model | sections = Array.set id v model.sections }) UpdateMarkdown
 
                                 _ ->
@@ -236,7 +236,7 @@ update session msg model =
                     of
                         Just ( id, Just sec ) ->
                             sec
-                                |> Markdown.handle model.definition topic e
+                                |> Markdown.handle (Just model.sync) model.definition topic e
                                 |> Return.mapValCmd (\v -> { model | sections = Array.set id v model.sections }) UpdateMarkdown
 
                         _ ->
@@ -281,7 +281,7 @@ update session msg model =
             case ( msg, get_active_section model ) of
                 ( UpdateMarkdown childMsg, Just sec ) ->
                     sec
-                        |> Markdown.update model.definition childMsg
+                        |> Markdown.update (Just model.sync) model.definition childMsg
                         |> Return.mapValCmd (set_active_section model) UpdateMarkdown
 
                 ( NextSection, Just sec ) ->
@@ -290,7 +290,7 @@ update session msg model =
 
                     else
                         sec
-                            |> Markdown.nextEffect model.definition model.settings.sound
+                            |> Markdown.nextEffect (Just model.sync) model.definition model.settings.sound
                             |> Return.mapValCmd (set_active_section model) UpdateMarkdown
 
                 ( PrevSection, Just sec ) ->
@@ -299,7 +299,7 @@ update session msg model =
 
                     else
                         sec
-                            |> Markdown.previousEffect model.definition model.settings.sound
+                            |> Markdown.previousEffect (Just model.sync) model.definition model.settings.sound
                             |> Return.mapValCmd (set_active_section model) UpdateMarkdown
 
                 ( InitSection, Just sec ) ->
@@ -307,10 +307,10 @@ update session msg model =
                         return =
                             case model.settings.mode of
                                 Textbook ->
-                                    Markdown.initEffect model.definition True False sec
+                                    Markdown.initEffect (Just model.sync) model.definition True False sec
 
                                 _ ->
-                                    Markdown.initEffect model.definition False model.settings.sound sec
+                                    Markdown.initEffect (Just model.sync) model.definition False model.settings.sound sec
                     in
                     return
                         |> Return.mapValCmd
@@ -328,7 +328,7 @@ update session msg model =
                                 sec.effect_model
 
                             return =
-                                Markdown.nextEffect model.definition model.settings.sound { sec | effect_model = { effect | visible = id - 1 } }
+                                Markdown.nextEffect (Just model.sync) model.definition model.settings.sound { sec | effect_model = { effect | visible = id - 1 } }
                         in
                         return
                             |> Return.mapValCmd (set_active_section model) UpdateMarkdown

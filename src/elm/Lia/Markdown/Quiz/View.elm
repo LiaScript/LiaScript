@@ -156,33 +156,40 @@ viewQuiz config labeledBy state quiz ( attr, body ) =
 
 viewSync : Element -> Html msg
 viewSync e =
-    case e.sync of
-        Nothing ->
-            Html.text ""
+    e.sync
+        |> Debug.toString
+        |> Html.text
 
-        Just { solved, resolved } ->
-            Html.text
-                ("solved: "
-                    ++ String.fromInt
-                        (solved
-                            + (if e.solved == Solution.Solved then
-                                1
 
-                               else
-                                0
-                              )
-                        )
-                    ++ ", resolved: "
-                    ++ String.fromInt
-                        (resolved
-                            + (if e.solved == Solution.ReSolved then
-                                1
 
-                               else
-                                0
-                              )
-                        )
-                )
+{- case e.sync of
+   Nothing ->
+       Html.text ""
+
+   Just { solved, resolved } ->
+       Html.text
+           ("solved: "
+               ++ String.fromInt
+                   (solved
+                       + (if e.solved == Solution.Solved then
+                           1
+
+                          else
+                           0
+                         )
+                   )
+               ++ ", resolved: "
+               ++ String.fromInt
+                   (resolved
+                       + (if e.solved == Solution.ReSolved then
+                           1
+
+                          else
+                           0
+                         )
+                   )
+           )
+-}
 
 
 viewFeedback : Lang -> Element -> Html msg

@@ -42,7 +42,7 @@ update session msg model =
             Return.val <|
                 case Event.destructure event of
                     Just ( "connect", _, message ) ->
-                        case JD.decodeValue JD.string message |> Debug.log "hash" of
+                        case JD.decodeValue JD.string message of
                             Ok hashID ->
                                 { model
                                     | state = Connected hashID

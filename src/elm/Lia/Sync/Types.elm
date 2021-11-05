@@ -3,6 +3,7 @@ module Lia.Sync.Types exposing
     , State(..)
     , Sync
     , init
+    , insert
     , isConnected
     , isSupported
     , title
@@ -10,6 +11,7 @@ module Lia.Sync.Types exposing
 
 import Html exposing (Html)
 import Html.Attributes as Attr
+import Lia.Sync.Container as Container exposing (Container)
 import Lia.Sync.Via as Via exposing (Backend)
 import Lia.Utils exposing (icon)
 import Return exposing (sync)
@@ -91,3 +93,13 @@ title sync =
 
         Pending ->
             Html.text "Classroom (pending)"
+
+
+insert : Settings -> data -> Container data -> ( Bool, Container data )
+insert settings data container =
+    case settings.state of
+        Connected id ->
+            Container.insert id data container
+
+        _ ->
+            ( False, container )

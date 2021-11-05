@@ -14,6 +14,7 @@ module Return exposing
     , replace
     , script
     , sync
+    , syncMsg
     , val
     , warn
     )
@@ -125,9 +126,22 @@ sync event r =
     { r | synchronize = Event.push "sync" event :: r.synchronize }
 
 
-mapSync : String -> Int -> Return model msg sub -> Return model msg sub
+syncMsg : Int -> JE.Value -> Return model msg sub -> Return model msg sub
+syncMsg id msg r =
+    { r | synchronize = Event.initWithId "sync" id msg :: r.synchronize }
+
+
+mapSync : String -> Maybe Int -> Return model msg sub -> Return model msg sub
 mapSync topic id r =
-    { r | synchronize = upgrade topic id r.synchronize }
+    { r
+        | synchronize =
+            case id of
+                Nothing ->
+                    List.map (Event.push topic) r.synchronize
+
+                Just i ->
+                    upgrade topic i r.synchronize
+    }
 
 
 log : String -> Return model msg sub -> Return model msg sub

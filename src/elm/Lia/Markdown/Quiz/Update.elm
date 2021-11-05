@@ -14,8 +14,11 @@ import Lia.Markdown.Quiz.Block.Update as Block
 import Lia.Markdown.Quiz.Json as Json
 import Lia.Markdown.Quiz.Matrix.Update as Matrix
 import Lia.Markdown.Quiz.Solution as Solution
+import Lia.Markdown.Quiz.Synchronization as Synchronization
 import Lia.Markdown.Quiz.Types exposing (Element, State(..), Type(..), Vector, comp, toState)
 import Lia.Markdown.Quiz.Vector.Update as Vector
+import Lia.Sync.Container as Container
+import Lia.Sync.Types as Sync
 import Port.Eval as Eval
 import Port.Event as Event exposing (Event)
 import Return exposing (Return)
@@ -33,8 +36,8 @@ type Msg sub
     | Script (Script.Msg sub)
 
 
-update : Scripts a -> Msg sub -> Vector -> Return Vector msg sub
-update scripts msg vector =
+update : Maybe Sync.Settings -> Scripts a -> Msg sub -> Vector -> Return Vector msg sub
+update sync scripts msg vector =
     case msg of
         Block_Update id _ ->
             update_ id vector (state_ msg)
@@ -51,7 +54,7 @@ update scripts msg vector =
                     case e.scriptID of
                         Nothing ->
                             check solution
-                                >> syncSolution id
+                                >> syncSolution sync id
                                 |> update_ id vector
                                 |> store
 
@@ -85,7 +88,7 @@ update scripts msg vector =
 
         ShowSolution id solution ->
             (\e -> Return.val { e | state = toState solution, solved = Solution.ReSolved, error_msg = "" })
-                >> syncSolution id
+                >> syncSolution sync id
                 |> update_ id vector
                 |> store
                 |> (\return ->
@@ -143,11 +146,10 @@ update scripts msg vector =
                         |> Return.val
                         |> init (\i s -> execute i s.state)
 
-                Just ( "sync", _ ) ->
+                Just ( "sync", Just section ) ->
                     event
-                        |> Event.pop
-                        |> Maybe.map (Tuple.second >> syncUpdate vector)
-                        |> Maybe.withDefault (Return.val vector)
+                        |> Event.message
+                        |> syncUpdate vector section
 
                 _ ->
                     Return.val vector
@@ -174,69 +176,40 @@ toString state =
             ""
 
 
-syncUpdate : Vector -> Event -> Return Vector msg sub
-syncUpdate vector event =
+syncUpdate : Vector -> Int -> JE.Value -> Return Vector msg sub
+syncUpdate vector id state =
     case
-        event
-            |> Event.topicWithId
-            |> syncGet vector
+        ( Array.get id vector
+        , Container.decode Synchronization.decoder state
+        )
     of
-        Just ( topic, id, element ) ->
-            Array.set id
-                { element
-                    | sync =
-                        Just <|
-                            syncUpdateHelper topic event.message <|
-                                case element.sync of
-                                    Nothing ->
-                                        { solved = 0, resolved = 0 }
+        ( Just element, Ok sync ) ->
+            case Container.union element.sync sync of
+                ( True, _ ) ->
+                    vector
+                        |> Return.val
 
-                                    Just sync ->
-                                        sync
-                }
-                vector
-                |> Return.val
+                ( False, union ) ->
+                    Array.set id { element | sync = union } vector
+                        |> Return.val
+                        |> Return.sync (Event.initWithId "sync" id (Container.encode Synchronization.encoder union))
 
         _ ->
             Return.val vector
 
 
-syncGet : Vector -> Maybe ( String, Maybe Int ) -> Maybe ( String, Int, Element )
-syncGet vector conf =
-    case conf of
-        Just ( topic, Just id ) ->
-            case Array.get id vector of
-                Just elem ->
-                    Just ( topic, id, elem )
+syncSolution : Maybe Sync.Settings -> Int -> Return Element msg sub -> Return Element msg sub
+syncSolution maybeSync id ret =
+    case ( maybeSync, Synchronization.toState ret.value ) of
+        ( Just sync, Just syncState ) ->
+            case Sync.insert sync syncState ret.value.sync of
+                ( False, newSync ) ->
+                    ret
+                        |> Return.mapVal (\v -> { v | sync = newSync })
+                        |> Return.syncMsg id (Container.encode Synchronization.encoder newSync)
 
                 _ ->
-                    Nothing
-
-        _ ->
-            Nothing
-
-
-syncUpdateHelper : String -> JE.Value -> { solved : Int, resolved : Int } -> { solved : Int, resolved : Int }
-syncUpdateHelper topic _ sync =
-    case topic of
-        "solved" ->
-            { sync | solved = sync.solved + 1 }
-
-        "resolved" ->
-            { sync | resolved = sync.resolved + 1 }
-
-        _ ->
-            sync
-
-
-syncSolution : Int -> Return Element msg sub -> Return Element msg sub
-syncSolution id ret =
-    case ret.value.solved of
-        Solution.Solved ->
-            Return.sync (Event.initWithId "solved" id (JE.int ret.value.trial)) ret
-
-        Solution.ReSolved ->
-            Return.sync (Event.initWithId "resolved" id JE.null) ret
+                    ret
 
         _ ->
             ret
@@ -245,19 +218,6 @@ syncSolution id ret =
 execute : Int -> State -> Script.Msg sub
 execute id =
     toString >> JS.run id
-
-
-get : Int -> Vector -> Maybe Element
-get idx vector =
-    case Array.get idx vector of
-        Just elem ->
-            --if (elem.solved == Solution.Solved) || (elem.solved == Solution.ReSolved) then
-            --    Nothing
-            --else
-            Just elem
-
-        _ ->
-            Nothing
 
 
 update_ :
