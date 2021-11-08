@@ -3,7 +3,6 @@ module Lia.Markdown.Quiz.Update exposing
     , handle
     , init
     , merge
-    , synchronize
     , update
     )
 
@@ -15,7 +14,6 @@ import Lia.Markdown.Quiz.Block.Update as Block
 import Lia.Markdown.Quiz.Json as Json
 import Lia.Markdown.Quiz.Matrix.Update as Matrix
 import Lia.Markdown.Quiz.Solution as Solution
-import Lia.Markdown.Quiz.Synchronization as Synchronization
 import Lia.Markdown.Quiz.Types exposing (Element, State(..), Type(..), Vector, comp, toState)
 import Lia.Markdown.Quiz.Vector.Update as Vector
 import Lia.Sync.Container as Container
@@ -37,8 +35,8 @@ type Msg sub
     | Script (Script.Msg sub)
 
 
-update : Maybe Sync.Settings -> Scripts a -> Msg sub -> Vector -> Return Vector msg sub
-update sync scripts msg vector =
+update : Scripts a -> Msg sub -> Vector -> Return Vector msg sub
+update scripts msg vector =
     case msg of
         Block_Update id _ ->
             update_ id vector (state_ msg)
@@ -55,10 +53,6 @@ update sync scripts msg vector =
                     case e.scriptID of
                         Nothing ->
                             check solution
-                                >> (sync
-                                        |> Maybe.map (syncSolution id)
-                                        |> Maybe.withDefault identity
-                                   )
                                 |> update_ id vector
                                 |> store
 
@@ -92,10 +86,6 @@ update sync scripts msg vector =
 
         ShowSolution id solution ->
             (\e -> Return.val { e | state = toState solution, solved = Solution.ReSolved, error_msg = "" })
-                >> (sync
-                        |> Maybe.map (syncSolution id)
-                        |> Maybe.withDefault identity
-                   )
                 |> update_ id vector
                 |> store
                 |> (\return ->
@@ -153,11 +143,26 @@ update sync scripts msg vector =
                         |> Return.val
                         |> init (\i s -> execute i s.state)
 
-                Just ( "sync", Just section ) ->
-                    event
-                        |> Event.message
-                        |> syncUpdate vector section
+                {- |> (\ret ->
+                        case sync of
+                            Nothing ->
+                                ret
 
+                            Just sync_ ->
+                                let
+                                    ( vector_, events ) =
+                                        synchronize sync_ ret.value
+                                in
+                                vector_
+                                    |> Return.replace ret
+                                    |> Return.syncAppend events
+                   )
+                -}
+                {- Just ( "sync", Just section ) ->
+                   event
+                       |> Event.message
+                       |> syncUpdate vector section
+                -}
                 _ ->
                     Return.val vector
 
@@ -183,54 +188,58 @@ toString state =
             ""
 
 
-syncUpdate : Vector -> Int -> JE.Value -> Return Vector msg sub
-syncUpdate vector id state =
-    case
-        ( Array.get id vector
-        , Container.decode Synchronization.decoder state
-        )
-    of
-        ( Just element, Ok sync ) ->
-            case Container.union element.sync sync of
-                ( True, _ ) ->
-                    vector
-                        |> Return.val
 
-                ( False, union ) ->
-                    Array.set id { element | sync = union } vector
-                        |> Return.val
-                        |> Return.sync (Event.initWithId "sync" id (Container.encode Synchronization.encoder union))
+{-
+   syncUpdate : Vector -> Int -> JE.Value -> Return Vector msg sub
+   syncUpdate vector id state =
+       case
+           ( Array.get id vector
+           , Container.decode Synchronization.decoder state
+           )
+       of
+           ( Just element, Ok sync ) ->
+               case Container.union element.sync sync of
+                   ( True, _ ) ->
+                       vector
+                           |> Return.val
 
-        _ ->
-            Return.val vector
+                   ( False, union ) ->
+                       vector
+                           |> Array.set id { element | sync = union }
+                           |> Return.val
+                           |> Return.sync (Event.initWithId "sync" id (Container.encode Synchronization.encoder union))
 
+           _ ->
+               Return.val vector
+-}
+{-
+   syncSolution : Int -> Sync.Settings -> Return Element msg sub -> Return Element msg sub
+   syncSolution id sync ret =
+       case Synchronization.toState ret.value of
+           Just syncState ->
+               case Sync.insert sync syncState ret.value.sync of
+                   ( False, newSync ) ->
+                       ret
+                           |> Return.mapVal (\v -> { v | sync = newSync })
+                           |> Return.syncMsg id (Container.encode Synchronization.encoder newSync)
 
-syncSolution : Int -> Sync.Settings -> Return Element msg sub -> Return Element msg sub
-syncSolution id sync ret =
-    case Synchronization.toState ret.value of
-        Just syncState ->
-            case Sync.insert sync syncState ret.value.sync of
-                ( False, newSync ) ->
-                    ret
-                        |> Return.mapVal (\v -> { v | sync = newSync })
-                        |> Return.syncMsg id (Container.encode Synchronization.encoder newSync)
+                   _ ->
+                       ret
 
-                _ ->
-                    ret
-
-        _ ->
-            ret
-
-
-synchronize : Sync.Settings -> Vector -> ( Vector, List Event )
-synchronize sync vector =
-    vector
-        |> Array.indexedMap (\i -> Return.val >> syncSolution i sync)
-        |> Array.map (\ret -> ( ret.value, ret.synchronize ))
-        |> Array.toList
-        |> List.unzip
-        |> Tuple.mapSecond List.concat
-        |> Tuple.mapFirst Array.fromList
+           _ ->
+               ret
+-}
+{-
+   synchronize : Sync.Settings -> Vector -> ( Vector, List Event )
+   synchronize sync vector =
+       vector
+           |> Array.indexedMap (\i -> Return.val >> syncSolution i sync)
+           |> Array.map (\ret -> ( ret.value, ret.synchronize ))
+           |> Array.toList
+           |> List.unzip
+           |> Tuple.mapSecond List.concat
+           |> Tuple.mapFirst Array.fromList
+-}
 
 
 execute : Int -> State -> Script.Msg sub

@@ -18,6 +18,7 @@ import Lia.Markdown.Survey.Types as Survey
 import Lia.Markdown.Table.Types as Table
 import Lia.Markdown.Task.Types as Task
 import Lia.Markdown.Types as Markdown
+import Lia.Sync.Container exposing (Container)
 
 
 {-| This is the main record to contain all section related information.
@@ -74,6 +75,7 @@ type alias Section =
     , definition : Maybe Definition
     , footnotes : Footnote.Model
     , footnote2show : Maybe String
+    , sync : Maybe { quiz : Container Quiz.Sync }
     }
 
 
@@ -153,4 +155,5 @@ init id base =
     , definition = Nothing
     , footnotes = Footnote.init
     , footnote2show = Nothing
+    , sync = Nothing
     }

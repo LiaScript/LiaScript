@@ -155,9 +155,8 @@ viewQuiz config labeledBy state quiz ( attr, body ) =
 
 
 viewSync : Element -> Html msg
-viewSync e =
-    e.sync
-        |> Debug.toString
+viewSync _ =
+    "todo"
         |> Html.text
 
 

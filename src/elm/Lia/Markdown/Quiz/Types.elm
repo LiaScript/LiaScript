@@ -3,23 +3,27 @@ module Lia.Markdown.Quiz.Types exposing
     , Hints
     , Quiz
     , State(..)
+    , Sync
     , Type(..)
     , Vector
     , comp
     , getClass
     , initState
     , isSolved
+    , sync
+    , syncDecoder
+    , syncEncoder
     , toState
     )
 
 import Array exposing (Array)
+import Json.Decode as JD
+import Json.Encode as JE
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Block.Types as Block
 import Lia.Markdown.Quiz.Matrix.Types as Matrix
 import Lia.Markdown.Quiz.Solution as Solution exposing (Solution)
-import Lia.Markdown.Quiz.Synchronization as Synchronization
 import Lia.Markdown.Quiz.Vector.Types as Vector
-import Lia.Sync.Container exposing (Container)
 
 
 type alias Vector =
@@ -37,8 +41,12 @@ type alias Element =
     , hint : Int
     , error_msg : String
     , scriptID : Maybe Int
-    , sync : Container Synchronization.State
     }
+
+
+type Sync
+    = Trials Int
+    | Resolved
 
 
 type State
@@ -143,3 +151,34 @@ getClass state =
 
         Generic_State ->
             "generic"
+
+
+sync : { quiz | trial : Int, solved : Solution } -> Maybe Sync
+sync quiz =
+    case quiz.solved of
+        Solution.Solved ->
+            Just (Trials quiz.trial)
+
+        Solution.ReSolved ->
+            Just Resolved
+
+        Solution.Open ->
+            Nothing
+
+
+syncEncoder : Sync -> JE.Value
+syncEncoder state =
+    case state of
+        Trials i ->
+            JE.int i
+
+        Resolved ->
+            JE.null
+
+
+syncDecoder : JD.Decoder Sync
+syncDecoder =
+    [ JD.int |> JD.map Trials
+    , JD.null Resolved
+    ]
+        |> JD.oneOf

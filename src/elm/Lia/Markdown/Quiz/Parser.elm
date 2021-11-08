@@ -41,7 +41,6 @@ import Lia.Markdown.Quiz.Vector.Parser as Vector
 import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (newline, spaces)
 import Lia.Parser.Indentation as Indent
-import Lia.Sync.Container as Container
 
 
 parse : Parser Context Quiz
@@ -95,7 +94,7 @@ modify_State q =
             { s
                 | quiz_vector =
                     Array.push
-                        (Element Solution.Open (initState q.quiz) 0 0 "" id Container.empty)
+                        (Element Solution.Open (initState q.quiz) 0 0 "" id)
                         s.quiz_vector
             }
     in

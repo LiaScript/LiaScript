@@ -4,8 +4,9 @@ port module Lia.Markdown.Update exposing
     , initEffect
     , nextEffect
     , previousEffect
-    , subscriptions
-    , synchronize
+    ,  subscriptions
+       --, synchronize
+
     , ttsReplay
     , update
     , updateScript
@@ -24,7 +25,6 @@ import Lia.Markdown.Survey.Update as Survey
 import Lia.Markdown.Table.Update as Table
 import Lia.Markdown.Task.Update as Task
 import Lia.Section exposing (Section, SubSection(..))
-import Lia.Sync.Types as Sync
 import Lia.Utils exposing (focus)
 import Port.Event as Event exposing (Event)
 import Return exposing (Return)
@@ -52,8 +52,8 @@ subscriptions _ =
     footnote FootnoteShow
 
 
-update : Maybe Sync.Settings -> Definition -> Msg -> Section -> Return Section Msg Msg
-update sync globals msg section =
+update : Definition -> Msg -> Section -> Return Section Msg Msg
+update globals msg section =
     Return.mapSync "sync" Nothing <|
         case msg of
             UpdateEffect sound childMsg ->
@@ -78,7 +78,7 @@ update sync globals msg section =
 
             UpdateQuiz childMsg ->
                 section.quiz_vector
-                    |> Quiz.update sync section.effect_model.javascript childMsg
+                    |> Quiz.update section.effect_model.javascript childMsg
                     |> Return.mapVal (\v -> { section | quiz_vector = v })
                     |> Return.mapEvents "quiz" section.id
                     |> updateScript
@@ -178,7 +178,7 @@ subUpdate js msg section =
                 UpdateQuiz childMsg ->
                     let
                         result =
-                            Quiz.update Nothing js childMsg subsection.quiz_vector
+                            Quiz.update js childMsg subsection.quiz_vector
                     in
                     case result.sub of
                         Just _ ->
@@ -250,16 +250,19 @@ subUpdate js msg section =
                     Return.val section
 
 
-synchronize : Sync.Settings -> Section -> ( Section, List Event )
-synchronize sync section =
-    let
-        ( quiz_vector, events ) =
-            Quiz.synchronize sync section.quiz_vector
-    in
-    ( { section | quiz_vector = quiz_vector }
-    , events
-        |> List.map (Event.pushWithId "quiz" section.id)
-    )
+
+{-
+   synchronize : Sync.Settings -> Section -> ( Section, List Event )
+   synchronize sync section =
+       let
+           ( quiz_vector, events ) =
+               Quiz.synchronize sync section.quiz_vector
+       in
+       ( { section | quiz_vector = quiz_vector }
+       , events
+           |> List.map (Event.pushWithId "quiz" section.id)
+       )
+-}
 
 
 updateScript :
@@ -287,19 +290,19 @@ updateScript return =
                 |> Return.batchEvents ret.events
 
 
-nextEffect : Maybe Sync.Settings -> Definition -> Bool -> Section -> Return Section Msg Msg
-nextEffect sync globals sound =
-    update sync globals (UpdateEffect sound Effect.next)
+nextEffect : Definition -> Bool -> Section -> Return Section Msg Msg
+nextEffect globals sound =
+    update globals (UpdateEffect sound Effect.next)
 
 
-previousEffect : Maybe Sync.Settings -> Definition -> Bool -> Section -> Return Section Msg Msg
-previousEffect sync globals sound =
-    update sync globals (UpdateEffect sound Effect.previous)
+previousEffect : Definition -> Bool -> Section -> Return Section Msg Msg
+previousEffect globals sound =
+    update globals (UpdateEffect sound Effect.previous)
 
 
-initEffect : Maybe Sync.Settings -> Definition -> Bool -> Bool -> Section -> Return Section Msg Msg
-initEffect sync globals run_all_javascript sound =
-    update sync globals (UpdateEffect sound (Effect.init run_all_javascript))
+initEffect : Definition -> Bool -> Bool -> Section -> Return Section Msg Msg
+initEffect globals run_all_javascript sound =
+    update globals (UpdateEffect sound (Effect.init run_all_javascript))
 
 
 subHandle : Scripts SubSection -> JE.Value -> SubSection -> Return SubSection Msg Msg
@@ -334,29 +337,29 @@ subHandle js json section =
                 |> Return.error "subHandle Problem"
 
 
-handle : Maybe Sync.Settings -> Definition -> String -> Event -> Section -> Return Section Msg Msg
-handle sync globals topic event section =
+handle : Definition -> String -> Event -> Section -> Return Section Msg Msg
+handle globals topic event section =
     case topic of
         "code" ->
-            update sync globals (UpdateCode (Code.handle event)) section
+            update globals (UpdateCode (Code.handle event)) section
 
         "quiz" ->
-            update sync globals (UpdateQuiz (Quiz.handle event)) section
+            update globals (UpdateQuiz (Quiz.handle event)) section
 
         "survey" ->
-            update sync globals (UpdateSurvey (Survey.handle event)) section
+            update globals (UpdateSurvey (Survey.handle event)) section
 
         "effect" ->
-            update sync globals (UpdateEffect True (Effect.handle event)) section
+            update globals (UpdateEffect True (Effect.handle event)) section
 
         "task" ->
-            update sync globals (UpdateTask (Task.handle event)) section
+            update globals (UpdateTask (Task.handle event)) section
 
         "table" ->
-            update sync globals (UpdateTable (Table.handle event)) section
+            update globals (UpdateTable (Table.handle event)) section
 
         "gallery" ->
-            update sync globals (UpdateGallery (Gallery.handle event)) section
+            update globals (UpdateGallery (Gallery.handle event)) section
 
         _ ->
             Return.val section

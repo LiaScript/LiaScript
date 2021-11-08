@@ -12,7 +12,6 @@ import Lia.Markdown.Quiz.Matrix.Json as Matrix
 import Lia.Markdown.Quiz.Solution as Solution
 import Lia.Markdown.Quiz.Types exposing (Element, Quiz, State(..), Type(..), Vector)
 import Lia.Markdown.Quiz.Vector.Json as Vector
-import Lia.Sync.Container as Container
 
 
 encode : Quiz -> JE.Value
@@ -98,14 +97,13 @@ toElement =
                 _ ->
                     JD.succeed Solution.ReSolved
     in
-    JD.map7 Element
+    JD.map6 Element
         (JD.field "solved" JD.int |> JD.andThen solved_decoder)
         (JD.field "state" toState)
         (JD.field "trial" JD.int)
         (JD.field "hint" JD.int)
         (JD.field "error_msg" JD.string)
         (JD.succeed Nothing)
-        (JD.succeed Container.empty)
 
 
 toState : JD.Decoder State

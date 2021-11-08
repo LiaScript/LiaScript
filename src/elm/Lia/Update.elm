@@ -199,27 +199,28 @@ update session msg model =
                             in
                             case ( Sync.isConnected model.sync, Sync.isConnected sync.value ) of
                                 -- A connection has happened ...
-                                ( False, True ) ->
-                                    let
-                                        ( sections, events ) =
-                                            model.sections
-                                                |> Array.map (Markdown.synchronize sync.value)
-                                                |> Array.toList
-                                                |> List.unzip
-                                                |> Tuple.mapFirst Array.fromList
-                                                |> Tuple.mapSecond List.concat
-                                    in
-                                    sync
-                                        |> Return.mapValCmd
-                                            (\v ->
-                                                { model
-                                                    | sync = v
-                                                    , sections = sections
-                                                }
-                                            )
-                                            UpdateSync
-                                        |> Return.syncAppend events
-
+                                {-
+                                   ( False, True ) ->
+                                       let
+                                           ( sections, events ) =
+                                               model.sections
+                                                   |> Array.map (Markdown.synchronize sync.value)
+                                                   |> Array.toList
+                                                   |> List.unzip
+                                                   |> Tuple.mapFirst Array.fromList
+                                                   |> Tuple.mapSecond List.concat
+                                       in
+                                       sync
+                                           |> Return.mapValCmd
+                                               (\v ->
+                                                   { model
+                                                       | sync = v
+                                                       , sections = sections
+                                                   }
+                                               )
+                                               UpdateSync
+                                           |> Return.syncAppend events
+                                -}
                                 _ ->
                                     sync
                                         |> Return.mapValCmd (\v -> { model | sync = v }) UpdateSync
@@ -231,7 +232,7 @@ update session msg model =
                             case Array.get id model.sections of
                                 Just sec ->
                                     sec
-                                        |> Markdown.handle (Just model.sync) model.definition topic e_
+                                        |> Markdown.handle model.definition topic e_
                                         |> Return.mapValCmd (\v -> { model | sections = Array.set id v model.sections }) UpdateMarkdown
 
                                 _ ->
@@ -263,7 +264,7 @@ update session msg model =
                     of
                         Just ( id, Just sec ) ->
                             sec
-                                |> Markdown.handle (Just model.sync) model.definition topic e
+                                |> Markdown.handle model.definition topic e
                                 |> Return.mapValCmd (\v -> { model | sections = Array.set id v model.sections }) UpdateMarkdown
 
                         _ ->
@@ -308,7 +309,7 @@ update session msg model =
             case ( msg, get_active_section model ) of
                 ( UpdateMarkdown childMsg, Just sec ) ->
                     sec
-                        |> Markdown.update (Just model.sync) model.definition childMsg
+                        |> Markdown.update model.definition childMsg
                         |> Return.mapValCmd (set_active_section model) UpdateMarkdown
 
                 ( NextSection, Just sec ) ->
@@ -317,7 +318,7 @@ update session msg model =
 
                     else
                         sec
-                            |> Markdown.nextEffect (Just model.sync) model.definition model.settings.sound
+                            |> Markdown.nextEffect model.definition model.settings.sound
                             |> Return.mapValCmd (set_active_section model) UpdateMarkdown
 
                 ( PrevSection, Just sec ) ->
@@ -326,7 +327,7 @@ update session msg model =
 
                     else
                         sec
-                            |> Markdown.previousEffect (Just model.sync) model.definition model.settings.sound
+                            |> Markdown.previousEffect model.definition model.settings.sound
                             |> Return.mapValCmd (set_active_section model) UpdateMarkdown
 
                 ( InitSection, Just sec ) ->
@@ -334,10 +335,10 @@ update session msg model =
                         return =
                             case model.settings.mode of
                                 Textbook ->
-                                    Markdown.initEffect (Just model.sync) model.definition True False sec
+                                    Markdown.initEffect model.definition True False sec
 
                                 _ ->
-                                    Markdown.initEffect (Just model.sync) model.definition False model.settings.sound sec
+                                    Markdown.initEffect model.definition False model.settings.sound sec
                     in
                     return
                         |> Return.mapValCmd
@@ -355,7 +356,7 @@ update session msg model =
                                 sec.effect_model
 
                             return =
-                                Markdown.nextEffect (Just model.sync) model.definition model.settings.sound { sec | effect_model = { effect | visible = id - 1 } }
+                                Markdown.nextEffect model.definition model.settings.sound { sec | effect_model = { effect | visible = id - 1 } }
                         in
                         return
                             |> Return.mapValCmd (set_active_section model) UpdateMarkdown
