@@ -6,13 +6,17 @@ module Lia.Sync.Update exposing
     , update
     )
 
+import Array exposing (Array)
+import Browser exposing (element)
 import Json.Decode as JD
 import Json.Encode as JE
+import Lia.Markdown.Quiz.Types as Quiz
+import Lia.Section as Section exposing (Sections)
+import Lia.Sync.Container as Container
 import Lia.Sync.Types exposing (Settings, State(..))
 import Lia.Sync.Via as Via exposing (Backend)
 import Port.Event as Event exposing (Event)
 import Return exposing (Return)
-import Session exposing (Session)
 import Set
 
 
@@ -31,82 +35,108 @@ type SyncMsg
     | Select (Maybe Backend)
 
 
-handle : Session -> Event -> Settings -> Return Settings Msg sub
-handle session event =
-    update session (Handle event)
+handle :
+    { model | sync : Settings, sections : Sections }
+    -> Event
+    -> Return { model | sync : Settings, sections : Sections } Msg sub
+handle model =
+    Handle >> update model
 
 
-update : Session -> Msg -> Settings -> Return Settings Msg sub
-update session msg model =
+update :
+    { model | sync : Settings, sections : Sections }
+    -> Msg
+    -> Return { model | sync : Settings, sections : Sections } Msg sub
+update model msg =
+    let
+        sync =
+            model.sync
+    in
     case msg of
         Handle event ->
-            Return.val <|
-                case Event.destructure event of
-                    Just ( "connect", _, message ) ->
-                        case JD.decodeValue JD.string message of
-                            Ok hashID ->
-                                { model
-                                    | state = Connected hashID
-                                    , peers = Set.empty
-                                }
+            case Event.destructure event of
+                Just ( "connect", _, message ) ->
+                    { model
+                        | sync =
+                            case JD.decodeValue JD.string message of
+                                Ok hashID ->
+                                    { sync
+                                        | state = Connected hashID
+                                        , peers = Set.empty
+                                    }
 
-                            _ ->
-                                { model
-                                    | state = Disconnected
-                                    , peers = Set.empty
-                                }
+                                _ ->
+                                    { sync
+                                        | state = Disconnected
+                                        , peers = Set.empty
+                                    }
+                    }
+                        |> join
 
-                    Just ( "disconnect", _, _ ) ->
-                        { model
-                            | state = Disconnected
-                            , peers = Set.empty
-                        }
+                Just ( "disconnect", _, _ ) ->
+                    { model
+                        | sync =
+                            { sync
+                                | state = Disconnected
+                                , peers = Set.empty
+                            }
+                    }
+                        |> Return.val
 
-                    Just ( "join", _, message ) ->
-                        { model
-                            | peers =
-                                case JD.decodeValue JD.string message of
-                                    Ok peerID ->
-                                        Set.insert peerID model.peers
+                Just ( "join", _, message ) ->
+                    { model
+                        | sync =
+                            { sync
+                                | peers =
+                                    case JD.decodeValue (JD.field "id" JD.string) message of
+                                        Ok peerID ->
+                                            Set.insert peerID sync.peers
 
-                                    _ ->
-                                        model.peers
-                        }
+                                        _ ->
+                                            sync.peers
+                            }
+                    }
+                        |> Return.val
 
-                    Just ( "leave", _, message ) ->
-                        { model
-                            | peers =
-                                case JD.decodeValue JD.string message of
-                                    Ok peerID ->
-                                        Set.remove peerID model.peers
+                Just ( "leave", _, message ) ->
+                    { model
+                        | sync =
+                            { sync
+                                | peers =
+                                    case JD.decodeValue (JD.field "id" JD.string) message of
+                                        Ok peerID ->
+                                            Set.remove peerID sync.peers
 
-                                    _ ->
-                                        model.peers
-                        }
+                                        _ ->
+                                            sync.peers
+                            }
+                    }
+                        |> Return.val
 
-                    _ ->
-                        model
+                _ ->
+                    model
+                        |> Return.val
 
         Password str ->
-            { model | password = str }
+            { model | sync = { sync | password = str } }
                 |> Return.val
 
         Username str ->
-            { model | username = str }
+            { model | sync = { sync | username = str } }
                 |> Return.val
 
         Room str ->
-            { model | room = str }
+            { model | sync = { sync | room = str } }
                 |> Return.val
 
         Backend sub ->
-            { model | sync = updateSync sub model.sync }
+            { model | sync = { sync | sync = updateSync sub sync.sync } }
                 |> Return.val
 
         Connect ->
-            case ( model.sync.select, model.state ) of
+            case ( sync.sync.select, sync.state ) of
                 ( Just backend, Disconnected ) ->
-                    { model | state = Pending }
+                    { model | sync = { sync | state = Pending } }
                         |> Return.val
                         |> Return.sync
                             ([ ( "backend"
@@ -115,15 +145,15 @@ update session msg model =
                                     |> String.toLower
                                     |> JE.string
                                )
-                             , ( "course", JE.string model.course )
-                             , ( "room", JE.string model.room )
-                             , ( "username", JE.string model.username )
+                             , ( "course", JE.string sync.course )
+                             , ( "room", JE.string sync.room )
+                             , ( "username", JE.string sync.username )
                              , ( "password"
-                               , if String.isEmpty model.password then
+                               , if String.isEmpty sync.password then
                                     JE.null
 
                                  else
-                                    JE.string model.password
+                                    JE.string sync.password
                                )
                              ]
                                 |> JE.object
@@ -134,7 +164,7 @@ update session msg model =
                     model |> Return.val
 
         Disconnect ->
-            { model | state = Pending }
+            { model | sync = { sync | state = Pending } }
                 |> Return.val
                 |> Return.sync (Event.empty "disconnect")
 
@@ -159,3 +189,55 @@ isConnected sync =
 
         _ ->
             False
+
+
+join : { model | sync : Settings, sections : Sections } -> Return { model | sync : Settings, sections : Sections } msg sub
+join model =
+    case model.sync.state of
+        Connected id ->
+            { model | sections = Array.map (Section.synchronize id) model.sections }
+                |> Return.val
+                |> globalSync id
+
+        _ ->
+            Return.val model
+
+
+globalSync :
+    String
+    -> Return { model | sync : Settings, sections : Sections } msg sub
+    -> Return { model | sync : Settings, sections : Sections } msg sub
+globalSync id ret =
+    ret
+        |> Return.sync
+            ([ ( "id", JE.string id )
+             , ( "quiz"
+               , ret.value.sections
+                    |> Array.map .sync
+                    |> Array.toIndexedList
+                    |> List.filterMap (filter .quiz)
+                    |> encode "quiz" Quiz.syncEncoder
+               )
+             ]
+                |> JE.object
+                |> Event.init "join"
+                |> Event.push "sync"
+            )
+
+
+filter : (a -> Maybe b) -> ( Int, Maybe a ) -> Maybe ( Int, b )
+filter fn ( i, element ) =
+    element
+        |> Maybe.andThen fn
+        |> Maybe.map (Tuple.pair i)
+
+
+encode id fn vector =
+    JE.object [ ( id, JE.list (encodeHelper fn) vector ) ]
+
+
+encodeHelper fn ( i, v ) =
+    JE.object
+        [ ( "i", JE.int i )
+        , ( "v", Container.encode fn v )
+        ]

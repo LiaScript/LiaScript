@@ -25,9 +25,20 @@ isEmpty (Container bag) =
         |> List.all Dict.isEmpty
 
 
-init : Int -> Container sync
-init length =
-    Container (Array.repeat length Dict.empty)
+init : String -> (x -> Maybe sync) -> Array x -> Container sync
+init id fn =
+    Array.map
+        (\x ->
+            Dict.empty
+                |> (case fn x of
+                        Just sync ->
+                            Dict.insert id sync
+
+                        Nothing ->
+                            identity
+                   )
+        )
+        >> Container
 
 
 size : Container sync -> Int

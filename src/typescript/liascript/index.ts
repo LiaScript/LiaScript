@@ -650,7 +650,7 @@ function process(
               break
             }
             default: {
-              console.warn('sync: unknown topic -> ', event)
+              if (self.sync) self.sync.publish(event)
             }
           }
           break

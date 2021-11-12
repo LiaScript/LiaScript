@@ -4,6 +4,7 @@ module Lia.Section exposing
     , Sections
     , SubSection(..)
     , init
+    , synchronize
     )
 
 import Array exposing (Array)
@@ -18,7 +19,7 @@ import Lia.Markdown.Survey.Types as Survey
 import Lia.Markdown.Table.Types as Table
 import Lia.Markdown.Task.Types as Task
 import Lia.Markdown.Types as Markdown
-import Lia.Sync.Container exposing (Container)
+import Lia.Sync.Container as Container exposing (Container)
 
 
 {-| This is the main record to contain all section related information.
@@ -75,7 +76,7 @@ type alias Section =
     , definition : Maybe Definition
     , footnotes : Footnote.Model
     , footnote2show : Maybe String
-    , sync : Maybe { quiz : Container Quiz.Sync }
+    , sync : Maybe { quiz : Maybe (Container Quiz.Sync) }
     }
 
 
@@ -157,3 +158,20 @@ init id base =
     , footnote2show = Nothing
     , sync = Nothing
     }
+
+
+synchronize : String -> Section -> Section
+synchronize id section =
+    if Array.isEmpty section.quiz_vector then
+        section
+
+    else
+        { section
+            | sync =
+                Just
+                    { quiz =
+                        section.quiz_vector
+                            |> Container.init id Quiz.sync
+                            |> Just
+                    }
+        }

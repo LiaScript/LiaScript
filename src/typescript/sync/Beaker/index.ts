@@ -40,7 +40,6 @@ export function isSupported(): boolean {
 
 export class Sync extends Base {
   private peerIds: Set<number>
-  private peerChannelIds: Set<number>
 
   private peerEvent?: Beaker.Event
   private peerChannelEvent?: Beaker.UserEvent
@@ -53,7 +52,6 @@ export class Sync extends Base {
     this.id = random()
 
     this.peerIds = new Set()
-    this.peerChannelIds = new Set()
   }
 
   connect(data: {
@@ -69,14 +67,11 @@ export class Sync extends Base {
     let self = this
 
     this.peerIds = new Set()
-    this.peerChannelIds = new Set()
 
     this.peerEvent = window.beaker.peersockets.watch()
 
     this.peerEvent.addEventListener('join', (e: Beaker.Message) => {
       self.peerIds.add(e.peerId)
-
-      self.sendTo(e.peerId, self.syncMsg('join', self.id))
     })
     this.peerEvent.addEventListener('leave', (e: Beaker.Message) => {
       self.peerIds.delete(e.peerId)
@@ -89,30 +84,10 @@ export class Sync extends Base {
         let message = decode(event.message)
 
         if (message) {
-          if (message.route.length == 3) {
-            switch (message.route[2].topic) {
-              case 'join': {
-                if (!self.peerChannelIds.has(event.peerId)) {
-                  self.peerChannelIds.add(event.peerId)
-                  self.sendTo(event.peerId, self.syncMsg('join', self.id))
-                }
-
-                break
-              }
-              case 'leave': {
-                self.peerChannelIds.delete(event.peerId)
-                message.message = self.id
-                break
-              }
-            }
-          }
-
           self.send(message)
         }
       }
     )
-
-    this.publish(this.syncMsg('join'))
 
     this.sync('connect', this.id)
   }

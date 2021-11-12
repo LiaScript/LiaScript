@@ -15,6 +15,7 @@ import Json.Encode as JE
 import Lia.Index.Update as Index
 import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Effect.Update as Effect
+import Lia.Markdown.Quiz.Types exposing (Sync)
 import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (Model, loadResource)
 import Lia.Parser.Parser exposing (parse_section)
@@ -24,7 +25,7 @@ import Lia.Settings.Update as Settings
 import Lia.Sync.Update as Sync
 import Port.Eval exposing (event)
 import Port.Event as Event exposing (Event)
-import Return exposing (Return)
+import Return exposing (Return, sync)
 import Session exposing (Session)
 import Translations exposing (Lang(..))
 
@@ -157,9 +158,8 @@ update session msg model =
                 |> Return.cmd (Cmd.map UpdateIndex cmd)
 
         UpdateSync childMsg ->
-            model.sync
-                |> Sync.update session childMsg
-                |> Return.mapValCmd (\v -> { model | sync = v }) UpdateSync
+            Sync.update model childMsg
+                |> Return.mapCmd UpdateSync
                 |> Return.mapEvents "sync" -1
 
         Handle event ->
@@ -193,37 +193,9 @@ update session msg model =
                 Just ( "sync", e ) ->
                     case Event.popWithId e of
                         Just ( "sync", _, e_ ) ->
-                            let
-                                sync =
-                                    Sync.handle session e_ model.sync
-                            in
-                            case ( Sync.isConnected model.sync, Sync.isConnected sync.value ) of
-                                -- A connection has happened ...
-                                {-
-                                   ( False, True ) ->
-                                       let
-                                           ( sections, events ) =
-                                               model.sections
-                                                   |> Array.map (Markdown.synchronize sync.value)
-                                                   |> Array.toList
-                                                   |> List.unzip
-                                                   |> Tuple.mapFirst Array.fromList
-                                                   |> Tuple.mapSecond List.concat
-                                       in
-                                       sync
-                                           |> Return.mapValCmd
-                                               (\v ->
-                                                   { model
-                                                       | sync = v
-                                                       , sections = sections
-                                                   }
-                                               )
-                                               UpdateSync
-                                           |> Return.syncAppend events
-                                -}
-                                _ ->
-                                    sync
-                                        |> Return.mapValCmd (\v -> { model | sync = v }) UpdateSync
+                            e_
+                                |> Sync.handle model
+                                |> Return.mapCmd UpdateSync
 
                         Just ( "load", Just id, _ ) ->
                             update session (Load True id) model
