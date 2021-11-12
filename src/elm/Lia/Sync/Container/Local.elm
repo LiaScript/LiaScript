@@ -1,4 +1,4 @@
-module Lia.Sync.Container exposing
+module Lia.Sync.Container.Local exposing
     ( Container
     , decode
     , encode

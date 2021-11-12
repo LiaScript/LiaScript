@@ -12,7 +12,7 @@ import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Section as Section exposing (Sections)
-import Lia.Sync.Container as Container
+import Lia.Sync.Container.Local as Local
 import Lia.Sync.Types exposing (Settings, State(..))
 import Lia.Sync.Via as Via exposing (Backend)
 import Port.Event as Event exposing (Event)
@@ -239,5 +239,5 @@ encode id fn vector =
 encodeHelper fn ( i, v ) =
     JE.object
         [ ( "i", JE.int i )
-        , ( "v", Container.encode fn v )
+        , ( "v", Local.encode fn v )
         ]
