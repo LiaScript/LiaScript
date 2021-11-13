@@ -68,7 +68,7 @@ union internal external =
     []
         |> unionHelper (Array.toList internal) (Array.toList external)
         |> List.unzip
-        |> Tuple.mapFirst (List.all identity)
+        |> Tuple.mapFirst (List.any identity)
         |> Tuple.mapSecond Array.fromList
 
 
@@ -178,6 +178,7 @@ toContainer tuples =
             (tuples
                 |> List.filterMap Tuple.first
                 |> List.maximum
+                |> Maybe.map ((+) 1)
                 |> Maybe.withDefault 0
             )
             Nothing

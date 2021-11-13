@@ -96,7 +96,7 @@ update model msg =
                                 , sections = Section.sync state model.sections
                             }
                                 |> (if sendUpdate then
-                                        join
+                                        globalSync
 
                                     else
                                         Return.val
@@ -203,31 +203,35 @@ join model =
     case model.sync.state of
         Connected id ->
             { model | sections = Array.map (Section.synchronize id) model.sections }
-                |> Return.val
-                |> globalSync id
+                |> globalSync
 
         _ ->
             Return.val model
 
 
 globalSync :
-    String
+    { model | sync : Settings, sections : Sections }
     -> Return { model | sync : Settings, sections : Sections } msg sub
-    -> Return { model | sync : Settings, sections : Sections } msg sub
-globalSync id ret =
-    ret
-        |> Return.sync
-            ([ ( "id", JE.string id )
-             , ( "quiz"
-               , ret.value.sections
-                    |> globalGet .quiz
-                    |> Global.encode Quiz.syncEncoder
-               )
-             ]
-                |> JE.object
-                |> Event.init "join"
-                |> Event.push "sync"
-            )
+globalSync model =
+    case model.sync.state of
+        Connected id ->
+            model
+                |> Return.val
+                |> Return.sync
+                    ([ ( "id", JE.string id )
+                     , ( "quiz"
+                       , model.sections
+                            |> globalGet .quiz
+                            |> Global.encode Quiz.syncEncoder
+                       )
+                     ]
+                        |> JE.object
+                        |> Event.init "join"
+                        |> Event.push "sync"
+                    )
+
+        _ ->
+            Return.val model
 
 
 globalGet fn =
