@@ -15,7 +15,6 @@ import Json.Encode as JE
 import Lia.Index.Update as Index
 import Lia.Markdown.Effect.Script.Types as Script
 import Lia.Markdown.Effect.Update as Effect
-import Lia.Markdown.Quiz.Types exposing (Sync)
 import Lia.Markdown.Update as Markdown
 import Lia.Model exposing (Model, loadResource)
 import Lia.Parser.Parser exposing (parse_section)
@@ -25,7 +24,7 @@ import Lia.Settings.Update as Settings
 import Lia.Sync.Update as Sync
 import Port.Eval exposing (event)
 import Port.Event as Event exposing (Event)
-import Return exposing (Return, sync)
+import Return exposing (Return)
 import Session exposing (Session)
 import Translations exposing (Lang(..))
 
@@ -410,7 +409,7 @@ generate model =
                     else
                         case parse_section model.search_index model.definition sec of
                             Ok new_sec ->
-                                new_sec
+                                { new_sec | sync = sec.sync }
 
                             Err msg ->
                                 { sec

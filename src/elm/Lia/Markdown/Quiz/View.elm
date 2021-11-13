@@ -38,6 +38,7 @@ import Lia.Markdown.Quiz.Types
         ( Element
         , Quiz
         , State(..)
+        , Sync
         , Type(..)
         , Vector
         , getClass
@@ -45,6 +46,7 @@ import Lia.Markdown.Quiz.Types
         )
 import Lia.Markdown.Quiz.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Vector.View as Vector
+import Lia.Sync.Container.Local as Container exposing (Container)
 import Lia.Utils exposing (btn, btnIcon)
 import Translations
     exposing
@@ -61,17 +63,30 @@ import Translations
 
 {-| Main Quiz view function.
 -}
-view : Config sub -> Maybe String -> Quiz -> Vector -> ( Maybe Int, List (Html (Msg sub)) )
-view config labeledBy quiz vector =
+view : Config sub -> Maybe String -> Quiz -> Vector -> Maybe (Container Sync) -> ( Maybe Int, List (Html (Msg sub)) )
+view config labeledBy quiz vector sync =
     case Array.get quiz.id vector of
         Just elem ->
             ( elem.scriptID
             , viewState config elem quiz
                 |> viewQuiz config labeledBy elem quiz
+                |> viewSync quiz.id sync
             )
 
         _ ->
             ( Nothing, [] )
+
+
+viewSync id sync quiz =
+    case
+        sync
+            |> Maybe.andThen (Container.get id)
+    of
+        Nothing ->
+            quiz
+
+        Just data ->
+            List.append quiz [ Html.text (Debug.toString data) ]
 
 
 {-| Determine the quiz class based on the current state
@@ -149,15 +164,8 @@ viewQuiz config labeledBy state quiz ( attr, body ) =
             |> viewHintButton quiz.id (quiz.hints /= []) (Solution.Open == state.solved && state.hint < List.length quiz.hints)
         ]
     , viewFeedback config.lang state
-    , viewSync state
     , viewHints config state.hint quiz.hints
     ]
-
-
-viewSync : Element -> Html msg
-viewSync _ =
-    "todo"
-        |> Html.text
 
 
 

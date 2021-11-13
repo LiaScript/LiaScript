@@ -22,7 +22,7 @@ import Lia.Markdown.Gallery.View as Gallery
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation, toAttribute)
 import Lia.Markdown.HTML.Types exposing (Node(..))
 import Lia.Markdown.HTML.View as HTML
-import Lia.Markdown.Inline.Stringify exposing (stringify, stringify_)
+import Lia.Markdown.Inline.Stringify exposing (stringify_)
 import Lia.Markdown.Inline.Types exposing (Inlines, htmlBlock, mediaBlock)
 import Lia.Markdown.Inline.View as Inline
 import Lia.Markdown.Json.Encode as Encode
@@ -512,14 +512,17 @@ viewQuiz config labeledBy attr quiz solution =
     scriptView config.view <|
         case solution of
             Nothing ->
-                Quizzes.view config.main labeledBy quiz config.section.quiz_vector
+                config.section.sync
+                    |> Maybe.andThen .quiz
+                    |> Quizzes.view config.main labeledBy quiz config.section.quiz_vector
                     |> Tuple.mapSecond (Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr))
                     |> Tuple.mapSecond (Html.map UpdateQuiz)
 
             Just ( answer, hidden_effects ) ->
                 if Quizzes.showSolution quiz config.section.quiz_vector then
-                    config.section.quiz_vector
-                        |> Quizzes.view config.main labeledBy quiz
+                    config.section.sync
+                        |> Maybe.andThen .quiz
+                        |> Quizzes.view config.main labeledBy quiz config.section.quiz_vector
                         |> Tuple.mapSecond (List.map (Html.map UpdateQuiz))
                         |> Tuple.mapSecond
                             (\list ->
@@ -532,8 +535,9 @@ viewQuiz config labeledBy attr quiz solution =
                         |> Tuple.mapSecond (Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr))
 
                 else
-                    config.section.quiz_vector
-                        |> Quizzes.view config.main labeledBy quiz
+                    config.section.sync
+                        |> Maybe.andThen .quiz
+                        |> Quizzes.view config.main labeledBy quiz config.section.quiz_vector
                         |> Tuple.mapSecond (List.map (Html.map UpdateQuiz))
                         |> Tuple.mapSecond (Html.div (annotation (Quizzes.class quiz.id config.section.quiz_vector) attr))
 

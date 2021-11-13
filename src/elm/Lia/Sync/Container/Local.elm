@@ -3,6 +3,7 @@ module Lia.Sync.Container.Local exposing
     , decode
     , decoder
     , encode
+    , get
     , init
     , isEmpty
     , union
@@ -32,7 +33,7 @@ synchronization might not exist for all peers.
 
 ## Convenience functions
 
-@init ,@isEmpty
+@init ,@isEmpty, @get
 
 
 ## JSON
@@ -78,6 +79,11 @@ init id map =
                     Dict.empty
         )
         >> Container
+
+
+get : Int -> Container sync -> Maybe (Dict String sync)
+get i (Container bag) =
+    Array.get i bag
 
 
 {-| Determine if the given container is empty:
