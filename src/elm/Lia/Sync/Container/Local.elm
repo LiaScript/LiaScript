@@ -1,12 +1,45 @@
 module Lia.Sync.Container.Local exposing
     ( Container
     , decode
+    , decoder
     , encode
     , init
     , isEmpty
-    , size
     , union
     )
+
+{-| This is a basic container module for dealing with synchronized data. At
+this moment it is a weak type of a CRDT, since it uses `Dict`s as a
+replacement for `Set`s. Thus, keys are used to store the ids of remote peers.
+If there is a conflict for some reason within the associated value, this is
+at the moment ignored, entries will get merged and state simply ignored.
+
+This local version of a `Container` is thought to be used for storing
+replicated states locally or in other words per section.
+
+**Why per `Section` and not as part of the sharable element itself?**
+
+The reason for this is, that in order to perform synchronization, where
+by different users different slides have been visited, the state has to
+be stored outside of the elements, which at the point in time of the
+synchronization might not exist for all peers.
+
+
+## Data
+
+@Container
+
+
+## Convenience functions
+
+@init ,@isEmpty
+
+
+## JSON
+
+@encode, @decode, @decoder
+
+-}
 
 import Array exposing (Array)
 import Dict exposing (Dict)
@@ -14,10 +47,44 @@ import Json.Decode as JD
 import Json.Encode as JE
 
 
+{-| A local container is an `Array` of `Dict`s, which mirrors the state to be
+shared of quizzes, surveys, etc. per `Section`.
+-}
 type Container sync
     = Container (Array (Dict String sync))
 
 
+{-| Used to initialize an entire Vector-state such as for Quizzes. The `id` to
+be passed is the peer itself. The
+
+Parameters:
+
+  - `id`: Own peer-ID
+  - `map`: A functions that translates the current state into a sharable state,
+    not everything
+  - `array`: The additional array defines the original state used within the
+    quiz, survey, etc.
+
+-}
+init : String -> (x -> Maybe sync) -> Array x -> Container sync
+init id map =
+    Array.map
+        (\x ->
+            case map x of
+                Just sync ->
+                    Dict.fromList [ ( id, sync ) ]
+
+                Nothing ->
+                    Dict.empty
+        )
+        >> Container
+
+
+{-| Determine if the given container is empty:
+
+    isEmpty empty == True
+
+-}
 isEmpty : Container sync -> Bool
 isEmpty (Container bag) =
     bag
@@ -25,54 +92,56 @@ isEmpty (Container bag) =
         |> List.all Dict.isEmpty
 
 
-init : String -> (x -> Maybe sync) -> Array x -> Container sync
-init id fn =
-    Array.map
-        (\x ->
-            Dict.empty
-                |> (case fn x of
-                        Just sync ->
-                            Dict.insert id sync
+{-| Merges two containers by preferring the first one if a collision occurs.
+**Thus, the first container should always be the own one!** The first boolean
+value means, that there was a difference, such that the new state should also
+be send to the other peers.
 
-                        Nothing ->
-                            identity
-                   )
-        )
-        >> Container
+    union a a =
+        ( False, a )
+    union a b =
+        ( True, a ∪ b )
+    union empty b =
+        ( False, b )
+    union a empty =
+        ( True, b )
 
-
-size : Container sync -> Int
-size (Container data) =
-    Array.length data
-
-
+-}
 union : Container sync -> Container sync -> ( Bool, Container sync )
-union (Container a) (Container b) =
-    List.map2 unionHelper (Array.toList a) (Array.toList b)
+union (Container internal) (Container external) =
+    List.map2 unionHelper (Array.toList internal) (Array.toList external)
         |> List.unzip
         |> Tuple.mapFirst (List.all identity)
         |> Tuple.mapSecond (Array.fromList >> Container)
 
 
 unionHelper : Dict String sync -> Dict String sync -> ( Bool, Dict String sync )
-unionHelper a b =
-    let
-        c =
-            Dict.union a b
-    in
-    ( Dict.size a
-        == Dict.size b
-        && Dict.size b
-        == Dict.size c
-    , c
+unionHelper internal external =
+    ( Dict.size (Dict.diff internal external) /= 0
+    , Dict.union internal external
     )
 
 
+{-| Turn a Container into a JSON. This encoder is a generic encoder and
+requires and additional encoder-function `fn` to encode the internal
+`sync` type.
+-}
 encode : (sync -> JE.Value) -> Container sync -> JE.Value
 encode fn (Container bag) =
     JE.array (JE.dict identity fn) bag
 
 
+{-| Decode a JSON into a `Container`. An additional decoder for the custom
+`sync` type has to be passed.
+-}
 decode : JD.Decoder sync -> JD.Value -> Result JD.Error (Container sync)
 decode fn =
-    JD.decodeValue (JD.array (JD.dict fn)) >> Result.map Container
+    JD.decodeValue (decoder fn)
+
+
+{-| Decoder for custom `Containers`, thats why an additional decoder for
+the custom `sync` type has to be passed.
+-}
+decoder : JD.Decoder sync -> JD.Decoder (Container sync)
+decoder fn =
+    JD.array (JD.dict fn) |> JD.map Container
