@@ -139,7 +139,7 @@ decode fn =
     JD.decodeValue (decoder fn)
 
 
-{-| Decoder for custom `Containers`, thats why an additional decoder for
+{-| Decoder for custom `Container`s, thats why an additional decoder for
 the custom `sync` type has to be passed.
 -}
 decoder : JD.Decoder sync -> JD.Decoder (Container sync)

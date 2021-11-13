@@ -6,16 +6,15 @@ module Lia.Sync.Update exposing
     , update
     )
 
-import Array exposing (Array)
-import Browser exposing (element)
+import Array
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Section as Section exposing (Sections)
-import Lia.Sync.Container.Local as Local
+import Lia.Sync.Container.Global as Global
 import Lia.Sync.Types exposing (Settings, State(..))
 import Lia.Sync.Via as Via exposing (Backend)
-import Port.Event as Event exposing (Event)
+import Port.Event as Event exposing (Event, message)
 import Return exposing (Return)
 import Set
 
@@ -84,19 +83,27 @@ update model msg =
                         |> Return.val
 
                 Just ( "join", _, message ) ->
-                    { model
-                        | sync =
-                            { sync
-                                | peers =
-                                    case JD.decodeValue (JD.field "id" JD.string) message of
-                                        Ok peerID ->
-                                            Set.insert peerID sync.peers
-
-                                        _ ->
-                                            sync.peers
+                    case
+                        ( JD.decodeValue (JD.field "id" JD.string) message
+                        , message
+                            |> JD.decodeValue (JD.field "quiz" (Global.decoder Quiz.syncDecoder))
+                            |> Result.map (Global.union (globalGet .quiz model.sections))
+                        )
+                    of
+                        ( Ok peerID, Ok ( sendUpdate, state ) ) ->
+                            { model
+                                | sync = { sync | peers = Set.insert peerID sync.peers }
+                                , sections = Section.sync state model.sections
                             }
-                    }
-                        |> Return.val
+                                |> (if sendUpdate then
+                                        join
+
+                                    else
+                                        Return.val
+                                   )
+
+                        _ ->
+                            Return.val model
 
                 Just ( "leave", _, message ) ->
                     { model
@@ -213,10 +220,8 @@ globalSync id ret =
             ([ ( "id", JE.string id )
              , ( "quiz"
                , ret.value.sections
-                    |> Array.map .sync
-                    |> Array.toIndexedList
-                    |> List.filterMap (filter .quiz)
-                    |> encode "quiz" Quiz.syncEncoder
+                    |> globalGet .quiz
+                    |> Global.encode Quiz.syncEncoder
                )
              ]
                 |> JE.object
@@ -225,19 +230,5 @@ globalSync id ret =
             )
 
 
-filter : (a -> Maybe b) -> ( Int, Maybe a ) -> Maybe ( Int, b )
-filter fn ( i, element ) =
-    element
-        |> Maybe.andThen fn
-        |> Maybe.map (Tuple.pair i)
-
-
-encode id fn vector =
-    JE.object [ ( id, JE.list (encodeHelper fn) vector ) ]
-
-
-encodeHelper fn ( i, v ) =
-    JE.object
-        [ ( "i", JE.int i )
-        , ( "v", Local.encode fn v )
-        ]
+globalGet fn =
+    Array.map (.sync >> Maybe.andThen fn)

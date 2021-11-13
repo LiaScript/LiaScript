@@ -4,6 +4,7 @@ module Lia.Section exposing
     , Sections
     , SubSection(..)
     , init
+    , sync
     , synchronize
     )
 
@@ -19,6 +20,7 @@ import Lia.Markdown.Survey.Types as Survey
 import Lia.Markdown.Table.Types as Table
 import Lia.Markdown.Task.Types as Task
 import Lia.Markdown.Types as Markdown
+import Lia.Sync.Container.Global as Global
 import Lia.Sync.Container.Local as Local
 
 
@@ -175,3 +177,38 @@ synchronize id section =
                             |> Just
                     }
         }
+
+
+sync : Global.Container Quiz.Sync -> Sections -> Sections
+sync state =
+    syncHelper (Array.toIndexedList state)
+
+
+syncHelper : List ( Int, Maybe (Local.Container Quiz.Sync) ) -> Sections -> Sections
+syncHelper tuples sections =
+    case tuples of
+        [] ->
+            sections
+
+        ( _, Nothing ) :: ts ->
+            syncHelper ts sections
+
+        ( i, Just state ) :: ts ->
+            sections
+                |> Array.get i
+                |> Maybe.map
+                    (\sec ->
+                        Array.set i
+                            { sec
+                                | sync =
+                                    case sec.sync of
+                                        Just sub ->
+                                            Just { sub | quiz = Just state }
+
+                                        Nothing ->
+                                            Just { quiz = Just state }
+                            }
+                            sections
+                    )
+                |> Maybe.withDefault sections
+                |> syncHelper ts
