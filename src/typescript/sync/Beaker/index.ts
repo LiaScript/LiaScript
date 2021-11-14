@@ -75,6 +75,7 @@ export class Sync extends Base {
     })
     this.peerEvent.addEventListener('leave', (e: Beaker.Message) => {
       self.peerIds.delete(e.peerId)
+      self.sync('leave', e.peerId)
     })
 
     this.peerChannelEvent = window.beaker.peersockets.join(this.uniqueID())
@@ -93,7 +94,7 @@ export class Sync extends Base {
   }
 
   disconnect() {
-    this.publish(this.syncMsg('leave'))
+    this.publish(this.syncMsg('leave', this.id))
 
     if (this.peerChannelEvent) this.peerChannelEvent.close()
 

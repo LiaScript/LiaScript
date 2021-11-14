@@ -12,7 +12,7 @@ import Json.Encode as JE
 import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Section as Section exposing (Sections)
 import Lia.Sync.Container.Global as Global
-import Lia.Sync.Types exposing (Settings, State(..))
+import Lia.Sync.Types exposing (Settings, State(..), id)
 import Lia.Sync.Via as Via exposing (Backend)
 import Port.Event as Event exposing (Event, message)
 import Return exposing (Return)
@@ -53,7 +53,7 @@ update model msg =
     in
     case msg of
         Handle event ->
-            case Event.destructure event of
+            case Event.destructure event |> Debug.log "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS" of
                 Just ( "connect", _, message ) ->
                     { model
                         | sync =
@@ -82,6 +82,7 @@ update model msg =
                     }
                         |> Return.val
 
+                --|> leave (id model.sync.state)
                 Just ( "join", _, message ) ->
                     case
                         ( JD.decodeValue (JD.field "id" JD.string) message
@@ -110,7 +111,7 @@ update model msg =
                         | sync =
                             { sync
                                 | peers =
-                                    case JD.decodeValue (JD.field "id" JD.string) message of
+                                    case JD.decodeValue JD.string message of
                                         Ok peerID ->
                                             Set.remove peerID sync.peers
 
