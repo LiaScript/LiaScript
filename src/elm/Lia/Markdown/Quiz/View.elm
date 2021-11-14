@@ -27,8 +27,6 @@ import Accessibility.Widget as A11y_Widget
 import Array
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
-import Json.Encode as JE
-import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
@@ -50,8 +48,7 @@ import Lia.Markdown.Quiz.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Vector.View as Vector
 import Lia.Sync.Container.Local exposing (Container)
 import Lia.Sync.Types as Sync
-import Lia.Utils exposing (btn, btnIcon, percentage)
-import List.Extra
+import Lia.Utils exposing (btn, btnIcon)
 import Translations
     exposing
         ( Lang
@@ -74,123 +71,23 @@ view config labeledBy quiz vector sync =
             ( elem.scriptID
             , viewState config elem quiz
                 |> viewQuiz config labeledBy elem quiz
-                |> viewSync config (Sync.get config.sync quiz.id sync)
+                |> viewSync quiz.id config.sync sync
             )
 
         _ ->
             ( Nothing, [] )
 
 
-viewSync : Config sub -> Maybe (List Sync) -> List (Html msg) -> List (Html msg)
-viewSync config syncData quiz =
-    case ( syncData, syncData |> Maybe.map List.length ) of
-        ( Just _, Just 0 ) ->
-            quiz
+viewSync id conf sync quiz =
+    case
+        sync
+            |> Maybe.andThen (Container.get id)
+            |> Maybe.map (Sync.filter conf)
+    of
+        Just data ->
+            List.append quiz [ Html.text (Debug.toString data) ]
 
-        ( Just data, Just length ) ->
-            let
-                total =
-                    toFloat length
-
-                chartData =
-                    data
-                        |> List.Extra.gatherEquals
-                        |> List.map
-                            (\( i, list ) ->
-                                let
-                                    absolute =
-                                        1 + List.length list
-
-                                    relative =
-                                        percentage total absolute
-                                in
-                                case i of
-                                    Just i_ ->
-                                        ( JE.string ("Trial " ++ String.fromInt i_)
-                                        , JE.object
-                                            [ ( "value", JE.float relative )
-                                            , ( "label"
-                                              , JE.object
-                                                    [ ( "show", JE.bool True )
-                                                    , ( "formatter"
-                                                      , String.fromInt absolute
-                                                            ++ " ("
-                                                            ++ String.fromFloat relative
-                                                            ++ "%)"
-                                                            |> JE.string
-                                                      )
-                                                    ]
-                                              )
-                                            ]
-                                        )
-
-                                    Nothing ->
-                                        ( JE.string "Resolved"
-                                        , JE.object
-                                            [ ( "value"
-                                              , JE.float relative
-                                              )
-                                            , ( "itemStyle"
-                                              , JE.object [ ( "color", JE.string "#888" ) ]
-                                              )
-                                            , ( "label"
-                                              , JE.object
-                                                    [ ( "show", JE.bool True )
-                                                    , ( "formatter"
-                                                      , String.fromInt absolute
-                                                            ++ " ("
-                                                            ++ String.fromFloat relative
-                                                            ++ "%)"
-                                                            |> JE.string
-                                                      )
-                                                    ]
-                                              )
-                                            ]
-                                        )
-                            )
-            in
-            JE.object
-                [ ( "grid"
-                  , JE.object
-                        [ ( "left", JE.int 10 )
-                        , ( "top", JE.int 20 )
-                        , ( "bottom", JE.int 20 )
-                        , ( "right", JE.int 10 )
-                        ]
-                  )
-                , ( "xAxis"
-                  , JE.object
-                        [ ( "type", JE.string "category" )
-                        , ( "data"
-                          , chartData
-                                |> List.map Tuple.first
-                                |> JE.list identity
-                          )
-                        ]
-                  )
-                , ( "yAxis"
-                  , JE.object
-                        [ ( "type", JE.string "value" )
-                        , ( "show", JE.bool False )
-                        ]
-                  )
-                , ( "series"
-                  , [ [ ( "type", JE.string "bar" )
-                      , ( "data"
-                        , chartData
-                            |> List.map Tuple.second
-                            |> JE.list identity
-                        )
-                      ]
-                    ]
-                        |> JE.list JE.object
-                  )
-                ]
-                |> Chart.eCharts config.lang [ ( "style", "height: 120px; width: 100%" ) ] True Nothing
-                |> List.singleton
-                |> List.append quiz
-
-        _ ->
+        Nothing ->
             quiz
 
 
