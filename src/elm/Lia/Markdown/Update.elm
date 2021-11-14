@@ -129,10 +129,9 @@ update sync globals msg section =
                             |> Event.message
                             |> Container.decode Quiz_.syncDecoder
                         )
-                            |> Debug.log "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                     of
                         ( Just old, Ok new ) ->
-                            case Container.union old new |> Debug.log "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS" of
+                            case Container.union old new of
                                 ( True, state ) ->
                                     section
                                         |> Section.syncSection state

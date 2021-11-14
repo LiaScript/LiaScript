@@ -53,6 +53,7 @@ update scripts msg vector =
                             check solution
                                 |> update_ id vector
                                 |> store
+                                |> doSync
 
                         Just scriptID ->
                             vector
@@ -101,6 +102,7 @@ update scripts msg vector =
                             _ ->
                                 return
                    )
+                |> doSync
 
         Handle event ->
             case Event.topicWithId event of
@@ -119,6 +121,7 @@ update scripts msg vector =
                                 |> evalEventDecoder
                                 |> update_ section vector
                                 |> store
+                                |> doSync
                                 |> Return.script
                                     (message
                                         |> Event.initWithId "code" scriptID
@@ -131,6 +134,7 @@ update scripts msg vector =
                                 |> evalEventDecoder
                                 |> update_ section vector
                                 |> store
+                                |> doSync
 
                 Just ( "restore", _ ) ->
                     event
@@ -140,7 +144,7 @@ update scripts msg vector =
                         |> Result.withDefault vector
                         |> Return.val
                         |> init (\i s -> execute i s.state)
-                        |> Return.sync (Event.init "" JE.null)
+                        |> doSync
 
                 {- |> (\ret ->
                         case sync of
@@ -169,6 +173,11 @@ update scripts msg vector =
             vector
                 |> Return.val
                 |> Return.script sub
+
+
+doSync : Return Vector msg sub -> Return Vector msg sub
+doSync =
+    Return.sync (Event.init "" JE.null)
 
 
 toString : State -> String
