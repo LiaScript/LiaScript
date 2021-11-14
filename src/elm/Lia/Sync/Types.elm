@@ -2,12 +2,14 @@ module Lia.Sync.Types exposing
     ( Settings
     , State(..)
     , Sync
+    , filter
     , id
     , init
     , isSupported
     , title
     )
 
+import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Lia.Sync.Via as Via exposing (Backend)
@@ -55,6 +57,24 @@ init supportedBackends =
     , password = ""
     , peers = Set.empty
     }
+
+
+filter : Maybe Settings -> Dict String sync -> Maybe (List sync)
+filter settings container =
+    case ( Maybe.andThen (.state >> id) settings, settings ) of
+        ( Just main, Just s ) ->
+            container
+                |> Dict.filter (filter_ (Set.insert main s.peers))
+                |> Dict.values
+                |> Just
+
+        _ ->
+            Nothing
+
+
+filter_ : Set String -> String -> sync -> Bool
+filter_ ids key _ =
+    Set.member key ids
 
 
 id : State -> Maybe String

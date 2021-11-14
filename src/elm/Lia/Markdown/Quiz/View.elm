@@ -47,6 +47,7 @@ import Lia.Markdown.Quiz.Types
 import Lia.Markdown.Quiz.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Vector.View as Vector
 import Lia.Sync.Container.Local as Container exposing (Container)
+import Lia.Sync.Types as Sync
 import Lia.Utils exposing (btn, btnIcon)
 import Translations
     exposing
@@ -70,23 +71,24 @@ view config labeledBy quiz vector sync =
             ( elem.scriptID
             , viewState config elem quiz
                 |> viewQuiz config labeledBy elem quiz
-                |> viewSync quiz.id sync
+                |> viewSync quiz.id config.sync sync
             )
 
         _ ->
             ( Nothing, [] )
 
 
-viewSync id sync quiz =
+viewSync id conf sync quiz =
     case
         sync
             |> Maybe.andThen (Container.get id)
+            |> Maybe.map (Sync.filter conf)
     of
-        Nothing ->
-            quiz
-
         Just data ->
             List.append quiz [ Html.text (Debug.toString data) ]
+
+        Nothing ->
+            quiz
 
 
 {-| Determine the quiz class based on the current state

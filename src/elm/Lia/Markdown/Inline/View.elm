@@ -300,6 +300,7 @@ view_inf scripts lang light tooltips translations media =
     , media = media |> Maybe.withDefault Dict.empty
     , scripts = scripts
     , translations = translations
+    , sync = Nothing
     }
         |> Config.init
         |> view

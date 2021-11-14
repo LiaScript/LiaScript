@@ -126,6 +126,7 @@ viewSlide screen model =
                     model.translation
                     ( model.langCodeOriginal, model.langCode )
                     model.settings
+                    model.sync
                     screen
                     section
                     model.section_active
