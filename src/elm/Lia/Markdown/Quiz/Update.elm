@@ -140,6 +140,7 @@ update scripts msg vector =
                         |> Result.withDefault vector
                         |> Return.val
                         |> init (\i s -> execute i s.state)
+                        |> Return.sync (Event.init "" JE.null)
 
                 {- |> (\ret ->
                         case sync of

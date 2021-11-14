@@ -2,6 +2,7 @@ module Lia.Sync.Types exposing
     ( Settings
     , State(..)
     , Sync
+    , id
     , init
     , isSupported
     , title
@@ -54,6 +55,16 @@ init supportedBackends =
     , password = ""
     , peers = Set.empty
     }
+
+
+id : State -> Maybe String
+id state =
+    case state of
+        Connected hash ->
+            Just hash
+
+        _ ->
+            Nothing
 
 
 isSupported : Settings -> Bool

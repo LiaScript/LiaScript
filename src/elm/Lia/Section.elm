@@ -5,6 +5,7 @@ module Lia.Section exposing
     , SubSection(..)
     , init
     , sync
+    , syncSection
     , synchronize
     )
 
@@ -196,19 +197,19 @@ syncHelper tuples sections =
         ( i, Just state ) :: ts ->
             sections
                 |> Array.get i
-                |> Maybe.map
-                    (\sec ->
-                        Array.set i
-                            { sec
-                                | sync =
-                                    case sec.sync of
-                                        Just sub ->
-                                            Just { sub | quiz = Just state }
-
-                                        Nothing ->
-                                            Just { quiz = Just state }
-                            }
-                            sections
-                    )
+                |> Maybe.map (\sec -> Array.set i (syncSection state sec) sections)
                 |> Maybe.withDefault sections
                 |> syncHelper ts
+
+
+syncSection : Local.Container Quiz.Sync -> Section -> Section
+syncSection state section =
+    { section
+        | sync =
+            case section.sync of
+                Just sub ->
+                    Just { sub | quiz = Just state }
+
+                Nothing ->
+                    Just { quiz = Just state }
+    }

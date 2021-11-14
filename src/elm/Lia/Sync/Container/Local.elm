@@ -2,6 +2,7 @@ module Lia.Sync.Container.Local exposing
     ( Container
     , decode
     , decoder
+    , empty
     , encode
     , get
     , init
@@ -33,7 +34,7 @@ synchronization might not exist for all peers.
 
 ## Convenience functions
 
-@init ,@isEmpty, @get
+@init ,@isEmpty, @empty, @get
 
 
 ## JSON
@@ -98,6 +99,16 @@ isEmpty (Container bag) =
         |> List.all Dict.isEmpty
 
 
+{-| Return an empty Container:
+
+    isEmpty empty == True
+
+-}
+empty : Container sync
+empty =
+    Container Array.empty
+
+
 {-| Merges two containers by preferring the first one if a collision occurs.
 **Thus, the first container should always be the own one!** The first boolean
 value means, that there was a difference, such that the new state should also
@@ -115,17 +126,46 @@ be send to the other peers.
 -}
 union : Container sync -> Container sync -> ( Bool, Container sync )
 union (Container internal) (Container external) =
-    List.map2 unionHelper (Array.toList internal) (Array.toList external)
+    unionHelper (Array.toList internal) (Array.toList external) []
         |> List.unzip
-        |> Tuple.mapFirst (List.all identity)
-        |> Tuple.mapSecond (Array.fromList >> Container)
+        |> union_
 
 
-unionHelper : Dict String sync -> Dict String sync -> ( Bool, Dict String sync )
-unionHelper internal external =
-    ( Dict.size (Dict.diff internal external) /= 0
-    , Dict.union internal external
+union_ : ( List Bool, List (Dict String sync) ) -> ( Bool, Container sync )
+union_ ( bool, list ) =
+    ( if List.isEmpty list then
+        False
+
+      else
+        List.any identity bool
+    , list
+        |> Array.fromList
+        |> Container
     )
+
+
+unionHelper : List (Dict String sync) -> List (Dict String sync) -> List ( Bool, Dict String sync ) -> List ( Bool, Dict String sync )
+unionHelper internal external combined =
+    case ( internal, external ) of
+        ( [], [] ) ->
+            List.reverse combined
+
+        ( [], e :: es ) ->
+            ( False, e )
+                :: combined
+                |> unionHelper [] es
+
+        ( i :: is, [] ) ->
+            ( True, i )
+                :: combined
+                |> unionHelper is []
+
+        ( i :: is, e :: es ) ->
+            ( Dict.size (Dict.diff e i) /= 0
+            , Dict.union i e
+            )
+                :: combined
+                |> unionHelper is es
 
 
 {-| Turn a Container into a JSON. This encoder is a generic encoder and

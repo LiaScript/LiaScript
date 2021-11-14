@@ -5,6 +5,7 @@ port module Lia.Markdown.Update exposing
     , nextEffect
     , previousEffect
     , subscriptions
+    , synchronize
     , ttsReplay
     , update
     , updateScript
@@ -18,14 +19,18 @@ import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts)
 import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.Gallery.Update as Gallery
+import Lia.Markdown.Quiz.Types as Quiz_
 import Lia.Markdown.Quiz.Update as Quiz
 import Lia.Markdown.Survey.Update as Survey
 import Lia.Markdown.Table.Update as Table
 import Lia.Markdown.Task.Update as Task
-import Lia.Section exposing (Section, SubSection(..))
+import Lia.Section as Section exposing (Section, SubSection(..))
+import Lia.Sync.Container.Local as Container
+import Lia.Sync.Types as Sync
 import Lia.Utils exposing (focus)
 import Port.Event as Event exposing (Event)
 import Return exposing (Return)
+import Translations exposing (Lang(..))
 
 
 port footnote : (String -> msg) -> Sub msg
@@ -42,7 +47,13 @@ type Msg
     | FootnoteHide
     | FootnoteShow String
     | Script (Script.Msg Msg)
+    | Sync Event
     | NoOp
+
+
+synchronize : Event -> Msg
+synchronize event =
+    Sync event
 
 
 subscriptions : Section -> Sub Msg
@@ -50,86 +61,157 @@ subscriptions _ =
     footnote FootnoteShow
 
 
-update : Definition -> Msg -> Section -> Return Section Msg Msg
-update globals msg section =
-    Return.mapSync "sync" Nothing <|
-        case msg of
-            UpdateEffect sound childMsg ->
-                section.effect_model
-                    |> Effect.update
-                        (section.definition
-                            |> Maybe.withDefault globals
-                            |> Just
-                            |> subs
+update : Sync.State -> Definition -> Msg -> Section -> Return Section Msg Msg
+update sync globals msg section =
+    case msg of
+        UpdateEffect sound childMsg ->
+            section.effect_model
+                |> Effect.update
+                    (section.definition
+                        |> Maybe.withDefault globals
+                        |> Just
+                        |> subs
+                    )
+                    sound
+                    childMsg
+                |> Return.mapValCmd (\v -> { section | effect_model = v }) (UpdateEffect sound)
+                |> Return.mapEvents "effect" section.id
+
+        UpdateCode childMsg ->
+            section.code_model
+                |> Code.update section.effect_model.javascript childMsg
+                |> Return.mapVal (\v -> { section | code_model = v })
+                |> Return.mapEvents "code" section.id
+                |> updateScript
+
+        UpdateQuiz childMsg ->
+            section.quiz_vector
+                |> Quiz.update section.effect_model.javascript childMsg
+                |> Return.mapVal (\v -> { section | quiz_vector = v })
+                |> Return.mapEvents "quiz" section.id
+                |> updateScript
+                |> syncQuiz sync
+
+        UpdateTask childMsg ->
+            section.task_vector
+                |> Task.update section.effect_model.javascript childMsg
+                |> Return.mapVal (\v -> { section | task_vector = v })
+                |> Return.mapEvents "task" section.id
+                |> updateScript
+
+        UpdateGallery childMsg ->
+            section.gallery_vector
+                |> Gallery.update childMsg
+                |> Return.mapVal (\v -> { section | gallery_vector = v })
+                |> Return.mapEvents "gallery" section.id
+                |> updateScript
+
+        UpdateSurvey childMsg ->
+            section.survey_vector
+                |> Survey.update section.effect_model.javascript childMsg
+                |> Return.mapVal (\v -> { section | survey_vector = v })
+                |> Return.mapEvents "survey" section.id
+                |> updateScript
+
+        UpdateTable childMsg ->
+            section.table_vector
+                |> Table.update childMsg
+                |> Return.mapVal (\v -> { section | table_vector = v })
+                |> Return.mapEvents "table" section.id
+
+        Sync event ->
+            case Event.topic_ event of
+                Just "quiz" ->
+                    case
+                        ( section.sync
+                            |> Maybe.andThen .quiz
+                        , event
+                            |> Event.message
+                            |> Container.decode Quiz_.syncDecoder
                         )
-                        sound
-                        childMsg
-                    |> Return.mapValCmd (\v -> { section | effect_model = v }) (UpdateEffect sound)
-                    |> Return.mapEvents "effect" section.id
+                            |> Debug.log "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                    of
+                        ( Just old, Ok new ) ->
+                            case Container.union old new |> Debug.log "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS" of
+                                ( True, state ) ->
+                                    section
+                                        |> Section.syncSection state
+                                        |> Return.val
+                                        |> Return.sync
+                                            (state
+                                                |> Container.encode Quiz_.syncEncoder
+                                                |> Event.init "quiz"
+                                                |> Event.pushWithId "local" section.id
+                                            )
 
-            UpdateCode childMsg ->
-                section.code_model
-                    |> Code.update section.effect_model.javascript childMsg
-                    |> Return.mapVal (\v -> { section | code_model = v })
-                    |> Return.mapEvents "code" section.id
-                    |> updateScript
+                                ( False, state ) ->
+                                    section
+                                        |> Section.syncSection state
+                                        |> Return.val
 
-            UpdateQuiz childMsg ->
-                section.quiz_vector
-                    |> Quiz.update section.effect_model.javascript childMsg
-                    |> Return.mapVal (\v -> { section | quiz_vector = v })
-                    |> Return.mapEvents "quiz" section.id
-                    |> updateScript
+                        ( Nothing, Ok state ) ->
+                            section
+                                |> Section.syncSection state
+                                |> Return.val
 
-            UpdateTask childMsg ->
-                section.task_vector
-                    |> Task.update section.effect_model.javascript childMsg
-                    |> Return.mapVal (\v -> { section | task_vector = v })
-                    |> Return.mapEvents "task" section.id
-                    |> updateScript
+                        _ ->
+                            section
+                                |> Return.val
 
-            UpdateGallery childMsg ->
-                section.gallery_vector
-                    |> Gallery.update childMsg
-                    |> Return.mapVal (\v -> { section | gallery_vector = v })
-                    |> Return.mapEvents "gallery" section.id
-                    |> updateScript
+                _ ->
+                    section
+                        |> Return.val
 
-            UpdateSurvey childMsg ->
-                section.survey_vector
-                    |> Survey.update section.effect_model.javascript childMsg
-                    |> Return.mapVal (\v -> { section | survey_vector = v })
-                    |> Return.mapEvents "survey" section.id
-                    |> updateScript
+        FootnoteShow key ->
+            { section | footnote2show = Just key }
+                |> Return.val
+                |> Return.cmd (focus NoOp "lia-modal__close")
 
-            UpdateTable childMsg ->
-                section.table_vector
-                    |> Table.update childMsg
-                    |> Return.mapVal (\v -> { section | table_vector = v })
-                    |> Return.mapEvents "table" section.id
+        FootnoteHide ->
+            { section | footnote2show = Nothing }
+                |> Return.val
+                |> Return.cmd
+                    (section.footnote2show
+                        |> Maybe.map (Footnote.byKey >> focus NoOp)
+                        |> Maybe.withDefault Cmd.none
+                    )
 
-            FootnoteShow key ->
-                { section | footnote2show = Just key }
-                    |> Return.val
-                    |> Return.cmd (focus NoOp "lia-modal__close")
+        Script childMsg ->
+            section
+                |> Return.val
+                |> Return.script childMsg
+                |> updateScript
 
-            FootnoteHide ->
-                { section | footnote2show = Nothing }
-                    |> Return.val
-                    |> Return.cmd
-                        (section.footnote2show
-                            |> Maybe.map (Footnote.byKey >> focus NoOp)
-                            |> Maybe.withDefault Cmd.none
-                        )
+        NoOp ->
+            Return.val section
 
-            Script childMsg ->
-                section
-                    |> Return.val
-                    |> Return.script childMsg
-                    |> updateScript
 
-            NoOp ->
-                Return.val section
+syncQuiz : Sync.State -> Return Section msg sub -> Return Section msg sub
+syncQuiz sync ret =
+    case ( List.isEmpty ret.synchronize, Sync.id sync ) of
+        ( False, Just id ) ->
+            case
+                ret.value.sync
+                    |> Maybe.andThen .quiz
+                    |> Maybe.withDefault Container.empty
+                    |> Container.union (Container.init id Quiz_.sync ret.value.quiz_vector)
+            of
+                ( True, state ) ->
+                    { ret | synchronize = [] }
+                        |> Return.mapVal (Section.syncSection state)
+                        |> Return.sync
+                            (state
+                                |> Container.encode Quiz_.syncEncoder
+                                |> Event.init "quiz"
+                                |> Event.pushWithId "local" ret.value.id
+                            )
+
+                ( False, state ) ->
+                    { ret | synchronize = [] }
+                        |> Return.mapVal (Section.syncSection state)
+
+        _ ->
+            { ret | synchronize = [] }
 
 
 subs :
@@ -273,19 +355,19 @@ updateScript return =
                 |> Return.batchEvents ret.events
 
 
-nextEffect : Definition -> Bool -> Section -> Return Section Msg Msg
-nextEffect globals sound =
-    update globals (UpdateEffect sound Effect.next)
+nextEffect : Sync.State -> Definition -> Bool -> Section -> Return Section Msg Msg
+nextEffect sync globals sound =
+    update sync globals (UpdateEffect sound Effect.next)
 
 
-previousEffect : Definition -> Bool -> Section -> Return Section Msg Msg
-previousEffect globals sound =
-    update globals (UpdateEffect sound Effect.previous)
+previousEffect : Sync.State -> Definition -> Bool -> Section -> Return Section Msg Msg
+previousEffect sync globals sound =
+    update sync globals (UpdateEffect sound Effect.previous)
 
 
-initEffect : Definition -> Bool -> Bool -> Section -> Return Section Msg Msg
-initEffect globals run_all_javascript sound =
-    update globals (UpdateEffect sound (Effect.init run_all_javascript))
+initEffect : Sync.State -> Definition -> Bool -> Bool -> Section -> Return Section Msg Msg
+initEffect sync globals run_all_javascript sound =
+    update sync globals (UpdateEffect sound (Effect.init run_all_javascript))
 
 
 subHandle : Scripts SubSection -> JE.Value -> SubSection -> Return SubSection Msg Msg
@@ -320,29 +402,29 @@ subHandle js json section =
                 |> Return.error "subHandle Problem"
 
 
-handle : Definition -> String -> Event -> Section -> Return Section Msg Msg
-handle globals topic event section =
+handle : Sync.State -> Definition -> String -> Event -> Section -> Return Section Msg Msg
+handle sync globals topic event section =
     case topic of
         "code" ->
-            update globals (UpdateCode (Code.handle event)) section
+            update sync globals (UpdateCode (Code.handle event)) section
 
         "quiz" ->
-            update globals (UpdateQuiz (Quiz.handle event)) section
+            update sync globals (UpdateQuiz (Quiz.handle event)) section
 
         "survey" ->
-            update globals (UpdateSurvey (Survey.handle event)) section
+            update sync globals (UpdateSurvey (Survey.handle event)) section
 
         "effect" ->
-            update globals (UpdateEffect True (Effect.handle event)) section
+            update sync globals (UpdateEffect True (Effect.handle event)) section
 
         "task" ->
-            update globals (UpdateTask (Task.handle event)) section
+            update sync globals (UpdateTask (Task.handle event)) section
 
         "table" ->
-            update globals (UpdateTable (Table.handle event)) section
+            update sync globals (UpdateTable (Table.handle event)) section
 
         "gallery" ->
-            update globals (UpdateGallery (Gallery.handle event)) section
+            update sync globals (UpdateGallery (Gallery.handle event)) section
 
         _ ->
             Return.val section
