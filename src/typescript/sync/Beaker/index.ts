@@ -3,23 +3,6 @@ import Beaker from './beaker.d'
 
 import { Sync as Base } from '../Base/index'
 
-/* This function is only required to generate a random string, that is used
-as a personal ID for every peer, since it is not possible at the moment to
-get the own peer ID from the beaker browser.
-*/
-function random(length: number = 16) {
-  // Declare all characters
-  let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-
-  // Pick characters randomly
-  let str = ''
-  for (let i = 0; i < length; i++) {
-    str += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-
-  return str
-}
-
 function encode(json: object) {
   return new TextEncoder().encode(JSON.stringify(json))
 }
@@ -44,12 +27,8 @@ export class Sync extends Base {
   private peerEvent?: Beaker.Event
   private peerChannelEvent?: Beaker.UserEvent
 
-  private id: string
-
   constructor(send: Lia.Send) {
     super(send)
-
-    this.id = random()
 
     this.peerIds = new Set()
   }
@@ -92,11 +71,11 @@ export class Sync extends Base {
       }
     )
 
-    this.sync('connect', this.id)
+    this.sync('connect', this.token)
   }
 
   disconnect() {
-    this.publish(this.syncMsg('leave', this.id))
+    this.publish(this.syncMsg('leave', this.token))
 
     if (this.peerChannelEvent) this.peerChannelEvent.close()
 
