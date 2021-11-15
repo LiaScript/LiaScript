@@ -53,7 +53,7 @@ update model msg =
     in
     case msg of
         Handle event ->
-            case Event.destructure event |> Debug.log "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS" of
+            case Event.destructure event of
                 Just ( "connect", _, message ) ->
                     { model
                         | sync =

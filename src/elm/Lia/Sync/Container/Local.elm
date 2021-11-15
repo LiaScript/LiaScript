@@ -152,7 +152,7 @@ unionHelper internal external combined =
             List.reverse combined
 
         ( [], e :: es ) ->
-            ( False, e )
+            ( True, e )
                 :: combined
                 |> unionHelper [] es
 

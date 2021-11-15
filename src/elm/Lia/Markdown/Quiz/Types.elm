@@ -44,9 +44,8 @@ type alias Element =
     }
 
 
-type Sync
-    = Trials Int
-    | Resolved
+type alias Sync =
+    Maybe Int
 
 
 type State
@@ -157,10 +156,10 @@ sync : { quiz | trial : Int, solved : Solution } -> Maybe Sync
 sync quiz =
     case quiz.solved of
         Solution.Solved ->
-            Just (Trials quiz.trial)
+            Just (Just quiz.trial)
 
         Solution.ReSolved ->
-            Just Resolved
+            Just Nothing
 
         Solution.Open ->
             Nothing
@@ -169,16 +168,16 @@ sync quiz =
 syncEncoder : Sync -> JE.Value
 syncEncoder state =
     case state of
-        Trials i ->
+        Just i ->
             JE.int i
 
-        Resolved ->
+        Nothing ->
             JE.null
 
 
 syncDecoder : JD.Decoder Sync
 syncDecoder =
-    [ JD.int |> JD.map Trials
-    , JD.null Resolved
+    [ JD.int |> JD.map Just
+    , JD.null Nothing
     ]
         |> JD.oneOf

@@ -123,8 +123,7 @@ update sync globals msg section =
             case Event.topic_ event of
                 Just "quiz" ->
                     case
-                        ( section.sync
-                            |> Maybe.andThen .quiz
+                        ( Maybe.andThen .quiz section.sync
                         , event
                             |> Event.message
                             |> Container.decode Quiz_.syncDecoder
@@ -190,10 +189,13 @@ syncQuiz sync ret =
     case ( List.isEmpty ret.synchronize, Sync.id sync ) of
         ( False, Just id ) ->
             case
-                ret.value.sync
-                    |> Maybe.andThen .quiz
-                    |> Maybe.withDefault Container.empty
-                    |> Container.union (Container.init id Quiz_.sync ret.value.quiz_vector)
+                ret.value.quiz_vector
+                    |> Container.init id Quiz_.sync
+                    |> Container.union
+                        (ret.value.sync
+                            |> Maybe.andThen .quiz
+                            |> Maybe.withDefault Container.empty
+                        )
             of
                 ( True, state ) ->
                     { ret | synchronize = [] }
