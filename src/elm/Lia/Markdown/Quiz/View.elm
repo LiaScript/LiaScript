@@ -27,6 +27,8 @@ import Accessibility.Widget as A11y_Widget
 import Array
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attr
+import Json.Encode as JE
+import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
@@ -49,6 +51,7 @@ import Lia.Markdown.Quiz.Vector.View as Vector
 import Lia.Sync.Container.Local exposing (Container)
 import Lia.Sync.Types as Sync
 import Lia.Utils exposing (btn, btnIcon)
+import List.Extra
 import Translations
     exposing
         ( Lang
@@ -71,17 +74,85 @@ view config labeledBy quiz vector sync =
             ( elem.scriptID
             , viewState config elem quiz
                 |> viewQuiz config labeledBy elem quiz
-                |> viewSync (Sync.get config.sync quiz.id sync)
+                |> viewSync config (Sync.get config.sync quiz.id sync)
             )
 
         _ ->
             ( Nothing, [] )
 
 
-viewSync syncData quiz =
+viewSync : Config sub -> Maybe (List Sync) -> List (Html msg) -> List (Html msg)
+viewSync config syncData quiz =
     case syncData of
         Just data ->
-            List.append quiz [ Html.text (Debug.toString data) ]
+            let
+                total =
+                    toFloat (List.length data)
+
+                chartData =
+                    data
+                        |> List.Extra.gatherEquals
+                        |> List.map
+                            (\( i, list ) ->
+                                case i of
+                                    Just i_ ->
+                                        ( JE.string ("Trial " ++ String.fromInt i_)
+                                        , JE.float (100 * toFloat (1 + List.length list) / total)
+                                        )
+
+                                    Nothing ->
+                                        ( JE.string "Resolved"
+                                        , JE.object
+                                            [ ( "value"
+                                              , JE.float (100 * toFloat (1 + List.length list) / total)
+                                              )
+                                            , ( "itemStyle"
+                                              , JE.object [ ( "color", JE.string "#888" ) ]
+                                              )
+                                            ]
+                                        )
+                            )
+            in
+            JE.object
+                [ ( "grid"
+                  , JE.object
+                        [ ( "left", JE.int 50 )
+                        , ( "top", JE.int 20 )
+                        , ( "bottom", JE.int 20 )
+                        , ( "right", JE.int 10 )
+                        ]
+                  )
+                , ( "xAxis"
+                  , JE.object
+                        [ ( "type", JE.string "category" )
+                        , ( "data"
+                          , chartData
+                                |> List.map Tuple.first
+                                |> JE.list identity
+                          )
+                        ]
+                  )
+                , ( "yAxis"
+                  , JE.object
+                        [ ( "type", JE.string "value" )
+                        , ( "axisLabel", JE.object [ ( "formatter", JE.string "{value} %" ) ] )
+                        ]
+                  )
+                , ( "series"
+                  , [ [ ( "type", JE.string "bar" )
+                      , ( "data"
+                        , chartData
+                            |> List.map Tuple.second
+                            |> JE.list identity
+                        )
+                      ]
+                    ]
+                        |> JE.list JE.object
+                  )
+                ]
+                |> Chart.eCharts config.lang [ ( "style", "height: 120px; width: 100%" ) ] True Nothing
+                |> List.singleton
+                |> List.append quiz
 
         Nothing ->
             quiz
