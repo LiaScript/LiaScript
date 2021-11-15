@@ -47,7 +47,6 @@ import Array exposing (Array)
 import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Encode as JE
-import Set exposing (Set)
 
 
 {-| A local container is an `Array` of `Dict`s, which mirrors the state to be
@@ -120,7 +119,7 @@ be send to the other peers.
     union a b =
         ( True, a ∪ b )
     union empty b =
-        ( False, b )
+        ( True, b )
     union a empty =
         ( True, b )
 
