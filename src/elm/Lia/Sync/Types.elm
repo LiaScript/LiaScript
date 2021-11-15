@@ -44,17 +44,17 @@ type alias Sync =
     }
 
 
-init : List String -> Settings
-init supportedBackends =
+init : String -> List String -> Settings
+init courseURL supportedBackends =
     { sync =
         { support = List.filterMap Via.fromString supportedBackends
         , select = Nothing
         , open = False
         }
     , state = Disconnected
-    , course = "www"
+    , course = courseURL
     , room = "test"
-    , username = "anonymous"
+    , username = ""
     , password = ""
     , peers = Set.empty
     }

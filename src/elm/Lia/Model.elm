@@ -135,7 +135,7 @@ init hasShareApi openTOC settings allowedBackends url readme origin anchor =
     , search_index = identity
     , media = Dict.empty
     , modal = Nothing
-    , sync = Sync.init allowedBackends
+    , sync = Sync.init readme allowedBackends
     }
 
 
