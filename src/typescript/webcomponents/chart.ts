@@ -45,6 +45,8 @@ customElements.define(
 
     private resizeObserver: ResizeObserver
 
+    private style_: string
+
     static get observedAttributes() {
       return ['style', 'mode', 'json', 'locale', 'aria-label']
     }
@@ -72,11 +74,13 @@ customElements.define(
           self.resizeChart()
         })
       )
+
+      this.style_ = style
     }
 
     connectedCallback() {
       if (!this.chart) {
-        this.container.setAttribute('style', style)
+        this.container.setAttribute('style', this.style_)
         this.chart = echarts.init(this.container, this.mode || '', {
           renderer: 'svg',
           locale: this.locale,
@@ -122,7 +126,8 @@ customElements.define(
 
       switch (name) {
         case 'style': {
-          this.container.setAttribute('style', style + newValue)
+          this.style_ = style + newValue
+          this.container.setAttribute('style', this.style_)
           this.resizeChart()
           break
         }
