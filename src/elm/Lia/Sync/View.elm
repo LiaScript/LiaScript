@@ -71,7 +71,7 @@ select sync =
                     , A11y_Role.button
                     , A11y_Widget.expanded sync.open
                     ]
-                    [ selectString sync.select
+                    [ maybeSelect sync.select
                     , Html.i
                         [ Attr.class <|
                             "icon"
@@ -104,17 +104,21 @@ select sync =
 option : Maybe Backend -> Html SyncMsg
 option via =
     Html.div
-        [ Event.onClick (Select via)
-        ]
-        [ selectString via
-        ]
+        [ Event.onClick (Select via) ]
+        [ maybeSelect via ]
 
 
-selectString : Maybe Backend -> Html msg
-selectString =
-    Maybe.map Backend.toString
-        >> Maybe.withDefault "None"
-        >> Html.text
+maybeSelect : Maybe Backend -> Html msg
+maybeSelect =
+    Maybe.map selectString >> Maybe.withDefault (Html.text "None")
+
+
+selectString : Backend -> Html msg
+selectString via =
+    Html.span []
+        [ Backend.icon via
+        , Backend.toString via |> Html.text
+        ]
 
 
 button : State -> Html Msg
