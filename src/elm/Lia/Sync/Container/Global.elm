@@ -98,7 +98,7 @@ unionHelper internal external combination =
             unionHelper
                 is
                 es
-                (Tuple.mapSecond Just (Local.union i e) :: combination)
+                (Tuple.mapSecond Just (Local.union_ i e) :: combination)
 
         ( (Just i) :: is, Nothing :: es ) ->
             unionHelper

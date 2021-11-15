@@ -8,6 +8,7 @@ module Lia.Sync.Container.Local exposing
     , init
     , isEmpty
     , union
+    , union_
     )
 
 {-| This is a basic container module for dealing with synchronized data. At
@@ -34,7 +35,7 @@ synchronization might not exist for all peers.
 
 ## Convenience functions
 
-@init ,@isEmpty, @empty, @get
+@init ,@isEmpty, @empty, @get, @union, @union\_
 
 
 ## JSON
@@ -126,13 +127,29 @@ be send to the other peers.
 -}
 union : Container sync -> Container sync -> ( Bool, Container sync )
 union (Container internal) (Container external) =
-    unionHelper (Array.toList internal) (Array.toList external) []
+    unionHelper True (Array.toList internal) (Array.toList external) []
         |> List.unzip
-        |> union_
+        |> unify
 
 
-union_ : ( List Bool, List (Dict String sync) ) -> ( Bool, Container sync )
-union_ ( bool, list ) =
+{-| To be used for **global** merges, preferring the first one if a collision
+occurs. **Thus, the first container should always be the own one!** The first
+boolean value means, that there was a difference, such that the new state
+should also be send to the other peers.
+
+In contrast to `union` this merge returns `True` if the internal and external
+containers are not equal
+
+-}
+union_ : Container sync -> Container sync -> ( Bool, Container sync )
+union_ (Container internal) (Container external) =
+    unionHelper False (Array.toList internal) (Array.toList external) []
+        |> List.unzip
+        |> unify
+
+
+unify : ( List Bool, List (Dict String sync) ) -> ( Bool, Container sync )
+unify ( bool, list ) =
     ( if List.isEmpty list then
         False
 
@@ -144,8 +161,8 @@ union_ ( bool, list ) =
     )
 
 
-unionHelper : List (Dict String sync) -> List (Dict String sync) -> List ( Bool, Dict String sync ) -> List ( Bool, Dict String sync )
-unionHelper internal external combined =
+unionHelper : Bool -> List (Dict String sync) -> List (Dict String sync) -> List ( Bool, Dict String sync ) -> List ( Bool, Dict String sync )
+unionHelper local internal external combined =
     case ( internal, external ) of
         ( [], [] ) ->
             List.reverse combined
@@ -153,19 +170,23 @@ unionHelper internal external combined =
         ( [], e :: es ) ->
             ( True, e )
                 :: combined
-                |> unionHelper [] es
+                |> unionHelper local [] es
 
         ( i :: is, [] ) ->
             ( True, i )
                 :: combined
-                |> unionHelper is []
+                |> unionHelper local is []
 
         ( i :: is, e :: es ) ->
-            ( Dict.size (Dict.diff e i) /= 0
+            ( if local then
+                Dict.size (Dict.diff e i) /= 0
+
+              else
+                Dict.size (Dict.diff e i) /= Dict.size (Dict.diff i e)
             , Dict.union i e
             )
                 :: combined
-                |> unionHelper is es
+                |> unionHelper local is es
 
 
 {-| Turn a Container into a JSON. This encoder is a generic encoder and
