@@ -35,12 +35,12 @@ import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Quiz.Block.View as Block
 import Lia.Markdown.Quiz.Matrix.View as Matrix
 import Lia.Markdown.Quiz.Solution as Solution exposing (Solution)
+import Lia.Markdown.Quiz.Sync exposing (Sync)
 import Lia.Markdown.Quiz.Types
     exposing
         ( Element
         , Quiz
         , State(..)
-        , Sync
         , Type(..)
         , Vector
         , getClass

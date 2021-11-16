@@ -3,22 +3,16 @@ module Lia.Markdown.Quiz.Types exposing
     , Hints
     , Quiz
     , State(..)
-    , Sync
     , Type(..)
     , Vector
     , comp
     , getClass
     , initState
     , isSolved
-    , sync
-    , syncDecoder
-    , syncEncoder
     , toState
     )
 
 import Array exposing (Array)
-import Json.Decode as JD
-import Json.Encode as JE
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Block.Types as Block
 import Lia.Markdown.Quiz.Matrix.Types as Matrix
@@ -42,10 +36,6 @@ type alias Element =
     , error_msg : String
     , scriptID : Maybe Int
     }
-
-
-type alias Sync =
-    Maybe Int
 
 
 type State
@@ -150,34 +140,3 @@ getClass state =
 
         Generic_State ->
             "generic"
-
-
-sync : { quiz | trial : Int, solved : Solution } -> Maybe Sync
-sync quiz =
-    case quiz.solved of
-        Solution.Solved ->
-            Just (Just quiz.trial)
-
-        Solution.ReSolved ->
-            Just Nothing
-
-        Solution.Open ->
-            Nothing
-
-
-syncEncoder : Sync -> JE.Value
-syncEncoder state =
-    case state of
-        Just i ->
-            JE.int i
-
-        Nothing ->
-            JE.null
-
-
-syncDecoder : JD.Decoder Sync
-syncDecoder =
-    [ JD.int |> JD.map Just
-    , JD.null Nothing
-    ]
-        |> JD.oneOf

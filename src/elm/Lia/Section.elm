@@ -16,6 +16,7 @@ import Lia.Markdown.Effect.Model as Effect
 import Lia.Markdown.Footnote.Model as Footnote
 import Lia.Markdown.Gallery.Types as Gallery
 import Lia.Markdown.Inline.Types exposing (Inlines)
+import Lia.Markdown.Quiz.Sync as Quiz_
 import Lia.Markdown.Quiz.Types as Quiz
 import Lia.Markdown.Survey.Types as Survey
 import Lia.Markdown.Table.Types as Table
@@ -79,7 +80,7 @@ type alias Section =
     , definition : Maybe Definition
     , footnotes : Footnote.Model
     , footnote2show : Maybe String
-    , sync : Maybe { quiz : Maybe (Local.Container Quiz.Sync) }
+    , sync : Maybe { quiz : Maybe (Local.Container Quiz_.Sync) }
     }
 
 
@@ -174,18 +175,18 @@ synchronize id section =
                 Just
                     { quiz =
                         section.quiz_vector
-                            |> Local.init id Quiz.sync
+                            |> Local.init id Quiz_.sync
                             |> Just
                     }
         }
 
 
-sync : Global.Container Quiz.Sync -> Sections -> Sections
+sync : Global.Container Quiz_.Sync -> Sections -> Sections
 sync state =
     syncHelper (Array.toIndexedList state)
 
 
-syncHelper : List ( Int, Maybe (Local.Container Quiz.Sync) ) -> Sections -> Sections
+syncHelper : List ( Int, Maybe (Local.Container Quiz_.Sync) ) -> Sections -> Sections
 syncHelper tuples sections =
     case tuples of
         [] ->
@@ -202,7 +203,7 @@ syncHelper tuples sections =
                 |> syncHelper ts
 
 
-syncSection : Local.Container Quiz.Sync -> Section -> Section
+syncSection : Local.Container Quiz_.Sync -> Section -> Section
 syncSection state section =
     { section
         | sync =

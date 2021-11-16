@@ -19,7 +19,7 @@ import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts)
 import Lia.Markdown.Effect.Update as Effect
 import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.Gallery.Update as Gallery
-import Lia.Markdown.Quiz.Types as Quiz_
+import Lia.Markdown.Quiz.Sync as Quiz_
 import Lia.Markdown.Quiz.Update as Quiz
 import Lia.Markdown.Survey.Update as Survey
 import Lia.Markdown.Table.Update as Table
@@ -126,7 +126,7 @@ update sync globals msg section =
                         ( Maybe.andThen .quiz section.sync
                         , event
                             |> Event.message
-                            |> Container.decode Quiz_.syncDecoder
+                            |> Container.decode Quiz_.decoder
                         )
                     of
                         ( Just old, Ok new ) ->
@@ -137,7 +137,7 @@ update sync globals msg section =
                                         |> Return.val
                                         |> Return.sync
                                             (state
-                                                |> Container.encode Quiz_.syncEncoder
+                                                |> Container.encode Quiz_.encoder
                                                 |> Event.init "quiz"
                                                 |> Event.pushWithId "local" section.id
                                             )
@@ -202,7 +202,7 @@ syncQuiz sync ret =
                         |> Return.mapVal (Section.syncSection state)
                         |> Return.sync
                             (state
-                                |> Container.encode Quiz_.syncEncoder
+                                |> Container.encode Quiz_.encoder
                                 |> Event.init "quiz"
                                 |> Event.pushWithId "local" ret.value.id
                             )

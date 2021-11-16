@@ -9,7 +9,7 @@ module Lia.Sync.Update exposing
 import Array
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Markdown.Quiz.Types as Quiz
+import Lia.Markdown.Quiz.Sync as Quiz
 import Lia.Section as Section exposing (Sections)
 import Lia.Sync.Container.Global as Global
 import Lia.Sync.Types exposing (Settings, State(..), id)
@@ -113,7 +113,7 @@ update session model msg =
                     case
                         ( JD.decodeValue (JD.field "id" JD.string) message
                         , message
-                            |> JD.decodeValue (JD.field "quiz" (Global.decoder Quiz.syncDecoder))
+                            |> JD.decodeValue (JD.field "quiz" (Global.decoder Quiz.decoder))
                             |> Result.map (Global.union (globalGet .quiz model.sections))
                         )
                     of
@@ -249,7 +249,7 @@ globalSync model =
                      , ( "quiz"
                        , model.sections
                             |> globalGet .quiz
-                            |> Global.encode Quiz.syncEncoder
+                            |> Global.encode Quiz.encoder
                        )
                      ]
                         |> JE.object
