@@ -133,7 +133,7 @@ update sync globals msg section =
                             case Container.union old new of
                                 ( True, state ) ->
                                     section
-                                        |> Section.syncSection state
+                                        |> Section.syncQuiz state
                                         |> Return.val
                                         |> Return.sync
                                             (state
@@ -144,12 +144,12 @@ update sync globals msg section =
 
                                 ( False, state ) ->
                                     section
-                                        |> Section.syncSection state
+                                        |> Section.syncQuiz state
                                         |> Return.val
 
                         ( Nothing, Ok state ) ->
                             section
-                                |> Section.syncSection state
+                                |> Section.syncQuiz state
                                 |> Return.val
 
                         _ ->
@@ -199,7 +199,7 @@ syncQuiz sync ret =
             of
                 ( True, state ) ->
                     { ret | synchronize = [] }
-                        |> Return.mapVal (Section.syncSection state)
+                        |> Return.mapVal (Section.syncQuiz state)
                         |> Return.sync
                             (state
                                 |> Container.encode Quiz_.encoder
@@ -209,7 +209,7 @@ syncQuiz sync ret =
 
                 ( False, state ) ->
                     { ret | synchronize = [] }
-                        |> Return.mapVal (Section.syncSection state)
+                        |> Return.mapVal (Section.syncQuiz state)
 
         _ ->
             { ret | synchronize = [] }

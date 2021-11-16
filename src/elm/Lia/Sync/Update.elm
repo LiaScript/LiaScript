@@ -10,6 +10,8 @@ import Array
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Quiz.Sync as Quiz
+import Lia.Markdown.Survey.Sync as Survey
+import Lia.Markdown.Survey.Types exposing (Survey)
 import Lia.Section as Section exposing (Sections)
 import Lia.Sync.Container.Global as Global
 import Lia.Sync.Types exposing (Settings, State(..), id)
@@ -115,14 +117,17 @@ update session model msg =
                         , message
                             |> JD.decodeValue (JD.field "quiz" (Global.decoder Quiz.decoder))
                             |> Result.map (Global.union (globalGet .quiz model.sections))
+                        , message
+                            |> JD.decodeValue (JD.field "survey" (Global.decoder Survey.decoder))
+                            |> Result.map (Global.union (globalGet .survey model.sections))
                         )
                     of
-                        ( Ok peerID, Ok ( sendUpdate, state ) ) ->
+                        ( Ok peerID, Ok ( quizUpdate, quizState ), Ok ( surveyUpdate, surveyState ) ) ->
                             { model
                                 | sync = { sync | peers = Set.insert peerID sync.peers }
-                                , sections = Section.sync state model.sections
+                                , sections = Section.sync quizState surveyState model.sections
                             }
-                                |> (if sendUpdate then
+                                |> (if quizUpdate || surveyUpdate then
                                         globalSync
 
                                     else
@@ -229,7 +234,7 @@ join : { model | sync : Settings, sections : Sections } -> Return { model | sync
 join model =
     case model.sync.state of
         Connected id ->
-            { model | sections = Array.map (Section.synchronize id) model.sections }
+            { model | sections = Array.map (Section.syncInit id) model.sections }
                 |> globalSync
 
         _ ->
@@ -250,6 +255,11 @@ globalSync model =
                        , model.sections
                             |> globalGet .quiz
                             |> Global.encode Quiz.encoder
+                       )
+                     , ( "survey"
+                       , model.sections
+                            |> globalGet .survey
+                            |> Global.encode Survey.encoder
                        )
                      ]
                         |> JE.object

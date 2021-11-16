@@ -5,8 +5,9 @@ module Lia.Section exposing
     , SubSection(..)
     , init
     , sync
-    , syncSection
-    , synchronize
+    , syncInit
+    , syncQuiz
+    , syncSurvey
     )
 
 import Array exposing (Array)
@@ -18,6 +19,7 @@ import Lia.Markdown.Gallery.Types as Gallery
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Quiz.Sync as Quiz_
 import Lia.Markdown.Quiz.Types as Quiz
+import Lia.Markdown.Survey.Sync as Survey_
 import Lia.Markdown.Survey.Types as Survey
 import Lia.Markdown.Table.Types as Table
 import Lia.Markdown.Task.Types as Task
@@ -80,7 +82,13 @@ type alias Section =
     , definition : Maybe Definition
     , footnotes : Footnote.Model
     , footnote2show : Maybe String
-    , sync : Maybe { quiz : Maybe (Local.Container Quiz_.Sync) }
+    , sync : Maybe Sync
+    }
+
+
+type alias Sync =
+    { quiz : Maybe (Local.Container Quiz_.Sync)
+    , survey : Maybe (Local.Container Survey_.Sync)
     }
 
 
@@ -164,47 +172,75 @@ init id base =
     }
 
 
-synchronize : String -> Section -> Section
-synchronize id section =
-    if Array.isEmpty section.quiz_vector then
-        section
+syncInit : String -> Section -> Section
+syncInit id section =
+    { section
+        | sync =
+            case ( Array.isEmpty section.quiz_vector, Array.isEmpty section.survey_vector ) of
+                ( True, True ) ->
+                    Nothing
 
-    else
-        { section
-            | sync =
-                Just
-                    { quiz =
-                        section.quiz_vector
-                            |> Local.init id Quiz_.sync
-                            |> Just
-                    }
-        }
+                ( True, False ) ->
+                    Just
+                        { quiz = Nothing
+                        , survey =
+                            section.survey_vector
+                                |> Local.init id Survey_.sync
+                                |> Just
+                        }
+
+                ( False, True ) ->
+                    Just
+                        { quiz =
+                            section.quiz_vector
+                                |> Local.init id Quiz_.sync
+                                |> Just
+                        , survey =
+                            Nothing
+                        }
+
+                ( False, False ) ->
+                    Just
+                        { quiz =
+                            section.quiz_vector
+                                |> Local.init id Quiz_.sync
+                                |> Just
+                        , survey =
+                            section.survey_vector
+                                |> Local.init id Survey_.sync
+                                |> Just
+                        }
+    }
 
 
-sync : Global.Container Quiz_.Sync -> Sections -> Sections
-sync state =
-    syncHelper (Array.toIndexedList state)
+sync : Global.Container Quiz_.Sync -> Global.Container Survey_.Sync -> Sections -> Sections
+sync quiz survey =
+    syncHelper syncQuiz (indexes quiz)
+        >> syncHelper syncSurvey (indexes survey)
 
 
-syncHelper : List ( Int, Maybe (Local.Container Quiz_.Sync) ) -> Sections -> Sections
-syncHelper tuples sections =
+indexes : Global.Container sync -> List ( Int, Local.Container sync )
+indexes =
+    Array.toIndexedList
+        >> List.filterMap (\( i, s ) -> s |> Maybe.map (Tuple.pair i))
+
+
+syncHelper : (Local.Container sync -> Section -> Section) -> List ( Int, Local.Container sync ) -> Sections -> Sections
+syncHelper fn tuples sections =
     case tuples of
         [] ->
             sections
 
-        ( _, Nothing ) :: ts ->
-            syncHelper ts sections
-
-        ( i, Just state ) :: ts ->
+        ( i, state ) :: ts ->
             sections
                 |> Array.get i
-                |> Maybe.map (\sec -> Array.set i (syncSection state sec) sections)
+                |> Maybe.map (\sec -> Array.set i (fn state sec) sections)
                 |> Maybe.withDefault sections
-                |> syncHelper ts
+                |> syncHelper fn ts
 
 
-syncSection : Local.Container Quiz_.Sync -> Section -> Section
-syncSection state section =
+syncQuiz : Local.Container Quiz_.Sync -> Section -> Section
+syncQuiz state section =
     { section
         | sync =
             case section.sync of
@@ -212,5 +248,24 @@ syncSection state section =
                     Just { sub | quiz = Just state }
 
                 Nothing ->
-                    Just { quiz = Just state }
+                    Just
+                        { quiz = Just state
+                        , survey = Nothing
+                        }
+    }
+
+
+syncSurvey : Local.Container Survey_.Sync -> Section -> Section
+syncSurvey state section =
+    { section
+        | sync =
+            case section.sync of
+                Just sub ->
+                    Just { sub | survey = Just state }
+
+                Nothing ->
+                    Just
+                        { survey = Just state
+                        , quiz = Nothing
+                        }
     }
