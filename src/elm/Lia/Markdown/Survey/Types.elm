@@ -2,7 +2,6 @@ module Lia.Markdown.Survey.Types exposing
     ( Element
     , State(..)
     , Survey
-    , Sync
     , Type(..)
     , Vector
     , toString
@@ -22,12 +21,7 @@ type alias Element =
     , state : State
     , errorMsg : Maybe String
     , scriptID : Maybe Int
-    , sync : Maybe Sync
     }
-
-
-type alias Sync =
-    List State
 
 
 type State

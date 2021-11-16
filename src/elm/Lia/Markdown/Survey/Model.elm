@@ -9,7 +9,7 @@ module Lia.Markdown.Survey.Model exposing
 
 import Array
 import Dict
-import Lia.Markdown.Survey.Types exposing (State(..), Sync, Vector)
+import Lia.Markdown.Survey.Types exposing (State(..), Vector)
 
 
 getErrorMessage : Int -> Vector -> Maybe String
@@ -25,68 +25,26 @@ get_submission_state vector idx =
         |> Maybe.withDefault False
 
 
-get_text_state : Vector -> Int -> ( String, Maybe Sync )
+get_text_state : Vector -> Int -> String
 get_text_state vector idx =
-    case Array.get idx vector |> Maybe.map (\e -> ( e.state, e.sync )) of
-        Just ( Text_State str, sync ) ->
-            ( str, sync )
+    case Array.get idx vector |> Maybe.map .state of
+        Just (Text_State str) ->
+            str
 
         _ ->
-            ( "", Nothing )
+            ""
 
 
-get_vector_state : Vector -> Int -> String -> ( Maybe Float, Bool )
+get_vector_state : Vector -> Int -> String -> Bool
 get_vector_state vector idx var =
-    case Array.get idx vector |> Maybe.map (\e -> ( e.state, e.sync )) of
-        Just ( Vector_State _ state, Nothing ) ->
+    case Array.get idx vector |> Maybe.map .state of
+        Just (Vector_State _ state) ->
             state
                 |> Dict.get var
                 |> Maybe.withDefault False
-                |> Tuple.pair Nothing
-
-        Just ( Vector_State b state, Just sync ) ->
-            let
-                counter =
-                    (if b then
-                        Vector_State b state :: sync
-
-                     else
-                        sync
-                    )
-                        |> List.filter
-                            (\syncedStates ->
-                                case syncedStates of
-                                    Vector_State _ syncedVector ->
-                                        syncedVector
-                                            |> Dict.get var
-                                            |> Maybe.withDefault False
-
-                                    _ ->
-                                        False
-                            )
-                        |> List.length
-                        |> toFloat
-            in
-            ( Just
-                (100
-                    * counter
-                    / toFloat
-                        ((if b then
-                            1
-
-                          else
-                            0
-                         )
-                            + List.length sync
-                        )
-                )
-            , state
-                |> Dict.get var
-                |> Maybe.withDefault False
-            )
 
         _ ->
-            ( Nothing, False )
+            False
 
 
 get_select_state : Vector -> Int -> ( Bool, Int )

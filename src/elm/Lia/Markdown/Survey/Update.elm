@@ -7,7 +7,6 @@ module Lia.Markdown.Survey.Update exposing
 import Array
 import Browser exposing (element)
 import Dict
-import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Types as Script exposing (Scripts, outputs)
 import Lia.Markdown.Effect.Script.Update as JS
@@ -79,11 +78,6 @@ update scripts msg vector =
                                             |> Json.fromVector
                                             |> Event.store
                                         )
-                                    |> Return.sync
-                                        (element.state
-                                            |> Json.fromState
-                                            |> Event.initWithId "submit" id
-                                        )
 
                             else
                                 vector
@@ -111,11 +105,6 @@ update scripts msg vector =
 
                                         Nothing ->
                                             []
-                                    )
-                                |> Return.sync
-                                    (element.state
-                                        |> Json.fromState
-                                        |> Event.initWithId "submit" id
                                     )
 
                 _ ->
@@ -174,47 +163,8 @@ update scripts msg vector =
                         |> Return.val
                         |> init (\i s -> execute i s.state)
 
-                Just ( "sync", _, _ ) ->
-                    event
-                        |> Event.pop
-                        |> Maybe.andThen (Tuple.second >> Event.destructure >> Maybe.map (updateSync vector))
-                        |> Maybe.withDefault vector
-                        |> Return.val
-
                 _ ->
                     Return.val vector
-
-
-updateSync : Vector -> ( String, Maybe Int, JE.Value ) -> Vector
-updateSync vector ( topic, id, message ) =
-    case
-        ( topic
-        , id
-        , Maybe.andThen (\i -> Array.get i vector) id
-        )
-    of
-        ( "submit", Just section, Just element ) ->
-            Array.set section
-                { element
-                    | sync =
-                        case element.sync of
-                            Just list ->
-                                message
-                                    |> JD.decodeValue Json.toState
-                                    |> Result.map (\state -> state :: list)
-                                    |> Result.withDefault list
-                                    |> Just
-
-                            Nothing ->
-                                message
-                                    |> JD.decodeValue Json.toState
-                                    |> Result.map List.singleton
-                                    |> Result.toMaybe
-                }
-                vector
-
-        _ ->
-            vector
 
 
 update_ :
