@@ -4,6 +4,8 @@ import Array
 import Html exposing (Html, button)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick, onInput)
+import Json.Encode as JE
+import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
 import Lia.Markdown.Inline.Config exposing (Config)
 import Lia.Markdown.Inline.Types exposing (Inlines)
@@ -17,11 +19,11 @@ import Lia.Markdown.Survey.Model
         , get_text_state
         , get_vector_state
         )
-import Lia.Markdown.Survey.Sync exposing (Sync)
+import Lia.Markdown.Survey.Sync as Sync exposing (Sync)
 import Lia.Markdown.Survey.Types exposing (State(..), Survey, Type(..), Vector)
 import Lia.Markdown.Survey.Update exposing (Msg(..))
 import Lia.Sync.Container.Local exposing (Container)
-import Lia.Sync.Types as Sync
+import Lia.Sync.Types as Sync_
 import Lia.Utils exposing (blockKeydown, btn, icon, onKeyDown)
 import Translations exposing (surveySubmit, surveySubmitted, surveyText)
 
@@ -34,47 +36,128 @@ view config attr survey model sync =
             |> Maybe.andThen .scriptID
         )
     <|
-        viewSync config (Sync.get config.sync survey.id sync) <|
-            case survey.survey of
-                Text lines ->
-                    view_text config (get_text_state model survey.id) lines survey.id
-                        |> view_survey config attr "text" model survey.id
+        case survey.survey of
+            Text lines ->
+                view_text config (get_text_state model survey.id) lines survey.id
+                    |> view_survey config attr "text" model survey.id
+                    |> viewTextSync config lines (Sync_.get config.sync survey.id sync)
 
-                Select inlines ->
-                    view_select config inlines (get_select_state model survey.id) survey.id
-                        |> view_survey config attr "select" model survey.id
+            Select inlines ->
+                view_select config inlines (get_select_state model survey.id) survey.id
+                    |> view_survey config attr "select" model survey.id
 
-                Vector button questions ->
-                    vector config button (VectorUpdate survey.id) (get_vector_state model survey.id)
-                        |> view_vector questions
-                        |> view_survey config
-                            attr
-                            (if button then
-                                "single-choice"
+            Vector button questions ->
+                vector config button (VectorUpdate survey.id) (get_vector_state model survey.id)
+                    |> view_vector questions
+                    |> view_survey config
+                        attr
+                        (if button then
+                            "single-choice"
 
-                             else
-                                "multiple-choice"
-                            )
-                            model
-                            survey.id
+                         else
+                            "multiple-choice"
+                        )
+                        model
+                        survey.id
+                    |> viewVectorSync config (Sync_.get config.sync survey.id sync)
 
-                Matrix button header vars questions ->
-                    matrix config button (MatrixUpdate survey.id) (get_matrix_state model survey.id) vars
-                        |> view_matrix config header questions
-                        |> view_survey config attr "matrix" model survey.id
+            Matrix button header vars questions ->
+                matrix config button (MatrixUpdate survey.id) (get_matrix_state model survey.id) vars
+                    |> view_matrix config header questions
+                    |> view_survey config attr "matrix" model survey.id
 
 
-viewSync : Config sub -> Maybe (List Sync) -> Html msg -> Html msg
-viewSync config syncData survey =
+viewTextSync : Config sub -> Int -> Maybe (List Sync) -> Html msg -> Html msg
+viewTextSync config lines syncData survey =
     case syncData of
         Just data ->
             Html.div []
                 [ survey
-                , Html.text (Debug.toString data)
+                , data
+                    |> Sync.text
+                    |> Maybe.map
+                        (List.map textBlock
+                            >> Html.div
+                                [ Attr.style "border" "1px solid rgb(var(--color-highlight))"
+                                , Attr.style "border-radius" "0.8rem"
+                                , Attr.style "max-height" "400px"
+                                , Attr.style "overflow" "auto"
+                                ]
+                        )
+                    |> Maybe.withDefault (Html.text "")
                 ]
 
         Nothing ->
-            survey
+            Html.div [] [ survey ]
+
+
+viewVectorSync : Config sub -> Maybe (List Sync) -> Html msg -> Html msg
+viewVectorSync config syncData survey =
+    case syncData of
+        Just data ->
+            Html.div []
+                [ survey
+                , data
+                    |> Sync.vector
+                    |> Maybe.map (vectorBlock config)
+                    |> Maybe.withDefault (Html.text "")
+                ]
+
+        Nothing ->
+            Html.div [] [ survey ]
+
+
+vectorBlock : Config sub -> List ( String, Float ) -> Html msg
+vectorBlock config data =
+    JE.object
+        [ ( "grid"
+          , JE.object
+                [ ( "left", JE.int 50 )
+                , ( "top", JE.int 20 )
+                , ( "bottom", JE.int 20 )
+                , ( "right", JE.int 10 )
+                ]
+          )
+        , ( "xAxis"
+          , JE.object
+                [ ( "type", JE.string "category" )
+                , ( "data"
+                  , data
+                        |> List.map Tuple.first
+                        |> JE.list JE.string
+                  )
+                ]
+          )
+        , ( "yAxis"
+          , JE.object
+                [ ( "type", JE.string "value" )
+                , ( "axisLabel", JE.object [ ( "formatter", JE.string "{value} %" ) ] )
+                ]
+          )
+        , ( "series"
+          , [ [ ( "type", JE.string "bar" )
+              , ( "data"
+                , data
+                    |> List.map Tuple.second
+                    |> JE.list JE.float
+                )
+              ]
+            ]
+                |> JE.list JE.object
+          )
+        ]
+        |> Chart.eCharts config.lang [ ( "style", "height: 120px; width: 100%" ) ] True Nothing
+
+
+textBlock : String -> Html msg
+textBlock str =
+    Html.div
+        [ Attr.style "white-space" "pre"
+        , Attr.style "background-color" "rgb(179 179 179)"
+        , Attr.style "border-bottom" "2px dashed #666"
+        , Attr.style "padding" "0.8rem"
+        ]
+        [ Html.text str ]
 
 
 viewError : Maybe String -> Html msg
