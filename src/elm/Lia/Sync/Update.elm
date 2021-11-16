@@ -16,6 +16,7 @@ import Lia.Sync.Types exposing (Settings, State(..), id)
 import Lia.Sync.Via as Via exposing (Backend)
 import Port.Event as Event exposing (Event, message)
 import Return exposing (Return)
+import Session exposing (Session)
 import Set
 
 
@@ -35,18 +36,20 @@ type SyncMsg
 
 
 handle :
-    { model | sync : Settings, sections : Sections }
+    Session
+    -> { model | sync : Settings, sections : Sections, readme : String }
     -> Event
-    -> Return { model | sync : Settings, sections : Sections } Msg sub
-handle model =
-    Handle >> update model
+    -> Return { model | sync : Settings, sections : Sections, readme : String } Msg sub
+handle session model =
+    Handle >> update session model
 
 
 update :
-    { model | sync : Settings, sections : Sections }
+    Session
+    -> { model | sync : Settings, sections : Sections, readme : String }
     -> Msg
-    -> Return { model | sync : Settings, sections : Sections } Msg sub
-update model msg =
+    -> Return { model | sync : Settings, sections : Sections, readme : String } Msg sub
+update session model msg =
     let
         sync =
             model.sync
@@ -55,22 +58,40 @@ update model msg =
         Handle event ->
             case Event.destructure event of
                 Just ( "connect", _, message ) ->
-                    { model
-                        | sync =
-                            case JD.decodeValue JD.string message of
-                                Ok hashID ->
+                    case ( JD.decodeValue JD.string message, sync.sync.select ) of
+                        ( Ok hashID, Just backend ) ->
+                            { model
+                                | sync =
                                     { sync
                                         | state = Connected hashID
                                         , peers = Set.empty
                                     }
+                            }
+                                |> join
+                                |> Return.cmd
+                                    (session
+                                        |> Session.setClass
+                                            { backend = Via.toString backend
+                                            , course = model.readme
+                                            , room = sync.room
+                                            }
+                                        |> Session.update
+                                    )
 
-                                _ ->
+                        _ ->
+                            { model
+                                | sync =
                                     { sync
                                         | state = Disconnected
                                         , peers = Set.empty
                                     }
-                    }
-                        |> join
+                            }
+                                |> Return.val
+                                |> Return.cmd
+                                    (session
+                                        |> Session.setQuery model.readme
+                                        |> Session.update
+                                    )
 
                 Just ( "disconnect", _, _ ) ->
                     { model
@@ -81,6 +102,11 @@ update model msg =
                             }
                     }
                         |> Return.val
+                        |> Return.cmd
+                            (session
+                                |> Session.setQuery model.readme
+                                |> Session.update
+                            )
 
                 --|> leave (id model.sync.state)
                 Just ( "join", _, message ) ->
@@ -153,7 +179,7 @@ update model msg =
                                     |> String.toLower
                                     |> JE.string
                                )
-                             , ( "course", JE.string sync.course )
+                             , ( "course", JE.string model.readme )
                              , ( "room", JE.string sync.room )
                              , ( "username", JE.string sync.username )
                              , ( "password"

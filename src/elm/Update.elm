@@ -241,13 +241,6 @@ update msg model =
         UrlChanged url ->
             if url /= model.session.url then
                 case Session.getType url of
-                    Session.Index ->
-                        initIndex
-                            { model
-                                | state = Idle
-                                , session = Session.setUrl url model.session
-                            }
-
                     Session.Course _ fragment ->
                         let
                             slide =
@@ -269,6 +262,35 @@ update msg model =
                           }
                         , batch LiaScript return
                         )
+
+                    Session.Class room fragment ->
+                        let
+                            slide =
+                                fragment
+                                    |> Maybe.andThen (Lia.Script.getSectionNumberFrom model.lia.search_index)
+                                    |> Maybe.withDefault 0
+
+                            session =
+                                model.session
+                                    |> Session.setClass room
+                                    |> Session.setFragment (slide + 1)
+
+                            return =
+                                Lia.Script.load_slide session True slide model.lia
+                        in
+                        ( { model
+                            | lia = return.value
+                            , session = session
+                          }
+                        , batch LiaScript return
+                        )
+
+                    Session.Index ->
+                        initIndex
+                            { model
+                                | state = Idle
+                                , session = Session.setUrl url model.session
+                            }
 
             else
                 ( model, Cmd.none )

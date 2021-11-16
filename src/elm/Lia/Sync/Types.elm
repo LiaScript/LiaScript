@@ -5,6 +5,7 @@ module Lia.Sync.Types exposing
     , get
     , id
     , init
+    , initRoom
     , isSupported
     , title
     )
@@ -29,11 +30,11 @@ type State
 type alias Settings =
     { sync : Sync
     , state : State
-    , course : String
     , room : String
     , username : String
     , password : String
     , peers : Set String
+    , error : Maybe String
     }
 
 
@@ -44,20 +45,41 @@ type alias Sync =
     }
 
 
-init : String -> List String -> Settings
-init courseURL supportedBackends =
+init : List String -> Settings
+init supportedBackends =
     { sync =
         { support = List.filterMap Via.fromString supportedBackends
         , select = Nothing
         , open = False
         }
     , state = Disconnected
-    , course = courseURL
-    , room = "test"
+    , room = ""
     , username = ""
     , password = ""
     , peers = Set.empty
+    , error = Nothing
     }
+
+
+initRoom : { backend : String, course : String, room : String } -> Settings -> Settings
+initRoom config settings =
+    case Via.fromString config.backend of
+        Just backend ->
+            if List.member backend settings.sync.support then
+                let
+                    sync =
+                        settings.sync
+                in
+                { settings
+                    | sync = { sync | select = Just backend }
+                    , room = config.room
+                }
+
+            else
+                { settings | error = Just ("Unsupported Backend type: " ++ config.backend) }
+
+        Nothing ->
+            { settings | error = Just ("Unknown Backend type: " ++ config.backend) }
 
 
 filter : Settings -> Dict String sync -> Maybe (List sync)

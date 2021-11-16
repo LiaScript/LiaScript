@@ -157,7 +157,7 @@ update session msg model =
                 |> Return.cmd (Cmd.map UpdateIndex cmd)
 
         UpdateSync childMsg ->
-            Sync.update model childMsg
+            Sync.update session model childMsg
                 |> Return.mapCmd UpdateSync
                 |> Return.mapEvents "sync" -1
 
@@ -193,7 +193,7 @@ update session msg model =
                     case Event.popWithId e of
                         Just ( "sync", _, e_ ) ->
                             e_
-                                |> Sync.handle model
+                                |> Sync.handle session model
                                 |> Return.mapCmd UpdateSync
 
                         Just ( "load", Just id, _ ) ->
