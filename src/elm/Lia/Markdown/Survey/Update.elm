@@ -73,6 +73,7 @@ update scripts msg vector =
                                 in
                                 new_vector
                                     |> Return.val
+                                    |> doSync
                                     |> Return.batchEvent
                                         (new_vector
                                             |> Json.fromVector
@@ -128,6 +129,7 @@ update scripts msg vector =
                                 |> evalEventDecoder
                                 |> update_ section vector
                                 |> store
+                                |> doSync
                                 |> Return.script
                                     (message
                                         |> Event.initWithId "code" scriptID
@@ -161,10 +163,16 @@ update scripts msg vector =
                         |> Result.map (merge vector)
                         |> Result.withDefault vector
                         |> Return.val
+                        |> doSync
                         |> init (\i s -> execute i s.state)
 
                 _ ->
                     Return.val vector
+
+
+doSync : Return Vector msg sub -> Return Vector msg sub
+doSync =
+    Return.sync (Event.init "" JE.null)
 
 
 update_ :

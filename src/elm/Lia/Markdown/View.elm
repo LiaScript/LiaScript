@@ -365,8 +365,9 @@ view_block config block =
             viewQuiz config Nothing attr quiz solution
 
         Survey attr survey ->
-            config.section.survey_vector
-                |> Surveys.view config.main attr survey
+            config.section.sync
+                |> Maybe.andThen .survey
+                |> Surveys.view config.main attr survey config.section.survey_vector
                 |> Tuple.mapSecond (Html.map UpdateSurvey)
                 |> scriptView config.view
 

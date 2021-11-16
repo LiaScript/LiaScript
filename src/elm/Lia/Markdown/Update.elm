@@ -21,6 +21,7 @@ import Lia.Markdown.Footnote.View as Footnote
 import Lia.Markdown.Gallery.Update as Gallery
 import Lia.Markdown.Quiz.Sync as Quiz_
 import Lia.Markdown.Quiz.Update as Quiz
+import Lia.Markdown.Survey.Sync as Survey_
 import Lia.Markdown.Survey.Update as Survey
 import Lia.Markdown.Table.Update as Table
 import Lia.Markdown.Task.Update as Task
@@ -112,6 +113,7 @@ update sync globals msg section =
                 |> Return.mapVal (\v -> { section | survey_vector = v })
                 |> Return.mapEvents "survey" section.id
                 |> updateScript
+                |> syncSurvey sync
 
         UpdateTable childMsg ->
             section.table_vector
@@ -150,6 +152,41 @@ update sync globals msg section =
                         ( Nothing, Ok state ) ->
                             section
                                 |> Section.syncQuiz state
+                                |> Return.val
+
+                        _ ->
+                            section
+                                |> Return.val
+
+                Just "survey" ->
+                    case
+                        ( Maybe.andThen .survey section.sync
+                        , event
+                            |> Event.message
+                            |> Container.decode Survey_.decoder
+                        )
+                    of
+                        ( Just old, Ok new ) ->
+                            case Container.union old new of
+                                ( True, state ) ->
+                                    section
+                                        |> Section.syncSurvey state
+                                        |> Return.val
+                                        |> Return.sync
+                                            (state
+                                                |> Container.encode Survey_.encoder
+                                                |> Event.init "survey"
+                                                |> Event.pushWithId "local" section.id
+                                            )
+
+                                ( False, state ) ->
+                                    section
+                                        |> Section.syncSurvey state
+                                        |> Return.val
+
+                        ( Nothing, Ok state ) ->
+                            section
+                                |> Section.syncSurvey state
                                 |> Return.val
 
                         _ ->
@@ -210,6 +247,37 @@ syncQuiz sync ret =
                 ( False, state ) ->
                     { ret | synchronize = [] }
                         |> Return.mapVal (Section.syncQuiz state)
+
+        _ ->
+            { ret | synchronize = [] }
+
+
+syncSurvey : Sync.State -> Return Section msg sub -> Return Section msg sub
+syncSurvey sync ret =
+    case ( List.isEmpty ret.synchronize, Sync.id sync ) of
+        ( False, Just id ) ->
+            case
+                ret.value.survey_vector
+                    |> Container.init id Survey_.sync
+                    |> Container.union
+                        (ret.value.sync
+                            |> Maybe.andThen .survey
+                            |> Maybe.withDefault Container.empty
+                        )
+            of
+                ( True, state ) ->
+                    { ret | synchronize = [] }
+                        |> Return.mapVal (Section.syncSurvey state)
+                        |> Return.sync
+                            (state
+                                |> Container.encode Survey_.encoder
+                                |> Event.init "survey"
+                                |> Event.pushWithId "local" ret.value.id
+                            )
+
+                ( False, state ) ->
+                    { ret | synchronize = [] }
+                        |> Return.mapVal (Section.syncSurvey state)
 
         _ ->
             { ret | synchronize = [] }

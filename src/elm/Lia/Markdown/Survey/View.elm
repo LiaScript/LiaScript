@@ -17,48 +17,64 @@ import Lia.Markdown.Survey.Model
         , get_text_state
         , get_vector_state
         )
+import Lia.Markdown.Survey.Sync exposing (Sync)
 import Lia.Markdown.Survey.Types exposing (State(..), Survey, Type(..), Vector)
 import Lia.Markdown.Survey.Update exposing (Msg(..))
+import Lia.Sync.Container.Local exposing (Container)
+import Lia.Sync.Types as Sync
 import Lia.Utils exposing (blockKeydown, btn, icon, onKeyDown)
 import Translations exposing (surveySubmit, surveySubmitted, surveyText)
 
 
-view : Config sub -> Parameters -> Survey -> Vector -> ( Maybe Int, Html (Msg sub) )
-view config attr survey model =
+view : Config sub -> Parameters -> Survey -> Vector -> Maybe (Container Sync) -> ( Maybe Int, Html (Msg sub) )
+view config attr survey model sync =
     Tuple.pair
         (model
             |> Array.get survey.id
             |> Maybe.andThen .scriptID
         )
     <|
-        case survey.survey of
-            Text lines ->
-                view_text config (get_text_state model survey.id) lines survey.id
-                    |> view_survey config attr "text" model survey.id
+        viewSync config (Sync.get config.sync survey.id sync) <|
+            case survey.survey of
+                Text lines ->
+                    view_text config (get_text_state model survey.id) lines survey.id
+                        |> view_survey config attr "text" model survey.id
 
-            Select inlines ->
-                view_select config inlines (get_select_state model survey.id) survey.id
-                    |> view_survey config attr "select" model survey.id
+                Select inlines ->
+                    view_select config inlines (get_select_state model survey.id) survey.id
+                        |> view_survey config attr "select" model survey.id
 
-            Vector button questions ->
-                vector config button (VectorUpdate survey.id) (get_vector_state model survey.id)
-                    |> view_vector questions
-                    |> view_survey config
-                        attr
-                        (if button then
-                            "single-choice"
+                Vector button questions ->
+                    vector config button (VectorUpdate survey.id) (get_vector_state model survey.id)
+                        |> view_vector questions
+                        |> view_survey config
+                            attr
+                            (if button then
+                                "single-choice"
 
-                         else
-                            "multiple-choice"
-                        )
-                        model
-                        survey.id
+                             else
+                                "multiple-choice"
+                            )
+                            model
+                            survey.id
 
-            --|> Html.p (annotation "lia-quiz" attr)
-            Matrix button header vars questions ->
-                matrix config button (MatrixUpdate survey.id) (get_matrix_state model survey.id) vars
-                    |> view_matrix config header questions
-                    |> view_survey config attr "matrix" model survey.id
+                Matrix button header vars questions ->
+                    matrix config button (MatrixUpdate survey.id) (get_matrix_state model survey.id) vars
+                        |> view_matrix config header questions
+                        |> view_survey config attr "matrix" model survey.id
+
+
+viewSync : Config sub -> Maybe (List Sync) -> Html msg -> Html msg
+viewSync config syncData survey =
+    case syncData of
+        Just data ->
+            Html.div []
+                [ survey
+                , Html.text (Debug.toString data)
+                ]
+
+        Nothing ->
+            survey
 
 
 viewError : Maybe String -> Html msg
