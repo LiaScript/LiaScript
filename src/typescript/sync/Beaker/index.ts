@@ -82,21 +82,6 @@ export class Sync extends Base {
     this.sync('disconnect')
   }
 
-  sync(topic: string, message: any = null) {
-    this.send(this.syncMsg(topic, message))
-  }
-
-  syncMsg(topic: string, message: any = null) {
-    return {
-      route: [
-        { topic: 'sync', id: null },
-        { topic: 'sync', id: null },
-        { topic: topic, id: null },
-      ],
-      message: message,
-    }
-  }
-
   publish(message: Object) {
     console.warn('BEAKER', message)
     if (this.peerChannelEvent) {

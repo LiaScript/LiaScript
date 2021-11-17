@@ -75,4 +75,19 @@ export class Sync {
   publish(event: any) {}
 
   subscribe(topic: string) {}
+
+  sync(topic: string, message: any = null) {
+    this.send(this.syncMsg(topic, message))
+  }
+
+  syncMsg(topic: string, message: any = null) {
+    return {
+      route: [
+        { topic: 'sync', id: null },
+        { topic: 'sync', id: null },
+        { topic: topic, id: null },
+      ],
+      message: message,
+    }
+  }
 }
