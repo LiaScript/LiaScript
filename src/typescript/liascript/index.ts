@@ -16,9 +16,12 @@ import { initTooltip } from '../webcomponents/tooltip/index'
 
 import * as Beaker from '../sync/Beaker/index'
 import * as Jitsi from '../sync/Jitsi/index'
+<<<<<<< HEAD
 import * as Matrix from '../sync/Matrix/index'
 import * as PubNub from '../sync/PubNub/index'
 import * as GUN from '../sync/Gun/index'
+=======
+>>>>>>> 1de91bc7 (Add stub for jitsi)
 
 window.img_Zoom = function (e: MouseEvent | TouchEvent) {
   const target = e.target as HTMLImageElement
@@ -266,6 +269,7 @@ class LiaScript {
         hasShareAPI: !!navigator.share,
         hasIndex: connector.hasIndex(),
         syncSupport: allowSync
+<<<<<<< HEAD
           ? [
               // beaker is only supported within the beaker-browser
               Beaker.isSupported() ? 'beaker' : '',
@@ -275,6 +279,9 @@ class LiaScript {
               'matrix',
               'pubnub',
             ]
+=======
+          ? [Beaker.isSupported() ? 'beaker' : '', 'matrix', 'jitsi']
+>>>>>>> 1de91bc7 (Add stub for jitsi)
           : [],
       },
     })
@@ -643,12 +650,15 @@ function process(
 
                   break
                 }
+<<<<<<< HEAD
                 case 'gun': {
                   self.sync = new GUN.Sync(elmSend)
                   self.sync.connect(event.message)
 
                   break
                 }
+=======
+>>>>>>> 1de91bc7 (Add stub for jitsi)
                 case 'jitsi': {
                   self.sync = new Jitsi.Sync(elmSend)
                   self.sync.connect(event.message)
