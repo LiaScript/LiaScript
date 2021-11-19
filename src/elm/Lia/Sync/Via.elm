@@ -76,8 +76,13 @@ fromString via =
         "matrix" ->
             Just Matrix
 
+<<<<<<< HEAD
         "pubnub" ->
             Just PubNub
+=======
+        "jitsi" ->
+            Just Jitsi
+>>>>>>> 68dd4203 (Add stub for jitsi)
 
         _ ->
             Nothing
