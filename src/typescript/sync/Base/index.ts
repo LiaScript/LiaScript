@@ -24,6 +24,8 @@ export class Sync {
 
   protected token: string
 
+  private urlCounter: number
+
   constructor(send: Lia.Send) {
     this.send = send
 
@@ -35,6 +37,7 @@ export class Sync {
     }
 
     this.token = token
+    this.urlCounter = 0
   }
 
   /* to have a valid connection 3 things are required:
@@ -88,6 +91,43 @@ export class Sync {
         { topic: topic, id: null },
       ],
       message: message,
+    }
+  }
+
+  load(url: string[], onOk: () => void, onError?: () => void) {
+    try {
+      for (let i = 0; i < url.length; i++) {
+        let tag = document.createElement('script')
+
+        tag.async = false
+        tag.defer = true
+        tag.src = url[i]
+
+        this.urlCounter++
+
+        let self = this
+
+        tag.onload = function () {
+          console.log('successfully loaded =>', url)
+
+          self.urlCounter--
+
+          if (self.urlCounter == 0) onOk()
+        }
+        tag.onerror = function (e) {
+          console.warn('could not load =>', url, e)
+
+          self.urlCounter--
+
+          if (onError && self.urlCounter == 0) {
+            onError()
+          }
+        }
+
+        document.head.appendChild(tag)
+      }
+    } catch (e) {
+      console.error('load: ', e)
     }
   }
 }

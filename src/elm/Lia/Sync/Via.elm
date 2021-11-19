@@ -13,6 +13,7 @@ import Lia.Utils as Util
 type Backend
     = Beaker
     | Matrix
+    | Jitsi
 
 
 toString : Backend -> String
@@ -24,6 +25,9 @@ toString via =
         Matrix ->
             "Matrix"
 
+        Jitsi ->
+            "JitSi"
+
 
 icon : Backend -> Html msg
 icon via =
@@ -34,6 +38,9 @@ icon via =
 
             Matrix ->
                 "icon-matrix icon-xs"
+
+            Jitsi ->
+                "icon-jitsi icon-xs"
         )
         [ Attr.style "padding-right" "5px"
         , Attr.style "font-size" "inherit"
@@ -48,6 +55,9 @@ fromString via =
 
         "matrix" ->
             Just Matrix
+
+        "jitsi" ->
+            Just Jitsi
 
         _ ->
             Nothing

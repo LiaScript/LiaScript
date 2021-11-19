@@ -15,6 +15,7 @@ import { updateClassName } from '../connectors/Base/settings'
 import { initTooltip } from '../webcomponents/tooltip/index'
 
 import * as Beaker from '../sync/Beaker/index'
+import * as Jitsi from '../sync/Jitsi/index'
 
 window.img_Zoom = function (e: MouseEvent | TouchEvent) {
   const target = e.target as HTMLImageElement
@@ -262,7 +263,7 @@ class LiaScript {
         hasShareAPI: !!navigator.share,
         hasIndex: connector.hasIndex(),
         syncSupport: allowSync
-          ? [Beaker.isSupported() ? 'beaker' : '', 'matrix']
+          ? [Beaker.isSupported() ? 'beaker' : '', 'matrix', 'jitsi']
           : [],
       },
     })
@@ -627,6 +628,12 @@ function process(
               switch (event.message.backend) {
                 case 'beaker': {
                   self.sync = new Beaker.Sync(elmSend)
+                  self.sync.connect(event.message)
+
+                  break
+                }
+                case 'jitsi': {
+                  self.sync = new Jitsi.Sync(elmSend)
                   self.sync.connect(event.message)
 
                   break
