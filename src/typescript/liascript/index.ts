@@ -75,7 +75,7 @@ function handleEffects(
       // setTimeout((e) => { persistent.load(event.section) }, 10)
       break
     case 'execute':
-      lia_execute_event(event.message, elmSend, section)
+      lia_execute_event(event.message, elmSend, event.route[0].id)
       break
     case 'speak': {
       let msg: Lia.Event = {

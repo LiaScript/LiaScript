@@ -184,6 +184,7 @@ function lia_wait() {
           break
         }
         case JS.exec: {
+          console.error('TODO: SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS', event)
           lia_execute_event(event.event, event.send, event.section)
           break
         }
@@ -299,6 +300,8 @@ function execute_response(
       msg = JSON.stringify(msg)
     }
 
+    console.log('llllllllllllllll', topic, event_id, section)
+
     send({
       route: [
         {
@@ -322,14 +325,14 @@ function execute_response(
 export function lia_execute_event(
   event: { code: string; delay: number; id?: number },
   sender?: Lia.Send,
-  section: number = -1
+  section?: number | null
 ) {
   if (window.event_semaphore > 0) {
     lia_queue.push({
       type: JS.exec,
       event: event,
       send: sender,
-      section: section,
+      section: section || -1,
     })
 
     if (lia_queue.length === 1) {
@@ -341,7 +344,7 @@ export function lia_execute_event(
   setTimeout(() => {
     let send: SendExec | undefined
 
-    if (sender && event.id != null && section >= 0) {
+    if (sender && event.id != null && section !== undefined) {
       const id = event.id
       send = {
         lia: execute_response('code', id, sender, section),
