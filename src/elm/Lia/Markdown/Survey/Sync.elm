@@ -5,6 +5,7 @@ module Lia.Markdown.Survey.Sync exposing
     , sync
     , text
     , vector
+    , wordCount
     )
 
 import Dict exposing (Dict)
@@ -25,6 +26,30 @@ sync survey =
 
     else
         Nothing
+
+
+wordCount : List Sync -> Maybe (List ( String, Int ))
+wordCount =
+    List.foldl
+        (\s dict ->
+            s
+                |> toText
+                |> Maybe.map (String.trim >> String.toUpper)
+                |> Maybe.map
+                    (\key ->
+                        Dict.insert key
+                            (dict
+                                |> Dict.get key
+                                |> Maybe.map ((+) 1)
+                                |> Maybe.withDefault 1
+                            )
+                            dict
+                    )
+                |> Maybe.withDefault dict
+        )
+        Dict.empty
+        >> Dict.toList
+        >> ifEmpty
 
 
 text : List Sync -> Maybe (List String)

@@ -24,7 +24,7 @@ import Lia.Markdown.Survey.Types exposing (State(..), Survey, Type(..), Vector)
 import Lia.Markdown.Survey.Update exposing (Msg(..))
 import Lia.Sync.Container.Local exposing (Container)
 import Lia.Sync.Types as Sync_
-import Lia.Utils exposing (blockKeydown, btn, icon, onKeyDown)
+import Lia.Utils exposing (blockKeydown, btn, icon, onKeyDown, string2Color)
 import Translations exposing (surveySubmit, surveySubmitted, surveyText)
 
 
@@ -69,8 +69,17 @@ view config attr survey model sync =
 
 viewTextSync : Config sub -> Int -> Maybe (List Sync) -> Html msg -> Html msg
 viewTextSync config lines syncData survey =
-    case syncData of
-        Just data ->
+    case ( syncData, lines ) of
+        ( Just data, 1 ) ->
+            Html.div []
+                [ survey
+                , data
+                    |> Sync.wordCount
+                    |> Maybe.map (wordCloud config)
+                    |> Maybe.withDefault (Html.text "")
+                ]
+
+        ( Just data, _ ) ->
             Html.div []
                 [ survey
                 , data
@@ -87,7 +96,7 @@ viewTextSync config lines syncData survey =
                     |> Maybe.withDefault (Html.text "")
                 ]
 
-        Nothing ->
+        _ ->
             Html.div [] [ survey ]
 
 
@@ -105,6 +114,49 @@ viewVectorSync config syncData survey =
 
         Nothing ->
             Html.div [] [ survey ]
+
+
+wordCloud : Config sub -> List ( String, Int ) -> Html msg
+wordCloud config data =
+    JE.object
+        [ ( "tooltip"
+          , JE.object
+                [ ( "trigger", JE.string "item" )
+                , ( "formatter", JE.string "{b} ({c})" )
+                ]
+          )
+        , ( "series"
+          , [ ( "type", JE.string "wordCloud" )
+            , ( "layoutAnimation", JE.bool True )
+            , ( "gridSize", JE.int 5 )
+            , ( "shape", JE.string "pentagon" )
+            , ( "sizeRange", JE.list JE.int [ 15, 50 ] )
+            , ( "emphasis", JE.object [ ( "focus", JE.string "self" ) ] )
+            , ( "data"
+              , data
+                    |> List.map
+                        (\( word, count ) ->
+                            [ ( "name", JE.string word )
+                            , ( "value", JE.int count )
+                            , ( "textStyle"
+                              , JE.object
+                                    [ ( "color"
+                                      , word
+                                            |> string2Color 160
+                                            |> JE.string
+                                      )
+                                    ]
+                              )
+                            ]
+                        )
+                    |> JE.list JE.object
+              )
+            ]
+                |> List.singleton
+                |> JE.list JE.object
+          )
+        ]
+        |> Chart.eCharts config.lang [ ( "style", "height: 120px; width: 100%" ) ] True Nothing
 
 
 vectorBlock : Config sub -> List ( String, Float ) -> Html msg
