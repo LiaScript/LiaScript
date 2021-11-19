@@ -1,5 +1,6 @@
 // @ts-ignore
 import * as echarts from 'echarts'
+import 'echarts-wordcloud'
 
 import 'echarts/i18n/langDE.js'
 import 'echarts/i18n/langEN.js'

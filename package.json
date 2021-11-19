@@ -55,6 +55,7 @@
     "caniuse-lite": "^1.0.30001303",
     "dexie": "^2.0.4",
     "echarts": "^5.3.0",
+    "echarts-wordcloud": "^2.0.0",
     "elm": "^0.19.1-5",
     "elm-hot": "^1.1.6",
     "elm-test": "^0.19.1-revision6",
