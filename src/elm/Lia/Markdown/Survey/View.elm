@@ -59,7 +59,9 @@ view config attr survey model sync =
                         )
                         model
                         survey.id
-                    |> viewVectorSync config (Sync_.get config.sync survey.id sync)
+                    |> viewVectorSync config
+                        questions
+                        (Sync_.get config.sync survey.id sync)
 
             Matrix button header vars questions ->
                 matrix config button (MatrixUpdate survey.id) (get_matrix_state model survey.id) vars
@@ -100,14 +102,14 @@ viewTextSync config lines syncData survey =
             Html.div [] [ survey ]
 
 
-viewVectorSync : Config sub -> Maybe (List Sync) -> Html msg -> Html msg
-viewVectorSync config syncData survey =
+viewVectorSync : Config sub -> List ( String, Inlines ) -> Maybe (List Sync) -> Html msg -> Html msg
+viewVectorSync config questions syncData survey =
     case syncData of
         Just data ->
             Html.div []
                 [ survey
                 , data
-                    |> Sync.vector
+                    |> Sync.vector (List.map Tuple.first questions)
                     |> Maybe.map (vectorBlock config)
                     |> Maybe.withDefault (Html.text "")
                 ]

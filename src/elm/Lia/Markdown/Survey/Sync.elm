@@ -76,29 +76,40 @@ ifEmpty list =
         Just list
 
 
-vector : List Sync -> Maybe (List ( String, Float ))
-vector list =
+vector : List String -> List Sync -> Maybe (List ( String, Float ))
+vector orderBy list =
     let
         data =
             List.filterMap toVector list
 
         total =
             List.length data |> toFloat
+
+        union =
+            List.foldl
+                (\v1 v2 ->
+                    Dict.merge
+                        Dict.insert
+                        (\key a b -> Dict.insert key (a + b))
+                        Dict.insert
+                        v1
+                        v2
+                        Dict.empty
+                )
+                Dict.empty
+                data
     in
-    data
-        |> List.foldl
-            (\v1 v2 ->
-                Dict.merge
-                    Dict.insert
-                    (\key a b -> Dict.insert key (a + b))
-                    Dict.insert
-                    v1
-                    v2
-                    Dict.empty
+    orderBy
+        |> List.foldr
+            (\o result ->
+                ( o
+                , Dict.get o union
+                    |> Maybe.map (\i -> 100 * toFloat i / total)
+                    |> Maybe.withDefault 0
+                )
+                    :: result
             )
-            Dict.empty
-        |> Dict.toList
-        |> List.map (Tuple.mapSecond (\i -> 100 * toFloat i / total))
+            []
         |> ifEmpty
 
 
