@@ -19,7 +19,7 @@ import Lia.Markdown.Survey.Model
         , get_text_state
         , get_vector_state
         )
-import Lia.Markdown.Survey.Sync as Sync exposing (Sync)
+import Lia.Markdown.Survey.Sync as Sync exposing (Sync, sync)
 import Lia.Markdown.Survey.Types exposing (State(..), Survey, Type(..), Vector)
 import Lia.Markdown.Survey.Update exposing (Msg(..))
 import Lia.Sync.Container.Local exposing (Container)
@@ -45,6 +45,7 @@ view config attr survey model sync =
             Select inlines ->
                 view_select config inlines (get_select_state model survey.id) survey.id
                     |> view_survey config attr "select" model survey.id
+                    |> viewSelectSync config inlines (Sync_.get config.sync survey.id sync)
 
             Vector button questions ->
                 vector config button (VectorUpdate survey.id) (get_vector_state model survey.id)
@@ -116,6 +117,25 @@ viewVectorSync config questions syncData survey =
 
         Nothing ->
             Html.div [] [ survey ]
+
+
+viewSelectSync : Config sub -> List Inlines -> Maybe (List Sync) -> Html msg -> Html msg
+viewSelectSync config options syncData survey =
+    case syncData of
+        Nothing ->
+            survey
+
+        Just data ->
+            Html.div []
+                [ survey
+                , data
+                    |> Sync.select (List.length options)
+                    |> Maybe.map
+                        (List.indexedMap (\i o -> ( String.fromInt (1 + i), o ))
+                            >> vectorBlock config
+                        )
+                    |> Maybe.withDefault (Html.text "")
+                ]
 
 
 wordCloud : Config sub -> List ( String, Int ) -> Html msg

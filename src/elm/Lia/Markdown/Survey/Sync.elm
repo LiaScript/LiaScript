@@ -2,12 +2,14 @@ module Lia.Markdown.Survey.Sync exposing
     ( Sync
     , decoder
     , encoder
+    , select
     , sync
     , text
     , vector
     , wordCount
     )
 
+import Array exposing (Array)
 import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Encode as JE
@@ -104,13 +106,18 @@ vector orderBy list =
             (\o result ->
                 ( o
                 , Dict.get o union
-                    |> Maybe.map (\i -> 100 * toFloat i / total)
+                    |> Maybe.map (percentage total)
                     |> Maybe.withDefault 0
                 )
                     :: result
             )
             []
         |> ifEmpty
+
+
+percentage : Float -> Int -> Float
+percentage total i =
+    100 * toFloat i / total
 
 
 toVector : Sync -> Maybe (Dict String Int)
@@ -125,6 +132,62 @@ toVector (Sync s) =
 
                         else
                             0
+                    )
+                |> Just
+
+        _ ->
+            Nothing
+
+
+select : Int -> List Sync -> Maybe (List Float)
+select maxElements list =
+    let
+        data =
+            List.filterMap toSelect list
+
+        total =
+            List.length data |> toFloat
+    in
+    data
+        |> List.foldl
+            (\s array ->
+                case Array.get s array of
+                    Just i ->
+                        Array.set s (i + 1) array
+
+                    Nothing ->
+                        array
+            )
+            (Array.repeat maxElements 0)
+        |> Array.map (percentage total)
+        |> Array.toList
+        |> ifEmpty
+
+
+toSelect : Sync -> Maybe Int
+toSelect (Sync s) =
+    case s of
+        Survey.Select_State _ i ->
+            Just i
+
+        _ ->
+            Nothing
+
+
+toMatrix : Sync -> Maybe (Array (Dict String Int))
+toMatrix (Sync s) =
+    case s of
+        Survey.Matrix_State _ matrix ->
+            matrix
+                |> Array.map
+                    (Dict.map
+                        (\_ v ->
+                            if v then
+                                1
+
+                            else
+                                0
+                        )
                     )
                 |> Just
 
