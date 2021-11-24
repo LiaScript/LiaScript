@@ -1,7 +1,4 @@
-module Lia.Voice exposing
-    ( Voice
-    , getVoiceFor
-    )
+module Lia.Voice exposing (getVoiceFor)
 
 
 type alias Voice =
@@ -56,7 +53,7 @@ voices =
     , toVoice "Nepali" "ne" False False
     , toVoice "Norwegian" "no" True True
     , toVoice "Polish" "pl" True True
-    , toVoice "Portuguese" "pl" True True
+    , toVoice "Portuguese" "pt" True True
     , toVoice "Brazilian Portuguese" "pt" False True
     , toVoice "Romanian" "ro" True False
     , toVoice "Russian" "ru" True False
@@ -131,17 +128,21 @@ getVoiceFromLang lang male =
 
 getVoice : Bool -> Voice -> Maybe String
 getVoice male voice =
-    if male && voice.male /= Nothing then
-        voice.male
+    case ( male, voice.male, voice.female ) of
+        ( True, Just maleVoice, _ ) ->
+            Just maleVoice
 
-    else if male && voice.female /= Nothing then
-        voice.female
+        ( True, Nothing, Just femaleVoice ) ->
+            Just femaleVoice
 
-    else if not male && voice.female /= Nothing then
-        voice.female
+        ( False, _, Just femaleVoice ) ->
+            Just femaleVoice
 
-    else
-        voice.default
+        ( False, Just maleVoice, Nothing ) ->
+            Just maleVoice
+
+        ( _, Nothing, Nothing ) ->
+            voice.default
 
 
 isMale : String -> Bool
