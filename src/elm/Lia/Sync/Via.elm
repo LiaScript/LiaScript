@@ -14,6 +14,7 @@ type Backend
     = Beaker
     | Matrix
     | Jitsi
+    | PubNub
 
 
 toString : Backend -> String
@@ -28,6 +29,9 @@ toString via =
         Jitsi ->
             "JitSi"
 
+        PubNub ->
+            "PubNub"
+
 
 icon : Backend -> Html msg
 icon via =
@@ -40,6 +44,9 @@ icon via =
                 "icon-matrix icon-xs"
 
             Jitsi ->
+                "icon-jitsi icon-xs"
+
+            PubNub ->
                 "icon-jitsi icon-xs"
         )
         [ Attr.style "padding-right" "5px"
@@ -58,6 +65,9 @@ fromString via =
 
         "jitsi" ->
             Just Jitsi
+
+        "pubnub" ->
+            Just PubNub
 
         _ ->
             Nothing

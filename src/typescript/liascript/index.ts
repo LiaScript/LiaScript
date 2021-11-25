@@ -17,6 +17,7 @@ import { initTooltip } from '../webcomponents/tooltip/index'
 import * as Beaker from '../sync/Beaker/index'
 import * as Jitsi from '../sync/Jitsi/index'
 import * as Matrix from '../sync/Matrix/index'
+import * as PubNub from '../sync/PubNub/index'
 
 window.img_Zoom = function (e: MouseEvent | TouchEvent) {
   const target = e.target as HTMLImageElement
@@ -264,7 +265,7 @@ class LiaScript {
         hasShareAPI: !!navigator.share,
         hasIndex: connector.hasIndex(),
         syncSupport: allowSync
-          ? [Beaker.isSupported() ? 'beaker' : '', 'matrix', 'jitsi']
+          ? [Beaker.isSupported() ? 'beaker' : '', 'matrix', 'jitsi', 'pubnub']
           : [],
       },
     })
@@ -641,6 +642,13 @@ function process(
                 }
                 case 'matrix': {
                   self.sync = new Matrix.Sync(elmSend)
+                  self.sync.connect(event.message)
+
+                  break
+                }
+
+                case 'pubnub': {
+                  self.sync = new PubNub.Sync(elmSend)
                   self.sync.connect(event.message)
 
                   break
