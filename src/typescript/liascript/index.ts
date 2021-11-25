@@ -16,6 +16,7 @@ import { initTooltip } from '../webcomponents/tooltip/index'
 
 import * as Beaker from '../sync/Beaker/index'
 import * as Jitsi from '../sync/Jitsi/index'
+import * as Matrix from '../sync/Matrix/index'
 
 window.img_Zoom = function (e: MouseEvent | TouchEvent) {
   const target = e.target as HTMLImageElement
@@ -431,7 +432,7 @@ function process(
   elmSend: Lia.Send,
   event: Lia.Event
 ) {
-  log.info(`LIA >>> (${event.route})`, event.message)
+  log.info(`LIA >>> (${JSON.stringify(event.route)})`, event.message)
 
   switch (event.route[0].topic) {
     case Port.SLIDE: {
@@ -639,10 +640,9 @@ function process(
                   break
                 }
                 case 'matrix': {
-                  alert('Not yet implemented!')
+                  self.sync = new Matrix.Sync(elmSend)
+                  self.sync.connect(event.message)
 
-                  event.message = false
-                  elmSend(event)
                   break
                 }
                 default: {

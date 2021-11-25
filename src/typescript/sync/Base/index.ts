@@ -94,7 +94,7 @@ export class Sync {
     }
   }
 
-  load(url: string[], onOk: () => void, onError?: () => void) {
+  load(url: string[], obj: { init: (ok: boolean, error?: string) => void }) {
     try {
       for (let i = 0; i < url.length; i++) {
         let tag = document.createElement('script')
@@ -112,15 +112,15 @@ export class Sync {
 
           self.urlCounter--
 
-          if (self.urlCounter == 0) onOk()
+          if (self.urlCounter == 0) obj.init(true)
         }
         tag.onerror = function (e) {
           console.warn('could not load =>', url, e)
 
           self.urlCounter--
 
-          if (onError && self.urlCounter == 0) {
-            onError()
+          if (self.urlCounter == 0) {
+            obj.init(false)
           }
         }
 

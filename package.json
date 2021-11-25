@@ -88,6 +88,9 @@
       "destination": "dist/katex.min.css"
     }
   ],
+  "staticFiles": {
+    "staticPath": ["static"]
+  },
   "directories": {
     "test": "tests"
   }
