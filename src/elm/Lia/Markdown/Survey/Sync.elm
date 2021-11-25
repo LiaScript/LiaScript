@@ -1,7 +1,9 @@
 module Lia.Markdown.Survey.Sync exposing
-    ( Sync
+    ( Data
+    , Sync
     , decoder
     , encoder
+    , matrix
     , select
     , sync
     , text
@@ -9,7 +11,7 @@ module Lia.Markdown.Survey.Sync exposing
     , wordCount
     )
 
-import Array exposing (Array)
+import Array
 import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Encode as JE
@@ -19,6 +21,13 @@ import Lia.Markdown.Survey.Types as Survey
 
 type Sync
     = Sync Survey.State
+
+
+type alias Data value =
+    { value : value
+    , absolute : Int
+    , relative : Float
+    }
 
 
 sync : Survey.Element -> Maybe Sync
@@ -125,14 +134,7 @@ toVector (Sync s) =
     case s of
         Survey.Vector_State _ dict ->
             dict
-                |> Dict.map
-                    (\_ v ->
-                        if v then
-                            1
-
-                        else
-                            0
-                    )
+                |> Dict.map boolToInt
                 |> Just
 
         _ ->
@@ -174,25 +176,49 @@ toSelect (Sync s) =
             Nothing
 
 
-toMatrix : Sync -> Maybe (Array (Dict String Int))
+matrix : List String -> List Sync -> Maybe (List (List ( String, Float )))
+matrix orderBy list =
+    list
+        |> List.filterMap toMatrix
+        |> List.foldl
+            (\state result ->
+                case result of
+                    Just collection ->
+                        collection
+                            |> List.map2 (\s c -> Sync (Survey.Vector_State True s) :: c) state
+                            |> Just
+
+                    Nothing ->
+                        state
+                            |> List.map (Survey.Vector_State True >> Sync >> List.singleton)
+                            |> Just
+            )
+            Nothing
+        |> Maybe.map
+            (List.map (vector orderBy)
+                >> List.map (Maybe.withDefault (List.map (\key -> ( key, 0 )) orderBy))
+            )
+
+
+toMatrix : Sync -> Maybe (List (Dict String Bool))
 toMatrix (Sync s) =
     case s of
-        Survey.Matrix_State _ matrix ->
-            matrix
-                |> Array.map
-                    (Dict.map
-                        (\_ v ->
-                            if v then
-                                1
-
-                            else
-                                0
-                        )
-                    )
+        Survey.Matrix_State _ state ->
+            state
+                |> Array.toList
                 |> Just
 
         _ ->
             Nothing
+
+
+boolToInt : String -> Bool -> Int
+boolToInt _ v =
+    if v then
+        1
+
+    else
+        0
 
 
 encoder : Sync -> JE.Value
