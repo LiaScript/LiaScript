@@ -23,7 +23,7 @@ export class Sync extends Base {
     if (window.PubNub) {
       this.init(true)
     } else {
-      this.load(['//cdn.pubnub.com/sdk/javascript/pubnub.4.21.6.min.js'], this)
+      this.load(['//cdn.pubnub.com/sdk/javascript/pubnub.4.33.1.min.js'], this)
     }
   }
 
@@ -34,6 +34,7 @@ export class Sync extends Base {
       this.pubnub = new PubNub({
         publishKey: process.env.PUBNUB_PUBLISH,
         subscribeKey: process.env.PUBNUB_SUBSCRIBE,
+        uuid: this.token,
       })
 
       this.pubnub.subscribe({ channels: [this.channel] })
@@ -41,7 +42,13 @@ export class Sync extends Base {
       let self = this
 
       this.pubnub.addListener({
-        message: function (event) {
+        status: function (statusEvent: any) {
+          console.log('PUBNUB status:', statusEvent)
+          //if (statusEvent.category === "PNConnectedCategory") {
+          //    publishSampleMessage();
+          //}
+        },
+        message: function (event: any) {
           self.send(event.message)
         },
       })
@@ -60,7 +67,9 @@ export class Sync extends Base {
     if (this.pubnub) {
       this.pubnub.publish(
         { channel: this.channel, message: message },
-        function (status, response) {}
+        function (status: any, response: any) {
+          console.log('PUBNUB publish', status, response)
+        }
       )
     }
   }
