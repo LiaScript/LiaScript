@@ -32,8 +32,8 @@ export class Sync extends Base {
       this.channel = btoa(this.uniqueID())
 
       this.pubnub = new PubNub({
-        publishKey: 'pub-c-c237447b-8a12-4fa0-9e76-bb72a8a3c8a4',
-        subscribeKey: 'sub-c-de8900be-4e29-11ec-b60b-aa41d66f579f',
+        publishKey: process.env.PUBNUB_PUBLISH,
+        subscribeKey: process.env.PUBNUB_SUBSCRIBE,
       })
 
       this.pubnub.subscribe({ channels: [this.channel] })
