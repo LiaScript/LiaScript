@@ -47,7 +47,7 @@ icon via =
                 "icon-jitsi icon-xs"
 
             PubNub ->
-                "icon-jitsi icon-xs"
+                "icon-pubnub icon-xs"
         )
         [ Attr.style "padding-right" "5px"
         , Attr.style "font-size" "inherit"
