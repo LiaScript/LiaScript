@@ -127,7 +127,7 @@ update session model msg =
                                 | sync = { sync | peers = Set.insert peerID sync.peers }
                                 , sections = Section.sync quizState surveyState model.sections
                             }
-                                |> (if quizUpdate || surveyUpdate then
+                                |> (if quizUpdate || surveyUpdate || not (Set.member peerID sync.peers) then
                                         globalSync
 
                                     else
