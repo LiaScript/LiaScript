@@ -26,7 +26,6 @@ import Lia.Sync.Container.Local exposing (Container)
 import Lia.Sync.Types as Sync_
 import Lia.Utils exposing (blockKeydown, btn, icon, onKeyDown, string2Color)
 import Translations exposing (surveySubmit, surveySubmitted, surveyText)
-import Url.Builder exposing (relative)
 
 
 view : Config sub -> Parameters -> Survey -> Vector -> Maybe (Container Sync) -> ( Maybe Int, Html (Msg sub) )
@@ -115,7 +114,6 @@ viewVectorSync config questions syncData survey =
     case
         syncData
             |> Maybe.andThen (Sync.vector (List.map Tuple.first questions))
-            |> Debug.log "WWWWWWWWWWWWWWWWWWWWWW"
             |> Maybe.map (vectorBlock config)
     of
         Nothing ->
@@ -201,7 +199,7 @@ vectorBlock config data =
     JE.object
         [ ( "grid"
           , JE.object
-                [ ( "left", JE.int 50 )
+                [ ( "left", JE.int 10 )
                 , ( "top", JE.int 20 )
                 , ( "bottom", JE.int 20 )
                 , ( "right", JE.int 10 )
@@ -220,15 +218,36 @@ vectorBlock config data =
         , ( "yAxis"
           , JE.object
                 [ ( "type", JE.string "value" )
-                , ( "axisLabel", JE.object [ ( "formatter", JE.string "{value} %" ) ] )
+                , ( "show", JE.bool False )
                 ]
           )
         , ( "series"
           , [ [ ( "type", JE.string "bar" )
               , ( "data"
                 , data
-                    |> List.map .relative
-                    |> JE.list JE.float
+                    |> List.map
+                        (\d ->
+                            case d.absolute of
+                                0 ->
+                                    [ ( "value", JE.float d.relative ) ]
+
+                                _ ->
+                                    [ ( "value", JE.float d.relative )
+                                    , ( "label"
+                                      , JE.object
+                                            [ ( "show", JE.bool True )
+                                            , ( "formatter"
+                                              , String.fromInt d.absolute
+                                                    ++ " ("
+                                                    ++ String.fromFloat d.relative
+                                                    ++ "%)"
+                                                    |> JE.string
+                                              )
+                                            ]
+                                      )
+                                    ]
+                        )
+                    |> JE.list JE.object
                 )
               ]
             ]

@@ -63,6 +63,7 @@ import Translations
         , quizLabelSolution
         , quizSolution
         )
+import Url.Builder exposing (absolute)
 
 
 {-| Main Quiz view function.
@@ -97,20 +98,53 @@ viewSync config syncData quiz =
                         |> List.Extra.gatherEquals
                         |> List.map
                             (\( i, list ) ->
+                                let
+                                    absolute =
+                                        1 + List.length list
+
+                                    relative =
+                                        100 * toFloat absolute / total
+                                in
                                 case i of
                                     Just i_ ->
                                         ( JE.string ("Trial " ++ String.fromInt i_)
-                                        , JE.float (100 * toFloat (1 + List.length list) / total)
+                                        , JE.object
+                                            [ ( "value", JE.float relative )
+                                            , ( "label"
+                                              , JE.object
+                                                    [ ( "show", JE.bool True )
+                                                    , ( "formatter"
+                                                      , String.fromInt absolute
+                                                            ++ " ("
+                                                            ++ String.fromFloat relative
+                                                            ++ "%)"
+                                                            |> JE.string
+                                                      )
+                                                    ]
+                                              )
+                                            ]
                                         )
 
                                     Nothing ->
                                         ( JE.string "Resolved"
                                         , JE.object
                                             [ ( "value"
-                                              , JE.float (100 * toFloat (1 + List.length list) / total)
+                                              , JE.float relative
                                               )
                                             , ( "itemStyle"
                                               , JE.object [ ( "color", JE.string "#888" ) ]
+                                              )
+                                            , ( "label"
+                                              , JE.object
+                                                    [ ( "show", JE.bool True )
+                                                    , ( "formatter"
+                                                      , String.fromInt absolute
+                                                            ++ " ("
+                                                            ++ String.fromFloat relative
+                                                            ++ "%)"
+                                                            |> JE.string
+                                                      )
+                                                    ]
                                               )
                                             ]
                                         )
@@ -119,7 +153,7 @@ viewSync config syncData quiz =
             JE.object
                 [ ( "grid"
                   , JE.object
-                        [ ( "left", JE.int 50 )
+                        [ ( "left", JE.int 10 )
                         , ( "top", JE.int 20 )
                         , ( "bottom", JE.int 20 )
                         , ( "right", JE.int 10 )
@@ -138,7 +172,7 @@ viewSync config syncData quiz =
                 , ( "yAxis"
                   , JE.object
                         [ ( "type", JE.string "value" )
-                        , ( "axisLabel", JE.object [ ( "formatter", JE.string "{value} %" ) ] )
+                        , ( "show", JE.bool False )
                         ]
                   )
                 , ( "series"
