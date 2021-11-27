@@ -5,11 +5,8 @@ module Lia.Markdown.Table.Update exposing
     )
 
 import Array
-import Json.Decode as JD
-import Json.Encode as JE
 import Lia.Markdown.Survey.Update exposing (Msg(..))
 import Lia.Markdown.Table.Types exposing (Class(..), State, Vector)
-import Port.Eval exposing (event)
 import Port.Event as Event exposing (Event)
 import Return exposing (Return)
 
@@ -33,30 +30,12 @@ update msg vector =
     case msg of
         Sort id col ->
             sort id vector col
-                |> Return.sync (Event.initWithId "sort" id (JE.int col))
 
         Toggle id ->
             toggle id vector
-                |> Return.sync (Event.initWithId "toggle" id JE.null)
 
-        Handle event ->
-            case Event.pop event of
-                Just ( "sync", e ) ->
-                    case Event.destructure e of
-                        Just ( "toggle", Just id, _ ) ->
-                            toggle id vector
-
-                        Just ( "sort", Just id, message ) ->
-                            message
-                                |> JD.decodeValue JD.int
-                                |> Result.map (sort id vector)
-                                |> Result.withDefault (Return.val vector)
-
-                        _ ->
-                            Return.val vector
-
-                _ ->
-                    Return.val vector
+        Handle _ ->
+            Return.val vector
 
         NoOp ->
             Return.val vector
