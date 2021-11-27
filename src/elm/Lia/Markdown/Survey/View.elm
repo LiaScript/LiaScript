@@ -115,6 +115,7 @@ viewVectorSync config questions syncData survey =
     case
         syncData
             |> Maybe.andThen (Sync.vector (List.map Tuple.first questions))
+            |> Debug.log "WWWWWWWWWWWWWWWWWWWWWW"
             |> Maybe.map (vectorBlock config)
     of
         Nothing ->

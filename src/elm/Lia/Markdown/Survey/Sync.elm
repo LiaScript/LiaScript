@@ -65,8 +65,8 @@ wordCount =
                 dict
                     |> Dict.toList
                     |> List.map (\( key, value ) -> Data key value (percentage total value))
+                    |> ifEmpty
            )
-        >> ifEmpty
 
 
 text : List Sync -> Maybe (List String)
@@ -95,41 +95,43 @@ ifEmpty list =
 
 vector : List String -> List Sync -> Maybe (List Data)
 vector orderBy list =
-    let
-        data =
-            List.filterMap toVector list
+    case List.filterMap toVector list of
+        [] ->
+            Nothing
 
-        total =
-            data
-                |> List.length
-                |> toFloat
+        data ->
+            let
+                total =
+                    data
+                        |> List.length
+                        |> toFloat
 
-        union =
-            List.foldl
-                (\v1 v2 ->
-                    Dict.merge
-                        Dict.insert
-                        (\key a b -> Dict.insert key (a + b))
-                        Dict.insert
-                        v1
-                        v2
+                union =
+                    List.foldl
+                        (\v1 v2 ->
+                            Dict.merge
+                                Dict.insert
+                                (\key a b -> Dict.insert key (a + b))
+                                Dict.insert
+                                v1
+                                v2
+                                Dict.empty
+                        )
                         Dict.empty
-                )
-                Dict.empty
-                data
-    in
-    orderBy
-        |> List.foldr
-            (\key result ->
-                (union
-                    |> Dict.get key
-                    |> Maybe.map (\absolute -> Data key absolute (percentage total absolute))
-                    |> Maybe.withDefault (Data key 0 0)
-                )
-                    :: result
-            )
-            []
-        |> ifEmpty
+                        data
+            in
+            orderBy
+                |> List.foldr
+                    (\key result ->
+                        (union
+                            |> Dict.get key
+                            |> Maybe.map (\absolute -> Data key absolute (percentage total absolute))
+                            |> Maybe.withDefault (Data key 0 0)
+                        )
+                            :: result
+                    )
+                    []
+                |> ifEmpty
 
 
 percentage : Float -> Int -> Float
@@ -151,27 +153,31 @@ toVector (Sync s) =
 
 select : Int -> List Sync -> Maybe (List Data)
 select maxElements list =
-    let
-        data =
-            List.filterMap toSelect list
+    case List.filterMap toSelect list of
+        [] ->
+            Nothing
 
-        total =
-            List.length data |> toFloat
-    in
-    data
-        |> List.foldl
-            (\s array ->
-                case Array.get s array of
-                    Just i ->
-                        Array.set s (i + 1) array
+        data ->
+            let
+                total =
+                    data
+                        |> List.length
+                        |> toFloat
+            in
+            data
+                |> List.foldl
+                    (\s array ->
+                        case Array.get s array of
+                            Just i ->
+                                Array.set s (i + 1) array
 
-                    Nothing ->
-                        array
-            )
-            (Array.repeat maxElements 0)
-        |> Array.indexedMap (\index absolute -> Data (String.fromInt (index + 1)) absolute (percentage total absolute))
-        |> Array.toList
-        |> ifEmpty
+                            Nothing ->
+                                array
+                    )
+                    (Array.repeat maxElements 0)
+                |> Array.indexedMap (\index absolute -> Data (String.fromInt (index + 1)) absolute (percentage total absolute))
+                |> Array.toList
+                |> ifEmpty
 
 
 toSelect : Sync -> Maybe Int

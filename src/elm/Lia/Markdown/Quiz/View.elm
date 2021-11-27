@@ -83,11 +83,14 @@ view config labeledBy quiz vector sync =
 
 viewSync : Config sub -> Maybe (List Sync) -> List (Html msg) -> List (Html msg)
 viewSync config syncData quiz =
-    case syncData of
-        Just data ->
+    case ( syncData, syncData |> Maybe.map List.length ) of
+        ( Just _, Just 0 ) ->
+            quiz
+
+        ( Just data, Just length ) ->
             let
                 total =
-                    toFloat (List.length data)
+                    toFloat length
 
                 chartData =
                     data
@@ -154,7 +157,7 @@ viewSync config syncData quiz =
                 |> List.singleton
                 |> List.append quiz
 
-        Nothing ->
+        _ ->
             quiz
 
 
