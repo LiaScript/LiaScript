@@ -300,8 +300,6 @@ function execute_response(
       msg = JSON.stringify(msg)
     }
 
-    console.log('llllllllllllllll', topic, event_id, section)
-
     send({
       route: [
         {

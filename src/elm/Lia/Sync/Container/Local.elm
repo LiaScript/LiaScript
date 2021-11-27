@@ -178,11 +178,16 @@ unionHelper local internal external combined =
                 |> unionHelper local is []
 
         ( i :: is, e :: es ) ->
-            ( if local then
-                Dict.size (Dict.diff e i) /= 0
+            ( case ( Dict.size i, Dict.size e ) of
+                ( 0, 0 ) ->
+                    False
 
-              else
-                Dict.size (Dict.diff e i) /= Dict.size (Dict.diff i e)
+                _ ->
+                    if local then
+                        Dict.size (Dict.diff e i) /= 0
+
+                    else
+                        Dict.size (Dict.diff e i) /= Dict.size (Dict.diff i e)
             , Dict.union i e
             )
                 :: combined

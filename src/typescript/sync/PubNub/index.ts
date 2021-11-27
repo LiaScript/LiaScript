@@ -37,19 +37,30 @@ export class Sync extends Base {
         uuid: this.token,
       })
 
-      this.pubnub.subscribe({ channels: [this.channel] })
+      this.pubnub.subscribe({
+        channels: [this.channel],
+        withPresence: true,
+        restore: false,
+      })
 
       let self = this
 
       this.pubnub.addListener({
         status: function (statusEvent: any) {
-          console.log('PUBNUB status:', statusEvent)
+          //console.log('PUBNUB status:', statusEvent)
           //if (statusEvent.category === "PNConnectedCategory") {
           //    publishSampleMessage();
           //}
         },
         message: function (event: any) {
-          self.send(event.message)
+          // prevent return of self send messages
+          if (event.publisher !== self.token) {
+            //console.log('sub:', JSON.stringify(event.message.message))
+            self.send(event.message)
+          }
+        },
+        presence: function (event: any) {
+          //console.log('presence: ', event)
         },
       })
 
@@ -59,16 +70,20 @@ export class Sync extends Base {
 
   disconnect() {
     this.publish(this.syncMsg('leave', this.token))
+    if (this.pubnub) {
+      this.pubnub.unsubscribeAll()
+    }
 
     this.sync('disconnect')
   }
 
   publish(message: Object) {
     if (this.pubnub) {
+      console.log('pub: ', message.message)
       this.pubnub.publish(
         { channel: this.channel, message: message },
         function (status: any, response: any) {
-          console.log('PUBNUB publish', status, response)
+          //console.log('PUBNUB publish', status, response)
         }
       )
     }

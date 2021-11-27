@@ -112,27 +112,35 @@ update session model msg =
 
                 --|> leave (id model.sync.state)
                 Just ( "join", _, message ) ->
-                    case
-                        ( JD.decodeValue (JD.field "id" JD.string) message
-                        , message
-                            |> JD.decodeValue (JD.field "quiz" (Global.decoder Quiz.decoder))
-                            |> Result.map (Global.union (globalGet .quiz model.sections))
-                        , message
-                            |> JD.decodeValue (JD.field "survey" (Global.decoder Survey.decoder))
-                            |> Result.map (Global.union (globalGet .survey model.sections))
-                        )
-                    of
-                        ( Ok peerID, Ok ( quizUpdate, quizState ), Ok ( surveyUpdate, surveyState ) ) ->
-                            { model
-                                | sync = { sync | peers = Set.insert peerID sync.peers }
-                                , sections = Section.sync quizState surveyState model.sections
-                            }
-                                |> (if quizUpdate || surveyUpdate || not (Set.member peerID sync.peers) then
-                                        globalSync
+                    case ( JD.decodeValue (JD.field "id" JD.string) message, id sync.state ) of
+                        ( Ok peerID, Just ownID ) ->
+                            if ownID == peerID then
+                                Return.val model
 
-                                    else
-                                        Return.val
-                                   )
+                            else
+                                case
+                                    ( message
+                                        |> JD.decodeValue (JD.field "quiz" (Global.decoder Quiz.decoder))
+                                        |> Result.map (Global.union (globalGet .quiz model.sections))
+                                    , message
+                                        |> JD.decodeValue (JD.field "survey" (Global.decoder Survey.decoder))
+                                        |> Result.map (Global.union (globalGet .survey model.sections))
+                                    )
+                                of
+                                    ( Ok ( quizUpdate, quizState ), Ok ( surveyUpdate, surveyState ) ) ->
+                                        { model
+                                            | sync = { sync | peers = Set.insert peerID sync.peers }
+                                            , sections = Section.sync quizState surveyState model.sections
+                                        }
+                                            |> (if quizUpdate || surveyUpdate || not (Set.member peerID sync.peers) then
+                                                    globalSync
+
+                                                else
+                                                    Return.val
+                                               )
+
+                                    _ ->
+                                        Return.val model
 
                         _ ->
                             Return.val model

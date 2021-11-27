@@ -82,11 +82,17 @@ unionHelper internal external combination =
         ( [], [] ) ->
             List.reverse combination
 
-        ( i :: is, [] ) ->
+        ( (Just i) :: is, [] ) ->
             unionHelper
                 is
                 []
-                (( i /= Nothing, i ) :: combination)
+                (( not <| Local.isEmpty i, Just i ) :: combination)
+
+        ( Nothing :: is, [] ) ->
+            unionHelper
+                is
+                []
+                (( False, Nothing ) :: combination)
 
         ( [], e :: es ) ->
             unionHelper
@@ -104,7 +110,7 @@ unionHelper internal external combination =
             unionHelper
                 is
                 es
-                (( True, Just i ) :: combination)
+                (( not (Local.isEmpty i), Just i ) :: combination)
 
         ( Nothing :: is, (Just e) :: es ) ->
             unionHelper
