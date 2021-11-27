@@ -71,8 +71,8 @@ update scripts msg model =
     case msg of
         Eval idx ->
             execute scripts model idx
-                |> Return.sync (PEvent.initWithId "eval" idx JE.null)
 
+        --|> Return.sync (PEvent.initWithId "eval" idx JE.null)
         Update id_1 id_2 code_str ->
             update_file
                 id_1
@@ -80,22 +80,22 @@ update scripts msg model =
                 model
                 (\f -> { f | code = code_str })
                 (\_ -> [])
-                |> Return.sync
-                    ([ ( "id", JE.int id_2 )
-                     , ( "code", JE.string code_str )
-                     ]
-                        |> JE.object
-                        |> PEvent.initWithId "update" id_1
-                    )
 
+        --|> Return.sync
+        --    ([ ( "id", JE.int id_2 )
+        --     , ( "code", JE.string code_str )
+        --     ]
+        --        |> JE.object
+        --        |> PEvent.initWithId "update" id_1
+        --    )
         FlipView (Evaluate id_1) id_2 ->
             flipEval model id_1 id_2
-                |> Return.sync (PEvent.initWithId "flip_eval" id_1 (JE.int id_2))
 
+        --|> Return.sync (PEvent.initWithId "flip_eval" id_1 (JE.int id_2))
         FlipView (Highlight id_1) id_2 ->
             flipHigh model id_1 id_2
-                |> Return.sync (PEvent.initWithId "flip_high" id_1 (JE.int id_2))
 
+        --|> Return.sync (PEvent.initWithId "flip_high" id_1 (JE.int id_2))
         FlipFullscreen (Highlight id_1) id_2 ->
             { model
                 | highlight =
@@ -124,12 +124,12 @@ update scripts msg model =
 
         Load idx version ->
             load model idx version
-                |> Return.sync (PEvent.initWithId "load" idx (JE.int version))
 
+        --|> Return.sync (PEvent.initWithId "load" idx (JE.int version))
         First idx ->
             load model idx 0
-                |> Return.sync (PEvent.initWithId "load" idx (JE.int 0))
 
+        --|> Return.sync (PEvent.initWithId "load" idx (JE.int 0))
         Last idx ->
             let
                 version =
@@ -139,8 +139,8 @@ update scripts msg model =
                         |> Maybe.withDefault 0
             in
             load model idx version
-                |> Return.sync (PEvent.initWithId "load" idx (JE.int version))
 
+        --|> Return.sync (PEvent.initWithId "load" idx (JE.int version))
         Handle event ->
             case PEvent.destructure event of
                 Just ( "eval", Just section, _ ) ->
@@ -210,52 +210,52 @@ update scripts msg model =
                         |> maybe_project section (logger Log.add Log.Stream message)
                         |> maybe_update section model
 
-                Just ( "sync", _, message ) ->
-                    case PEvent.topicWithId event of
-                        Just ( "flip_eval", Just id ) ->
-                            message
-                                |> JD.decodeValue JD.int
-                                |> Result.map (flipEval model id)
-                                |> Result.withDefault (Return.val model)
+                {- Just ( "sync", _, message ) ->
+                   case PEvent.topicWithId event of
+                       Just ( "flip_eval", Just id ) ->
+                           message
+                               |> JD.decodeValue JD.int
+                               |> Result.map (flipEval model id)
+                               |> Result.withDefault (Return.val model)
 
-                        Just ( "flip_high", Just id ) ->
-                            message
-                                |> JD.decodeValue JD.int
-                                |> Result.map (flipHigh model id)
-                                |> Result.withDefault (Return.val model)
+                       Just ( "flip_high", Just id ) ->
+                           message
+                               |> JD.decodeValue JD.int
+                               |> Result.map (flipHigh model id)
+                               |> Result.withDefault (Return.val model)
 
-                        Just ( "eval", Just id ) ->
-                            execute scripts model id
+                       Just ( "eval", Just id ) ->
+                           execute scripts model id
 
-                        Just ( "update", Just id_1 ) ->
-                            case
-                                JD.decodeValue
-                                    (JD.map2 Tuple.pair
-                                        (JD.field "id" JD.int)
-                                        (JD.field "code" JD.string)
-                                    )
-                                    message
-                            of
-                                Ok ( id_2, code ) ->
-                                    update_file
-                                        id_1
-                                        id_2
-                                        model
-                                        (\f -> { f | code = code })
-                                        (\_ -> [])
+                       Just ( "update", Just id_1 ) ->
+                           case
+                               JD.decodeValue
+                                   (JD.map2 Tuple.pair
+                                       (JD.field "id" JD.int)
+                                       (JD.field "code" JD.string)
+                                   )
+                                   message
+                           of
+                               Ok ( id_2, code ) ->
+                                   update_file
+                                       id_1
+                                       id_2
+                                       model
+                                       (\f -> { f | code = code })
+                                       (\_ -> [])
 
-                                _ ->
-                                    Return.val model
+                               _ ->
+                                   Return.val model
 
-                        Just ( "load", Just id ) ->
-                            message
-                                |> JD.decodeValue JD.int
-                                |> Result.map (load model id)
-                                |> Result.withDefault (Return.val model)
+                       Just ( "load", Just id ) ->
+                           message
+                               |> JD.decodeValue JD.int
+                               |> Result.map (load model id)
+                               |> Result.withDefault (Return.val model)
 
-                        _ ->
-                            Return.val model
-
+                       _ ->
+                           Return.val model
+                -}
                 _ ->
                     Return.val model
 
