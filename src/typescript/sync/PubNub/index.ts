@@ -72,6 +72,7 @@ export class Sync extends Base {
     this.publish(this.syncMsg('leave', this.token))
     if (this.pubnub) {
       this.pubnub.unsubscribeAll()
+      this.pubnub.stop()
     }
 
     this.sync('disconnect')
@@ -79,9 +80,13 @@ export class Sync extends Base {
 
   publish(message: Object) {
     if (this.pubnub) {
-      console.log('pub: ', message.message)
+      //console.log('pub: ', message.message)
       this.pubnub.publish(
-        { channel: this.channel, message: message },
+        {
+          channel: this.channel,
+          message: message,
+          storeInHistory: false,
+        },
         function (status: any, response: any) {
           //console.log('PUBNUB publish', status, response)
         }
