@@ -23,8 +23,8 @@ type Sync
     = Sync Survey.State
 
 
-type alias Data value =
-    { value : value
+type alias Data =
+    { value : String
     , absolute : Int
     , relative : Float
     }
@@ -39,27 +39,33 @@ sync survey =
         Nothing
 
 
-wordCount : List Sync -> Maybe (List ( String, Int ))
+wordCount : List Sync -> Maybe (List Data)
 wordCount =
     List.foldl
-        (\s dict ->
+        (\s ( dict, counter ) ->
             s
                 |> toText
                 |> Maybe.map (String.trim >> String.toUpper)
                 |> Maybe.map
                     (\key ->
-                        Dict.insert key
+                        ( Dict.insert key
                             (dict
                                 |> Dict.get key
                                 |> Maybe.map ((+) 1)
                                 |> Maybe.withDefault 1
                             )
                             dict
+                        , counter + 1
+                        )
                     )
-                |> Maybe.withDefault dict
+                |> Maybe.withDefault ( dict, counter )
         )
-        Dict.empty
-        >> Dict.toList
+        ( Dict.empty, 0 )
+        >> (\( dict, total ) ->
+                dict
+                    |> Dict.toList
+                    |> List.map (\( key, value ) -> Data key value (percentage total value))
+           )
         >> ifEmpty
 
 
@@ -87,14 +93,16 @@ ifEmpty list =
         Just list
 
 
-vector : List String -> List Sync -> Maybe (List ( String, Float ))
+vector : List String -> List Sync -> Maybe (List Data)
 vector orderBy list =
     let
         data =
             List.filterMap toVector list
 
         total =
-            List.length data |> toFloat
+            data
+                |> List.length
+                |> toFloat
 
         union =
             List.foldl
@@ -112,11 +120,11 @@ vector orderBy list =
     in
     orderBy
         |> List.foldr
-            (\o result ->
-                ( o
-                , Dict.get o union
-                    |> Maybe.map (percentage total)
-                    |> Maybe.withDefault 0
+            (\key result ->
+                (union
+                    |> Dict.get key
+                    |> Maybe.map (\absolute -> Data key absolute (percentage total absolute))
+                    |> Maybe.withDefault (Data key 0 0)
                 )
                     :: result
             )
@@ -141,7 +149,7 @@ toVector (Sync s) =
             Nothing
 
 
-select : Int -> List Sync -> Maybe (List Float)
+select : Int -> List Sync -> Maybe (List Data)
 select maxElements list =
     let
         data =
@@ -161,7 +169,7 @@ select maxElements list =
                         array
             )
             (Array.repeat maxElements 0)
-        |> Array.map (percentage total)
+        |> Array.indexedMap (\index absolute -> Data (String.fromInt (index + 1)) absolute (percentage total absolute))
         |> Array.toList
         |> ifEmpty
 
@@ -176,7 +184,7 @@ toSelect (Sync s) =
             Nothing
 
 
-matrix : List String -> List Sync -> Maybe (List (List ( String, Float )))
+matrix : List String -> List Sync -> Maybe (List (List Data))
 matrix orderBy list =
     list
         |> List.filterMap toMatrix
@@ -196,7 +204,7 @@ matrix orderBy list =
             Nothing
         |> Maybe.map
             (List.map (vector orderBy)
-                >> List.map (Maybe.withDefault (List.map (\key -> ( key, 0 )) orderBy))
+                >> List.map (Maybe.withDefault (List.map (\key -> Data key 0 0) orderBy))
             )
 
 

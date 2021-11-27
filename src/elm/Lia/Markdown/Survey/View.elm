@@ -26,6 +26,7 @@ import Lia.Sync.Container.Local exposing (Container)
 import Lia.Sync.Types as Sync_
 import Lia.Utils exposing (blockKeydown, btn, icon, onKeyDown, string2Color)
 import Translations exposing (surveySubmit, surveySubmitted, surveyText)
+import Url.Builder exposing (relative)
 
 
 view : Config sub -> Parameters -> Survey -> Vector -> Maybe (Container Sync) -> ( Maybe Int, Html (Msg sub) )
@@ -77,13 +78,16 @@ viewTextSync : Config sub -> Int -> Maybe (List Sync) -> Html msg -> Html msg
 viewTextSync config lines syncData survey =
     case ( syncData, lines ) of
         ( Just data, 1 ) ->
-            Html.div []
-                [ survey
-                , data
+            case
+                data
                     |> Sync.wordCount
                     |> Maybe.map (wordCloud config)
-                    |> Maybe.withDefault (Html.text "")
-                ]
+            of
+                Nothing ->
+                    survey
+
+                Just diagram ->
+                    Html.div [] [ survey, diagram ]
 
         ( Just data, _ ) ->
             Html.div []
@@ -108,56 +112,47 @@ viewTextSync config lines syncData survey =
 
 viewVectorSync : Config sub -> List ( String, Inlines ) -> Maybe (List Sync) -> Html msg -> Html msg
 viewVectorSync config questions syncData survey =
-    case syncData of
-        Just data ->
-            Html.div []
-                [ survey
-                , data
-                    |> Sync.vector (List.map Tuple.first questions)
-                    |> Maybe.map (vectorBlock config)
-                    |> Maybe.withDefault (Html.text "")
-                ]
-
+    case
+        syncData
+            |> Maybe.andThen (Sync.vector (List.map Tuple.first questions))
+            |> Maybe.map (vectorBlock config)
+    of
         Nothing ->
-            Html.div [] [ survey ]
+            survey
+
+        Just diagram ->
+            Html.div [] [ survey, diagram ]
 
 
 viewMatrixSync : Config sub -> List String -> Maybe (List Sync) -> Html msg -> Html msg
 viewMatrixSync config questions syncData survey =
-    case syncData of
-        Just data ->
-            Html.div []
-                [ survey
-                , data
-                    |> Sync.matrix questions
-                    |> Maybe.map (List.map (vectorBlock config) >> Html.div [])
-                    |> Maybe.withDefault (Html.text "")
-                ]
-
+    case
+        syncData
+            |> Maybe.andThen (Sync.matrix questions)
+            |> Maybe.map (List.map (vectorBlock config) >> Html.div [])
+    of
         Nothing ->
-            Html.div [] [ survey ]
+            survey
+
+        Just diagram ->
+            Html.div [] [ survey, diagram ]
 
 
 viewSelectSync : Config sub -> List Inlines -> Maybe (List Sync) -> Html msg -> Html msg
 viewSelectSync config options syncData survey =
-    case syncData of
+    case
+        syncData
+            |> Maybe.andThen (Sync.select (List.length options))
+            |> Maybe.map (vectorBlock config)
+    of
         Nothing ->
             survey
 
-        Just data ->
-            Html.div []
-                [ survey
-                , data
-                    |> Sync.select (List.length options)
-                    |> Maybe.map
-                        (List.indexedMap (\i o -> ( String.fromInt (1 + i), o ))
-                            >> vectorBlock config
-                        )
-                    |> Maybe.withDefault (Html.text "")
-                ]
+        Just diagram ->
+            Html.div [] [ survey, diagram ]
 
 
-wordCloud : Config sub -> List ( String, Int ) -> Html msg
+wordCloud : Config sub -> List Sync.Data -> Html msg
 wordCloud config data =
     JE.object
         [ ( "tooltip"
@@ -176,13 +171,13 @@ wordCloud config data =
             , ( "data"
               , data
                     |> List.map
-                        (\( word, count ) ->
-                            [ ( "name", JE.string word )
-                            , ( "value", JE.int count )
+                        (\d ->
+                            [ ( "name", JE.string d.value )
+                            , ( "value", JE.int d.absolute )
                             , ( "textStyle"
                               , JE.object
                                     [ ( "color"
-                                      , word
+                                      , d.value
                                             |> string2Color 160
                                             |> JE.string
                                       )
@@ -200,7 +195,7 @@ wordCloud config data =
         |> Chart.eCharts config.lang [ ( "style", "height: 120px; width: 100%" ) ] True Nothing
 
 
-vectorBlock : Config sub -> List ( String, Float ) -> Html msg
+vectorBlock : Config sub -> List Sync.Data -> Html msg
 vectorBlock config data =
     JE.object
         [ ( "grid"
@@ -216,7 +211,7 @@ vectorBlock config data =
                 [ ( "type", JE.string "category" )
                 , ( "data"
                   , data
-                        |> List.map Tuple.first
+                        |> List.map .value
                         |> JE.list JE.string
                   )
                 ]
@@ -231,7 +226,7 @@ vectorBlock config data =
           , [ [ ( "type", JE.string "bar" )
               , ( "data"
                 , data
-                    |> List.map Tuple.second
+                    |> List.map .relative
                     |> JE.list JE.float
                 )
               ]
