@@ -132,7 +132,7 @@ update session msg model =
                     }
                         |> Return.val
                         |> Return.cmd (Session.navToSlide session idx)
-                        |> Return.sync (Event.initWithId "load" idx JE.null)
+                --|> Return.sync (Event.initWithId "load" idx JE.null)
 
             else
                 Return.val model
