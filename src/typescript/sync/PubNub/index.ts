@@ -35,6 +35,9 @@ export class Sync extends Base {
         publishKey: process.env.PUBNUB_PUBLISH,
         subscribeKey: process.env.PUBNUB_SUBSCRIBE,
         uuid: this.token,
+        // logVerbosity: true,
+        // heartbeatInterval: 10,
+        // presenceTimeout: 30,
       })
 
       this.pubnub.subscribe({
@@ -55,12 +58,17 @@ export class Sync extends Base {
         message: function (event: any) {
           // prevent return of self send messages
           if (event.publisher !== self.token) {
-            //console.log('sub:', JSON.stringify(event.message.message))
+            //console.log('SUB:', JSON.stringify(event.message.message))
             self.send(event.message)
           }
         },
         presence: function (event: any) {
           //console.log('presence: ', event)
+          switch (event.action) {
+            case 'leave': {
+              self.send(self.syncMsg('leave', event.uuid))
+            }
+          }
         },
       })
 
@@ -80,7 +88,7 @@ export class Sync extends Base {
 
   publish(message: Object) {
     if (this.pubnub) {
-      //console.log('pub: ', message.message)
+      //console.log('PUB: ', message.message)
       this.pubnub.publish(
         {
           channel: this.channel,

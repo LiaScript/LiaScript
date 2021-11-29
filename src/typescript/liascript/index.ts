@@ -269,8 +269,8 @@ class LiaScript {
               // beaker is only supported within the beaker-browser
               Beaker.isSupported() ? 'beaker' : '',
               // remove these strings if you want to enable or disable certain sync support
-              'matrix',
               'jitsi',
+              'matrix',
               'pubnub',
             ]
           : [],
