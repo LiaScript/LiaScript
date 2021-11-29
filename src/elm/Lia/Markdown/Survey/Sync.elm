@@ -17,6 +17,7 @@ import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Survey.Json as Json
 import Lia.Markdown.Survey.Types as Survey
+import List.Extra
 
 
 type Sync
@@ -211,6 +212,7 @@ matrix orderBy list =
         |> Maybe.map
             (List.map (vector orderBy)
                 >> List.map (Maybe.withDefault (List.map (\key -> Data key 0 0) orderBy))
+                >> List.Extra.transpose
             )
 
 

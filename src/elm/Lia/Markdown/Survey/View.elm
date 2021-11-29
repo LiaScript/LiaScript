@@ -8,6 +8,7 @@ import Json.Encode as JE
 import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
 import Lia.Markdown.Inline.Config exposing (Config)
+import Lia.Markdown.Inline.Stringify exposing (stringify, stringify_)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Survey.Model
@@ -69,6 +70,7 @@ view config attr survey model sync =
                     |> view_matrix config header questions
                     |> view_survey config attr "matrix" model survey.id
                     |> viewMatrixSync config
+                        questions
                         vars
                         (Sync_.get config.sync survey.id sync)
 
@@ -123,12 +125,12 @@ viewVectorSync config questions syncData survey =
             Html.div [] [ survey, diagram ]
 
 
-viewMatrixSync : Config sub -> List String -> Maybe (List Sync) -> Html msg -> Html msg
-viewMatrixSync config questions syncData survey =
+viewMatrixSync : Config sub -> List Inlines -> List String -> Maybe (List Sync) -> Html msg -> Html msg
+viewMatrixSync config categories questions syncData survey =
     case
         syncData
             |> Maybe.andThen (Sync.matrix questions)
-            |> Maybe.map (List.map (vectorBlock config) >> Html.div [])
+            |> Maybe.map (matrixBlock config categories)
     of
         Nothing ->
             survey
@@ -255,6 +257,102 @@ vectorBlock config data =
           )
         ]
         |> Chart.eCharts config.lang [ ( "style", "height: 120px; width: 100%" ) ] True Nothing
+
+
+matrixBlock : Config sub -> List Inlines -> List (List Sync.Data) -> Html msg
+matrixBlock config categories data =
+    JE.object
+        [ ( "grid"
+          , JE.object
+                [ ( "left", JE.int 10 )
+                , ( "top", JE.int 30 )
+                , ( "bottom", JE.int 28 )
+                , ( "right", JE.int 30 )
+                ]
+          )
+        , ( "legend"
+          , JE.object
+                [ ( "data"
+                  , data
+                        |> List.map (List.head >> Maybe.map .value >> Maybe.withDefault "")
+                        |> JE.list JE.string
+                  )
+                ]
+          )
+        , ( "xAxis"
+          , JE.object
+                [ ( "type", JE.string "category" )
+                , ( "data"
+                  , categories
+                        |> List.map stringify
+                        |> JE.list JE.string
+                  )
+                ]
+          )
+        , ( "yAxis"
+          , JE.object
+                [ ( "type", JE.string "value" )
+                , ( "show", JE.bool False )
+                ]
+          )
+        , ( "toolbox"
+          , JE.object
+                [ ( "orient", JE.string "vertical" )
+                , Chart.feature
+                    { saveAsImage = True
+                    , dataView = True
+                    , dataZoom = False
+                    , magicType = True
+                    , restore = False
+                    }
+                ]
+          )
+        , ( "tooltip", JE.object [] )
+        , ( "series"
+          , data
+                |> List.map
+                    (\data_ ->
+                        [ ( "type", JE.string "bar" )
+                        , ( "name"
+                          , data_
+                                |> List.head
+                                |> Maybe.map .value
+                                |> Maybe.withDefault ""
+                                |> JE.string
+                          )
+                        , ( "data"
+                          , data_
+                                |> List.map
+                                    (\d ->
+                                        case d.absolute of
+                                            0 ->
+                                                [ ( "value", JE.float d.relative ) ]
+
+                                            _ ->
+                                                [ ( "value", JE.float d.relative )
+                                                , ( "label"
+                                                  , JE.object
+                                                        [ ( "show", JE.bool True )
+                                                        , ( "formatter"
+                                                          , String.fromInt d.absolute
+                                                                ++ " ("
+                                                                ++ String.fromFloat d.relative
+                                                                ++ "%)"
+                                                                |> JE.string
+                                                          )
+                                                        , ( "rotate", JE.int 90 )
+                                                        ]
+                                                  )
+                                                ]
+                                    )
+                                |> JE.list JE.object
+                          )
+                        ]
+                    )
+                |> JE.list JE.object
+          )
+        ]
+        |> Chart.eCharts config.lang [ ( "style", "height: 200px; width: 100%" ) ] True Nothing
 
 
 textBlock : String -> Html msg
