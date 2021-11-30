@@ -35,6 +35,7 @@ export class Sync extends Base {
         publishKey: process.env.PUBNUB_PUBLISH,
         subscribeKey: process.env.PUBNUB_SUBSCRIBE,
         uuid: this.token,
+        heartbeatInterval: 30,
         // logVerbosity: true,
         // heartbeatInterval: 10,
         // presenceTimeout: 30,
