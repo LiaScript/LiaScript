@@ -18,6 +18,7 @@ import * as Beaker from '../sync/Beaker/index'
 import * as Jitsi from '../sync/Jitsi/index'
 import * as Matrix from '../sync/Matrix/index'
 import * as PubNub from '../sync/PubNub/index'
+import * as GUN from '../sync/Gun/index'
 
 window.img_Zoom = function (e: MouseEvent | TouchEvent) {
   const target = e.target as HTMLImageElement
@@ -269,6 +270,7 @@ class LiaScript {
               // beaker is only supported within the beaker-browser
               Beaker.isSupported() ? 'beaker' : '',
               // remove these strings if you want to enable or disable certain sync support
+              'gun',
               'jitsi',
               'matrix',
               'pubnub',
@@ -637,6 +639,12 @@ function process(
               switch (event.message.backend) {
                 case 'beaker': {
                   self.sync = new Beaker.Sync(elmSend)
+                  self.sync.connect(event.message)
+
+                  break
+                }
+                case 'gun': {
+                  self.sync = new GUN.Sync(elmSend)
                   self.sync.connect(event.message)
 
                   break

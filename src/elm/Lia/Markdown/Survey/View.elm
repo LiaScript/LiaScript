@@ -8,7 +8,7 @@ import Json.Encode as JE
 import Lia.Markdown.Chart.View as Chart
 import Lia.Markdown.HTML.Attributes exposing (Parameters, annotation)
 import Lia.Markdown.Inline.Config exposing (Config)
-import Lia.Markdown.Inline.Stringify exposing (stringify, stringify_)
+import Lia.Markdown.Inline.Stringify exposing (stringify)
 import Lia.Markdown.Inline.Types exposing (Inlines)
 import Lia.Markdown.Inline.View exposing (viewer)
 import Lia.Markdown.Survey.Model
@@ -21,12 +21,31 @@ import Lia.Markdown.Survey.Model
         , get_vector_state
         )
 import Lia.Markdown.Survey.Sync as Sync exposing (Sync, sync)
-import Lia.Markdown.Survey.Types exposing (State(..), Survey, Type(..), Vector)
+import Lia.Markdown.Survey.Types
+    exposing
+        ( Analyse(..)
+        , State(..)
+        , Survey
+        , Type(..)
+        , Vector
+        )
 import Lia.Markdown.Survey.Update exposing (Msg(..))
 import Lia.Sync.Container.Local exposing (Container)
 import Lia.Sync.Types as Sync_
-import Lia.Utils exposing (blockKeydown, btn, icon, onKeyDown, string2Color)
-import Translations exposing (surveySubmit, surveySubmitted, surveyText)
+import Lia.Utils
+    exposing
+        ( blockKeydown
+        , btn
+        , icon
+        , onKeyDown
+        , string2Color
+        )
+import Translations
+    exposing
+        ( surveySubmit
+        , surveySubmitted
+        , surveyText
+        )
 
 
 view : Config sub -> Parameters -> Survey -> Vector -> Maybe (Container Sync) -> ( Maybe Int, Html (Msg sub) )
@@ -48,7 +67,7 @@ view config attr survey model sync =
                     |> view_survey config attr "select" model survey.id
                     |> viewSelectSync config inlines (Sync_.get config.sync survey.id sync)
 
-            Vector button questions ->
+            Vector button questions analyse ->
                 vector config button (VectorUpdate survey.id) (get_vector_state model survey.id)
                     |> view_vector questions
                     |> view_survey config
@@ -62,6 +81,7 @@ view config attr survey model sync =
                         model
                         survey.id
                     |> viewVectorSync config
+                        analyse
                         questions
                         (Sync_.get config.sync survey.id sync)
 
@@ -111,12 +131,12 @@ viewTextSync config lines syncData survey =
             Html.div [] [ survey ]
 
 
-viewVectorSync : Config sub -> List ( String, Inlines ) -> Maybe (List Sync) -> Html msg -> Html msg
-viewVectorSync config questions syncData survey =
+viewVectorSync : Config sub -> Analyse -> List ( String, Inlines ) -> Maybe (List Sync) -> Html msg -> Html msg
+viewVectorSync config analyse questions syncData survey =
     case
         syncData
             |> Maybe.andThen (Sync.vector (List.map Tuple.first questions))
-            |> Maybe.map (vectorBlock config)
+            |> Maybe.map (vectorBlock config analyse)
     of
         Nothing ->
             survey
@@ -144,7 +164,7 @@ viewSelectSync config options syncData survey =
     case
         syncData
             |> Maybe.andThen (Sync.select (List.length options))
-            |> Maybe.map (vectorBlock config)
+            |> Maybe.map (vectorBlock config Categorical)
     of
         Nothing ->
             survey
@@ -196,8 +216,8 @@ wordCloud config data =
         |> Chart.eCharts config.lang [ ( "style", "height: 120px; width: 100%" ) ] True Nothing
 
 
-vectorBlock : Config sub -> List Sync.Data -> Html msg
-vectorBlock config data =
+vectorBlock : Config sub -> Analyse -> List Sync.Data -> Html msg
+vectorBlock config analyse data =
     JE.object
         [ ( "grid"
           , JE.object
@@ -224,7 +244,17 @@ vectorBlock config data =
                 ]
           )
         , ( "series"
-          , [ [ ( "type", JE.string "bar" )
+          , [ [ ( "type"
+                , JE.string <|
+                    case analyse of
+                        Categorical ->
+                            "bar"
+
+                        Quantitative ->
+                            "line"
+                )
+              , ( "smooth", JE.bool True )
+              , ( "areaStyle", JE.object [ ( "opacity", JE.float 0.8 ) ] )
               , ( "data"
                 , data
                     |> List.map

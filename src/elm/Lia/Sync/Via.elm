@@ -12,8 +12,9 @@ import Lia.Utils as Util
 
 type Backend
     = Beaker
-    | Matrix
+    | GUN
     | Jitsi
+    | Matrix
     | PubNub
 
 
@@ -23,11 +24,14 @@ toString via =
         Beaker ->
             "Beaker"
 
-        Matrix ->
-            "Matrix"
+        GUN ->
+            "GUN"
 
         Jitsi ->
             "JitSi"
+
+        Matrix ->
+            "Matrix"
 
         PubNub ->
             "PubNub"
@@ -40,11 +44,14 @@ icon via =
             Beaker ->
                 "icon-beaker icon-xs"
 
-            Matrix ->
-                "icon-matrix icon-xs"
+            GUN ->
+                "icon-beaker icon-xs"
 
             Jitsi ->
                 "icon-jitsi icon-xs"
+
+            Matrix ->
+                "icon-matrix icon-xs"
 
             PubNub ->
                 "icon-pubnub icon-xs"
@@ -60,11 +67,14 @@ fromString via =
         "beaker" ->
             Just Beaker
 
-        "matrix" ->
-            Just Matrix
+        "gun" ->
+            Just GUN
 
         "jitsi" ->
             Just Jitsi
+
+        "matrix" ->
+            Just Matrix
 
         "pubnub" ->
             Just PubNub

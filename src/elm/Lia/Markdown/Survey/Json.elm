@@ -11,7 +11,15 @@ import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Inline.Json.Encode as Inline
-import Lia.Markdown.Survey.Types exposing (Element, State(..), Survey, Type(..), Vector)
+import Lia.Markdown.Survey.Types
+    exposing
+        ( Element
+        , State(..)
+        , Survey
+        , Type(..)
+        , Vector
+        , analyseType
+        )
 
 
 encode : Survey -> JE.Value
@@ -29,7 +37,7 @@ encode survey =
                 , JE.list Inline.encode elements
                 )
 
-            Vector bool options ->
+            Vector bool options _ ->
                 ( "Vector"
                 , JE.object
                     [ ( "bool", JE.bool bool )

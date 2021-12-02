@@ -67,7 +67,7 @@ export class Sync extends Base {
           //console.log('presence: ', event)
           switch (event.action) {
             case 'leave': {
-              self.send(self.syncMsg('leave', event.uuid))
+              self.sync('leave', event.uuid)
             }
           }
         },
