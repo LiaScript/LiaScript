@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.40
+version:  0.9.41
 language: en
 narrator: UK English Male
 
@@ -281,6 +281,15 @@ This will apply the following three patches:
 - elm-patch/dom: enable onclick events as well as innerHTML
 
 ## Version-Changes
+
+**0.9.41** (07/12/2021)
+
+- use elm-optimize-level-2 for compilation
+- fix: google voice translations
+- update via npm
+- improved icon support
+- reference macro
+- updated oEmbed endpoints
 
 **0.9.40** (21/10/2021)
 
