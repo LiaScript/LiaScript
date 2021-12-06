@@ -31,3 +31,4 @@ gulpfile.js
 patches
 .parcel-cache
 .parcelrc
+.env
