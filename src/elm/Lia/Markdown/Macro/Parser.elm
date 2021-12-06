@@ -41,16 +41,24 @@ import Lia.Utils exposing (toEscapeString, toJSstring)
 import Regex
 
 
-pattern : Parser s ( String, Bool )
-pattern =
+identifier : Parser s String
+identifier =
+    regex "\\w[\\w\\d._]+"
+
+
+start =
     regex "@-?@?"
-        |> map (\ad escape name -> ( ad ++ name, escape ))
+        |> map (\ad escape name_ -> ( ad ++ name_, escape ))
         |> andMap
             (string "'"
                 |> onsuccess True
                 |> optional False
             )
-        |> andMap (regex "\\w[\\w\\d._]+")
+
+
+pattern : Parser s ( String, Bool )
+pattern =
+    andMap identifier start
 
 
 parameter : Parser Context String
@@ -78,6 +86,7 @@ macro =
         (choice
             [ uid_macro |> andThen inject_macro
             , simple_macro |> andThen inject_macro
+            , reference_macro |> andThen inject_macro
             , macro_listing
             ]
         )
@@ -106,6 +115,21 @@ simple_macro =
     pattern
         |> map Tuple.pair
         |> andMap parameter_list
+
+
+reference_macro : Parser Context ( ( String, Bool ), List String )
+reference_macro =
+    start
+        |> ignore (string "[")
+        |> andMap identifier
+        |> map Tuple.pair
+        |> andMap
+            (parameter_list
+                |> ignore (string "](")
+                |> map (\list url -> List.append list [ url ])
+                |> andMap (regex "[^)]*")
+                |> ignore (string ")")
+            )
 
 
 code_block : Parser Context (List String)
