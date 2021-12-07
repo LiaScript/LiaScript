@@ -1,12 +1,12 @@
 import Lia from '../../liascript/types/lia.d'
 
+import { Gun } from './gun.d'
+
 import { Sync as Base } from '../Base/index'
 
 export class Sync extends Base {
-  private gun: any
-  private db: any
+  private gun?: Gun
   private store: string
-  private user: any
 
   constructor(send: Lia.Send) {
     super(send)
@@ -28,7 +28,7 @@ export class Sync extends Base {
         [
           '//cdnjs.cloudflare.com/ajax/libs/gun/0.2020.1235/gun.min.js',
           //'//cdnjs.cloudflare.com/ajax/libs/gun/0.2020.1235/axe.min.js',
-          '//cdnjs.cloudflare.com/ajax/libs/gun/0.2020.1235/sea.min.js',
+          //'//cdnjs.cloudflare.com/ajax/libs/gun/0.2020.1235/sea.min.js',
         ],
         this
       )
@@ -37,37 +37,26 @@ export class Sync extends Base {
 
   init(ok: boolean, error?: string) {
     if (ok && window.Gun) {
-      this.gun = window.Gun(['//lia-gun.herokuapp.com/gun'])
+      this.gun = window.Gun({ peers: ['https://lia-gun.herokuapp.com/gun'] })
+      this.publish(null)
 
       this.store = btoa(this.uniqueID())
 
-      this.db = this.gun.get(this.store)
-
-      this.user = this.db.user()
-
       let self = this
 
-      this.db.on('auth', async (event: any) => {
-        const alias = await self.user.get('alias')
-        console.log('auth:', alias)
-      })
+      this.gun
+        .get(this.store)
+        .on(function (data: { msg: string }, key: string) {
+          try {
+            let message = JSON.parse(data.msg)
 
-      this.user.create(this.token, 'aölskfdjasfdiasfsa234')
-      this.user.auth(this.token, 'aölskfdjasfdiasfsa234')
-
-      this.db.map().on(async (data, id) => {
-        if (data) {
-          //const key = '#foo'
-
-          //var message = {
-          //  who: await self.db.user(data).get('alias'),
-          //  what: (await SafeArray.decrypt(data.what, key)) + '',
-          //  when: window.Gun.state.is(data, 'what'),
-          //}
-
-          console.log('SUB:', data)
-        }
-      })
+            if (message !== null) {
+              if (message.id !== self.token) self.send(message)
+            }
+          } catch (e) {
+            console.warn('GunDB', e)
+          }
+        })
 
       this.sync('connect', this.token)
     }
@@ -75,16 +64,16 @@ export class Sync extends Base {
 
   disconnect() {
     this.publish(this.syncMsg('leave', this.token))
+    this.publish(null)
 
     this.sync('disconnect')
+
+    delete this.gun
   }
 
-  async publish(message: Object) {
-    if (this.db) {
-      console.log('PUB: ', message.message)
-      //const secret = await SEA.encrypt(message.message)
-
-      this.db.get(this.store).put(JSON.stringify(message))
+  publish(message: Object | null) {
+    if (this.gun) {
+      this.gun.get(this.store).put({ msg: JSON.stringify(message) })
     }
   }
 }
