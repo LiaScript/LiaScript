@@ -45,7 +45,7 @@ icon via =
                 "icon-beaker icon-xs"
 
             GUN ->
-                "icon-beaker icon-xs"
+                "icon-gundb icon-xs"
 
             Jitsi ->
                 "icon-jitsi icon-xs"

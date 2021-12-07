@@ -319,164 +319,168 @@
   content: "\EA1A"
 }
 
-.icon-heatmap:before {
+.icon-gundb:before {
   content: "\EA1B"
 }
 
-.icon-hint:before {
+.icon-heatmap:before {
   content: "\EA1C"
 }
 
-.icon-info:before {
+.icon-hint:before {
   content: "\EA1D"
 }
 
-.icon-jitsi:before {
+.icon-info:before {
   content: "\EA1E"
 }
 
-.icon-lightmode:before {
+.icon-jitsi:before {
   content: "\EA1F"
 }
 
-.icon-lineplot:before {
+.icon-lightmode:before {
   content: "\EA20"
 }
 
-.icon-login:before {
+.icon-lineplot:before {
   content: "\EA21"
 }
 
-.icon-mail:before {
+.icon-login:before {
   content: "\EA22"
 }
 
-.icon-map:before {
+.icon-mail:before {
   content: "\EA23"
 }
 
-.icon-matrix:before {
+.icon-map:before {
   content: "\EA24"
 }
 
-.icon-minus:before {
+.icon-matrix:before {
   content: "\EA25"
 }
 
-.icon-more:before {
+.icon-minus:before {
   content: "\EA26"
 }
 
-.icon-parallel:before {
+.icon-more:before {
   content: "\EA27"
 }
 
-.icon-pencil:before {
+.icon-parallel:before {
   content: "\EA28"
 }
 
-.icon-person:before {
+.icon-pencil:before {
   content: "\EA29"
 }
 
-.icon-piechart:before {
+.icon-person:before {
   content: "\EA2A"
 }
 
-.icon-play-circle:before {
+.icon-piechart:before {
   content: "\EA2B"
 }
 
-.icon-plus:before {
+.icon-play-circle:before {
   content: "\EA2C"
 }
 
-.icon-presentation:before {
+.icon-plus:before {
   content: "\EA2D"
 }
 
-.icon-pubnub:before {
+.icon-presentation:before {
   content: "\EA2E"
 }
 
-.icon-radar:before {
+.icon-pubnub:before {
   content: "\EA2F"
 }
 
-.icon-refresh:before {
+.icon-radar:before {
   content: "\EA30"
 }
 
-.icon-resolve:before {
+.icon-refresh:before {
   content: "\EA31"
 }
 
-.icon-sankey:before {
+.icon-resolve:before {
   content: "\EA32"
 }
 
-.icon-scatterplot:before {
+.icon-sankey:before {
   content: "\EA33"
 }
 
-.icon-search:before {
+.icon-scatterplot:before {
   content: "\EA34"
 }
 
-.icon-settings:before {
+.icon-search:before {
   content: "\EA35"
 }
 
-.icon-slides:before {
+.icon-settings:before {
   content: "\EA36"
 }
 
-.icon-social:before {
+.icon-slides:before {
   content: "\EA37"
 }
 
-.icon-sort-asc:before {
+.icon-social:before {
   content: "\EA38"
 }
 
-.icon-sort-desc:before {
+.icon-sort-asc:before {
   content: "\EA39"
 }
 
-.icon-sound-off:before {
+.icon-sort-desc:before {
   content: "\EA3A"
 }
 
-.icon-sound-on:before {
+.icon-sound-off:before {
   content: "\EA3B"
 }
 
-.icon-stop-circle:before {
+.icon-sound-on:before {
   content: "\EA3C"
 }
 
-.icon-sync:before {
+.icon-stop-circle:before {
   content: "\EA3D"
 }
 
-.icon-table:before {
+.icon-sync:before {
   content: "\EA3E"
 }
 
-.icon-trash:before {
+.icon-table:before {
   content: "\EA3F"
 }
 
-.icon-warning:before {
+.icon-trash:before {
   content: "\EA40"
 }
 
-.icon-zoom-out:before {
+.icon-warning:before {
   content: "\EA41"
 }
 
-.icon-zoom:before {
+.icon-zoom-out:before {
   content: "\EA42"
+}
+
+.icon-zoom:before {
+  content: "\EA43"
 }
 
 
