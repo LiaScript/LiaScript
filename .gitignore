@@ -5,6 +5,7 @@ node_modules
 dist
 .DS_Store
 .cache
+.env
 .parcel-cache
 .vscode
 static/README.md
