@@ -50,7 +50,7 @@ import Lia.Markdown.Quiz.Update exposing (Msg(..))
 import Lia.Markdown.Quiz.Vector.View as Vector
 import Lia.Sync.Container.Local exposing (Container)
 import Lia.Sync.Types as Sync
-import Lia.Utils exposing (btn, btnIcon)
+import Lia.Utils exposing (btn, btnIcon, percentage)
 import List.Extra
 import Translations
     exposing
@@ -63,7 +63,6 @@ import Translations
         , quizLabelSolution
         , quizSolution
         )
-import Url.Builder exposing (absolute)
 
 
 {-| Main Quiz view function.
@@ -103,7 +102,7 @@ viewSync config syncData quiz =
                                         1 + List.length list
 
                                     relative =
-                                        100 * toFloat absolute / total
+                                        percentage total absolute
                                 in
                                 case i of
                                     Just i_ ->

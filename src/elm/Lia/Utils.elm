@@ -11,6 +11,7 @@ module Lia.Utils exposing
     , noTranslate
     , onEnter
     , onKeyDown
+    , percentage
     , string2Color
     , toEscapeString
     , toJSstring
@@ -273,3 +274,13 @@ string2Color maxValue url =
                     ++ (String.fromInt <| modBy maxValue b)
                     ++ ")"
            )
+
+
+{-| Return rounded percentage up to two digits.
+
+    percentage 3.14159 1 == 31.83
+
+-}
+percentage : Float -> Int -> Float
+percentage total i =
+    toFloat (round ((10000.0 * toFloat i) / total)) / 100.0

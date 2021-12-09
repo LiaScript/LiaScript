@@ -17,6 +17,7 @@ import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Markdown.Survey.Json as Json
 import Lia.Markdown.Survey.Types as Survey
+import Lia.Utils exposing (percentage)
 import List.Extra
 
 
@@ -133,11 +134,6 @@ vector orderBy list =
                     )
                     []
                 |> ifEmpty
-
-
-percentage : Float -> Int -> Float
-percentage total i =
-    100 * toFloat i / total
 
 
 toVector : Sync -> Maybe (Dict String Int)
