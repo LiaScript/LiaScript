@@ -9,14 +9,23 @@ import Lia.Settings.Update exposing (Msg(..))
 import Lia.Sync.Types as Sync exposing (State(..), Sync)
 import Lia.Sync.Update exposing (Msg(..), SyncMsg(..))
 import Lia.Sync.Via as Backend exposing (Backend)
-import Lia.Utils exposing (btn)
+import Lia.Utils exposing (btn, btnIcon)
 
 
 view : Sync.Settings -> Html Msg
 view settings =
+    let
+        open =
+            case settings.state of
+                Sync.Disconnected ->
+                    True
+
+                _ ->
+                    False
+    in
     Html.div []
         [ Html.h1 [] [ Html.text "Classroom" ]
-        , select settings.sync
+        , select open settings.sync
         , Html.br [] []
         , Html.br [] []
         , case settings.sync.select of
@@ -25,13 +34,34 @@ view settings =
 
             _ ->
                 Html.div []
-                    [ input Room "room" "input" settings.room
+                    [ input open
+                        Room
+                        (Html.span []
+                            [ Html.text "room "
+                            , btnIcon
+                                { title = "generate random"
+                                , tabbable = open
+                                , msg =
+                                    if open then
+                                        Just Random_Generate
+
+                                    else
+                                        Nothing
+                                , icon = "icon-refresh"
+                                }
+                                [ Attr.class "lia-btn--transparent icon-sm"
+                                , Attr.style "padding" "0"
+                                ]
+                            ]
+                        )
+                        "input"
+                        settings.room
                     , Html.br [] []
                     , Html.br [] []
-                    , input Username "user" "input" settings.username
+                    , input open Username (Html.text "user") "input" settings.username
                     , Html.br [] []
                     , Html.br [] []
-                    , input Password "maybe password" "password" settings.password
+                    , input open Password (Html.text "maybe password") "password" settings.password
                     , Html.br [] []
                     , Html.br [] []
                     , button settings.state
@@ -39,12 +69,16 @@ view settings =
         ]
 
 
-input msg label type_ value =
+input editable msg label type_ value =
     Html.label []
-        [ Html.span [ Attr.class "lia-label" ] [ Html.text label ]
+        [ Html.span [ Attr.class "lia-label" ] [ label ]
         , Html.br [] []
         , Html.input
-            [ Event.onInput msg
+            [ if editable then
+                Event.onInput msg
+
+              else
+                Attr.disabled True
             , Attr.value value
             , Attr.style "color" "black"
             , Attr.type_ type_
@@ -53,17 +87,21 @@ input msg label type_ value =
         ]
 
 
-select : Sync -> Html Msg
-select sync =
+select : Bool -> Sync -> Html Msg
+select editable sync =
     Html.map Backend <|
         Html.label []
             [ Html.span [ Attr.class "lia-label" ] [ Html.text "via Backend" ]
             , Html.br [] []
             , Html.div
                 [ Attr.class "lia-dropdown"
-                , not sync.open
-                    |> Open
-                    |> Event.onClick
+                , if editable then
+                    not sync.open
+                        |> Open
+                        |> Event.onClick
+
+                  else
+                    Attr.disabled True
                 ]
                 [ Html.div
                     [ Attr.class "lia-dropdown__selected"
