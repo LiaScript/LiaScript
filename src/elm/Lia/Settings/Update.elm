@@ -1,6 +1,7 @@
 module Lia.Settings.Update exposing
     ( Msg(..)
     , Toggle(..)
+    , closeSync
     , customizeEvent
     , handle
     , toggle_sound
@@ -187,6 +188,11 @@ update main msg model =
 
         Ignore ->
             Return.val model
+
+
+closeSync : Settings -> Settings
+closeSync model =
+    { model | sync = False }
 
 
 handle : Event -> Msg

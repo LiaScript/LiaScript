@@ -26,6 +26,7 @@ import Port.Eval exposing (event)
 import Port.Event as Event exposing (Event)
 import Return exposing (Return)
 import Session exposing (Session)
+import Set exposing (Set)
 import Translations exposing (Lang(..))
 
 
@@ -193,7 +194,14 @@ update session msg model =
                     case Event.popWithId e of
                         Just ( "sync", _, e_ ) ->
                             e_
-                                |> Sync.handle session model
+                                |> Sync.handle session
+                                    (case Event.topic_ e_ of
+                                        Just "connect" ->
+                                            { model | settings = Settings.closeSync model.settings }
+
+                                        _ ->
+                                            model
+                                    )
                                 |> Return.mapCmd UpdateSync
 
                         Just ( "load", Just id, _ ) ->
