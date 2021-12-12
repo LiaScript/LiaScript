@@ -177,6 +177,8 @@ inject_macro ( ( name, escape ), params ) =
                                     |> String.join
                                         (state.indentation
                                             |> String.concat
+                                            |> String.replace "?" ""
+                                            |> String.replace "*" ""
                                             |> (++) "\n"
                                         )
 
