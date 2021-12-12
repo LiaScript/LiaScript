@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.41
+version:  0.9.42
 language: en
 narrator: UK English Male
 
@@ -281,6 +281,10 @@ This will apply the following three patches:
 - elm-patch/dom: enable onclick events as well as innerHTML
 
 ## Version-Changes
+
+**0.9.42** (12/12/2021)
+
+- fix: Indentation for bigger macro-blocks are now injected appropriately
 
 **0.9.41** (07/12/2021)
 
