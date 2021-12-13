@@ -33,6 +33,7 @@ import Combine
         )
 import Dict
 import Lia.Definition.Types exposing (Definition)
+import Lia.Markdown.HTML.Attributes exposing (toURL)
 import Lia.Parser.Context exposing (Context)
 import Lia.Parser.Helper exposing (c_frame)
 import Lia.Parser.Indentation as Indent
@@ -125,9 +126,10 @@ reference_macro =
         |> andMap
             (parameter_list
                 |> ignore (string "](")
-                |> map (\list url -> List.append list [ url ])
+                |> map (\list url baseURL -> List.append list [ toURL baseURL url ])
                 |> andMap (regex "[^)]*")
                 |> ignore (string ")")
+                |> andMap (withState (.defines >> .base >> succeed))
             )
 
 
