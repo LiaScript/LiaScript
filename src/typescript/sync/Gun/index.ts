@@ -63,8 +63,8 @@ export class Sync extends Base {
   }
 
   disconnect() {
-    this.publish(this.syncMsg('leave', this.token))
     this.publish(null)
+    this.publish(this.syncMsg('leave', this.token))
 
     this.sync('disconnect')
 
