@@ -127,8 +127,8 @@ reference_macro =
             (parameter_list
                 |> ignore (string "](")
                 |> map (\list url baseURL -> List.append list [ toURL baseURL url ])
-                |> andMap (regex "[^)]*")
-                |> ignore (string ")")
+                |> andMap (regex "[^) ]*")
+                |> ignore (regex "(\\)|[^)]*\\))")
                 |> andMap (withState (.defines >> .base >> succeed))
             )
 
