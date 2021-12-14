@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.42
+version:  0.9.43
 language: en
 narrator: UK English Male
 
@@ -281,6 +281,16 @@ This will apply the following three patches:
 - elm-patch/dom: enable onclick events as well as innerHTML
 
 ## Version-Changes
+
+**0.9.43** (14/12/2021)
+
+- improve: Reference macros can now also have an optional title field, which
+  will be ignored during the injection. However, this might be useful for
+  adding information about the content of the data:
+
+  ```markdown
+  @[Macro.Name](URL "some more information")
+  ```
 
 **0.9.42** (12/12/2021)
 
