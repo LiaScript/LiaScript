@@ -28,14 +28,8 @@ export function initSettings(
   if (send) {
     send({
       route: [
-        {
-          topic: Port.SETTINGS,
-          id: null,
-        },
-        {
-          topic: 'init',
-          id: null,
-        },
+        [Port.SETTINGS, -1],
+        ['init', -1],
       ],
       message: data,
     })

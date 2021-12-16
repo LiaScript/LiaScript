@@ -118,7 +118,7 @@ update scripts msg vector =
 
         Handle event ->
             case Event.destructure event of
-                Just ( "eval", Just section, message ) ->
+                Just ( "eval", section, message ) ->
                     case
                         vector
                             |> Array.get section

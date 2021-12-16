@@ -196,7 +196,7 @@ update main msg scripts =
 
         Handle event ->
             case Event.topicWithId event of
-                Just ( "code", Just section ) ->
+                Just ( "code", section ) ->
                     let
                         ( publish, javascript ) =
                             scripts
@@ -245,7 +245,7 @@ update main msg scripts =
                                         []
                                     )
 
-                Just ( "codeX", Just section ) ->
+                Just ( "codeX", section ) ->
                     let
                         ( publish, javascript ) =
                             scripts
@@ -272,7 +272,7 @@ update main msg scripts =
                                         []
                                     )
 
-                Just ( "sub", Just section ) ->
+                Just ( "sub", section ) ->
                     case scripts |> Array.get section |> Maybe.andThen .result of
                         Just (IFrame lia) ->
                             lia

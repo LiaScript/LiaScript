@@ -12,14 +12,11 @@ export type ErrMessage = {
 }
 
 export type Event = {
-  route: Point[]
+  route: POI[]
   message: any
 }
 
-type Point = {
-  topic: string
-  id: number | null
-}
+type POI = [string, number]
 
 export type Settings = {
   table_of_contents: Boolean

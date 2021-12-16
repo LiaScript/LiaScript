@@ -86,9 +86,9 @@ export class Sync {
   syncMsg(topic: string, message: any = null) {
     return {
       route: [
-        { topic: 'sync', id: null },
-        { topic: 'sync', id: null },
-        { topic: topic, id: null },
+        ['sync', -1],
+        ['sync', -1],
+        [topic, -1],
       ],
       message: message,
     }

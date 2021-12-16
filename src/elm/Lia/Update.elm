@@ -26,7 +26,6 @@ import Port.Eval exposing (event)
 import Port.Event as Event exposing (Event)
 import Return exposing (Return, sync)
 import Session exposing (Session)
-import Set exposing (Set)
 import Translations exposing (Lang(..))
 
 
@@ -206,10 +205,10 @@ update session msg model =
                                     )
                                 |> Return.mapCmd UpdateSync
 
-                        Just ( "load", Just id, _ ) ->
+                        Just ( "load", id, _ ) ->
                             update session (Load True id) model
 
-                        Just ( "local", Just id, e_ ) ->
+                        Just ( "local", id, e_ ) ->
                             case Array.get id model.sections of
                                 Just sec ->
                                     sec
@@ -219,7 +218,7 @@ update session msg model =
                                 _ ->
                                     Return.val model
 
-                        Just ( topic, Just id, e_ ) ->
+                        Just ( topic, id, e_ ) ->
                             case Array.get id model.sections of
                                 Just sec ->
                                     sec

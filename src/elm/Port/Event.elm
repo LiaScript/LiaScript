@@ -19,19 +19,26 @@ module Port.Event exposing
 
 import Json.Decode as JD
 import Json.Encode as JE
-import Lia.Markdown.Chart.Types exposing (Point)
 
 
 type alias Event =
-    { route : List Point
+    { route : List POI
     , message : JE.Value
     }
 
 
-type alias Point =
-    { topic : String
-    , id : Maybe Int
-    }
+{-| A `POI` in this case is only a tuple of a string, which defines where
+an event comes from. The usage of the additional `Int` parameter is mostly
+used, if there is an array involved. For example by using quizzes, the
+additional number is used to identify the quiz on vector position 12.
+A default value is -1, which in turn will also result as `Nothing`, if an
+Array is queried ...
+
+    ( "quiz", 12 )
+
+-}
+type alias POI =
+    ( String, Int )
 
 
 empty : String -> Event
@@ -41,38 +48,38 @@ empty topic =
 
 init : String -> JE.Value -> Event
 init topic =
-    Event [ Point topic Nothing ]
+    Event [ ( topic, -1 ) ]
 
 
 initWithId : String -> Int -> JE.Value -> Event
 initWithId topic id =
-    Event [ Point topic (Just id) ]
+    Event [ ( topic, id ) ]
 
 
 push : String -> Event -> Event
 push topic to =
-    { to | route = Point topic Nothing :: to.route }
+    { to | route = ( topic, -1 ) :: to.route }
 
 
 pushWithId : String -> Int -> Event -> Event
 pushWithId topic id to =
-    { to | route = Point topic (Just id) :: to.route }
+    { to | route = ( topic, id ) :: to.route }
 
 
 pop : Event -> Maybe ( String, Event )
 pop event =
     case event.route of
-        point :: route ->
-            Just ( point.topic, { event | route = route } )
+        ( topic, _ ) :: route ->
+            Just ( topic, { event | route = route } )
 
         _ ->
             Nothing
 
 
-popWithId : Event -> Maybe ( String, Maybe Int, Event )
+popWithId : Event -> Maybe ( String, Int, Event )
 popWithId event =
     case event.route of
-        { topic, id } :: route ->
+        ( topic, id ) :: route ->
             Just ( topic, id, { event | route = route } )
 
         _ ->
@@ -83,24 +90,31 @@ topic_ : Event -> Maybe String
 topic_ =
     .route
         >> List.head
-        >> Maybe.map .topic
+        >> Maybe.map Tuple.first
 
 
-topicWithId : Event -> Maybe ( String, Maybe Int )
+topicWithId : Event -> Maybe ( String, Int )
 topicWithId =
-    .route
-        >> List.head
-        >> Maybe.map (\{ topic, id } -> ( topic, id ))
+    .route >> List.head
 
 
 id_ : Event -> Maybe Int
 id_ =
     .route
         >> List.head
-        >> Maybe.andThen .id
+        >> Maybe.andThen checkId
 
 
-destructure : Event -> Maybe ( String, Maybe Int, JE.Value )
+checkId : POI -> Maybe Int
+checkId ( _, i ) =
+    if i >= 0 then
+        Just i
+
+    else
+        Nothing
+
+
+destructure : Event -> Maybe ( String, Int, JE.Value )
 destructure event =
     case topicWithId event of
         Just ( topic, id ) ->
@@ -115,31 +129,16 @@ message =
     .message
 
 
-encode : Event -> JE.Value
-encode event =
-    JE.object
-        [ ( "route", JE.list encPoint event.route )
-        , ( "message", event.message )
-        ]
+store : JE.Value -> Event
+store =
+    init "store"
 
 
-encPoint : Point -> JE.Value
-encPoint { topic, id } =
-    JE.object
-        [ ( "topic", JE.string topic )
-        , ( "id"
-          , id
-                |> Maybe.map JE.int
-                |> Maybe.withDefault JE.null
-          )
-        ]
-
-
-decPoint : JD.Decoder Point
+decPoint : JD.Decoder POI
 decPoint =
-    JD.map2 Point
-        (JD.field "topic" JD.string)
-        (JD.field "id" (JD.maybe JD.int))
+    JD.map2 Tuple.pair
+        (JD.index 0 JD.string)
+        (JD.index 1 JD.int)
 
 
 decode : JD.Value -> Result JD.Error Event
@@ -151,6 +150,17 @@ decode =
         )
 
 
-store : JE.Value -> Event
-store =
-    init "store"
+encode : Event -> JE.Value
+encode event =
+    JE.object
+        [ ( "route", JE.list encPoint event.route )
+        , ( "message", event.message )
+        ]
+
+
+encPoint : POI -> JE.Value
+encPoint ( topic, id ) =
+    JE.list identity
+        [ JE.string topic
+        , JE.int id
+        ]

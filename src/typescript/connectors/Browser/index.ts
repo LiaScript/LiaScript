@@ -24,14 +24,8 @@ class Connector extends Base {
     if (this.database)
       this.database.open(uidDB, versionDB, {
         route: [
-          {
-            topic: Port.CODE,
-            id: slide,
-          },
-          {
-            topic: Port.RESTORE,
-            id: null,
-          },
+          [Port.CODE, slide],
+          [Port.RESTORE, -1],
         ],
         message: null,
       })

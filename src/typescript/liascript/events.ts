@@ -132,8 +132,8 @@ export class LiaEvents {
 
   dispatch_input(event: Lia.Event) {
     try {
-      if (event.route[0].id !== null && event.route[1].id !== null)
-        this.input[event.route[0].id][event.route[1].id][event.route[1].topic](
+      if (event.route[0][1] !== -1 && event.route[1][1] !== -1)
+        this.input[event.route[0][1]][event.route[1][1]][event.route[1][0]](
           event.message
         )
     } catch (e) {
@@ -184,7 +184,6 @@ function lia_wait() {
           break
         }
         case JS.exec: {
-          console.error('TODO: SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS', event)
           lia_execute_event(event.event, event.send, event.section)
           break
         }
@@ -251,7 +250,7 @@ export function lia_eval_event(
 ) {
   lia_eval(event.message, {
     lia: (result: string, details = [], ok = true) => {
-      event.route[1].topic = JS.eval
+      event.route[1][0] = JS.eval
       event.message = {
         result: result,
         details: details,
@@ -260,14 +259,14 @@ export function lia_eval_event(
       send(event)
     },
     log: (topic: string, sep: string, ...args: any) => {
-      event.route[1].topic = topic
+      event.route[1][0] = topic
       event.message = list_to_string(sep, args)
       send(event)
     },
     // service: websocket(channel),
     handle: (name: string, fn: any) => {
-      const e1 = event.route[0].id || -1
-      const e2 = event.route[1].id || -1
+      const e1 = event.route[0][1]
+      const e2 = event.route[1][1]
       handler.register_input(e1, e2, name, fn)
     },
     register: (name: string, fn: any) => {
@@ -302,14 +301,8 @@ function execute_response(
 
     send({
       route: [
-        {
-          topic: Port.EFFECT,
-          id: section === undefined ? -1 : section,
-        },
-        {
-          topic: topic,
-          id: event_id,
-        },
+        [Port.EFFECT, section === undefined ? -1 : section],
+        [topic, event_id],
       ],
       message: {
         ok: ok,
@@ -323,7 +316,7 @@ function execute_response(
 export function lia_execute_event(
   event: { code: string; delay: number; id?: number },
   sender?: Lia.Send,
-  section?: number | null
+  section?: number
 ) {
   if (window.event_semaphore > 0) {
     lia_queue.push({

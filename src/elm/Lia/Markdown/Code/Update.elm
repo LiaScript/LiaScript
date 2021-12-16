@@ -143,7 +143,7 @@ update scripts msg model =
         --|> Return.sync (PEvent.initWithId "load" idx (JE.int version))
         Handle event ->
             case PEvent.destructure event of
-                Just ( "eval", Just section, _ ) ->
+                Just ( "eval", section, _ ) ->
                     let
                         e =
                             Event.evalDecode event
@@ -180,32 +180,32 @@ update scripts msg model =
                 Just ( "restore", _, message ) ->
                     restore message model
 
-                Just ( "debug", Just section, message ) ->
+                Just ( "debug", section, message ) ->
                     model
                         |> maybe_project section (logger Log.add Log.Debug message)
                         |> maybe_update section model
 
-                Just ( "info", Just section, message ) ->
+                Just ( "info", section, message ) ->
                     model
                         |> maybe_project section (logger Log.add Log.Info message)
                         |> maybe_update section model
 
-                Just ( "warn", Just section, message ) ->
+                Just ( "warn", section, message ) ->
                     model
                         |> maybe_project section (logger Log.add Log.Warn message)
                         |> maybe_update section model
 
-                Just ( "error", Just section, message ) ->
+                Just ( "error", section, message ) ->
                     model
                         |> maybe_project section (logger Log.add Log.Error message)
                         |> maybe_update section model
 
-                Just ( "html", Just section, message ) ->
+                Just ( "html", section, message ) ->
                     model
                         |> maybe_project section (logger Log.add Log.HTML message)
                         |> maybe_update section model
 
-                Just ( "stream", Just section, message ) ->
+                Just ( "stream", section, message ) ->
                     model
                         |> maybe_project section (logger Log.add Log.Stream message)
                         |> maybe_update section model

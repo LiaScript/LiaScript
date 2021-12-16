@@ -133,12 +133,7 @@ class Connector extends Base {
     try {
       location = JSON.parse(this.scorm.LMSGetValue('cmi.core.lesson_location'))
       this.send({
-        route: [
-          {
-            topic: 'goto',
-            id: location.slide,
-          },
-        ],
+        route: [['goto', location.slide]],
         message: null,
       })
     } catch (e) {
@@ -319,11 +314,11 @@ class Connector extends Base {
   store(event: Lia.Event) {
     if (!this.scorm || !this.active) return
 
-    if (event.route[0].topic === 'code') {
+    if (event.route[0][0] === 'code') {
       for (let i = 0; i < event.message.length; i++) {
         this.logInteraction({
-          type: event.route[0].topic,
-          sec: event.route[0].id || -1,
+          type: event.route[0][0],
+          sec: event.route[0][1],
           i: i,
           data: event.message[i],
         })
@@ -339,10 +334,7 @@ class Connector extends Base {
     for (let i = 0; i < count; i++) {
       let item = this.getObjective(i)
       if (!!item) {
-        if (
-          item.sec === event.route[0].id &&
-          item.type === event.route[0].topic
-        ) {
+        if (item.sec === event.route[0][1] && item.type === event.route[0][0]) {
           // store only the position to be overwritten
           items.push(i)
         }
@@ -350,8 +342,8 @@ class Connector extends Base {
     }
 
     let obj = {
-      type: event.route[0].topic,
-      sec: event.route[0].id || -1,
+      type: event.route[0][0],
+      sec: event.route[0][1],
       i: 0,
       data: null,
     }
@@ -374,15 +366,9 @@ class Connector extends Base {
   load(event: Lia.Event) {
     if (!this.scorm) return
 
-    if (event.route[0].topic === 'code') {
+    if (event.route[0][0] === 'code') {
       this.send({
-        route: [
-          event.route[0],
-          {
-            topic: 'restore',
-            id: null,
-          },
-        ],
+        route: [event.route[0], ['restore', -1]],
         message: null,
       })
       return
@@ -395,10 +381,7 @@ class Connector extends Base {
     for (let i = 0; i < count; i++) {
       let item = this.getObjective(i)
       if (!!item) {
-        if (
-          item.sec === event.route[0].id &&
-          item.type === event.route[0].topic
-        ) {
+        if (item.sec === event.route[0][1] && item.type === event.route[0][0]) {
           items.push(item)
         }
       }
@@ -406,13 +389,7 @@ class Connector extends Base {
 
     if (items.length !== 0) {
       this.send({
-        route: [
-          event.route[0],
-          {
-            topic: 'restore',
-            id: null,
-          },
-        ],
+        route: [event.route[0], ['restore', -1]],
         message: items.sort((a, b) => a.i - b.i).map((e) => e.data),
       })
     }

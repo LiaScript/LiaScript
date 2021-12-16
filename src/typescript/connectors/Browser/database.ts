@@ -53,8 +53,8 @@ class LiaDB {
     }
 
     if (init && this.db) {
-      const item = await this.db[init.route[0].topic].get({
-        id: init.route[0].id,
+      const item = await this.db[init.route[0][0]].get({
+        id: init.route[0][1],
         version: versionDB,
       })
 
@@ -71,11 +71,11 @@ class LiaDB {
     if (!this.db || this.version === 0) return
 
     log.warn(
-      `liaDB: event(store), table(${event.route[0].topic}), id(${event.route[0].id}), data(${event.message})`
+      `liaDB: event(store), table(${event.route[0][0]}), id(${event.route[0][1]}), data(${event.message})`
     )
 
-    await this.db[event.route[0].topic].put({
-      id: event.route[0].id,
+    await this.db[event.route[0][0]].put({
+      id: event.route[0][1],
       version: versionDB != null ? versionDB : this.version,
       data: event.message,
       created: new Date().getTime(),
@@ -88,7 +88,7 @@ class LiaDB {
     log.info('loading => ', event.message, event.route)
 
     const item = await this.db[event.message].get({
-      id: event.route[0].id,
+      id: event.route[0][1],
       version: versionDB != undefined ? versionDB : this.version,
     })
 
@@ -96,18 +96,12 @@ class LiaDB {
       log.info('restore table', event.message) //, e._value.data)
 
       event.message = item.data
-      event.route.push({
-        topic: Port.RESTORE,
-        id: null,
-      })
+      event.route.push([Port.RESTORE, -1])
 
       this.send(event)
     } else if (event.message === Port.CODE) {
       event.message = null
-      event.route.push({
-        topic: Port.RESTORE,
-        id: null,
-      })
+      event.route.push([Port.RESTORE, -1])
       this.send(event)
     }
   }
@@ -150,20 +144,18 @@ class LiaDB {
         version: this.version,
       })
 
-      console.warn('SSSSSSSSSSSSSS', vector, event)
+      if (vector.data) {
+        let project = vector.data[event.route[0][1]]
 
-      if (vector.data && event.route[0].id !== null) {
-        let project = vector.data[event.route[0].id]
-
-        switch (event.route[0].topic) {
+        switch (event.route[0][0]) {
           case 'flip': {
-            if (event.route[1].topic === 'view' && event.route[1].id !== null) {
-              project.file[event.route[1].id].visible = event.message
+            if (event.route[1][0] === 'view') {
+              project.file[event.route[1][1]].visible = event.message
             } else if (
-              event.route[1].topic === 'fullscreen' &&
-              event.route[1].id !== null
+              event.route[1][0] === 'fullscreen' &&
+              event.route[1][1] !== -1
             ) {
-              project.file[event.route[1].id].fullscreen = event.message
+              project.file[event.route[1][1]].fullscreen = event.message
             }
             break
           }
@@ -198,7 +190,7 @@ class LiaDB {
           }
         }
 
-        vector.data[event.route[0].id] = project
+        vector.data[event.route[0][1]] = project
 
         await db.code.put(vector)
       }
@@ -219,12 +211,7 @@ class LiaDB {
       })
 
       this.send({
-        route: [
-          {
-            topic: Port.RESTORE,
-            id: null,
-          },
-        ],
+        route: [[Port.RESTORE, -1]],
         message: offline === undefined ? null : offline.data,
       })
     }
@@ -235,12 +222,7 @@ class LiaDB {
       const course = await this.dbIndex.courses.get(uidDB)
 
       this.send({
-        route: [
-          {
-            topic: 'getIndex',
-            id: null,
-          },
-        ],
+        route: [['getIndex', -1]],
         message: {
           id: uidDB,
           course: course,
@@ -250,12 +232,7 @@ class LiaDB {
       log.warn('DB: getIndex -> ', e.message)
 
       this.send({
-        route: [
-          {
-            topic: 'getIndex',
-            id: null,
-          },
-        ],
+        route: [['getIndex', -1]],
         message: {
           id: uidDB,
           course: null,
@@ -272,12 +249,7 @@ class LiaDB {
     }
 
     this.send({
-      route: [
-        {
-          topic: Port.INDEX,
-          id: null,
-        },
-      ],
+      route: [[Port.INDEX, -1]],
       message: {
         list: courses,
       },

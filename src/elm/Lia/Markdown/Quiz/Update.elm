@@ -113,7 +113,7 @@ update scripts msg vector =
 
         Handle event ->
             case Event.topicWithId event of
-                Just ( "eval", Just section ) ->
+                Just ( "eval", section ) ->
                     case
                         vector
                             |> Array.get section

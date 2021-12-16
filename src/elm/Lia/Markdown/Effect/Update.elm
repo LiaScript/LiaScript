@@ -123,7 +123,7 @@ update main sound msg model =
 
             Handle event ->
                 case Event.topicWithId event of
-                    Just ( "speak", Just section ) ->
+                    Just ( "speak", section ) ->
                         Return.val <|
                             case
                                 event

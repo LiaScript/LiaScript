@@ -91,7 +91,7 @@ update scripts msg vector =
                         |> Return.val
                         |> init execute
 
-                Just ( "eval", Just section, message ) ->
+                Just ( "eval", section, message ) ->
                     case
                         vector
                             |> Array.get section
