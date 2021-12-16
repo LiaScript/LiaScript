@@ -22,7 +22,7 @@ import Json.Encode as JE
 
 
 type alias Event =
-    { route : List POI
+    { track : List POI
     , message : JE.Value
     }
 
@@ -58,19 +58,19 @@ initWithId topic id =
 
 push : String -> Event -> Event
 push topic to =
-    { to | route = ( topic, -1 ) :: to.route }
+    { to | track = ( topic, -1 ) :: to.track }
 
 
 pushWithId : String -> Int -> Event -> Event
 pushWithId topic id to =
-    { to | route = ( topic, id ) :: to.route }
+    { to | track = ( topic, id ) :: to.track }
 
 
 pop : Event -> Maybe ( String, Event )
 pop event =
-    case event.route of
+    case event.track of
         ( topic, _ ) :: route ->
-            Just ( topic, { event | route = route } )
+            Just ( topic, { event | track = route } )
 
         _ ->
             Nothing
@@ -78,9 +78,9 @@ pop event =
 
 popWithId : Event -> Maybe ( String, Int, Event )
 popWithId event =
-    case event.route of
+    case event.track of
         ( topic, id ) :: route ->
-            Just ( topic, id, { event | route = route } )
+            Just ( topic, id, { event | track = route } )
 
         _ ->
             Nothing
@@ -88,19 +88,19 @@ popWithId event =
 
 topic_ : Event -> Maybe String
 topic_ =
-    .route
+    .track
         >> List.head
         >> Maybe.map Tuple.first
 
 
 topicWithId : Event -> Maybe ( String, Int )
 topicWithId =
-    .route >> List.head
+    .track >> List.head
 
 
 id_ : Event -> Maybe Int
 id_ =
-    .route
+    .track
         >> List.head
         >> Maybe.andThen checkId
 
@@ -153,7 +153,7 @@ decode =
 encode : Event -> JE.Value
 encode event =
     JE.object
-        [ ( "route", JE.list encPoint event.route )
+        [ ( "route", JE.list encPoint event.track )
         , ( "message", event.message )
         ]
 
