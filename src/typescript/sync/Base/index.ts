@@ -85,7 +85,8 @@ export class Sync {
 
   syncMsg(topic: string, message: any = null) {
     return {
-      route: [
+      reply: false,
+      track: [
         ['sync', -1],
         ['sync', -1],
         [topic, -1],

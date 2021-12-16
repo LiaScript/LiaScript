@@ -27,7 +27,8 @@ export function initSettings(
 
   if (send) {
     send({
-      route: [
+      reply: false,
+      track: [
         [Port.SETTINGS, -1],
         ['init', -1],
       ],

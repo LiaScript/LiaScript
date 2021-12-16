@@ -53,8 +53,8 @@ class LiaDB {
     }
 
     if (init && this.db) {
-      const item = await this.db[init.route[0][0]].get({
-        id: init.route[0][1],
+      const item = await this.db[init.track[0][0]].get({
+        id: init.track[0][1],
         version: versionDB,
       })
 
@@ -71,11 +71,11 @@ class LiaDB {
     if (!this.db || this.version === 0) return
 
     log.warn(
-      `liaDB: event(store), table(${event.route[0][0]}), id(${event.route[0][1]}), data(${event.message})`
+      `liaDB: event(store), table(${event.track[0][0]}), id(${event.track[0][1]}), data(${event.message})`
     )
 
-    await this.db[event.route[0][0]].put({
-      id: event.route[0][1],
+    await this.db[event.track[0][0]].put({
+      id: event.track[0][1],
       version: versionDB != null ? versionDB : this.version,
       data: event.message,
       created: new Date().getTime(),
@@ -85,10 +85,10 @@ class LiaDB {
   async load(event: Lia.Event, versionDB?: number) {
     if (!this.db) return
 
-    log.info('loading => ', event.message, event.route)
+    log.info('loading => ', event.message, event.track)
 
     const item = await this.db[event.message].get({
-      id: event.route[0][1],
+      id: event.track[0][1],
       version: versionDB != undefined ? versionDB : this.version,
     })
 
@@ -96,12 +96,12 @@ class LiaDB {
       log.info('restore table', event.message) //, e._value.data)
 
       event.message = item.data
-      event.route.push([Port.RESTORE, -1])
+      event.track.push([Port.RESTORE, -1])
 
       this.send(event)
     } else if (event.message === Port.CODE) {
       event.message = null
-      event.route.push([Port.RESTORE, -1])
+      event.track.push([Port.RESTORE, -1])
       this.send(event)
     }
   }
@@ -145,17 +145,17 @@ class LiaDB {
       })
 
       if (vector.data) {
-        let project = vector.data[event.route[0][1]]
+        let project = vector.data[event.track[0][1]]
 
-        switch (event.route[0][0]) {
+        switch (event.track[0][0]) {
           case 'flip': {
-            if (event.route[1][0] === 'view') {
-              project.file[event.route[1][1]].visible = event.message
+            if (event.track[1][0] === 'view') {
+              project.file[event.track[1][1]].visible = event.message
             } else if (
-              event.route[1][0] === 'fullscreen' &&
-              event.route[1][1] !== -1
+              event.track[1][0] === 'fullscreen' &&
+              event.track[1][1] !== -1
             ) {
-              project.file[event.route[1][1]].fullscreen = event.message
+              project.file[event.track[1][1]].fullscreen = event.message
             }
             break
           }
@@ -190,7 +190,7 @@ class LiaDB {
           }
         }
 
-        vector.data[event.route[0][1]] = project
+        vector.data[event.track[0][1]] = project
 
         await db.code.put(vector)
       }
@@ -211,7 +211,8 @@ class LiaDB {
       })
 
       this.send({
-        route: [[Port.RESTORE, -1]],
+        reply: false,
+        track: [[Port.RESTORE, -1]],
         message: offline === undefined ? null : offline.data,
       })
     }
@@ -222,7 +223,8 @@ class LiaDB {
       const course = await this.dbIndex.courses.get(uidDB)
 
       this.send({
-        route: [['getIndex', -1]],
+        reply: false,
+        track: [['getIndex', -1]],
         message: {
           id: uidDB,
           course: course,
@@ -232,7 +234,8 @@ class LiaDB {
       log.warn('DB: getIndex -> ', e.message)
 
       this.send({
-        route: [['getIndex', -1]],
+        reply: false,
+        track: [['getIndex', -1]],
         message: {
           id: uidDB,
           course: null,
@@ -249,7 +252,8 @@ class LiaDB {
     }
 
     this.send({
-      route: [[Port.INDEX, -1]],
+      reply: false,
+      track: [[Port.INDEX, -1]],
       message: {
         list: courses,
       },

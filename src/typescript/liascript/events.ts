@@ -132,8 +132,8 @@ export class LiaEvents {
 
   dispatch_input(event: Lia.Event) {
     try {
-      if (event.route[0][1] !== -1 && event.route[1][1] !== -1)
-        this.input[event.route[0][1]][event.route[1][1]][event.route[1][0]](
+      if (event.track[0][1] !== -1 && event.track[1][1] !== -1)
+        this.input[event.track[0][1]][event.track[1][1]][event.track[1][0]](
           event.message
         )
     } catch (e) {
@@ -250,7 +250,7 @@ export function lia_eval_event(
 ) {
   lia_eval(event.message, {
     lia: (result: string, details = [], ok = true) => {
-      event.route[1][0] = JS.eval
+      event.track[1][0] = JS.eval
       event.message = {
         result: result,
         details: details,
@@ -259,14 +259,14 @@ export function lia_eval_event(
       send(event)
     },
     log: (topic: string, sep: string, ...args: any) => {
-      event.route[1][0] = topic
+      event.track[1][0] = topic
       event.message = list_to_string(sep, args)
       send(event)
     },
     // service: websocket(channel),
     handle: (name: string, fn: any) => {
-      const e1 = event.route[0][1]
-      const e2 = event.route[1][1]
+      const e1 = event.track[0][1]
+      const e2 = event.track[1][1]
       handler.register_input(e1, e2, name, fn)
     },
     register: (name: string, fn: any) => {
@@ -300,7 +300,8 @@ function execute_response(
     }
 
     send({
-      route: [
+      reply: false,
+      track: [
         [Port.EFFECT, section === undefined ? -1 : section],
         [topic, event_id],
       ],

@@ -23,7 +23,8 @@ class Connector extends Base {
   open(uidDB: string, versionDB: number, slide: number, _data?: Lia.Event) {
     if (this.database)
       this.database.open(uidDB, versionDB, {
-        route: [
+        reply: false,
+        track: [
           [Port.CODE, slide],
           [Port.RESTORE, -1],
         ],
