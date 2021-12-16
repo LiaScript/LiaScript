@@ -15,6 +15,7 @@ module Port.Event exposing
     , store
     , topicWithId
     , topic_
+    , withNoReply
     )
 
 import Json.Decode as JD
@@ -22,7 +23,8 @@ import Json.Encode as JE
 
 
 type alias Event =
-    { track : List POI
+    { reply : Bool
+    , track : List POI
     , message : JE.Value
     }
 
@@ -48,12 +50,20 @@ empty topic =
 
 init : String -> JE.Value -> Event
 init topic =
-    Event [ ( topic, -1 ) ]
+    Event True [ ( topic, -1 ) ]
+
+
+{-| Simply set the default `reply` value to `False`, which will result in an
+event to which no response message will be send from Typescript.
+-}
+withNoReply : Event -> Event
+withNoReply e =
+    { e | reply = False }
 
 
 initWithId : String -> Int -> JE.Value -> Event
 initWithId topic id =
-    Event [ ( topic, id ) ]
+    Event True [ ( topic, id ) ]
 
 
 push : String -> Event -> Event
@@ -144,7 +154,8 @@ decPoint =
 decode : JD.Value -> Result JD.Error Event
 decode =
     JD.decodeValue
-        (JD.map2 Event
+        (JD.map3 Event
+            (JD.field "reply" JD.bool)
             (JD.field "route" (JD.list decPoint))
             (JD.field "message" JD.value)
         )
@@ -153,7 +164,8 @@ decode =
 encode : Event -> JE.Value
 encode event =
     JE.object
-        [ ( "route", JE.list encPoint event.track )
+        [ ( "reply", JE.bool event.reply )
+        , ( "route", JE.list encPoint event.track )
         , ( "message", event.message )
         ]
 
