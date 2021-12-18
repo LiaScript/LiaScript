@@ -215,7 +215,7 @@ update session model msg =
                                )
                              ]
                                 |> JE.object
-                                |> Event.init "connect"
+                                |> Event.init Nothing "connect"
                             )
 
                 _ ->
@@ -224,7 +224,7 @@ update session model msg =
         Disconnect ->
             { model | sync = { sync | state = Pending } }
                 |> Return.val
-                |> Return.sync (Event.empty "disconnect")
+                |> Return.sync (Event.empty Nothing "disconnect")
 
 
 updateSync msg sync =
@@ -286,7 +286,7 @@ globalSync model =
                        )
                      ]
                         |> JE.object
-                        |> Event.init "join"
+                        |> Event.init Nothing "join"
                         |> Event.push "sync"
                     )
 

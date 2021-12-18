@@ -14,6 +14,7 @@ export type ErrMessage = {
 export type Event = {
   reply: boolean
   track: POI[]
+  service: string | null
   message: any
 }
 

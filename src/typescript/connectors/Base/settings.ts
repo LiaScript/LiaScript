@@ -32,6 +32,7 @@ export function initSettings(
         [Port.SETTINGS, -1],
         ['init', -1],
       ],
+      service: null,
       message: data,
     })
   }

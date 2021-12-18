@@ -155,7 +155,7 @@ loadResource old new =
     ( List.append old to_load
     , List.map
         (\res ->
-            Event.init "resource" <|
+            Event.init Nothing "resource" <|
                 JE.list JE.string <|
                     case res of
                         Script url ->

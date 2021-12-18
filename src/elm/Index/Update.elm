@@ -46,28 +46,28 @@ index =
 
 init : Event
 init =
-    Event.empty "list"
+    Event.empty Nothing "list"
         |> index
 
 
 delete : String -> Event
 delete =
     JE.string
-        >> Event.init "delete"
+        >> Event.init Nothing "delete"
         >> index
 
 
 get : String -> Event
 get =
     JE.string
-        >> Event.init "get"
+        >> Event.init Nothing "get"
         >> index
 
 
 restore : String -> String -> Event
 restore version =
     JE.string
-        >> Event.initWithId "restore" (Version.getMajor version)
+        >> Event.initWithId Nothing "restore" (Version.getMajor version)
         >> index
 
 
@@ -75,7 +75,7 @@ reset : String -> Int -> Event
 reset course version =
     course
         |> JE.string
-        |> Event.initWithId "reset" version
+        |> Event.initWithId Nothing "reset" version
         |> index
 
 

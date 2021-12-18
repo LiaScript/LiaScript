@@ -40,7 +40,7 @@ event id code scripts inputs =
         |> List.foldl replace_id code_
         |> replace_0 default
         |> JE.string
-        |> Event.initWithId "eval" id
+        |> Event.initWithId Nothing "eval" id
 
 
 replace_0 : String -> String -> String

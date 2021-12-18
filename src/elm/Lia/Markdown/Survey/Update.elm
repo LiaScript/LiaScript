@@ -132,7 +132,7 @@ update scripts msg vector =
                                 |> doSync
                                 |> Return.script
                                     (message
-                                        |> Event.initWithId "code" scriptID
+                                        |> Event.initWithId Nothing "code" scriptID
                                         |> JS.handle
                                     )
 
@@ -172,7 +172,7 @@ update scripts msg vector =
 
 doSync : Return Vector msg sub -> Return Vector msg sub
 doSync =
-    Return.sync (Event.init "" JE.null)
+    Return.sync (Event.init Nothing "" JE.null)
 
 
 update_ :

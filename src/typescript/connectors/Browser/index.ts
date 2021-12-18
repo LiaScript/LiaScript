@@ -28,6 +28,7 @@ class Connector extends Base {
           [Port.CODE, slide],
           [Port.RESTORE, -1],
         ],
+        service: null,
         message: null,
       })
   }

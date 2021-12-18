@@ -305,6 +305,7 @@ function execute_response(
         [Port.EFFECT, section === undefined ? -1 : section],
         [topic, event_id],
       ],
+      service: null,
       message: {
         ok: ok,
         result: msg,

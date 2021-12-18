@@ -102,7 +102,7 @@ update scripts msg vector =
                                 |> Return.val
                                 |> Return.script
                                     (message
-                                        |> Event.initWithId "code" scriptID
+                                        |> Event.initWithId Nothing "code" scriptID
                                         |> JS.handle
                                     )
 

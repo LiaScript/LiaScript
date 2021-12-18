@@ -104,7 +104,7 @@ load_first_slide session model =
             , to_do =
                 (model
                     |> Json.encode
-                    |> Event.initWithId "init" model.section_active
+                    |> Event.initWithId Nothing "init" model.section_active
                 )
                     :: Settings.customizeEvent model.settings
                     :: model.to_do

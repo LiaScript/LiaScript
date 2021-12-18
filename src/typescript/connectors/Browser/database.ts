@@ -213,6 +213,7 @@ class LiaDB {
       this.send({
         reply: false,
         track: [[Port.RESTORE, -1]],
+        service: null,
         message: offline === undefined ? null : offline.data,
       })
     }
@@ -225,6 +226,7 @@ class LiaDB {
       this.send({
         reply: false,
         track: [['getIndex', -1]],
+        service: null,
         message: {
           id: uidDB,
           course: course,
@@ -236,6 +238,7 @@ class LiaDB {
       this.send({
         reply: false,
         track: [['getIndex', -1]],
+        service: null,
         message: {
           id: uidDB,
           course: null,
@@ -254,6 +257,7 @@ class LiaDB {
     this.send({
       reply: false,
       track: [[Port.INDEX, -1]],
+      service: null,
       message: {
         list: courses,
       },

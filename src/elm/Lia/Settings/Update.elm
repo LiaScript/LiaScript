@@ -162,7 +162,7 @@ update main msg model =
         Reset ->
             model
                 |> Return.val
-                |> Return.batchEvent (Event.empty "reset")
+                |> Return.batchEvent (Event.empty Nothing "reset")
 
         ShareCourse url ->
             model
@@ -184,7 +184,7 @@ update main msg model =
         Toggle TranslateWithGoogle ->
             { model | translateWithGoogle = True }
                 |> Return.val
-                |> Return.batchEvent (Event.empty "googleTranslate")
+                |> Return.batchEvent (Event.empty Nothing "googleTranslate")
 
         Ignore ->
             Return.val model
@@ -232,7 +232,7 @@ customizeEvent settings =
         JE.null
     ]
         |> JE.list identity
-        |> Event.init "settings"
+        |> Event.init Nothing "settings"
 
 
 no_log : Maybe String -> Settings -> Return Settings Msg sub

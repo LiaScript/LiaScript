@@ -66,7 +66,7 @@ update main msg scripts =
                         |> update main
                             (Eval True value []
                                 |> Eval.encode
-                                |> Event.initWithId "code" id
+                                |> Event.initWithId Nothing "code" id
                                 |> Handle
                             )
 
@@ -328,7 +328,7 @@ execute delay ( id, code ) =
     , ( "id", JE.int id )
     ]
         |> JE.object
-        |> Event.initWithId "execute" id
+        |> Event.initWithId Nothing "execute" id
 
 
 update_ : Maybe Definition -> Int -> JE.Value -> Scripts SubSection -> ( Bool, Scripts SubSection )

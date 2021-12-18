@@ -148,7 +148,8 @@ update main sound msg model =
 scrollTo : Bool -> String -> Event
 scrollTo force =
     JE.string
-        >> Event.initWithId "scrollTo"
+        >> Event.initWithId Nothing
+            "scrollTo"
             (if force then
                 -1
 

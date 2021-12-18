@@ -180,7 +180,7 @@ update session msg model =
                 Just ( "reset", _ ) ->
                     model
                         |> Return.val
-                        |> Return.batchEvent (Event.init "reset" JE.null)
+                        |> Return.batchEvent (Event.init Nothing "reset" JE.null)
 
                 Just ( "goto", _ ) ->
                     case Event.id_ event of
@@ -334,7 +334,7 @@ update session msg model =
                         |> Return.mapValCmd
                             (set_active_section { model | to_do = [] })
                             UpdateMarkdown
-                        |> Return.batchEvents (Event.initWithId "slide" model.section_active JE.null :: model.to_do)
+                        |> Return.batchEvents (Event.initWithId Nothing "slide" model.section_active JE.null :: model.to_do)
 
                 ( JumpToFragment id, Just sec ) ->
                     if (model.settings.mode == Textbook) || sec.effect_model.visible == id then
@@ -374,7 +374,7 @@ add_load vector sectionID name logs =
         logs
 
     else
-        (Event.initWithId "load" sectionID <| JE.string name) :: logs
+        (Event.initWithId Nothing "load" sectionID <| JE.string name) :: logs
 
 
 {-| **@private:** shortcut for returning the active section in from the model.

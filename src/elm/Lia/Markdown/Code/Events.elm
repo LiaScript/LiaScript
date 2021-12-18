@@ -24,13 +24,13 @@ import Return exposing (Return)
 
 stop : Int -> Event
 stop id =
-    Event.initWithId "stop" id JE.null
+    Event.initWithId Nothing "stop" id JE.null
 
 
 input : Int -> String -> Event
 input id =
     JE.string
-        >> Event.initWithId "input" id
+        >> Event.initWithId Nothing "input" id
 
 
 eval : Scripts a -> Int -> Project -> Event
@@ -69,13 +69,13 @@ version_update id return =
                )
              ]
                 |> JE.object
-                |> Event.initWithId "version_update" id
+                |> Event.initWithId Nothing "version_update" id
             )
 
 
 version_append : Int -> Project -> Repo -> Event
 version_append id project repo_update =
-    Event.initWithId "version_append" id <|
+    Event.initWithId Nothing "version_append" id <|
         JE.object
             [ ( "version_active", JE.int project.version_active )
             , ( "log", Log.encode project.log )
@@ -96,7 +96,7 @@ load : Int -> Return Project msg sub -> Return Project msg sub
 load id return =
     return
         |> Return.batchEvent
-            (Event.initWithId "load" id <|
+            (Event.initWithId Nothing "load" id <|
                 JE.object
                     [ ( "file", JE.array Json.fromFile return.value.file )
                     , ( "version_active", JE.int return.value.version_active )
@@ -121,6 +121,6 @@ toggle : String -> Int -> Int -> Bool -> List Event
 toggle message id1 id2 value =
     [ value
         |> JE.bool
-        |> Event.initWithId message id2
+        |> Event.initWithId Nothing message id2
         |> Event.pushWithId "flip" id1
     ]

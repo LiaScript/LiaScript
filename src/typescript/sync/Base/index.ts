@@ -91,6 +91,7 @@ export class Sync {
         ['sync', -1],
         [topic, -1],
       ],
+      service: null,
       message: message,
     }
   }

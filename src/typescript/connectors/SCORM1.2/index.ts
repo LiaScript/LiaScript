@@ -135,6 +135,7 @@ class Connector extends Base {
       this.send({
         reply: false,
         track: [['goto', location.slide]],
+        service: null,
         message: null,
       })
     } catch (e) {
@@ -371,6 +372,7 @@ class Connector extends Base {
       this.send({
         reply: false,
         track: [event.track[0], ['restore', -1]],
+        service: null,
         message: null,
       })
       return
@@ -393,6 +395,7 @@ class Connector extends Base {
       this.send({
         reply: false,
         track: [event.track[0], ['restore', -1]],
+        service: null,
         message: items.sort((a, b) => a.i - b.i).map((e) => e.data),
       })
     }

@@ -11,4 +11,4 @@ share { title, text, url } =
     , ( "url", JE.string url )
     ]
         |> JE.object
-        |> Event.init "share"
+        |> Event.init Nothing "share"

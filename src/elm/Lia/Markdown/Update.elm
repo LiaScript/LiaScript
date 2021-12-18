@@ -140,7 +140,7 @@ update sync globals msg section =
                                         |> Return.sync
                                             (state
                                                 |> Container.encode Quiz_.encoder
-                                                |> Event.init "quiz"
+                                                |> Event.init Nothing "quiz"
                                                 |> Event.pushWithId "local" section.id
                                             )
 
@@ -175,7 +175,7 @@ update sync globals msg section =
                                         |> Return.sync
                                             (state
                                                 |> Container.encode Survey_.encoder
-                                                |> Event.init "survey"
+                                                |> Event.init Nothing "survey"
                                                 |> Event.pushWithId "local" section.id
                                             )
 
@@ -240,7 +240,7 @@ syncQuiz sync ret =
                         |> Return.sync
                             (state
                                 |> Container.encode Quiz_.encoder
-                                |> Event.init "quiz"
+                                |> Event.init Nothing "quiz"
                                 |> Event.pushWithId "local" ret.value.id
                             )
 
@@ -271,7 +271,7 @@ syncSurvey sync ret =
                         |> Return.sync
                             (state
                                 |> Container.encode Survey_.encoder
-                                |> Event.init "survey"
+                                |> Event.init Nothing "survey"
                                 |> Event.pushWithId "local" ret.value.id
                             )
 

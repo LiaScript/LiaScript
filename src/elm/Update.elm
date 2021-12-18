@@ -319,7 +319,7 @@ update msg model =
                             Cmd.batch
                                 [ url
                                     |> JE.string
-                                    |> Event.init "offline"
+                                    |> Event.init Nothing "offline"
                                     |> event2js
                                 , cmd
                                 ]

@@ -29,7 +29,7 @@ event on =
         "cancel"
     )
         |> JE.string
-        |> Event.init "speak"
+        |> Event.init Nothing "speak"
         |> Event.push "effect"
 
 
@@ -53,7 +53,7 @@ cancel : Event.Event
 cancel =
     "cancel"
         |> JE.string
-        |> Event.init "speak"
+        |> Event.init Nothing "speak"
 
 
 playback : Int -> String -> String -> Event
@@ -63,7 +63,7 @@ playback id voice text =
     , "true"
     ]
         |> JE.list JE.string
-        |> Event.initWithId "speak" id
+        |> Event.initWithId Nothing "speak" id
 
 
 readFrom : Int -> Int -> Event
@@ -71,11 +71,11 @@ readFrom id effectID =
     "lia-tts-"
         ++ String.fromInt effectID
         |> JE.string
-        |> Event.initWithId "speak" id
+        |> Event.initWithId Nothing "speak" id
 
 
 mute : Int -> Event.Event
 mute id =
     "cancel"
         |> JE.string
-        |> Event.initWithId "speak" id
+        |> Event.initWithId Nothing "speak" id

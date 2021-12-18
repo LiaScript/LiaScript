@@ -129,7 +129,7 @@ sync event r =
 
 syncMsg : Int -> JE.Value -> Return model msg sub -> Return model msg sub
 syncMsg id msg r =
-    { r | synchronize = Event.initWithId "sync" id msg :: r.synchronize }
+    { r | synchronize = Event.initWithId Nothing "sync" id msg :: r.synchronize }
 
 
 mapSync : String -> Maybe Int -> Return model msg sub -> Return model msg sub
@@ -167,4 +167,4 @@ error =
 
 debug_ : Int -> String -> Return model msg sub -> Return model msg sub
 debug_ id message r =
-    { r | debug = Event.initWithId "log" id (JE.string message) :: r.debug }
+    { r | debug = Event.initWithId Nothing "log" id (JE.string message) :: r.debug }

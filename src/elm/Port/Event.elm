@@ -25,6 +25,7 @@ import Json.Encode as JE
 type alias Event =
     { reply : Bool
     , track : List POI
+    , service : Maybe String
     , message : JE.Value
     }
 
@@ -43,14 +44,14 @@ type alias POI =
     ( String, Int )
 
 
-empty : String -> Event
-empty topic =
-    init topic JE.null
+empty : Maybe String -> String -> Event
+empty service topic =
+    init service topic JE.null
 
 
-init : String -> JE.Value -> Event
-init topic =
-    Event True [ ( topic, -1 ) ]
+init : Maybe String -> String -> JE.Value -> Event
+init service topic =
+    Event True [ ( topic, -1 ) ] service
 
 
 {-| Simply set the default `reply` value to `False`, which will result in an
@@ -61,9 +62,9 @@ withNoReply e =
     { e | reply = False }
 
 
-initWithId : String -> Int -> JE.Value -> Event
-initWithId topic id =
-    Event True [ ( topic, id ) ]
+initWithId : Maybe String -> String -> Int -> JE.Value -> Event
+initWithId service topic id =
+    Event True [ ( topic, id ) ] service
 
 
 push : String -> Event -> Event
@@ -141,7 +142,7 @@ message =
 
 store : JE.Value -> Event
 store =
-    init "store"
+    init Nothing "store"
 
 
 decPoint : JD.Decoder POI
@@ -154,9 +155,10 @@ decPoint =
 decode : JD.Value -> Result JD.Error Event
 decode =
     JD.decodeValue
-        (JD.map3 Event
+        (JD.map4 Event
             (JD.field "reply" JD.bool)
             (JD.field "route" (JD.list decPoint))
+            (JD.field "service" (JD.nullable JD.string))
             (JD.field "message" JD.value)
         )
 
@@ -166,6 +168,11 @@ encode event =
     JE.object
         [ ( "reply", JE.bool event.reply )
         , ( "route", JE.list encPoint event.track )
+        , ( "service"
+          , event.service
+                |> Maybe.map JE.string
+                |> Maybe.withDefault JE.null
+          )
         , ( "message", event.message )
         ]
 
