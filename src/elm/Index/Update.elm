@@ -21,7 +21,7 @@ import Lia.Settings.Types exposing (Settings)
 import Lia.Settings.Update as Settings
 import Lia.Update exposing (Msg(..))
 import Port.Event as Event exposing (Event)
-import Port.Share exposing (share)
+import Port.Service.Share as Share
 
 
 type Msg
@@ -177,7 +177,7 @@ update msg settings model =
             Share site ->
                 ( model
                 , Cmd.none
-                , [ share site ]
+                , [ Share.share site ]
                 )
 
             LoadCourse url ->

@@ -15,7 +15,7 @@ import Lia.Settings.Json as Json
 import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
 import Lia.Utils exposing (focus)
 import Port.Event as Event exposing (Event)
-import Port.Share
+import Port.Service.Share as Share
 import Port.TTS as TTS
 import Return exposing (Return)
 
@@ -178,7 +178,7 @@ update main msg model =
                             |> Maybe.withDefault ""
                      , url = url
                      }
-                        |> Port.Share.share
+                        |> Share.share
                     )
 
         Toggle TranslateWithGoogle ->

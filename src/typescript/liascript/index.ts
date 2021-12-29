@@ -21,6 +21,7 @@ import * as PubNub from '../sync/PubNub/index'
 import * as GUN from '../sync/Gun/index'
 
 import Console from './service/Console'
+import Share from './service/Share'
 
 window.img_Zoom = function (e: MouseEvent | TouchEvent) {
   const target = e.target as HTMLImageElement
@@ -452,8 +453,13 @@ function process(
       case Console.PORT:
         Console.handle(event)
         break
+
+      case Share.PORT:
+        Share.handle(event)
+        break
+
       default:
-        console.warn('Unknown event => ', event)
+        console.warn('Unknown Service => ', event)
     }
   } else
     switch (event.track[0][0]) {
@@ -774,17 +780,7 @@ function process(
         }
         break
       }
-      case Port.SHARE: {
-        try {
-          if (navigator.share) {
-            navigator.share(event.message)
-          }
-        } catch (e) {
-          log.error('sharing was not possible => ', event.message, e)
-        }
 
-        break
-      }
       case Port.RESET: {
         self.connector.reset()
         window.location.reload()
