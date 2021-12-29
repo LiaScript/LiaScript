@@ -22,6 +22,7 @@ import * as GUN from '../sync/Gun/index'
 
 import Console from './service/Console'
 import Share from './service/Share'
+import Translate from './service/Translate'
 
 window.img_Zoom = function (e: MouseEvent | TouchEvent) {
   const target = e.target as HTMLImageElement
@@ -414,25 +415,7 @@ class LiaScript {
 
     this.initNavigation(elem, elmSend)
 
-    var observer = new MutationObserver(function (mutations) {
-      mutations.forEach(function (mutation) {
-        changeGoogleStyles()
-
-        elmSend({
-          reply: false,
-          track: [['lang', -1]],
-          service: null,
-          message: document.documentElement.lang,
-        })
-      })
-    })
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      childList: false,
-      characterData: false,
-      attributeFilter: ['lang'],
-    })
+    Translate.init(elmSend)
 
     jsSubscribe((event: Lia.Event) => {
       process(true, self, elmSend, event)
@@ -456,6 +439,10 @@ function process(
 
       case Share.PORT:
         Share.handle(event)
+        break
+
+      case Translate.PORT:
+        Translate.handle(event)
         break
 
       default:
@@ -787,48 +774,9 @@ function process(
         break
       }
 
-      case Port.TRANSLATE: {
-        injectGoogleTranslate()
-        break
-      }
       default:
         log.error('Command not found => ', event)
     }
-}
-
-var googleTranslate = false
-function injectGoogleTranslate() {
-  // inject the google translator
-  if (!googleTranslate) {
-    let tag = document.createElement('script')
-    tag.src =
-      '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit'
-    tag.type = 'text/javascript'
-    document.head.appendChild(tag)
-
-    window.googleTranslateElementInit = function () {
-      // @ts-ignore: will be injected by google
-      new google.translate.TranslateElement(
-        {
-          pageLanguage: document.documentElement.lang,
-          // includedLanguages: 'ar,en,es,jv,ko,pa,pt,ru,zh-CN',
-          // layout: google.translate.TranslateElement.InlineLayout.HORIZONTAL,
-          autoDisplay: false,
-        },
-        'google_translate_element'
-      )
-    }
-    googleTranslate = true
-  }
-}
-
-function changeGoogleStyles() {
-  let goog = document.getElementById(':1.container')
-
-  if (goog) {
-    goog.style.visibility = 'hidden'
-    document.body.style.top = ''
-  }
 }
 
 export default LiaScript
