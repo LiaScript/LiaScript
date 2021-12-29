@@ -30,6 +30,7 @@ import Lia.Sync.Container.Local as Container
 import Lia.Sync.Types as Sync
 import Lia.Utils exposing (focus)
 import Port.Event as Event exposing (Event)
+import Port.Service.Console as Console
 import Return exposing (Return)
 import Translations exposing (Lang(..))
 
@@ -468,7 +469,7 @@ subHandle js json section =
         _ ->
             section
                 |> Return.val
-                |> Return.error "subHandle Problem"
+                |> Return.batchEvent (Console.error "subHandle Problem")
 
 
 handle : Sync.State -> Definition -> String -> Event -> Section -> Return Section Msg Msg

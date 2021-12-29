@@ -24,7 +24,8 @@ import Lia.Settings.Update as Settings
 import Lia.Sync.Update as Sync
 import Port.Eval exposing (event)
 import Port.Event as Event exposing (Event)
-import Return exposing (Return, sync)
+import Port.Service.Console as Console
+import Return exposing (Return)
 import Session exposing (Session)
 import Translations exposing (Lang(..))
 
@@ -189,7 +190,7 @@ update session msg model =
 
                         Nothing ->
                             Return.val model
-                                |> Return.warn "message goto with no id"
+                                |> Return.batchEvent (Console.warn "message goto with no id")
 
                 Just ( "sync", e ) ->
                     case Event.popWithId e of
@@ -262,7 +263,7 @@ update session msg model =
 
                 Nothing ->
                     Return.val model
-                        |> Return.error "unknown main topic"
+                        |> Return.batchEvent (Console.error "unknown main topic")
 
         Script ( id, sub ) ->
             case Array.get id model.sections of

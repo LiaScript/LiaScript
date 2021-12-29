@@ -7,6 +7,7 @@ module Port.Event exposing
     , id_
     , init
     , initWithId
+    , initX
     , message
     , pop
     , popWithId
@@ -47,6 +48,14 @@ type alias POI =
 empty : Maybe String -> String -> Event
 empty service topic =
     init service topic JE.null
+
+
+initX : String -> { cmd : String, param : JE.Value } -> Event
+initX service msg =
+    Event True
+        []
+        (Just service)
+        (JE.object [ ( "cmd", JE.string msg.cmd ), ( "param", msg.param ) ])
 
 
 init : Maybe String -> String -> JE.Value -> Event

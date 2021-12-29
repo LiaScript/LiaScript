@@ -20,6 +20,8 @@ import * as Matrix from '../sync/Matrix/index'
 import * as PubNub from '../sync/PubNub/index'
 import * as GUN from '../sync/Gun/index'
 
+import Console from './service/Console'
+
 window.img_Zoom = function (e: MouseEvent | TouchEvent) {
   const target = e.target as HTMLImageElement
 
@@ -445,363 +447,357 @@ function process(
 ) {
   log.info(`LIA >>> (${JSON.stringify(event.track)})`, event.message)
 
-  switch (event.track[0][0]) {
-    case Port.SLIDE: {
-      self.connector.slide(event.track[0][1])
+  if (event.service) {
+    switch (event.service) {
+      case Console.PORT:
+        Console.handle(event)
+        break
+      default:
+        console.warn('Unknown event => ', event)
+    }
+  } else
+    switch (event.track[0][0]) {
+      case Port.SLIDE: {
+        self.connector.slide(event.track[0][1])
 
-      const sec = document.getElementsByTagName('main')[0]
-      if (sec) {
-        sec.scrollTo(0, 0)
+        const sec = document.getElementsByTagName('main')[0]
+        if (sec) {
+          sec.scrollTo(0, 0)
 
-        if (sec.children.length > 0) (sec.children[0] as HTMLElement).focus()
+          if (sec.children.length > 0) (sec.children[0] as HTMLElement).focus()
+        }
+
+        const elem = document.getElementById('focusedToc')
+        if (elem) {
+          if (!isInViewport(elem)) {
+            elem.scrollIntoView({
+              behavior: 'smooth',
+            })
+          }
+        }
+
+        break
+      }
+      case Port.LOAD: {
+        self.connector.load(
+          // generate the return message ...
+          // the previous topic is mapped with the current message to match the return path
+          {
+            reply: false,
+            track: [[event.message, event.track[0][1]]],
+            service: null,
+            message: event.message,
+          }
+        )
+        break
+      }
+      case Port.CODE: {
+        switch (event.track[1][0]) {
+          case 'eval':
+            lia_eval_event(elmSend, eventHandler, event)
+            break
+          case 'store':
+            if (isConnected) {
+              //event.track = event.track.slice(1)
+              self.connector.store(event)
+            }
+            break
+          case 'input':
+            eventHandler.dispatch_input(event)
+            break
+          case 'stop':
+            eventHandler.dispatch_input(event)
+            break
+          default: {
+            if (isConnected) {
+              const slide = event.track[0][1]
+              event.track = event.track.slice(1)
+              self.connector.update(event, slide)
+            }
+          }
+        }
+        break
+      }
+      case Port.QUIZ: {
+        if (isConnected && event.track[1][0] === 'store') {
+          // event.track.slice(1)
+          self.connector.store(event)
+        } else if (event.track[1][0] === 'eval') {
+          lia_eval_event(elmSend, eventHandler, event)
+        }
+
+        break
+      }
+      case Port.SURVEY: {
+        if (isConnected && event.track[1][0] === 'store') {
+          // event.track.slice(1)
+          self.connector.store(event)
+        } else if (event.track[1][0] === 'eval') {
+          lia_eval_event(elmSend, eventHandler, event)
+        }
+        break
+      }
+      case Port.TASK: {
+        if (isConnected && event.track[1][0] === 'store') {
+          // event.track.slice(1)
+          self.connector.store(event)
+        } else if (event.track[1][0] === 'eval') {
+          lia_eval_event(elmSend, eventHandler, event)
+        }
+        break
+      }
+      case Port.EFFECT: {
+        const id = event.track[0][1]
+        event.track = event.track.slice(1)
+        handleEffects(event, elmSend, id, self)
+        break
       }
 
-      const elem = document.getElementById('focusedToc')
-      if (elem) {
-        if (!isInViewport(elem)) {
-          elem.scrollIntoView({
-            behavior: 'smooth',
+      case Port.SETTINGS: {
+        // if (self.channel) {
+        //  self.channel.push('lia', {settings: event.message});
+        // } else {
+
+        try {
+          updateClassName(event.message[0])
+
+          const conf = self.connector.getSettings()
+
+          setTimeout(function () {
+            window.dispatchEvent(new Event('resize'))
+          }, 333)
+
+          let style = document.getElementById('lia-custom-style')
+
+          if (typeof event.message[1] === 'string') {
+            if (style == null) {
+              style = document.createElement('style')
+              style.id = 'lia-custom-style'
+              document.head.appendChild(style)
+            }
+
+            style.innerHTML = ':root {' + event.message[1] + '}'
+          } else if (style !== null) {
+            style.innerHTML = ''
+          }
+        } catch (e) {}
+
+        if (isConnected) {
+          self.connector.setSettings(event.message[0])
+        }
+
+        break
+      }
+      case Port.RESOURCE: {
+        let elem = event.message[0]
+        let url = event.message[1]
+
+        log.info('loading resource => ', elem, ':', url)
+
+        try {
+          let tag = document.createElement(elem)
+          if (elem === 'link') {
+            tag.href = url
+            tag.rel = 'stylesheet'
+          } else {
+            window.event_semaphore++
+
+            tag.src = url
+            tag.async = false
+            tag.defer = true
+            tag.onload = function () {
+              window.event_semaphore--
+              log.info('successfully loaded =>', url)
+            }
+            tag.onerror = function (e: Error) {
+              window.event_semaphore--
+              log.warn('could not load =>', url, e)
+            }
+          }
+          document.head.appendChild(tag)
+        } catch (e) {
+          log.error('loading resource => ', e)
+        }
+
+        break
+      }
+      case Port.SYNC: {
+        switch (event.track[1][0]) {
+          case 'sync': {
+            // all sync relevant messages
+            switch (event.track[2][0]) {
+              case 'connect': {
+                if (!self.sync) delete self.sync
+
+                switch (event.message.backend) {
+                  case 'beaker': {
+                    self.sync = new Beaker.Sync(elmSend)
+                    self.sync.connect(event.message)
+
+                    break
+                  }
+                  case 'gun': {
+                    self.sync = new GUN.Sync(elmSend)
+                    self.sync.connect(event.message)
+
+                    break
+                  }
+                  case 'jitsi': {
+                    self.sync = new Jitsi.Sync(elmSend)
+                    self.sync.connect(event.message)
+
+                    break
+                  }
+                  case 'matrix': {
+                    self.sync = new Matrix.Sync(elmSend)
+                    self.sync.connect(event.message)
+
+                    break
+                  }
+
+                  case 'pubnub': {
+                    self.sync = new PubNub.Sync(elmSend)
+                    self.sync.connect(event.message)
+
+                    break
+                  }
+                  default: {
+                    log.error('could not load =>', event.message)
+                  }
+                }
+
+                break
+              }
+              case 'disconnect': {
+                if (self.sync) self.sync.disconnect()
+                break
+              }
+              default: {
+                if (self.sync) self.sync.publish(event)
+              }
+            }
+            break
+          }
+
+          default: {
+            if (self.sync) self.sync.publish(event)
+          }
+        }
+        break
+      }
+      case Port.PERSISTENT: {
+        if (event.message === 'store') {
+          // todo, needs to be moved back
+          // persistent.store(event.section)
+          elmSend({
+            reply: false,
+            track: [[Port.LOAD, -1]],
+            service: null,
+            message: null,
           })
         }
-      }
 
-      break
-    }
-    case Port.LOAD: {
-      self.connector.load(
-        // generate the return message ...
-        // the previous topic is mapped with the current message to match the return path
-        {
-          reply: false,
-          track: [[event.message, event.track[0][1]]],
-          service: null,
-          message: event.message,
+        break
+      }
+      case Port.INIT: {
+        let data = event.message
+
+        let isPersistent = true
+
+        try {
+          isPersistent = !(
+            data.definition.macro['persistent'].trim().toLowerCase() === 'false'
+          )
+        } catch (e) {}
+
+        if (isConnected && isPersistent) {
+          self.connector.open(
+            data.readme,
+            data.version,
+            data.section_active,
+            data
+          )
         }
-      )
-      break
-    }
-    case Port.CODE: {
-      switch (event.track[1][0]) {
-        case 'eval':
-          lia_eval_event(elmSend, eventHandler, event)
-          break
-        case 'store':
-          if (isConnected) {
-            //event.track = event.track.slice(1)
-            self.connector.store(event)
+
+        if (data.definition.onload !== '') {
+          lia_execute_event({
+            code: data.definition.onload,
+            delay: 350,
+          })
+        }
+
+        document.documentElement.lang = data.definition.language
+
+        meta('author', data.definition.author)
+        meta('og:description', data.comment)
+        meta('og:title', data.str_title)
+        meta('og:type', 'website')
+        meta('og:url', '')
+        meta('og:image', data.definition.logo)
+
+        // store the basic info in the offline-repositories
+        if (isConnected && isPersistent) {
+          self.connector.storeToIndex(data)
+        }
+
+        break
+      }
+      case Port.INDEX: {
+        if (!isConnected) break
+
+        switch (event.track[1][0]) {
+          case 'list': {
+            try {
+              TTS.cancel()
+            } catch (e) {}
+            self.connector.getIndex()
+            break
           }
-          break
-        case 'input':
-          eventHandler.dispatch_input(event)
-          break
-        case 'stop':
-          eventHandler.dispatch_input(event)
-          break
-        default: {
-          if (isConnected) {
-            const slide = event.track[0][1]
-            event.track = event.track.slice(1)
-            self.connector.update(event, slide)
+          case 'delete': {
+            self.connector.deleteFromIndex(event.message)
+            break
           }
-        }
-      }
-      break
-    }
-    case Port.QUIZ: {
-      if (isConnected && event.track[1][0] === 'store') {
-        // event.track.slice(1)
-        self.connector.store(event)
-      } else if (event.track[1][0] === 'eval') {
-        lia_eval_event(elmSend, eventHandler, event)
-      }
-
-      break
-    }
-    case Port.SURVEY: {
-      if (isConnected && event.track[1][0] === 'store') {
-        // event.track.slice(1)
-        self.connector.store(event)
-      } else if (event.track[1][0] === 'eval') {
-        lia_eval_event(elmSend, eventHandler, event)
-      }
-      break
-    }
-    case Port.TASK: {
-      if (isConnected && event.track[1][0] === 'store') {
-        // event.track.slice(1)
-        self.connector.store(event)
-      } else if (event.track[1][0] === 'eval') {
-        lia_eval_event(elmSend, eventHandler, event)
-      }
-      break
-    }
-    case Port.EFFECT: {
-      const id = event.track[0][1]
-      event.track = event.track.slice(1)
-      handleEffects(event, elmSend, id, self)
-      break
-    }
-    case Port.LOG: {
-      switch (event.track[0][1]) {
-        case 0:
-          log.info(event.message)
-          break
-        case 1:
-          log.warn(event.message)
-          break
-        case 2:
-          log.error(event.message)
-          break
-        default:
-          console.warn('unknown log event ', event.track[0][1], event.message)
-      }
-      break
-    }
-    case Port.SETTINGS: {
-      // if (self.channel) {
-      //  self.channel.push('lia', {settings: event.message});
-      // } else {
-
-      try {
-        updateClassName(event.message[0])
-
-        const conf = self.connector.getSettings()
-
-        setTimeout(function () {
-          window.dispatchEvent(new Event('resize'))
-        }, 333)
-
-        let style = document.getElementById('lia-custom-style')
-
-        if (typeof event.message[1] === 'string') {
-          if (style == null) {
-            style = document.createElement('style')
-            style.id = 'lia-custom-style'
-            document.head.appendChild(style)
+          case 'restore': {
+            self.connector.restoreFromIndex(event.message, event.track[1][1])
+            break
           }
-
-          style.innerHTML = ':root {' + event.message[1] + '}'
-        } else if (style !== null) {
-          style.innerHTML = ''
-        }
-      } catch (e) {}
-
-      if (isConnected) {
-        self.connector.setSettings(event.message[0])
-      }
-
-      break
-    }
-    case Port.RESOURCE: {
-      let elem = event.message[0]
-      let url = event.message[1]
-
-      log.info('loading resource => ', elem, ':', url)
-
-      try {
-        let tag = document.createElement(elem)
-        if (elem === 'link') {
-          tag.href = url
-          tag.rel = 'stylesheet'
-        } else {
-          window.event_semaphore++
-
-          tag.src = url
-          tag.async = false
-          tag.defer = true
-          tag.onload = function () {
-            window.event_semaphore--
-            log.info('successfully loaded =>', url)
+          case 'reset': {
+            self.connector.reset(event.message, event.track[1][1])
+            break
           }
-          tag.onerror = function (e: Error) {
-            window.event_semaphore--
-            log.warn('could not load =>', url, e)
+          case 'get': {
+            self.connector.getFromIndex(event.message)
+            break
           }
+          default:
+            log.error('Command not found => ', event)
         }
-        document.head.appendChild(tag)
-      } catch (e) {
-        log.error('loading resource => ', e)
+        break
       }
-
-      break
-    }
-    case Port.SYNC: {
-      switch (event.track[1][0]) {
-        case 'sync': {
-          // all sync relevant messages
-          switch (event.track[2][0]) {
-            case 'connect': {
-              if (!self.sync) delete self.sync
-
-              switch (event.message.backend) {
-                case 'beaker': {
-                  self.sync = new Beaker.Sync(elmSend)
-                  self.sync.connect(event.message)
-
-                  break
-                }
-                case 'gun': {
-                  self.sync = new GUN.Sync(elmSend)
-                  self.sync.connect(event.message)
-
-                  break
-                }
-                case 'jitsi': {
-                  self.sync = new Jitsi.Sync(elmSend)
-                  self.sync.connect(event.message)
-
-                  break
-                }
-                case 'matrix': {
-                  self.sync = new Matrix.Sync(elmSend)
-                  self.sync.connect(event.message)
-
-                  break
-                }
-
-                case 'pubnub': {
-                  self.sync = new PubNub.Sync(elmSend)
-                  self.sync.connect(event.message)
-
-                  break
-                }
-                default: {
-                  log.error('could not load =>', event.message)
-                }
-              }
-
-              break
-            }
-            case 'disconnect': {
-              if (self.sync) self.sync.disconnect()
-              break
-            }
-            default: {
-              if (self.sync) self.sync.publish(event)
-            }
+      case Port.SHARE: {
+        try {
+          if (navigator.share) {
+            navigator.share(event.message)
           }
-          break
+        } catch (e) {
+          log.error('sharing was not possible => ', event.message, e)
         }
 
-        default: {
-          if (self.sync) self.sync.publish(event)
-        }
+        break
       }
-      break
-    }
-    case Port.PERSISTENT: {
-      if (event.message === 'store') {
-        // todo, needs to be moved back
-        // persistent.store(event.section)
-        elmSend({
-          reply: false,
-          track: [[Port.LOAD, -1]],
-          service: null,
-          message: null,
-        })
+      case Port.RESET: {
+        self.connector.reset()
+        window.location.reload()
+        break
       }
 
-      break
-    }
-    case Port.INIT: {
-      let data = event.message
-
-      let isPersistent = true
-
-      try {
-        isPersistent = !(
-          data.definition.macro['persistent'].trim().toLowerCase() === 'false'
-        )
-      } catch (e) {}
-
-      if (isConnected && isPersistent) {
-        self.connector.open(
-          data.readme,
-          data.version,
-          data.section_active,
-          data
-        )
+      case Port.TRANSLATE: {
+        injectGoogleTranslate()
+        break
       }
-
-      if (data.definition.onload !== '') {
-        lia_execute_event({
-          code: data.definition.onload,
-          delay: 350,
-        })
-      }
-
-      document.documentElement.lang = data.definition.language
-
-      meta('author', data.definition.author)
-      meta('og:description', data.comment)
-      meta('og:title', data.str_title)
-      meta('og:type', 'website')
-      meta('og:url', '')
-      meta('og:image', data.definition.logo)
-
-      // store the basic info in the offline-repositories
-      if (isConnected && isPersistent) {
-        self.connector.storeToIndex(data)
-      }
-
-      break
+      default:
+        log.error('Command not found => ', event)
     }
-    case Port.INDEX: {
-      if (!isConnected) break
-
-      switch (event.track[1][0]) {
-        case 'list': {
-          try {
-            TTS.cancel()
-          } catch (e) {}
-          self.connector.getIndex()
-          break
-        }
-        case 'delete': {
-          self.connector.deleteFromIndex(event.message)
-          break
-        }
-        case 'restore': {
-          self.connector.restoreFromIndex(event.message, event.track[1][1])
-          break
-        }
-        case 'reset': {
-          self.connector.reset(event.message, event.track[1][1])
-          break
-        }
-        case 'get': {
-          self.connector.getFromIndex(event.message)
-          break
-        }
-        default:
-          log.error('Command not found => ', event)
-      }
-      break
-    }
-    case Port.SHARE: {
-      try {
-        if (navigator.share) {
-          navigator.share(event.message)
-        }
-      } catch (e) {
-        log.error('sharing was not possible => ', event.message, e)
-      }
-
-      break
-    }
-    case Port.RESET: {
-      self.connector.reset()
-      window.location.reload()
-      break
-    }
-
-    case Port.TRANSLATE: {
-      injectGoogleTranslate()
-      break
-    }
-    default:
-      log.error('Command not found => ', event)
-  }
 }
 
 var googleTranslate = false

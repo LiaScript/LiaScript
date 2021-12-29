@@ -4,8 +4,6 @@ module Return exposing
     , batchEvent
     , batchEvents
     , cmd
-    , error
-    , log
     , mapCmd
     , mapEvents
     , mapSync
@@ -17,7 +15,6 @@ module Return exposing
     , syncAppend
     , syncMsg
     , val
-    , warn
     )
 
 import Json.Encode as JE
@@ -30,7 +27,6 @@ type alias Return model msg sub =
     , command : Cmd msg
     , events : List Event
     , sub : Maybe (Script.Msg sub)
-    , debug : List Event
     , synchronize : List Event
     }
 
@@ -42,7 +38,6 @@ val model =
         Cmd.none
         []
         Nothing
-        []
         []
 
 
@@ -75,23 +70,21 @@ cmd c r =
 
 
 mapCmd : (msgA -> msgB) -> Return model msgA sub -> Return model msgB sub
-mapCmd fn { value, command, sub, events, debug, synchronize } =
+mapCmd fn { value, command, sub, events, synchronize } =
     { value = value
     , command = Cmd.map fn command
     , events = events
     , sub = sub
-    , debug = debug
     , synchronize = synchronize
     }
 
 
 mapValCmd : (modelA -> modelB) -> (msgA -> msgB) -> Return modelA msgA sub -> Return modelB msgB sub
-mapValCmd fnVal fnMsg { value, command, sub, events, debug, synchronize } =
+mapValCmd fnVal fnMsg { value, command, sub, events, synchronize } =
     { value = fnVal value
     , command = Cmd.map fnMsg command
     , events = events
     , sub = sub
-    , debug = debug
     , synchronize = synchronize
     }
 
@@ -107,12 +100,11 @@ script s r =
 
 
 mapVal : (modelA -> modelB) -> Return modelA msg sub -> Return modelB msg sub
-mapVal fn { value, command, events, sub, debug, synchronize } =
+mapVal fn { value, command, events, sub, synchronize } =
     { value = fn value
     , command = command
     , events = events
     , sub = sub
-    , debug = debug
     , synchronize = synchronize
     }
 
@@ -148,23 +140,3 @@ mapSync topic id r =
 syncAppend : List Event -> Return model msg sub -> Return model msg sub
 syncAppend events r =
     { r | synchronize = List.append events r.synchronize }
-
-
-log : String -> Return model msg sub -> Return model msg sub
-log =
-    debug_ 0
-
-
-warn : String -> Return model msg sub -> Return model msg sub
-warn =
-    debug_ 1
-
-
-error : String -> Return model msg sub -> Return model msg sub
-error =
-    debug_ 2
-
-
-debug_ : Int -> String -> Return model msg sub -> Return model msg sub
-debug_ id message r =
-    { r | debug = Event.initWithId Nothing "log" id (JE.string message) :: r.debug }
