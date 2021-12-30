@@ -3,7 +3,6 @@ import { Elm } from '../../elm/Main.elm'
 import { LiaEvents, lia_execute_event, lia_eval_event } from './events'
 // import persistent from './persistent.ts'
 import log from './log'
-import * as Swipe from './swipe'
 
 import './types/globals'
 import Lia from './types/lia.d'
@@ -20,8 +19,10 @@ import * as Matrix from '../sync/Matrix/index'
 import * as PubNub from '../sync/PubNub/index'
 import * as GUN from '../sync/Gun/index'
 
+// Services
 import Console from './service/Console'
 import Share from './service/Share'
+import Swipe from './service/Swipe'
 import Translate from './service/Translate'
 
 window.img_Zoom = function (e: MouseEvent | TouchEvent) {
@@ -323,50 +324,6 @@ class LiaScript {
     }
   }
 
-  initNavigation(elem: HTMLElement, elmSend: Lia.Send) {
-    Swipe.detect(elem, function (swipeDir) {
-      if (document.getElementsByClassName('lia-modal').length === 0) {
-        elmSend({
-          reply: false,
-          track: [[Port.SWIPE, -1]],
-          service: null,
-          message: swipeDir,
-        })
-      }
-    })
-
-    elem.addEventListener(
-      'keydown',
-      (e) => {
-        switch (e.key) {
-          case 'ArrowRight': {
-            if (document.getElementsByClassName('lia-modal').length === 0) {
-              elmSend({
-                reply: false,
-                track: [[Port.SWIPE, -1]],
-                service: null,
-                message: Swipe.Dir.left,
-              })
-            }
-            break
-          }
-          case 'ArrowLeft': {
-            if (document.getElementsByClassName('lia-modal').length === 0) {
-              elmSend({
-                reply: false,
-                track: [[Port.SWIPE, -1]],
-                service: null,
-                message: Swipe.Dir.right,
-              })
-            }
-            break
-          }
-        }
-      },
-      false
-    )
-  }
-
   reset() {
     this.app.ports.event2elm.send({
       track: [
@@ -413,8 +370,7 @@ class LiaScript {
 
     let self = this
 
-    this.initNavigation(elem, elmSend)
-
+    Swipe.init(elem, elmSend)
     Translate.init(elmSend)
 
     jsSubscribe((event: Lia.Event) => {

@@ -164,4 +164,54 @@ function detect(el: HTMLElement, callback: (_: Dir) => void) {
   }
 }
 
-export { detect, Dir }
+const Port = 'swipe'
+
+const Service = {
+  PORT: Port,
+
+  init: function initNavigation(elem: HTMLElement, elmSend: Lia.Send) {
+    detect(elem, function (swipeDir) {
+      if (document.getElementsByClassName('lia-modal').length === 0) {
+        elmSend({
+          reply: false,
+          track: [[Port, -1]],
+          service: null,
+          message: swipeDir,
+        })
+      }
+    })
+
+    elem.addEventListener(
+      'keydown',
+      (e) => {
+        switch (e.key) {
+          case 'ArrowRight': {
+            if (document.getElementsByClassName('lia-modal').length === 0) {
+              elmSend({
+                reply: false,
+                track: [[Port, -1]],
+                service: null,
+                message: Dir.left,
+              })
+            }
+            break
+          }
+          case 'ArrowLeft': {
+            if (document.getElementsByClassName('lia-modal').length === 0) {
+              elmSend({
+                reply: false,
+                track: [[Port, -1]],
+                service: null,
+                message: Dir.right,
+              })
+            }
+            break
+          }
+        }
+      },
+      false
+    )
+  },
+}
+
+export default Service
