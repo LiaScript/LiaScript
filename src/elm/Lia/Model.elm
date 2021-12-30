@@ -14,7 +14,8 @@ import Lia.Section exposing (Sections)
 import Lia.Settings.Json
 import Lia.Settings.Types as Settings exposing (Settings)
 import Lia.Sync.Types as Sync
-import Port.Event as Event exposing (Event)
+import Port.Event exposing (Event)
+import Port.Service.Resource as Resource
 import Translations
 
 
@@ -155,14 +156,12 @@ loadResource old new =
     ( List.append old to_load
     , List.map
         (\res ->
-            Event.init Nothing "resource" <|
-                JE.list JE.string <|
-                    case res of
-                        Script url ->
-                            [ "script", url ]
+            case res of
+                Script url ->
+                    Resource.script url
 
-                        Link url ->
-                            [ "link", url ]
+                Link url ->
+                    Resource.link url
         )
         to_load
     )

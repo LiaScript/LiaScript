@@ -21,6 +21,7 @@ import * as GUN from '../sync/Gun/index'
 
 // Services
 import Console from './service/Console'
+import Resource from './service/Resource'
 import Share from './service/Share'
 import Swipe from './service/Swipe'
 import Translate from './service/Translate'
@@ -397,6 +398,10 @@ function process(
         Share.handle(event)
         break
 
+      case Resource.PORT:
+        Resource.handle(event)
+        break
+
       case Translate.PORT:
         Translate.handle(event)
         break
@@ -533,39 +538,6 @@ function process(
 
         if (isConnected) {
           self.connector.setSettings(event.message[0])
-        }
-
-        break
-      }
-      case Port.RESOURCE: {
-        let elem = event.message[0]
-        let url = event.message[1]
-
-        log.info('loading resource => ', elem, ':', url)
-
-        try {
-          let tag = document.createElement(elem)
-          if (elem === 'link') {
-            tag.href = url
-            tag.rel = 'stylesheet'
-          } else {
-            window.event_semaphore++
-
-            tag.src = url
-            tag.async = false
-            tag.defer = true
-            tag.onload = function () {
-              window.event_semaphore--
-              log.info('successfully loaded =>', url)
-            }
-            tag.onerror = function (e: Error) {
-              window.event_semaphore--
-              log.warn('could not load =>', url, e)
-            }
-          }
-          document.head.appendChild(tag)
-        } catch (e) {
-          log.error('loading resource => ', e)
         }
 
         break
