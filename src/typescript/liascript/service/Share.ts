@@ -3,6 +3,10 @@ import log from '../log'
 const Service = {
   PORT: 'share',
 
+  isSupported: function (): boolean {
+    return !!navigator.share
+  },
+
   handle: function (event: Lia.Event) {
     switch (event.message.cmd) {
       case 'link':

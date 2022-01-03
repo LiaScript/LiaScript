@@ -255,7 +255,7 @@ class LiaScript {
           width: window.innerWidth,
           height: window.innerHeight,
         },
-        hasShareAPI: !!navigator.share,
+        hasShareAPI: Share.isSupported(),
         hasIndex: connector.hasIndex(),
         syncSupport: allowSync
           ? [
