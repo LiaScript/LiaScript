@@ -19,8 +19,8 @@ import Lia.Markdown.Inline.Types exposing (Inline)
 import Lia.Markdown.Types exposing (Block)
 import Lia.Markdown.Update exposing (Msg(..))
 import Lia.Voice as Voice
-import Port.Event as Event exposing (Event)
-import Port.TTS
+import Port.Event as Event
+import Port.Service.TTS
 
 
 circle_ : Int -> Html msg
@@ -200,7 +200,7 @@ block_playback config e =
 playBackAttr : Int -> String -> Int -> String -> Html.Attribute msg
 playBackAttr id voice section command =
     "XXX"
-        |> Port.TTS.playback id voice
+        |> Port.Service.TTS.playback id voice
         |> Event.pushWithId "effect" section
         |> Event.encode
         |> JE.encode 0
@@ -214,7 +214,7 @@ inline_playback config e =
     if config.speaking == Just e.id then
         Html.button
             [ Attr.class "lia-btn lia-btn--transparent icon icon-stop-circle mx-1"
-            , Port.TTS.mute e.id
+            , Port.Service.TTS.mute e.id
                 |> Event.pushWithId "effect" config.slide
                 |> Event.encode
                 |> JE.encode 0

@@ -1,4 +1,4 @@
-module Port.TTS exposing
+module Port.Service.TTS exposing
     ( Msg(..)
     , cancel
     , decode

@@ -16,8 +16,8 @@ import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
 import Lia.Utils exposing (focus)
 import Port.Event as Event exposing (Event)
 import Port.Service.Share as Share
+import Port.Service.TTS as TTS
 import Port.Service.Translate as Translate
-import Port.TTS as TTS
 import Return exposing (Return)
 
 

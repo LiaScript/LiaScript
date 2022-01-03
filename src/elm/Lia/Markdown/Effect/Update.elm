@@ -26,7 +26,7 @@ import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Section exposing (SubSection)
 import Port.Event as Event exposing (Event)
 import Port.Service.Slide as Slide
-import Port.TTS as TTS
+import Port.Service.TTS as TTS
 import Return exposing (Return)
 import Task
 
