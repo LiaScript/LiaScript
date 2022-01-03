@@ -177,7 +177,7 @@ update msg settings model =
             Share site ->
                 ( model
                 , Cmd.none
-                , [ Share.share site ]
+                , [ Share.link site ]
                 )
 
             LoadCourse url ->

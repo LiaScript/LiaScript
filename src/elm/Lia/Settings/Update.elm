@@ -179,7 +179,7 @@ update main msg model =
                             |> Maybe.withDefault ""
                      , url = url
                      }
-                        |> Share.share
+                        |> Share.link
                     )
 
         Toggle TranslateWithGoogle ->

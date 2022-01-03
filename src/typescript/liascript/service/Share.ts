@@ -5,7 +5,7 @@ const Service = {
 
   handle: function (event: Lia.Event) {
     switch (event.message.cmd) {
-      case 'share':
+      case 'link':
         try {
           if (navigator.share) {
             navigator.share(event.message.param)
