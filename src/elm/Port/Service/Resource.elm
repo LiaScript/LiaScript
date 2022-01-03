@@ -1,21 +1,33 @@
-module Port.Service.Resource exposing (link, script)
+module Port.Service.Resource exposing
+    ( link
+    , script
+    )
 
 import Json.Encode as JE
 import Port.Event as Event exposing (Event)
 
 
+{-| Generate an event that will dynamically load (inject) a custom
+`style-sheet.css` into the head of the document.
+-}
 link : String -> Event
-link =
-    load "link"
+link url =
+    event "link" url
 
 
+{-| Generate an event that will dynamically load (inject) a custom
+JavaScript file/library into the head of the document.
+-}
 script : String -> Event
-script =
-    load "script"
+script url =
+    event "script" url
 
 
-load : String -> String -> Event
-load type_ url =
+{-| **private:** Helper function to generate event - stubs that will be handled
+by the service module `Resource.ts`.
+-}
+event : String -> String -> Event
+event type_ url =
     { cmd = type_, param = JE.string url }
         |> Event.initX "resource"
         |> Event.withNoReply
