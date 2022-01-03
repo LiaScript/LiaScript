@@ -23,6 +23,7 @@ import * as GUN from '../sync/Gun/index'
 import Console from './service/Console'
 import Resource from './service/Resource'
 import Share from './service/Share'
+import Slide from './service/Slide'
 import Swipe from './service/Swipe'
 import Translate from './service/Translate'
 
@@ -76,9 +77,6 @@ function handleEffects(
   self?: LiaScript
 ) {
   switch (event.track[0][0]) {
-    case 'scrollTo':
-      scrollIntoView(event.message, 350)
-      break
     case 'persistent':
       // Todo
       // setTimeout((e) => { persistent.load(event.section) }, 10)
@@ -390,6 +388,14 @@ function process(
 
   if (event.service) {
     switch (event.service) {
+      case Slide.PORT:
+        if (event.message.param.slide) {
+          // store the current slide number within the backend
+          self.connector.slide(event.message.param.slide)
+        }
+        Slide.handle(event)
+        break
+
       case Console.PORT:
         Console.handle(event)
         break
@@ -411,27 +417,6 @@ function process(
     }
   } else
     switch (event.track[0][0]) {
-      case Port.SLIDE: {
-        self.connector.slide(event.track[0][1])
-
-        const sec = document.getElementsByTagName('main')[0]
-        if (sec) {
-          sec.scrollTo(0, 0)
-
-          if (sec.children.length > 0) (sec.children[0] as HTMLElement).focus()
-        }
-
-        const elem = document.getElementById('focusedToc')
-        if (elem) {
-          if (!isInViewport(elem)) {
-            elem.scrollIntoView({
-              behavior: 'smooth',
-            })
-          }
-        }
-
-        break
-      }
       case Port.LOAD: {
         self.connector.load(
           // generate the return message ...

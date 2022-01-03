@@ -25,6 +25,7 @@ import Lia.Markdown.Effect.Script.Types as Script_ exposing (Scripts)
 import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Section exposing (SubSection)
 import Port.Event as Event exposing (Event)
+import Port.Service.Slide as Slide
 import Port.TTS as TTS
 import Return exposing (Return)
 import Task
@@ -94,8 +95,8 @@ update main sound msg model =
             Send event ->
                 let
                     events =
-                        scrollTo True "focused"
-                            :: scrollTo False "lia-notes-active"
+                        Slide.scrollIntoView "focused" 350
+                            :: Slide.scrollIntoView "lia-notes-active" 350
                             :: event
                 in
                 model
@@ -143,19 +144,6 @@ update main sound msg model =
                         model.javascript
                             |> Script.update main (Script_.Handle event)
                             |> Return.mapValCmd (\v -> { model | javascript = v }) Script
-
-
-scrollTo : Bool -> String -> Event
-scrollTo force =
-    JE.string
-        >> Event.initWithId Nothing
-            "scrollTo"
-            (if force then
-                -1
-
-             else
-                0
-            )
 
 
 markRunning : Return (Model a) (Msg sub) sub -> Return (Model a) (Msg sub) sub

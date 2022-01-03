@@ -25,6 +25,7 @@ import Lia.Sync.Update as Sync
 import Port.Eval exposing (event)
 import Port.Event as Event exposing (Event)
 import Port.Service.Console as Console
+import Port.Service.Slide as Slide
 import Return exposing (Return)
 import Session exposing (Session)
 import Translations exposing (Lang(..))
@@ -335,7 +336,7 @@ update session msg model =
                         |> Return.mapValCmd
                             (set_active_section { model | to_do = [] })
                             UpdateMarkdown
-                        |> Return.batchEvents (Event.initWithId Nothing "slide" model.section_active JE.null :: model.to_do)
+                        |> Return.batchEvents (Slide.initialize model.section_active :: model.to_do)
 
                 ( JumpToFragment id, Just sec ) ->
                     if (model.settings.mode == Textbook) || sec.effect_model.visible == id then
