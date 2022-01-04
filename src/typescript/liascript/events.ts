@@ -300,7 +300,7 @@ function execute_response(
     }
 
     send({
-      reply: false,
+      reply: true,
       track: [
         [Port.EFFECT, section === undefined ? -1 : section],
         [topic, event_id],

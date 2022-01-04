@@ -274,8 +274,10 @@ class LiaScript {
     const sendTo = this.app.ports.event2elm.send
 
     const sender = function (msg: Lia.Event) {
-      log.info(`LIA <<< (${msg.track}) :`, msg.message)
-      sendTo(msg)
+      if (msg.reply) {
+        log.info(`LIA <<< (${msg.track}) :`, msg.message)
+        sendTo(msg)
+      }
     }
 
     this.connector = connector
@@ -422,7 +424,7 @@ function process(
           // generate the return message ...
           // the previous topic is mapped with the current message to match the return path
           {
-            reply: false,
+            reply: true,
             track: [[event.message, event.track[0][1]]],
             service: null,
             message: event.message,
@@ -596,7 +598,7 @@ function process(
           // todo, needs to be moved back
           // persistent.store(event.section)
           elmSend({
-            reply: false,
+            reply: true,
             track: [[Port.LOAD, -1]],
             service: null,
             message: null,

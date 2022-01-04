@@ -173,7 +173,7 @@ const Service = {
     detect(elem, function (swipeDir) {
       if (document.getElementsByClassName('lia-modal').length === 0) {
         elmSend({
-          reply: false,
+          reply: true,
           track: [[Port, -1]],
           service: null,
           message: swipeDir,
@@ -188,7 +188,7 @@ const Service = {
           case 'ArrowRight': {
             if (document.getElementsByClassName('lia-modal').length === 0) {
               elmSend({
-                reply: false,
+                reply: true,
                 track: [[Port, -1]],
                 service: null,
                 message: Dir.left,
@@ -199,7 +199,7 @@ const Service = {
           case 'ArrowLeft': {
             if (document.getElementsByClassName('lia-modal').length === 0) {
               elmSend({
-                reply: false,
+                reply: true,
                 track: [[Port, -1]],
                 service: null,
                 message: Dir.right,

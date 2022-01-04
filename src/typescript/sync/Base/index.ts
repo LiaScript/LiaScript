@@ -85,7 +85,7 @@ export class Sync {
 
   syncMsg(topic: string, message: any = null) {
     return {
-      reply: false,
+      reply: true,
       track: [
         ['sync', -1],
         ['sync', -1],

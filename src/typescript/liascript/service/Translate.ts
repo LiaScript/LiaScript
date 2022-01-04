@@ -45,7 +45,7 @@ const Service = {
         changeGoogleStyles()
 
         elmSend({
-          reply: false,
+          reply: true,
           track: [['lang', -1]],
           service: null,
           message: document.documentElement.lang,

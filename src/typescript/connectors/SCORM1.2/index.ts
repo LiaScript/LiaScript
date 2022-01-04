@@ -133,7 +133,7 @@ class Connector extends Base {
     try {
       location = JSON.parse(this.scorm.LMSGetValue('cmi.core.lesson_location'))
       this.send({
-        reply: false,
+        reply: true,
         track: [['goto', location.slide]],
         service: null,
         message: null,
@@ -370,7 +370,7 @@ class Connector extends Base {
 
     if (event.track[0][0] === 'code') {
       this.send({
-        reply: false,
+        reply: true,
         track: [event.track[0], ['restore', -1]],
         service: null,
         message: null,
@@ -393,7 +393,7 @@ class Connector extends Base {
 
     if (items.length !== 0) {
       this.send({
-        reply: false,
+        reply: true,
         track: [event.track[0], ['restore', -1]],
         service: null,
         message: items.sort((a, b) => a.i - b.i).map((e) => e.data),

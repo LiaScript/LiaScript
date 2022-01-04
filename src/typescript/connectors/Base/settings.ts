@@ -27,7 +27,7 @@ export function initSettings(
 
   if (send) {
     send({
-      reply: false,
+      reply: true,
       track: [
         [Port.SETTINGS, -1],
         ['init', -1],

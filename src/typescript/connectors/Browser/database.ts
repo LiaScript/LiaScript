@@ -211,7 +211,7 @@ class LiaDB {
       })
 
       this.send({
-        reply: false,
+        reply: true,
         track: [[Port.RESTORE, -1]],
         service: null,
         message: offline === undefined ? null : offline.data,
@@ -224,7 +224,7 @@ class LiaDB {
       const course = await this.dbIndex.courses.get(uidDB)
 
       this.send({
-        reply: false,
+        reply: true,
         track: [['getIndex', -1]],
         service: null,
         message: {
@@ -236,7 +236,7 @@ class LiaDB {
       log.warn('DB: getIndex -> ', e.message)
 
       this.send({
-        reply: false,
+        reply: true,
         track: [['getIndex', -1]],
         service: null,
         message: {
@@ -255,7 +255,7 @@ class LiaDB {
     }
 
     this.send({
-      reply: false,
+      reply: true,
       track: [[Port.INDEX, -1]],
       service: null,
       message: {
