@@ -6,6 +6,7 @@ module Lia.Markdown.Effect.Model exposing
     , current_paragraphs
     , getHiddenComments
     , get_paragraph
+    , hasComments
     , init
     , set_annotation
     )
@@ -39,6 +40,14 @@ type alias Content =
     , attr : Parameters
     , content : Inlines
     }
+
+
+{-| Checks if the current effect model contains any comments that should
+be spoken out loud.
+-}
+hasComments : Model a -> Bool
+hasComments model =
+    not (Dict.isEmpty model.comments)
 
 
 set_annotation : Int -> Int -> Dict Int Element -> Parameters -> Dict Int Element
