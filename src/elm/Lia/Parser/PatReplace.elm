@@ -1,9 +1,11 @@
 module Lia.Parser.PatReplace exposing
     ( link
     , replace
+    , repo
     , root
     )
 
+import Const
 import Regex
 
 
@@ -49,10 +51,64 @@ link =
         >> Tuple.second
 
 
+{-| **private:** translates the `Const.urlProxy` string into a regular
+expression.
+-}
+urlProxy : String
+urlProxy =
+    Const.urlProxy
+        |> String.replace "." "\\."
+        |> String.replace "?" "\\?"
+
+
+{-| This is the inverse function to link and tries to determine the URL of the
+main repository.
+
+    repo "https://raw.githubusercontent.com/LiaScript/LiaScript/development/README.md"
+        == "https://github.com/LiaScript/LiaScript/tree/development"
+
+Gitlab and some other resources cannot be downloaded directly, therefor the proxy
+URL is automatically added by the system, which is ignored.
+
+    repo "Const.proxyURL"+"https://gitlab.com/OvGU-ESS/eLab_v2/lia_script/-/raw/master/README.md"
+    = "https://gitlab.com/OvGU-ESS/eLab_v2/lia_script/-/blob/master/README.md"
+
+Works also fro dropbox...
+
+-}
+repo : String -> String
+repo =
+    replace
+        [ { by =
+                \_ w ->
+                    "https://github.com/"
+                        ++ (case w |> String.split "/" of
+                                user :: repository :: "blob" :: hash :: _ ->
+                                    user ++ "/" ++ repository ++ "/tree/" ++ hash
+
+                                -- user :: repo :: branch :: path ..
+                                user :: repository :: branch :: _ ->
+                                    user ++ "/" ++ repository ++ "/tree/" ++ branch
+
+                                _ ->
+                                    w
+                           )
+          , pattern = root "raw.githubusercontent\\.com/(.*)"
+          }
+        , { by = \_ w -> "https://gitlab.com/" ++ String.replace "-/raw/" "-/tree/" w
+          , pattern = root (urlProxy ++ "https://gitlab\\.com/(.*)")
+          }
+        , { by = \_ w -> "https://dropbox.com/s/" ++ w
+          , pattern = root "dl\\.dropbox\\.com/s/(.*)"
+          }
+        ]
+        >> Tuple.second
+        >> String.replace Const.urlProxy ""
+
+
 regex : String -> Regex.Regex
 regex =
-    Regex.fromString
-        >> Maybe.withDefault Regex.never
+    Regex.fromString >> Maybe.withDefault Regex.never
 
 
 check : String -> String -> Maybe String

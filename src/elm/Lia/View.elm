@@ -118,7 +118,7 @@ viewSlide screen model =
     case get_active_section model of
         Just section ->
             [ Html.div [ Attr.class "lia-slide" ]
-                [ slideTopBar model.translation screen model.url model.settings model.definition
+                [ slideTopBar model.translation screen model.url model.repositoryUrl model.settings model.definition
                 , Config.init
                     model.translation
                     ( model.langCodeOriginal, model.langCode )
@@ -152,6 +152,7 @@ viewSlide screen model =
                     model.translation
                     screen
                     model.url
+                    model.repositoryUrl
                     model.settings
                     model.definition
                 , Html.text "Ups, something went wrong"
@@ -340,13 +341,13 @@ navButton title id class msg =
 6.  `state`: fragments, if animations are active, not visible in textbook mode
 
 -}
-slideTopBar : Lang -> Screen -> String -> Settings -> Definition -> Html Msg
-slideTopBar lang screen url settings def =
+slideTopBar : Lang -> Screen -> String -> String -> Settings -> Definition -> Html Msg
+slideTopBar lang screen url repositoryURL settings def =
     [ ( Settings.menuMode, "mode" )
     , ( Settings.menuSettings, "settings" )
     , ( Settings.menuTranslations def, "lang" )
     , ( Settings.menuShare url, "share" )
-    , ( Settings.menuInformation def, "info" )
+    , ( Settings.menuInformation repositoryURL def, "info" )
     ]
         |> Settings.header lang screen settings (Definition.getIcon def)
         |> Html.map UpdateSettings
