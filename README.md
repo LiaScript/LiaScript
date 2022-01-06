@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.43
+version:  0.9.44
 language: en
 narrator: UK English Male
 
@@ -281,6 +281,14 @@ This will apply the following three patches:
 - elm-patch/dom: enable onclick events as well as innerHTML
 
 ## Version-Changes
+
+**0.9.44** (06/01/2022)
+
+- fix(patches): `make all` now runs all patches including the virtual-dom patch
+- improve: ResponsiveVoice information is only visible if and only if text to
+  speech is activated and used
+- improve: A repository link is added to the information section, which points
+  to the github, gitlab, or dropbox-repository. Others are about to come...
 
 **0.9.43** (14/12/2021)
 
