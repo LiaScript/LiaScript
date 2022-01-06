@@ -524,6 +524,7 @@ oembed option url =
 view_url : Config sub -> Inlines -> String -> Maybe Inlines -> Parameters -> Html (Msg sub)
 view_url config alt_ url_ title_ attr =
     Attr.href url_
+        :: Attr.target "_blank"
         :: annotation "lia-link" attr
         |> CList.addWhen (title config title_)
         |> Html.a
