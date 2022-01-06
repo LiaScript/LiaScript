@@ -1,4 +1,4 @@
-all: patch-url
+all: patch-url patch-break-dom
 
 patch-url:
 	cd elm-patch && make all

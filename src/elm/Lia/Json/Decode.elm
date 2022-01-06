@@ -7,6 +7,7 @@ import Lia.Definition.Json.Decode as Definition
 import Lia.Index.Model as Index
 import Lia.Markdown.Inline.Json.Decode as Inline
 import Lia.Model exposing (Model)
+import Lia.Parser.PatReplace exposing (repo)
 import Lia.Section as Section
 import Lia.Settings.Types as Settings
 import Translations
@@ -30,6 +31,7 @@ toModel : JD.Decoder Model
 toModel =
     JD.succeed Model
         |> andMap "url" JD.string
+        |> andMap "readme" (JD.string |> JD.map repo)
         |> andMap "readme" JD.string
         |> andMap "origin" JD.string
         |> andMap "str_title" JD.string

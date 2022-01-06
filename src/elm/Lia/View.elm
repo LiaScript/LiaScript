@@ -3,7 +3,6 @@ module Lia.View exposing (view)
 import Accessibility.Key as A11y_Key
 import Accessibility.Landmark as A11y_Landmark
 import Accessibility.Widget as A11y_Widget
-import Const
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -118,7 +117,7 @@ viewSlide screen model =
     case get_active_section model of
         Just section ->
             [ Html.div [ Attr.class "lia-slide" ]
-                [ slideTopBar model.translation screen model.url model.settings model.definition
+                [ slideTopBar model.translation screen model.url model.repositoryUrl model.settings model.definition
                 , Config.init
                     model.translation
                     ( model.langCodeOriginal, model.langCode )
@@ -130,7 +129,6 @@ viewSlide screen model =
                     |> Markdown.view
                     |> Html.map UpdateMarkdown
                 , slideBottom
-                    screen
                     model.translation
                     model.settings
                     model.section_active
@@ -152,6 +150,7 @@ viewSlide screen model =
                     model.translation
                     screen
                     model.url
+                    model.repositoryUrl
                     model.settings
                     model.definition
                 , Html.text "Ups, something went wrong"
@@ -162,8 +161,12 @@ viewSlide screen model =
 {-| **@private:** used to display the text2speech output settings and spoken
 comments in text, depending on the currently applied rendering mode.
 -}
-slideBottom : Screen -> Lang -> Settings -> Int -> Effect.Model SubSection -> Html Msg
-slideBottom screen lang settings slide effects =
+slideBottom : Lang -> Settings -> Int -> Effect.Model SubSection -> Html Msg
+slideBottom lang settings slide effects =
+    let
+        sound =
+            settings.sound && Effect.hasComments effects
+    in
     Html.footer
         [ Attr.class "lia-slide__footer" ]
         [ slideNavigation lang settings.mode slide effects
@@ -172,27 +175,18 @@ slideBottom screen lang settings slide effects =
                 Html.text ""
 
             _ ->
-                Html.div [ Attr.class "lia-responsive-voice" ] <|
-                    if screen.width > Const.globalBreakpoints.sm then
-                        [ Html.div [ Attr.class "lia-responsive-voice__control" ]
-                            [ btnReplay lang settings
-                            , btnStop lang settings
-                            ]
-                        , responsiveVoice
+                Html.div [ Attr.class "lia-responsive-voice" ]
+                    [ Html.div [ Attr.class "lia-responsive-voice__control" ]
+                        [ btnReplay lang sound settings
+                        , responsiveVoice sound
+                        , btnStop lang settings
                         ]
-
-                    else
-                        [ Html.div [ Attr.class "lia-responsive-voice__control" ]
-                            [ btnReplay lang settings
-                            , responsiveVoice
-                            , btnStop lang settings
-                            ]
-                        ]
+                    ]
         ]
 
 
-btnReplay : Lang -> Settings -> Html Msg
-btnReplay lang settings =
+btnReplay : Lang -> Bool -> Settings -> Html Msg
+btnReplay lang soundEnabled settings =
     Lia.Utils.btnIcon
         { title =
             if settings.speaking then
@@ -202,7 +196,7 @@ btnReplay lang settings =
                 Trans.basePlay lang
         , tabbable = settings.sound
         , msg =
-            if settings.sound then
+            if soundEnabled && settings.sound then
                 Just (TTSReplay (not settings.speaking))
 
             else
@@ -340,13 +334,13 @@ navButton title id class msg =
 6.  `state`: fragments, if animations are active, not visible in textbook mode
 
 -}
-slideTopBar : Lang -> Screen -> String -> Settings -> Definition -> Html Msg
-slideTopBar lang screen url settings def =
+slideTopBar : Lang -> Screen -> String -> String -> Settings -> Definition -> Html Msg
+slideTopBar lang screen url repositoryURL settings def =
     [ ( Settings.menuMode, "mode" )
     , ( Settings.menuSettings, "settings" )
     , ( Settings.menuTranslations def, "lang" )
     , ( Settings.menuShare url, "share" )
-    , ( Settings.menuInformation def, "info" )
+    , ( Settings.menuInformation repositoryURL def, "info" )
     ]
         |> Settings.header lang screen settings (Definition.getIcon def)
         |> Html.map UpdateSettings
@@ -401,9 +395,17 @@ slideNavigation lang mode slide effect =
 -- ]
 
 
-responsiveVoice : Html msg
-responsiveVoice =
-    Html.small [ Attr.class "lia-responsive-voice__info" ]
+responsiveVoice : Bool -> Html msg
+responsiveVoice show =
+    Html.small
+        [ Attr.class "lia-responsive-voice__info"
+        , Attr.style "visibility" <|
+            if show then
+                "visible"
+
+            else
+                "hidden"
+        ]
         [ Html.a [ Attr.class "lia-link", Attr.href "https://responsivevoice.org" ] [ Html.text "ResponsiveVoice-NonCommercial" ]
         , Html.text " licensed under "
         , Html.a

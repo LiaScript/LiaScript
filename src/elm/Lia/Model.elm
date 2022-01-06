@@ -9,6 +9,7 @@ import Dict exposing (Dict)
 import Json.Encode as JE
 import Lia.Definition.Types as Definition exposing (Definition, Resource(..))
 import Lia.Index.Model as Index
+import Lia.Parser.PatReplace exposing (repo)
 import Lia.Section exposing (Sections)
 import Lia.Settings.Json
 import Lia.Settings.Types as Settings exposing (Settings)
@@ -64,6 +65,7 @@ import Translations
 -}
 type alias Model =
     { url : String
+    , repositoryUrl : String
     , readme : String
     , origin : String
     , title : String
@@ -109,6 +111,7 @@ init hasShareApi openTOC settings url readme origin anchor =
             Settings.init hasShareApi Settings.Presentation
     in
     { url = url
+    , repositoryUrl = repo readme
     , readme = readme
     , origin = origin
     , title = "Lia"
