@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.44
+version:  0.9.45
 language: en
 narrator: UK English Male
 
@@ -281,6 +281,12 @@ This will apply the following three patches:
 - elm-patch/dom: enable onclick events as well as innerHTML
 
 ## Version-Changes
+
+**0.9.45** (06/01/2022)
+
+- improve(Links): Links to external sites do now contain a `target="_blank"` by
+  default. Thus, clicks open a new tab instead of destroying the current state
+  of the window.
 
 **0.9.44** (06/01/2022)
 
