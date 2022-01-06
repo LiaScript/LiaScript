@@ -42,17 +42,17 @@ view session settings model =
                         []
                         [ Html.li []
                             [ Html.a
-                                [ Attr.href Const.urlLiascript ]
+                                [ Attr.href Const.urlLiascript, Attr.target "_blank" ]
                                 [ Html.text "Project-Website" ]
                             ]
                         , Html.li []
                             [ Html.a
-                                [ href "https://raw.githubusercontent.com/liaScript/docs/master/README.md" ]
+                                [ href "https://raw.githubusercontent.com/liaScript/docs/master/README.md", Attr.target "_blank" ]
                                 [ Html.text "Project-Documentation" ]
                             ]
                         , Html.li []
                             [ Html.a
-                                [ href "https://raw.githubusercontent.com/liaScript/index/master/README.md" ]
+                                [ href "https://raw.githubusercontent.com/liaScript/index/master/README.md", Attr.target "_blank" ]
                                 [ Html.text "Index" ]
                             ]
                         ]
