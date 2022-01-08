@@ -238,11 +238,16 @@ bold =
     Html.text >> List.singleton >> Html.strong []
 
 
-viewInformation : Lang -> Bool -> String -> Definition -> List (Html Msg)
+viewInformation : Lang -> Bool -> Maybe String -> Definition -> List (Html Msg)
 viewInformation lang tabbable repositoryURL definition =
-    [ [ bold "Repository: "
-      , Html.a [ Attr.href repositoryURL, Attr.target "_blank" ] [ Html.text repositoryURL ]
-      ]
+    [ case repositoryURL of
+        Just url ->
+            [ bold "Repository: "
+            , Html.a [ Attr.href url, Attr.target "_blank" ] [ Html.text url ]
+            ]
+
+        Nothing ->
+            []
     ]
         |> CList.addIf (definition.attributes /= [])
             [ bold "Attributes:"
@@ -583,7 +588,7 @@ menuShare url lang tabbable settings =
     ]
 
 
-menuInformation : String -> Definition -> Lang -> Bool -> Settings -> List (Html Msg)
+menuInformation : Maybe String -> Definition -> Lang -> Bool -> Settings -> List (Html Msg)
 menuInformation repositoryURL definition lang tabbable settings =
     [ Html.i
         [ Attr.class "icon icon-info hide-md-up"

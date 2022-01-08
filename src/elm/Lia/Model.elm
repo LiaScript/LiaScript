@@ -65,7 +65,7 @@ import Translations
 -}
 type alias Model =
     { url : String
-    , repositoryUrl : String
+    , repositoryUrl : Maybe String
     , readme : String
     , origin : String
     , title : String

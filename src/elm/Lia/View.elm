@@ -334,7 +334,7 @@ navButton title id class msg =
 6.  `state`: fragments, if animations are active, not visible in textbook mode
 
 -}
-slideTopBar : Lang -> Screen -> String -> String -> Settings -> Definition -> Html Msg
+slideTopBar : Lang -> Screen -> String -> Maybe String -> Settings -> Definition -> Html Msg
 slideTopBar lang screen url repositoryURL settings def =
     [ ( Settings.menuMode, "mode" )
     , ( Settings.menuSettings, "settings" )

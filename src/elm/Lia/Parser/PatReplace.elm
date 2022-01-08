@@ -76,7 +76,7 @@ URL is automatically added by the system, which is ignored.
 Works also fro dropbox...
 
 -}
-repo : String -> String
+repo : String -> Maybe String
 repo =
     replace
         [ { by =
@@ -102,8 +102,13 @@ repo =
           , pattern = root "dl\\.dropbox\\.com/s/(.*)"
           }
         ]
-        >> Tuple.second
-        >> String.replace Const.urlProxy ""
+        >> (\( found, string ) ->
+                if found then
+                    Just <| String.replace Const.urlProxy "" string
+
+                else
+                    Nothing
+           )
 
 
 regex : String -> Regex.Regex
