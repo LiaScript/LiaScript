@@ -240,13 +240,14 @@ bold =
 
 viewInformation : Lang -> Bool -> Maybe String -> Definition -> List (Html Msg)
 viewInformation lang tabbable repositoryURL definition =
-    [ case repositoryURL of
-        Just url ->
-            [ bold "Repository: "
-            , Html.a [ Attr.href url, Attr.target "_blank" ] [ Html.text url ]
-            ]
+    [ case ( Dict.get "repository" definition.macro, repositoryURL ) of
+        ( Just url, _ ) ->
+            viewRepository url
 
-        Nothing ->
+        ( _, Just url ) ->
+            viewRepository url
+
+        _ ->
             []
     ]
         |> CList.addIf (definition.attributes /= [])
@@ -289,6 +290,13 @@ viewInformation lang tabbable repositoryURL definition =
                 Html.text ""
             ]
         |> List.map (Html.span [])
+
+
+viewRepository : String -> List (Html msg)
+viewRepository url =
+    [ bold "Repository: "
+    , Html.a [ Attr.href url, Attr.target "_blank" ] [ Html.text url ]
+    ]
 
 
 viewAttributes : Lang -> List Inlines -> Html Msg
