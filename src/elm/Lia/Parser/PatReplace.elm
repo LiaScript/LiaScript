@@ -98,6 +98,20 @@ repo =
         , { by = \_ w -> "https://gitlab.com/" ++ String.replace "-/raw/" "-/tree/" w
           , pattern = root (urlProxy ++ "https://gitlab\\.com/(.*)")
           }
+
+        -- Pattern:
+        --
+        -- USER.gitlab.io/PROJECT/folder/.../file -> gitlab.com/USER/PROJECT
+        , { by =
+                \_ w ->
+                    case w |> String.split "/" |> List.map (String.split ".") of
+                        [ user, "gitlab", "io" ] :: [ project ] :: _ ->
+                            "https://gitlab.com/" ++ user ++ "/" ++ project
+
+                        _ ->
+                            "https://" ++ w
+          , pattern = root "(.*\\.gitlab\\.io/.*)"
+          }
         , { by = \_ w -> "https://dropbox.com/s/" ++ w
           , pattern = root "dl\\.dropbox\\.com/s/(.*)"
           }
