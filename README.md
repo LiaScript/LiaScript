@@ -2,7 +2,7 @@
 
 author:   André Dietrich
 email:    LiaScript@web.de
-version:  0.9.45
+version:  0.9.46
 language: en
 narrator: UK English Male
 
@@ -281,6 +281,14 @@ This will apply the following three patches:
 - elm-patch/dom: enable onclick events as well as innerHTML
 
 ## Version-Changes
+
+**0.9.46** (09/01/2022)
+
+- improve: Repository information
+
+  - only visible for resources from GitHub, GitLab, DropBox
+  - additional `@repository: url` macro-def, which overwrites the definitions
+    from above and is also visible for exports
 
 **0.9.45** (06/01/2022)
 
