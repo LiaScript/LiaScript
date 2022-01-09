@@ -76,7 +76,7 @@ URL is automatically added by the system, which is ignored.
 Works also fro dropbox...
 
 -}
-repo : String -> String
+repo : String -> Maybe String
 repo =
     replace
         [ { by =
@@ -98,12 +98,31 @@ repo =
         , { by = \_ w -> "https://gitlab.com/" ++ String.replace "-/raw/" "-/tree/" w
           , pattern = root (urlProxy ++ "https://gitlab\\.com/(.*)")
           }
+
+        -- Pattern:
+        --
+        -- USER.gitlab.io/PROJECT/folder/.../file -> gitlab.com/USER/PROJECT
+        , { by =
+                \_ w ->
+                    case w |> String.split "/" |> List.map (String.split ".") of
+                        [ user, "gitlab", "io" ] :: [ project ] :: _ ->
+                            "https://gitlab.com/" ++ user ++ "/" ++ project
+
+                        _ ->
+                            "https://" ++ w
+          , pattern = root "(.*\\.gitlab\\.io/.*)"
+          }
         , { by = \_ w -> "https://dropbox.com/s/" ++ w
           , pattern = root "dl\\.dropbox\\.com/s/(.*)"
           }
         ]
-        >> Tuple.second
-        >> String.replace Const.urlProxy ""
+        >> (\( found, string ) ->
+                if found then
+                    Just <| String.replace Const.urlProxy "" string
+
+                else
+                    Nothing
+           )
 
 
 regex : String -> Regex.Regex
