@@ -200,7 +200,7 @@ block_playback config e =
 playBackAttr : Int -> String -> Int -> String -> Html.Attribute msg
 playBackAttr id voice section command =
     "XXX"
-        |> Port.Service.TTS.playback id voice
+        |> Port.Service.TTS.playback voice
         |> Event.pushWithId "effect" section
         |> Event.encode
         |> JE.encode 0
@@ -214,8 +214,9 @@ inline_playback config e =
     if config.speaking == Just e.id then
         Html.button
             [ Attr.class "lia-btn lia-btn--transparent icon icon-stop-circle mx-1"
-            , Port.Service.TTS.mute e.id
+            , Port.Service.TTS.cancel
                 |> Event.pushWithId "effect" config.slide
+                |> Event.pushWithId "playback" e.id
                 |> Event.encode
                 |> JE.encode 0
                 |> (\event -> "playback(" ++ event ++ ")")

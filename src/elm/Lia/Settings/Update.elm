@@ -53,25 +53,26 @@ update :
 update main msg model =
     case msg of
         Handle event ->
-            case Event.topic_ event of
+            case Event.topic_ event |> Debug.log "'''''''''''''''''''''''''''''''''" of
                 Just "init" ->
                     event
                         |> Event.message
                         |> load { model | initialized = True }
                         |> no_log Nothing
 
-                Just "speak" ->
-                    no_log Nothing
-                        { model
-                            | speaking =
-                                event
-                                    |> Event.message
-                                    |> TTS.decode
-                                    |> (==) TTS.Start
-                        }
-
                 _ ->
-                    log Nothing model
+                    case event.service of
+                        Just "tts" ->
+                            no_log Nothing
+                                { model
+                                    | speaking =
+                                        event
+                                            |> TTS.decode
+                                            |> (==) TTS.Start
+                                }
+
+                        _ ->
+                            log Nothing model
 
         Toggle TableOfContents ->
             log Nothing
@@ -88,12 +89,16 @@ update main msg model =
                 }
 
         Toggle Sound ->
-            let
-                return =
-                    log Nothing { model | sound = not model.sound }
-            in
-            return
-                |> Return.batchEvent (TTS.event return.value.sound)
+            { model | sound = not model.sound }
+                |> log Nothing
+                |> Return.batchEvent
+                    (Event.push "settings" <|
+                        if model.sound then
+                            TTS.cancel
+
+                        else
+                            TTS.repeat
+                    )
 
         Toggle Light ->
             log Nothing { model | light = not model.light }
@@ -131,12 +136,9 @@ update main msg model =
         SwitchMode mode ->
             case mode of
                 Textbook ->
-                    let
-                        return =
-                            log Nothing { model | sound = False, mode = Textbook }
-                    in
-                    return
-                        |> Return.batchEvent (TTS.event return.value.sound)
+                    { model | sound = False, mode = Textbook }
+                        |> log Nothing
+                        |> Return.batchEvent TTS.cancel
 
                 _ ->
                     log Nothing { model | mode = mode }

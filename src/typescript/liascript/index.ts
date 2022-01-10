@@ -7,7 +7,7 @@ import log from './log'
 import './types/globals'
 import Lia from './types/lia.d'
 import Port from './types/ports'
-import TTS from './tts'
+//import TTS from './tts'
 import { Connector } from '../connectors/Base/index'
 import { updateClassName } from '../connectors/Base/settings'
 
@@ -25,6 +25,7 @@ import Resource from './service/Resource'
 import Share from './service/Share'
 import Slide from './service/Slide'
 import Swipe from './service/Swipe'
+import TTS from './service/TTS'
 import Translate from './service/Translate'
 
 window.img_Zoom = function (e: MouseEvent | TouchEvent) {
@@ -84,9 +85,9 @@ function handleEffects(
     case 'execute':
       lia_execute_event(event.message, elmSend, event.track[0][1])
       break
-    case 'speak': {
+    /*case 'speak': {
       let msg: Lia.Event = {
-        reply: false,
+        reply: true,
         track: [
           [Port.SETTINGS, -1],
           ['speak', -1],
@@ -97,7 +98,7 @@ function handleEffects(
 
       if (section >= 0) {
         msg = {
-          reply: false,
+          reply: true,
           track: [
             [Port.EFFECT, section],
             ['speak', event.track[0][1]],
@@ -188,11 +189,12 @@ function handleEffects(
       }
       break
     }
+    */
     case 'sub': {
       if (self != undefined && event.track.length != 0) {
         const newSend = function (subEvent: Lia.Event) {
           elmSend({
-            reply: false,
+            reply: true,
             track: [
               [Port.EFFECT, section],
               ['sub', event.track[0][1]],
@@ -286,12 +288,6 @@ class LiaScript {
 
     liaStorage = this.connector.storage()
 
-    window.playback = function (event) {
-      const id = event.track[0][1]
-      event.track = event.track.slice(1)
-      handleEffects(event, sender, id)
-    }
-
     let self = this
     window.showFootnote = (key) => {
       self.footnote(key)
@@ -302,10 +298,6 @@ class LiaScript {
     window.img_Click = (url: string) => {
       self.img_Click(url)
     }
-
-    setTimeout(function () {
-      firstSpeak = false
-    }, 1000)
 
     initTooltip()
   }
@@ -371,6 +363,7 @@ class LiaScript {
 
     let self = this
 
+    TTS.init(elmSend)
     Swipe.init(elem, elmSend)
     Translate.init(elmSend)
 
@@ -396,6 +389,10 @@ function process(
           self.connector.slide(event.message.param.slide)
         }
         Slide.handle(event)
+        break
+
+      case TTS.PORT:
+        TTS.handle(elmSend, event)
         break
 
       case Console.PORT:
@@ -656,7 +653,7 @@ function process(
         switch (event.track[1][0]) {
           case 'list': {
             try {
-              TTS.cancel()
+              TTS.mute()
             } catch (e) {}
             self.connector.getIndex()
             break

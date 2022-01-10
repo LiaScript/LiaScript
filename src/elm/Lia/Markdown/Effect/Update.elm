@@ -6,14 +6,12 @@ module Lia.Markdown.Effect.Update exposing
     , init
     , next
     , previous
-    , ttsCancel
     , ttsReplay
     , update
     , updateSub
     )
 
 import Browser.Dom as Dom
-import Json.Decode as JD
 import Json.Encode as JE
 import Lia.Definition.Types exposing (Definition)
 import Lia.Markdown.Effect.Model
@@ -25,6 +23,7 @@ import Lia.Markdown.Effect.Script.Types as Script_ exposing (Scripts)
 import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Section exposing (SubSection)
 import Port.Event as Event exposing (Event)
+import Port.Service.Console as Console
 import Port.Service.Slide as Slide
 import Port.Service.TTS as TTS
 import Return exposing (Return)
@@ -90,7 +89,10 @@ update main sound msg model =
             Mute id ->
                 { model | speaking = Nothing }
                     |> Return.val
-                    |> Return.batchEvent (TTS.mute id)
+                    |> Return.batchEvent
+                        (TTS.cancel
+                            |> Event.pushWithId "playback" id
+                        )
 
             Send event ->
                 let
@@ -105,7 +107,7 @@ update main sound msg model =
                         (case current_comment model of
                             Just ( id, _ ) ->
                                 if sound then
-                                    TTS.readFrom -1 id :: events
+                                    TTS.readFrom id :: events
 
                                 else
                                     events
@@ -123,22 +125,21 @@ update main sound msg model =
                     |> Return.mapValCmd (\v -> { model | javascript = v }) Script
 
             Handle event ->
-                case Event.topicWithId event of
-                    Just ( "speak", section ) ->
-                        Return.val <|
-                            case
-                                event
-                                    |> Event.message
-                                    |> JD.decodeValue JD.string
-                            of
-                                Ok "start" ->
-                                    { model | speaking = Just section }
+                case Event.topicWithId event |> Debug.log "QQQQQQQQQQQQQQQQQQQQQQQQQQ" of
+                    Just ( "tts", section ) ->
+                        case TTS.decode event of
+                            TTS.Start ->
+                                { model | speaking = Just section }
+                                    |> Return.val
 
-                                Ok "stop" ->
-                                    { model | speaking = Nothing }
+                            TTS.Stop ->
+                                { model | speaking = Nothing }
+                                    |> Return.val
 
-                                _ ->
-                                    model
+                            TTS.Error info ->
+                                model
+                                    |> Return.val
+                                    |> Return.batchEvent (Console.warn info)
 
                     _ ->
                         model.javascript
@@ -231,19 +232,8 @@ handle =
     Handle
 
 
-ttsReplay :
-    Bool
-    -> Model SubSection
-    -> Maybe Event
-ttsReplay sound model =
-    case ( sound, current_comment model ) of
-        ( True, Just ( id, _ ) ) ->
-            Just <| TTS.readFrom -1 id
-
-        _ ->
-            Nothing
-
-
-ttsCancel : Event
-ttsCancel =
-    TTS.cancel
+ttsReplay : Model SubSection -> Maybe Event
+ttsReplay model =
+    model
+        |> current_comment
+        |> Maybe.map (Tuple.first >> TTS.readFrom)

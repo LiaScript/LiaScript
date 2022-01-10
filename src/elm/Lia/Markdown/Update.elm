@@ -31,6 +31,7 @@ import Lia.Sync.Types as Sync
 import Lia.Utils exposing (focus)
 import Port.Event as Event exposing (Event)
 import Port.Service.Console as Console
+import Port.Service.TTS as TTS
 import Return exposing (Return)
 import Translations exposing (Lang(..))
 
@@ -502,6 +503,10 @@ handle sync globals topic event section =
 
 ttsReplay : Bool -> Bool -> Maybe Section -> Maybe Event
 ttsReplay sound true section =
+    let
+        _ =
+            Debug.log "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW" ( sound, true )
+    in
     -- replay if possible
     if sound then
         if true then
@@ -509,13 +514,18 @@ ttsReplay sound true section =
                 |> Maybe.andThen
                     (\s ->
                         s.effect_model
-                            |> Effect.ttsReplay sound
+                            |> Effect.ttsReplay
                             |> Maybe.map (Event.pushWithId "effect" s.id)
                     )
 
         else
-            Effect.ttsCancel
-                |> Event.push "effect"
+            TTS.cancel
+                |> Event.pushWithId "tts" 0
+                |> Event.pushWithId "effect"
+                    (section
+                        |> Maybe.map .id
+                        |> Maybe.withDefault -1
+                    )
                 |> Just
 
     else
