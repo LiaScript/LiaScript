@@ -7,5 +7,5 @@ import Service.Event as Event exposing (Event)
 google : Event
 google =
     { cmd = "google", param = JE.null }
-        |> Event.initX "translate"
+        |> Event.init "translate"
         |> Event.withNoReply

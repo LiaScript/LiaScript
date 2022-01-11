@@ -45,5 +45,5 @@ by the service module `Slide.ts`.
 event : String -> JE.Value -> Event
 event cmd message =
     { cmd = cmd, param = message }
-        |> Event.initX "slide"
+        |> Event.init "slide"
         |> Event.withNoReply

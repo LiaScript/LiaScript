@@ -29,5 +29,5 @@ by the service module `Resource.ts`.
 event : String -> String -> Event
 event type_ url =
     { cmd = type_, param = JE.string url }
-        |> Event.initX "resource"
+        |> Event.init "resource"
         |> Event.withNoReply

@@ -27,30 +27,27 @@ repeat =
 decode : Event -> Msg
 decode e =
     case e.service of
-        Just "tts" ->
-            case JD.decodeValue (JD.field "cmd" JD.string) e.message |> Debug.log "-----------------------" of
-                Ok "start" ->
+        "tts" ->
+            case e.message.cmd of
+                "start" ->
                     Start
 
-                Ok "stop" ->
+                "stop" ->
                     Stop
 
-                Ok "error" ->
-                    case JD.decodeValue (JD.field "param" JD.string) e.message of
+                "error" ->
+                    case JD.decodeValue JD.string e.message.param of
                         Ok msg ->
                             Error msg
 
                         Err msg ->
                             Error <| JD.errorToString msg
 
-                Ok _ ->
-                    Error "unknown cmd"
-
-                Err msg ->
-                    Error <| JD.errorToString msg
+                unknown ->
+                    Error <| "unknown cmd => " ++ unknown
 
         _ ->
-            Error <| "Wrong Service -> " ++ Maybe.withDefault "unknown" e.service
+            Error <| "Wrong Service -> " ++ e.service
 
 
 playback : String -> String -> Event
@@ -80,4 +77,4 @@ by the service module `Slide.ts`.
 -}
 event : String -> JE.Value -> Event
 event cmd message =
-    Event.initX "tts" { cmd = cmd, param = message }
+    Event.init "tts" { cmd = cmd, param = message }

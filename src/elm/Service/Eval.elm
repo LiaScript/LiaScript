@@ -40,7 +40,9 @@ event id code scripts inputs =
         |> List.foldl replace_id code_
         |> replace_0 default
         |> JE.string
-        |> Event.initWithId Nothing "eval" id
+        -- TODO
+        -- |> Event.init "eval" id
+        |> event_ "eval"
 
 
 replace_0 : String -> String -> String
@@ -86,3 +88,9 @@ encode { ok, result, details } =
         , ( "result", JE.string result )
         , ( "details", JE.list identity details )
         ]
+
+
+event_ : String -> JE.Value -> Event
+event_ cmd param =
+    { cmd = cmd, param = param }
+        |> Event.init "code"

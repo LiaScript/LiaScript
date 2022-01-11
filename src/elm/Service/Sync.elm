@@ -56,4 +56,4 @@ join id message =
 publish : String -> JE.Value -> Event
 publish cmd message =
     { cmd = cmd, param = message }
-        |> Event.initX "sync"
+        |> Event.init "sync"

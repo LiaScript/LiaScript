@@ -44,5 +44,5 @@ by the service module `Console.ts`.
 console : String -> String -> Event
 console cmd message =
     { cmd = cmd, param = JE.string message }
-        |> Event.initX "console"
+        |> Event.init "console"
         |> Event.withNoReply

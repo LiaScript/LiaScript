@@ -20,5 +20,5 @@ link { title, text, url } =
             , ( "url", JE.string url )
             ]
     }
-        |> Event.initX "share"
+        |> Event.init "share"
         |> Event.withNoReply
