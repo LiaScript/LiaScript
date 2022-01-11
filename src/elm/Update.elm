@@ -109,10 +109,7 @@ message msg =
 -}
 batch : (a -> msg) -> Return model a sub -> Cmd msg
 batch map ret =
-    [ ret.events
-    , ret.synchronize
-    ]
-        |> List.concat
+    ret.events
         |> List.map event2js
         |> (::) (Cmd.map map ret.command)
         |> Cmd.batch

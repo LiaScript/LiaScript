@@ -31,6 +31,7 @@ import Lia.Sync.Types as Sync
 import Lia.Utils exposing (focus)
 import Port.Event as Event exposing (Event)
 import Port.Service.Console as Console
+import Port.Service.Sync as Sync_
 import Port.Service.TTS as TTS
 import Return exposing (Return)
 import Translations exposing (Lang(..))
@@ -139,10 +140,10 @@ update sync globals msg section =
                                     section
                                         |> Section.syncQuiz state
                                         |> Return.val
-                                        |> Return.sync
+                                        |> Return.batchEvent
                                             (state
                                                 |> Container.encode Quiz_.encoder
-                                                |> Event.init Nothing "quiz"
+                                                |> Sync_.publish "quiz"
                                                 |> Event.pushWithId "local" section.id
                                             )
 
@@ -174,10 +175,10 @@ update sync globals msg section =
                                     section
                                         |> Section.syncSurvey state
                                         |> Return.val
-                                        |> Return.sync
+                                        |> Return.batchEvent
                                             (state
                                                 |> Container.encode Survey_.encoder
-                                                |> Event.init Nothing "survey"
+                                                |> Sync_.publish "survey"
                                                 |> Event.pushWithId "local" section.id
                                             )
 
@@ -225,8 +226,8 @@ update sync globals msg section =
 
 syncQuiz : Sync.State -> Return Section msg sub -> Return Section msg sub
 syncQuiz sync ret =
-    case ( List.isEmpty ret.synchronize, Sync.id sync ) of
-        ( False, Just id ) ->
+    case ( ret.synchronize, Sync.id sync ) of
+        ( True, Just id ) ->
             case
                 ret.value.quiz_vector
                     |> Container.init id Quiz_.sync
@@ -237,27 +238,27 @@ syncQuiz sync ret =
                         )
             of
                 ( True, state ) ->
-                    { ret | synchronize = [] }
+                    { ret | synchronize = False }
                         |> Return.mapVal (Section.syncQuiz state)
-                        |> Return.sync
+                        |> Return.batchEvent
                             (state
                                 |> Container.encode Quiz_.encoder
-                                |> Event.init Nothing "quiz"
+                                |> Sync_.publish "quiz"
                                 |> Event.pushWithId "local" ret.value.id
                             )
 
                 ( False, state ) ->
-                    { ret | synchronize = [] }
+                    { ret | synchronize = False }
                         |> Return.mapVal (Section.syncQuiz state)
 
         _ ->
-            { ret | synchronize = [] }
+            { ret | synchronize = False }
 
 
 syncSurvey : Sync.State -> Return Section msg sub -> Return Section msg sub
 syncSurvey sync ret =
-    case ( List.isEmpty ret.synchronize, Sync.id sync ) of
-        ( False, Just id ) ->
+    case ( ret.synchronize, Sync.id sync ) of
+        ( True, Just id ) ->
             case
                 ret.value.survey_vector
                     |> Container.init id Survey_.sync
@@ -268,21 +269,21 @@ syncSurvey sync ret =
                         )
             of
                 ( True, state ) ->
-                    { ret | synchronize = [] }
+                    { ret | synchronize = False }
                         |> Return.mapVal (Section.syncSurvey state)
-                        |> Return.sync
+                        |> Return.batchEvent
                             (state
                                 |> Container.encode Survey_.encoder
-                                |> Event.init Nothing "survey"
+                                |> Sync_.publish "survey"
                                 |> Event.pushWithId "local" ret.value.id
                             )
 
                 ( False, state ) ->
-                    { ret | synchronize = [] }
+                    { ret | synchronize = False }
                         |> Return.mapVal (Section.syncSurvey state)
 
         _ ->
-            { ret | synchronize = [] }
+            ret
 
 
 subs :

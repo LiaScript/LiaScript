@@ -16,6 +16,7 @@ import Lia.Sync.Container.Global as Global
 import Lia.Sync.Types exposing (Settings, State(..), id)
 import Lia.Sync.Via as Via exposing (Backend)
 import Port.Event as Event exposing (Event, message)
+import Port.Service.Sync as Sync
 import Random
 import Return exposing (Return)
 import Session exposing (Session)
@@ -196,26 +197,14 @@ update session model msg =
                 ( Just backend, Disconnected ) ->
                     { model | sync = { sync | state = Pending, sync = closeSelect sync.sync } }
                         |> Return.val
-                        |> Return.sync
-                            ([ ( "backend"
-                               , backend
-                                    |> Via.toString
-                                    |> String.toLower
-                                    |> JE.string
-                               )
-                             , ( "course", JE.string model.readme )
-                             , ( "room", JE.string sync.room )
-                             , ( "username", JE.string sync.username )
-                             , ( "password"
-                               , if String.isEmpty sync.password then
-                                    JE.null
-
-                                 else
-                                    JE.string sync.password
-                               )
-                             ]
-                                |> JE.object
-                                |> Event.init Nothing "connect"
+                        |> Return.batchEvent
+                            (Sync.connect
+                                { backend = backend
+                                , course = model.readme
+                                , room = sync.room
+                                , username = sync.username
+                                , password = sync.password
+                                }
                             )
 
                 _ ->
@@ -224,7 +213,7 @@ update session model msg =
         Disconnect ->
             { model | sync = { sync | state = Pending } }
                 |> Return.val
-                |> Return.sync (Event.empty Nothing "disconnect")
+                |> Return.batchEvent Sync.disconnect
 
 
 updateSync msg sync =
@@ -272,9 +261,8 @@ globalSync model =
         Connected id ->
             model
                 |> Return.val
-                |> Return.sync
-                    ([ ( "id", JE.string id )
-                     , ( "quiz"
+                |> Return.batchEvent
+                    ([ ( "quiz"
                        , model.sections
                             |> globalGet .quiz
                             |> Global.encode Quiz.encoder
@@ -286,8 +274,7 @@ globalSync model =
                        )
                      ]
                         |> JE.object
-                        |> Event.init Nothing "join"
-                        |> Event.push "sync"
+                        |> Sync.join id
                     )
 
         _ ->

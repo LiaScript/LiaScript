@@ -14,7 +14,6 @@ module Lia.Sync.Types exposing
 
 import Dict exposing (Dict)
 import Lia.Sync.Via as Via
-import Return exposing (sync)
 import Set exposing (Set)
 
 

@@ -13,18 +13,13 @@ import { updateClassName } from '../connectors/Base/settings'
 
 import { initTooltip } from '../webcomponents/tooltip/index'
 
-import * as Beaker from '../sync/Beaker/index'
-import * as Jitsi from '../sync/Jitsi/index'
-import * as Matrix from '../sync/Matrix/index'
-import * as PubNub from '../sync/PubNub/index'
-import * as GUN from '../sync/Gun/index'
-
 // Services
 import Console from './service/Console'
 import Resource from './service/Resource'
 import Share from './service/Share'
 import Slide from './service/Slide'
 import Swipe from './service/Swipe'
+import Sync from './service/Sync'
 import TTS from './service/TTS'
 import Translate from './service/Translate'
 
@@ -259,17 +254,7 @@ class LiaScript {
         },
         hasShareAPI: Share.isSupported(),
         hasIndex: connector.hasIndex(),
-        syncSupport: allowSync
-          ? [
-              // beaker is only supported within the beaker-browser
-              Beaker.isSupported() ? 'beaker' : '',
-              // remove these strings if you want to enable or disable certain sync support
-              'gun',
-              'jitsi',
-              'matrix',
-              'pubnub',
-            ]
-          : [],
+        syncSupport: Sync.supported(allowSync),
       },
     })
 
@@ -329,31 +314,6 @@ class LiaScript {
     })
   }
 
-  initSynchronization() {
-    let self = this
-    let publish = this.app.ports.syncIn.send
-
-    this.app.ports.syncOut.subscribe(function (event: Lia.Event) {
-      switch (event.topic) {
-        case 'connect': {
-          if (!self.sync) delete self.sync
-
-          self.sync = new Sync()
-
-          self.sync.connect(
-            publish,
-            event.message.course,
-            event.message.room,
-            event.message.username,
-            event.message.password
-          )
-
-          break
-        }
-      }
-    })
-  }
-
   initEventSystem(
     elem: HTMLElement,
     jsSubscribe: (fn: (_: Lia.Event) => void) => void,
@@ -397,6 +357,10 @@ function process(
 
       case Console.PORT:
         Console.handle(event)
+        break
+
+      case Sync.PORT:
+        Sync.handle(elmSend, event)
         break
 
       case Share.PORT:
@@ -526,70 +490,7 @@ function process(
 
         break
       }
-      case Port.SYNC: {
-        switch (event.track[1][0]) {
-          case 'sync': {
-            // all sync relevant messages
-            switch (event.track[2][0]) {
-              case 'connect': {
-                if (!self.sync) delete self.sync
 
-                switch (event.message.backend) {
-                  case 'beaker': {
-                    self.sync = new Beaker.Sync(elmSend)
-                    self.sync.connect(event.message)
-
-                    break
-                  }
-                  case 'gun': {
-                    self.sync = new GUN.Sync(elmSend)
-                    self.sync.connect(event.message)
-
-                    break
-                  }
-                  case 'jitsi': {
-                    self.sync = new Jitsi.Sync(elmSend)
-                    self.sync.connect(event.message)
-
-                    break
-                  }
-                  case 'matrix': {
-                    self.sync = new Matrix.Sync(elmSend)
-                    self.sync.connect(event.message)
-
-                    break
-                  }
-
-                  case 'pubnub': {
-                    self.sync = new PubNub.Sync(elmSend)
-                    self.sync.connect(event.message)
-
-                    break
-                  }
-                  default: {
-                    log.error('could not load =>', event.message)
-                  }
-                }
-
-                break
-              }
-              case 'disconnect': {
-                if (self.sync) self.sync.disconnect()
-                break
-              }
-              default: {
-                if (self.sync) self.sync.publish(event)
-              }
-            }
-            break
-          }
-
-          default: {
-            if (self.sync) self.sync.publish(event)
-          }
-        }
-        break
-      }
       case Port.PERSISTENT: {
         if (event.message === 'store') {
           // todo, needs to be moved back

@@ -54,7 +54,7 @@ update scripts msg vector =
                                 >> syncSolution id
                                 |> update_ id vector
                                 |> store
-                                |> doSync
+                                |> Return.doSync
 
                         Just scriptID ->
                             vector
@@ -109,7 +109,7 @@ update scripts msg vector =
                             _ ->
                                 return
                    )
-                |> doSync
+                |> Return.doSync
 
         Handle event ->
             case Event.topicWithId event of
@@ -128,7 +128,7 @@ update scripts msg vector =
                                 |> evalEventDecoder
                                 |> update_ section vector
                                 |> store
-                                |> doSync
+                                |> Return.doSync
                                 |> Return.script
                                     (message
                                         |> Event.initWithId Nothing "code" scriptID
@@ -141,7 +141,7 @@ update scripts msg vector =
                                 |> evalEventDecoder
                                 |> update_ section vector
                                 |> store
-                                |> doSync
+                                |> Return.doSync
 
                 Just ( "restore", _ ) ->
                     event
@@ -151,7 +151,7 @@ update scripts msg vector =
                         |> Result.withDefault vector
                         |> Return.val
                         |> init (\i s -> execute i s.state)
-                        |> doSync
+                        |> Return.doSync
 
                 {- |> (\ret ->
                         case sync of
@@ -180,11 +180,6 @@ update scripts msg vector =
             vector
                 |> Return.val
                 |> Return.script sub
-
-
-doSync : Return Vector msg sub -> Return Vector msg sub
-doSync =
-    Return.sync (Event.init Nothing "" JE.null)
 
 
 toString : State -> String

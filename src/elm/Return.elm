@@ -4,20 +4,16 @@ module Return exposing
     , batchEvent
     , batchEvents
     , cmd
+    , doSync
     , mapCmd
     , mapEvents
-    , mapSync
     , mapVal
     , mapValCmd
     , replace
     , script
-    , sync
-    , syncAppend
-    , syncMsg
     , val
     )
 
-import Json.Encode as JE
 import Lia.Markdown.Effect.Script.Types as Script
 import Port.Event as Event exposing (Event)
 
@@ -27,7 +23,7 @@ type alias Return model msg sub =
     , command : Cmd msg
     , events : List Event
     , sub : Maybe (Script.Msg sub)
-    , synchronize : List Event
+    , synchronize : Bool
     }
 
 
@@ -38,7 +34,7 @@ val model =
         Cmd.none
         []
         Nothing
-        []
+        False
 
 
 batchEvent : Event -> Return model msg sub -> Return model msg sub
@@ -58,10 +54,7 @@ upgrade topic id =
 
 mapEvents : String -> Int -> Return model msg sub -> Return model msg sub
 mapEvents topic id r =
-    { r
-        | events = upgrade topic id r.events
-        , synchronize = upgrade topic id r.synchronize
-    }
+    { r | events = upgrade topic id r.events }
 
 
 cmd : Cmd msg -> Return model msg sub -> Return model msg sub
@@ -114,29 +107,6 @@ replace r m =
     mapVal (always m) r
 
 
-sync : Event -> Return model msg sub -> Return model msg sub
-sync event r =
-    { r | synchronize = Event.push "sync" event :: r.synchronize }
-
-
-syncMsg : Int -> JE.Value -> Return model msg sub -> Return model msg sub
-syncMsg id msg r =
-    { r | synchronize = Event.initWithId Nothing "sync" id msg :: r.synchronize }
-
-
-mapSync : String -> Maybe Int -> Return model msg sub -> Return model msg sub
-mapSync topic id r =
-    { r
-        | synchronize =
-            case id of
-                Nothing ->
-                    List.map (Event.push topic) r.synchronize
-
-                Just i ->
-                    upgrade topic i r.synchronize
-    }
-
-
-syncAppend : List Event -> Return model msg sub -> Return model msg sub
-syncAppend events r =
-    { r | synchronize = List.append events r.synchronize }
+doSync : Return model msg sub -> Return model msg sub
+doSync r =
+    { r | synchronize = True }
