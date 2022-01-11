@@ -15,7 +15,10 @@ export type Event = {
   reply: boolean
   track: POI[]
   service: string | null
-  message: any
+  message: {
+    cmd: string
+    param: any
+  }
 }
 
 type POI = [string, number]
