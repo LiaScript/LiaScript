@@ -1,4 +1,4 @@
-module Service.Service.Resource exposing
+module Service.Resource exposing
     ( link
     , script
     )

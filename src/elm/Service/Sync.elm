@@ -1,4 +1,4 @@
-module Service.Service.Sync exposing (..)
+module Service.Sync exposing (..)
 
 import Json.Encode as JE
 import Lia.Sync.Via as Via

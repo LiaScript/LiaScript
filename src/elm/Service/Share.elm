@@ -1,4 +1,4 @@
-module Service.Service.Share exposing (link)
+module Service.Share exposing (link)
 
 import Json.Encode as JE
 import Service.Event as Event exposing (Event)

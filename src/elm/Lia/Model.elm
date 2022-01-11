@@ -15,7 +15,7 @@ import Lia.Settings.Json
 import Lia.Settings.Types as Settings exposing (Settings)
 import Lia.Sync.Types as Sync
 import Service.Event exposing (Event)
-import Service.Service.Resource as Resource
+import Service.Resource
 import Translations
 
 
@@ -158,10 +158,10 @@ loadResource old new =
         (\res ->
             case res of
                 Script url ->
-                    Resource.script url
+                    Service.Resource.script url
 
                 Link url ->
-                    Resource.link url
+                    Service.Resource.link url
         )
         to_load
     )

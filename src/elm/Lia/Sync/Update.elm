@@ -18,7 +18,7 @@ import Lia.Sync.Via as Via exposing (Backend)
 import Random
 import Return exposing (Return)
 import Service.Event as Event exposing (Event, message)
-import Service.Service.Sync as Sync
+import Service.Sync
 import Session exposing (Session)
 import Set
 
@@ -198,7 +198,7 @@ update session model msg =
                     { model | sync = { sync | state = Pending, sync = closeSelect sync.sync } }
                         |> Return.val
                         |> Return.batchEvent
-                            (Sync.connect
+                            (Service.Sync.connect
                                 { backend = backend
                                 , course = model.readme
                                 , room = sync.room
@@ -213,7 +213,7 @@ update session model msg =
         Disconnect ->
             { model | sync = { sync | state = Pending } }
                 |> Return.val
-                |> Return.batchEvent Sync.disconnect
+                |> Return.batchEvent Service.Sync.disconnect
 
 
 updateSync msg sync =
@@ -274,7 +274,7 @@ globalSync model =
                        )
                      ]
                         |> JE.object
-                        |> Sync.join id
+                        |> Service.Sync.join id
                     )
 
         _ ->

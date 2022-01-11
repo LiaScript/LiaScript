@@ -30,10 +30,10 @@ import Lia.Sync.Container.Local as Container
 import Lia.Sync.Types as Sync
 import Lia.Utils exposing (focus)
 import Return exposing (Return)
+import Service.Console
 import Service.Event as Event exposing (Event)
-import Service.Service.Console as Console
-import Service.Service.Sync as Sync_
-import Service.Service.TTS as TTS
+import Service.Sync
+import Service.TTS
 import Translations exposing (Lang(..))
 
 
@@ -143,7 +143,7 @@ update sync globals msg section =
                                         |> Return.batchEvent
                                             (state
                                                 |> Container.encode Quiz_.encoder
-                                                |> Sync_.publish "quiz"
+                                                |> Service.Sync.publish "quiz"
                                                 |> Event.pushWithId "local" section.id
                                             )
 
@@ -178,7 +178,7 @@ update sync globals msg section =
                                         |> Return.batchEvent
                                             (state
                                                 |> Container.encode Survey_.encoder
-                                                |> Sync_.publish "survey"
+                                                |> Service.Sync.publish "survey"
                                                 |> Event.pushWithId "local" section.id
                                             )
 
@@ -243,7 +243,7 @@ syncQuiz sync ret =
                         |> Return.batchEvent
                             (state
                                 |> Container.encode Quiz_.encoder
-                                |> Sync_.publish "quiz"
+                                |> Service.Sync.publish "quiz"
                                 |> Event.pushWithId "local" ret.value.id
                             )
 
@@ -274,7 +274,7 @@ syncSurvey sync ret =
                         |> Return.batchEvent
                             (state
                                 |> Container.encode Survey_.encoder
-                                |> Sync_.publish "survey"
+                                |> Service.Sync.publish "survey"
                                 |> Event.pushWithId "local" ret.value.id
                             )
 
@@ -471,7 +471,7 @@ subHandle js json section =
         _ ->
             section
                 |> Return.val
-                |> Return.batchEvent (Console.error "subHandle Problem")
+                |> Return.batchEvent (Service.Console.error "subHandle Problem")
 
 
 handle : Sync.State -> Definition -> String -> Event -> Section -> Return Section Msg Msg
@@ -520,7 +520,7 @@ ttsReplay sound true section =
                     )
 
         else
-            TTS.cancel
+            Service.TTS.cancel
                 |> Event.pushWithId "tts" 0
                 |> Event.pushWithId "effect"
                     (section

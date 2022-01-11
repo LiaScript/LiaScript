@@ -1,4 +1,4 @@
-module Service.Service.Console exposing
+module Service.Console exposing
     ( error
     , log
     , warn

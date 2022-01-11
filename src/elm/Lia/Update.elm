@@ -23,10 +23,10 @@ import Lia.Settings.Types exposing (Mode(..))
 import Lia.Settings.Update as Settings
 import Lia.Sync.Update as Sync
 import Return exposing (Return)
+import Service.Console
 import Service.Eval exposing (event)
 import Service.Event as Event exposing (Event)
-import Service.Service.Console as Console
-import Service.Service.Slide as Slide
+import Service.Slide
 import Session exposing (Session)
 import Translations exposing (Lang(..))
 
@@ -191,7 +191,7 @@ update session msg model =
 
                         Nothing ->
                             Return.val model
-                                |> Return.batchEvent (Console.warn "message goto with no id")
+                                |> Return.batchEvent (Service.Console.warn "message goto with no id")
 
                 Just ( "sync", e ) ->
                     case Event.popWithId e of
@@ -264,7 +264,7 @@ update session msg model =
 
                 Nothing ->
                     Return.val model
-                        |> Return.batchEvent (Console.error "unknown main topic")
+                        |> Return.batchEvent (Service.Console.error "unknown main topic")
 
         Script ( id, sub ) ->
             case Array.get id model.sections of
@@ -336,7 +336,7 @@ update session msg model =
                         |> Return.mapValCmd
                             (set_active_section { model | to_do = [] })
                             UpdateMarkdown
-                        |> Return.batchEvents (Slide.initialize model.section_active :: model.to_do)
+                        |> Return.batchEvents (Service.Slide.initialize model.section_active :: model.to_do)
 
                 ( JumpToFragment id, Just sec ) ->
                     if (model.settings.mode == Textbook) || sec.effect_model.visible == id then

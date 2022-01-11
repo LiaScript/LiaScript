@@ -1,4 +1,4 @@
-module Service.Service.Translate exposing (google)
+module Service.Translate exposing (google)
 
 import Json.Encode as JE
 import Service.Event as Event exposing (Event)

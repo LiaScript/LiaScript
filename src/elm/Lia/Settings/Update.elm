@@ -16,9 +16,9 @@ import Lia.Settings.Types exposing (Action(..), Mode(..), Settings)
 import Lia.Utils exposing (focus)
 import Return exposing (Return)
 import Service.Event as Event exposing (Event)
-import Service.Service.Share as Share
-import Service.Service.TTS as TTS
-import Service.Service.Translate as Translate
+import Service.Share
+import Service.TTS
+import Service.Translate
 
 
 type Msg
@@ -67,8 +67,8 @@ update main msg model =
                                 { model
                                     | speaking =
                                         event
-                                            |> TTS.decode
-                                            |> (==) TTS.Start
+                                            |> Service.TTS.decode
+                                            |> (==) Service.TTS.Start
                                 }
 
                         _ ->
@@ -94,10 +94,10 @@ update main msg model =
                 |> Return.batchEvent
                     (Event.push "settings" <|
                         if model.sound then
-                            TTS.cancel
+                            Service.TTS.cancel
 
                         else
-                            TTS.repeat
+                            Service.TTS.repeat
                     )
 
         Toggle Light ->
@@ -138,7 +138,7 @@ update main msg model =
                 Textbook ->
                     { model | sound = False, mode = Textbook }
                         |> log Nothing
-                        |> Return.batchEvent TTS.cancel
+                        |> Return.batchEvent Service.TTS.cancel
 
                 _ ->
                     log Nothing { model | mode = mode }
@@ -181,13 +181,13 @@ update main msg model =
                             |> Maybe.withDefault ""
                      , url = url
                      }
-                        |> Share.link
+                        |> Service.Share.link
                     )
 
         Toggle TranslateWithGoogle ->
             { model | translateWithGoogle = True }
                 |> Return.val
-                |> Return.batchEvent Translate.google
+                |> Return.batchEvent Service.Translate.google
 
         Ignore ->
             Return.val model

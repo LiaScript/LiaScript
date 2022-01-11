@@ -1,4 +1,4 @@
-module Service.Service.Slide exposing
+module Service.Slide exposing
     ( initialize
     , scrollIntoView
     , scrollUp

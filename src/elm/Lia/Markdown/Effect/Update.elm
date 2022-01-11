@@ -23,10 +23,10 @@ import Lia.Markdown.Effect.Script.Types as Script_ exposing (Scripts)
 import Lia.Markdown.Effect.Script.Update as Script
 import Lia.Section exposing (SubSection)
 import Return exposing (Return)
+import Service.Console
 import Service.Event as Event exposing (Event)
-import Service.Service.Console as Console
-import Service.Service.Slide as Slide
-import Service.Service.TTS as TTS
+import Service.Slide
+import Service.TTS
 import Task
 
 
@@ -90,15 +90,15 @@ update main sound msg model =
                 { model | speaking = Nothing }
                     |> Return.val
                     |> Return.batchEvent
-                        (TTS.cancel
+                        (Service.TTS.cancel
                             |> Event.pushWithId "playback" id
                         )
 
             Send event ->
                 let
                     events =
-                        Slide.scrollIntoView "focused" 350
-                            :: Slide.scrollIntoView "lia-notes-active" 350
+                        Service.Slide.scrollIntoView "focused" 350
+                            :: Service.Slide.scrollIntoView "lia-notes-active" 350
                             :: event
                 in
                 model
@@ -107,13 +107,13 @@ update main sound msg model =
                         (case current_comment model of
                             Just ( id, _ ) ->
                                 if sound then
-                                    TTS.readFrom id :: events
+                                    Service.TTS.readFrom id :: events
 
                                 else
                                     events
 
                             _ ->
-                                TTS.cancel :: events
+                                Service.TTS.cancel :: events
                         )
 
             Rendered run_all_javascript _ ->
@@ -127,19 +127,19 @@ update main sound msg model =
             Handle event ->
                 case Event.topicWithId event of
                     Just ( "tts", section ) ->
-                        case TTS.decode event of
-                            TTS.Start ->
+                        case Service.TTS.decode event of
+                            Service.TTS.Start ->
                                 { model | speaking = Just section }
                                     |> Return.val
 
-                            TTS.Stop ->
+                            Service.TTS.Stop ->
                                 { model | speaking = Nothing }
                                     |> Return.val
 
-                            TTS.Error info ->
+                            Service.TTS.Error info ->
                                 model
                                     |> Return.val
-                                    |> Return.batchEvent (Console.warn info)
+                                    |> Return.batchEvent (Service.Console.warn info)
 
                     _ ->
                         model.javascript
@@ -236,4 +236,4 @@ ttsReplay : Model SubSection -> Maybe Event
 ttsReplay model =
     model
         |> current_comment
-        |> Maybe.map (Tuple.first >> TTS.readFrom)
+        |> Maybe.map (Tuple.first >> Service.TTS.readFrom)

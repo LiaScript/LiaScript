@@ -1,4 +1,4 @@
-module Service.Service.TTS exposing
+module Service.TTS exposing
     ( Msg(..)
     , cancel
     , decode
